@@ -1,0 +1,269 @@
+package newrelic
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
+	newrelic "github.com/paultyng/go-newrelic/api"
+)
+
+func resourceNewRelicNrqlAlertCondition() *schema.Resource {
+
+	return &schema.Resource{
+		Create: resourceNewRelicNrqlAlertConditionCreate,
+		Read:   resourceNewRelicNrqlAlertConditionRead,
+		Update: resourceNewRelicNrqlAlertConditionUpdate,
+		Delete: resourceNewRelicNrqlAlertConditionDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Schema: map[string]*schema.Schema{
+			"policy_id": {
+				Type:     schema.TypeInt,
+				Required: true,
+				ForceNew: true,
+			},
+			"name": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"runbook_url": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
+			"nrql": {
+				Type:     schema.TypeList,
+				Required: true,
+				MinItems: 1,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"query": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"since_value": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"term": {
+				Type: schema.TypeList,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"duration": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: intInSlice([]int{5, 10, 15, 30, 60, 120}),
+						},
+						"operator": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Default:      "equal",
+							ValidateFunc: validation.StringInSlice([]string{"above", "below", "equal"}, false),
+						},
+						"priority": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Default:      "critical",
+							ValidateFunc: validation.StringInSlice([]string{"critical", "warning"}, false),
+						},
+						"threshold": {
+							Type:         schema.TypeFloat,
+							Required:     true,
+							ValidateFunc: float64Gte(0.0),
+						},
+						"time_function": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
+						},
+					},
+				},
+				Required: true,
+				MinItems: 1,
+			},
+			"value_function": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"single_value", "sum"}, false),
+			},
+		},
+	}
+}
+
+func buildNrqlAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertNrqlCondition {
+	termSet := d.Get("term").([]interface{})
+	terms := make([]newrelic.AlertConditionTerm, len(termSet))
+
+	for i, termI := range termSet {
+		termM := termI.(map[string]interface{})
+
+		terms[i] = newrelic.AlertConditionTerm{
+			Duration:     termM["duration"].(int),
+			Operator:     termM["operator"].(string),
+			Priority:     termM["priority"].(string),
+			Threshold:    termM["threshold"].(float64),
+			TimeFunction: termM["time_function"].(string),
+		}
+	}
+
+	query := newrelic.AlertNrqlQuery{}
+
+	if nrqlQuery, ok := d.GetOk("nrql.0.query"); ok {
+		query.Query = nrqlQuery.(string)
+	}
+
+	if sinceValue, ok := d.GetOk("nrql.0.since_value"); ok {
+		query.SinceValue = sinceValue.(string)
+	}
+
+	condition := newrelic.AlertNrqlCondition{
+		Name:          d.Get("name").(string),
+		Enabled:       d.Get("enabled").(bool),
+		Terms:         terms,
+		PolicyID:      d.Get("policy_id").(int),
+		Nrql:          query,
+		ValueFunction: d.Get("value_function").(string),
+	}
+
+	if attr, ok := d.GetOk("runbook_url"); ok {
+		condition.RunbookURL = attr.(string)
+	}
+
+	return &condition
+}
+
+func readNrqlAlertConditionStruct(condition *newrelic.AlertNrqlCondition, d *schema.ResourceData) error {
+	ids, err := parseIDs(d.Id(), 2)
+	if err != nil {
+		return err
+	}
+
+	policyID := ids[0]
+
+	d.Set("policy_id", policyID)
+	d.Set("name", condition.Name)
+	d.Set("runbook_url", condition.RunbookURL)
+	d.Set("enabled", condition.Enabled)
+	d.Set("value_function", condition.ValueFunction)
+	d.Set("nrql.0.Query", condition.Nrql.Query)
+	d.Set("nrql.0.SinceValue", condition.Nrql.SinceValue)
+
+	var terms []map[string]interface{}
+
+	for _, src := range condition.Terms {
+		dst := map[string]interface{}{
+			"duration":      src.Duration,
+			"operator":      src.Operator,
+			"priority":      src.Priority,
+			"threshold":     src.Threshold,
+			"time_function": src.TimeFunction,
+		}
+		terms = append(terms, dst)
+	}
+
+	if err := d.Set("term", terms); err != nil {
+		return fmt.Errorf("[DEBUG] Error setting alert condition terms: %#v", err)
+	}
+
+	return nil
+}
+
+func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*newrelic.Client)
+	condition := buildNrqlAlertConditionStruct(d)
+
+	log.Printf("[INFO] Creating New Relic NRQL alert condition %s", condition.Name)
+
+	condition, err := client.CreateAlertNrqlCondition(*condition)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(serializeIDs([]int{condition.PolicyID, condition.ID}))
+
+	return nil
+}
+
+func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*newrelic.Client)
+
+	log.Printf("[INFO] Reading New Relic NRQL alert condition %s", d.Id())
+
+	ids, err := parseIDs(d.Id(), 2)
+	if err != nil {
+		return err
+	}
+
+	policyID := ids[0]
+	id := ids[1]
+
+	condition, err := client.GetAlertNrqlCondition(policyID, id)
+	if err != nil {
+		if err == newrelic.ErrNotFound {
+			d.SetId("")
+			return nil
+		}
+
+		return err
+	}
+
+	return readNrqlAlertConditionStruct(condition, d)
+}
+
+func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*newrelic.Client)
+	condition := buildNrqlAlertConditionStruct(d)
+
+	ids, err := parseIDs(d.Id(), 2)
+	if err != nil {
+		return err
+	}
+
+	policyID := ids[0]
+	id := ids[1]
+
+	condition.PolicyID = policyID
+	condition.ID = id
+
+	log.Printf("[INFO] Updating New Relic NRQL alert condition %d", id)
+
+	updatedCondition, err := client.UpdateAlertNrqlCondition(*condition)
+	if err != nil {
+		return err
+	}
+
+	return readNrqlAlertConditionStruct(updatedCondition, d)
+}
+
+func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*newrelic.Client)
+
+	ids, err := parseIDs(d.Id(), 2)
+	if err != nil {
+		return err
+	}
+
+	policyID := ids[0]
+	id := ids[1]
+
+	log.Printf("[INFO] Deleting New Relic NRQL alert condition %d", id)
+
+	if err := client.DeleteAlertNrqlCondition(policyID, id); err != nil {
+		return err
+	}
+
+	d.SetId("")
+
+	return nil
+}
