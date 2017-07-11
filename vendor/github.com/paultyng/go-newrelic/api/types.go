@@ -41,7 +41,7 @@ type AlertConditionTerm struct {
 	Duration     int     `json:"duration,string,omitempty"`
 	Operator     string  `json:"operator,omitempty"`
 	Priority     string  `json:"priority,omitempty"`
-	Threshold    float64 `json:"threshold,string,omitempty"`
+	Threshold    float64 `json:"threshold,string"`
 	TimeFunction string  `json:"time_function,omitempty"`
 }
 
