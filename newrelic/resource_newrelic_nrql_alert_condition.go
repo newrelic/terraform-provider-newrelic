@@ -50,8 +50,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Required: true,
 						},
 						"since_value": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice([]string{"1", "2", "3", "4", "5"}, false),
 						},
 					},
 				},
@@ -63,7 +64,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 						"duration": {
 							Type:         schema.TypeInt,
 							Required:     true,
-							ValidateFunc: intInSlice([]int{5, 10, 15, 30, 60, 120}),
+							ValidateFunc: intInSlice([]int{1, 2, 3, 4, 5, 10, 15, 30, 60, 120}),
 						},
 						"operator": {
 							Type:         schema.TypeString,
