@@ -96,6 +96,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"value_function": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Default:      "single_value",
 				ValidateFunc: validation.StringInSlice([]string{"single_value", "sum"}, false),
 			},
 		},
