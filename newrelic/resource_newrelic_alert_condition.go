@@ -11,7 +11,7 @@ import (
 )
 
 var alertConditionTypes = map[string][]string{
-	"apm_app_metric": []string{
+	"apm_app_metric": {
 		"apdex",
 		"error_percentage",
 		"response_time_background",
@@ -20,14 +20,14 @@ var alertConditionTypes = map[string][]string{
 		"throughput_web",
 		"user_defined",
 	},
-	"apm_kt_metric": []string{
+	"apm_kt_metric": {
 		"apdex",
 		"error_count",
 		"error_percentage",
 		"response_time",
 		"throughput",
 	},
-	"browser_metric": []string{
+	"browser_metric": {
 		"ajax_response_time",
 		"ajax_throughput",
 		"dom_processing",
@@ -41,7 +41,7 @@ var alertConditionTypes = map[string][]string{
 		"user_defined",
 		"web_application",
 	},
-	"mobile_metric": []string{
+	"mobile_metric": {
 		"database",
 		"images",
 		"json",
@@ -52,7 +52,7 @@ var alertConditionTypes = map[string][]string{
 		"user_defined",
 		"view_loading",
 	},
-	"servers_metric": []string{
+	"servers_metric": {
 		"cpu_percentage",
 		"disk_io_percentage",
 		"fullest_disk_percentage",
