@@ -68,4 +68,4 @@ resource "newrelic_alert_policy_channel" "alert_email" {
 
 The following arguments are supported:
 
-* `api_key` - (Required) Your New Relic API key.
+* `api_key` - (Required) Your New Relic API key. Can also use `NEWRELIC_API_KEY` environment variable.

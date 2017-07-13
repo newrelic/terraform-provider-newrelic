@@ -1,5 +1,6 @@
-## 0.2.0 (Unreleased)
-- Add support for NRQL Alert Conditions
+## 0.1.1 (Unreleased)
+
+* r/newrelic_alert_condition: Allow zero threshold value for terms [GH-13]
 
 ## 0.1.0 (June 21, 2017)
 
