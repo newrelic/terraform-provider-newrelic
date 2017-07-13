@@ -1,12 +1,12 @@
 ---
 layout: "newrelic"
-page_title: "New Relic: newrelic_alert_condition"
-sidebar_current: "docs-newrelic-resource-alert-condition"
+page_title: "New Relic: newrelic_nrql_alert_condition"
+sidebar_current: "docs-newrelic-resource-nrql-alert-condition"
 description: |-
-  Create and manage an alert condition for a policy in New Relic.
+  Create and manage a NRQL alert condition for a policy in New Relic.
 ---
 
-# newrelic\_alert\_condition
+# newrelic\_nrql_alert\_condition
 
 ## Example Usage
 
