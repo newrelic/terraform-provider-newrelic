@@ -194,7 +194,7 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 
 	d.SetId(serializeIDs([]int{condition.PolicyID, condition.ID}))
 
-	return nil
+	return resourceNewRelicNrqlAlertConditionRead(d, meta)
 }
 
 func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
@@ -240,12 +240,12 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 
 	log.Printf("[INFO] Updating New Relic NRQL alert condition %d", id)
 
-	updatedCondition, err := client.UpdateAlertNrqlCondition(*condition)
+	_, err = client.UpdateAlertNrqlCondition(*condition)
 	if err != nil {
 		return err
 	}
 
-	return readNrqlAlertConditionStruct(updatedCondition, d)
+	return resourceNewRelicNrqlAlertConditionRead(d, meta)
 }
 
 func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
