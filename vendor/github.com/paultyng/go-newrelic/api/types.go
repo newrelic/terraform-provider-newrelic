@@ -62,6 +62,34 @@ type AlertCondition struct {
 	Scope       string                    `json:"condition_scope,omitempty"`
 }
 
+// AlertNrqlQuery represents a NRQL query to use with a NRQL alert condition
+type AlertNrqlQuery struct {
+	Query      string `json:"query,omitempty"`
+	SinceValue string `json:"since_value,omitempty"`
+}
+
+// AlertNrqlCondition represents a New Relic NRQL Alert condition.
+type AlertNrqlCondition struct {
+	PolicyID      int                  `json:"-"`
+	ID            int                  `json:"id,omitempty"`
+	Name          string               `json:"name,omitempty"`
+	Enabled       bool                 `json:"enabled,omitempty"`
+	RunbookURL    string               `json:"runbook_url,omitempty"`
+	Terms         []AlertConditionTerm `json:"terms,omitempty"`
+	ValueFunction string               `json:"value_function,omitempty"`
+	Nrql          AlertNrqlQuery       `json:"nrql,omitempty"`
+}
+
+// AlertSyntheticsCondition represents a New Relic NRQL Alert condition.
+type AlertSyntheticsCondition struct {
+	PolicyID   int    `json:"-"`
+	ID         int    `json:"id,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Enabled    bool   `json:"enabled,omitempty"`
+	RunbookURL string `json:"runbook_url,omitempty"`
+	MonitorID  string `json:"monitor_id,omitempty"`
+}
+
 // AlertChannelLinks represent the links between policies and alert channels
 type AlertChannelLinks struct {
 	PolicyIDs []int `json:"policy_ids,omitempty"`

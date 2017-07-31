@@ -578,10 +578,10 @@
 			"revisionTime": "2016-11-16T22:44:47Z"
 		},
 		{
-			"checksumSHA1": "aEV+rDkw6bb+NklToOHumEq4vQA=",
+			"checksumSHA1": "7DeYeNvvsiruxTa0EeD/pHjAUCQ=",
 			"path": "github.com/paultyng/go-newrelic/api",
-			"revision": "48c279af9399a0a00eca683a36dad18a929ea943",
-			"revisionTime": "2017-07-10T20:07:19Z"
+			"revision": "c788556a307ec84b9b11087c27c62b2eb652ba17",
+			"revisionTime": "2017-07-11T17:07:03Z"
 		},
 		{
 			"checksumSHA1": "u5s2PZ7fzCOqQX7bVPf9IJ+qNLQ=",

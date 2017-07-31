@@ -31,6 +31,7 @@ func Provider() terraform.ResourceProvider {
 		ResourcesMap: map[string]*schema.Resource{
 			"newrelic_alert_channel":        resourceNewRelicAlertChannel(),
 			"newrelic_alert_condition":      resourceNewRelicAlertCondition(),
+			"newrelic_nrql_alert_condition": resourceNewRelicNrqlAlertCondition(),
 			"newrelic_alert_policy":         resourceNewRelicAlertPolicy(),
 			"newrelic_alert_policy_channel": resourceNewRelicAlertPolicyChannel(),
 		},
