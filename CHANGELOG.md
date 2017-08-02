@@ -1,10 +1,10 @@
-## 0.1.1 (Unreleased)
+## 0.1.1 (August 02, 2017)
 
 IMPROVEMENTS:
 
-**New Resource:** `newrelic_nrql_alert_condition` [GH-15]
+**New Resource:** `newrelic_nrql_alert_condition` ([#15](https://github.com/terraform-providers/terraform-provider-newrelic/issues/15))
 
-* r/newrelic_alert_condition: Allow zero threshold value for terms [GH-13]
+* r/newrelic_alert_condition: Allow zero threshold value for terms ([#13](https://github.com/terraform-providers/terraform-provider-newrelic/issues/13))
 
 ## 0.1.0 (June 21, 2017)
 
