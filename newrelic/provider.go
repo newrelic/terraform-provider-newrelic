@@ -25,7 +25,8 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"newrelic_application": dataSourceNewRelicApplication(),
+			"newrelic_application":     dataSourceNewRelicApplication(),
+			"newrelic_key_transaction": dataSourceNewRelicKeyTransaction(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{

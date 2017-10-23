@@ -233,3 +233,16 @@ type ComponentMetric struct {
 	Name   string   `json:"name,omitempty"`
 	Values []string `json:"values"`
 }
+
+// KeyTransaction represents information about a New Relic key transaction.
+type KeyTransaction struct {
+	ID              int                       `json:"id,omitempty"`
+	Name            string                    `json:"name,omitempty"`
+	TransactionName string                    `json:"transaction_name,omitempty"`
+	HealthStatus    string                    `json:"health_status,omitempty"`
+	Reporting       bool                      `json:"reporting,omitempty"`
+	LastReportedAt  string                    `json:"last_reported_at,omitempty"`
+	Summary         ApplicationSummary        `json:"application_summary,omitempty"`
+	EndUserSummary  ApplicationEndUserSummary `json:"end_user_summary,omitempty"`
+	Links           ApplicationLinks          `json:"links,omitempty"`
+}
