@@ -1,6 +1,6 @@
 {
 	"comment": "",
-	"ignore": "appengine test github.com/hashicorp/nomad/ github.com/hashicorp/terraform/backend",
+	"ignore": "test",
 	"package": [
 		{
 			"checksumSHA1": "FIL83loX9V9APvGQIjJpbxq53F0=",
@@ -604,10 +604,12 @@
 			"revisionTime": "2016-11-16T22:44:47Z"
 		},
 		{
-			"checksumSHA1": "7DeYeNvvsiruxTa0EeD/pHjAUCQ=",
+			"checksumSHA1": "wfghfDRJbXP8lELiZQc3+8oHSjk=",
 			"path": "github.com/paultyng/go-newrelic/api",
-			"revision": "c788556a307ec84b9b11087c27c62b2eb652ba17",
-			"revisionTime": "2017-07-11T17:07:03Z"
+			"revision": "01e978b7791e5d84e5b1046c547fd96f98b0b4df",
+			"revisionTime": "2017-10-20T02:27:27Z",
+			"version": "v1.3.0",
+			"versionExact": "v1.3.0"
 		},
 		{
 			"checksumSHA1": "u5s2PZ7fzCOqQX7bVPf9IJ+qNLQ=",
