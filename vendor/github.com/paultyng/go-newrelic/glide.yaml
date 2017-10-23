@@ -1,0 +1,11 @@
+package: github.com/paultyng/go-newrelic
+import:
+- package: github.com/imdario/mergo
+  version: ^0.2.2
+- package: github.com/olekukonko/tablewriter
+- package: github.com/spf13/cobra
+- package: github.com/spf13/viper
+- package: github.com/tomnomnom/linkheader
+  version: ^0.1.0
+- package: gopkg.in/resty.v0
+  version: ^0.11.0
