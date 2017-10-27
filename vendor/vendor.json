@@ -750,5 +750,5 @@
 			"versionExact": "v1.6.1"
 		}
 	],
-	"rootPath": "github.com/terraform-providers/terraform-provider-newrelic"
+	"rootPath": "github.com/bridgetlane/terraform-provider-newrelic"
 }
