@@ -25,15 +25,17 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"newrelic_application": dataSourceNewRelicApplication(),
+			"newrelic_application":        dataSourceNewRelicApplication(),
+			"newrelic_synthetics_monitor": dataSourceNewRelicSyntheticsMonitor(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"newrelic_alert_channel":        resourceNewRelicAlertChannel(),
-			"newrelic_alert_condition":      resourceNewRelicAlertCondition(),
-			"newrelic_nrql_alert_condition": resourceNewRelicNrqlAlertCondition(),
-			"newrelic_alert_policy":         resourceNewRelicAlertPolicy(),
-			"newrelic_alert_policy_channel": resourceNewRelicAlertPolicyChannel(),
+			"newrelic_alert_channel":              resourceNewRelicAlertChannel(),
+			"newrelic_alert_condition":            resourceNewRelicAlertCondition(),
+			"newrelic_nrql_alert_condition":       resourceNewRelicNrqlAlertCondition(),
+			"newrelic_synthetics_alert_condition": resourceNewRelicSyntheticsAlertCondition(),
+			"newrelic_alert_policy":               resourceNewRelicAlertPolicy(),
+			"newrelic_alert_policy_channel":       resourceNewRelicAlertPolicyChannel(),
 		},
 
 		ConfigureFunc: providerConfigure,
