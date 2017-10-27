@@ -227,10 +227,6 @@
 			"revisionTime": "2017-07-27T06:48:18Z"
 		},
 		{
-			"path": "github.com/blinohod/terraform/builtin/providers/newrelic",
-			"revision": ""
-		},
-		{
 			"checksumSHA1": "dvabztWVQX8f6oMLRyv4dLH+TGY=",
 			"path": "github.com/davecgh/go-spew/spew",
 			"revision": "346938d642f2ec3594ed81d874461961cd0faa76",
