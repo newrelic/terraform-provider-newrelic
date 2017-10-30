@@ -227,6 +227,12 @@
 			"revisionTime": "2017-07-27T06:48:18Z"
 		},
 		{
+			"checksumSHA1": "jZpG8JA8KXXPB0ITK6ZWq1HUJNk=",
+			"path": "github.com/blinohod/terraform/builtin/providers/newrelic",
+			"revision": "bf51b4537c38be928e015bdd94ade0cdf9389bd5",
+			"revisionTime": "2016-12-22T07:04:26Z"
+		},
+		{
 			"checksumSHA1": "dvabztWVQX8f6oMLRyv4dLH+TGY=",
 			"path": "github.com/davecgh/go-spew/spew",
 			"revision": "346938d642f2ec3594ed81d874461961cd0faa76",
@@ -750,5 +756,5 @@
 			"versionExact": "v1.6.1"
 		}
 	],
-	"rootPath": "github.com/bridgetlane/terraform-provider-newrelic"
+	"rootPath": "github.com/terraform-providers/terraform-provider-newrelic"
 }
