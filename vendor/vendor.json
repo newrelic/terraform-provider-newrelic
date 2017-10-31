@@ -245,6 +245,12 @@
 			"revisionTime": "2017-06-05T22:47:34Z"
 		},
 		{
+			"checksumSHA1": "WwL/VC8HfOPXjbRqZqGS6aOa+6c=",
+			"path": "github.com/dollarshaveclub/new-relic-synthetics-go/util",
+			"revision": "4dc3dd6ae8845dc78d5f23e86a1f211d4aef7daf",
+			"revisionTime": "2017-06-05T22:47:34Z"
+		},
+		{
 			"checksumSHA1": "BCv50o5pDkoSG3vYKOSai1Z8p3w=",
 			"path": "github.com/fsouza/go-dockerclient",
 			"revision": "1d4f4ae73768d3ca16a6fb964694f58dc5eba601",
