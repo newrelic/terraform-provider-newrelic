@@ -20,6 +20,12 @@ var alertConditionTypes = map[string][]string{
 		"throughput_web",
 		"user_defined",
 	},
+	"apm_jvm_metric": {
+		"cpu_utilization_time",
+		"deadlocked_threads",
+		"gc_cpu_time",
+		"heap_memory_usage",
+	},
 	"apm_kt_metric": {
 		"apdex",
 		"error_count",
@@ -110,6 +116,16 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"violation_close_timer": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      24,
+				ValidateFunc: intInSlice([]int{1, 2, 4, 8, 12, 24}),
+			},
+			"gc_metric": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"term": {
 				Type: schema.TypeList,
 				Elem: &schema.Resource{
@@ -183,14 +199,16 @@ func buildAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertCondition 
 	}
 
 	condition := newrelic.AlertCondition{
-		Type:     d.Get("type").(string),
-		Name:     d.Get("name").(string),
-		Enabled:  true,
-		Entities: entities,
-		Metric:   d.Get("metric").(string),
-		Terms:    terms,
-		PolicyID: d.Get("policy_id").(int),
-		Scope:    d.Get("condition_scope").(string),
+		Type:                d.Get("type").(string),
+		Name:                d.Get("name").(string),
+		Enabled:             true,
+		Entities:            entities,
+		Metric:              d.Get("metric").(string),
+		Terms:               terms,
+		PolicyID:            d.Get("policy_id").(int),
+		Scope:               d.Get("condition_scope").(string),
+		ViolationCloseTimer: d.Get("violation_close_timer").(int),
+		GCMetric:            d.Get("gc_metric").(string),
 	}
 
 	if attr, ok := d.GetOk("runbook_url"); ok {
@@ -232,6 +250,8 @@ func readAlertConditionStruct(condition *newrelic.AlertCondition, d *schema.Reso
 	d.Set("metric", condition.Metric)
 	d.Set("runbook_url", condition.RunbookURL)
 	d.Set("condition_scope", condition.Scope)
+	d.Set("violation_close_timer", condition.ViolationCloseTimer)
+	d.Set("gc_metric", condition.GCMetric)
 	d.Set("user_defined_metric", condition.UserDefined.Metric)
 	d.Set("user_defined_value_function", condition.UserDefined.ValueFunction)
 	if err := d.Set("entities", entities); err != nil {
