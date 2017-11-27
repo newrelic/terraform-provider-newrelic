@@ -49,17 +49,19 @@ type AlertConditionTerm struct {
 // TODO: custom unmarshal entities to ints?
 // TODO: handle unmarshaling .75 for float (not just 0.75)
 type AlertCondition struct {
-	PolicyID    int                       `json:"-"`
-	ID          int                       `json:"id,omitempty"`
-	Type        string                    `json:"type,omitempty"`
-	Name        string                    `json:"name,omitempty"`
-	Enabled     bool                      `json:"enabled,omitempty"`
-	Entities    []string                  `json:"entities,omitempty"`
-	Metric      string                    `json:"metric,omitempty"`
-	RunbookURL  string                    `json:"runbook_url,omitempty"`
-	Terms       []AlertConditionTerm      `json:"terms,omitempty"`
-	UserDefined AlertConditionUserDefined `json:"user_defined,omitempty"`
-	Scope       string                    `json:"condition_scope,omitempty"`
+	PolicyID            int                       `json:"-"`
+	ID                  int                       `json:"id,omitempty"`
+	Type                string                    `json:"type,omitempty"`
+	Name                string                    `json:"name,omitempty"`
+	Enabled             bool                      `json:"enabled,omitempty"`
+	Entities            []string                  `json:"entities,omitempty"`
+	Metric              string                    `json:"metric,omitempty"`
+	RunbookURL          string                    `json:"runbook_url,omitempty"`
+	Terms               []AlertConditionTerm      `json:"terms,omitempty"`
+	UserDefined         AlertConditionUserDefined `json:"user_defined,omitempty"`
+	Scope               string                    `json:"condition_scope,omitempty"`
+	GCMetric            string                    `json:"gc_metric,omitempty"`
+	ViolationCloseTimer int                       `json:"violation_close_timer,omitempty"`
 }
 
 // AlertNrqlQuery represents a NRQL query to use with a NRQL alert condition
@@ -232,4 +234,17 @@ type Component struct {
 type ComponentMetric struct {
 	Name   string   `json:"name,omitempty"`
 	Values []string `json:"values"`
+}
+
+// KeyTransaction represents information about a New Relic key transaction.
+type KeyTransaction struct {
+	ID              int                       `json:"id,omitempty"`
+	Name            string                    `json:"name,omitempty"`
+	TransactionName string                    `json:"transaction_name,omitempty"`
+	HealthStatus    string                    `json:"health_status,omitempty"`
+	Reporting       bool                      `json:"reporting,omitempty"`
+	LastReportedAt  string                    `json:"last_reported_at,omitempty"`
+	Summary         ApplicationSummary        `json:"application_summary,omitempty"`
+	EndUserSummary  ApplicationEndUserSummary `json:"end_user_summary,omitempty"`
+	Links           ApplicationLinks          `json:"links,omitempty"`
 }
