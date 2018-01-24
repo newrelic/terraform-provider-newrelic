@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	newrelic "source.datanerd.us/csmith/go-newrelic/api"
+	newrelic "github.com/paultyng/go-newrelic/api"
 )
 
 func TestAccNewRelicDashboard_Basic(t *testing.T) {
