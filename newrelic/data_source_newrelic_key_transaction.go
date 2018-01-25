@@ -33,7 +33,10 @@ func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface
 	}
 
 	var transaction *newrelic.KeyTransaction
-	name := d.Get("name").(string)
+	name, ok := d.Get("name").(string)
+	if !ok {
+		return fmt.Errorf("The name '%v' is not a string.", name)
+	}
 
 	for _, t := range transactions {
 		if t.Name == name {
