@@ -51,7 +51,7 @@ func dataSourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interf
 	var monitor *synthetics.ExtendedMonitor
 	name := d.Get("name").(string)
 	for offset <= maxCheck {
-		if len(monitors.Monitors) == 100 && err == nil {
+		if len(monitors.Monitors) > 0 && err == nil {
 			mon := *monitors
 
 			for i := 0; i < len(monitors.Monitors); i++ {
