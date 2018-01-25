@@ -34,17 +34,17 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_dashboard.foo", "widget.#", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.2870742112.title", "Average Transaction Duration"),
+						"newrelic_dashboard.foo", "widget.754238675.title", "Average Transaction Duration"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.2870742112.height", "1"),
+						"newrelic_dashboard.foo", "widget.754238675.height", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.2870742112.width", "1"),
+						"newrelic_dashboard.foo", "widget.754238675.width", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.2870742112.row", "1"),
+						"newrelic_dashboard.foo", "widget.754238675.row", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.2870742112.column", "1"),
+						"newrelic_dashboard.foo", "widget.754238675.column", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.2870742112.visualization", "faceted_line_chart"),
+						"newrelic_dashboard.foo", "widget.754238675.visualization", "faceted_line_chart"),
 				),
 			},
 			// Update dashboard title
@@ -60,6 +60,17 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 			},
 			// Add widget
 			resource.TestStep{
+				Config: testAccCheckNewRelicDashboardWidgetConfigAdded(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "title", fmt.Sprintf("tf-test-updated-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "widget.#", "2"),
+				),
+			},
+			// Update widget
+			resource.TestStep{
 				Config: testAccCheckNewRelicDashboardWidgetConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
@@ -67,6 +78,8 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 						"newrelic_dashboard.foo", "title", fmt.Sprintf("tf-test-updated-%s", rName)),
 					resource.TestCheckResourceAttr(
 						"newrelic_dashboard.foo", "widget.#", "2"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "widget.3380029573.nrql", "SELECT PERCENTILE(duration, 50) from Transaction FACET appName TIMESERIES auto"),
 				),
 			},
 		},
@@ -125,7 +138,7 @@ func testAccCheckNewRelicDashboardExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckNewRelicDashboardWidgetConfigUpdated(rName string) string {
+func testAccCheckNewRelicDashboardWidgetConfigAdded(rName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_dashboard" "foo" {
   title                = "tf-test-updated-%s"
@@ -135,6 +148,28 @@ resource "newrelic_dashboard" "foo" {
 	column		  = 1
 	row			  = 1
     nrql          = "SELECT PERCENTILE(duration, 95) from Transaction FACET appName TIMESERIES auto"
+  }
+  widget {
+    title         = "Page Views"
+	visualization = "faceted_line_chart"
+	column		  = 1
+	row			  = 2
+    nrql          = "SELECT AVERAGE(duration) from PageView FACET appName TIMESERIES auto"
+  }
+}
+`, rName)
+}
+
+func testAccCheckNewRelicDashboardWidgetConfigUpdated(rName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_dashboard" "foo" {
+  title                = "tf-test-updated-%s"
+  widget {
+    title         = "Average Transaction Duration"
+	visualization = "faceted_line_chart"
+	column		  = 1
+	row			  = 1
+    nrql          = "SELECT PERCENTILE(duration, 50) from Transaction FACET appName TIMESERIES auto"
   }
   widget {
     title         = "Page Views"
