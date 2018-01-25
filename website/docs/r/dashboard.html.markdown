@@ -49,8 +49,10 @@ The `widget` mapping supports the following arguments:
 
   * `title` - (Required) A title for the widget.
   * `visualization` - (Required) How the widget visualizes data.
-  * `row` - (Optional) Row position of widget from top left, starting at `1`. Defaults to `1`.
-  * `column` - (Optional) Column position of widget from top left, starting at `1`.  Defaults to `1`.
+  * `row` - (Required) Row position of widget from top left, starting at `1`.
+  * `column` - (Required) Column position of widget from top left, starting at `1`.
+  * `width` - (Optional) Width of the widget. Defaults to `1`.
+  * `height` - (Optional) Height of the widget. Defaults to `1`.
   * `notes` - (Optional) Description of the widget.
   * `nrql` - (Optional) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
 
