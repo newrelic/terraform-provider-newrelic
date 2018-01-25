@@ -120,8 +120,15 @@ func resourceNewRelicDashboardWidgetsHash(v interface{}) int {
 
 	row := m["row"].(int)
 	column := m["column"].(int)
+	width := m["width"].(int)
+	height := m["height"].(int)
+	nrql := m["nrql"].(string)
+	title := m["title"].(string)
+	notes := m["notes"].(string)
+	viz := m["visualization"].(string)
 
-	buf.WriteString(fmt.Sprintf("%d-%d", row, column))
+	buf.WriteString(fmt.Sprintf("%d-%d-%d-%d-%s-%s-%s-%s",
+		row, column, width, height, nrql, title, viz, notes))
 
 	return hashcode.String(buf.String())
 }
