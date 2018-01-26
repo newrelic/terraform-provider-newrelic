@@ -81,7 +81,7 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 	})
 }
 
-// TODO: func TestAccNewRelicNrqlAlertCondition_Multi(t *testing.T) {
+// TODO: func_ TestAccNewRelicNrqlAlertCondition_Multi(t *testing.T) {
 
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*newrelic.Client)
