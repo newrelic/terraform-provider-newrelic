@@ -8,26 +8,10 @@ import (
 
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
+
 	newrelic "github.com/paultyng/go-newrelic/api"
 )
-
-func stringInList(values []string) schema.SchemaValidateFunc {
-	return func(v interface{}, k string) (we []string, errors []error) {
-		value := v.(string)
-		valid := false
-		for _, v := range values {
-			if value == v {
-				valid = true
-				break
-			}
-		}
-
-		if !valid {
-			errors = append(errors, fmt.Errorf("%s is an invalid value for argument %s", value, k))
-		}
-		return
-	}
-}
 
 func resourceNewRelicDashboard() *schema.Resource {
 	return &schema.Resource{
@@ -42,7 +26,6 @@ func resourceNewRelicDashboard() *schema.Resource {
 			"title": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: false,
 			},
 			"icon": {
 				Type:     schema.TypeString,
@@ -53,7 +36,7 @@ func resourceNewRelicDashboard() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "all",
-				ValidateFunc: stringInList([]string{"owner", "all"}),
+				ValidateFunc: validation.StringInSlice([]string{"owner", "all"}, false),
 			},
 			"dashboard_url": {
 				Type:     schema.TypeString,
@@ -63,7 +46,7 @@ func resourceNewRelicDashboard() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "editable_by_all",
-				ValidateFunc: stringInList([]string{"read_only", "editable_by_owner", "editable_by_all", "all"}),
+				ValidateFunc: validation.StringInSlice([]string{"read_only", "editable_by_owner", "editable_by_all", "all"}, false),
 			},
 			"widget": {
 				Type:     schema.TypeSet,
@@ -166,10 +149,11 @@ func buildDashboardStruct(d *schema.ResourceData) *newrelic.Dashboard {
 			}
 
 			// TODO: Support non-NRQL Widgets
-			widgetData := make([]newrelic.DashboardWidgetData, 0, 1)
-			widgetData = append(widgetData, newrelic.DashboardWidgetData{
-				NRQL: w["nrql"].(string),
-			})
+			widgetData := []newrelic.DashboardWidgetData{
+				{
+					NRQL: w["nrql"].(string),
+				},
+			}
 
 			dashboard.Widgets = append(dashboard.Widgets, newrelic.DashboardWidget{
 				Visualization: w["visualization"].(string),
