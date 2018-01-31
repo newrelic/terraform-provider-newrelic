@@ -116,7 +116,10 @@ func resourceNewRelicDashboardWidgetsHash(v interface{}) int {
 	return hashcode.String(buf.String())
 }
 
-func buildDashboardStruct(d *schema.ResourceData) *newrelic.Dashboard {
+// Assemble the *newrelic.Dashboard variable.
+//
+// Used by the newrelic_dashboard Create and Update functions.
+func expandDashboard(d *schema.ResourceData) *newrelic.Dashboard {
 	metadata := newrelic.DashboardMetadata{
 		Version: 1,
 	}
@@ -167,7 +170,10 @@ func buildDashboardStruct(d *schema.ResourceData) *newrelic.Dashboard {
 	return &dashboard
 }
 
-func readDashboardStruct(dashboard *newrelic.Dashboard, d *schema.ResourceData) error {
+// Unpack the *newrelic.Dashboard variable and set resource data.
+//
+// Used by the newrelic_dashboard Read function (resourceNewRelicDashboardRead)
+func flattenDashboard(dashboard *newrelic.Dashboard, d *schema.ResourceData) error {
 	d.Set("title", dashboard.Title)
 	d.Set("icon", dashboard.Icon)
 	d.Set("visibility", dashboard.Visibility)
@@ -203,7 +209,7 @@ func readDashboardStruct(dashboard *newrelic.Dashboard, d *schema.ResourceData) 
 
 func resourceNewRelicDashboardCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*newrelic.Client)
-	dashboard := buildDashboardStruct(d)
+	dashboard := expandDashboard(d)
 	log.Printf("[INFO] Creating New Relic dashboard: %s", dashboard.Title)
 
 	dashboard, err := client.CreateDashboard(*dashboard)
@@ -236,12 +242,12 @@ func resourceNewRelicDashboardRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	return readDashboardStruct(dashboard, d)
+	return flattenDashboard(dashboard, d)
 }
 
 func resourceNewRelicDashboardUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*newrelic.Client)
-	dashboard := buildDashboardStruct(d)
+	dashboard := expandDashboard(d)
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
