@@ -28,6 +28,10 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "runbook_url", "https://foo.example.com"),
 					resource.TestCheckResourceAttr(
+						"newrelic_alert_condition.foo", "violation_close_timer", "24"),
+					resource.TestCheckResourceAttr(
+						"newrelic_alert_condition.foo", "gc_metric", "GC/ConcurrentMarkSweep"),
+					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "entities.#", "1"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "term.#", "1"),
