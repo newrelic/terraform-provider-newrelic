@@ -248,3 +248,52 @@ type KeyTransaction struct {
 	EndUserSummary  ApplicationEndUserSummary `json:"end_user_summary,omitempty"`
 	Links           ApplicationLinks          `json:"links,omitempty"`
 }
+
+// Dashboard represents information about a New Relic dashboard.
+type Dashboard struct {
+	ID         int               `json:"id"`
+	Title      string            `json:"title,omitempty"`
+	Icon       string            `json:"icon,omitempty"`
+	CreatedAt  string            `json:"created_at,omitempty"`
+	UpdatedAt  string            `json:"updated_at,omitempty"`
+	Visibility string            `json:"visibility,omitempty"`
+	Editable   string            `json:"editable,omitempty"`
+	UIURL      string            `json:"ui_url,omitempty"`
+	APIRL      string            `json:"api_url,omitempty"`
+	OwnerEmail string            `json:"owner_email,omitempty"`
+	Metadata   DashboardMetadata `json:"metadata"`
+	Widgets    []DashboardWidget `json:"widgets,omitempty"`
+}
+
+// DashboardMetadata represents metadata about the dashboard (like version)
+type DashboardMetadata struct {
+	Version int `json:"version"`
+}
+
+// DashboardWidget represents a widget in a dashboard.
+type DashboardWidget struct {
+	Visualization string                      `json:"visualization,omitempty"`
+	AccountID     int                         `json:"account_id,omitempty"`
+	Data          []DashboardWidgetData       `json:"data,omitempty"`
+	Presentation  DashboardWidgetPresentation `json:"presentation,omitempty"`
+	Layout        DashboardWidgetLayout       `json:"layout,omitempty"`
+}
+
+// DashboardWidgetData represents the data backing a dashboard widget.
+type DashboardWidgetData struct {
+	NRQL string `json:"nrql,omitempty"`
+}
+
+// DashboardWidgetPresentation representations the visual presentation of a dashboard widget
+type DashboardWidgetPresentation struct {
+	Title string `json:"title,omitempty"`
+	Notes string `json:"notes,omitempty"`
+}
+
+// DashboardWidgetLayout represents the layout of a widget in a dashboard.
+type DashboardWidgetLayout struct {
+	Width  int `json:"width"`
+	Height int `json:"height"`
+	Row    int `json:"row"`
+	Column int `json:"column"`
+}
