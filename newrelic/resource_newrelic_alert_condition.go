@@ -119,7 +119,6 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 			"violation_close_timer": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				Default:      24,
 				ValidateFunc: intInSlice([]int{1, 2, 4, 8, 12, 24}),
 			},
 			"gc_metric": {
