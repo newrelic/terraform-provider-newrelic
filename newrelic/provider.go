@@ -35,6 +35,7 @@ func Provider() terraform.ResourceProvider {
 			"newrelic_nrql_alert_condition": resourceNewRelicNrqlAlertCondition(),
 			"newrelic_alert_policy":         resourceNewRelicAlertPolicy(),
 			"newrelic_alert_policy_channel": resourceNewRelicAlertPolicyChannel(),
+			"newrelic_dashboard":            resourceNewRelicDashboard(),
 		},
 
 		ConfigureFunc: providerConfigure,
