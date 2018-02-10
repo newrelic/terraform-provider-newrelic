@@ -108,47 +108,6 @@ func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicAlertCondition_InstanceScope(t *testing.T) {
-	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckNewRelicAlertConditionConfigInstanceScope(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "type", "apm_app_metric"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "runbook_url", "https://foo.example.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "condition_scope", "instance"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "violation_close_timer", "24"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "entities.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.duration", "5"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.operator", "below"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.priority", "critical"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.threshold", "0"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.time_function", "all"),
-				),
-			},
-		},
-	})
-}
-
 // TODO: func_ TestAccNewRelicAlertCondition_Multi(t *testing.T) {
 
 func testAccCheckNewRelicAlertConditionDestroy(s *terraform.State) error {
@@ -289,38 +248,6 @@ resource "newrelic_alert_condition" "foo" {
   metric          = "apdex"
   runbook_url     = "https://foo.example.com"
   condition_scope = "application"
-
-  term {
-    duration      = 5
-    operator      = "below"
-    priority      = "critical"
-    threshold     = "0"
-    time_function = "all"
-  }
-}
-`, rName, testAccExpectedApplicationName)
-}
-
-func testAccCheckNewRelicAlertConditionConfigInstanceScope(rName string) string {
-	return fmt.Sprintf(`
-data "newrelic_application" "app" {
-	name = "%[2]s"
-}
-
-resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
-}
-
-resource "newrelic_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
-
-  name            = "tf-test-%[1]s"
-  type            = "apm_app_metric"
-  entities        = ["${data.newrelic_application.app.id}"]
-  metric          = "apdex"
-  runbook_url     = "https://foo.example.com"
-  condition_scope = "instance"
-	violation_close_timer = "24"
 
   term {
     duration      = 5
