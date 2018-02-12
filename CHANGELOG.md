@@ -1,5 +1,14 @@
 ## 0.1.2 (Unreleased)
 
+FEATURES:
+
+* **New Resource** `newrelic_dashboard` ([#26](https://github.com/terraform-providers/terraform-provider-newrelic/pull/26))
+* **New Data Source** `newrelic_key_transaction` ([#21](https://github.com/terraform-providers/terraform-provider-newrelic/pull/21))
+
+IMPROVEMENTS:
+
+* resource/newrelic_alert_condition: Add support for `apm_jvm_metric` and instance scope alerts ([#24](https://github.com/terraform-providers/terraform-provider-newrelic/pull/24))
+
 ## 0.1.1 (August 02, 2017)
 
 FEATURES:
