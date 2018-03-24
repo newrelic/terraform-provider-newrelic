@@ -278,7 +278,7 @@ func readAlertConditionStruct(condition *newrelic.AlertCondition, d *schema.Reso
 }
 
 func resourceNewRelicAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	condition := buildAlertConditionStruct(d)
 
 	log.Printf("[INFO] Creating New Relic alert condition %s", condition.Name)
@@ -294,7 +294,7 @@ func resourceNewRelicAlertConditionCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	log.Printf("[INFO] Reading New Relic alert condition %s", d.Id())
 
@@ -320,7 +320,7 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 }
 
 func resourceNewRelicAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	condition := buildAlertConditionStruct(d)
 
 	ids, err := parseIDs(d.Id(), 2)
@@ -345,7 +345,7 @@ func resourceNewRelicAlertConditionUpdate(d *schema.ResourceData, meta interface
 }
 
 func resourceNewRelicAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {

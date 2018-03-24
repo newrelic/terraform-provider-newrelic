@@ -48,7 +48,7 @@ func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 }
 
 func resourceNewRelicAlertPolicyChannelCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	policyID := d.Get("policy_id").(int)
 	channelID := d.Get("channel_id").(int)
@@ -75,7 +75,7 @@ func resourceNewRelicAlertPolicyChannelCreate(d *schema.ResourceData, meta inter
 }
 
 func resourceNewRelicAlertPolicyChannelRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
@@ -104,7 +104,7 @@ func resourceNewRelicAlertPolicyChannelRead(d *schema.ResourceData, meta interfa
 }
 
 func resourceNewRelicAlertPolicyChannelDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {

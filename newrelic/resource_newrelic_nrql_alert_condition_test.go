@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	newrelic "github.com/paultyng/go-newrelic/api"
 )
 
 func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
@@ -84,7 +83,7 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 // TODO: func_ TestAccNewRelicNrqlAlertCondition_Multi(t *testing.T) {
 
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*newrelic.Client)
+	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_nrql_alert_condition" {
 			continue
@@ -117,7 +116,7 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 			return fmt.Errorf("No alert condition ID is set")
 		}
 
-		client := testAccProvider.Meta().(*newrelic.Client)
+		client := testAccProvider.Meta().(*ProviderConfig).Client
 
 		ids, err := parseIDs(rs.Primary.ID, 2)
 		if err != nil {

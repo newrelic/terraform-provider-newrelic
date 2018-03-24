@@ -33,7 +33,7 @@ func dataSourceNewRelicApplication() *schema.Resource {
 }
 
 func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	log.Printf("[INFO] Reading New Relic applications")
 

@@ -1,6 +1,7 @@
 package newrelic
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -22,6 +23,11 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_URL", "https://api.newrelic.com/v2"),
 			},
+			"infra_api_url": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INFRA_API_URL", "https://infra-api.newrelic.com/v2"),
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -30,12 +36,13 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"newrelic_alert_channel":        resourceNewRelicAlertChannel(),
-			"newrelic_alert_condition":      resourceNewRelicAlertCondition(),
-			"newrelic_nrql_alert_condition": resourceNewRelicNrqlAlertCondition(),
-			"newrelic_alert_policy":         resourceNewRelicAlertPolicy(),
-			"newrelic_alert_policy_channel": resourceNewRelicAlertPolicyChannel(),
-			"newrelic_dashboard":            resourceNewRelicDashboard(),
+			"newrelic_alert_channel":         resourceNewRelicAlertChannel(),
+			"newrelic_alert_condition":       resourceNewRelicAlertCondition(),
+			"newrelic_nrql_alert_condition":  resourceNewRelicNrqlAlertCondition(),
+			"newrelic_infra_alert_condition": resourceNewRelicInfraAlertCondition(),
+			"newrelic_alert_policy":          resourceNewRelicAlertPolicy(),
+			"newrelic_alert_policy_channel":  resourceNewRelicAlertPolicyChannel(),
+			"newrelic_dashboard":             resourceNewRelicDashboard(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -48,5 +55,27 @@ func providerConfigure(data *schema.ResourceData) (interface{}, error) {
 		APIURL: data.Get("api_url").(string),
 	}
 	log.Println("[INFO] Initializing New Relic client")
-	return config.Client()
+
+	client, err := config.Client()
+	if err != nil {
+		return nil, fmt.Errorf("Error initializing New Relic client: %s", err)
+	}
+
+	infraConfig := Config{
+		APIKey: data.Get("api_key").(string),
+		APIURL: data.Get("infra_api_url").(string),
+	}
+	log.Println("[INFO] Initializing New Relic Infra client")
+
+	clientInfra, err := infraConfig.ClientInfra()
+	if err != nil {
+		return nil, fmt.Errorf("Error initializing New Relic Infra client: %s", err)
+	}
+
+	providerConfig := ProviderConfig{
+		Client:      client,
+		InfraClient: clientInfra,
+	}
+
+	return &providerConfig, nil
 }

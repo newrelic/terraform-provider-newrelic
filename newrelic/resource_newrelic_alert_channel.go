@@ -104,7 +104,7 @@ func buildAlertChannelStruct(d *schema.ResourceData) *newrelic.AlertChannel {
 }
 
 func resourceNewRelicAlertChannelCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	channel := buildAlertChannelStruct(d)
 
 	log.Printf("[INFO] Creating New Relic alert channel %s", channel.Name)
@@ -120,7 +120,7 @@ func resourceNewRelicAlertChannelCreate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 32)
 	if err != nil {
@@ -149,7 +149,7 @@ func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceNewRelicAlertChannelDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 32)
 	if err != nil {
