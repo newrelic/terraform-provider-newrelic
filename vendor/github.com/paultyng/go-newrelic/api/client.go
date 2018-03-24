@@ -14,6 +14,20 @@ type Client struct {
 	RestyClient *resty.Client
 }
 
+// InfraClient represents the client state for the Infrastructure API
+type InfraClient struct {
+	Client
+}
+
+// NewInfraClient returns a new InfraClient for the specified apiKey.
+func NewInfraClient(config Config) InfraClient {
+	if config.BaseURL == "" {
+		config.BaseURL = "https://infra-api.newrelic.com/v2"
+	}
+
+	return InfraClient{New(config)}
+}
+
 // ErrorResponse represents an error response from New Relic.
 type ErrorResponse struct {
 	Detail *ErrorDetail `json:"error,omitempty"`
@@ -68,7 +82,8 @@ func New(config Config) Client {
 // Do exectes an API request with the specified parameters.
 func (c *Client) Do(method string, path string, body interface{}, response interface{}) (string, error) {
 	r := c.RestyClient.R().
-		SetError(&ErrorResponse{})
+		SetError(&ErrorResponse{}).
+		SetHeader("Content-Type", "application/json")
 
 	if body != nil {
 		r = r.SetBody(body)
