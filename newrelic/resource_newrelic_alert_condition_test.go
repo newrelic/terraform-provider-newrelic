@@ -108,7 +108,7 @@ func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
 	})
 }
 
-// TODO: func TestAccNewRelicAlertCondition_Multi(t *testing.T) {
+// TODO: func_ TestAccNewRelicAlertCondition_Multi(t *testing.T) {
 
 func testAccCheckNewRelicAlertConditionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*newrelic.Client)
