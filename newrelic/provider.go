@@ -26,6 +26,7 @@ func Provider() terraform.ResourceProvider {
 
 		DataSourcesMap: map[string]*schema.Resource{
 			"newrelic_application":        dataSourceNewRelicApplication(),
+			"newrelic_key_transaction":    dataSourceNewRelicKeyTransaction(),
 			"newrelic_synthetics_monitor": dataSourceNewRelicSyntheticsMonitor(),
 		},
 
@@ -36,6 +37,7 @@ func Provider() terraform.ResourceProvider {
 			"newrelic_synthetics_alert_condition": resourceNewRelicSyntheticsAlertCondition(),
 			"newrelic_alert_policy":               resourceNewRelicAlertPolicy(),
 			"newrelic_alert_policy_channel":       resourceNewRelicAlertPolicyChannel(),
+			"newrelic_dashboard":                  resourceNewRelicDashboard(),
 		},
 
 		ConfigureFunc: providerConfigure,
