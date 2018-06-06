@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	newrelic "github.com/paultyng/go-newrelic/api"
 )
 
 func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
@@ -34,7 +33,7 @@ func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 }
 
 func testAccCheckNewRelicAlertPolicyChannelDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*newrelic.Client)
+	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_alert_policy_channel" {
 			continue
@@ -70,7 +69,7 @@ func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFu
 			return fmt.Errorf("No resource ID is set")
 		}
 
-		client := testAccProvider.Meta().(*newrelic.Client)
+		client := testAccProvider.Meta().(*ProviderConfig).Client
 
 		ids, err := parseIDs(rs.Primary.ID, 2)
 		if err != nil {
