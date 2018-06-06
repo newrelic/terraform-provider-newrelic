@@ -1,4 +1,9 @@
 ## 1.0.1 (Unreleased)
+
+FEATURES:
+
+* **New Resource** `newrelic_infra_alert_condition` ([#30](https://github.com/terraform-providers/terraform-provider-newrelic/pull/30))
+
 ## 1.0.0 (February 12, 2018)
 
 FEATURES:
