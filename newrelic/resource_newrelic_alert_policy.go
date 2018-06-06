@@ -56,7 +56,7 @@ func buildAlertPolicyStruct(d *schema.ResourceData) *newrelic.AlertPolicy {
 }
 
 func resourceNewRelicAlertPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	policy := buildAlertPolicyStruct(d)
 
 	log.Printf("[INFO] Creating New Relic alert policy %s", policy.Name)
@@ -72,7 +72,7 @@ func resourceNewRelicAlertPolicyCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 32)
 	if err != nil {
@@ -100,7 +100,7 @@ func resourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceNewRelicAlertPolicyDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 32)
 	if err != nil {

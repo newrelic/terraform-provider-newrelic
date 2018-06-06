@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	newrelic "github.com/paultyng/go-newrelic/api"
 )
 
 func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
@@ -43,7 +42,7 @@ func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
 }
 
 func testAccCheckNewRelicAlertPolicyDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*newrelic.Client)
+	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_alert_policy" {
 			continue
@@ -74,7 +73,7 @@ func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("No policy ID is set")
 		}
 
-		client := testAccProvider.Meta().(*newrelic.Client)
+		client := testAccProvider.Meta().(*ProviderConfig).Client
 
 		id, err := strconv.ParseInt(rs.Primary.ID, 10, 32)
 		if err != nil {
