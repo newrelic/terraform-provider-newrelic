@@ -79,7 +79,7 @@ func readSyntheticsAlertConditionStruct(condition *newrelic.AlertSyntheticsCondi
 }
 
 func resourceNewRelicSyntheticsAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	condition := buildSyntheticsAlertConditionStruct(d)
 
 	log.Printf("[INFO] Creating New Relic Synthetics alert condition %s", condition.Name)
@@ -95,7 +95,7 @@ func resourceNewRelicSyntheticsAlertConditionCreate(d *schema.ResourceData, meta
 }
 
 func resourceNewRelicSyntheticsAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	log.Printf("[INFO] Reading New Relic Synthetics alert condition %s", d.Id())
 
@@ -121,7 +121,7 @@ func resourceNewRelicSyntheticsAlertConditionRead(d *schema.ResourceData, meta i
 }
 
 func resourceNewRelicSyntheticsAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	condition := buildSyntheticsAlertConditionStruct(d)
 
 	ids, err := parseIDs(d.Id(), 2)
@@ -146,7 +146,7 @@ func resourceNewRelicSyntheticsAlertConditionUpdate(d *schema.ResourceData, meta
 }
 
 func resourceNewRelicSyntheticsAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {

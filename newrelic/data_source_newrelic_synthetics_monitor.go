@@ -17,40 +17,25 @@ func dataSourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"api_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_KEY", nil),
-				Sensitive:   true,
-			},
-			"max_check": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  1000,
+			"monitor_id": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
 }
 
 func dataSourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interface{}) error {
-
-	apiKey := d.Get("api_key").(string)
-	maxCheck := d.Get("max_check").(int)
-
-	conf := func(s *synthetics.Client) {
-		s.APIKey = apiKey
-	}
-
-	syntheticsClient, _ := synthetics.NewClient(conf)
+	client := meta.(*ProviderConfig).Synthetics
 
 	log.Printf("[INFO] Reading New Relic synthetics monitors")
 
 	offset := 0
 	max := 100
-	monitors, err := syntheticsClient.GetAllMonitors(uint(offset), uint(max))
+	monitors, err := client.GetAllMonitors(uint(offset), uint(max))
 	var monitor *synthetics.ExtendedMonitor
 	name := d.Get("name").(string)
-	for offset <= maxCheck {
+	for monitors != nil {
 		if len(monitors.Monitors) > 0 && err == nil {
 			mon := *monitors
 
@@ -60,12 +45,14 @@ func dataSourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interf
 					break
 				}
 			}
-		} else {
-			break
 		}
 
 		offset = offset + 100
-		monitors, err = syntheticsClient.GetAllMonitors(uint(offset), uint(max))
+		monitors, err = client.GetAllMonitors(uint(offset), uint(max))
+
+		if len(monitors.Monitors) == 0 {
+			monitors = nil
+		}
 	}
 	if err != nil {
 		return err
