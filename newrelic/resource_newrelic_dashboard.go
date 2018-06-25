@@ -208,7 +208,7 @@ func flattenDashboard(dashboard *newrelic.Dashboard, d *schema.ResourceData) err
 }
 
 func resourceNewRelicDashboardCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	dashboard := expandDashboard(d)
 	log.Printf("[INFO] Creating New Relic dashboard: %s", dashboard.Title)
 
@@ -223,7 +223,7 @@ func resourceNewRelicDashboardCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceNewRelicDashboardRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	log.Printf("[INFO] Reading New Relic dashboard %s", d.Id())
 
@@ -246,7 +246,7 @@ func resourceNewRelicDashboardRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceNewRelicDashboardUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	dashboard := expandDashboard(d)
 
 	id, err := strconv.Atoi(d.Id())
@@ -266,7 +266,7 @@ func resourceNewRelicDashboardUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceNewRelicDashboardDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {

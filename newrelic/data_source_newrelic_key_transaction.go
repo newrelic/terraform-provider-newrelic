@@ -23,7 +23,7 @@ func dataSourceNewRelicKeyTransaction() *schema.Resource {
 }
 
 func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	log.Printf("[INFO] Reading New Relic key transactions")
 
