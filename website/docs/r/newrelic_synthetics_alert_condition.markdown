@@ -13,8 +13,6 @@ description: |-
 ```hcl
 data "newrelic_synthetics_monitor" "foo" {
   name = "foo"
-  api_key = "${var.newrelic_api_key}"
-  max_check = 3000
 }
 
 resource "newrelic_synthetics_alert_condition" "foo" {
