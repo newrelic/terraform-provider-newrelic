@@ -1,7 +1,6 @@
 package newrelic
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -10,16 +9,6 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 	newrelic "github.com/paultyng/go-newrelic/api"
 )
-
-// https://github.com/hashicorp/terraform/blob/master/helper/validation/validation.go#L263
-// ValidateRFC3339TimeString is a ValidateFunc that ensures a string parses
-// as time.RFC3339 format
-func validateRFC3339TimeString(v interface{}, k string) (ws []string, errors []error) {
-	if _, err := time.Parse(time.RFC3339, v.(string)); err != nil {
-		errors = append(errors, fmt.Errorf("%q: invalid RFC3339 timestamp", k))
-	}
-	return
-}
 
 func resourceNewRelicAlertPolicy() *schema.Resource {
 	return &schema.Resource{
@@ -44,14 +33,12 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"PER_POLICY", "PER_CONDITION", "PER_CONDITION_AND_TARGET"}, false),
 			},
 			"created_at": {
-				Type:         schema.TypeString,
-				Computed:     true,
-				ValidateFunc: validateRFC3339TimeString,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"updated_at": {
-				Type:         schema.TypeString,
-				Computed:     true,
-				ValidateFunc: validateRFC3339TimeString,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
