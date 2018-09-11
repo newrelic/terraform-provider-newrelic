@@ -26,8 +26,8 @@ type AlertPolicy struct {
 	ID                 int    `json:"id,omitempty"`
 	IncidentPreference string `json:"incident_preference,omitempty"`
 	Name               string `json:"name,omitempty"`
-	CreatedAt          int    `json:"created_at,omitempty"`
-	UpdatedAt          int    `json:"updated_at,omitempty"`
+	CreatedAt          int64  `json:"created_at,omitempty"`
+	UpdatedAt          int64  `json:"updated_at,omitempty"`
 }
 
 // AlertConditionUserDefined represents user defined metrics for the New Relic alert condition.
