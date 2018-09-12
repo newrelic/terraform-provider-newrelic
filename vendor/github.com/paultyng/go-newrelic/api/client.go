@@ -49,6 +49,7 @@ type ErrorDetail struct {
 type Config struct {
 	APIKey    string
 	BaseURL   string
+	ProxyURL  string
 	Debug     bool
 	TLSConfig *tls.Config
 }
@@ -60,6 +61,11 @@ func New(config Config) Client {
 	baseURL := config.BaseURL
 	if baseURL == "" {
 		baseURL = "https://api.newrelic.com/v2"
+	}
+
+	proxyURL := config.ProxyURL
+	if proxyURL != "" {
+		r.SetProxy(proxyURL)
 	}
 
 	r.SetHeader("X-Api-Key", config.APIKey)
