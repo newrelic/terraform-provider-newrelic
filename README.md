@@ -32,7 +32,7 @@ $ make build
 
 Using the provider
 ----------------------
-## Fill in for each provider
+__TODO__: Fill in for each provider
 
 Developing the Provider
 ---------------------------
@@ -61,3 +61,14 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 ```sh
 $ make testacc
 ```
+
+Updating Vendor Packages
+------------------------
+
+This repository uses the [govendor](https://github.com/kardianos/govendor) tool to manage dependencies found in the vendor folder. These dependencies are indexed in the `vendor/vendor.json` file.
+
+To update a dependency:
+
+1. Ensure you have govendor installed: `go get -u github.com/kardianos/govendor`
+2. CD to the root of this repo (not into th vendor directory)
+3. Run `govendor fetch PATH/FOR/PACKAGE` where PATH/FOR/PACKAGE is the path property in `vendor.json` of the package you wish to update. Ex. `go get github.com/paultyng/go-newrelic/api`
