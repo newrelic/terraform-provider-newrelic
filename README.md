@@ -70,5 +70,5 @@ This repository uses the [govendor](https://github.com/kardianos/govendor) tool 
 To update a dependency:
 
 1. Ensure you have govendor installed: `go get -u github.com/kardianos/govendor`
-2. CD to the root of this repo (not into th vendor directory)
+2. CD to the root of this repo (not into the vendor directory)
 3. Run `govendor fetch PATH/FOR/PACKAGE` where PATH/FOR/PACKAGE is the path property in `vendor.json` of the package you wish to update. Ex. `go get github.com/paultyng/go-newrelic/api`
