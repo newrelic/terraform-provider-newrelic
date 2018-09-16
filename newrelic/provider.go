@@ -31,18 +31,20 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"newrelic_application":     dataSourceNewRelicApplication(),
-			"newrelic_key_transaction": dataSourceNewRelicKeyTransaction(),
+			"newrelic_application":        dataSourceNewRelicApplication(),
+			"newrelic_key_transaction":    dataSourceNewRelicKeyTransaction(),
+			"newrelic_synthetics_monitor": dataSourceNewRelicSyntheticsMonitor(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"newrelic_alert_channel":         resourceNewRelicAlertChannel(),
-			"newrelic_alert_condition":       resourceNewRelicAlertCondition(),
-			"newrelic_nrql_alert_condition":  resourceNewRelicNrqlAlertCondition(),
-			"newrelic_infra_alert_condition": resourceNewRelicInfraAlertCondition(),
-			"newrelic_alert_policy":          resourceNewRelicAlertPolicy(),
-			"newrelic_alert_policy_channel":  resourceNewRelicAlertPolicyChannel(),
-			"newrelic_dashboard":             resourceNewRelicDashboard(),
+			"newrelic_alert_channel":              resourceNewRelicAlertChannel(),
+			"newrelic_alert_condition":            resourceNewRelicAlertCondition(),
+			"newrelic_nrql_alert_condition":       resourceNewRelicNrqlAlertCondition(),
+			"newrelic_synthetics_alert_condition": resourceNewRelicSyntheticsAlertCondition(),
+			"newrelic_infra_alert_condition":      resourceNewRelicInfraAlertCondition(),
+			"newrelic_alert_policy":               resourceNewRelicAlertPolicy(),
+			"newrelic_alert_policy_channel":       resourceNewRelicAlertPolicyChannel(),
+			"newrelic_dashboard":                  resourceNewRelicDashboard(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -61,6 +63,13 @@ func providerConfigure(data *schema.ResourceData) (interface{}, error) {
 		return nil, fmt.Errorf("Error initializing New Relic client: %s", err)
 	}
 
+	log.Println("[INFO] Initializing New Relic Synthetics client")
+
+	clientSynthetics, err := config.ClientSynthetics()
+	if err != nil {
+		return nil, fmt.Errorf("Error initializing New Relic synthetics client: %s", err)
+	}
+
 	infraConfig := Config{
 		APIKey: data.Get("api_key").(string),
 		APIURL: data.Get("infra_api_url").(string),
@@ -75,6 +84,7 @@ func providerConfigure(data *schema.ResourceData) (interface{}, error) {
 	providerConfig := ProviderConfig{
 		Client:      client,
 		InfraClient: clientInfra,
+		Synthetics:  clientSynthetics,
 	}
 
 	return &providerConfig, nil
