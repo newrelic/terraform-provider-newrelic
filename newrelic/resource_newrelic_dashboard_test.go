@@ -32,6 +32,18 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_dashboard.foo", "visibility", "all"),
 					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "filter.#", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "filter.0.event_types.#", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "filter.0.event_types.4104882694", "Transaction"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "filter.0.attributes.#", "2"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "filter.0.attributes.2634578693", "appName"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "filter.0.attributes.3755723101", "envName"),
+					resource.TestCheckResourceAttr(
 						"newrelic_dashboard.foo", "widget.#", "1"),
 					resource.TestCheckResourceAttr(
 						"newrelic_dashboard.foo", "widget.754238675.title", "Average Transaction Duration"),
@@ -142,6 +154,15 @@ func testAccCheckNewRelicDashboardWidgetConfigAdded(rName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_dashboard" "foo" {
   title                = "%s"
+  filter {
+    event_types = [
+        "Transaction"
+    ]
+    attributes = [
+        "appName",
+        "envName"
+    ]
+  }
   widget {
     title         = "Average Transaction Duration"
     visualization = "faceted_line_chart"
@@ -164,6 +185,15 @@ func testAccCheckNewRelicDashboardWidgetConfigUpdated(rName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_dashboard" "foo" {
   title                = "%s"
+  filter {
+    event_types = [
+        "Transaction"
+    ]
+    attributes = [
+        "appName",
+        "envName"
+    ]
+  }
   widget {
     title         = "Average Transaction Duration"
     visualization = "faceted_line_chart"
@@ -186,6 +216,15 @@ func testAccCheckNewRelicDashboardConfigUpdated(rName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_dashboard" "foo" {
   title                = "%s"
+  filter {
+    event_types = [
+        "Transaction"
+    ]
+    attributes = [
+        "appName",
+        "envName"
+    ]
+  }
   widget {
     title         = "Average Transaction Duration"
     visualization = "faceted_line_chart"
@@ -201,6 +240,15 @@ func testAccCheckNewRelicDashboardConfig(rName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_dashboard" "foo" {
   title = "%s"
+  filter {
+    event_types = [
+        "Transaction"
+    ]
+    attributes = [
+        "appName",
+        "envName"
+    ]
+  }
   widget {
     title         = "Average Transaction Duration"
     visualization = "faceted_line_chart"
