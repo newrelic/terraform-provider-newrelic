@@ -341,6 +341,11 @@ func flattenFilter(f *newrelic.DashboardFilter) []interface{} {
 	if f == nil {
 		return nil
 	}
+
+	if len(f.Attributes) == 0 && len(f.EventTypes) == 0 {
+		return nil
+	}
+
 	filterResult := make(map[string]interface{})
 
 	attributesList := make([]interface{}, 0, len(f.Attributes))
