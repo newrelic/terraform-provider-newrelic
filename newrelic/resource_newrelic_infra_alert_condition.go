@@ -127,6 +127,10 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 				Elem:     thresholdSchema(),
 				//TODO: ValidateFunc from thresholdConditionTypes map
 			},
+			"integration_provider": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
