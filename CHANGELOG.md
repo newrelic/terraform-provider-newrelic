@@ -5,6 +5,7 @@ FEATURES:
 * **New Resource** `newrelic_synthetics_alert_condition` ([#22](https://github.com/terraform-providers/terraform-provider-newrelic/pull/22))
 * **New Data Source** `newrelic_synthetics_monitor` ([#22](https://github.com/terraform-providers/terraform-provider-newrelic/pull/22))
 * **Bug Fix** `newrelic_alert_policy` int64 bug ([#42](https://github.com/terraform-providers/terraform-provider-newrelic/pull/42))
+* **Bug Fix** Missing doc links ([#49](https://github.com/terraform-providers/terraform-provider-newrelic/pull/49))
 
 ## 1.0.1 (June 06, 2018)
 
