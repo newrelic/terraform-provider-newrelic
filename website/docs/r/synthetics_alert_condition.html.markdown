@@ -27,6 +27,7 @@ resource "newrelic_synthetics_alert_condition" "foo" {
 ## Argument Reference
 
 The following arguments are supported:
+
   * `policy_id` - (Required) The ID of the policy where this condition should be used.
   * `name` - (Required) The title of this condition.
   * `monitor_id` - (Required) The ID of the Synthetics monitor to be referenced in the alert condition. 
