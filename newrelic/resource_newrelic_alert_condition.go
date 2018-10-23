@@ -92,6 +92,11 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
 			"type": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -200,7 +205,7 @@ func buildAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertCondition 
 	condition := newrelic.AlertCondition{
 		Type:                d.Get("type").(string),
 		Name:                d.Get("name").(string),
-		Enabled:             true,
+		Enabled:             d.Get("enabled").(bool),
 		Entities:            entities,
 		Metric:              d.Get("metric").(string),
 		Terms:               terms,
@@ -245,6 +250,7 @@ func readAlertConditionStruct(condition *newrelic.AlertCondition, d *schema.Reso
 
 	d.Set("policy_id", policyID)
 	d.Set("name", condition.Name)
+	d.Set("enabled", condition.Enabled)
 	d.Set("type", condition.Type)
 	d.Set("metric", condition.Metric)
 	d.Set("runbook_url", condition.RunbookURL)
