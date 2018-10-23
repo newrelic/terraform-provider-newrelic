@@ -262,6 +262,7 @@ type Dashboard struct {
 	APIRL      string            `json:"api_url,omitempty"`
 	OwnerEmail string            `json:"owner_email,omitempty"`
 	Metadata   DashboardMetadata `json:"metadata"`
+	Filter     DashboardFilter   `json:"filter,omitempty"`
 	Widgets    []DashboardWidget `json:"widgets,omitempty"`
 }
 
@@ -296,6 +297,12 @@ type DashboardWidgetLayout struct {
 	Height int `json:"height"`
 	Row    int `json:"row"`
 	Column int `json:"column"`
+}
+
+// DashboardFilter represents the filter in a dashboard.
+type DashboardFilter struct {
+	EventTypes []string `json:"event_types,omitempty"`
+	Attributes []string `json:"attributes,omitempty"`
 }
 
 // AlertInfraThreshold represents an Infra alerting condition
