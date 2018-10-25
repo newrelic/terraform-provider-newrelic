@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	newrelic "github.com/paultyng/go-newrelic/api"
+	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
 func policyChannelExists(client *newrelic.Client, policyID int, channelID int) (bool, error) {
