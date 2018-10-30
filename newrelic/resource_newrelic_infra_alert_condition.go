@@ -243,6 +243,15 @@ func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interf
 	policyID := ids[0]
 	id := ids[1]
 
+	_, err = client.GetAlertPolicy(policyID)
+	if err != nil {
+		if err == newrelic.ErrNotFound {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
+
 	condition, err := client.GetAlertInfraCondition(policyID, id)
 	if err != nil {
 		if err == newrelic.ErrNotFound {
