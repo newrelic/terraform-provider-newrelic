@@ -109,6 +109,28 @@ func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
 
 // TODO: func_ TestAccNewRelicAlertCondition_Multi(t *testing.T) {
 
+func TestAccNewRelicAlertCondition_import(t *testing.T) {
+	resourceName := "newrelic_alert_condition.foo"
+	rName := acctest.RandString(5)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckNewRelicAlertConditionConfig(rName),
+			},
+
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicAlertConditionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
