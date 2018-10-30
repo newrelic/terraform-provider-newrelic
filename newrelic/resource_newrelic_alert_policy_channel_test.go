@@ -102,7 +102,7 @@ resource "newrelic_alert_channel" "foo" {
 	type = "email"
 	
 	configuration = {
-		recipients = "foo@example.com"
+		recipients = "terraform-acctest+foo@hashicorp.com"
 		include_json_attachment = "1"
 	}
 }
@@ -125,7 +125,7 @@ resource "newrelic_alert_channel" "foo" {
 	type = "email"
 	
 	configuration = {
-		recipients = "bar@example.com"
+		recipients = "terraform-acctest+bar@hashicorp.com"
 		include_json_attachment = "0"
 	}
 }
