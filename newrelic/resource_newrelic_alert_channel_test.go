@@ -26,7 +26,7 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_channel.foo", "type", "email"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_channel.foo", "configuration.recipients", "foo@example.com"),
+						"newrelic_alert_channel.foo", "configuration.recipients", "terraform-acctest+foo@hashicorp.com"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_channel.foo", "configuration.include_json_attachment", "1"),
 				),
@@ -40,10 +40,31 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_channel.foo", "type", "email"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_channel.foo", "configuration.recipients", "bar@example.com"),
+						"newrelic_alert_channel.foo", "configuration.recipients", "terraform-acctest+bar@hashicorp.com"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_channel.foo", "configuration.include_json_attachment", "0"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertChannel_import(t *testing.T) {
+	resourceName := "newrelic_alert_channel.foo"
+	rName := acctest.RandString(5)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckNewRelicAlertChannelConfig(rName),
+			},
+
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -108,7 +129,7 @@ resource "newrelic_alert_channel" "foo" {
 	type = "email"
 	
 	configuration = {
-		recipients = "foo@example.com"
+		recipients = "terraform-acctest+foo@hashicorp.com"
 		include_json_attachment = "1"
 	}
 }
@@ -122,7 +143,7 @@ resource "newrelic_alert_channel" "foo" {
 	type = "email"
 	
 	configuration = {
-		recipients = "bar@example.com"
+		recipients = "terraform-acctest+bar@hashicorp.com"
 		include_json_attachment = "0"
 	}
 }

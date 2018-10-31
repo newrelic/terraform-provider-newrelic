@@ -98,6 +98,28 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicDashboard_import(t *testing.T) {
+	resourceName := "newrelic_dashboard.foo"
+	rName := acctest.RandString(5)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckNewRelicDashboardConfig(rName),
+			},
+
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicDashboardDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
