@@ -232,6 +232,7 @@ func resourceNewRelicInfraAlertConditionCreate(d *schema.ResourceData, meta inte
 
 func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).InfraClient
+	policyClient := meta.(*ProviderConfig).Client
 
 	log.Printf("[INFO] Reading New Relic Infra alert condition %s", d.Id())
 
@@ -243,7 +244,7 @@ func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interf
 	policyID := ids[0]
 	id := ids[1]
 
-	_, err = client.GetAlertPolicy(policyID)
+	_, err = policyClient.GetAlertPolicy(policyID)
 	if err != nil {
 		if err == newrelic.ErrNotFound {
 			d.SetId("")
