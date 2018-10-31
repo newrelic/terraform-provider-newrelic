@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -70,6 +71,39 @@ func TestAccNewRelicInfraAlertCondition_Where(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicInfraAlertCondition_IntegrationProvider(t *testing.T) {
+	key := "ENABLE_NEWRELIC_INTEGRATION_PROVIDER"
+	enableNewRelicIntegrationProvider := os.Getenv(key)
+	if enableNewRelicIntegrationProvider == "" {
+		t.Skipf("Environment variable %s is not set", key)
+	}
+
+	rName := acctest.RandString(5)
+	integrationProvider := "Elb"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckNewRelicInfraAlertConditionConfigWithIntegrationProvider(rName, integrationProvider),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
+					resource.TestCheckResourceAttr(
+						"newrelic_infra_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"newrelic_infra_alert_condition.foo", "critical.0.duration", "10"),
+					resource.TestCheckResourceAttr(
+						"newrelic_infra_alert_condition.foo", "critical.0.value", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_infra_alert_condition.foo", "integration_provider", integrationProvider),
+					resource.TestCheckResourceAttr(
+						"newrelic_infra_alert_condition.foo", "comparison", "below"),
+				),
+			},
+		},
+	})
+}
 func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 	rName := acctest.RandString(5)
 	resource.Test(t, resource.TestCase{
@@ -294,4 +328,29 @@ resource "newrelic_infra_alert_condition" "foo" {
   }
 }
 `, rName, where)
+}
+
+func testAccCheckNewRelicInfraAlertConditionConfigWithIntegrationProvider(rName, integrationProvider string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+
+resource "newrelic_infra_alert_condition" "foo" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+
+  name                 = "tf-test-%[1]s"
+  type                 = "infra_metric"
+  event                = "LoadBalancerSample"
+  integration_provider = "%[2]s"
+  select               = "provider.healthyHostCount.Minimum"
+  comparison           = "below"
+
+  critical {
+    duration      = 10
+    value         = 1
+    time_function = "all"
+  }
+}
+`, rName, integrationProvider)
 }
