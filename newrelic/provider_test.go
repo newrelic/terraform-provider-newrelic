@@ -13,12 +13,14 @@ import (
 )
 
 var (
-	testAccExpectedApplicationName string
-	testAccProviders               map[string]terraform.ResourceProvider
-	testAccProvider                *schema.Provider
+	testAccExpectedAlertChannelName string
+	testAccExpectedApplicationName  string
+	testAccProviders                map[string]terraform.ResourceProvider
+	testAccProvider                 *schema.Provider
 )
 
 func init() {
+	testAccExpectedAlertChannelName = fmt.Sprintf("%s tf-test@example.com", acctest.RandString(5))
 	testAccExpectedApplicationName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	testAccProvider = Provider().(*schema.Provider)
 	testAccProviders = map[string]terraform.ResourceProvider{
