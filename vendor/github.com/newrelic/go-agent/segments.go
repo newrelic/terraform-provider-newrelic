@@ -56,18 +56,26 @@ type ExternalSegment struct {
 	Request   *http.Request
 	Response  *http.Response
 	// If you do not have access to the request, this URL field should be
-	// used to indicate the endpoint.
+	// used to indicate the endpoint.  NOTE: If non-empty, this field
+	// is parsed using url.Parse and therefore it MUST include the protocol
+	// (eg. "http://").
 	URL string
 }
 
 // End finishes the segment.
-func (s Segment) End() { endSegment(s) }
+func (s Segment) End() error { return endSegment(s) }
 
 // End finishes the datastore segment.
-func (s DatastoreSegment) End() { endDatastore(s) }
+func (s DatastoreSegment) End() error { return endDatastore(s) }
 
 // End finishes the external segment.
-func (s ExternalSegment) End() { endExternal(s) }
+func (s ExternalSegment) End() error { return endExternal(s) }
+
+// OutboundHeaders returns the headers that should be attached to the external
+// request.
+func (s ExternalSegment) OutboundHeaders() http.Header {
+	return outboundHeaders(s)
+}
 
 // StartSegmentNow helps avoid Transaction nil checks.
 func StartSegmentNow(txn Transaction) SegmentStartTime {
@@ -106,8 +114,16 @@ func StartSegment(txn Transaction, name string) Segment {
 //    segment.End()
 //
 func StartExternalSegment(txn Transaction, request *http.Request) ExternalSegment {
-	return ExternalSegment{
+	s := ExternalSegment{
 		StartTime: StartSegmentNow(txn),
 		Request:   request,
 	}
+
+	for key, values := range s.OutboundHeaders() {
+		for _, value := range values {
+			request.Header.Add(key, value)
+		}
+	}
+
+	return s
 }

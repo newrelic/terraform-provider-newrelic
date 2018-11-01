@@ -2,8 +2,10 @@ package newrelic
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
 	"sync"
 	"time"
 
@@ -12,7 +14,6 @@ import (
 
 type txnInput struct {
 	W          http.ResponseWriter
-	Request    *http.Request
 	Config     Config
 	Reply      *internal.ConnectReply
 	Consumer   dataConsumer
@@ -27,49 +28,44 @@ type txn struct {
 	// finished indicates whether or not End() has been called.  After
 	// finished has been set to true, no recording should occur.
 	finished bool
-	queuing  time.Duration
-	start    time.Time
-	name     string // Work in progress name
-	isWeb    bool
-	ignore   bool
-	errors   internal.TxnErrors // Lazily initialized.
-	attrs    *internal.Attributes
 
-	// Fields relating to tracing and breakdown metrics/segments.
-	tracer internal.Tracer
+	ignore bool
 
 	// wroteHeader prevents capturing multiple response code errors if the
 	// user erroneously calls WriteHeader multiple times.
 	wroteHeader bool
 
-	// Fields assigned at completion
-	stop           time.Time
-	duration       time.Duration
-	finalName      string // Full finalized metric name
-	zone           internal.ApdexZone
-	apdexThreshold time.Duration
+	internal.TxnData
 }
 
-func newTxn(input txnInput, name string) *txn {
+func newTxn(input txnInput, req *http.Request, name string) *txn {
 	txn := &txn{
 		txnInput: input,
-		start:    time.Now(),
-		name:     name,
-		isWeb:    nil != input.Request,
-		attrs:    internal.NewAttributes(input.attrConfig),
 	}
-	if nil != txn.Request {
-		txn.queuing = internal.QueueDuration(input.Request.Header, txn.start)
-		internal.RequestAgentAttributes(txn.attrs, input.Request)
+	txn.Start = time.Now()
+	txn.Name = name
+	txn.IsWeb = nil != req
+	txn.Attrs = internal.NewAttributes(input.attrConfig)
+	if nil != req {
+		txn.Queuing = internal.QueueDuration(req.Header, txn.Start)
+		internal.RequestAgentAttributes(txn.Attrs, req)
 	}
-	txn.attrs.Agent.HostDisplayName = txn.Config.HostDisplayName
-	txn.tracer.Enabled = txn.txnTracesEnabled()
-	txn.tracer.SegmentThreshold = txn.Config.TransactionTracer.SegmentThreshold
-	txn.tracer.StackTraceThreshold = txn.Config.TransactionTracer.StackTraceThreshold
-	txn.tracer.SlowQueriesEnabled = txn.slowQueriesEnabled()
-	txn.tracer.SlowQueryThreshold = txn.Config.DatastoreTracer.SlowQuery.Threshold
+	txn.Attrs.Agent.HostDisplayName = txn.Config.HostDisplayName
+	txn.TxnTrace.Enabled = txn.txnTracesEnabled()
+	txn.TxnTrace.SegmentThreshold = txn.Config.TransactionTracer.SegmentThreshold
+	txn.StackTraceThreshold = txn.Config.TransactionTracer.StackTraceThreshold
+	txn.SlowQueriesEnabled = txn.slowQueriesEnabled()
+	txn.SlowQueryThreshold = txn.Config.DatastoreTracer.SlowQuery.Threshold
+	if nil != req && nil != req.URL {
+		txn.CleanURL = internal.SafeURL(req.URL)
+	}
+	txn.CrossProcess.InitFromHTTPRequest(txn.crossProcessEnabled(), input.Reply, req)
 
 	return txn
+}
+
+func (txn *txn) crossProcessEnabled() bool {
+	return txn.Config.CrossApplicationTracer.Enabled
 }
 
 func (txn *txn) slowQueriesEnabled() bool {
@@ -93,106 +89,67 @@ func (txn *txn) errorEventsEnabled() bool {
 }
 
 func (txn *txn) freezeName() {
-	if txn.ignore || ("" != txn.finalName) {
+	if txn.ignore || ("" != txn.FinalName) {
 		return
 	}
 
-	txn.finalName = internal.CreateFullTxnName(txn.name, txn.Reply, txn.isWeb)
-	if "" == txn.finalName {
+	txn.FinalName = internal.CreateFullTxnName(txn.Name, txn.Reply, txn.IsWeb)
+	if "" == txn.FinalName {
 		txn.ignore = true
 	}
 }
 
 func (txn *txn) getsApdex() bool {
-	return txn.isWeb
+	return txn.IsWeb
 }
 
 func (txn *txn) txnTraceThreshold() time.Duration {
 	if txn.Config.TransactionTracer.Threshold.IsApdexFailing {
-		return internal.ApdexFailingThreshold(txn.apdexThreshold)
+		return internal.ApdexFailingThreshold(txn.ApdexThreshold)
 	}
 	return txn.Config.TransactionTracer.Threshold.Duration
 }
 
 func (txn *txn) shouldSaveTrace() bool {
-	return txn.txnTracesEnabled() &&
-		(txn.duration >= txn.txnTraceThreshold())
-}
-
-func (txn *txn) hasErrors() bool {
-	return len(txn.errors) > 0
+	return txn.CrossProcess.IsSynthetics() ||
+		(txn.txnTracesEnabled() && (txn.Duration >= txn.txnTraceThreshold()))
 }
 
 func (txn *txn) MergeIntoHarvest(h *internal.Harvest) {
-	exclusive := time.Duration(0)
-	children := internal.TracerRootChildren(&txn.tracer)
-	if txn.duration > children {
-		exclusive = txn.duration - children
-	}
-
-	internal.CreateTxnMetrics(internal.CreateTxnMetricsArgs{
-		IsWeb:          txn.isWeb,
-		Duration:       txn.duration,
-		Exclusive:      exclusive,
-		Name:           txn.finalName,
-		Zone:           txn.zone,
-		ApdexThreshold: txn.apdexThreshold,
-		HasErrors:      txn.hasErrors(),
-		Queueing:       txn.queuing,
-	}, h.Metrics)
-
-	internal.MergeBreakdownMetrics(&txn.tracer, h.Metrics, txn.finalName, txn.isWeb)
+	internal.CreateTxnMetrics(&txn.TxnData, h.Metrics)
+	internal.MergeBreakdownMetrics(&txn.TxnData, h.Metrics)
 
 	if txn.txnEventsEnabled() {
-		h.TxnEvents.AddTxnEvent(&internal.TxnEvent{
-			Name:      txn.finalName,
-			Timestamp: txn.start,
-			Duration:  txn.duration,
-			Queuing:   txn.queuing,
-			Zone:      txn.zone,
-			Attrs:     txn.attrs,
-			DatastoreExternalTotals: txn.tracer.DatastoreExternalTotals,
-		})
+		// Allocate a new TxnEvent to prevent a reference to the large transaction.
+		alloc := new(internal.TxnEvent)
+		*alloc = txn.TxnData.TxnEvent
+		h.TxnEvents.AddTxnEvent(alloc)
 	}
 
-	requestURI := ""
-	if nil != txn.Request && nil != txn.Request.URL {
-		requestURI = internal.SafeURL(txn.Request.URL)
-	}
-
-	internal.MergeTxnErrors(h.ErrorTraces, txn.errors, txn.finalName, requestURI, txn.attrs)
+	internal.MergeTxnErrors(&h.ErrorTraces, txn.Errors, txn.TxnEvent)
 
 	if txn.errorEventsEnabled() {
-		for _, e := range txn.errors {
-			h.ErrorEvents.Add(&internal.ErrorEvent{
-				Klass:    e.Klass,
-				Msg:      e.Msg,
-				When:     e.When,
-				TxnName:  txn.finalName,
-				Duration: txn.duration,
-				Queuing:  txn.queuing,
-				Attrs:    txn.attrs,
-				DatastoreExternalTotals: txn.tracer.DatastoreExternalTotals,
-			})
+		for _, e := range txn.Errors {
+			errEvent := &internal.ErrorEvent{
+				ErrorData: *e,
+				TxnEvent:  txn.TxnEvent,
+			}
+			// Since the stack trace is not used in error events, remove the reference
+			// to minimize memory.
+			errEvent.Stack = nil
+			h.ErrorEvents.Add(errEvent)
 		}
 	}
 
 	if txn.shouldSaveTrace() {
 		h.TxnTraces.Witness(internal.HarvestTrace{
-			Start:                txn.start,
-			Duration:             txn.duration,
-			MetricName:           txn.finalName,
-			CleanURL:             requestURI,
-			Trace:                txn.tracer.TxnTrace,
-			ForcePersist:         false,
-			GUID:                 "",
-			SyntheticsResourceID: "",
-			Attrs:                txn.attrs,
+			TxnEvent: txn.TxnEvent,
+			Trace:    txn.TxnTrace,
 		})
 	}
 
-	if nil != txn.tracer.SlowQueries {
-		h.SlowSQLs.Merge(txn.tracer.SlowQueries, txn.finalName, requestURI)
+	if nil != txn.SlowQueries {
+		h.SlowSQLs.Merge(txn.SlowQueries, txn.FinalName, txn.CleanURL)
 	}
 }
 
@@ -209,6 +166,9 @@ func responseCodeIsError(cfg *Config, code int) bool {
 }
 
 func headersJustWritten(txn *txn, code int) {
+	txn.Lock()
+	defer txn.Unlock()
+
 	if txn.finished {
 		return
 	}
@@ -217,8 +177,8 @@ func headersJustWritten(txn *txn, code int) {
 	}
 	txn.wroteHeader = true
 
-	internal.ResponseHeaderAttributes(txn.attrs, txn.W.Header())
-	internal.ResponseCodeAttribute(txn.attrs, code)
+	internal.ResponseHeaderAttributes(txn.Attrs, txn.W.Header())
+	internal.ResponseCodeAttribute(txn.Attrs, code)
 
 	if responseCodeIsError(&txn.Config, code) {
 		e := internal.TxnErrorFromResponseCode(time.Now(), code)
@@ -227,13 +187,53 @@ func headersJustWritten(txn *txn, code int) {
 	}
 }
 
+func (txn *txn) responseHeader() http.Header {
+	txn.Lock()
+	defer txn.Unlock()
+
+	if txn.finished {
+		return nil
+	}
+	if txn.wroteHeader {
+		return nil
+	}
+	if !txn.CrossProcess.Enabled {
+		return nil
+	}
+	if !txn.CrossProcess.IsInbound() {
+		return nil
+	}
+	txn.freezeName()
+	contentLength := internal.GetContentLengthFromHeader(txn.W.Header())
+
+	appData, err := txn.CrossProcess.CreateAppData(txn.FinalName, txn.Queuing, time.Since(txn.Start), contentLength)
+	if err != nil {
+		txn.Config.Logger.Debug("error generating outbound response header", map[string]interface{}{
+			"error": err,
+		})
+		return nil
+	}
+	return internal.AppDataToHTTPHeader(appData)
+}
+
+func addCrossProcessHeaders(txn *txn) {
+	// responseHeader() checks the wroteHeader field and returns a nil map if the
+	// header has been written, so we don't need a check here.
+	for key, values := range txn.responseHeader() {
+		for _, value := range values {
+			txn.W.Header().Add(key, value)
+		}
+	}
+}
+
 func (txn *txn) Header() http.Header { return txn.W.Header() }
 
 func (txn *txn) Write(b []byte) (int, error) {
-	n, err := txn.W.Write(b)
+	// This is safe to call unconditionally, even if Write() is called multiple
+	// times; see also the commentary in addCrossProcessHeaders().
+	addCrossProcessHeaders(txn)
 
-	txn.Lock()
-	defer txn.Unlock()
+	n, err := txn.W.Write(b)
 
 	headersJustWritten(txn, http.StatusOK)
 
@@ -241,10 +241,9 @@ func (txn *txn) Write(b []byte) (int, error) {
 }
 
 func (txn *txn) WriteHeader(code int) {
-	txn.W.WriteHeader(code)
+	addCrossProcessHeaders(txn)
 
-	txn.Lock()
-	defer txn.Unlock()
+	txn.W.WriteHeader(code)
 
 	headersJustWritten(txn, code)
 }
@@ -266,29 +265,39 @@ func (txn *txn) End() error {
 		txn.noticeErrorInternal(e)
 	}
 
-	txn.stop = time.Now()
-	txn.duration = txn.stop.Sub(txn.start)
+	txn.Stop = time.Now()
+	txn.Duration = txn.Stop.Sub(txn.Start)
+	if children := internal.TracerRootChildren(&txn.TxnData); txn.Duration > children {
+		txn.Exclusive = txn.Duration - children
+	}
 
 	txn.freezeName()
 
+	// Finalise the CAT state.
+	if err := txn.CrossProcess.Finalise(txn.Name, txn.Config.AppName); err != nil {
+		txn.Config.Logger.Debug("error finalising the cross process state", map[string]interface{}{
+			"error": err,
+		})
+	}
+
 	// Assign apdexThreshold regardless of whether or not the transaction
 	// gets apdex since it may be used to calculate the trace threshold.
-	txn.apdexThreshold = internal.CalculateApdexThreshold(txn.Reply, txn.finalName)
+	txn.ApdexThreshold = internal.CalculateApdexThreshold(txn.Reply, txn.FinalName)
 
 	if txn.getsApdex() {
-		if txn.hasErrors() {
-			txn.zone = internal.ApdexFailing
+		if txn.HasErrors() {
+			txn.Zone = internal.ApdexFailing
 		} else {
-			txn.zone = internal.CalculateApdexZone(txn.apdexThreshold, txn.duration)
+			txn.Zone = internal.CalculateApdexZone(txn.ApdexThreshold, txn.Duration)
 		}
 	} else {
-		txn.zone = internal.ApdexNone
+		txn.Zone = internal.ApdexNone
 	}
 
 	if txn.Config.Logger.DebugEnabled() {
 		txn.Config.Logger.Debug("transaction ended", map[string]interface{}{
-			"name":        txn.finalName,
-			"duration_ms": txn.duration.Seconds() * 1000.0,
+			"name":        txn.FinalName,
+			"duration_ms": txn.Duration.Seconds() * 1000.0,
 			"ignored":     txn.ignore,
 			"run":         txn.Reply.RunID,
 		})
@@ -315,7 +324,7 @@ func (txn *txn) AddAttribute(name string, value interface{}) error {
 		return errAlreadyEnded
 	}
 
-	return internal.AddUserAttribute(txn.attrs, name, value, internal.DestAll)
+	return internal.AddUserAttribute(txn.Attrs, name, value, internal.DestAll)
 }
 
 var (
@@ -329,7 +338,7 @@ const (
 	highSecurityErrorMsg = "message removed by high security setting"
 )
 
-func (txn *txn) noticeErrorInternal(err internal.TxnError) error {
+func (txn *txn) noticeErrorInternal(err internal.ErrorData) error {
 	if !txn.Config.ErrorCollector.Enabled {
 		return errorsLocallyDisabled
 	}
@@ -338,18 +347,23 @@ func (txn *txn) noticeErrorInternal(err internal.TxnError) error {
 		return errorsRemotelyDisabled
 	}
 
-	if nil == txn.errors {
-		txn.errors = internal.NewTxnErrors(internal.MaxTxnErrors)
+	if nil == txn.Errors {
+		txn.Errors = internal.NewTxnErrors(internal.MaxTxnErrors)
 	}
 
 	if txn.Config.HighSecurity {
 		err.Msg = highSecurityErrorMsg
 	}
 
-	txn.errors.Add(err)
+	txn.Errors.Add(err)
 
 	return nil
 }
+
+var (
+	errTooManyErrorAttributes = fmt.Errorf("too many extra attributes: limit is %d",
+		internal.AttributeErrorLimit)
+)
 
 func (txn *txn) NoticeError(err error) error {
 	txn.Lock()
@@ -363,8 +377,41 @@ func (txn *txn) NoticeError(err error) error {
 		return errNilError
 	}
 
-	e := internal.TxnErrorFromError(time.Now(), err)
-	e.Stack = internal.GetStackTrace(2)
+	e := internal.ErrorData{
+		When: time.Now(),
+		Msg:  err.Error(),
+	}
+	if ec, ok := err.(ErrorClasser); ok {
+		e.Klass = ec.ErrorClass()
+	}
+	if "" == e.Klass {
+		e.Klass = reflect.TypeOf(err).String()
+	}
+	if st, ok := err.(StackTracer); ok {
+		e.Stack = st.StackTrace()
+		// Note that if the provided stack trace is excessive in length,
+		// it will be truncated during JSON creation.
+	}
+	if nil == e.Stack {
+		e.Stack = internal.GetStackTrace(2)
+	}
+
+	if ea, ok := err.(ErrorAttributer); ok && !txn.Config.HighSecurity {
+		unvetted := ea.ErrorAttributes()
+		if len(unvetted) > internal.AttributeErrorLimit {
+			return errTooManyErrorAttributes
+		}
+
+		e.ExtraAttributes = make(map[string]interface{})
+		for key, val := range unvetted {
+			val, errr := internal.ValidateUserAttribute(key, val)
+			if nil != errr {
+				return errr
+			}
+			e.ExtraAttributes[key] = val
+		}
+	}
+
 	return txn.noticeErrorInternal(e)
 }
 
@@ -376,7 +423,7 @@ func (txn *txn) SetName(name string) error {
 		return errAlreadyEnded
 	}
 
-	txn.name = name
+	txn.Name = name
 	return nil
 }
 
@@ -395,7 +442,7 @@ func (txn *txn) StartSegmentNow() SegmentStartTime {
 	var s internal.SegmentStartTime
 	txn.Lock()
 	if !txn.finished {
-		s = internal.StartSegment(&txn.tracer, time.Now())
+		s = internal.StartSegment(&txn.TxnData, time.Now())
 	}
 	txn.Unlock()
 	return SegmentStartTime{
@@ -411,28 +458,32 @@ type segment struct {
 	txn   *txn
 }
 
-func endSegment(s Segment) {
+func endSegment(s Segment) error {
 	txn := s.StartTime.txn
 	if nil == txn {
-		return
+		return nil
 	}
+	var err error
 	txn.Lock()
-	if !txn.finished {
-		internal.EndBasicSegment(&txn.tracer, s.StartTime.start, time.Now(), s.Name)
+	if txn.finished {
+		err = errAlreadyEnded
+	} else {
+		err = internal.EndBasicSegment(&txn.TxnData, s.StartTime.start, time.Now(), s.Name)
 	}
 	txn.Unlock()
+	return err
 }
 
-func endDatastore(s DatastoreSegment) {
+func endDatastore(s DatastoreSegment) error {
 	txn := s.StartTime.txn
 	if nil == txn {
-		return
+		return nil
 	}
 	txn.Lock()
 	defer txn.Unlock()
 
 	if txn.finished {
-		return
+		return errAlreadyEnded
 	}
 	if txn.Config.HighSecurity {
 		s.QueryParameters = nil
@@ -447,8 +498,8 @@ func endDatastore(s DatastoreSegment) {
 		s.Host = ""
 		s.PortPathOrID = ""
 	}
-	internal.EndDatastoreSegment(internal.EndDatastoreParams{
-		Tracer:             &txn.tracer,
+	return internal.EndDatastoreSegment(internal.EndDatastoreParams{
+		Tracer:             &txn.TxnData,
 		Start:              s.StartTime.start,
 		Now:                time.Now(),
 		Product:            string(s.Product),
@@ -462,31 +513,60 @@ func endDatastore(s DatastoreSegment) {
 	})
 }
 
-func externalSegmentURL(s ExternalSegment) *url.URL {
+func externalSegmentURL(s ExternalSegment) (*url.URL, error) {
 	if "" != s.URL {
-		u, _ := url.Parse(s.URL)
-		return u
+		return url.Parse(s.URL)
 	}
 	r := s.Request
 	if nil != s.Response && nil != s.Response.Request {
 		r = s.Response.Request
 	}
 	if r != nil {
-		return r.URL
+		return r.URL, nil
 	}
-	return nil
+	return nil, nil
 }
 
-func endExternal(s ExternalSegment) {
+func endExternal(s ExternalSegment) error {
 	txn := s.StartTime.txn
 	if nil == txn {
-		return
+		return nil
 	}
 	txn.Lock()
 	defer txn.Unlock()
 
 	if txn.finished {
-		return
+		return errAlreadyEnded
 	}
-	internal.EndExternalSegment(&txn.tracer, s.StartTime.start, time.Now(), externalSegmentURL(s))
+	u, err := externalSegmentURL(s)
+	if nil != err {
+		return err
+	}
+	return internal.EndExternalSegment(&txn.TxnData, s.StartTime.start, time.Now(), u, s.Response)
+}
+
+func outboundHeaders(s ExternalSegment) http.Header {
+	txn := s.StartTime.txn
+	if nil == txn {
+		return http.Header{}
+	}
+	txn.Lock()
+	defer txn.Unlock()
+
+	if txn.finished {
+		return http.Header{}
+	}
+
+	metadata, err := txn.CrossProcess.CreateCrossProcessMetadata(txn.Name, txn.Config.AppName)
+	if err != nil {
+		txn.Config.Logger.Debug("error generating outbound headers", map[string]interface{}{
+			"error": err,
+		})
+
+		// It's possible for CreateCrossProcessMetadata() to error and still have a
+		// Synthetics header, so we'll still fall through to returning headers
+		// based on whatever metadata was returned.
+	}
+
+	return internal.MetadataToHTTPHeader(metadata)
 }

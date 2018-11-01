@@ -1,9 +1,9 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
 	"runtime"
-	"time"
 )
 
 var (
@@ -52,12 +52,6 @@ type WantMetric struct {
 	Data   []float64
 }
 
-// WantCustomEvent is a custom event expectation.
-type WantCustomEvent struct {
-	Type   string
-	Params map[string]interface{}
-}
-
 // WantError is a traced error expectation.
 type WantError struct {
 	TxnName         string
@@ -69,27 +63,21 @@ type WantError struct {
 	AgentAttributes map[string]interface{}
 }
 
-// WantErrorEvent is an error event expectation.
-type WantErrorEvent struct {
-	TxnName            string
-	Msg                string
-	Klass              string
-	Queuing            bool
-	ExternalCallCount  uint64
-	DatastoreCallCount uint64
-	UserAttributes     map[string]interface{}
-	AgentAttributes    map[string]interface{}
+func uniquePointer() *struct{} {
+	s := struct{}{}
+	return &s
 }
 
-// WantTxnEvent is a transaction event expectation.
-type WantTxnEvent struct {
-	Name               string
-	Zone               string
-	Queuing            bool
-	ExternalCallCount  uint64
-	DatastoreCallCount uint64
-	UserAttributes     map[string]interface{}
-	AgentAttributes    map[string]interface{}
+var (
+	// MatchAnything is for use when matching attributes.
+	MatchAnything = uniquePointer()
+)
+
+// WantEvent is a transaction or error event expectation.
+type WantEvent struct {
+	Intrinsics      map[string]interface{}
+	UserAttributes  map[string]interface{}
+	AgentAttributes map[string]interface{}
 }
 
 // WantTxnTrace is a transaction trace expectation.
@@ -117,10 +105,10 @@ type WantSlowQuery struct {
 // Expect exposes methods that allow for testing whether the correct data was
 // captured.
 type Expect interface {
-	ExpectCustomEvents(t Validator, want []WantCustomEvent)
+	ExpectCustomEvents(t Validator, want []WantEvent)
 	ExpectErrors(t Validator, want []WantError)
-	ExpectErrorEvents(t Validator, want []WantErrorEvent)
-	ExpectTxnEvents(t Validator, want []WantTxnEvent)
+	ExpectErrorEvents(t Validator, want []WantEvent)
+	ExpectTxnEvents(t Validator, want []WantEvent)
 	ExpectMetrics(t Validator, want []WantMetric)
 	ExpectTxnTraces(t Validator, want []WantTxnTrace)
 	ExpectSlowQueries(t Validator, want []WantSlowQuery)
@@ -173,38 +161,34 @@ func expectAttributes(v Validator, exists map[string]interface{}, expect map[str
 	// TODO: This params comparison can be made smarter: Alert differences
 	// based on sub/super set behavior.
 	if len(exists) != len(expect) {
-		v.Error("attributes length difference", exists, expect)
-		return
+		v.Error("attributes length difference", len(exists), len(expect))
 	}
 	for key, val := range expect {
 		found, ok := exists[key]
 		if !ok {
-			v.Error("missing key", key)
+			v.Error("expected attribute not found: ", key)
+			continue
+		}
+		if val == MatchAnything {
 			continue
 		}
 		v1 := fmt.Sprint(found)
 		v2 := fmt.Sprint(val)
 		if v1 != v2 {
-			v.Error("value difference", fmt.Sprintf("key=%s", key),
-				v1, v2)
+			v.Error("value difference", fmt.Sprintf("key=%s", key), v1, v2)
+		}
+	}
+	for key, val := range exists {
+		_, ok := expect[key]
+		if !ok {
+			v.Error("unexpected attribute present: ", key, val)
+			continue
 		}
 	}
 }
 
-func expectCustomEvent(v Validator, event *CustomEvent, expect WantCustomEvent) {
-	if event.eventType != expect.Type {
-		v.Error("type mismatch", event.eventType, expect.Type)
-	}
-	now := time.Now()
-	diff := absTimeDiff(now, event.timestamp)
-	if diff > time.Hour {
-		v.Error("large timestamp difference", event.eventType, now, event.timestamp)
-	}
-	expectAttributes(v, event.truncatedParams, expect.Params)
-}
-
 // ExpectCustomEvents allows testing of custom events.
-func ExpectCustomEvents(v Validator, cs *customEvents, expect []WantCustomEvent) {
+func ExpectCustomEvents(v Validator, cs *customEvents, expect []WantEvent) {
 	if len(cs.events.events) != len(expect) {
 		v.Error("number of custom events does not match", len(cs.events.events),
 			len(expect))
@@ -215,40 +199,52 @@ func ExpectCustomEvents(v Validator, cs *customEvents, expect []WantCustomEvent)
 		if !ok {
 			v.Error("wrong custom event")
 		} else {
-			expectCustomEvent(v, event, e)
+			expectEvent(v, event, e)
 		}
 	}
 }
 
-func expectErrorEvent(v Validator, err *ErrorEvent, expect WantErrorEvent) {
-	validateStringField(v, "txnName", expect.TxnName, err.TxnName)
-	validateStringField(v, "klass", expect.Klass, err.Klass)
-	validateStringField(v, "msg", expect.Msg, err.Msg)
-	if (0 != err.Queuing) != expect.Queuing {
-		v.Error("queuing", err.Queuing)
+func expectEvent(v Validator, e json.Marshaler, expect WantEvent) {
+	js, err := e.MarshalJSON()
+	if nil != err {
+		v.Error("unable to marshal event", err)
+		return
+	}
+	var event []map[string]interface{}
+	err = json.Unmarshal(js, &event)
+	if nil != err {
+		v.Error("unable to parse event json", err)
+		return
+	}
+	intrinsics := event[0]
+	userAttributes := event[1]
+	agentAttributes := event[2]
+
+	if nil != expect.Intrinsics {
+		expectAttributes(v, intrinsics, expect.Intrinsics)
 	}
 	if nil != expect.UserAttributes {
-		expectAttributes(v, getUserAttributes(err.Attrs, destError), expect.UserAttributes)
+		expectAttributes(v, userAttributes, expect.UserAttributes)
 	}
 	if nil != expect.AgentAttributes {
-		expectAttributes(v, getAgentAttributes(err.Attrs, destError), expect.AgentAttributes)
-	}
-	if expect.ExternalCallCount != err.externalCallCount {
-		v.Error("external call count", expect.ExternalCallCount, err.externalCallCount)
-	}
-	if doDurationTests && (0 == expect.ExternalCallCount) != (err.externalDuration == 0) {
-		v.Error("external duration", err.externalDuration)
-	}
-	if expect.DatastoreCallCount != err.datastoreCallCount {
-		v.Error("datastore call count", expect.DatastoreCallCount, err.datastoreCallCount)
-	}
-	if doDurationTests && (0 == expect.DatastoreCallCount) != (err.datastoreDuration == 0) {
-		v.Error("datastore duration", err.datastoreDuration)
+		expectAttributes(v, agentAttributes, expect.AgentAttributes)
 	}
 }
 
+// Second attributes have priority.
+func mergeAttributes(a1, a2 map[string]interface{}) map[string]interface{} {
+	a := make(map[string]interface{})
+	for k, v := range a1 {
+		a[k] = v
+	}
+	for k, v := range a2 {
+		a[k] = v
+	}
+	return a
+}
+
 // ExpectErrorEvents allows testing of error events.
-func ExpectErrorEvents(v Validator, events *errorEvents, expect []WantErrorEvent) {
+func ExpectErrorEvents(v Validator, events *errorEvents, expect []WantEvent) {
 	if len(events.events.events) != len(expect) {
 		v.Error("number of custom events does not match",
 			len(events.events.events), len(expect))
@@ -259,42 +255,22 @@ func ExpectErrorEvents(v Validator, events *errorEvents, expect []WantErrorEvent
 		if !ok {
 			v.Error("wrong error event")
 		} else {
-			expectErrorEvent(v, event, e)
+			if nil != e.Intrinsics {
+				e.Intrinsics = mergeAttributes(map[string]interface{}{
+					// The following intrinsics should always be present in
+					// error events:
+					"type":      "TransactionError",
+					"timestamp": MatchAnything,
+					"duration":  MatchAnything,
+				}, e.Intrinsics)
+			}
+			expectEvent(v, event, e)
 		}
 	}
 }
 
-func expectTxnEvent(v Validator, e *TxnEvent, expect WantTxnEvent) {
-	validateStringField(v, "apdex zone", expect.Zone, e.Zone.label())
-	validateStringField(v, "name", expect.Name, e.Name)
-	if doDurationTests && 0 == e.Duration {
-		v.Error("zero duration", e.Duration)
-	}
-	if (0 != e.Queuing) != expect.Queuing {
-		v.Error("queuing", e.Queuing)
-	}
-	if nil != expect.UserAttributes {
-		expectAttributes(v, getUserAttributes(e.Attrs, destTxnEvent), expect.UserAttributes)
-	}
-	if nil != expect.AgentAttributes {
-		expectAttributes(v, getAgentAttributes(e.Attrs, destTxnEvent), expect.AgentAttributes)
-	}
-	if expect.ExternalCallCount != e.externalCallCount {
-		v.Error("external call count", expect.ExternalCallCount, e.externalCallCount)
-	}
-	if doDurationTests && (0 == expect.ExternalCallCount) != (e.externalDuration == 0) {
-		v.Error("external duration", e.externalDuration)
-	}
-	if expect.DatastoreCallCount != e.datastoreCallCount {
-		v.Error("datastore call count", expect.DatastoreCallCount, e.datastoreCallCount)
-	}
-	if doDurationTests && (0 == expect.DatastoreCallCount) != (e.datastoreDuration == 0) {
-		v.Error("datastore duration", e.datastoreDuration)
-	}
-}
-
 // ExpectTxnEvents allows testing of txn events.
-func ExpectTxnEvents(v Validator, events *txnEvents, expect []WantTxnEvent) {
+func ExpectTxnEvents(v Validator, events *txnEvents, expect []WantEvent) {
 	if len(events.events.events) != len(expect) {
 		v.Error("number of txn events does not match",
 			len(events.events.events), len(expect))
@@ -305,68 +281,123 @@ func ExpectTxnEvents(v Validator, events *txnEvents, expect []WantTxnEvent) {
 		if !ok {
 			v.Error("wrong txn event")
 		} else {
-			expectTxnEvent(v, event, e)
+			if nil != e.Intrinsics {
+				e.Intrinsics = mergeAttributes(map[string]interface{}{
+					// The following intrinsics should always be present in
+					// txn events:
+					"type":      "Transaction",
+					"timestamp": MatchAnything,
+					"duration":  MatchAnything,
+				}, e.Intrinsics)
+			}
+			expectEvent(v, event, e)
 		}
 	}
 }
 
-func expectError(v Validator, err *harvestError, expect WantError) {
-	caller := topCallerNameBase(err.TxnError.Stack)
+func expectError(v Validator, err *tracedError, expect WantError) {
+	caller := topCallerNameBase(err.ErrorData.Stack)
 	validateStringField(v, "caller", expect.Caller, caller)
-	validateStringField(v, "txnName", expect.TxnName, err.txnName)
-	validateStringField(v, "klass", expect.Klass, err.TxnError.Klass)
-	validateStringField(v, "msg", expect.Msg, err.TxnError.Msg)
-	validateStringField(v, "URL", expect.URL, err.requestURI)
+	validateStringField(v, "txnName", expect.TxnName, err.FinalName)
+	validateStringField(v, "klass", expect.Klass, err.Klass)
+	validateStringField(v, "msg", expect.Msg, err.Msg)
+	validateStringField(v, "URL", expect.URL, err.CleanURL)
+	js, errr := err.MarshalJSON()
+	if nil != errr {
+		v.Error("unable to marshal error json", errr)
+		return
+	}
+	var unmarshalled []interface{}
+	errr = json.Unmarshal(js, &unmarshalled)
+	if nil != errr {
+		v.Error("unable to unmarshal error json", errr)
+		return
+	}
+	attributes := unmarshalled[4].(map[string]interface{})
+	agentAttributes := attributes["agentAttributes"].(map[string]interface{})
+	userAttributes := attributes["userAttributes"].(map[string]interface{})
+
 	if nil != expect.UserAttributes {
-		expectAttributes(v, getUserAttributes(err.attrs, destError), expect.UserAttributes)
+		expectAttributes(v, userAttributes, expect.UserAttributes)
 	}
 	if nil != expect.AgentAttributes {
-		expectAttributes(v, getAgentAttributes(err.attrs, destError), expect.AgentAttributes)
+		expectAttributes(v, agentAttributes, expect.AgentAttributes)
 	}
 }
 
 // ExpectErrors allows testing of errors.
-func ExpectErrors(v Validator, errors *harvestErrors, expect []WantError) {
-	if len(errors.errors) != len(expect) {
-		v.Error("number of errors mismatch", len(errors.errors), len(expect))
+func ExpectErrors(v Validator, errors harvestErrors, expect []WantError) {
+	if len(errors) != len(expect) {
+		v.Error("number of errors mismatch", len(errors), len(expect))
 		return
 	}
 	for i, e := range expect {
-		expectError(v, errors.errors[i], e)
+		expectError(v, errors[i], e)
 	}
 }
 
-func expectTxnTrace(v Validator, trace *HarvestTrace, expect WantTxnTrace) {
-	if doDurationTests && 0 == trace.Duration {
+func countSegments(node []interface{}) int {
+	count := 1
+	children := node[4].([]interface{})
+	for _, c := range children {
+		node := c.([]interface{})
+		count += countSegments(node)
+	}
+	return count
+}
+
+func expectTxnTrace(v Validator, got json.Marshaler, expect WantTxnTrace) {
+	js, err := got.MarshalJSON()
+	if nil != err {
+		v.Error("unable to marshal txn trace json", err)
+		return
+	}
+	var unmarshalled []interface{}
+	err = json.Unmarshal(js, &unmarshalled)
+	if nil != err {
+		v.Error("unable to unmarshal error json", err)
+		return
+	}
+	duration := unmarshalled[1].(float64)
+	name := unmarshalled[2].(string)
+	cleanURL := unmarshalled[3].(string)
+	traceData := unmarshalled[4].([]interface{})
+
+	rootNode := traceData[3].([]interface{})
+	attributes := traceData[4].(map[string]interface{})
+	userAttributes := attributes["userAttributes"].(map[string]interface{})
+	agentAttributes := attributes["agentAttributes"].(map[string]interface{})
+
+	validateStringField(v, "metric name", expect.MetricName, name)
+	validateStringField(v, "request url", expect.CleanURL, cleanURL)
+
+	if doDurationTests && 0 == duration {
 		v.Error("zero trace duration")
 	}
-	validateStringField(v, "metric name", expect.MetricName, trace.MetricName)
-	validateStringField(v, "request url", expect.CleanURL, trace.CleanURL)
+
 	if nil != expect.UserAttributes {
-		expectAttributes(v, getUserAttributes(trace.Attrs, destTxnTrace), expect.UserAttributes)
+		expectAttributes(v, userAttributes, expect.UserAttributes)
 	}
 	if nil != expect.AgentAttributes {
-		expectAttributes(v, getAgentAttributes(trace.Attrs, destTxnTrace), expect.AgentAttributes)
+		expectAttributes(v, agentAttributes, expect.AgentAttributes)
 	}
-	if expect.NumSegments != len(trace.Trace.nodes) {
-		v.Error("wrong number of segments", expect.NumSegments, len(trace.Trace.nodes))
+	numSegments := countSegments(rootNode)
+	// The expectation segment count does not include the two root nodes.
+	numSegments -= 2
+	if expect.NumSegments != numSegments {
+		v.Error("wrong number of segments", expect.NumSegments, numSegments)
 	}
 }
 
 // ExpectTxnTraces allows testing of transaction traces.
 func ExpectTxnTraces(v Validator, traces *harvestTraces, want []WantTxnTrace) {
-	if len(want) == 0 {
-		if nil != traces.trace {
-			v.Error("trace exists when not expected")
-		}
-	} else if len(want) > 1 {
-		v.Error("too many traces expected")
-	} else {
-		if nil == traces.trace {
-			v.Error("missing expected trace")
-		} else {
-			expectTxnTrace(v, traces.trace, want[0])
-		}
+	if len(want) != traces.Len() {
+		v.Error("number of traces do not match", len(want), traces.Len())
+	}
+
+	actual := traces.slice()
+	for i, expected := range want {
+		expectTxnTrace(v, actual[i], expected)
 	}
 }
 

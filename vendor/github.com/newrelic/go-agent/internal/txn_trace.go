@@ -20,12 +20,13 @@ type traceNodeHeap []traceNode
 // start using a map.  This struct is not embedded into traceNode to minimize
 // the size of traceNode:  Not all nodes will have parameters.
 type traceNodeParams struct {
-	StackTrace      *StackTrace
+	StackTrace      StackTrace
 	CleanURL        string
 	Database        string
 	Host            string
 	PortPathOrID    string
 	Query           string
+	TransactionGUID string
 	queryParameters queryParameters
 }
 
@@ -49,6 +50,9 @@ func (p *traceNodeParams) WriteJSON(buf *bytes.Buffer) {
 	}
 	if "" != p.Query {
 		w.stringField("query", p.Query)
+	}
+	if "" != p.TransactionGUID {
+		w.stringField("transaction_guid", p.TransactionGUID)
 	}
 	if nil != p.queryParameters {
 		w.writerField("query_parameters", p.queryParameters)
@@ -142,15 +146,8 @@ func (trace *TxnTrace) witnessNode(end segmentEnd, name string, params *traceNod
 // HarvestTrace contains a finished transaction trace ready for serialization to
 // the collector.
 type HarvestTrace struct {
-	Start                time.Time
-	Duration             time.Duration
-	MetricName           string
-	CleanURL             string
-	Trace                TxnTrace
-	ForcePersist         bool
-	GUID                 string
-	SyntheticsResourceID string
-	Attrs                *Attributes
+	TxnEvent
+	Trace TxnTrace
 }
 
 type nodeDetails struct {
@@ -209,7 +206,8 @@ func (s sortedTraceNodes) Len() int           { return len(s) }
 func (s sortedTraceNodes) Less(i, j int) bool { return s[i].start.Stamp < s[j].start.Stamp }
 func (s sortedTraceNodes) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
-func traceDataJSON(trace *HarvestTrace) []byte {
+// MarshalJSON prepares the trace in the JSON expected by the collector.
+func (trace *HarvestTrace) MarshalJSON() ([]byte, error) {
 	estimate := 100 * len(trace.Trace.nodes)
 	buf := bytes.NewBuffer(make([]byte, 0, estimate))
 
@@ -218,6 +216,17 @@ func traceDataJSON(trace *HarvestTrace) []byte {
 		nodes[i] = &trace.Trace.nodes[i]
 	}
 	sort.Sort(nodes)
+
+	buf.WriteByte('[') // begin trace
+
+	jsonx.AppendInt(buf, trace.Start.UnixNano()/1000)
+	buf.WriteByte(',')
+	jsonx.AppendFloat(buf, trace.Duration.Seconds()*1000.0)
+	buf.WriteByte(',')
+	jsonx.AppendString(buf, trace.FinalName)
+	buf.WriteByte(',')
+	jsonx.AppendString(buf, trace.CleanURL)
+	buf.WriteByte(',')
 
 	buf.WriteByte('[') // begin trace data
 
@@ -237,7 +246,7 @@ func traceDataJSON(trace *HarvestTrace) []byte {
 	})
 
 	printNodeStart(buf, nodeDetails{ // begin inner root
-		name:          trace.MetricName,
+		name:          trace.FinalName,
 		relativeStart: 0,
 		relativeStop:  trace.Duration,
 	})
@@ -256,60 +265,136 @@ func traceDataJSON(trace *HarvestTrace) []byte {
 	agentAttributesJSON(trace.Attrs, buf, destTxnTrace)
 	buf.WriteByte(',')
 	buf.WriteString(`"userAttributes":`)
-	userAttributesJSON(trace.Attrs, buf, destTxnTrace)
+	userAttributesJSON(trace.Attrs, buf, destTxnTrace, nil)
 	buf.WriteByte(',')
-	buf.WriteString(`"intrinsics":{}`) // TODO intrinsics
+	buf.WriteString(`"intrinsics":`)
+	intrinsicsJSON(&trace.TxnEvent, buf)
 	buf.WriteByte('}')
 
 	// If the trace string pool is used, end another array here.
 
 	buf.WriteByte(']') // end trace data
 
-	return buf.Bytes()
+	buf.WriteByte(',')
+	if trace.CrossProcess.Used() && trace.CrossProcess.GUID != "" {
+		jsonx.AppendString(buf, trace.CrossProcess.GUID)
+	} else {
+		buf.WriteString(`""`)
+	}
+	buf.WriteByte(',')       //
+	buf.WriteString(`null`)  // reserved for future use
+	buf.WriteByte(',')       //
+	buf.WriteString(`false`) // ForcePersist is not yet supported
+	buf.WriteByte(',')       //
+	buf.WriteString(`null`)  // X-Ray sessions not supported
+	buf.WriteByte(',')       //
+
+	// Synthetics are supported:
+	if trace.CrossProcess.IsSynthetics() {
+		jsonx.AppendString(buf, trace.CrossProcess.Synthetics.ResourceID)
+	} else {
+		buf.WriteString(`""`)
+	}
+
+	buf.WriteByte(']') // end trace
+
+	return buf.Bytes(), nil
 }
 
-// MarshalJSON prepares the trace in the JSON expected by the collector.
-func (trace *HarvestTrace) MarshalJSON() ([]byte, error) {
-	return json.Marshal([]interface{}{
-		trace.Start.UnixNano() / 1000,
-		trace.Duration.Seconds() * 1000.0,
-		trace.MetricName,
-		trace.CleanURL,
-		JSONString(traceDataJSON(trace)),
-		trace.GUID,
-		nil, // reserved for future use
-		trace.ForcePersist,
-		nil, // X-Ray sessions not supported
-		trace.SyntheticsResourceID,
-	})
+type txnTraceHeap []*HarvestTrace
+
+func (h *txnTraceHeap) isEmpty() bool {
+	return 0 == len(*h)
+}
+
+func newTxnTraceHeap(max int) *txnTraceHeap {
+	h := make(txnTraceHeap, 0, max)
+	heap.Init(&h)
+	return &h
+}
+
+// Implement sort.Interface.
+func (h txnTraceHeap) Len() int           { return len(h) }
+func (h txnTraceHeap) Less(i, j int) bool { return h[i].Duration < h[j].Duration }
+func (h txnTraceHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+// Implement heap.Interface.
+func (h *txnTraceHeap) Push(x interface{}) { *h = append(*h, x.(*HarvestTrace)) }
+
+func (h *txnTraceHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
+}
+
+func (h *txnTraceHeap) isKeeper(t *HarvestTrace) bool {
+	if len(*h) < cap(*h) {
+		return true
+	}
+	return t.Duration >= (*h)[0].Duration
+}
+
+func (h *txnTraceHeap) addTxnTrace(t *HarvestTrace) {
+	if len(*h) < cap(*h) {
+		heap.Push(h, t)
+		return
+	}
+
+	if t.Duration <= (*h)[0].Duration {
+		return
+	}
+	heap.Pop(h)
+	heap.Push(h, t)
 }
 
 type harvestTraces struct {
-	trace *HarvestTrace
+	regular    *txnTraceHeap
+	synthetics *txnTraceHeap
 }
 
 func newHarvestTraces() *harvestTraces {
-	return &harvestTraces{}
+	return &harvestTraces{
+		regular:    newTxnTraceHeap(maxRegularTraces),
+		synthetics: newTxnTraceHeap(maxSyntheticsTraces),
+	}
+}
+
+func (traces *harvestTraces) Len() int {
+	return traces.regular.Len() + traces.synthetics.Len()
 }
 
 func (traces *harvestTraces) Witness(trace HarvestTrace) {
-	if nil == traces.trace || traces.trace.Duration < trace.Duration {
+	traceHeap := traces.regular
+	if trace.CrossProcess.IsSynthetics() {
+		traceHeap = traces.synthetics
+	}
+
+	if traceHeap.isKeeper(&trace) {
 		cpy := new(HarvestTrace)
 		*cpy = trace
-		traces.trace = cpy
+		traceHeap.addTxnTrace(cpy)
 	}
 }
 
 func (traces *harvestTraces) Data(agentRunID string, harvestStart time.Time) ([]byte, error) {
-	if nil == traces.trace {
+	if traces.Len() == 0 {
 		return nil, nil
 	}
+
 	return json.Marshal([]interface{}{
 		agentRunID,
-		[]interface{}{
-			traces.trace,
-		},
+		traces.slice(),
 	})
+}
+
+func (traces *harvestTraces) slice() []*HarvestTrace {
+	out := make([]*HarvestTrace, 0, traces.Len())
+	out = append(out, (*traces.regular)...)
+	out = append(out, (*traces.synthetics)...)
+
+	return out
 }
 
 func (traces *harvestTraces) MergeIntoHarvest(h *Harvest) {}

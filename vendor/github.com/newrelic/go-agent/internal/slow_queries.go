@@ -19,11 +19,8 @@ func vetQueryParameters(params map[string]interface{}) queryParameters {
 	// from the customer.
 	vetted := make(map[string]interface{})
 	for key, val := range params {
-		if err := validAttributeKey(key); nil != err {
-			continue
-		}
-		val = truncateStringValueIfLongInterface(val)
-		if err := valueIsValid(val); nil != err {
+		val, err := ValidateUserAttribute(key, val)
+		if nil != err {
 			continue
 		}
 		vetted[key] = val
@@ -53,7 +50,7 @@ type slowQueryInstance struct {
 	Host               string
 	PortPathOrID       string
 	DatabaseName       string
-	StackTrace         *StackTrace
+	StackTrace         StackTrace
 
 	// Fields populated when merging into the harvest:
 
