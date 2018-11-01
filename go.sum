@@ -67,8 +67,8 @@ github.com/mitchellh/mapstructure v1.1.2 h1:fmNYVwqnSfB9mZU6OS2O6GsXM+wcskZDuKQz
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/mitchellh/reflectwalk v0.0.0-20161003174516-92573fe8d000 h1:ajR9C+BMu/Q7NN8pmQQAchGkMwlLivNVWFC06dH+K/4=
 github.com/mitchellh/reflectwalk v0.0.0-20161003174516-92573fe8d000/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
-github.com/newrelic/go-agent v1.5.0 h1:UEHKDy41za/59lCYWjoi5Py0fqX5ivJMYq6yXQbKBUU=
-github.com/newrelic/go-agent v1.5.0/go.mod h1:a8Fv1b/fYhFSReoTU6HDkTYIMZeSVNffmoS726Y0LzQ=
+github.com/newrelic/go-agent v1.11.0 h1:jnd8+H6dB+93UTJHFT1wJoij5spKNN/xZ0nkw0kvt7o=
+github.com/newrelic/go-agent v1.11.0/go.mod h1:a8Fv1b/fYhFSReoTU6HDkTYIMZeSVNffmoS726Y0LzQ=
 github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc h1:rQ1O4ZLYR2xXHXgBCCfIIGnuZ0lidMQw2S5n1oOv+Wg=
 github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=
 github.com/paultyng/go-newrelic v3.1.0+incompatible h1:Rk4tqa9X79e8mII/Wb2LkhTRdkr7N+YtaGtMY5IxdwE=
