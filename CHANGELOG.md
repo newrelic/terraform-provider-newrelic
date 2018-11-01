@@ -1,5 +1,9 @@
 ## 1.2.0 (Unreleased)
 
+FEATURES:
+
+* **New Data Source** `newrelic_alert_policy` [GH-34]
+
 IMPROVEMENTS:
 
 * `newrelic_infra_alert_condition`: Add support for `integration_provider` [GH-48]
