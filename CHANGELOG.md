@@ -2,7 +2,8 @@
 
 IMPROVEMENTS:
 
-* resource/newrelic_infra_alert_condition: Add support for `integration_provider` ([#48](https://github.com/terraform-providers/terraform-provider-newrelic/pull/48))
+* `newrelic_infra_alert_condition`: Add support for `integration_provider` [GH-48]
+* `newrelic_dashboard`: Add support for `filter` [GH-46]
 
 ## 1.1.0 (October 16, 2018)
 
