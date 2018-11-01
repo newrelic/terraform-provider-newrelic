@@ -1,4 +1,9 @@
-## 1.1.1 (Unreleased)
+## 1.2.0 (Unreleased)
+
+IMPROVEMENTS:
+
+* resource/newrelic_infra_alert_condition: Add support for `integration_provider` ([#48](https://github.com/terraform-providers/terraform-provider-newrelic/pull/48))
+
 ## 1.1.0 (October 16, 2018)
 
 FEATURES:
