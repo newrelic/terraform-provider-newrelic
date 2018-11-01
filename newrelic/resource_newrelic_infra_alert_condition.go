@@ -127,6 +127,10 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 				Elem:     thresholdSchema(),
 				//TODO: ValidateFunc from thresholdConditionTypes map
 			},
+			"integration_provider": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -156,6 +160,10 @@ func buildInfraAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertInfra
 		condition.ProcessWhere = attr.(string)
 	}
 
+	if attr, ok := d.GetOk("integration_provider"); ok {
+		condition.IntegrationProvider = attr.(string)
+	}
+
 	return &condition
 }
 
@@ -179,6 +187,10 @@ func readInfraAlertConditionStruct(condition *newrelic.AlertInfraCondition, d *s
 
 	if condition.ProcessWhere != "" {
 		d.Set("process_where", condition.ProcessWhere)
+	}
+
+	if condition.IntegrationProvider != "" {
+		d.Set("integration_provider", condition.IntegrationProvider)
 	}
 
 	if err := d.Set("critical", flattenAlertThreshold(condition.Critical)); err != nil {
