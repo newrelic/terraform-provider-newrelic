@@ -3,6 +3,7 @@ package newrelic
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"strings"
@@ -14,9 +15,17 @@ import (
 )
 
 var (
-	debugLogging = os.Getenv("NEW_RELIC_DEBUG_LOGGING")
+	// NEW_RELIC_HOST can be used to override the New Relic endpoint.  This
+	// is useful for testing against staging.
+	envHost = "NEW_RELIC_HOST"
+	// NEW_RELIC_DEBUG_LOGGING can be set to anything to enable additional
+	// debug logging: the agent will log every transaction's data at info
+	// level.
+	envDebugLogging = "NEW_RELIC_DEBUG_LOGGING"
+
+	debugLogging = os.Getenv(envDebugLogging)
 	redirectHost = func() string {
-		if s := os.Getenv("NEW_RELIC_HOST"); "" != s {
+		if s := os.Getenv(envHost); "" != s {
 			return s
 		}
 		return "collector.newrelic.com"
@@ -183,13 +192,13 @@ func debug(data internal.Harvestable, lg Logger) {
 			continue
 		}
 		if nil != err {
-			lg.Debug("integration", map[string]interface{}{
+			lg.Info("integration", map[string]interface{}{
 				"cmd":   cmd,
 				"error": err.Error(),
 			})
 			continue
 		}
-		lg.Debug("integration", map[string]interface{}{
+		lg.Info("integration", map[string]interface{}{
 			"cmd":  cmd,
 			"data": internal.JSONString(d),
 		})
@@ -473,11 +482,10 @@ func (app *app) StartTransaction(name string, w http.ResponseWriter, r *http.Req
 	return upgradeTxn(newTxn(txnInput{
 		Config:     app.config,
 		Reply:      run.ConnectReply,
-		Request:    r,
 		W:          w,
 		Consumer:   app,
 		attrConfig: app.attrConfig,
-	}, name))
+	}, r, name))
 }
 
 var (
@@ -511,6 +519,31 @@ func (app *app) RecordCustomEvent(eventType string, params map[string]interface{
 	return nil
 }
 
+var (
+	errMetricInf       = errors.New("invalid metric value: inf")
+	errMetricNaN       = errors.New("invalid metric value: NaN")
+	errMetricNameEmpty = errors.New("missing metric name")
+)
+
+// RecordCustomMetric implements newrelic.Application's RecordCustomMetric.
+func (app *app) RecordCustomMetric(name string, value float64) error {
+	if math.IsNaN(value) {
+		return errMetricNaN
+	}
+	if math.IsInf(value, 0) {
+		return errMetricInf
+	}
+	if "" == name {
+		return errMetricNameEmpty
+	}
+	run, _ := app.getState()
+	app.Consume(run.RunID, internal.CustomMetric{
+		RawInputName: name,
+		Value:        value,
+	})
+	return nil
+}
+
 func (app *app) Consume(id internal.AgentRunID, data internal.Harvestable) {
 	if "" != debugLogging {
 		debug(data, app.config.Logger)
@@ -531,7 +564,7 @@ func (app *app) Consume(id internal.AgentRunID, data internal.Harvestable) {
 	}
 }
 
-func (app *app) ExpectCustomEvents(t internal.Validator, want []internal.WantCustomEvent) {
+func (app *app) ExpectCustomEvents(t internal.Validator, want []internal.WantEvent) {
 	internal.ExpectCustomEvents(internal.ExtendValidator(t, "custom events"), app.testHarvest.CustomEvents, want)
 }
 
@@ -540,12 +573,12 @@ func (app *app) ExpectErrors(t internal.Validator, want []internal.WantError) {
 	internal.ExpectErrors(t, app.testHarvest.ErrorTraces, want)
 }
 
-func (app *app) ExpectErrorEvents(t internal.Validator, want []internal.WantErrorEvent) {
+func (app *app) ExpectErrorEvents(t internal.Validator, want []internal.WantEvent) {
 	t = internal.ExtendValidator(t, "error events")
 	internal.ExpectErrorEvents(t, app.testHarvest.ErrorEvents, want)
 }
 
-func (app *app) ExpectTxnEvents(t internal.Validator, want []internal.WantTxnEvent) {
+func (app *app) ExpectTxnEvents(t internal.Validator, want []internal.WantEvent) {
 	t = internal.ExtendValidator(t, "txn events")
 	internal.ExpectTxnEvents(t, app.testHarvest.TxnEvents, want)
 }

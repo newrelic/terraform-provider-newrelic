@@ -25,7 +25,7 @@ require (
 	github.com/mitchellh/go-homedir v0.0.0-20161203194507-b8bc1bf76747 // indirect
 	github.com/mitchellh/hashstructure v0.0.0-20160209213820-6b17d669fac5 // indirect
 	github.com/mitchellh/reflectwalk v0.0.0-20161003174516-92573fe8d000 // indirect
-	github.com/newrelic/go-agent v1.5.0
+	github.com/newrelic/go-agent v1.11.0
 	github.com/paultyng/go-newrelic/v4 v4.0.0
 	github.com/pkg/errors v0.0.0-20171018195549-f15c970de5b7 // indirect
 	github.com/satori/go.uuid v0.0.0-20160927100844-b061729afc07 // indirect
