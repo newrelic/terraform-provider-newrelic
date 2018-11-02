@@ -1,5 +1,90 @@
 ## ChangeLog
 
+## 1.11.0
+
+* We've closed the Issues tab on GitHub. Please visit our
+  [support site](https://support.newrelic.com) to get timely help with any
+  problems you're having, or to report issues.
+
+* Added support for Cross Application Tracing (CAT). Please refer to the
+  [upgrading section of the guide](GUIDE.md#upgrading-applications-to-support-cross-application-tracing)
+  for more detail on how to ensure you get the most out of the Go agent's new
+  CAT support.
+
+* The agent now collects additional metadata when running within Amazon Web
+  Services, Google Cloud Platform, Microsoft Azure, and Pivotal Cloud Foundry.
+  This information is used to provide an enhanced experience when the agent is
+  deployed on those platforms.
+
+## 1.10.0
+
+* Added new `RecordCustomMetric` method to [Application](https://godoc.org/github.com/newrelic/go-agent#Application).
+  This functionality can be used to track averages or counters without using
+  custom events.
+  * [Custom Metric Documentation](https://docs.newrelic.com/docs/agents/manage-apm-agents/agent-data/collect-custom-metrics)
+
+* Fixed import needed for logrus.  The import Sirupsen/logrus had been renamed to sirupsen/logrus.
+  Thanks to @alfred-landrum for spotting this.
+
+* Added [ErrorAttributer](https://godoc.org/github.com/newrelic/go-agent#ErrorAttributer),
+  an optional interface that can be implemented by errors provided to
+  `Transaction.NoticeError` to attach additional attributes.  These attributes are
+  subject to attribute configuration.
+
+* Added [Error](https://godoc.org/github.com/newrelic/go-agent#Error), a type
+  that allows direct control of error fields.  Example use:
+
+```go
+txn.NoticeError(newrelic.Error{
+	// Message is returned by the Error() method.
+	Message: "error message: something went very wrong",
+	Class:   "errors are aggregated by class",
+	Attributes: map[string]interface{}{
+		"important_number": 97232,
+		"relevant_string":  "zap",
+	},
+})
+```
+
+* Updated license to address scope of usage.
+
+## 1.9.0
+
+* Added support for [github.com/gin-gonic/gin](https://github.com/gin-gonic/gin)
+  in the new `nrgin` package.
+  * [Documentation](http://godoc.org/github.com/newrelic/go-agent/_integrations/nrgin/v1)
+  * [Example](examples/_gin/main.go)
+
+## 1.8.0
+
+* Fixed incorrect metric rule application when the metric rule is flagged to
+  terminate and matches but the name is unchanged.
+
+* `Segment.End()`, `DatastoreSegment.End()`, and `ExternalSegment.End()` methods now return an
+  error which may be helpful in diagnosing situations where segment data is unexpectedly missing.
+
+## 1.7.0
+
+* Added support for [gorilla/mux](http://github.com/gorilla/mux) in the new `nrgorilla`
+  package.
+  * [Documentation](http://godoc.org/github.com/newrelic/go-agent/_integrations/nrgorilla/v1)
+  * [Example](examples/_gorilla/main.go)
+
+## 1.6.0
+
+* Added support for custom error messages and stack traces.  Errors provided
+  to `Transaction.NoticeError` will now be checked to see if
+  they implement [ErrorClasser](https://godoc.org/github.com/newrelic/go-agent#ErrorClasser)
+  and/or [StackTracer](https://godoc.org/github.com/newrelic/go-agent#StackTracer).
+  Thanks to @fgrosse for this proposal.
+
+* Added support for [pkg/errors](https://github.com/pkg/errors).  Thanks to
+  @fgrosse for this work.
+  * [documentation](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrpkgerrors)
+  * [example](https://github.com/newrelic/go-agent/blob/master/_integrations/nrpkgerrors/nrpkgerrors.go)
+
+* Fixed tests for Go 1.8.
+
 ## 1.5.0
 
 * Added support for Windows.  Thanks to @ianomad and @lvxv for the contributions.

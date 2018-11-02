@@ -3,6 +3,8 @@ package internal
 import (
 	"bytes"
 	"math/rand"
+	"sort"
+	"strings"
 	"time"
 )
 
@@ -15,27 +17,14 @@ type DatastoreExternalTotals struct {
 	datastoreDuration  time.Duration
 }
 
-// TxnEvent represents a transaction.
-// https://source.datanerd.us/agents/agent-specs/blob/master/Transaction-Events-PORTED.md
-// https://newrelic.atlassian.net/wiki/display/eng/Agent+Support+for+Synthetics%3A+Forced+Transaction+Traces+and+Analytic+Events
-type TxnEvent struct {
-	Name      string
-	Timestamp time.Time
-	Duration  time.Duration
-	Queuing   time.Duration
-	Zone      ApdexZone
-	Attrs     *Attributes
-	DatastoreExternalTotals
-}
-
 // WriteJSON prepares JSON in the format expected by the collector.
 func (e *TxnEvent) WriteJSON(buf *bytes.Buffer) {
 	w := jsonFieldsWriter{buf: buf}
 	buf.WriteByte('[')
 	buf.WriteByte('{')
 	w.stringField("type", "Transaction")
-	w.stringField("name", e.Name)
-	w.floatField("timestamp", timeToFloatSeconds(e.Timestamp))
+	w.stringField("name", e.FinalName)
+	w.floatField("timestamp", timeToFloatSeconds(e.Start))
 	w.floatField("duration", e.Duration.Seconds())
 	if ApdexNone != e.Zone {
 		w.stringField("nr.apdexPerfZone", e.Zone.label())
@@ -53,9 +42,42 @@ func (e *TxnEvent) WriteJSON(buf *bytes.Buffer) {
 		w.intField("databaseCallCount", int64(e.datastoreCallCount))
 		w.floatField("databaseDuration", e.datastoreDuration.Seconds())
 	}
+	if e.CrossProcess.Used() {
+		if e.CrossProcess.ClientID != "" {
+			w.stringField("client_cross_process_id", e.CrossProcess.ClientID)
+		}
+		if e.CrossProcess.TripID != "" {
+			w.stringField("nr.tripId", e.CrossProcess.TripID)
+		}
+		if e.CrossProcess.PathHash != "" {
+			w.stringField("nr.pathHash", e.CrossProcess.PathHash)
+		}
+		if e.CrossProcess.ReferringPathHash != "" {
+			w.stringField("nr.referringPathHash", e.CrossProcess.ReferringPathHash)
+		}
+		if e.CrossProcess.GUID != "" {
+			w.stringField("nr.guid", e.CrossProcess.GUID)
+		}
+		if e.CrossProcess.ReferringTxnGUID != "" {
+			w.stringField("nr.referringTransactionGuid", e.CrossProcess.ReferringTxnGUID)
+		}
+		if len(e.CrossProcess.AlternatePathHashes) > 0 {
+			hashes := make([]string, 0, len(e.CrossProcess.AlternatePathHashes))
+			for hash := range e.CrossProcess.AlternatePathHashes {
+				hashes = append(hashes, hash)
+			}
+			sort.Strings(hashes)
+			w.stringField("nr.alternatePathHashes", strings.Join(hashes, ","))
+		}
+		if e.CrossProcess.IsSynthetics() {
+			w.stringField("nr.syntheticsResourceId", e.CrossProcess.Synthetics.ResourceID)
+			w.stringField("nr.syntheticsJobId", e.CrossProcess.Synthetics.JobID)
+			w.stringField("nr.syntheticsMonitorId", e.CrossProcess.Synthetics.MonitorID)
+		}
+	}
 	buf.WriteByte('}')
 	buf.WriteByte(',')
-	userAttributesJSON(e.Attrs, buf, destTxnEvent)
+	userAttributesJSON(e.Attrs, buf, destTxnEvent, nil)
 	buf.WriteByte(',')
 	agentAttributesJSON(e.Attrs, buf, destTxnEvent)
 	buf.WriteByte(']')
@@ -82,6 +104,14 @@ func newTxnEvents(max int) *txnEvents {
 
 func (events *txnEvents) AddTxnEvent(e *TxnEvent) {
 	stamp := eventStamp(rand.Float32())
+
+	// Synthetics events always get priority: normal event stamps are in the
+	// range [0.0,1.0), so adding 1 means that a Synthetics event will always
+	// win.
+	if e.CrossProcess.IsSynthetics() {
+		stamp += 1.0
+	}
+
 	events.events.addEvent(analyticsEvent{stamp, e})
 }
 

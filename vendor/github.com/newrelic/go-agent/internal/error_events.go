@@ -6,18 +6,6 @@ import (
 	"time"
 )
 
-// ErrorEvent is an error event.
-type ErrorEvent struct {
-	Klass    string
-	Msg      string
-	When     time.Time
-	TxnName  string
-	Duration time.Duration
-	Queuing  time.Duration
-	Attrs    *Attributes
-	DatastoreExternalTotals
-}
-
 // MarshalJSON is used for testing.
 func (e *ErrorEvent) MarshalJSON() ([]byte, error) {
 	buf := bytes.NewBuffer(make([]byte, 0, 256))
@@ -37,7 +25,7 @@ func (e *ErrorEvent) WriteJSON(buf *bytes.Buffer) {
 	w.stringField("error.class", e.Klass)
 	w.stringField("error.message", e.Msg)
 	w.floatField("timestamp", timeToFloatSeconds(e.When))
-	w.stringField("transactionName", e.TxnName)
+	w.stringField("transactionName", e.FinalName)
 	w.floatField("duration", e.Duration.Seconds())
 	if e.Queuing > 0 {
 		w.floatField("queueDuration", e.Queuing.Seconds())
@@ -54,7 +42,7 @@ func (e *ErrorEvent) WriteJSON(buf *bytes.Buffer) {
 	}
 	buf.WriteByte('}')
 	buf.WriteByte(',')
-	userAttributesJSON(e.Attrs, buf, destError)
+	userAttributesJSON(e.Attrs, buf, destError, e.ErrorData.ExtraAttributes)
 	buf.WriteByte(',')
 	agentAttributesJSON(e.Attrs, buf, destError)
 	buf.WriteByte(']')

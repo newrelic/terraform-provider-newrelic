@@ -7,6 +7,10 @@ Relic.  It helps you track transactions, outbound requests, database calls, and
 other parts of your Go application's behavior and provides a running overview of
 garbage collection, goroutine activity, and memory use.
 
+All pull requests will be reviewed by the New Relic product team. Any questions or issues should be directed to our [support
+site](http://support.newrelic.com/) or our [community
+forum](http://forum.newrelic.com).
+
 ## Requirements
 
 Go 1.3+ is required, due to the use of http.Client's Timeout field.
@@ -74,8 +78,8 @@ defer newrelic.StartSegment(txn, "mySegmentName").End()
 
 ## Runnable Example
 
-[examples/server/main.go](./examples/server/main.go) is an example that will appear as "My Go
-Application" in your New Relic applications list.  To run it:
+[examples/server/main.go](./examples/server/main.go) is an example that will
+appear as "Example App" in your New Relic applications list.  To run it:
 
 ```
 env NEW_RELIC_LICENSE_KEY=__YOUR_NEW_RELIC_LICENSE_KEY__LICENSE__ \
@@ -129,7 +133,7 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	// Create a config.  You need to provide the desired application name
 	// and your New Relic license key.
-	cfg := newrelic.NewConfig("My Go Application", "__YOUR_NEW_RELIC_LICENSE_KEY__")
+	cfg := newrelic.NewConfig("Example App", "__YOUR_NEW_RELIC_LICENSE_KEY__")
 
 	// Create an application.  This represents an application in the New
 	// Relic UI.
