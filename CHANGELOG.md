@@ -1,13 +1,13 @@
-## 1.2.0 (Unreleased)
+## 1.2.0 (November 02, 2018)
 
 FEATURES:
 
-* **New Data Source** `newrelic_alert_policy` [GH-34]
+* **New Data Source** `newrelic_alert_policy` ([#34](https://github.com/terraform-providers/terraform-provider-newrelic/issues/34))
 
 IMPROVEMENTS:
 
-* `newrelic_infra_alert_condition`: Add support for `integration_provider` [GH-48]
-* `newrelic_dashboard`: Add support for `filter` [GH-46]
+* `newrelic_infra_alert_condition`: Add support for `integration_provider` ([#48](https://github.com/terraform-providers/terraform-provider-newrelic/issues/48))
+* `newrelic_dashboard`: Add support for `filter` ([#46](https://github.com/terraform-providers/terraform-provider-newrelic/issues/46))
 
 ## 1.1.0 (October 16, 2018)
 
