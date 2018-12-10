@@ -1,4 +1,8 @@
 ## 1.3.0 (Unreleased)
+
+BUG FIXES:
+* `newrelic_alert_policy` should have update functionality ([#68](https://github.com/terraform-providers/terraform-provider-newrelic/pull/68))
+
 ## 1.2.0 (November 02, 2018)
 
 FEATURES:
