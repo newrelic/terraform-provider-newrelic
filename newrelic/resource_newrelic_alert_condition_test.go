@@ -25,6 +25,8 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "type", "apm_app_metric"),
 					resource.TestCheckResourceAttr(
+						"newrelic_alert_condition.foo", "enabled", "false"),
+					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "runbook_url", "https://foo.example.com"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "entities.#", "1"),
@@ -48,6 +50,8 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "name", fmt.Sprintf("tf-test-updated-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"newrelic_alert_condition.foo", "enabled", "true"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "runbook_url", "https://bar.example.com"),
 					resource.TestCheckResourceAttr(
@@ -83,6 +87,8 @@ func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
 					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"newrelic_alert_condition.foo", "enabled", "false"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "type", "apm_app_metric"),
 					resource.TestCheckResourceAttr(
@@ -202,6 +208,7 @@ resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name            = "tf-test-%[1]s"
+  enabled         = false
   type            = "apm_app_metric"
   entities        = ["${data.newrelic_application.app.id}"]
   metric          = "apdex"
@@ -233,6 +240,7 @@ resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name            = "tf-test-updated-%[1]s"
+  enabled         = true  
   type            = "apm_app_metric"
   entities        = ["${data.newrelic_application.app.id}"]
   metric          = "apdex"
@@ -264,6 +272,7 @@ resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name            = "tf-test-%[1]s"
+  enabled         = false  
   type            = "apm_app_metric"
   entities        = ["${data.newrelic_application.app.id}"]
   metric          = "apdex"
