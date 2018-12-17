@@ -17,7 +17,7 @@ require (
 	github.com/hashicorp/go-version v0.0.0-20161031182605-e96d38404026 // indirect
 	github.com/hashicorp/hil v0.0.0-20170512213305-fac2259da677 // indirect
 	github.com/hashicorp/logutils v0.0.0-20150609070431-0dc08b1671f3 // indirect
-	github.com/hashicorp/terraform v0.10.0
+	github.com/hashicorp/terraform v0.11.11
 	github.com/hashicorp/yamux v0.0.0-20160720233140-d1caa6c97c9f // indirect
 	github.com/jmespath/go-jmespath v0.0.0-20160803190731-bd40a432e4c7 // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
