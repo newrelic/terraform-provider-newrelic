@@ -118,7 +118,7 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 				Elem:     thresholdSchema(),
 				//TODO: ValidateFunc from thresholdConditionTypes map
 			},
-			"warning": &schema.Schema{
+			"warning": {
 				Type:     schema.TypeList,
 				Optional: true,
 				MaxItems: 1,

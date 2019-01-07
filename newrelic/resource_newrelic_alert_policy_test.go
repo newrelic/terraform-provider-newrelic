@@ -17,7 +17,7 @@ func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertPolicyConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyExists("newrelic_alert_policy.foo"),
@@ -27,7 +27,7 @@ func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
 						"newrelic_alert_policy.foo", "incident_preference", "PER_POLICY"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertPolicyConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyExists("newrelic_alert_policy.foo"),
@@ -50,11 +50,11 @@ func TestAccNewRelicAlertPolicy_import(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertPolicyConfig(rName),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,

@@ -17,7 +17,7 @@ func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
@@ -29,7 +29,7 @@ func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 						"newrelic_infra_alert_condition.foo", "warning"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
@@ -49,7 +49,7 @@ func TestAccNewRelicInfraAlertCondition_Where(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfigWithWhere(rName, whereClause),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
@@ -85,7 +85,7 @@ func TestAccNewRelicInfraAlertCondition_IntegrationProvider(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfigWithIntegrationProvider(rName, integrationProvider),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
@@ -111,7 +111,7 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfigWithThreshold(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
@@ -127,7 +127,7 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 						"newrelic_infra_alert_condition.foo", "warning.0.value", "20"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfigWithThresholdUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
