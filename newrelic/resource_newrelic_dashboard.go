@@ -54,13 +54,13 @@ func resourceNewRelicDashboard() *schema.Resource {
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"event_types": &schema.Schema{
+						"event_types": {
 							Type:     schema.TypeSet,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 							Required: true,
 							Set:      schema.HashString,
 						},
-						"attributes": &schema.Schema{
+						"attributes": {
 							Type:     schema.TypeSet,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 							Optional: true,
@@ -76,38 +76,38 @@ func resourceNewRelicDashboard() *schema.Resource {
 				Set:      resourceNewRelicDashboardWidgetsHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"title": &schema.Schema{
+						"title": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"visualization": &schema.Schema{
+						"visualization": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"width": &schema.Schema{
+						"width": {
 							Type:     schema.TypeInt,
 							Optional: true,
 							Default:  1,
 						},
-						"height": &schema.Schema{
+						"height": {
 							Type:     schema.TypeInt,
 							Optional: true,
 							Default:  1,
 						},
-						"row": &schema.Schema{
+						"row": {
 							Type:     schema.TypeInt,
 							Required: true,
 						},
-						"column": &schema.Schema{
+						"column": {
 							Type:     schema.TypeInt,
 							Required: true,
 						},
-						"notes": &schema.Schema{
+						"notes": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
 						// TODO: Move this to a set/map?
-						"nrql": &schema.Schema{
+						"nrql": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},

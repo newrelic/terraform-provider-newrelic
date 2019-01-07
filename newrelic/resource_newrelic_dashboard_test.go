@@ -19,7 +19,7 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
 		Steps: []resource.TestStep{
 			// Check exists
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicDashboardConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
@@ -48,7 +48,7 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 				),
 			},
 			// Update dashboard title
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicDashboardConfigUpdated(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
@@ -71,7 +71,7 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 				),
 			},
 			// Add widget
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicDashboardWidgetConfigAdded(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
@@ -82,7 +82,7 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 				),
 			},
 			// Update widget
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicDashboardWidgetConfigUpdated(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
@@ -107,11 +107,11 @@ func TestAccNewRelicDashboard_import(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicDashboardConfig(rName),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
