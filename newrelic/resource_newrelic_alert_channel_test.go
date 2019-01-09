@@ -17,7 +17,7 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertChannelConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertChannelExists("newrelic_alert_channel.foo"),
@@ -31,7 +31,7 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 						"newrelic_alert_channel.foo", "configuration.include_json_attachment", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertChannelConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertChannelExists("newrelic_alert_channel.foo"),
@@ -57,11 +57,11 @@ func TestAccNewRelicAlertChannel_import(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertChannelConfig(rName),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,

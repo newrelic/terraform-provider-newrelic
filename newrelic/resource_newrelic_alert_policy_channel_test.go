@@ -16,13 +16,13 @@ func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyChannelDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertPolicyChannelConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertPolicyChannelConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),

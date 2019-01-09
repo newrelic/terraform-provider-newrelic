@@ -16,7 +16,7 @@ func TestAccNewRelicAlertChannelDataSource_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccNewRelicAlertChannelDataSourceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicAlertChannel("data.newrelic_alert_channel.channel"),

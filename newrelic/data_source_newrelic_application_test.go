@@ -13,7 +13,7 @@ func TestAccNewRelicApplication_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccNewRelicApplicationConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicApplication("data.newrelic_application.app"),

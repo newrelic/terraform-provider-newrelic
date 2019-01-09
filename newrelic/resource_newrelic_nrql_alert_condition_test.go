@@ -16,7 +16,7 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicNrqlAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
@@ -46,7 +46,7 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "5"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicNrqlAlertConditionConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
