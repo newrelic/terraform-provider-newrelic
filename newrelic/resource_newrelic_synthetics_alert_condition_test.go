@@ -16,7 +16,7 @@ func TestAccNewRelicSyntheticsAlertCondition_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsAlertConditionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsAlertConditionExists("newrelic_synthetics_alert_condition.foo"),

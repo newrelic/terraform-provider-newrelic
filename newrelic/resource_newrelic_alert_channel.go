@@ -11,41 +11,41 @@ import (
 )
 
 var alertChannelTypes = map[string][]string{
-	"campfire": []string{
+	"campfire": {
 		"room",
 		"subdomain",
 		"token",
 	},
-	"email": []string{
+	"email": {
 		"include_json_attachment",
 		"recipients",
 	},
-	"hipchat": []string{
+	"hipchat": {
 		"auth_token",
 		"base_url",
 		"room_id",
 	},
-	"opsgenie": []string{
+	"opsgenie": {
 		"api_key",
 		"recipients",
 		"tags",
 		"teams",
 	},
-	"pagerduty": []string{
+	"pagerduty": {
 		"service_key",
 	},
-	"slack": []string{
+	"slack": {
 		"channel",
 		"url",
 	},
-	"user": []string{
+	"user": {
 		"user_id",
 	},
-	"victorops": []string{
+	"victorops": {
 		"key",
 		"route_key",
 	},
-	"webhook": []string{
+	"webhook": {
 		"auth_password",
 		"auth_type",
 		"auth_username",
