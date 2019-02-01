@@ -11,15 +11,34 @@ description: |-
 ## Example Usage
 
 ```hcl
-data "newrelic_synthetics_monitor" "foo" {
-  name = "foo"
+
+# Discover an existing monitor by name and create a new alert condition
+data "newrelic_synthetics_monitor" "existing" {
+  name = "Existing Monitor"
 }
 
 resource "newrelic_synthetics_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
-
   name        = "foo"
-  monitor_id  = "${data.newrelic_synthetics_monitor.foo.id}"
+  monitor_id  = "${data.newrelic_synthetics_monitor.existing.id}"
+  runbook_url = "https://www.example.com"
+}
+
+
+# Or create a new monitor resource from scratch and create a new alert condition
+resource "newrelic_synthetics_monitor" "new" {
+    name                = "New Monitor"
+    frequency           = 10
+    uri                 = "https://www.example.com"
+    locations           = ["AWS_US_EAST_1","AWS_US_WEST_2"]
+    status              = "ENABLED"
+    sla_threshold       = 2
+}
+
+resource "newrelic_synthetics_alert_condition" "foo" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+  name        = "foo"
+  monitor_id  = "${newrelic_synthetics_monitor.new.id}"
   runbook_url = "https://www.example.com"
 }
 ```

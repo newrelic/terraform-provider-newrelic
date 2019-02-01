@@ -31,7 +31,8 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 			},
 			"frequency": {
 				Type:         schema.TypeInt,
-				Required:     true,
+				Optional:     true,
+				Default:      15,
 				ValidateFunc: intInSlice([]int{1, 5, 10, 15, 30, 60, 360, 720, 1440}),
 			},
 			"uri": {
@@ -55,15 +56,28 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 			"sla_threshold": {
 				Type:     schema.TypeFloat,
 				Optional: true,
+				Default:  2,
 			},
-			//TODO: Add advanced options
-			//"options": {
-			//  "validationString": string [only valid for SIMPLE and BROWSER types],
-			//  "verifySSL": boolean (true, false) [only valid for SIMPLE and BROWSER types],
-			//  "bypassHEADRequest": boolean (true, false) [only valid for SIMPLE types],
-			//  "treatRedirectAsFailure": boolean (true, false) [only valid for SIMPLE types]
-			//  }
-
+			"validation_string": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "",
+			},
+			"verify_ssl": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"bypass_head": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"redirect_is_fail": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -77,14 +91,23 @@ func resourceNewRelicSyntheticsMonitorCreate(d *schema.ResourceData, meta interf
 		locations[i] = location.(string)
 	}
 
+	validationString := d.Get("validation_string").(string)
+	verifySSL := d.Get("verify_ssl").(bool)
+	bypassHead := d.Get("bypass_head").(bool)
+	redirect := d.Get("redirect_is_fail").(bool)
+
 	createMonitor := synthetics.CreateMonitorArgs{
-		Name:         d.Get("name").(string),
-		Type:         d.Get("type").(string),
-		Frequency:    uint(d.Get("frequency").(int)),
-		URI:          d.Get("uri").(string),
-		Locations:    locations,
-		Status:       d.Get("status").(string),
-		SLAThreshold: d.Get("sla_threshold").(float64),
+		Name:                   d.Get("name").(string),
+		Type:                   d.Get("type").(string),
+		Frequency:              uint(d.Get("frequency").(int)),
+		URI:                    d.Get("uri").(string),
+		Locations:              locations,
+		Status:                 d.Get("status").(string),
+		SLAThreshold:           d.Get("sla_threshold").(float64),
+		ValidationString:       &validationString,
+		VerifySSL:              &verifySSL,
+		BypassHEADRequest:      &bypassHead,
+		TreatRedirectAsFailure: &redirect,
 	}
 
 	log.Printf("[INFO] Creating New Relic synthetics monitor %s", createMonitor.Name)
@@ -116,6 +139,10 @@ func resourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interfac
 	d.Set("locations", monitor.Locations)
 	d.Set("status", monitor.Status)
 	d.Set("sla_threshold", monitor.SLAThreshold)
+	d.Set("validation_string", monitor.ValidationString)
+	d.Set("verify_ssl", monitor.VerifySSL)
+	d.Set("bypass_head", monitor.BypassHEADRequest)
+	d.Set("redirect_is_fail", monitor.TreatRedirectAsFailure)
 
 	return nil
 }
@@ -129,13 +156,22 @@ func resourceNewRelicSyntheticsMonitorUpdate(d *schema.ResourceData, meta interf
 		locations[i] = location.(string)
 	}
 
+	validationString := d.Get("validation_string").(string)
+	verifySSL := d.Get("verify_ssl").(bool)
+	bypassHead := d.Get("bypass_head").(bool)
+	redirect := d.Get("redirect_is_fail").(bool)
+
 	updatedMonitor := synthetics.UpdateMonitorArgs{
-		Name:         d.Get("name").(string),
-		Frequency:    uint(d.Get("frequency").(int)),
-		URI:          d.Get("uri").(string),
-		Locations:    locations,
-		Status:       d.Get("status").(string),
-		SLAThreshold: d.Get("sla_threshold").(float64),
+		Name:                   d.Get("name").(string),
+		Frequency:              uint(d.Get("frequency").(int)),
+		URI:                    d.Get("uri").(string),
+		Locations:              locations,
+		Status:                 d.Get("status").(string),
+		SLAThreshold:           d.Get("sla_threshold").(float64),
+		ValidationString:       &validationString,
+		VerifySSL:              &verifySSL,
+		BypassHEADRequest:      &bypassHead,
+		TreatRedirectAsFailure: &redirect,
 	}
 
 	log.Printf("[INFO] Updating New Relic synthetics monitor %s", d.Id())
