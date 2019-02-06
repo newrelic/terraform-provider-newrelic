@@ -53,7 +53,7 @@ type AlertCondition struct {
 	ID                  int                       `json:"id,omitempty"`
 	Type                string                    `json:"type,omitempty"`
 	Name                string                    `json:"name,omitempty"`
-	Enabled             bool                      `json:"enabled,omitempty"`
+	Enabled             bool                      `json:"enabled"`
 	Entities            []string                  `json:"entities,omitempty"`
 	Metric              string                    `json:"metric,omitempty"`
 	RunbookURL          string                    `json:"runbook_url,omitempty"`
@@ -75,7 +75,7 @@ type AlertNrqlCondition struct {
 	PolicyID      int                  `json:"-"`
 	ID            int                  `json:"id,omitempty"`
 	Name          string               `json:"name,omitempty"`
-	Enabled       bool                 `json:"enabled,omitempty"`
+	Enabled       bool                 `json:"enabled"`
 	RunbookURL    string               `json:"runbook_url,omitempty"`
 	Terms         []AlertConditionTerm `json:"terms,omitempty"`
 	ValueFunction string               `json:"value_function,omitempty"`
@@ -87,7 +87,7 @@ type AlertSyntheticsCondition struct {
 	PolicyID   int    `json:"-"`
 	ID         int    `json:"id,omitempty"`
 	Name       string `json:"name,omitempty"`
-	Enabled    bool   `json:"enabled,omitempty"`
+	Enabled    bool   `json:"enabled"`
 	RunbookURL string `json:"runbook_url,omitempty"`
 	MonitorID  string `json:"monitor_id,omitempty"`
 }
@@ -130,8 +130,8 @@ type ApplicationEndUserSummary struct {
 type ApplicationSettings struct {
 	AppApdexThreshold        float64 `json:"app_apdex_threshold,omitempty"`
 	EndUserApdexThreshold    float64 `json:"end_user_apdex_threshold,omitempty"`
-	EnableRealUserMonitoring bool    `json:"enable_real_user_monitoring,omitempty"`
-	UseServerSideConfig      bool    `json:"use_server_side_config,omitempty"`
+	EnableRealUserMonitoring bool    `json:"enable_real_user_monitoring"`
+	UseServerSideConfig      bool    `json:"use_server_side_config"`
 }
 
 // ApplicationLinks represents all the links for a New Relic application.
@@ -148,7 +148,7 @@ type Application struct {
 	Name           string                    `json:"name,omitempty"`
 	Language       string                    `json:"language,omitempty"`
 	HealthStatus   string                    `json:"health_status,omitempty"`
-	Reporting      bool                      `json:"reporting,omitempty"`
+	Reporting      bool                      `json:"reporting"`
 	LastReportedAt string                    `json:"last_reported_at,omitempty"`
 	Summary        ApplicationSummary        `json:"application_summary,omitempty"`
 	EndUserSummary ApplicationEndUserSummary `json:"end_user_summary,omitempty"`
@@ -242,7 +242,7 @@ type KeyTransaction struct {
 	Name            string                    `json:"name,omitempty"`
 	TransactionName string                    `json:"transaction_name,omitempty"`
 	HealthStatus    string                    `json:"health_status,omitempty"`
-	Reporting       bool                      `json:"reporting,omitempty"`
+	Reporting       bool                      `json:"reporting"`
 	LastReportedAt  string                    `json:"last_reported_at,omitempty"`
 	Summary         ApplicationSummary        `json:"application_summary,omitempty"`
 	EndUserSummary  ApplicationEndUserSummary `json:"end_user_summary,omitempty"`
@@ -305,6 +305,16 @@ type DashboardFilter struct {
 	Attributes []string `json:"attributes,omitempty"`
 }
 
+// Deployment represents information about a New Relic application deployment.
+type Deployment struct {
+	ID          int    `json:"id,omitempty"`
+	Revision    string `json:"revision"`
+	Changelog   string `json:"changelog,omitempty"`
+	Description string `json:"description,omitempty"`
+	User        string `json:"user,omitempty"`
+	Timestamp   string `json:"timestamp,omitempty"`
+}
+
 // AlertInfraThreshold represents an Infra alerting condition
 type AlertInfraThreshold struct {
 	Value    int    `json:"value,omitempty"`
@@ -321,7 +331,7 @@ type AlertInfraCondition struct {
 	Comparison          string               `json:"comparison,omitempty"`
 	CreatedAt           int                  `json:"created_at_epoch_millis,omitempty"`
 	UpdatedAt           int                  `json:"updated_at_epoch_millis,omitempty"`
-	Enabled             bool                 `json:"enabled,omitempty"`
+	Enabled             bool                 `json:"enabled"`
 	Event               string               `json:"event_type,omitempty"`
 	Select              string               `json:"select_value,omitempty"`
 	Where               string               `json:"where_clause,omitempty"`

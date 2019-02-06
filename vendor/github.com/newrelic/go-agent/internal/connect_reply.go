@@ -13,18 +13,17 @@ func (id AgentRunID) String() string {
 	return string(id)
 }
 
-// AppRun contains information regarding a single connection session with the
-// collector.  It is created upon application connect and is afterwards
-// immutable.
-type AppRun struct {
-	*ConnectReply
-	Collector string
+// PreconnectReply contains settings from the preconnect endpoint.
+type PreconnectReply struct {
+	Collector        string           `json:"redirect_host"`
+	SecurityPolicies SecurityPolicies `json:"security_policies"`
 }
 
 // ConnectReply contains all of the settings and state send down from the
 // collector.  It should not be modified after creation.
 type ConnectReply struct {
-	RunID AgentRunID `json:"agent_run_id"`
+	RunID             AgentRunID        `json:"agent_run_id"`
+	RequestHeadersMap map[string]string `json:"request_headers_map"`
 
 	// Transaction Name Modifiers
 	SegmentTerms segmentRules `json:"transaction_segment_terms"`
@@ -45,6 +44,7 @@ type ConnectReply struct {
 	CollectTraces          bool               `json:"collect_traces"`
 	CollectErrors          bool               `json:"collect_errors"`
 	CollectErrorEvents     bool               `json:"collect_error_events"`
+	CollectSpanEvents      bool               `json:"collect_span_events"`
 
 	// RUM
 	AgentLoader string `json:"js_agent_loader"`
@@ -54,10 +54,28 @@ type ConnectReply struct {
 	ErrorBeacon string `json:"error_beacon"`
 	JSAgentFile string `json:"js_agent_file"`
 
+	// PreconnectReply fields are not in the connect reply, this embedding
+	// is done to simplify code.
+	PreconnectReply `json:"-"`
+
 	Messages []struct {
 		Message string `json:"message"`
 		Level   string `json:"level"`
 	} `json:"messages"`
+
+	AdaptiveSampler AdaptiveSampler
+
+	// BetterCAT/Distributed Tracing
+	AccountID                     string `json:"account_id"`
+	TrustedAccountKey             string `json:"trusted_account_key"`
+	PrimaryAppID                  string `json:"primary_application_id"`
+	SamplingTarget                uint64 `json:"sampling_target"`
+	SamplingTargetPeriodInSeconds int    `json:"sampling_target_period_in_seconds"`
+
+	// rulesCache caches the results of calling CreateFullTxnName.  It
+	// exists here in ConnectReply since it is specific to a set of rules
+	// and is shared between transactions.
+	rulesCache *rulesCache
 }
 
 type trustedAccountSet map[int]struct{}
@@ -92,6 +110,10 @@ func ConnectReplyDefaults() *ConnectReply {
 		CollectTraces:          true,
 		CollectErrors:          true,
 		CollectErrorEvents:     true,
+		CollectSpanEvents:      true,
+		// No transactions should be sampled before the application is
+		// connected.
+		AdaptiveSampler: SampleNothing{},
 	}
 }
 
@@ -107,6 +129,21 @@ func CalculateApdexThreshold(c *ConnectReply, txnName string) time.Duration {
 // construct the full transaction metric name from the name given by the
 // consumer.
 func CreateFullTxnName(input string, reply *ConnectReply, isWeb bool) string {
+	if name := reply.rulesCache.find(input, isWeb); "" != name {
+		return name
+	}
+	name := constructFullTxnName(input, reply, isWeb)
+	if "" != name {
+		// Note that we  don't cache situations where the rules say
+		// ignore.  It would increase complication (we would need to
+		// disambiguate not-found vs ignore).  Also, the ignore code
+		// path is probably extremely uncommon.
+		reply.rulesCache.set(input, isWeb, name)
+	}
+	return name
+}
+
+func constructFullTxnName(input string, reply *ConnectReply, isWeb bool) string {
 	var afterURLRules string
 	if "" != input {
 		afterURLRules = reply.URLRules.Apply(input)
