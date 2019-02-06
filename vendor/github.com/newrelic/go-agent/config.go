@@ -42,6 +42,11 @@ type Config struct {
 	// https://docs.newrelic.com/docs/accounts-partnerships/accounts/security/high-security
 	HighSecurity bool
 
+	// SecurityPoliciesToken enables security policies if set to a non-empty
+	// string.  Only set this if security policies have been enabled on your
+	// account.  This cannot be used in conjunction with HighSecurity.
+	SecurityPoliciesToken string
+
 	// CustomInsightsEvents controls the behavior of
 	// Application.RecordCustomEvent.
 	//
@@ -112,10 +117,6 @@ type Config struct {
 	// Relic UI.  This is an optional setting.
 	HostDisplayName string
 
-	// UseTLS controls whether http or https is used to send data to New
-	// Relic servers.
-	UseTLS bool
-
 	// Transport customizes http.Client communication with New Relic
 	// servers.  This may be used to configure a proxy.
 	Transport http.RoundTripper
@@ -138,6 +139,9 @@ type Config struct {
 		// DetectDocker controls whether the Application attempts to
 		// detect Docker.
 		DetectDocker bool
+		// DetectKubernetes controls whether the Application attempts to
+		// detect Kubernetes.
+		DetectKubernetes bool
 
 		// These settings provide system information when custom values
 		// are required.
@@ -147,8 +151,22 @@ type Config struct {
 	}
 
 	// CrossApplicationTracer controls behaviour relating to cross application
-	// tracing (CAT).
+	// tracing (CAT), available since Go Agent v0.11.  The CrossApplication
+	// Tracer and the DistributedTracer cannot be simultaneously enabled.
 	CrossApplicationTracer struct {
+		Enabled bool
+	}
+
+	// DistributedTracer controls behaviour relating to Distributed Tracing,
+	// available since Go Agent v2.1. The DistributedTracer and the
+	// CrossApplicationTracer cannot be simultaneously enabled.
+	DistributedTracer struct {
+		Enabled bool
+	}
+
+	// SpanEvents controls behavior relating to Span Events.  Span Events
+	// require that distributed tracing is enabled.
+	SpanEvents struct {
 		Enabled bool
 	}
 
@@ -205,7 +223,6 @@ func NewConfig(appname, license string) Config {
 	c.TransactionEvents.Enabled = true
 	c.TransactionEvents.Attributes.Enabled = true
 	c.HighSecurity = false
-	c.UseTLS = true
 	c.ErrorCollector.Enabled = true
 	c.ErrorCollector.CaptureEvents = true
 	c.ErrorCollector.IgnoreStatusCodes = []int{
@@ -217,6 +234,7 @@ func NewConfig(appname, license string) Config {
 	c.Utilization.DetectPCF = true
 	c.Utilization.DetectGCP = true
 	c.Utilization.DetectDocker = true
+	c.Utilization.DetectKubernetes = true
 	c.Attributes.Enabled = true
 	c.RuntimeSampler.Enabled = true
 
@@ -228,6 +246,8 @@ func NewConfig(appname, license string) Config {
 	c.TransactionTracer.Attributes.Enabled = true
 
 	c.CrossApplicationTracer.Enabled = true
+	c.DistributedTracer.Enabled = false
+	c.SpanEvents.Enabled = true
 
 	c.DatastoreTracer.InstanceReporting.Enabled = true
 	c.DatastoreTracer.DatabaseNameReporting.Enabled = true
@@ -245,10 +265,11 @@ const (
 
 // The following errors will be returned if your Config fails to validate.
 var (
-	errLicenseLen      = fmt.Errorf("license length is not %d", licenseLength)
-	errHighSecurityTLS = errors.New("high security requires TLS")
-	errAppNameMissing  = errors.New("string AppName required")
-	errAppNameLimit    = fmt.Errorf("max of %d rollup application names", appNameLimit)
+	errLicenseLen                       = fmt.Errorf("license length is not %d", licenseLength)
+	errAppNameMissing                   = errors.New("string AppName required")
+	errAppNameLimit                     = fmt.Errorf("max of %d rollup application names", appNameLimit)
+	errHighSecurityWithSecurityPolicies = errors.New("SecurityPoliciesToken and HighSecurity are incompatible; please ensure HighSecurity is set to false if SecurityPoliciesToken is a non-empty string and a security policy has been set for your account")
+	errMixedTracers                     = errors.New("CrossApplicationTracer and DistributedTracer cannot be enabled simultaneously; please choose CrossApplicationTracer (available since v1.11) or DistributedTracer (available since v2.1)")
 )
 
 // Validate checks the config for improper fields.  If the config is invalid,
@@ -264,11 +285,14 @@ func (c Config) Validate() error {
 			return errLicenseLen
 		}
 	}
-	if c.HighSecurity && !c.UseTLS {
-		return errHighSecurityTLS
-	}
-	if "" == c.AppName {
+	if "" == c.AppName && c.Enabled {
 		return errAppNameMissing
+	}
+	if c.HighSecurity && "" != c.SecurityPoliciesToken {
+		return errHighSecurityWithSecurityPolicies
+	}
+	if c.CrossApplicationTracer.Enabled && c.DistributedTracer.Enabled {
+		return errMixedTracers
 	}
 	if strings.Count(c.AppName, ";") >= appNameLimit {
 		return errAppNameLimit

@@ -3,7 +3,6 @@ package internal
 import (
 	"bytes"
 	"container/heap"
-	"encoding/json"
 	"sort"
 	"time"
 
@@ -92,6 +91,15 @@ type TxnTrace struct {
 	maxNodes            int
 }
 
+// getMaxNodes allows the maximum number of nodes to be overwritten for unit
+// tests.
+func (trace *TxnTrace) getMaxNodes() int {
+	if 0 != trace.maxNodes {
+		return trace.maxNodes
+	}
+	return maxTxnTraceNodes
+}
+
 // considerNode exists to prevent unnecessary calls to witnessNode: constructing
 // the metric name and params map requires allocations.
 func (trace *TxnTrace) considerNode(end segmentEnd) bool {
@@ -110,11 +118,7 @@ func (trace *TxnTrace) witnessNode(end segmentEnd, name string, params *traceNod
 		return
 	}
 	if trace.nodes == nil {
-		max := trace.maxNodes
-		if 0 == max {
-			max = maxTxnTraceNodes
-		}
-		trace.nodes = make(traceNodeHeap, 0, max)
+		trace.nodes = make(traceNodeHeap, 0, startingTxnTraceNodes)
 	}
 	if end.exclusive >= trace.StackTraceThreshold {
 		if node.params == nil {
@@ -129,13 +133,14 @@ func (trace *TxnTrace) witnessNode(end segmentEnd, name string, params *traceNod
 		skip := 4
 		node.params.StackTrace = GetStackTrace(skip)
 	}
-	if len(trace.nodes) < cap(trace.nodes) {
+	if max := trace.getMaxNodes(); len(trace.nodes) < max {
 		trace.nodes = append(trace.nodes, node)
-		if len(trace.nodes) == cap(trace.nodes) {
+		if len(trace.nodes) == max {
 			heap.Init(trace.nodes)
 		}
 		return
 	}
+
 	if node.duration <= trace.nodes[0].duration {
 		return
 	}
@@ -206,11 +211,18 @@ func (s sortedTraceNodes) Len() int           { return len(s) }
 func (s sortedTraceNodes) Less(i, j int) bool { return s[i].start.Stamp < s[j].start.Stamp }
 func (s sortedTraceNodes) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
-// MarshalJSON prepares the trace in the JSON expected by the collector.
+// MarshalJSON is used for testing.
+//
+// TODO: Eliminate this entirely by using harvestTraces.Data().
 func (trace *HarvestTrace) MarshalJSON() ([]byte, error) {
-	estimate := 100 * len(trace.Trace.nodes)
-	buf := bytes.NewBuffer(make([]byte, 0, estimate))
+	buf := bytes.NewBuffer(make([]byte, 0, 100+100*trace.Trace.nodes.Len()))
 
+	trace.writeJSON(buf)
+
+	return buf.Bytes(), nil
+}
+
+func (trace *HarvestTrace) writeJSON(buf *bytes.Buffer) {
 	nodes := make(sortedTraceNodes, len(trace.Trace.nodes))
 	for i := 0; i < len(nodes); i++ {
 		nodes[i] = &trace.Trace.nodes[i]
@@ -297,8 +309,6 @@ func (trace *HarvestTrace) MarshalJSON() ([]byte, error) {
 	}
 
 	buf.WriteByte(']') // end trace
-
-	return buf.Bytes(), nil
 }
 
 type txnTraceHeap []*HarvestTrace
@@ -383,10 +393,45 @@ func (traces *harvestTraces) Data(agentRunID string, harvestStart time.Time) ([]
 		return nil, nil
 	}
 
-	return json.Marshal([]interface{}{
-		agentRunID,
-		traces.slice(),
-	})
+	// This estimate is used to guess the size of the buffer.  No worries if
+	// the estimate is small since the buffer will be lengthened as
+	// necessary.  This is just about minimizing reallocations.
+	estimate := 512
+	for _, t := range *traces.regular {
+		estimate += 100 * t.Trace.nodes.Len()
+	}
+	for _, t := range *traces.synthetics {
+		estimate += 100 * t.Trace.nodes.Len()
+	}
+
+	buf := bytes.NewBuffer(make([]byte, 0, estimate))
+	buf.WriteByte('[')
+	jsonx.AppendString(buf, agentRunID)
+	buf.WriteByte(',')
+	buf.WriteByte('[')
+
+	// use a function to add traces to the buffer to avoid duplicating comma
+	// logic in both loops
+	firstTrace := true
+	addTrace := func(trace *HarvestTrace) {
+		if firstTrace {
+			firstTrace = false
+		} else {
+			buf.WriteByte(',')
+		}
+		trace.writeJSON(buf)
+	}
+
+	for _, trace := range *traces.regular {
+		addTrace(trace)
+	}
+	for _, trace := range *traces.synthetics {
+		addTrace(trace)
+	}
+	buf.WriteByte(']')
+	buf.WriteByte(']')
+
+	return buf.Bytes(), nil
 }
 
 func (traces *harvestTraces) slice() []*HarvestTrace {
@@ -398,3 +443,7 @@ func (traces *harvestTraces) slice() []*HarvestTrace {
 }
 
 func (traces *harvestTraces) MergeIntoHarvest(h *Harvest) {}
+
+func (traces *harvestTraces) EndpointMethod() string {
+	return cmdTxnTraces
+}
