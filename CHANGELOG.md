@@ -1,5 +1,9 @@
 ## 1.3.0 (Unreleased)
 
+FEATURES:
+
+* **New Data Source** `newrelic_alert_policy` [GH-64]
+
 BUG FIXES:
 * `newrelic_alert_policy` should have update functionality ([#68](https://github.com/terraform-providers/terraform-provider-newrelic/pull/68))
 * Fix documentation typos for `newrelic_nrql_alert_condition` [GH-76]
