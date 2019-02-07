@@ -126,7 +126,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				Optional: true,
 			},
 			"term": {
-				Type: schema.TypeList,
+				Type: schema.TypeSet,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"duration": {
@@ -182,7 +182,7 @@ func buildAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertCondition 
 		entities[i] = strconv.Itoa(entity.(int))
 	}
 
-	termSet := d.Get("term").([]interface{})
+	termSet := d.Get("term").(*schema.Set).List()
 	terms := make([]newrelic.AlertConditionTerm, len(termSet))
 
 	for i, termI := range termSet {
