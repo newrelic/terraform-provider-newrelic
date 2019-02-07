@@ -1,5 +1,200 @@
 ## ChangeLog
 
+## 2.4.0
+
+* Introduced `Transaction.Application` method which returns the `Application`
+  that started the `Transaction`.  This method is useful since it may prevent
+  having to pass the `Application` to code that already has access to the
+  `Transaction`.  Example use:
+
+```go
+txn.Application().RecordCustomEvent("customerOrder", map[string]interface{}{
+	"numItems":   2,
+	"totalPrice": 13.75,
+})
+```
+
+* The `Transaction.AddAttribute` method no longer accepts `nil` values since
+  our backend ignores them.
+
+## 2.3.0
+
+* Added support for [Echo](https://echo.labstack.com) in the new `nrecho`
+  package.
+  * [Documentation](http://godoc.org/github.com/newrelic/go-agent/_integrations/nrecho)
+  * [Example](_integrations/nrecho/example/main.go)
+
+* Introduced `Transaction.SetWebResponse(http.ResponseWriter)` method which sets
+  the transaction's response writer.  After calling this method, the
+  `Transaction` may be used in place of the `http.ResponseWriter` to intercept
+  the response code.  This method is useful when the `http.ResponseWriter` is
+  not available at the beginning of the transaction (if so, it can be given as a
+  parameter to `Application.StartTransaction`).  This method will return a
+  reference to the transaction which implements the combination of
+  `http.CloseNotifier`, `http.Flusher`, `http.Hijacker`, and `io.ReaderFrom`
+  implemented by the ResponseWriter.  Example:
+
+```go
+func setResponseDemo(txn newrelic.Transaction) {
+	recorder := httptest.NewRecorder()
+	txn = txn.SetWebResponse(recorder)
+	txn.WriteHeader(200)
+	fmt.Println("response code recorded:", recorder.Code)
+}
+```
+
+* The `Transaction`'s `http.ResponseWriter` methods may now be called safely if
+  a `http.ResponseWriter` has not been set.  This allows you to add a response code
+  to the transaction without using a `http.ResponseWriter`.  Example:
+
+```go
+func transactionWithResponseCode(app newrelic.Application) {
+       txn := app.StartTransaction("hasResponseCode", nil, nil)
+       defer txn.End()
+       txn.WriteHeader(200) // Safe!
+}
+```
+
+* The agent now collects environment variables prefixed by
+  `NEW_RELIC_METADATA_`.  Some of these may be added
+  Transaction events to provide context between your Kubernetes cluster and your
+  services. For details on the benefits (currently in beta) see [this blog
+  post](https://blog.newrelic.com/engineering/monitoring-application-performance-in-kubernetes/)
+
+* The agent now collects the `KUBERNETES_SERVICE_HOST` environment variable to
+  detect when the application is running on Kubernetes.
+
+* The agent now collects the fully qualified domain name of the host and
+  local IP addresses for improved linking with our infrastructure product.
+
+## 2.2.0
+
+* The `Transaction` parameter to
+[NewRoundTripper](https://godoc.org/github.com/newrelic/go-agent#NewRoundTripper)
+and
+[StartExternalSegment](https://godoc.org/github.com/newrelic/go-agent#StartExternalSegment)
+is now optional:  If it is `nil`, then a `Transaction` will be looked for in the
+request's context (using
+[FromContext](https://godoc.org/github.com/newrelic/go-agent#FromContext)).
+Passing a `nil` transaction is **STRONGLY** recommended when using
+[NewRoundTripper](https://godoc.org/github.com/newrelic/go-agent#NewRoundTripper)
+since it allows one `http.Client.Transport` to be used for multiple
+transactions.  Example use:
+
+```go
+client := &http.Client{}
+client.Transport = newrelic.NewRoundTripper(nil, client.Transport)
+request, _ := http.NewRequest("GET", "http://example.com", nil)
+request = newrelic.RequestWithTransactionContext(request, txn)
+resp, err := client.Do(request)
+```
+
+* Introduced `Transaction.SetWebRequest(WebRequest)` method which marks the
+transaction as a web transaction.  If the `WebRequest` parameter is non-nil,
+`SetWebRequest` will collect details on request attributes, url, and method.
+This method is useful if you don't have access to the request at the beginning
+of the transaction, or if your request is not an `*http.Request` (just add
+methods to your request that satisfy
+[WebRequest](https://godoc.org/github.com/newrelic/go-agent#WebRequest)).  To
+use an `*http.Request` as the parameter, use the
+[NewWebRequest](https://godoc.org/github.com/newrelic/go-agent#NewWebRequest)
+transformation function.  Example:
+
+```go
+var request *http.Request = getInboundRequest()
+txn.SetWebRequest(newrelic.NewWebRequest(request))
+```
+
+* Fixed `Debug` in `nrlogrus` package.  Previous versions of the New Relic Go Agent incorrectly
+logged to Info level instead of Debug.  This has now been fixed.  Thanks to @paddycarey for catching this.
+
+* [nrgin.Transaction](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrgin/v1#Transaction)
+may now be called with either a `context.Context` or a `*gin.Context`.  If you were passing a `*gin.Context`
+around your functions as a `context.Context`, you may access the Transaction by calling either
+[nrgin.Transaction](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrgin/v1#Transaction)
+or [FromContext](https://godoc.org/github.com/newrelic/go-agent#FromContext).
+These functions now work nicely together.
+For example, [FromContext](https://godoc.org/github.com/newrelic/go-agent#FromContext) will return the `Transaction`
+added by [nrgin.Middleware](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrgin/v1#Middleware).
+Thanks to @rodriguezgustavo for the suggestion.  
+
+## 2.1.0
+
+* The Go Agent now supports distributed tracing.
+
+  Distributed tracing lets you see the path that a request takes as it travels through your distributed system. By
+  showing the distributed activity through a unified view, you can troubleshoot and understand a complex system better
+  than ever before.
+
+  Distributed tracing is available with an APM Pro or equivalent subscription. To see a complete distributed trace, you
+  need to enable the feature on a set of neighboring services. Enabling distributed tracing changes the behavior of
+  some New Relic features, so carefully consult the
+  [transition guide](https://docs.newrelic.com/docs/transition-guide-distributed-tracing) before you enable this
+  feature.
+
+  To enable distributed tracing, set the following fields in your config.  Note that distributed tracing and cross
+  application tracing cannot be used simultaneously.
+
+```
+  config := newrelic.NewConfig("Your Application Name", "__YOUR_NEW_RELIC_LICENSE_KEY__")
+  config.CrossApplicationTracer.Enabled = false
+  config.DistributedTracer.Enabled = true
+```
+
+  Please refer to the
+  [distributed tracing section of the guide](GUIDE.md#distributed-tracing)
+  for more detail on how to ensure you get the most out of the Go agent's distributed tracing support.
+
+* Added functions [NewContext](https://godoc.org/github.com/newrelic/go-agent#NewContext)
+  and [FromContext](https://godoc.org/github.com/newrelic/go-agent#FromContext)
+  for adding and retrieving the Transaction from a Context.  Handlers
+  instrumented by
+  [WrapHandle](https://godoc.org/github.com/newrelic/go-agent#WrapHandle),
+  [WrapHandleFunc](https://godoc.org/github.com/newrelic/go-agent#WrapHandleFunc),
+  and [nrgorilla.InstrumentRoutes](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrgorilla/v1#InstrumentRoutes)
+  may use [FromContext](https://godoc.org/github.com/newrelic/go-agent#FromContext)
+  on the request's context to access the Transaction.
+  Thanks to @caarlos0 for the contribution!  Though [NewContext](https://godoc.org/github.com/newrelic/go-agent#NewContext)
+  and [FromContext](https://godoc.org/github.com/newrelic/go-agent#FromContext)
+  require Go 1.7+ (when [context](https://golang.org/pkg/context/) was added),
+  [RequestWithTransactionContext](https://godoc.org/github.com/newrelic/go-agent#RequestWithTransactionContext) is always exported so that it can be used in all framework and library
+  instrumentation.
+
+## 2.0.0
+
+* The `End()` functions defined on the `Segment`, `DatastoreSegment`, and
+  `ExternalSegment` types now receive the segment as a pointer, rather than as
+  a value. This prevents unexpected behaviour when a call to `End()` is
+  deferred before one or more fields are changed on the segment.
+
+  In practice, this is likely to only affect this pattern:
+
+    ```go
+    defer newrelic.DatastoreSegment{
+      // ...
+    }.End()
+    ```
+
+  Instead, you will now need to separate the literal from the deferred call:
+
+    ```go
+    ds := newrelic.DatastoreSegment{
+      // ...
+    }
+    defer ds.End()
+    ```
+
+  When creating custom and external segments, we recommend using
+  [`newrelic.StartSegment()`](https://godoc.org/github.com/newrelic/go-agent#StartSegment)
+  and
+  [`newrelic.StartExternalSegment()`](https://godoc.org/github.com/newrelic/go-agent#StartExternalSegment),
+  respectively.
+
+* Added GoDoc badge to README.  Thanks to @mrhwick for the contribution!
+
+* `Config.UseTLS` configuration setting has been removed to increase security.
+   TLS will now always be used in communication with New Relic Servers.
+
 ## 1.11.0
 
 * We've closed the Issues tab on GitHub. Please visit our
@@ -7,7 +202,7 @@
   problems you're having, or to report issues.
 
 * Added support for Cross Application Tracing (CAT). Please refer to the
-  [upgrading section of the guide](GUIDE.md#upgrading-applications-to-support-cross-application-tracing)
+  [CAT section of the guide](GUIDE.md#cross-application-tracing)
   for more detail on how to ensure you get the most out of the Go agent's new
   CAT support.
 
