@@ -1,4 +1,4 @@
-# New Relic Go Agent
+# New Relic Go Agent [![GoDoc](https://godoc.org/github.com/newrelic/go-agent?status.svg)](https://godoc.org/github.com/newrelic/go-agent)
 
 ## Description
 
@@ -9,7 +9,7 @@ garbage collection, goroutine activity, and memory use.
 
 All pull requests will be reviewed by the New Relic product team. Any questions or issues should be directed to our [support
 site](http://support.newrelic.com/) or our [community
-forum](http://forum.newrelic.com).
+forum](https://discuss.newrelic.com).
 
 ## Requirements
 
@@ -151,11 +151,12 @@ func main() {
 
 ## Support
 
-You can find more detailed documentation [in the guide](GUIDE.md).
+You can find more detailed documentation [in the guide](GUIDE.md) and on
+[the New Relic Documentation site](https://docs.newrelic.com/docs/agents/go-agent).
 
 If you can't find what you're looking for there, reach out to us on our [support
 site](http://support.newrelic.com/) or our [community
-forum](http://forum.newrelic.com) and we'll be happy to help you.
+forum](https://discuss.newrelic.com) and we'll be happy to help you.
 
 Find a bug?  Contact us via [support.newrelic.com](http://support.newrelic.com/),
 or email support@newrelic.com.
