@@ -1,4 +1,9 @@
 ## 1.4.0 (Unreleased)
+
+IMPROVEMENTS:
+
+* `newrelic_alert_condition` make enabled status configurable [GH-70]
+
 ## 1.3.0 (February 07, 2019)
 
 FEATURES:
