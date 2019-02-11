@@ -3,6 +3,7 @@
 IMPROVEMENTS:
 
 * `newrelic_alert_condition` make enabled status configurable [GH-70]
+* `newrelic_alert_condition` add name length validation [GH-79]
 
 ## 1.3.0 (February 07, 2019)
 
