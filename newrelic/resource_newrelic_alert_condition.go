@@ -89,8 +89,9 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				ForceNew: true,
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringLenBetween(1, 64),
 			},
 			"enabled": {
 				Type:     schema.TypeBool,
