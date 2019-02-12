@@ -25,7 +25,7 @@ require (
 	github.com/paultyng/go-newrelic/v4 v4.1.0
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/posener/complete v1.2.1 // indirect
-	github.com/zclconf/go-cty v0.0.0-20190201220620-4ca19710f056 // indirect
+	github.com/zclconf/go-cty v0.0.0-20190212215652-19dda139b164 // indirect
 	golang.org/x/crypto v0.0.0-20190131182504-b8fe1690c613 // indirect
 	golang.org/x/net v0.0.0-20190206173232-65e2d4e15006 // indirect
 	golang.org/x/sys v0.0.0-20190204203706-41f3e6584952 // indirect
