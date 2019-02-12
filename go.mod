@@ -8,7 +8,7 @@ require (
 	github.com/dollarshaveclub/new-relic-synthetics-go v0.0.0-20170605224734-4dc3dd6ae884
 	github.com/hashicorp/go-getter v1.0.2 // indirect
 	github.com/hashicorp/go-hclog v0.0.0-20190109152822-4783caec6f2e // indirect
-	github.com/hashicorp/go-plugin v0.0.0-20190129155509-362c99b11937 // indirect
+	github.com/hashicorp/go-plugin v0.0.0-20190212234556-b838ffee39ce // indirect
 	github.com/hashicorp/go-uuid v1.0.1 // indirect
 	github.com/hashicorp/hcl2 v0.0.0-20190130225218-89dbc5eb3d9e // indirect
 	github.com/hashicorp/hil v0.0.0-20190129155652-59d7c1fee952 // indirect
