@@ -34,15 +34,15 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "term.#", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.duration", "5"),
+						"newrelic_alert_condition.foo", "term.1025554152.duration", "5"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.operator", "below"),
+						"newrelic_alert_condition.foo", "term.1025554152.operator", "below"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.priority", "critical"),
+						"newrelic_alert_condition.foo", "term.1025554152.priority", "critical"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.threshold", "0.75"),
+						"newrelic_alert_condition.foo", "term.1025554152.threshold", "0.75"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.time_function", "all"),
+						"newrelic_alert_condition.foo", "term.1025554152.time_function", "all"),
 				),
 			},
 			{
@@ -60,15 +60,15 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "term.#", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.duration", "10"),
+						"newrelic_alert_condition.foo", "term.1944209821.duration", "10"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.operator", "below"),
+						"newrelic_alert_condition.foo", "term.1944209821.operator", "below"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.priority", "critical"),
+						"newrelic_alert_condition.foo", "term.1944209821.priority", "critical"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.threshold", "0.65"),
+						"newrelic_alert_condition.foo", "term.1944209821.threshold", "0.65"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.time_function", "all"),
+						"newrelic_alert_condition.foo", "term.1944209821.time_function", "all"),
 				),
 			},
 		},
@@ -99,22 +99,20 @@ func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "term.#", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.duration", "5"),
+						"newrelic_alert_condition.foo", "term.971858588.duration", "5"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.operator", "below"),
+						"newrelic_alert_condition.foo", "term.971858588.operator", "below"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.priority", "critical"),
+						"newrelic_alert_condition.foo", "term.971858588.priority", "critical"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.threshold", "0"),
+						"newrelic_alert_condition.foo", "term.971858588.threshold", "0"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.0.time_function", "all"),
+						"newrelic_alert_condition.foo", "term.971858588.time_function", "all"),
 				),
 			},
 		},
 	})
 }
-
-// TODO: func_ TestAccNewRelicAlertCondition_Multi(t *testing.T) {
 
 func TestAccNewRelicAlertCondition_import(t *testing.T) {
 	resourceName := "newrelic_alert_condition.foo"
@@ -133,6 +131,20 @@ func TestAccNewRelicAlertCondition_import(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertCondition_nameGreaterThan64Char(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile("expected length of name to be in the range \\(1 \\- 64\\)")
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config:      testAccCheckNewRelicAlertConditionConfig("really-long-name-longer-than-sixty-four-characters-so-it-causes-an-error"),
+				ExpectError: expectedErrorMsg,
 			},
 		},
 	})
@@ -193,21 +205,6 @@ func testAccCheckNewRelicAlertConditionExists(n string) resource.TestCheckFunc {
 
 		return nil
 	}
-}
-
-func TestErrorThrownUponConditionNameGreaterThan64Char(t *testing.T) {
-	expectedErrorMsg, _ := regexp.Compile("expected length of name to be in the range \\(1 \\- 64\\)")
-	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config:      testErrorThrownUponConditionNameGreaterThan64Char(rName),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
 }
 
 func testAccCheckNewRelicAlertConditionConfig(rName string) string {
@@ -305,29 +302,3 @@ resource "newrelic_alert_condition" "foo" {
 }
 `, rName, testAccExpectedApplicationName)
 }
-
-func testErrorThrownUponConditionNameGreaterThan64Char(resourceName string) string {
-	return fmt.Sprintf(`
-resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
-}
-resource "newrelic_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
-  name            = "really-long-name-that-is-more-than-sixtyfour-characters-long-tf-test-%[1]s"
-  type            = "apm_app_metric"
-  entities        = ["12345"]
-  metric          = "apdex"
-  runbook_url     = "https://foo.example.com"
-  condition_scope = "application"
-  term {
-    duration      = 5
-    operator      = "below"
-    priority      = "critical"
-    threshold     = "0.75"
-    time_function = "all"
-  }
-}
-`, resourceName, testAccExpectedApplicationName)
-}
-
-// TODO: const testAccCheckNewRelicAlertConditionConfigMulti = `
