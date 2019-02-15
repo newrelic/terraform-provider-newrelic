@@ -7,7 +7,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/dollarshaveclub/new-relic-synthetics-go v0.0.0-20170605224734-4dc3dd6ae884
 	github.com/hashicorp/go-getter v1.0.3 // indirect
-	github.com/hashicorp/go-hclog v0.0.0-20190109152822-4783caec6f2e // indirect
+	github.com/hashicorp/go-hclog v0.0.0-20190215185856-90f2fbc4844c // indirect
 	github.com/hashicorp/go-plugin v0.0.0-20190212232519-b838ffee39ce // indirect
 	github.com/hashicorp/go-uuid v1.0.1 // indirect
 	github.com/hashicorp/hcl2 v0.0.0-20190130225218-89dbc5eb3d9e // indirect
