@@ -3,7 +3,7 @@ module github.com/terraform-providers/terraform-provider-newrelic
 require (
 	github.com/apparentlymart/go-cidr v1.0.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.16.33 // indirect
+	github.com/aws/aws-sdk-go v1.17.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/dollarshaveclub/new-relic-synthetics-go v0.0.0-20170605224734-4dc3dd6ae884
 	github.com/hashicorp/go-getter v1.0.3 // indirect
