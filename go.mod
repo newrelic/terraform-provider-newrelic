@@ -30,7 +30,7 @@ require (
 	golang.org/x/net v0.0.0-20190213061140-3a22650c66bd // indirect
 	golang.org/x/sys v0.0.0-20190213121743-983097b1a8a3 // indirect
 	golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2 // indirect
-	google.golang.org/genproto v0.0.0-20190201180003-4b09977fb922 // indirect
+	google.golang.org/genproto v0.0.0-20190219194528-082222b4a5c5 // indirect
 	google.golang.org/grpc v1.18.0 // indirect
 	gopkg.in/jarcoal/httpmock.v1 v1.0.0-20190204112747-618f46f3f0c8 // indirect
 	gopkg.in/resty.v1 v1.11.0 // indirect

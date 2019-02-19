@@ -232,7 +232,7 @@ golang.org/x/text/unicode/norm
 golang.org/x/text/transform
 golang.org/x/text/secure/bidirule
 golang.org/x/text/unicode/bidi
-# google.golang.org/genproto v0.0.0-20190201180003-4b09977fb922
+# google.golang.org/genproto v0.0.0-20190219194528-082222b4a5c5
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.18.0
 google.golang.org/grpc
