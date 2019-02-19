@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.17.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/dollarshaveclub/new-relic-synthetics-go v0.0.0-20170605224734-4dc3dd6ae884
-	github.com/hashicorp/go-getter v1.0.3 // indirect
+	github.com/hashicorp/go-getter v1.1.0 // indirect
 	github.com/hashicorp/go-hclog v0.7.0 // indirect
 	github.com/hashicorp/go-plugin v0.0.0-20190212232519-b838ffee39ce // indirect
 	github.com/hashicorp/go-uuid v1.0.1 // indirect
