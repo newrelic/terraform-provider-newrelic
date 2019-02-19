@@ -21,7 +21,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
 	github.com/mitchellh/hashstructure v1.0.0 // indirect
-	github.com/newrelic/go-agent v2.4.0+incompatible
+	github.com/newrelic/go-agent v2.5.0
 	github.com/paultyng/go-newrelic/v4 v4.1.0
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/posener/complete v1.2.1 // indirect

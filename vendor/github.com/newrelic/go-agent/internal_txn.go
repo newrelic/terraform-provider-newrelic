@@ -32,6 +32,7 @@ type txn struct {
 	// finished has been set to true, no recording should occur.
 	finished           bool
 	numPayloadsCreated uint32
+	sampledCalculated  bool
 
 	ignore bool
 
@@ -54,15 +55,8 @@ func newTxn(input txnInput, name string) *txn {
 		txn.BetterCAT.Enabled = true
 		txn.BetterCAT.Priority = internal.NewPriority()
 		txn.BetterCAT.ID = internal.NewSpanID()
-
-		// Calculate sampled at the beginning of the transaction (rather
-		// than lazily at payload creation time) because it controls the
-		// creation of span events.
-		txn.BetterCAT.Sampled = txn.Reply.AdaptiveSampler.ComputeSampled(txn.BetterCAT.Priority.Float32(), txn.Start)
-		if txn.BetterCAT.Sampled {
-			txn.BetterCAT.Priority += 1.0
-		}
 		txn.SpanEventsEnabled = txn.Config.SpanEvents.Enabled && txn.Reply.CollectSpanEvents
+		txn.LazilyCalculateSampled = txn.lazilyCalculateSampled
 	}
 
 	txn.Attrs.Agent.Add(internal.AttributeHostDisplayName, txn.Config.HostDisplayName, nil)
@@ -81,6 +75,25 @@ func newTxn(input txnInput, name string) *txn {
 	txn.CrossProcess.Init(doOldCAT, noGUID, input.Reply)
 
 	return txn
+}
+
+// lazilyCalculateSampled calculates and returns whether or not the transaction
+// should be sampled.  Sampled is not computed at the beginning of the
+// transaction because we want to calculate Sampled only for transactions that
+// do not accept an inbound payload.
+func (txn *txn) lazilyCalculateSampled() bool {
+	if !txn.BetterCAT.Enabled {
+		return false
+	}
+	if txn.sampledCalculated {
+		return txn.BetterCAT.Sampled
+	}
+	txn.BetterCAT.Sampled = txn.Reply.AdaptiveSampler.ComputeSampled(txn.BetterCAT.Priority.Float32(), time.Now())
+	if txn.BetterCAT.Sampled {
+		txn.BetterCAT.Priority += 1.0
+	}
+	txn.sampledCalculated = true
+	return txn.BetterCAT.Sampled
 }
 
 type requestWrap struct{ request *http.Request }
@@ -124,11 +137,7 @@ func (txn *txn) SetWebRequest(r WebRequest) error {
 		txn.CrossProcess.InboundHTTPRequest(h)
 	}
 
-	internal.RequestAgentAttributes(txn.Attrs, r.Method(), r.Header())
-
-	if u := r.URL(); nil != u {
-		txn.CleanURL = internal.SafeURL(u)
-	}
+	internal.RequestAgentAttributes(txn.Attrs, r.Method(), r.Header(), r.URL())
 
 	return nil
 }
@@ -395,6 +404,9 @@ func (txn *txn) End() error {
 	}
 
 	txn.freezeName()
+	// Make a sampling decision if there have been no segments or outbound
+	// payloads.
+	txn.lazilyCalculateSampled()
 
 	// Finalise the CAT state.
 	if err := txn.CrossProcess.Finalise(txn.Name, txn.Config.AppName); err != nil {
@@ -464,6 +476,8 @@ var (
 	errNilError            = errors.New("nil error")
 	errAlreadyEnded        = errors.New("transaction has already ended")
 	errSecurityPolicy      = errors.New("disabled by security policy")
+	errTransactionIgnored  = errors.New("transaction has been ignored")
+	errBrowserDisabled     = errors.New("browser disabled by local configuration")
 )
 
 const (
@@ -590,12 +604,83 @@ func (txn *txn) StartSegmentNow() SegmentStartTime {
 	}
 }
 
+const (
+	// Browser fields are encoded using the first digits of the license
+	// key.
+	browserEncodingKeyLimit = 13
+)
+
+func browserEncodingKey(licenseKey string) []byte {
+	key := []byte(licenseKey)
+	if len(key) > browserEncodingKeyLimit {
+		key = key[0:browserEncodingKeyLimit]
+	}
+	return key
+}
+
+func (txn *txn) BrowserTimingHeader() (*BrowserTimingHeader, error) {
+	txn.Lock()
+	defer txn.Unlock()
+
+	if !txn.Config.BrowserMonitoring.Enabled {
+		return nil, errBrowserDisabled
+	}
+
+	if txn.Reply.AgentLoader == "" {
+		// If the loader is empty, either browser has been disabled
+		// by the server or the application is not yet connected.
+		return nil, nil
+	}
+
+	if txn.finished {
+		return nil, errAlreadyEnded
+	}
+
+	txn.freezeName()
+
+	// Freezing the name might cause the transaction to be ignored, so check
+	// this after txn.freezeName().
+	if txn.ignore {
+		return nil, errTransactionIgnored
+	}
+
+	encodingKey := browserEncodingKey(txn.Config.License)
+
+	attrs, err := internal.Obfuscate(internal.BrowserAttributes(txn.Attrs), encodingKey)
+	if err != nil {
+		return nil, fmt.Errorf("error getting browser attributes: %v", err)
+	}
+
+	name, err := internal.Obfuscate([]byte(txn.FinalName), encodingKey)
+	if err != nil {
+		return nil, fmt.Errorf("error obfuscating name: %v", err)
+	}
+
+	return &BrowserTimingHeader{
+		agentLoader: txn.Reply.AgentLoader,
+		info: browserInfo{
+			Beacon:                txn.Reply.Beacon,
+			LicenseKey:            txn.Reply.BrowserKey,
+			ApplicationID:         txn.Reply.AppID,
+			TransactionName:       name,
+			QueueTimeMillis:       txn.Queuing.Nanoseconds() / (1000 * 1000),
+			ApplicationTimeMillis: time.Now().Sub(txn.Start).Nanoseconds() / (1000 * 1000),
+			ObfuscatedAttributes:  attrs,
+			ErrorBeacon:           txn.Reply.ErrorBeacon,
+			Agent:                 txn.Reply.JSAgentFile,
+		},
+	}, nil
+}
+
 type segment struct {
 	start internal.SegmentStartTime
 	txn   *txn
 }
 
 func endSegment(s *Segment) error {
+	if nil == s {
+		return nil
+	}
 	txn := s.StartTime.txn
 	if nil == txn {
 		return nil
@@ -612,6 +697,9 @@ func endSegment(s *Segment) error {
 }
 
 func endDatastore(s *DatastoreSegment) error {
+	if nil == s {
+		return nil
+	}
 	txn := s.StartTime.txn
 	if nil == txn {
 		return nil
@@ -691,6 +779,9 @@ func externalSegmentURL(s *ExternalSegment) (*url.URL, error) {
 }
 
 func endExternal(s *ExternalSegment) error {
+	if nil == s {
+		return nil
+	}
 	txn := s.StartTime.txn
 	if nil == txn {
 		return nil
@@ -798,7 +889,8 @@ func (txn *txn) CreateDistributedTracePayload() (payload DistributedTracePayload
 		p.TrustedAccountKey = txn.Reply.TrustedAccountKey
 	}
 
-	if txn.BetterCAT.Sampled && txn.SpanEventsEnabled {
+	sampled := txn.lazilyCalculateSampled()
+	if sampled && txn.SpanEventsEnabled {
 		p.ID = txn.CurrentSpanIdentifier()
 	}
 
@@ -806,7 +898,7 @@ func (txn *txn) CreateDistributedTracePayload() (payload DistributedTracePayload
 	// many downstream sampled events.
 	p.SetSampled(false)
 	if txn.numPayloadsCreated < maxSampledDistributedPayloads {
-		p.SetSampled(txn.BetterCAT.Sampled)
+		p.SetSampled(sampled)
 	}
 
 	txn.CreatePayloadSuccess = true
@@ -897,8 +989,7 @@ func (txn *txn) acceptDistributedTracePayloadLocked(t TransportType, p interface
 	// a nul payload.Sampled means the a field wasn't provided
 	if nil != payload.Sampled {
 		txn.BetterCAT.Sampled = *payload.Sampled
-	} else {
-		txn.BetterCAT.Sampled = txn.Reply.AdaptiveSampler.ComputeSampled(txn.BetterCAT.Priority.Float32(), time.Now())
+		txn.sampledCalculated = true
 	}
 
 	txn.BetterCAT.Inbound = payload
