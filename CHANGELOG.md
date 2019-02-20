@@ -1,7 +1,20 @@
-## 1.3.0 (Unreleased)
+## 1.4.0 (Unreleased)
+
+IMPROVEMENTS:
+
+* `newrelic_alert_condition` make enabled status configurable [GH-70]
+* `newrelic_alert_condition` add name length validation [GH-79]
+
+## 1.3.0 (February 07, 2019)
+
+FEATURES:
+
+* **New Data Source** `newrelic_alert_policy` ([#64](https://github.com/terraform-providers/terraform-provider-newrelic/issues/64))
 
 BUG FIXES:
 * `newrelic_alert_policy` should have update functionality ([#68](https://github.com/terraform-providers/terraform-provider-newrelic/pull/68))
+* Fix documentation typos for `newrelic_nrql_alert_condition` ([#76](https://github.com/terraform-providers/terraform-provider-newrelic/issues/76))
+* Fix diff problem with `newrelic_alert_condition.term` ([#63](https://github.com/terraform-providers/terraform-provider-newrelic/issues/63))
 
 ## 1.2.0 (November 02, 2018)
 

@@ -9,11 +9,20 @@
   * [Datastore Segments](#datastore-segments)
   * [External Segments](#external-segments)
 * [Attributes](#attributes)
-* [Cross Application Tracing](#cross-application-tracing)
-  * [Upgrading Applications to Support Cross Application Tracing](#upgrading-applications-to-support-cross-application-tracing)
+* [Tracing](#tracing)
+  * [Distributed Tracing](#distributed-tracing)
+  * [Cross-Application Tracing](#cross-application-tracing)
+  * [Tracing instrumentation](#tracing-instrumentation)
+    * [Getting Tracing Instrumentation Out-of-the-Box](#getting-tracing-instrumentation-out-of-the-box)
+    * [Manually Implementing Distributed Tracing](#manually-implementing-distributed-tracing)
+* [Distributed Tracing](#distributed-tracing)
 * [Custom Metrics](#custom-metrics)
 * [Custom Events](#custom-events)
 * [Request Queuing](#request-queuing)
+* [Error Reporting](#error-reporting)
+  * [Advanced Error Reporting](#advanced-error-reporting)
+* [Naming Transactions and Metrics](#naming-transactions-and-metrics)
+* [For More Help](#for-more-help)
 
 ## Installation
 
@@ -39,7 +48,7 @@ app, err := newrelic.NewApplication(config)
 ```
 
 Find your application in the New Relic UI.  Click on it to see the Go runtime
-tab that shows information about goroutine counts, garbage collection, memory,
+page that shows information about goroutine counts, garbage collection, memory,
 and CPU usage.
 
 If you are working in a development environment or running unit tests, you may
@@ -110,8 +119,8 @@ defer txn.End()
 If the response writer is provided when calling `StartTransaction`, you can
 then use `txn.WriteHeader` as a drop in replacement for the standard library's
 [`http.ResponseWriter.WriteHeader`](https://golang.org/pkg/net/http/#ResponseWriter)
-function. We strongly recommend doing so, as this both enables Cross
-Application Tracing support and ensures that attributes are added to the
+function. We strongly recommend doing so, as this both enables cross-application
+tracing support and ensures that attributes are added to the
 Transaction event capturing the response size and status code.
 
 The response writer and request parameters are optional.  Leave them `nil` to
@@ -205,10 +214,10 @@ s.End()
 ### Datastore Segments
 
 Datastore segments appear in the transaction "Breakdown table" and in the
-"Databases" tab.
+"Databases" page.
 
 * [datastore.go](datastore.go)
-* [More info on Databases tab](https://docs.newrelic.com/docs/apm/applications-menu/monitoring/databases-slow-queries-page)
+* [More info on Databases page](https://docs.newrelic.com/docs/apm/applications-menu/monitoring/databases-slow-queries-page)
 
 Datastore segments are instrumented using `DatastoreSegment`.  Just like basic
 segments, datastore segments begin when the `StartTime` field is populated and
@@ -232,24 +241,28 @@ This may be combined into a single line when instrumenting a datastore call
 that spans an entire function call:
 
 ```go
-defer newrelic.DatastoreSegment{
+s := newrelic.DatastoreSegment{
 	StartTime:  newrelic.StartSegmentNow(txn),
 	Product:    newrelic.DatastoreMySQL,
 	Collection: "my_table",
 	Operation:  "SELECT",
-}.End()
+}
+defer s.End()
 ```
 
 ### External Segments
 
 External segments appear in the transaction "Breakdown table" and in the
-"External services" tab. Version 1.11.0 of the Go agent also adds support for
-Cross Application Tracing (CAT), which will result in external segments also
-appearing in the "Service maps" tab and being linked in transaction traces when
-both sides of the request have traces.
+"External services" page. Version 1.11.0 of the Go Agent adds support for
+cross-application tracing (CAT), which will result in external segments also
+appearing in the "Service maps" page and being linked in transaction traces when
+both sides of the request have traces. Version 2.1.0 of the Go Agent adds
+support for distributed tracing, which lets you see the path a request takes as
+it travels through distributed APM apps.
 
-* [More info on External Services tab](https://docs.newrelic.com/docs/apm/applications-menu/monitoring/external-services-page)
-* [More info on Cross Application Tracing](https://docs.newrelic.com/docs/apm/transactions/cross-application-traces/introduction-cross-application-traces)
+* [More info on External Services page](https://docs.newrelic.com/docs/apm/applications-menu/monitoring/external-services-page)
+* [More info on Cross-Application Tracing](https://docs.newrelic.com/docs/apm/transactions/cross-application-traces/introduction-cross-application-traces)
+* [More info on Distributed Tracing](https://docs.newrelic.com/docs/apm/distributed-tracing/getting-started/introduction-distributed-tracing)
 
 External segments are instrumented using `ExternalSegment`. There are three
 ways to use this functionality:
@@ -257,7 +270,7 @@ ways to use this functionality:
 1. Using `StartExternalSegment` to create an `ExternalSegment` before the
    request is sent, and then calling `ExternalSegment.End` when the external
    request is complete.
-   
+
    For CAT support to operate, an `http.Request` must be provided to
    `StartExternalSegment`, and the `ExternalSegment.Response` field must be set
    before `ExternalSegment.End` is called or deferred.
@@ -274,38 +287,51 @@ ways to use this functionality:
     }
     ```
 
+    If the transaction is `nil` then `StartExternalSegment` will look for a
+    transaction in the request's context using
+    [FromContext](https://godoc.org/github.com/newrelic/go-agent#FromContext).
+
 2. Using `NewRoundTripper` to get a
    [`http.RoundTripper`](https://golang.org/pkg/net/http/#RoundTripper) that
    will automatically instrument all requests made via
    [`http.Client`](https://golang.org/pkg/net/http/#Client) instances that use
-   that round tripper as their `Transport`. This option results in CAT support
-   transparently, provided the Go agent is version 1.11.0 or later.
+   that round tripper as their `Transport`. This option results in CAT support,
+   provided the Go Agent is version 1.11.0, and in distributed tracing support,
+   provided the Go Agent is version 2.1.0.  `NewRoundTripper` can be called
+   with a `nil` or non-`nil` transaction:  If the transaction is `nil`, the
+   round tripper will look for a transaction in the request's context
+   using [FromContext](https://godoc.org/github.com/newrelic/go-agent#FromContext).
+   This pattern is **strongly** recommended, since it allows the round tripper
+   to be used in a client shared between multiple transactions.
 
    For example:
 
     ```go
     client := &http.Client{}
-    client.Transport = newrelic.NewRoundTripper(txn, nil)
-    resp, err := client.Get("http://example.com/")
+    client.Transport = newrelic.NewRoundTripper(nil, client.Transport)
+    request, _ := http.NewRequest("GET", "http://example.com", nil)
+    request = newrelic.RequestWithTransactionContext(request, txn)
+    resp, err := client.Do(request)
     ```
 
-   Note that, as with all segments, the round tripper returned **must** only be
+   If transaction is non-`nil`, the round tripper returned **must** only be
    used in the same goroutine as the transaction.
 
 3. Directly creating an `ExternalSegment` via a struct literal with an explicit
    `URL` or `Request`, and then calling `ExternalSegment.End`. This option does
    not support CAT, and may be removed or changed in a future major version of
-   the Go agent. As a result, we suggest using one of the other options above
+   the Go Agent. As a result, we suggest using one of the other options above
    wherever possible.
 
    For example:
 
     ```go
     func external(txn newrelic.Transaction, url string) (*http.Response, error) {
-      defer newrelic.ExternalSegment{
+      es := newrelic.ExternalSegment{
         StartTime: newrelic.StartSegmentNow(txn),
         URL:   url,
-      }.End()
+      }
+      defer es.End()
 
       return http.Get(url)
     }
@@ -341,54 +367,104 @@ config.Attributes.Exclude = append(config.Attributes.Exclude, newrelic.Attribute
 
 * [More info on Agent Attributes](https://docs.newrelic.com/docs/agents/manage-apm-agents/agent-metrics/agent-attributes)
 
-## Cross Application Tracing
+## Tracing
+
+New Relic's [distributed
+tracing](https://docs.newrelic.com/docs/apm/distributed-tracing/getting-started/introduction-distributed-tracing)  
+is the next generation of the previous cross-application tracing feature. Compared to
+cross-application tracing, distributed tracing gives more detail about cross-service activity and provides more
+complete end-to-end visibility.  This section discusses distributed tracing and cross-application tracing in turn.
+
+### Distributed Tracing
+
+New Relic's [distributed
+tracing](https://docs.newrelic.com/docs/apm/distributed-tracing/getting-started/introduction-distributed-tracing)
+feature lets you see the path that a request takes as it travels through distributed APM
+apps, which is vital for applications implementing a service-oriented or
+microservices architecture. Support for distributed tracing was added in
+version 2.1.0 of the Go Agent.
+
+The config's `DistributedTracer.Enabled` field has to be set. When true, the
+agent will add distributed tracing headers in outbound requests, and scan
+incoming requests for distributed tracing headers. Distributed tracing and
+cross-application tracing cannot be used simultaneously:
+
+```go
+config.CrossApplicationTracer.Enabled = false
+config.DistributedTracer.Enabled = true
+```
+
+### Cross-Application Tracing
 
 New Relic's
-[Cross Application Tracing](https://docs.newrelic.com/docs/apm/transactions/cross-application-traces/introduction-cross-application-traces)
+[cross-application tracing](https://docs.newrelic.com/docs/apm/transactions/cross-application-traces/introduction-cross-application-traces)
 feature, or CAT for short, links transactions between applications in APM to
 help identify performance problems within your service-oriented architecture.
-Support for CAT was added in version 1.11.0 of the Go agent.
+Support for CAT was added in version 1.11.0 of the Go Agent.
 
-As CAT uses HTTP headers to track requests across applications, the Go agent
+As CAT uses HTTP headers to track requests across applications, the Go Agent
 needs to be able to access and modify request and response headers both for
 incoming and outgoing requests.
 
-### Upgrading Applications to Support Cross Application Tracing
+### Tracing Instrumentation
 
-Although many Go applications instrumented using older versions of the Go agent
-will not require changes to enable CAT support, we've prepared this checklist
-that you can use to ensure that your application is ready to take advantage of
-the full functionality offered by New Relic's CAT feature:
+Both distributed tracing and cross-application tracing work by propagating
+[header information](https://docs.newrelic.com/docs/apm/distributed-tracing/getting-started/how-new-relic-distributed-tracing-works#headers)
+from service to service in a request path. In many scenarios, the Go Agent offers tracing instrumentation
+out-of-the-box, for both distributed tracing and cross-application tracing. For other scenarios customers may implement
+distributed tracing based on the examples provided in this guide.
 
-1. Ensure that incoming HTTP requests both parse any incoming CAT headers, and
-   output the required outgoing CAT header:
+#### Getting Tracing Instrumentation Out-of-the-Box
 
-   1. If you use `WrapHandle` or `WrapHandleFunc` to instrument a server that
-      uses [`http.ServeMux`](https://golang.org/pkg/net/http/#ServeMux), no
-      changes are required.
+The Go Agent automatically creates and propagates tracing header information
+for each of the following scenarios:
 
-   2. If you use either of the Go agent's [Gin](_integrations/nrgin/v1) or
-      [Gorilla](_integrations/nrgorilla/v1) integrations, no changes are
-      required.
+1. Using `WrapHandle` or `WrapHandleFunc` to instrument a server that
+   uses [`http.ServeMux`](https://golang.org/pkg/net/http/#ServeMux)
+   ([Example](examples/server/main.go)).
 
-   3. If you use another framework or
-      [`http.Server`](https://golang.org/pkg/net/http/#Server) directly, you
-      will need to ensure that:
+2. Using either of the Go Agent's [Gin](_integrations/nrgin/v1) or
+   [Gorilla](_integrations/nrgorilla/v1) integration
+   ([Gin Example](_integrations/nrgin/v1/example/main.go), [Gorilla Example](_integrations/nrgorilla/v1/example/main.go)).
+.
+
+3. Using another framework or [`http.Server`](https://golang.org/pkg/net/http/#Server) while ensuring that:
 
       1. All calls to `StartTransaction` include the response writer and
          request, and
       2. `Transaction.WriteHeader` is used instead of calling `WriteHeader`
          directly on the response writer, as described in the
-         [transactions section of this guide](#transactions).
+         [transactions section of this guide](#transactions)
+         ([Example](examples/server-http/main.go)).
 
-2. Convert any instances of using an `ExternalSegment` literal directly to
-   either use `StartExternalSegment` or `NewRoundTripper`, as described in the
-   [external segments section of this guide](#external-segments).
+4. Using `NewRoundTripper`, as described in the
+   [external segments section of this guide](#external-segments)
+   ([Example](examples/client-round-tripper/main.go)).
 
-3. Ensure that calls to `StartExternalSegment` provide an `http.Request`.
+5. Using the call `StartExternalSegment` and providing an `http.Request`, as
+   described in the [external segments section of this guide](#external-segments)
+   ([Example](examples/client/main.go)).
 
-4. Ensure that the `Response` field is set on `ExternalSegment` values before
-   making or deferring calls to `ExternalSegment.End`.
+#### Manually Implementing Distributed Tracing
+
+Consider [manual instrumentation](https://docs.newrelic.com/docs/apm/distributed-tracing/enable-configure/enable-distributed-tracing#agent-apis)
+for services not instrumented automatically by the Go Agent. In such scenarios, the
+calling service has to generate a distributed trace payload:
+
+```go
+p := callingTxn.CreateDistributedTracePayload()
+```
+
+This payload has to be added to the call to the destination service, which in turn
+invokes the call for accepting the payload:
+
+```go
+calledTxn.AcceptDistributedTracePayload(newrelic.TransportOther, p)
+```
+
+A complete example can be found
+[here](examples/custom-instrumentation/main.go).
+
 
 ## Custom Metrics
 
@@ -468,7 +544,7 @@ in the *Error Analytics* section of APM.  Second, the `Attributes` field allows
 you to send through key/value pairs with additional error debugging information
 (also exposed in the *Error Analytics* section of APM).
 
-## Advanced Error Reporting
+### Advanced Error Reporting
 
 You're not limited to using Go's built-in error type or the provided
 `newrelic.Error` struct.  The Go Agent provides three error interfaces

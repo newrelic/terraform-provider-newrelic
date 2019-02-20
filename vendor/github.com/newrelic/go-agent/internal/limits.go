@@ -5,9 +5,12 @@ import "time"
 const (
 	// app behavior
 
-	// ConnectBackoff is the wait time between unsuccessful connect
-	// attempts.
-	ConnectBackoff = 20 * time.Second
+	// ConnectBackoffStart is the initial backoff time between unsuccessful connect
+	// attempts.  It is doubled until the ConnectBackoffLimit is reached.
+	// https://source.datanerd.us/agents/agent-specs/blob/master/Collector-Response-Handling.md#retries-and-backoffs
+	ConnectBackoffStart = 15 * time.Second
+	// ConnectBackoffLimit is the largest connect backoff possible.
+	ConnectBackoffLimit = 240 * time.Second
 	// HarvestPeriod is the period that collected data is sent to New Relic.
 	HarvestPeriod = 60 * time.Second
 	// CollectorTimeout is the timeout used in the client for communication
@@ -24,8 +27,10 @@ const (
 	// MaxTxnErrors is the maximum number of errors captured per
 	// transaction.
 	MaxTxnErrors      = 5
-	maxTxnTraceNodes  = 256
 	maxTxnSlowQueries = 10
+
+	startingTxnTraceNodes = 16
+	maxTxnTraceNodes      = 256
 
 	// harvest data
 	maxMetrics          = 2 * 1000
@@ -36,6 +41,7 @@ const (
 	maxErrorEvents      = 100
 	maxHarvestErrors    = 20
 	maxHarvestSlowSQLs  = 10
+	maxSpanEvents       = 1000
 
 	// attributes
 	attributeKeyLengthLimit   = 255
@@ -55,4 +61,6 @@ const (
 	// be changed without notifying customers that they must update all
 	// instance simultaneously for valid runtime metrics.
 	RuntimeSamplerPeriod = 60 * time.Second
+
+	txnNameCacheLimit = 40
 )
