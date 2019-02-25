@@ -214,7 +214,7 @@ golang.org/x/crypto/cast5
 golang.org/x/crypto/openpgp/elgamal
 golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/internal/subtle
-# golang.org/x/net v0.0.0-20190213061140-3a22650c66bd
+# golang.org/x/net v0.0.0-20190225175439-fe579d43d832
 golang.org/x/net/context
 golang.org/x/net/html
 golang.org/x/net/publicsuffix
