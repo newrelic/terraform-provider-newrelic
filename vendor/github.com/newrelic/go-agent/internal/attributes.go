@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -25,6 +26,7 @@ const (
 	attributeRequestHeadersHost
 	attributeRequestHeadersUserAgent
 	attributeRequestHeadersReferer
+	attributeRequestURI
 	attributeResponseHeadersContentType
 	attributeResponseHeadersContentLength
 	attributeResponseCode
@@ -45,6 +47,7 @@ var (
 		attributeRequestHeadersHost:           {name: "request.headers.host", defaultDests: usualDests},
 		attributeRequestHeadersUserAgent:      {name: "request.headers.User-Agent", defaultDests: tracesDests},
 		attributeRequestHeadersReferer:        {name: "request.headers.referer", defaultDests: tracesDests},
+		attributeRequestURI:                   {name: "request.uri", defaultDests: usualDests},
 		attributeResponseHeadersContentType:   {name: "response.headers.contentType", defaultDests: usualDests},
 		attributeResponseHeadersContentLength: {name: "response.headers.contentLength", defaultDests: usualDests},
 		attributeResponseCode:                 {name: "httpResponseCode", defaultDests: usualDests},
@@ -191,7 +194,7 @@ type AttributeConfigInput struct {
 	Attributes        AttributeDestinationConfig
 	ErrorCollector    AttributeDestinationConfig
 	TransactionEvents AttributeDestinationConfig
-	browserMonitoring AttributeDestinationConfig
+	BrowserMonitoring AttributeDestinationConfig
 	TransactionTracer AttributeDestinationConfig
 }
 
@@ -201,6 +204,7 @@ var (
 		ErrorCollector:    AttributeDestinationConfig{Enabled: true},
 		TransactionEvents: AttributeDestinationConfig{Enabled: true},
 		TransactionTracer: AttributeDestinationConfig{Enabled: true},
+		BrowserMonitoring: AttributeDestinationConfig{Enabled: true},
 	}
 )
 
@@ -215,7 +219,7 @@ func CreateAttributeConfig(input AttributeConfigInput, includeEnabled bool) *Att
 	processDest(c, includeEnabled, &input.ErrorCollector, destError)
 	processDest(c, includeEnabled, &input.TransactionEvents, destTxnEvent)
 	processDest(c, includeEnabled, &input.TransactionTracer, destTxnTrace)
-	processDest(c, includeEnabled, &input.browserMonitoring, destBrowser)
+	processDest(c, includeEnabled, &input.BrowserMonitoring, destBrowser)
 
 	sort.Sort(byMatch(c.wildcardModifiers))
 
@@ -238,6 +242,17 @@ type agentAttributeValue struct {
 }
 
 type agentAttributes map[AgentAttributeID]agentAttributeValue
+
+// GetAgentValue is used to access agent attributes.  This function returns ("",
+// nil) if the attribute doesn't exist or it doesn't match the destinations
+// provided.
+func (a *Attributes) GetAgentValue(id AgentAttributeID, d destinationSet) (string, interface{}) {
+	if nil == a || 0 == a.config.agentDests[id]&d {
+		return "", nil
+	}
+	v, _ := a.Agent[id]
+	return v.stringVal, v.otherVal
+}
 
 // Add is used to add agent attributes.  Only one of stringVal and otherVal
 // should be populated.  Since most agent attribute values are strings,
@@ -441,8 +456,12 @@ func userAttributesStringJSON(a *Attributes, d destinationSet, extraAttributes m
 }
 
 // RequestAgentAttributes gathers agent attributes out of the request.
-func RequestAgentAttributes(a *Attributes, method string, h http.Header) {
+func RequestAgentAttributes(a *Attributes, method string, h http.Header, u *url.URL) {
 	a.Agent.Add(attributeRequestMethod, method, nil)
+
+	if nil != u {
+		a.Agent.Add(attributeRequestURI, SafeURL(u), nil)
+	}
 
 	if nil == h {
 		return

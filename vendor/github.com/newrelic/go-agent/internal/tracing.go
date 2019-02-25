@@ -33,8 +33,6 @@ type TxnEvent struct {
 	Zone      ApdexZone
 	Attrs     *Attributes
 	DatastoreExternalTotals
-	// CleanURL is not used in txn events, but is used in traced errors which embed TxnEvent.
-	CleanURL     string
 	CrossProcess TxnCrossProcess
 	BetterCAT    BetterCAT
 	HasError     bool
@@ -72,9 +70,10 @@ type TxnData struct {
 	stamp            segmentStamp
 	stack            []segmentFrame
 
-	SpanEventsEnabled bool
-	rootSpanID        string
-	spanEvents        []*SpanEvent
+	LazilyCalculateSampled func() bool
+	SpanEventsEnabled      bool
+	rootSpanID             string
+	spanEvents             []*SpanEvent
 
 	customSegments    map[string]*metricData
 	datastoreSegments map[DatastoreMetricKey]*metricData
@@ -256,7 +255,7 @@ func endSegment(t *TxnData, start SegmentStartTime, now time.Time) (segmentEnd, 
 
 	t.stack = t.stack[0:start.Depth]
 
-	if t.BetterCAT.Sampled && t.SpanEventsEnabled {
+	if t.SpanEventsEnabled && t.LazilyCalculateSampled() {
 		s.SpanID = frame.spanID
 		if "" == s.SpanID {
 			s.SpanID = NewSpanID()
