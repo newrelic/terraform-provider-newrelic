@@ -1,6 +1,6 @@
 ## 1.5.0 (Unreleased)
 
-* Add 0.12 support [GH-107]
+* Add Terraform 0.12 support [GH-107]
 
 ## 1.4.0 (February 27, 2019)
 
