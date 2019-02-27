@@ -31,7 +31,7 @@ require (
 	golang.org/x/sys v0.0.0-20190225065934-cc5685c2db12 // indirect
 	golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2 // indirect
 	google.golang.org/appengine v1.4.0 // indirect
-	google.golang.org/genproto v0.0.0-20190219182410-082222b4a5c5 // indirect
+	google.golang.org/genproto v0.0.0-20190227225332-4f5b463f9597 // indirect
 	google.golang.org/grpc v1.18.0 // indirect
 	gopkg.in/jarcoal/httpmock.v1 v1.0.0-20190204112747-618f46f3f0c8 // indirect
 	gopkg.in/resty.v1 v1.11.0 // indirect
