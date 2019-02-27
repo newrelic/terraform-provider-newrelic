@@ -1,9 +1,9 @@
-## 1.4.0 (Unreleased)
+## 1.4.0 (February 27, 2019)
 
 IMPROVEMENTS:
 
-* `newrelic_alert_condition` make enabled status configurable [GH-70]
-* `newrelic_alert_condition` add name length validation [GH-79]
+* `newrelic_alert_condition` make enabled status configurable ([#70](https://github.com/terraform-providers/terraform-provider-newrelic/issues/70))
+* `newrelic_alert_condition` add name length validation ([#79](https://github.com/terraform-providers/terraform-provider-newrelic/issues/79))
 
 ## 1.3.0 (February 07, 2019)
 
