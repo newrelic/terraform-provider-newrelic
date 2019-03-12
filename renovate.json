@@ -11,5 +11,6 @@
   ],
   "labels": [
     "dependencies"
-  ]
+  ],
+  "prConcurrentLimit": 2
 }
