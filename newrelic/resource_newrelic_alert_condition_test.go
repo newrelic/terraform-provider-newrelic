@@ -139,8 +139,7 @@ func TestAccNewRelicAlertCondition_import(t *testing.T) {
 func TestAccNewRelicAlertCondition_nameGreaterThan64Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile("expected length of name to be in the range \\(1 \\- 64\\)")
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config:      testAccCheckNewRelicAlertConditionConfig("really-long-name-longer-than-sixty-four-characters-so-it-causes-an-error"),
