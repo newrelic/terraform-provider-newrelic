@@ -14,7 +14,7 @@ require (
 	github.com/hashicorp/terraform v0.12.0-alpha4.0.20190214185235-e1df4110c30e
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/mattn/go-colorable v0.1.1 // indirect
-	github.com/mattn/go-isatty v0.0.6 // indirect
+	github.com/mattn/go-isatty v0.0.7 // indirect
 	github.com/mitchellh/cli v1.0.0 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
