@@ -180,7 +180,7 @@ github.com/hashicorp/yamux
 github.com/jmespath/go-jmespath
 # github.com/mattn/go-colorable v0.1.1
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.6
+# github.com/mattn/go-isatty v0.0.7
 github.com/mattn/go-isatty
 # github.com/mitchellh/cli v1.0.0
 github.com/mitchellh/cli
