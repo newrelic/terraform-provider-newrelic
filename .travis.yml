@@ -1,12 +1,10 @@
 language: go
 go:
   - "1.11.x"
-- 1.11.x
-- tip
+  - tip
 
 env:
-  # deps are vendored
-  GO111MODULE: 'off'
+  - GOFLAGS=-mod=vendor GO111MODULE=on
 
 script:
 - make test
@@ -16,5 +14,4 @@ script:
 matrix:
   fast_finish: true
   allow_failures:
-  - go: 1.11.x
   - go: tip
