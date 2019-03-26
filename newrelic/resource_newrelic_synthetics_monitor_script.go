@@ -106,6 +106,5 @@ func resourceNewRelicSyntheticsMonitorScriptDelete(d *schema.ResourceData, meta 
 		return err
 	}
 
-	d.SetId("")
 	return nil
 }

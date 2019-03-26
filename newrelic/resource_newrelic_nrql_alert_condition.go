@@ -265,7 +265,5 @@ func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta inter
 		return err
 	}
 
-	d.SetId("")
-
 	return nil
 }

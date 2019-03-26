@@ -247,6 +247,5 @@ func resourceNewRelicSyntheticsMonitorDelete(d *schema.ResourceData, meta interf
 		return err
 	}
 
-	d.SetId("")
 	return nil
 }
