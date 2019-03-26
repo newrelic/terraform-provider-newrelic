@@ -290,8 +290,6 @@ func resourceNewRelicInfraAlertConditionDelete(d *schema.ResourceData, meta inte
 		return err
 	}
 
-	d.SetId("")
-
 	return nil
 }
 
