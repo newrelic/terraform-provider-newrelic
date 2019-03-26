@@ -23,13 +23,21 @@ func TestAccNewRelicSyntheticsAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_synthetics_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
 					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_alert_condition.foo", "policy_id", "0"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_alert_condition.foo", "monitor_id", "derp"),
-					resource.TestCheckResourceAttr(
 						"newrelic_synthetics_alert_condition.foo", "runbook_url", "www.example.com"),
 					resource.TestCheckResourceAttr(
 						"newrelic_synthetics_alert_condition.foo", "enabled", "true"),
+				),
+			},
+			{
+				Config: testAccCheckNewRelicSyntheticsAlertConditionUpdated(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsAlertConditionExists("newrelic_synthetics_alert_condition.foo"),
+					resource.TestCheckResourceAttr(
+						"newrelic_synthetics_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"newrelic_synthetics_alert_condition.foo", "runbook_url", "www.example2.com"),
+					resource.TestCheckResourceAttr(
+						"newrelic_synthetics_alert_condition.foo", "enabled", "false"),
 				),
 			},
 		},
@@ -96,41 +104,51 @@ func testAccCheckNewRelicSyntheticsAlertConditionExists(n string) resource.TestC
 func testAccCheckNewRelicSyntheticsAlertConditionConfig(rName string) string {
 	return fmt.Sprintf(`
 
-data "newrelic_synthetics_monitor" "bar" {
-  name = "%[2]s"
+resource "newrelic_synthetics_monitor" "bar" {
+	name = "tf-test-synthetic-%[1]s"
+	type = "SIMPLE"
+	frequency = 15
+	status = "DISABLED"
+	locations = ["AWS_US_EAST_1"]
+	uri = "https://google.com"
 }
 
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+	name = "tf-test-%[1]s"
 }
 
 resource "newrelic_synthetics_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
-
+	policy_id = "${newrelic_alert_policy.foo.id}"
 	name            = "tf-test-%[1]s"
-	monitor_id      = "${data.newrelic_synthetics_monitor.bar.id}"
-	runbook_url     = "https://foo.example.com"
+	monitor_id      = "${newrelic_synthetics_monitor.bar.id}"
+	runbook_url     = "www.example.com"
+	enabled			= "true"
 }
-`, rName, testAccExpectedApplicationName)
+`, rName)
 }
 
-func testAccCheckNewRelicSyntheticsAlertConditionConfigUpdated(rName string) string {
+func testAccCheckNewRelicSyntheticsAlertConditionUpdated(rName string) string {
 	return fmt.Sprintf(`
 
-data "newrelic_synthetics_monitor" "bar" {
-  name = "%[2]s"
+resource "newrelic_synthetics_monitor" "bar" {
+	name = "tf-test-synthetic-%[1]s"
+	type = "SIMPLE"
+	frequency = 15
+	status = "DISABLED"
+	locations = ["AWS_US_EAST_1"]
+	uri = "https://google.com"
 }
 
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+	name = "tf-test-%[1]s"
 }
 
 resource "newrelic_synthetics_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
-
-	name            = "tf-test-updated-%[1]s"
-	monitor_id      = "${data.newrelic_synthetics_monitor.bar.id}"
-  runbook_url     = "https://bar.example.com"
+	policy_id = "${newrelic_alert_policy.foo.id}"
+	name            = "tf-test-%[1]s"
+	monitor_id      = "${newrelic_synthetics_monitor.bar.id}"
+	runbook_url     = "www.example2.com"
+	enabled			= "false"
 }
-`, rName, testAccExpectedApplicationName)
+`, rName)
 }

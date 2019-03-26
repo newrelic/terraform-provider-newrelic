@@ -131,7 +131,5 @@ func resourceNewRelicAlertPolicyChannelDelete(d *schema.ResourceData, meta inter
 		}
 	}
 
-	d.SetId("")
-
 	return nil
 }
