@@ -1,5 +1,11 @@
 ## 1.5.0 (Unreleased)
 
+FEATURES
+
+* **New Resource** `newrelic_synthetics_monitor` and `newrelic_synthetics_monitor_script` [GH-67]
+
+IMPROVEMENTS
+
 * Add Terraform 0.12 support [GH-107]
 
 ## 1.4.0 (February 27, 2019)
