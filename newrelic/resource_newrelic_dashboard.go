@@ -326,13 +326,10 @@ func resourceNewRelicDashboardDelete(d *schema.ResourceData, meta interface{}) e
 
 	if err := client.DeleteDashboard(id); err != nil {
 		if err == newrelic.ErrNotFound {
-			d.SetId("")
 			return nil
 		}
 		return err
 	}
-
-	d.SetId("")
 
 	return nil
 }
