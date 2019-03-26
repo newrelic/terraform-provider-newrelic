@@ -1,12 +1,12 @@
-## 1.5.0 (Unreleased)
+## 1.5.0 (March 26, 2019)
 
 FEATURES
 
-* **New Resource** `newrelic_synthetics_monitor` and `newrelic_synthetics_monitor_script` [GH-67]
+* **New Resource** `newrelic_synthetics_monitor` and `newrelic_synthetics_monitor_script` ([#67](https://github.com/terraform-providers/terraform-provider-newrelic/issues/67))
 
 IMPROVEMENTS
 
-* Add Terraform 0.12 support [GH-107]
+* Add Terraform 0.12 support ([#107](https://github.com/terraform-providers/terraform-provider-newrelic/issues/107))
 
 ## 1.4.0 (February 27, 2019)
 
