@@ -360,5 +360,5 @@ google.golang.org/grpc/credentials/internal
 google.golang.org/grpc/balancer/base
 google.golang.org/grpc/binarylog/grpc_binarylog_v1
 google.golang.org/grpc/internal/syscall
-# gopkg.in/resty.v1 v1.11.0
+# gopkg.in/resty.v1 v1.12.0
 gopkg.in/resty.v1
