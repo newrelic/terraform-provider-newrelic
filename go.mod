@@ -16,7 +16,7 @@ require (
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/ulikunitz/xz v0.5.6 // indirect
 	github.com/vmihailenco/msgpack v4.0.2+incompatible // indirect
-	github.com/zclconf/go-cty v0.0.0-20190212192503-19dda139b164 // indirect
+	github.com/zclconf/go-cty v0.0.0-20190402204003-fd76348b9329 // indirect
 	golang.org/x/sys v0.0.0-20190225065934-cc5685c2db12 // indirect
 	google.golang.org/genproto v0.0.0-20190219182410-082222b4a5c5 // indirect
 	gopkg.in/jarcoal/httpmock.v1 v1.0.0-20190204112747-618f46f3f0c8 // indirect
