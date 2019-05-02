@@ -210,7 +210,7 @@ github.com/newrelic/go-agent/internal/jsonx
 github.com/newrelic/go-agent/internal/sysinfo
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
-# github.com/paultyng/go-newrelic/v4 v4.1.0
+# github.com/paultyng/go-newrelic/v4 v4.3.0
 github.com/paultyng/go-newrelic/v4/api
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
@@ -289,7 +289,7 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20190225065934-cc5685c2db12
+# golang.org/x/sys v0.0.0-20190302045720-b6889370fb10
 golang.org/x/sys/unix
 golang.org/x/sys/cpu
 # golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2
