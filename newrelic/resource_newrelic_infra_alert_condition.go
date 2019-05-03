@@ -70,6 +70,10 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"runbook_url": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -148,6 +152,9 @@ func buildInfraAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertInfra
 		Critical:   expandAlertThreshold(d.Get("critical")),
 	}
 
+	if attr, ok := d.GetOk("runbook_url"); ok {
+		condition.RunbookURL = attr.(string)
+	}
 	if attr, ok := d.GetOk("warning"); ok {
 		condition.Warning = expandAlertThreshold(attr)
 	}
@@ -177,6 +184,7 @@ func readInfraAlertConditionStruct(condition *newrelic.AlertInfraCondition, d *s
 
 	d.Set("policy_id", policyID)
 	d.Set("name", condition.Name)
+	d.Set("runbook_url", condition.RunbookURL)
 	d.Set("enabled", condition.Enabled)
 	d.Set("created_at", condition.CreatedAt)
 	d.Set("updated_at", condition.UpdatedAt)
