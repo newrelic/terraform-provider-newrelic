@@ -29,7 +29,7 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_nrql_alert_condition.foo", "term.#", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.duration", "5"),
+						"newrelic_nrql_alert_condition.foo", "term.0.duration", "55"),
 					resource.TestCheckResourceAttr(
 						"newrelic_nrql_alert_condition.foo", "term.0.operator", "below"),
 					resource.TestCheckResourceAttr(
@@ -59,7 +59,7 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_nrql_alert_condition.foo", "term.#", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.duration", "10"),
+						"newrelic_nrql_alert_condition.foo", "term.0.duration", "100"),
 					resource.TestCheckResourceAttr(
 						"newrelic_nrql_alert_condition.foo", "term.0.operator", "below"),
 					resource.TestCheckResourceAttr(
@@ -154,7 +154,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   enabled         = false
 
   term {
-    duration      = 5
+    duration      = 55
     operator      = "below"
     priority      = "critical"
     threshold     = "0.75"
@@ -184,7 +184,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   enabled         = false
 
   term {
-    duration      = 10
+    duration      = 100
     operator      = "below"
     priority      = "critical"
     threshold     = "0.65"
