@@ -42,7 +42,7 @@ func intInSlice(valid []int) schema.SchemaValidateFunc {
 	}
 }
 
-func StringIntBetween(min, max int) schema.SchemaValidateFunc {
+func stringIntBetween(min, max int) schema.SchemaValidateFunc {
 	return func(i interface{}, k string) (s []string, es []error) {
 		v, ok := i.(string)
 		if !ok {

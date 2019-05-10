@@ -52,7 +52,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 						"since_value": {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: StringIntBetween(1, 20),
+							ValidateFunc: stringIntBetween(1, 20),
 						},
 					},
 				},

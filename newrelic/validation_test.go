@@ -17,25 +17,25 @@ func TestValidationIntBetweenStrings(t *testing.T) {
 	runTestCases(t, []testCase{
 		{
 			val: "1",
-			f:   StringIntBetween(1, 3),
+			f:   stringIntBetween(1, 3),
 		},
 		{
 			val: "3",
-			f:   StringIntBetween(1, 3),
+			f:   stringIntBetween(1, 3),
 		},
 		{
 			val:         "notanumber",
-			f:           StringIntBetween(1, 3),
+			f:           stringIntBetween(1, 3),
 			expectedErr: regexp.MustCompile("expected [\\w]+ to be convertable to int, got notanumber"),
 		},
 		{
 			val:         2,
-			f:           StringIntBetween(1, 3),
+			f:           stringIntBetween(1, 3),
 			expectedErr: regexp.MustCompile("expected type of [\\w]+ to be string"),
 		},
 		{
 			val:         "4",
-			f:           StringIntBetween(1, 3),
+			f:           stringIntBetween(1, 3),
 			expectedErr: regexp.MustCompile("expected [\\w]+ to be in the range \\(1 - 3\\), got 4"),
 		},
 	})
