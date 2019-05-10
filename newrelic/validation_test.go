@@ -75,7 +75,7 @@ func runTestCases(t *testing.T, cases []testCase) {
 		}
 
 		if !matchErr(errs, tc.expectedErr) {
-			t.Fatalf("expected test case %d to produce error matching \"%s\", got %v", i, tc.expectedErr, errs)
+			t.Fatalf("expected test case %d to produce error matching \"%s\", got '%v'", i, tc.expectedErr, errs[0])
 		}
 	}
 }

@@ -83,7 +83,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 						"duration": {
 							Type:         schema.TypeInt,
 							Required:     true,
-							ValidateFunc: intInSlice([]int{1, 2, 3, 4, 5, 10, 15, 30, 60, 120}),
+							ValidateFunc: validation.IntAtLeast(1),
 						},
 						"operator": {
 							Type:         schema.TypeString,
