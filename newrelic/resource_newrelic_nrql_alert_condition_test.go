@@ -43,7 +43,7 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_nrql_alert_condition.foo", "nrql.0.query", "SELECT uniqueCount(hostname) FROM ComputeSample"),
 					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "5"),
+						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "20"),
 				),
 			},
 			{
@@ -73,7 +73,7 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_nrql_alert_condition.foo", "nrql.0.query", "SELECT uniqueCount(hostname) as Hosts FROM ComputeSample"),
 					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "3"),
+						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "1"),
 				),
 			},
 		},
@@ -162,7 +162,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   }
   nrql {
     query         = "SELECT uniqueCount(hostname) FROM ComputeSample"
-    since_value   = "5"
+    since_value   = "20"
   }
   value_function  = "single_value"
 }
@@ -192,7 +192,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   }
   nrql {
     query         = "SELECT uniqueCount(hostname) as Hosts FROM ComputeSample"
-    since_value   = "3"
+    since_value   = "1"
   }
   value_function  = "single_value"
 }

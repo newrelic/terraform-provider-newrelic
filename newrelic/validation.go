@@ -2,8 +2,8 @@ package newrelic
 
 import (
 	"fmt"
-
 	"github.com/hashicorp/terraform/helper/schema"
+	"strconv"
 )
 
 func float64Gte(gte float64) schema.SchemaValidateFunc {
@@ -38,6 +38,29 @@ func intInSlice(valid []int) schema.SchemaValidateFunc {
 		}
 
 		es = append(es, fmt.Errorf("expected %s to be one of %v, got %v", k, valid, v))
+		return
+	}
+}
+
+func StringIntBetween(min, max int) schema.SchemaValidateFunc {
+	return func(i interface{}, k string) (s []string, es []error) {
+		v, ok := i.(string)
+		if !ok {
+			es = append(es, fmt.Errorf("expected type of %s to be string", k))
+			return
+		}
+
+		intValue, err := strconv.Atoi(v)
+		if err != nil {
+			es = append(es, fmt.Errorf("expected %s to be convertable to int, got %s", k, v))
+			return
+		}
+
+		if intValue < min || intValue > max {
+			es = append(es, fmt.Errorf("expected %s to be in the range (%d - %d), got %s", k, min, max, v))
+			return
+		}
+
 		return
 	}
 }
