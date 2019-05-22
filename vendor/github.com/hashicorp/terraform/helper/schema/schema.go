@@ -167,7 +167,8 @@ type Schema struct {
 	// The following fields are only set for a TypeList, TypeSet, or TypeMap.
 	//
 	// Elem represents the element type. For a TypeMap, it must be a *Schema
-	// with a Type of TypeString, otherwise it may be either a *Schema or a
+	// with a Type that is one of the primitives: TypeString, TypeBool,
+	// TypeInt, or TypeFloat. Otherwise it may be either a *Schema or a
 	// *Resource. If it is *Schema, the element type is just a simple value.
 	// If it is *Resource, the element type is a complex structure,
 	// potentially with its own lifecycle.
@@ -187,21 +188,8 @@ type Schema struct {
 	//
 	// If the field Optional is set to true then MinItems is ignored and thus
 	// effectively zero.
-	//
-	// If MaxItems is 1, you may optionally also set AsSingle in order to have
-	// Terraform v0.12 or later treat a TypeList or TypeSet as if it were a
-	// single value. It will remain a list or set in Terraform v0.10 and v0.11.
-	// Enabling this for an existing attribute after you've made at least one
-	// v0.12-compatible provider release is a breaking change. AsSingle is
-	// likely to misbehave when used with deeply-nested set structures due to
-	// the imprecision of set diffs, so be sure to test it thoroughly,
-	// including updates that change the set members at all levels. AsSingle
-	// exists primarily to be used in conjunction with ConfigMode when forcing
-	// a nested resource to be treated as an attribute, so it can be considered
-	// an attribute of object type rather than of list/set of object.
 	MaxItems int
 	MinItems int
-	AsSingle bool
 
 	// PromoteSingle originally allowed for a single element to be assigned
 	// where a primitive list was expected, but this no longer works from
@@ -250,7 +238,8 @@ type Schema struct {
 	// guaranteed to be of the proper Schema type, and it can yield warnings or
 	// errors based on inspection of that value.
 	//
-	// ValidateFunc currently only works for primitive types.
+	// ValidateFunc is honored only when the schema's Type is set to TypeInt,
+	// TypeFloat, TypeString, TypeBool, or TypeMap. It is ignored for all other types.
 	ValidateFunc SchemaValidateFunc
 
 	// Sensitive ensures that the attribute's value does not get displayed in
@@ -735,8 +724,10 @@ func (m schemaMap) internalValidate(topSchemaMap schemaMap, attrsOnly bool) erro
 			// Since "Auto" for Elem: *Resource would create a nested block,
 			// and that's impossible inside an attribute, we require it to be
 			// explicitly overridden as mode "Attr" for clarity.
-			if _, ok := v.Elem.(*Resource); ok && attrsOnly {
-				return fmt.Errorf("%s: in *schema.Resource with ConfigMode of attribute, so must also have ConfigMode of attribute", k)
+			if _, ok := v.Elem.(*Resource); ok {
+				if attrsOnly {
+					return fmt.Errorf("%s: in *schema.Resource with ConfigMode of attribute, so must also have ConfigMode of attribute", k)
+				}
 			}
 		default:
 			return fmt.Errorf("%s: invalid ConfigMode value", k)
@@ -821,15 +812,6 @@ func (m schemaMap) internalValidate(topSchemaMap schemaMap, attrsOnly bool) erro
 		} else {
 			if v.MaxItems > 0 || v.MinItems > 0 {
 				return fmt.Errorf("%s: MaxItems and MinItems are only supported on lists or sets", k)
-			}
-		}
-
-		if v.AsSingle {
-			if v.MaxItems != 1 {
-				return fmt.Errorf("%s: MaxItems must be 1 when AsSingle is set", k)
-			}
-			if v.Type != TypeList && v.Type != TypeSet {
-				return fmt.Errorf("%s: AsSingle can be used only with TypeList and TypeSet schemas", k)
 			}
 		}
 
@@ -1713,12 +1695,25 @@ func (m schemaMap) validatePrimitive(
 		}
 		decoded = n
 	case TypeInt:
-		// Verify that we can parse this as an int
-		var n int
-		if err := mapstructure.WeakDecode(raw, &n); err != nil {
-			return nil, []error{fmt.Errorf("%s: %s", k, err)}
+		switch {
+		case isProto5():
+			// We need to verify the type precisely, because WeakDecode will
+			// decode a float as an integer.
+
+			// the config shims only use int for integral number values
+			if v, ok := raw.(int); ok {
+				decoded = v
+			} else {
+				return nil, []error{fmt.Errorf("%s: must be a whole number, got %v", k, raw)}
+			}
+		default:
+			// Verify that we can parse this as an int
+			var n int
+			if err := mapstructure.WeakDecode(raw, &n); err != nil {
+				return nil, []error{fmt.Errorf("%s: %s", k, err)}
+			}
+			decoded = n
 		}
-		decoded = n
 	case TypeFloat:
 		// Verify that we can parse this as an int
 		var n float64

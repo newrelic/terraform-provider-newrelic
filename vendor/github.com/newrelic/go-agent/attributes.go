@@ -43,3 +43,31 @@ const (
 	// string parameters are removed.
 	AttributeRequestReferer = "request.headers.referer"
 )
+
+// AWS Lambda specific attributes:
+const (
+	AttributeAWSRequestID            = "aws.requestId"
+	AttributeAWSLambdaARN            = "aws.lambda.arn"
+	AttributeAWSLambdaColdStart      = "aws.lambda.coldStart"
+	AttributeAWSLambdaEventSourceARN = "aws.lambda.eventSource.arn"
+)
+
+// Attributes destined for Span Events:
+//
+// To disable the capture of one of these span event attributes, db.statement
+// for example, modify your Config like this:
+//
+//	cfg.SpanEvents.Attributes.Exclude = append(cfg.SpanEvents.Attributes.Exclude,
+//		newrelic.SpanAttributeDBStatement)
+const (
+	SpanAttributeDBStatement  = "db.statement"
+	SpanAttributeDBInstance   = "db.instance"
+	SpanAttributeDBCollection = "db.collection"
+	SpanAttributePeerAddress  = "peer.address"
+	SpanAttributePeerHostname = "peer.hostname"
+	SpanAttributeHTTPURL      = "http.url"
+	SpanAttributeHTTPMethod   = "http.method"
+	SpanAttributeAWSOperation = "aws.operation"
+	SpanAttributeAWSRequestID = "aws.requestId"
+	SpanAttributeAWSRegion    = "aws.region"
+)

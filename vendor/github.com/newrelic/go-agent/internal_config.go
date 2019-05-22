@@ -43,11 +43,15 @@ func copyConfigReferenceFields(cfg Config) Config {
 	cp.ErrorCollector.Attributes = copyDestConfig(cfg.ErrorCollector.Attributes)
 	cp.TransactionEvents.Attributes = copyDestConfig(cfg.TransactionEvents.Attributes)
 	cp.TransactionTracer.Attributes = copyDestConfig(cfg.TransactionTracer.Attributes)
+	cp.BrowserMonitoring.Attributes = copyDestConfig(cfg.BrowserMonitoring.Attributes)
+	cp.SpanEvents.Attributes = copyDestConfig(cfg.SpanEvents.Attributes)
+	cp.TransactionTracer.Segments.Attributes = copyDestConfig(cfg.TransactionTracer.Segments.Attributes)
 
 	return cp
 }
 
 const (
+	// agentLanguage is used in the connect JSON and the Lambda JSON
 	agentLanguage = "go"
 )
 

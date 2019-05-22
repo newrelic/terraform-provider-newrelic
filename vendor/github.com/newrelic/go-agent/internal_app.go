@@ -69,37 +69,14 @@ type app struct {
 	err error
 }
 
-// appRun contains information regarding a single connection session with the
-// collector.  It is immutable after creation at application connect.
-type appRun struct {
-	*internal.ConnectReply
-
-	// AttributeConfig is calculated on every connect since it depends on
-	// the security policies.
-	AttributeConfig *internal.AttributeConfig
-}
-
-func newAppRun(config Config, reply *internal.ConnectReply) *appRun {
-	return &appRun{
-		ConnectReply: reply,
-		AttributeConfig: internal.CreateAttributeConfig(internal.AttributeConfigInput{
-			Attributes:        convertAttributeDestinationConfig(config.Attributes),
-			ErrorCollector:    convertAttributeDestinationConfig(config.ErrorCollector.Attributes),
-			TransactionEvents: convertAttributeDestinationConfig(config.TransactionEvents.Attributes),
-			TransactionTracer: convertAttributeDestinationConfig(config.TransactionTracer.Attributes),
-			BrowserMonitoring: convertAttributeDestinationConfig(config.BrowserMonitoring.Attributes),
-		}, reply.SecurityPolicies.AttributesInclude.Enabled()),
-	}
-}
-
 func (app *app) doHarvest(h *internal.Harvest, harvestStart time.Time, run *appRun) {
 	h.CreateFinalMetrics()
-	h.Metrics = h.Metrics.ApplyRules(run.MetricRules)
+	h.Metrics = h.Metrics.ApplyRules(run.Reply.MetricRules)
 
 	payloads := h.Payloads(app.config.DistributedTracer.Enabled)
 	for _, p := range payloads {
 		cmd := p.EndpointMethod()
-		data, err := p.Data(run.RunID.String(), harvestStart)
+		data, err := p.Data(run.Reply.RunID.String(), harvestStart)
 
 		if nil != err {
 			app.config.Logger.Warn("unable to create harvest data", map[string]interface{}{
@@ -113,11 +90,11 @@ func (app *app) doHarvest(h *internal.Harvest, harvestStart time.Time, run *appR
 		}
 
 		call := internal.RpmCmd{
-			Collector:         run.Collector,
-			RunID:             run.RunID.String(),
+			Collector:         run.Reply.Collector,
+			RunID:             run.Reply.RunID.String(),
 			Name:              cmd,
 			Data:              data,
-			RequestHeadersMap: run.RequestHeadersMap,
+			RequestHeadersMap: run.Reply.RequestHeadersMap,
 		}
 
 		resp := internal.CollectorRequest(call, app.rpmControls)
@@ -139,7 +116,7 @@ func (app *app) doHarvest(h *internal.Harvest, harvestStart time.Time, run *appR
 		}
 
 		if resp.ShouldSaveHarvestData() {
-			app.Consume(run.RunID, p)
+			app.Consume(run.Reply.RunID, p)
 		}
 	}
 }
@@ -205,7 +182,7 @@ func debug(data internal.Harvestable, lg Logger) {
 }
 
 func processConnectMessages(run *appRun, lg Logger) {
-	for _, msg := range run.Messages {
+	for _, msg := range run.Reply.Messages {
 		event := "collector message"
 		cn := map[string]interface{}{"msg": msg.Message}
 
@@ -240,7 +217,7 @@ func (app *app) process() {
 				h = internal.NewHarvest(now)
 			}
 		case d := <-app.dataChan:
-			if nil != run && run.RunID == d.id {
+			if nil != run && run.Reply.RunID == d.id {
 				d.data.MergeIntoHarvest(h)
 			}
 		case <-app.initiateShutdown:
@@ -254,7 +231,7 @@ func (app *app) process() {
 				for done := false; !done; {
 					select {
 					case d := <-app.dataChan:
-						if run.RunID == d.id {
+						if run.Reply.RunID == d.id {
 							d.data.MergeIntoHarvest(h)
 						}
 					default:
@@ -288,7 +265,7 @@ func (app *app) process() {
 
 			app.config.Logger.Info("application connected", map[string]interface{}{
 				"app": app.config.AppName,
-				"run": run.RunID.String(),
+				"run": run.Reply.RunID.String(),
 			})
 			processConnectMessages(run, app.config.Logger)
 		}
@@ -297,6 +274,9 @@ func (app *app) process() {
 
 func (app *app) Shutdown(timeout time.Duration) {
 	if !app.config.Enabled {
+		return
+	}
+	if app.config.ServerlessMode.Enabled {
 		return
 	}
 
@@ -334,7 +314,7 @@ func runSampler(app *app, period time.Duration) {
 		case now := <-t.C:
 			current := internal.GetSample(now, app.config.Logger)
 			run, _ := app.getState()
-			app.Consume(run.RunID, internal.GetStats(internal.Samples{
+			app.Consume(run.Reply.RunID, internal.GetStats(internal.Samples{
 				Previous: previous,
 				Current:  current,
 			}))
@@ -350,6 +330,9 @@ func (app *app) WaitForConnection(timeout time.Duration) error {
 	if !app.config.Enabled {
 		return nil
 	}
+	if app.config.ServerlessMode.Enabled {
+		return nil
+	}
 	deadline := time.Now().Add(timeout)
 	pollPeriod := 50 * time.Millisecond
 
@@ -358,7 +341,7 @@ func (app *app) WaitForConnection(timeout time.Duration) error {
 		if nil != err {
 			return err
 		}
-		if run.RunID != "" {
+		if run.Reply.RunID != "" {
 			return nil
 		}
 		if time.Now().After(deadline) {
@@ -406,15 +389,17 @@ func newApp(c Config) (Application, error) {
 		"enabled": app.config.Enabled,
 	})
 
-	if !app.config.Enabled {
-		return app, nil
+	if app.config.ServerlessMode.Enabled {
+		reply := newServerlessConnectReply(c)
+		app.run = newAppRun(c, reply)
 	}
 
-	go app.process()
-	go app.connectRoutine()
-
-	if app.config.RuntimeSampler.Enabled {
-		go runSampler(app, internal.RuntimeSamplerPeriod)
+	if app.config.Enabled && !app.config.ServerlessMode.Enabled {
+		go app.process()
+		go app.connectRoutine()
+		if app.config.RuntimeSampler.Enabled {
+			go runSampler(app, internal.RuntimeSamplerPeriod)
+		}
 	}
 
 	return app, nil
@@ -474,12 +459,10 @@ func (app *app) setState(run *appRun, err error) {
 func (app *app) StartTransaction(name string, w http.ResponseWriter, r *http.Request) Transaction {
 	run, _ := app.getState()
 	txn := upgradeTxn(newTxn(txnInput{
-		app:        app,
-		Config:     app.config,
-		Reply:      run.ConnectReply,
-		writer:     w,
-		Consumer:   app,
-		attrConfig: run.AttributeConfig,
+		app:      app,
+		appRun:   run,
+		writer:   w,
+		Consumer: app,
 	}, name))
 
 	if nil != r {
@@ -492,10 +475,15 @@ var (
 	errHighSecurityEnabled        = errors.New("high security enabled")
 	errCustomEventsDisabled       = errors.New("custom events disabled")
 	errCustomEventsRemoteDisabled = errors.New("custom events disabled by server")
+	errCustomEventsServerless     = errors.New("custom events are not supported by serverless")
 )
 
 // RecordCustomEvent implements newrelic.Application's RecordCustomEvent.
 func (app *app) RecordCustomEvent(eventType string, params map[string]interface{}) error {
+	if app.config.ServerlessMode.Enabled {
+		return errCustomEventsServerless
+	}
+
 	if app.config.HighSecurity {
 		return errHighSecurityEnabled
 	}
@@ -510,27 +498,31 @@ func (app *app) RecordCustomEvent(eventType string, params map[string]interface{
 	}
 
 	run, _ := app.getState()
-	if !run.CollectCustomEvents {
+	if !run.Reply.CollectCustomEvents {
 		return errCustomEventsRemoteDisabled
 	}
 
-	if !run.SecurityPolicies.CustomEvents.Enabled() {
+	if !run.Reply.SecurityPolicies.CustomEvents.Enabled() {
 		return errSecurityPolicy
 	}
 
-	app.Consume(run.RunID, event)
+	app.Consume(run.Reply.RunID, event)
 
 	return nil
 }
 
 var (
-	errMetricInf       = errors.New("invalid metric value: inf")
-	errMetricNaN       = errors.New("invalid metric value: NaN")
-	errMetricNameEmpty = errors.New("missing metric name")
+	errMetricInf        = errors.New("invalid metric value: inf")
+	errMetricNaN        = errors.New("invalid metric value: NaN")
+	errMetricNameEmpty  = errors.New("missing metric name")
+	errMetricServerless = errors.New("custom metrics are not supported in serverless mode")
 )
 
 // RecordCustomMetric implements newrelic.Application's RecordCustomMetric.
 func (app *app) RecordCustomMetric(name string, value float64) error {
+	if app.config.ServerlessMode.Enabled {
+		return errMetricServerless
+	}
 	if math.IsNaN(value) {
 		return errMetricNaN
 	}
@@ -541,7 +533,7 @@ func (app *app) RecordCustomMetric(name string, value float64) error {
 		return errMetricNameEmpty
 	}
 	run, _ := app.getState()
-	app.Consume(run.RunID, internal.CustomMetric{
+	app.Consume(run.Reply.RunID, internal.CustomMetric{
 		RawInputName: name,
 		Value:        value,
 	})
@@ -556,6 +548,12 @@ func (app *app) Consume(id internal.AgentRunID, data internal.Harvestable) {
 	if nil != app.testHarvest {
 		data.MergeIntoHarvest(app.testHarvest)
 		return
+	}
+
+	if app.config.Enabled && app.config.ServerlessMode.Enabled {
+		if t, ok := data.(serverlessTransaction); ok {
+			t.serverlessDump()
+		}
 	}
 
 	if "" == id {

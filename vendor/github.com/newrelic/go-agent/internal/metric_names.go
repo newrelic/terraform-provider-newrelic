@@ -7,6 +7,10 @@ const (
 	webRollup        = "WebTransaction"
 	backgroundRollup = "OtherTransaction/all"
 
+	// https://source.datanerd.us/agents/agent-specs/blob/master/Total-Time-Async.md
+	totalTimeWeb        = "WebTransactionTotalTime"
+	totalTimeBackground = "OtherTransactionTotalTime"
+
 	errorsPrefix = "Errors/"
 
 	// "HttpDispatcher" metric is used for the overview graph, and
@@ -193,6 +197,13 @@ func datastoreInstanceMetric(key DatastoreMetricKey) string {
 	return "Datastore/instance/" + key.Product +
 		"/" + key.Host +
 		"/" + key.PortPathOrID
+}
+
+func externalScopedMetric(key externalMetricKey) string {
+	if "" != key.ExternalCrossProcessID && "" != key.ExternalTransactionName {
+		return externalTransactionMetric(key)
+	}
+	return externalHostMetric(key)
 }
 
 // External/{host}/all

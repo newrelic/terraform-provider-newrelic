@@ -1,10 +1,15 @@
 package newrelic
 
 import (
+	"bytes"
+	"compress/gzip"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"reflect"
 	"strings"
 	"sync"
@@ -15,12 +20,10 @@ import (
 
 type txnInput struct {
 	// This ResponseWriter should only be accessed using txn.getWriter()
-	writer     http.ResponseWriter
-	app        Application
-	Config     Config
-	Reply      *internal.ConnectReply
-	Consumer   dataConsumer
-	attrConfig *internal.AttributeConfig
+	writer   http.ResponseWriter
+	app      Application
+	Consumer dataConsumer
+	*appRun
 }
 
 type txn struct {
@@ -41,29 +44,69 @@ type txn struct {
 	wroteHeader bool
 
 	internal.TxnData
+
+	mainThread   internal.Thread
+	asyncThreads []*internal.Thread
 }
 
-func newTxn(input txnInput, name string) *txn {
+type thread struct {
+	*txn
+	// thread does not have locking because it should only be accessed while
+	// the txn is locked.
+	thread *internal.Thread
+}
+
+func (txn *txn) markStart(now time.Time) {
+	txn.Start = now
+	// The mainThread is considered active now.
+	txn.mainThread.RecordActivity(now)
+
+}
+
+func (txn *txn) markEnd(now time.Time, thread *internal.Thread) {
+	txn.Stop = now
+	// The thread on which End() was called is considered active now.
+	thread.RecordActivity(now)
+	txn.Duration = txn.Stop.Sub(txn.Start)
+
+	// TotalTime is the sum of "active time" across all threads.  A thread
+	// was active when it started the transaction, stopped the transaction,
+	// started a segment, or stopped a segment.
+	txn.TotalTime = txn.mainThread.TotalTime()
+	for _, thd := range txn.asyncThreads {
+		txn.TotalTime += thd.TotalTime()
+	}
+	// Ensure that TotalTime is at least as large as Duration so that the
+	// graphs look sensible.  This can happen under the following situation:
+	// goroutine1: txn.start----|segment1|
+	// goroutine2:                                   |segment2|----txn.end
+	if txn.Duration > txn.TotalTime {
+		txn.TotalTime = txn.Duration
+	}
+}
+
+func newTxn(input txnInput, name string) *thread {
 	txn := &txn{
 		txnInput: input,
 	}
-	txn.Start = time.Now()
+	txn.markStart(time.Now())
+
 	txn.Name = name
-	txn.Attrs = internal.NewAttributes(input.attrConfig)
+	txn.Attrs = internal.NewAttributes(input.AttributeConfig)
 
 	if input.Config.DistributedTracer.Enabled {
 		txn.BetterCAT.Enabled = true
 		txn.BetterCAT.Priority = internal.NewPriority()
 		txn.BetterCAT.ID = internal.NewSpanID()
-		txn.SpanEventsEnabled = txn.Config.SpanEvents.Enabled && txn.Reply.CollectSpanEvents
+		txn.SpanEventsEnabled = txn.Config.SpanEvents.Enabled
 		txn.LazilyCalculateSampled = txn.lazilyCalculateSampled
 	}
 
 	txn.Attrs.Agent.Add(internal.AttributeHostDisplayName, txn.Config.HostDisplayName, nil)
-	txn.TxnTrace.Enabled = txn.txnTracesEnabled()
+	txn.TxnTrace.Enabled = txn.Config.TransactionTracer.Enabled
 	txn.TxnTrace.SegmentThreshold = txn.Config.TransactionTracer.SegmentThreshold
 	txn.StackTraceThreshold = txn.Config.TransactionTracer.StackTraceThreshold
-	txn.SlowQueriesEnabled = txn.slowQueriesEnabled()
+	txn.SlowQueriesEnabled = txn.Config.DatastoreTracer.SlowQuery.Enabled
 	txn.SlowQueryThreshold = txn.Config.DatastoreTracer.SlowQuery.Threshold
 
 	// Synthetics support is tied up with a transaction's Old CAT field,
@@ -74,7 +117,10 @@ func newTxn(input txnInput, name string) *txn {
 	noGUID := txn.Config.DistributedTracer.Enabled
 	txn.CrossProcess.Init(doOldCAT, noGUID, input.Reply)
 
-	return txn
+	return &thread{
+		txn:    txn,
+		thread: &txn.mainThread,
+	}
 }
 
 // lazilyCalculateSampled calculates and returns whether or not the transaction
@@ -142,7 +188,8 @@ func (txn *txn) SetWebRequest(r WebRequest) error {
 	return nil
 }
 
-func (txn *txn) SetWebResponse(w http.ResponseWriter) Transaction {
+func (thd *thread) SetWebResponse(w http.ResponseWriter) Transaction {
+	txn := thd.txn
 	txn.Lock()
 	defer txn.Unlock()
 
@@ -151,27 +198,10 @@ func (txn *txn) SetWebResponse(w http.ResponseWriter) Transaction {
 	// data flowing through as expected.
 	txn.writer = w
 
-	return upgradeTxn(txn)
-}
-
-func (txn *txn) slowQueriesEnabled() bool {
-	return txn.Config.DatastoreTracer.SlowQuery.Enabled &&
-		txn.Reply.CollectTraces
-}
-
-func (txn *txn) txnTracesEnabled() bool {
-	return txn.Config.TransactionTracer.Enabled &&
-		txn.Reply.CollectTraces
-}
-
-func (txn *txn) txnEventsEnabled() bool {
-	return txn.Config.TransactionEvents.Enabled &&
-		txn.Reply.CollectAnalyticsEvents
-}
-
-func (txn *txn) errorEventsEnabled() bool {
-	return txn.Config.ErrorCollector.CaptureEvents &&
-		txn.Reply.CollectErrorEvents
+	return upgradeTxn(&thread{
+		thread: thd.thread,
+		txn:    txn,
+	})
 }
 
 func (txn *txn) freezeName() {
@@ -189,16 +219,14 @@ func (txn *txn) getsApdex() bool {
 	return txn.IsWeb
 }
 
-func (txn *txn) txnTraceThreshold() time.Duration {
-	if txn.Config.TransactionTracer.Threshold.IsApdexFailing {
-		return internal.ApdexFailingThreshold(txn.ApdexThreshold)
-	}
-	return txn.Config.TransactionTracer.Threshold.Duration
-}
-
 func (txn *txn) shouldSaveTrace() bool {
-	return txn.CrossProcess.IsSynthetics() ||
-		(txn.txnTracesEnabled() && (txn.Duration >= txn.txnTraceThreshold()))
+	if !txn.Config.TransactionTracer.Enabled {
+		return false
+	}
+	if txn.CrossProcess.IsSynthetics() {
+		return true
+	}
+	return txn.Duration >= txn.txnTraceThreshold(txn.ApdexThreshold)
 }
 
 func (txn *txn) MergeIntoHarvest(h *internal.Harvest) {
@@ -213,16 +241,18 @@ func (txn *txn) MergeIntoHarvest(h *internal.Harvest) {
 	internal.CreateTxnMetrics(&txn.TxnData, h.Metrics)
 	internal.MergeBreakdownMetrics(&txn.TxnData, h.Metrics)
 
-	if txn.txnEventsEnabled() {
+	if txn.Config.TransactionEvents.Enabled {
 		// Allocate a new TxnEvent to prevent a reference to the large transaction.
 		alloc := new(internal.TxnEvent)
 		*alloc = txn.TxnData.TxnEvent
 		h.TxnEvents.AddTxnEvent(alloc, priority)
 	}
 
-	internal.MergeTxnErrors(&h.ErrorTraces, txn.Errors, txn.TxnEvent)
+	if txn.Reply.CollectErrors {
+		internal.MergeTxnErrors(&h.ErrorTraces, txn.Errors, txn.TxnEvent)
+	}
 
-	if txn.errorEventsEnabled() {
+	if txn.Config.ErrorCollector.CaptureEvents {
 		for _, e := range txn.Errors {
 			errEvent := &internal.ErrorEvent{
 				ErrorData: *e,
@@ -251,18 +281,6 @@ func (txn *txn) MergeIntoHarvest(h *internal.Harvest) {
 	}
 }
 
-func responseCodeIsError(cfg *Config, code int) bool {
-	if code < http.StatusBadRequest { // 400
-		return false
-	}
-	for _, ignoreCode := range cfg.ErrorCollector.IgnoreStatusCodes {
-		if code == ignoreCode {
-			return false
-		}
-	}
-	return true
-}
-
 func headersJustWritten(txn *txn, code int, hdr http.Header) {
 	txn.Lock()
 	defer txn.Unlock()
@@ -278,7 +296,7 @@ func headersJustWritten(txn *txn, code int, hdr http.Header) {
 	internal.ResponseHeaderAttributes(txn.Attrs, hdr)
 	internal.ResponseCodeAttribute(txn.Attrs, code)
 
-	if responseCodeIsError(&txn.Config, code) {
+	if txn.appRun.responseCodeIsError(code) {
 		e := internal.TxnErrorFromResponseCode(time.Now(), code)
 		e.Stack = internal.GetStackTrace(1)
 		txn.noticeErrorInternal(e)
@@ -380,7 +398,109 @@ func (txn *txn) WriteHeader(code int) {
 	headersJustWritten(txn, code, hdr)
 }
 
-func (txn *txn) End() error {
+const (
+	lambdaMetadataVersion = 2
+)
+
+func (txn *txn) serverlessDataJSON() ([]byte, error) {
+	harvest := internal.NewHarvest(txn.Start)
+	txn.MergeIntoHarvest(harvest)
+	payloads := harvest.Payloads(false)
+	harvestPayloads := make(map[string]json.RawMessage, len(payloads))
+	for _, p := range payloads {
+		agentRunID := ""
+		cmd := p.EndpointMethod()
+		data, err := p.Data(agentRunID, txn.Stop)
+		if err != nil {
+			txn.Config.Logger.Error("error creating payload json", map[string]interface{}{
+				"command": cmd,
+				"error":   err.Error(),
+			})
+			continue
+		}
+		if nil == data {
+			continue
+		}
+		// NOTE!  This code relies on the fact that each payload is
+		// using a different endpoint method.  Sometimes the transaction
+		// events payload might be split, but since there is only one
+		// transaction event per serverless transaction, that's not an
+		// issue.  Likewise, if we ever split normal transaction events
+		// apart from synthetics events, the transaction will either be
+		// normal or synthetic, so that won't be an issue.  Log an error
+		// if this happens for future defensiveness.
+		if _, ok := harvestPayloads[cmd]; ok {
+			txn.Config.Logger.Error("data with duplicate command name lost", map[string]interface{}{
+				"command": cmd,
+			})
+		}
+		harvestPayloads[cmd] = json.RawMessage(data)
+	}
+
+	return json.Marshal(harvestPayloads)
+}
+
+func (txn *txn) serverlessJSON(executionEnv string) ([]byte, error) {
+	data, err := txn.serverlessDataJSON()
+	if nil != err {
+		return nil, err
+	}
+
+	var dataBuf bytes.Buffer
+	gz := gzip.NewWriter(&dataBuf)
+	gz.Write(data)
+	gz.Flush()
+	gz.Close()
+
+	arn, _ := txn.Attrs.GetAgentValue(internal.AttributeAWSLambdaARN, internal.DestAll)
+	return json.Marshal([]interface{}{
+		lambdaMetadataVersion,
+		"NR_LAMBDA_MONITORING",
+		struct {
+			MetadataVersion      int    `json:"metadata_version"`
+			ARN                  string `json:"arn,omitempty"`
+			ProtocolVersion      int    `json:"protocol_version"`
+			ExecutionEnvironment string `json:"execution_environment,omitempty"`
+			AgentVersion         string `json:"agent_version"`
+			AgentLanguage        string `json:"agent_language"`
+		}{
+			MetadataVersion:      lambdaMetadataVersion,
+			ProtocolVersion:      internal.ProcotolVersion,
+			AgentVersion:         Version,
+			ExecutionEnvironment: executionEnv,
+			ARN:                  arn,
+			AgentLanguage:        agentLanguage,
+		},
+		base64.StdEncoding.EncodeToString(dataBuf.Bytes()),
+	})
+}
+
+var (
+	_ serverlessTransaction = &txn{}
+)
+
+type serverlessTransaction interface {
+	// serverlessJSON creates the Lambda JSON that will be printed to stdout
+	// by serverlessDump.  It is exposed through this interface to
+	// facilitate testing.
+	serverlessJSON(executionEnv string) ([]byte, error)
+	// serverlessDump writes the Lambda JSON to stdout.
+	serverlessDump()
+}
+
+func (txn *txn) serverlessDump() {
+	js, err := txn.serverlessJSON(os.Getenv("AWS_EXECUTION_ENV"))
+	if err != nil {
+		txn.Config.Logger.Error("error creating serverless json", map[string]interface{}{
+			"error": err.Error(),
+		})
+	} else {
+		fmt.Println(string(js))
+	}
+}
+
+func (thd *thread) End() error {
+	txn := thd.txn
 	txn.Lock()
 	defer txn.Unlock()
 
@@ -397,12 +517,7 @@ func (txn *txn) End() error {
 		txn.noticeErrorInternal(e)
 	}
 
-	txn.Stop = time.Now()
-	txn.Duration = txn.Stop.Sub(txn.Start)
-	if children := internal.TracerRootChildren(&txn.TxnData); txn.Duration > children {
-		txn.Exclusive = txn.Duration - children
-	}
-
+	txn.markEnd(time.Now(), thd.thread)
 	txn.freezeName()
 	// Make a sampling decision if there have been no segments or outbound
 	// payloads.
@@ -471,13 +586,12 @@ func (txn *txn) AddAttribute(name string, value interface{}) error {
 }
 
 var (
-	errorsLocallyDisabled  = errors.New("errors locally disabled")
-	errorsRemotelyDisabled = errors.New("errors remotely disabled")
-	errNilError            = errors.New("nil error")
-	errAlreadyEnded        = errors.New("transaction has already ended")
-	errSecurityPolicy      = errors.New("disabled by security policy")
-	errTransactionIgnored  = errors.New("transaction has been ignored")
-	errBrowserDisabled     = errors.New("browser disabled by local configuration")
+	errorsDisabled        = errors.New("errors disabled")
+	errNilError           = errors.New("nil error")
+	errAlreadyEnded       = errors.New("transaction has already ended")
+	errSecurityPolicy     = errors.New("disabled by security policy")
+	errTransactionIgnored = errors.New("transaction has been ignored")
+	errBrowserDisabled    = errors.New("browser disabled by local configuration")
 )
 
 const (
@@ -487,11 +601,7 @@ const (
 
 func (txn *txn) noticeErrorInternal(err internal.ErrorData) error {
 	if !txn.Config.ErrorCollector.Enabled {
-		return errorsLocallyDisabled
-	}
-
-	if !txn.Reply.CollectErrors {
-		return errorsRemotelyDisabled
+		return errorsDisabled
 	}
 
 	if nil == txn.Errors {
@@ -589,17 +699,18 @@ func (txn *txn) Ignore() error {
 	return nil
 }
 
-func (txn *txn) StartSegmentNow() SegmentStartTime {
+func (thd *thread) StartSegmentNow() SegmentStartTime {
 	var s internal.SegmentStartTime
+	txn := thd.txn
 	txn.Lock()
 	if !txn.finished {
-		s = internal.StartSegment(&txn.TxnData, time.Now())
+		s = internal.StartSegment(&txn.TxnData, thd.thread, time.Now())
 	}
 	txn.Unlock()
 	return SegmentStartTime{
 		segment: segment{
-			start: s,
-			txn:   txn,
+			start:  s,
+			thread: thd,
 		},
 	}
 }
@@ -672,25 +783,47 @@ func (txn *txn) BrowserTimingHeader() (*BrowserTimingHeader, error) {
 	}, nil
 }
 
+func createThread(txn *txn) *internal.Thread {
+	newThread := internal.NewThread(&txn.TxnData)
+	txn.asyncThreads = append(txn.asyncThreads, newThread)
+	return newThread
+}
+
+func (thd *thread) NewGoroutine() Transaction {
+	txn := thd.txn
+	txn.Lock()
+	defer txn.Unlock()
+
+	if txn.finished {
+		// If the transaction has finished, return the same thread.
+		return upgradeTxn(thd)
+	}
+	return upgradeTxn(&thread{
+		thread: createThread(txn),
+		txn:    txn,
+	})
+}
+
 type segment struct {
-	start internal.SegmentStartTime
-	txn   *txn
+	start  internal.SegmentStartTime
+	thread *thread
 }
 
 func endSegment(s *Segment) error {
 	if nil == s {
 		return nil
 	}
-	txn := s.StartTime.txn
-	if nil == txn {
+	thd := s.StartTime.thread
+	if nil == thd {
 		return nil
 	}
+	txn := thd.txn
 	var err error
 	txn.Lock()
 	if txn.finished {
 		err = errAlreadyEnded
 	} else {
-		err = internal.EndBasicSegment(&txn.TxnData, s.StartTime.start, time.Now(), s.Name)
+		err = internal.EndBasicSegment(&txn.TxnData, thd.thread, s.StartTime.start, time.Now(), s.Name)
 	}
 	txn.Unlock()
 	return err
@@ -700,10 +833,11 @@ func endDatastore(s *DatastoreSegment) error {
 	if nil == s {
 		return nil
 	}
-	txn := s.StartTime.txn
-	if nil == txn {
+	thd := s.StartTime.thread
+	if nil == thd {
 		return nil
 	}
+	txn := thd.txn
 	txn.Lock()
 	defer txn.Unlock()
 
@@ -730,7 +864,8 @@ func endDatastore(s *DatastoreSegment) error {
 		s.PortPathOrID = ""
 	}
 	return internal.EndDatastoreSegment(internal.EndDatastoreParams{
-		Tracer:             &txn.TxnData,
+		TxnData:            &txn.TxnData,
+		Thread:             thd.thread,
 		Start:              s.StartTime.start,
 		Now:                time.Now(),
 		Product:            string(s.Product),
@@ -782,10 +917,11 @@ func endExternal(s *ExternalSegment) error {
 	if nil == s {
 		return nil
 	}
-	txn := s.StartTime.txn
-	if nil == txn {
+	thd := s.StartTime.thread
+	if nil == thd {
 		return nil
 	}
+	txn := thd.txn
 	txn.Lock()
 	defer txn.Unlock()
 
@@ -797,7 +933,7 @@ func endExternal(s *ExternalSegment) error {
 	if nil != err {
 		return err
 	}
-	return internal.EndExternalSegment(&txn.TxnData, s.StartTime.start, time.Now(), u, m, s.Response)
+	return internal.EndExternalSegment(&txn.TxnData, thd.thread, s.StartTime.start, time.Now(), u, m, s.Response, txn.Config.Logger)
 }
 
 // oldCATOutboundHeaders generates the Old CAT and Synthetics headers, depending
@@ -826,17 +962,17 @@ func oldCATOutboundHeaders(txn *txn) http.Header {
 }
 
 func outboundHeaders(s *ExternalSegment) http.Header {
-	txn := s.StartTime.txn
+	thd := s.StartTime.thread
 
-	if nil == txn {
+	if nil == thd {
 		return http.Header{}
 	}
-
+	txn := thd.txn
 	hdr := oldCATOutboundHeaders(txn)
 
 	// hdr may be empty, or it may contain headers.  If DistributedTracer
 	// is enabled, add more to the existing hdr
-	if p := txn.CreateDistributedTracePayload().HTTPSafe(); "" != p {
+	if p := thd.CreateDistributedTracePayload().HTTPSafe(); "" != p {
 		hdr.Add(DistributedTracePayloadHeader, p)
 		return hdr
 	}
@@ -853,9 +989,10 @@ type shimPayload struct{}
 func (s shimPayload) Text() string     { return "" }
 func (s shimPayload) HTTPSafe() string { return "" }
 
-func (txn *txn) CreateDistributedTracePayload() (payload DistributedTracePayload) {
+func (thd *thread) CreateDistributedTracePayload() (payload DistributedTracePayload) {
 	payload = shimPayload{}
 
+	txn := thd.txn
 	txn.Lock()
 	defer txn.Unlock()
 
@@ -868,8 +1005,10 @@ func (txn *txn) CreateDistributedTracePayload() (payload DistributedTracePayload
 		return
 	}
 
-	if "" == txn.Reply.PrimaryAppID {
-		// Return a shimPayload if the application is not yet connected.
+	if "" == txn.Reply.AccountID || "" == txn.Reply.TrustedAccountKey {
+		// We can't create a payload:  The application is not yet
+		// connected or serverless distributed tracing configuration was
+		// not provided.
 		return
 	}
 
@@ -891,7 +1030,7 @@ func (txn *txn) CreateDistributedTracePayload() (payload DistributedTracePayload
 
 	sampled := txn.lazilyCalculateSampled()
 	if sampled && txn.SpanEventsEnabled {
-		p.ID = txn.CurrentSpanIdentifier()
+		p.ID = txn.CurrentSpanIdentifier(thd.thread)
 	}
 
 	// limit the number of outbound sampled=true payloads to prevent too
@@ -944,6 +1083,13 @@ func (txn *txn) acceptDistributedTracePayloadLocked(t TransportType, p interface
 
 	if nil == p {
 		txn.AcceptPayloadNullPayload = true
+		return nil
+	}
+
+	if "" == txn.Reply.AccountID || "" == txn.Reply.TrustedAccountKey {
+		// We can't accept a payload:  The application is not yet
+		// connected or serverless distributed tracing configuration was
+		// not provided.
 		return nil
 	}
 
@@ -1013,4 +1159,24 @@ func (txn *txn) acceptDistributedTracePayloadLocked(t TransportType, p interface
 
 func (txn *txn) Application() Application {
 	return txn.app
+}
+
+func (thd *thread) AddAgentSpanAttribute(key internal.SpanAttribute, val string) {
+	thd.thread.AddAgentSpanAttribute(key, val)
+}
+
+var (
+	// Ensure that txn implements AddAgentAttributer to avoid breaking
+	// integration package type assertions.
+	_ internal.AddAgentAttributer = &txn{}
+)
+
+func (txn *txn) AddAgentAttribute(id internal.AgentAttributeID, stringVal string, otherVal interface{}) {
+	txn.Lock()
+	defer txn.Unlock()
+
+	if txn.finished {
+		return
+	}
+	txn.Attrs.Agent.Add(id, stringVal, otherVal)
 }

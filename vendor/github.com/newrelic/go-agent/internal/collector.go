@@ -140,7 +140,7 @@ func collectorRequestInternal(url string, cmd RpmCmd, cs RpmControls) RPMRespons
 	req.Header.Add("Accept-Encoding", "identity, deflate")
 	req.Header.Add("Content-Type", "application/octet-stream")
 	req.Header.Add("User-Agent", userAgentPrefix+cs.AgentVersion)
-	req.Header.Add("Content-Encoding", "deflate")
+	req.Header.Add("Content-Encoding", "gzip")
 	for k, v := range cmd.RequestHeadersMap {
 		req.Header.Add(k, v)
 	}
@@ -297,10 +297,10 @@ func ConnectAttempt(config ConnectJSONCreator, securityPoliciesToken string, cs 
 
 	reply.Reply.PreconnectReply = preconnect.Preconnect
 
-	reply.Reply.AdaptiveSampler = newAdaptiveSampler(adaptiveSamplerInput{
-		Period: time.Duration(reply.Reply.SamplingTargetPeriodInSeconds) * time.Second,
-		Target: reply.Reply.SamplingTarget,
-	}, time.Now())
+	reply.Reply.AdaptiveSampler = NewAdaptiveSampler(
+		time.Duration(reply.Reply.SamplingTargetPeriodInSeconds)*time.Second,
+		reply.Reply.SamplingTarget,
+		time.Now())
 	reply.Reply.rulesCache = newRulesCache(txnNameCacheLimit)
 
 	return reply.Reply, resp

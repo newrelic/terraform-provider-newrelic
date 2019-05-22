@@ -30,7 +30,48 @@ const (
 	attributeResponseHeadersContentType
 	attributeResponseHeadersContentLength
 	attributeResponseCode
+	AttributeAWSRequestID
+	AttributeAWSLambdaARN
+	AttributeAWSLambdaColdStart
+	AttributeAWSLambdaEventSourceARN
 )
+
+// SpanAttribute is an attribute put in span events.
+type SpanAttribute string
+
+// AddAgentSpanAttributer should be implemented by the Transaction.
+type AddAgentSpanAttributer interface {
+	AddAgentSpanAttribute(key SpanAttribute, val string)
+}
+
+// AddAgentSpanAttribute allows instrumentation packages to add span attributes.
+func AddAgentSpanAttribute(txn interface{}, key SpanAttribute, val string) {
+	if aa, ok := txn.(AddAgentSpanAttributer); ok {
+		aa.AddAgentSpanAttribute(key, val)
+	}
+}
+
+// These span event string constants must match the contents of the top level
+// attributes.go file.
+const (
+	spanAttributeDBStatement  SpanAttribute = "db.statement"
+	spanAttributeDBInstance   SpanAttribute = "db.instance"
+	spanAttributeDBCollection SpanAttribute = "db.collection"
+	spanAttributePeerAddress  SpanAttribute = "peer.address"
+	spanAttributePeerHostname SpanAttribute = "peer.hostname"
+	spanAttributeHTTPURL      SpanAttribute = "http.url"
+	spanAttributeHTTPMethod   SpanAttribute = "http.method"
+	// query parameters only appear in segments, not span events, but is
+	// listed as span attributes to simplify code.
+	spanAttributeQueryParameters SpanAttribute = "query_parameters"
+	// These span attributes are added by aws sdk instrumentation.
+	// https://source.datanerd.us/agents/agent-specs/blob/master/implementation_guides/aws-sdk.md#span-and-segment-attributes
+	SpanAttributeAWSOperation SpanAttribute = "aws.operation"
+	SpanAttributeAWSRequestID SpanAttribute = "aws.requestId"
+	SpanAttributeAWSRegion    SpanAttribute = "aws.region"
+)
+
+func (sa SpanAttribute) String() string { return string(sa) }
 
 var (
 	usualDests         = DestAll &^ destBrowser
@@ -51,6 +92,23 @@ var (
 		attributeResponseHeadersContentType:   {name: "response.headers.contentType", defaultDests: usualDests},
 		attributeResponseHeadersContentLength: {name: "response.headers.contentLength", defaultDests: usualDests},
 		attributeResponseCode:                 {name: "httpResponseCode", defaultDests: usualDests},
+		AttributeAWSRequestID:                 {name: "aws.requestId", defaultDests: usualDests},
+		AttributeAWSLambdaARN:                 {name: "aws.lambda.arn", defaultDests: usualDests},
+		AttributeAWSLambdaColdStart:           {name: "aws.lambda.coldStart", defaultDests: usualDests},
+		AttributeAWSLambdaEventSourceARN:      {name: "aws.lambda.eventSource.arn", defaultDests: usualDests},
+	}
+	spanAttributes = []SpanAttribute{
+		spanAttributeDBStatement,
+		spanAttributeDBInstance,
+		spanAttributeDBCollection,
+		spanAttributePeerAddress,
+		spanAttributePeerHostname,
+		spanAttributeHTTPURL,
+		spanAttributeHTTPMethod,
+		spanAttributeQueryParameters,
+		SpanAttributeAWSOperation,
+		SpanAttributeAWSRequestID,
+		SpanAttributeAWSRegion,
 	}
 )
 
@@ -73,12 +131,14 @@ const (
 	destError
 	destTxnTrace
 	destBrowser
+	destSpan
+	destSegment
 )
 
 const (
 	destNone destinationSet = 0
 	// DestAll contains all destinations.
-	DestAll destinationSet = destTxnEvent | destTxnTrace | destError | destBrowser
+	DestAll destinationSet = destTxnEvent | destTxnTrace | destError | destBrowser | destSpan | destSegment
 )
 
 const (
@@ -105,6 +165,7 @@ type AttributeConfig struct {
 	// over modifiers appearing earlier.
 	wildcardModifiers []*attributeModifier
 	agentDests        map[AgentAttributeID]destinationSet
+	spanDests         map[SpanAttribute]destinationSet
 }
 
 type includeExclude struct {
@@ -196,6 +257,8 @@ type AttributeConfigInput struct {
 	TransactionEvents AttributeDestinationConfig
 	BrowserMonitoring AttributeDestinationConfig
 	TransactionTracer AttributeDestinationConfig
+	SpanEvents        AttributeDestinationConfig
+	TraceSegments     AttributeDestinationConfig
 }
 
 var (
@@ -205,6 +268,8 @@ var (
 		TransactionEvents: AttributeDestinationConfig{Enabled: true},
 		TransactionTracer: AttributeDestinationConfig{Enabled: true},
 		BrowserMonitoring: AttributeDestinationConfig{Enabled: true},
+		SpanEvents:        AttributeDestinationConfig{Enabled: true},
+		TraceSegments:     AttributeDestinationConfig{Enabled: true},
 	}
 )
 
@@ -220,12 +285,18 @@ func CreateAttributeConfig(input AttributeConfigInput, includeEnabled bool) *Att
 	processDest(c, includeEnabled, &input.TransactionEvents, destTxnEvent)
 	processDest(c, includeEnabled, &input.TransactionTracer, destTxnTrace)
 	processDest(c, includeEnabled, &input.BrowserMonitoring, destBrowser)
+	processDest(c, includeEnabled, &input.SpanEvents, destSpan)
+	processDest(c, includeEnabled, &input.TraceSegments, destSegment)
 
 	sort.Sort(byMatch(c.wildcardModifiers))
 
 	c.agentDests = make(map[AgentAttributeID]destinationSet)
 	for id, info := range agentAttributeInfo {
 		c.agentDests[id] = applyAttributeConfig(c, info.name, info.defaultDests)
+	}
+	c.spanDests = make(map[SpanAttribute]destinationSet, len(spanAttributes))
+	for _, id := range spanAttributes {
+		c.spanDests[id] = applyAttributeConfig(c, id.String(), destSpan|destSegment)
 	}
 
 	return c
@@ -243,6 +314,17 @@ type agentAttributeValue struct {
 
 type agentAttributes map[AgentAttributeID]agentAttributeValue
 
+func (a *Attributes) filterSpanAttributes(s map[SpanAttribute]jsonWriter, d destinationSet) map[SpanAttribute]jsonWriter {
+	if nil != a {
+		for key := range s {
+			if a.config.spanDests[key]&d == 0 {
+				delete(s, key)
+			}
+		}
+	}
+	return s
+}
+
 // GetAgentValue is used to access agent attributes.  This function returns ("",
 // nil) if the attribute doesn't exist or it doesn't match the destinations
 // provided.
@@ -254,8 +336,14 @@ func (a *Attributes) GetAgentValue(id AgentAttributeID, d destinationSet) (strin
 	return v.stringVal, v.otherVal
 }
 
-// Add is used to add agent attributes.  Only one of stringVal and otherVal
-// should be populated.  Since most agent attribute values are strings,
+// AddAgentAttributer allows instrumentation to add agent attributes without
+// exposing a Transaction method.
+type AddAgentAttributer interface {
+	AddAgentAttribute(id AgentAttributeID, stringVal string, otherVal interface{})
+}
+
+// Add is used to add agent attributes.  Only one of stringVal and
+// otherVal should be populated.  Since most agent attribute values are strings,
 // stringVal exists to avoid allocations.
 func (attr agentAttributes) Add(id AgentAttributeID, stringVal string, otherVal interface{}) {
 	if "" != stringVal || otherVal != nil {

@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
+
+	"time"
+
+	"github.com/newrelic/go-agent/internal/racedetector"
 )
 
 var (
@@ -44,7 +48,7 @@ func ExtendValidator(v Validator, field interface{}) Validator {
 }
 
 // WantMetric is a metric expectation.  If Data is nil, then any data values are
-// acceptable.
+// acceptable.  If Data has len 1, then only the metric count is validated.
 type WantMetric struct {
 	Name   string
 	Scope  string
@@ -54,10 +58,14 @@ type WantMetric struct {
 
 // WantError is a traced error expectation.
 type WantError struct {
-	TxnName         string
-	Msg             string
-	Klass           string
-	Caller          string
+	TxnName string
+	Msg     string
+	Klass   string
+	Caller  string
+	// NotNoticed should be true if the stack trace was not generated within
+	// txn.NoticeError.  This field is provided to account for extra stack
+	// frames when running tests with -race.
+	NotNoticed      bool
 	UserAttributes  map[string]interface{}
 	AgentAttributes map[string]interface{}
 }
@@ -85,6 +93,22 @@ type WantTxnTrace struct {
 	NumSegments     int
 	UserAttributes  map[string]interface{}
 	AgentAttributes map[string]interface{}
+	Intrinsics      map[string]interface{}
+	// If the Root's SegmentName is populated then the segments will be
+	// tested, otherwise NumSegments will be tested.
+	Root WantTraceSegment
+}
+
+// WantTraceSegment is a transaction trace segment expectation.
+type WantTraceSegment struct {
+	SegmentName string
+	// RelativeStartMillis and RelativeStopMillis will be tested if they are
+	// provided:  This makes it easy for top level tests which cannot
+	// control duration.
+	RelativeStartMillis interface{}
+	RelativeStopMillis  interface{}
+	Attributes          map[string]interface{}
+	Children            []WantTraceSegment
 }
 
 // WantSlowQuery is a slowQuery expectation.
@@ -133,6 +157,8 @@ func ExpectTxnMetrics(t Validator, mt *metricTable, want WantTxn) {
 		metrics = []WantMetric{
 			{Name: "WebTransaction/Go/" + want.Name, Scope: "", Forced: true, Data: nil},
 			{Name: "WebTransaction", Scope: "", Forced: true, Data: nil},
+			{Name: "WebTransactionTotalTime/Go/" + want.Name, Scope: "", Forced: false, Data: nil},
+			{Name: "WebTransactionTotalTime", Scope: "", Forced: true, Data: nil},
 			{Name: "HttpDispatcher", Scope: "", Forced: true, Data: nil},
 			{Name: "Apdex", Scope: "", Forced: true, Data: nil},
 			{Name: "Apdex/Go/" + want.Name, Scope: "", Forced: false, Data: nil},
@@ -143,6 +169,8 @@ func ExpectTxnMetrics(t Validator, mt *metricTable, want WantTxn) {
 		metrics = []WantMetric{
 			{Name: "OtherTransaction/Go/" + want.Name, Scope: "", Forced: true, Data: nil},
 			{Name: "OtherTransaction/all", Scope: "", Forced: true, Data: nil},
+			{Name: "OtherTransactionTotalTime/Go/" + want.Name, Scope: "", Forced: false, Data: nil},
+			{Name: "OtherTransactionTotalTime", Scope: "", Forced: true, Data: nil},
 		}
 	}
 	if want.NumErrors > 0 {
@@ -222,11 +250,14 @@ func expectMetrics(t Validator, mt *metricTable, expect []WantMetric, exactMatch
 
 		if nil != e.Data {
 			expectMetricField(t, id, e.Data[0], m.data.countSatisfied, "countSatisfied")
-			expectMetricField(t, id, e.Data[1], m.data.totalTolerated, "totalTolerated")
-			expectMetricField(t, id, e.Data[2], m.data.exclusiveFailed, "exclusiveFailed")
-			expectMetricField(t, id, e.Data[3], m.data.min, "min")
-			expectMetricField(t, id, e.Data[4], m.data.max, "max")
-			expectMetricField(t, id, e.Data[5], m.data.sumSquares, "sumSquares")
+
+			if len(e.Data) > 1 {
+				expectMetricField(t, id, e.Data[1], m.data.totalTolerated, "totalTolerated")
+				expectMetricField(t, id, e.Data[2], m.data.exclusiveFailed, "exclusiveFailed")
+				expectMetricField(t, id, e.Data[3], m.data.min, "min")
+				expectMetricField(t, id, e.Data[4], m.data.max, "max")
+				expectMetricField(t, id, e.Data[5], m.data.sumSquares, "sumSquares")
+			}
 		}
 	}
 	if exactMatch {
@@ -502,9 +533,15 @@ func ExpectSpanEvents(v Validator, events *spanEvents, expect []WantEvent) {
 				e.Intrinsics = mergeAttributes(map[string]interface{}{
 					// The following intrinsics should always be present in
 					// span events:
-					"type":      "Span",
-					"timestamp": MatchAnything,
-					"duration":  MatchAnything,
+					"type":          "Span",
+					"timestamp":     MatchAnything,
+					"duration":      MatchAnything,
+					"traceId":       MatchAnything,
+					"guid":          MatchAnything,
+					"transactionId": MatchAnything,
+					// All span events are currently sampled.
+					"sampled":  true,
+					"priority": MatchAnything,
 				}, e.Intrinsics)
 			}
 			expectEvent(v, event, e)
@@ -557,6 +594,7 @@ func ExpectTxnEvents(v Validator, events *txnEvents, expect []WantEvent) {
 					"type":      "Transaction",
 					"timestamp": MatchAnything,
 					"duration":  MatchAnything,
+					"totalTime": MatchAnything,
 					"error":     MatchAnything,
 				}, e.Intrinsics)
 			}
@@ -566,7 +604,14 @@ func ExpectTxnEvents(v Validator, events *txnEvents, expect []WantEvent) {
 }
 
 func expectError(v Validator, err *tracedError, expect WantError) {
-	caller := topCallerNameBase(err.ErrorData.Stack)
+	extraSkipFrames := 0
+	if !expect.NotNoticed && racedetector.Enabled {
+		// If the race detector is enabled then the stacktraces produced
+		// by txn.NoticeError will have an extra stack frame caused by
+		// embedding the txn into the thread.
+		extraSkipFrames = 1
+	}
+	caller := topCallerNameBase(err.ErrorData.Stack, extraSkipFrames)
 	validateStringField(v, "caller", expect.Caller, caller)
 	validateStringField(v, "txnName", expect.TxnName, err.FinalName)
 	validateStringField(v, "klass", expect.Klass, err.Klass)
@@ -615,18 +660,45 @@ func countSegments(node []interface{}) int {
 	return count
 }
 
-func expectTxnTrace(v Validator, got json.Marshaler, expect WantTxnTrace) {
-	js, err := got.MarshalJSON()
-	if nil != err {
-		v.Error("unable to marshal txn trace json", err)
-		return
+func expectTraceSegment(v Validator, nodeObj interface{}, expect WantTraceSegment) {
+	node := nodeObj.([]interface{})
+	start := int(node[0].(float64))
+	stop := int(node[1].(float64))
+	name := node[2].(string)
+	attributes := node[3].(map[string]interface{})
+	children := node[4].([]interface{})
+
+	validateStringField(v, "segmentName", expect.SegmentName, name)
+	if nil != expect.RelativeStartMillis {
+		expectStart, ok := expect.RelativeStartMillis.(int)
+		if !ok {
+			v.Error("invalid expect.RelativeStartMillis", expect.RelativeStartMillis)
+		} else if expectStart != start {
+			v.Error("segmentStartTime", expect.SegmentName, start, expectStart)
+		}
 	}
-	var unmarshalled []interface{}
-	err = json.Unmarshal(js, &unmarshalled)
-	if nil != err {
-		v.Error("unable to unmarshal error json", err)
-		return
+	if nil != expect.RelativeStopMillis {
+		expectStop, ok := expect.RelativeStopMillis.(int)
+		if !ok {
+			v.Error("invalid expect.RelativeStopMillis", expect.RelativeStopMillis)
+		} else if expectStop != stop {
+			v.Error("segmentStopTime", expect.SegmentName, stop, expectStop)
+		}
 	}
+	if nil != expect.Attributes {
+		expectAttributes(v, attributes, expect.Attributes)
+	}
+	if len(children) != len(expect.Children) {
+		v.Error("segmentChildrenCount", expect.SegmentName, len(children), len(expect.Children))
+	} else {
+		for idx, child := range children {
+			expectTraceSegment(v, child, expect.Children[idx])
+		}
+	}
+}
+
+func expectTxnTrace(v Validator, got interface{}, expect WantTxnTrace) {
+	unmarshalled := got.([]interface{})
 	duration := unmarshalled[1].(float64)
 	name := unmarshalled[2].(string)
 	var arrayURL string
@@ -639,6 +711,7 @@ func expectTxnTrace(v Validator, got json.Marshaler, expect WantTxnTrace) {
 	attributes := traceData[4].(map[string]interface{})
 	userAttributes := attributes["userAttributes"].(map[string]interface{})
 	agentAttributes := attributes["agentAttributes"].(map[string]interface{})
+	intrinsics := attributes["intrinsics"].(map[string]interface{})
 
 	validateStringField(v, "metric name", expect.MetricName, name)
 
@@ -656,11 +729,18 @@ func expectTxnTrace(v Validator, got json.Marshaler, expect WantTxnTrace) {
 			validateStringField(v, "request url in array", expectURL, arrayURL)
 		}
 	}
-	numSegments := countSegments(rootNode)
-	// The expectation segment count does not include the two root nodes.
-	numSegments -= 2
-	if expect.NumSegments != numSegments {
-		v.Error("wrong number of segments", expect.NumSegments, numSegments)
+	if nil != expect.Intrinsics {
+		expectAttributes(v, intrinsics, expect.Intrinsics)
+	}
+	if expect.Root.SegmentName != "" {
+		expectTraceSegment(v, rootNode, expect.Root)
+	} else {
+		numSegments := countSegments(rootNode)
+		// The expectation segment count does not include the two root nodes.
+		numSegments -= 2
+		if expect.NumSegments != numSegments {
+			v.Error("wrong number of segments", expect.NumSegments, numSegments)
+		}
 	}
 }
 
@@ -668,11 +748,34 @@ func expectTxnTrace(v Validator, got json.Marshaler, expect WantTxnTrace) {
 func ExpectTxnTraces(v Validator, traces *harvestTraces, want []WantTxnTrace) {
 	if len(want) != traces.Len() {
 		v.Error("number of traces do not match", len(want), traces.Len())
+		return
+	}
+	if len(want) == 0 {
+		return
+	}
+	js, err := traces.Data("agentRunID", time.Now())
+	if nil != err {
+		v.Error("error creasing harvest traces data", err)
+		return
 	}
 
-	actual := traces.slice()
+	var unmarshalled []interface{}
+	err = json.Unmarshal(js, &unmarshalled)
+	if nil != err {
+		v.Error("unable to unmarshal error json", err)
+		return
+	}
+	if "agentRunID" != unmarshalled[0].(string) {
+		v.Error("traces agent run id wrong", unmarshalled[0])
+		return
+	}
+	gotTraces := unmarshalled[1].([]interface{})
+	if len(gotTraces) != len(want) {
+		v.Error("number of traces in json does not match", len(gotTraces), len(want))
+		return
+	}
 	for i, expected := range want {
-		expectTxnTrace(v, actual[i], expected)
+		expectTxnTrace(v, gotTraces[i], expected)
 	}
 }
 
