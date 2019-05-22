@@ -38,6 +38,14 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"expected_groups": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"ignore_overlap": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"nrql": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -93,6 +101,12 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Required: true,
 				MinItems: 1,
 			},
+			"type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "static",
+				ValidateFunc: validation.StringInSlice([]string{"static", "outlier", "baseline"}, false),
+			},
 			"value_function": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -131,6 +145,7 @@ func buildNrqlAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertNrqlCo
 
 	condition := newrelic.AlertNrqlCondition{
 		Name:          d.Get("name").(string),
+		Type:          d.Get("type").(string),
 		Enabled:       d.Get("enabled").(bool),
 		Terms:         terms,
 		PolicyID:      d.Get("policy_id").(int),
@@ -140,6 +155,14 @@ func buildNrqlAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertNrqlCo
 
 	if attr, ok := d.GetOk("runbook_url"); ok {
 		condition.RunbookURL = attr.(string)
+	}
+
+	if attr, ok := d.GetOkExists("ignore_overlap"); ok {
+		condition.IgnoreOverlap = attr.(bool)
+	}
+
+	if attr, ok := d.GetOk("expected_groups"); ok {
+		condition.ExpectedGroups = attr.(int)
 	}
 
 	return &condition
