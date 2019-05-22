@@ -76,6 +76,85 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "3"),
 				),
 			},
+			{
+				Config: testAccCheckNewRelicNrqlAlertConditionConfigUpdatedWithStatic(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "name", fmt.Sprintf("tf-test-updated-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "runbook_url", "https://bar.example.com"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "enabled", "false"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "term.#", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "term.0.duration", "10"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "term.0.operator", "below"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "term.0.priority", "critical"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "term.0.threshold", "0.65"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "term.0.time_function", "all"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "nrql.#", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "nrql.0.query", "SELECT uniqueCount(hostname) as Hosts FROM ComputeSample"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "3"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "type", "static"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicNrqlAlertCondition_Outlier(t *testing.T) {
+	rName := acctest.RandString(5)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicNrqlAlertConditionConfigWithOutlier(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "name", fmt.Sprintf("tf-test-updated-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "runbook_url", "https://bar.example.com"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "enabled", "false"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "term.#", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "term.0.duration", "10"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "term.0.operator", "above"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "term.0.priority", "critical"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "term.0.threshold", "0.65"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "term.0.time_function", "all"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "nrql.#", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "nrql.0.query", "SELECT percentile(duration, 99) FROM Transaction FACET remote_ip"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "3"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "type", "outlier"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "expected_groups", "2"),
+					resource.TestCheckResourceAttr(
+						"newrelic_nrql_alert_condition.foo", "ignore_overlap", "true"),
+				),
+			},
 		},
 	})
 }
@@ -194,7 +273,68 @@ resource "newrelic_nrql_alert_condition" "foo" {
     query         = "SELECT uniqueCount(hostname) as Hosts FROM ComputeSample"
     since_value   = "3"
   }
-  value_function  = "single_value"
+}
+`, rName)
+}
+
+func testAccCheckNewRelicNrqlAlertConditionConfigUpdatedWithStatic(rName string) string {
+	return fmt.Sprintf(`
+
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+
+  name            = "tf-test-updated-%[1]s"
+  runbook_url     = "https://bar.example.com"
+  enabled         = false
+
+  term {
+    duration      = 10
+    operator      = "below"
+    priority      = "critical"
+    threshold     = "0.65"
+    time_function = "all"
+  }
+  nrql {
+    query         = "SELECT uniqueCount(hostname) as Hosts FROM ComputeSample"
+    since_value   = "3"
+  }
+  type = "static"
+}
+`, rName)
+}
+
+func testAccCheckNewRelicNrqlAlertConditionConfigWithOutlier(rName string) string {
+	return fmt.Sprintf(`
+
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+
+  name            = "tf-test-updated-%[1]s"
+  runbook_url     = "https://bar.example.com"
+  enabled         = false
+
+  term {
+    duration      = 10
+    operator      = "above"
+    priority      = "critical"
+    threshold     = "0.65"
+    time_function = "all"
+  }
+  nrql {
+    query         = "SELECT percentile(duration, 99) FROM Transaction FACET remote_ip"
+    since_value   = "3"
+  }
+  type            = "outlier"
+  expected_groups = 2
+  ignore_overlap  = true
 }
 `, rName)
 }
