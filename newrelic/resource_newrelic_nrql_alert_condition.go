@@ -3,6 +3,7 @@ package newrelic
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -55,10 +56,10 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								v, err := strconv.Atoi(val)
 								if err != nil {
-									errs = append(errs, fmt.Errorf("%q Error converting string to int: %#v", key, err)
+									errs = append(errs, fmt.Errorf("Error converting string to int: %#v", err))
 								}
-   								if v < 1 || v > 20 {
-     								errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
+								if v < 1 || v > 20 {
+									errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
 								}
 								return
 							},
@@ -67,7 +68,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				},
 			},
 			"term": {
-				Type: schema.TypeList,s
+				Type: schema.TypeList,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"duration": {
