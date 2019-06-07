@@ -52,14 +52,22 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 						"since_value": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validation.StringInSlice([]string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-								"11", "12", "13", "14", "15", "16", "17", "18", "19", "20"}, false),
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								v, err := strconv.Atoi(val)
+								if err != nil {
+									errs = append(errs, fmt.Errorf("%q Error converting string to int: %#v", key, err)
+								}
+   								if v < 1 || v > 20 {
+     								errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
+								}
+								return
+							},
 						},
 					},
 				},
 			},
 			"term": {
-				Type: schema.TypeList,
+				Type: schema.TypeList,s
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"duration": {
