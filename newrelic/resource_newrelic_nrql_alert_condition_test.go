@@ -43,7 +43,7 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_nrql_alert_condition.foo", "nrql.0.query", "SELECT uniqueCount(hostname) FROM ComputeSample"),
 					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "5"),
+						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "20"),
 				),
 			},
 			{
