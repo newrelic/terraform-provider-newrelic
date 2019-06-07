@@ -54,7 +54,8 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-								v, err := strconv.Atoi(val)
+								valueString := val.(string)
+								val, err := strconv.Atoi(valueString)
 								if err != nil {
 									errs = append(errs, fmt.Errorf("Error converting string to int: %#v", err))
 								}
