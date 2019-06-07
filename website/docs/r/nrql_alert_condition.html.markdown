@@ -66,7 +66,7 @@ The `term` mapping supports the following arguments:
 The `nrql` attribute supports the following arguments:
 
   * `query` - (Required) The NRQL query to execute for the condition.
-  * `since_value` - (Required) The value to be used in the `SINCE <X> MINUTES AGO` clause for the NRQL query. Must be: `1`, `2`, `3`, `4`, or `5`.
+  * `since_value` - (Required) The value to be used in the `SINCE <X> MINUTES AGO` clause for the NRQL query. Must be an integer between `1` and `20`.
 
 ## Attributes Reference
 
