@@ -162,8 +162,6 @@ func (r *Resource) ShimInstanceStateFromValue(state cty.Value) (*terraform.Insta
 	// match those from the Schema.
 	s := terraform.NewInstanceStateShimmedFromValue(state, r.SchemaVersion)
 
-	FixupAsSingleInstanceStateIn(s, r)
-
 	// We now rebuild the state through the ResourceData, so that the set indexes
 	// match what helper/schema expects.
 	data, err := schemaMap(r.Schema).Data(s, nil)
@@ -331,21 +329,13 @@ func (r *Resource) simpleDiff(
 	c *terraform.ResourceConfig,
 	meta interface{}) (*terraform.InstanceDiff, error) {
 
-	t := &ResourceTimeout{}
-	err := t.ConfigDecode(r, c)
-
-	if err != nil {
-		return nil, fmt.Errorf("[ERR] Error decoding timeout: %s", err)
-	}
-
 	instanceDiff, err := schemaMap(r.Schema).Diff(s, c, r.CustomizeDiff, meta, false)
 	if err != nil {
 		return instanceDiff, err
 	}
 
 	if instanceDiff == nil {
-		log.Printf("[DEBUG] Instance Diff is nil in SimpleDiff()")
-		return nil, err
+		instanceDiff = terraform.NewInstanceDiff()
 	}
 
 	// Make sure the old value is set in each of the instance diffs.
@@ -359,10 +349,7 @@ func (r *Resource) simpleDiff(
 		}
 	}
 
-	if err := t.DiffEncode(instanceDiff); err != nil {
-		log.Printf("[ERR] Error encoding timeout to instance diff: %s", err)
-	}
-	return instanceDiff, err
+	return instanceDiff, nil
 }
 
 // Validate validates the resource configuration against the schema.
@@ -754,6 +741,13 @@ func (r *Resource) TestResourceData() *ResourceData {
 	return &ResourceData{
 		schema: r.Schema,
 	}
+}
+
+// SchemasForFlatmapPath tries its best to find a sequence of schemas that
+// the given dot-delimited attribute path traverses through in the schema
+// of the receiving Resource.
+func (r *Resource) SchemasForFlatmapPath(path string) []*Schema {
+	return SchemasForFlatmapPath(path, r.Schema)
 }
 
 // Returns true if the resource is "top level" i.e. not a sub-resource.
