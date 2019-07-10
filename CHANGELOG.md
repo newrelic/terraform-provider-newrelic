@@ -1,3 +1,9 @@
+## 1.6.0 (Unreleased)
+
+BUG FIXES:
+
+* `newrelic_nrql_alert_condition` modifies `since_value` validation to match rest API's requirements [GH-144]
+
 ## 1.5.0 (March 26, 2019)
 
 FEATURES
