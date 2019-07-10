@@ -2,6 +2,7 @@ package api
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 
 	"github.com/tomnomnom/linkheader"
@@ -112,6 +113,24 @@ func (c *Client) Do(method string, path string, body interface{}, response inter
 		for _, link := range links.FilterByRel("next") {
 			nextPath = link.URL
 			break
+		}
+	}
+
+	apiResponseBody := apiResponse.Body()
+	if nextPath == "" && apiResponseBody != nil && len(apiResponseBody) > 0 {
+		linksResponse := struct {
+			Links struct {
+				Next string `json:"next"`
+			} `json:"links"`
+		}{}
+
+		err = json.Unmarshal(apiResponseBody, &linksResponse)
+		if err != nil {
+			return "", err
+		}
+
+		if linksResponse.Links.Next != "" {
+			nextPath = linksResponse.Links.Next
 		}
 	}
 
