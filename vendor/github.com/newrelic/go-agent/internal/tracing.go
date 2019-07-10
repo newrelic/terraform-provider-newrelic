@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/newrelic/go-agent/internal/cat"
+	"github.com/newrelic/go-agent/internal/jsonx"
+	"github.com/newrelic/go-agent/internal/logger"
 	"github.com/newrelic/go-agent/internal/sysinfo"
 )
 
@@ -29,6 +31,7 @@ type TxnEvent struct {
 	FinalName string
 	Start     time.Time
 	Duration  time.Duration
+	TotalTime time.Duration
 	Queuing   time.Duration
 	Zone      ApdexZone
 	Attrs     *Attributes
@@ -64,11 +67,9 @@ type TxnData struct {
 	Errors         TxnErrors // Lazily initialized.
 	Stop           time.Time
 	ApdexThreshold time.Duration
-	Exclusive      time.Duration
 
-	finishedChildren time.Duration
-	stamp            segmentStamp
-	stack            []segmentFrame
+	stamp           segmentStamp
+	threadIDCounter uint64
 
 	LazilyCalculateSampled func() bool
 	SpanEventsEnabled      bool
@@ -90,6 +91,50 @@ type TxnData struct {
 	DistributedTracingSupport
 }
 
+func (t *TxnData) saveTraceSegment(end segmentEnd, name string, attrs spanAttributeMap, externalGUID string) {
+	attrs = t.Attrs.filterSpanAttributes(attrs, destSegment)
+	t.TxnTrace.witnessNode(end, name, attrs, externalGUID)
+}
+
+// Thread contains a segment stack that is used to track segment parenting time
+// within a single goroutine.
+type Thread struct {
+	threadID uint64
+	stack    []segmentFrame
+	// start and end are used to track the TotalTime this Thread was active.
+	start time.Time
+	end   time.Time
+}
+
+// RecordActivity indicates that activity happened at this time on this
+// goroutine which helps track total time.
+func (thread *Thread) RecordActivity(now time.Time) {
+	if thread.start.IsZero() || now.Before(thread.start) {
+		thread.start = now
+	}
+	if now.After(thread.end) {
+		thread.end = now
+	}
+}
+
+// TotalTime returns the amount to time that this thread contributes to the
+// total time.
+func (thread *Thread) TotalTime() time.Duration {
+	if thread.start.Before(thread.end) {
+		return thread.end.Sub(thread.start)
+	}
+	return 0
+}
+
+// NewThread returns a new Thread to track segments in a new goroutine.
+func NewThread(txndata *TxnData) *Thread {
+	// Each thread needs a unique ID.
+	txndata.threadIDCounter++
+	return &Thread{
+		threadID: txndata.threadIDCounter,
+	}
+}
+
 type segmentStamp uint64
 
 type segmentTime struct {
@@ -104,19 +149,56 @@ type SegmentStartTime struct {
 	Depth int
 }
 
+type stringJSONWriter string
+
+func (s stringJSONWriter) WriteJSON(buf *bytes.Buffer) {
+	jsonx.AppendString(buf, string(s))
+}
+
+// spanAttributeMap is used for span attributes and segment attributes. The
+// value is a jsonWriter to allow for segment query parameters.
+type spanAttributeMap map[SpanAttribute]jsonWriter
+
+func (m *spanAttributeMap) addString(key SpanAttribute, val string) {
+	if "" != val {
+		m.add(key, stringJSONWriter(val))
+	}
+}
+
+func (m *spanAttributeMap) add(key SpanAttribute, val jsonWriter) {
+	if *m == nil {
+		*m = make(spanAttributeMap)
+	}
+	(*m)[key] = val
+}
+
+func (m spanAttributeMap) copy() spanAttributeMap {
+	if len(m) == 0 {
+		return nil
+	}
+	cpy := make(spanAttributeMap, len(m))
+	for k, v := range m {
+		cpy[k] = v
+	}
+	return cpy
+}
+
 type segmentFrame struct {
 	segmentTime
-	children time.Duration
-	spanID   string
+	children   time.Duration
+	spanID     string
+	attributes spanAttributeMap
 }
 
 type segmentEnd struct {
-	start     segmentTime
-	stop      segmentTime
-	duration  time.Duration
-	exclusive time.Duration
-	SpanID    string
-	ParentID  string
+	start      segmentTime
+	stop       segmentTime
+	duration   time.Duration
+	exclusive  time.Duration
+	SpanID     string
+	ParentID   string
+	threadID   uint64
+	attributes spanAttributeMap
 }
 
 func (end segmentEnd) spanEvent() *SpanEvent {
@@ -128,6 +210,7 @@ func (end segmentEnd) spanEvent() *SpanEvent {
 		ParentID:     end.ParentID,
 		Timestamp:    end.start.Time,
 		Duration:     end.duration,
+		Attributes:   end.attributes,
 		IsEntrypoint: false,
 	}
 }
@@ -151,26 +234,24 @@ func (t *TxnData) time(now time.Time) segmentTime {
 	}
 }
 
-// TracerRootChildren is used to calculate a transaction's exclusive duration.
-func TracerRootChildren(t *TxnData) time.Duration {
-	var lostChildren time.Duration
-	for i := 0; i < len(t.stack); i++ {
-		lostChildren += t.stack[i].children
+// AddAgentSpanAttribute allows attributes to be added to spans.
+func (thread *Thread) AddAgentSpanAttribute(key SpanAttribute, val string) {
+	if len(thread.stack) > 0 {
+		thread.stack[len(thread.stack)-1].attributes.addString(key, val)
 	}
-	return t.finishedChildren + lostChildren
 }
 
 // StartSegment begins a segment.
-func StartSegment(t *TxnData, now time.Time) SegmentStartTime {
+func StartSegment(t *TxnData, thread *Thread, now time.Time) SegmentStartTime {
 	tm := t.time(now)
-	t.stack = append(t.stack, segmentFrame{
+	thread.stack = append(thread.stack, segmentFrame{
 		segmentTime: tm,
 		children:    0,
 	})
 
 	return SegmentStartTime{
 		Stamp: tm.Stamp,
-		Depth: len(t.stack) - 1,
+		Depth: len(thread.stack) - 1,
 	}
 }
 
@@ -190,17 +271,18 @@ func (t *TxnData) getRootSpanID() string {
 
 // CurrentSpanIdentifier returns the identifier of the span at the top of the
 // segment stack.
-func (t *TxnData) CurrentSpanIdentifier() string {
-	if 0 == len(t.stack) {
+func (t *TxnData) CurrentSpanIdentifier(thread *Thread) string {
+	if 0 == len(thread.stack) {
 		return t.getRootSpanID()
 	}
-	if "" == t.stack[len(t.stack)-1].spanID {
-		t.stack[len(t.stack)-1].spanID = NewSpanID()
+	if "" == thread.stack[len(thread.stack)-1].spanID {
+		thread.stack[len(thread.stack)-1].spanID = NewSpanID()
 	}
-	return t.stack[len(t.stack)-1].spanID
+	return thread.stack[len(thread.stack)-1].spanID
 }
 
 func (t *TxnData) saveSpanEvent(e *SpanEvent) {
+	e.Attributes = t.Attrs.filterSpanAttributes(e.Attributes, destSpan)
 	if len(t.spanEvents) < maxSpanEvents {
 		t.spanEvents = append(t.spanEvents, e)
 	}
@@ -213,28 +295,29 @@ var (
 		`see https://github.com/newrelic/go-agent/blob/master/GUIDE.md#segments`)
 )
 
-func endSegment(t *TxnData, start SegmentStartTime, now time.Time) (segmentEnd, error) {
+func endSegment(t *TxnData, thread *Thread, start SegmentStartTime, now time.Time) (segmentEnd, error) {
 	if 0 == start.Stamp {
 		return segmentEnd{}, errMalformedSegment
 	}
-	if start.Depth >= len(t.stack) {
+	if start.Depth >= len(thread.stack) {
 		return segmentEnd{}, errSegmentOrder
 	}
 	if start.Depth < 0 {
 		return segmentEnd{}, errMalformedSegment
 	}
-	frame := t.stack[start.Depth]
+	frame := thread.stack[start.Depth]
 	if start.Stamp != frame.Stamp {
 		return segmentEnd{}, errSegmentOrder
 	}
 
 	var children time.Duration
-	for i := start.Depth; i < len(t.stack); i++ {
-		children += t.stack[i].children
+	for i := start.Depth; i < len(thread.stack); i++ {
+		children += thread.stack[i].children
 	}
 	s := segmentEnd{
-		stop:  t.time(now),
-		start: frame.segmentTime,
+		stop:       t.time(now),
+		start:      frame.segmentTime,
+		attributes: frame.attributes,
 	}
 	if s.stop.Time.After(s.start.Time) {
 		s.duration = s.stop.Time.Sub(s.start.Time)
@@ -247,13 +330,11 @@ func endSegment(t *TxnData, start SegmentStartTime, now time.Time) (segmentEnd, 
 	// (depth < (len(t.stack) - 1)), that's ok: could be a panic popped
 	// some stack frames (and the consumer was not using defer).
 
-	if 0 == start.Depth {
-		t.finishedChildren += s.duration
-	} else {
-		t.stack[start.Depth-1].children += s.duration
+	if start.Depth > 0 {
+		thread.stack[start.Depth-1].children += s.duration
 	}
 
-	t.stack = t.stack[0:start.Depth]
+	thread.stack = thread.stack[0:start.Depth]
 
 	if t.SpanEventsEnabled && t.LazilyCalculateSampled() {
 		s.SpanID = frame.spanID
@@ -263,15 +344,20 @@ func endSegment(t *TxnData, start SegmentStartTime, now time.Time) (segmentEnd, 
 		// Note that the current span identifier is the parent's
 		// identifier because we've already popped the segment that's
 		// ending off of the stack.
-		s.ParentID = t.CurrentSpanIdentifier()
+		s.ParentID = t.CurrentSpanIdentifier(thread)
 	}
+
+	s.threadID = thread.threadID
+
+	thread.RecordActivity(s.start.Time)
+	thread.RecordActivity(s.stop.Time)
 
 	return s, nil
 }
 
 // EndBasicSegment ends a basic segment.
-func EndBasicSegment(t *TxnData, start SegmentStartTime, now time.Time, name string) error {
-	end, err := endSegment(t, start, now)
+func EndBasicSegment(t *TxnData, thread *Thread, start SegmentStartTime, now time.Time, name string) error {
+	end, err := endSegment(t, thread, start, now)
 	if nil != err {
 		return err
 	}
@@ -290,7 +376,8 @@ func EndBasicSegment(t *TxnData, start SegmentStartTime, now time.Time, name str
 	}
 
 	if t.TxnTrace.considerNode(end) {
-		t.TxnTrace.witnessNode(end, customSegmentMetric(name), nil)
+		attributes := end.attributes.copy()
+		t.saveTraceSegment(end, customSegmentMetric(name), attributes, "")
 	}
 
 	if evt := end.spanEvent(); evt != nil {
@@ -302,23 +389,50 @@ func EndBasicSegment(t *TxnData, start SegmentStartTime, now time.Time, name str
 	return nil
 }
 
+// EndExternalParams contains the parameters for EndExternalSegment.
+type EndExternalParams struct {
+	TxnData  *TxnData
+	Thread   *Thread
+	Start    SegmentStartTime
+	Now      time.Time
+	Logger   logger.Logger
+	Response *http.Response
+	URL      *url.URL
+	Host     string
+	Library  string
+	Method   string
+}
+
 // EndExternalSegment ends an external segment.
-func EndExternalSegment(t *TxnData, start SegmentStartTime, now time.Time, u *url.URL, method string, resp *http.Response) error {
-	end, err := endSegment(t, start, now)
+func EndExternalSegment(p EndExternalParams) error {
+	t := p.TxnData
+	end, err := endSegment(t, p.Thread, p.Start, p.Now)
 	if nil != err {
 		return err
 	}
 
-	host := HostFromURL(u)
-	if "" == host {
-		host = "unknown"
+	// Use the Host field if present, otherwise use host in the URL.
+	if p.Host == "" && p.URL != nil {
+		p.Host = p.URL.Host
+	}
+	if p.Host == "" {
+		p.Host = "unknown"
+	}
+	if p.Library == "" {
+		p.Library = "http"
 	}
 
 	var appData *cat.AppDataHeader
-	if resp != nil {
-		appData, err = t.CrossProcess.ParseAppData(HTTPHeaderToAppData(resp.Header))
+	if p.Response != nil {
+		hdr := HTTPHeaderToAppData(p.Response.Header)
+		appData, err = t.CrossProcess.ParseAppData(hdr)
 		if err != nil {
-			return err
+			if p.Logger.DebugEnabled() {
+				p.Logger.Debug("failure to parse cross application response header", map[string]interface{}{
+					"err":    err.Error(),
+					"header": hdr,
+				})
+			}
 		}
 	}
 
@@ -332,7 +446,9 @@ func EndExternalSegment(t *TxnData, start SegmentStartTime, now time.Time, u *ur
 	}
 
 	key := externalMetricKey{
-		Host:                    host,
+		Host:                    p.Host,
+		Library:                 p.Library,
+		Method:                  p.Method,
 		ExternalCrossProcessID:  crossProcessID,
 		ExternalTransactionName: transactionName,
 	}
@@ -353,18 +469,21 @@ func EndExternalSegment(t *TxnData, start SegmentStartTime, now time.Time, u *ur
 	}
 
 	if t.TxnTrace.considerNode(end) {
-		t.TxnTrace.witnessNode(end, externalHostMetric(key), &traceNodeParams{
-			CleanURL:        SafeURL(u),
-			TransactionGUID: transactionGUID,
-		})
+		attributes := end.attributes.copy()
+		if p.Library == "http" {
+			attributes.addString(spanAttributeHTTPURL, SafeURL(p.URL))
+		}
+		t.saveTraceSegment(end, key.scopedMetric(), attributes, transactionGUID)
 	}
 
 	if evt := end.spanEvent(); evt != nil {
-		evt.Name = externalHostMetric(key)
+		evt.Name = key.scopedMetric()
 		evt.Category = spanCategoryHTTP
-		evt.ExternalExtras = &spanExternalExtras{
-			URL:    SafeURL(u),
-			Method: method,
+		evt.Kind = "client"
+		evt.Component = p.Library
+		if p.Library == "http" {
+			evt.Attributes.addString(spanAttributeHTTPURL, SafeURL(p.URL))
+			evt.Attributes.addString(spanAttributeHTTPMethod, p.Method)
 		}
 		t.saveSpanEvent(evt)
 	}
@@ -374,7 +493,8 @@ func EndExternalSegment(t *TxnData, start SegmentStartTime, now time.Time, u *ur
 
 // EndDatastoreParams contains the parameters for EndDatastoreSegment.
 type EndDatastoreParams struct {
-	Tracer             *TxnData
+	TxnData            *TxnData
+	Thread             *Thread
 	Start              SegmentStartTime
 	Now                time.Time
 	Product            string
@@ -427,7 +547,7 @@ func datastoreSpanAddress(host, portPathOrID string) string {
 
 // EndDatastoreSegment ends a datastore segment.
 func EndDatastoreSegment(p EndDatastoreParams) error {
-	end, err := endSegment(p.Tracer, p.Start, p.Now)
+	end, err := endSegment(p.TxnData, p.Thread, p.Start, p.Now)
 	if nil != err {
 		return err
 	}
@@ -466,45 +586,43 @@ func EndDatastoreSegment(p EndDatastoreParams) error {
 		Host:         p.Host,
 		PortPathOrID: p.PortPathOrID,
 	}
-	if nil == p.Tracer.datastoreSegments {
-		p.Tracer.datastoreSegments = make(map[DatastoreMetricKey]*metricData)
+	if nil == p.TxnData.datastoreSegments {
+		p.TxnData.datastoreSegments = make(map[DatastoreMetricKey]*metricData)
 	}
-	p.Tracer.datastoreCallCount++
-	p.Tracer.datastoreDuration += end.duration
+	p.TxnData.datastoreCallCount++
+	p.TxnData.datastoreDuration += end.duration
 	m := metricDataFromDuration(end.duration, end.exclusive)
-	if data, ok := p.Tracer.datastoreSegments[key]; ok {
+	if data, ok := p.TxnData.datastoreSegments[key]; ok {
 		data.aggregate(m)
 	} else {
 		// Use `new` in place of &m so that m is not
 		// automatically moved to the heap.
 		cpy := new(metricData)
 		*cpy = m
-		p.Tracer.datastoreSegments[key] = cpy
+		p.TxnData.datastoreSegments[key] = cpy
 	}
 
 	scopedMetric := datastoreScopedMetric(key)
-	queryParams := vetQueryParameters(p.QueryParameters)
+	// errors in QueryParameters must not stop the recording of the segment
+	queryParams, err := vetQueryParameters(p.QueryParameters)
 
-	if p.Tracer.TxnTrace.considerNode(end) {
-		p.Tracer.TxnTrace.witnessNode(end, scopedMetric, &traceNodeParams{
-			Host:            p.Host,
-			PortPathOrID:    p.PortPathOrID,
-			Database:        p.Database,
-			Query:           p.ParameterizedQuery,
-			queryParameters: queryParams,
-		})
+	if p.TxnData.TxnTrace.considerNode(end) {
+		attributes := end.attributes.copy()
+		attributes.addString(spanAttributeDBStatement, p.ParameterizedQuery)
+		attributes.addString(spanAttributeDBInstance, p.Database)
+		attributes.addString(spanAttributePeerAddress, datastoreSpanAddress(p.Host, p.PortPathOrID))
+		attributes.addString(spanAttributePeerHostname, p.Host)
+		if len(queryParams) > 0 {
+			attributes.add(spanAttributeQueryParameters, queryParams)
+		}
+		p.TxnData.saveTraceSegment(end, scopedMetric, attributes, "")
 	}
 
-	if p.Tracer.slowQueryWorthy(end.duration) {
-		if nil == p.Tracer.SlowQueries {
-			p.Tracer.SlowQueries = newSlowQueries(maxTxnSlowQueries)
+	if p.TxnData.slowQueryWorthy(end.duration) {
+		if nil == p.TxnData.SlowQueries {
+			p.TxnData.SlowQueries = newSlowQueries(maxTxnSlowQueries)
 		}
-		// Frames to skip:
-		//   this function
-		//   endDatastore
-		//   DatastoreSegment.End
-		skipFrames := 3
-		p.Tracer.SlowQueries.observeInstance(slowQueryInstance{
+		p.TxnData.SlowQueries.observeInstance(slowQueryInstance{
 			Duration:           end.duration,
 			DatastoreMetric:    scopedMetric,
 			ParameterizedQuery: p.ParameterizedQuery,
@@ -512,24 +630,24 @@ func EndDatastoreSegment(p EndDatastoreParams) error {
 			Host:               p.Host,
 			PortPathOrID:       p.PortPathOrID,
 			DatabaseName:       p.Database,
-			StackTrace:         GetStackTrace(skipFrames),
+			StackTrace:         GetStackTrace(),
 		})
 	}
 
 	if evt := end.spanEvent(); evt != nil {
 		evt.Name = scopedMetric
 		evt.Category = spanCategoryDatastore
-		evt.DatastoreExtras = &spanDatastoreExtras{
-			Component: p.Product,
-			Statement: p.ParameterizedQuery,
-			Instance:  p.Database,
-			Address:   datastoreSpanAddress(p.Host, p.PortPathOrID),
-			Hostname:  p.Host,
-		}
-		p.Tracer.saveSpanEvent(evt)
+		evt.Kind = "client"
+		evt.Component = p.Product
+		evt.Attributes.addString(spanAttributeDBStatement, p.ParameterizedQuery)
+		evt.Attributes.addString(spanAttributeDBInstance, p.Database)
+		evt.Attributes.addString(spanAttributePeerAddress, datastoreSpanAddress(p.Host, p.PortPathOrID))
+		evt.Attributes.addString(spanAttributePeerHostname, p.Host)
+		evt.Attributes.addString(spanAttributeDBCollection, p.Collection)
+		p.TxnData.saveSpanEvent(evt)
 	}
 
-	return nil
+	return err
 }
 
 // MergeBreakdownMetrics creates segment metrics.
@@ -558,13 +676,10 @@ func MergeBreakdownMetrics(t *TxnData, metrics *metricTable) {
 			// Unscoped CAT metrics
 			metrics.add(externalAppMetric(key), "", *data, unforced)
 			metrics.add(txnMetric, "", *data, unforced)
-
-			// Scoped External Metric
-			metrics.add(txnMetric, scope, *data, unforced)
-		} else {
-			// Scoped External Metric
-			metrics.add(hostMetric, scope, *data, unforced)
 		}
+
+		// Scoped External Metric
+		metrics.add(key.scopedMetric(), scope, *data, unforced)
 	}
 
 	// Datastore Segment Metrics

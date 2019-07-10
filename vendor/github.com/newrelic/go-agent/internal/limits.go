@@ -11,8 +11,13 @@ const (
 	ConnectBackoffStart = 15 * time.Second
 	// ConnectBackoffLimit is the largest connect backoff possible.
 	ConnectBackoffLimit = 240 * time.Second
-	// HarvestPeriod is the period that collected data is sent to New Relic.
-	HarvestPeriod = 60 * time.Second
+	// fixedHarvestPeriod is the period that fixed period data (metrics,
+	// traces, and span events) is sent to New Relic.
+	fixedHarvestPeriod = 60 * time.Second
+	// defaultConfigurableEventHarvestMs is the period for custom, error,
+	// and transaction events if the connect response's
+	// "event_harvest_config.report_period_ms" is missing or invalid.
+	defaultConfigurableEventHarvestMs = 60 * 1000
 	// CollectorTimeout is the timeout used in the client for communication
 	// with New Relic's servers.
 	CollectorTimeout = 20 * time.Second

@@ -1,5 +1,243 @@
 ## ChangeLog
 
+## 2.9.0
+
+### New Features
+
+* Added support for [gRPC](https://github.com/grpc/grpc-go) monitoring with the new
+[_integrations/nrgrpc](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrgrpc)
+package.  This package supports instrumentation for servers and clients.
+
+  * [Server Example](https://github.com/newrelic/go-agent/blob/master/_integrations/nrgrpc/example/server/server.go)
+  * [Client Example](https://github.com/newrelic/go-agent/blob/master/_integrations/nrgrpc/example/client/client.go)
+
+* Added new
+  [ExternalSegment](https://godoc.org/github.com/newrelic/go-agent#ExternalSegment)
+  fields `Host`, `Procedure`, and `Library`.  These optional fields are
+  automatically populated from the segment's `URL` or `Request` if unset.  Use
+  them if you don't have access to a request or URL but still want useful external
+  metrics, transaction segment attributes, and span attributes.
+  * `Host` is used for external metrics, transaction trace segment names, and
+    span event names.  The host of segment's `Request` or `URL` is the default.
+  * `Procedure` is used for transaction breakdown metrics.  If set, it should be
+    set to the remote procedure being called.  The HTTP method of the segment's `Request` is the default.
+  * `Library` is used for external metrics and the `"component"` span attribute.
+    If set, it should be set to the framework making the call. `"http"` is the default.
+
+  With the addition of these new fields, external transaction breakdown metrics
+  are changed: `External/myhost.com/all` will now report as
+  `External/myhost.com/http/GET` (provided the HTTP method is `GET`).
+
+* HTTP Response codes below `100`, except `0` and `5`, are now recorded as
+  errors.  This is to support `gRPC` status codes.  If you start seeing
+  new status code errors that you would like to ignore, add them to
+  `Config.ErrorCollector.IgnoreStatusCodes` or your server side configuration
+  settings.
+
+* Improve [logrus](https://github.com/sirupsen/logrus) support by introducing
+  [nrlogrus.Transform](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrlogrus#Transform),
+  a function which allows you to turn a
+  [logrus.Logger](https://godoc.org/github.com/sirupsen/logrus#Logger) instance into a
+  [newrelic.Logger](https://godoc.org/github.com/newrelic/go-agent#Logger).
+  Example use:
+
+  ```go
+  l := logrus.New()
+  l.SetLevel(logrus.DebugLevel)
+  cfg := newrelic.NewConfig("Your Application Name", "__YOUR_NEW_RELIC_LICENSE_KEY__")
+  cfg.Logger = nrlogrus.Transform(l)
+  ```
+
+  As a result of this change, the
+  [nrlogrus](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrlogrus)
+  package requires [logrus](https://github.com/sirupsen/logrus) version `v1.1.0`
+  and above.
+
+## 2.8.1
+
+### Bug Fixes
+
+* Removed `nrmysql.NewConnector` since
+  [go-sql-driver/mysql](https://github.com/go-sql-driver/mysql) has not yet
+  released `mysql.NewConnector`.
+
+## 2.8.0
+
+### New Features
+
+* Introduce support for databases using
+  [database/sql](https://golang.org/pkg/database/sql/).  This new functionality
+  allows you to instrument MySQL, PostgreSQL, and SQLite calls without manually
+  creating
+  [DatastoreSegment](https://godoc.org/github.com/newrelic/go-agent#DatastoreSegment)s.
+
+  | Database Library Supported | Integration Package |
+  | ------------- | ------------- |
+  | [go-sql-driver/mysql](https://github.com/go-sql-driver/mysql) | [_integrations/nrmysql](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrmysql) |
+  | [lib/pq](https://github.com/lib/pq) | [_integrations/nrpq](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrpq) |
+  | [mattn/go-sqlite3](https://github.com/mattn/go-sqlite3) | [_integrations/nrsqlite3](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrsqlite3) |
+
+  Using these database integration packages is easy!  First replace the driver
+  with our integration version:
+
+  ```go
+  import (
+  	// import our integration package in place of "github.com/go-sql-driver/mysql"
+  	_ "github.com/newrelic/go-agent/_integrations/nrmysql"
+  )
+
+  func main() {
+  	// open "nrmysql" in place of "mysql"
+  	db, err := sql.Open("nrmysql", "user@unix(/path/to/socket)/dbname")
+  }
+  ```
+
+  Second, use the `ExecContext`, `QueryContext`, and `QueryRowContext` methods of
+  [sql.DB](https://golang.org/pkg/database/sql/#DB),
+  [sql.Conn](https://golang.org/pkg/database/sql/#Conn),
+  [sql.Tx](https://golang.org/pkg/database/sql/#Tx), and
+  [sql.Stmt](https://golang.org/pkg/database/sql/#Stmt) and provide a
+  transaction-containing context.  Calls to `Exec`, `Query`, and `QueryRow` do not
+  get instrumented.
+
+  ```go
+  ctx := newrelic.NewContext(context.Background(), txn)
+  row := db.QueryRowContext(ctx, "SELECT count(*) from tables")
+  ```
+
+  If you are using a [database/sql](https://golang.org/pkg/database/sql/) database
+  not listed above, you can write your own instrumentation for it using
+  [InstrumentSQLConnector](https://godoc.org/github.com/newrelic/go-agent#InstrumentSQLConnector),
+  [InstrumentSQLDriver](https://godoc.org/github.com/newrelic/go-agent#InstrumentSQLDriver),
+  and
+  [SQLDriverSegmentBuilder](https://godoc.org/github.com/newrelic/go-agent#SQLDriverSegmentBuilder).
+  The integration packages act as examples of how to do this.
+
+  For more information, see the [Go agent documentation on instrumenting datastore segments](https://docs.newrelic.com/docs/agents/go-agent/instrumentation/instrument-go-segments#go-datastore-segments).
+
+### Bug Fixes
+
+* The [http.RoundTripper](https://golang.org/pkg/net/http/#RoundTripper) returned
+  by [NewRoundTripper](https://godoc.org/github.com/newrelic/go-agent#NewRoundTripper)
+  no longer modifies the request.  Our thanks to @jlordiales for the contribution.
+
+## 2.7.0
+
+### New Features
+
+* Added support for server side configuration.  Server side configuration allows
+ you to set the following configuration settings in the New Relic APM UI:
+
+  * `Config.TransactionTracer.Enabled`
+  * `Config.ErrorCollector.Enabled`
+  * `Config.CrossApplicationTracer.Enabled`
+  * `Config.TransactionTracer.Threshold`
+  * `Config.TransactionTracer.StackTraceThreshold`
+  * `Config.ErrorCollector.IgnoreStatusCodes`
+
+  For more information see the [server side configuration documentation](https://docs.newrelic.com/docs/agents/manage-apm-agents/configuration/server-side-agent-configuration).
+
+* Added support for AWS Lambda functions in the new
+  [nrlambda](_integrations/nrlambda)
+  package.  Please email <lambda_preview@newrelic.com> if you are interested in
+  learning more or previewing New Relic Lambda monitoring.  This instrumentation
+  package requires `aws-lambda-go` version
+  [v1.9.0](https://github.com/aws/aws-lambda-go/releases) and above.
+
+  * [documentation](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrlambda)
+  * [working example](_integrations/nrlambda/example/main.go)
+
+## 2.6.0
+
+### New Features
+
+* Added support for async: the ability to instrument multiple concurrent
+  goroutines, or goroutines that access or manipulate the same Transaction.
+
+  The new `Transaction.NewGoroutine() Transaction` method allows
+  transactions to create segments in multiple goroutines!
+
+  `NewGoroutine` returns a new reference to the `Transaction`.  This must be
+  called any time you are passing the `Transaction` to another goroutine which
+  makes segments.  Each segment-creating goroutine must have its own `Transaction`
+  reference.  It does not matter if you call this before or after the other
+  goroutine has started.
+
+  All `Transaction` methods can be used in any `Transaction` reference.  The
+  `Transaction` will end when `End()` is called in any goroutine.
+
+  Example passing a new `Transaction` reference directly to another goroutine:
+
+  ```go
+  	go func(txn newrelic.Transaction) {
+  		defer newrelic.StartSegment(txn, "async").End()
+  		time.Sleep(100 * time.Millisecond)
+  	}(txn.NewGoroutine())
+  ```
+
+  Example passing a new `Transaction` reference on a channel to another
+  goroutine:
+
+  ```go
+  	ch := make(chan newrelic.Transaction)
+  	go func() {
+  		txn := <-ch
+  		defer newrelic.StartSegment(txn, "async").End()
+  		time.Sleep(100 * time.Millisecond)
+  	}()
+  	ch <- txn.NewGoroutine()
+  ```
+
+* Added integration support for
+  [`aws-sdk-go`](https://github.com/aws/aws-sdk-go) and
+  [`aws-sdk-go-v2`](https://github.com/aws/aws-sdk-go-v2).
+
+  When using these SDKs, a segment will be created for each out going request.
+  For DynamoDB calls, these will be Datastore segments and for all others they
+  will be External segments.
+  * [v1 Documentation](http://godoc.org/github.com/newrelic/go-agent/_integrations/nrawssdk/v1)
+  * [v2 Documentation](http://godoc.org/github.com/newrelic/go-agent/_integrations/nrawssdk/v2)
+
+* Added span event and transaction trace segment attribute configuration.  You
+  may control which attributes are captured in span events and transaction trace
+  segments using the `Config.SpanEvents.Attributes` and
+  `Config.TransactionTracer.Segments.Attributes` settings. For example, if you
+  want to disable the collection of `"db.statement"` in your span events, modify
+  your config like this:
+
+  ```go
+  cfg.SpanEvents.Attributes.Exclude = append(cfg.SpanEvents.Attributes.Exclude,
+  	newrelic.SpanAttributeDBStatement)
+  ```
+
+  To disable the collection of all attributes from your transaction trace
+  segments, modify your config like this:
+
+  ```go
+  cfg.TransactionTracer.Segments.Attributes.Enabled = false
+  ```
+
+### Bug Fixes
+
+* Fixed a bug that would prevent External Segments from being created under
+  certain error conditions related to Cross Application Tracing.
+
+### Miscellaneous
+
+* Improved linking between Cross Application Transaction Traces in the APM UI.
+  When `Config.CrossApplicationTracer.Enabled = true`, External segments in the
+  Transaction Traces details will now link to the downstream Transaction Trace
+  if there is one. Additionally, the segment name will now include the name of
+  the downstream application and the name of the downstream transaction.
+
+* Update attribute names of Datastore and External segments on Transaction
+  Traces to be in line with attribute names on Spans. Specifically:
+    * `"uri"` => `"http.url"`
+    * `"query"` => `"db.statement"`
+    * `"database_name"` => `"db.instance"`
+    * `"host"` => `"peer.hostname"`
+    * `"port_path_or_id"` + `"host"` => `"peer.address"`
+
 ## 2.5.0
 
 * Added support for [New Relic Browser](https://docs.newrelic.com/docs/browser)

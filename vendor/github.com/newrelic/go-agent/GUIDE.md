@@ -3,7 +3,6 @@
 * [Installation](#installation)
 * [Config and Application](#config-and-application)
 * [Logging](#logging)
-  * [logrus](#logrus)
 * [Transactions](#transactions)
 * [Segments](#segments)
   * [Datastore Segments](#datastore-segments)
@@ -65,17 +64,21 @@ app, err := newrelic.NewApplication(config)
 
 ## Logging
 
-* [log.go](log.go)
-
 The agent's logging system is designed to be easily extensible.  By default, no
 logging will occur.  To enable logging, assign the `Config.Logger` field to
-something implementing the `Logger` interface.  A basic logging
-implementation is included.
+something implementing the
+[Logger](https://godoc.org/github.com/newrelic/go-agent#Logger) interface.  Two
+[Logger](https://godoc.org/github.com/newrelic/go-agent#Logger) implementations
+are included:
+[NewLogger](https://godoc.org/github.com/newrelic/go-agent#NewLogger), which
+logs at info level, and
+[NewDebugLogger](https://godoc.org/github.com/newrelic/go-agent#NewDebugLogger)
+which logs at debug level.
 
 To log at debug level to standard out, set:
 
 ```go
-config.Logger = newrelic.NewDebugLogger(os.Stdout)
+cfg.Logger = newrelic.NewDebugLogger(os.Stdout)
 ```
 
 To log at info level to a file, set:
@@ -83,21 +86,14 @@ To log at info level to a file, set:
 ```go
 w, err := os.OpenFile("my_log_file", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 if nil == err {
-  config.Logger = newrelic.NewLogger(w)
+  cfg.Logger = newrelic.NewLogger(w)
 }
 ```
 
-### logrus
+Popular logging libraries `logrus` and `logxi` are supported by integration packages:
 
-* [_integrations/nrlogrus/nrlogrus.go](_integrations/nrlogrus/nrlogrus.go)
-
-If you are using `logrus` and would like to send the agent's log messages to its
-standard logger, import the
-`github.com/newrelic/go-agent/_integrations/nrlogrus` package, then set:
-
-```go
-config.Logger = nrlogrus.StandardLogger()
-```
+* [_integrations/nrlogrus](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrlogrus)
+* [_integrations/nrlogxi/v1](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrlogxi/v1)
 
 ## Transactions
 
@@ -217,20 +213,28 @@ s.End()
 Datastore segments appear in the transaction "Breakdown table" and in the
 "Databases" page.
 
-* [datastore.go](datastore.go)
 * [More info on Databases page](https://docs.newrelic.com/docs/apm/applications-menu/monitoring/databases-slow-queries-page)
 
-Datastore segments are instrumented using `DatastoreSegment`.  Just like basic
-segments, datastore segments begin when the `StartTime` field is populated and
-finish when the `End` method is called.  Here is an example:
+Datastore segments are instrumented using
+[DatastoreSegment](https://godoc.org/github.com/newrelic/go-agent#DatastoreSegment).
+Just like basic segments, datastore segments begin when the `StartTime` field
+is populated and finish when the `End` method is called.  Here is an example:
 
 ```go
 s := newrelic.DatastoreSegment{
-	// Product is the datastore type.  See the constants in datastore.go.
+	// Product is the datastore type.  See the constants in
+	// https://github.com/newrelic/go-agent/blob/master/datastore.go.  Product
+	// is one of the fields primarily responsible for the grouping of Datastore
+	// metrics.
 	Product: newrelic.DatastoreMySQL,
-	// Collection is the table or group.
-	Collection: "my_table",
-	// Operation is the relevant action, e.g. "SELECT" or "GET".
+	// Collection is the table or group being operated upon in the datastore,
+	// e.g. "users_table".  This becomes the db.collection attribute on Span
+	// events and Transaction Trace segments.  Collection is one of the fields
+	// primarily responsible for the grouping of Datastore metrics.
+	Collection: "users_table",
+	// Operation is the relevant action, e.g. "SELECT" or "GET".  Operation is
+	// one of the fields primarily responsible for the grouping of Datastore
+	// metrics.
 	Operation: "SELECT",
 }
 s.StartTime = newrelic.StartSegmentNow(txn)
@@ -250,6 +254,17 @@ s := newrelic.DatastoreSegment{
 }
 defer s.End()
 ```
+
+If you are using the standard library's
+[database/sql](https://golang.org/pkg/database/sql/) package with
+[MySQL](https://github.com/go-sql-driver/mysql),
+[PostgreSQL](https://github.com/lib/pq), or
+[SQLite](https://github.com/mattn/go-sqlite3) then you can avoid creating
+DatastoreSegments by hand by using an integration package:
+
+* [_integrations/nrpq](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrpq)
+* [_integrations/nrmysql](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrmysql)
+* [_integrations/nrsqlite3](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrsqlite3)
 
 ### External Segments
 
@@ -387,11 +402,10 @@ version 2.1.0 of the Go Agent.
 
 The config's `DistributedTracer.Enabled` field has to be set. When true, the
 agent will add distributed tracing headers in outbound requests, and scan
-incoming requests for distributed tracing headers. Distributed tracing and
-cross-application tracing cannot be used simultaneously:
+incoming requests for distributed tracing headers. Distributed tracing will
+override cross-application tracing.
 
 ```go
-config.CrossApplicationTracer.Enabled = false
 config.DistributedTracer.Enabled = true
 ```
 
@@ -613,14 +627,34 @@ metric name.
 
 ## Browser
 
-To enable support for using
+To enable support for
 [New Relic Browser](https://docs.newrelic.com/docs/browser), your HTML pages
 must include a JavaScript snippet that will load the Browser agent and
 configure it with the correct application name. This snippet is available via
-the `BrowserTimingHeader` method: simply include the byte slice returned by
-`txn.BrowserTimingHeader().WithTags()` as early as possible in the `<head>`
-section of your HTML, load the page, and browser data should be available
-immediately.
+the `Transaction.BrowserTimingHeader` method.  Include the byte slice returned
+by `Transaction.BrowserTimingHeader().WithTags()` as early as possible in the
+`<head>` section of your HTML after any `<meta charset>` tags.
+
+```go
+func indexHandler(w http.ResponseWriter, req *http.Request) {
+    io.WriteString(w, "<html><head>")
+    // The New Relic browser javascript should be placed as high in the
+    // HTML as possible.  We suggest including it immediately after the
+    // opening <head> tag and any <meta charset> tags.
+    if txn := FromContext(req.Context()); nil != txn {
+        hdr, err := txn.BrowserTimingHeader()
+        if nil != err {
+            log.Printf("unable to create browser timing header: %v", err)
+        }
+        // BrowserTimingHeader() will always return a header whose methods can
+        // be safely called.
+        if js := hdr.WithTags(); js != nil {
+            w.Write(js)
+        }
+    }
+    io.WriteString(w, "</head><body>browser header page</body></html>")
+}
+```
 
 
 ## For More Help

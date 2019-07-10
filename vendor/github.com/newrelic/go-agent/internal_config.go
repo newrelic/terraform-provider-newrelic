@@ -43,11 +43,15 @@ func copyConfigReferenceFields(cfg Config) Config {
 	cp.ErrorCollector.Attributes = copyDestConfig(cfg.ErrorCollector.Attributes)
 	cp.TransactionEvents.Attributes = copyDestConfig(cfg.TransactionEvents.Attributes)
 	cp.TransactionTracer.Attributes = copyDestConfig(cfg.TransactionTracer.Attributes)
+	cp.BrowserMonitoring.Attributes = copyDestConfig(cfg.BrowserMonitoring.Attributes)
+	cp.SpanEvents.Attributes = copyDestConfig(cfg.SpanEvents.Attributes)
+	cp.TransactionTracer.Segments.Attributes = copyDestConfig(cfg.TransactionTracer.Segments.Attributes)
 
 	return cp
 }
 
 const (
+	// agentLanguage is used in the connect JSON and the Lambda JSON
 	agentLanguage = "go"
 )
 
@@ -107,20 +111,21 @@ func (s settings) MarshalJSON() ([]byte, error) {
 
 func configConnectJSONInternal(c Config, pid int, util *utilization.Data, e internal.Environment, version string, securityPolicies *internal.SecurityPolicies, metadata map[string]string) ([]byte, error) {
 	return json.Marshal([]interface{}{struct {
-		Pid              int                        `json:"pid"`
-		Language         string                     `json:"language"`
-		Version          string                     `json:"agent_version"`
-		Host             string                     `json:"host"`
-		HostDisplayName  string                     `json:"display_host,omitempty"`
-		Settings         interface{}                `json:"settings"`
-		AppName          []string                   `json:"app_name"`
-		HighSecurity     bool                       `json:"high_security"`
-		Labels           internal.Labels            `json:"labels,omitempty"`
-		Environment      internal.Environment       `json:"environment"`
-		Identifier       string                     `json:"identifier"`
-		Util             *utilization.Data          `json:"utilization"`
-		SecurityPolicies *internal.SecurityPolicies `json:"security_policies,omitempty"`
-		Metadata         map[string]string          `json:"metadata"`
+		Pid              int                         `json:"pid"`
+		Language         string                      `json:"language"`
+		Version          string                      `json:"agent_version"`
+		Host             string                      `json:"host"`
+		HostDisplayName  string                      `json:"display_host,omitempty"`
+		Settings         interface{}                 `json:"settings"`
+		AppName          []string                    `json:"app_name"`
+		HighSecurity     bool                        `json:"high_security"`
+		Labels           internal.Labels             `json:"labels,omitempty"`
+		Environment      internal.Environment        `json:"environment"`
+		Identifier       string                      `json:"identifier"`
+		Util             *utilization.Data           `json:"utilization"`
+		SecurityPolicies *internal.SecurityPolicies  `json:"security_policies,omitempty"`
+		Metadata         map[string]string           `json:"metadata"`
+		EventData        internal.EventHarvestConfig `json:"event_harvest_config"`
 	}{
 		Pid:             pid,
 		Language:        agentLanguage,
@@ -147,6 +152,7 @@ func configConnectJSONInternal(c Config, pid int, util *utilization.Data, e inte
 		Util:             util,
 		SecurityPolicies: securityPolicies,
 		Metadata:         metadata,
+		EventData:        internal.DefaultEventHarvestConfig(),
 	}})
 }
 

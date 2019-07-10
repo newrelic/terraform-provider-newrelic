@@ -127,12 +127,12 @@ func rpmURL(cmd RpmCmd, cs RpmControls) string {
 }
 
 func collectorRequestInternal(url string, cmd RpmCmd, cs RpmControls) RPMResponse {
-	deflated, err := compress(cmd.Data)
+	compressed, err := compress(cmd.Data)
 	if nil != err {
 		return RPMResponse{Err: err}
 	}
 
-	req, err := http.NewRequest("POST", url, deflated)
+	req, err := http.NewRequest("POST", url, compressed)
 	if nil != err {
 		return RPMResponse{Err: err}
 	}
@@ -140,7 +140,7 @@ func collectorRequestInternal(url string, cmd RpmCmd, cs RpmControls) RPMRespons
 	req.Header.Add("Accept-Encoding", "identity, deflate")
 	req.Header.Add("Content-Type", "application/octet-stream")
 	req.Header.Add("User-Agent", userAgentPrefix+cs.AgentVersion)
-	req.Header.Add("Content-Encoding", "deflate")
+	req.Header.Add("Content-Encoding", "gzip")
 	for k, v := range cmd.RequestHeadersMap {
 		req.Header.Add(k, v)
 	}
@@ -281,27 +281,39 @@ func ConnectAttempt(config ConnectJSONCreator, securityPoliciesToken string, cs 
 		return nil, resp
 	}
 
+	reply, err := constructConnectReply(resp.body, preconnect.Preconnect)
+	if nil != err {
+		return nil, RPMResponse{Err: err}
+	}
+	return reply, resp
+}
+
+func constructConnectReply(body []byte, preconnect PreconnectReply) (*ConnectReply, error) {
 	var reply struct {
 		Reply *ConnectReply `json:"return_value"`
 	}
 	reply.Reply = ConnectReplyDefaults()
-	err = json.Unmarshal(resp.body, &reply)
+	err := json.Unmarshal(body, &reply)
 	if nil != err {
-		return nil, RPMResponse{Err: fmt.Errorf("unable to parse connect reply: %v", err)}
+		return nil, fmt.Errorf("unable to parse connect reply: %v", err)
 	}
 	// Note:  This should never happen.  It would mean the collector
 	// response is malformed.  This exists merely as extra defensiveness.
 	if "" == reply.Reply.RunID {
-		return nil, RPMResponse{Err: errors.New("connect reply missing agent run id")}
+		return nil, errors.New("connect reply missing agent run id")
 	}
 
-	reply.Reply.PreconnectReply = preconnect.Preconnect
+	reply.Reply.PreconnectReply = preconnect
 
-	reply.Reply.AdaptiveSampler = newAdaptiveSampler(adaptiveSamplerInput{
-		Period: time.Duration(reply.Reply.SamplingTargetPeriodInSeconds) * time.Second,
-		Target: reply.Reply.SamplingTarget,
-	}, time.Now())
+	reply.Reply.AdaptiveSampler = NewAdaptiveSampler(
+		time.Duration(reply.Reply.SamplingTargetPeriodInSeconds)*time.Second,
+		reply.Reply.SamplingTarget,
+		time.Now())
 	reply.Reply.rulesCache = newRulesCache(txnNameCacheLimit)
 
-	return reply.Reply, resp
+	if reply.Reply.EventData.EventReportPeriodMs <= 0 {
+		reply.Reply.EventData.EventReportPeriodMs = defaultConfigurableEventHarvestMs
+	}
+
+	return reply.Reply, nil
 }
