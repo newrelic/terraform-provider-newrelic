@@ -3,6 +3,7 @@ package newrelic
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -50,9 +51,19 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Required: true,
 						},
 						"since_value": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"1", "2", "3", "4", "5"}, false),
+							Type:     schema.TypeString,
+							Required: true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								valueString := val.(string)
+								v, err := strconv.Atoi(valueString)
+								if err != nil {
+									errs = append(errs, fmt.Errorf("Error converting string to int: %#v", err))
+								}
+								if v < 1 || v > 20 {
+									errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
+								}
+								return
+							},
 						},
 					},
 				},
