@@ -2,7 +2,7 @@ module github.com/terraform-providers/terraform-provider-newrelic
 
 require (
 	github.com/dollarshaveclub/new-relic-synthetics-go v0.0.0-20170605224734-4dc3dd6ae884
-	github.com/hashicorp/go-hclog v0.8.0 // indirect
+	github.com/hashicorp/go-hclog v0.9.2 // indirect
 	github.com/hashicorp/hil v0.0.0-20190212132231-97b3a9cdfa93 // indirect
 	github.com/hashicorp/terraform v0.12.3
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
