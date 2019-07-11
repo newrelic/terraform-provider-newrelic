@@ -1,8 +1,8 @@
-## 1.5.1 (Unreleased)
+## 1.5.1 (July 11, 2019)
 
 BUG FIXES:
 
-* `newrelic_nrql_alert_condition` modifies `since_value` validation to match rest API's requirements [GH-144]
+* `newrelic_nrql_alert_condition` modifies `since_value` validation to match rest API's requirements ([#144](https://github.com/terraform-providers/terraform-provider-newrelic/issues/144))
 
 ## 1.5.0 (March 26, 2019)
 
