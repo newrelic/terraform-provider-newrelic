@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/terraform v0.12.3
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
-	github.com/newrelic/go-agent v2.5.0+incompatible
+	github.com/newrelic/go-agent v2.9.0+incompatible
 	github.com/paultyng/go-newrelic/v4 v4.4.0
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/ulikunitz/xz v0.5.6 // indirect
