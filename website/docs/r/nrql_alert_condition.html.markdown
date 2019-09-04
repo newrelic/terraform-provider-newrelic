@@ -76,8 +76,15 @@ The following attributes are exported:
 
 ## Import
 
-Alert conditions can be imported using the `id`, e.g.
+Alert conditions can be imported using the `id` of the alert condition which is in the format of:
+
+`[AlertPolicyId]:[AlertConditionId]`
+
+e.g.
 
 ```
-$ terraform import newrelic_nrql_alert_condition.main 12345
+$ terraform import newrelic_nrql_alert_condition.main 789:12345
 ```
+The actual values for AlertPolicyId and AlertConditionId can be retreived from the the url when looking at the alert condition:
+
+https://alerts.newrelic.com/accounts/[AccountId]/policies/[AlertPolicyId]/conditions/[AlertConditionId]/edit?selectedField=thresholds
