@@ -81,4 +81,4 @@ Finding Certain ID and Key
 
 Alert policy ID
 
-1. If you go to Alerts>Alert Policys>[your policy] New Relic UI the url will be formatted like https://alerts.newrelic.com/accounts/[account id]/policies/[policy id]
+1. If you go to Alerts>Alert Policys>[your policy] New Relic UI the url will be formatted like **alerts.newrelic.com/accounts/[account id]/policies/[policy id]**
