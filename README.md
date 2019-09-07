@@ -75,3 +75,10 @@ To update a dependency:
 1. Ensure you have govendor installed: `go get -u github.com/kardianos/govendor`
 2. CD to the root of this repo (not into the vendor directory)
 3. Run `govendor fetch PATH/FOR/PACKAGE` where PATH/FOR/PACKAGE is the path property in `vendor.json` of the package you wish to update. Ex. `go get github.com/paultyng/go-newrelic/api`
+
+Finding Certain ID and Key
+---------------------------
+
+Alert policy ID
+
+1. If you go to Alerts>Alert Policys>[your policy] New Relic UI the url will be formatted like https://alerts.newrelic.com/accounts/<account id>/policies/<policy id>
