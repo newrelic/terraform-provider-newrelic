@@ -82,3 +82,4 @@ Finding Certain ID and Key
 Alert policy ID
 
 1. If you go to Alerts>Alert Policys>[your policy] New Relic UI the url will be formatted like **alerts.newrelic.com/accounts/[account id]/policies/[policy id]**
+2. You can also use the REST API to get your policy ids (https://docs.newrelic.com/docs/alerts/rest-api-alerts/new-relic-alerts-rest-api/rest-api-calls-new-relic-alerts#policies-list)
