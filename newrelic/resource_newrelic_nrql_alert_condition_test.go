@@ -162,7 +162,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   }
   nrql {
     query         = "SELECT uniqueCount(hostname) FROM ComputeSample"
-    since_value   = "5"
+    since_value   = "20"
   }
   value_function  = "single_value"
 }

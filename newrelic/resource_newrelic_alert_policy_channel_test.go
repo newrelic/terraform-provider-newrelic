@@ -116,7 +116,7 @@ resource "newrelic_alert_policy_channel" "foo" {
 
 func testAccCheckNewRelicAlertPolicyChannelConfigUpdated(rName string) string {
 	return fmt.Sprintf(`
-resource "newrelic_alert_policy" "bar" {
+resource "newrelic_alert_policy" "foo" {
   name = "tf-test-updated-%[1]s"
 }
 
@@ -131,7 +131,7 @@ resource "newrelic_alert_channel" "foo" {
 }
 
 resource "newrelic_alert_policy_channel" "foo" {
-  policy_id  = "${newrelic_alert_policy.bar.id}"
+  policy_id  = "${newrelic_alert_policy.foo.id}"
   channel_id = "${newrelic_alert_channel.foo.id}"
 }
 `, rName)
