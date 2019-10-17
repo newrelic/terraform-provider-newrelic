@@ -76,7 +76,7 @@ The following attributes are exported:
 
 ## Import
 
-Alert conditions can be imported using the a composite ID of `<policy_id>:<condition_id> `id`, e.g.
+Alert conditions can be imported using a composite ID of `<policy_id>:<condition_id> `id`, e.g.
 
 ```
 $ terraform import newrelic_nrql_alert_condition.main 12345:67890
