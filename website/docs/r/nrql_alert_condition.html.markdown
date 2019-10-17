@@ -55,7 +55,7 @@ The following arguments are supported:
 
 The `term` mapping supports the following arguments:
 
-  * `duration` - (Required) In minutes, must be in the range of `2` to `120`, inclusive.
+  * `duration` - (Required) In minutes, must be in the range of `1` to `120`, inclusive.
   * `operator` - (Optional) `above`, `below`, or `equal`.  Defaults to `equal`.
   * `priority` - (Optional) `critical` or `warning`.  Defaults to `critical`.
   * `threshold` - (Required) Must be 0 or greater.
