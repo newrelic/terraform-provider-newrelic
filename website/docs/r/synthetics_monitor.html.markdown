@@ -27,7 +27,7 @@ resource "newrelic_synthetics_monitor" "foo" {
 The following arguments are supported:
 
   * `name` - (Required) The title of this monitor.
-  * `type` - (Required) The monitor type.
+  * `type` - (Required) The monitor type (i.e. SIMPLE, BROWSER, SCRIPT_API, SCRIPT_BROWSER).
   * `frequency` - (Required) The interval (in minutes) at which this monitor should run.
   * `status` - (Required) The monitor status (i.e. ENABLED, MUTED, DISABLED)
   * `locations` - (Required) The locations in which this monitor should be run.
