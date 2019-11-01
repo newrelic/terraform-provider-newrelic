@@ -43,13 +43,12 @@ func copyConfigReferenceFields(cfg Config) Config {
 	cp.ErrorCollector.Attributes = copyDestConfig(cfg.ErrorCollector.Attributes)
 	cp.TransactionEvents.Attributes = copyDestConfig(cfg.TransactionEvents.Attributes)
 	cp.TransactionTracer.Attributes = copyDestConfig(cfg.TransactionTracer.Attributes)
+	cp.BrowserMonitoring.Attributes = copyDestConfig(cfg.BrowserMonitoring.Attributes)
+	cp.SpanEvents.Attributes = copyDestConfig(cfg.SpanEvents.Attributes)
+	cp.TransactionTracer.Segments.Attributes = copyDestConfig(cfg.TransactionTracer.Segments.Attributes)
 
 	return cp
 }
-
-const (
-	agentLanguage = "go"
-)
 
 func transportSetting(t http.RoundTripper) interface{} {
 	if nil == t {
@@ -79,7 +78,7 @@ func (s settings) MarshalJSON() ([]byte, error) {
 	c := Config(s)
 	transport := c.Transport
 	c.Transport = nil
-	logger := c.Logger
+	l := c.Logger
 	c.Logger = nil
 
 	js, err := json.Marshal(c)
@@ -95,7 +94,7 @@ func (s settings) MarshalJSON() ([]byte, error) {
 	// to it since we want to allow consumers to populate Config from JSON.
 	delete(fields, `License`)
 	fields[`Transport`] = transportSetting(transport)
-	fields[`Logger`] = loggerSetting(logger)
+	fields[`Logger`] = loggerSetting(l)
 
 	// Browser monitoring support.
 	if c.BrowserMonitoring.Enabled {
@@ -107,30 +106,31 @@ func (s settings) MarshalJSON() ([]byte, error) {
 
 func configConnectJSONInternal(c Config, pid int, util *utilization.Data, e internal.Environment, version string, securityPolicies *internal.SecurityPolicies, metadata map[string]string) ([]byte, error) {
 	return json.Marshal([]interface{}{struct {
-		Pid              int                        `json:"pid"`
-		Language         string                     `json:"language"`
-		Version          string                     `json:"agent_version"`
-		Host             string                     `json:"host"`
-		HostDisplayName  string                     `json:"display_host,omitempty"`
-		Settings         interface{}                `json:"settings"`
-		AppName          []string                   `json:"app_name"`
-		HighSecurity     bool                       `json:"high_security"`
-		Labels           internal.Labels            `json:"labels,omitempty"`
-		Environment      internal.Environment       `json:"environment"`
-		Identifier       string                     `json:"identifier"`
-		Util             *utilization.Data          `json:"utilization"`
-		SecurityPolicies *internal.SecurityPolicies `json:"security_policies,omitempty"`
-		Metadata         map[string]string          `json:"metadata"`
+		Pid              int                         `json:"pid"`
+		Language         string                      `json:"language"`
+		Version          string                      `json:"agent_version"`
+		Host             string                      `json:"host"`
+		HostDisplayName  string                      `json:"display_host,omitempty"`
+		Settings         interface{}                 `json:"settings"`
+		AppName          []string                    `json:"app_name"`
+		HighSecurity     bool                        `json:"high_security"`
+		Labels           internal.Labels             `json:"labels,omitempty"`
+		Environment      internal.Environment        `json:"environment"`
+		Identifier       string                      `json:"identifier"`
+		Util             *utilization.Data           `json:"utilization"`
+		SecurityPolicies *internal.SecurityPolicies  `json:"security_policies,omitempty"`
+		Metadata         map[string]string           `json:"metadata"`
+		EventData        internal.EventHarvestConfig `json:"event_harvest_config"`
 	}{
 		Pid:             pid,
-		Language:        agentLanguage,
+		Language:        internal.AgentLanguage,
 		Version:         version,
 		Host:            internal.StringLengthByteLimit(util.Hostname, hostByteLimit),
 		HostDisplayName: internal.StringLengthByteLimit(c.HostDisplayName, hostByteLimit),
 		Settings:        (settings)(c),
 		AppName:         strings.Split(c.AppName, ";"),
 		HighSecurity:    c.HighSecurity,
-		Labels:          internal.Labels(c.Labels),
+		Labels:          c.Labels,
 		Environment:     e,
 		// This identifier field is provided to avoid:
 		// https://newrelic.atlassian.net/browse/DSCORE-778
@@ -147,6 +147,7 @@ func configConnectJSONInternal(c Config, pid int, util *utilization.Data, e inte
 		Util:             util,
 		SecurityPolicies: securityPolicies,
 		Metadata:         metadata,
+		EventData:        internal.DefaultEventHarvestConfig(c),
 	}})
 }
 

@@ -41,6 +41,7 @@ type RpmCmd struct {
 	RunID             string
 	Data              []byte
 	RequestHeadersMap map[string]string
+	MaxPayloadSize    int
 }
 
 // RpmControls contains fields which will be the same for all calls made
@@ -127,12 +128,16 @@ func rpmURL(cmd RpmCmd, cs RpmControls) string {
 }
 
 func collectorRequestInternal(url string, cmd RpmCmd, cs RpmControls) RPMResponse {
-	deflated, err := compress(cmd.Data)
+	compressed, err := compress(cmd.Data)
 	if nil != err {
 		return RPMResponse{Err: err}
 	}
 
-	req, err := http.NewRequest("POST", url, deflated)
+	if l := compressed.Len(); l > cmd.MaxPayloadSize {
+		return RPMResponse{Err: fmt.Errorf("Payload size for %s too large: %d greater than %d", cmd.Name, l, cmd.MaxPayloadSize)}
+	}
+
+	req, err := http.NewRequest("POST", url, compressed)
 	if nil != err {
 		return RPMResponse{Err: err}
 	}
@@ -140,7 +145,7 @@ func collectorRequestInternal(url string, cmd RpmCmd, cs RpmControls) RPMRespons
 	req.Header.Add("Accept-Encoding", "identity, deflate")
 	req.Header.Add("Content-Type", "application/octet-stream")
 	req.Header.Add("User-Agent", userAgentPrefix+cs.AgentVersion)
-	req.Header.Add("Content-Encoding", "deflate")
+	req.Header.Add("Content-Encoding", "gzip")
 	for k, v := range cmd.RequestHeadersMap {
 		req.Header.Add(k, v)
 	}
@@ -233,21 +238,28 @@ type ConnectJSONCreator interface {
 
 type preconnectRequest struct {
 	SecurityPoliciesToken string `json:"security_policies_token,omitempty"`
+	HighSecurity          bool   `json:"high_security"`
 }
 
+var (
+	errMissingAgentRunID = errors.New("connect reply missing agent run id")
+)
+
 // ConnectAttempt tries to connect an application.
-func ConnectAttempt(config ConnectJSONCreator, securityPoliciesToken string, cs RpmControls) (*ConnectReply, RPMResponse) {
-	preconnectData, err := json.Marshal([]preconnectRequest{
-		{SecurityPoliciesToken: securityPoliciesToken},
-	})
+func ConnectAttempt(config ConnectJSONCreator, securityPoliciesToken string, highSecurity bool, cs RpmControls) (*ConnectReply, RPMResponse) {
+	preconnectData, err := json.Marshal([]preconnectRequest{{
+		SecurityPoliciesToken: securityPoliciesToken,
+		HighSecurity:          highSecurity,
+	}})
 	if nil != err {
 		return nil, RPMResponse{Err: fmt.Errorf("unable to marshal preconnect data: %v", err)}
 	}
 
 	call := RpmCmd{
-		Name:      cmdPreconnect,
-		Collector: calculatePreconnectHost(cs.License, preconnectHostOverride),
-		Data:      preconnectData,
+		Name:           cmdPreconnect,
+		Collector:      calculatePreconnectHost(cs.License, preconnectHostOverride),
+		Data:           preconnectData,
+		MaxPayloadSize: maxPayloadSizeInBytes,
 	}
 
 	resp := CollectorRequest(call, cs)
@@ -281,27 +293,39 @@ func ConnectAttempt(config ConnectJSONCreator, securityPoliciesToken string, cs 
 		return nil, resp
 	}
 
+	reply, err := ConstructConnectReply(resp.body, preconnect.Preconnect)
+	if nil != err {
+		return nil, RPMResponse{Err: err}
+	}
+
+	// Note:  This should never happen.  It would mean the collector
+	// response is malformed.  This exists merely as extra defensiveness.
+	if "" == reply.RunID {
+		return nil, RPMResponse{Err: errMissingAgentRunID}
+	}
+
+	return reply, resp
+}
+
+// ConstructConnectReply takes the body of a Connect reply, in the form of bytes, and a
+// PreconnectReply, and converts it into a *ConnectReply
+func ConstructConnectReply(body []byte, preconnect PreconnectReply) (*ConnectReply, error) {
 	var reply struct {
 		Reply *ConnectReply `json:"return_value"`
 	}
 	reply.Reply = ConnectReplyDefaults()
-	err = json.Unmarshal(resp.body, &reply)
+	err := json.Unmarshal(body, &reply)
 	if nil != err {
-		return nil, RPMResponse{Err: fmt.Errorf("unable to parse connect reply: %v", err)}
-	}
-	// Note:  This should never happen.  It would mean the collector
-	// response is malformed.  This exists merely as extra defensiveness.
-	if "" == reply.Reply.RunID {
-		return nil, RPMResponse{Err: errors.New("connect reply missing agent run id")}
+		return nil, fmt.Errorf("unable to parse connect reply: %v", err)
 	}
 
-	reply.Reply.PreconnectReply = preconnect.Preconnect
+	reply.Reply.PreconnectReply = preconnect
 
-	reply.Reply.AdaptiveSampler = newAdaptiveSampler(adaptiveSamplerInput{
-		Period: time.Duration(reply.Reply.SamplingTargetPeriodInSeconds) * time.Second,
-		Target: reply.Reply.SamplingTarget,
-	}, time.Now())
+	reply.Reply.AdaptiveSampler = NewAdaptiveSampler(
+		time.Duration(reply.Reply.SamplingTargetPeriodInSeconds)*time.Second,
+		reply.Reply.SamplingTarget,
+		time.Now())
 	reply.Reply.rulesCache = newRulesCache(txnNameCacheLimit)
 
-	return reply.Reply, resp
+	return reply.Reply, nil
 }

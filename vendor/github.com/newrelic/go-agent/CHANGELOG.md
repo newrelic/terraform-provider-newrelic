@@ -1,5 +1,568 @@
 ## ChangeLog
 
+## 2.15.0
+
+### New Features
+
+* Added support for monitoring [MongoDB](https://github.com/mongodb/mongo-go-driver/) queries with the new
+[_integrations/nrmongo](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrmongo)
+package.
+
+  * [Example application](https://github.com/newrelic/go-agent/blob/master/_integrations/nrmongo/example/main.go)
+  * [Full godocs Documentation](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrmongo)
+
+* Added new method `Transaction.IsSampled()` that returns a boolean that
+  indicates if the transaction is sampled.  A sampled transaction records a
+  span event for each segment.  Distributed tracing must be enabled for
+  transactions to be sampled.  `false` is returned if the transaction has
+  finished.  This sampling flag is needed for B3 trace propagation and 
+  future support of W3C Trace Context.
+
+* Added support for adding [B3
+  Headers](https://github.com/openzipkin/b3-propagation) to outgoing requests.
+  This is helpful if the service you are calling uses B3 for trace state
+  propagation (for example, it uses Zipkin instrumentation).  You can use the
+  new
+  [_integrations/nrb3](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrb3)
+  package's
+  [`nrb3.NewRoundTripper`](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrb3#NewRoundTripper)
+  like this:
+
+  ```go
+  // When defining the client, set the Transport to the NewRoundTripper. This
+  // will create ExternalSegments and add B3 headers for each request.
+  client := &http.Client{
+      Transport: nrb3.NewRoundTripper(nil),
+  }
+
+  // Distributed Tracing must be enabled for this application.
+  // (see https://docs.newrelic.com/docs/understand-dependencies/distributed-tracing/enable-configure/enable-distributed-tracing)
+  txn := currentTxn()
+
+  req, err := http.NewRequest("GET", "http://example.com", nil)
+  if nil != err {
+      log.Fatalln(err)
+  }
+
+  // Be sure to add the transaction to the request context.  This step is
+  // required.
+  req = newrelic.RequestWithTransactionContext(req, txn)
+  resp, err := client.Do(req)
+  if nil != err {
+      log.Fatalln(err)
+  }
+
+  defer resp.Body.Close()
+  fmt.Println(resp.StatusCode)
+  ```
+
+### Bug Fixes
+
+* Fixed an issue where the
+  [`nrgin`](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrgin/v1)
+  integration was not capturing the correct response code in the case where no
+  response body was sent.  This issue has now been fixed but requires Gin
+  greater than v1.4.0.
+
+## 2.14.1
+
+### Bug Fixes
+
+* Removed the hidden `"NEW_RELIC_DEBUG_LOGGING"` environment variable setting
+  which was broken in release 2.14.0.
+
+## 2.14.0
+
+### New Features
+
+* Added support for a new segment type,
+  [`MessageProducerSegment`](https://godoc.org/github.com/newrelic/go-agent#MessageProducerSegment),
+  to be used to track time spent adding messages to message queuing systems like
+  RabbitMQ or Kafka.
+
+  ```go
+  seg := &newrelic.MessageProducerSegment{
+      StartTime:       newrelic.StartSegmentNow(txn),
+      Library:         "RabbitMQ",
+      DestinationType: newrelic.MessageExchange,
+      DestinationName: "myExchange",
+  }
+  // add message to queue here
+  seg.End()
+  ```
+
+* Added new attribute constants for use with message consumer transactions.
+  These attributes can be used to add more detail to a transaction that tracks
+  time spent consuming a message off a message queuing system like RabbitMQ or Kafka.
+  They can be added using
+  [`txn.AddAttribute`](https://godoc.org/github.com/newrelic/go-agent#Transaction).
+
+  ```go
+  // The routing key of the consumed message.
+  txn.AddAttribute(newrelic.AttributeMessageRoutingKey, "myRoutingKey")
+  // The name of the queue the message was consumed from.
+  txn.AddAttribute(newrelic.AttributeMessageQueueName, "myQueueName")
+  // The type of exchange used for the consumed message (direct, fanout,
+  // topic, or headers).
+  txn.AddAttribute(newrelic.AttributeMessageExchangeType, "myExchangeType")
+  // The callback queue used in RPC configurations.
+  txn.AddAttribute(newrelic.AttributeMessageReplyTo, "myReplyTo")
+  // The application-generated identifier used in RPC configurations.
+  txn.AddAttribute(newrelic.AttributeMessageCorrelationID, "myCorrelationID")
+  ```
+
+  It is recommended that at most one message is consumed per transaction.
+
+* Added support for [Go 1.13's Error wrapping](https://golang.org/doc/go1.13#error_wrapping).
+  `Transaction.NoticeError` now uses [Unwrap](https://golang.org/pkg/errors/#Unwrap)
+  recursively to identify the error's cause (the deepest wrapped error) when generating
+  the error's class field.  This functionality will help group your errors usefully.
+
+  For example, when using Go 1.13, the following code:
+
+  ```go
+  type socketError struct{}
+
+  func (e socketError) Error() string { return "socket error" }
+
+  func gamma() error { return socketError{} }
+  func beta() error  { return fmt.Errorf("problem in beta: %w", gamma()) }
+  func alpha() error { return fmt.Errorf("problem in alpha: %w", beta()) }
+
+  func execute(txn newrelic.Transaction) {
+  	err := alpha()
+  	txn.NoticeError(err)
+  }
+  ```
+  captures an error with message `"problem in alpha: problem in beta: socket error"`
+  and class `"main.socketError"`.  Previously, the class was recorded as `"*fmt.wrapError"`.
+
+* A `Stack` field has been added to [Error](https://godoc.org/github.com/newrelic/go-agent#Error),
+  which can be assigned using the new
+  [NewStackTrace](https://godoc.org/github.com/newrelic/go-agent#NewStackTrace) function.
+  This allows your error stack trace to show where the error happened, rather
+  than the location of the `NoticeError` call.
+
+  `Transaction.NoticeError` not only checks for a stack trace (using
+  [StackTracer](https://godoc.org/github.com/newrelic/go-agent#StackTracer)) in
+  the error parameter, but in the error's cause as well.  This means that you
+  can create an [Error](https://godoc.org/github.com/newrelic/go-agent#Error)
+  where your error occurred, wrap it multiple times to add information, notice it
+  with `NoticeError`, and still have a useful stack trace. Take a look!
+
+  ```go
+  func gamma() error {
+  	return newrelic.Error{
+  		Message: "something went very wrong",
+  		Class:   "socketError",
+  		Stack:   newrelic.NewStackTrace(),
+  	}
+  }
+
+  func beta() error  { return fmt.Errorf("problem in beta: %w", gamma()) }
+  func alpha() error { return fmt.Errorf("problem in alpha: %w", beta()) }
+
+  func execute(txn newrelic.Transaction) {
+  	err := alpha()
+  	txn.NoticeError(err)
+  }
+  ```
+
+  In this example, the topmost stack trace frame recorded is `"gamma"`,
+  rather than `"execute"`.
+
+* Added support for configuring a maximum number of transaction events per minute to be sent to New Relic.
+It can be configured as follows:
+
+  ```go
+  config := newrelic.NewConfig("Application Name", os.Getenv("NEW_RELIC_LICENSE_KEY"))  
+  config.TransactionEvents.MaxSamplesStored = 100
+  ```
+    * For additional configuration information, see our [documentation](https://docs.newrelic.com/docs/agents/go-agent/configuration/go-agent-configuration)
+
+
+### Miscellaneous
+
+* Updated the
+  [`nrmicro`](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrmicro)
+  package to use the new segment type
+  [`MessageProducerSegment`](https://godoc.org/github.com/newrelic/go-agent#MessageProducerSegment)
+  and the new attribute constants:
+  * [`nrmicro.ClientWrapper`](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrmicro#ClientWrapper)
+    now uses `newrelic.MessageProducerSegment`s instead of
+    `newrelic.ExternalSegment`s for calls to
+    [`Client.Publish`](https://godoc.org/github.com/micro/go-micro/client#Client).
+  * [`nrmicro.SubscriberWrapper`](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrmicro#SubscriberWrapper)
+    updates transaction names and adds the attribute `message.routingKey`.
+
+* Updated the
+  [`nrnats`](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrnats)
+  and
+  [`nrstan`](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrstan)
+  packages to use the new segment type
+  [`MessageProducerSegment`](https://godoc.org/github.com/newrelic/go-agent#MessageProducerSegment)
+  and the new attribute constants:
+  * [`nrnats.StartPublishSegment`](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrnats#StartPublishSegment)
+    now starts and returns a `newrelic.MessageProducerSegment` type.
+  * [`nrnats.SubWrapper`](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrnats#SubWrapper)
+    and
+    [`nrstan.StreamingSubWrapper`](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrstan#StreamingSubWrapper)
+    updates transaction names and adds the attributes `message.routingKey`,
+    `message.queueName`, and `message.replyTo`.
+
+## 2.13.0
+
+### New Features
+
+* Added support for [HttpRouter](https://github.com/julienschmidt/httprouter) in
+  the new [_integrations/nrhttprouter](http://godoc.org/github.com/newrelic/go-agent/_integrations/nrhttprouter) package.  This package allows you to easily instrument inbound requests through the HttpRouter framework.
+
+  * [Documentation](http://godoc.org/github.com/newrelic/go-agent/_integrations/nrhttprouter)
+  * [Example](_integrations/nrhttprouter/example/main.go)
+
+* Added support for [github.com/uber-go/zap](https://github.com/uber-go/zap) in
+  the new
+  [_integrations/nrzap](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrzap)
+  package.  This package allows you to send agent log messages to `zap`.
+
+## 2.12.0
+
+### New Features
+
+* Added new methods to expose `Transaction` details:
+
+  * `Transaction.GetTraceMetadata()` returns a
+    [TraceMetadata](https://godoc.org/github.com/newrelic/go-agent#TraceMetadata)
+    which contains distributed tracing identifiers.
+
+  * `Transaction.GetLinkingMetadata()` returns a
+    [LinkingMetadata](https://godoc.org/github.com/newrelic/go-agent#LinkingMetadata)
+    which contains the fields needed to link data to a trace or entity.
+
+* Added a new plugin for the [Logrus logging
+  framework](https://github.com/sirupsen/logrus) with the new
+  [_integrations/logcontext/nrlogrusplugin](https://github.com/newrelic/go-agent/go-agent/tree/master/_integrations/logcontext/nrlogrusplugin)
+  package. This plugin leverages the new `GetTraceMetadata` and
+  `GetLinkingMetadata` above to decorate logs.
+
+  To enable, set your log's formatter to the `nrlogrusplugin.ContextFormatter{}`
+
+  ```go
+  logger := logrus.New()
+  logger.SetFormatter(nrlogrusplugin.ContextFormatter{})
+  ```
+
+  The logger will now look for a `newrelic.Transaction` inside its context and
+  decorate logs accordingly.  Therefore, the Transaction must be added to the
+  context and passed to the logger.  For example, this logging call
+
+  ```go
+  logger.Info("Hello New Relic!")
+  ```
+
+  must be transformed to include the context, such as:
+
+  ```go
+  ctx := newrelic.NewContext(context.Background(), txn)
+  logger.WithContext(ctx).Info("Hello New Relic!")
+  ```
+
+  For full documentation see the
+  [godocs](https://godoc.org/github.com/newrelic/go-agent/_integrations/logcontext/nrlogrusplugin)
+  or view the
+  [example](https://github.com/newrelic/go-agent/blob/master/_integrations/logcontext/nrlogrusplugin/example/main.go).
+
+* Added support for [NATS](https://github.com/nats-io/nats.go) and [NATS Streaming](https://github.com/nats-io/stan.go)
+monitoring with the new [_integrations/nrnats](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrnats) and
+[_integrations/nrstan](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrstan) packages.  These packages
+support instrumentation of publishers and subscribers.
+
+  * [NATS Example](https://github.com/newrelic/go-agent/blob/master/_integrations/nrnats/examples/main.go)
+  * [NATS Streaming Example](https://github.com/newrelic/go-agent/blob/master/_integrations/nrstan/examples/main.go)
+
+* Enables ability to migrate to [Configurable Security Policies (CSP)](https://docs.newrelic.com/docs/agents/manage-apm-agents/configuration/enable-configurable-security-policies) on a per agent basis for accounts already using [High Security Mode (HSM)](https://docs.newrelic.com/docs/agents/manage-apm-agents/configuration/high-security-mode).
+  * Previously, if CSP was configured for an account, New Relic would not allow an agent to connect without the `security_policies_token`. This led to agents not being able to connect during the period between when CSP was enabled for an account and when each agent is configured with the correct token.
+  * With this change, when both HSM and CSP are enabled for an account, an agent (this version or later) can successfully connect with either `high_security: true` or the appropriate `security_policies_token` configured - allowing the agent to continue to connect after CSP is configured on the account but before the appropriate `security_policies_token` is configured for each agent.
+
+## 2.11.0
+
+### New Features
+
+* Added support for [Micro](https://github.com/micro/go-micro) monitoring with the new
+[_integrations/nrmicro](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrmicro)
+package.  This package supports instrumentation for servers, clients, publishers, and subscribers.
+
+  * [Server Example](https://github.com/newrelic/go-agent/blob/master/_integrations/nrmicro/example/server/server.go)
+  * [Client Example](https://github.com/newrelic/go-agent/blob/master/_integrations/nrmicro/example/client/client.go)
+  * [Publisher and Subscriber Example](https://github.com/newrelic/go-agent/blob/master/_integrations/nrmicro/example/pubsub/main.go)
+  * [Full godocs Documentation](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrmicro)
+
+* Added support for creating static `WebRequest` instances manually via the `NewStaticWebRequest` function. This can be useful when you want to create a web transaction but don't have an `http.Request` object. Here's an example of creating a static `WebRequest` and using it to mark a transaction as a web transaction:
+  ```go
+  hdrs := http.Headers{}
+  u, _ := url.Parse("http://example.com")
+  webReq := newrelic.NewStaticWebRequest(hdrs, u, "GET", newrelic.TransportHTTP)
+  txn := app.StartTransaction("My-Transaction", nil, nil)
+  txn.SetWebRequest(webReq)
+  ```
+
+## 2.10.0
+
+### New Features
+
+* Added support for custom events when using
+  [nrlambda](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrlambda).
+  Example Lambda handler which creates custom event:
+
+   ```go
+   func handler(ctx context.Context) {
+		if txn := newrelic.FromContext(ctx); nil != txn {
+			txn.Application().RecordCustomEvent("myEvent", map[string]interface{}{
+				"zip": "zap",
+			})
+		}
+		fmt.Println("hello world!")
+   }
+   ```
+
+## 2.9.0
+
+### New Features
+
+* Added support for [gRPC](https://github.com/grpc/grpc-go) monitoring with the new
+[_integrations/nrgrpc](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrgrpc)
+package.  This package supports instrumentation for servers and clients.
+
+  * [Server Example](https://github.com/newrelic/go-agent/blob/master/_integrations/nrgrpc/example/server/server.go)
+  * [Client Example](https://github.com/newrelic/go-agent/blob/master/_integrations/nrgrpc/example/client/client.go)
+
+* Added new
+  [ExternalSegment](https://godoc.org/github.com/newrelic/go-agent#ExternalSegment)
+  fields `Host`, `Procedure`, and `Library`.  These optional fields are
+  automatically populated from the segment's `URL` or `Request` if unset.  Use
+  them if you don't have access to a request or URL but still want useful external
+  metrics, transaction segment attributes, and span attributes.
+  * `Host` is used for external metrics, transaction trace segment names, and
+    span event names.  The host of segment's `Request` or `URL` is the default.
+  * `Procedure` is used for transaction breakdown metrics.  If set, it should be
+    set to the remote procedure being called.  The HTTP method of the segment's `Request` is the default.
+  * `Library` is used for external metrics and the `"component"` span attribute.
+    If set, it should be set to the framework making the call. `"http"` is the default.
+
+  With the addition of these new fields, external transaction breakdown metrics
+  are changed: `External/myhost.com/all` will now report as
+  `External/myhost.com/http/GET` (provided the HTTP method is `GET`).
+
+* HTTP Response codes below `100`, except `0` and `5`, are now recorded as
+  errors.  This is to support `gRPC` status codes.  If you start seeing
+  new status code errors that you would like to ignore, add them to
+  `Config.ErrorCollector.IgnoreStatusCodes` or your server side configuration
+  settings.
+
+* Improve [logrus](https://github.com/sirupsen/logrus) support by introducing
+  [nrlogrus.Transform](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrlogrus#Transform),
+  a function which allows you to turn a
+  [logrus.Logger](https://godoc.org/github.com/sirupsen/logrus#Logger) instance into a
+  [newrelic.Logger](https://godoc.org/github.com/newrelic/go-agent#Logger).
+  Example use:
+
+  ```go
+  l := logrus.New()
+  l.SetLevel(logrus.DebugLevel)
+  cfg := newrelic.NewConfig("Your Application Name", "__YOUR_NEW_RELIC_LICENSE_KEY__")
+  cfg.Logger = nrlogrus.Transform(l)
+  ```
+
+  As a result of this change, the
+  [nrlogrus](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrlogrus)
+  package requires [logrus](https://github.com/sirupsen/logrus) version `v1.1.0`
+  and above.
+
+## 2.8.1
+
+### Bug Fixes
+
+* Removed `nrmysql.NewConnector` since
+  [go-sql-driver/mysql](https://github.com/go-sql-driver/mysql) has not yet
+  released `mysql.NewConnector`.
+
+## 2.8.0
+
+### New Features
+
+* Introduce support for databases using
+  [database/sql](https://golang.org/pkg/database/sql/).  This new functionality
+  allows you to instrument MySQL, PostgreSQL, and SQLite calls without manually
+  creating
+  [DatastoreSegment](https://godoc.org/github.com/newrelic/go-agent#DatastoreSegment)s.
+
+  | Database Library Supported | Integration Package |
+  | ------------- | ------------- |
+  | [go-sql-driver/mysql](https://github.com/go-sql-driver/mysql) | [_integrations/nrmysql](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrmysql) |
+  | [lib/pq](https://github.com/lib/pq) | [_integrations/nrpq](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrpq) |
+  | [mattn/go-sqlite3](https://github.com/mattn/go-sqlite3) | [_integrations/nrsqlite3](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrsqlite3) |
+
+  Using these database integration packages is easy!  First replace the driver
+  with our integration version:
+
+  ```go
+  import (
+  	// import our integration package in place of "github.com/go-sql-driver/mysql"
+  	_ "github.com/newrelic/go-agent/_integrations/nrmysql"
+  )
+
+  func main() {
+  	// open "nrmysql" in place of "mysql"
+  	db, err := sql.Open("nrmysql", "user@unix(/path/to/socket)/dbname")
+  }
+  ```
+
+  Second, use the `ExecContext`, `QueryContext`, and `QueryRowContext` methods of
+  [sql.DB](https://golang.org/pkg/database/sql/#DB),
+  [sql.Conn](https://golang.org/pkg/database/sql/#Conn),
+  [sql.Tx](https://golang.org/pkg/database/sql/#Tx), and
+  [sql.Stmt](https://golang.org/pkg/database/sql/#Stmt) and provide a
+  transaction-containing context.  Calls to `Exec`, `Query`, and `QueryRow` do not
+  get instrumented.
+
+  ```go
+  ctx := newrelic.NewContext(context.Background(), txn)
+  row := db.QueryRowContext(ctx, "SELECT count(*) from tables")
+  ```
+
+  If you are using a [database/sql](https://golang.org/pkg/database/sql/) database
+  not listed above, you can write your own instrumentation for it using
+  [InstrumentSQLConnector](https://godoc.org/github.com/newrelic/go-agent#InstrumentSQLConnector),
+  [InstrumentSQLDriver](https://godoc.org/github.com/newrelic/go-agent#InstrumentSQLDriver),
+  and
+  [SQLDriverSegmentBuilder](https://godoc.org/github.com/newrelic/go-agent#SQLDriverSegmentBuilder).
+  The integration packages act as examples of how to do this.
+
+  For more information, see the [Go agent documentation on instrumenting datastore segments](https://docs.newrelic.com/docs/agents/go-agent/instrumentation/instrument-go-segments#go-datastore-segments).
+
+### Bug Fixes
+
+* The [http.RoundTripper](https://golang.org/pkg/net/http/#RoundTripper) returned
+  by [NewRoundTripper](https://godoc.org/github.com/newrelic/go-agent#NewRoundTripper)
+  no longer modifies the request.  Our thanks to @jlordiales for the contribution.
+
+## 2.7.0
+
+### New Features
+
+* Added support for server side configuration.  Server side configuration allows
+ you to set the following configuration settings in the New Relic APM UI:
+
+  * `Config.TransactionTracer.Enabled`
+  * `Config.ErrorCollector.Enabled`
+  * `Config.CrossApplicationTracer.Enabled`
+  * `Config.TransactionTracer.Threshold`
+  * `Config.TransactionTracer.StackTraceThreshold`
+  * `Config.ErrorCollector.IgnoreStatusCodes`
+
+  For more information see the [server side configuration documentation](https://docs.newrelic.com/docs/agents/manage-apm-agents/configuration/server-side-agent-configuration).
+
+* Added support for AWS Lambda functions in the new
+  [nrlambda](_integrations/nrlambda)
+  package.  Please email <lambda_preview@newrelic.com> if you are interested in
+  learning more or previewing New Relic Lambda monitoring.  This instrumentation
+  package requires `aws-lambda-go` version
+  [v1.9.0](https://github.com/aws/aws-lambda-go/releases) and above.
+
+  * [documentation](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrlambda)
+  * [working example](_integrations/nrlambda/example/main.go)
+
+## 2.6.0
+
+### New Features
+
+* Added support for async: the ability to instrument multiple concurrent
+  goroutines, or goroutines that access or manipulate the same Transaction.
+
+  The new `Transaction.NewGoroutine() Transaction` method allows
+  transactions to create segments in multiple goroutines!
+
+  `NewGoroutine` returns a new reference to the `Transaction`.  This must be
+  called any time you are passing the `Transaction` to another goroutine which
+  makes segments.  Each segment-creating goroutine must have its own `Transaction`
+  reference.  It does not matter if you call this before or after the other
+  goroutine has started.
+
+  All `Transaction` methods can be used in any `Transaction` reference.  The
+  `Transaction` will end when `End()` is called in any goroutine.
+
+  Example passing a new `Transaction` reference directly to another goroutine:
+
+  ```go
+  	go func(txn newrelic.Transaction) {
+  		defer newrelic.StartSegment(txn, "async").End()
+  		time.Sleep(100 * time.Millisecond)
+  	}(txn.NewGoroutine())
+  ```
+
+  Example passing a new `Transaction` reference on a channel to another
+  goroutine:
+
+  ```go
+  	ch := make(chan newrelic.Transaction)
+  	go func() {
+  		txn := <-ch
+  		defer newrelic.StartSegment(txn, "async").End()
+  		time.Sleep(100 * time.Millisecond)
+  	}()
+  	ch <- txn.NewGoroutine()
+  ```
+
+* Added integration support for
+  [`aws-sdk-go`](https://github.com/aws/aws-sdk-go) and
+  [`aws-sdk-go-v2`](https://github.com/aws/aws-sdk-go-v2).
+
+  When using these SDKs, a segment will be created for each out going request.
+  For DynamoDB calls, these will be Datastore segments and for all others they
+  will be External segments.
+  * [v1 Documentation](http://godoc.org/github.com/newrelic/go-agent/_integrations/nrawssdk/v1)
+  * [v2 Documentation](http://godoc.org/github.com/newrelic/go-agent/_integrations/nrawssdk/v2)
+
+* Added span event and transaction trace segment attribute configuration.  You
+  may control which attributes are captured in span events and transaction trace
+  segments using the `Config.SpanEvents.Attributes` and
+  `Config.TransactionTracer.Segments.Attributes` settings. For example, if you
+  want to disable the collection of `"db.statement"` in your span events, modify
+  your config like this:
+
+  ```go
+  cfg.SpanEvents.Attributes.Exclude = append(cfg.SpanEvents.Attributes.Exclude,
+  	newrelic.SpanAttributeDBStatement)
+  ```
+
+  To disable the collection of all attributes from your transaction trace
+  segments, modify your config like this:
+
+  ```go
+  cfg.TransactionTracer.Segments.Attributes.Enabled = false
+  ```
+
+### Bug Fixes
+
+* Fixed a bug that would prevent External Segments from being created under
+  certain error conditions related to Cross Application Tracing.
+
+### Miscellaneous
+
+* Improved linking between Cross Application Transaction Traces in the APM UI.
+  When `Config.CrossApplicationTracer.Enabled = true`, External segments in the
+  Transaction Traces details will now link to the downstream Transaction Trace
+  if there is one. Additionally, the segment name will now include the name of
+  the downstream application and the name of the downstream transaction.
+
+* Update attribute names of Datastore and External segments on Transaction
+  Traces to be in line with attribute names on Spans. Specifically:
+    * `"uri"` => `"http.url"`
+    * `"query"` => `"db.statement"`
+    * `"database_name"` => `"db.instance"`
+    * `"host"` => `"peer.hostname"`
+    * `"port_path_or_id"` + `"host"` => `"peer.address"`
+
 ## 2.5.0
 
 * Added support for [New Relic Browser](https://docs.newrelic.com/docs/browser)
