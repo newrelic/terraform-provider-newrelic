@@ -152,6 +152,8 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 }
 
 func testAccCheckNewRelicInfraAlertConditionDestroy(s *terraform.State) error {
+	defer testAccCheckDestroy()
+
 	client := testAccProvider.Meta().(*ProviderConfig).InfraClient
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_infra_alert_condition" {

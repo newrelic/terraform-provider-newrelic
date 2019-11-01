@@ -66,6 +66,8 @@ func testAccCheckNewRelicSyntheticsMonitorScriptExists(n string) resource.TestCh
 }
 
 func testAccCheckNewRelicSyntheticsMonitorScriptDestroy(s *terraform.State) error {
+	defer testAccCheckDestroy()
+
 	client := testAccProvider.Meta().(*ProviderConfig).Synthetics
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_synthetics_monitor_script" {

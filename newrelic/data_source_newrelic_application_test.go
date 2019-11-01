@@ -10,8 +10,9 @@ import (
 
 func TestAccNewRelicApplication_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: func(s *terraform.State) error { testAccCheckDestroy(); return nil },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNewRelicApplicationConfig(),

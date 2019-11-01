@@ -121,6 +121,8 @@ func TestAccNewRelicDashboard_import(t *testing.T) {
 }
 
 func testAccCheckNewRelicDashboardDestroy(s *terraform.State) error {
+	defer testAccCheckDestroy()
+
 	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_dashboard" {

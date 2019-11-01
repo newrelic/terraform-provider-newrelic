@@ -13,8 +13,9 @@ import (
 func TestAccNewRelicAlertPolicyDataSource_Basic(t *testing.T) {
 	rName := acctest.RandString(5)
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: func(s *terraform.State) error { testAccCheckDestroy(); return nil },
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccNewRelicAlertPolicyDataSourceConfig(rName),

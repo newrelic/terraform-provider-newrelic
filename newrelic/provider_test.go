@@ -9,7 +9,8 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
-	newrelic "github.com/newrelic/go-agent"
+	newrelicAgent "github.com/newrelic/go-agent"
+	newrelicSDK "github.com/paultyng/go-newrelic/v4/api"
 )
 
 var (
@@ -40,6 +41,23 @@ func TestProviderImpl(t *testing.T) {
 	var _ terraform.ResourceProvider = Provider()
 }
 
+func testAccCheckDestroy() {
+	// delete fake application used during tests
+	config := newrelicSDK.Config{
+		APIKey: os.Getenv(("NEWRELIC_API_KEY")),
+	}
+	client := newrelicSDK.New(config)
+
+	apps, _ := client.ListApplications()
+
+	for _, app := range apps {
+		if app.Name == testAccExpectedApplicationName {
+			_ = client.DeleteApplication(app.ID)
+			break
+		}
+	}
+}
+
 func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("NEWRELIC_API_KEY"); v == "" {
 		t.Log(v)
@@ -48,8 +66,8 @@ func testAccPreCheck(t *testing.T) {
 
 	// setup fake application by logging some metrics
 	if v := os.Getenv("NEWRELIC_LICENSE_KEY"); len(v) > 0 {
-		config := newrelic.NewConfig(testAccExpectedApplicationName, v)
-		app, err := newrelic.NewApplication(config)
+		config := newrelicAgent.NewConfig(testAccExpectedApplicationName, v)
+		app, err := newrelicAgent.NewApplication(config)
 		if err != nil {
 			t.Log(err)
 			t.Fatal("Error setting up New Relic application")
