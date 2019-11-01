@@ -3,11 +3,11 @@
 * [Installation](#installation)
 * [Config and Application](#config-and-application)
 * [Logging](#logging)
-  * [logrus](#logrus)
 * [Transactions](#transactions)
 * [Segments](#segments)
   * [Datastore Segments](#datastore-segments)
   * [External Segments](#external-segments)
+  * [Message Producer Segments](#message-producer-segments)
 * [Attributes](#attributes)
 * [Tracing](#tracing)
   * [Distributed Tracing](#distributed-tracing)
@@ -20,7 +20,10 @@
 * [Custom Events](#custom-events)
 * [Request Queuing](#request-queuing)
 * [Error Reporting](#error-reporting)
-  * [Advanced Error Reporting](#advanced-error-reporting)
+  * [NoticeError](#noticeerror)
+    * [Advanced NoticeError Use](#advanced-noticeerror-use)
+  * [Panics](#panics)
+  * [Error Response Codes](#error-response-codes)
 * [Naming Transactions and Metrics](#naming-transactions-and-metrics)
 * [Browser](#browser)
 * [For More Help](#for-more-help)
@@ -65,17 +68,21 @@ app, err := newrelic.NewApplication(config)
 
 ## Logging
 
-* [log.go](log.go)
-
 The agent's logging system is designed to be easily extensible.  By default, no
 logging will occur.  To enable logging, assign the `Config.Logger` field to
-something implementing the `Logger` interface.  A basic logging
-implementation is included.
+something implementing the
+[Logger](https://godoc.org/github.com/newrelic/go-agent#Logger) interface.  Two
+[Logger](https://godoc.org/github.com/newrelic/go-agent#Logger) implementations
+are included:
+[NewLogger](https://godoc.org/github.com/newrelic/go-agent#NewLogger), which
+logs at info level, and
+[NewDebugLogger](https://godoc.org/github.com/newrelic/go-agent#NewDebugLogger)
+which logs at debug level.
 
 To log at debug level to standard out, set:
 
 ```go
-config.Logger = newrelic.NewDebugLogger(os.Stdout)
+cfg.Logger = newrelic.NewDebugLogger(os.Stdout)
 ```
 
 To log at info level to a file, set:
@@ -83,21 +90,14 @@ To log at info level to a file, set:
 ```go
 w, err := os.OpenFile("my_log_file", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 if nil == err {
-  config.Logger = newrelic.NewLogger(w)
+  cfg.Logger = newrelic.NewLogger(w)
 }
 ```
 
-### logrus
+Popular logging libraries `logrus` and `logxi` are supported by integration packages:
 
-* [_integrations/nrlogrus/nrlogrus.go](_integrations/nrlogrus/nrlogrus.go)
-
-If you are using `logrus` and would like to send the agent's log messages to its
-standard logger, import the
-`github.com/newrelic/go-agent/_integrations/nrlogrus` package, then set:
-
-```go
-config.Logger = nrlogrus.StandardLogger()
-```
+* [_integrations/nrlogrus](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrlogrus)
+* [_integrations/nrlogxi/v1](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrlogxi/v1)
 
 ## Transactions
 
@@ -217,20 +217,28 @@ s.End()
 Datastore segments appear in the transaction "Breakdown table" and in the
 "Databases" page.
 
-* [datastore.go](datastore.go)
 * [More info on Databases page](https://docs.newrelic.com/docs/apm/applications-menu/monitoring/databases-slow-queries-page)
 
-Datastore segments are instrumented using `DatastoreSegment`.  Just like basic
-segments, datastore segments begin when the `StartTime` field is populated and
-finish when the `End` method is called.  Here is an example:
+Datastore segments are instrumented using
+[DatastoreSegment](https://godoc.org/github.com/newrelic/go-agent#DatastoreSegment).
+Just like basic segments, datastore segments begin when the `StartTime` field
+is populated and finish when the `End` method is called.  Here is an example:
 
 ```go
 s := newrelic.DatastoreSegment{
-	// Product is the datastore type.  See the constants in datastore.go.
+	// Product is the datastore type.  See the constants in
+	// https://github.com/newrelic/go-agent/blob/master/datastore.go.  Product
+	// is one of the fields primarily responsible for the grouping of Datastore
+	// metrics.
 	Product: newrelic.DatastoreMySQL,
-	// Collection is the table or group.
-	Collection: "my_table",
-	// Operation is the relevant action, e.g. "SELECT" or "GET".
+	// Collection is the table or group being operated upon in the datastore,
+	// e.g. "users_table".  This becomes the db.collection attribute on Span
+	// events and Transaction Trace segments.  Collection is one of the fields
+	// primarily responsible for the grouping of Datastore metrics.
+	Collection: "users_table",
+	// Operation is the relevant action, e.g. "SELECT" or "GET".  Operation is
+	// one of the fields primarily responsible for the grouping of Datastore
+	// metrics.
 	Operation: "SELECT",
 }
 s.StartTime = newrelic.StartSegmentNow(txn)
@@ -250,6 +258,17 @@ s := newrelic.DatastoreSegment{
 }
 defer s.End()
 ```
+
+If you are using the standard library's
+[database/sql](https://golang.org/pkg/database/sql/) package with
+[MySQL](https://github.com/go-sql-driver/mysql),
+[PostgreSQL](https://github.com/lib/pq), or
+[SQLite](https://github.com/mattn/go-sqlite3) then you can avoid creating
+DatastoreSegments by hand by using an integration package:
+
+* [_integrations/nrpq](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrpq)
+* [_integrations/nrmysql](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrmysql)
+* [_integrations/nrsqlite3](https://godoc.org/github.com/newrelic/go-agent/_integrations/nrsqlite3)
 
 ### External Segments
 
@@ -338,6 +357,47 @@ ways to use this functionality:
     }
     ```
 
+### Message Producer Segments
+
+Message producer segments appear in the transaction "Breakdown table".
+
+Message producer segments are instrumented using
+[MessageProducerSegment](https://godoc.org/github.com/newrelic/go-agent#MessageProducerSegment).
+Just like basic segments, messsage producer segments begin when the `StartTime`
+field is populated and finish when the `End` method is called.  Here is an
+example:
+
+```go
+s := newrelic.MessageProducerSegment{
+    // Library is the name of the library instrumented.
+    Library: "RabbitMQ",
+    // DestinationType is the destination type.
+    DestinationType: newrelic.MessageExchange,
+    // DestinationName is the name of your queue or topic.
+    DestinationName: "myExchange",
+    // DestinationTemporary must be set to true if destination is temporary
+    // to improve metric grouping.
+    DestinationTemporary: false,
+}
+s.StartTime = newrelic.StartSegmentNow(txn)
+// ... add message to queue here
+s.End()
+```
+
+This may be combined into a single line when instrumenting a message producer
+call that spans an entire function call:
+
+```go
+s := newrelic.MessageProducerSegment{
+	StartTime:            newrelic.StartSegmentNow(txn),
+	Library:              "RabbitMQ",
+	DestinationType:      newrelic.MessageExchange,
+	DestinationName:      "myExchange",
+	DestinationTemporary: false,
+}
+defer s.End()
+```
+
 ## Attributes
 
 Attributes add context to errors and allow you to filter performance data
@@ -387,11 +447,10 @@ version 2.1.0 of the Go Agent.
 
 The config's `DistributedTracer.Enabled` field has to be set. When true, the
 agent will add distributed tracing headers in outbound requests, and scan
-incoming requests for distributed tracing headers. Distributed tracing and
-cross-application tracing cannot be used simultaneously:
+incoming requests for distributed tracing headers. Distributed tracing will
+override cross-application tracing.
 
 ```go
-config.CrossApplicationTracer.Enabled = false
 config.DistributedTracer.Enabled = true
 ```
 
@@ -511,6 +570,14 @@ band on the application overview chart showing queue time.
 
 ## Error Reporting
 
+The Go Agent captures errors in three different ways:
+
+1. [the Transaction.NoticeError method](#noticeerror)
+2. [panics recovered in defer Transaction.End](#panics)
+3. [error response status codes recorded with Transaction.WriteHeader](#error-response-codes)
+
+### NoticeError
+
 You may track errors using the `Transaction.NoticeError` method.  The easiest
 way to get started with `NoticeError` is to use errors based on
 [Go's standard error interface](https://blog.golang.org/error-handling-and-go).
@@ -536,7 +603,7 @@ txn.NoticeError(newrelic.Error{
 })
 ```
 
-Using the `newrelic.Error` struct requires you to manually marshall your error
+Using the `newrelic.Error` struct requires you to manually marshal your error
 data into the `Message`, `Class`, and `Attributes` fields.  However, there's two
 **advantages** to using the `newrelic.Error` struct.
 
@@ -545,7 +612,7 @@ in the *Error Analytics* section of APM.  Second, the `Attributes` field allows
 you to send through key/value pairs with additional error debugging information
 (also exposed in the *Error Analytics* section of APM).
 
-### Advanced Error Reporting
+### Advanced NoticeError Use
 
 You're not limited to using Go's built-in error type or the provided
 `newrelic.Error` struct.  The Go Agent provides three error interfaces
@@ -597,6 +664,39 @@ txn.NoticeError(MyErrorWithClass{})
 While this is an oversimplified example, these interfaces give you a great deal
 of control over what error information is available for your application.
 
+### Panics
+
+When the Transaction is ended using `defer`, the Transaction will recover any
+panic that occurs, record it as an error, and re-throw it.  As a result, panics
+may appear to be originating from `Transaction.End`.
+
+```go
+func unstableTask(app newrelic.Application) {
+	txn := app.StartTransaction("unstableTask", nil, nil)
+	defer txn.End()
+
+	// This panic will be recorded as an error.
+	panic("something went wrong")
+}
+```
+
+### Error Response Codes
+
+Since the
+[Transaction](https://godoc.org/github.com/newrelic/go-agent#Transaction)
+implements
+[http.ResponseWriter](https://golang.org/pkg/net/http/#ResponseWriter), you can
+use `Transaction.WriteHeader` to record the response status code.  The
+transaction will record an error if the status code is above 400 or below 100
+and not in the ignored status codes configuration list.  The ignored status
+codes list is configured by the `Config.ErrorCollector.IgnoreStatusCodes` field
+or within the New Relic UI if your application has server side configuration
+enabled.
+
+As a result, using `Transaction.NoticeError` in situations where your code is
+returning an erroneous status code may result in redundant errors.
+`NoticeError` is not affected by the ignored status codes configuration list.
+
 ## Naming Transactions and Metrics
 
 You'll want to think carefully about how you name your transactions and custom
@@ -613,14 +713,34 @@ metric name.
 
 ## Browser
 
-To enable support for using
+To enable support for
 [New Relic Browser](https://docs.newrelic.com/docs/browser), your HTML pages
 must include a JavaScript snippet that will load the Browser agent and
 configure it with the correct application name. This snippet is available via
-the `BrowserTimingHeader` method: simply include the byte slice returned by
-`txn.BrowserTimingHeader().WithTags()` as early as possible in the `<head>`
-section of your HTML, load the page, and browser data should be available
-immediately.
+the `Transaction.BrowserTimingHeader` method.  Include the byte slice returned
+by `Transaction.BrowserTimingHeader().WithTags()` as early as possible in the
+`<head>` section of your HTML after any `<meta charset>` tags.
+
+```go
+func indexHandler(w http.ResponseWriter, req *http.Request) {
+    io.WriteString(w, "<html><head>")
+    // The New Relic browser javascript should be placed as high in the
+    // HTML as possible.  We suggest including it immediately after the
+    // opening <head> tag and any <meta charset> tags.
+    if txn := FromContext(req.Context()); nil != txn {
+        hdr, err := txn.BrowserTimingHeader()
+        if nil != err {
+            log.Printf("unable to create browser timing header: %v", err)
+        }
+        // BrowserTimingHeader() will always return a header whose methods can
+        // be safely called.
+        if js := hdr.WithTags(); js != nil {
+            w.Write(js)
+        }
+    }
+    io.WriteString(w, "</head><body>browser header page</body></html>")
+}
+```
 
 
 ## For More Help
