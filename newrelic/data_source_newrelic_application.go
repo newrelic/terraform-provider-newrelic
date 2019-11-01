@@ -53,7 +53,7 @@ func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{})
 	}
 
 	if application == nil {
-		return fmt.Errorf("The name '%s' does not match any New Relic applications.", name)
+		return fmt.Errorf("the name '%s' does not match any New Relic applications", name)
 	}
 
 	d.SetId(strconv.Itoa(application.ID))

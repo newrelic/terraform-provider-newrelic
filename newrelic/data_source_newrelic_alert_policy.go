@@ -56,7 +56,7 @@ func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{})
 	}
 
 	if policy == nil {
-		return fmt.Errorf("The name '%s' does not match any New Relic alert policy.", name)
+		return fmt.Errorf("the name '%s' does not match any New Relic alert policy", name)
 	}
 
 	d.SetId(strconv.Itoa(policy.ID))
