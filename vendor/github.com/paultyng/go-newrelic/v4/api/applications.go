@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
 )
@@ -56,4 +57,11 @@ func (c *Client) queryApplications(filters applicationsFilters) ([]Application, 
 // ListApplications lists all the applications you have access to.
 func (c *Client) ListApplications() ([]Application, error) {
 	return c.queryApplications(applicationsFilters{})
+}
+
+// DeleteApplication deletes a non-reporting application from your account.
+func (c *Client) DeleteApplication(id int) error {
+	u := &url.URL{Path: fmt.Sprintf("/applications/%v.json", id)}
+	_, err := c.Do("DELETE", u.String(), nil, nil)
+	return err
 }
