@@ -80,6 +80,25 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
+	rName := acctest.RandString(5)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckNewRelicNrqlAlertConditionConfig(rName),
+			},
+			resource.TestStep{
+				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
+				Config:    testAccCheckNewRelicNrqlAlertConditionConfig(rName),
+				Check:     testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
+			},
+		},
+	})
+}
+
 // TODO: func_ TestAccNewRelicNrqlAlertCondition_Multi(t *testing.T) {
 
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
