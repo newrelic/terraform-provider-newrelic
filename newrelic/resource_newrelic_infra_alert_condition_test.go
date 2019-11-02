@@ -151,6 +151,25 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicInfraAlertCondition_MissingPolicy(t *testing.T) {
+	rName := acctest.RandString(5)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckNewRelicInfraAlertConditionConfig(rName),
+			},
+			resource.TestStep{
+				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
+				Config:    testAccCheckNewRelicInfraAlertConditionConfig(rName),
+				Check:     testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicInfraAlertConditionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).InfraClient
 	for _, r := range s.RootModule().Resources {
