@@ -230,7 +230,7 @@ github.com/newrelic/go-agent/internal/sysinfo
 github.com/newrelic/go-agent/internal/utilization
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
-# github.com/paultyng/go-newrelic/v4 v4.5.0
+# github.com/paultyng/go-newrelic/v4 v4.6.0
 github.com/paultyng/go-newrelic/v4/api
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
