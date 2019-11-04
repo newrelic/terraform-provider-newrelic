@@ -1,6 +1,8 @@
 package newrelic
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestParseIDs_Basic(t *testing.T) {
 	ids, err := parseIDs("1:2", 2)
@@ -22,5 +24,19 @@ func TestSerializeIDs_Basic(t *testing.T) {
 
 	if id != "1:2" {
 		t.Fatal(id)
+	}
+}
+
+func deletePolicy(name string) func() {
+	return func() {
+		client := testAccProvider.Meta().(*ProviderConfig).Client
+		policies, _ := client.ListAlertPolicies()
+
+		for _, p := range policies {
+			if p.Name == name {
+				client.DeleteAlertPolicy(p.ID)
+				break
+			}
+		}
 	}
 }

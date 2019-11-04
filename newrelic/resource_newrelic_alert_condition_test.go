@@ -149,6 +149,25 @@ func TestAccNewRelicAlertCondition_nameGreaterThan64Char(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicAlertCondition_MissingPolicy(t *testing.T) {
+	rName := acctest.RandString(5)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckNewRelicAlertConditionConfig(rName),
+			},
+			resource.TestStep{
+				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
+				Config:    testAccCheckNewRelicAlertConditionConfig(rName),
+				Check:     testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicAlertConditionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
