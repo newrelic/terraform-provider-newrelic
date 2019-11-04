@@ -338,6 +338,9 @@ resource "newrelic_alert_condition" "foo" {
 
 func testErrorThrownUponConditionNameGreaterThan64Char(resourceName string) string {
 	return fmt.Sprintf(`
+provider "newrelic" {
+  api_key = "foo"
+}
 resource "newrelic_alert_policy" "foo" {
   name = "tf-test-%[1]s"
 }
@@ -376,6 +379,10 @@ func TestErrorThrownUponConditionNameLessThan1Char(t *testing.T) {
 
 func testErrorThrownUponConditionNameLessThan1Char() string {
 	return `
+provider "newrelic" {
+  api_key = "foo"
+}
+
 resource "newrelic_alert_policy" "foo" {
   name = "tf-test-%[1]s"
 }

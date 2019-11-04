@@ -5,10 +5,11 @@ import (
 	"strconv"
 	"testing"
 
+	"regexp"
+
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"regexp"
 )
 
 func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
@@ -150,6 +151,9 @@ func TestErrorThrownUponPolicyNameGreaterThan64Char(t *testing.T) {
 
 func testErrorThrownUponPolicyNameGreaterThan64Char(resourceName string) string {
 	return fmt.Sprintf(`
+provider "newrelic" {
+  api_key = "foo"
+}
 resource "newrelic_alert_policy" "foo" {
   name = "really-long-name-that-is-more-than-sixtyfour-characters-long-tf-test-%[1]s"
 }
@@ -172,6 +176,9 @@ func TestErrorThrownUponPolicyNameLessThan1Char(t *testing.T) {
 
 func testErrorThrownUponPolicyNameLessThan1Char() string {
 	return `
+provider "newrelic" {
+  api_key = "foo"
+}
 resource "newrelic_alert_policy" "foo" {
   name = ""
 }
