@@ -23,6 +23,7 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ValidateFunc: validation.StringLenBetween(1, 64),
 			},
 			"incident_preference": {
 				Type:         schema.TypeString,
