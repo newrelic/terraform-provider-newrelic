@@ -1,0 +1,56 @@
+# This file contains all available configuration options
+# with their default values.
+
+# options for analysis running
+run:
+  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  deadline: 5m
+  modules-download-mode: vendor
+
+
+# all available settings of specific linters
+linters-settings:
+  errcheck:
+    ignoretests: true
+    ignore: github.com/hashicorp/terraform-plugin-sdk/helper/schema:ForceNew|Set,github.com/hashicorp/terraform/helper/schema:Set,github.com/terraform-providers/terraform-provider-newrelic/newrelic:Set,io:Close|Write
+  golint:
+    # minimal confidence for issues, default is 0.8
+    min-confidence: 0.5
+  gocyclo:
+    # minimal code complexity to report, 30 by default (but we recommend 10-20)
+    min-complexity: 20
+  govet:
+    # report about shadowed variables
+    check-shadowing: true
+  maligned:
+    # print struct with more effective memory layout or not, false by default
+    suggest-new: true
+  misspell:
+    ignore-words:
+      - newrelic
+
+linters:
+  disable-all: true
+  enable:
+    - deadcode
+    - errcheck
+    - gocyclo
+    - gofmt
+    - golint
+    - gosimple
+    - govet
+    - ineffassign
+    - maligned
+    - misspell
+    - staticcheck
+    - structcheck
+    - unconvert
+    - unused
+    - varcheck
+    - vet
+
+issues:
+  # disable limits on issue reporting
+  max-per-linter: 0
+  max-same-issues: 0
+
