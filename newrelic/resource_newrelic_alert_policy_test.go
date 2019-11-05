@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"testing"
 
+	"regexp"
+
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -130,4 +132,55 @@ resource "newrelic_alert_policy" "foo" {
   incident_preference = "PER_CONDITION"
 }
 `, rName)
+}
+
+func TestErrorThrownUponPolicyNameGreaterThan64Char(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile("expected length of name to be in the range \\(1 \\- 64\\)")
+	rName := acctest.RandString(5)
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testErrorThrownUponPolicyNameGreaterThan64Char(rName),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func testErrorThrownUponPolicyNameGreaterThan64Char(resourceName string) string {
+	return fmt.Sprintf(`
+provider "newrelic" {
+  api_key = "foo"
+}
+resource "newrelic_alert_policy" "foo" {
+  name = "really-long-name-that-is-more-than-sixtyfour-characters-long-tf-test-%[1]s"
+}
+`, resourceName, testAccExpectedApplicationName)
+}
+
+func TestErrorThrownUponPolicyNameLessThan1Char(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile("expected length of name to be in the range \\(1 \\- 64\\)")
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testErrorThrownUponPolicyNameLessThan1Char(),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func testErrorThrownUponPolicyNameLessThan1Char() string {
+	return `
+provider "newrelic" {
+  api_key = "foo"
+}
+resource "newrelic_alert_policy" "foo" {
+  name = ""
+}
+`
 }

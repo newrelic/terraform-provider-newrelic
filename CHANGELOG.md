@@ -1,3 +1,16 @@
+## 1.5.3 (Unreleased)
+## 1.5.2 (October 23, 2019)
+
+BUG FIXES:
+
+* `newrelic_nrql_alert_condition` modifies `duration` validation to match rest API's requirements ([#169](https://github.com/terraform-providers/terraform-provider-newrelic/issues/169))
+
+## 1.5.1 (July 11, 2019)
+
+BUG FIXES:
+
+* `newrelic_nrql_alert_condition` modifies `since_value` validation to match rest API's requirements ([#144](https://github.com/terraform-providers/terraform-provider-newrelic/issues/144))
+
 ## 1.5.0 (March 26, 2019)
 
 FEATURES

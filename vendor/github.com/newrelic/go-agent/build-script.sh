@@ -1,11 +1,11 @@
 set -x
 set -e
 
-LATEST_VERSION="go1.11"
+LATEST_VERSION="go1.13"
 
 if [ -n "$INTEGRATION" ]; then
 	cd $INTEGRATION
-	go get ./...
+	go get -t ./...
 fi
 
 go test -race -benchtime=1ms -bench=. ./...

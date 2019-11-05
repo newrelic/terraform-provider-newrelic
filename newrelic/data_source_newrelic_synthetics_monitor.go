@@ -59,7 +59,7 @@ func dataSourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interf
 	}
 
 	if monitor == nil {
-		return fmt.Errorf("The name '%s' does not match any New Relic monitors.", name)
+		return fmt.Errorf("the name '%s' does not match any New Relic monitors", name)
 	}
 
 	d.SetId(monitor.ID)

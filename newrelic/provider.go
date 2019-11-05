@@ -4,13 +4,19 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
+
+	"github.com/terraform-providers/terraform-provider-newrelic/version"
 )
+
+// TerraformProviderProductUserAgent string used to identify this provider in User Agent requests
+const TerraformProviderProductUserAgent = "terraform-provider-newrelic"
 
 // Provider represents a resource provider in Terraform
 func Provider() terraform.ResourceProvider {
-	return &schema.Provider{
+	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"api_key": {
 				Type:        schema.TypeString,
@@ -50,15 +56,25 @@ func Provider() terraform.ResourceProvider {
 			"newrelic_synthetics_monitor":         resourceNewRelicSyntheticsMonitor(),
 			"newrelic_synthetics_monitor_script":  resourceNewRelicSyntheticsMonitorScript(),
 		},
-
-		ConfigureFunc: providerConfigure,
 	}
+
+	provider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+		terraformVersion := provider.TerraformVersion
+		if terraformVersion == "" {
+			// Catch for versions < 0.12
+			terraformVersion = "0.11+compatible"
+		}
+		return providerConfigure(d, terraformVersion)
+	}
+
+	return provider
 }
 
-func providerConfigure(data *schema.ResourceData) (interface{}, error) {
+func providerConfigure(data *schema.ResourceData, terraformVersion string) (interface{}, error) {
 	config := Config{
-		APIKey: data.Get("api_key").(string),
-		APIURL: data.Get("api_url").(string),
+		APIKey:    data.Get("api_key").(string),
+		APIURL:    data.Get("api_url").(string),
+		userAgent: fmt.Sprintf("%s %s/%s", httpclient.TerraformUserAgent(terraformVersion), TerraformProviderProductUserAgent, version.ProviderVersion),
 	}
 	log.Println("[INFO] Initializing New Relic client")
 

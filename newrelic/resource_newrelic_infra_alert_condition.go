@@ -70,6 +70,10 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"runbook_url": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -148,6 +152,9 @@ func buildInfraAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertInfra
 		Critical:   expandAlertThreshold(d.Get("critical")),
 	}
 
+	if attr, ok := d.GetOk("runbook_url"); ok {
+		condition.RunbookURL = attr.(string)
+	}
 	if attr, ok := d.GetOk("warning"); ok {
 		condition.Warning = expandAlertThreshold(attr)
 	}
@@ -177,6 +184,7 @@ func readInfraAlertConditionStruct(condition *newrelic.AlertInfraCondition, d *s
 
 	d.Set("policy_id", policyID)
 	d.Set("name", condition.Name)
+	d.Set("runbook_url", condition.RunbookURL)
 	d.Set("enabled", condition.Enabled)
 	d.Set("created_at", condition.CreatedAt)
 	d.Set("updated_at", condition.UpdatedAt)
@@ -224,6 +232,7 @@ func resourceNewRelicInfraAlertConditionCreate(d *schema.ResourceData, meta inte
 
 func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).InfraClient
+	policyClient := meta.(*ProviderConfig).Client
 
 	log.Printf("[INFO] Reading New Relic Infra alert condition %s", d.Id())
 
@@ -234,6 +243,15 @@ func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interf
 
 	policyID := ids[0]
 	id := ids[1]
+
+	_, err = policyClient.GetAlertPolicy(policyID)
+	if err != nil {
+		if err == newrelic.ErrNotFound {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
 
 	condition, err := client.GetAlertInfraCondition(policyID, id)
 	if err != nil {

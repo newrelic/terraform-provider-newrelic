@@ -10,8 +10,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform/addrs"
-	"github.com/hashicorp/terraform/config"
-	"github.com/hashicorp/terraform/config/hcl2shim"
+	"github.com/hashicorp/terraform/configs/hcl2shim"
 	"github.com/hashicorp/terraform/states"
 
 	"github.com/hashicorp/errwrap"
@@ -214,6 +213,7 @@ func legacyDiffComparisonString(changes *plans.Changes) string {
 	}
 	byModule := map[string]map[string]*ResourceChanges{}
 	resourceKeys := map[string][]string{}
+	requiresReplace := map[string][]string{}
 	var moduleKeys []string
 	for _, rc := range changes.Resources {
 		if rc.Action == plans.NoOp {
@@ -239,6 +239,12 @@ func legacyDiffComparisonString(changes *plans.Changes) string {
 		} else {
 			byModule[moduleKey][resourceKey].Deposed[rc.DeposedKey] = rc
 		}
+
+		rr := []string{}
+		for _, p := range rc.RequiredReplace.List() {
+			rr = append(rr, hcl2shim.FlatmapKeyFromPath(p))
+		}
+		requiresReplace[resourceKey] = rr
 	}
 	sort.Strings(moduleKeys)
 	for _, ks := range resourceKeys {
@@ -253,6 +259,8 @@ func legacyDiffComparisonString(changes *plans.Changes) string {
 
 		for _, resourceKey := range resourceKeys[moduleKey] {
 			rc := rcs[resourceKey]
+
+			forceNewAttrs := requiresReplace[resourceKey]
 
 			crud := "UPDATE"
 			if rc.Current != nil {
@@ -332,7 +340,7 @@ func legacyDiffComparisonString(changes *plans.Changes) string {
 				v := newAttrs[attrK]
 				u := oldAttrs[attrK]
 
-				if v == config.UnknownVariableValue {
+				if v == hcl2shim.UnknownVariableValue {
 					v = "<computed>"
 				}
 				// NOTE: we don't support <sensitive> here because we would
@@ -341,7 +349,17 @@ func legacyDiffComparisonString(changes *plans.Changes) string {
 				// at the core layer.
 
 				updateMsg := ""
-				// TODO: Mark " (forces new resource)" in updateMsg when appropriate.
+
+				// This may not be as precise as in the old diff, as it matches
+				// everything under the attribute that was originally marked as
+				// ForceNew, but should help make it easier to determine what
+				// caused replacement here.
+				for _, k := range forceNewAttrs {
+					if strings.HasPrefix(attrK, k) {
+						updateMsg = " (forces new resource)"
+						break
+					}
+				}
 
 				fmt.Fprintf(
 					&mBuf, "  %s:%s %#v => %#v%s\n",

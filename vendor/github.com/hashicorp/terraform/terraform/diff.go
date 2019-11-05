@@ -13,9 +13,8 @@ import (
 	"sync"
 
 	"github.com/hashicorp/terraform/addrs"
-	"github.com/hashicorp/terraform/config"
-	"github.com/hashicorp/terraform/config/hcl2shim"
 	"github.com/hashicorp/terraform/configs/configschema"
+	"github.com/hashicorp/terraform/configs/hcl2shim"
 	"github.com/zclconf/go-cty/cty"
 
 	"github.com/mitchellh/copystructure"
@@ -514,6 +513,12 @@ func (d *InstanceDiff) applyBlockDiff(path []string, attrs map[string]string, sc
 		}
 
 		for k, diff := range d.Attributes {
+			// helper/schema should not insert nil diff values, but don't panic
+			// if it does.
+			if diff == nil {
+				continue
+			}
+
 			if strings.HasPrefix(k, blockKey) {
 				nextDot := strings.Index(k[len(blockKey):], ".")
 				if nextDot < 0 {
@@ -540,6 +545,12 @@ func (d *InstanceDiff) applyBlockDiff(path []string, attrs map[string]string, sc
 				// that we're dropping. Since we're only applying the "New"
 				// portion of the set, we can ignore diffs that only contain "Old"
 				for attr, diff := range d.Attributes {
+					// helper/schema should not insert nil diff values, but don't panic
+					// if it does.
+					if diff == nil {
+						continue
+					}
+
 					if !strings.HasPrefix(attr, indexPrefix) {
 						continue
 					}
@@ -646,8 +657,10 @@ func (d *InstanceDiff) applyBlockDiff(path []string, attrs map[string]string, sc
 func (d *InstanceDiff) applyAttrDiff(path []string, attrs map[string]string, attrSchema *configschema.Attribute) (map[string]string, error) {
 	ty := attrSchema.Type
 	switch {
-	case ty.IsListType(), ty.IsTupleType(), ty.IsMapType(), ty.IsSetType():
+	case ty.IsListType(), ty.IsTupleType(), ty.IsMapType():
 		return d.applyCollectionDiff(path, attrs, attrSchema)
+	case ty.IsSetType():
+		return d.applySetDiff(path, attrs, attrSchema)
 	default:
 		return d.applySingleAttrDiff(path, attrs, attrSchema)
 	}
@@ -663,7 +676,7 @@ func (d *InstanceDiff) applySingleAttrDiff(path []string, attrs map[string]strin
 	old, exists := attrs[currentKey]
 
 	if diff != nil && diff.NewComputed {
-		result[attr] = config.UnknownVariableValue
+		result[attr] = hcl2shim.UnknownVariableValue
 		return result, nil
 	}
 
@@ -671,7 +684,7 @@ func (d *InstanceDiff) applySingleAttrDiff(path []string, attrs map[string]strin
 	// This only applied to top-level "id" fields.
 	if attr == "id" && len(path) == 1 {
 		if old == "" {
-			result[attr] = config.UnknownVariableValue
+			result[attr] = hcl2shim.UnknownVariableValue
 		} else {
 			result[attr] = old
 		}
@@ -699,6 +712,19 @@ func (d *InstanceDiff) applySingleAttrDiff(path []string, attrs map[string]strin
 		return result, nil
 	}
 
+	// check for missmatched diff values
+	if exists &&
+		old != diff.Old &&
+		old != hcl2shim.UnknownVariableValue &&
+		diff.Old != hcl2shim.UnknownVariableValue {
+		return result, fmt.Errorf("diff apply conflict for %s: diff expects %q, but prior value has %q", attr, diff.Old, old)
+	}
+
+	if diff.NewRemoved {
+		// don't set anything in the new value
+		return map[string]string{}, nil
+	}
+
 	if diff.Old == diff.New && diff.New == "" {
 		// this can only be a valid empty string
 		if attrSchema.Type == cty.String {
@@ -707,21 +733,8 @@ func (d *InstanceDiff) applySingleAttrDiff(path []string, attrs map[string]strin
 		return result, nil
 	}
 
-	// check for missmatched diff values
-	if exists &&
-		old != diff.Old &&
-		old != config.UnknownVariableValue &&
-		diff.Old != config.UnknownVariableValue {
-		return result, fmt.Errorf("diff apply conflict for %s: diff expects %q, but prior value has %q", attr, diff.Old, old)
-	}
-
 	if attrSchema.Computed && diff.NewComputed {
-		result[attr] = config.UnknownVariableValue
-		return result, nil
-	}
-
-	if diff.NewRemoved {
-		// don't set anything in the new value
+		result[attr] = hcl2shim.UnknownVariableValue
 		return result, nil
 	}
 
@@ -754,7 +767,7 @@ func (d *InstanceDiff) applyCollectionDiff(path []string, attrs map[string]strin
 			}
 
 			if diff.NewComputed {
-				result[k[len(prefix):]] = config.UnknownVariableValue
+				result[k[len(prefix):]] = hcl2shim.UnknownVariableValue
 				return result, nil
 			}
 
@@ -863,12 +876,54 @@ func (d *InstanceDiff) applyCollectionDiff(path []string, attrs map[string]strin
 		}
 	}
 
-	// Fill in the count value if it was missing for some reason:
-	if result[countKey] == "" {
+	// Fill in the count value if it wasn't present in the diff for some reason,
+	// or if there is no count at all.
+	_, countDiff := d.Attributes[countKey]
+	if result[countKey] == "" || (!countDiff && len(keys) != len(result)) {
 		result[countKey] = countFlatmapContainerValues(countKey, result)
 	}
 
 	return result, nil
+}
+
+func (d *InstanceDiff) applySetDiff(path []string, attrs map[string]string, attrSchema *configschema.Attribute) (map[string]string, error) {
+	// We only need this special behavior for sets of object.
+	if !attrSchema.Type.ElementType().IsObjectType() {
+		// The normal collection apply behavior will work okay for this one, then.
+		return d.applyCollectionDiff(path, attrs, attrSchema)
+	}
+
+	// When we're dealing with a set of an object type we actually want to
+	// use our normal _block type_ apply behaviors, so we'll construct ourselves
+	// a synthetic schema that treats the object type as a block type and
+	// then delegate to our block apply method.
+	synthSchema := &configschema.Block{
+		Attributes: make(map[string]*configschema.Attribute),
+	}
+
+	for name, ty := range attrSchema.Type.ElementType().AttributeTypes() {
+		// We can safely make everything into an attribute here because in the
+		// event that there are nested set attributes we'll end up back in
+		// here again recursively and can then deal with the next level of
+		// expansion.
+		synthSchema.Attributes[name] = &configschema.Attribute{
+			Type:     ty,
+			Optional: true,
+		}
+	}
+
+	parentPath := path[:len(path)-1]
+	childName := path[len(path)-1]
+	containerSchema := &configschema.Block{
+		BlockTypes: map[string]*configschema.NestedBlock{
+			childName: {
+				Nesting: configschema.NestingSet,
+				Block:   *synthSchema,
+			},
+		},
+	}
+
+	return d.applyBlockDiff(parentPath, attrs, containerSchema)
 }
 
 // countFlatmapContainerValues returns the number of values in the flatmapped container

@@ -16,11 +16,12 @@ import (
 	"github.com/hashicorp/errwrap"
 	getter "github.com/hashicorp/go-getter"
 	multierror "github.com/hashicorp/go-multierror"
+	"github.com/hashicorp/terraform-svchost/disco"
+	"github.com/hashicorp/terraform/addrs"
 	"github.com/hashicorp/terraform/httpclient"
 	"github.com/hashicorp/terraform/registry"
 	"github.com/hashicorp/terraform/registry/regsrc"
 	"github.com/hashicorp/terraform/registry/response"
-	"github.com/hashicorp/terraform/svchost/disco"
 	"github.com/hashicorp/terraform/tfdiags"
 	tfversion "github.com/hashicorp/terraform/version"
 	"github.com/mitchellh/cli"
@@ -29,12 +30,6 @@ import (
 // Releases are located by querying the terraform registry.
 
 const protocolVersionHeader = "x-terraform-protocol-version"
-
-const gpgVerificationError = `GPG signature verification error:
-Terraform was unable to verify the GPG signature of the downloaded provider
-files using the keys downloaded from the Terraform Registry. This may mean that
-the publisher of the provider removed the key it was signed with, or that the
-distributed files were changed after this version was released.`
 
 var httpClient *http.Client
 
@@ -55,7 +50,7 @@ func init() {
 // An Installer maintains a local cache of plugins by downloading plugins
 // from an online repository.
 type Installer interface {
-	Get(name string, req Constraints) (PluginMeta, tfdiags.Diagnostics, error)
+	Get(provider addrs.ProviderType, req Constraints) (PluginMeta, tfdiags.Diagnostics, error)
 	PurgeUnused(used map[string]PluginMeta) (removed PluginMetaSet, err error)
 }
 
@@ -112,7 +107,7 @@ type ProviderInstaller struct {
 // are produced under the assumption that if presented to the user they will
 // be presented alongside context about what is being installed, and thus the
 // error messages do not redundantly include such information.
-func (i *ProviderInstaller) Get(provider string, req Constraints) (PluginMeta, tfdiags.Diagnostics, error) {
+func (i *ProviderInstaller) Get(provider addrs.ProviderType, req Constraints) (PluginMeta, tfdiags.Diagnostics, error) {
 	var diags tfdiags.Diagnostics
 
 	// a little bit of initialization.
@@ -131,6 +126,14 @@ func (i *ProviderInstaller) Get(provider string, req Constraints) (PluginMeta, t
 
 	// TODO: return multiple errors
 	if err != nil {
+		log.Printf("[DEBUG] %s", err)
+		if registry.IsServiceUnreachable(err) {
+			registryHost, err := i.hostname()
+			if err == nil && registryHost == regsrc.PublicRegistryHost.Raw {
+				return PluginMeta{}, diags, ErrorPublicRegistryUnreachable
+			}
+			return PluginMeta{}, diags, ErrorServiceUnreachable
+		}
 		if registry.IsServiceNotProvided(err) {
 			return PluginMeta{}, diags, err
 		}
@@ -202,9 +205,22 @@ func (i *ProviderInstaller) Get(provider string, req Constraints) (PluginMeta, t
 	}
 
 	downloadURLs, err := i.listProviderDownloadURLs(providerSource, versionMeta.Version)
+	if err != nil {
+		return PluginMeta{}, diags, err
+	}
 	providerURL := downloadURLs.DownloadURL
 
 	if !i.SkipVerify {
+		// Terraform verifies the integrity of a provider release before downloading
+		// the plugin binary. The digital signature (SHA256SUMS.sig) on the
+		// release distribution (SHA256SUMS) is verified with the public key of the
+		// publisher provided in the Terraform Registry response, ensuring that
+		// everything is as intended by the publisher. The checksum of the provider
+		// plugin is expected in the SHA256SUMS file and is double checked to match
+		// the checksum of the original published release to the Registry. This
+		// enforces immutability of releases between the Registry and the plugin's
+		// host location. Lastly, the integrity of the binary is verified upon
+		// download matches the Registry and signed checksum.
 		sha256, err := i.getProviderChecksum(downloadURLs)
 		if err != nil {
 			return PluginMeta{}, diags, err
@@ -216,9 +232,9 @@ func (i *ProviderInstaller) Get(provider string, req Constraints) (PluginMeta, t
 		}
 	}
 
-	printedProviderName := fmt.Sprintf("%s (%s)", provider, providerSource)
-	i.Ui.Info(fmt.Sprintf("- Downloading plugin for provider %q (%s)...", printedProviderName, versionMeta.Version))
-	log.Printf("[DEBUG] getting provider %q version %q", printedProviderName, versionMeta.Version)
+	printedProviderName := fmt.Sprintf("%q (%s)", provider.Name, providerSource)
+	i.Ui.Info(fmt.Sprintf("- Downloading plugin for provider %s %s...", printedProviderName, versionMeta.Version))
+	log.Printf("[DEBUG] getting provider %s version %q", printedProviderName, versionMeta.Version)
 	err = i.install(provider, v, providerURL)
 	if err != nil {
 		return PluginMeta{}, diags, err
@@ -228,11 +244,11 @@ func (i *ProviderInstaller) Get(provider string, req Constraints) (PluginMeta, t
 	// (This is weird, because go-getter doesn't directly return
 	//  information about what was extracted, and we just extracted
 	//  the archive directly into a shared dir here.)
-	log.Printf("[DEBUG] looking for the %s %s plugin we just installed", provider, versionMeta.Version)
+	log.Printf("[DEBUG] looking for the %s %s plugin we just installed", provider.Name, versionMeta.Version)
 	metas := FindPlugins("provider", []string{i.Dir})
 	log.Printf("[DEBUG] all plugins found %#v", metas)
 	metas, _ = metas.ValidateVersions()
-	metas = metas.WithName(provider).WithVersion(v)
+	metas = metas.WithName(provider.Name).WithVersion(v)
 	log.Printf("[DEBUG] filtered plugins %#v", metas)
 	if metas.Count() == 0 {
 		// This should never happen. Suggests that the release archive
@@ -260,18 +276,18 @@ func (i *ProviderInstaller) Get(provider string, req Constraints) (PluginMeta, t
 	return metas.Newest(), diags, nil
 }
 
-func (i *ProviderInstaller) install(provider string, version Version, url string) error {
+func (i *ProviderInstaller) install(provider addrs.ProviderType, version Version, url string) error {
 	if i.Cache != nil {
-		log.Printf("[DEBUG] looking for provider %s %s in plugin cache", provider, version)
-		cached := i.Cache.CachedPluginPath("provider", provider, version)
+		log.Printf("[DEBUG] looking for provider %s %s in plugin cache", provider.Name, version)
+		cached := i.Cache.CachedPluginPath("provider", provider.Name, version)
 		if cached == "" {
-			log.Printf("[DEBUG] %s %s not yet in cache, so downloading %s", provider, version, url)
+			log.Printf("[DEBUG] %s %s not yet in cache, so downloading %s", provider.Name, version, url)
 			err := getter.Get(i.Cache.InstallDir(), url)
 			if err != nil {
 				return err
 			}
 			// should now be in cache
-			cached = i.Cache.CachedPluginPath("provider", provider, version)
+			cached = i.Cache.CachedPluginPath("provider", provider.Name, version)
 			if cached == "" {
 				// should never happen if the getter is behaving properly
 				// and the plugins are packaged properly.
@@ -286,13 +302,13 @@ func (i *ProviderInstaller) install(provider string, version Version, url string
 		// check if the target dir exists, and create it if not
 		var err error
 		if _, StatErr := os.Stat(i.Dir); os.IsNotExist(StatErr) {
-			err = os.Mkdir(i.Dir, 0700)
+			err = os.MkdirAll(i.Dir, 0700)
 		}
 		if err != nil {
 			return err
 		}
 
-		log.Printf("[DEBUG] installing %s %s to %s from local cache %s", provider, version, targetPath, cached)
+		log.Printf("[DEBUG] installing %s %s to %s from local cache %s", provider.Name, version, targetPath, cached)
 
 		// Delete if we can. If there's nothing there already then no harm done.
 		// This is important because we can't create a link if there's
@@ -350,7 +366,7 @@ func (i *ProviderInstaller) install(provider string, version Version, url string
 		// One way or another, by the time we get here we should have either
 		// a link or a copy of the cached plugin within i.Dir, as expected.
 	} else {
-		log.Printf("[DEBUG] plugin cache is disabled, so downloading %s %s from %s", provider, version, url)
+		log.Printf("[DEBUG] plugin cache is disabled, so downloading %s %s from %s", provider.Name, version, url)
 		err := getter.Get(i.Dir, url)
 		if err != nil {
 			return err
@@ -391,25 +407,27 @@ func (i *ProviderInstaller) PurgeUnused(used map[string]PluginMeta) (PluginMetaS
 	return removed, errs
 }
 
-func (i *ProviderInstaller) getProviderChecksum(urls *response.TerraformProviderPlatformLocation) (string, error) {
+func (i *ProviderInstaller) getProviderChecksum(resp *response.TerraformProviderPlatformLocation) (string, error) {
 	// Get SHA256SUMS file.
-	shasums, err := getFile(urls.ShasumsURL)
+	shasums, err := getFile(resp.ShasumsURL)
 	if err != nil {
-		return "", fmt.Errorf("error fetching checksums: %s", err)
+		log.Printf("[ERROR] error fetching checksums from %q: %s", resp.ShasumsURL, err)
+		return "", ErrorMissingChecksumVerification
 	}
 
 	// Get SHA256SUMS.sig file.
-	signature, err := getFile(urls.ShasumsSignatureURL)
+	signature, err := getFile(resp.ShasumsSignatureURL)
 	if err != nil {
-		return "", fmt.Errorf("error fetching checksums signature: %s", err)
+		log.Printf("[ERROR] error fetching checksums signature from %q: %s", resp.ShasumsSignatureURL, err)
+		return "", ErrorSignatureVerification
 	}
 
 	// Verify the GPG signature returned from the Registry.
-	asciiArmor := urls.SigningKeys.GPGASCIIArmor()
+	asciiArmor := resp.SigningKeys.GPGASCIIArmor()
 	signer, err := verifySig(shasums, signature, asciiArmor)
 	if err != nil {
 		log.Printf("[ERROR] error verifying signature: %s", err)
-		return "", fmt.Errorf(gpgVerificationError)
+		return "", ErrorSignatureVerification
 	}
 
 	// Also verify the GPG signature against the HashiCorp public key. This is
@@ -418,7 +436,7 @@ func (i *ProviderInstaller) getProviderChecksum(urls *response.TerraformProvider
 	_, err = verifySig(shasums, signature, HashicorpPublicKey)
 	if err != nil {
 		log.Printf("[ERROR] error verifying signature against HashiCorp public key: %s", err)
-		return "", fmt.Errorf(gpgVerificationError)
+		return "", ErrorSignatureVerification
 	}
 
 	// Display identity for GPG key which succeeded verifying the signature.
@@ -430,8 +448,17 @@ func (i *ProviderInstaller) getProviderChecksum(urls *response.TerraformProvider
 	identity := strings.Join(identities, ", ")
 	log.Printf("[DEBUG] verified GPG signature with key from %s", identity)
 
-	// Extract checksum for this os/arch platform binary.
-	return checksumForFile(shasums, urls.Filename), nil
+	// Extract checksum for this os/arch platform binary and verify against Registry
+	checksum := checksumForFile(shasums, resp.Filename)
+	if checksum == "" {
+		log.Printf("[ERROR] missing checksum for %s from source %s", resp.Filename, resp.ShasumsURL)
+		return "", ErrorMissingChecksumVerification
+	} else if checksum != resp.Shasum {
+		log.Printf("[ERROR] unexpected checksum for %s from source %q", resp.Filename, resp.ShasumsURL)
+		return "", ErrorChecksumVerification
+	}
+
+	return checksum, nil
 }
 
 func (i *ProviderInstaller) hostname() (string, error) {
@@ -445,9 +472,9 @@ func (i *ProviderInstaller) hostname() (string, error) {
 }
 
 // list all versions available for the named provider
-func (i *ProviderInstaller) listProviderVersions(name string) (*response.TerraformProviderVersions, error) {
-	provider := regsrc.NewTerraformProvider(name, i.OS, i.Arch)
-	versions, err := i.registry.TerraformProviderVersions(provider)
+func (i *ProviderInstaller) listProviderVersions(provider addrs.ProviderType) (*response.TerraformProviderVersions, error) {
+	req := regsrc.NewTerraformProvider(provider.Name, i.OS, i.Arch)
+	versions, err := i.registry.TerraformProviderVersions(req)
 	return versions, err
 }
 

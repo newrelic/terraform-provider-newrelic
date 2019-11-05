@@ -55,7 +55,7 @@ The following arguments are supported:
 
 The `term` mapping supports the following arguments:
 
-  * `duration` - (Required) In minutes, must be: `1`, `2`, `3`, `4`, `5`, `10`, `15`, `30`, `60`, or `120`.
+  * `duration` - (Required) In minutes, must be in the range of `1` to `120`, inclusive.
   * `operator` - (Optional) `above`, `below`, or `equal`.  Defaults to `equal`.
   * `priority` - (Optional) `critical` or `warning`.  Defaults to `critical`.
   * `threshold` - (Required) Must be 0 or greater.
@@ -66,7 +66,7 @@ The `term` mapping supports the following arguments:
 The `nrql` attribute supports the following arguments:
 
   * `query` - (Required) The NRQL query to execute for the condition.
-  * `since_value` - (Required) The value to be used in the `SINCE <X> MINUTES AGO` clause for the NRQL query. Must be: `1`, `2`, `3`, `4`, or `5`.
+  * `since_value` - (Required) The value to be used in the `SINCE <X> MINUTES AGO` clause for the NRQL query. Must be between `1` and `20`.
 
 ## Attributes Reference
 
@@ -76,8 +76,8 @@ The following attributes are exported:
 
 ## Import
 
-Alert conditions can be imported using the `id`, e.g.
+Alert conditions can be imported using a composite ID of `<policy_id>:<condition_id> `id`, e.g.
 
 ```
-$ terraform import newrelic_nrql_alert_condition.main 12345
+$ terraform import newrelic_nrql_alert_condition.main 12345:67890
 ```

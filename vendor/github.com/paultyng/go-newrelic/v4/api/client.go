@@ -6,7 +6,8 @@ import (
 	"fmt"
 
 	"github.com/tomnomnom/linkheader"
-	resty "gopkg.in/resty.v1"
+
+	resty "github.com/go-resty/resty/v2"
 )
 
 // Client represents the client state for the API.
@@ -45,13 +46,33 @@ type ErrorDetail struct {
 	Title string `json:"title,omitempty"`
 }
 
-// Config contains all the configuration data for the API Client
+// Config contains all the configuration data for the API Client.
 type Config struct {
-	APIKey    string
-	BaseURL   string
-	ProxyURL  string
-	Debug     bool
+	// APIKey is the Admin API Key for your New Relic account.
+	// This parameter is required.
+	APIKey string
+
+	// BaseURL is the base API URL for the client.
+	// `Client` defaults to `https://api.newrelic.com/v2`.
+	// Use `https://api.eu.newrelic.com/v2` for EU-based accounts.
+	// `InfraClient` defaults to `https://infra-api.newrelic.com/v2`.
+	// Use `https://intra-api.eu.newrelic.com/v2` for EU-based accounts.
+	BaseURL string
+
+	// ProxyURL sets the Resty client's proxy URL (optional).
+	ProxyURL string
+
+	// Debug sets the Resty client's debug mode.
+	// Defaults to `false`.
+	Debug bool
+
+	// TLSConfig is passed to the Resty client's SetTLSClientConfig method (optional).
+	// Used to set a custom root certificate or disable security.
 	TLSConfig *tls.Config
+
+	// UserAgent is passed to the Resty client's SetHeaders to allow overriding
+	// the default user-agent header (go-newrelic/$version)
+	UserAgent string
 }
 
 // New returns a new Client for the specified apiKey.
@@ -68,7 +89,15 @@ func New(config Config) Client {
 		r.SetProxy(proxyURL)
 	}
 
-	r.SetHeader("X-Api-Key", config.APIKey)
+	userAgent := config.UserAgent
+	if userAgent == "" {
+		userAgent = fmt.Sprintf("go-newrelic/%s (https://github.com/paultyng/go-newrelic)", Version)
+	}
+
+	r.SetHeaders(map[string]string{
+		"X-Api-Key":  config.APIKey,
+		"User-Agent": userAgent,
+	})
 	r.SetHostURL(baseURL)
 
 	if config.TLSConfig != nil {
