@@ -104,7 +104,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(validAlertConditionTypes, false),
 			},
 			"entities": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 				Required: true,
 				MinItems: 1,
