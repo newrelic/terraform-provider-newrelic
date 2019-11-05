@@ -166,10 +166,10 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicNrqlAlertConditionConfig(rName),
 			},
-			resource.TestStep{
+			{
 				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
 				Config:    testAccCheckNewRelicNrqlAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
