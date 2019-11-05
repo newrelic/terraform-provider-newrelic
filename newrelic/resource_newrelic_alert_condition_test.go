@@ -141,7 +141,7 @@ func TestAccNewRelicAlertCondition_nameGreaterThan64Char(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config:      testAccCheckNewRelicAlertConditionConfig("really-long-name-longer-than-sixty-four-characters-so-it-causes-an-error"),
 				ExpectError: expectedErrorMsg,
 			},
@@ -156,10 +156,10 @@ func TestAccNewRelicAlertCondition_MissingPolicy(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertConditionConfig(rName),
 			},
-			resource.TestStep{
+			{
 				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
 				Config:    testAccCheckNewRelicAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),

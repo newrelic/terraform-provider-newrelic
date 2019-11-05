@@ -51,10 +51,10 @@ func TestAccNewRelicSyntheticsAlertCondition_MissingPolicy(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
 			},
-			resource.TestStep{
+			{
 				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
 				Config:    testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicSyntheticsAlertConditionExists("newrelic_synthetics_alert_condition.foo"),

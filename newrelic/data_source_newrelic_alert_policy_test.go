@@ -16,7 +16,7 @@ func TestAccNewRelicAlertPolicyDataSource_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccNewRelicAlertPolicyDataSourceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicAlertPolicy("data.newrelic_alert_policy.policy"),
