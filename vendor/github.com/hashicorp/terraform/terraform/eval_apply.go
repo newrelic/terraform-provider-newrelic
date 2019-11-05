@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/hashicorp/hcl2/hcl"
+	"github.com/hashicorp/hcl/v2"
 	"github.com/zclconf/go-cty/cty"
 
 	"github.com/hashicorp/terraform/addrs"
@@ -61,12 +61,20 @@ func (n *EvalApply) Eval(ctx EvalContext) (interface{}, error) {
 	configVal := cty.NullVal(cty.DynamicPseudoType)
 	if n.Config != nil {
 		var configDiags tfdiags.Diagnostics
-		keyData := EvalDataForInstanceKey(n.Addr.Key)
+		forEach, _ := evaluateResourceForEachExpression(n.Config.ForEach, ctx)
+		keyData := EvalDataForInstanceKey(n.Addr.Key, forEach)
 		configVal, _, configDiags = ctx.EvaluateBlock(n.Config.Config, schema, nil, keyData)
 		diags = diags.Append(configDiags)
 		if configDiags.HasErrors() {
 			return nil, diags.Err()
 		}
+	}
+
+	if !configVal.IsWhollyKnown() {
+		return nil, fmt.Errorf(
+			"configuration for %s still contains unknown values during apply (this is a bug in Terraform; please report it!)",
+			absAddr,
+		)
 	}
 
 	log.Printf("[DEBUG] %s: applying the planned %s change", n.Addr.Absolute(ctx.Path()), change.Action)
@@ -247,11 +255,11 @@ func (n *EvalApply) Eval(ctx EvalContext) (interface{}, error) {
 	}
 
 	// Sometimes providers return a null value when an operation fails for some
-	// reason, but for any action other than delete we'd rather keep the prior
-	// state so that the error can be corrected on a subsequent run. We must
-	// only do this for null new value though, or else we may discard partial
-	// updates the provider was able to complete.
-	if change.Action != plans.Delete && diags.HasErrors() && newVal.IsNull() {
+	// reason, but we'd rather keep the prior state so that the error can be
+	// corrected on a subsequent run. We must only do this for null new value
+	// though, or else we may discard partial updates the provider was able to
+	// complete.
+	if diags.HasErrors() && newVal.IsNull() {
 		// Otherwise, we'll continue but using the prior state as the new value,
 		// making this effectively a no-op. If the item really _has_ been
 		// deleted then our next refresh will detect that and fix it up.
@@ -548,11 +556,18 @@ func (n *EvalApplyProvisioners) apply(ctx EvalContext, provs []*configs.Provisio
 		provisioner := ctx.Provisioner(prov.Type)
 		schema := ctx.ProvisionerSchema(prov.Type)
 
-		keyData := EvalDataForInstanceKey(instanceAddr.Key)
+		forEach, forEachDiags := evaluateResourceForEachExpression(n.ResourceConfig.ForEach, ctx)
+		diags = diags.Append(forEachDiags)
+		keyData := EvalDataForInstanceKey(instanceAddr.Key, forEach)
 
 		// Evaluate the main provisioner configuration.
 		config, _, configDiags := ctx.EvaluateBlock(prov.Config, schema, instanceAddr, keyData)
 		diags = diags.Append(configDiags)
+
+		// we can't apply the provisioner if the config has errors
+		if diags.HasErrors() {
+			return diags.Err()
+		}
 
 		// If the provisioner block contains a connection block of its own then
 		// it can override the base connection configuration, if any.

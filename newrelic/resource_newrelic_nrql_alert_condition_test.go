@@ -43,7 +43,7 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_nrql_alert_condition.foo", "nrql.0.query", "SELECT uniqueCount(hostname) FROM ComputeSample"),
 					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "5"),
+						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "20"),
 				),
 			},
 			{
@@ -159,6 +159,25 @@ func TestAccNewRelicNrqlAlertCondition_Outlier(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
+	rName := acctest.RandString(5)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckNewRelicNrqlAlertConditionConfig(rName),
+			},
+			resource.TestStep{
+				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
+				Config:    testAccCheckNewRelicNrqlAlertConditionConfig(rName),
+				Check:     testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
+			},
+		},
+	})
+}
+
 // TODO: func_ TestAccNewRelicNrqlAlertCondition_Multi(t *testing.T) {
 
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
@@ -241,7 +260,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   }
   nrql {
     query         = "SELECT uniqueCount(hostname) FROM ComputeSample"
-    since_value   = "5"
+    since_value   = "20"
   }
   value_function  = "single_value"
 }

@@ -51,3 +51,10 @@ func (c *Client) CreateDeployment(applicationID int, deployment Deployment) (*De
 
 	return &resp.Deployment, nil
 }
+
+// DeleteDeployment deletes an application deployment from an application.
+func (c *Client) DeleteDeployment(applicationID, deploymentID int) error {
+	u := &url.URL{Path: fmt.Sprintf("/applications/%v/deployments/%v.json", applicationID, deploymentID)}
+	_, err := c.Do("DELETE", u.String(), nil, nil)
+	return err
+}

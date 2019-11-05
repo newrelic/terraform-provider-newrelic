@@ -3,6 +3,7 @@ package newrelic
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -58,9 +59,19 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Required: true,
 						},
 						"since_value": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"1", "2", "3", "4", "5"}, false),
+							Type:     schema.TypeString,
+							Required: true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								valueString := val.(string)
+								v, err := strconv.Atoi(valueString)
+								if err != nil {
+									errs = append(errs, fmt.Errorf("Error converting string to int: %#v", err))
+								}
+								if v < 1 || v > 20 {
+									errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
+								}
+								return
+							},
 						},
 					},
 				},
@@ -72,7 +83,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 						"duration": {
 							Type:         schema.TypeInt,
 							Required:     true,
-							ValidateFunc: intInSlice([]int{1, 2, 3, 4, 5, 10, 15, 30, 60, 120}),
+							ValidateFunc: validation.IntBetween(1, 120),
 						},
 						"operator": {
 							Type:         schema.TypeString,
@@ -237,6 +248,15 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 
 	policyID := ids[0]
 	id := ids[1]
+
+	_, err = client.GetAlertPolicy(policyID)
+	if err != nil {
+		if err == newrelic.ErrNotFound {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
 
 	condition, err := client.GetAlertNrqlCondition(policyID, id)
 	if err != nil {

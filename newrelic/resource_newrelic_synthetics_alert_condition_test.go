@@ -44,6 +44,25 @@ func TestAccNewRelicSyntheticsAlertCondition_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicSyntheticsAlertCondition_MissingPolicy(t *testing.T) {
+	rName := acctest.RandString(5)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
+			},
+			resource.TestStep{
+				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
+				Config:    testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
+				Check:     testAccCheckNewRelicSyntheticsAlertConditionExists("newrelic_synthetics_alert_condition.foo"),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicSyntheticsAlertConditionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {

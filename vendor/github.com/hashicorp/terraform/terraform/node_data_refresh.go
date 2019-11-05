@@ -27,10 +27,26 @@ var (
 func (n *NodeRefreshableDataResource) DynamicExpand(ctx EvalContext) (*Graph, error) {
 	var diags tfdiags.Diagnostics
 
-	count, countDiags := evaluateResourceCountExpression(n.Config.Count, ctx)
+	count, countKnown, countDiags := evaluateResourceCountExpressionKnown(n.Config.Count, ctx)
 	diags = diags.Append(countDiags)
 	if countDiags.HasErrors() {
 		return nil, diags.Err()
+	}
+	if !countKnown {
+		// If the count isn't known yet, we'll skip refreshing and try expansion
+		// again during the plan walk.
+		return nil, nil
+	}
+
+	forEachMap, forEachKnown, forEachDiags := evaluateResourceForEachExpressionKnown(n.Config.ForEach, ctx)
+	diags = diags.Append(forEachDiags)
+	if forEachDiags.HasErrors() {
+		return nil, diags.Err()
+	}
+	if !forEachKnown {
+		// If the for_each isn't known yet, we'll skip refreshing and try expansion
+		// again during the plan walk.
+		return nil, nil
 	}
 
 	// Next we need to potentially rename an instance address in the state
@@ -72,6 +88,7 @@ func (n *NodeRefreshableDataResource) DynamicExpand(ctx EvalContext) (*Graph, er
 			Concrete: concreteResource,
 			Schema:   n.Schema,
 			Count:    count,
+			ForEach:  forEachMap,
 			Addr:     n.ResourceAddr(),
 		},
 
@@ -80,6 +97,7 @@ func (n *NodeRefreshableDataResource) DynamicExpand(ctx EvalContext) (*Graph, er
 		&OrphanResourceCountTransformer{
 			Concrete: concreteResourceDestroyable,
 			Count:    count,
+			ForEach:  forEachMap,
 			Addr:     n.ResourceAddr(),
 			State:    state,
 		},
@@ -145,22 +163,6 @@ func (n *NodeRefreshableDataResourceInstance) EvalTree() EvalNode {
 				ProviderSchema: &providerSchema,
 			},
 
-			&EvalIf{
-				If: func(ctx EvalContext) (bool, error) {
-					// If the config explicitly has a depends_on for this
-					// data source, assume the intention is to prevent
-					// refreshing ahead of that dependency, and therefore
-					// we need to deal with this resource during the apply
-					// phase..
-					if len(n.Config.DependsOn) > 0 {
-						return true, EvalEarlyExitError{}
-					}
-
-					return true, nil
-				},
-				Then: EvalNoop{},
-			},
-
 			// EvalReadData will _attempt_ to read the data source, but may
 			// generate an incomplete planned object if the configuration
 			// includes values that won't be known until apply.
@@ -174,6 +176,12 @@ func (n *NodeRefreshableDataResourceInstance) EvalTree() EvalNode {
 				OutputChange:      &change,
 				OutputConfigValue: &configVal,
 				OutputState:       &state,
+				// If the config explicitly has a depends_on for this data
+				// source, assume the intention is to prevent refreshing ahead
+				// of that dependency, and therefore we need to deal with this
+				// resource during the apply phase. We do that by forcing this
+				// read to result in a plan.
+				ForcePlanRead: len(n.Config.DependsOn) > 0,
 			},
 
 			&EvalIf{

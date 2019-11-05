@@ -149,6 +149,25 @@ func TestAccNewRelicAlertCondition_nameGreaterThan64Char(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicAlertCondition_MissingPolicy(t *testing.T) {
+	rName := acctest.RandString(5)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckNewRelicAlertConditionConfig(rName),
+			},
+			resource.TestStep{
+				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
+				Config:    testAccCheckNewRelicAlertConditionConfig(rName),
+				Check:     testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicAlertConditionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
@@ -204,6 +223,21 @@ func testAccCheckNewRelicAlertConditionExists(n string) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func TestErrorThrownUponConditionNameGreaterThan64Char(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile("expected length of name to be in the range \\(1 \\- 64\\)")
+	rName := acctest.RandString(5)
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testErrorThrownUponConditionNameGreaterThan64Char(rName),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
 }
 
 func testAccCheckNewRelicAlertConditionConfig(rName string) string {
@@ -301,3 +335,74 @@ resource "newrelic_alert_condition" "foo" {
 }
 `, rName, testAccExpectedApplicationName)
 }
+
+func testErrorThrownUponConditionNameGreaterThan64Char(resourceName string) string {
+	return fmt.Sprintf(`
+provider "newrelic" {
+  api_key = "foo"
+}
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+resource "newrelic_alert_condition" "foo" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+  name            = "really-long-name-that-is-more-than-sixtyfour-characters-long-tf-test-%[1]s"
+  type            = "apm_app_metric"
+  entities        = ["12345"]
+  metric          = "apdex"
+  runbook_url     = "https://foo.example.com"
+  condition_scope = "application"
+  term {
+    duration      = 5
+    operator      = "below"
+    priority      = "critical"
+    threshold     = "0.75"
+    time_function = "all"
+  }
+}
+`, resourceName, testAccExpectedApplicationName)
+}
+
+func TestErrorThrownUponConditionNameLessThan1Char(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile("expected length of name to be in the range \\(1 \\- 64\\)")
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testErrorThrownUponConditionNameLessThan1Char(),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func testErrorThrownUponConditionNameLessThan1Char() string {
+	return `
+provider "newrelic" {
+  api_key = "foo"
+}
+
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+resource "newrelic_alert_condition" "foo" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+  name            = ""
+  type            = "apm_app_metric"
+  entities        = ["12345"]
+  metric          = "apdex"
+  runbook_url     = "https://foo.example.com"
+  condition_scope = "application"
+  term {
+    duration      = 5
+    operator      = "below"
+    priority      = "critical"
+    threshold     = "0.75"
+    time_function = "all"
+  }
+}
+`
+}
+
+// TODO: const testAccCheckNewRelicAlertConditionConfigMulti = `
