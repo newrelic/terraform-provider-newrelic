@@ -1,6 +1,7 @@
 module github.com/terraform-providers/terraform-provider-newrelic
 
 require (
+	github.com/bflad/tfproviderlint v0.5.0 // indirect
 	github.com/dollarshaveclub/new-relic-synthetics-go v0.0.0-20170605224734-4dc3dd6ae884
 	github.com/golangci/golangci-lint v1.21.0 // indirect
 	github.com/hashicorp/hil v0.0.0-20190212132231-97b3a9cdfa93 // indirect
