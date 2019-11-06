@@ -11,24 +11,6 @@ Requirements
 ------------
 
 -	[Terraform](https://www.terraform.io/downloads.html) 0.10.x
--	[Go](https://golang.org/doc/install) 1.13 (to build the provider plugin)
-
-Building The Provider
----------------------
-
-Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-newrelic`
-
-```sh
-$ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone git@github.com:terraform-providers/terraform-provider-newrelic.git
-```
-
-Enter the provider directory and build the provider
-
-```sh
-$ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-newrelic
-$ make build
-```
 
 Using the provider
 ----------------------
@@ -44,6 +26,20 @@ machine (version 1.13+ is *required*). You'll also need to correctly setup a
 [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 #### Building
+Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-newrelic`
+
+```sh
+$ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
+$ git clone git@github.com:terraform-providers/terraform-provider-newrelic.git
+```
+
+Enter the provider directory and build the provider
+
+```sh
+$ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-newrelic
+$ make build
+```
+
 To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
 ```sh
@@ -62,7 +58,7 @@ $ make test
 
 In order to run the full suite of Acceptance tests, run `make testacc`.
 
-*Note:* Acceptance tests *create real resources*, and often cost money to run. The environment variable `NEWRELIC_API_KEY` must also be set with your key for acceptance tests to work properly.
+*Note:* Acceptance tests *create real resources*, and often cost money to run. The environment variables `NEWRELIC_API_KEY` and `NEWRELIC_LICENSE_KEY` must also be set with your associated keys for acceptance tests to work properly.
 
 ```sh
 $ make testacc
