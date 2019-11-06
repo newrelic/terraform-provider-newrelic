@@ -29,24 +29,16 @@ machine (version 1.13+ is *required*). You'll also need to correctly setup a
 Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-newrelic`
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
+$ mkdir -p $GOPATH/src/github.com/terraform-providers;
+$ cd $GOPATH/src/github.com/terraform-providers
 $ git clone git@github.com:terraform-providers/terraform-provider-newrelic.git
 ```
 
-Enter the provider directory and build the provider
+Enter the provider directory and build the provider. To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
 ```sh
 $ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-newrelic
 $ make build
-```
-
-To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
-
-```sh
-$ make bin
-...
-$ $GOPATH/bin/terraform-provider-newrelic
-...
 ```
 
 #### Testing
