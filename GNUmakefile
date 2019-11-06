@@ -4,42 +4,70 @@ GO_PKGS      := $(shell go list ./... | grep -v -e "/vendor/" -e "/example")
 GOFMT_FILES  ?= $$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO  = github.com/hashicorp/terraform-website
 
-GO       = go
-GOLINTER = golangci-lint
+# Commands
+GO        := go
+GO_LINTER := golangci-lint
+TF_LINTER := tfproviderlint
 
 BUILD_DIR    := ./bin/
 COVERAGE_DIR := ./coverage/
 COVERMODE     = atomic
 
-default: clean build lint test cover-report
+default: clean build lint vet test cover-report
 
 build: fmtcheck
 	@$(GO) install
 
 clean:
-	@echo "=== $(PROJECT_NAME) === [ clean            ]: removing binaries and coverage file..."
+	@echo "=== $(PKG_NAME) === [ clean            ]: removing binaries and coverage file..."
+	@$(GO) clean $(GO_PKGS)
 	@rm -rfv $(BUILD_DIR)/* $(COVERAGE_DIR)/*
 
 lint: tools
-	@echo "=== $(PKG_NAME) === [ lint             ]: Validating source code running $(GOLINTER)..."
-	@$(GOLINTER) run ./$(PKG_NAME)
+	@echo "=== $(PKG_NAME) === [ lint             ]: running linters..."
+	@echo "=== $(PKG_NAME) === [ lint             ]:     $(GO_LINTER) ..."
+	@$(GO_LINTER) run ./$(PKG_NAME)
+	@echo "=== $(PKG_NAME) === [ lint             ]:     $(TF_LINTER) ..."
+	@$(TF_LINTER) \
+		-c 1 \
+		-AT001 \
+		-AT002 \
+		-S001 \
+		-S002 \
+		-S003 \
+		-S004 \
+		-S005 \
+		-S007 \
+		-S008 \
+		-S009 \
+		-S010 \
+		-S011 \
+		-S012 \
+		-S013 \
+		-S014 \
+		-S015 \
+		-S016 \
+		-S017 \
+		-S019 \
+		./$(PKG_NAME)
 
-test: fmtcheck
-#	@$(GO) test $(TESTARGS) -timeout=30s -parallel=4 -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/unit.tmp $(TEST)
+test: clean fmtcheck
 	@echo "=== $(PKG_NAME) === [ test             ]: running test suite..."
-	@rm -rf $(COVERAGE_DIR)/*
 	@mkdir -p $(COVERAGE_DIR)
+	@$(GO) test -i $(TEST) || exit 1
 	@for d in $(GO_PKGS); do \
 		pkg=`basename $$d` ;\
 		$(GO) test $(TESTARGS) -timeout=30s -parallel=4 -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/$$pkg.tmp $$d ;\
 	done
 
-
 testacc: fmtcheck
-	TF_ACC=1 $(GO) test $(TEST) -v $(TESTARGS) -timeout 120m
+	TF_ACC=1 $(GO) test $(TEST) \
+				 -v $(TESTARGS) \
+				 -timeout 120m \
+				 -ldflags="-X=github.com/terraform-providers/terraform-provider-newrelic/version.ProviderVersion=acc"
 
 vet:
-	@echo "=== $(PKG_NAME) === [ vet              ]: Running go vet..."
+	@echo "=== $(PKG_NAME) === [ vet              ]: running go vet..."
 	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
 		echo ""; \
 		echo "Vet found suspicious constructs. Please check the reported constructs"; \
@@ -54,6 +82,7 @@ fmt:
 tools:
 	@echo "=== $(PKG_NAME) === [ tools            ]: installing required tooling..."
 	@GO111MODULE=on $(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint
+	@GO111MODULE=on go install github.com/bflad/tfproviderlint/cmd/tfproviderlint
 
 fmtcheck:
 	@echo "=== $(PKG_NAME) === [ fmtcheck         ]: Checking that code complies with gofmt requirements..."
@@ -71,8 +100,7 @@ test-compile:
 	go test -c $(TEST) $(TESTARGS)
 
 cover-report: test
-	@echo "=== $(PKG_NAME) === [ cover-report     ]: generating coverage results..."
-	@mkdir -p $(COVERAGE_DIR)
+	@echo "=== $(PKG_NAME) === [ cover-report     ]: generating test coverage..."
 	@echo 'mode: $(COVERMODE)' > $(COVERAGE_DIR)/coverage.out
 	@cat $(COVERAGE_DIR)/*.tmp | grep -v 'mode: $(COVERMODE)' >> $(COVERAGE_DIR)/coverage.out || true
 	@$(GO) tool cover -html=$(COVERAGE_DIR)/coverage.out -o $(COVERAGE_DIR)/coverage.html
@@ -92,5 +120,5 @@ ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
 endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test tools lint
+.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test tools lint cover-report
 

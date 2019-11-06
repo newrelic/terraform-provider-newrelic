@@ -61,6 +61,8 @@ github.com/aws/aws-sdk-go v1.25.3/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN
 github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f/go.mod h1:AuiFmCCPBSrqvVMvuqFuk0qogytodnVFVSN5CeJB8Gc=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
+github.com/bflad/tfproviderlint v0.5.0 h1:gV2WRN49cOFzArAtGm4rra1uaIyqitu9l04a+IWvUyg=
+github.com/bflad/tfproviderlint v0.5.0/go.mod h1:rADZLkXIOfWikYWuaz64bMqDzzk91FAYN+3hTgb9FHw=
 github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d h1:xDfNPAt8lFiC1UJrqV3uuy861HCTo708pDMbjHHdCas=
 github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d/go.mod h1:6QX/PXZ00z/TKoufEY6K/a0k6AhaJrQKdFe6OfVXsa4=
 github.com/bgentry/speakeasy v0.1.0 h1:ByYyxL9InA1OWqxJqqp2A5pYHUrCiAL6K3J+LKSsQkY=
@@ -298,6 +300,7 @@ github.com/hashicorp/terraform v0.12.13 h1:LACXUTZvAGf8W/6wehHjOgi6YEMN7ejDUpnpl
 github.com/hashicorp/terraform v0.12.13/go.mod h1:Sq/J8KhhxpxT+XsE4YRfEAq5X87YUrVhsaIOo0P00wA=
 github.com/hashicorp/terraform-config-inspect v0.0.0-20190821133035-82a99dc22ef4 h1:fTkL0YwjohGyN7AqsDhz6bwcGBpT+xBqi3Qhpw58Juw=
 github.com/hashicorp/terraform-config-inspect v0.0.0-20190821133035-82a99dc22ef4/go.mod h1:JDmizlhaP5P0rYTTZB0reDMefAiJyfWPEtugV4in1oI=
+github.com/hashicorp/terraform-plugin-sdk v1.0.0/go.mod h1:NuwtLpEpPsFaKJPJNGtMcn9vlhe6Ofe+Y6NqXhJgV2M=
 github.com/hashicorp/terraform-plugin-sdk v1.2.0 h1:OASbbPmJHbajCSXelwWLSw/HkvnakG4rd/GcrqD2k/g=
 github.com/hashicorp/terraform-plugin-sdk v1.2.0/go.mod h1:NuwtLpEpPsFaKJPJNGtMcn9vlhe6Ofe+Y6NqXhJgV2M=
 github.com/hashicorp/terraform-svchost v0.0.0-20191011084731-65d371908596 h1:hjyO2JsNZUKT1ym+FAdlBEkGPevazYsmVgIMw7dVELg=
@@ -692,6 +695,7 @@ golang.org/x/tools v0.0.0-20190606124116-d0a3d012864b/go.mod h1:/rFqwRUd4F7ZHNgw
 golang.org/x/tools v0.0.0-20190621195816-6e04913cbbac/go.mod h1:/rFqwRUd4F7ZHNgwSSTFct+R/Kf4OFW1sUzUTQQTgfc=
 golang.org/x/tools v0.0.0-20190628153133-6cdbf07be9d0/go.mod h1:/rFqwRUd4F7ZHNgwSSTFct+R/Kf4OFW1sUzUTQQTgfc=
 golang.org/x/tools v0.0.0-20190719005602-e377ae9d6386/go.mod h1:jcCCGcm9btYwXyDqrUWc6MKQKKGJCWEQ3AfLSRIbEuI=
+golang.org/x/tools v0.0.0-20190823093517-aa644d2adf2a/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
 golang.org/x/tools v0.0.0-20190910044552-dd2b5c81c578/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
 golang.org/x/tools v0.0.0-20190930201159-7c411dea38b0/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
 golang.org/x/tools v0.0.0-20191010075000-0337d82405ff h1:XdBG6es/oFDr1HwaxkxgVve7NB281QhxgK/i4voubFs=
