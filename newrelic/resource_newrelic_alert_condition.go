@@ -181,7 +181,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 }
 
 func buildAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertCondition {
-	entitySet := d.Get("entities").([]interface{})
+	entitySet := d.Get("entities").(*schema.Set).List()
 	entities := make([]string, len(entitySet))
 
 	for i, entity := range entitySet {
