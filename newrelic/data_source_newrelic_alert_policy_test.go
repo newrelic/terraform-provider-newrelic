@@ -16,7 +16,7 @@ func TestAccNewRelicAlertPolicyDataSource_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccNewRelicAlertPolicyDataSourceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicAlertPolicy("data.newrelic_alert_policy.policy"),
@@ -32,11 +32,11 @@ func testAccNewRelicAlertPolicy(n string) resource.TestCheckFunc {
 		a := r.Primary.Attributes
 
 		if a["id"] == "" {
-			return fmt.Errorf("Expected to get an alert policy from New Relic")
+			return fmt.Errorf("expected to get an alert policy from New Relic")
 		}
 
 		if strings.Contains(strings.ToLower(testAccExpectedAlertPolicyName), strings.ToLower(a["name"])) {
-			return fmt.Errorf("Expected the alert policy name to be: %s, but got: %s", testAccExpectedAlertPolicyName, a["name"])
+			return fmt.Errorf("expected the alert policy name to be: %s, but got: %s", testAccExpectedAlertPolicyName, a["name"])
 		}
 
 		return nil

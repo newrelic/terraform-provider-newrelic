@@ -51,10 +51,10 @@ func TestAccNewRelicSyntheticsAlertCondition_MissingPolicy(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
 			},
-			resource.TestStep{
+			{
 				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
 				Config:    testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicSyntheticsAlertConditionExists("newrelic_synthetics_alert_condition.foo"),
@@ -80,7 +80,7 @@ func testAccCheckNewRelicSyntheticsAlertConditionDestroy(s *terraform.State) err
 
 		_, err = client.GetAlertSyntheticsCondition(policyID, id)
 		if err == nil {
-			return fmt.Errorf("Synthetics alert condition still exists")
+			return fmt.Errorf("synthetics alert condition still exists")
 		}
 
 	}
@@ -91,10 +91,10 @@ func testAccCheckNewRelicSyntheticsAlertConditionExists(n string) resource.TestC
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No alert condition ID is set")
+			return fmt.Errorf("no alert condition ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).Client
@@ -113,7 +113,7 @@ func testAccCheckNewRelicSyntheticsAlertConditionExists(n string) resource.TestC
 		}
 
 		if found.ID != id {
-			return fmt.Errorf("Alert condition not found: %v - %v", id, found)
+			return fmt.Errorf("alert condition not found: %v - %v", id, found)
 		}
 
 		return nil
