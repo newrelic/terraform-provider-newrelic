@@ -49,7 +49,7 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicAlertChannel_import(t *testing.T) {
+func TestAccNewRelicAlertChannel(t *testing.T) {
 	resourceName := "newrelic_alert_channel.foo"
 	rName := acctest.RandString(5)
 	resource.Test(t, resource.TestCase{

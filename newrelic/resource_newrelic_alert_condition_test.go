@@ -114,7 +114,7 @@ func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicAlertCondition_import(t *testing.T) {
+func TestAccNewRelicAlertCondition(t *testing.T) {
 	resourceName := "newrelic_alert_condition.foo"
 	rName := acctest.RandString(5)
 

@@ -43,7 +43,7 @@ func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicAlertPolicy_import(t *testing.T) {
+func TestAccNewRelicAlertPolicy(t *testing.T) {
 	resourceName := "newrelic_alert_policy.foo"
 	rName := acctest.RandString(5)
 

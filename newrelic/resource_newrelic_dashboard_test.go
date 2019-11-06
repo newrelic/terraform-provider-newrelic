@@ -98,7 +98,7 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicDashboard_import(t *testing.T) {
+func TestAccNewRelicDashboard(t *testing.T) {
 	resourceName := "newrelic_dashboard.foo"
 	rName := acctest.RandString(5)
 
