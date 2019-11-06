@@ -53,7 +53,7 @@ func testAccCheckNewRelicAlertPolicyChannelDestroy(s *terraform.State) error {
 		}
 
 		if exists {
-			return fmt.Errorf("Resource still exists")
+			return fmt.Errorf("resource still exists")
 		}
 	}
 	return nil
@@ -63,10 +63,10 @@ func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFu
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No resource ID is set")
+			return fmt.Errorf("no resource ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).Client
@@ -84,7 +84,7 @@ func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFu
 			return err
 		}
 		if !exists {
-			return fmt.Errorf("Resource not found: %v", rs.Primary.ID)
+			return fmt.Errorf("resource not found: %v", rs.Primary.ID)
 		}
 
 		return nil
