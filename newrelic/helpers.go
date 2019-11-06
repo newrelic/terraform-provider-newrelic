@@ -9,7 +9,7 @@ import (
 func parseIDs(serializedID string, count int) ([]int, error) {
 	rawIDs := strings.SplitN(serializedID, ":", count)
 	if len(rawIDs) != count {
-		return []int{}, fmt.Errorf("Unable to parse ID %v", serializedID)
+		return []int{}, fmt.Errorf("unable to parse ID %v", serializedID)
 	}
 
 	ids := make([]int, count)

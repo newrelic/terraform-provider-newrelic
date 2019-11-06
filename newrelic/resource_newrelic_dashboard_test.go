@@ -135,7 +135,7 @@ func testAccCheckNewRelicDashboardDestroy(s *terraform.State) error {
 		_, err = client.GetDashboard(int(id))
 
 		if err == nil {
-			return fmt.Errorf("Dashboard still exists")
+			return fmt.Errorf("dashboard still exists")
 		}
 
 	}
@@ -146,10 +146,10 @@ func testAccCheckNewRelicDashboardExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No dashboard ID is set")
+			return fmt.Errorf("no dashboard ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).Client
@@ -165,7 +165,7 @@ func testAccCheckNewRelicDashboardExists(n string) resource.TestCheckFunc {
 		}
 
 		if strconv.Itoa(found.ID) != rs.Primary.ID {
-			return fmt.Errorf("Dashboard not found: %v - %v", rs.Primary.ID, found)
+			return fmt.Errorf("dashboard not found: %v - %v", rs.Primary.ID, found)
 		}
 
 		return nil

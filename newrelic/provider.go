@@ -80,14 +80,14 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 
 	client, err := config.Client()
 	if err != nil {
-		return nil, fmt.Errorf("Error initializing New Relic client: %s", err)
+		return nil, fmt.Errorf("error initializing New Relic client: %s", err)
 	}
 
 	log.Println("[INFO] Initializing New Relic Synthetics client")
 
 	clientSynthetics, err := config.ClientSynthetics()
 	if err != nil {
-		return nil, fmt.Errorf("Error initializing New Relic synthetics client: %s", err)
+		return nil, fmt.Errorf("error initializing New Relic synthetics client: %s", err)
 	}
 
 	infraConfig := Config{
@@ -98,7 +98,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 
 	clientInfra, err := infraConfig.ClientInfra()
 	if err != nil {
-		return nil, fmt.Errorf("Error initializing New Relic Infra client: %s", err)
+		return nil, fmt.Errorf("error initializing New Relic Infra client: %s", err)
 	}
 
 	providerConfig := ProviderConfig{

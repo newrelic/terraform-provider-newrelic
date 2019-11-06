@@ -34,7 +34,7 @@ func deletePolicy(name string) func() {
 
 		for _, p := range policies {
 			if p.Name == name {
-				client.DeleteAlertPolicy(p.ID)
+				_ = client.DeleteAlertPolicy(p.ID)
 				break
 			}
 		}

@@ -65,7 +65,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 								valueString := val.(string)
 								v, err := strconv.Atoi(valueString)
 								if err != nil {
-									errs = append(errs, fmt.Errorf("Error converting string to int: %#v", err))
+									errs = append(errs, fmt.Errorf("error converting string to int: %#v", err))
 								}
 								if v < 1 || v > 20 {
 									errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
