@@ -32,11 +32,11 @@ func testAccNewRelicAlertChannel(n string) resource.TestCheckFunc {
 		a := r.Primary.Attributes
 
 		if a["id"] == "" {
-			return fmt.Errorf("Expected to get an alert channel from New Relic")
+			return fmt.Errorf("expected to get an alert channel from New Relic")
 		}
 
 		if strings.Contains(strings.ToLower(testAccExpectedAlertChannelName), strings.ToLower(a["name"])) {
-			return fmt.Errorf("Expected the alert channel name to be: %s, but got: %s", testAccExpectedAlertChannelName, a["name"])
+			return fmt.Errorf("expected the alert channel name to be: %s, but got: %s", testAccExpectedAlertChannelName, a["name"])
 		}
 
 		return nil

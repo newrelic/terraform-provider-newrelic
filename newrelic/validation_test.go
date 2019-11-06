@@ -22,12 +22,12 @@ func TestValidationIntInInSlice(t *testing.T) {
 		{
 			val:         4,
 			f:           intInSlice([]int{1, 2, 3}),
-			expectedErr: regexp.MustCompile("expected [\\w]+ to be one of \\[1 2 3\\], got 4"),
+			expectedErr: regexp.MustCompile(`expected [\w]+ to be one of \[1 2 3\], got 4`),
 		},
 		{
 			val:         "foo",
 			f:           intInSlice([]int{1, 2, 3}),
-			expectedErr: regexp.MustCompile("expected type of [\\w]+ to be int"),
+			expectedErr: regexp.MustCompile(`expected type of [\w]+ to be int`),
 		},
 	})
 }
@@ -45,12 +45,12 @@ func TestValidationFloat64Gte(t *testing.T) {
 		{
 			val:         "foo",
 			f:           float64Gte(1.1),
-			expectedErr: regexp.MustCompile("expected type of [\\w]+ to be float64"),
+			expectedErr: regexp.MustCompile(`expected type of [\w]+ to be float64`),
 		},
 		{
 			val:         0.1,
 			f:           float64Gte(1.1),
-			expectedErr: regexp.MustCompile("expected [\\w]+ to be greater than or equal to 1.1, got 0.1"),
+			expectedErr: regexp.MustCompile(`expected [\w]+ to be greater than or equal to 1.1, got 0.1`),
 		},
 	})
 }

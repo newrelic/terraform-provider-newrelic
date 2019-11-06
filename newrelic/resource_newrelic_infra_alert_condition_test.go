@@ -187,7 +187,7 @@ func testAccCheckNewRelicInfraAlertConditionDestroy(s *terraform.State) error {
 
 		_, err = client.GetAlertInfraCondition(policyID, id)
 		if err == nil {
-			return fmt.Errorf("Infra Alert condition still exists")
+			return fmt.Errorf("infra Alert condition still exists")
 		}
 
 	}
@@ -198,10 +198,10 @@ func testAccCheckNewRelicInfraAlertConditionExists(n string) resource.TestCheckF
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No alert condition ID is set")
+			return fmt.Errorf("no alert condition ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).InfraClient
@@ -220,7 +220,7 @@ func testAccCheckNewRelicInfraAlertConditionExists(n string) resource.TestCheckF
 		}
 
 		if found.ID != id {
-			return fmt.Errorf("Alert condition not found: %v - %v", id, found)
+			return fmt.Errorf("alert condition not found: %v - %v", id, found)
 		}
 
 		return nil
