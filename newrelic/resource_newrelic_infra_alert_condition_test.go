@@ -24,6 +24,8 @@ func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_infra_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
 					resource.TestCheckResourceAttr(
+						"newrelic_infra_alert_condition.foo", "runbook_url", "https://foo.example.com"),
+					resource.TestCheckResourceAttr(
 						"newrelic_infra_alert_condition.foo", "critical.0.duration", "10"),
 					resource.TestCheckNoResourceAttr(
 						"newrelic_infra_alert_condition.foo", "warning"),
@@ -35,6 +37,8 @@ func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
 					resource.TestCheckResourceAttr(
 						"newrelic_infra_alert_condition.foo", "name", fmt.Sprintf("tf-test-updated-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"newrelic_infra_alert_condition.foo", "runbook_url", "https://bar.example.com"),
 				),
 			},
 		},
@@ -147,6 +151,25 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicInfraAlertCondition_MissingPolicy(t *testing.T) {
+	rName := acctest.RandString(5)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicInfraAlertConditionConfig(rName),
+			},
+			{
+				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
+				Config:    testAccCheckNewRelicInfraAlertConditionConfig(rName),
+				Check:     testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicInfraAlertConditionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).InfraClient
 	for _, r := range s.RootModule().Resources {
@@ -164,7 +187,7 @@ func testAccCheckNewRelicInfraAlertConditionDestroy(s *terraform.State) error {
 
 		_, err = client.GetAlertInfraCondition(policyID, id)
 		if err == nil {
-			return fmt.Errorf("Infra Alert condition still exists")
+			return fmt.Errorf("infra Alert condition still exists")
 		}
 
 	}
@@ -175,10 +198,10 @@ func testAccCheckNewRelicInfraAlertConditionExists(n string) resource.TestCheckF
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No alert condition ID is set")
+			return fmt.Errorf("no alert condition ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).InfraClient
@@ -197,7 +220,7 @@ func testAccCheckNewRelicInfraAlertConditionExists(n string) resource.TestCheckF
 		}
 
 		if found.ID != id {
-			return fmt.Errorf("Alert condition not found: %v - %v", id, found)
+			return fmt.Errorf("alert condition not found: %v - %v", id, found)
 		}
 
 		return nil
@@ -215,6 +238,7 @@ resource "newrelic_infra_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name            = "tf-test-%[1]s"
+  runbook_url     = "https://foo.example.com"
   type            = "infra_metric"
   event           = "StorageSample"
   select          = "diskFreePercent"
@@ -239,6 +263,7 @@ resource "newrelic_infra_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name            = "tf-test-updated-%[1]s"
+  runbook_url     = "https://bar.example.com"
   type            = "infra_metric"
   event           = "StorageSample"
   select          = "diskFreePercent"

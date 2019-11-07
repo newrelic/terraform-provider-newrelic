@@ -53,7 +53,7 @@ func dataSourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}
 	}
 
 	if channel == nil {
-		return fmt.Errorf("The name '%s' does not match any New Relic alert channel.", name)
+		return fmt.Errorf("the name '%s' does not match any New Relic alert channel", name)
 	}
 
 	d.SetId(strconv.Itoa(channel.ID))

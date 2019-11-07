@@ -35,7 +35,7 @@ func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface
 	var transaction *newrelic.KeyTransaction
 	name, ok := d.Get("name").(string)
 	if !ok {
-		return fmt.Errorf("The name '%v' is not a string.", name)
+		return fmt.Errorf("the name '%v' is not a string", name)
 	}
 
 	for _, t := range transactions {
@@ -46,7 +46,7 @@ func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface
 	}
 
 	if transaction == nil {
-		return fmt.Errorf("The name '%s' does not match any New Relic key transaction.", name)
+		return fmt.Errorf("the name '%s' does not match any New Relic key transaction", name)
 	}
 
 	d.SetId(strconv.Itoa(transaction.ID))

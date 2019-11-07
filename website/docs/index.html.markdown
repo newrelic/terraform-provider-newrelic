@@ -69,3 +69,5 @@ resource "newrelic_alert_policy_channel" "alert_email" {
 The following arguments are supported:
 
 * `api_key` - (Required) Your New Relic API key. Can also use `NEWRELIC_API_KEY` environment variable.
+* `api_url` - (Optional) Possibility to change the API url (default is https://api.newrelic.com/v2). This is for instance relevant if the New Relic account is in the EU. The API url must then be set to https://api.eu.newrelic.com/v2. Can also use `NEWRELIC_API_URL` environment variable.
+* `infra_api_url` - (Optional) Possibility to change the Infra API url (default is https://infra-api.newrelic.com/v2). This is for instance relevant if the New Relic account is in the EU. The Infra API url must then be set to https://infra-api.eu.newrelic.com/v2. Can also use `NEWRELIC_INFRA_API_URL` environment variable.

@@ -22,8 +22,10 @@ type PreconnectReply struct {
 // ConnectReply contains all of the settings and state send down from the
 // collector.  It should not be modified after creation.
 type ConnectReply struct {
-	RunID             AgentRunID        `json:"agent_run_id"`
-	RequestHeadersMap map[string]string `json:"request_headers_map"`
+	RunID                 AgentRunID        `json:"agent_run_id"`
+	RequestHeadersMap     map[string]string `json:"request_headers_map"`
+	MaxPayloadSizeInBytes int               `json:"max_payload_size_in_bytes"`
+	EntityGUID            string            `json:"entity_guid"`
 
 	// Transaction Name Modifiers
 	SegmentTerms segmentRules `json:"transaction_segment_terms"`
@@ -64,6 +66,10 @@ type ConnectReply struct {
 	} `json:"messages"`
 
 	AdaptiveSampler AdaptiveSampler
+	// TraceIDGenerator creates random IDs for distributed tracing.  It
+	// exists here in the connect reply so it can be modified to create
+	// deterministic identifiers in tests.
+	TraceIDGenerator *TraceIDGenerator `json:"-"`
 
 	// BetterCAT/Distributed Tracing
 	AccountID                     string `json:"account_id"`
@@ -76,6 +82,58 @@ type ConnectReply struct {
 	// exists here in ConnectReply since it is specific to a set of rules
 	// and is shared between transactions.
 	rulesCache *rulesCache
+
+	ServerSideConfig struct {
+		TransactionTracerEnabled *bool `json:"transaction_tracer.enabled"`
+		// TransactionTracerThreshold should contain either a number or
+		// "apdex_f" if it is non-nil.
+		TransactionTracerThreshold           interface{} `json:"transaction_tracer.transaction_threshold"`
+		TransactionTracerStackTraceThreshold *float64    `json:"transaction_tracer.stack_trace_threshold"`
+		ErrorCollectorEnabled                *bool       `json:"error_collector.enabled"`
+		ErrorCollectorIgnoreStatusCodes      []int       `json:"error_collector.ignore_status_codes"`
+		CrossApplicationTracerEnabled        *bool       `json:"cross_application_tracer.enabled"`
+	} `json:"agent_config"`
+
+	// Faster Event Harvest
+	EventData EventHarvestConfig `json:"event_harvest_config"`
+}
+
+// EventHarvestConfig contains fields relating to faster event harvest.
+// This structure is used in the connect request (to send up defaults)
+// and in the connect response (to get the server values).
+//
+// https://source.datanerd.us/agents/agent-specs/blob/master/Connect-LEGACY.md#event_harvest_config-hash
+// https://source.datanerd.us/agents/agent-specs/blob/master/Connect-LEGACY.md#event-harvest-config
+type EventHarvestConfig struct {
+	ReportPeriodMs int `json:"report_period_ms,omitempty"`
+	Limits         struct {
+		TxnEvents    *uint `json:"analytic_event_data,omitempty"`
+		CustomEvents *uint `json:"custom_event_data,omitempty"`
+		ErrorEvents  *uint `json:"error_event_data,omitempty"`
+		SpanEvents   *uint `json:"span_event_data,omitempty"`
+	} `json:"harvest_limits"`
+}
+
+// ConfigurablePeriod returns the Faster Event Harvest configurable reporting period if it is set, or the default
+// report period otherwise.
+func (r *ConnectReply) ConfigurablePeriod() time.Duration {
+	ms := DefaultConfigurableEventHarvestMs
+	if nil != r && r.EventData.ReportPeriodMs > 0 {
+		ms = r.EventData.ReportPeriodMs
+	}
+	return time.Duration(ms) * time.Millisecond
+}
+
+func uintPtr(x uint) *uint { return &x }
+
+// DefaultEventHarvestConfig provides faster event harvest defaults.
+func DefaultEventHarvestConfig(eventer MaxTxnEventer) EventHarvestConfig {
+	cfg := EventHarvestConfig{}
+	cfg.ReportPeriodMs = DefaultConfigurableEventHarvestMs
+	cfg.Limits.TxnEvents = uintPtr(uint(eventer.MaxTxnEvents()))
+	cfg.Limits.CustomEvents = uintPtr(uint(MaxCustomEvents))
+	cfg.Limits.ErrorEvents = uintPtr(uint(MaxErrorEvents))
+	return cfg
 }
 
 type trustedAccountSet map[int]struct{}
@@ -111,21 +169,24 @@ func ConnectReplyDefaults() *ConnectReply {
 		CollectErrors:          true,
 		CollectErrorEvents:     true,
 		CollectSpanEvents:      true,
+		MaxPayloadSizeInBytes:  maxPayloadSizeInBytes,
 		// No transactions should be sampled before the application is
 		// connected.
 		AdaptiveSampler: SampleNothing{},
 
 		SamplingTarget:                10,
 		SamplingTargetPeriodInSeconds: 60,
+
+		TraceIDGenerator: NewTraceIDGenerator(int64(time.Now().UnixNano())),
 	}
 }
 
 // CalculateApdexThreshold calculates the apdex threshold.
 func CalculateApdexThreshold(c *ConnectReply, txnName string) time.Duration {
 	if t, ok := c.KeyTxnApdex[txnName]; ok {
-		return floatSecondsToDuration(t)
+		return FloatSecondsToDuration(t)
 	}
-	return floatSecondsToDuration(c.ApdexThresholdSeconds)
+	return FloatSecondsToDuration(c.ApdexThresholdSeconds)
 }
 
 // CreateFullTxnName uses collector rules and the appropriate metric prefix to

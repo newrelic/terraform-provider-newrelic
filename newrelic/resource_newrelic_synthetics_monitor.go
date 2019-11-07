@@ -99,9 +99,9 @@ func buildSyntheticsMonitorStruct(d *schema.ResourceData) *synthetics.CreateMoni
 		monitor.URI = uri.(string)
 	}
 
-	locations_raw := d.Get("locations").(*schema.Set)
-	locations := make([]string, locations_raw.Len())
-	for i, v := range locations_raw.List() {
+	locationsRaw := d.Get("locations").(*schema.Set)
+	locations := make([]string, locationsRaw.Len())
+	for i, v := range locationsRaw.List() {
 		locations[i] = fmt.Sprint(v)
 	}
 
@@ -137,9 +137,9 @@ func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Update
 		monitor.URI = uri.(string)
 	}
 
-	locations_raw := d.Get("locations").(*schema.Set)
-	locations := make([]string, locations_raw.Len())
-	for i, v := range locations_raw.List() {
+	locationsRaw := d.Get("locations").(*schema.Set)
+	locations := make([]string, locationsRaw.Len())
+	for i, v := range locationsRaw.List() {
 		locations[i] = fmt.Sprint(v)
 	}
 

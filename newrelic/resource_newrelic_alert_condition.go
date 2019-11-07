@@ -104,7 +104,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(validAlertConditionTypes, false),
 			},
 			"entities": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 				Required: true,
 				MinItems: 1,
@@ -181,7 +181,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 }
 
 func buildAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertCondition {
-	entitySet := d.Get("entities").([]interface{})
+	entitySet := d.Get("entities").(*schema.Set).List()
 	entities := make([]string, len(entitySet))
 
 	for i, entity := range entitySet {
@@ -312,6 +312,15 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 
 	policyID := ids[0]
 	id := ids[1]
+
+	_, err = client.GetAlertPolicy(policyID)
+	if err != nil {
+		if err == newrelic.ErrNotFound {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
 
 	condition, err := client.GetAlertCondition(policyID, id)
 	if err != nil {

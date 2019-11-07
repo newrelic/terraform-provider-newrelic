@@ -5,6 +5,7 @@ example.tf
 terraform.tfplan
 terraform.tfstate
 bin/
+coverage/
 modules-dev/
 /pkg/
 website/.vagrant

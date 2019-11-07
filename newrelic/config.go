@@ -3,23 +3,26 @@ package newrelic
 import (
 	"log"
 
-	synthetics "github.com/dollarshaveclub/new-relic-synthetics-go"
 	"github.com/hashicorp/terraform/helper/logging"
+
+	synthetics "github.com/dollarshaveclub/new-relic-synthetics-go"
 	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
 // Config contains New Relic provider settings
 type Config struct {
-	APIKey string
-	APIURL string
+	APIKey    string
+	APIURL    string
+	userAgent string
 }
 
 // Client returns a new client for accessing New Relic
 func (c *Config) Client() (*newrelic.Client, error) {
 	nrConfig := newrelic.Config{
-		APIKey:  c.APIKey,
-		Debug:   logging.IsDebugOrHigher(),
-		BaseURL: c.APIURL,
+		APIKey:    c.APIKey,
+		BaseURL:   c.APIURL,
+		Debug:     logging.IsDebugOrHigher(),
+		UserAgent: c.userAgent,
 	}
 
 	client := newrelic.New(nrConfig)
@@ -32,9 +35,10 @@ func (c *Config) Client() (*newrelic.Client, error) {
 // ClientInfra returns a new client for accessing New Relic
 func (c *Config) ClientInfra() (*newrelic.InfraClient, error) {
 	nrConfig := newrelic.Config{
-		APIKey:  c.APIKey,
-		Debug:   logging.IsDebugOrHigher(),
-		BaseURL: c.APIURL,
+		APIKey:    c.APIKey,
+		BaseURL:   c.APIURL,
+		Debug:     logging.IsDebugOrHigher(),
+		UserAgent: c.userAgent,
 	}
 
 	client := newrelic.NewInfraClient(nrConfig)

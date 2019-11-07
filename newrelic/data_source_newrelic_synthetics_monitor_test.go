@@ -34,11 +34,11 @@ func testAccNewRelicSyntheticsDataSource(n string) resource.TestCheckFunc {
 		a := r.Primary.Attributes
 
 		if a["id"] == "" {
-			return fmt.Errorf("Expected to read synthetics monitor data from New Relic")
+			return fmt.Errorf("expected to read synthetics monitor data from New Relic")
 		}
 
 		if a["name"] != expectedMonitorName {
-			return fmt.Errorf("Expected the synthetics monitor name to be: %s, but got: %s", expectedMonitorName, a["name"])
+			return fmt.Errorf("expected the synthetics monitor name to be: %s, but got: %s", expectedMonitorName, a["name"])
 		}
 		return nil
 	}

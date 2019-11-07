@@ -55,7 +55,7 @@ The following arguments are supported:
 
 The `term` mapping supports the following arguments:
 
-  * `duration` - (Required) In minutes, must be: `1`, `2`, `3`, `4`, `5`, `10`, `15`, `30`, `60`, or `120`.
+  * `duration` - (Required) In minutes, must be in the range of `1` to `120`, inclusive.
   * `operator` - (Optional) `above`, `below`, or `equal`.  Defaults to `equal`.
   * `priority` - (Optional) `critical` or `warning`.  Defaults to `critical`.
   * `threshold` - (Required) Must be 0 or greater.
@@ -76,15 +76,12 @@ The following attributes are exported:
 
 ## Import
 
-Alert conditions can be imported using the `id` of the alert condition which is in the format of:
-
-`[AlertPolicyId]:[AlertConditionId]`
-
-e.g.
+Alert conditions can be imported using a composite ID of `<policy_id>:<condition_id>`, e.g.
 
 ```
-$ terraform import newrelic_nrql_alert_condition.main 789:12345
+$ terraform import newrelic_nrql_alert_condition.main 12345:67890
 ```
-The actual values for AlertPolicyId and AlertConditionId can be retreived from the the url when looking at the alert condition:
 
-https://alerts.newrelic.com/accounts/[AccountId]/policies/[AlertPolicyId]/conditions/[AlertConditionId]/edit?selectedField=thresholds
+The actual values for `policy_id` and `condition_id` can be retreived from the the URL when looking at the alert condition:
+
+https://alerts.newrelic.com/accounts/<account_id>/policies/<policy_id>/conditions/<condition_id>/edit?selectedField=thresholds

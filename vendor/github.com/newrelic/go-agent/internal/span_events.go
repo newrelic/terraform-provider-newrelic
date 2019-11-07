@@ -17,33 +17,20 @@ const (
 
 // SpanEvent represents a span event, necessary to support Distributed Tracing.
 type SpanEvent struct {
-	TraceID         string
-	GUID            string
-	ParentID        string
-	TransactionID   string
-	Sampled         bool
-	Priority        Priority
-	Timestamp       time.Time
-	Duration        time.Duration
-	Name            string
-	Category        spanCategory
-	IsEntrypoint    bool
-	DatastoreExtras *spanDatastoreExtras
-	ExternalExtras  *spanExternalExtras
-}
-
-type spanDatastoreExtras struct {
-	Component string
-	Statement string
-	Instance  string
-	Address   string
-	Hostname  string
-}
-
-type spanExternalExtras struct {
-	URL       string
-	Method    string
-	Component string
+	TraceID       string
+	GUID          string
+	ParentID      string
+	TransactionID string
+	Sampled       bool
+	Priority      Priority
+	Timestamp     time.Time
+	Duration      time.Duration
+	Name          string
+	Category      spanCategory
+	Component     string
+	Kind          string
+	IsEntrypoint  bool
+	Attributes    spanAttributeMap
 }
 
 // WriteJSON prepares JSON in the format expected by the collector.
@@ -67,42 +54,25 @@ func (e *SpanEvent) WriteJSON(buf *bytes.Buffer) {
 	if e.IsEntrypoint {
 		w.boolField("nr.entryPoint", true)
 	}
-	if ex := e.DatastoreExtras; nil != ex {
-		if "" != ex.Component {
-			w.stringField("component", ex.Component)
-		}
-		if "" != ex.Statement {
-			w.stringField("db.statement", ex.Statement)
-		}
-		if "" != ex.Instance {
-			w.stringField("db.instance", ex.Instance)
-		}
-		if "" != ex.Address {
-			w.stringField("peer.address", ex.Address)
-		}
-		if "" != ex.Hostname {
-			w.stringField("peer.hostname", ex.Hostname)
-		}
-		w.stringField("span.kind", "client")
+	if e.Component != "" {
+		w.stringField("component", e.Component)
 	}
-
-	if ex := e.ExternalExtras; nil != ex {
-		if "" != ex.URL {
-			w.stringField("http.url", ex.URL)
-		}
-		if "" != ex.Method {
-			w.stringField("http.method", ex.Method)
-		}
-		w.stringField("span.kind", "client")
-		w.stringField("component", "http")
+	if e.Kind != "" {
+		w.stringField("span.kind", e.Kind)
 	}
-
 	buf.WriteByte('}')
 	buf.WriteByte(',')
 	buf.WriteByte('{')
+	// user attributes section is unused
 	buf.WriteByte('}')
 	buf.WriteByte(',')
 	buf.WriteByte('{')
+
+	w = jsonFieldsWriter{buf: buf}
+	for key, val := range e.Attributes {
+		w.writerField(key.String(), val)
+	}
+
 	buf.WriteByte('}')
 	buf.WriteByte(']')
 }
@@ -117,12 +87,12 @@ func (e *SpanEvent) MarshalJSON() ([]byte, error) {
 }
 
 type spanEvents struct {
-	events *analyticsEvents
+	*analyticsEvents
 }
 
 func newSpanEvents(max int) *spanEvents {
 	return &spanEvents{
-		events: newAnalyticsEvents(max),
+		analyticsEvents: newAnalyticsEvents(max),
 	}
 }
 
@@ -135,7 +105,7 @@ func (events *spanEvents) addEvent(e *SpanEvent, cat *BetterCAT) {
 }
 
 func (events *spanEvents) addEventPopulated(e *SpanEvent) {
-	events.events.addEvent(analyticsEvent{priority: e.Priority, jsonWriter: e})
+	events.analyticsEvents.addEvent(analyticsEvent{priority: e.Priority, jsonWriter: e})
 }
 
 // MergeFromTransaction merges the span events from a transaction into the
@@ -161,15 +131,12 @@ func (events *spanEvents) MergeFromTransaction(txndata *TxnData) {
 }
 
 func (events *spanEvents) MergeIntoHarvest(h *Harvest) {
-	h.SpanEvents.events.mergeFailed(events.events)
+	h.SpanEvents.mergeFailed(events.analyticsEvents)
 }
 
 func (events *spanEvents) Data(agentRunID string, harvestStart time.Time) ([]byte, error) {
-	return events.events.CollectorJSON(agentRunID)
+	return events.CollectorJSON(agentRunID)
 }
-
-func (events *spanEvents) numSeen() float64  { return events.events.NumSeen() }
-func (events *spanEvents) numSaved() float64 { return events.events.NumSaved() }
 
 func (events *spanEvents) EndpointMethod() string {
 	return cmdSpanEvents
