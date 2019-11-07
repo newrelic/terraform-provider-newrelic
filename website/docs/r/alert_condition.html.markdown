@@ -27,7 +27,8 @@ resource "newrelic_alert_condition" "foo" {
   entities    = ["${data.newrelic_application.app.id}"]
   metric      = "apdex"
   runbook_url = "https://www.example.com"
-
+  condition_scope = "application"
+  
   term {
     duration      = 5
     operator      = "below"
