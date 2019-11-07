@@ -1,4 +1,4 @@
-## 1.6.0 (Unreleased)
+## 1.6.0 (November 07, 2019)
 
 BUG FIXES:
 
