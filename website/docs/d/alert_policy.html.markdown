@@ -6,7 +6,7 @@ description: |-
   Looks up the information about an alert policy in New Relic.
 ---
 
-# newrelic\_alert\_channel
+# newrelic\_alert\_policy
 
 Use this data source to get information about an specific alert policy in New Relic which already exists.
 

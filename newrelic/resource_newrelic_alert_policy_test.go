@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"testing"
 
+	"regexp"
+
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -41,7 +43,7 @@ func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicAlertPolicy_import(t *testing.T) {
+func TestAccNewRelicAlertPolicy(t *testing.T) {
 	resourceName := "newrelic_alert_policy.foo"
 	rName := acctest.RandString(5)
 
@@ -78,7 +80,7 @@ func testAccCheckNewRelicAlertPolicyDestroy(s *terraform.State) error {
 		_, err = client.GetAlertPolicy(int(id))
 
 		if err == nil {
-			return fmt.Errorf("Policy still exists")
+			return fmt.Errorf("policy still exists")
 		}
 
 	}
@@ -89,10 +91,10 @@ func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No policy ID is set")
+			return fmt.Errorf("no policy ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).Client
@@ -108,7 +110,7 @@ func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 		}
 
 		if strconv.Itoa(found.ID) != rs.Primary.ID {
-			return fmt.Errorf("Policy not found: %v - %v", rs.Primary.ID, found)
+			return fmt.Errorf("policy not found: %v - %v", rs.Primary.ID, found)
 		}
 
 		return nil
@@ -130,4 +132,55 @@ resource "newrelic_alert_policy" "foo" {
   incident_preference = "PER_CONDITION"
 }
 `, rName)
+}
+
+func TestErrorThrownUponPolicyNameGreaterThan64Char(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
+	rName := acctest.RandString(5)
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testErrorThrownUponPolicyNameGreaterThan64Char(rName),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func testErrorThrownUponPolicyNameGreaterThan64Char(resourceName string) string {
+	return fmt.Sprintf(`
+provider "newrelic" {
+  api_key = "foo"
+}
+resource "newrelic_alert_policy" "foo" {
+  name = "really-long-name-that-is-more-than-sixtyfour-characters-long-tf-test-%[1]s"
+}
+`, resourceName, testAccExpectedApplicationName)
+}
+
+func TestErrorThrownUponPolicyNameLessThan1Char(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testErrorThrownUponPolicyNameLessThan1Char(),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func testErrorThrownUponPolicyNameLessThan1Char() string {
+	return `
+provider "newrelic" {
+  api_key = "foo"
+}
+resource "newrelic_alert_policy" "foo" {
+  name = ""
+}
+`
 }

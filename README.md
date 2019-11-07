@@ -11,44 +11,38 @@ Requirements
 ------------
 
 -	[Terraform](https://www.terraform.io/downloads.html) 0.10.x
--	[Go](https://golang.org/doc/install) 1.8 (to build the provider plugin)
 
-Building The Provider
----------------------
+Using the provider
+----------------------
+To use a released provider in your Terraform environment, run `terraform init` and Terraform will automatically install the provider.
 
+If you're developing and building the provider, follow the instructions to [install it as a plugin](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin). After placing the provider your plugins directory, run `terraform init` to initialize it.
+
+Developing the Provider
+---------------------------
+
+If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your
+machine (version 1.13+ is *required*). You'll also need to correctly setup a
+[GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
+
+#### Building
 Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-newrelic`
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
+$ mkdir -p $GOPATH/src/github.com/terraform-providers;
+$ cd $GOPATH/src/github.com/terraform-providers
 $ git clone git@github.com:terraform-providers/terraform-provider-newrelic.git
 ```
 
-Enter the provider directory and build the provider
+Enter the provider directory and build the provider. To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
 ```sh
 $ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-newrelic
 $ make build
 ```
 
-Using the provider
-----------------------
-__TODO__: Fill in for each provider
-
-Developing the Provider
----------------------------
-
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.8+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
-
-To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
-
-```sh
-$ make bin
-...
-$ $GOPATH/bin/terraform-provider-newrelic
-...
-```
-
-In order to test the provider, you can simply run `make test`.
+#### Testing
+In order to test the provider, run `make test`. This will run the unit test suite.
 
 ```sh
 $ make test
@@ -56,19 +50,19 @@ $ make test
 
 In order to run the full suite of Acceptance tests, run `make testacc`.
 
-*Note:* Acceptance tests create real resources, and often cost money to run.
+*Note:* Acceptance tests *create real resources*, and often cost money to run. The environment variables `NEWRELIC_API_KEY` and `NEWRELIC_LICENSE_KEY` must also be set with your associated keys for acceptance tests to work properly.
 
 ```sh
 $ make testacc
 ```
 
-Updating Vendor Packages
-------------------------
+#### Updating Vendor Packages
 
-This repository uses the [govendor](https://github.com/kardianos/govendor) tool to manage dependencies found in the vendor folder. These dependencies are indexed in the `vendor/vendor.json` file.
+This repository uses [go modules](https://github.com/golang/go/wiki/Modules) to manage dependencies found in the vendor folder.
 
 To update a dependency:
 
-1. Ensure you have govendor installed: `go get -u github.com/kardianos/govendor`
+1. Ensure you have go 1.13.0 or later installed
 2. CD to the root of this repo (not into the vendor directory)
-3. Run `govendor fetch PATH/FOR/PACKAGE` where PATH/FOR/PACKAGE is the path property in `vendor.json` of the package you wish to update. Ex. `go get github.com/paultyng/go-newrelic/api`
+3. Run `go mod tidy` to ensure `go.mod` is up to date
+4. Run `go mod vendor` to store dependencies in the `vendor` directory

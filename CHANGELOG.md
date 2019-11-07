@@ -1,4 +1,22 @@
-## 1.6.0 (Unreleased)
+## 1.6.1 (Unreleased)
+## 1.6.0 (November 07, 2019)
+
+BUG FIXES:
+
+* Perpetual drift in alert conditions with multiple entities ([#137](https://github.com/terraform-providers/terraform-provider-newrelic/issues/137))
+
+IMPROVEMENTS
+
+* Add provider version to the User-Agent ([#189](https://github.com/terraform-providers/terraform-provider-newrelic/pull/189))
+* Add support for outlier NRQL alert conditions ([#141](https://github.com/terraform-providers/terraform-provider-newrelic/pull/141))
+* Update module paultyng/go-newrelic/v4 to v4.6.0 ([#187](https://github.com/terraform-providers/terraform-provider-newrelic/pull/187))
+
+## 1.5.2 (October 23, 2019)
+
+BUG FIXES:
+
+* `newrelic_nrql_alert_condition` modifies `duration` validation to match rest API's requirements ([#169](https://github.com/terraform-providers/terraform-provider-newrelic/issues/169))
+
 ## 1.5.1 (July 11, 2019)
 
 BUG FIXES:

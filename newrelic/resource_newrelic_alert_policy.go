@@ -21,8 +21,9 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringLenBetween(1, 64),
 			},
 			"incident_preference": {
 				Type:         schema.TypeString,
@@ -71,8 +72,8 @@ func resourceNewRelicAlertPolicyCreate(d *schema.ResourceData, meta interface{})
 }
 
 func unixMillis(msec int64) time.Time {
-	sec := int64(msec / 1000)
-	nsec := int64((msec - (sec * 1000)) * 1000000)
+	sec := msec / 1000
+	nsec := (msec - (sec * 1000)) * 1000000
 	// Note: this will default to local time
 	created := time.Unix(sec, nsec)
 	return created

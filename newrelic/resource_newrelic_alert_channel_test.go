@@ -49,7 +49,7 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicAlertChannel_import(t *testing.T) {
+func TestAccNewRelicAlertChannel(t *testing.T) {
 	resourceName := "newrelic_alert_channel.foo"
 	rName := acctest.RandString(5)
 	resource.Test(t, resource.TestCase{
@@ -85,7 +85,7 @@ func testAccCheckNewRelicAlertChannelDestroy(s *terraform.State) error {
 		_, err = client.GetAlertChannel(int(id))
 
 		if err == nil {
-			return fmt.Errorf("Alert channel still exists")
+			return fmt.Errorf("alert channel still exists")
 		}
 
 	}
@@ -96,10 +96,10 @@ func testAccCheckNewRelicAlertChannelExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No channel ID is set")
+			return fmt.Errorf("no channel ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).Client
@@ -115,7 +115,7 @@ func testAccCheckNewRelicAlertChannelExists(n string) resource.TestCheckFunc {
 		}
 
 		if strconv.Itoa(found.ID) != rs.Primary.ID {
-			return fmt.Errorf("Channel not found: %v - %v", rs.Primary.ID, found)
+			return fmt.Errorf("channel not found: %v - %v", rs.Primary.ID, found)
 		}
 
 		return nil

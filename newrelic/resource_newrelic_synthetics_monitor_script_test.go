@@ -44,10 +44,10 @@ func testAccCheckNewRelicSyntheticsMonitorScriptExists(n string) resource.TestCh
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No synthetics monitor script ID is set")
+			return fmt.Errorf("no synthetics monitor script ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).Synthetics
@@ -58,7 +58,7 @@ func testAccCheckNewRelicSyntheticsMonitorScriptExists(n string) resource.TestCh
 		}
 
 		if foundText != rs.Primary.Attributes["text"] {
-			return fmt.Errorf("Synthetics monitor script text does not match: %v \n\n %v", foundText, rs.Primary.Attributes["text"])
+			return fmt.Errorf("synthetics monitor script text does not match: %v \n\n %v", foundText, rs.Primary.Attributes["text"])
 		}
 
 		return nil
@@ -74,7 +74,7 @@ func testAccCheckNewRelicSyntheticsMonitorScriptDestroy(s *terraform.State) erro
 
 		foundText, err := client.GetMonitorScript(r.Primary.ID)
 		if err == nil || strings.TrimSpace(foundText) != "" {
-			return fmt.Errorf("Synthetics monitor script text still exists")
+			return fmt.Errorf("synthetics monitor script text still exists")
 		}
 	}
 	return nil

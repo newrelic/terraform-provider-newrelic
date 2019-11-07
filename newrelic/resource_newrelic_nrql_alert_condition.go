@@ -39,6 +39,14 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"expected_groups": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"ignore_overlap": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"nrql": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -57,7 +65,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 								valueString := val.(string)
 								v, err := strconv.Atoi(valueString)
 								if err != nil {
-									errs = append(errs, fmt.Errorf("Error converting string to int: %#v", err))
+									errs = append(errs, fmt.Errorf("error converting string to int: %#v", err))
 								}
 								if v < 1 || v > 20 {
 									errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
@@ -75,7 +83,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 						"duration": {
 							Type:         schema.TypeInt,
 							Required:     true,
-							ValidateFunc: intInSlice([]int{1, 2, 3, 4, 5, 10, 15, 30, 60, 120}),
+							ValidateFunc: validation.IntBetween(1, 120),
 						},
 						"operator": {
 							Type:         schema.TypeString,
@@ -103,6 +111,12 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				},
 				Required: true,
 				MinItems: 1,
+			},
+			"type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "static",
+				ValidateFunc: validation.StringInSlice([]string{"static", "outlier", "baseline"}, false),
 			},
 			"value_function": {
 				Type:         schema.TypeString,
@@ -142,6 +156,7 @@ func buildNrqlAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertNrqlCo
 
 	condition := newrelic.AlertNrqlCondition{
 		Name:          d.Get("name").(string),
+		Type:          d.Get("type").(string),
 		Enabled:       d.Get("enabled").(bool),
 		Terms:         terms,
 		PolicyID:      d.Get("policy_id").(int),
@@ -151,6 +166,14 @@ func buildNrqlAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertNrqlCo
 
 	if attr, ok := d.GetOk("runbook_url"); ok {
 		condition.RunbookURL = attr.(string)
+	}
+
+	if attr, ok := d.GetOkExists("ignore_overlap"); ok {
+		condition.IgnoreOverlap = attr.(bool)
+	}
+
+	if attr, ok := d.GetOk("expected_groups"); ok {
+		condition.ExpectedGroups = attr.(int)
 	}
 
 	return &condition
@@ -168,9 +191,14 @@ func readNrqlAlertConditionStruct(condition *newrelic.AlertNrqlCondition, d *sch
 	d.Set("name", condition.Name)
 	d.Set("runbook_url", condition.RunbookURL)
 	d.Set("enabled", condition.Enabled)
-	d.Set("value_function", condition.ValueFunction)
 	d.Set("nrql.0.Query", condition.Nrql.Query)
 	d.Set("nrql.0.SinceValue", condition.Nrql.SinceValue)
+
+	if condition.ValueFunction == "" {
+		d.Set("value_function", "single_value")
+	} else {
+		d.Set("value_function", condition.ValueFunction)
+	}
 
 	var terms []map[string]interface{}
 
@@ -220,6 +248,15 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 
 	policyID := ids[0]
 	id := ids[1]
+
+	_, err = client.GetAlertPolicy(policyID)
+	if err != nil {
+		if err == newrelic.ErrNotFound {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
 
 	condition, err := client.GetAlertNrqlCondition(policyID, id)
 	if err != nil {
