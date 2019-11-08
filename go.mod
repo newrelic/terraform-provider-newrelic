@@ -8,7 +8,6 @@ require (
 	github.com/hashicorp/terraform v0.12.13
 	github.com/hashicorp/terraform-plugin-sdk v1.3.0
 	github.com/newrelic/go-agent v2.15.0+incompatible
-	github.com/paultyng/go-newrelic v3.1.0+incompatible // indirect
 	github.com/paultyng/go-newrelic/v4 v4.6.0
 	github.com/ulikunitz/xz v0.5.6 // indirect
 	github.com/vmihailenco/msgpack v4.0.2+incompatible // indirect

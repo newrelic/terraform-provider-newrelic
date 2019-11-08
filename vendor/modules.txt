@@ -159,6 +159,7 @@ github.com/hashicorp/terraform/helper/didyoumean
 github.com/hashicorp/terraform/helper/hashcode
 github.com/hashicorp/terraform/helper/hilmapstructure
 github.com/hashicorp/terraform/helper/logging
+github.com/hashicorp/terraform/helper/pathorcontents
 github.com/hashicorp/terraform/helper/plugin
 github.com/hashicorp/terraform/helper/resource
 github.com/hashicorp/terraform/helper/schema
