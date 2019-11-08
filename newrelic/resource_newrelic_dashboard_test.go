@@ -337,6 +337,24 @@ func TestNewRelicDashboard_WidgetValidation(t *testing.T) {
 	}
 }
 
+func TestAccNewRelicDashboard_MissingDashboard(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicDashboardConfig(rName),
+			},
+			{
+				PreConfig: deleteDashboard(rName),
+				Config:    testAccCheckNewRelicDashboardConfig(rName),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicDashboardConfig(dashboardName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_dashboard" "foo" {
@@ -531,4 +549,18 @@ func testAccCheckNewRelicDashboardDestroy(s *terraform.State) error {
 
 	}
 	return nil
+}
+
+func deleteDashboard(title string) func() {
+	return func() {
+		client := testAccProvider.Meta().(*ProviderConfig).Client
+		dashboards, _ := client.ListDashboards()
+
+		for _, d := range dashboards {
+			if d.Title == title {
+				_ = client.DeleteDashboard(d.ID)
+				break
+			}
+		}
+	}
 }
