@@ -7,45 +7,45 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
-	newrelic "github.com/paultyng/go-newrelic/api"
+	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
 var alertChannelTypes = map[string][]string{
-	"campfire": []string{
+	"campfire": {
 		"room",
 		"subdomain",
 		"token",
 	},
-	"email": []string{
+	"email": {
 		"include_json_attachment",
 		"recipients",
 	},
-	"hipchat": []string{
+	"hipchat": {
 		"auth_token",
 		"base_url",
 		"room_id",
 	},
-	"opsgenie": []string{
+	"opsgenie": {
 		"api_key",
 		"recipients",
 		"tags",
 		"teams",
 	},
-	"pagerduty": []string{
+	"pagerduty": {
 		"service_key",
 	},
-	"slack": []string{
+	"slack": {
 		"channel",
 		"url",
 	},
-	"user": []string{
+	"user": {
 		"user_id",
 	},
-	"victorops": []string{
+	"victorops": {
 		"key",
 		"route_key",
 	},
-	"webhook": []string{
+	"webhook": {
 		"auth_password",
 		"auth_type",
 		"auth_username",
@@ -104,7 +104,7 @@ func buildAlertChannelStruct(d *schema.ResourceData) *newrelic.AlertChannel {
 }
 
 func resourceNewRelicAlertChannelCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	channel := buildAlertChannelStruct(d)
 
 	log.Printf("[INFO] Creating New Relic alert channel %s", channel.Name)
@@ -120,7 +120,7 @@ func resourceNewRelicAlertChannelCreate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 32)
 	if err != nil {
@@ -149,7 +149,7 @@ func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceNewRelicAlertChannelDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 32)
 	if err != nil {
@@ -161,8 +161,6 @@ func resourceNewRelicAlertChannelDelete(d *schema.ResourceData, meta interface{}
 	if err := client.DeleteAlertChannel(int(id)); err != nil {
 		return err
 	}
-
-	d.SetId("")
 
 	return nil
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	newrelic "github.com/paultyng/go-newrelic/api"
 )
 
 func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
@@ -18,7 +17,7 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertChannelConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertChannelExists("newrelic_alert_channel.foo"),
@@ -27,12 +26,12 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_channel.foo", "type", "email"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_channel.foo", "configuration.recipients", "foo@example.com"),
+						"newrelic_alert_channel.foo", "configuration.recipients", "terraform-acctest+foo@hashicorp.com"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_channel.foo", "configuration.include_json_attachment", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertChannelConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertChannelExists("newrelic_alert_channel.foo"),
@@ -41,7 +40,7 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_channel.foo", "type", "email"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_channel.foo", "configuration.recipients", "bar@example.com"),
+						"newrelic_alert_channel.foo", "configuration.recipients", "terraform-acctest+bar@hashicorp.com"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_channel.foo", "configuration.include_json_attachment", "0"),
 				),
@@ -50,8 +49,29 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicAlertChannel(t *testing.T) {
+	resourceName := "newrelic_alert_channel.foo"
+	rName := acctest.RandString(5)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicAlertChannelConfig(rName),
+			},
+
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicAlertChannelDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*newrelic.Client)
+	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_alert_channel" {
 			continue
@@ -65,7 +85,7 @@ func testAccCheckNewRelicAlertChannelDestroy(s *terraform.State) error {
 		_, err = client.GetAlertChannel(int(id))
 
 		if err == nil {
-			return fmt.Errorf("Alert channel still exists")
+			return fmt.Errorf("alert channel still exists")
 		}
 
 	}
@@ -76,13 +96,13 @@ func testAccCheckNewRelicAlertChannelExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No channel ID is set")
+			return fmt.Errorf("no channel ID is set")
 		}
 
-		client := testAccProvider.Meta().(*newrelic.Client)
+		client := testAccProvider.Meta().(*ProviderConfig).Client
 
 		id, err := strconv.ParseInt(rs.Primary.ID, 10, 32)
 		if err != nil {
@@ -95,7 +115,7 @@ func testAccCheckNewRelicAlertChannelExists(n string) resource.TestCheckFunc {
 		}
 
 		if strconv.Itoa(found.ID) != rs.Primary.ID {
-			return fmt.Errorf("Channel not found: %v - %v", rs.Primary.ID, found)
+			return fmt.Errorf("channel not found: %v - %v", rs.Primary.ID, found)
 		}
 
 		return nil
@@ -109,7 +129,7 @@ resource "newrelic_alert_channel" "foo" {
 	type = "email"
 	
 	configuration = {
-		recipients = "foo@example.com"
+		recipients = "terraform-acctest+foo@hashicorp.com"
 		include_json_attachment = "1"
 	}
 }
@@ -123,7 +143,7 @@ resource "newrelic_alert_channel" "foo" {
 	type = "email"
 	
 	configuration = {
-		recipients = "bar@example.com"
+		recipients = "terraform-acctest+bar@hashicorp.com"
 		include_json_attachment = "0"
 	}
 }

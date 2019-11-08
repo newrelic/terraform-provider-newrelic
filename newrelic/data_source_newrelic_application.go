@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	newrelic "github.com/paultyng/go-newrelic/api"
+	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
 func dataSourceNewRelicApplication() *schema.Resource {
@@ -33,7 +33,7 @@ func dataSourceNewRelicApplication() *schema.Resource {
 }
 
 func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	log.Printf("[INFO] Reading New Relic applications")
 
@@ -53,7 +53,7 @@ func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{})
 	}
 
 	if application == nil {
-		return fmt.Errorf("The name '%s' does not match any New Relic applications.", name)
+		return fmt.Errorf("the name '%s' does not match any New Relic applications", name)
 	}
 
 	d.SetId(strconv.Itoa(application.ID))

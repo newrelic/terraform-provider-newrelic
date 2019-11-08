@@ -27,7 +27,8 @@ resource "newrelic_alert_condition" "foo" {
   entities    = ["${data.newrelic_application.app.id}"]
   metric      = "apdex"
   runbook_url = "https://www.example.com"
-
+  condition_scope = "application"
+  
   term {
     duration      = 5
     operator      = "below"
@@ -43,7 +44,7 @@ resource "newrelic_alert_condition" "foo" {
 The following arguments are supported:
 
   * `policy_id` - (Required) The ID of the policy where this condition should be used.
-  * `name` - (Required) The title of the condition
+  * `name` - (Required) The title of the condition. Must be between 1 and 64 characters, inclusive.
   * `type` - (Required) The type of condition. One of: `apm_app_metric`, `apm_jvm_metric`, `apm_kt_metric`, `servers_metric`, `browser_metric`, `mobile_metric`
   * `entities` - (Required) The instance IDS associated with this condition.
   * `metric` - (Required) The metric field accepts parameters based on the `type` set.

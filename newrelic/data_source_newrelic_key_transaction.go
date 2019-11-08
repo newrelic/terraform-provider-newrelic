@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	newrelic "github.com/paultyng/go-newrelic/api"
+	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
 func dataSourceNewRelicKeyTransaction() *schema.Resource {
@@ -23,7 +23,7 @@ func dataSourceNewRelicKeyTransaction() *schema.Resource {
 }
 
 func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	log.Printf("[INFO] Reading New Relic key transactions")
 
@@ -35,7 +35,7 @@ func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface
 	var transaction *newrelic.KeyTransaction
 	name, ok := d.Get("name").(string)
 	if !ok {
-		return fmt.Errorf("The name '%v' is not a string.", name)
+		return fmt.Errorf("the name '%v' is not a string", name)
 	}
 
 	for _, t := range transactions {
@@ -46,7 +46,7 @@ func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface
 	}
 
 	if transaction == nil {
-		return fmt.Errorf("The name '%s' does not match any New Relic key transaction.", name)
+		return fmt.Errorf("the name '%s' does not match any New Relic key transaction", name)
 	}
 
 	d.SetId(strconv.Itoa(transaction.ID))

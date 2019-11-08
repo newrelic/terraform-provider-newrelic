@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 
-	newrelic "github.com/paultyng/go-newrelic/api"
+	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
 func resourceNewRelicDashboard() *schema.Resource {
@@ -48,6 +48,27 @@ func resourceNewRelicDashboard() *schema.Resource {
 				Default:      "editable_by_all",
 				ValidateFunc: validation.StringInSlice([]string{"read_only", "editable_by_owner", "editable_by_all", "all"}, false),
 			},
+			"filter": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"event_types": {
+							Type:     schema.TypeSet,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+							Required: true,
+							Set:      schema.HashString,
+						},
+						"attributes": {
+							Type:     schema.TypeSet,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+							Optional: true,
+							Set:      schema.HashString,
+						},
+					},
+				},
+			},
 			"widget": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -55,38 +76,38 @@ func resourceNewRelicDashboard() *schema.Resource {
 				Set:      resourceNewRelicDashboardWidgetsHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"title": &schema.Schema{
+						"title": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"visualization": &schema.Schema{
+						"visualization": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"width": &schema.Schema{
+						"width": {
 							Type:     schema.TypeInt,
 							Optional: true,
 							Default:  1,
 						},
-						"height": &schema.Schema{
+						"height": {
 							Type:     schema.TypeInt,
 							Optional: true,
 							Default:  1,
 						},
-						"row": &schema.Schema{
+						"row": {
 							Type:     schema.TypeInt,
 							Required: true,
 						},
-						"column": &schema.Schema{
+						"column": {
 							Type:     schema.TypeInt,
 							Required: true,
 						},
-						"notes": &schema.Schema{
+						"notes": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
 						// TODO: Move this to a set/map?
-						"nrql": &schema.Schema{
+						"nrql": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -132,6 +153,32 @@ func expandDashboard(d *schema.ResourceData) *newrelic.Dashboard {
 		Visibility: d.Get("visibility").(string),
 		Editable:   d.Get("editable").(string),
 	}
+
+	if f, ok := d.GetOk("filter"); ok {
+		filter := f.([]interface{})[0].(map[string]interface{})
+		dashboardFilter := newrelic.DashboardFilter{}
+
+		if v, ok := filter["attributes"]; ok {
+			attributes := v.(*schema.Set).List()
+			vs := make([]string, 0, len(attributes))
+			for _, a := range attributes {
+				vs = append(vs, a.(string))
+			}
+
+			dashboardFilter.Attributes = vs
+		}
+
+		if v, ok := filter["event_types"]; ok {
+			eventTypes := v.(*schema.Set).List()
+			vs := make([]string, 0, len(eventTypes))
+			for _, e := range eventTypes {
+				vs = append(vs, e.(string))
+			}
+			dashboardFilter.EventTypes = vs
+		}
+		dashboard.Filter = dashboardFilter
+	}
+
 	log.Printf("[INFO] widget schema: %+v\n", d.Get("widget"))
 
 	if w, ok := d.GetOk("widget"); ok {
@@ -179,7 +226,9 @@ func flattenDashboard(dashboard *newrelic.Dashboard, d *schema.ResourceData) err
 	d.Set("visibility", dashboard.Visibility)
 	d.Set("editable", dashboard.Editable)
 	d.Set("dashboard_url", dashboard.UIURL)
-
+	if filterErr := d.Set("filter", flattenFilter(&dashboard.Filter)); filterErr != nil {
+		return filterErr
+	}
 	widgetSet := schema.Set{
 		F: resourceNewRelicDashboardWidgetsHash,
 	}
@@ -208,7 +257,7 @@ func flattenDashboard(dashboard *newrelic.Dashboard, d *schema.ResourceData) err
 }
 
 func resourceNewRelicDashboardCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	dashboard := expandDashboard(d)
 	log.Printf("[INFO] Creating New Relic dashboard: %s", dashboard.Title)
 
@@ -223,7 +272,7 @@ func resourceNewRelicDashboardCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceNewRelicDashboardRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	log.Printf("[INFO] Reading New Relic dashboard %s", d.Id())
 
@@ -246,7 +295,7 @@ func resourceNewRelicDashboardRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceNewRelicDashboardUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	dashboard := expandDashboard(d)
 
 	id, err := strconv.Atoi(d.Id())
@@ -266,7 +315,7 @@ func resourceNewRelicDashboardUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceNewRelicDashboardDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -277,13 +326,36 @@ func resourceNewRelicDashboardDelete(d *schema.ResourceData, meta interface{}) e
 
 	if err := client.DeleteDashboard(id); err != nil {
 		if err == newrelic.ErrNotFound {
-			d.SetId("")
 			return nil
 		}
 		return err
 	}
 
-	d.SetId("")
-
 	return nil
+}
+
+func flattenFilter(f *newrelic.DashboardFilter) []interface{} {
+	if f == nil {
+		return nil
+	}
+
+	if len(f.Attributes) == 0 && len(f.EventTypes) == 0 {
+		return nil
+	}
+
+	filterResult := make(map[string]interface{})
+
+	attributesList := make([]interface{}, 0, len(f.Attributes))
+	for _, v := range f.Attributes {
+		attributesList = append(attributesList, v)
+	}
+
+	eventTypesList := make([]interface{}, 0, len(f.EventTypes))
+	for _, v := range f.EventTypes {
+		eventTypesList = append(eventTypesList, v)
+	}
+
+	filterResult["attributes"] = schema.NewSet(schema.HashString, attributesList)
+	filterResult["event_types"] = schema.NewSet(schema.HashString, eventTypesList)
+	return []interface{}{filterResult}
 }

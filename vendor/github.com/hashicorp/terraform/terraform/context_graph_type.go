@@ -1,6 +1,6 @@
 package terraform
 
-//go:generate stringer -type=GraphType context_graph_type.go
+//go:generate go run golang.org/x/tools/cmd/stringer -type=GraphType context_graph_type.go
 
 // GraphType is an enum of the type of graph to create with a Context.
 // The values of the constants may change so they shouldn't be depended on;
@@ -14,8 +14,8 @@ const (
 	GraphTypePlan
 	GraphTypePlanDestroy
 	GraphTypeApply
-	GraphTypeInput
 	GraphTypeValidate
+	GraphTypeEval // only visits in-memory elements such as variables, locals, and outputs.
 )
 
 // GraphTypeMap is a mapping of human-readable string to GraphType. This
@@ -23,10 +23,10 @@ const (
 // graph types.
 var GraphTypeMap = map[string]GraphType{
 	"apply":        GraphTypeApply,
-	"input":        GraphTypeInput,
 	"plan":         GraphTypePlan,
 	"plan-destroy": GraphTypePlanDestroy,
 	"refresh":      GraphTypeRefresh,
 	"legacy":       GraphTypeLegacy,
 	"validate":     GraphTypeValidate,
+	"eval":         GraphTypeEval,
 }

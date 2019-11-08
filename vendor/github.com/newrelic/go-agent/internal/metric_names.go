@@ -7,10 +7,11 @@ const (
 	webRollup        = "WebTransaction"
 	backgroundRollup = "OtherTransaction/all"
 
-	errorsAll        = "Errors/all"
-	errorsWeb        = "Errors/allWeb"
-	errorsBackground = "Errors/allOther"
-	errorsPrefix     = "Errors/"
+	// https://source.datanerd.us/agents/agent-specs/blob/master/Total-Time-Async.md
+	totalTimeWeb        = "WebTransactionTotalTime"
+	totalTimeBackground = "OtherTransactionTotalTime"
+
+	errorsPrefix = "Errors/"
 
 	// "HttpDispatcher" metric is used for the overview graph, and
 	// therefore should only be made for web transactions.
@@ -35,19 +36,11 @@ const (
 	errorEventsSeen = "Supportability/Events/TransactionError/Seen"
 	errorEventsSent = "Supportability/Events/TransactionError/Sent"
 
+	// https://source.datanerd.us/agents/agent-specs/blob/master/Span-Events.md
+	spanEventsSeen = "Supportability/SpanEvent/TotalEventsSeen"
+	spanEventsSent = "Supportability/SpanEvent/TotalEventsSent"
+
 	supportabilityDropped = "Supportability/MetricsDropped"
-
-	// source.datanerd.us/agents/agent-specs/blob/master/Datastore-Metrics-PORTED.md
-	datastoreAll   = "Datastore/all"
-	datastoreWeb   = "Datastore/allWeb"
-	datastoreOther = "Datastore/allOther"
-
-	// source.datanerd.us/agents/agent-specs/blob/master/APIs/external_segment.md
-	// source.datanerd.us/agents/agent-specs/blob/master/APIs/external_cat.md
-	// source.datanerd.us/agents/agent-specs/blob/master/Cross-Application-Tracing-PORTED.md
-	externalAll   = "External/all"
-	externalWeb   = "External/allWeb"
-	externalOther = "External/allOther"
 
 	// Runtime/System Metrics
 	memoryPhysical       = "Memory/Physical"
@@ -59,10 +52,106 @@ const (
 	runGoroutine         = "Go/Runtime/Goroutines"
 	gcPauseFraction      = "GC/System/Pause Fraction"
 	gcPauses             = "GC/System/Pauses"
+
+	// Distributed Tracing Supportability Metrics
+	supportTracingAcceptSuccess          = "Supportability/DistributedTrace/AcceptPayload/Success"
+	supportTracingAcceptException        = "Supportability/DistributedTrace/AcceptPayload/Exception"
+	supportTracingAcceptParseException   = "Supportability/DistributedTrace/AcceptPayload/ParseException"
+	supportTracingCreateBeforeAccept     = "Supportability/DistributedTrace/AcceptPayload/Ignored/CreateBeforeAccept"
+	supportTracingIgnoredMultiple        = "Supportability/DistributedTrace/AcceptPayload/Ignored/Multiple"
+	supportTracingIgnoredVersion         = "Supportability/DistributedTrace/AcceptPayload/Ignored/MajorVersion"
+	supportTracingAcceptUntrustedAccount = "Supportability/DistributedTrace/AcceptPayload/Ignored/UntrustedAccount"
+	supportTracingAcceptNull             = "Supportability/DistributedTrace/AcceptPayload/Ignored/Null"
+	supportTracingCreatePayloadSuccess   = "Supportability/DistributedTrace/CreatePayload/Success"
+	supportTracingCreatePayloadException = "Supportability/DistributedTrace/CreatePayload/Exception"
+
+	// Configurable event harvest supportability metrics
+	supportReportPeriod     = "Supportability/EventHarvest/ReportPeriod"
+	supportTxnEventLimit    = "Supportability/EventHarvest/AnalyticEventData/HarvestLimit"
+	supportCustomEventLimit = "Supportability/EventHarvest/CustomEventData/HarvestLimit"
+	supportErrorEventLimit  = "Supportability/EventHarvest/ErrorEventData/HarvestLimit"
+	supportSpanEventLimit   = "Supportability/EventHarvest/SpanEventData/HarvestLimit"
+)
+
+// DistributedTracingSupport is used to track distributed tracing activity for
+// supportability.
+type DistributedTracingSupport struct {
+	AcceptPayloadSuccess            bool // AcceptPayload was called successfully
+	AcceptPayloadException          bool // AcceptPayload had a generic exception
+	AcceptPayloadParseException     bool // AcceptPayload had a parsing exception
+	AcceptPayloadCreateBeforeAccept bool // AcceptPayload was ignored because CreatePayload had already been called
+	AcceptPayloadIgnoredMultiple    bool // AcceptPayload was ignored because AcceptPayload had already been called
+	AcceptPayloadIgnoredVersion     bool // AcceptPayload was ignored because the payload's major version was greater than the agent's
+	AcceptPayloadUntrustedAccount   bool // AcceptPayload was ignored because the payload was untrusted
+	AcceptPayloadNullPayload        bool // AcceptPayload was ignored because the payload was nil
+	CreatePayloadSuccess            bool // CreatePayload was called successfully
+	CreatePayloadException          bool // CreatePayload had a generic exception
+}
+
+type rollupMetric struct {
+	all      string
+	allWeb   string
+	allOther string
+}
+
+func newRollupMetric(s string) rollupMetric {
+	return rollupMetric{
+		all:      s + "all",
+		allWeb:   s + "allWeb",
+		allOther: s + "allOther",
+	}
+}
+
+func (r rollupMetric) webOrOther(isWeb bool) string {
+	if isWeb {
+		return r.allWeb
+	}
+	return r.allOther
+}
+
+var (
+	errorsRollupMetric = newRollupMetric("Errors/")
+
+	// source.datanerd.us/agents/agent-specs/blob/master/APIs/external_segment.md
+	// source.datanerd.us/agents/agent-specs/blob/master/APIs/external_cat.md
+	// source.datanerd.us/agents/agent-specs/blob/master/Cross-Application-Tracing-PORTED.md
+	externalRollupMetric = newRollupMetric("External/")
+
+	// source.datanerd.us/agents/agent-specs/blob/master/Datastore-Metrics-PORTED.md
+	datastoreRollupMetric = newRollupMetric("Datastore/")
+
+	datastoreProductMetricsCache = map[string]rollupMetric{
+		"Cassandra":     newRollupMetric("Datastore/Cassandra/"),
+		"Derby":         newRollupMetric("Datastore/Derby/"),
+		"Elasticsearch": newRollupMetric("Datastore/Elasticsearch/"),
+		"Firebird":      newRollupMetric("Datastore/Firebird/"),
+		"IBMDB2":        newRollupMetric("Datastore/IBMDB2/"),
+		"Informix":      newRollupMetric("Datastore/Informix/"),
+		"Memcached":     newRollupMetric("Datastore/Memcached/"),
+		"MongoDB":       newRollupMetric("Datastore/MongoDB/"),
+		"MySQL":         newRollupMetric("Datastore/MySQL/"),
+		"MSSQL":         newRollupMetric("Datastore/MSSQL/"),
+		"Oracle":        newRollupMetric("Datastore/Oracle/"),
+		"Postgres":      newRollupMetric("Datastore/Postgres/"),
+		"Redis":         newRollupMetric("Datastore/Redis/"),
+		"Solr":          newRollupMetric("Datastore/Solr/"),
+		"SQLite":        newRollupMetric("Datastore/SQLite/"),
+		"CouchDB":       newRollupMetric("Datastore/CouchDB/"),
+		"Riak":          newRollupMetric("Datastore/Riak/"),
+		"VoltDB":        newRollupMetric("Datastore/VoltDB/"),
+	}
 )
 
 func customSegmentMetric(s string) string {
 	return "Custom/" + s
+}
+
+// customMetric is used to construct custom metrics from the input given to
+// Application.RecordCustomMetric.  Note that the "Custom/" prefix helps prevent
+// collision with other agent metrics, but does not eliminate the possibility
+// since "Custom/" is also used for segments.
+func customMetric(customerInput string) string {
+	return "Custom/" + customerInput
 }
 
 // DatastoreMetricKey contains the fields by which datastore metrics are
@@ -77,14 +166,49 @@ type DatastoreMetricKey struct {
 
 type externalMetricKey struct {
 	Host                    string
+	Library                 string
+	Method                  string
 	ExternalCrossProcessID  string
 	ExternalTransactionName string
 }
 
-type datastoreProductMetrics struct {
-	All   string // Datastore/{datastore}/all
-	Web   string // Datastore/{datastore}/allWeb
-	Other string // Datastore/{datastore}/allOther
+// MessageMetricKey is the key to use for message segments.
+type MessageMetricKey struct {
+	Library         string
+	DestinationType string
+	Consumer        bool
+	DestinationName string
+	DestinationTemp bool
+}
+
+// Name returns the metric name value for this MessageMetricKey to be used for
+// scoped and unscoped metrics.
+//
+// Producers
+// MessageBroker/{Library}/{Destination Type}/{Action}/Named/{Destination Name}
+// MessageBroker/{Library}/{Destination Type}/{Action}/Temp
+//
+// Consumers
+// OtherTransaction/Message/{Library}/{DestinationType}/Named/{Destination Name}
+// OtherTransaction/Message/{Library}/{DestinationType}/Temp
+func (key MessageMetricKey) Name() string {
+	var destination string
+	if key.DestinationTemp {
+		destination = "Temp"
+	} else if key.DestinationName == "" {
+		destination = "Named/Unknown"
+	} else {
+		destination = "Named/" + key.DestinationName
+	}
+
+	if key.Consumer {
+		return "Message/" + key.Library +
+			"/" + key.DestinationType +
+			"/" + destination
+	}
+	return "MessageBroker/" + key.Library +
+		"/" + key.DestinationType +
+		"/Produce/" + destination
 }
 
 func datastoreScopedMetric(key DatastoreMetricKey) string {
@@ -94,16 +218,13 @@ func datastoreScopedMetric(key DatastoreMetricKey) string {
 	return datastoreOperationMetric(key)
 }
 
-func datastoreProductMetric(key DatastoreMetricKey) datastoreProductMetrics {
+// Datastore/{datastore}/*
+func datastoreProductMetric(key DatastoreMetricKey) rollupMetric {
 	d, ok := datastoreProductMetricsCache[key.Product]
 	if ok {
 		return d
 	}
-	return datastoreProductMetrics{
-		All:   "Datastore/" + key.Product + "/all",
-		Web:   "Datastore/" + key.Product + "/allWeb",
-		Other: "Datastore/" + key.Product + "/allOther",
-	}
+	return newRollupMetric("Datastore/" + key.Product + "/")
 }
 
 // Datastore/operation/{datastore}/{operation}
@@ -126,6 +247,19 @@ func datastoreInstanceMetric(key DatastoreMetricKey) string {
 		"/" + key.PortPathOrID
 }
 
+func (key externalMetricKey) scopedMetric() string {
+	if "" != key.ExternalCrossProcessID && "" != key.ExternalTransactionName {
+		return externalTransactionMetric(key)
+	}
+
+	if key.Method == "" {
+		// External/{host}/{library}
+		return "External/" + key.Host + "/" + key.Library
+	}
+	// External/{host}/{library}/{method}
+	return "External/" + key.Host + "/" + key.Library + "/" + key.Method
+}
+
 // External/{host}/all
 func externalHostMetric(key externalMetricKey) string {
 	return "External/" + key.Host + "/all"
@@ -142,4 +276,27 @@ func externalTransactionMetric(key externalMetricKey) string {
 	return "ExternalTransaction/" + key.Host +
 		"/" + key.ExternalCrossProcessID +
 		"/" + key.ExternalTransactionName
+}
+
+func callerFields(c payloadCaller) string {
+	return "/" + c.Type +
+		"/" + c.Account +
+		"/" + c.App +
+		"/" + c.TransportType +
+		"/"
+}
+
+// DurationByCaller/{type}/{account}/{app}/{transport}/*
+func durationByCallerMetric(c payloadCaller) rollupMetric {
+	return newRollupMetric("DurationByCaller" + callerFields(c))
+}
+
+// ErrorsByCaller/{type}/{account}/{app}/{transport}/*
+func errorsByCallerMetric(c payloadCaller) rollupMetric {
+	return newRollupMetric("ErrorsByCaller" + callerFields(c))
+}
+
+// TransportDuration/{type}/{account}/{app}/{transport}/*
+func transportDurationMetric(c payloadCaller) rollupMetric {
+	return newRollupMetric("TransportDuration" + callerFields(c))
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	newrelic "github.com/paultyng/go-newrelic/api"
 )
 
 func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
@@ -17,13 +16,13 @@ func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyChannelDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertPolicyChannelConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicAlertPolicyChannelConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
@@ -34,7 +33,7 @@ func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 }
 
 func testAccCheckNewRelicAlertPolicyChannelDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*newrelic.Client)
+	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_alert_policy_channel" {
 			continue
@@ -54,7 +53,7 @@ func testAccCheckNewRelicAlertPolicyChannelDestroy(s *terraform.State) error {
 		}
 
 		if exists {
-			return fmt.Errorf("Resource still exists")
+			return fmt.Errorf("resource still exists")
 		}
 	}
 	return nil
@@ -64,13 +63,13 @@ func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFu
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No resource ID is set")
+			return fmt.Errorf("no resource ID is set")
 		}
 
-		client := testAccProvider.Meta().(*newrelic.Client)
+		client := testAccProvider.Meta().(*ProviderConfig).Client
 
 		ids, err := parseIDs(rs.Primary.ID, 2)
 		if err != nil {
@@ -85,7 +84,7 @@ func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFu
 			return err
 		}
 		if !exists {
-			return fmt.Errorf("Resource not found: %v", rs.Primary.ID)
+			return fmt.Errorf("resource not found: %v", rs.Primary.ID)
 		}
 
 		return nil
@@ -103,7 +102,7 @@ resource "newrelic_alert_channel" "foo" {
 	type = "email"
 	
 	configuration = {
-		recipients = "foo@example.com"
+		recipients = "terraform-acctest+foo@hashicorp.com"
 		include_json_attachment = "1"
 	}
 }
@@ -117,7 +116,7 @@ resource "newrelic_alert_policy_channel" "foo" {
 
 func testAccCheckNewRelicAlertPolicyChannelConfigUpdated(rName string) string {
 	return fmt.Sprintf(`
-resource "newrelic_alert_policy" "bar" {
+resource "newrelic_alert_policy" "foo" {
   name = "tf-test-updated-%[1]s"
 }
 
@@ -126,13 +125,13 @@ resource "newrelic_alert_channel" "foo" {
 	type = "email"
 	
 	configuration = {
-		recipients = "bar@example.com"
+		recipients = "terraform-acctest+bar@hashicorp.com"
 		include_json_attachment = "0"
 	}
 }
 
 resource "newrelic_alert_policy_channel" "foo" {
-  policy_id  = "${newrelic_alert_policy.bar.id}"
+  policy_id  = "${newrelic_alert_policy.foo.id}"
   channel_id = "${newrelic_alert_channel.foo.id}"
 }
 `, rName)

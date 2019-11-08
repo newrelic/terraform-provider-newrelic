@@ -13,7 +13,7 @@ func TestAccNewRelicApplication_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccNewRelicApplicationConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicApplication("data.newrelic_application.app"),
@@ -29,11 +29,11 @@ func testAccNewRelicApplication(n string) resource.TestCheckFunc {
 		a := r.Primary.Attributes
 
 		if a["id"] == "" {
-			return fmt.Errorf("Expected to get an application from New Relic")
+			return fmt.Errorf("expected to get an application from New Relic")
 		}
 
 		if a["name"] != testAccExpectedApplicationName {
-			return fmt.Errorf("Expected the application name to be: %s, but got: %s", testAccExpectedApplicationName, a["name"])
+			return fmt.Errorf("expected the application name to be: %s, but got: %s", testAccExpectedApplicationName, a["name"])
 		}
 
 		return nil

@@ -72,3 +72,5 @@ The following arguments are supported:
 * `insecure_skip_verify` - (Optional) Trust self-signed SSL certificates. If omitted, the `NEWRELIC_API_SKIP_VERIFY` environment variable is used.
 * `cacert_file` - (Optional) A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEWRELIC_API_CACERT` environment variable can also be used.
 * `api_key` - (Required) Your New Relic API key. Can also use `NEWRELIC_API_KEY` environment variable.
+* `api_url` - (Optional) Possibility to change the API url (default is https://api.newrelic.com/v2). This is for instance relevant if the New Relic account is in the EU. The API url must then be set to https://api.eu.newrelic.com/v2. Can also use `NEWRELIC_API_URL` environment variable.
+* `infra_api_url` - (Optional) Possibility to change the Infra API url (default is https://infra-api.newrelic.com/v2). This is for instance relevant if the New Relic account is in the EU. The Infra API url must then be set to https://infra-api.eu.newrelic.com/v2. Can also use `NEWRELIC_INFRA_API_URL` environment variable.

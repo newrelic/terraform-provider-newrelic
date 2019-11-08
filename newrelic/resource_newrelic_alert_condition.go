@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
-	newrelic "github.com/paultyng/go-newrelic/api"
+	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
 var alertConditionTypes = map[string][]string{
@@ -89,8 +89,14 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				ForceNew: true,
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringLenBetween(1, 64),
+			},
+			"enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
 			},
 			"type": {
 				Type:         schema.TypeString,
@@ -98,7 +104,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(validAlertConditionTypes, false),
 			},
 			"entities": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 				Required: true,
 				MinItems: 1,
@@ -126,7 +132,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				Optional: true,
 			},
 			"term": {
-				Type: schema.TypeList,
+				Type: schema.TypeSet,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"duration": {
@@ -175,14 +181,14 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 }
 
 func buildAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertCondition {
-	entitySet := d.Get("entities").([]interface{})
+	entitySet := d.Get("entities").(*schema.Set).List()
 	entities := make([]string, len(entitySet))
 
 	for i, entity := range entitySet {
 		entities[i] = strconv.Itoa(entity.(int))
 	}
 
-	termSet := d.Get("term").([]interface{})
+	termSet := d.Get("term").(*schema.Set).List()
 	terms := make([]newrelic.AlertConditionTerm, len(termSet))
 
 	for i, termI := range termSet {
@@ -200,7 +206,7 @@ func buildAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertCondition 
 	condition := newrelic.AlertCondition{
 		Type:                d.Get("type").(string),
 		Name:                d.Get("name").(string),
-		Enabled:             true,
+		Enabled:             d.Get("enabled").(bool),
 		Entities:            entities,
 		Metric:              d.Get("metric").(string),
 		Terms:               terms,
@@ -245,6 +251,7 @@ func readAlertConditionStruct(condition *newrelic.AlertCondition, d *schema.Reso
 
 	d.Set("policy_id", policyID)
 	d.Set("name", condition.Name)
+	d.Set("enabled", condition.Enabled)
 	d.Set("type", condition.Type)
 	d.Set("metric", condition.Metric)
 	d.Set("runbook_url", condition.RunbookURL)
@@ -278,7 +285,7 @@ func readAlertConditionStruct(condition *newrelic.AlertCondition, d *schema.Reso
 }
 
 func resourceNewRelicAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	condition := buildAlertConditionStruct(d)
 
 	log.Printf("[INFO] Creating New Relic alert condition %s", condition.Name)
@@ -294,7 +301,7 @@ func resourceNewRelicAlertConditionCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	log.Printf("[INFO] Reading New Relic alert condition %s", d.Id())
 
@@ -305,6 +312,15 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 
 	policyID := ids[0]
 	id := ids[1]
+
+	_, err = client.GetAlertPolicy(policyID)
+	if err != nil {
+		if err == newrelic.ErrNotFound {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
 
 	condition, err := client.GetAlertCondition(policyID, id)
 	if err != nil {
@@ -320,7 +336,7 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 }
 
 func resourceNewRelicAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 	condition := buildAlertConditionStruct(d)
 
 	ids, err := parseIDs(d.Id(), 2)
@@ -345,7 +361,7 @@ func resourceNewRelicAlertConditionUpdate(d *schema.ResourceData, meta interface
 }
 
 func resourceNewRelicAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
@@ -360,8 +376,6 @@ func resourceNewRelicAlertConditionDelete(d *schema.ResourceData, meta interface
 	if err := client.DeleteAlertCondition(policyID, id); err != nil {
 		return err
 	}
-
-	d.SetId("")
 
 	return nil
 }

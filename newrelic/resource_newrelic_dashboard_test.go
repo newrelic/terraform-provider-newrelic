@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	newrelic "github.com/paultyng/go-newrelic/api"
 )
 
 func TestAccNewRelicDashboard_Basic(t *testing.T) {
@@ -20,7 +19,7 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
 		Steps: []resource.TestStep{
 			// Check exists
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicDashboardConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
@@ -49,7 +48,7 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 				),
 			},
 			// Update dashboard title
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicDashboardConfigUpdated(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
@@ -57,10 +56,22 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 						"newrelic_dashboard.foo", "title", rNameUpdated),
 					resource.TestCheckResourceAttr(
 						"newrelic_dashboard.foo", "widget.#", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "filter.#", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "filter.0.event_types.#", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "filter.0.event_types.4104882694", "Transaction"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "filter.0.attributes.#", "2"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "filter.0.attributes.2634578693", "appName"),
+					resource.TestCheckResourceAttr(
+						"newrelic_dashboard.foo", "filter.0.attributes.3755723101", "envName"),
 				),
 			},
 			// Add widget
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicDashboardWidgetConfigAdded(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
@@ -71,7 +82,7 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 				),
 			},
 			// Update widget
-			resource.TestStep{
+			{
 				Config: testAccCheckNewRelicDashboardWidgetConfigUpdated(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
@@ -87,8 +98,30 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicDashboard(t *testing.T) {
+	resourceName := "newrelic_dashboard.foo"
+	rName := acctest.RandString(5)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicDashboardConfig(rName),
+			},
+
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicDashboardDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*newrelic.Client)
+	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_dashboard" {
 			continue
@@ -102,7 +135,7 @@ func testAccCheckNewRelicDashboardDestroy(s *terraform.State) error {
 		_, err = client.GetDashboard(int(id))
 
 		if err == nil {
-			return fmt.Errorf("Dashboard still exists")
+			return fmt.Errorf("dashboard still exists")
 		}
 
 	}
@@ -113,13 +146,13 @@ func testAccCheckNewRelicDashboardExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No dashboard ID is set")
+			return fmt.Errorf("no dashboard ID is set")
 		}
 
-		client := testAccProvider.Meta().(*newrelic.Client)
+		client := testAccProvider.Meta().(*ProviderConfig).Client
 
 		id, err := strconv.ParseInt(rs.Primary.ID, 10, 32)
 		if err != nil {
@@ -132,7 +165,7 @@ func testAccCheckNewRelicDashboardExists(n string) resource.TestCheckFunc {
 		}
 
 		if strconv.Itoa(found.ID) != rs.Primary.ID {
-			return fmt.Errorf("Dashboard not found: %v - %v", rs.Primary.ID, found)
+			return fmt.Errorf("dashboard not found: %v - %v", rs.Primary.ID, found)
 		}
 
 		return nil
@@ -143,6 +176,15 @@ func testAccCheckNewRelicDashboardWidgetConfigAdded(rName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_dashboard" "foo" {
   title                = "%s"
+  filter {
+    event_types = [
+        "Transaction"
+    ]
+    attributes = [
+        "appName",
+        "envName"
+    ]
+  }
   widget {
     title         = "Average Transaction Duration"
     visualization = "faceted_line_chart"
@@ -165,6 +207,15 @@ func testAccCheckNewRelicDashboardWidgetConfigUpdated(rName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_dashboard" "foo" {
   title                = "%s"
+  filter {
+    event_types = [
+        "Transaction"
+    ]
+    attributes = [
+        "appName",
+        "envName"
+    ]
+  }
   widget {
     title         = "Average Transaction Duration"
     visualization = "faceted_line_chart"
@@ -187,6 +238,15 @@ func testAccCheckNewRelicDashboardConfigUpdated(rName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_dashboard" "foo" {
   title                = "%s"
+  filter {
+    event_types = [
+        "Transaction"
+    ]
+    attributes = [
+        "appName",
+        "envName"
+    ]
+  }
   widget {
     title         = "Average Transaction Duration"
     visualization = "faceted_line_chart"
@@ -202,6 +262,7 @@ func testAccCheckNewRelicDashboardConfig(rName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_dashboard" "foo" {
   title = "%s"
+
   widget {
     title         = "Average Transaction Duration"
     visualization = "faceted_line_chart"

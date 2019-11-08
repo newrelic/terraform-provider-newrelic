@@ -3,19 +3,16 @@ package config
 import (
 	"bytes"
 	"encoding/gob"
+	"errors"
+	"strconv"
 	"sync"
 
+	hcl2 "github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hil"
 	"github.com/hashicorp/hil/ast"
 	"github.com/mitchellh/copystructure"
 	"github.com/mitchellh/reflectwalk"
 )
-
-// UnknownVariableValue is a sentinel value that can be used
-// to denote that the value of a variable is unknown at this time.
-// RawConfig uses this information to build up data about
-// unknown keys.
-const UnknownVariableValue = "74D93920-ED26-11E3-AC10-0800200C9A66"
 
 // RawConfig is a structure that holds a piece of configuration
 // where the overall structure is unknown since it will be used
@@ -27,8 +24,24 @@ const UnknownVariableValue = "74D93920-ED26-11E3-AC10-0800200C9A66"
 // RawConfig supports a query-like interface to request
 // information from deep within the structure.
 type RawConfig struct {
-	Key            string
-	Raw            map[string]interface{}
+	Key string
+
+	// Only _one_ of Raw and Body may be populated at a time.
+	//
+	// In the normal case, Raw is populated and Body is nil.
+	//
+	// When the experimental HCL2 parsing mode is enabled, "Body"
+	// is populated and RawConfig serves only to transport the hcl2.Body
+	// through the rest of Terraform core so we can ultimately decode it
+	// once its schema is known.
+	//
+	// Once we transition to HCL2 as the primary representation, RawConfig
+	// should be removed altogether and the hcl2.Body should be passed
+	// around directly.
+
+	Raw  map[string]interface{}
+	Body hcl2.Body
+
 	Interpolations []ast.Node
 	Variables      map[string]InterpolatedVariable
 
@@ -46,6 +59,26 @@ func NewRawConfig(raw map[string]interface{}) (*RawConfig, error) {
 	}
 
 	return result, nil
+}
+
+// NewRawConfigHCL2 creates a new RawConfig that is serving as a capsule
+// to transport a hcl2.Body. In this mode, the publicly-readable struct
+// fields are not populated since all operations should instead be diverted
+// to the HCL2 body.
+//
+// For a RawConfig object constructed with this function, the only valid use
+// is to later retrieve the Body value and call its own methods. Callers
+// may choose to set and then later handle the Key field, in a manner
+// consistent with how it is handled by the Value method, but the Value
+// method itself must not be used.
+//
+// This is an experimental codepath to be used only by the HCL2 config loader.
+// Non-experimental parsing should _always_ use NewRawConfig to produce a
+// fully-functional RawConfig object.
+func NewRawConfigHCL2(body hcl2.Body) *RawConfig {
+	return &RawConfig{
+		Body: body,
+	}
 }
 
 // RawMap returns a copy of the RawConfig.Raw map.
@@ -68,6 +101,10 @@ func (r *RawConfig) Copy() *RawConfig {
 
 	r.lock.Lock()
 	defer r.lock.Unlock()
+
+	if r.Body != nil {
+		return NewRawConfigHCL2(r.Body)
+	}
 
 	newRaw := make(map[string]interface{})
 	for k, v := range r.Raw {
@@ -223,6 +260,13 @@ func (r *RawConfig) init() error {
 }
 
 func (r *RawConfig) interpolate(fn interpolationWalkerFunc) error {
+	if r.Body != nil {
+		// For RawConfigs created for the HCL2 experiement, callers must
+		// use the HCL2 Body API directly rather than interpolating via
+		// the RawConfig.
+		return errors.New("this feature is not yet supported under the HCL2 experiment")
+	}
+
 	config, err := copystructure.Copy(r.Raw)
 	if err != nil {
 		return err
@@ -266,6 +310,46 @@ func (r *RawConfig) merge(r2 *RawConfig) *RawConfig {
 	}
 
 	return result
+}
+
+// couldBeInteger is a helper that determines if the represented value could
+// result in an integer.
+//
+// This function only works for RawConfigs that have "Key" set, meaning that
+// a single result can be produced. Calling this function will overwrite
+// the Config and Value results to be a test value.
+//
+// This function is conservative. If there is some doubt about whether the
+// result could be an integer -- for example, if it depends on a variable
+// whose type we don't know yet -- it will still return true.
+func (r *RawConfig) couldBeInteger() bool {
+	if r.Key == "" {
+		// un-keyed RawConfigs can never produce numbers
+		return false
+	}
+	if r.Body == nil {
+		// Normal path: using the interpolator in this package
+		// Interpolate with a fixed number to verify that its a number.
+		r.interpolate(func(root ast.Node) (interface{}, error) {
+			// Execute the node but transform the AST so that it returns
+			// a fixed value of "5" for all interpolations.
+			result, err := hil.Eval(
+				hil.FixedValueTransform(
+					root, &ast.LiteralNode{Value: "5", Typex: ast.TypeString}),
+				nil)
+			if err != nil {
+				return "", err
+			}
+
+			return result.Value, nil
+		})
+		_, err := strconv.ParseInt(r.Value().(string), 0, 0)
+		return err == nil
+	} else {
+		// We briefly tried to gradually implement HCL2 support by adding a
+		// branch here, but that experiment was not successful.
+		panic("HCL2 experimental path no longer supported")
+	}
 }
 
 // UnknownKeys returns the keys of the configuration that are unknown
@@ -317,14 +401,14 @@ type gobRawConfig struct {
 }
 
 // langEvalConfig returns the evaluation configuration we use to execute.
+//
+// The interpolation functions are no longer available here, because this
+// codepath is no longer used. Instead, see ../lang/functions.go .
 func langEvalConfig(vs map[string]ast.Variable) *hil.EvalConfig {
 	funcMap := make(map[string]ast.Function)
 	for k, v := range Funcs() {
 		funcMap[k] = v
 	}
-	funcMap["lookup"] = interpolationFuncLookup(vs)
-	funcMap["keys"] = interpolationFuncKeys(vs)
-	funcMap["values"] = interpolationFuncValues(vs)
 
 	return &hil.EvalConfig{
 		GlobalScope: &ast.BasicScope{

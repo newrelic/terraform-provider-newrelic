@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	newrelic "github.com/paultyng/go-newrelic/api"
+	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
 func policyChannelExists(client *newrelic.Client, policyID int, channelID int) (bool, error) {
@@ -48,7 +48,7 @@ func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 }
 
 func resourceNewRelicAlertPolicyChannelCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	policyID := d.Get("policy_id").(int)
 	channelID := d.Get("channel_id").(int)
@@ -75,7 +75,7 @@ func resourceNewRelicAlertPolicyChannelCreate(d *schema.ResourceData, meta inter
 }
 
 func resourceNewRelicAlertPolicyChannelRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
@@ -104,7 +104,7 @@ func resourceNewRelicAlertPolicyChannelRead(d *schema.ResourceData, meta interfa
 }
 
 func resourceNewRelicAlertPolicyChannelDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*newrelic.Client)
+	client := meta.(*ProviderConfig).Client
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
@@ -130,8 +130,6 @@ func resourceNewRelicAlertPolicyChannelDelete(d *schema.ResourceData, meta inter
 			return err
 		}
 	}
-
-	d.SetId("")
 
 	return nil
 }
