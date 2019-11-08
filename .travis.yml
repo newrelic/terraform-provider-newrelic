@@ -1,17 +1,18 @@
 language: go
 go:
-  - "1.13.x"
+  - '1.13.x'
   - tip
 
 env:
   - GOFLAGS=-mod=vendor GO111MODULE=on
 
 script:
-- make test
-- make vet
-- make website-test
+  - echo "Travising..."
+  - make test
+  - make vet
+  - make website-test
 
 matrix:
   fast_finish: true
   allow_failures:
-  - go: tip
+    - go: tip
