@@ -49,7 +49,7 @@ func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{})
 	name := d.Get("name").(string)
 
 	for _, c := range policies {
-		if strings.Contains(strings.ToLower(c.Name), strings.ToLower(name)) {
+		if strings.EqualFold(c.Name, name) {
 			policy = &c
 			break
 		}
