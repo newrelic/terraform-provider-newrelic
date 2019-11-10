@@ -167,6 +167,8 @@ resource "newrelic_nrql_alert_condition" "foo" {
   name            = "tf-test-%[1]s"
   runbook_url     = "https://foo.example.com"
   enabled         = false
+  violation_time_limit_seconds = 3600
+
 
   term {
     duration      = 5
@@ -198,6 +200,8 @@ resource "newrelic_nrql_alert_condition" "foo" {
   name            = "tf-test-updated-%[1]s"
   runbook_url     = "https://bar.example.com"
   enabled         = false
+  violation_time_limit_seconds = 3600
+
 
   term {
     duration      = 10
@@ -226,6 +230,8 @@ resource "newrelic_nrql_alert_condition" "foo" {
   name            = "tf-test-updated-%[1]s"
   runbook_url     = "https://bar.example.com"
   enabled         = false
+  violation_time_limit_seconds = 7200
+
 
   term {
     duration      = 10

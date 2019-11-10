@@ -46,6 +46,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
+			"violation_time_limit_seconds": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "This limit will automatically force-close a long-lasting violation after the number of hours you select",
+			},
 			"nrql": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -154,13 +159,14 @@ func buildNrqlAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertNrqlCo
 	}
 
 	condition := newrelic.AlertNrqlCondition{
-		Name:          d.Get("name").(string),
-		Type:          d.Get("type").(string),
-		Enabled:       d.Get("enabled").(bool),
-		Terms:         terms,
-		PolicyID:      d.Get("policy_id").(int),
-		Nrql:          query,
-		ValueFunction: d.Get("value_function").(string),
+		Name:                d.Get("name").(string),
+		Type:                d.Get("type").(string),
+		Enabled:             d.Get("enabled").(bool),
+		Terms:               terms,
+		PolicyID:            d.Get("policy_id").(int),
+		Nrql:                query,
+		ValueFunction:       d.Get("value_function").(string),
+		ViolationCloseTimer: d.Get("violation_time_limit_seconds").(int),
 	}
 
 	if attr, ok := d.GetOk("runbook_url"); ok {
@@ -169,6 +175,10 @@ func buildNrqlAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertNrqlCo
 
 	if attr, ok := d.GetOkExists("ignore_overlap"); ok {
 		condition.IgnoreOverlap = attr.(bool)
+	}
+
+	if attr, ok := d.GetOkExists("violation_time_limit_seconds"); ok {
+		condition.ViolationCloseTimer = attr.(int)
 	}
 
 	if attr, ok := d.GetOk("expected_groups"); ok {
