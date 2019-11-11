@@ -34,17 +34,17 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_dashboard.foo", "widget.#", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.754238675.title", "Average Transaction Duration"),
+						"newrelic_dashboard.foo", "widget.0.title", "Average Transaction Duration"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.754238675.height", "1"),
+						"newrelic_dashboard.foo", "widget.0.height", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.754238675.width", "1"),
+						"newrelic_dashboard.foo", "widget.0.width", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.754238675.row", "1"),
+						"newrelic_dashboard.foo", "widget.0.row", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.754238675.column", "1"),
+						"newrelic_dashboard.foo", "widget.0.column", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.754238675.visualization", "faceted_line_chart"),
+						"newrelic_dashboard.foo", "widget.0.visualization", "faceted_line_chart"),
 				),
 			},
 			// Update dashboard title
@@ -91,7 +91,7 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_dashboard.foo", "widget.#", "2"),
 					resource.TestCheckResourceAttr(
-						"newrelic_dashboard.foo", "widget.3380029573.nrql", "SELECT PERCENTILE(duration, 50) from Transaction FACET appName TIMESERIES auto"),
+						"newrelic_dashboard.foo", "widget.0.nrql", "SELECT PERCENTILE(duration, 50) from Transaction FACET appName TIMESERIES auto"),
 				),
 			},
 		},
