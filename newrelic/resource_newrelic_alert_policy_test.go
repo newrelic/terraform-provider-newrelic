@@ -134,34 +134,8 @@ resource "newrelic_alert_policy" "foo" {
 `, rName)
 }
 
-func TestErrorThrownUponPolicyNameGreaterThan64Char(t *testing.T) {
-	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
-	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config:      testErrorThrownUponPolicyNameGreaterThan64Char(rName),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
-}
-
-func testErrorThrownUponPolicyNameGreaterThan64Char(resourceName string) string {
-	return fmt.Sprintf(`
-provider "newrelic" {
-  api_key = "foo"
-}
-resource "newrelic_alert_policy" "foo" {
-  name = "really-long-name-that-is-more-than-sixtyfour-characters-long-tf-test-%[1]s"
-}
-`, resourceName, testAccExpectedApplicationName)
-}
-
 func TestErrorThrownUponPolicyNameLessThan1Char(t *testing.T) {
-	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
+	expectedErrorMsg, _ := regexp.Compile(`name must not be empty`)
 	resource.Test(t, resource.TestCase{
 		IsUnitTest: true,
 		Providers:  testAccProviders,

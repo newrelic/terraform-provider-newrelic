@@ -20,7 +20,7 @@ resource "newrelic_alert_policy" "foo" {
 
 The following arguments are supported:
 
-  * `name` - (Required) The name of the policy.   Must be between 1 and 64 characters, inclusive.
+  * `name` - (Required) The name of the policy.
   * `incident_preference` - (Optional) The rollup strategy for the policy.  Options include: `PER_POLICY`, `PER_CONDITION`, or `PER_CONDITION_AND_TARGET`.  The default is `PER_POLICY`.
 
 ## Attributes Reference
