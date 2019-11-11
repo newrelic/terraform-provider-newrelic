@@ -286,7 +286,7 @@ resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name            = "tf-test-updated-%[1]s"
-  enabled         = true  
+  enabled         = true
   type            = "apm_app_metric"
   entities        = ["${data.newrelic_application.app.id}"]
   metric          = "apdex"
@@ -318,7 +318,7 @@ resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name            = "tf-test-%[1]s"
-  enabled         = false  
+  enabled         = false
   type            = "apm_app_metric"
   entities        = ["${data.newrelic_application.app.id}"]
   metric          = "apdex"
@@ -396,6 +396,90 @@ resource "newrelic_alert_condition" "foo" {
   condition_scope = "application"
   term {
     duration      = 5
+    operator      = "below"
+    priority      = "critical"
+    threshold     = "0.75"
+    time_function = "all"
+  }
+}
+`
+}
+
+func TestErrorThrownUponConditionTermDurationGreaterThan120(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testErrorThrownUponConditionTermDurationGreaterThan120(),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func testErrorThrownUponConditionTermDurationGreaterThan120() string {
+	return `
+provider "newrelic" {
+  api_key = "foo"
+}
+
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+resource "newrelic_alert_condition" "foo" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+  name            = "test-term-duration"
+  type            = "apm_app_metric"
+  entities        = ["12345"]
+  metric          = "apdex"
+  runbook_url     = "https://foo.example.com"
+  condition_scope = "application"
+  term {
+    duration      = 121
+    operator      = "below"
+    priority      = "critical"
+    threshold     = "0.75"
+    time_function = "all"
+  }
+}
+`
+}
+
+func TestErrorThrownUponConditionTermDurationLessThan5(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testErrorThrownUponConditionTermDurationLessThan5(),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func testErrorThrownUponConditionTermDurationLessThan5() string {
+	return `
+provider "newrelic" {
+  api_key = "foo"
+}
+
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+resource "newrelic_alert_condition" "foo" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+  name            = "test-term-duration"
+  type            = "apm_app_metric"
+  entities        = ["12345"]
+  metric          = "apdex"
+  runbook_url     = "https://foo.example.com"
+  condition_scope = "application"
+  term {
+    duration      = 4
     operator      = "below"
     priority      = "critical"
     threshold     = "0.75"

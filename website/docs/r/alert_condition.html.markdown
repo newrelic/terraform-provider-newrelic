@@ -28,7 +28,7 @@ resource "newrelic_alert_condition" "foo" {
   metric      = "apdex"
   runbook_url = "https://www.example.com"
   condition_scope = "application"
-  
+
   term {
     duration      = 5
     operator      = "below"
@@ -60,7 +60,7 @@ The following arguments are supported:
 
 The `term` mapping supports the following arguments:
 
-  * `duration` - (Required) In minutes, must be: `5`, `10`, `15`, `30`, `60`, or `120`.
+  * `duration` - (Required) In minutes, must be in the range of `5` to `120`, inclusive.
   * `operator` - (Optional) `above`, `below`, or `equal`.  Defaults to `equal`.
   * `priority` - (Optional) `critical` or `warning`.  Defaults to `critical`.
   * `threshold` - (Required) Must be 0 or greater.
