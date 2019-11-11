@@ -138,7 +138,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 						"duration": {
 							Type:         schema.TypeInt,
 							Required:     true,
-							ValidateFunc: intInSlice([]int{5, 10, 15, 30, 60, 120}),
+							ValidateFunc: validation.IntBetween(5, 120),
 						},
 						"operator": {
 							Type:         schema.TypeString,
