@@ -46,7 +46,7 @@ func dataSourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}
 	name := d.Get("name").(string)
 
 	for _, c := range channels {
-		if strings.Contains(strings.ToLower(c.Name), strings.ToLower(name)) {
+		if strings.EqualFold(c.Name, name) {
 			channel = &c
 			break
 		}
