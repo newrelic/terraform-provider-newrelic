@@ -114,6 +114,21 @@ func resourceNewRelicDashboard() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
+						"threshold_red": {
+							Type:         schema.TypeFloat,
+							Optional:     true,
+							ValidateFunc: Float64AtLeast(0),
+						},
+						"threshold_yellow": {
+							Type:         schema.TypeFloat,
+							Optional:     true,
+							ValidateFunc: Float64AtLeast(0),
+						},
+						"drilldown_dashboard_id": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							ValidateFunc: validation.IntAtLeast(1),
+						},
 						"duration": {
 							Type:         schema.TypeInt,
 							Optional:     true,
