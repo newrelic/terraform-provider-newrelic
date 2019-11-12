@@ -46,6 +46,7 @@ func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{})
 	}
 
 	var policy *newrelic.AlertPolicy
+
 	name := d.Get("name").(string)
 
 	for _, c := range policies {

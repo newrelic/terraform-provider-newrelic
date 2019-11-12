@@ -57,7 +57,7 @@ func testAccCheckNewRelicAlertPolicyDataSource(n string) resource.TestCheckFunc 
 			return fmt.Errorf("expected to get an alert policy from New Relic")
 		}
 
-		if strings.Contains(strings.ToLower(testAccExpectedAlertPolicyName), strings.ToLower(a["name"])) {
+		if strings.EqualFold(testAccExpectedAlertPolicyName, a["name"]) {
 			return fmt.Errorf("expected the alert policy name to be: %s, but got: %s", testAccExpectedAlertPolicyName, a["name"])
 		}
 
