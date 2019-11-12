@@ -53,7 +53,7 @@ func Float64AtLeast(min float64) schema.SchemaValidateFunc {
 		}
 
 		if v < min {
-			es = append(es, fmt.Errorf("expected %s to be at least (%d), got %d", k, min, v))
+			es = append(es, fmt.Errorf("expected %s to be at least (%f), got %f", k, min, v))
 			return
 		}
 
