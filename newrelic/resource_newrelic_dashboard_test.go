@@ -12,7 +12,7 @@ import (
 
 func TestAccNewRelicDashboard_Basic(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
@@ -29,6 +29,14 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "icon", "bar-chart"),
 					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "visibility", "all"),
 					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.#", "4"),
+
+					// filters
+					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.#", "1"),
+					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.event_types.#", "1"),
+					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.event_types.4104882694", "Transaction"),
+					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.attributes.#", "2"),
+					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.attributes.2634578693", "appName"),
+					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.attributes.3755723101", "envName"),
 
 					// billboard widget
 					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.2779494853.title", "Transaction Count"),
@@ -96,7 +104,7 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 
 func TestAccNewRelicDashboard_NoDiffOnReapply(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
@@ -116,13 +124,17 @@ func TestAccNewRelicDashboard_UpdateDashboard(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	rNameUpdated := fmt.Sprintf("%s-updated", rName)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckNewRelicDashboardConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
+					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "title", rName),
+				),
 			},
 			{
 				Config: testAccCheckNewRelicDashboardConfig(rNameUpdated),
@@ -130,12 +142,6 @@ func TestAccNewRelicDashboard_UpdateDashboard(t *testing.T) {
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
 					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "title", rNameUpdated),
 					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.#", "4"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.#", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.event_types.#", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.event_types.4104882694", "Transaction"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.attributes.#", "2"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.attributes.2634578693", "appName"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.attributes.3755723101", "envName"),
 				),
 			},
 		},
@@ -145,7 +151,7 @@ func TestAccNewRelicDashboard_UpdateDashboard(t *testing.T) {
 func TestAccNewRelicDashboard_AddWidget(t *testing.T) {
 	rDashboardName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	widgetName := "Page Views"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
@@ -175,16 +181,23 @@ func TestAccNewRelicDashboard_UpdateWidget(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicDashboardConfig(rName),
-			},
-			{
 				Config: testAccCheckNewRelicDashboardWidgetConfigAdded(rName, widgetName),
 				Check: resource.ComposeTestCheckFunc(
 					// logState(t),
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "title", widgetNameUpdated),
+					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "title", rName),
 					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.#", "5"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.2318477184.title", "Page Views Updated"),
+					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.3349214025.title", widgetName),
+				),
+			},
+			{
+				Config: testAccCheckNewRelicDashboardWidgetConfigAdded(rName, widgetNameUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					// logState(t),
+					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
+					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "title", rName),
+					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.#", "5"),
+					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.2318477184.title", widgetNameUpdated),
 				),
 			},
 		},
