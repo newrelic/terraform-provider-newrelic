@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
 
@@ -51,7 +50,6 @@ func expandDashboard(d *schema.ResourceData) (*newrelic.Dashboard, error) {
 		dashboard.Filter = dashboardFilter
 	}
 
-	log.Printf("[INFO] widget schema: %+v\n", d.Get("widget"))
 	if widgets, ok := d.GetOk("widget"); ok && widgets.(*schema.Set).Len() > 0 {
 		expandedWidgets, err := expandWidgets(widgets.(*schema.Set).List())
 
@@ -114,30 +112,28 @@ func validateWidgetData(cfg map[string]interface{}) error {
 
 	switch visualization {
 	case "billboard", "gauge", "billboard_comparison":
-		if _, ok := cfg["nrql"]; !ok {
+		if nrql, ok := cfg["nrql"]; !ok || nrql.(string) == "" {
 			return fmt.Errorf("nrql is required for %s visualization", visualization)
 		}
-
-		if t, ok := cfg["threshold"]; !ok || len(t.([]interface{})) == 0 {
-			return fmt.Errorf("threshold is required for %s visualization", visualization)
+		if red, ok := cfg["threshold_red"]; !ok || red.(float64) == 0 {
+			return fmt.Errorf("threshold_red is required for %s visualization", visualization)
 		}
 	case "facet_bar_chart", "faceted_line_chart", "facet_pie_chart", "facet_table", "faceted_area_chart", "heatmap":
-		if _, ok := cfg["nrql"]; !ok {
+		if nrql, ok := cfg["nrql"]; !ok || nrql.(string) == "" {
 			return fmt.Errorf("nrql is required for %s visualization", visualization)
 		}
 	case "attribute_sheet", "single_event", "histogram", "funnel", "raw_json", "event_feed", "event_table", "uniques_list", "line_chart", "comparison_line_chart":
-		if _, ok := cfg["nrql"]; !ok {
+		if nrql, ok := cfg["nrql"]; !ok || nrql.(string) == "" {
 			return fmt.Errorf("nrql is required for %s visualization", visualization)
 		}
 	case "markdown":
-		if _, ok := cfg["source"]; !ok {
+		if source, ok := cfg["source"]; !ok || source.(string) == "" {
 			return fmt.Errorf("source is required for %s visualization", visualization)
 		}
 	case "metric_line_chart":
 		if _, ok := cfg["metric"]; !ok {
 			return fmt.Errorf("metrics is required for %s visualization", visualization)
 		}
-
 		if _, ok := cfg["entity_ids"]; !ok {
 			return fmt.Errorf("entity_ids is required for %s visualization", visualization)
 		}
@@ -264,25 +260,23 @@ func expandWidgetPresentation(cfg map[string]interface{}) newrelic.DashboardWidg
 		Notes: cfg["notes"].(string),
 	}
 
-	if threshold, ok := cfg["threshold"]; ok && len(threshold.([]interface{})) > 0 {
-		widgetPresentation.Threshold = expandWidgetThreshold(threshold.([]interface{})[0].(map[string]interface{}))
+	if d, ok := cfg["drilldown_dashboard_id"]; ok {
+		widgetPresentation.DrilldownDashboardID = d.(int)
 	}
 
-	return widgetPresentation
-}
-
-func expandWidgetThreshold(cfg map[string]interface{}) *newrelic.DashboardWidgetThreshold {
 	widgetThreshold := &newrelic.DashboardWidgetThreshold{}
 
-	if red, ok := cfg["red"]; ok {
+	if red, ok := cfg["threshold_red"]; ok {
 		widgetThreshold.Red = red.(float64)
 	}
 
-	if yellow, ok := cfg["yellow"]; ok {
+	if yellow, ok := cfg["threshold_yellow"]; ok {
 		widgetThreshold.Yellow = yellow.(float64)
 	}
 
-	return widgetThreshold
+	widgetPresentation.Threshold = widgetThreshold
+
+	return widgetPresentation
 }
 
 func expandWidgetLayout(cfg map[string]interface{}) (*newrelic.DashboardWidgetLayout, error) {
@@ -331,6 +325,22 @@ func flattenWidgets(in *[]newrelic.DashboardWidget) []map[string]interface{} {
 		m["column"] = w.Layout.Column
 		m["width"] = w.Layout.Width
 		m["height"] = w.Layout.Height
+
+		if w.Presentation.DrilldownDashboardID > 0 {
+			m["drilldown_dashboard_id"] = w.Presentation.DrilldownDashboardID
+		}
+
+		if w.Presentation.Threshold != nil {
+			threshold := w.Presentation.Threshold
+
+			if threshold.Red > 0 {
+				m["threshold_red"] = threshold.Red
+			}
+
+			if threshold.Yellow > 0 {
+				m["threshold_yellow"] = threshold.Yellow
+			}
+		}
 
 		if w.Data != nil && len(w.Data) > 0 {
 			data := w.Data[0]
