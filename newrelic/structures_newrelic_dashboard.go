@@ -132,7 +132,7 @@ func validateWidgetData(cfg map[string]interface{}) error {
 		}
 	case "metric_line_chart":
 		if _, ok := cfg["metric"]; !ok {
-			return fmt.Errorf("metrics is required for %s visualization", visualization)
+			return fmt.Errorf("metric is required for %s visualization", visualization)
 		}
 		if _, ok := cfg["entity_ids"]; !ok {
 			return fmt.Errorf("entity_ids is required for %s visualization", visualization)
@@ -257,7 +257,10 @@ func expandWidgetDataCompareWithPresentation(cfg map[string]interface{}) newreli
 func expandWidgetPresentation(cfg map[string]interface{}) newrelic.DashboardWidgetPresentation {
 	widgetPresentation := newrelic.DashboardWidgetPresentation{
 		Title: cfg["title"].(string),
-		Notes: cfg["notes"].(string),
+	}
+
+	if n, ok := cfg["notes"]; ok {
+		widgetPresentation.Notes = n.(string)
 	}
 
 	if d, ok := cfg["drilldown_dashboard_id"]; ok {

@@ -204,6 +204,122 @@ func TestAccNewRelicDashboard_UpdateWidget(t *testing.T) {
 	})
 }
 
+func TestNewRelicDashboard_WidgetValidation(t *testing.T) {
+	cases := []struct {
+		cfg            map[string]interface{}
+		visualizations []string
+		condition      string
+	}{
+		{
+			condition: "nrql field missing",
+			visualizations: []string{
+				"attribute_sheet",
+				"billboard",
+				"billboard_comparison",
+				"comparison_line_chart",
+				"event_feed",
+				"event_table",
+				"facet_bar_chart",
+				"facet_pie_chart",
+				"facet_table",
+				"faceted_area_chart",
+				"faceted_line_chart",
+				"funnel",
+				"gauge",
+				"heatmap",
+				"histogram",
+				"line_chart",
+				"raw_json",
+				"single_event",
+				"uniques_list",
+			},
+			cfg: map[string]interface{}{
+				"title":         "title",
+				"widget_id":     1234,
+				"threshold_red": 1,
+				"row":           1,
+				"column":        1,
+				"width":         1,
+				"height":        1,
+			},
+		},
+		{
+			condition: "threshold_red field missing",
+			visualizations: []string{
+				"billboard",
+				"billboard_comparison",
+				"gauge",
+			},
+			cfg: map[string]interface{}{
+				"title":     "title",
+				"nrql":      "nrql",
+				"widget_id": 1234,
+				"row":       1,
+				"column":    1,
+				"width":     1,
+				"height":    1,
+			},
+		},
+		{
+			condition: "source field missing",
+			visualizations: []string{
+				"markdown",
+			},
+			cfg: map[string]interface{}{
+				"title":     "title",
+				"widget_id": 1234,
+				"row":       1,
+				"column":    1,
+				"width":     1,
+				"height":    1,
+			},
+		},
+		{
+			condition: "metric field missing",
+			visualizations: []string{
+				"metric_line_chart",
+			},
+			cfg: map[string]interface{}{
+				"title":      "title",
+				"widget_id":  1234,
+				"entity_ids": []int{1234},
+				"row":        1,
+				"column":     1,
+				"width":      1,
+				"height":     1,
+			},
+		},
+		{
+			condition: "entity_ids field missing",
+			visualizations: []string{
+				"application_breakdown",
+				"metric_line_chart",
+			},
+			cfg: map[string]interface{}{
+				"title":     "title",
+				"widget_id": 1234,
+				"metric":    []map[string]interface{}{},
+				"row":       1,
+				"column":    1,
+				"width":     1,
+				"height":    1,
+			},
+		},
+	}
+
+	for _, c := range cases {
+		for _, v := range c.visualizations {
+			c.cfg["visualization"] = v
+
+			_, err := expandWidget(c.cfg)
+
+			if err == nil {
+				t.Errorf("validation error expected when %s for %s visualization", c.condition, v)
+			}
+		}
+	}
+}
+
 func testAccCheckNewRelicDashboardConfig(dashboardName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_dashboard" "foo" {
