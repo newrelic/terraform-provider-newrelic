@@ -1,4 +1,18 @@
 ## 1.6.1 (Unreleased)
+
+BUG FIXES:
+
+* fix: align alert condition duration constraints to NR's API constraints ([#201](https://github.com/terraform-providers/terraform-provider-newrelic/issues/201))
+* fix: align alert policy validation with NR's API validation ([#199](https://github.com/terraform-providers/terraform-provider-newrelic/issues/199))
+
+IMPROVEMENTS:
+* Adds ability to skip TLS verification from a remote agent and trust self-signed certs ([#196](https://github.com/terraform-providers/terraform-provider-newrelic/pull/196))
+
+NOTES:
+* Documentation updates ([#207](https://github.com/terraform-providers/terraform-provider-newrelic/pull/207), [#195](https://github.com/terraform-providers/terraform-provider-newrelic/pull/195))
+
+
+
 ## 1.6.0 (November 07, 2019)
 
 BUG FIXES:
