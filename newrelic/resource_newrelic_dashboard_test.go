@@ -247,8 +247,6 @@ func TestNewRelicDashboard_WidgetValidation(t *testing.T) {
 		{
 			condition: "threshold_red field missing",
 			visualizations: []string{
-				"billboard",
-				"billboard_comparison",
 				"gauge",
 			},
 			cfg: map[string]interface{}{
@@ -533,14 +531,4 @@ func testAccCheckNewRelicDashboardDestroy(s *terraform.State) error {
 
 	}
 	return nil
-}
-
-// A custom check function to log the state during a test run.
-// This is useful to find the individual widget hash values when writing assertions against them.
-func logState(t *testing.T) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		t.Logf("State: %s\n", s)
-
-		return nil
-	}
 }

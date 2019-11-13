@@ -206,13 +206,11 @@ func resourceNewRelicDashboard() *schema.Resource {
 						"duration": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      0,
 							ValidateFunc: validation.IntAtLeast(1),
 						},
 						"end_time": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      0,
 							ValidateFunc: validation.IntAtLeast(1),
 						},
 						"raw_metric_name": {
@@ -230,7 +228,6 @@ func resourceNewRelicDashboard() *schema.Resource {
 						"limit": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      0,
 							ValidateFunc: validation.IntAtLeast(1),
 						},
 						"entity_ids": {
