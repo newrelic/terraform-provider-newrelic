@@ -2,21 +2,20 @@ package newrelic
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
 
 	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
-// Assemble the *newrelic.Dashboard variable.
-//
+// Assemble the *newrelic.Dashboard struct.
 // Used by the newrelic_dashboard Create and Update functions.
 func expandDashboard(d *schema.ResourceData) (*newrelic.Dashboard, error) {
 	metadata := newrelic.DashboardMetadata{
 		Version: 1,
 	}
 
-	// TODO: Some of these should be terraform defaults and validated
 	dashboard := newrelic.Dashboard{
 		Title:      d.Get("title").(string),
 		Metadata:   metadata,
@@ -26,31 +25,11 @@ func expandDashboard(d *schema.ResourceData) (*newrelic.Dashboard, error) {
 	}
 
 	if f, ok := d.GetOk("filter"); ok {
-		filter := f.([]interface{})[0].(map[string]interface{})
-		dashboardFilter := newrelic.DashboardFilter{}
-
-		if v, ok := filter["attributes"]; ok {
-			attributes := v.(*schema.Set).List()
-			vs := make([]string, 0, len(attributes))
-			for _, a := range attributes {
-				vs = append(vs, a.(string))
-			}
-
-			dashboardFilter.Attributes = vs
-		}
-
-		if v, ok := filter["event_types"]; ok {
-			eventTypes := v.(*schema.Set).List()
-			vs := make([]string, 0, len(eventTypes))
-			for _, e := range eventTypes {
-				vs = append(vs, e.(string))
-			}
-			dashboardFilter.EventTypes = vs
-		}
-		dashboard.Filter = dashboardFilter
+		dashboard.Filter = expandFilter(f.([]interface{})[0].(map[string]interface{}))
 	}
 
-	if widgets, ok := d.GetOk("widget"); ok && widgets.(*schema.Set).Len() > 0 {
+	log.Printf("[INFO] widget schema: %+v\n", d.Get("widget"))
+	if widgets, ok := d.GetOk("widget"); ok {
 		expandedWidgets, err := expandWidgets(widgets.(*schema.Set).List())
 
 		if err != nil {
@@ -61,6 +40,20 @@ func expandDashboard(d *schema.ResourceData) (*newrelic.Dashboard, error) {
 	}
 
 	return &dashboard, nil
+}
+
+func expandFilter(filter map[string]interface{}) newrelic.DashboardFilter {
+	perms := newrelic.DashboardFilter{}
+
+	if v, ok := filter["attributes"]; ok {
+		perms.Attributes = expandStringSet(v.(*schema.Set))
+	}
+
+	if v, ok := filter["event_types"]; ok {
+		perms.EventTypes = expandStringSet(v.(*schema.Set))
+	}
+
+	return perms
 }
 
 func expandWidgets(widgets []interface{}) ([]newrelic.DashboardWidget, error) {
@@ -188,11 +181,11 @@ func expandWidgetData(cfg map[string]interface{}) []newrelic.DashboardWidgetData
 		widgetData.Limit = limit.(int)
 	}
 
-	if metrics, ok := cfg["metric"]; ok && metrics.(*schema.Set).Len() > 0 {
+	if metrics, ok := cfg["metric"]; ok {
 		widgetData.Metrics = expandWidgetDataMetrics(metrics.(*schema.Set).List())
 	}
 
-	if entityIds, ok := cfg["entity_ids"]; ok && entityIds.(*schema.Set).Len() > 0 {
+	if entityIds, ok := cfg["entity_ids"]; ok {
 		widgetData.EntityIds = expandIntSet(entityIds.(*schema.Set))
 	}
 
