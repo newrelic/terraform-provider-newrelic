@@ -39,7 +39,7 @@ For SIMPLE and BROWSER monitor types, the following arguments are also supported
   * `validation_string` - (Optional) The string to validate against in the response.
   * `verify_ssl` - (Optional) Verify SSL.
   * `bypass_head_request` - (Optional) Bypass HEAD request.
-  * `treat_redirect_as_faiure` - (Optional) Fail the monitor check if redirected.
+  * `treat_redirect_as_failure` - (Optional) Fail the monitor check if redirected.
 
 ## Attributes Reference
 
