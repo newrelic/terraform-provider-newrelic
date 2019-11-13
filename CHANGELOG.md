@@ -1,4 +1,32 @@
-## 1.6.1 (Unreleased)
+## 1.7.0 (Unreleased)
+
+BUG FIXES:
+
+* fix: align alert condition duration constraints to NR's API constraints ([#201](https://github.com/terraform-providers/terraform-provider-newrelic/issues/201))
+* fix: align alert policy validation with NR's API validation ([#199](https://github.com/terraform-providers/terraform-provider-newrelic/issues/199))
+
+IMPROVEMENTS:
+* Dashboard improvements ([#206](https://github.com/terraform-providers/terraform-provider-newrelic/pull/206))
+    * Support for more dashboard widget types:
+        * `metric_line_chart`
+        * `markdown`
+        * `gauge`
+        * `billboard`
+        * `billboard_comparison`
+    * Plan-time validation for:
+        * `icon`
+        * `visualization`
+    * More robust validation of widgets, based on visualization type
+    * Allow up to 300 dashboard widgets per the [API documentation]
+    * Refresh dashboard state properly when underlying resource has been deleted
+    * Documentation improvements
+* Adds ability to skip TLS verification from a remote agent and trust self-signed certs ([#196](https://github.com/terraform-providers/terraform-provider-newrelic/pull/196))
+
+NOTES:
+* Documentation updates ([#207](https://github.com/terraform-providers/terraform-provider-newrelic/pull/207), [#195](https://github.com/terraform-providers/terraform-provider-newrelic/pull/195))
+
+
+
 ## 1.6.0 (November 07, 2019)
 
 BUG FIXES:
