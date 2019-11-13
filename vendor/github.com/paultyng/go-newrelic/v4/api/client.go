@@ -163,10 +163,15 @@ func (c *Client) Do(method string, path string, body interface{}, response inter
 		}
 	}
 
-	statusClass := apiResponse.StatusCode() / 100 % 10
+	statusCode := apiResponse.StatusCode()
+	statusClass := statusCode / 100 % 10
 
 	if statusClass == 2 {
 		return nextPath, nil
+	}
+
+	if statusCode == 404 {
+		return "", ErrNotFound
 	}
 
 	rawError := apiResponse.Error()

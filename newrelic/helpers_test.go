@@ -2,6 +2,9 @@ package newrelic
 
 import (
 	"testing"
+
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestParseIDs_Basic(t *testing.T) {
@@ -38,5 +41,14 @@ func deletePolicy(name string) func() {
 				break
 			}
 		}
+	}
+}
+
+// A custom check function to log the internal state during a test run.
+func logState(t *testing.T) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		t.Logf("State: %s\n", s)
+
+		return nil
 	}
 }
