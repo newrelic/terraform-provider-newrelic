@@ -442,6 +442,8 @@ github.com/packer-community/winrmcp v0.0.0-20180102160824-81144009af58/go.mod h1
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/paultyng/go-newrelic/v4 v4.6.0 h1:GK/UpCjOWztqTOxbAjAcTcJJTeS83f+I8MqwiuGxn7E=
 github.com/paultyng/go-newrelic/v4 v4.6.0/go.mod h1:6ciKW4zxksyn1SUWZRYVWPLUF1/pnUEPNHGfyhlOlTU=
+github.com/paultyng/go-newrelic/v4 v4.8.0 h1:O4JVL3xLmxCUz5+ixfRiMZ9L0u0zXSZWej4FvRqGrBw=
+github.com/paultyng/go-newrelic/v4 v4.8.0/go.mod h1:5nPTyJCWLiaE+ggG3JOhrKqmAXjz8+w+LvD76/0uzb8=
 github.com/pelletier/go-toml v1.2.0 h1:T5zMGML61Wp+FlcbWjRDT7yAxhJNAiPPLOFECq181zc=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/pierrec/lz4 v2.0.5+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
