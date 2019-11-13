@@ -8,27 +8,84 @@ description: |-
 
 # newrelic\_dashboard
 
-## Example Usage
+This resource can be used to create and manage New Relic dashboards.
+
+## Example Usage: Create a New Relic Dashboard
 
 ```hcl
+data "newrelic_application" "my_application" {
+  name = "My Application"
+}
+
 resource "newrelic_dashboard" "exampledash" {
   title = "New Relic Terraform Example"
 
-  widget {
-    title         = "Average Transaction Duration"
-    row           = 1
-    column        = 1
-    width         = 2
-    visualization = "faceted_line_chart"
-    nrql          = "SELECT AVERAGE(duration) from Transaction FACET appName TIMESERIES auto"
+  filter {
+    event_types = [
+        "Transaction"
+    ]
+    attributes = [
+        "appName",
+        "name"
+    ]
   }
 
   widget {
-    title         = "Page Views"
-    row           = 1
-    column        = 3
+    title = "Requests per minute"
     visualization = "billboard"
-    nrql          = "SELECT count(*) FROM PageView SINCE 1 week ago"
+    nrql = "SELECT rate(count(*), 1 minute) FROM Transaction"
+    row = 1
+    column = 1
+  }
+
+  widget {
+    title = "Error rate"
+    visualization = "gauge"
+    nrql = "SELECT percentage(count(*), WHERE error IS True) FROM Transaction"
+    threshold_red = 2.5
+    row = 1
+    column = 2
+  }
+
+  widget {
+    title = "Average transaction duration, by application"
+    visualization = "facet_bar_chart"
+    nrql = "SELECT average(duration) FROM Transaction FACET appName"
+    row = 1
+    column = 3
+  }
+
+  widget {
+    title = "Apdex, top 5 by host"
+    duration = 1800000
+    visualization = "metric_line_chart"
+    entity_ids = [
+      "${data.newrelic_application.my_application.id}",
+    ]
+    metric {
+        name = "Apdex"
+        values = [ "score" ]
+    }
+    facet = "host"
+    limit = 5
+    row = 2
+    column = 1
+  }
+
+  widget {
+    title = "Requests per minute, by transaction"
+    visualization = "facet_table"
+    nrql = "SELECT rate(count(*), 1 minute) FROM Transaction FACET name"
+    row = 2
+    column = 2
+  }
+
+  widget {
+    title = "Dashboard Note"
+    visualization = "markdown"
+    source = "### Helpful Links\n\n* [New Relic One](https://one.newrelic.com)\n* [Developer Portal](https://developer.newrelic.com)"
+    row = 2
+    column = 3
   }
 }
 ```
@@ -38,26 +95,59 @@ resource "newrelic_dashboard" "exampledash" {
 The following arguments are supported:
 
   * `title` - (Required) The title of the dashboard.
-  * `icon` - (Optional) The icon for the dashboard.  Defaults to `bar-chart`.
-  * `visibility` - (Optional) Who can see the dashboard in an account. Must be `owner` or `all`. Defaults to `all`.
-  * `widget` - (Optional) A widget that describes a visualization. See [Widgets](#widgets) below for details.
-  * `editable` - (Optional) Who can edit the dashboard in an account. Must be `read_only`, `editable_by_owner`, `editable_by_all`, or `all`. Defaults to `editable_by_all`.
+  * `icon` - (Optional) The icon for the dashboard.  Valid values are `adjust`, `archive`, `bar-chart`, `bell`, `bolt`, `bug`, `bullhorn`, `bullseye`, `clock-o`, `cloud`, `cog`, `comments-o`, `crosshairs`, `dashboard`, `envelope`, `fire`, `flag`, `flask`, `globe`, `heart`, `leaf`, `legal`, `life-ring`, `line-chart`, `magic`, `mobile`, `money`, `none`, `paper-plane`, `pie-chart`, `puzzle-piece`, `road`, `rocket`, `shopping-cart`, `sitemap`, `sliders`, `tablet`, `thumbs-down`, `thumbs-up`, `trophy`, `usd`, `user`, and `users`.  Defaults to `bar-chart`.
+  * `visibility` - (Optional) Determines who can see the dashboard in an account. Valid values are `all` or `owner`.  Defaults to `all`.
+  * `editable` - (Optional) Determines who can edit the dashboard in an account. Valid values are `all`,  `editable_by_all`, `editable_by_owner`, or `read_only`.  Defaults to `editable_by_all`.
+  * `widget` - (Optional) A nested block that describes a visualization.  Up to 300 `widget` blocks are allowed in a dashboard definition.  See [Nested widget blocks](#nested-`widget`-blocks) below for details.
+  * `filter` - (Optional) A nested block that describes a dashboard filter.  Exactly one nested `filter` block is allowed. See [Nested filter block](#nested-`filter`-block) below for details.
 
-## Widgets
+### Nested `widget` blocks
 
-The `widget` mapping supports the following arguments:
+All nested `widget` blocks support the following common arguments:
 
   * `title` - (Required) A title for the widget.
-  * `visualization` - (Required) How the widget visualizes data.
+  * `visualization` - (Required) How the widget visualizes data.  Valid values are `billboard`, `gauge`, `billboard_comparison`, `facet_bar_chart`, `faceted_line_chart`, `facet_pie_chart`, `facet_table`, `faceted_area_chart`, `heatmap`, `attribute_sheet`, `single_event`, `histogram`, `funnel`, `raw_json`, `event_feed`, `event_table`, `uniques_list`, `line_chart`, `comparison_line_chart`, `markdown`, and `metric_line_chart`.
   * `row` - (Required) Row position of widget from top left, starting at `1`.
   * `column` - (Required) Column position of widget from top left, starting at `1`.
-  * `width` - (Optional) Width of the widget. Defaults to `1`.
-  * `height` - (Optional) Height of the widget. Defaults to `1`.
+  * `width` - (Optional) Width of the widget.  Valid values are `1` to `3` inclusive.  Defaults to `1`.
+  * `height` - (Optional) Height of the widget.  Valid values are `1` to `3` inclusive.  Defaults to `1`.
   * `notes` - (Optional) Description of the widget.
-  * `nrql` - (Optional) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
 
-## Attributes Reference
+Each visualization type supports an additional set of arguments:
+  * `billboard`, `billboard_comparison`:
+    * `nrql` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
+    * `threshold_red` - (Optional) Threshold above which the displayed value will be styled with a red color.
+    * `threshold_yellow` - (Optional) Threshold above which the displayed value will be styled with a yellow color.
+  * `gauge`:
+    * `nrql` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
+    * `threshold_red` - (Required) Threshold above which the displayed value will be styled with a red color.
+    * `threshold_yellow` - (Optional) Threshold above which the displayed value will be styled with a yellow color.
+  * `facet_bar_chart`, `facet_pie_chart`, `facet_table`, `faceted_area_chart`, `faceted_line_chart`, or `heatmap`:
+    * `nrql` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
+    * `drilldown_dashboard_id` - (Optional) The ID of a dashboard to link to from the widget's facets.
+  * `attribute_sheet`, `comparison_line_chart`, `event_feed`, `event_table`, `funnel`, `histogram`, `line_chart`, `raw_json`, `single_event`, or `uniques_list`:
+    * `nrql` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
+  * `markdown`:
+    * `source` - (Required) The markdown source to be rendered in the widget.
+  * `metric_line_chart`:
+    * `entity_ids` - (Required) A collection of entity ids to display data for.  These are typically application IDs.
+    * `metric` - (Required) A nested block that describes a metric.  Nested `metric` blocks support the following arguments:
+      * `name` - (Required) The metric name to display.
+      * `values` - (Required) The metric values to display.
+    * `duration` - (Required) The duration, in ms, of the time window represented in the chart.
+    * `end_time` - (Optional) The end time of the time window represented in the chart in epoch time.  When not set, the time window will end at the current time.
+    * `facet` - (Optional) Can be set to "host" to facet the metric data by host.
+    * `limit` - (Optional) The limit of distinct data series to display.  
 
-The following attributes are exported:
+### Nested `filter` block
+The optional filter block supports the following arguments:
+  * `event_types` - (Optional) A list of event types to enable filtering for.
+  * `attributes` - (Optional) A list of attributes belonging to the specified event types to enable filtering for.
 
-  * `id` - The ID of the dashboard.
+## Import
+
+New Relic dashboards can be imported using their ID, e.g.
+
+```
+$ terraform import newrelic_dashboard.my_dashboard 8675309
+```
