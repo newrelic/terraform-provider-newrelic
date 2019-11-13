@@ -111,12 +111,16 @@ func validateWidgetData(cfg map[string]interface{}) error {
 	visualization := cfg["visualization"].(string)
 
 	switch visualization {
-	case "billboard", "gauge", "billboard_comparison":
+	case "gauge":
 		if nrql, ok := cfg["nrql"]; !ok || nrql.(string) == "" {
 			return fmt.Errorf("nrql is required for %s visualization", visualization)
 		}
 		if red, ok := cfg["threshold_red"]; !ok || red.(float64) == 0 {
 			return fmt.Errorf("threshold_red is required for %s visualization", visualization)
+		}
+	case "billboard", "billboard_comparison":
+		if nrql, ok := cfg["nrql"]; !ok || nrql.(string) == "" {
+			return fmt.Errorf("nrql is required for %s visualization", visualization)
 		}
 	case "facet_bar_chart", "faceted_line_chart", "facet_pie_chart", "facet_table", "faceted_area_chart", "heatmap":
 		if nrql, ok := cfg["nrql"]; !ok || nrql.(string) == "" {
@@ -136,6 +140,9 @@ func validateWidgetData(cfg map[string]interface{}) error {
 		}
 		if _, ok := cfg["entity_ids"]; !ok {
 			return fmt.Errorf("entity_ids is required for %s visualization", visualization)
+		}
+		if _, ok := cfg["duration"]; !ok {
+			return fmt.Errorf("duration is required for %s visualization", visualization)
 		}
 	case "application_breakdown":
 		if _, ok := cfg["entity_ids"]; !ok {

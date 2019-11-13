@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
@@ -282,7 +283,8 @@ func TestNewRelicDashboard_WidgetValidation(t *testing.T) {
 			cfg: map[string]interface{}{
 				"title":      "title",
 				"widget_id":  1234,
-				"entity_ids": []int{1234},
+				"entity_ids": schema.NewSet(schema.HashInt, []interface{}{1234}),
+				"duration":   1800000,
 				"row":        1,
 				"column":     1,
 				"width":      1,
@@ -298,11 +300,28 @@ func TestNewRelicDashboard_WidgetValidation(t *testing.T) {
 			cfg: map[string]interface{}{
 				"title":     "title",
 				"widget_id": 1234,
-				"metric":    []map[string]interface{}{},
+				"metric":    schema.NewSet(schema.HashString, []interface{}{}),
+				"duration":  1800000,
 				"row":       1,
 				"column":    1,
 				"width":     1,
 				"height":    1,
+			},
+		},
+		{
+			condition: "duration field missing",
+			visualizations: []string{
+				"metric_line_chart",
+			},
+			cfg: map[string]interface{}{
+				"title":      "title",
+				"widget_id":  1234,
+				"entity_ids": schema.NewSet(schema.HashInt, []interface{}{1234}),
+				"metric":     schema.NewSet(schema.HashString, []interface{}{}),
+				"row":        1,
+				"column":     1,
+				"width":      1,
+				"height":     1,
 			},
 		},
 	}
