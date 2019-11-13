@@ -72,17 +72,18 @@ type AlertNrqlQuery struct {
 
 // AlertNrqlCondition represents a New Relic NRQL Alert condition.
 type AlertNrqlCondition struct {
-	PolicyID       int                  `json:"-"`
-	ID             int                  `json:"id,omitempty"`
-	Type           string               `json:"type,omitempty"`
-	Name           string               `json:"name,omitempty"`
-	Enabled        bool                 `json:"enabled"`
-	RunbookURL     string               `json:"runbook_url,omitempty"`
-	Terms          []AlertConditionTerm `json:"terms,omitempty"`
-	ValueFunction  string               `json:"value_function,omitempty"`
-	ExpectedGroups int                  `json:"expected_groups,omitempty"`
-	IgnoreOverlap  bool                 `json:"ignore_overlap,omitempty"`
-	Nrql           AlertNrqlQuery       `json:"nrql,omitempty"`
+	PolicyID            int                  `json:"-"`
+	ID                  int                  `json:"id,omitempty"`
+	Type                string               `json:"type,omitempty"`
+	Name                string               `json:"name,omitempty"`
+	Enabled             bool                 `json:"enabled"`
+	RunbookURL          string               `json:"runbook_url,omitempty"`
+	Terms               []AlertConditionTerm `json:"terms,omitempty"`
+	ValueFunction       string               `json:"value_function,omitempty"`
+	ExpectedGroups      int                  `json:"expected_groups,omitempty"`
+	IgnoreOverlap       bool                 `json:"ignore_overlap,omitempty"`
+	Nrql                AlertNrqlQuery       `json:"nrql,omitempty"`
+	ViolationCloseTimer int                  `json:"violation_time_limit_seconds,omitempty"`
 }
 
 // AlertPlugin represents a plugin to use with a Plugin alert condition.
@@ -298,6 +299,7 @@ type DashboardMetadata struct {
 // DashboardWidget represents a widget in a dashboard.
 type DashboardWidget struct {
 	Visualization string                      `json:"visualization,omitempty"`
+	ID            int                         `json:"widget_id,omitempty"`
 	AccountID     int                         `json:"account_id,omitempty"`
 	Data          []DashboardWidgetData       `json:"data,omitempty"`
 	Presentation  DashboardWidgetPresentation `json:"presentation,omitempty"`
@@ -306,13 +308,51 @@ type DashboardWidget struct {
 
 // DashboardWidgetData represents the data backing a dashboard widget.
 type DashboardWidgetData struct {
-	NRQL string `json:"nrql,omitempty"`
+	NRQL          string                           `json:"nrql,omitempty"`
+	Source        string                           `json:"source,omitempty"`
+	Duration      int                              `json:"duration,omitempty"`
+	EndTime       int                              `json:"end_time,omitempty"`
+	EntityIds     []int                            `json:"entity_ids,omitempty"`
+	CompareWith   []DashboardWidgetDataCompareWith `json:"compare_with,omitempty"`
+	Metrics       []DashboardWidgetDataMetric      `json:"metrics,omitempty"`
+	RawMetricName string                           `json:"raw_metric_name,omitempty"`
+	Facet         string                           `json:"facet,omitempty"`
+	OrderBy       string                           `json:"order_by,omitempty"`
+	Limit         int                              `json:"limit,omitempty"`
 }
 
-// DashboardWidgetPresentation representations the visual presentation of a dashboard widget
+// DashboardWidgetDataCompareWith represents the compare with configuration of the widget.
+type DashboardWidgetDataCompareWith struct {
+	OffsetDuration string                                     `json:"offset_duration,omitempty"`
+	Presentation   DashboardWidgetDataCompareWithPresentation `json:"presentation,omitempty"`
+}
+
+// DashboardWidgetDataCompareWithPresentation represents the compare with presentation configuration of the widget.
+type DashboardWidgetDataCompareWithPresentation struct {
+	Name  string `json:"name,omitempty"`
+	Color string `json:"color,omitempty"`
+}
+
+// DashboardWidgetDataMetric represents the metrics data of the widget.
+type DashboardWidgetDataMetric struct {
+	Name   string   `json:"name,omitempty"`
+	Units  string   `json:"units,omitempty"`
+	Scope  string   `json:"scope,omitempty"`
+	Values []string `json:"values,omitempty"`
+}
+
+// DashboardWidgetPresentation represents the visual presentation of a dashboard widget.
 type DashboardWidgetPresentation struct {
-	Title string `json:"title,omitempty"`
-	Notes string `json:"notes,omitempty"`
+	Title                string                    `json:"title,omitempty"`
+	Notes                string                    `json:"notes,omitempty"`
+	DrilldownDashboardID int                       `json:"drilldown_dashboard_id,omitempty"`
+	Threshold            *DashboardWidgetThreshold `json:"threshold,omitempty"`
+}
+
+// DashboardWidgetThreshold represents the threshold configuration of a dashboard widget.
+type DashboardWidgetThreshold struct {
+	Red    float64 `json:"red,omitempty"`
+	Yellow float64 `json:"yellow,omitempty"`
 }
 
 // DashboardWidgetLayout represents the layout of a widget in a dashboard.
