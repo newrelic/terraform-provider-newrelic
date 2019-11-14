@@ -114,6 +114,7 @@ All nested `widget` blocks support the following common arguments:
   * `notes` - (Optional) Description of the widget.
 
 Each visualization type supports an additional set of arguments:
+
   * `billboard`, `billboard_comparison`:
     * `nrql` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
     * `threshold_red` - (Optional) Threshold above which the displayed value will be styled with a red color.
