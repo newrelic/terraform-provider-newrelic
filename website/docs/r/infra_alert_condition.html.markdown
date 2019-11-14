@@ -48,7 +48,8 @@ The following arguments are supported:
   * `warning` - (Optional) Identifies the warning threshold parameters. See [Thresholds](#thresholds) below for details.
   * `where` - (Optional) Infrastructure host filter for the alert condition.
   * `process_where` - (Optional) Any filters applied to processes; for example: `"commandName = 'java'"`.
-  * `integration_provider` - (Optional) For alerts on integrations, use this instead of `event`. 
+  * `integration_provider` - (Optional) For alerts on integrations, use this instead of `event`.
+  * `runbook_url` - (Optional) Runbook URL to display in notifications.
 
 ## Thresholds
 
