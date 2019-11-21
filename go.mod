@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk v1.3.0
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/newrelic/go-agent v2.15.0+incompatible
-	github.com/paultyng/go-newrelic/v4 v4.8.0
+	github.com/paultyng/go-newrelic/v4 v4.9.1
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/ulikunitz/xz v0.5.6 // indirect
