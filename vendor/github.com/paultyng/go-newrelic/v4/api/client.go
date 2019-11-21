@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/tomnomnom/linkheader"
 
@@ -73,6 +74,9 @@ type Config struct {
 	// UserAgent is passed to the Resty client's SetHeaders to allow overriding
 	// the default user-agent header (go-newrelic/$version)
 	UserAgent string
+
+	// HttpTransport is passed to the Resty client's SetTransport method (optional).
+	HTTPTransport http.RoundTripper
 }
 
 // New returns a new Client for the specified apiKey.
@@ -105,6 +109,9 @@ func New(config Config) Client {
 	}
 	if config.Debug {
 		r.SetDebug(true)
+	}
+	if config.HTTPTransport != nil {
+		r.SetTransport(config.HTTPTransport)
 	}
 
 	c := Client{
