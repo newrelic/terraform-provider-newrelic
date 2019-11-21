@@ -11,7 +11,8 @@ import (
 )
 
 func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
-	rName := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rNameUpdated := fmt.Sprintf("tf-test-updated-%s", acctest.RandString(5))
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -22,7 +23,7 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
+						"newrelic_alert_condition.foo", "name", rName),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "type", "apm_app_metric"),
 					resource.TestCheckResourceAttr(
@@ -46,11 +47,11 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckNewRelicAlertConditionConfigUpdated(rName),
+				Config: testAccCheckNewRelicAlertConditionConfigUpdated(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "name", fmt.Sprintf("tf-test-updated-%s", rName)),
+						"newrelic_alert_condition.foo", "name", rNameUpdated),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "enabled", "true"),
 					resource.TestCheckResourceAttr(
@@ -76,18 +77,18 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 }
 
 func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
-	rName := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAlertConditionConfigZeroThreshold(rName),
+				Config: testAccCheckNewRelicAlertConditionConfigThreshold(rName, 0),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
+						"newrelic_alert_condition.foo", "name", rName),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "enabled", "false"),
 					resource.TestCheckResourceAttr(
@@ -116,7 +117,7 @@ func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
 
 func TestAccNewRelicAlertCondition(t *testing.T) {
 	resourceName := "newrelic_alert_condition.foo"
-	rName := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -136,22 +137,8 @@ func TestAccNewRelicAlertCondition(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicAlertCondition_nameGreaterThan64Char(t *testing.T) {
-	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
-	resource.ParallelTest(t, resource.TestCase{
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccCheckNewRelicAlertConditionConfig("really-long-name-longer-than-sixty-four-characters-so-it-causes-an-error"),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
-}
-
 func TestAccNewRelicAlertCondition_MissingPolicy(t *testing.T) {
-	rName := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -162,7 +149,7 @@ func TestAccNewRelicAlertCondition_MissingPolicy(t *testing.T) {
 				Config: testAccCheckNewRelicAlertConditionConfig(rName),
 			},
 			{
-				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
+				PreConfig: testAccDeleteNewRelicAlertPolicy(rName),
 				Config:    testAccCheckNewRelicAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
 			},
@@ -170,57 +157,57 @@ func TestAccNewRelicAlertCondition_MissingPolicy(t *testing.T) {
 	})
 }
 
-func TestErrorThrownUponConditionTermDurationLessThan5(t *testing.T) {
+func TestAccNewRelicAlertCondition_ShortTermDuration(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest: true,
 		Providers:  testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testErrorThrownUponConditionTermDurationLessThan5(),
+				Config:      testAccNewRelicAlertConditionConfigDuration(rName, 4),
 				ExpectError: expectedErrorMsg,
 			},
 		},
 	})
 }
 
-func TestErrorThrownUponConditionNameGreaterThan64Char(t *testing.T) {
-	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
-	rName := acctest.RandString(5)
-	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config:      testErrorThrownUponConditionNameGreaterThan64Char(rName),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
-}
-
-func TestErrorThrownUponConditionNameLessThan1Char(t *testing.T) {
-	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
-	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config:      testErrorThrownUponConditionNameLessThan1Char(),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
-}
-
-func TestErrorThrownUponConditionTermDurationGreaterThan120(t *testing.T) {
+func TestAccNewRelicAlertCondition_LongTermDuration(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest: true,
 		Providers:  testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testErrorThrownUponConditionTermDurationGreaterThan120(),
+				Config:      testAccNewRelicAlertConditionConfigDuration(rName, 121),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertCondition_LongName(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
+	resource.ParallelTest(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckNewRelicAlertConditionConfig("really-long-name-longer-than-sixty-four-characters-so-it-causes-an-error"),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertCondition_EmptyName(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile(`name must not be empty`)
+	resource.ParallelTest(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckNewRelicAlertConditionConfig(""),
 				ExpectError: expectedErrorMsg,
 			},
 		},
@@ -291,13 +278,13 @@ data "newrelic_application" "app" {
 }
 
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+  name = "%[1]s"
 }
 
 resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name            = "tf-test-%[1]s"
+  name            = "%[1]s"
   enabled         = false
   type            = "apm_app_metric"
   entities        = ["${data.newrelic_application.app.id}"]
@@ -323,13 +310,13 @@ data "newrelic_application" "app" {
 }
 
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-updated-%[1]s"
+  name = "%[1]s"
 }
 
 resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name            = "tf-test-updated-%[1]s"
+  name            = "%[1]s"
   enabled         = true
   type            = "apm_app_metric"
   entities        = ["${data.newrelic_application.app.id}"]
@@ -348,20 +335,20 @@ resource "newrelic_alert_condition" "foo" {
 `, rName, testAccExpectedApplicationName)
 }
 
-func testAccCheckNewRelicAlertConditionConfigZeroThreshold(rName string) string {
+func testAccCheckNewRelicAlertConditionConfigThreshold(rName string, threshold int) string {
 	return fmt.Sprintf(`
 data "newrelic_application" "app" {
-	name = "%[2]s"
+	name = "%[3]s"
 }
 
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+  name = "%[1]s"
 }
 
 resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name            = "tf-test-%[1]s"
+  name            = "%[1]s"
   enabled         = false
   type            = "apm_app_metric"
   entities        = ["${data.newrelic_application.app.id}"]
@@ -373,76 +360,21 @@ resource "newrelic_alert_condition" "foo" {
     duration      = 5
     operator      = "below"
     priority      = "critical"
-    threshold     = "0"
+    threshold     = "%d"
     time_function = "all"
   }
 }
-`, rName, testAccExpectedApplicationName)
+`, rName, threshold, testAccExpectedApplicationName)
 }
 
-func testErrorThrownUponConditionNameGreaterThan64Char(resourceName string) string {
+func testAccNewRelicAlertConditionConfigDuration(name string, duration int) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
   api_key = "foo"
 }
-resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
-}
-resource "newrelic_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
-  name            = "really-long-name-that-is-more-than-sixtyfour-characters-long-tf-test-%[1]s"
-  type            = "apm_app_metric"
-  entities        = ["12345"]
-  metric          = "apdex"
-  runbook_url     = "https://foo.example.com"
-  condition_scope = "application"
-  term {
-    duration      = 5
-    operator      = "below"
-    priority      = "critical"
-    threshold     = "0.75"
-    time_function = "all"
-  }
-}
-`, resourceName, testAccExpectedApplicationName)
-}
-
-func testErrorThrownUponConditionNameLessThan1Char() string {
-	return `
-provider "newrelic" {
-  api_key = "foo"
-}
 
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
-}
-resource "newrelic_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
-  name            = ""
-  type            = "apm_app_metric"
-  entities        = ["12345"]
-  metric          = "apdex"
-  runbook_url     = "https://foo.example.com"
-  condition_scope = "application"
-  term {
-    duration      = 5
-    operator      = "below"
-    priority      = "critical"
-    threshold     = "0.75"
-    time_function = "all"
-  }
-}
-`
-}
-
-func testErrorThrownUponConditionTermDurationGreaterThan120() string {
-	return `
-provider "newrelic" {
-  api_key = "foo"
-}
-
-resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+  name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
@@ -453,40 +385,12 @@ resource "newrelic_alert_condition" "foo" {
   runbook_url     = "https://foo.example.com"
   condition_scope = "application"
   term {
-    duration      = 121
+    duration      = %[2]d
     operator      = "below"
     priority      = "critical"
     threshold     = "0.75"
     time_function = "all"
   }
 }
-`
-}
-
-func testErrorThrownUponConditionTermDurationLessThan5() string {
-	return `
-provider "newrelic" {
-  api_key = "foo"
-}
-
-resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
-}
-resource "newrelic_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
-  name            = "test-term-duration"
-  type            = "apm_app_metric"
-  entities        = ["12345"]
-  metric          = "apdex"
-  runbook_url     = "https://foo.example.com"
-  condition_scope = "application"
-  term {
-    duration      = 4
-    operator      = "below"
-    priority      = "critical"
-    threshold     = "0.75"
-    time_function = "all"
-  }
-}
-`
+`, name, duration)
 }
