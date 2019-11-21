@@ -12,7 +12,7 @@ import (
 
 func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
@@ -77,7 +77,7 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 
 func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
 	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
@@ -118,7 +118,7 @@ func TestAccNewRelicAlertCondition(t *testing.T) {
 	resourceName := "newrelic_alert_condition.foo"
 	rName := acctest.RandString(5)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
@@ -138,7 +138,7 @@ func TestAccNewRelicAlertCondition(t *testing.T) {
 
 func TestAccNewRelicAlertCondition_nameGreaterThan64Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -153,7 +153,7 @@ func TestAccNewRelicAlertCondition_nameGreaterThan64Char(t *testing.T) {
 func TestAccNewRelicAlertCondition_MissingPolicy(t *testing.T) {
 	rName := acctest.RandString(5)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
@@ -230,7 +230,7 @@ func testAccCheckNewRelicAlertConditionExists(n string) resource.TestCheckFunc {
 func TestErrorThrownUponConditionNameGreaterThan64Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest:   true,
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
@@ -368,7 +368,7 @@ resource "newrelic_alert_condition" "foo" {
 
 func TestErrorThrownUponConditionNameLessThan1Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest:   true,
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
@@ -411,7 +411,7 @@ resource "newrelic_alert_condition" "foo" {
 
 func TestErrorThrownUponConditionTermDurationGreaterThan120(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest:   true,
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
@@ -454,7 +454,7 @@ resource "newrelic_alert_condition" "foo" {
 
 func TestErrorThrownUponConditionTermDurationLessThan5(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest:   true,
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
