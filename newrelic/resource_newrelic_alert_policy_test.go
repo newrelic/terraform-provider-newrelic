@@ -2,60 +2,32 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
-
-	"regexp"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
-	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckNewRelicAlertPolicyConfig(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAlertPolicyExists("newrelic_alert_policy.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_policy.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_policy.foo", "incident_preference", "PER_POLICY"),
-				),
-			},
-			{
-				Config: testAccCheckNewRelicAlertPolicyConfigUpdated(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAlertPolicyExists("newrelic_alert_policy.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_policy.foo", "name", fmt.Sprintf("tf-test-updated-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_policy.foo", "incident_preference", "PER_CONDITION"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccNewRelicAlertPolicy(t *testing.T) {
+func TestAccNewRelicAlertPolicy_Create(t *testing.T) {
 	resourceName := "newrelic_alert_policy.foo"
 	rName := acctest.RandString(5)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAlertPolicyConfig(rName),
+				Config: testAccNewRelicAlertPolicyConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertPolicyExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "incident_preference", "PER_POLICY"),
+				),
 			},
-
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
@@ -63,6 +35,100 @@ func TestAccNewRelicAlertPolicy(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccNewRelicAlertPolicy_Update(t *testing.T) {
+	resourceName := "newrelic_alert_policy.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicAlertPolicyConfig(rName),
+			},
+			{
+				Config: testAccNewRelicAlertPolicyConfigUpdated(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertPolicyExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-updated-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "incident_preference", "PER_CONDITION"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertPolicy_NoDiffOnReapply(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicAlertPolicyConfig(rName),
+			},
+			{
+				Config:             testAccNewRelicAlertPolicyConfig(rName),
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertPolicy_ResourceNotFound(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicAlertPolicyConfig(rName),
+			},
+			{
+				PreConfig: testAccDeleteAlertPolicy(rName),
+				Config:    testAccNewRelicAlertPolicyConfig(rName),
+			},
+		},
+	})
+}
+
+func TestNewRelicAlertPolicy_ErrorThrownWhenNameEmpty(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile(`name must not be empty`)
+
+	resource.ParallelTest(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAlertPolicyConfigNameEmpty(),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func testAccNewRelicAlertPolicyConfig(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%s"
+}
+`, name)
+}
+
+func testAccNewRelicAlertPolicyConfigUpdated(rName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+  name                = "tf-test-updated-%s"
+  incident_preference = "PER_CONDITION"
+}
+`, rName)
 }
 
 func testAccCheckNewRelicAlertPolicyDestroy(s *terraform.State) error {
@@ -117,42 +183,22 @@ func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckNewRelicAlertPolicyConfig(rName string) string {
-	return fmt.Sprintf(`
-resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%s"
-}
-`, rName)
+func testAccDeleteAlertPolicy(name string) func() {
+	return func() {
+		client := testAccProvider.Meta().(*ProviderConfig).Client
+		alertPolicies, _ := client.ListAlertPolicies()
+
+		for _, d := range alertPolicies {
+			if d.Name == name {
+				_ = client.DeleteAlertPolicy(d.ID)
+				break
+			}
+		}
+	}
 }
 
-func testAccCheckNewRelicAlertPolicyConfigUpdated(rName string) string {
-	return fmt.Sprintf(`
-resource "newrelic_alert_policy" "foo" {
-  name                = "tf-test-updated-%s"
-  incident_preference = "PER_CONDITION"
-}
-`, rName)
-}
-
-func TestErrorThrownUponPolicyNameLessThan1Char(t *testing.T) {
-	expectedErrorMsg, _ := regexp.Compile(`name must not be empty`)
-	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config:      testErrorThrownUponPolicyNameLessThan1Char(),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
-}
-
-func testErrorThrownUponPolicyNameLessThan1Char() string {
+func testAlertPolicyConfigNameEmpty() string {
 	return `
-provider "newrelic" {
-  api_key = "foo"
-}
 resource "newrelic_alert_policy" "foo" {
   name = ""
 }

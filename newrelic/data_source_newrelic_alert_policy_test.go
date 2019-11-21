@@ -10,23 +10,43 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccNewRelicAlertPolicyDataSource_Basic(t *testing.T) {
+func TestAccNewRelicAlertPolicyDataSource_Create(t *testing.T) {
+	resourceName := "newrelic_alert_policy.foo"
 	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
+
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNewRelicAlertPolicyDataSourceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicAlertPolicy("data.newrelic_alert_policy.policy"),
+					testAccCheckNewRelicAlertPolicyDataSource("data.newrelic_alert_policy.policy"),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-%s", rName)),
 				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func testAccNewRelicAlertPolicy(n string) resource.TestCheckFunc {
+func testAccNewRelicAlertPolicyDataSourceConfig(rName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%s"
+}
+
+data "newrelic_alert_policy" "policy" {
+	name = "${newrelic_alert_policy.foo.name}"
+}
+`, rName)
+}
+
+func testAccCheckNewRelicAlertPolicyDataSource(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
 		a := r.Primary.Attributes
@@ -41,16 +61,4 @@ func testAccNewRelicAlertPolicy(n string) resource.TestCheckFunc {
 
 		return nil
 	}
-}
-
-func testAccNewRelicAlertPolicyDataSourceConfig(rName string) string {
-	return fmt.Sprintf(`
-resource "newrelic_alert_policy" "foo" {
-	name = "tf-test-%s"
-}
-
-data "newrelic_alert_policy" "policy" {
-	name = "${newrelic_alert_policy.foo.name}"
-}
-`, rName)
 }
