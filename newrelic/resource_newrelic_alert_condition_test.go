@@ -170,6 +170,63 @@ func TestAccNewRelicAlertCondition_MissingPolicy(t *testing.T) {
 	})
 }
 
+func TestErrorThrownUponConditionTermDurationLessThan5(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
+	resource.ParallelTest(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testErrorThrownUponConditionTermDurationLessThan5(),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func TestErrorThrownUponConditionNameGreaterThan64Char(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
+	rName := acctest.RandString(5)
+	resource.ParallelTest(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testErrorThrownUponConditionNameGreaterThan64Char(rName),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func TestErrorThrownUponConditionNameLessThan1Char(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
+	resource.ParallelTest(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testErrorThrownUponConditionNameLessThan1Char(),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func TestErrorThrownUponConditionTermDurationGreaterThan120(t *testing.T) {
+	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
+	resource.ParallelTest(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers:  testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testErrorThrownUponConditionTermDurationGreaterThan120(),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicAlertConditionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
@@ -225,22 +282,6 @@ func testAccCheckNewRelicAlertConditionExists(n string) resource.TestCheckFunc {
 
 		return nil
 	}
-}
-
-func TestErrorThrownUponConditionNameGreaterThan64Char(t *testing.T) {
-	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
-	rName := acctest.RandString(5)
-	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest:   true,
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config:      testErrorThrownUponConditionNameGreaterThan64Char(rName),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
 }
 
 func testAccCheckNewRelicAlertConditionConfig(rName string) string {
@@ -366,21 +407,6 @@ resource "newrelic_alert_condition" "foo" {
 `, resourceName, testAccExpectedApplicationName)
 }
 
-func TestErrorThrownUponConditionNameLessThan1Char(t *testing.T) {
-	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
-	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest:   true,
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config:      testErrorThrownUponConditionNameLessThan1Char(),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
-}
-
 func testErrorThrownUponConditionNameLessThan1Char() string {
 	return `
 provider "newrelic" {
@@ -407,21 +433,6 @@ resource "newrelic_alert_condition" "foo" {
   }
 }
 `
-}
-
-func TestErrorThrownUponConditionTermDurationGreaterThan120(t *testing.T) {
-	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
-	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest:   true,
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config:      testErrorThrownUponConditionTermDurationGreaterThan120(),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
 }
 
 func testErrorThrownUponConditionTermDurationGreaterThan120() string {
@@ -452,21 +463,6 @@ resource "newrelic_alert_condition" "foo" {
 `
 }
 
-func TestErrorThrownUponConditionTermDurationLessThan5(t *testing.T) {
-	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
-	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest:   true,
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config:      testErrorThrownUponConditionTermDurationLessThan5(),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
-}
-
 func testErrorThrownUponConditionTermDurationLessThan5() string {
 	return `
 provider "newrelic" {
@@ -494,5 +490,3 @@ resource "newrelic_alert_condition" "foo" {
 }
 `
 }
-
-// TODO: const testAccCheckNewRelicAlertConditionConfigMulti = `
