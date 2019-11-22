@@ -100,6 +100,8 @@ func expandWidget(cfg map[string]interface{}) (*newrelic.DashboardWidget, error)
 	return widget, nil
 }
 
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint:gocyclo
 func validateWidgetData(cfg map[string]interface{}) error {
 	visualization := cfg["visualization"].(string)
 
@@ -316,8 +318,10 @@ func flattenDashboard(dashboard *newrelic.Dashboard, d *schema.ResourceData) err
 	return nil
 }
 
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint:gocyclo
 func flattenWidgets(in *[]newrelic.DashboardWidget) []map[string]interface{} {
-	var out = make([]map[string]interface{}, len(*in), len(*in))
+	var out = make([]map[string]interface{}, len(*in))
 	for i, w := range *in {
 		m := make(map[string]interface{})
 		m["widget_id"] = w.ID
@@ -400,7 +404,7 @@ func flattenWidgets(in *[]newrelic.DashboardWidget) []map[string]interface{} {
 }
 
 func flattenWidgetDataCompareWith(in []newrelic.DashboardWidgetDataCompareWith) []map[string]interface{} {
-	var out = make([]map[string]interface{}, len(in), len(in))
+	var out = make([]map[string]interface{}, len(in))
 	for i, v := range in {
 		m := make(map[string]interface{})
 
@@ -423,7 +427,7 @@ func flattenWidgetDataCompareWithPresentation(in *newrelic.DashboardWidgetDataCo
 }
 
 func flattenWidgetDataMetrics(in []newrelic.DashboardWidgetDataMetric) []map[string]interface{} {
-	var out = make([]map[string]interface{}, len(in), len(in))
+	var out = make([]map[string]interface{}, len(in))
 	for i, v := range in {
 		m := make(map[string]interface{})
 

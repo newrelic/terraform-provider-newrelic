@@ -45,6 +45,7 @@ func deletePolicy(name string) func() {
 }
 
 // A custom check function to log the internal state during a test run.
+// nolint:deadcode,unused
 func logState(t *testing.T) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		t.Logf("State: %s\n", s)
