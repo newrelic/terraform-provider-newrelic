@@ -13,7 +13,7 @@ BUILD_DIR    := ./bin/
 COVERAGE_DIR := ./coverage/
 COVERMODE     = atomic
 
-default: clean build lint vet test cover-report
+default: clean build lint tidy vet test cover-report
 
 build: fmtcheck
 	@$(GO) install
@@ -83,6 +83,10 @@ tools:
 	@echo "=== $(PKG_NAME) === [ tools            ]: installing required tooling..."
 	@GO111MODULE=on $(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint
 	@GO111MODULE=on go install github.com/bflad/tfproviderlint/cmd/tfproviderlint
+
+tidy:
+	@echo "=== $(PKG_NAME) === [ tidy             ]: tidying modules..."
+	@$(GO) mod tidy
 
 fmtcheck:
 	@echo "=== $(PKG_NAME) === [ fmtcheck         ]: Checking that code complies with gofmt requirements..."
