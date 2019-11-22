@@ -52,6 +52,8 @@ The following arguments are supported:
 - `term` - (Required) A list of terms for this condition. See [Terms](#terms) below for details.
 - `nrql` - (Required) A NRQL query. See [NRQL](#nrql) below for details.
 - `value_function` - (Optional) Possible values are `single_value`, `sum`.
+- `expected_groups` - (Optional) Number of expected groups when using `outlier` detection.
+- `ignore_overlap` - (Optional) Whether to look for a convergence of groups when using `outlier` detection.
 
 ## Terms
 
