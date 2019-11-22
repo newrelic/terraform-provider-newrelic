@@ -1,4 +1,15 @@
-## 1.7.1 (Unreleased)
+## 1.8.0 (Unreleased)
+
+IMPROVEMENTS:
+
+* feat: add import functionality for `newrelic_alert_policy` data source ([#233](https://github.com/terraform-providers/terraform-provider-newrelic/pull/233))
+* feat: allow passing an http transport ([#228](https://github.com/terraform-providers/terraform-provider-newrelic/pull/228))
+* docs: add Getting Started section ([#225](https://github.com/terraform-providers/terraform-provider-newrelic/pull/225))
+* docs: update alert infra condition docs to include runbook url argument ([#211](https://github.com/terraform-providers/terraform-provider-newrelic/pull/211))
+* docs: add info for `nrql_alert_condition` arguments `type`, `expected_groups`, and `ignore_overlap` ([#231](https://github.com/terraform-providers/terraform-provider-newrelic/pull/231))
+* fix: get `make` working again ([#236](https://github.com/terraform-providers/terraform-provider-newrelic/pull/236))
+
+
 ## 1.7.0 (November 13, 2019)
 
 BUG FIXES:
