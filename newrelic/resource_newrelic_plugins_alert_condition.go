@@ -33,7 +33,7 @@ func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 			"enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  true,
+				Default:  false,
 			},
 			"entities": {
 				Type:     schema.TypeSet,
@@ -44,7 +44,6 @@ func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 			"metric": {
 				Type:     schema.TypeString,
 				Required: true,
-				//TODO: ValidateFunc from map
 			},
 			"metric_description": {
 				Type:     schema.TypeString,
