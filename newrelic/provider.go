@@ -51,6 +51,7 @@ func Provider() terraform.ResourceProvider {
 			"newrelic_alert_policy":       dataSourceNewRelicAlertPolicy(),
 			"newrelic_application":        dataSourceNewRelicApplication(),
 			"newrelic_key_transaction":    dataSourceNewRelicKeyTransaction(),
+			"newrelic_plugin":             dataSourceNewRelicPlugin(),
 			"newrelic_synthetics_monitor": dataSourceNewRelicSyntheticsMonitor(),
 		},
 
