@@ -130,9 +130,9 @@ func TestAccNewRelicPluginsAlertCondition_MissingPolicy(t *testing.T) {
 func testAccCheckNewRelicPluginsAlertConditionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
-        if r.Type != "newrelic_plugins_alert_condition" {
-           continue
-        }
+		if r.Type != "newrelic_plugins_alert_condition" {
+			continue
+		}
 		ids, err := parseIDs(r.Primary.ID, 2)
 		if err != nil {
 			return err
