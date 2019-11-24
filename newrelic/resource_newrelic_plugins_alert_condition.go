@@ -10,12 +10,12 @@ import (
 	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
-func resourceNewRelicAlertPluginsCondition() *schema.Resource {
+func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicAlertPluginsConditionCreate,
-		Read:   resourceNewRelicAlertPluginsConditionRead,
-		Update: resourceNewRelicAlertPluginsConditionUpdate,
-		Delete: resourceNewRelicAlertPluginsConditionDelete,
+		Create: resourceNewRelicPluginsAlertConditionCreate,
+		Read:   resourceNewRelicPluginsAlertConditionRead,
+		Update: resourceNewRelicPluginsAlertConditionUpdate,
+		Delete: resourceNewRelicPluginsAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -206,7 +206,7 @@ func readAlertPluginsConditionStruct(condition *newrelic.AlertPluginsCondition, 
 	return nil
 }
 
-func resourceNewRelicAlertPluginsConditionCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicPluginsAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).Client
 	condition := buildAlertPluginsConditionStruct(d)
 
@@ -222,7 +222,7 @@ func resourceNewRelicAlertPluginsConditionCreate(d *schema.ResourceData, meta in
 	return nil
 }
 
-func resourceNewRelicAlertPluginsConditionRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicPluginsAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).Client
 
 	log.Printf("[INFO] Reading New Relic alert condition %s", d.Id())
@@ -257,7 +257,7 @@ func resourceNewRelicAlertPluginsConditionRead(d *schema.ResourceData, meta inte
 	return readAlertPluginsConditionStruct(condition, d)
 }
 
-func resourceNewRelicAlertPluginsConditionUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicPluginsAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).Client
 	condition := buildAlertPluginsConditionStruct(d)
 
@@ -282,7 +282,7 @@ func resourceNewRelicAlertPluginsConditionUpdate(d *schema.ResourceData, meta in
 	return readAlertPluginsConditionStruct(updatedCondition, d)
 }
 
-func resourceNewRelicAlertPluginsConditionDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicPluginsAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).Client
 
 	ids, err := parseIDs(d.Id(), 2)

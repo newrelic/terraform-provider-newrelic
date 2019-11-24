@@ -10,121 +10,121 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccNewRelicAlertPluginsCondition_Basic(t *testing.T) {
+func TestAccNewRelicPluginsAlertCondition_Basic(t *testing.T) {
 	rName := acctest.RandString(5)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertPluginsConditionDestroy,
+		CheckDestroy: testAccCheckNewRelicPluginsAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAlertPluginsConditionConfig(rName),
+				Config: testAccCheckNewRelicPluginsAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAlertPluginsConditionExists("newrelic_alert_plugins_condition.foo"),
+					testAccCheckNewRelicPluginsAlertConditionExists("newrelic_plugins_alert_condition.foo"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
+						"newrelic_plugins_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "type", "apm_app_metric"),
+						"newrelic_plugins_alert_condition.foo", "type", "apm_app_metric"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "enabled", "false"),
+						"newrelic_plugins_alert_condition.foo", "enabled", "false"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "runbook_url", "https://foo.example.com"),
+						"newrelic_plugins_alert_condition.foo", "runbook_url", "https://foo.example.com"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "entities.#", "1"),
+						"newrelic_plugins_alert_condition.foo", "entities.#", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.#", "1"),
+						"newrelic_plugins_alert_condition.foo", "term.#", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.1025554152.duration", "5"),
+						"newrelic_plugins_alert_condition.foo", "term.1025554152.duration", "5"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.1025554152.operator", "below"),
+						"newrelic_plugins_alert_condition.foo", "term.1025554152.operator", "below"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.1025554152.priority", "critical"),
+						"newrelic_plugins_alert_condition.foo", "term.1025554152.priority", "critical"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.1025554152.threshold", "0.75"),
+						"newrelic_plugins_alert_condition.foo", "term.1025554152.threshold", "0.75"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.1025554152.time_function", "all"),
+						"newrelic_plugins_alert_condition.foo", "term.1025554152.time_function", "all"),
 				),
 			},
 			{
-				Config: testAccCheckNewRelicAlertPluginsConditionConfigUpdated(rName),
+				Config: testAccCheckNewRelicPluginsAlertConditionConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAlertPluginsConditionExists("newrelic_alert_plugins_condition.foo"),
+					testAccCheckNewRelicPluginsAlertConditionExists("newrelic_plugins_alert_condition.foo"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "name", fmt.Sprintf("tf-test-updated-%s", rName)),
+						"newrelic_plugins_alert_condition.foo", "name", fmt.Sprintf("tf-test-updated-%s", rName)),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "enabled", "true"),
+						"newrelic_plugins_alert_condition.foo", "enabled", "true"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "runbook_url", "https://bar.example.com"),
+						"newrelic_plugins_alert_condition.foo", "runbook_url", "https://bar.example.com"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "entities.#", "1"),
+						"newrelic_plugins_alert_condition.foo", "entities.#", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.#", "1"),
+						"newrelic_plugins_alert_condition.foo", "term.#", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.1944209821.duration", "10"),
+						"newrelic_plugins_alert_condition.foo", "term.1944209821.duration", "10"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.1944209821.operator", "below"),
+						"newrelic_plugins_alert_condition.foo", "term.1944209821.operator", "below"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.1944209821.priority", "critical"),
+						"newrelic_plugins_alert_condition.foo", "term.1944209821.priority", "critical"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.1944209821.threshold", "0.65"),
+						"newrelic_plugins_alert_condition.foo", "term.1944209821.threshold", "0.65"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.1944209821.time_function", "all"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccNewRelicAlertPluginsCondition_ZeroThreshold(t *testing.T) {
-	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertPluginsConditionDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckNewRelicAlertPluginsConditionConfigZeroThreshold(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAlertPluginsConditionExists("newrelic_alert_plugins_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "enabled", "false"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "type", "apm_app_metric"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "runbook_url", "https://foo.example.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "entities.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.971858588.duration", "5"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.971858588.operator", "below"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.971858588.priority", "critical"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.971858588.threshold", "0"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_plugins_condition.foo", "term.971858588.time_function", "all"),
+						"newrelic_plugins_alert_condition.foo", "term.1944209821.time_function", "all"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccNewRelicAlertPluginsCondition(t *testing.T) {
-	resourceName := "newrelic_alert_plugins_condition.foo"
+func TestAccNewRelicPluginsAlertCondition_ZeroThreshold(t *testing.T) {
+	rName := acctest.RandString(5)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicPluginsAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicPluginsAlertConditionConfigZeroThreshold(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicPluginsAlertConditionExists("newrelic_plugins_alert_condition.foo"),
+					resource.TestCheckResourceAttr(
+						"newrelic_plugins_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"newrelic_plugins_alert_condition.foo", "enabled", "false"),
+					resource.TestCheckResourceAttr(
+						"newrelic_plugins_alert_condition.foo", "type", "apm_app_metric"),
+					resource.TestCheckResourceAttr(
+						"newrelic_plugins_alert_condition.foo", "runbook_url", "https://foo.example.com"),
+					resource.TestCheckResourceAttr(
+						"newrelic_plugins_alert_condition.foo", "entities.#", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_plugins_alert_condition.foo", "term.#", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_plugins_alert_condition.foo", "term.971858588.duration", "5"),
+					resource.TestCheckResourceAttr(
+						"newrelic_plugins_alert_condition.foo", "term.971858588.operator", "below"),
+					resource.TestCheckResourceAttr(
+						"newrelic_plugins_alert_condition.foo", "term.971858588.priority", "critical"),
+					resource.TestCheckResourceAttr(
+						"newrelic_plugins_alert_condition.foo", "term.971858588.threshold", "0"),
+					resource.TestCheckResourceAttr(
+						"newrelic_plugins_alert_condition.foo", "term.971858588.time_function", "all"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicPluginsAlertCondition(t *testing.T) {
+	resourceName := "newrelic_plugins_alert_condition.foo"
 	rName := acctest.RandString(5)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertPluginsConditionDestroy,
+		CheckDestroy: testAccCheckNewRelicPluginsAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAlertPluginsConditionConfig(rName),
+				Config: testAccCheckNewRelicPluginsAlertConditionConfig(rName),
 			},
 
 			{
@@ -136,20 +136,20 @@ func TestAccNewRelicAlertPluginsCondition(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicAlertPluginsCondition_nameGreaterThan64Char(t *testing.T) {
+func TestAccNewRelicPluginsAlertCondition_nameGreaterThan64Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckNewRelicAlertPluginsConditionConfig("really-long-name-longer-than-sixty-four-characters-so-it-causes-an-error"),
+				Config:      testAccCheckNewRelicPluginsAlertConditionConfig("really-long-name-longer-than-sixty-four-characters-so-it-causes-an-error"),
 				ExpectError: expectedErrorMsg,
 			},
 		},
 	})
 }
 
-func TestAccNewRelicAlertPluginsCondition_MissingPolicy(t *testing.T) {
+func TestAccNewRelicPluginsAlertCondition_MissingPolicy(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.Test(t, resource.TestCase{
@@ -157,18 +157,18 @@ func TestAccNewRelicAlertPluginsCondition_MissingPolicy(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAlertPluginsConditionConfig(rName),
+				Config: testAccCheckNewRelicPluginsAlertConditionConfig(rName),
 			},
 			{
 				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
-				Config:    testAccCheckNewRelicAlertPluginsConditionConfig(rName),
-				Check:     testAccCheckNewRelicAlertPluginsConditionExists("newrelic_alert_plugins_condition.foo"),
+				Config:    testAccCheckNewRelicPluginsAlertConditionConfig(rName),
+				Check:     testAccCheckNewRelicPluginsAlertConditionExists("newrelic_plugins_alert_condition.foo"),
 			},
 		},
 	})
 }
 
-func testAccCheckNewRelicAlertPluginsConditionDestroy(s *terraform.State) error {
+func testAccCheckNewRelicPluginsAlertConditionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
 		ids, err := parseIDs(r.Primary.ID, 2)
@@ -188,7 +188,7 @@ func testAccCheckNewRelicAlertPluginsConditionDestroy(s *terraform.State) error 
 	return nil
 }
 
-func testAccCheckNewRelicAlertPluginsConditionExists(n string) resource.TestCheckFunc {
+func testAccCheckNewRelicPluginsAlertConditionExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -237,7 +237,7 @@ func TestErrorThrownUponPluginsConditionNameGreaterThan64Char(t *testing.T) {
 	})
 }
 
-func testAccCheckNewRelicAlertPluginsConditionConfig(rName string) string {
+func testAccCheckNewRelicPluginsAlertConditionConfig(rName string) string {
 	return fmt.Sprintf(`
 data "newrelic_application" "app" {
 	name = "%[2]s"
@@ -247,7 +247,7 @@ resource "newrelic_alert_policy" "foo" {
   name = "tf-test-%[1]s"
 }
 
-resource "newrelic_alert_plugins_condition" "foo" {
+resource "newrelic_plugins_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name               = "tf-test-%[1]s"
@@ -272,7 +272,7 @@ resource "newrelic_alert_plugins_condition" "foo" {
 `, rName, testAccExpectedApplicationName)
 }
 
-func testAccCheckNewRelicAlertPluginsConditionConfigUpdated(rName string) string {
+func testAccCheckNewRelicPluginsAlertConditionConfigUpdated(rName string) string {
 	return fmt.Sprintf(`
 data "newrelic_application" "app" {
 	name = "%[2]s"
@@ -282,7 +282,7 @@ resource "newrelic_alert_policy" "foo" {
   name = "tf-test-updated-%[1]s"
 }
 
-resource "newrelic_alert_plugins_condition" "foo" {
+resource "newrelic_plugins_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name               = "tf-test-%[1]s"
@@ -306,7 +306,7 @@ resource "newrelic_alert_plugins_condition" "foo" {
 `, rName, testAccExpectedApplicationName)
 }
 
-func testAccCheckNewRelicAlertPluginsConditionConfigZeroThreshold(rName string) string {
+func testAccCheckNewRelicPluginsAlertConditionConfigZeroThreshold(rName string) string {
 	return fmt.Sprintf(`
 data "newrelic_application" "app" {
 	name = "%[2]s"
@@ -316,7 +316,7 @@ resource "newrelic_alert_policy" "foo" {
   name = "tf-test-%[1]s"
 }
 
-resource "newrelic_alert_plugins_condition" "foo" {
+resource "newrelic_plugins_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name            = "tf-test-%[1]s"
@@ -345,7 +345,7 @@ provider "newrelic" {
 resource "newrelic_alert_policy" "foo" {
   name = "tf-test-%[1]s"
 }
-resource "newrelic_alert_plugins_condition" "foo" {
+resource "newrelic_plugins_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name               = "really-long-name-that-is-more-than-sixtyfour-characters-long-tf-test-%[1]s"
@@ -392,7 +392,7 @@ provider "newrelic" {
 resource "newrelic_alert_policy" "foo" {
   name = "tf-test-%[1]s"
 }
-resource "newrelic_alert_plugins_condition" "foo" {
+resource "newrelic_plugins_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name               = ""
@@ -439,7 +439,7 @@ provider "newrelic" {
 resource "newrelic_alert_policy" "foo" {
   name = "tf-test-%[1]s"
 }
-resource "newrelic_alert_plugins_condition" "foo" {
+resource "newrelic_plugins_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name               = "tf-test-%[1]s"
@@ -486,7 +486,7 @@ provider "newrelic" {
 resource "newrelic_alert_policy" "foo" {
   name = "tf-test-%[1]s"
 }
-resource "newrelic_alert_plugins_condition" "foo" {
+resource "newrelic_plugins_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name               = "tf-test-%[1]s"
@@ -510,4 +510,4 @@ resource "newrelic_alert_plugins_condition" "foo" {
 `
 }
 
-// TODO: const testAccCheckNewRelicAlertPluginsConditionConfigMulti = `
+// TODO: const testAccCheckNewRelicPluginsAlertConditionConfigMulti = `
