@@ -12,7 +12,7 @@ import (
 
 func TestAccNewRelicPluginsAlertCondition_Basic(t *testing.T) {
 	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicPluginsAlertConditionDestroy,
@@ -23,8 +23,6 @@ func TestAccNewRelicPluginsAlertCondition_Basic(t *testing.T) {
 					testAccCheckNewRelicPluginsAlertConditionExists("newrelic_plugins_alert_condition.foo"),
 					resource.TestCheckResourceAttr(
 						"newrelic_plugins_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_plugins_alert_condition.foo", "type", "apm_app_metric"),
 					resource.TestCheckResourceAttr(
 						"newrelic_plugins_alert_condition.foo", "enabled", "false"),
 					resource.TestCheckResourceAttr(
@@ -77,7 +75,7 @@ func TestAccNewRelicPluginsAlertCondition_Basic(t *testing.T) {
 
 func TestAccNewRelicPluginsAlertCondition_ZeroThreshold(t *testing.T) {
 	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicPluginsAlertConditionDestroy,
@@ -118,7 +116,7 @@ func TestAccNewRelicPluginsAlertCondition(t *testing.T) {
 	resourceName := "newrelic_plugins_alert_condition.foo"
 	rName := acctest.RandString(5)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicPluginsAlertConditionDestroy,
@@ -138,7 +136,7 @@ func TestAccNewRelicPluginsAlertCondition(t *testing.T) {
 
 func TestAccNewRelicPluginsAlertCondition_nameGreaterThan64Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -152,7 +150,7 @@ func TestAccNewRelicPluginsAlertCondition_nameGreaterThan64Char(t *testing.T) {
 func TestAccNewRelicPluginsAlertCondition_MissingPolicy(t *testing.T) {
 	rName := acctest.RandString(5)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -171,6 +169,9 @@ func TestAccNewRelicPluginsAlertCondition_MissingPolicy(t *testing.T) {
 func testAccCheckNewRelicPluginsAlertConditionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).Client
 	for _, r := range s.RootModule().Resources {
+        if r.Type != "newrelic_plugins_alert_condition" {
+           continue
+        }
 		ids, err := parseIDs(r.Primary.ID, 2)
 		if err != nil {
 			return err
@@ -225,7 +226,7 @@ func testAccCheckNewRelicPluginsAlertConditionExists(n string) resource.TestChec
 func TestErrorThrownUponPluginsConditionNameGreaterThan64Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest: true,
 		Providers:  testAccProviders,
 		Steps: []resource.TestStep{
@@ -285,10 +286,10 @@ resource "newrelic_alert_policy" "foo" {
 resource "newrelic_plugins_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name               = "tf-test-%[1]s"
-  enabled            = false
+  name               = "tf-test-updated-%[1]s"
+  enabled            = true
   entities           = ["${data.newrelic_application.app.id}"]
-  runbook_url        = "https://foo.example.com"
+  runbook_url        = "https://bar.example.com"
   metric             = "my-metric"
   metric_description = "my-metric-description"
   plugin_id          = "123"
@@ -371,7 +372,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 
 func TestErrorThrownUponPluginsConditionNameLessThan1Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest: true,
 		Providers:  testAccProviders,
 		Steps: []resource.TestStep{
@@ -418,7 +419,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 
 func TestErrorThrownUponPluginsConditionTermDurationGreaterThan120(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest: true,
 		Providers:  testAccProviders,
 		Steps: []resource.TestStep{
@@ -465,7 +466,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 
 func TestErrorThrownUponPluginsConditionTermDurationLessThan5(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest: true,
 		Providers:  testAccProviders,
 		Steps: []resource.TestStep{
