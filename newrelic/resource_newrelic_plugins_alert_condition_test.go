@@ -73,45 +73,6 @@ func TestAccNewRelicPluginsAlertCondition_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicPluginsAlertCondition_ZeroThreshold(t *testing.T) {
-	rName := acctest.RandString(5)
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicPluginsAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckNewRelicPluginsAlertConditionConfigZeroThreshold(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicPluginsAlertConditionExists("newrelic_plugins_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_plugins_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_plugins_alert_condition.foo", "enabled", "false"),
-					resource.TestCheckResourceAttr(
-						"newrelic_plugins_alert_condition.foo", "type", "apm_app_metric"),
-					resource.TestCheckResourceAttr(
-						"newrelic_plugins_alert_condition.foo", "runbook_url", "https://foo.example.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_plugins_alert_condition.foo", "entities.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_plugins_alert_condition.foo", "term.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_plugins_alert_condition.foo", "term.971858588.duration", "5"),
-					resource.TestCheckResourceAttr(
-						"newrelic_plugins_alert_condition.foo", "term.971858588.operator", "below"),
-					resource.TestCheckResourceAttr(
-						"newrelic_plugins_alert_condition.foo", "term.971858588.priority", "critical"),
-					resource.TestCheckResourceAttr(
-						"newrelic_plugins_alert_condition.foo", "term.971858588.threshold", "0"),
-					resource.TestCheckResourceAttr(
-						"newrelic_plugins_alert_condition.foo", "term.971858588.time_function", "all"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccNewRelicPluginsAlertCondition(t *testing.T) {
 	resourceName := "newrelic_plugins_alert_condition.foo"
 	rName := acctest.RandString(5)
@@ -180,7 +141,7 @@ func testAccCheckNewRelicPluginsAlertConditionDestroy(s *terraform.State) error 
 		policyID := ids[0]
 		id := ids[1]
 
-		_, err = client.GetAlertCondition(policyID, id)
+		_, err = client.GetAlertPluginsCondition(policyID, id)
 		if err == nil {
 			return fmt.Errorf("alert condition still exists")
 		}
@@ -209,7 +170,7 @@ func testAccCheckNewRelicPluginsAlertConditionExists(n string) resource.TestChec
 		policyID := ids[0]
 		id := ids[1]
 
-		found, err := client.GetAlertCondition(policyID, id)
+		found, err := client.GetAlertPluginsCondition(policyID, id)
 		if err != nil {
 			return err
 		}
@@ -222,7 +183,6 @@ func testAccCheckNewRelicPluginsAlertConditionExists(n string) resource.TestChec
 	}
 }
 
-// TODO
 func TestErrorThrownUponPluginsConditionNameGreaterThan64Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	rName := acctest.RandString(5)
@@ -260,7 +220,6 @@ resource "newrelic_plugins_alert_condition" "foo" {
   plugin_id          = "123"
   plugin_guid        = "com.example.plugin"
   value_function     = "average"
-  condition_scope    = "application"
 
   term {
     duration      = 5
@@ -301,37 +260,6 @@ resource "newrelic_plugins_alert_condition" "foo" {
     operator      = "below"
     priority      = "critical"
     threshold     = "0.65"
-    time_function = "all"
-  }
-}
-`, rName, testAccExpectedApplicationName)
-}
-
-func testAccCheckNewRelicPluginsAlertConditionConfigZeroThreshold(rName string) string {
-	return fmt.Sprintf(`
-data "newrelic_application" "app" {
-	name = "%[2]s"
-}
-
-resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
-}
-
-resource "newrelic_plugins_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
-
-  name            = "tf-test-%[1]s"
-  enabled         = false
-  entities        = ["${data.newrelic_application.app.id}"]
-  metric          = "apdex"
-  runbook_url     = "https://foo.example.com"
-  condition_scope = "application"
-
-  term {
-    duration      = 5
-    operator      = "below"
-    priority      = "critical"
-    threshold     = "0"
     time_function = "all"
   }
 }
@@ -464,21 +392,21 @@ resource "newrelic_plugins_alert_condition" "foo" {
 `
 }
 
-func TestErrorThrownUponPluginsConditionTermDurationLessThan5(t *testing.T) {
+func TestAccNewRelicAlertPluginsCondition_TermDurationLessThan5(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest: true,
 		Providers:  testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testErrorThrownUponPluginsConditionTermDurationLessThan5(),
+				Config:      TestAccNewRelicAlertPluginsCondition_TermDurationLessThan5(),
 				ExpectError: expectedErrorMsg,
 			},
 		},
 	})
 }
 
-func testErrorThrownUponPluginsConditionTermDurationLessThan5() string {
+func TestAccNewRelicAlertPluginsCondition_TermDurationLessThan5() string {
 	return `
 provider "newrelic" {
   api_key = "foo"
@@ -510,5 +438,3 @@ resource "newrelic_plugins_alert_condition" "foo" {
 }
 `
 }
-
-// TODO: const testAccCheckNewRelicPluginsAlertConditionConfigMulti = `
