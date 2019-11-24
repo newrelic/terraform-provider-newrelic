@@ -183,7 +183,7 @@ func testAccCheckNewRelicPluginsAlertConditionExists(n string) resource.TestChec
 	}
 }
 
-func TestErrorThrownUponPluginsConditionNameGreaterThan64Char(t *testing.T) {
+func TestAccNewRelicAlertPluginsCondition_NameGreaterThan64Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	rName := acctest.RandString(5)
 	resource.ParallelTest(t, resource.TestCase{
@@ -191,7 +191,7 @@ func TestErrorThrownUponPluginsConditionNameGreaterThan64Char(t *testing.T) {
 		Providers:  testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testErrorThrownUponPluginsConditionNameGreaterThan64Char(rName),
+				Config:      testAccNewRelicAlertPluginsCondition_NameGreaterThan64Char(rName),
 				ExpectError: expectedErrorMsg,
 			},
 		},
@@ -266,7 +266,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 `, rName, testAccExpectedApplicationName)
 }
 
-func testErrorThrownUponPluginsConditionNameGreaterThan64Char(resourceName string) string {
+func testAccNewRelicAlertPluginsCondition_NameGreaterThan64Char(resourceName string) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
   api_key = "foo"
@@ -298,21 +298,21 @@ resource "newrelic_plugins_alert_condition" "foo" {
 `, resourceName, testAccExpectedApplicationName)
 }
 
-func TestErrorThrownUponPluginsConditionNameLessThan1Char(t *testing.T) {
+func TestAccNewRelicAlertPluginsCondition_NameLessThan1Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest: true,
 		Providers:  testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testErrorThrownUponPluginsConditionNameLessThan1Char(),
+				Config:      testAccNewRelicAlertPluginsCondition_NameLessThan1Char(),
 				ExpectError: expectedErrorMsg,
 			},
 		},
 	})
 }
 
-func testErrorThrownUponPluginsConditionNameLessThan1Char() string {
+func testAccNewRelicAlertPluginsCondition_NameLessThan1Char() string {
 	return `
 provider "newrelic" {
   api_key = "foo"
@@ -345,21 +345,21 @@ resource "newrelic_plugins_alert_condition" "foo" {
 `
 }
 
-func TestErrorThrownUponPluginsConditionTermDurationGreaterThan120(t *testing.T) {
+func TestAccNewRelicAlertPluginsCondition_TermDurationGreaterThan120(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest: true,
 		Providers:  testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testErrorThrownUponPluginsConditionTermDurationGreaterThan120(),
+				Config:      testAccNewRelicAlertPluginsCondition_TermDurationGreaterThan120(),
 				ExpectError: expectedErrorMsg,
 			},
 		},
 	})
 }
 
-func testErrorThrownUponPluginsConditionTermDurationGreaterThan120() string {
+func testAccNewRelicAlertPluginsCondition_TermDurationGreaterThan120() string {
 	return `
 provider "newrelic" {
   api_key = "foo"
@@ -399,14 +399,14 @@ func TestAccNewRelicAlertPluginsCondition_TermDurationLessThan5(t *testing.T) {
 		Providers:  testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      TestAccNewRelicAlertPluginsCondition_TermDurationLessThan5(),
+				Config:      testAccNewRelicAlertPluginsCondition_TermDurationLessThan5(),
 				ExpectError: expectedErrorMsg,
 			},
 		},
 	})
 }
 
-func TestAccNewRelicAlertPluginsCondition_TermDurationLessThan5() string {
+func testAccNewRelicAlertPluginsCondition_TermDurationLessThan5() string {
 	return `
 provider "newrelic" {
   api_key = "foo"
