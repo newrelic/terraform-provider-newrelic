@@ -6,8 +6,8 @@ import (
 	"log"
 
 	synthetics "github.com/dollarshaveclub/new-relic-synthetics-go"
-	"github.com/hashicorp/terraform/helper/logging"
-	"github.com/hashicorp/terraform/helper/pathorcontents"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
 	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 

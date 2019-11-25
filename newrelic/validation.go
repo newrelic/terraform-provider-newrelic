@@ -3,7 +3,7 @@ package newrelic
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func float64Gte(gte float64) schema.SchemaValidateFunc {
