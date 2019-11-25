@@ -48,8 +48,9 @@ func TestAccNewRelicSyntheticsAlertCondition_MissingPolicy(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
