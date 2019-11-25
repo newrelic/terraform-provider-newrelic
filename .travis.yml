@@ -4,11 +4,10 @@ go:
   - tip
 
 env:
-  - GOFLAGS=-mod=vendor GO111MODULE=on
+  GO111MODULE: 'on'
 
 script:
-- make test
-- make vet
+- make
 - make website-test
 
 matrix:
