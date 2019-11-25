@@ -203,7 +203,7 @@ github.com/mitchellh/go-wordwrap
 github.com/mitchellh/mapstructure
 # github.com/mitchellh/reflectwalk v1.0.1
 github.com/mitchellh/reflectwalk
-# github.com/newrelic/go-agent v2.15.0+incompatible
+# github.com/newrelic/go-agent v2.16.0+incompatible
 github.com/newrelic/go-agent
 github.com/newrelic/go-agent/internal
 github.com/newrelic/go-agent/internal/cat
