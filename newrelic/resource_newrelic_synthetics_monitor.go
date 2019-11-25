@@ -6,8 +6,8 @@ import (
 
 	synthetics "github.com/dollarshaveclub/new-relic-synthetics-go"
 	util "github.com/dollarshaveclub/new-relic-synthetics-go/util"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 func resourceNewRelicSyntheticsMonitor() *schema.Resource {
