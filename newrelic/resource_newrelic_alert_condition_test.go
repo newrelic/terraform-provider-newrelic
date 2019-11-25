@@ -139,7 +139,8 @@ func TestAccNewRelicAlertCondition(t *testing.T) {
 func TestAccNewRelicAlertCondition_nameGreaterThan64Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckNewRelicAlertConditionConfig("really-long-name-longer-than-sixty-four-characters-so-it-causes-an-error"),
@@ -153,8 +154,9 @@ func TestAccNewRelicAlertCondition_MissingPolicy(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckNewRelicAlertConditionConfig(rName),
@@ -229,8 +231,9 @@ func TestErrorThrownUponConditionNameGreaterThan64Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	rName := acctest.RandString(5)
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
+		IsUnitTest:   true,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testErrorThrownUponConditionNameGreaterThan64Char(rName),
@@ -366,8 +369,9 @@ resource "newrelic_alert_condition" "foo" {
 func TestErrorThrownUponConditionNameLessThan1Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
+		IsUnitTest:   true,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testErrorThrownUponConditionNameLessThan1Char(),
@@ -408,8 +412,9 @@ resource "newrelic_alert_condition" "foo" {
 func TestErrorThrownUponConditionTermDurationGreaterThan120(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
+		IsUnitTest:   true,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testErrorThrownUponConditionTermDurationGreaterThan120(),
@@ -450,8 +455,9 @@ resource "newrelic_alert_condition" "foo" {
 func TestErrorThrownUponConditionTermDurationLessThan5(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
+		IsUnitTest:   true,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testErrorThrownUponConditionTermDurationLessThan5(),
