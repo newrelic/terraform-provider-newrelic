@@ -60,6 +60,7 @@ func dataSourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}
 	d.Set("name", channel.Name)
 	d.Set("type", channel.Type)
 	d.Set("policy_ids", channel.Links.PolicyIDs)
+	d.Set("configuration", channel.Configuration)
 
 	return nil
 }
