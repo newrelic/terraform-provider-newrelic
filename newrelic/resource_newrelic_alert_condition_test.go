@@ -20,7 +20,7 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
-			// Create
+			// Test: Create
 			{
 				Config: testAccCheckNewRelicAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
@@ -53,12 +53,12 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 						"newrelic_alert_condition.foo", "term.1025554152.time_function", "all"),
 				),
 			},
-			// Check no diff on re-apply
+			// Test: Check no diff on re-apply
 			{
 				Config:             testAccCheckNewRelicAlertConditionConfig(rName),
 				ExpectNonEmptyPlan: false,
 			},
-			// Update
+			// Test: Update
 			{
 				Config: testAccCheckNewRelicAlertConditionConfigUpdated(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
@@ -91,7 +91,7 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 						"newrelic_alert_condition.foo", "term.3409672004.time_function", "any"),
 				),
 			},
-			// Import
+			// Test: Import
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
@@ -142,8 +142,9 @@ func TestAccNewRelicAlertCondition_ShortTermDuration(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
+		IsUnitTest:   true,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicAlertConditionConfigDuration(rName, 4),
@@ -157,8 +158,9 @@ func TestAccNewRelicAlertCondition_LongTermDuration(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
+		IsUnitTest:   true,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicAlertConditionConfigDuration(rName, 121),
@@ -171,7 +173,9 @@ func TestAccNewRelicAlertCondition_LongTermDuration(t *testing.T) {
 func TestAccNewRelicAlertCondition_LongName(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		IsUnitTest:   true,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckNewRelicAlertConditionConfig("really-long-name-longer-than-sixty-four-characters-so-it-causes-an-error"),
@@ -184,8 +188,9 @@ func TestAccNewRelicAlertCondition_LongName(t *testing.T) {
 func TestAccNewRelicAlertCondition_EmptyName(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`name must not be empty`)
 	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers:  testAccProviders,
+		IsUnitTest:   true,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckNewRelicAlertConditionConfig(""),
@@ -257,11 +262,9 @@ func testAccCheckNewRelicAlertConditionConfig(rName string) string {
 data "newrelic_application" "app" {
 	name = "%[2]s"
 }
-
 resource "newrelic_alert_policy" "foo" {
   name = "%[1]s"
 }
-
 resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
@@ -289,11 +292,9 @@ func testAccCheckNewRelicAlertConditionConfigUpdated(name string) string {
 data "newrelic_application" "app" {
 	name = "%[2]s"
 }
-
 resource "newrelic_alert_policy" "foo" {
   name = "%[1]s"
 }
-
 resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
@@ -321,11 +322,9 @@ func testAccCheckNewRelicAlertConditionConfigThreshold(name string, threshold in
 data "newrelic_application" "app" {
 	name = "%[3]s"
 }
-
 resource "newrelic_alert_policy" "foo" {
   name = "%[1]s"
 }
-
 resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
@@ -353,7 +352,6 @@ func testAccNewRelicAlertConditionConfigDuration(name string, duration int) stri
 provider "newrelic" {
   api_key = "foo"
 }
-
 resource "newrelic_alert_policy" "foo" {
   name = "%[1]s"
 }
