@@ -22,7 +22,7 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccCheckNewRelicAlertConditionConfig(rName),
+				Config: testAccNewRelicAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
 					resource.TestCheckResourceAttr(
@@ -55,12 +55,12 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 			},
 			// Test: Check no diff on re-apply
 			{
-				Config:             testAccCheckNewRelicAlertConditionConfig(rName),
+				Config:             testAccNewRelicAlertConditionConfig(rName),
 				ExpectNonEmptyPlan: false,
 			},
 			// Test: Update
 			{
-				Config: testAccCheckNewRelicAlertConditionConfigUpdated(rNameUpdated),
+				Config: testAccNewRelicAlertConditionConfigUpdated(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
 					resource.TestCheckResourceAttr(
@@ -109,7 +109,7 @@ func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAlertConditionConfigThreshold(rName, 0),
+				Config: testAccNewRelicAlertConditionConfigThreshold(rName, 0),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
 				),
@@ -127,11 +127,11 @@ func TestAccNewRelicAlertCondition_AlertPolicyNotFound(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAlertConditionConfig(rName),
+				Config: testAccNewRelicAlertConditionConfig(rName),
 			},
 			{
 				PreConfig: testAccDeleteNewRelicAlertPolicy(rName),
-				Config:    testAccCheckNewRelicAlertConditionConfig(rName),
+				Config:    testAccNewRelicAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
 			},
 		},
@@ -178,7 +178,7 @@ func TestAccNewRelicAlertCondition_LongName(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckNewRelicAlertConditionConfig("really-long-name-longer-than-sixty-four-characters-so-it-causes-an-error"),
+				Config:      testAccNewRelicAlertConditionConfig("really-long-name-longer-than-sixty-four-characters-so-it-causes-an-error"),
 				ExpectError: expectedErrorMsg,
 			},
 		},
@@ -193,7 +193,7 @@ func TestAccNewRelicAlertCondition_EmptyName(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckNewRelicAlertConditionConfig(""),
+				Config:      testAccNewRelicAlertConditionConfig(""),
 				ExpectError: expectedErrorMsg,
 			},
 		},
@@ -257,7 +257,7 @@ func testAccCheckNewRelicAlertConditionExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckNewRelicAlertConditionConfig(rName string) string {
+func testAccNewRelicAlertConditionConfig(rName string) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
 	api_key = "%[3]s"
@@ -290,7 +290,7 @@ resource "newrelic_alert_condition" "foo" {
 `, rName, testAccExpectedApplicationName, testAccAPIKey)
 }
 
-func testAccCheckNewRelicAlertConditionConfigUpdated(name string) string {
+func testAccNewRelicAlertConditionConfigUpdated(name string) string {
 	return fmt.Sprintf(`
 data "newrelic_application" "app" {
 	name = "%[2]s"
@@ -320,7 +320,7 @@ resource "newrelic_alert_condition" "foo" {
 `, name, testAccExpectedApplicationName)
 }
 
-func testAccCheckNewRelicAlertConditionConfigThreshold(name string, threshold int) string {
+func testAccNewRelicAlertConditionConfigThreshold(name string, threshold int) string {
 	return fmt.Sprintf(`
 data "newrelic_application" "app" {
 	name = "%[3]s"
