@@ -40,11 +40,13 @@ func eventSchema() *schema.Resource {
 					regexp.MustCompile(`^[a-zA-Z0-9_: ]+$`),
 					"only alphanumeric characters, underscores, and colons allowed for event type",
 				),
+				ForceNew: true,
 			},
 			"timestamp": {
 				Type:        schema.TypeInt,
 				Description: "Unix epoch timestamp in either seconds or milliseconds",
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"attribute": {
 				Type:     schema.TypeSet,
@@ -52,6 +54,7 @@ func eventSchema() *schema.Resource {
 				MinItems: 1,
 				MaxItems: 255,
 				Elem:     eventValueSchema(),
+				ForceNew: true,
 			},
 		},
 	}
@@ -65,17 +68,20 @@ func eventValueSchema() *schema.Resource {
 				Description:  "The name for the attribute",
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 255),
+				ForceNew:     true,
 			},
 			"value": {
 				Type:        schema.TypeString,
 				Description: "The value for the attribute",
 				Required:    true,
+				ForceNew:    true,
 			},
 			"type": {
 				Type:         schema.TypeString,
 				Description:  "Type for attribute value. Accepted values are string (default), int, or float",
 				ValidateFunc: validation.StringInSlice([]string{"", "int", "float", "string"}, true),
 				Optional:     true,
+				ForceNew:     true,
 			},
 		},
 	}
