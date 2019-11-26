@@ -259,32 +259,35 @@ func testAccCheckNewRelicAlertConditionExists(n string) resource.TestCheckFunc {
 
 func testAccCheckNewRelicAlertConditionConfig(rName string) string {
 	return fmt.Sprintf(`
+provider "newrelic" {
+	api_key = "%[3]s"
+}
 data "newrelic_application" "app" {
 	name = "%[2]s"
 }
 resource "newrelic_alert_policy" "foo" {
-  name = "%[1]s"
+	name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name            = "%[1]s"
-  enabled         = true
-  type            = "apm_app_metric"
-  entities        = ["${data.newrelic_application.app.id}"]
-  metric          = "apdex"
-  runbook_url     = "https://foo.example.com"
-  condition_scope = "application"
+	name            = "%[1]s"
+	enabled         = true
+	type            = "apm_app_metric"
+	entities        = ["${data.newrelic_application.app.id}"]
+	metric          = "apdex"
+	runbook_url     = "https://foo.example.com"
+	condition_scope = "application"
 
-  term {
-    duration      = 5
-    operator      = "below"
-    priority      = "critical"
-    threshold     = "0.75"
-    time_function = "all"
-  }
+	term {
+		duration      = 5
+		operator      = "below"
+		priority      = "critical"
+		threshold     = "0.75"
+		time_function = "all"
+	}
 }
-`, rName, testAccExpectedApplicationName)
+`, rName, testAccExpectedApplicationName, testAccAPIKey)
 }
 
 func testAccCheckNewRelicAlertConditionConfigUpdated(name string) string {
@@ -293,26 +296,26 @@ data "newrelic_application" "app" {
 	name = "%[2]s"
 }
 resource "newrelic_alert_policy" "foo" {
-  name = "%[1]s"
+	name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name            = "%[1]s"
-  enabled         = false
-  type            = "apm_app_metric"
-  entities        = ["${data.newrelic_application.app.id}"]
-  metric          = "error_percentage"
-  runbook_url     = "https://bar.example.com"
-  condition_scope = "application"
+	name            = "%[1]s"
+	enabled         = false
+	type            = "apm_app_metric"
+	entities        = ["${data.newrelic_application.app.id}"]
+	metric          = "error_percentage"
+	runbook_url     = "https://bar.example.com"
+	condition_scope = "application"
 
-  term {
-    duration      = 10 
-    operator      = "above"
-    priority      = "critical"
-    threshold     = "1.00"
-    time_function = "any"
-  }
+	term {
+		duration      = 10
+		operator      = "above"
+		priority      = "critical"
+		threshold     = "1.00"
+		time_function = "any"
+	}
 }
 `, name, testAccExpectedApplicationName)
 }
@@ -323,26 +326,26 @@ data "newrelic_application" "app" {
 	name = "%[3]s"
 }
 resource "newrelic_alert_policy" "foo" {
-  name = "%[1]s"
+	name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name            = "%[1]s"
-  enabled         = false
-  type            = "apm_app_metric"
-  entities        = ["${data.newrelic_application.app.id}"]
-  metric          = "apdex"
-  runbook_url     = "https://foo.example.com"
-  condition_scope = "application"
+	name            = "%[1]s"
+	enabled         = false
+	type            = "apm_app_metric"
+	entities        = ["${data.newrelic_application.app.id}"]
+	metric          = "apdex"
+	runbook_url     = "https://foo.example.com"
+	condition_scope = "application"
 
-  term {
-    duration      = 5
-    operator      = "below"
-    priority      = "critical"
-    threshold     = "%d"
-    time_function = "all"
-  }
+	term {
+		duration      = 5
+		operator      = "below"
+		priority      = "critical"
+		threshold     = "%d"
+		time_function = "all"
+	}
 }
 `, name, threshold, testAccExpectedApplicationName)
 }
@@ -350,26 +353,26 @@ resource "newrelic_alert_condition" "foo" {
 func testAccNewRelicAlertConditionConfigDuration(name string, duration int) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
-  api_key = "foo"
+	api_key = "foo"
 }
 resource "newrelic_alert_policy" "foo" {
-  name = "%[1]s"
+	name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
-  name            = "test-term-duration"
-  type            = "apm_app_metric"
-  entities        = ["12345"]
-  metric          = "apdex"
-  runbook_url     = "https://foo.example.com"
-  condition_scope = "application"
-  term {
-    duration      = %[2]d
-    operator      = "below"
-    priority      = "critical"
-    threshold     = "0.75"
-    time_function = "all"
-  }
+	policy_id = "${newrelic_alert_policy.foo.id}"
+	name            = "test-term-duration"
+	type            = "apm_app_metric"
+	entities        = ["12345"]
+	metric          = "apdex"
+	runbook_url     = "https://foo.example.com"
+	condition_scope = "application"
+	term {
+		duration      = %[2]d
+		operator      = "below"
+		priority      = "critical"
+		threshold     = "0.75"
+		time_function = "all"
+	}
 }
 `, name, duration)
 }

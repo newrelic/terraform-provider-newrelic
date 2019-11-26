@@ -16,6 +16,7 @@ var (
 	testAccExpectedAlertChannelName string
 	testAccExpectedApplicationName  string
 	testAccExpectedAlertPolicyName  string
+	testAccAPIKey                   string
 	testAccProviders                map[string]terraform.ResourceProvider
 	testAccProvider                 *schema.Provider
 )
@@ -27,6 +28,11 @@ func init() {
 	testAccProvider = Provider().(*schema.Provider)
 	testAccProviders = map[string]terraform.ResourceProvider{
 		"newrelic": testAccProvider,
+	}
+
+	testAccAPIKey = os.Getenv("NEWRELIC_API_KEY")
+	if v := os.Getenv("NEWRELIC_API_KEY"); v == "" {
+		testAccAPIKey = "foo"
 	}
 }
 
