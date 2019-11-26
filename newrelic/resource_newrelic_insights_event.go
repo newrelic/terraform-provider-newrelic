@@ -1,11 +1,9 @@
 package newrelic
 
 import (
-	"bytes"
-	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	"log"
+	"math/rand"
 	"regexp"
 	"strconv"
 
@@ -13,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-func resourceNewRelicCustomEvents() *schema.Resource {
+func resourceNewRelicInsightsEvent() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicCustomEventsCreate,
+		Create: resourceNewRelicInsightsInsightsEventCreate,
 		Read:   schema.Noop,
 		Delete: schema.RemoveFromState,
 
@@ -74,23 +72,24 @@ func eventValueSchema() *schema.Resource {
 				Required:    true,
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Description: "Type for attribute value. Accepted values are string, int, or float. Defaults to string.",
-				Optional:    true,
+				Type:         schema.TypeString,
+				Description:  "Type for attribute value. Accepted values are string (default), int, or float",
+				ValidateFunc: validation.StringInSlice([]string{"", "int", "float", "string"}, true),
+				Optional:     true,
 			},
 		},
 	}
 }
 
-// Event represents an Insights event
-type Event struct {
+// InsightsEvent represents an Insights event
+type InsightsEvent struct {
 	Type       string
 	Timestamp  *int
 	Attributes []map[string]interface{}
 }
 
-// MarshalJSON implements a custom marshal method for Event
-func (e *Event) MarshalJSON() ([]byte, error) {
+// MarshalJSON implements a custom marshal method for InsightsEvent
+func (e *InsightsEvent) MarshalJSON() ([]byte, error) {
 	event := map[string]interface{}{
 		"eventType": e.Type,
 	}
@@ -110,16 +109,17 @@ func (e *Event) MarshalJSON() ([]byte, error) {
 	return b, nil
 }
 
-func resourceNewRelicCustomEventsCreate(d *schema.ResourceData, meta interface{}) error {
-	var payload []*Event
+func resourceNewRelicInsightsInsightsEventCreate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ProviderConfig).InsightsInsertClient
+	var eventsPayload []*InsightsEvent
 
 	if v, ok := d.GetOkExists("event"); ok {
 		events := v.(*schema.Set).List()
-		payload = make([]*Event, len(events))
+		eventsPayload = make([]*InsightsEvent, len(events))
 
 		for i, event := range v.(*schema.Set).List() {
 			attrs := event.(map[string]interface{})["attribute"].(*schema.Set).List()
-			eventPayload := &Event{
+			eventPayload := &InsightsEvent{
 				Type:       event.(map[string]interface{})["type"].(string),
 				Attributes: make([]map[string]interface{}, len(attrs)),
 			}
@@ -151,29 +151,14 @@ func resourceNewRelicCustomEventsCreate(d *schema.ResourceData, meta interface{}
 
 				eventPayload.Attributes[i] = map[string]interface{}{key: val}
 			}
-			payload[i] = eventPayload
+			eventsPayload[i] = eventPayload
 		}
 	}
 
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		log.Print(err)
+	if err := client.PostEvent(eventsPayload); err != nil {
+		return fmt.Errorf("error occurreed while posting events to Insights: %q", err)
 	}
 
-	var gzPayload bytes.Buffer
-	gz, err := gzip.NewWriterLevel(&gzPayload, gzip.BestCompression)
-	if err != nil {
-		return fmt.Errorf("problem creating gzip writer: %s", err)
-	}
-	if _, err := gz.Write(jsonPayload); err != nil {
-		return fmt.Errorf("problem gzipping payload: %s", err)
-	}
-	if err := gz.Close(); err != nil {
-		return fmt.Errorf("problem closing gzip writer: %s", err)
-	}
-
-	log.Printf("%+v", string(jsonPayload))
-	log.Printf("%+v", string(gzPayload.Bytes()))
-
+	d.SetId(fmt.Sprintf("%d", rand.Int()))
 	return nil
 }

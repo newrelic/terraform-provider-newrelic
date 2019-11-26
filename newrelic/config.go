@@ -1,18 +1,23 @@
 package newrelic
 
 import (
+	"compress/gzip"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"log"
+	"net/url"
 
 	synthetics "github.com/dollarshaveclub/new-relic-synthetics-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
+	insights "github.com/newrelic/go-insights/client"
 	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
 // Config contains New Relic provider settings
 type Config struct {
+	AccountID          string
 	APIKey             string
 	APIURL             string
 	userAgent          string
@@ -53,6 +58,30 @@ func (c *Config) Client() (*newrelic.Client, error) {
 	return &client, nil
 }
 
+// ClientInsightsInsert returns a new Insights insert client
+func (c *Config) ClientInsightsInsert() (*insights.InsertClient, error) {
+	client := insights.NewInsertClient(c.APIKey, c.AccountID)
+
+	if c.APIURL != "" {
+		insightsURL, err := url.Parse(c.APIURL)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing API URL: %q", err)
+		}
+		insightsURL.Path = fmt.Sprintf("%s/%s/events", insightsURL.Path, c.AccountID)
+		client.URL = insightsURL
+	}
+
+	client.SetCompression(gzip.DefaultCompression)
+
+	if err := client.Validate(); err != nil {
+		return nil, err
+	}
+
+	log.Printf("[INFO] New Relic Insights insert client configured")
+
+	return client, nil
+}
+
 // ClientInfra returns a new client for accessing New Relic
 func (c *Config) ClientInfra() (*newrelic.InfraClient, error) {
 	nrConfig := newrelic.Config{
@@ -82,17 +111,10 @@ func (c *Config) ClientSynthetics() (*synthetics.Client, error) {
 	return client, nil
 }
 
-func (c *Config) ClientCustomEvents() (*CustomEventsClient, error) {
-	return nil, nil
-}
-
 // ProviderConfig for the custom provider
 type ProviderConfig struct {
-	Client             *newrelic.Client
-	InfraClient        *newrelic.InfraClient
-	Synthetics         *synthetics.Client
-	CustomEventsClient *CustomEventsClient
-}
-
-type CustomEventsClient struct {
+	Client               *newrelic.Client
+	InsightsInsertClient *insights.InsertClient
+	InfraClient          *newrelic.InfraClient
+	Synthetics           *synthetics.Client
 }
