@@ -188,17 +188,3 @@ resource "newrelic_alert_policy_channel" "foo" {
 }
 `, rName)
 }
-
-func testAccDeleteAlertChannel(name string) func() {
-	return func() {
-		client := testAccProvider.Meta().(*ProviderConfig).Client
-		channels, _ := client.ListAlertChannels()
-
-		for _, c := range channels {
-			if c.Name == name {
-				_ = client.DeleteAlertChannel(c.ID)
-				break
-			}
-		}
-	}
-}
