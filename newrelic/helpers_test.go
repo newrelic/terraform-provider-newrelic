@@ -1,10 +1,15 @@
 package newrelic
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+)
+
+var (
+	nrInternalAccount bool = os.Getenv("NR_ACC_TESTING") != ""
 )
 
 func TestParseIDs_Basic(t *testing.T) {
