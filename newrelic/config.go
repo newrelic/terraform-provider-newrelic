@@ -17,9 +17,13 @@ import (
 
 // Config contains New Relic provider settings
 type Config struct {
-	AccountID          string
+	InsightsAccountID  string
 	APIKey             string
 	APIURL             string
+	InsightsInsertKey  string
+	InsightsInsertURL  string
+	InsightsQueryKey   string
+	InsightsQueryURL   string
 	userAgent          string
 	CACertFile         string
 	InsecureSkipVerify bool
@@ -58,30 +62,6 @@ func (c *Config) Client() (*newrelic.Client, error) {
 	return &client, nil
 }
 
-// ClientInsightsInsert returns a new Insights insert client
-func (c *Config) ClientInsightsInsert() (*insights.InsertClient, error) {
-	client := insights.NewInsertClient(c.APIKey, c.AccountID)
-
-	if c.APIURL != "" {
-		insightsURL, err := url.Parse(c.APIURL)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing API URL: %q", err)
-		}
-		insightsURL.Path = fmt.Sprintf("%s/%s/events", insightsURL.Path, c.AccountID)
-		client.URL = insightsURL
-	}
-
-	client.SetCompression(gzip.DefaultCompression)
-
-	if err := client.Validate(); err != nil {
-		return nil, err
-	}
-
-	log.Printf("[INFO] New Relic Insights insert client configured")
-
-	return client, nil
-}
-
 // ClientInfra returns a new client for accessing New Relic
 func (c *Config) ClientInfra() (*newrelic.InfraClient, error) {
 	nrConfig := newrelic.Config{
@@ -96,6 +76,56 @@ func (c *Config) ClientInfra() (*newrelic.InfraClient, error) {
 	log.Printf("[INFO] New Relic Infra client configured")
 
 	return &client, nil
+}
+
+// ClientInsightsInsert returns a new Insights insert client
+func (c *Config) ClientInsightsInsert() (*insights.InsertClient, error) {
+	client := insights.NewInsertClient(c.InsightsInsertKey, c.InsightsAccountID)
+
+	if c.InsightsInsertURL != "" {
+		insightsURL, err := url.Parse(c.InsightsInsertURL)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing Insights URL: %q", err)
+		}
+		insightsURL.Path = fmt.Sprintf("%s/%s/events", insightsURL.Path, c.InsightsAccountID)
+		client.URL = insightsURL
+	}
+
+	client.SetCompression(gzip.DefaultCompression)
+
+	if len(c.InsightsInsertKey) > 1 {
+		if err := client.Validate(); err != nil {
+			return nil, err
+		}
+	}
+
+	log.Printf("[INFO] New Relic Insights insert client configured")
+
+	return client, nil
+}
+
+// ClientInsightsQuery returns a new Insights query client
+func (c *Config) ClientInsightsQuery() (*insights.QueryClient, error) {
+	client := insights.NewQueryClient(c.InsightsQueryKey, c.InsightsAccountID)
+
+	if c.InsightsQueryURL != "" {
+		insightsURL, err := url.Parse(c.InsightsQueryURL)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing Insights URL: %q", err)
+		}
+		insightsURL.Path = fmt.Sprintf("%s/%s/query", insightsURL.Path, c.InsightsAccountID)
+		client.URL = insightsURL
+	}
+
+	if len(c.InsightsQueryKey) > 1 {
+		if err := client.Validate(); err != nil {
+			return nil, err
+		}
+	}
+
+	log.Printf("[INFO] New Relic Insights query client configured")
+
+	return client, nil
 }
 
 // ClientSynthetics returns a new client for accessing New Relic Synthetics
@@ -115,6 +145,7 @@ func (c *Config) ClientSynthetics() (*synthetics.Client, error) {
 type ProviderConfig struct {
 	Client               *newrelic.Client
 	InsightsInsertClient *insights.InsertClient
+	InsightsQueryClient  *insights.QueryClient
 	InfraClient          *newrelic.InfraClient
 	Synthetics           *synthetics.Client
 }

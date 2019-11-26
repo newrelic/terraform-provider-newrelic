@@ -18,15 +18,9 @@ const TerraformProviderProductUserAgent = "terraform-provider-newrelic"
 func Provider() terraform.ResourceProvider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"account_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_ACCOUNT_ID", nil),
-				Sensitive:   true,
-			},
 			"api_key": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_KEY", nil),
 				Sensitive:   true,
 			},
@@ -35,10 +29,33 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_URL", "https://api.newrelic.com/v2"),
 			},
+			"insights_account_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_ACCOUNT_ID", nil),
+				Sensitive:   true,
+			},
+			"insights_insert_key": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_INSERT_KEY", nil),
+				Sensitive:   true,
+			},
 			"insights_insert_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_INSERT_URL", "https://insights-collector.newrelic.com/v1/accounts"),
+			},
+			"insights_query_key": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_QUERY_KEY", nil),
+				Sensitive:   true,
+			},
+			"insights_query_url": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_QUERY_URL", "https://insights-api.newrelic.com/v1/accounts"),
 			},
 			"infra_api_url": {
 				Type:        schema.TypeString,
@@ -117,14 +134,24 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		return nil, fmt.Errorf("error initializing New Relic Synthetics client: %s", err)
 	}
 
-	insightsConfig := Config{
-		AccountID: data.Get("account_id").(string),
-		APIKey:    data.Get("api_key").(string),
-		APIURL:    data.Get("insights_insert_url").(string),
+	insightsInsertConfig := Config{
+		InsightsAccountID: data.Get("insights_account_id").(string),
+		InsightsInsertKey: data.Get("insights_insert_key").(string),
+		InsightsInsertURL: data.Get("insights_insert_url").(string),
 	}
-	clientInsightsInsert, err := insightsConfig.ClientInsightsInsert()
+	clientInsightsInsert, err := insightsInsertConfig.ClientInsightsInsert()
 	if err != nil {
 		return nil, fmt.Errorf("error initializing New Relic Insights insert client: %s", err)
+	}
+
+	insightsQueryConfig := Config{
+		InsightsAccountID: data.Get("insights_account_id").(string),
+		InsightsQueryKey:  data.Get("insights_query_key").(string),
+		InsightsQueryURL:  data.Get("insights_query_url").(string),
+	}
+	clientInsightsQuery, err := insightsQueryConfig.ClientInsightsQuery()
+	if err != nil {
+		return nil, fmt.Errorf("error initializing New Relic Insights query client: %s", err)
 	}
 
 	infraConfig := Config{
@@ -142,6 +169,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		Client:               client,
 		InfraClient:          clientInfra,
 		InsightsInsertClient: clientInsightsInsert,
+		InsightsQueryClient:  clientInsightsQuery,
 		Synthetics:           clientSynthetics,
 	}
 
