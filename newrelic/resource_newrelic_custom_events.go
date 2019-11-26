@@ -17,7 +17,6 @@ func resourceNewRelicCustomEvents() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceNewRelicCustomEventsCreate,
 		Read:   schema.Noop,
-		Update: resourceNewRelicCustomEventsUpdate,
 		Delete: schema.RemoveFromState,
 
 		Schema: map[string]*schema.Schema{
@@ -26,6 +25,7 @@ func resourceNewRelicCustomEvents() *schema.Resource {
 				Required: true,
 				MinItems: 1,
 				Elem:     eventSchema(),
+				ForceNew: true,
 			},
 		},
 	}
@@ -173,6 +173,5 @@ func resourceNewRelicCustomEventsCreate(d *schema.ResourceData, meta interface{}
 	log.Printf("%+v", string(jsonPayload))
 	log.Printf("%+v", string(gzPayload.Bytes()))
 
-func resourceNewRelicCustomEventsUpdate(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
