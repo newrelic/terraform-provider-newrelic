@@ -56,7 +56,7 @@ func TestAccNewRelicSyntheticsAlertCondition_MissingPolicy(t *testing.T) {
 				Config: testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
 			},
 			{
-				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
+				PreConfig: testAccDeleteNewRelicAlertPolicy(fmt.Sprintf("tf-test-%s", rName)),
 				Config:    testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicSyntheticsAlertConditionExists("newrelic_synthetics_alert_condition.foo"),
 			},
