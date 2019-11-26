@@ -1,6 +1,8 @@
 package newrelic
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -151,14 +153,25 @@ func resourceNewRelicCustomEventsCreate(d *schema.ResourceData, meta interface{}
 		}
 	}
 
-	b, err := json.Marshal(payload)
+	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
 		log.Print(err)
 	}
-	log.Printf("%+v", string(b))
 
-	return nil
-}
+	var gzPayload bytes.Buffer
+	gz, err := gzip.NewWriterLevel(&gzPayload, gzip.BestCompression)
+	if err != nil {
+		return fmt.Errorf("problem creating gzip writer: %s", err)
+	}
+	if _, err := gz.Write(jsonPayload); err != nil {
+		return fmt.Errorf("problem gzipping payload: %s", err)
+	}
+	if err := gz.Close(); err != nil {
+		return fmt.Errorf("problem closing gzip writer: %s", err)
+	}
+
+	log.Printf("%+v", string(jsonPayload))
+	log.Printf("%+v", string(gzPayload.Bytes()))
 
 func resourceNewRelicCustomEventsUpdate(d *schema.ResourceData, meta interface{}) error {
 	return nil
