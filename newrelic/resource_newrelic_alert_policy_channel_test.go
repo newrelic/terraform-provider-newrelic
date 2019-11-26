@@ -21,7 +21,7 @@ func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 			{
 				Config: testAccNewRelicAlertPolicyChannelConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
+					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
 				),
 			},
 			// Test: No diff on re-apply
@@ -31,9 +31,9 @@ func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 			},
 			// Test: Update
 			{
-				Config: testAccCheckNewRelicAlertPolicyChannelConfigUpdated(rName),
+				Config: testAccNewRelicAlertPolicyChannelConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
+					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
 				),
 			},
 			// Test: Import
@@ -60,6 +60,9 @@ func TestAccNewRelicAlertPolicyChannel_AlertPolicyNotFound(t *testing.T) {
 			{
 				PreConfig: testAccDeleteAlertPolicy(rName),
 				Config:    testAccNewRelicAlertPolicyChannelConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
+				),
 			},
 		},
 	})
@@ -79,6 +82,9 @@ func TestAccNewRelicAlertPolicyChannel_AlertChannelNotFound(t *testing.T) {
 			{
 				PreConfig: testAccDeleteAlertChannel(rName),
 				Config:    testAccNewRelicAlertPolicyChannelConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
+				),
 			},
 		},
 	})
@@ -111,7 +117,7 @@ func testAccCheckNewRelicAlertPolicyChannelDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFunc {
+func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -166,7 +172,7 @@ resource "newrelic_alert_policy_channel" "foo" {
 `, name)
 }
 
-func testAccCheckNewRelicAlertPolicyChannelConfigUpdated(rName string) string {
+func testAccNewRelicAlertPolicyChannelConfigUpdated(rName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
   name = "tf-test-updated-%[1]s"
