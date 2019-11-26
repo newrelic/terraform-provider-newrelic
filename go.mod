@@ -7,6 +7,7 @@ require (
 	github.com/golangci/golangci-lint v1.21.0
 	github.com/hashicorp/terraform-plugin-sdk v1.4.0
 	github.com/newrelic/go-agent v2.16.0+incompatible
+	github.com/newrelic/go-insights v1.0.2
 	github.com/paultyng/go-newrelic/v4 v4.9.1
 	github.com/ulikunitz/xz v0.5.6 // indirect
 	github.com/vmihailenco/msgpack v4.0.2+incompatible // indirect
