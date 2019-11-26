@@ -32,6 +32,9 @@ func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 		Read:   resourceNewRelicAlertPolicyChannelRead,
 		// Update: Not currently supported in API
 		Delete: resourceNewRelicAlertPolicyChannelDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
 				Type:     schema.TypeInt,
