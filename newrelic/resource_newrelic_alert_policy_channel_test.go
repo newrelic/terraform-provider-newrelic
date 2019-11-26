@@ -19,21 +19,21 @@ func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccCheckNewRelicAlertPolicyChannelConfig(rName),
+				Config: testAccNewRelicAlertPolicyChannelConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
+					testAccNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
 				),
 			},
 			// Test: No diff on re-apply
 			{
-				Config:             testAccCheckNewRelicAlertPolicyChannelConfig(rName),
+				Config:             testAccNewRelicAlertPolicyChannelConfig(rName),
 				ExpectNonEmptyPlan: false,
 			},
 			// Test: Update
 			{
 				Config: testAccCheckNewRelicAlertPolicyChannelConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
+					testAccNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
 				),
 			},
 			// Test: Import
@@ -59,7 +59,7 @@ func TestAccNewRelicAlertPolicyChannel_AlertPolicyNotFound(t *testing.T) {
 			},
 			{
 				PreConfig: testAccDeleteAlertPolicy(rName),
-				Config:    testAccCheckNewRelicAlertPolicyChannelConfig(rName),
+				Config:    testAccNewRelicAlertPolicyChannelConfig(rName),
 			},
 		},
 	})
@@ -78,7 +78,7 @@ func TestAccNewRelicAlertPolicyChannel_AlertChannelNotFound(t *testing.T) {
 			},
 			{
 				PreConfig: testAccDeleteAlertChannel(rName),
-				Config:    testAccCheckNewRelicAlertPolicyChannelConfig(rName),
+				Config:    testAccNewRelicAlertPolicyChannelConfig(rName),
 			},
 		},
 	})
@@ -111,7 +111,7 @@ func testAccCheckNewRelicAlertPolicyChannelDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFunc {
+func testAccNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -143,7 +143,7 @@ func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFu
 	}
 }
 
-func testAccCheckNewRelicAlertPolicyChannelConfig(name string) string {
+func testAccNewRelicAlertPolicyChannelConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
   name = "%[1]s"
