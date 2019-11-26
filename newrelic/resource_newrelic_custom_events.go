@@ -82,12 +82,14 @@ func eventValueSchema() *schema.Resource {
 	}
 }
 
+// Event represents an Insights event
 type Event struct {
 	Type       string
 	Timestamp  *int
 	Attributes []map[string]interface{}
 }
 
+// MarshalJSON implements a custom marshal method for Event
 func (e *Event) MarshalJSON() ([]byte, error) {
 	event := map[string]interface{}{
 		"eventType": e.Type,
