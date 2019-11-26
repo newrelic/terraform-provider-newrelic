@@ -33,16 +33,18 @@ func eventSchema() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The event's name",
 				ValidateFunc: validation.StringMatch(
 					regexp.MustCompile(`[a-zA-Z0-9_:]+`),
 					"only alphanumeric characters, underscores, and colons allowed for event type",
 				),
 			},
 			"timestamp": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "Unix epoch timestamp in either seconds or milliseconds",
+				Optional:    true,
 			},
 			"attribute": {
 				Type:     schema.TypeSet,
@@ -60,16 +62,19 @@ func eventValueSchema() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"key": {
 				Type:         schema.TypeString,
+				Description:  "The name for the attribute",
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 255),
 			},
 			"value": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The value for the attribute",
+				Required:    true,
 			},
 			"type": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Type for attribute value. Accepted values are string, int, or float. Defaults to string.",
+				Optional:    true,
 			},
 		},
 	}
