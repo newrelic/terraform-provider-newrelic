@@ -37,7 +37,7 @@ func eventSchema() *schema.Resource {
 				Required:    true,
 				Description: "The event's name",
 				ValidateFunc: validation.StringMatch(
-					regexp.MustCompile(`[a-zA-Z0-9_:]+`),
+					regexp.MustCompile(`^[a-zA-Z0-9_: ]+$`),
 					"only alphanumeric characters, underscores, and colons allowed for event type",
 				),
 			},
