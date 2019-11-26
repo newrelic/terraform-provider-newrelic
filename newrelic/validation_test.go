@@ -55,6 +55,29 @@ func TestValidationFloat64Gte(t *testing.T) {
 	})
 }
 
+func TestValidationFloat64AtLeast(t *testing.T) {
+	runTestCases(t, []testCase{
+		{
+			val: 1.1,
+			f:   float64AtLeast(1.1),
+		},
+		{
+			val: 1.2,
+			f:   float64AtLeast(1.1),
+		},
+		{
+			val:         "foo",
+			f:           float64AtLeast(1.1),
+			expectedErr: regexp.MustCompile(`expected type of [\w]+ to be float64`),
+		},
+		{
+			val:         0.1,
+			f:           float64AtLeast(1.1),
+			expectedErr: regexp.MustCompile(`expected [\w]+ to be at least 1.100000, got 0.100000`),
+		},
+	})
+}
+
 func runTestCases(t *testing.T, cases []testCase) {
 	matchErr := func(errs []error, r *regexp.Regexp) bool {
 		// err must match one provided
