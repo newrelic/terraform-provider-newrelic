@@ -57,7 +57,7 @@ test: clean fmtcheck
 	@$(GO) test -i $(TEST) || exit 1
 	@for d in $(GO_PKGS); do \
 		pkg=`basename $$d` ;\
-		$(GO) test $(TESTARGS) -timeout=30s -parallel=4 -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/$$pkg.tmp $$d ;\
+		$(GO) test $(TESTARGS) -timeout=30s -parallel=4 -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/$$pkg.tmp $$d || exit 1; \
 	done
 
 testacc: fmtcheck
@@ -82,7 +82,8 @@ fmt:
 tools:
 	@echo "=== $(PKG_NAME) === [ tools            ]: installing required tooling..."
 	@GO111MODULE=on $(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint
-	@GO111MODULE=on go install github.com/bflad/tfproviderlint/cmd/tfproviderlint
+	@GO111MODULE=on $(GO) install github.com/bflad/tfproviderlint/cmd/tfproviderlint
+	@GO111MODULE=on $(GO) install github.com/client9/misspell/cmd/misspell
 
 tidy:
 	@echo "=== $(PKG_NAME) === [ tidy             ]: tidying modules..."
@@ -123,6 +124,10 @@ ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
 	git clone https://$(WEBSITE_REPO) $(GOPATH)/src/$(WEBSITE_REPO)
 endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
+
+website-lint:
+	@echo "=== $(PKG_NAME) === [ website-lint     ]: linting website..."
+	@misspell -error -source=text website/
 
 .PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test tools lint cover-report
 
