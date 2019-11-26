@@ -20,7 +20,7 @@ func dataSourceNewRelicPlugin() *schema.Resource {
 			},
 			"id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 		},
 	}
