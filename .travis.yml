@@ -4,11 +4,17 @@ go:
   - tip
 
 env:
-  GO111MODULE: 'on'
+  global: GOFLAGS=-mod=vendor
+
+install:
+- make tools
 
 script:
-- make
+- make lint
+- make vet
+- make test
 - make website-test
+- make website-lint
 
 matrix:
   fast_finish: true
