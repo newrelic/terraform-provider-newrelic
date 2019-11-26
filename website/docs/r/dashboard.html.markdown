@@ -141,6 +141,7 @@ Each visualization type supports an additional set of arguments:
     * `limit` - (Optional) The limit of distinct data series to display.  
 
 ### Nested `filter` block
+
 The optional filter block supports the following arguments:
   * `event_types` - (Optional) A list of event types to enable filtering for.
   * `attributes` - (Optional) A list of attributes belonging to the specified event types to enable filtering for.
