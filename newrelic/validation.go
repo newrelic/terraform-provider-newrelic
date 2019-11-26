@@ -42,9 +42,9 @@ func intInSlice(valid []int) schema.SchemaValidateFunc {
 	}
 }
 
-// Float64AtLeast returns a SchemaValidateFunc which tests if the provided value
+// float64AtLeast returns a SchemaValidateFunc which tests if the provided value
 // is of type float64 and is at least min (inclusive)
-func Float64AtLeast(min float64) schema.SchemaValidateFunc {
+func float64AtLeast(min float64) schema.SchemaValidateFunc {
 	return func(i interface{}, k string) (s []string, es []error) {
 		v, ok := i.(float64)
 		if !ok {
@@ -53,7 +53,7 @@ func Float64AtLeast(min float64) schema.SchemaValidateFunc {
 		}
 
 		if v < min {
-			es = append(es, fmt.Errorf("expected %s to be at least (%f), got %f", k, min, v))
+			es = append(es, fmt.Errorf("expected %s to be at least %f, got %f", k, min, v))
 			return
 		}
 
