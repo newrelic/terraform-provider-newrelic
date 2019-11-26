@@ -82,9 +82,17 @@ func (c *Config) ClientSynthetics() (*synthetics.Client, error) {
 	return client, nil
 }
 
+func (c *Config) ClientCustomEvents() (*CustomEventsClient, error) {
+	return nil, nil
+}
+
 // ProviderConfig for the custom provider
 type ProviderConfig struct {
-	Client      *newrelic.Client
-	InfraClient *newrelic.InfraClient
-	Synthetics  *synthetics.Client
+	Client             *newrelic.Client
+	InfraClient        *newrelic.InfraClient
+	Synthetics         *synthetics.Client
+	CustomEventsClient *CustomEventsClient
+}
+
+type CustomEventsClient struct {
 }
