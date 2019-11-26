@@ -11,6 +11,7 @@ import (
 )
 
 var alertChannelTypes = map[string][]string{
+	// Campfire no longer supported by New Relic (remove this option from here and docs eventually)
 	"campfire": {
 		"room",
 		"subdomain",
@@ -20,6 +21,7 @@ var alertChannelTypes = map[string][]string{
 		"include_json_attachment",
 		"recipients",
 	},
+	// HipChat no longer supported by New Relic (remove this option from here and docs eventually)
 	"hipchat": {
 		"auth_token",
 		"base_url",
