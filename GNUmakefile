@@ -57,7 +57,7 @@ test: clean fmtcheck
 	@$(GO) test -i $(TEST) || exit 1
 	@for d in $(GO_PKGS); do \
 		pkg=`basename $$d` ;\
-		$(GO) test $(TESTARGS) -timeout=30s -parallel=4 -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/$$pkg.tmp $$d ;\
+		$(GO) test $(TESTARGS) -timeout=30s -parallel=4 -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/$$pkg.tmp $$d || exit 1; \
 	done
 
 testacc: fmtcheck
