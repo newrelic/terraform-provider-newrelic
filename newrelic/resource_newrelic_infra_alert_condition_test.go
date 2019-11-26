@@ -163,7 +163,7 @@ func TestAccNewRelicInfraAlertCondition_MissingPolicy(t *testing.T) {
 				Config: testAccCheckNewRelicInfraAlertConditionConfig(rName),
 			},
 			{
-				PreConfig: deletePolicy(fmt.Sprintf("tf-test-%s", rName)),
+				PreConfig: testAccDeleteNewRelicAlertPolicy(fmt.Sprintf("tf-test-%s", rName)),
 				Config:    testAccCheckNewRelicInfraAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
 			},
