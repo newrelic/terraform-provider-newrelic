@@ -42,7 +42,7 @@ func TestSerializeIDs_Basic(t *testing.T) {
 	}
 }
 
-func deletePolicy(name string) func() {
+func testAccDeleteNewRelicAlertPolicy(name string) func() {
 	return func() {
 		client := testAccProvider.Meta().(*ProviderConfig).Client
 		policies, _ := client.ListAlertPolicies()
