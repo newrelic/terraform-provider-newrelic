@@ -10,20 +10,78 @@ import (
 )
 
 func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
+	resourceName := "newrelic_alert_policy_channel.foo"
 	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertPolicyChannelDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicAlertPolicyChannelConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
+				),
+			},
+			// Test: No diff on re-apply
+			{
+				Config:             testAccNewRelicAlertPolicyChannelConfig(rName),
+				ExpectNonEmptyPlan: false,
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicAlertPolicyChannelConfigUpdated(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertPolicyChannel_AlertPolicyNotFound(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyChannelDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAlertPolicyChannelConfig(rName),
+				Config: testAccNewRelicAlertPolicyConfig(rName),
+			},
+			{
+				PreConfig: testAccDeleteAlertPolicy(rName),
+				Config:    testAccNewRelicAlertPolicyChannelConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
 				),
 			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertPolicyChannel_AlertChannelNotFound(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertPolicyChannelDestroy,
+		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAlertPolicyChannelConfigUpdated(rName),
+				Config: testAccNewRelicAlertPolicyConfig(rName),
+			},
+			{
+				PreConfig: testAccDeleteAlertChannel(rName),
+				Config:    testAccNewRelicAlertPolicyChannelConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
 				),
@@ -91,14 +149,14 @@ func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFu
 	}
 }
 
-func testAccCheckNewRelicAlertPolicyChannelConfig(rName string) string {
+func testAccNewRelicAlertPolicyChannelConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+  name = "%[1]s"
 }
 
 resource "newrelic_alert_channel" "foo" {
-  name = "tf-test-%[1]s"
+  name = "%[1]s"
 	type = "email"
 	
 	configuration = {
@@ -111,10 +169,10 @@ resource "newrelic_alert_policy_channel" "foo" {
   policy_id  = "${newrelic_alert_policy.foo.id}"
   channel_id = "${newrelic_alert_channel.foo.id}"
 }
-`, rName)
+`, name)
 }
 
-func testAccCheckNewRelicAlertPolicyChannelConfigUpdated(rName string) string {
+func testAccNewRelicAlertPolicyChannelConfigUpdated(rName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
   name = "tf-test-updated-%[1]s"
