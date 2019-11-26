@@ -22,6 +22,18 @@ func TestParseIDs_Basic(t *testing.T) {
 	}
 }
 
+func TestParseIDs_BadIDs(t *testing.T) {
+	_, err := parseIDs("12", 2)
+	if err == nil {
+		t.Fatal(err)
+	}
+
+	_, err = parseIDs("a:b", 2)
+	if err == nil {
+		t.Fatal(err)
+	}
+}
+
 func TestSerializeIDs_Basic(t *testing.T) {
 	id := serializeIDs([]int{1, 2})
 
