@@ -222,7 +222,7 @@ data "newrelic_application" "app" {
 data "newrelic_plugin" "foo" {
 	guid = "net.kenjij.newrelic_redis_plugin"
 }
-data "newrelic_component" "foo" {
+data "newrelic_plugin_component" "foo" {
 	plugin_id = "${data.newrelic_plugin.foo.id}"
 	name = "MyRedisServer"
 }
@@ -234,7 +234,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 
 	name               = "tf-test-%[1]s"
 	enabled            = false
-	entities           = ["${data.newrelic_component.foo.id}"]
+	entities           = ["${data.newrelic_plugin_component.foo.id}"]
 	metric             = "Component/Connection/Clients[connections]"
 	runbook_url        = "https://foo.example.com"
 	metric_description = "my-metric-description"
@@ -261,7 +261,7 @@ data "newrelic_application" "app" {
 data "newrelic_plugin" "foo" {
 	guid = "net.kenjij.newrelic_redis_plugin"
 }
-data "newrelic_component" "foo" {
+data "newrelic_plugin_component" "foo" {
 	plugin_id = "${data.newrelic_plugin.foo.id}"
 	name = "MyRedisServer"
 }
@@ -273,7 +273,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 
 	name               = "tf-test-updated-%[1]s"
 	enabled            = true
-	entities           = ["${data.newrelic_component.foo.id}"]
+	entities           = ["${data.newrelic_plugin_component.foo.id}"]
 	runbook_url        = "https://bar.example.com"
 	metric             = "Component/Connection/Clients[connections]"
 	metric_description = "my-metric-description"
@@ -333,7 +333,7 @@ provider "newrelic" {
 data "newrelic_plugin" "foo" {
   guid = "net.kenjij.newrelic_redis_plugin"
 }
-data "newrelic_component" "foo" {
+data "newrelic_plugin_component" "foo" {
 	plugin_id = "${data.newrelic_plugin.foo.id}"
 	name = "MyRedisServer"
 }
@@ -345,7 +345,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 
   name               = "really-long-name-that-is-more-than-sixtyfour-characters-long-tf-test-%[1]s"
   enabled            = false
-  entities           = ["${data.newrelic_component.foo.id}"]
+  entities           = ["${data.newrelic_plugin_component.foo.id}"]
   runbook_url        = "https://foo.example.com"
   metric             = "Component/Connection/Clients[connections]"
   metric_description = "my-metric-description"
@@ -387,7 +387,7 @@ provider "newrelic" {
 data "newrelic_plugin" "foo" {
 	guid = "net.kenjij.newrelic_redis_plugin"
 }
-data "newrelic_component" "foo" {
+data "newrelic_plugin_component" "foo" {
 	plugin_id = "${data.newrelic_plugin.foo.id}"
 	name = "MyRedisServer"
 }
@@ -399,7 +399,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 	
 	name               = ""
 	enabled            = false
-	entities           = ["${data.newrelic_component.foo.id}"]
+	entities           = ["${data.newrelic_plugin_component.foo.id}"]
 	runbook_url        = "https://foo.example.com"
 	metric             = "Component/Connection/Clients[connections]"
 	metric_description = "my-metric-description"
@@ -441,7 +441,7 @@ provider "newrelic" {
 data "newrelic_plugin" "foo" {
 	guid = "net.kenjij.newrelic_redis_plugin"
 }
-data "newrelic_component" "foo" {
+data "newrelic_plugin_component" "foo" {
 	plugin_id = "${data.newrelic_plugin.foo.id}"
 	name = "MyRedisServer"
 }
@@ -453,7 +453,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 
 	name               = "tf-test-%[1]s"
 	enabled            = false
-	entities           = ["${data.newrelic_component.foo.id}"]
+	entities           = ["${data.newrelic_plugin_component.foo.id}"]
 	runbook_url        = "https://foo.example.com"
 	metric             = "Component/Connection/Clients[connections]"
 	metric_description = "my-metric-description"
@@ -495,7 +495,7 @@ provider "newrelic" {
 data "newrelic_plugin" "foo" {
 	guid = "net.kenjij.newrelic_redis_plugin"
 }
-data "newrelic_component" "foo" {
+data "newrelic_plugin_component" "foo" {
 	plugin_id = "${data.newrelic_plugin.foo.id}"
 	name = "MyRedisServer"
 }
@@ -507,7 +507,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 
 	name               = "tf-test-%[1]s"
 	enabled            = false
-	entities           = ["${data.newrelic_component.foo.id}"]
+	entities           = ["${data.newrelic_plugin_component.foo.id}"]
 	runbook_url        = "https://foo.example.com"
 	metric             = "Component/Connection/Clients[connections]"
 	metric_description = "my-metric-description"

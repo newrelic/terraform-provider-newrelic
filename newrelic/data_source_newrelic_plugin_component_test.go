@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccNewRelicComponent_Basic(t *testing.T) {
+func TestAccNewRelicPluginComponent_Basic(t *testing.T) {
 	if !nrInternalAccount {
 		t.Skipf("New Relic internal testing account required")
 	}
@@ -18,34 +18,34 @@ func TestAccNewRelicComponent_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicComponentConfig(),
+				Config: testAccNewRelicPluginComponentConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicComponentDataSource("data.newrelic_component.foo"),
+					testAccCheckNewRelicPluginComponentDataSource("data.newrelic_plugin_component.foo"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckNewRelicComponentDataSource(n string) resource.TestCheckFunc {
+func testAccCheckNewRelicPluginComponentDataSource(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
 		a := r.Primary.Attributes
 
 		if a["id"] == "" {
-			return fmt.Errorf("expected to get a component from New Relic")
+			return fmt.Errorf("expected to get a plugin component from New Relic")
 		}
 
 		return nil
 	}
 }
 
-func testAccNewRelicComponentConfig() string {
+func testAccNewRelicPluginComponentConfig() string {
 	return `
 data "newrelic_plugin" "foo" {
 	guid = "net.kenjij.newrelic_redis_plugin"
 }
-data "newrelic_component" "foo" {
+data "newrelic_plugin_component" "foo" {
 	plugin_id = "${data.newrelic_plugin.foo.id}"
 	name = "MyRedisServer"
 }
