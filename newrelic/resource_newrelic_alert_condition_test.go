@@ -11,13 +11,16 @@ import (
 )
 
 func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-	rNameUpdated := fmt.Sprintf("tf-test-updated-%s", acctest.RandString(5))
+	resourceName := "newrelic_alert_condition.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	rNameUpdated := fmt.Sprintf("tf-test-updated-%s", rand)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
+			// Create
 			{
 				Config: testAccCheckNewRelicAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
@@ -27,11 +30,15 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "type", "apm_app_metric"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "enabled", "false"),
+						"newrelic_alert_condition.foo", "enabled", "true"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "runbook_url", "https://foo.example.com"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "entities.#", "1"),
+					resource.TestCheckResourceAttr(
+						"newrelic_alert_condition.foo", "metric", "apdex"),
+					resource.TestCheckResourceAttr(
+						"newrelic_alert_condition.foo", "condition_scope", "application"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "term.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -46,6 +53,12 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 						"newrelic_alert_condition.foo", "term.1025554152.time_function", "all"),
 				),
 			},
+			// Check no diff on re-apply
+			{
+				Config:             testAccCheckNewRelicAlertConditionConfig(rName),
+				ExpectNonEmptyPlan: false,
+			},
+			// Update
 			{
 				Config: testAccCheckNewRelicAlertConditionConfigUpdated(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
@@ -53,24 +66,36 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "name", rNameUpdated),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "enabled", "true"),
+						"newrelic_alert_condition.foo", "type", "apm_app_metric"),
+					resource.TestCheckResourceAttr(
+						"newrelic_alert_condition.foo", "enabled", "false"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "runbook_url", "https://bar.example.com"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "entities.#", "1"),
 					resource.TestCheckResourceAttr(
+						"newrelic_alert_condition.foo", "metric", "error_percentage"),
+					resource.TestCheckResourceAttr(
+						"newrelic_alert_condition.foo", "condition_scope", "application"),
+					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "term.#", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1944209821.duration", "10"),
+						"newrelic_alert_condition.foo", "term.3409672004.duration", "10"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1944209821.operator", "below"),
+						"newrelic_alert_condition.foo", "term.3409672004.operator", "above"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1944209821.priority", "critical"),
+						"newrelic_alert_condition.foo", "term.3409672004.priority", "critical"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1944209821.threshold", "0.65"),
+						"newrelic_alert_condition.foo", "term.3409672004.threshold", "1"),
 					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1944209821.time_function", "all"),
+						"newrelic_alert_condition.foo", "term.3409672004.time_function", "any"),
 				),
+			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -87,57 +112,13 @@ func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
 				Config: testAccCheckNewRelicAlertConditionConfigThreshold(rName, 0),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "name", rName),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "enabled", "false"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "type", "apm_app_metric"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "runbook_url", "https://foo.example.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "entities.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.971858588.duration", "5"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.971858588.operator", "below"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.971858588.priority", "critical"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.971858588.threshold", "0"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.971858588.time_function", "all"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccNewRelicAlertCondition(t *testing.T) {
-	resourceName := "newrelic_alert_condition.foo"
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckNewRelicAlertConditionConfig(rName),
-			},
-
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func TestAccNewRelicAlertCondition_MissingPolicy(t *testing.T) {
+func TestAccNewRelicAlertCondition_AlertPolicyNotFound(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -285,7 +266,7 @@ resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name            = "%[1]s"
-  enabled         = false
+  enabled         = true
   type            = "apm_app_metric"
   entities        = ["${data.newrelic_application.app.id}"]
   metric          = "apdex"
@@ -303,7 +284,7 @@ resource "newrelic_alert_condition" "foo" {
 `, rName, testAccExpectedApplicationName)
 }
 
-func testAccCheckNewRelicAlertConditionConfigUpdated(rName string) string {
+func testAccCheckNewRelicAlertConditionConfigUpdated(name string) string {
 	return fmt.Sprintf(`
 data "newrelic_application" "app" {
 	name = "%[2]s"
@@ -317,25 +298,25 @@ resource "newrelic_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name            = "%[1]s"
-  enabled         = true
+  enabled         = false
   type            = "apm_app_metric"
   entities        = ["${data.newrelic_application.app.id}"]
-  metric          = "apdex"
+  metric          = "error_percentage"
   runbook_url     = "https://bar.example.com"
   condition_scope = "application"
 
   term {
-    duration      = 10
-    operator      = "below"
+    duration      = 10 
+    operator      = "above"
     priority      = "critical"
-    threshold     = "0.65"
-    time_function = "all"
+    threshold     = "1.00"
+    time_function = "any"
   }
 }
-`, rName, testAccExpectedApplicationName)
+`, name, testAccExpectedApplicationName)
 }
 
-func testAccCheckNewRelicAlertConditionConfigThreshold(rName string, threshold int) string {
+func testAccCheckNewRelicAlertConditionConfigThreshold(name string, threshold int) string {
 	return fmt.Sprintf(`
 data "newrelic_application" "app" {
 	name = "%[3]s"
@@ -364,7 +345,7 @@ resource "newrelic_alert_condition" "foo" {
     time_function = "all"
   }
 }
-`, rName, threshold, testAccExpectedApplicationName)
+`, name, threshold, testAccExpectedApplicationName)
 }
 
 func testAccNewRelicAlertConditionConfigDuration(name string, duration int) string {
