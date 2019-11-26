@@ -52,7 +52,7 @@ func Provider() terraform.ResourceProvider {
 			"newrelic_application":        dataSourceNewRelicApplication(),
 			"newrelic_key_transaction":    dataSourceNewRelicKeyTransaction(),
 			"newrelic_plugin":             dataSourceNewRelicPlugin(),
-			"newrelic_component":          dataSourceNewRelicComponent(),
+			"newrelic_plugin_component":   dataSourceNewRelicPluginComponent(),
 			"newrelic_synthetics_monitor": dataSourceNewRelicSyntheticsMonitor(),
 		},
 

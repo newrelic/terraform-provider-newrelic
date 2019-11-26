@@ -9,9 +9,9 @@ import (
 	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
-func dataSourceNewRelicComponent() *schema.Resource {
+func dataSourceNewRelicPluginComponent() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNewRelicComponentRead,
+		Read: dataSourceNewRelicPluginComponentRead,
 
 		Schema: map[string]*schema.Schema{
 			"plugin_id": {
@@ -34,10 +34,10 @@ func dataSourceNewRelicComponent() *schema.Resource {
 	}
 }
 
-func dataSourceNewRelicComponentRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceNewRelicPluginComponentRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).Client
 
-	log.Printf("[INFO] Reading New Relic Components")
+	log.Printf("[INFO] Reading New Relic Plugin Components")
 
 	pluginID := d.Get("plugin_id").(int)
 	components, err := client.ListComponents(pluginID)
@@ -56,7 +56,7 @@ func dataSourceNewRelicComponentRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	if component == nil {
-		return fmt.Errorf("the name '%s' does not match any New Relic components", name)
+		return fmt.Errorf("the name '%s' does not match any New Relic plugin components", name)
 	}
 
 	d.SetId(strconv.Itoa(component.ID))
