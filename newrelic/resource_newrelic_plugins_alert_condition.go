@@ -106,7 +106,7 @@ func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 	}
 }
 
-func buildAlertPluginsConditionStruct(d *schema.ResourceData) *newrelic.AlertPluginsCondition {
+func buildPluginsAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertPluginsCondition {
 	entitySet := d.Get("entities").(*schema.Set).List()
 	entities := make([]string, len(entitySet))
 
@@ -150,7 +150,7 @@ func buildAlertPluginsConditionStruct(d *schema.ResourceData) *newrelic.AlertPlu
 	return &condition
 }
 
-func readAlertPluginsConditionStruct(condition *newrelic.AlertPluginsCondition, d *schema.ResourceData) error {
+func readPluginsAlertConditionStruct(condition *newrelic.AlertPluginsCondition, d *schema.ResourceData) error {
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
 		return err
@@ -202,7 +202,7 @@ func readAlertPluginsConditionStruct(condition *newrelic.AlertPluginsCondition, 
 
 func resourceNewRelicPluginsAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).Client
-	condition := buildAlertPluginsConditionStruct(d)
+	condition := buildPluginsAlertConditionStruct(d)
 
 	log.Printf("[INFO] Creating New Relic alert condition %s", condition.Name)
 
@@ -248,12 +248,12 @@ func resourceNewRelicPluginsAlertConditionRead(d *schema.ResourceData, meta inte
 		return err
 	}
 
-	return readAlertPluginsConditionStruct(condition, d)
+	return readPluginsAlertConditionStruct(condition, d)
 }
 
 func resourceNewRelicPluginsAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).Client
-	condition := buildAlertPluginsConditionStruct(d)
+	condition := buildPluginsAlertConditionStruct(d)
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
@@ -273,7 +273,7 @@ func resourceNewRelicPluginsAlertConditionUpdate(d *schema.ResourceData, meta in
 		return err
 	}
 
-	return readAlertPluginsConditionStruct(updatedCondition, d)
+	return readPluginsAlertConditionStruct(updatedCondition, d)
 }
 
 func resourceNewRelicPluginsAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
