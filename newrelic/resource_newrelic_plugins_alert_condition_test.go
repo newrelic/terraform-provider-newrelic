@@ -11,6 +11,10 @@ import (
 )
 
 func TestAccNewRelicPluginsAlertCondition_Basic(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
 	rName := acctest.RandString(5)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -74,6 +78,10 @@ func TestAccNewRelicPluginsAlertCondition_Basic(t *testing.T) {
 }
 
 func TestAccNewRelicPluginsAlertCondition(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
 	resourceName := "newrelic_plugins_alert_condition.foo"
 	rName := acctest.RandString(5)
 
@@ -95,10 +103,11 @@ func TestAccNewRelicPluginsAlertCondition(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicPluginsAlertCondition_nameGreaterThan64Char(t *testing.T) {
+func TestAccNewRelicPluginsAlertCondition_NameGreaterThan64Char(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	resource.ParallelTest(t, resource.TestCase{
 		Providers:    testAccProviders,
+		IsUnitTest:   true,
 		CheckDestroy: testAccCheckNewRelicPluginsAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -110,6 +119,10 @@ func TestAccNewRelicPluginsAlertCondition_nameGreaterThan64Char(t *testing.T) {
 }
 
 func TestAccNewRelicPluginsAlertCondition_MissingPolicy(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{

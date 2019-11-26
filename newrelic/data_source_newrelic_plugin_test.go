@@ -9,6 +9,10 @@ import (
 )
 
 func TestAccNewRelicPlugin_Basic(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -16,14 +20,14 @@ func TestAccNewRelicPlugin_Basic(t *testing.T) {
 			{
 				Config: testAccNewRelicPluginConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicPlugin("data.newrelic_plugin.guid"),
+					testAccCheckNewRelicPluginDataSource("data.newrelic_plugin.foo"),
 				),
 			},
 		},
 	})
 }
 
-func testAccNewRelicPlugin(n string) resource.TestCheckFunc {
+func testAccCheckNewRelicPluginDataSource(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
 		a := r.Primary.Attributes
@@ -36,11 +40,10 @@ func testAccNewRelicPlugin(n string) resource.TestCheckFunc {
 	}
 }
 
-// The test plugin for this data source is created in provider_test.go
 func testAccNewRelicPluginConfig() string {
-	return fmt.Sprintf(`
+	return `
 data "newrelic_plugin" "foo" {
-	guid = "%s"
+	guid = "net.kenjij.newrelic_redis_plugin"
 }
-`, testAccExpectedPluginName)
+`
 }
