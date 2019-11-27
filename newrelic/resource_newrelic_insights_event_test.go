@@ -15,8 +15,9 @@ func TestAccNewRelicInsightsEvent_Basic(t *testing.T) {
 	tNow := time.Now().Unix() * 1000
 	eType := acctest.RandString(5)
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: func(*terraform.State) error { return nil },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckNewRelicInsightsEventConfig(eType, tNow),
