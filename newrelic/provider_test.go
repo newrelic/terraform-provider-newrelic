@@ -51,6 +51,18 @@ func testAccPreCheck(t *testing.T) {
 		t.Log(v)
 		t.Fatal("NEWRELIC_API_KEY must be set for acceptance tests")
 	}
+	if v := os.Getenv("NEWRELIC_INSIGHTS_ACCOUNT_ID"); v == "" {
+		t.Log(v)
+		t.Fatal("NEWRELIC_INSIGHTS_ACCOUNT_ID must be set for acceptance tests")
+	}
+	if v := os.Getenv("NEWRELIC_INSIGHTS_INSERT_KEY"); v == "" {
+		t.Log(v)
+		t.Fatal("NEWRELIC_INSIGHTS_INSERT_KEY must be set for acceptance tests")
+	}
+	if v := os.Getenv("NEWRELIC_INSIGHTS_QUERY_KEY"); v == "" {
+		t.Log(v)
+		t.Fatal("NEWRELIC_INSIGHTS_QUERY_KEY must be set for acceptance tests")
+	}
 
 	// setup fake application by logging some metrics
 	if v := os.Getenv("NEWRELIC_LICENSE_KEY"); len(v) > 0 {
