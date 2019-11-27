@@ -10,102 +10,67 @@ import (
 )
 
 func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicNrqlAlertConditionConfig(rName),
+				Config: testAccNewRelicNrqlAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "runbook_url", "https://foo.example.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "enabled", "false"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.duration", "5"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.operator", "below"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.priority", "critical"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.threshold", "0.75"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.time_function", "all"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.0.query", "SELECT uniqueCount(hostname) FROM ComputeSample"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "20"),
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "runbook_url", "https://foo.example.com"),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName, "term.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.duration", "5"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.operator", "below"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.priority", "critical"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.threshold", "0.75"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.time_function", "all"),
+					resource.TestCheckResourceAttr(resourceName, "nrql.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "nrql.0.query", "SELECT uniqueCount(hostname) FROM ComputeSample"),
+					resource.TestCheckResourceAttr(resourceName, "nrql.0.since_value", "20"),
 				),
 			},
 			{
-				Config: testAccCheckNewRelicNrqlAlertConditionConfigUpdated(rName),
+				Config: testAccNewRelicNrqlAlertConditionConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "name", fmt.Sprintf("tf-test-updated-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "runbook_url", "https://bar.example.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "enabled", "false"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.duration", "10"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.operator", "below"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.priority", "critical"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.threshold", "0.65"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.time_function", "all"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.0.query", "SELECT uniqueCount(hostname) as Hosts FROM ComputeSample"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "3"),
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-updated-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "runbook_url", "https://bar.example.com"),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName, "term.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.duration", "10"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.operator", "below"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.priority", "critical"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.threshold", "0.65"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.time_function", "all"),
+					resource.TestCheckResourceAttr(resourceName, "nrql.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "nrql.0.query", "SELECT uniqueCount(hostname) as Hosts FROM ComputeSample"),
+					resource.TestCheckResourceAttr(resourceName, "nrql.0.since_value", "3"),
 				),
 			},
 			{
-				Config: testAccCheckNewRelicNrqlAlertConditionConfigUpdatedWithStatic(rName),
+				Config: testAccNewRelicNrqlAlertConditionConfigUpdatedWithStatic(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "name", fmt.Sprintf("tf-test-updated-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "runbook_url", "https://bar.example.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "enabled", "false"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.duration", "10"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.operator", "below"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.priority", "critical"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.threshold", "0.65"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.time_function", "all"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.0.query", "SELECT uniqueCount(hostname) as Hosts FROM ComputeSample"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "3"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "type", "static"),
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-updated-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "runbook_url", "https://bar.example.com"),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName, "term.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.duration", "10"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.operator", "below"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.priority", "critical"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.threshold", "0.65"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.time_function", "all"),
+					resource.TestCheckResourceAttr(resourceName, "nrql.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "nrql.0.query", "SELECT uniqueCount(hostname) as Hosts FROM ComputeSample"),
+					resource.TestCheckResourceAttr(resourceName, "nrql.0.since_value", "3"),
+					resource.TestCheckResourceAttr(resourceName, "type", "static"),
 				),
 			},
 		},
@@ -113,46 +78,33 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 }
 
 func TestAccNewRelicNrqlAlertCondition_Outlier(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicNrqlAlertConditionConfigWithOutlier(rName),
+				Config: testAccNewRelicNrqlAlertConditionConfigWithOutlier(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "name", fmt.Sprintf("tf-test-updated-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "runbook_url", "https://bar.example.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "enabled", "false"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.duration", "10"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.operator", "above"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.priority", "critical"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.threshold", "0.65"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "term.0.time_function", "all"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.0.query", "SELECT percentile(duration, 99) FROM Transaction FACET remote_ip"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "nrql.0.since_value", "3"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "type", "outlier"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "expected_groups", "2"),
-					resource.TestCheckResourceAttr(
-						"newrelic_nrql_alert_condition.foo", "ignore_overlap", "true"),
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-updated-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "runbook_url", "https://bar.example.com"),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName, "term.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.duration", "10"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.operator", "above"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.priority", "critical"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.threshold", "0.65"),
+					resource.TestCheckResourceAttr(resourceName, "term.0.time_function", "all"),
+					resource.TestCheckResourceAttr(resourceName, "nrql.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "nrql.0.query", "SELECT percentile(duration, 99) FROM Transaction FACET remote_ip"),
+					resource.TestCheckResourceAttr(resourceName, "nrql.0.since_value", "3"),
+					resource.TestCheckResourceAttr(resourceName, "type", "outlier"),
+					resource.TestCheckResourceAttr(resourceName, "expected_groups", "2"),
+					resource.TestCheckResourceAttr(resourceName, "ignore_overlap", "true"),
 				),
 			},
 		},
@@ -168,11 +120,11 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicNrqlAlertConditionConfig(rName),
+				Config: testAccNewRelicNrqlAlertConditionConfig(rName),
 			},
 			{
 				PreConfig: testAccDeleteNewRelicAlertPolicy(fmt.Sprintf("tf-test-%s", rName)),
-				Config:    testAccCheckNewRelicNrqlAlertConditionConfig(rName),
+				Config:    testAccNewRelicNrqlAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
 			},
 		},
@@ -238,7 +190,7 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 	}
 }
 
-func testAccCheckNewRelicNrqlAlertConditionConfig(rName string) string {
+func testAccNewRelicNrqlAlertConditionConfig(rName string) string {
 	return fmt.Sprintf(`
 
 resource "newrelic_alert_policy" "foo" {
@@ -268,7 +220,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 `, rName)
 }
 
-func testAccCheckNewRelicNrqlAlertConditionConfigUpdated(rName string) string {
+func testAccNewRelicNrqlAlertConditionConfigUpdated(rName string) string {
 	return fmt.Sprintf(`
 
 resource "newrelic_alert_policy" "foo" {
@@ -297,7 +249,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 `, rName)
 }
 
-func testAccCheckNewRelicNrqlAlertConditionConfigUpdatedWithStatic(rName string) string {
+func testAccNewRelicNrqlAlertConditionConfigUpdatedWithStatic(rName string) string {
 	return fmt.Sprintf(`
 
 resource "newrelic_alert_policy" "foo" {
@@ -327,7 +279,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 `, rName)
 }
 
-func testAccCheckNewRelicNrqlAlertConditionConfigWithOutlier(rName string) string {
+func testAccNewRelicNrqlAlertConditionConfigWithOutlier(rName string) string {
 	return fmt.Sprintf(`
 
 resource "newrelic_alert_policy" "foo" {
