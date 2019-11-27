@@ -13,7 +13,7 @@ import (
 
 func resourceNewRelicInsightsEvent() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicInsightsInsightsEventCreate,
+		Create: resourceNewRelicInsightsEventCreate,
 		Read:   schema.Noop,
 		Delete: schema.RemoveFromState,
 
@@ -115,7 +115,7 @@ func (e *InsightsEvent) MarshalJSON() ([]byte, error) {
 	return b, nil
 }
 
-func resourceNewRelicInsightsInsightsEventCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicInsightsEventCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).InsightsInsertClient
 	var eventsPayload []*InsightsEvent
 
