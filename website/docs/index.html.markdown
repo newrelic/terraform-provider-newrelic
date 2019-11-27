@@ -68,8 +68,13 @@ resource "newrelic_alert_policy_channel" "alert_email" {
 
 The following arguments are supported:
 
-- `api_key` - (Required) Your New Relic API key. Can also use `NEWRELIC_API_KEY` environment variable.
+- `api_key` - (Optional) Your New Relic API key. Can also use `NEWRELIC_API_KEY` environment variable.
 - `api_url` - (Optional) Possibility to change the API url (default is https://api.newrelic.com/v2). This is for instance relevant if the New Relic account is in the EU. The API url must then be set to https://api.eu.newrelic.com/v2. Can also use `NEWRELIC_API_URL` environment variable.
 - `infra_api_url` - (Optional) Possibility to change the Infra API url (default is https://infra-api.newrelic.com/v2). This is for instance relevant if the New Relic account is in the EU. The Infra API url must then be set to https://infra-api.eu.newrelic.com/v2. Can also use `NEWRELIC_INFRA_API_URL` environment variable.
 - `insecure_skip_verify` - (Optional) Trust self-signed SSL certificates. If omitted, the `NEWRELIC_API_SKIP_VERIFY` environment variable is used.
+- `insights_account_id` - (Optional) Your New Relic Account ID used when inserting or querying Insights events. Can also use `NEWRELIC_INSIGHTS_ACCOUNT_ID` environment variable.
+- `insights_insert_key` - (Optional) You Insights insert key used when inserting Insights events. Can also use `NEWRELIC_INSIGHTS_INSERT_KEY` environment variable.
+- `insights_insert_url` - (Optional) Possibility to change the Insights  insert url (default is https://insights-collector.newrelic.com/v1/accounts). Can also use `NEWRELIC_INSIGHTS_INSERT_URL` environment variable.
+- `insights_query_key` - (Optional) You Insights query key used when querying Insights events. Can also use `NEWRELIC_INSIGHTS_QUERY_KEY` environment variable.
+- `insights_query_url` - (Optional) Possibility to change the Insights  query url (default is https://insights-api.newrelic.com/v1/accounts). Can also use `NEWRELIC_INSIGHTS_QUERY_URL` environment variable.
 - `cacert_file` - (Optional) A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEWRELIC_API_CACERT` environment variable can also be used.
