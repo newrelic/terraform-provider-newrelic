@@ -17,7 +17,6 @@ var (
 	testAccExpectedApplicationName  string
 	testAccExpectedAlertPolicyName  string
 	testAccAPIKey                   string
-	testAccExpectedPluginName       string
 	testAccProviders                map[string]terraform.ResourceProvider
 	testAccProvider                 *schema.Provider
 )
