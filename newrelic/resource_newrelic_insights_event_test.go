@@ -24,9 +24,25 @@ func TestAccNewRelicInsightsEvent_Basic(t *testing.T) {
 					testAccCheckNewRelicInsightsEventExists(
 						"newrelic_insights_event.foo",
 						[]string{
-							fmt.Sprintf("SELECT * FROM tf_test_%s WHERE event_test = 'checking floats' AND a_float = 101.1 AND timestamp = %d", eType, tNow),
-							fmt.Sprintf("SELECT * FROM tf_test_%s WHERE event_test = 'checking ints' AND an_int = 42 AND timestamp = %d", eType, tNow),
-							fmt.Sprintf("SELECT * FROM tf_test_%s WHERE event_test = 'checking strings' AND a_string = 'a string' AND another_string = 'another string' AND timestamp = %d", eType, tNow),
+							fmt.Sprintf(
+								"SELECT * FROM tf_test_%s "+
+									"WHERE event_test = 'checking floats' "+
+									"AND a_float = 101.1 "+
+									"AND timestamp = %d",
+								eType, tNow),
+							fmt.Sprintf(
+								"SELECT * FROM tf_test_%s "+
+									"WHERE event_test = 'checking ints' "+
+									"AND an_int = 42 "+
+									"AND timestamp = %d",
+								eType, tNow),
+							fmt.Sprintf(
+								"SELECT * FROM tf_test_%s "+
+									"WHERE event_test = 'checking strings' "+
+									"AND a_string = 'a string' "+
+									"AND another_string = 'another string' "+
+									"AND timestamp = %d",
+								eType, tNow),
 						},
 					),
 					resource.TestCheckResourceAttr("newrelic_insights_event.foo", "event.#", "3"),
