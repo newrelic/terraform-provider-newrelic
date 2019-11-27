@@ -12,7 +12,6 @@ import (
 func dataSourceNewRelicApplication() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceNewRelicApplicationRead,
-
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,

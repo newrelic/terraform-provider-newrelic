@@ -16,14 +16,14 @@ func TestAccNewRelicApplication_Basic(t *testing.T) {
 			{
 				Config: testAccNewRelicApplicationConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicApplication("data.newrelic_application.app"),
+					testAccCheckNewRelicApplicationExists("data.newrelic_application.app"),
 				),
 			},
 		},
 	})
 }
 
-func testAccNewRelicApplication(n string) resource.TestCheckFunc {
+func testAccCheckNewRelicApplicationExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
 		a := r.Primary.Attributes
