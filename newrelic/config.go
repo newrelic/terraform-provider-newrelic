@@ -17,9 +17,9 @@ import (
 
 // Config contains New Relic provider settings
 type Config struct {
-	InsightsAccountID  string
 	APIKey             string
 	APIURL             string
+	InsightsAccountID  string
 	InsightsInsertKey  string
 	InsightsInsertURL  string
 	InsightsQueryKey   string
