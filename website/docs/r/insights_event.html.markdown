@@ -18,8 +18,8 @@ resource "newrelic_insights_event" "foo" {
     timestamp = 1232471100
 
     attribute {
-      key   = "an_attribute"
-      value = "value of an attribute"
+      key   = "a_string_attribute"
+      value = "a string"
     }
     attribute {
       key   = "an_integer_attribute"
