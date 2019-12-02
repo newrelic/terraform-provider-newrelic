@@ -12,7 +12,7 @@ import (
 func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 	resourceName := "newrelic_infra_alert_condition.foo"
 	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
@@ -51,7 +51,7 @@ func TestAccNewRelicInfraAlertCondition_Where(t *testing.T) {
 	resourceName := "newrelic_infra_alert_condition.foo"
 	rName := acctest.RandString(5)
 	whereClause := "(`hostname` LIKE '%cassandra%')"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
@@ -82,7 +82,7 @@ func TestAccNewRelicInfraAlertCondition_IntegrationProvider(t *testing.T) {
 	rName := acctest.RandString(5)
 	resourceName := "newrelic_infra_alert_condition.foo"
 	integrationProvider := "Elb"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
@@ -111,7 +111,7 @@ func TestAccNewRelicInfraAlertCondition_IntegrationProvider(t *testing.T) {
 func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 	resourceName := "newrelic_infra_alert_condition.foo"
 	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
@@ -150,7 +150,7 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 func TestAccNewRelicInfraAlertCondition_MissingPolicy(t *testing.T) {
 	rName := acctest.RandString(5)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
