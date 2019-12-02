@@ -21,7 +21,7 @@ func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccCheckNewRelicInfraAlertConditionConfig(rName),
+				Config: testAccNewRelicInfraAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 					resource.TestCheckNoResourceAttr("newrelic_infra_alert_condition.foo", "warning"),
@@ -29,12 +29,12 @@ func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 			},
 			// Test: No diff on re-apply
 			{
-				Config:             testAccCheckNewRelicInfraAlertConditionConfig(rName),
+				Config:             testAccNewRelicInfraAlertConditionConfig(rName),
 				ExpectNonEmptyPlan: false,
 			},
 			// Test: Update
 			{
-				Config: testAccCheckNewRelicInfraAlertConditionConfigUpdated(rNameUpdated),
+				Config: testAccNewRelicInfraAlertConditionConfigUpdated(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
@@ -61,14 +61,14 @@ func TestAccNewRelicInfraAlertCondition_Where(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccCheckNewRelicInfraAlertConditionConfigWithWhere(rName, whereClause),
+				Config: testAccNewRelicInfraAlertConditionConfigWithWhere(rName, whereClause),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
 			},
 			// Test: No diff on re-apply
 			{
-				Config:             testAccCheckNewRelicInfraAlertConditionConfigWithWhere(rName, whereClause),
+				Config:             testAccNewRelicInfraAlertConditionConfigWithWhere(rName, whereClause),
 				ExpectNonEmptyPlan: false,
 			},
 			// Test: Import
@@ -97,14 +97,14 @@ func TestAccNewRelicInfraAlertCondition_IntegrationProvider(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccCheckNewRelicInfraAlertConditionConfigWithIntegrationProvider(rName, integrationProvider),
+				Config: testAccNewRelicInfraAlertConditionConfigWithIntegrationProvider(rName, integrationProvider),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
 			},
 			// Test: No diff on re-apply
 			{
-				Config:             testAccCheckNewRelicInfraAlertConditionConfigWithIntegrationProvider(rName, integrationProvider),
+				Config:             testAccNewRelicInfraAlertConditionConfigWithIntegrationProvider(rName, integrationProvider),
 				ExpectNonEmptyPlan: false,
 			},
 			// Test: Import
@@ -127,14 +127,14 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccCheckNewRelicInfraAlertConditionConfigWithThreshold(rName),
+				Config: testAccNewRelicInfraAlertConditionConfigWithThreshold(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
 			},
 			// Test: No diff on re-apply
 			{
-				Config:             testAccCheckNewRelicInfraAlertConditionConfigWithThreshold(rName),
+				Config:             testAccNewRelicInfraAlertConditionConfigWithThreshold(rName),
 				ExpectNonEmptyPlan: false,
 			},
 			// Test: Update
@@ -166,11 +166,11 @@ func TestAccNewRelicInfraAlertCondition_MissingPolicy(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicInfraAlertConditionConfig(rName),
+				Config: testAccNewRelicInfraAlertConditionConfig(rName),
 			},
 			{
 				PreConfig: testAccDeleteNewRelicAlertPolicy(fmt.Sprintf("tf-test-%s", rName)),
-				Config:    testAccCheckNewRelicInfraAlertConditionConfig(rName),
+				Config:    testAccNewRelicInfraAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
 			},
 		},
@@ -234,7 +234,7 @@ func testAccCheckNewRelicInfraAlertConditionExists(n string) resource.TestCheckF
 	}
 }
 
-func testAccCheckNewRelicInfraAlertConditionConfig(name string) string {
+func testAccNewRelicInfraAlertConditionConfig(name string) string {
 	return fmt.Sprintf(`
 
 resource "newrelic_alert_policy" "foo" {
@@ -260,7 +260,7 @@ resource "newrelic_infra_alert_condition" "foo" {
 `, name)
 }
 
-func testAccCheckNewRelicInfraAlertConditionConfigUpdated(name string) string {
+func testAccNewRelicInfraAlertConditionConfigUpdated(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
   name = "%[1]s"
@@ -285,7 +285,7 @@ resource "newrelic_infra_alert_condition" "foo" {
 `, name)
 }
 
-func testAccCheckNewRelicInfraAlertConditionConfigWithThreshold(name string) string {
+func testAccNewRelicInfraAlertConditionConfigWithThreshold(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
   name = "%[1]s"
@@ -339,7 +339,7 @@ resource "newrelic_infra_alert_condition" "foo" {
 `, name)
 }
 
-func testAccCheckNewRelicInfraAlertConditionConfigWithWhere(name, where string) string {
+func testAccNewRelicInfraAlertConditionConfigWithWhere(name, where string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
   name = "%[1]s"
@@ -362,7 +362,7 @@ resource "newrelic_infra_alert_condition" "foo" {
 `, name, where)
 }
 
-func testAccCheckNewRelicInfraAlertConditionConfigWithIntegrationProvider(name, integrationProvider string) string {
+func testAccNewRelicInfraAlertConditionConfigWithIntegrationProvider(name, integrationProvider string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
   name = "%[1]s"
