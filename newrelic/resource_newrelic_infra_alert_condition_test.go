@@ -82,6 +82,10 @@ func TestAccNewRelicInfraAlertCondition_Where(t *testing.T) {
 }
 
 func TestAccNewRelicInfraAlertCondition_IntegrationProvider(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-test-%s", rand)
 	resourceName := "newrelic_infra_alert_condition.foo"
