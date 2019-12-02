@@ -11,7 +11,9 @@ import (
 
 func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 	resourceName := "newrelic_infra_alert_condition.foo"
-	rName := acctest.RandString(5)
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	rNameUpdated := fmt.Sprintf("tf-test-updated-%s", rand)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -25,14 +27,14 @@ func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckNoResourceAttr("newrelic_infra_alert_condition.foo", "warning"),
 				),
 			},
-			// Test: No diff on reapply
+			// Test: No diff on re-apply
 			{
 				Config:             testAccCheckNewRelicInfraAlertConditionConfig(rName),
 				ExpectNonEmptyPlan: false,
 			},
 			// Test: Update
 			{
-				Config: testAccCheckNewRelicInfraAlertConditionConfigUpdated(rName),
+				Config: testAccCheckNewRelicInfraAlertConditionConfigUpdated(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
@@ -49,7 +51,8 @@ func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 
 func TestAccNewRelicInfraAlertCondition_Where(t *testing.T) {
 	resourceName := "newrelic_infra_alert_condition.foo"
-	rName := acctest.RandString(5)
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
 	whereClause := "(`hostname` LIKE '%cassandra%')"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -63,7 +66,7 @@ func TestAccNewRelicInfraAlertCondition_Where(t *testing.T) {
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
 			},
-			// Test: No diff on reapply
+			// Test: No diff on re-apply
 			{
 				Config:             testAccCheckNewRelicInfraAlertConditionConfigWithWhere(rName, whereClause),
 				ExpectNonEmptyPlan: false,
@@ -79,7 +82,8 @@ func TestAccNewRelicInfraAlertCondition_Where(t *testing.T) {
 }
 
 func TestAccNewRelicInfraAlertCondition_IntegrationProvider(t *testing.T) {
-	rName := acctest.RandString(5)
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
 	resourceName := "newrelic_infra_alert_condition.foo"
 	integrationProvider := "Elb"
 	resource.ParallelTest(t, resource.TestCase{
@@ -91,7 +95,7 @@ func TestAccNewRelicInfraAlertCondition_IntegrationProvider(t *testing.T) {
 			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfigWithIntegrationProvider(rName, integrationProvider),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
+					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
 			},
 			// Test: No diff on re-apply
@@ -110,7 +114,8 @@ func TestAccNewRelicInfraAlertCondition_IntegrationProvider(t *testing.T) {
 }
 func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 	resourceName := "newrelic_infra_alert_condition.foo"
-	rName := acctest.RandString(5)
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -148,7 +153,8 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 }
 
 func TestAccNewRelicInfraAlertCondition_MissingPolicy(t *testing.T) {
-	rName := acctest.RandString(5)
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -224,17 +230,17 @@ func testAccCheckNewRelicInfraAlertConditionExists(n string) resource.TestCheckF
 	}
 }
 
-func testAccCheckNewRelicInfraAlertConditionConfig(rName string) string {
+func testAccCheckNewRelicInfraAlertConditionConfig(name string) string {
 	return fmt.Sprintf(`
 
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+  name = "%[1]s"
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name            = "tf-test-%[1]s"
+  name            = "%[1]s"
   runbook_url     = "https://foo.example.com"
   type            = "infra_metric"
   event           = "StorageSample"
@@ -247,19 +253,19 @@ resource "newrelic_infra_alert_condition" "foo" {
 	  time_function = "any"
   }
 }
-`, rName)
+`, name)
 }
 
-func testAccCheckNewRelicInfraAlertConditionConfigUpdated(rName string) string {
+func testAccCheckNewRelicInfraAlertConditionConfigUpdated(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+  name = "%[1]s"
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name            = "tf-test-updated-%[1]s"
+  name            = "%[1]s"
   runbook_url     = "https://bar.example.com"
   type            = "infra_metric"
   event           = "StorageSample"
@@ -272,19 +278,19 @@ resource "newrelic_infra_alert_condition" "foo" {
 	  time_function = "any"
   }
 }
-`, rName)
+`, name)
 }
 
-func testAccCheckNewRelicInfraAlertConditionConfigWithThreshold(rName string) string {
+func testAccCheckNewRelicInfraAlertConditionConfigWithThreshold(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+  name = "%[1]s"
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name            = "tf-test-%[1]s"
+  name            = "%[1]s"
   type            = "infra_metric"
   event           = "StorageSample"
   select          = "diskFreePercent"
@@ -302,19 +308,19 @@ resource "newrelic_infra_alert_condition" "foo" {
 	time_function = "any"
   }
 }
-`, rName)
+`, name)
 }
 
-func testAccCheckNewRelicInfraAlertConditionConfigWithThresholdUpdated(rName string) string {
+func testAccCheckNewRelicInfraAlertConditionConfigWithThresholdUpdated(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+  name = "%[1]s"
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name            = "tf-test-%[1]s"
+  name            = "%[1]s"
   type            = "infra_metric"
   event           = "StorageSample"
   select          = "diskFreePercent"
@@ -326,19 +332,19 @@ resource "newrelic_infra_alert_condition" "foo" {
 	time_function = "all"
   }
 }
-`, rName)
+`, name)
 }
 
-func testAccCheckNewRelicInfraAlertConditionConfigWithWhere(rName, where string) string {
+func testAccCheckNewRelicInfraAlertConditionConfigWithWhere(name, where string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+  name = "%[1]s"
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name          = "tf-test-%[1]s"
+  name          = "%[1]s"
   type          = "infra_process_running"
   process_where = "commandName = 'java'"
   comparison    = "equal"
@@ -349,19 +355,19 @@ resource "newrelic_infra_alert_condition" "foo" {
 	value = 0
   }
 }
-`, rName, where)
+`, name, where)
 }
 
-func testAccCheckNewRelicInfraAlertConditionConfigWithIntegrationProvider(rName, integrationProvider string) string {
+func testAccCheckNewRelicInfraAlertConditionConfigWithIntegrationProvider(name, integrationProvider string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+  name = "%[1]s"
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
-  name                 = "tf-test-%[1]s"
+  name                 = "%[1]s"
   type                 = "infra_metric"
   event                = "LoadBalancerSample"
   integration_provider = "%[2]s"
@@ -374,5 +380,5 @@ resource "newrelic_infra_alert_condition" "foo" {
     time_function = "all"
   }
 }
-`, rName, integrationProvider)
+`, name, integrationProvider)
 }
