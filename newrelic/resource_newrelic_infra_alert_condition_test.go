@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -11,41 +10,45 @@ import (
 )
 
 func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
+	resourceName := "newrelic_infra_alert_condition.foo"
 	rName := acctest.RandString(5)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create
 			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "runbook_url", "https://foo.example.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "critical.0.duration", "10"),
-					resource.TestCheckNoResourceAttr(
-						"newrelic_infra_alert_condition.foo", "warning"),
+					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
+					resource.TestCheckNoResourceAttr("newrelic_infra_alert_condition.foo", "warning"),
 				),
 			},
+			// Test: No diff on reapply
+			{
+				Config:             testAccCheckNewRelicInfraAlertConditionConfig(rName),
+				ExpectNonEmptyPlan: false,
+			},
+			// Test: Update
 			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "name", fmt.Sprintf("tf-test-updated-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "runbook_url", "https://bar.example.com"),
+					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
 func TestAccNewRelicInfraAlertCondition_Where(t *testing.T) {
+	resourceName := "newrelic_infra_alert_condition.foo"
 	rName := acctest.RandString(5)
 	whereClause := "(`hostname` LIKE '%cassandra%')"
 	resource.Test(t, resource.TestCase{
@@ -53,99 +56,92 @@ func TestAccNewRelicInfraAlertCondition_Where(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create
 			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfigWithWhere(rName, whereClause),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "critical.0.duration", "10"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "critical.0.value", "0"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "where", whereClause),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "process_where", "commandName = 'java'"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "comparison", "equal"),
+					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
+			},
+			// Test: No diff on reapply
+			{
+				Config:             testAccCheckNewRelicInfraAlertConditionConfigWithWhere(rName, whereClause),
+				ExpectNonEmptyPlan: false,
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
 func TestAccNewRelicInfraAlertCondition_IntegrationProvider(t *testing.T) {
-	key := "ENABLE_NEWRELIC_INTEGRATION_PROVIDER"
-	enableNewRelicIntegrationProvider := os.Getenv(key)
-	if enableNewRelicIntegrationProvider == "" {
-		t.Skipf("Environment variable %s is not set", key)
-	}
-
 	rName := acctest.RandString(5)
+	resourceName := "newrelic_infra_alert_condition.foo"
 	integrationProvider := "Elb"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create
 			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfigWithIntegrationProvider(rName, integrationProvider),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "critical.0.duration", "10"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "critical.0.value", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "integration_provider", integrationProvider),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "comparison", "below"),
 				),
+			},
+			// Test: No diff on re-apply
+			{
+				Config:             testAccCheckNewRelicInfraAlertConditionConfigWithIntegrationProvider(rName, integrationProvider),
+				ExpectNonEmptyPlan: false,
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
+	resourceName := "newrelic_infra_alert_condition.foo"
 	rName := acctest.RandString(5)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create
 			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfigWithThreshold(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "critical.0.duration", "10"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "critical.0.value", "10"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "critical.0.time_function", "any"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "warning.0.value", "20"),
+					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
 			},
+			// Test: No diff on re-apply
+			{
+				Config:             testAccCheckNewRelicInfraAlertConditionConfigWithThreshold(rName),
+				ExpectNonEmptyPlan: false,
+			},
+			// Test: Update
 			{
 				Config: testAccCheckNewRelicInfraAlertConditionConfigWithThresholdUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "critical.0.duration", "20"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "critical.0.value", "15"),
-					resource.TestCheckResourceAttr(
-						"newrelic_infra_alert_condition.foo", "critical.0.time_function", "all"),
+					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 					resource.TestCheckNoResourceAttr(
 						"newrelic_infra_alert_condition.foo", "warning"),
 				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
