@@ -186,6 +186,10 @@ func readInfraAlertConditionStruct(condition *newrelic.AlertInfraCondition, d *s
 	d.Set("name", condition.Name)
 	d.Set("runbook_url", condition.RunbookURL)
 	d.Set("enabled", condition.Enabled)
+	d.Set("comparison", condition.Comparison)
+	d.Set("event", condition.Event)
+	d.Set("select", condition.Select)
+	d.Set("type", condition.Type)
 	d.Set("created_at", condition.CreatedAt)
 	d.Set("updated_at", condition.UpdatedAt)
 
