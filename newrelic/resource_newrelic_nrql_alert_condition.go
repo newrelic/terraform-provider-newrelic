@@ -11,7 +11,6 @@ import (
 )
 
 func resourceNewRelicNrqlAlertCondition() *schema.Resource {
-
 	return &schema.Resource{
 		Create: resourceNewRelicNrqlAlertConditionCreate,
 		Read:   resourceNewRelicNrqlAlertConditionRead,
@@ -191,13 +190,18 @@ func readNrqlAlertConditionStruct(condition *newrelic.AlertNrqlCondition, d *sch
 	d.Set("name", condition.Name)
 	d.Set("runbook_url", condition.RunbookURL)
 	d.Set("enabled", condition.Enabled)
-	d.Set("nrql.0.Query", condition.Nrql.Query)
-	d.Set("nrql.0.SinceValue", condition.Nrql.SinceValue)
+	d.Set("type", condition.Type)
+	d.Set("expected_groups", condition.ExpectedGroups)
+	d.Set("ignore_overlap", condition.IgnoreOverlap)
 
 	if condition.ValueFunction == "" {
 		d.Set("value_function", "single_value")
 	} else {
 		d.Set("value_function", condition.ValueFunction)
+	}
+
+	if err := d.Set("nrql", flattenNrql(condition.Nrql)); err != nil {
+		return err
 	}
 
 	var terms []map[string]interface{}

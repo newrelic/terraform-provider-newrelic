@@ -1,6 +1,7 @@
 package newrelic
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -34,4 +35,12 @@ func serializeIDs(ids []int) string {
 	}
 
 	return strings.Join(idStrings, ":")
+}
+
+// Helper for converting data to pretty JSON
+// nolint:deadcode,unused
+func toJSON(data interface{}) string {
+	c, _ := json.MarshalIndent(data, "", "  ")
+
+	return string(c)
 }
