@@ -10,6 +10,7 @@ description: |-
 
 ## Example Usage
 
+##### Type: `static` (default)
 ```hcl
 resource "newrelic_alert_policy" "foo" {
   name = "foo"
@@ -39,6 +40,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   value_function = "single_value"
 }
 ```
+See additional [examples](#additional-examples).
 
 ## Argument Reference
 
@@ -46,9 +48,9 @@ The following arguments are supported:
 
 - `policy_id` - (Required) The ID of the policy where this condition should be used.
 - `name` - (Required) The title of the condition
-- `type` - (Optional) The type of the condition. One of `static`, `outlier`, or `baseline`. Defaults to `static`.
+- `type` - (Optional) The type of the condition. Valid values are `static` or `outlier`. Defaults to `static`.
 - `runbook_url` - (Optional) Runbook URL to display in notifications.
-- `enabled` - (Optional) Set whether to enable the alert condition. Defaults to `true`.
+- `enabled` - (Optional) Whether to enable the alert condition. Valid values are `true` and `false`. Defaults to `true`.
 - `term` - (Required) A list of terms for this condition. See [Terms](#terms) below for details.
 - `nrql` - (Required) A NRQL query. See [NRQL](#nrql) below for details.
 - `value_function` - (Optional) Possible values are `single_value`, `sum`.
@@ -77,6 +79,38 @@ The `nrql` attribute supports the following arguments:
 The following attributes are exported:
 
 - `id` - The ID of the NRQL alert condition.
+
+## Additional Examples
+
+##### Type: `outlier`
+```hcl
+resource "newrelic_alert_policy" "foo" {
+  name = "foo"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+
+  name        = "outlier-example"
+  runbook_url = "https://bar.example.com"
+  enabled     = true
+
+  term {
+    duration      = 10
+    operator      = "above"
+    priority      = "critical"
+    threshold     = "0.65"
+    time_function = "all"
+  }
+  nrql {
+    query       = "SELECT percentile(duration, 99) FROM Transaction FACET remote_ip"
+    since_value = "3"
+  }
+  type            = "outlier"
+  expected_groups = 2
+  ignore_overlap  = true
+}
+```
 
 ## Import
 
