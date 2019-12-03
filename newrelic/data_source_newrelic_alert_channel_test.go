@@ -18,7 +18,6 @@ func TestAccNewRelicAlertChannelDataSource_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			// Test: Create
 			{
 				Config: testAccNewRelicAlertChannelDataSourceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
@@ -26,12 +25,6 @@ func TestAccNewRelicAlertChannelDataSource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "type", "email"),
 				),
-			},
-			// Test: Import
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
