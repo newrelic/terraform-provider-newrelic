@@ -8,7 +8,6 @@ import (
 )
 
 func resourceNewRelicSyntheticsAlertCondition() *schema.Resource {
-
 	return &schema.Resource{
 		Create: resourceNewRelicSyntheticsAlertConditionCreate,
 		Read:   resourceNewRelicSyntheticsAlertConditionRead,
@@ -46,7 +45,6 @@ func resourceNewRelicSyntheticsAlertCondition() *schema.Resource {
 }
 
 func buildSyntheticsAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertSyntheticsCondition {
-
 	condition := newrelic.AlertSyntheticsCondition{
 		Name:      d.Get("name").(string),
 		Enabled:   d.Get("enabled").(bool),
