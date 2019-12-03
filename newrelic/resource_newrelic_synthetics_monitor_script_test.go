@@ -16,7 +16,7 @@ func TestAccNewRelicSyntheticsMonitorScript_Basic(t *testing.T) {
 	scriptText := acctest.RandString(5)
 	scriptTextUpdated := acctest.RandString(5)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorScriptDestroy,
