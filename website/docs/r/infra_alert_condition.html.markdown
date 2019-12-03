@@ -15,7 +15,7 @@ resource "newrelic_alert_policy" "foo" {
   name = "foo"
 }
 
-resource "newrelic_infra_alert_condition" "foo" {
+resource "newrelic_infra_alert_condition" "high_disk_usage" {
   policy_id = "${newrelic_alert_policy.foo.id}"
 
   name       = "High disk usage"
@@ -30,6 +30,58 @@ resource "newrelic_infra_alert_condition" "foo" {
     value         = 90
     time_function = "all"
   }
+
+  warning {
+    duration      = 10
+    value         = 90
+    time_function = "all"
+  }
+}
+
+resource "newrelic_infra_alert_condition" "high_db_conn_count" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+
+  name       = "High database connection count"
+  type       = "infra_metric"
+  event      = "DatastoreSample"
+  select     = "provider.databaseConnections.Average"
+  comparison = "above"
+  where      = "(`hostname` LIKE '%db%')"
+  integration_provider = "RdsDbInstance"
+
+  critical {
+    duration      = 25
+    value         = 90
+    time_function = "all"
+  }
+}
+
+resource "newrelic_infra_alert_condition" "process_not_running" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+
+  name             = "Process not running (/usr/bin/ruby)"
+  type             = "infra_process_running"
+  comparison       = "equal"
+  process_where    = "`commandName` = '/usr/bin/ruby'"
+
+  critical {
+    duration      = 5
+    value         = 0
+  }
+}
+
+resource "newrelic_infra_alert_condition" "host_not_reporting" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+
+  name       = "Host not reporting"
+  type       = "infra_host_not_reporting"
+  event      = "StorageSample"
+  select     = "diskUsedPercent"
+  where      = "(`hostname` LIKE '%frontend%')"
+
+  critical {
+    duration = 5
+  }
 }
 ```
 
@@ -39,15 +91,15 @@ The following arguments are supported:
 
   * `policy_id` - (Required) The ID of the alert policy where this condition should be used.
   * `name` - (Required) The Infrastructure alert condition's name.
-  * `enabled` - (Optional) Set whether to enable the alert condition. Defaults to `true`.
-  * `type` - (Required) The type of Infrastructure alert condition: "infra_process_running", "infra_metric", or "infra_host_not_reporting".
-  * `event` - (Required) The metric event; for example, system metrics, process metrics, storage metrics, or network metrics.
-  * `select` - (Required) The attribute name to identify the type of metric condition; for example, "network", "process", "system", or "storage".
-  * `comparison` - (Required) The operator used to evaluate the threshold value; "above", "below", "equal".
-  * `critical` - (Required) Identifies the critical threshold parameters for triggering an alert notification. See [Thresholds](#thresholds) below for details.
-  * `warning` - (Optional) Identifies the warning threshold parameters. See [Thresholds](#thresholds) below for details.
-  * `where` - (Optional) Infrastructure host filter for the alert condition.
-  * `process_where` - (Optional) Any filters applied to processes; for example: `"commandName = 'java'"`.
+  * `type` - (Required) The type of Infrastructure alert condition.  Valid values are  `infra_process_running`, `infra_metric`, and `infra_host_not_reporting`.
+  * `event` - (Required) The metric event; for example, `SystemSample` or `StorageSample`.
+  * `select` - (Required) The attribute name to identify the metric being targeted; for example, `cpuPercent`, `diskFreePercent`, or `memoryResidentSizeBytes`.  The underlying API will automatically populate this value for Infrastructure integrations (for example `diskFreePercent`), so make sure to explicitly include this value to avoid diff issues.
+  * `comparison` - (Required) The operator used to evaluate the threshold value.  Valid values are `above`, `below`, and `equal`.
+  * `critical` - (Required) Identifies the threshold parameters for opening a critial alert violation. See [Thresholds](#thresholds) below for details.
+  * `warning` - (Optional) Identifies the threshold parameters for opening a warning alert violation. See [Thresholds](#thresholds) below for details.
+  * `enabled` - (Optional) Whether the condition is turned on or off.  Valid values are `true` and `false`.  Defaults to `true`.
+  * `where` - (Optional) If applicable, this identifies any Infrastructure host filters used; for example: `hostname LIKE '%cassandra%'`.
+  * `process_where` - (Optional) Any filters applied to processes; for example: `commandName = 'java'`.
   * `integration_provider` - (Optional) For alerts on integrations, use this instead of `event`.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
 
@@ -56,8 +108,8 @@ The following arguments are supported:
 The `critical` and `warning` threshold mapping supports the following arguments:
 
   * `duration` - (Required) Identifies the number of minutes the threshold must be passed or met for the alert to trigger. Threshold durations must be between 1 and 60 minutes (inclusive).
-  * `value` - (Optional) Threshold value, computed against the `comparison` operator. Supported by "infra_metric" and "infra_process_running" alert condition types.
-  * `time_function` - (Optional) Indicates if the condition needs to be sustained or to just break the threshold once; `all` or `any`. Supported by the "infra_metric" alert condition type.
+  * `value` - (Optional) Threshold value, computed against the `comparison` operator. Supported by `infra_metric` and `infra_process_running` alert condition types.
+  * `time_function` - (Optional) Indicates if the condition needs to be sustained or to just break the threshold once; `all` or `any`. Supported by the `infra_metric` alert condition type.
 
 ## Attributes Reference
 

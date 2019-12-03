@@ -10,16 +10,16 @@ import (
 
 var thresholdConditionTypes = map[string][]string{
 	"infra_process_running": {
-		"duration_minutes",
+		"duration",
 		"value",
 	},
 	"infra_metric": {
-		"duration_minutes",
+		"duration",
 		"value",
 		"time_function",
 	},
 	"infra_host_not_reporting": {
-		"duration_minutes",
+		"duration",
 	},
 }
 
