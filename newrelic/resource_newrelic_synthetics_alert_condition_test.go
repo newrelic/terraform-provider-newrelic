@@ -10,35 +10,39 @@ import (
 )
 
 func TestAccNewRelicSyntheticsAlertCondition_Basic(t *testing.T) {
+	resourceName := "newrelic_synthetics_alert_condition.foo"
 	rName := acctest.RandString(5)
-	resource.Test(t, resource.TestCase{
+
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsAlertConditionDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create
 			{
-				Config: testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
+				Config: testAccNewRelicSyntheticsAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicSyntheticsAlertConditionExists("newrelic_synthetics_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_alert_condition.foo", "runbook_url", "www.example.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_alert_condition.foo", "enabled", "true"),
+					testAccCheckNewRelicSyntheticsAlertConditionExists(resourceName),
 				),
 			},
+			// Test: No diff on re-apply
+			{
+				Config:             testAccNewRelicSyntheticsAlertConditionConfig(rName),
+				ExpectNonEmptyPlan: false,
+			},
+
+			// Test: Update
 			{
 				Config: testAccCheckNewRelicSyntheticsAlertConditionUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicSyntheticsAlertConditionExists("newrelic_synthetics_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_alert_condition.foo", "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_alert_condition.foo", "runbook_url", "www.example2.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_alert_condition.foo", "enabled", "false"),
+					testAccCheckNewRelicSyntheticsAlertConditionExists(resourceName),
 				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -47,17 +51,17 @@ func TestAccNewRelicSyntheticsAlertCondition_Basic(t *testing.T) {
 func TestAccNewRelicSyntheticsAlertCondition_MissingPolicy(t *testing.T) {
 	rName := acctest.RandString(5)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
+				Config: testAccNewRelicSyntheticsAlertConditionConfig(rName),
 			},
 			{
 				PreConfig: testAccDeleteNewRelicAlertPolicy(fmt.Sprintf("tf-test-%s", rName)),
-				Config:    testAccCheckNewRelicSyntheticsAlertConditionConfig(rName),
+				Config:    testAccNewRelicSyntheticsAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicSyntheticsAlertConditionExists("newrelic_synthetics_alert_condition.foo"),
 			},
 		},
@@ -121,16 +125,15 @@ func testAccCheckNewRelicSyntheticsAlertConditionExists(n string) resource.TestC
 	}
 }
 
-func testAccCheckNewRelicSyntheticsAlertConditionConfig(rName string) string {
+func testAccNewRelicSyntheticsAlertConditionConfig(name string) string {
 	return fmt.Sprintf(`
-
 resource "newrelic_synthetics_monitor" "bar" {
-	name = "tf-test-synthetic-%[1]s"
-	type = "SIMPLE"
+	name      = "tf-test-synthetic-%[1]s"
+	type      = "SIMPLE"
 	frequency = 15
-	status = "DISABLED"
+	status    = "DISABLED"
 	locations = ["AWS_US_EAST_1"]
-	uri = "https://google.com"
+	uri       = "https://google.com"
 }
 
 resource "newrelic_alert_policy" "foo" {
@@ -138,25 +141,24 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_synthetics_alert_condition" "foo" {
-	policy_id = "${newrelic_alert_policy.foo.id}"
-	name            = "tf-test-%[1]s"
-	monitor_id      = "${newrelic_synthetics_monitor.bar.id}"
-	runbook_url     = "www.example.com"
-	enabled			= "true"
+	policy_id   = "${newrelic_alert_policy.foo.id}"
+	name        = "tf-test-%[1]s"
+	monitor_id  = "${newrelic_synthetics_monitor.bar.id}"
+	runbook_url = "www.example.com"
+	enabled     = "true"
 }
-`, rName)
+`, name)
 }
 
-func testAccCheckNewRelicSyntheticsAlertConditionUpdated(rName string) string {
+func testAccCheckNewRelicSyntheticsAlertConditionUpdated(name string) string {
 	return fmt.Sprintf(`
-
 resource "newrelic_synthetics_monitor" "bar" {
-	name = "tf-test-synthetic-%[1]s"
-	type = "SIMPLE"
+	name      = "tf-test-synthetic-%[1]s"
+	type      = "SIMPLE"
 	frequency = 15
-	status = "DISABLED"
+	status    = "DISABLED"
 	locations = ["AWS_US_EAST_1"]
-	uri = "https://google.com"
+	uri       = "https://google.com"
 }
 
 resource "newrelic_alert_policy" "foo" {
@@ -164,11 +166,11 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_synthetics_alert_condition" "foo" {
-	policy_id = "${newrelic_alert_policy.foo.id}"
-	name            = "tf-test-%[1]s"
-	monitor_id      = "${newrelic_synthetics_monitor.bar.id}"
-	runbook_url     = "www.example2.com"
-	enabled			= "false"
+	policy_id   = "${newrelic_alert_policy.foo.id}"
+	name        = "tf-test-%[1]s"
+	monitor_id  = "${newrelic_synthetics_monitor.bar.id}"
+	runbook_url = "www.example-updated.com"
+	enabled     = "false"
 }
-`, rName)
+`, name)
 }
