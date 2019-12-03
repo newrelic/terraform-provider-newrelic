@@ -10,47 +10,38 @@ import (
 )
 
 func TestAccNewRelicSyntheticsMonitor_Basic(t *testing.T) {
+	resourceName := "newrelic_synthetics_monitor.foo"
 	rName := acctest.RandString(5)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create
 			{
-				Config: testAccCheckNewRelicSyntheticsMonitorConfig(rName),
+				Config: testAccNewRelicSyntheticsMonitorConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicSyntheticsMonitorExists("newrelic_synthetics_monitor.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor.foo", "name", rName),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor.foo", "type", "SIMPLE"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor.foo", "frequency", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor.foo", "status", "DISABLED"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor.foo", "uri", "https://google.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor.foo", "locations.#", "1"),
+					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
 			},
+			// Test: No diff on re-apply
 			{
-				Config: testAccCheckNewRelicSyntheticsMonitorConfigUpdated(rName),
+				Config:             testAccNewRelicSyntheticsMonitorConfig(rName),
+				ExpectNonEmptyPlan: false,
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicSyntheticsMonitorConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicSyntheticsMonitorExists("newrelic_synthetics_monitor.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor.foo", "name", fmt.Sprintf("%s-updated", rName)),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor.foo", "type", "SIMPLE"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor.foo", "frequency", "5"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor.foo", "status", "ENABLED"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor.foo", "uri", "https://github.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor.foo", "locations.#", "2"),
+					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -97,30 +88,28 @@ func testAccCheckNewRelicSyntheticsMonitorDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckNewRelicSyntheticsMonitorConfig(rName string) string {
+func testAccNewRelicSyntheticsMonitorConfig(name string) string {
 	return fmt.Sprintf(`
-
 resource "newrelic_synthetics_monitor" "foo" {
-  name = "%[1]s"
-  type = "SIMPLE"
-  frequency = 1
-  status = "DISABLED"
-  locations = ["AWS_US_EAST_1"]
-  uri = "https://google.com"
+	name      = "%[1]s"
+	type      = "SIMPLE"
+	frequency = 1
+	status    = "DISABLED"
+	locations = ["AWS_US_EAST_1"]
+	uri       = "https://google.com"
 }
-`, rName)
+`, name)
 }
 
-func testAccCheckNewRelicSyntheticsMonitorConfigUpdated(rName string) string {
+func testAccNewRelicSyntheticsMonitorConfigUpdated(name string) string {
 	return fmt.Sprintf(`
-
 resource "newrelic_synthetics_monitor" "foo" {
-  name = "%[1]s-updated"
-  type = "SIMPLE"
-  frequency = 5
-  status = "ENABLED"
-  locations = ["AWS_US_EAST_1", "AWS_US_WEST_1"]
-  uri = "https://github.com"
+	name      = "%[1]s-updated"
+	type      = "SIMPLE"
+	frequency = 5
+	status    = "ENABLED"
+	locations = ["AWS_US_EAST_1", "AWS_US_WEST_1"]
+	uri       = "https://github.com"
 }
-`, rName)
+`, name)
 }
