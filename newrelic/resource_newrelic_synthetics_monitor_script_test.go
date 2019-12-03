@@ -11,7 +11,8 @@ import (
 )
 
 func TestAccNewRelicSyntheticsMonitorScript_Basic(t *testing.T) {
-	rname := acctest.RandString(5)
+	resourceName := "newrelic_synthetics_monitor_script.foo_script"
+	rName := acctest.RandString(5)
 	scriptText := acctest.RandString(5)
 	scriptTextUpdated := acctest.RandString(5)
 
@@ -20,21 +21,30 @@ func TestAccNewRelicSyntheticsMonitorScript_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorScriptDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create
 			{
-				Config: testAccCheckNewRelicSyntheticsMonitorScriptConfig(rname, scriptText),
+				Config: testAccNewRelicSyntheticsMonitorScriptConfig(rName, scriptText),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicSyntheticsMonitorScriptExists("newrelic_synthetics_monitor_script.foo_script"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor_script.foo_script", "text", scriptText),
+					testAccCheckNewRelicSyntheticsMonitorScriptExists(resourceName),
 				),
 			},
+			// Test: No diff on re-apply
 			{
-				Config: testAccCheckNewRelicSyntheticsMonitorScriptConfig(rname, scriptTextUpdated),
+				Config:             testAccNewRelicSyntheticsMonitorScriptConfig(rName, scriptText),
+				ExpectNonEmptyPlan: false,
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicSyntheticsMonitorScriptConfig(rName, scriptTextUpdated),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicSyntheticsMonitorScriptExists("newrelic_synthetics_monitor_script.foo_script"),
-					resource.TestCheckResourceAttr(
-						"newrelic_synthetics_monitor_script.foo_script", "text", scriptTextUpdated),
+					testAccCheckNewRelicSyntheticsMonitorScriptExists(resourceName),
 				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -80,9 +90,8 @@ func testAccCheckNewRelicSyntheticsMonitorScriptDestroy(s *terraform.State) erro
 	return nil
 }
 
-func testAccCheckNewRelicSyntheticsMonitorScriptConfig(rName string, scriptText string) string {
+func testAccNewRelicSyntheticsMonitorScriptConfig(name string, scriptText string) string {
 	return fmt.Sprintf(`
-
 resource "newrelic_synthetics_monitor" "foo" {
   name = "%[1]s"
   type = "SCRIPT_BROWSER"
@@ -96,5 +105,5 @@ resource "newrelic_synthetics_monitor_script" "foo_script" {
   monitor_id = "${newrelic_synthetics_monitor.foo.id}"
   text = "%[2]s"
 }
-`, rName, scriptText)
+`, name, scriptText)
 }
