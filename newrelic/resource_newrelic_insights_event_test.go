@@ -12,6 +12,10 @@ import (
 )
 
 func TestAccNewRelicInsightsEvent_Basic(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
 	tNow := time.Now().Unix() * 1000
 	eType := acctest.RandString(5)
 	resource.Test(t, resource.TestCase{
