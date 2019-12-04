@@ -381,7 +381,7 @@ github.com/newrelic/go-agent/internal/utilization
 github.com/newrelic/go-insights/client
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
-# github.com/paultyng/go-newrelic/v4 v4.9.1
+# github.com/paultyng/go-newrelic/v4 v4.10.0
 github.com/paultyng/go-newrelic/v4/api
 # github.com/pelletier/go-toml v1.2.0
 github.com/pelletier/go-toml
