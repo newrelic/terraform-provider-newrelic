@@ -1,4 +1,21 @@
-## 1.8.1 (Unreleased)
+## 1.9.0 (Unreleased)
+
+IMPROVEMENTS:
+
+* feat: add `newrelic_plugins_alert_condition` resource ([#234](https://github.com/terraform-providers/terraform-provider-newrelic/pull/234))
+* feat: add `newrelic_insights_event` resource ([#246](https://github.com/terraform-providers/terraform-provider-newrelic/pull/246))
+* feat: add ability to import `newrelic_alert_channel` resource ([#241](https://github.com/terraform-providers/terraform-provider-newrelic/pull/241))
+* feat: add ability to import `newrelic_alert_policy_channel` resource ([#249](https://github.com/terraform-providers/terraform-provider-newrelic/pull/249))
+* feat: add ability to import `newrelic_infra_alert_condition` resource ([#254](https://github.com/terraform-providers/terraform-provider-newrelic/pull/254))
+* feat: add ability to import `newrelic_nrql_alert_condition` resource for all condition types ([#250](https://github.com/terraform-providers/terraform-provider-newrelic/pull/250))
+* feat: add `violation_time_limit_seconds` attribute to `newrelic_nrql_alert_condition` resource ([#198](https://github.com/terraform-providers/terraform-provider-newrelic/pull/198))
+* docs: various improvements
+
+BUG FIXES:
+
+* fix: `newrelic_alert_policy` data source now matches on policy name more strictly ([#197](https://github.com/terraform-providers/terraform-provider-newrelic/pull/197))
+* fix: `newrelic_alert_channel` data source now matches on channel name more strictly ([#197](https://github.com/terraform-providers/terraform-provider-newrelic/pull/197))
+
 ## 1.8.0 (November 22, 2019)
 
 IMPROVEMENTS:
