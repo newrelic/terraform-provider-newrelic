@@ -47,9 +47,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional: true,
 			},
 			"violation_time_limit_seconds": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "This limit will automatically force-close a long-lasting violation after the number of hours you select",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntInSlice([]int{3600, 7200, 14400, 28800, 43200, 86400}),
 			},
 			"nrql": {
 				Type:     schema.TypeList,
@@ -203,6 +203,7 @@ func readNrqlAlertConditionStruct(condition *newrelic.AlertNrqlCondition, d *sch
 	d.Set("type", condition.Type)
 	d.Set("expected_groups", condition.ExpectedGroups)
 	d.Set("ignore_overlap", condition.IgnoreOverlap)
+	d.Set("violation_time_limit_seconds", condition.ViolationCloseTimer)
 
 	if condition.ValueFunction == "" {
 		d.Set("value_function", "single_value")
