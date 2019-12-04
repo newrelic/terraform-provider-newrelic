@@ -38,7 +38,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 			"frequency": {
 				Type:         schema.TypeInt,
 				Required:     true,
-				ValidateFunc: intInSlice([]int{1, 5, 10, 15, 30, 60, 360, 720, 1440}),
+				ValidateFunc: validation.IntInSlice([]int{1, 5, 10, 15, 30, 60, 360, 720, 1440}),
 			},
 			"uri": {
 				Type:     schema.TypeString,
@@ -87,9 +87,11 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 }
 
 func buildSyntheticsMonitorStruct(d *schema.ResourceData) *synthetics.CreateMonitorArgs {
+	monitorType := d.Get("type").(string)
+
 	monitor := synthetics.CreateMonitorArgs{
+		Type:         monitorType,
 		Name:         d.Get("name").(string),
-		Type:         d.Get("type").(string),
 		Frequency:    uint(d.Get("frequency").(int)),
 		Status:       d.Get("status").(string),
 		SLAThreshold: d.Get("sla_threshold").(float64),
@@ -105,27 +107,120 @@ func buildSyntheticsMonitorStruct(d *schema.ResourceData) *synthetics.CreateMoni
 		locations[i] = fmt.Sprint(v)
 	}
 
-	if validationString, ok := d.GetOk("validation_string"); ok {
-		monitor.ValidationString = util.StrPtr(validationString.(string))
+	if monitorType == synthetics.TypeSimple || monitorType == synthetics.TypeBrowser {
+		if validationString, ok := d.GetOk("validation_string"); ok {
+			monitor.ValidationString = util.StrPtr(validationString.(string))
+		}
+
+		verifySSL := d.Get("verify_ssl")
+		if verifySSL != nil {
+			monitor.VerifySSL = util.BoolPtr(verifySSL.(bool))
+		}
 	}
 
-	if verifySSL, ok := d.GetOk("verify_ssl"); ok {
-		monitor.VerifySSL = util.BoolPtr(verifySSL.(bool))
-	}
+	if monitorType == synthetics.TypeSimple {
+		bypassHeadRequest := d.Get("bypass_head_request")
+		treatRedirectAsFailure := d.Get("treat_redirect_as_failure")
 
-	if bypassHeadRequest, ok := d.GetOk("bypass_head_request"); ok {
-		monitor.BypassHEADRequest = util.BoolPtr(bypassHeadRequest.(bool))
-	}
+		if bypassHeadRequest != nil {
+			monitor.BypassHEADRequest = util.BoolPtr(bypassHeadRequest.(bool))
+		}
 
-	if treatRedirectAsFailure, ok := d.GetOk("treat_redirect_as_failure"); ok {
-		monitor.TreatRedirectAsFailure = util.BoolPtr(treatRedirectAsFailure.(bool))
+		if treatRedirectAsFailure != nil {
+			monitor.TreatRedirectAsFailure = util.BoolPtr(treatRedirectAsFailure.(bool))
+		}
 	}
 
 	monitor.Locations = locations
+
 	return &monitor
 }
 
-func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.UpdateMonitorArgs {
+func readSyntheticsMonitorStruct(monitor *synthetics.Monitor, d *schema.ResourceData) error {
+	d.Set("name", monitor.Name)
+	d.Set("type", monitor.Type)
+	d.Set("frequency", monitor.Frequency)
+	d.Set("uri", monitor.URI)
+	d.Set("locations", monitor.Locations)
+	d.Set("status", monitor.Status)
+	d.Set("sla_threshold", monitor.SLAThreshold)
+
+	if monitor.Type == synthetics.TypeSimple || monitor.Type == synthetics.TypeBrowser {
+		if monitor.VerifySSL != nil {
+			d.Set("verify_ssl", monitor.VerifySSL)
+		}
+
+		if monitor.ValidationString != nil {
+			d.Set("validation_string", monitor.ValidationString)
+		}
+	}
+
+	if monitor.Type == synthetics.TypeSimple {
+		if monitor.BypassHEADRequest != nil {
+			d.Set("bypass_head_request", monitor.BypassHEADRequest)
+		}
+
+		if monitor.TreatRedirectAsFailure != nil {
+			d.Set("treat_redirect_as_failure", monitor.TreatRedirectAsFailure)
+		}
+	}
+
+	return nil
+}
+
+func resourceNewRelicSyntheticsMonitorCreate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ProviderConfig).Synthetics
+	monitor := buildSyntheticsMonitorStruct(d)
+
+	log.Printf("[INFO] Creating New Relic Synthetics monitor %s", monitor.Name)
+
+	condition, err := client.CreateMonitor(monitor)
+
+	if err != nil {
+		return err
+	}
+
+	d.SetId(condition.ID)
+	return resourceNewRelicSyntheticsMonitorRead(d, meta)
+}
+
+func resourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ProviderConfig).Synthetics
+
+	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
+
+	monitor, err := client.GetMonitor(d.Id())
+
+	if err != nil {
+		if err == synthetics.ErrMonitorNotFound {
+			d.SetId("")
+			return nil
+		}
+
+		return err
+	}
+
+	return readSyntheticsMonitorStruct(monitor, d)
+}
+
+func resourceNewRelicSyntheticsMonitorUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ProviderConfig).Synthetics
+	monitor := buildSyntheticsMonitorStructUpdate(d)
+
+	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
+
+	_, err := client.UpdateMonitor(d.Id(), monitor)
+
+	if err != nil {
+		return err
+	}
+
+	return resourceNewRelicSyntheticsMonitorRead(d, meta)
+}
+
+func buildSyntheticsMonitorStructUpdate(d *schema.ResourceData) *synthetics.UpdateMonitorArgs {
+	monitorType := d.Get("type").(string)
+
 	monitor := synthetics.UpdateMonitorArgs{
 		Name:         d.Get("name").(string),
 		Frequency:    uint(d.Get("frequency").(int)),
@@ -147,95 +242,28 @@ func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Update
 		monitor.ValidationString = util.StrPtr(validationString.(string))
 	}
 
-	if verifySSL, ok := d.GetOk("verify_ssl"); ok {
+	verifySSL := d.Get("verify_ssl")
+
+	if verifySSL != nil {
 		monitor.VerifySSL = util.BoolPtr(verifySSL.(bool))
 	}
 
-	if bypassHeadRequest, ok := d.GetOk("bypass_head_request"); ok {
-		monitor.BypassHEADRequest = util.BoolPtr(bypassHeadRequest.(bool))
-	}
+	if monitorType == synthetics.TypeSimple {
+		bypassHeadRequest := d.Get("bypass_head_request")
+		treatRedirectAsFailure := d.Get("treat_redirect_as_failure")
 
-	if treatRedirectAsFailure, ok := d.GetOk("treat_redirect_as_failure"); ok {
-		monitor.TreatRedirectAsFailure = util.BoolPtr(treatRedirectAsFailure.(bool))
+		if bypassHeadRequest != nil {
+			monitor.BypassHEADRequest = util.BoolPtr(bypassHeadRequest.(bool))
+		}
+
+		if treatRedirectAsFailure != nil {
+			monitor.TreatRedirectAsFailure = util.BoolPtr(treatRedirectAsFailure.(bool))
+		}
 	}
 
 	monitor.Locations = locations
+
 	return &monitor
-}
-
-func readSyntheticsMonitorStruct(monitor *synthetics.Monitor, d *schema.ResourceData) error {
-	d.Set("name", monitor.Name)
-	d.Set("type", monitor.Type)
-	d.Set("frequency", monitor.Frequency)
-	d.Set("uri", monitor.URI)
-	d.Set("locations", monitor.Locations)
-	d.Set("status", monitor.Status)
-	d.Set("sla_threshold", monitor.SLAThreshold)
-
-	if monitor.VerifySSL != nil {
-		d.Set("verify_ssl", *monitor.VerifySSL)
-	}
-
-	if monitor.ValidationString != nil {
-		d.Set("validation_string", *monitor.ValidationString)
-	}
-
-	if monitor.BypassHEADRequest != nil {
-		d.Set("bypass_head_request", monitor.BypassHEADRequest)
-	}
-
-	if monitor.TreatRedirectAsFailure != nil {
-		d.Set("treat_redirect_as_failure", monitor.TreatRedirectAsFailure)
-	}
-
-	return nil
-}
-
-func resourceNewRelicSyntheticsMonitorCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Synthetics
-	monitor := buildSyntheticsMonitorStruct(d)
-
-	log.Printf("[INFO] Creating New Relic Synthetics monitor %s", monitor.Name)
-
-	condition, err := client.CreateMonitor(monitor)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(condition.ID)
-	return resourceNewRelicSyntheticsMonitorRead(d, meta)
-}
-
-func resourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Synthetics
-
-	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
-
-	monitor, err := client.GetMonitor(d.Id())
-	if err != nil {
-		if err == synthetics.ErrMonitorNotFound {
-			d.SetId("")
-			return nil
-		}
-
-		return err
-	}
-
-	return readSyntheticsMonitorStruct(monitor, d)
-}
-
-func resourceNewRelicSyntheticsMonitorUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Synthetics
-	monitor := buildSyntheticsUpdateMonitorArgs(d)
-
-	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
-
-	_, err := client.UpdateMonitor(d.Id(), monitor)
-	if err != nil {
-		return err
-	}
-
-	return resourceNewRelicSyntheticsMonitorRead(d, meta)
 }
 
 func resourceNewRelicSyntheticsMonitorDelete(d *schema.ResourceData, meta interface{}) error {

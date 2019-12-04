@@ -13,7 +13,7 @@ func TestAccNewRelicSyntheticsMonitor_Basic(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.foo"
 	rName := acctest.RandString(5)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
@@ -33,6 +33,44 @@ func TestAccNewRelicSyntheticsMonitor_Basic(t *testing.T) {
 			// Test: Update
 			{
 				Config: testAccNewRelicSyntheticsMonitorConfigUpdated(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicSyntheticsMonitor_Browser(t *testing.T) {
+	resourceName := "newrelic_synthetics_monitor.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicSyntheticsMonitorConfigBrowser(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
+				),
+			},
+			// Test: No diff on re-apply
+			{
+				Config:             testAccNewRelicSyntheticsMonitorConfigBrowser(rName),
+				ExpectNonEmptyPlan: false,
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicSyntheticsMonitorConfigBrowserUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
@@ -91,12 +129,17 @@ func testAccCheckNewRelicSyntheticsMonitorDestroy(s *terraform.State) error {
 func testAccNewRelicSyntheticsMonitorConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_synthetics_monitor" "foo" {
-	name      = "%[1]s"
-	type      = "SIMPLE"
-	frequency = 1
-	status    = "DISABLED"
-	locations = ["AWS_US_EAST_1"]
-	uri       = "https://google.com"
+	name       = "%[1]s"
+	type       = "SIMPLE"
+	frequency  = 1
+	status     = "DISABLED"
+	locations  = ["AWS_US_EAST_1"]
+
+	uri                       = "https://example.com"
+	validation_string         = "add example validation check here"
+	verify_ssl                = false
+	bypass_head_request       = false
+	treat_redirect_as_failure = false
 }
 `, name)
 }
@@ -109,7 +152,44 @@ resource "newrelic_synthetics_monitor" "foo" {
 	frequency = 5
 	status    = "ENABLED"
 	locations = ["AWS_US_EAST_1", "AWS_US_WEST_1"]
-	uri       = "https://github.com"
+
+	uri                       = "https://example-updated.com"
+	validation_string         = "add example validation check here updated"
+	verify_ssl                = true
+	bypass_head_request       = true
+	treat_redirect_as_failure = true
+}
+`, name)
+}
+
+func testAccNewRelicSyntheticsMonitorConfigBrowser(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_synthetics_monitor" "foo" {
+	name      = "%[1]s-browser-test"
+	type      = "BROWSER"
+	frequency = 1
+	status    = "DISABLED"
+	locations = ["AWS_US_EAST_1"]
+
+	uri                       = "https://example.com"
+	validation_string         = "this text should exist in the response"
+	verify_ssl                = false
+}
+`, name)
+}
+
+func testAccNewRelicSyntheticsMonitorConfigBrowserUpdated(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_synthetics_monitor" "foo" {
+	name      = "%[1]s-browser-test-updated"
+	type      = "BROWSER"
+	frequency = 5
+	status    = "ENABLED"
+	locations = ["AWS_US_EAST_1", "AWS_US_WEST_1"]
+
+	uri                       = "https://example-updated.com"
+	validation_string         = "this text should exist in the response updated"
+	verify_ssl                = true
 }
 `, name)
 }
