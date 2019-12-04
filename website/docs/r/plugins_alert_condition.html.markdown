@@ -6,7 +6,7 @@ description: |-
   Create and manage a Plugins alert condition for a policy in New Relic.
 ---
 
-# newrelic\_plugins\_alert\_condition
+# Resource: newrelic\_plugins\_alert\_condition
 
 ## Example Usage
 
@@ -62,7 +62,7 @@ The `term` mapping supports the following arguments:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the alert condition.
 

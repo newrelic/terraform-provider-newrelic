@@ -6,7 +6,7 @@ description: |-
   Create one or more Insights events.
 ---
 
-# newrelic\_insights\_event
+# Resource: newrelic\_insights\_event
 
 ## Example Usage
 

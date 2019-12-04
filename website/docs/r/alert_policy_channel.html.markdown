@@ -6,7 +6,7 @@ description: |-
   Map alert policies to alert channels in New Relic.
 ---
 
-# newrelic\_alert\_policy\_channel
+# Resource: newrelic\_alert\_policy\_channel
 
 ## Example Usage
 

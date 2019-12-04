@@ -6,7 +6,7 @@ description: |-
   Looks up the information about a plugin in New Relic.
 ---
 
-# newrelic\_plugin
+# Data Source: newrelic\_plugin
 
 Use this data source to get information about a specific installed plugin in New Relic.
 
@@ -49,4 +49,7 @@ The following arguments are supported:
 * `guid` - (Required) The GUID of the plugin in New Relic.
 
 ## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
 * `id` - The ID of the installed plugin instance.
