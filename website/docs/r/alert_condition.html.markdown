@@ -3,10 +3,12 @@ layout: "newrelic"
 page_title: "New Relic: newrelic_alert_condition"
 sidebar_current: "docs-newrelic-resource-alert-condition"
 description: |-
-  Create and manage an alert condition for a policy in New Relic.
+  Create and manage alert conditions for APM, Browser, and Mobile in New Relic.
 ---
 
 # newrelic\_alert\_condition
+
+Use this resource to create and manage alert conditions for APM, Browser, and Mobile in New Relic.
 
 ## Example Usage
 

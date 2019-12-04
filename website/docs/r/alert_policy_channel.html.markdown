@@ -8,6 +8,8 @@ description: |-
 
 # newrelic\_alert\_policy\_channel
 
+Use this resource to map alert policies to alert channels in New Relic.
+
 ## Example Usage
 
 ```hcl

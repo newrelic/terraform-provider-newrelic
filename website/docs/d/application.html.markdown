@@ -8,7 +8,7 @@ description: |-
 
 # newrelic\_application
 
-Use this data source to get information about a specific application in New Relic.
+Use this data source to get information about a specific application in New Relic that already exists. More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
 
 ## Example Usage
 

@@ -8,6 +8,8 @@ description: |-
 
 # newrelic\_synthetics\_alert\_condition
 
+Use this resource to create and manage synthetics alert conditions in New Relic.
+
 ## Example Usage
 
 ```hcl
