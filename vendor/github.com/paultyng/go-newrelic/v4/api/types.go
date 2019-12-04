@@ -1,6 +1,10 @@
 package api
 
-import "errors"
+import (
+	"encoding/json"
+	"errors"
+	"strconv"
+)
 
 var (
 	// ErrNotFound is returned when the resource was not found in New Relic.
@@ -45,9 +49,37 @@ type AlertConditionTerm struct {
 	TimeFunction string  `json:"time_function,omitempty"`
 }
 
+// UnmarshalJSON implements custom json unmarshalling for the AlertConditionTerm type
+func (t *AlertConditionTerm) UnmarshalJSON(data []byte) error {
+	type alias AlertConditionTerm
+	aux := &struct {
+		Duration     int    `json:"duration,string,omitempty"`
+		Operator     string `json:"operator,omitempty"`
+		Priority     string `json:"priority,omitempty"`
+		Threshold    string `json:"threshold"`
+		TimeFunction string `json:"time_function,omitempty"`
+	}{}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	threshold, err := strconv.ParseFloat(aux.Threshold, 64)
+	if err != nil {
+		return err
+	}
+
+	t.Threshold = threshold
+	t.Duration = aux.Duration
+	t.Operator = aux.Operator
+	t.Priority = aux.Priority
+	t.TimeFunction = aux.TimeFunction
+
+	return nil
+}
+
 // AlertCondition represents a New Relic alert condition.
 // TODO: custom unmarshal entities to ints?
-// TODO: handle unmarshaling .75 for float (not just 0.75)
 type AlertCondition struct {
 	PolicyID            int                       `json:"-"`
 	ID                  int                       `json:"id,omitempty"`
