@@ -369,7 +369,7 @@ github.com/nbutton23/zxcvbn-go/match
 github.com/nbutton23/zxcvbn-go/matching
 github.com/nbutton23/zxcvbn-go/scoring
 github.com/nbutton23/zxcvbn-go/utils/math
-# github.com/newrelic/go-agent v2.16.0+incompatible
+# github.com/newrelic/go-agent v2.16.1+incompatible
 github.com/newrelic/go-agent
 github.com/newrelic/go-agent/internal
 github.com/newrelic/go-agent/internal/cat
