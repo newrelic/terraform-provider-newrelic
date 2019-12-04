@@ -2,7 +2,7 @@ package newrelic
 
 import (
 	"fmt"
-	"strings"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -18,7 +18,6 @@ func TestAccNewRelicAlertPolicyDataSource_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			// Test: Create
 			{
 				Config: testAccNewRelicAlertPolicyDataSourceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
@@ -26,17 +25,27 @@ func TestAccNewRelicAlertPolicyDataSource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-%s", rName)),
 				),
 			},
-			// Test: Import
+		},
+	})
+}
+
+func TestAccNewRelicAlertPolicyDataSource_NameExactMatchOnly(t *testing.T) {
+	rName := acctest.RandString(5)
+	expectedErrorMsg := regexp.MustCompile(`the name '.*' does not match any New Relic alert policy`)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:      testAccNewRelicAlertPolicyDataSourceConfigNameExactMatchOnly(rName),
+				ExpectError: expectedErrorMsg,
 			},
 		},
 	})
 }
 
-func testAccNewRelicAlertPolicyDataSourceConfig(rName string) string {
+func testAccNewRelicAlertPolicyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
 	name = "tf-test-%s"
@@ -45,7 +54,20 @@ resource "newrelic_alert_policy" "foo" {
 data "newrelic_alert_policy" "policy" {
 	name = "${newrelic_alert_policy.foo.name}"
 }
-`, rName)
+`, name)
+}
+
+func testAccNewRelicAlertPolicyDataSourceConfigNameExactMatchOnly(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%s"
+}
+
+data "newrelic_alert_policy" "policy" {
+	name = "tf-test-%s"
+	depends_on = [newrelic_alert_policy.foo]
+}
+`, name, name[:len(name)-1])
 }
 
 func testAccCheckNewRelicAlertPolicyDataSource(n string) resource.TestCheckFunc {
@@ -55,10 +77,6 @@ func testAccCheckNewRelicAlertPolicyDataSource(n string) resource.TestCheckFunc 
 
 		if a["id"] == "" {
 			return fmt.Errorf("expected to get an alert policy from New Relic")
-		}
-
-		if strings.EqualFold(testAccExpectedAlertPolicyName, a["name"]) {
-			return fmt.Errorf("expected the alert policy name to be: %s, but got: %s", testAccExpectedAlertPolicyName, a["name"])
 		}
 
 		return nil
