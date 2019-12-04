@@ -8,7 +8,7 @@ description: |-
 
 # Data Source: newrelic\_alert\_channel
 
-Use this data source to get information about a specific alert channel in New Relic that already exists (e.g newrelic user). More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
+Use this data source to get information about a specific alert channel in New Relic that already exists.  More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
 
 ## Example Usage
 

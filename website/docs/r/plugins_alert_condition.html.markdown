@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_plugins\_alert\_condition
 
+Use this resource to create and manage plugins alert conditions in New Relic.
+
 ## Example Usage
 
 ```hcl

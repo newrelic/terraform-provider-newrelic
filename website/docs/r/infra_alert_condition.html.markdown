@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_infra_alert\_condition
 
+Use this resource to create and manage Infrastructure alert conditions in New Relic.
+
 ## Example Usage
 
 ```hcl

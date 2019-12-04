@@ -8,7 +8,7 @@ description: |-
 
 # Resource: newrelic\_dashboard
 
-This resource can be used to create and manage New Relic dashboards.
+Use this resource to create and manage New Relic dashboards.
 
 ## Example Usage: Create a New Relic Dashboard
 

@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_alert\_channel
 
+Use this resource to create and manage New Relic alert policies.
+
 ## Example Usage
 
 ##### Email
