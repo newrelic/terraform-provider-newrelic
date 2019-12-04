@@ -36,13 +36,14 @@ func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{})
 
 	log.Printf("[INFO] Reading New Relic applications")
 
-	applications, err := client.ListApplications()
+	name := d.Get("name").(string)
+	filter := newrelic.ApplicationsFilters{Name: &name}
+	applications, err := client.QueryApplications(filter)
 	if err != nil {
 		return err
 	}
 
 	var application *newrelic.Application
-	name := d.Get("name").(string)
 
 	for _, a := range applications {
 		if a.Name == name {
