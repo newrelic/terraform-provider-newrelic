@@ -6,14 +6,20 @@ import (
 	"strconv"
 )
 
-type applicationsFilters struct {
+// ApplicationsFilters represents a set of filters to be
+// used when querying New Relic applications.
+type ApplicationsFilters struct {
 	Name     *string
 	Host     *string
 	IDs      []int
 	Language *string
 }
 
-func (c *Client) queryApplications(filters applicationsFilters) ([]Application, error) {
+// QueryApplications queries for New Relic applications
+// with filters to narrow down the result set.  This can
+// result in less paging required, for instance if you know
+// the name of the application you are searching for ahead of time.
+func (c *Client) QueryApplications(filters ApplicationsFilters) ([]Application, error) {
 	applications := []Application{}
 
 	reqURL, err := url.Parse("/applications.json")
@@ -56,7 +62,7 @@ func (c *Client) queryApplications(filters applicationsFilters) ([]Application, 
 
 // ListApplications lists all the applications you have access to.
 func (c *Client) ListApplications() ([]Application, error) {
-	return c.queryApplications(applicationsFilters{})
+	return c.QueryApplications(ApplicationsFilters{})
 }
 
 // DeleteApplication deletes a non-reporting application from your account.
