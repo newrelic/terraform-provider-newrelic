@@ -56,6 +56,7 @@ The following arguments are supported:
 - `value_function` - (Optional) Possible values are `single_value`, `sum`.
 - `expected_groups` - (Optional) Number of expected groups when using `outlier` detection.
 - `ignore_overlap` - (Optional) Whether to look for a convergence of groups when using `outlier` detection.
+- `violation_time_limit_seconds` - (Optional) Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select.  Possible values are `3600`, `7200`, `14400`, `28800`, `43200`, and `86400`.
 
 ## Terms
 
