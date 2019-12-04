@@ -2,7 +2,7 @@ package newrelic
 
 import (
 	"fmt"
-	"strings"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -30,7 +30,23 @@ func TestAccNewRelicAlertChannelDataSource_Basic(t *testing.T) {
 	})
 }
 
-func testAccNewRelicAlertChannelDataSourceConfig(rName string) string {
+func TestAccNewRelicAlertChannelDataSource_NameExactMatchOnly(t *testing.T) {
+	rName := acctest.RandString(5)
+	expectedErrorMsg := regexp.MustCompile(`the name '.*' does not match any New Relic alert channel`)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicAlertChannelDataSourceConfigNameExactMatchOnly(rName),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
+}
+
+func testAccNewRelicAlertChannelDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_channel" "foo" {
 	name = "tf-test-%s"
@@ -45,7 +61,26 @@ resource "newrelic_alert_channel" "foo" {
 data "newrelic_alert_channel" "channel" {
 	name = "${newrelic_alert_channel.foo.name}"
 }
-`, rName)
+`, name)
+}
+
+func testAccNewRelicAlertChannelDataSourceConfigNameExactMatchOnly(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_channel" "foo" {
+	name = "tf-test-%s"
+	type = "email"
+
+	configuration = {
+		recipients = "terraform-acctest+foo@hashicorp.com"
+		include_json_attachment = "1"
+	}
+}
+
+data "newrelic_alert_channel" "channel" {
+	name = "tf-test-%s"
+	depends_on = [newrelic_alert_channel.foo]
+}
+`, name, name[:len(name)-1])
 }
 
 func testAccNewRelicAlertChannel(n string) resource.TestCheckFunc {
@@ -55,10 +90,6 @@ func testAccNewRelicAlertChannel(n string) resource.TestCheckFunc {
 
 		if a["id"] == "" {
 			return fmt.Errorf("expected to get an alert channel from New Relic")
-		}
-
-		if strings.EqualFold(testAccExpectedAlertChannelName, a["name"]) {
-			return fmt.Errorf("expected the alert channel name to be: %s, but got: %s", testAccExpectedAlertChannelName, a["name"])
 		}
 
 		return nil
