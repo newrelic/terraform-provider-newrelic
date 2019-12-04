@@ -1,14 +1,14 @@
 ---
 layout: "newrelic"
 page_title: "New Relic: newrelic_synthetics_monitor"
-sidebar_current: "docs-newrelic-synthetics-monitor"
+sidebar_current: "docs-newrelic-datasource-synthetics-monitor"
 description: |-
   Grabs a synthetics monitor by name.
 ---
 
 # Data Source: newrelic\_synthetics\_monitor
 
-Use this data source to get information about a specific synthetics monitor in New Relic. This can then be used to set up a synthetics alert condition.
+Use this data source to get information about a specific synthetics monitor in New Relic that already exists. This can be used to set up a Synthetics alert condition.
 
 ## Example Usage
 

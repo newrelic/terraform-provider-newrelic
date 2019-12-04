@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic_nrql_alert_condition
 
+Use this resource to create and manage NRQL alert conditions in New Relic.
+
 ## Example Usage
 
 ##### Type: `static` (default)
