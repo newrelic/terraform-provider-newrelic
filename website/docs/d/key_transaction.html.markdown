@@ -6,7 +6,7 @@ description: |-
   Looks up the information about a key transaction in New Relic.
 ---
 
-# newrelic\_key\_transaction
+# Data Source: newrelic\_key\_transaction
 
 Use this data source to get information about a specific key transaction in New Relic.
 
@@ -47,5 +47,7 @@ The following arguments are supported:
 * `name` - (Required) The name of the application in New Relic.
 
 ## Attributes Reference
-* `id` - The ID of the application.
 
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - The ID of the application.

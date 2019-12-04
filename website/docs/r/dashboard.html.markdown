@@ -6,7 +6,7 @@ description: |-
   Create and manage dashboards in New Relic.
 ---
 
-# newrelic\_dashboard
+# Resource: newrelic\_dashboard
 
 This resource can be used to create and manage New Relic dashboards.
 
@@ -100,6 +100,12 @@ The following arguments are supported:
   * `editable` - (Optional) Determines who can edit the dashboard in an account. Valid values are `all`,  `editable_by_all`, `editable_by_owner`, or `read_only`.  Defaults to `editable_by_all`.
   * `widget` - (Optional) A nested block that describes a visualization.  Up to 300 `widget` blocks are allowed in a dashboard definition.  See [Nested widget blocks](#nested-`widget`-blocks) below for details.
   * `filter` - (Optional) A nested block that describes a dashboard filter.  Exactly one nested `filter` block is allowed. See [Nested filter block](#nested-`filter`-block) below for details.
+
+## Attribute Refence
+
+In addition to all arguments above, the following attributes are exported:
+
+  * `dashboard_url` - The URL for viewing the dashboard.
 
 ### Nested `widget` blocks
 

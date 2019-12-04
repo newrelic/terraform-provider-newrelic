@@ -6,7 +6,7 @@ description: |-
   Create and manage an Infrastructure alert condition for a policy in New Relic.
 ---
 
-# newrelic\_infra_alert\_condition
+# Resource: newrelic\_infra_alert\_condition
 
 ## Example Usage
 
@@ -103,6 +103,12 @@ The following arguments are supported:
   * `integration_provider` - (Optional) For alerts on integrations, use this instead of `event`.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
 
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+  * `id` - The ID of the Infrastructure alert condition.
+
 ## Thresholds
 
 The `critical` and `warning` threshold mapping supports the following arguments:
@@ -110,9 +116,3 @@ The `critical` and `warning` threshold mapping supports the following arguments:
   * `duration` - (Required) Identifies the number of minutes the threshold must be passed or met for the alert to trigger. Threshold durations must be between 1 and 60 minutes (inclusive).
   * `value` - (Optional) Threshold value, computed against the `comparison` operator. Supported by `infra_metric` and `infra_process_running` alert condition types.
   * `time_function` - (Optional) Indicates if the condition needs to be sustained or to just break the threshold once; `all` or `any`. Supported by the `infra_metric` alert condition type.
-
-## Attributes Reference
-
-The following attributes are exported:
-
-  * `id` - The ID of the Infrastructure alert condition.

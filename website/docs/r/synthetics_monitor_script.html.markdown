@@ -6,7 +6,7 @@ description: |-
   Update and manage a Synthetics monitor script in New Relic.
 ---
 
-# newrelic\_synthetics\_monitor\_script
+# Resource: newrelic\_synthetics\_monitor\_script
 
 Use this resource to update a synthetics monitor script in New Relic.
 
@@ -32,6 +32,6 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the Synthetics monitor that the script is attached to.
