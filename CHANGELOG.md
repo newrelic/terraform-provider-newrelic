@@ -13,6 +13,7 @@ IMPROVEMENTS:
 
 BUG FIXES:
 
+* fix: speed up `newrelic_application` data source state refresh for accounts with many applications ([#263](https://github.com/terraform-providers/terraform-provider-newrelic/pull/263))
 * fix: `newrelic_alert_policy` data source now matches on policy name more strictly ([#197](https://github.com/terraform-providers/terraform-provider-newrelic/pull/197))
 * fix: `newrelic_alert_channel` data source now matches on channel name more strictly ([#197](https://github.com/terraform-providers/terraform-provider-newrelic/pull/197))
 
