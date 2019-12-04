@@ -6,7 +6,7 @@ description: |-
   Looks up the information about a plugin component in New Relic.
 ---
 
-# newrelic\_plugin\_component
+# Data Source: newrelic\_plugin\_component
 
 Use this data source to get information about a single plugin component in New Relic.
 
@@ -56,5 +56,8 @@ The following arguments are supported:
 * `name` - (Required) The name of the plugin component.
 
 ## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
 * `id` - The ID of the plugin component.
 * `health_status` - The health status of the plugin component.

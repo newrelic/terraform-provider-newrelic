@@ -6,7 +6,7 @@ description: |-
   Create and manage a NRQL alert condition for a policy in New Relic.
 ---
 
-# newrelic_nrql_alert_condition
+# Resource: newrelic_nrql_alert_condition
 
 ## Example Usage
 
@@ -77,7 +77,7 @@ The `nrql` attribute supports the following arguments:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the NRQL alert condition.
 

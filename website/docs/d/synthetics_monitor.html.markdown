@@ -6,7 +6,7 @@ description: |-
   Grabs a synthetics monitor by name.
 ---
 
-# newrelic\_synthetics\_monitor
+# Data Source: newrelic\_synthetics\_monitor
 
 Use this data source to get information about a specific synthetics monitor in New Relic. This can then be used to set up a synthetics alert condition.
 
@@ -33,5 +33,7 @@ The following arguments are supported:
 * `name` - (Required) The name of the synthetics monitor in New Relic.
 
 ## Attributes Reference
-* `id` - The ID of the synthetics monitor.
 
+In addition to all arguments above, the following attributes are exported:
+
+* `monitor_id` - The ID of the synthetics monitor.

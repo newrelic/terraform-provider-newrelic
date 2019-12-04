@@ -6,7 +6,7 @@ description: |-
   Create and manage alert policies in New Relic.
 ---
 
-# newrelic\_alert\_policy
+# Resource: newrelic\_alert\_policy
 
 ## Example Usage
 
@@ -25,7 +25,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the policy.
   * `created_at` - The time the policy was created.

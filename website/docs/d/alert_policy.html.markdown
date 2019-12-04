@@ -6,7 +6,7 @@ description: |-
   Looks up the information about an alert policy in New Relic.
 ---
 
-# newrelic\_alert\_policy
+# Data Source: newrelic\_alert\_policy
 
 Use this data source to get information about an specific alert policy in New Relic which already exists.
 
@@ -34,6 +34,8 @@ The following arguments are supported:
 * `name` - (Required) The name of the alert policy in New Relic.
 
 ## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the alert policy.
 * `incident_preference` - The rollup strategy for the policy. Options include: PER_POLICY, PER_CONDITION, or PER_CONDITION_AND_TARGET. The default is PER_POLICY.

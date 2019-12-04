@@ -6,7 +6,7 @@ description: |-
   Create and manage a Synthetics monitor in New Relic.
 ---
 
-# newrelic\_synthetics\_monitor
+# Resource: newrelic\_synthetics\_monitor
 
 Use this resource to create, update, and delete a synthetics monitor in New Relic.
 
@@ -43,6 +43,6 @@ For SIMPLE and BROWSER monitor types, the following arguments are also supported
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the Synthetics monitor.
