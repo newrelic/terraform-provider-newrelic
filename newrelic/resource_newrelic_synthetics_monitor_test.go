@@ -85,6 +85,40 @@ func TestAccNewRelicSyntheticsMonitor_Browser(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicSyntheticsMonitor_ScriptBrowser(t *testing.T) {
+	resourceName := "newrelic_synthetics_monitor.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicSyntheticsMonitorConfigScriptBrowser(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
+				),
+			},
+			// Test: No diff on re-apply
+			{
+				Config:             testAccNewRelicSyntheticsMonitorConfigScriptBrowser(rName),
+				ExpectNonEmptyPlan: false,
+			},
+			// TODO: Test: Update
+			// (update needs to be fixed for type SCRIPT_BROWSER and SCRIPT_API)
+
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -190,6 +224,18 @@ resource "newrelic_synthetics_monitor" "foo" {
 	uri                       = "https://example-updated.com"
 	validation_string         = "this text should exist in the response updated"
 	verify_ssl                = true
+}
+`, name)
+}
+
+func testAccNewRelicSyntheticsMonitorConfigScriptBrowser(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_synthetics_monitor" "foo" {
+	name      = "%[1]s-script-browser-test"
+	type      = "SCRIPT_BROWSER"
+	frequency = 1
+	status    = "DISABLED"
+	locations = ["AWS_US_EAST_1"]
 }
 `, name)
 }
