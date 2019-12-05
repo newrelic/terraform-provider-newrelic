@@ -109,15 +109,15 @@ func buildSyntheticsMonitorStruct(d *schema.ResourceData) *synthetics.CreateMoni
 		monitor.ValidationString = util.StrPtr(validationString.(string))
 	}
 
-	if verifySSL, ok := d.GetOk("verify_ssl"); ok {
+	if verifySSL, ok := d.GetOkExists("verify_ssl"); ok {
 		monitor.VerifySSL = util.BoolPtr(verifySSL.(bool))
 	}
 
-	if bypassHeadRequest, ok := d.GetOk("bypass_head_request"); ok {
+	if bypassHeadRequest, ok := d.GetOkExists("bypass_head_request"); ok {
 		monitor.BypassHEADRequest = util.BoolPtr(bypassHeadRequest.(bool))
 	}
 
-	if treatRedirectAsFailure, ok := d.GetOk("treat_redirect_as_failure"); ok {
+	if treatRedirectAsFailure, ok := d.GetOkExists("treat_redirect_as_failure"); ok {
 		monitor.TreatRedirectAsFailure = util.BoolPtr(treatRedirectAsFailure.(bool))
 	}
 
@@ -147,15 +147,15 @@ func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Update
 		monitor.ValidationString = util.StrPtr(validationString.(string))
 	}
 
-	if verifySSL, ok := d.GetOk("verify_ssl"); ok {
+	if verifySSL, ok := d.GetOkExists("verify_ssl"); ok {
 		monitor.VerifySSL = util.BoolPtr(verifySSL.(bool))
 	}
 
-	if bypassHeadRequest, ok := d.GetOk("bypass_head_request"); ok {
+	if bypassHeadRequest, ok := d.GetOkExists("bypass_head_request"); ok {
 		monitor.BypassHEADRequest = util.BoolPtr(bypassHeadRequest.(bool))
 	}
 
-	if treatRedirectAsFailure, ok := d.GetOk("treat_redirect_as_failure"); ok {
+	if treatRedirectAsFailure, ok := d.GetOkExists("treat_redirect_as_failure"); ok {
 		monitor.TreatRedirectAsFailure = util.BoolPtr(treatRedirectAsFailure.(bool))
 	}
 
