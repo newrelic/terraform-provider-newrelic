@@ -1,0 +1,9 @@
+tmp/*
+bin/*
+build/*
+coverage/*
+vendor/*/*
+
+*.csv
+*.yml
+*.yaml
