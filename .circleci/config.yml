@@ -1,0 +1,12 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.13
+
+    working_directory: /go/src/github.com/newrelic/newrelic-client-go
+    steps:
+      - checkout
+
+      - run: make build-ci
+
