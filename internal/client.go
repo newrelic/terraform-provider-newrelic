@@ -2,16 +2,15 @@ package internal
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
-	resty "github.com/go-resty/resty/v2"
-	"github.com/tomnomnom/linkheader"
+	"github.com/go-resty/resty/v2"
 )
 
 type NewRelicClient struct {
-	Client *resty.Client
+	client resty.Client
+	pager  Pager
 }
 
 // Config contains all the configuration data for the API Client.
@@ -23,6 +22,7 @@ type Config struct {
 	TLSConfig     *tls.Config
 	UserAgent     string
 	HTTPTransport http.RoundTripper
+	Pager         Pager
 }
 
 func NewClient(config Config) NewRelicClient {
@@ -35,8 +35,13 @@ func NewClient(config Config) NewRelicClient {
 	setDebug(config, client)
 	setHTTPTransport(config, client)
 
+	if config.Pager == nil {
+		config.Pager = &LinkHeaderPager{}
+	}
+
 	return NewRelicClient{
-		Client: client,
+		client: *client,
+		pager:  config.Pager,
 	}
 }
 
@@ -87,28 +92,58 @@ func setHTTPTransport(config Config, client *resty.Client) {
 }
 
 // nolint
-func (nr *NewRelicClient) Get(path string, response interface{}) (string, error) {
-	return nr.do(http.MethodGet, path, nil, response)
+func (nr *NewRelicClient) Get(path string, response interface{}) error {
+	nextPath := path
+
+	for nextPath != "" {
+		paging, err := nr.do(http.MethodGet, path, nil, response)
+
+		if err != nil {
+			return err
+		}
+
+		nextPath = paging.Next
+	}
+
+	return nil
 }
 
 // nolint
-func (nr *NewRelicClient) Put(path string, body interface{}, response interface{}) (string, error) {
-	return nr.do(http.MethodPut, path, body, response)
+func (nr *NewRelicClient) Put(path string, body interface{}, response interface{}) error {
+	_, err := nr.do(http.MethodPut, path, body, response)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // nolint
-func (nr *NewRelicClient) Post(path string, body interface{}, response interface{}) (string, error) {
-	return nr.do(http.MethodPost, path, body, response)
+func (nr *NewRelicClient) Post(path string, body interface{}, response interface{}) error {
+	_, err := nr.do(http.MethodPost, path, body, response)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // nolint
-func (nr *NewRelicClient) Delete(path string) (string, error) {
-	return nr.do(http.MethodDelete, path, nil, nil)
+func (nr *NewRelicClient) Delete(path string) error {
+	_, err := nr.do(http.MethodDelete, path, nil, nil)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Do exectes an API request with the specified parameters.
-func (nr *NewRelicClient) do(method string, path string, body interface{}, response interface{}) (string, error) {
-	client := nr.Client.R().
+func (nr *NewRelicClient) do(method string, path string, body interface{}, response interface{}) (*Paging, error) {
+	client := nr.client.R().
 		SetError(&ErrorResponse{}).
 		SetHeader("Content-Type", "application/json")
 
@@ -123,48 +158,24 @@ func (nr *NewRelicClient) do(method string, path string, body interface{}, respo
 	apiResponse, err := client.Execute(method, path)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	nextPath := ""
-	header := apiResponse.Header().Get("Link")
-	if header != "" {
-		links := linkheader.Parse(header)
+	paging := nr.pager.Parse(apiResponse)
 
-		for _, link := range links.FilterByRel("next") {
-			nextPath = link.URL
-			break
-		}
-	}
-
-	apiResponseBody := apiResponse.Body()
-	if nextPath == "" && apiResponseBody != nil && len(apiResponseBody) > 0 {
-
-		linksResponse := struct {
-			Links struct {
-				Next string `json:"next"`
-			} `json:"links"`
-		}{}
-
-		err = json.Unmarshal(apiResponseBody, &linksResponse)
-		if err != nil {
-			return "", err
-		}
-
-		if linksResponse.Links.Next != "" {
-			nextPath = linksResponse.Links.Next
-		}
+	if err != nil {
+		return nil, err
 	}
 
 	statusCode := apiResponse.StatusCode()
 	statusClass := statusCode / 100 % 10
 
 	if statusClass == 2 {
-		return nextPath, nil
+		return &paging, nil
 	}
 
 	if statusCode == 404 {
-		return "", ErrNotFound
+		return nil, ErrNotFound
 	}
 
 	rawError := apiResponse.Error()
@@ -173,9 +184,9 @@ func (nr *NewRelicClient) do(method string, path string, body interface{}, respo
 		apiError := rawError.(*ErrorResponse)
 
 		if apiError.Detail != nil {
-			return "", apiError
+			return nil, apiError
 		}
 	}
 
-	return "", fmt.Errorf("Unexpected status %v returned from API", apiResponse.StatusCode())
+	return nil, fmt.Errorf("Unexpected status %v returned from API", apiResponse.StatusCode())
 }

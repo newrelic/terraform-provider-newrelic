@@ -10,8 +10,10 @@ type APM struct {
 }
 
 func New(config newrelic.Config) APM {
+	internalConfig := config.ToInternal()
+
 	pkg := APM{
-		client: internal.NewClient(internal.Config(config)),
+		client: internal.NewClient(internalConfig),
 	}
 
 	return pkg
@@ -22,7 +24,7 @@ func (apm *APM) ListApplications() ([]Application, error) {
 		Applications []Application `json:"applications,omitempty"`
 	}{}
 
-	_, err := apm.client.Get("applications.json", &res)
+	err := apm.client.Get("applications.json", &res)
 
 	if err != nil {
 		return nil, err

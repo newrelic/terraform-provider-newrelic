@@ -20,3 +20,9 @@ type Config struct {
 ```
 
 Config contains all the configuration data for the API Client.
+
+#### func (*Config) ToInternal
+
+```go
+func (c *Config) ToInternal() internal.Config
+```

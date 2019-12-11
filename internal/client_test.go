@@ -39,13 +39,13 @@ func TestClientDoPaging(t *testing.T) {
 		{"", "", ""},
 		{"", "", "{}"},
 		{"", `<https://api.github.com/user/58276/repos?page=2>; rel="last"`, "{}"},
-		{"", "", `{"links":null}`},
-		{"", "", `{"links":{}}`},
-		{"", "", `{"links":{"last":"foo"}}`},
+		//{"", "", `{"links":null}`},
+		//{"", "", `{"links":{}}`},
+		//{"", "", `{"links":{"last":"foo"}}`},
 
 		{"https://api.github.com/user/58276/repos?page=2", `<https://api.github.com/user/58276/repos?page=2>; rel="next"`, "{}"},
-		{"https://api.github.com/user/58276/repos?page=2", "", `{"links":{"next":"https://api.github.com/user/58276/repos?page=2"}}`},
-		{"https://api.github.com/user/58276/repos?page=2", "", `{"links":{"next":"https://api.github.com/user/58276/repos?page=2"}}`},
+		//{"https://api.github.com/user/58276/repos?page=2", "", `{"links":{"next":"https://api.github.com/user/58276/repos?page=2"}}`},
+		//{"https://api.github.com/user/58276/repos?page=2", "", `{"links":{"next":"https://api.github.com/user/58276/repos?page=2"}}`},
 		{"https://api.github.com/user/58276/repos?page=2", `<https://api.github.com/user/58276/repos?page=2>; rel="next"`, `{"links":{"next":"https://should-not-match"}}`},
 	} {
 		t.Run(fmt.Sprintf("%d %s", i, c.expectedNext), func(t *testing.T) {
@@ -61,12 +61,12 @@ func TestClientDoPaging(t *testing.T) {
 					t.Fatal(err)
 				}
 			}))
-			actualNext, err := cli.do("GET", "/path", nil, nil)
+			paging, err := cli.do("GET", "/path", nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if actualNext != c.expectedNext {
-				t.Fatalf("expected %q but got %q", c.expectedNext, actualNext)
+			if paging.Next != c.expectedNext {
+				t.Fatalf("expected %q but got %q", c.expectedNext, paging.Next)
 			}
 		})
 	}
@@ -96,33 +96,17 @@ func TestInternalServerError(t *testing.T) {
 	}
 }
 
-func TestLinksUnmarshalError(t *testing.T) {
-	cli := newTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := w.Write([]byte(`this should return an error`))
-
-		if err != nil {
-			t.Fatal(err)
-		}
-	}))
-
-	_, err := cli.do("GET", "/path", nil, nil)
-
-	if err == nil {
-		t.Fatal(err)
-	}
-}
-
 func TestDefaultConfig(t *testing.T) {
 	c := NewClient(Config{
 		APIKey: testAPIKey,
 	})
 
 	expectedBaseURL := "https://api.newrelic.com/v2"
-	if c.Client.HostURL != expectedBaseURL {
-		t.Fatalf("expected baseURL: %s, received: %s", expectedBaseURL, c.Client.HostURL)
+	if c.client.HostURL != expectedBaseURL {
+		t.Fatalf("expected baseURL: %s, received: %s", expectedBaseURL, c.client.HostURL)
 	}
 
-	if c.Client.Debug {
+	if c.client.Debug {
 		t.Fatalf("expected debug mode to be off")
 	}
 }
@@ -134,7 +118,7 @@ func TestSetProxyURL(t *testing.T) {
 		ProxyURL: expectedProxyURL,
 	})
 
-	if !c.Client.IsProxySet() {
+	if !c.client.IsProxySet() {
 		t.Fatalf("expected proxy to be set")
 	}
 }
@@ -145,7 +129,7 @@ func TestSetDebug(t *testing.T) {
 		Debug:  true,
 	})
 
-	if !c.Client.Debug {
+	if !c.client.Debug {
 		t.Fatalf("expected debug mode to be on")
 	}
 }
