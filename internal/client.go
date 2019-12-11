@@ -86,19 +86,23 @@ func setHTTPTransport(config Config, client *resty.Client) {
 	}
 }
 
-func (nr *NewRelicClient) get(path string, response interface{}) (string, error) {
+// nolint
+func (nr *NewRelicClient) Get(path string, response interface{}) (string, error) {
 	return nr.do(http.MethodGet, path, nil, response)
 }
 
-func (nr *NewRelicClient) put(path string, body interface{}, response interface{}) (string, error) {
+// nolint
+func (nr *NewRelicClient) Put(path string, body interface{}, response interface{}) (string, error) {
 	return nr.do(http.MethodPut, path, body, response)
 }
 
-func (nr *NewRelicClient) post(path string, body interface{}, response interface{}) (string, error) {
+// nolint
+func (nr *NewRelicClient) Post(path string, body interface{}, response interface{}) (string, error) {
 	return nr.do(http.MethodPost, path, body, response)
 }
 
-func (nr *NewRelicClient) delete(path string) (string, error) {
+// nolint
+func (nr *NewRelicClient) Delete(path string) (string, error) {
 	return nr.do(http.MethodDelete, path, nil, nil)
 }
 

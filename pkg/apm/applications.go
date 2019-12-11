@@ -4,7 +4,7 @@ import (
 	client "github.com/newrelic/newrelic-client-go/internal"
 )
 
-type APM struct{
+type APM struct {
 	client client.NewRelicClient
 }
 
@@ -16,6 +16,7 @@ func New(config client.Config) APM {
 	return pkg
 }
 
-func (apm *APM) ListApplications() {
-
+func (apm *APM) ListApplications() ([]Application, error) {
+	applications := []Application{}
+	return applications, nil
 }

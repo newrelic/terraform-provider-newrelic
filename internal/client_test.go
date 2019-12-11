@@ -1,7 +1,6 @@
 package client
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -56,7 +55,11 @@ func TestClientDoPaging(t *testing.T) {
 					w.Header().Set("Link", c.linkHeader)
 				}
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(c.body))
+				_, err := w.Write([]byte(c.body))
+
+				if err != nil {
+					t.Fatal(err)
+				}
 			}))
 			actualNext, err := cli.do("GET", "/path", nil, nil)
 			if err != nil {
@@ -95,8 +98,11 @@ func TestInternalServerError(t *testing.T) {
 
 func TestLinksUnmarshalError(t *testing.T) {
 	cli := newTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`this should return an error`))
+		_, err := w.Write([]byte(`this should return an error`))
+
+		if err != nil {
+			t.Fatal(err)
+		}
 	}))
 
 	_, err := cli.do("GET", "/path", nil, nil)
@@ -152,22 +158,6 @@ func newTestAPIClient(handler http.Handler) *NewRelicClient {
 		BaseURL:   ts.URL,
 		Debug:     false,
 		UserAgent: testUserAgentHeader,
-	})
-
-	return &c
-}
-
-func newTestAPIClientTLSConfig(handler http.Handler) *NewRelicClient {
-	ts := httptest.NewServer(handler)
-
-	tlsCfg := &tls.Config{}
-	tlsCfg.InsecureSkipVerify = true
-
-	c := NewClient(Config{
-		APIKey:    "123456",
-		BaseURL:   ts.URL,
-		Debug:     false,
-		TLSConfig: tlsCfg,
 	})
 
 	return &c

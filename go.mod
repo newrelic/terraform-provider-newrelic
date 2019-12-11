@@ -8,6 +8,7 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/go-resty/resty/v2 v2.1.0
 	github.com/golangci/golangci-lint v1.21.0
+	github.com/google/go-cmp v0.2.0
 	github.com/robertkrimen/godocdown v0.0.0-20130622164427-0bfa04905481
 	github.com/stretchr/testify v1.4.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
