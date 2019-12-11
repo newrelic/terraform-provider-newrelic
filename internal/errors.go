@@ -1,4 +1,4 @@
-package client
+package internal
 
 // ErrorResponse represents an error response from New Relic.
 type ErrorResponse struct {

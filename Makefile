@@ -20,9 +20,9 @@ PACKAGES = ${SRCDIR}/newrelic
 ifneq ("$(wildcard ${SRCDIR}/pkg/*)","")
 	PACKAGES += $(wildcard ${SRCDIR}/pkg/*)
 endif
-ifneq ("$(wildcard ${SRCDIR}/internal/*)","")
-	PACKAGES += $(wildcard ${SRCDIR}/internal/*)
-endif
+# ifneq ("$(wildcard ${SRCDIR}/internal/*)","")
+# 	PACKAGES += $(wildcard ${SRCDIR}/internal/*)
+# endif
 
 # Determine commands by looking into cmd/*
 COMMANDS = $(wildcard ${SRCDIR}/cmd/*)

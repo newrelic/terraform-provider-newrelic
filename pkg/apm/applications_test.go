@@ -6,13 +6,13 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	client "github.com/newrelic/newrelic-client-go/internal"
+	"github.com/newrelic/newrelic-client-go/newrelic"
 )
 
 func NewTestAPM(handler http.Handler) APM {
 	ts := httptest.NewServer(handler)
 
-	c := New(client.Config{
+	c := New(newrelic.Config{
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
 		Debug:     false,

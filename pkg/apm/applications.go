@@ -1,16 +1,17 @@
 package apm
 
 import (
-	client "github.com/newrelic/newrelic-client-go/internal"
+	"github.com/newrelic/newrelic-client-go/internal"
+	"github.com/newrelic/newrelic-client-go/newrelic"
 )
 
 type APM struct {
-	client client.NewRelicClient
+	client internal.NewRelicClient
 }
 
-func New(config client.Config) APM {
+func New(config newrelic.Config) APM {
 	pkg := APM{
-		client: client.NewClient(config),
+		client: internal.NewClient(internal.Config(config)),
 	}
 
 	return pkg
