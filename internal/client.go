@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	resty "github.com/go-resty/resty/v2"
@@ -35,8 +34,6 @@ func NewClient(config Config) NewRelicClient {
 	setTLSConfig(config, client)
 	setDebug(config, client)
 	setHTTPTransport(config, client)
-
-	log.Println(client)
 
 	return NewRelicClient{
 		Client: client,
@@ -78,35 +75,35 @@ func setTLSConfig(config Config, client *resty.Client) {
 }
 
 func setDebug(config Config, client *resty.Client) {
-	if config.TLSConfig != nil {
+	if config.Debug {
 		client.SetDebug(true)
 	}
 }
 
 func setHTTPTransport(config Config, client *resty.Client) {
-	if config.TLSConfig != nil {
+	if config.HTTPTransport != nil {
 		client.SetTransport(config.HTTPTransport)
 	}
 }
 
-func (nr *NewRelicClient) Get(path string, response interface{}) (string, error) {
-	return nr.Do(http.MethodGet, path, nil, response)
+func (nr *NewRelicClient) get(path string, response interface{}) (string, error) {
+	return nr.do(http.MethodGet, path, nil, response)
 }
 
-func (nr *NewRelicClient) Put(path string, body interface{}, response interface{}) (string, error) {
-	return nr.Do(http.MethodPut, path, body, response)
+func (nr *NewRelicClient) put(path string, body interface{}, response interface{}) (string, error) {
+	return nr.do(http.MethodPut, path, body, response)
 }
 
-func (nr *NewRelicClient) Post(path string, body interface{}, response interface{}) (string, error) {
-	return nr.Do(http.MethodPost, path, body, response)
+func (nr *NewRelicClient) post(path string, body interface{}, response interface{}) (string, error) {
+	return nr.do(http.MethodPost, path, body, response)
 }
 
-func (nr *NewRelicClient) Delete(path string) (string, error) {
-	return nr.Do(http.MethodDelete, path, nil, nil)
+func (nr *NewRelicClient) delete(path string) (string, error) {
+	return nr.do(http.MethodDelete, path, nil, nil)
 }
 
 // Do exectes an API request with the specified parameters.
-func (nr *NewRelicClient) Do(method string, path string, body interface{}, response interface{}) (string, error) {
+func (nr *NewRelicClient) do(method string, path string, body interface{}, response interface{}) (string, error) {
 	client := nr.Client.R().
 		SetError(&ErrorResponse{}).
 		SetHeader("Content-Type", "application/json")
@@ -138,6 +135,7 @@ func (nr *NewRelicClient) Do(method string, path string, body interface{}, respo
 
 	apiResponseBody := apiResponse.Body()
 	if nextPath == "" && apiResponseBody != nil && len(apiResponseBody) > 0 {
+
 		linksResponse := struct {
 			Links struct {
 				Next string `json:"next"`
