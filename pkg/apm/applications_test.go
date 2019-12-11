@@ -42,7 +42,8 @@ func TestListApplications(t *testing.T) {
 						"apdex_target": 0.5,
 						"apdex_score": 1,
 						"host_count": 1,
-						"instance_count": 15
+						"instance_count": 15,
+						"concurrent_instance_count": 1
 					},
 					"end_user_summary": {
 						"response_time": 3.8,
@@ -63,7 +64,8 @@ func TestListApplications(t *testing.T) {
 						"servers": [],
 						"application_hosts": [
 							204260579
-						]
+						],
+						"alert_policy": 1234
 					}
 				}
 			]
@@ -82,8 +84,8 @@ func TestListApplications(t *testing.T) {
 		ApdexTarget:             0.5,
 		ApdexScore:              1,
 		HostCount:               1,
-		InstanceCount:           1,
-		ConcurrentInstanceCount: 15,
+		InstanceCount:           15,
+		ConcurrentInstanceCount: 1,
 	}
 
 	applicationEndUserSummary := ApplicationEndUserSummary{
@@ -125,16 +127,14 @@ func TestListApplications(t *testing.T) {
 	actual, err := apm.ListApplications()
 
 	if err != nil {
-		t.Log(err)
-		t.Fatal("ListApplications error")
+		t.Fatalf("ListApplications error: %s", err)
 	}
 
 	if actual == nil {
-		t.Log(err)
-		t.Fatal("ListApplications error")
+		t.Fatalf("ListApplications response is nil")
 	}
 
 	if diff := cmp.Diff(expected, actual); diff != "" {
-		t.Fatalf("applications not parsed correctly: %s", diff)
+		t.Fatalf("ListApplications response differs from expected: %s", diff)
 	}
 }

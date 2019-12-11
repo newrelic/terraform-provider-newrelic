@@ -17,6 +17,15 @@ func New(config client.Config) APM {
 }
 
 func (apm *APM) ListApplications() ([]Application, error) {
-	applications := []Application{}
-	return applications, nil
+	res := struct {
+		Applications []Application `json:"applications,omitempty"`
+	}{}
+
+	_, err := apm.client.Get("applications.json", &res)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Applications, nil
 }
