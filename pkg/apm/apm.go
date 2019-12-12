@@ -9,6 +9,7 @@ type APM struct {
 	client internal.NewRelicClient
 }
 
+// New is used to create a new APM client instance.
 func New(config newrelic.Config) APM {
 	internalConfig := config.ToInternal()
 

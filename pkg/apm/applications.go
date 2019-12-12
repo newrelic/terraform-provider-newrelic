@@ -18,6 +18,7 @@ type listApplicationsResponse struct {
 	Applications []Application `json:"applications,omitempty"`
 }
 
+// ListApplications is used to retrieve New Relic applications.
 func (apm *APM) ListApplications(params *ListApplicationsParams) ([]Application, error) {
 	res := listApplicationsResponse{}
 	paramsMap := buildListApplicationsParamsMap(params)

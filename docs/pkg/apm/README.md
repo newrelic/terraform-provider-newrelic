@@ -24,6 +24,7 @@ func New(config newrelic.Config) APM
 ```go
 func (apm *APM) ListApplications(params *ListApplicationsParams) ([]Application, error)
 ```
+ListApplications is used to retrieve New Relic applications.
 
 #### type Application
 
