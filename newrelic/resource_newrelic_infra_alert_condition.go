@@ -88,6 +88,7 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 			"event": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"where": {
 				Type:     schema.TypeString,
