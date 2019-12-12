@@ -163,7 +163,6 @@ func TestAccNewRelicInfraAlertCondition_InvalidAttrsForType(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", rand)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
-		IsUnitTest:   true,
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
 		Steps: []resource.TestStep{
