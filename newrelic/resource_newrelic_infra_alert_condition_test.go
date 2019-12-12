@@ -28,11 +28,6 @@ func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 					resource.TestCheckNoResourceAttr("newrelic_infra_alert_condition.foo", "warning"),
 				),
 			},
-			// Test: No diff on re-apply
-			{
-				Config:             testAccNewRelicInfraAlertConditionConfig(rName),
-				ExpectNonEmptyPlan: false,
-			},
 			// Test: Update
 			{
 				Config: testAccNewRelicInfraAlertConditionConfigUpdated(rNameUpdated),
@@ -67,11 +62,6 @@ func TestAccNewRelicInfraAlertCondition_Where(t *testing.T) {
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
 			},
-			// Test: No diff on re-apply
-			{
-				Config:             testAccNewRelicInfraAlertConditionConfigWithWhere(rName, whereClause),
-				ExpectNonEmptyPlan: false,
-			},
 			// Test: Import
 			{
 				ResourceName:      resourceName,
@@ -103,11 +93,6 @@ func TestAccNewRelicInfraAlertCondition_IntegrationProvider(t *testing.T) {
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
 			},
-			// Test: No diff on re-apply
-			{
-				Config:             testAccNewRelicInfraAlertConditionConfigWithIntegrationProvider(rName, integrationProvider),
-				ExpectNonEmptyPlan: false,
-			},
 			// Test: Import
 			{
 				ResourceName:      resourceName,
@@ -132,11 +117,6 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
-			},
-			// Test: No diff on re-apply
-			{
-				Config:             testAccNewRelicInfraAlertConditionConfigWithThreshold(rName),
-				ExpectNonEmptyPlan: false,
 			},
 			// Test: Update
 			{
