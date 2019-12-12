@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -172,6 +173,46 @@ func TestAccNewRelicInfraAlertCondition_MissingPolicy(t *testing.T) {
 				PreConfig: testAccDeleteNewRelicAlertPolicy(fmt.Sprintf("tf-test-%s", rName)),
 				Config:    testAccNewRelicInfraAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicInfraAlertConditionExists("newrelic_infra_alert_condition.foo"),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicInfraAlertCondition_InvalidAttrsForType(t *testing.T) {
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		IsUnitTest:   true,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicInfraAlertConditionInvalidAttrsForTypeConfig(rName),
+				ExpectError: regexp.MustCompile("not supported"),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicInfraAlertCondition_ComputedEvent(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
+	resourceName := "newrelic_infra_alert_condition.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicInfraAlertConditionComputedEvent(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
+				),
 			},
 		},
 	})
@@ -385,4 +426,53 @@ resource "newrelic_infra_alert_condition" "foo" {
   }
 }
 `, name, integrationProvider)
+}
+
+func testAccNewRelicInfraAlertConditionInvalidAttrsForTypeConfig(name string) string {
+	return fmt.Sprintf(`
+
+resource "newrelic_alert_policy" "foo" {
+  name = "%[1]s"
+}
+
+resource "newrelic_infra_alert_condition" "foo" {
+  policy_id = "${newrelic_alert_policy.foo.id}"
+
+  name            = "%[1]s"
+  runbook_url     = "https://foo.example.com"
+  type            = "infra_process_running"
+  event           = "StorageSample"
+  select          = "diskFreePercent"
+  comparison      = "below"
+
+  critical {
+	  duration = 10
+	  value = 10
+	  time_function = "any"
+  }
+}
+`, name)
+}
+
+func testAccNewRelicInfraAlertConditionComputedEvent(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "%[1]s"
+}
+
+resource "newrelic_infra_alert_condition" "foo" {
+	policy_id = "${newrelic_alert_policy.foo.id}"
+	name                 = "%[1]s"
+	type                 = "infra_metric"
+	integration_provider = "S3Bucket"
+	select               = "nr.ingestTimeMs"
+	comparison = "above"
+
+	critical {
+		duration      = "1440"
+		time_function = "all"
+		value         = "25"
+	}
+}
+`, name)
 }
