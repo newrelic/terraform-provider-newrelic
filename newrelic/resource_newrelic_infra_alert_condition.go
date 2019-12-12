@@ -1,6 +1,7 @@
 package newrelic
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -139,7 +140,7 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 	}
 }
 
-func buildInfraAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertInfraCondition {
+func buildInfraAlertConditionStruct(d *schema.ResourceData) (*newrelic.AlertInfraCondition, error) {
 
 	condition := newrelic.AlertInfraCondition{
 		Name:       d.Get("name").(string),
@@ -171,7 +172,59 @@ func buildInfraAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertInfra
 		condition.IntegrationProvider = attr.(string)
 	}
 
-	return &condition
+	err := validateAttributesForType(&condition)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &condition, nil
+}
+
+func validateAttributesForType(c *newrelic.AlertInfraCondition) error {
+	switch c.Type {
+	case "infra_process_running":
+		if c.Event != "" {
+			return fmt.Errorf("event is not supported by condition type %s", c.Type)
+		}
+		if c.IntegrationProvider != "" {
+			return fmt.Errorf("integration_provider is not supported by condition type %s", c.Type)
+		}
+		if c.Select != "" {
+			return fmt.Errorf("select is not supported by condition type %s", c.Type)
+		}
+		if c.Critical.Function != "" {
+			return fmt.Errorf("time_function is not supported by condition type %s", c.Type)
+		}
+	case "infra_metric":
+		if c.ProcessWhere != "" {
+			return fmt.Errorf("process_where is not supported by condition type %s", c.Type)
+		}
+	case "infra_host_not_reporting":
+		if c.Event != "" {
+			return fmt.Errorf("event is not supported by condition type %s", c.Type)
+		}
+		if c.IntegrationProvider != "" {
+			return fmt.Errorf("integration_provider is not supported by condition type %s", c.Type)
+		}
+		if c.Select != "" {
+			return fmt.Errorf("select is not supported by condition type %s", c.Type)
+		}
+		if c.ProcessWhere != "" {
+			return fmt.Errorf("process_where is not supported by condition type %s", c.Type)
+		}
+		if c.Comparison != "" {
+			return fmt.Errorf("comparison is not supported by condition type %s", c.Type)
+		}
+		if c.Critical.Function != "" {
+			return fmt.Errorf("time_function is not supported by condition type %s", c.Type)
+		}
+		if c.Critical.Value != 0 {
+			return fmt.Errorf("value is not supported by condition type %s", c.Type)
+		}
+	}
+
+	return nil
 }
 
 func readInfraAlertConditionStruct(condition *newrelic.AlertInfraCondition, d *schema.ResourceData) error {
@@ -220,11 +273,16 @@ func readInfraAlertConditionStruct(condition *newrelic.AlertInfraCondition, d *s
 
 func resourceNewRelicInfraAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).InfraClient
-	condition := buildInfraAlertConditionStruct(d)
+	condition, err := buildInfraAlertConditionStruct(d)
+
+	if err != nil {
+		return err
+	}
 
 	log.Printf("[INFO] Creating New Relic Infra alert condition %s", condition.Name)
 
-	condition, err := client.CreateAlertInfraCondition(*condition)
+	condition, err = client.CreateAlertInfraCondition(*condition)
+
 	if err != nil {
 		return err
 	}
@@ -272,7 +330,11 @@ func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interf
 
 func resourceNewRelicInfraAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).InfraClient
-	condition := buildInfraAlertConditionStruct(d)
+	condition, err := buildInfraAlertConditionStruct(d)
+
+	if err != nil {
+		return err
+	}
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
