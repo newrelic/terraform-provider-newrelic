@@ -1,5 +1,7 @@
 package synthetics
 
+import "time"
+
 type MonitorOptions struct {
 	ValidationString       string `json:"validationString,omitempty"`
 	VerifySSL              bool   `json:"verifySSL,omitempty"`
@@ -19,5 +21,7 @@ type Monitor struct {
 	SLAThreshold float64        `json:"slaThreshold"`
 	UserID       uint           `json:"userId,omitempty"`
 	APIVersion   string         `json:"apiVersion,omitempty"`
+	ModifiedAt   time.Time      `json:"modified_at,omitempty"`
+	CreatedAt    time.Time      `json:"created_at,omitempty"`
 	Options      MonitorOptions `json:"options,omitempty"`
 }
