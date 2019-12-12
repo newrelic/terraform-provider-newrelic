@@ -23,7 +23,7 @@ func TestClientHeaders(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
-	_, err := cli.do("GET", "/path", nil, nil)
+	err := cli.Get("/path", nil, nil)
 
 	if err != nil {
 		t.Fatal(err)
@@ -61,7 +61,7 @@ func TestClientDoPaging(t *testing.T) {
 					t.Fatal(err)
 				}
 			}))
-			paging, err := cli.do("GET", "/path", nil, nil)
+			paging, err := cli.do("GET", "/path", nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -77,7 +77,7 @@ func TestErrNotFound(t *testing.T) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
 
-	_, err := cli.do("GET", "/path", nil, nil)
+	err := cli.Get("/path", nil, nil)
 
 	if err != ErrNotFound {
 		t.Fatal(err)
@@ -89,7 +89,7 @@ func TestInternalServerError(t *testing.T) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}))
 
-	_, err := cli.do("GET", "/path", nil, nil)
+	err := cli.Get("/path", nil, nil)
 
 	if err == nil {
 		t.Fatal(err)

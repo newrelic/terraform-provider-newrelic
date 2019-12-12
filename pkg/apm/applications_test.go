@@ -124,7 +124,7 @@ func TestListApplications(t *testing.T) {
 		},
 	}
 
-	actual, err := apm.ListApplications()
+	actual, err := apm.ListApplications(nil)
 
 	if err != nil {
 		t.Fatalf("ListApplications error: %s", err)
@@ -136,5 +136,56 @@ func TestListApplications(t *testing.T) {
 
 	if diff := cmp.Diff(expected, actual); diff != "" {
 		t.Fatalf("ListApplications response differs from expected: %s", diff)
+	}
+}
+
+func TestListApplicationsWithParams(t *testing.T) {
+	expectedName := "appName"
+	expectedHost := "appHost"
+	expectedLanguage := "appLanguage"
+	expectedIDs := "123,456"
+
+	apm := NewTestAPM(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		values := r.URL.Query()
+
+		name := values.Get("filter[name]")
+		if name != expectedName {
+			t.Errorf(`expected name filter "%s", recieved: "%s"`, expectedName, name)
+		}
+
+		host := values.Get("filter[host]")
+		if host != expectedHost {
+			t.Errorf(`expected host filter "%s", recieved: "%s"`, expectedHost, host)
+		}
+
+		ids := values.Get("filter[ids]")
+		if ids != expectedIDs {
+			t.Errorf(`expected ids filter "%s", recieved: "%s"`, expectedIDs, ids)
+		}
+
+		language := values.Get("filter[language]")
+		if language != expectedLanguage {
+			t.Errorf(`expected language filter "%s", recieved: "%s"`, expectedLanguage, language)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_, err := w.Write([]byte(`{"applications":[]}`))
+
+		if err != nil {
+			t.Fatal(err)
+		}
+	}))
+
+	params := ListApplicationsParams{
+		Name:     &expectedName,
+		Host:     &expectedHost,
+		IDs:      []int{123, 456},
+		Language: &expectedLanguage,
+	}
+
+	_, err := apm.ListApplications(&params)
+
+	if err != nil {
+		t.Fatalf("ListApplications error: %s", err)
 	}
 }

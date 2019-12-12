@@ -22,7 +22,7 @@ func New(config newrelic.Config) APM
 #### func (*APM) ListApplications
 
 ```go
-func (apm *APM) ListApplications() ([]Application, error)
+func (apm *APM) ListApplications(params *ListApplicationsParams) ([]Application, error)
 ```
 
 #### type Application
@@ -101,3 +101,17 @@ type ApplicationSummary struct {
 
 ApplicationSummary represents performance information about a New Relic
 application.
+
+#### type ListApplicationsParams
+
+```go
+type ListApplicationsParams struct {
+	Name     *string
+	Host     *string
+	IDs      []int
+	Language *string
+}
+```
+
+ListApplicationsParams represents a set of filters to be used when querying New
+Relic applications.
