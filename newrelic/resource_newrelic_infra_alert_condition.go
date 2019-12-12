@@ -34,9 +34,8 @@ func thresholdSchema() *schema.Resource {
 				Optional: true,
 			},
 			"duration": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validation.IntBetween(1, 60),
+				Type:     schema.TypeInt,
+				Required: true,
 			},
 			"time_function": {
 				Type:         schema.TypeString,
