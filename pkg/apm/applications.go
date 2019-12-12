@@ -3,24 +3,7 @@ package apm
 import (
 	"strconv"
 	"strings"
-
-	"github.com/newrelic/newrelic-client-go/internal"
-	"github.com/newrelic/newrelic-client-go/newrelic"
 )
-
-type APM struct {
-	client internal.NewRelicClient
-}
-
-func New(config newrelic.Config) APM {
-	internalConfig := config.ToInternal()
-
-	pkg := APM{
-		client: internal.NewClient(internalConfig),
-	}
-
-	return pkg
-}
 
 // ListApplicationsParams represents a set of filters to be
 // used when querying New Relic applications.
