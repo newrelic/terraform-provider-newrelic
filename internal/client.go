@@ -9,7 +9,7 @@ import (
 )
 
 type NewRelicClient struct {
-	client resty.Client
+	Client resty.Client
 	pager  Pager
 }
 
@@ -23,6 +23,31 @@ type Config struct {
 	UserAgent     string
 	HTTPTransport http.RoundTripper
 	Pager         Pager
+	Environment   Environment
+}
+
+// Environment specifies the New Relic environment to target.
+type Environment int
+
+const (
+	// Production represents New Relic's US-based production deployment.
+	Production = iota
+
+	// EU represents New Relic's EU-based production deployment.
+	EU
+
+	// Staging represents New Relic's US-based staging deployment.  This is for internal use only.
+	Staging
+)
+
+func (e Environment) String() string {
+	return [...]string{"production", "eu", "staging"}[e]
+}
+
+var defaultBaseURLs = map[Environment]string{
+	Production: "https://api.newrelic.com/v2",
+	EU:         "https://api.eu.newrelic.com/v2",
+	Staging:    "https://staging-api.newrelic.com/v2",
 }
 
 func NewClient(config Config) NewRelicClient {
@@ -40,18 +65,17 @@ func NewClient(config Config) NewRelicClient {
 	}
 
 	return NewRelicClient{
-		client: *client,
+		Client: *client,
 		pager:  config.Pager,
 	}
 }
 
 func setHostURL(config Config, client *resty.Client) {
-	baseURL := config.BaseURL
-	if baseURL == "" {
-		baseURL = "https://api.newrelic.com/v2"
+	if config.BaseURL == "" {
+		config.BaseURL = defaultBaseURLs[config.Environment]
 	}
 
-	client.SetHostURL(baseURL)
+	client.SetHostURL(config.BaseURL)
 }
 
 func setProxyURL(config Config, client *resty.Client) {
@@ -91,9 +115,9 @@ func setHTTPTransport(config Config, client *resty.Client) {
 	}
 }
 
-// nolint
+// Get executes an HTTP GET request.
 func (nr *NewRelicClient) Get(path string, params *map[string]string, result interface{}) error {
-	req := nr.client.R()
+	req := nr.Client.R()
 
 	if result != nil {
 		req.SetResult(result)
@@ -120,7 +144,7 @@ func (nr *NewRelicClient) Get(path string, params *map[string]string, result int
 
 // nolint
 func (nr *NewRelicClient) Put(path string, body interface{}, result interface{}) error {
-	req := nr.client.R().
+	req := nr.Client.R().
 		SetBody(body).
 		SetResult(result)
 
@@ -135,7 +159,7 @@ func (nr *NewRelicClient) Put(path string, body interface{}, result interface{})
 
 // nolint
 func (nr *NewRelicClient) Post(path string, body interface{}, result interface{}) error {
-	req := nr.client.R().
+	req := nr.Client.R().
 		SetBody(body).
 		SetResult(result)
 
@@ -159,10 +183,9 @@ func (nr *NewRelicClient) Delete(path string) error {
 	return nil
 }
 
-// Do exectes an API request with the specified parameters.
 func (nr *NewRelicClient) do(method string, path string, req *resty.Request) (*Paging, error) {
 	if req == nil {
-		req = nr.client.R()
+		req = nr.Client.R()
 	}
 
 	req.SetError(&ErrorResponse{}).

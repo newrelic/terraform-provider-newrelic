@@ -102,11 +102,11 @@ func TestDefaultConfig(t *testing.T) {
 	})
 
 	expectedBaseURL := "https://api.newrelic.com/v2"
-	if c.client.HostURL != expectedBaseURL {
-		t.Fatalf("expected baseURL: %s, received: %s", expectedBaseURL, c.client.HostURL)
+	if c.Client.HostURL != expectedBaseURL {
+		t.Fatalf("expected baseURL: %s, received: %s", expectedBaseURL, c.Client.HostURL)
 	}
 
-	if c.client.Debug {
+	if c.Client.Debug {
 		t.Fatalf("expected debug mode to be off")
 	}
 }
@@ -118,7 +118,7 @@ func TestSetProxyURL(t *testing.T) {
 		ProxyURL: expectedProxyURL,
 	})
 
-	if !c.client.IsProxySet() {
+	if !c.Client.IsProxySet() {
 		t.Fatalf("expected proxy to be set")
 	}
 }
@@ -129,7 +129,7 @@ func TestSetDebug(t *testing.T) {
 		Debug:  true,
 	})
 
-	if !c.client.Debug {
+	if !c.Client.Debug {
 		t.Fatalf("expected debug mode to be on")
 	}
 }

@@ -5,9 +5,11 @@ import (
 	"github.com/newrelic/newrelic-client-go/newrelic"
 )
 
-const (
-	syntheticsBaseURL = "https://synthetics.newrelic.com/synthetics/api/v3"
-)
+var baseURLs = map[newrelic.Environment]string{
+	newrelic.Production: "https://synthetics.newrelic.com/synthetics/api/v3",
+	newrelic.EU:         "https://synthetics.eu.newrelic.com/synthetics/api/v3",
+	newrelic.Staging:    "https://staging-synthetics.newrelic.com/synthetics/api/v3",
+}
 
 type Synthetics struct {
 	client internal.NewRelicClient
@@ -18,7 +20,7 @@ func New(config newrelic.Config) Synthetics {
 	internalConfig := config.ToInternal()
 
 	if internalConfig.BaseURL == "" {
-		internalConfig.BaseURL = syntheticsBaseURL
+		internalConfig.BaseURL = baseURLs[config.Environment]
 	}
 
 	pkg := Synthetics{
