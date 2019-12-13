@@ -14,7 +14,7 @@ DOC_DIR       = ./docs/
 GOLINTER      = golangci-lint
 
 # Main API Entry point
-# PACKAGES = ${SRCDIR}/newrelic
+PACKAGES = ${SRCDIR}/newrelic
 
 # Determine packages by looking into pkg/*
 ifneq ("$(wildcard ${SRCDIR}/pkg/*)","")

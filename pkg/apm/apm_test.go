@@ -1,3 +1,5 @@
+// +build unit
+
 package apm
 
 import (
@@ -20,7 +22,7 @@ func TestDefaultEnvironment(t *testing.T) {
 func TestEUEnvironment(t *testing.T) {
 	t.Parallel()
 	a := New(config.Config{
-		Region: config.EU,
+		Region: config.Region.EU,
 	})
 
 	actual := a.client.Client.HostURL
@@ -33,7 +35,7 @@ func TestEUEnvironment(t *testing.T) {
 func TestStagingEnvironment(t *testing.T) {
 	t.Parallel()
 	a := New(config.Config{
-		Region: config.Staging,
+		Region: config.Region.Staging,
 	})
 
 	actual := a.client.Client.HostURL

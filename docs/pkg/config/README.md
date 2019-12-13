@@ -7,16 +7,30 @@
 
 ```go
 const (
-	// Production represents New Relic's US-based production deployment.
-	Production = iota
+	// US represents New Relic's US-based production deployment.
+	US = iota
 
 	// EU represents New Relic's EU-based production deployment.
 	EU
 
-	// Staging represents New Relic's US-based staging deployment.  This is for internal use only.
+	// Staging represents New Relic's US-based staging deployment.
+	// This is for internal New Relic use only.
 	Staging
 )
 ```
+
+```go
+var Region = struct {
+	US      RegionType
+	EU      RegionType
+	Staging RegionType
+}{
+	US:      US,
+	EU:      EU,
+	Staging: Staging,
+}
+```
+Region specifies the New Relic environment to target.
 
 #### type Config
 
@@ -29,16 +43,16 @@ type Config struct {
 	TLSConfig     *tls.Config
 	UserAgent     string
 	HTTPTransport http.RoundTripper
-	Region        Region
+	Region        RegionType
 }
 ```
 
 Config contains all the configuration data for the API Client.
 
-#### type Region
+#### type RegionType
 
 ```go
-type Region int
+type RegionType int
 ```
 
-Region specifies the New Relic environment to target.
+RegionType represents the members of the Region enumeration.

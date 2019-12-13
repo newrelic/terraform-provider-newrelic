@@ -13,10 +13,10 @@ type NewRelicClient struct {
 	pager  Pager
 }
 
-var defaultBaseURLs = map[config.Region]string{
-	config.Production: "https://api.newrelic.com/v2",
-	config.EU:         "https://api.eu.newrelic.com/v2",
-	config.Staging:    "https://staging-api.newrelic.com/v2",
+var defaultBaseURLs = map[config.RegionType]string{
+	config.Region.US:      "https://api.newrelic.com/v2",
+	config.Region.EU:      "https://api.eu.newrelic.com/v2",
+	config.Region.Staging: "https://staging-api.newrelic.com/v2",
 }
 
 func NewClient(config config.Config) NewRelicClient {

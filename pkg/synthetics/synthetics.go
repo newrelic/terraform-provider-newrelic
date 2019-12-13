@@ -5,10 +5,10 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
-var baseURLs = map[config.Region]string{
-	config.Production: "https://synthetics.newrelic.com/synthetics/api/v3",
-	config.EU:         "https://synthetics.eu.newrelic.com/synthetics/api/v3",
-	config.Staging:    "https://staging-synthetics.newrelic.com/synthetics/api/v3",
+var baseURLs = map[config.RegionType]string{
+	config.Region.US:      "https://synthetics.newrelic.com/synthetics/api/v3",
+	config.Region.EU:      "https://synthetics.eu.newrelic.com/synthetics/api/v3",
+	config.Region.Staging: "https://staging-synthetics.newrelic.com/synthetics/api/v3",
 }
 
 type Synthetics struct {
