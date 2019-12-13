@@ -1,5 +1,11 @@
 package synthetics
 
+import "strconv"
+
+const (
+	listMonitorsLimit = 100
+)
+
 type listMonitorsResponse struct {
 	Monitors []Monitor `json:"monitors,omitempty"`
 }
@@ -7,7 +13,11 @@ type listMonitorsResponse struct {
 // ListMonitors is used to retrieve New Relic Synthetics monitors.
 func (s *Synthetics) ListMonitors() ([]Monitor, error) {
 	res := listMonitorsResponse{}
-	err := s.client.Get("monitors", nil, &res)
+	paramsMap := map[string]string{
+		"limit": strconv.Itoa(listMonitorsLimit),
+	}
+
+	err := s.client.Get("monitors", &paramsMap, &res)
 
 	if err != nil {
 		return nil, err
