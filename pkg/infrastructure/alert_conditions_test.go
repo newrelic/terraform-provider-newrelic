@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/newrelic/newrelic-client-go/internal/serialization"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
@@ -30,28 +32,25 @@ func TestListAlertConditions(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		_, err := w.Write([]byte(`
 		{
-			"monitors": [
-				{
-					"id": "72733a02-9701-4279-8ac3-8f6281a5a1a9",
-					"name": "test-synthetics-monitor",
-					"type": "SIMPLE",
-					"frequency": 15,
-					"uri": "https://google.com",
-					"locations": [
-						"AWS_US_EAST_1"
-					],
-					"status": "DISABLED",
-					"slaThreshold": 7,
-					"options": {
-
+			"data":[
+			   {
+					"type":"infra_process_running",
+					"name":"Java is running",
+					"enabled":true,
+					"where_clause":"(hostname LIKE '%cassandra%')",
+					"id":13890,
+					"created_at_epoch_millis":1490996713872,
+					"updated_at_epoch_millis":1490996713872,
+					"policy_id":111111,
+					"comparison":"equal",
+					"critical_threshold":{
+						"value":0,
+						"duration_minutes":6
 					},
-					"modifiedAt": "2019-11-27T19:11:05.076+0000",
-					"createdAt": "2019-11-27T19:11:05.076+0000",
-					"userId": 0,
-					"apiVersion": "LATEST"
-				}
+					"process_where_clause":"(commandName = 'java')"
+			   }
 			]
-		}
+		 }
 		`))
 
 		if err != nil {
@@ -59,11 +58,28 @@ func TestListAlertConditions(t *testing.T) {
 		}
 	}))
 
-	expected := []AlertCondition{
-		{},
+	critical := Threshold{
+		Value:    0,
+		Duration: 6,
 	}
 
-	actual, err := infra.ListAlertConditions()
+	expected := []AlertCondition{
+		{
+			Type:         "infra_process_running",
+			Name:         "Java is running",
+			Enabled:      true,
+			Where:        "(hostname LIKE '%cassandra%')",
+			ID:           13890,
+			CreatedAt:    serialization.Epoch(time.Unix(1490996713872, 0)),
+			UpdatedAt:    serialization.Epoch(time.Unix(1490996713872, 0)),
+			PolicyID:     111111,
+			Comparison:   "equal",
+			Critical:     &critical,
+			ProcessWhere: "(commandName = 'java')",
+		},
+	}
+
+	actual, err := infra.ListAlertConditions(111111)
 
 	if err != nil {
 		t.Fatalf("ListAlertConditions error: %s", err)

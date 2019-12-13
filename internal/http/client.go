@@ -29,6 +29,8 @@ func NewClient(config config.Config) NewRelicClient {
 	setDebug(config, client)
 	setHTTPTransport(config, client)
 
+	client.SetError(&ErrorResponse{})
+
 	c := NewRelicClient{
 		Client: *client,
 	}
@@ -156,8 +158,7 @@ func (nr *NewRelicClient) do(method string, path string, req *resty.Request) (*P
 		req = nr.Client.R()
 	}
 
-	req.SetError(&ErrorResponse{}).
-		SetHeader("Content-Type", "application/json")
+	req.SetHeader("Content-Type", "application/json")
 
 	apiResponse, err := req.Execute(method, path)
 
