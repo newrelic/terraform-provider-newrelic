@@ -24,7 +24,7 @@ func NewTestSynthetics(handler http.Handler) Synthetics {
 	return c
 }
 
-func TestListApplications(t *testing.T) {
+func TestListMonitors(t *testing.T) {
 	synthetics := NewTestSynthetics(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, err := w.Write([]byte(`
@@ -100,7 +100,7 @@ func TestListApplications(t *testing.T) {
 	}
 }
 
-func TestAccListApplications(t *testing.T) {
+func TestAccListMonitors(t *testing.T) {
 	apiKey := os.Getenv("NEWRELIC_API_KEY")
 
 	if apiKey == "" {
