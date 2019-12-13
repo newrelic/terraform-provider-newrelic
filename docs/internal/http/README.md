@@ -44,12 +44,14 @@ func (e *ErrorResponse) Error() string
 type LinkHeaderPager struct{}
 ```
 
+LinkHeaderPager represents a pagination implementation that adheres to RFC 5988.
 
 #### func (*LinkHeaderPager) Parse
 
 ```go
 func (l *LinkHeaderPager) Parse(res *resty.Response) Paging
 ```
+Parse is used to parse a pagination context from an HTTP response.
 
 #### type NewRelicClient
 
@@ -59,46 +61,64 @@ type NewRelicClient struct {
 }
 ```
 
+NewRelicClient is the internal client for communicating with the New Relic APIs.
 
 #### func  NewClient
 
 ```go
 func NewClient(config config.Config) NewRelicClient
 ```
+NewClient is used to create a new instance of the NewRelicClient type.
 
 #### func  NewTestAPIClient
 
 ```go
 func NewTestAPIClient(handler http.Handler) NewRelicClient
 ```
+NewTestAPIClient returns a test NewRelicClient instance that is configured to
+communicate with a mock server.
 
 #### func (*NewRelicClient) Delete
 
 ```go
-func (nr *NewRelicClient) Delete(path string) error
+func (n *NewRelicClient) Delete(path string) error
 ```
-nolint
+Delete executes an HTTP DELETE request. nolint
 
 #### func (*NewRelicClient) Get
 
 ```go
-func (nr *NewRelicClient) Get(path string, params *map[string]string, result interface{}) error
+func (n *NewRelicClient) Get(path string, params *map[string]string, result interface{}) error
 ```
 Get executes an HTTP GET request.
 
 #### func (*NewRelicClient) Post
 
 ```go
-func (nr *NewRelicClient) Post(path string, body interface{}, result interface{}) error
+func (n *NewRelicClient) Post(path string, body interface{}, result interface{}) error
 ```
-nolint
+Post executes an HTTP POST request. nolint
 
 #### func (*NewRelicClient) Put
 
 ```go
-func (nr *NewRelicClient) Put(path string, body interface{}, result interface{}) error
+func (n *NewRelicClient) Put(path string, body interface{}, result interface{}) error
 ```
-nolint
+Put executes an HTTP PUT request. nolint
+
+#### func (NewRelicClient) SetError
+
+```go
+func (n NewRelicClient) SetError(err interface{}) NewRelicClient
+```
+SetError allows for registering different well-known error response structures.
+
+#### func (NewRelicClient) SetPager
+
+```go
+func (n NewRelicClient) SetPager(pager Pager) NewRelicClient
+```
+SetPager allows for use of different pagination implementations.
 
 #### type Pager
 
@@ -108,6 +128,7 @@ type Pager interface {
 }
 ```
 
+Pager represents a pagination implementation.
 
 #### type Paging
 
@@ -116,3 +137,5 @@ type Paging struct {
 	Next string
 }
 ```
+
+Paging represents the pagination context returned from the Pager implementation.

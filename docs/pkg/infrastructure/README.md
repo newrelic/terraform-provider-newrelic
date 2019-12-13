@@ -51,14 +51,14 @@ type ErrorResponse struct {
 }
 ```
 
-ErrorResponse represents the an error response from New Relic Infrastructure.
+ErrorResponse represents an error response from New Relic Infrastructure.
 
 #### func (*ErrorResponse) Error
 
 ```go
 func (e *ErrorResponse) Error() string
 ```
-Error surfaces an error message from the Infrastructure error response
+Error surfaces an error message from the Infrastructure error response.
 
 #### type Infrastructure
 
@@ -67,13 +67,14 @@ type Infrastructure struct {
 }
 ```
 
+Infrastructure is used to communicate with the New Relic Infrastructure product.
 
 #### func  New
 
 ```go
 func New(config config.Config) Infrastructure
 ```
-New is used to create a new Synthetics client instance.
+New is used to create a new Infrastructure client instance.
 
 #### func (*Infrastructure) ListAlertConditions
 

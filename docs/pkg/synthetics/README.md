@@ -46,6 +46,7 @@ type Synthetics struct {
 }
 ```
 
+Synthetics is used to communicate with the New Relic Synthetics product.
 
 #### func  New
 

@@ -12,6 +12,7 @@ type APM struct {
 }
 ```
 
+APM is used to communicate with the New Relic APM product.
 
 #### func  New
 

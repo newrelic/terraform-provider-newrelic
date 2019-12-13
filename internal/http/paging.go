@@ -5,16 +5,20 @@ import (
 	"github.com/tomnomnom/linkheader"
 )
 
+// Pager represents a pagination implementation.
 type Pager interface {
 	Parse(res *resty.Response) Paging
 }
 
+// Paging represents the pagination context returned from the Pager implementation.
 type Paging struct {
 	Next string
 }
 
+// LinkHeaderPager represents a pagination implementation that adheres to RFC 5988.
 type LinkHeaderPager struct{}
 
+// Parse is used to parse a pagination context from an HTTP response.
 func (l *LinkHeaderPager) Parse(res *resty.Response) Paging {
 	paging := Paging{}
 	header := res.Header().Get("Link")

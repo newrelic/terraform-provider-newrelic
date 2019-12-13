@@ -8,6 +8,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
+// NewRelicClient is the internal client for communicating with the New Relic APIs.
 type NewRelicClient struct {
 	Client resty.Client
 	pager  Pager
@@ -19,6 +20,7 @@ var defaultBaseURLs = map[config.RegionType]string{
 	config.Region.Staging: "https://staging-api.newrelic.com/v2",
 }
 
+// NewClient is used to create a new instance of the NewRelicClient type.
 func NewClient(config config.Config) NewRelicClient {
 	client := resty.New()
 
@@ -112,6 +114,7 @@ func (nr *NewRelicClient) Get(path string, params *map[string]string, result int
 	return nil
 }
 
+// Put executes an HTTP PUT request.
 // nolint
 func (nr *NewRelicClient) Put(path string, body interface{}, result interface{}) error {
 	req := nr.Client.R().
@@ -127,6 +130,7 @@ func (nr *NewRelicClient) Put(path string, body interface{}, result interface{})
 	return nil
 }
 
+// Post executes an HTTP POST request.
 // nolint
 func (nr *NewRelicClient) Post(path string, body interface{}, result interface{}) error {
 	req := nr.Client.R().
@@ -142,6 +146,7 @@ func (nr *NewRelicClient) Post(path string, body interface{}, result interface{}
 	return nil
 }
 
+// Delete executes an HTTP DELETE request.
 // nolint
 func (nr *NewRelicClient) Delete(path string) error {
 	_, err := nr.do(http.MethodDelete, path, nil)

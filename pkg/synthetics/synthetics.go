@@ -11,6 +11,7 @@ var baseURLs = map[config.RegionType]string{
 	config.Region.Staging: "https://staging-synthetics.newrelic.com/synthetics/api/v3",
 }
 
+// Synthetics is used to communicate with the New Relic Synthetics product.
 type Synthetics struct {
 	client http.NewRelicClient
 }

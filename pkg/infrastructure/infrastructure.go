@@ -11,11 +11,12 @@ var baseURLs = map[config.RegionType]string{
 	config.Region.Staging: "https://staging-infra-api.newrelic.com/v2/alerts/conditions",
 }
 
+// Infrastructure is used to communicate with the New Relic Infrastructure product.
 type Infrastructure struct {
 	client http.NewRelicClient
 }
 
-// ErrorResponse represents the an error response from New Relic Infrastructure.
+// ErrorResponse represents an error response from New Relic Infrastructure.
 type ErrorResponse struct {
 	Errors []*ErrorDetail `json:"errors,omitempty"`
 }
@@ -26,7 +27,7 @@ type ErrorDetail struct {
 	Detail string `json:"detail,omitempty"`
 }
 
-// Error surfaces an error message from the Infrastructure error response
+// Error surfaces an error message from the Infrastructure error response.
 func (e *ErrorResponse) Error() string {
 	if e != nil && len(e.Errors) > 0 && e.Errors[0].Detail != "" {
 		return e.Errors[0].Detail
@@ -34,7 +35,7 @@ func (e *ErrorResponse) Error() string {
 	return "Unknown error"
 }
 
-// New is used to create a new Synthetics client instance.
+// New is used to create a new Infrastructure client instance.
 func New(config config.Config) Infrastructure {
 	if config.BaseURL == "" {
 		config.BaseURL = baseURLs[config.Region]

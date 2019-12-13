@@ -2,6 +2,7 @@ package synthetics
 
 import "time"
 
+// MonitorOptions represents the options for a New Relic Synthetics monitor.
 type MonitorOptions struct {
 	ValidationString       string `json:"validationString,omitempty"`
 	VerifySSL              bool   `json:"verifySSL,omitempty"`

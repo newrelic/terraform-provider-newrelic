@@ -7,6 +7,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
+// NewTestAPIClient returns a test NewRelicClient instance that is configured to communicate with a mock server.
 func NewTestAPIClient(handler http.Handler) NewRelicClient {
 	ts := httptest.NewServer(handler)
 
