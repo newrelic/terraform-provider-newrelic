@@ -3,6 +3,7 @@ package apm
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -184,6 +185,25 @@ func TestListApplicationsWithParams(t *testing.T) {
 	}
 
 	_, err := apm.ListApplications(&params)
+
+	if err != nil {
+		t.Fatalf("ListApplications error: %s", err)
+	}
+}
+
+func TestAccListApplications(t *testing.T) {
+	apiKey := os.Getenv("NEWRELIC_API_KEY")
+	t.Logf("apiKey: %s", apiKey)
+
+	if apiKey == "" {
+		t.Skipf("acceptance testing requires an API key")
+	}
+
+	api := New(newrelic.Config{
+		APIKey: apiKey,
+	})
+
+	_, err := api.ListApplications(nil)
 
 	if err != nil {
 		t.Fatalf("ListApplications error: %s", err)

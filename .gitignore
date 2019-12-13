@@ -7,3 +7,5 @@ vendor/*/*
 *.csv
 *.yml
 *.yaml
+
+.vscode/

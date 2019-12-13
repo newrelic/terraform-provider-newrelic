@@ -106,7 +106,7 @@ func (nr *NewRelicClient) Get(path string, params *map[string]string, result int
 	nextPath := path
 
 	for nextPath != "" {
-		paging, err := nr.do(http.MethodGet, path, req)
+		paging, err := nr.do(http.MethodGet, nextPath, req)
 
 		if err != nil {
 			return err
