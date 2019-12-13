@@ -5,11 +5,6 @@
 
 ## Usage
 
-<<<<<<< HEAD
-#### type ErrorDetail
-
-```go
-=======
 #### type AlertCondition
 
 ```go
@@ -39,7 +34,6 @@ AlertCondition represents a New Relic Infrastructure alert condition.
 #### type ErrorDetail
 
 ```go
->>>>>>> feat: add ListAlertConditions for infrastructure
 type ErrorDetail struct {
 	Status string `json:"status,omitempty"`
 	Detail string `json:"detail,omitempty"`
