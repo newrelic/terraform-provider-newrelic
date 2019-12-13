@@ -42,6 +42,18 @@ func NewClient(config config.Config) NewRelicClient {
 	return c
 }
 
+// SetPager allows for use of different pagination implementations.
+func (n NewRelicClient) SetPager(pager Pager) NewRelicClient {
+	n.pager = pager
+	return n
+}
+
+// SetError allows for registering different well-known error response structures.
+func (n NewRelicClient) SetError(err interface{}) NewRelicClient {
+	n.Client.SetError(err)
+	return n
+}
+
 func setHostURL(config config.Config, client *resty.Client) {
 	if config.BaseURL == "" {
 		config.BaseURL = defaultBaseURLs[config.Region]

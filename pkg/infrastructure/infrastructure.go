@@ -41,8 +41,9 @@ func New(config config.Config) Infrastructure {
 		config.BaseURL = baseURLs[config.Region]
 	}
 
-	c := http.NewClient(config)
-	c.Client.SetError(&ErrorResponse{})
+	c := http.NewClient(config).
+		SetError(&ErrorResponse{}).
+		SetPager(&http.LinkHeaderPager{})
 
 	pkg := Infrastructure{
 		client: c,
