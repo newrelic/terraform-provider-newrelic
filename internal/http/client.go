@@ -100,8 +100,8 @@ func setHTTPTransport(config config.Config, client *resty.Client) {
 }
 
 // Get executes an HTTP GET request.
-func (nr *NewRelicClient) Get(path string, params *map[string]string, result interface{}) error {
-	req := nr.Client.R()
+func (n *NewRelicClient) Get(path string, params *map[string]string, result interface{}) error {
+	req := n.Client.R()
 
 	if result != nil {
 		req.SetResult(result)
@@ -114,7 +114,7 @@ func (nr *NewRelicClient) Get(path string, params *map[string]string, result int
 	nextPath := path
 
 	for nextPath != "" {
-		paging, err := nr.do(http.MethodGet, nextPath, req)
+		paging, err := n.do(http.MethodGet, nextPath, req)
 
 		if err != nil {
 			return err
@@ -128,12 +128,12 @@ func (nr *NewRelicClient) Get(path string, params *map[string]string, result int
 
 // Put executes an HTTP PUT request.
 // nolint
-func (nr *NewRelicClient) Put(path string, body interface{}, result interface{}) error {
-	req := nr.Client.R().
+func (n *NewRelicClient) Put(path string, body interface{}, result interface{}) error {
+	req := n.Client.R().
 		SetBody(body).
 		SetResult(result)
 
-	_, err := nr.do(http.MethodPut, path, req)
+	_, err := n.do(http.MethodPut, path, req)
 
 	if err != nil {
 		return err
@@ -144,12 +144,12 @@ func (nr *NewRelicClient) Put(path string, body interface{}, result interface{})
 
 // Post executes an HTTP POST request.
 // nolint
-func (nr *NewRelicClient) Post(path string, body interface{}, result interface{}) error {
-	req := nr.Client.R().
+func (n *NewRelicClient) Post(path string, body interface{}, result interface{}) error {
+	req := n.Client.R().
 		SetBody(body).
 		SetResult(result)
 
-	_, err := nr.do(http.MethodPost, path, req)
+	_, err := n.do(http.MethodPost, path, req)
 
 	if err != nil {
 		return err
@@ -160,8 +160,8 @@ func (nr *NewRelicClient) Post(path string, body interface{}, result interface{}
 
 // Delete executes an HTTP DELETE request.
 // nolint
-func (nr *NewRelicClient) Delete(path string) error {
-	_, err := nr.do(http.MethodDelete, path, nil)
+func (n *NewRelicClient) Delete(path string) error {
+	_, err := n.do(http.MethodDelete, path, nil)
 
 	if err != nil {
 		return err
@@ -170,9 +170,9 @@ func (nr *NewRelicClient) Delete(path string) error {
 	return nil
 }
 
-func (nr *NewRelicClient) do(method string, path string, req *resty.Request) (*Paging, error) {
+func (n *NewRelicClient) do(method string, path string, req *resty.Request) (*Paging, error) {
 	if req == nil {
-		req = nr.Client.R()
+		req = n.Client.R()
 	}
 
 	req.SetHeader("Content-Type", "application/json")
@@ -183,7 +183,7 @@ func (nr *NewRelicClient) do(method string, path string, req *resty.Request) (*P
 		return nil, err
 	}
 
-	paging := nr.pager.Parse(apiResponse)
+	paging := n.pager.Parse(apiResponse)
 
 	if err != nil {
 		return nil, err
