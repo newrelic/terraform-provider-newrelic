@@ -1,4 +1,4 @@
-package internal
+package http
 
 import (
 	"github.com/go-resty/resty/v2"

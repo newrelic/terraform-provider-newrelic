@@ -1,11 +1,11 @@
-package internal
+package http
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
 type NewRelicClient struct {
@@ -13,44 +13,13 @@ type NewRelicClient struct {
 	pager  Pager
 }
 
-// Config contains all the configuration data for the API Client.
-type Config struct {
-	APIKey        string
-	BaseURL       string
-	ProxyURL      string
-	Debug         bool
-	TLSConfig     *tls.Config
-	UserAgent     string
-	HTTPTransport http.RoundTripper
-	Pager         Pager
-	Environment   Environment
+var defaultBaseURLs = map[config.Region]string{
+	config.Production: "https://api.newrelic.com/v2",
+	config.EU:         "https://api.eu.newrelic.com/v2",
+	config.Staging:    "https://staging-api.newrelic.com/v2",
 }
 
-// Environment specifies the New Relic environment to target.
-type Environment int
-
-const (
-	// Production represents New Relic's US-based production deployment.
-	Production = iota
-
-	// EU represents New Relic's EU-based production deployment.
-	EU
-
-	// Staging represents New Relic's US-based staging deployment.  This is for internal use only.
-	Staging
-)
-
-func (e Environment) String() string {
-	return [...]string{"production", "eu", "staging"}[e]
-}
-
-var defaultBaseURLs = map[Environment]string{
-	Production: "https://api.newrelic.com/v2",
-	EU:         "https://api.eu.newrelic.com/v2",
-	Staging:    "https://staging-api.newrelic.com/v2",
-}
-
-func NewClient(config Config) NewRelicClient {
+func NewClient(config config.Config) NewRelicClient {
 	client := resty.New()
 
 	setHostURL(config, client)
@@ -60,32 +29,31 @@ func NewClient(config Config) NewRelicClient {
 	setDebug(config, client)
 	setHTTPTransport(config, client)
 
-	if config.Pager == nil {
-		config.Pager = &LinkHeaderPager{}
+	c := NewRelicClient{
+		Client: *client,
 	}
 
-	return NewRelicClient{
-		Client: *client,
-		pager:  config.Pager,
-	}
+	c.pager = &LinkHeaderPager{}
+
+	return c
 }
 
-func setHostURL(config Config, client *resty.Client) {
+func setHostURL(config config.Config, client *resty.Client) {
 	if config.BaseURL == "" {
-		config.BaseURL = defaultBaseURLs[config.Environment]
+		config.BaseURL = defaultBaseURLs[config.Region]
 	}
 
 	client.SetHostURL(config.BaseURL)
 }
 
-func setProxyURL(config Config, client *resty.Client) {
+func setProxyURL(config config.Config, client *resty.Client) {
 	proxyURL := config.ProxyURL
 	if proxyURL != "" {
 		client.SetProxy(proxyURL)
 	}
 }
 
-func setHeaders(config Config, client *resty.Client) {
+func setHeaders(config config.Config, client *resty.Client) {
 	userAgent := config.UserAgent
 	if userAgent == "" {
 		userAgent = fmt.Sprintf("newrelic/newrelic-client-go/%s (https://github.com/newrelic/newrelic-client-go)", "VERSION")
@@ -97,19 +65,19 @@ func setHeaders(config Config, client *resty.Client) {
 	})
 }
 
-func setTLSConfig(config Config, client *resty.Client) {
+func setTLSConfig(config config.Config, client *resty.Client) {
 	if config.TLSConfig != nil {
 		client.SetTLSClientConfig(config.TLSConfig)
 	}
 }
 
-func setDebug(config Config, client *resty.Client) {
+func setDebug(config config.Config, client *resty.Client) {
 	if config.Debug {
 		client.SetDebug(true)
 	}
 }
 
-func setHTTPTransport(config Config, client *resty.Client) {
+func setHTTPTransport(config config.Config, client *resty.Client) {
 	if config.HTTPTransport != nil {
 		client.SetTransport(config.HTTPTransport)
 	}

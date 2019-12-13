@@ -1,20 +1,18 @@
 package apm
 
 import (
-	"github.com/newrelic/newrelic-client-go/internal"
-	"github.com/newrelic/newrelic-client-go/newrelic"
+	"github.com/newrelic/newrelic-client-go/internal/http"
+	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
 type APM struct {
-	client internal.NewRelicClient
+	client http.NewRelicClient
 }
 
 // New is used to create a new APM client instance.
-func New(config newrelic.Config) APM {
-	internalConfig := config.ToInternal()
-
+func New(config config.Config) APM {
 	pkg := APM{
-		client: internal.NewClient(internalConfig),
+		client: http.NewClient(config),
 	}
 
 	return pkg

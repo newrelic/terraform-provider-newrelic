@@ -50,7 +50,7 @@ type Synthetics struct {
 #### func  New
 
 ```go
-func New(config newrelic.Config) Synthetics
+func New(config config.Config) Synthetics
 ```
 New is used to create a new Synthetics client instance.
 

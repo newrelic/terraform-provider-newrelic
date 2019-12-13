@@ -14,15 +14,15 @@ DOC_DIR       = ./docs/
 GOLINTER      = golangci-lint
 
 # Main API Entry point
-PACKAGES = ${SRCDIR}/newrelic
+# PACKAGES = ${SRCDIR}/newrelic
 
 # Determine packages by looking into pkg/*
 ifneq ("$(wildcard ${SRCDIR}/pkg/*)","")
 	PACKAGES += $(wildcard ${SRCDIR}/pkg/*)
 endif
-# ifneq ("$(wildcard ${SRCDIR}/internal/*)","")
-# 	PACKAGES += $(wildcard ${SRCDIR}/internal/*)
-# endif
+ifneq ("$(wildcard ${SRCDIR}/internal/*)","")
+	PACKAGES += $(wildcard ${SRCDIR}/internal/*)
+endif
 
 # Determine commands by looking into cmd/*
 COMMANDS = $(wildcard ${SRCDIR}/cmd/*)

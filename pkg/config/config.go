@@ -1,14 +1,12 @@
-package newrelic
+package config
 
 import (
 	"crypto/tls"
 	"net/http"
-
-	"github.com/newrelic/newrelic-client-go/internal"
 )
 
-// Environment specifies the New Relic environment to target.
-type Environment int
+// Region specifies the New Relic environment to target.
+type Region int
 
 const (
 	// Production represents New Relic's US-based production deployment.
@@ -30,17 +28,5 @@ type Config struct {
 	TLSConfig     *tls.Config
 	UserAgent     string
 	HTTPTransport http.RoundTripper
-	Environment   Environment
-}
-
-func (c *Config) ToInternal() internal.Config {
-	return internal.Config{
-		APIKey:      c.APIKey,
-		BaseURL:     c.BaseURL,
-		ProxyURL:    c.ProxyURL,
-		Debug:       c.Debug,
-		TLSConfig:   c.TLSConfig,
-		UserAgent:   c.UserAgent,
-		Environment: internal.Environment(c.Environment),
-	}
+	Region        Region
 }

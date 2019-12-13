@@ -1,10 +1,14 @@
-package internal
+// +build unit
+
+package http
 
 import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
 const testAPIKey string = "12345"
@@ -97,7 +101,7 @@ func TestInternalServerError(t *testing.T) {
 }
 
 func TestDefaultConfig(t *testing.T) {
-	c := NewClient(Config{
+	c := NewClient(config.Config{
 		APIKey: testAPIKey,
 	})
 
@@ -113,7 +117,7 @@ func TestDefaultConfig(t *testing.T) {
 
 func TestSetProxyURL(t *testing.T) {
 	expectedProxyURL := "http://proxy.url"
-	c := NewClient(Config{
+	c := NewClient(config.Config{
 		APIKey:   testAPIKey,
 		ProxyURL: expectedProxyURL,
 	})
@@ -124,7 +128,7 @@ func TestSetProxyURL(t *testing.T) {
 }
 
 func TestSetDebug(t *testing.T) {
-	c := NewClient(Config{
+	c := NewClient(config.Config{
 		APIKey: testAPIKey,
 		Debug:  true,
 	})
@@ -137,7 +141,7 @@ func TestSetDebug(t *testing.T) {
 func newTestAPIClient(handler http.Handler) *NewRelicClient {
 	ts := httptest.NewServer(handler)
 
-	c := NewClient(Config{
+	c := NewClient(config.Config{
 		APIKey:    testAPIKey,
 		BaseURL:   ts.URL,
 		Debug:     false,

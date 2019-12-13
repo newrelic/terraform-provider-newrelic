@@ -1,19 +1,20 @@
+// +build unit
+
 package apm
 
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/newrelic/newrelic-client-go/newrelic"
+	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
 func NewTestAPM(handler http.Handler) APM {
 	ts := httptest.NewServer(handler)
 
-	c := New(newrelic.Config{
+	c := New(config.Config{
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
 		Debug:     false,
@@ -24,6 +25,7 @@ func NewTestAPM(handler http.Handler) APM {
 }
 
 func TestListApplications(t *testing.T) {
+	t.Parallel()
 	apm := NewTestAPM(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, err := w.Write([]byte(`
@@ -141,6 +143,7 @@ func TestListApplications(t *testing.T) {
 }
 
 func TestListApplicationsWithParams(t *testing.T) {
+	t.Parallel()
 	expectedName := "appName"
 	expectedHost := "appHost"
 	expectedLanguage := "appLanguage"
@@ -185,25 +188,6 @@ func TestListApplicationsWithParams(t *testing.T) {
 	}
 
 	_, err := apm.ListApplications(&params)
-
-	if err != nil {
-		t.Fatalf("ListApplications error: %s", err)
-	}
-}
-
-func TestAccListApplications(t *testing.T) {
-	apiKey := os.Getenv("NEWRELIC_API_KEY")
-	t.Logf("apiKey: %s", apiKey)
-
-	if apiKey == "" {
-		t.Skipf("acceptance testing requires an API key")
-	}
-
-	api := New(newrelic.Config{
-		APIKey: apiKey,
-	})
-
-	_, err := api.ListApplications(nil)
 
 	if err != nil {
 		t.Fatalf("ListApplications error: %s", err)

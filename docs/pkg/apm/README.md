@@ -16,7 +16,7 @@ type APM struct {
 #### func  New
 
 ```go
-func New(config newrelic.Config) APM
+func New(config config.Config) APM
 ```
 New is used to create a new APM client instance.
 

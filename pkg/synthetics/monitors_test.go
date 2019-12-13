@@ -1,20 +1,21 @@
+// +build unit
+
 package synthetics
 
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/newrelic/newrelic-client-go/newrelic"
+	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
 func NewTestSynthetics(handler http.Handler) Synthetics {
 	ts := httptest.NewServer(handler)
 
-	c := New(newrelic.Config{
+	c := New(config.Config{
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
 		Debug:     false,
@@ -25,6 +26,7 @@ func NewTestSynthetics(handler http.Handler) Synthetics {
 }
 
 func TestListMonitors(t *testing.T) {
+	t.Parallel()
 	synthetics := NewTestSynthetics(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, err := w.Write([]byte(`
@@ -97,23 +99,5 @@ func TestListMonitors(t *testing.T) {
 
 	if diff := cmp.Diff(expected, actual); diff != "" {
 		t.Fatalf("ListMonitors response differs from expected: %s", diff)
-	}
-}
-
-func TestAccListMonitors(t *testing.T) {
-	apiKey := os.Getenv("NEWRELIC_API_KEY")
-
-	if apiKey == "" {
-		t.Skipf("acceptance testing requires an API key")
-	}
-
-	synthetics := New(newrelic.Config{
-		APIKey: apiKey,
-	})
-
-	_, err := synthetics.ListMonitors()
-
-	if err != nil {
-		t.Fatalf("ListMonitors error: %s", err)
 	}
 }
