@@ -38,6 +38,7 @@ type MonitorOptions struct {
 }
 ```
 
+MonitorOptions represents the options for a New Relic Synthetics monitor.
 
 #### type Synthetics
 

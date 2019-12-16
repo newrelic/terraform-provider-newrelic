@@ -22,7 +22,7 @@ type listApplicationsResponse struct {
 func (apm *APM) ListApplications(params *ListApplicationsParams) ([]Application, error) {
 	res := listApplicationsResponse{}
 	paramsMap := buildListApplicationsParamsMap(params)
-	err := apm.client.Get("applications.json", &paramsMap, &res)
+	err := apm.client.Get("/applications.json", &paramsMap, &res)
 
 	if err != nil {
 		return nil, err
