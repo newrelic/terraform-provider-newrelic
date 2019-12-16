@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/newrelic/newrelic-client-go/internal/version"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
@@ -72,7 +73,7 @@ func setProxyURL(config config.Config, client *resty.Client) {
 func setHeaders(config config.Config, client *resty.Client) {
 	userAgent := config.UserAgent
 	if userAgent == "" {
-		userAgent = fmt.Sprintf("newrelic/newrelic-client-go/%s (https://github.com/newrelic/newrelic-client-go)", "VERSION")
+		userAgent = fmt.Sprintf("newrelic/newrelic-client-go/%s (https://github.com/newrelic/newrelic-client-go)", version.Version)
 	}
 
 	client.SetHeaders(map[string]string{
