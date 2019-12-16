@@ -5,14 +5,14 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
-// APM is used to communicate with the New Relic APM product.
-type APM struct {
+// Alerts is used to communicate with New Relic Alerts.
+type Alerts struct {
 	client http.NewRelicClient
 }
 
-// New is used to create a new APM client instance.
-func New(config config.Config) APM {
-	pkg := APM{
+// New is used to create a new Alerts client instance.
+func New(config config.Config) Alerts {
+	pkg := Alerts{
 		client: http.NewClient(config),
 	}
 
