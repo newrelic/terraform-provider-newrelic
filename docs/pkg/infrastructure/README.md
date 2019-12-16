@@ -1,6 +1,6 @@
 # infrastructure
 --
-    import "."
+    import "github.com/newrelic/newrelic-client-go/pkg/infrastructure"
 
 
 ## Usage

@@ -1,6 +1,6 @@
 # http
 --
-    import "."
+    import "github.com/newrelic/newrelic-client-go/internal/http"
 
 
 ## Usage

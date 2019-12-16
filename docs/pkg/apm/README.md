@@ -1,6 +1,6 @@
 # apm
 --
-    import "."
+    import "github.com/newrelic/newrelic-client-go/pkg/apm"
 
 
 ## Usage
