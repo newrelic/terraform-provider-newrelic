@@ -211,5 +211,5 @@ func (n *NewRelicClient) do(method string, path string, req *resty.Request) (*Pa
 		}
 	}
 
-	return nil, fmt.Errorf("Unexpected status %v returned from API", apiResponse.StatusCode())
+	return nil, fmt.Errorf("unexpected status %v returned from API", apiResponse.StatusCode())
 }

@@ -1,6 +1,6 @@
 # config
 --
-    import "."
+    import "github.com/newrelic/newrelic-client-go/pkg/config"
 
 
 ## Usage

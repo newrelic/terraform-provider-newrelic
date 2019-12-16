@@ -1,6 +1,6 @@
 # synthetics
 --
-    import "."
+    import "github.com/newrelic/newrelic-client-go/pkg/synthetics"
 
 
 ## Usage
