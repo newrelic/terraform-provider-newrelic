@@ -1,6 +1,8 @@
-# go-template
+# newrelic-client-go
 
-Empty project layout for making Golang apps following the [project-layout](https://github.com/golang-standards/project-layout) standard
+[![Go Report Card](https://goreportcard.com/badge/github.com/newrelic/newrelic-client-go?style=flat-square)](https://goreportcard.com/report/github.com/newrelic/newrelic-client-go)
+[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/newrelic/newrelic-client-go)
+[![Release](https://img.shields.io/github/release/newrelic/newrelic-client-go?style=flat-square)](https://github.com/newrelic/newrelic-client-go/releases/latest)
 
 ## Auto-versioning
 
