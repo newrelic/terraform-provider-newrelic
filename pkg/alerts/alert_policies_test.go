@@ -317,3 +317,34 @@ func TestUpdateAlertPolicy(t *testing.T) {
 		t.Fatalf("UpdateAlertPolicy result differs from expected: %s", diff)
 	}
 }
+
+func TestDeleteAlertPolicy(t *testing.T) {
+	t.Parallel()
+	alerts := NewTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		// The New Relic API returns the deleted object for this endpoint
+		_, err := w.Write([]byte(`
+		{
+			"policy": {
+				"id": 123,
+				"incident_preference": "PER_CONDITION",
+				"name": "name-updated",
+				"created_at": 1575438237690,
+				"updated_at": 1575438237690
+			}
+		}
+		`))
+
+		if err != nil {
+			t.Fatal(err)
+		}
+	}))
+
+	err := alerts.DeleteAlertPolicy(123)
+
+	if err != nil {
+		t.Fatalf("UpdateAlertPolicy error: %s", err)
+	}
+}

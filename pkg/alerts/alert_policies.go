@@ -94,6 +94,15 @@ func (alerts *Alerts) UpdateAlertPolicy(policy AlertPolicy) (*AlertPolicy, error
 	return &resp.Policy, nil
 }
 
+// DeleteAlertPolicy deletes an existing alert policy for a given account.
+func (alerts *Alerts) DeleteAlertPolicy(id int) error {
+	url := fmt.Sprintf("/alerts_policies/%d.json", id)
+
+	err := alerts.client.Delete(url)
+
+	return err
+}
+
 func buildListAlertPoliciesParamsMap(params *ListAlertPoliciesParams) map[string]string {
 	paramsMap := map[string]string{}
 
