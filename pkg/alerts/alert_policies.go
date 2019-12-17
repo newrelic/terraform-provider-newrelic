@@ -1,11 +1,17 @@
 package alerts
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // ListAlertPoliciesParams represents a set of filters to be
 // used when querying New Relic alert policies.
 type ListAlertPoliciesParams struct {
 	Name *string
+}
+
+type listAlertsResponse struct {
+	AlertPolicies []AlertPolicy `json:"policies,omitempty"`
 }
 
 type createAlertPolicyRequestBody struct {
@@ -16,8 +22,12 @@ type createAlertPolicyResponse struct {
 	Policy AlertPolicy `json:"policy,omitempty"`
 }
 
-type listAlertsResponse struct {
-	AlertPolicies []AlertPolicy `json:"policies,omitempty"`
+type updateAlertPolicyRequestBody struct {
+	Policy AlertPolicy `json:"policy"`
+}
+
+type updateAlertPolicyResponse struct {
+	Policy AlertPolicy `json:"policy,omitempty"`
 }
 
 // GetAlertPolicy returns a specific alert policy by ID for a given account.
@@ -58,6 +68,24 @@ func (alerts *Alerts) CreateAlertPolicy(policy AlertPolicy) (*AlertPolicy, error
 	resp := createAlertPolicyResponse{}
 
 	err := alerts.client.Post("/alerts_policies.json", reqBody, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.Policy, nil
+}
+
+// UpdateAlertPolicy update an alert policy for a given account.
+func (alerts *Alerts) UpdateAlertPolicy(policy AlertPolicy) (*AlertPolicy, error) {
+	reqBody := updateAlertPolicyRequestBody{
+		Policy: policy,
+	}
+	resp := updateAlertPolicyResponse{}
+
+	url := fmt.Sprintf("/alerts_policies/%d.json", policy.ID)
+
+	err := alerts.client.Put(url, reqBody, &resp)
 
 	if err != nil {
 		return nil, err
