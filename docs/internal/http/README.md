@@ -12,30 +12,72 @@ var (
 )
 ```
 
+#### func  RetryPolicy
+
+```go
+func RetryPolicy(ctx context.Context, resp *http.Response, err error) (bool, error)
+```
+RetryPolicy provides a callback for retryablehttp's CheckRetry, which will retry
+on connection errors and server errors.
+
+#### type DefaultErrorResponse
+
+```go
+type DefaultErrorResponse struct {
+	ErrorDetail ErrorDetail `json:"error"`
+}
+```
+
+
+#### func (*DefaultErrorResponse) Error
+
+```go
+func (e *DefaultErrorResponse) Error() string
+```
+
 #### type ErrorDetail
 
 ```go
 type ErrorDetail struct {
-	Title string `json:"title,omitempty"`
+	Title string `json:"title"`
 }
 ```
 
-ErrorDetail represents the details of an ErrorResponse from New Relic.
+
+#### type ErrorNotFound
+
+```go
+type ErrorNotFound struct{}
+```
+
+
+#### func (*ErrorNotFound) Error
+
+```go
+func (e *ErrorNotFound) Error() string
+```
 
 #### type ErrorResponse
 
 ```go
-type ErrorResponse struct {
-	Detail *ErrorDetail `json:"error,omitempty"`
+type ErrorResponse interface {
+	Error() string
 }
 ```
 
-ErrorResponse represents an error response from New Relic.
 
-#### func (*ErrorResponse) Error
+#### type ErrorUnexpectedStatusCode
 
 ```go
-func (e *ErrorResponse) Error() string
+type ErrorUnexpectedStatusCode struct {
+}
+```
+
+
+#### func (*ErrorUnexpectedStatusCode) Error
+
+```go
+func (e *ErrorUnexpectedStatusCode) Error() string
 ```
 
 #### type LinkHeaderPager
@@ -49,7 +91,7 @@ LinkHeaderPager represents a pagination implementation that adheres to RFC 5988.
 #### func (*LinkHeaderPager) Parse
 
 ```go
-func (l *LinkHeaderPager) Parse(res *resty.Response) Paging
+func (l *LinkHeaderPager) Parse(resp *http.Response) Paging
 ```
 Parse is used to parse a pagination context from an HTTP response.
 
@@ -124,7 +166,7 @@ SetPager allows for use of different pagination implementations.
 
 ```go
 type Pager interface {
-	Parse(res *resty.Response) Paging
+	Parse(res *http.Response) Paging
 }
 ```
 
@@ -139,3 +181,57 @@ type Paging struct {
 ```
 
 Paging represents the pagination context returned from the Pager implementation.
+
+#### type ReplacementClient
+
+```go
+type ReplacementClient struct {
+	Client *retryablehttp.Client
+	Config config.ReplacementConfig
+}
+```
+
+
+#### func  NewReplacementClient
+
+```go
+func NewReplacementClient(config config.ReplacementConfig) ReplacementClient
+```
+
+#### func (*ReplacementClient) Get
+
+```go
+func (c *ReplacementClient) Get(url string, params map[string]string, reqBody interface{}, value interface{}) (*http.Response, error)
+```
+
+#### func (*ReplacementClient) SetErrorValue
+
+```go
+func (c *ReplacementClient) SetErrorValue(v ErrorResponse) *ReplacementClient
+```
+
+#### type RestyErrorDetail
+
+```go
+type RestyErrorDetail struct {
+	Title string `json:"title,omitempty"`
+}
+```
+
+ErrorDetail represents the details of an ErrorResponse from New Relic.
+
+#### type RestyErrorResponse
+
+```go
+type RestyErrorResponse struct {
+	Detail *ErrorDetail `json:"error,omitempty"`
+}
+```
+
+RestyErrorResponse represents an error response from New Relic.
+
+#### func (*RestyErrorResponse) Error
+
+```go
+func (e *RestyErrorResponse) Error() string
+```

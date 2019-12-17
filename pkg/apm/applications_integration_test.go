@@ -18,7 +18,7 @@ func TestIntegrationListApplications(t *testing.T) {
 		t.Skipf("acceptance testing requires an API key")
 	}
 
-	api := New(config.Config{
+	api := New(config.ReplacementConfig{
 		APIKey: apiKey,
 	})
 

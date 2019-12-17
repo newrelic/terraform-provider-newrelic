@@ -3,6 +3,7 @@ package config
 import (
 	"crypto/tls"
 	"net/http"
+	"time"
 )
 
 // RegionType represents the members of the Region enumeration.
@@ -40,5 +41,14 @@ type Config struct {
 	TLSConfig     *tls.Config
 	UserAgent     string
 	HTTPTransport http.RoundTripper
+	Region        RegionType
+}
+
+type ReplacementConfig struct {
+	BaseURL       string
+	APIKey        string
+	Timeout       *time.Duration
+	HTTPTransport *http.RoundTripper
+	UserAgent     string
 	Region        RegionType
 }

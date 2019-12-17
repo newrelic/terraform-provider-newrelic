@@ -1,13 +1,14 @@
 package http
 
 import (
-	"github.com/go-resty/resty/v2"
+	"net/http"
+
 	"github.com/tomnomnom/linkheader"
 )
 
 // Pager represents a pagination implementation.
 type Pager interface {
-	Parse(res *resty.Response) Paging
+	Parse(res *http.Response) Paging
 }
 
 // Paging represents the pagination context returned from the Pager implementation.
@@ -19,9 +20,9 @@ type Paging struct {
 type LinkHeaderPager struct{}
 
 // Parse is used to parse a pagination context from an HTTP response.
-func (l *LinkHeaderPager) Parse(res *resty.Response) Paging {
+func (l *LinkHeaderPager) Parse(resp *http.Response) Paging {
 	paging := Paging{}
-	header := res.Header().Get("Link")
+	header := resp.Header.Get("Link")
 	if header != "" {
 		links := linkheader.Parse(header)
 

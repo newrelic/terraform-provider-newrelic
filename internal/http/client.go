@@ -15,12 +15,6 @@ type NewRelicClient struct {
 	pager  Pager
 }
 
-var defaultBaseURLs = map[config.RegionType]string{
-	config.Region.US:      "https://api.newrelic.com/v2",
-	config.Region.EU:      "https://api.eu.newrelic.com/v2",
-	config.Region.Staging: "https://staging-api.newrelic.com/v2",
-}
-
 // NewClient is used to create a new instance of the NewRelicClient type.
 func NewClient(config config.Config) NewRelicClient {
 	client := resty.New()
@@ -32,7 +26,7 @@ func NewClient(config config.Config) NewRelicClient {
 	setDebug(config, client)
 	setHTTPTransport(config, client)
 
-	client.SetError(&ErrorResponse{})
+	client.SetError(&RestyErrorResponse{})
 
 	c := NewRelicClient{
 		Client: *client,
@@ -184,7 +178,7 @@ func (n *NewRelicClient) do(method string, path string, req *resty.Request) (*Pa
 		return nil, err
 	}
 
-	paging := n.pager.Parse(apiResponse)
+	paging := n.pager.Parse(apiResponse.RawResponse)
 
 	if err != nil {
 		return nil, err
@@ -204,7 +198,7 @@ func (n *NewRelicClient) do(method string, path string, req *resty.Request) (*Pa
 	rawError := apiResponse.Error()
 
 	if rawError != nil {
-		apiError := rawError.(*ErrorResponse)
+		apiError := rawError.(*RestyErrorResponse)
 
 		if apiError.Detail != nil {
 			return nil, apiError

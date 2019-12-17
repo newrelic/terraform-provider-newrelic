@@ -20,15 +20,25 @@ type listApplicationsResponse struct {
 
 // ListApplications is used to retrieve New Relic applications.
 func (apm *APM) ListApplications(params *ListApplicationsParams) ([]Application, error) {
-	res := listApplicationsResponse{}
+	response := listApplicationsResponse{}
+	apps := []Application{}
+	nextURL := apm.client.Config.BaseURL + "/applications.json"
 	paramsMap := buildListApplicationsParamsMap(params)
-	err := apm.client.Get("/applications.json", &paramsMap, &res)
 
-	if err != nil {
-		return nil, err
+	for nextURL != "" {
+		resp, err := apm.client.Get(nextURL, paramsMap, nil, &response)
+
+		if err != nil {
+			return nil, err
+		}
+
+		apps = append(apps, response.Applications...)
+
+		paging := apm.pager.Parse(resp)
+		nextURL = paging.Next
 	}
 
-	return res.Applications, nil
+	return apps, nil
 }
 
 func buildListApplicationsParamsMap(params *ListApplicationsParams) map[string]string {

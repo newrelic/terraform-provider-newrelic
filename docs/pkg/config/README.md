@@ -56,3 +56,16 @@ type RegionType int
 ```
 
 RegionType represents the members of the Region enumeration.
+
+#### type ReplacementConfig
+
+```go
+type ReplacementConfig struct {
+	BaseURL       string
+	APIKey        string
+	Timeout       *time.Duration
+	HTTPTransport *http.RoundTripper
+	UserAgent     string
+	Region        RegionType
+}
+```

@@ -11,7 +11,6 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
-const testAPIKey string = "12345"
 const testUserAgentHeader string = "go-newrelic/test"
 
 func TestClientHeaders(t *testing.T) {

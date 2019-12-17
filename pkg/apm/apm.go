@@ -7,13 +7,15 @@ import (
 
 // APM is used to communicate with the New Relic APM product.
 type APM struct {
-	client http.NewRelicClient
+	client http.ReplacementClient
+	pager  http.Pager
 }
 
 // New is used to create a new APM client instance.
-func New(config config.Config) APM {
+func New(config config.ReplacementConfig) APM {
 	pkg := APM{
-		client: http.NewClient(config),
+		client: http.NewReplacementClient(config),
+		pager:  &http.LinkHeaderPager{},
 	}
 
 	return pkg

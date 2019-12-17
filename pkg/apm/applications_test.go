@@ -14,10 +14,9 @@ import (
 func NewTestAPM(handler http.Handler) APM {
 	ts := httptest.NewServer(handler)
 
-	c := New(config.Config{
+	c := New(config.ReplacementConfig{
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
-		Debug:     false,
 		UserAgent: "newrelic/newrelic-client-go",
 	})
 
