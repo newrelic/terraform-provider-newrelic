@@ -13,6 +13,7 @@ import (
 )
 
 func TestConfig(t *testing.T) {
+	t.Parallel()
 	testBaseURL := "https://www.mocky.io"
 	testTimeout := time.Second * 5
 	testTransport := http.DefaultTransport
@@ -31,6 +32,7 @@ func TestConfig(t *testing.T) {
 }
 
 func TestConfigDefaults(t *testing.T) {
+	t.Parallel()
 	c := NewClient(config.Config{
 		APIKey: testAPIKey,
 	})
@@ -40,6 +42,7 @@ func TestConfigDefaults(t *testing.T) {
 }
 
 func TestDefaultErrorValue(t *testing.T) {
+	t.Parallel()
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -60,6 +63,7 @@ func (c *CustomErrorResponse) Error() string {
 }
 
 func TestCustomErrorValue(t *testing.T) {
+	t.Parallel()
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -78,6 +82,7 @@ type CustomResponseValue struct {
 }
 
 func TestResponseValue(t *testing.T) {
+	t.Parallel()
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"custom":"custom response string"}`))
@@ -91,6 +96,7 @@ func TestResponseValue(t *testing.T) {
 }
 
 func TestQueryParams(t *testing.T) {
+	t.Parallel()
 	queryParams := map[string]string{
 		"a": "1",
 		"b": "2",
@@ -118,6 +124,7 @@ type TestRequestBody struct {
 }
 
 func TestRequestBodyMarshal(t *testing.T) {
+	t.Parallel()
 	expected := TestRequestBody{
 		A: "1",
 		B: "2",
@@ -142,6 +149,7 @@ type TestInvalidRequestBody struct {
 }
 
 func TestRequestBodyMarshalError(t *testing.T) {
+	t.Parallel()
 	b := TestInvalidRequestBody{
 		Channel: make(chan int),
 	}
@@ -153,6 +161,7 @@ func TestRequestBodyMarshalError(t *testing.T) {
 }
 
 func TestUrlParseError(t *testing.T) {
+	t.Parallel()
 	c := NewTestAPIClient(nil)
 
 	_, err := c.Get("\\", nil, nil, nil)
@@ -160,6 +169,7 @@ func TestUrlParseError(t *testing.T) {
 }
 
 func TestPathOnlyUrl(t *testing.T) {
+	t.Parallel()
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -173,6 +183,7 @@ func TestPathOnlyUrl(t *testing.T) {
 }
 
 func TestHostAndPathUrl(t *testing.T) {
+	t.Parallel()
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -190,6 +201,7 @@ type TestInvalidReponseBody struct {
 }
 
 func TestResponseUnmarshalError(t *testing.T) {
+	t.Parallel()
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"channel": "test"}`))
@@ -201,6 +213,7 @@ func TestResponseUnmarshalError(t *testing.T) {
 }
 
 func TestHeaders(t *testing.T) {
+	t.Parallel()
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -215,6 +228,7 @@ func TestHeaders(t *testing.T) {
 }
 
 func TestErrNotFound(t *testing.T) {
+	t.Parallel()
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
@@ -225,6 +239,7 @@ func TestErrNotFound(t *testing.T) {
 }
 
 func TestInternalServerError(t *testing.T) {
+	t.Parallel()
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}))
