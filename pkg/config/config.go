@@ -1,7 +1,6 @@
 package config
 
 import (
-	"crypto/tls"
 	"net/http"
 	"time"
 )
@@ -33,17 +32,6 @@ var Region = struct {
 }
 
 // Config contains all the configuration data for the API Client.
-type Config struct {
-	APIKey        string
-	BaseURL       string
-	ProxyURL      string
-	Debug         bool
-	TLSConfig     *tls.Config
-	UserAgent     string
-	HTTPTransport http.RoundTripper
-	Region        RegionType
-}
-
 type ReplacementConfig struct {
 	BaseURL       string
 	APIKey        string

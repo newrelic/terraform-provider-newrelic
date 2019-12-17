@@ -7,15 +7,19 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
+var (
+	testAPIKey    = "apiKey"
+	testUserAgent = "userAgent"
+)
+
 // NewTestAPIClient returns a test NewRelicClient instance that is configured to communicate with a mock server.
-func NewTestAPIClient(handler http.Handler) NewRelicClient {
+func NewTestAPIClient(handler http.Handler) ReplacementClient {
 	ts := httptest.NewServer(handler)
 
-	c := NewClient(config.Config{
-		APIKey:    "abc123",
+	c := NewReplacementClient(config.ReplacementConfig{
+		APIKey:    testAPIKey,
 		BaseURL:   ts.URL,
-		Debug:     false,
-		UserAgent: "newrelic/newrelic-client-go",
+		UserAgent: testUserAgent,
 	})
 
 	return c

@@ -6,7 +6,6 @@ require (
 	github.com/AlekSi/gocov-xml v0.0.0-20190121064608-3a14fb1c4737
 	github.com/axw/gocov v1.0.0
 	github.com/client9/misspell v0.3.4
-	github.com/go-resty/resty/v2 v2.1.0
 	github.com/golangci/golangci-lint v1.21.0
 	github.com/google/go-cmp v0.2.0
 	github.com/hashicorp/go-retryablehttp v0.6.4

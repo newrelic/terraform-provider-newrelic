@@ -32,23 +32,6 @@ var Region = struct {
 ```
 Region specifies the New Relic environment to target.
 
-#### type Config
-
-```go
-type Config struct {
-	APIKey        string
-	BaseURL       string
-	ProxyURL      string
-	Debug         bool
-	TLSConfig     *tls.Config
-	UserAgent     string
-	HTTPTransport http.RoundTripper
-	Region        RegionType
-}
-```
-
-Config contains all the configuration data for the API Client.
-
 #### type RegionType
 
 ```go
@@ -69,3 +52,5 @@ type ReplacementConfig struct {
 	Region        RegionType
 }
 ```
+
+Config contains all the configuration data for the API Client.
