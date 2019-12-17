@@ -214,3 +214,53 @@ func TestListAlertPoliciesWithParams(t *testing.T) {
 		t.Fatalf("ListApplications response differs from expected: %s", diff)
 	}
 }
+
+func TestCreateAlertPolicy(t *testing.T) {
+	t.Parallel()
+	alerts := NewTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte(`
+		{
+			"policy": {
+				"id": 123,
+				"incident_preference": "PER_POLICY",
+				"name": "test-alert-policy-1",
+				"created_at": 1575438237690,
+				"updated_at": 1575438237690
+			}
+		}
+		`))
+
+		if err != nil {
+			t.Fatal(err)
+		}
+	}))
+
+	policy := AlertPolicy{
+		IncidentPreference: "PER_POLICY",
+		Name:               "test-alert-policy-1",
+	}
+
+	expected := &AlertPolicy{
+		ID:                 123,
+		IncidentPreference: "PER_POLICY",
+		Name:               "test-alert-policy-1",
+		CreatedAt:          1575438237690,
+		UpdatedAt:          1575438237690,
+	}
+
+	actual, err := alerts.CreateAlertPolicy(policy)
+
+	if err != nil {
+		t.Fatalf("CreateAlertPolicy error: %s", err)
+	}
+
+	if actual == nil {
+		t.Fatalf("CreateAlertPolicy result is nil")
+	}
+
+	if diff := cmp.Diff(expected, actual); diff != "" {
+		t.Fatalf("CreateAlertPolicy result differs from expected: %s", diff)
+	}
+}
