@@ -17,7 +17,7 @@ func TestAccListMonitors(t *testing.T) {
 		t.Skipf("acceptance testing requires an API key")
 	}
 
-	synthetics := New(config.ReplacementConfig{
+	synthetics := New(config.Config{
 		APIKey: apiKey,
 	})
 

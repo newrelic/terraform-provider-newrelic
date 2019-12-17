@@ -15,7 +15,7 @@ import (
 func NewTestSynthetics(handler http.Handler) Synthetics {
 	ts := httptest.NewServer(handler)
 
-	c := New(config.ReplacementConfig{
+	c := New(config.Config{
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
 		UserAgent: "newrelic/newrelic-client-go",

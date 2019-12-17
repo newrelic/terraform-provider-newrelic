@@ -10,7 +10,7 @@ import (
 
 func TestDefaultEnvironment(t *testing.T) {
 	t.Parallel()
-	a := New(config.ReplacementConfig{})
+	a := New(config.Config{})
 
 	actual := a.client.Config.BaseURL
 	expected := "https://infra-api.newrelic.com/v2/alerts/conditions"
@@ -21,7 +21,7 @@ func TestDefaultEnvironment(t *testing.T) {
 
 func TestEUEnvironment(t *testing.T) {
 	t.Parallel()
-	a := New(config.ReplacementConfig{
+	a := New(config.Config{
 		Region: config.Region.EU,
 	})
 
@@ -34,7 +34,7 @@ func TestEUEnvironment(t *testing.T) {
 
 func TestStagingEnvironment(t *testing.T) {
 	t.Parallel()
-	a := New(config.ReplacementConfig{
+	a := New(config.Config{
 		Region: config.Region.Staging,
 	})
 

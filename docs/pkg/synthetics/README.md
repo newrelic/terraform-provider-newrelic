@@ -52,7 +52,7 @@ Synthetics is used to communicate with the New Relic Synthetics product.
 #### func  New
 
 ```go
-func New(config config.ReplacementConfig) Synthetics
+func New(config config.Config) Synthetics
 ```
 New is used to create a new Synthetics client instance.
 

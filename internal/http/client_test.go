@@ -12,12 +12,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestReplacementClientConfig(t *testing.T) {
+func TestConfig(t *testing.T) {
 	testBaseURL := "https://www.mocky.io"
 	testTimeout := time.Second * 5
 	testTransport := http.DefaultTransport
 
-	c := NewReplacementClient(config.ReplacementConfig{
+	c := NewClient(config.Config{
 		APIKey:        testAPIKey,
 		BaseURL:       testBaseURL,
 		UserAgent:     testUserAgent,
@@ -30,8 +30,8 @@ func TestReplacementClientConfig(t *testing.T) {
 	assert.Same(t, &testTransport, c.Config.HTTPTransport)
 }
 
-func TestReplacementClientConfigDefaults(t *testing.T) {
-	c := NewReplacementClient(config.ReplacementConfig{
+func TestConfigDefaults(t *testing.T) {
+	c := NewClient(config.Config{
 		APIKey: testAPIKey,
 	})
 
@@ -39,7 +39,7 @@ func TestReplacementClientConfigDefaults(t *testing.T) {
 	assert.Contains(t, c.Config.UserAgent, "newrelic/newrelic-client-go/")
 }
 
-func TestReplacementClientDefaultErrorValue(t *testing.T) {
+func TestDefaultErrorValue(t *testing.T) {
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -59,7 +59,7 @@ func (c *CustomErrorResponse) Error() string {
 	return c.CustomError
 }
 
-func TestReplacementClientCustomErrorValue(t *testing.T) {
+func TestCustomErrorValue(t *testing.T) {
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -77,7 +77,7 @@ type CustomResponseValue struct {
 	Custom string `json:"custom"`
 }
 
-func TestReplacementClientResponseValue(t *testing.T) {
+func TestResponseValue(t *testing.T) {
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"custom":"custom response string"}`))
@@ -90,7 +90,7 @@ func TestReplacementClientResponseValue(t *testing.T) {
 	assert.Equal(t, &CustomResponseValue{Custom: "custom response string"}, v)
 }
 
-func TestReplacementClientQueryParams(t *testing.T) {
+func TestQueryParams(t *testing.T) {
 	queryParams := map[string]string{
 		"a": "1",
 		"b": "2",
@@ -117,7 +117,7 @@ type TestRequestBody struct {
 	B string `json:"b"`
 }
 
-func TestReplacementClientRequestBody(t *testing.T) {
+func TestRequestBodyMarshal(t *testing.T) {
 	expected := TestRequestBody{
 		A: "1",
 		B: "2",
@@ -141,7 +141,7 @@ type TestInvalidRequestBody struct {
 	Channel chan int `json:"a"`
 }
 
-func TestReplacementClientRequestBodyMarshalError(t *testing.T) {
+func TestRequestBodyMarshalError(t *testing.T) {
 	b := TestInvalidRequestBody{
 		Channel: make(chan int),
 	}
@@ -152,14 +152,14 @@ func TestReplacementClientRequestBodyMarshalError(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestReplacementClientUrlParseError(t *testing.T) {
+func TestUrlParseError(t *testing.T) {
 	c := NewTestAPIClient(nil)
 
 	_, err := c.Get("\\", nil, nil, nil)
 	assert.Error(t, err)
 }
 
-func TestReplacementClientPathOnlyUrl(t *testing.T) {
+func TestPathOnlyUrl(t *testing.T) {
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -172,7 +172,7 @@ func TestReplacementClientPathOnlyUrl(t *testing.T) {
 	_, _ = c.Get("/path", nil, nil, nil)
 }
 
-func TestReplacementClientHostAndPathUrl(t *testing.T) {
+func TestHostAndPathUrl(t *testing.T) {
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -189,7 +189,7 @@ type TestInvalidReponseBody struct {
 	Channel chan int `json:"channel"`
 }
 
-func TestReplacementClientResponseUnmarshalError(t *testing.T) {
+func TestResponseUnmarshalError(t *testing.T) {
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"channel": "test"}`))
@@ -200,7 +200,7 @@ func TestReplacementClientResponseUnmarshalError(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestReplacementClientHeaders(t *testing.T) {
+func TestHeaders(t *testing.T) {
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -214,7 +214,7 @@ func TestReplacementClientHeaders(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestReplacementClientErrNotFound(t *testing.T) {
+func TestErrNotFound(t *testing.T) {
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
@@ -224,7 +224,7 @@ func TestReplacementClientErrNotFound(t *testing.T) {
 	assert.IsType(t, &ErrorNotFound{}, err)
 }
 
-func TestReplacementClientInternalServerError(t *testing.T) {
+func TestInternalServerError(t *testing.T) {
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}))

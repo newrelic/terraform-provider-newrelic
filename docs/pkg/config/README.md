@@ -32,18 +32,10 @@ var Region = struct {
 ```
 Region specifies the New Relic environment to target.
 
-#### type RegionType
+#### type Config
 
 ```go
-type RegionType int
-```
-
-RegionType represents the members of the Region enumeration.
-
-#### type ReplacementConfig
-
-```go
-type ReplacementConfig struct {
+type Config struct {
 	BaseURL       string
 	APIKey        string
 	Timeout       *time.Duration
@@ -54,3 +46,11 @@ type ReplacementConfig struct {
 ```
 
 Config contains all the configuration data for the API Client.
+
+#### type RegionType
+
+```go
+type RegionType int
+```
+
+RegionType represents the members of the Region enumeration.

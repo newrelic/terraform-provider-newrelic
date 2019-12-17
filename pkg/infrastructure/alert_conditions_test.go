@@ -16,7 +16,7 @@ import (
 func NewTestInfrastructure(handler http.Handler) Infrastructure {
 	ts := httptest.NewServer(handler)
 
-	c := New(config.ReplacementConfig{
+	c := New(config.Config{
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
 		UserAgent: "newrelic/newrelic-client-go",

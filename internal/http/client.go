@@ -28,13 +28,13 @@ var (
 	}
 )
 
-type ReplacementClient struct {
+type NewRelicClient struct {
 	Client     *retryablehttp.Client
-	Config     config.ReplacementConfig
+	Config     config.Config
 	errorValue ErrorResponse
 }
 
-func NewReplacementClient(config config.ReplacementConfig) ReplacementClient {
+func NewClient(config config.Config) NewRelicClient {
 	c := http.Client{
 		Timeout: defaultTimeout,
 	}
@@ -62,19 +62,19 @@ func NewReplacementClient(config config.ReplacementConfig) ReplacementClient {
 	r.RetryMax = defaultRetryMax
 	r.CheckRetry = RetryPolicy
 
-	return ReplacementClient{
+	return NewRelicClient{
 		Client:     r,
 		Config:     config,
 		errorValue: &DefaultErrorResponse{},
 	}
 }
 
-func (c *ReplacementClient) SetErrorValue(v ErrorResponse) *ReplacementClient {
+func (c *NewRelicClient) SetErrorValue(v ErrorResponse) *NewRelicClient {
 	c.errorValue = v
 	return c
 }
 
-func (c *ReplacementClient) Get(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
+func (c *NewRelicClient) Get(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
 	return c.do(http.MethodGet, url, params, reqBody, value)
 }
 
@@ -93,7 +93,7 @@ func makeRequestBody(reqBody interface{}) (*bytes.Buffer, error) {
 	return b, nil
 }
 
-func (c *ReplacementClient) setHeaders(req *retryablehttp.Request) {
+func (c *NewRelicClient) setHeaders(req *retryablehttp.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Api-Key", c.Config.APIKey)
 	req.Header.Set("User-Agent", c.Config.UserAgent)
@@ -110,7 +110,7 @@ func setQueryParams(req *retryablehttp.Request, params *map[string]string) {
 	}
 }
 
-func (c *ReplacementClient) makeURL(url string) (*neturl.URL, error) {
+func (c *NewRelicClient) makeURL(url string) (*neturl.URL, error) {
 	u, err := neturl.Parse(url)
 
 	if err != nil {
@@ -130,7 +130,7 @@ func (c *ReplacementClient) makeURL(url string) (*neturl.URL, error) {
 	return u, err
 }
 
-func (c *ReplacementClient) do(method string, url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
+func (c *NewRelicClient) do(method string, url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
 	reqBody, err := makeRequestBody(reqBody)
 
 	if err != nil {

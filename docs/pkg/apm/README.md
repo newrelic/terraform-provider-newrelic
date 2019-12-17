@@ -17,7 +17,7 @@ APM is used to communicate with the New Relic APM product.
 #### func  New
 
 ```go
-func New(config config.ReplacementConfig) APM
+func New(config config.Config) APM
 ```
 New is used to create a new APM client instance.
 

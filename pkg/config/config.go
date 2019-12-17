@@ -32,7 +32,7 @@ var Region = struct {
 }
 
 // Config contains all the configuration data for the API Client.
-type ReplacementConfig struct {
+type Config struct {
 	BaseURL       string
 	APIKey        string
 	Timeout       *time.Duration

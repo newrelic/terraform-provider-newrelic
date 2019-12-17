@@ -10,7 +10,7 @@ import (
 
 func TestDefaultEnvironment(t *testing.T) {
 	t.Parallel()
-	a := New(config.ReplacementConfig{})
+	a := New(config.Config{})
 
 	actual := a.client.Config.BaseURL
 	expected := "https://synthetics.newrelic.com/synthetics/api/v3"
@@ -21,7 +21,7 @@ func TestDefaultEnvironment(t *testing.T) {
 
 func TestEUEnvironment(t *testing.T) {
 	t.Parallel()
-	a := New(config.ReplacementConfig{
+	a := New(config.Config{
 		Region: config.EU,
 	})
 
@@ -34,7 +34,7 @@ func TestEUEnvironment(t *testing.T) {
 
 func TestStagingEnvironment(t *testing.T) {
 	t.Parallel()
-	a := New(config.ReplacementConfig{
+	a := New(config.Config{
 		Region: config.Staging,
 	})
 

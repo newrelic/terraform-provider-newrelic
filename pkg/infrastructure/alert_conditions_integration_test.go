@@ -18,7 +18,7 @@ func TestIntegrationListAlertConditions(t *testing.T) {
 		t.Skipf("acceptance testing requires an API key")
 	}
 
-	api := New(config.ReplacementConfig{
+	api := New(config.Config{
 		APIKey: apiKey,
 	})
 

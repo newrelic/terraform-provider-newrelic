@@ -96,6 +96,42 @@ func (l *LinkHeaderPager) Parse(resp *http.Response) Paging
 ```
 Parse is used to parse a pagination context from an HTTP response.
 
+#### type NewRelicClient
+
+```go
+type NewRelicClient struct {
+	Client *retryablehttp.Client
+	Config config.Config
+}
+```
+
+
+#### func  NewClient
+
+```go
+func NewClient(config config.Config) NewRelicClient
+```
+
+#### func  NewTestAPIClient
+
+```go
+func NewTestAPIClient(handler http.Handler) NewRelicClient
+```
+NewTestAPIClient returns a test NewRelicClient instance that is configured to
+communicate with a mock server.
+
+#### func (*NewRelicClient) Get
+
+```go
+func (c *NewRelicClient) Get(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error)
+```
+
+#### func (*NewRelicClient) SetErrorValue
+
+```go
+func (c *NewRelicClient) SetErrorValue(v ErrorResponse) *NewRelicClient
+```
+
 #### type Pager
 
 ```go
@@ -115,39 +151,3 @@ type Paging struct {
 ```
 
 Paging represents the pagination context returned from the Pager implementation.
-
-#### type ReplacementClient
-
-```go
-type ReplacementClient struct {
-	Client *retryablehttp.Client
-	Config config.ReplacementConfig
-}
-```
-
-
-#### func  NewReplacementClient
-
-```go
-func NewReplacementClient(config config.ReplacementConfig) ReplacementClient
-```
-
-#### func  NewTestAPIClient
-
-```go
-func NewTestAPIClient(handler http.Handler) ReplacementClient
-```
-NewTestAPIClient returns a test NewRelicClient instance that is configured to
-communicate with a mock server.
-
-#### func (*ReplacementClient) Get
-
-```go
-func (c *ReplacementClient) Get(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error)
-```
-
-#### func (*ReplacementClient) SetErrorValue
-
-```go
-func (c *ReplacementClient) SetErrorValue(v ErrorResponse) *ReplacementClient
-```

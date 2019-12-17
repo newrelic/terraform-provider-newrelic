@@ -13,10 +13,10 @@ var (
 )
 
 // NewTestAPIClient returns a test NewRelicClient instance that is configured to communicate with a mock server.
-func NewTestAPIClient(handler http.Handler) ReplacementClient {
+func NewTestAPIClient(handler http.Handler) NewRelicClient {
 	ts := httptest.NewServer(handler)
 
-	c := NewReplacementClient(config.ReplacementConfig{
+	c := NewClient(config.Config{
 		APIKey:    testAPIKey,
 		BaseURL:   ts.URL,
 		UserAgent: testUserAgent,
