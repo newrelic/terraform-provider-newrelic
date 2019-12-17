@@ -74,7 +74,7 @@ func (c *ReplacementClient) SetErrorValue(v ErrorResponse) *ReplacementClient {
 	return c
 }
 
-func (c *ReplacementClient) Get(url string, params map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
+func (c *ReplacementClient) Get(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
 	return c.do(http.MethodGet, url, params, reqBody, value)
 }
 
@@ -99,10 +99,10 @@ func (c *ReplacementClient) setHeaders(req *retryablehttp.Request) {
 	req.Header.Set("User-Agent", c.Config.UserAgent)
 }
 
-func setQueryParams(req *retryablehttp.Request, params map[string]string) {
+func setQueryParams(req *retryablehttp.Request, params *map[string]string) {
 	if params != nil {
 		q := req.URL.Query()
-		for k, v := range params {
+		for k, v := range *params {
 			q.Add(k, v)
 		}
 
@@ -130,7 +130,7 @@ func (c *ReplacementClient) makeURL(url string) (*neturl.URL, error) {
 	return u, err
 }
 
-func (c *ReplacementClient) do(method string, url string, params map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
+func (c *ReplacementClient) do(method string, url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
 	reqBody, err := makeRequestBody(reqBody)
 
 	if err != nil {

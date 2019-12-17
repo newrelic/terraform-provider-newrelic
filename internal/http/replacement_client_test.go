@@ -115,7 +115,7 @@ func TestReplacementClientQueryParams(t *testing.T) {
 		assert.Equal(t, "2", b[0])
 	}))
 
-	_, _ = c.Get("/path", queryParams, nil, nil)
+	_, _ = c.Get("/path", &queryParams, nil, nil)
 }
 
 type TestRequestBody struct {

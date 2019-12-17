@@ -13,18 +13,18 @@ var baseURLs = map[config.RegionType]string{
 
 // Synthetics is used to communicate with the New Relic Synthetics product.
 type Synthetics struct {
-	client http.NewRelicClient
+	client http.ReplacementClient
 }
 
 // New is used to create a new Synthetics client instance.
-func New(config config.Config) Synthetics {
+func New(config config.ReplacementConfig) Synthetics {
 
 	if config.BaseURL == "" {
 		config.BaseURL = baseURLs[config.Region]
 	}
 
 	pkg := Synthetics{
-		client: http.NewClient(config),
+		client: http.NewReplacementClient(config),
 	}
 
 	return pkg

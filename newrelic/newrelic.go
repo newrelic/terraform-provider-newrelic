@@ -13,9 +13,9 @@ type NewRelic struct {
 	Infrastructure infrastructure.Infrastructure
 }
 
-func New(config config.Config, rconfig config.ReplacementConfig) NewRelic {
+func New(config config.ReplacementConfig) NewRelic {
 	return NewRelic{
-		APM:            apm.New(rconfig),
+		APM:            apm.New(config),
 		Infrastructure: infrastructure.New(config),
 		Synthetics:     synthetics.New(config),
 	}

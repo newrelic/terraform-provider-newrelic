@@ -10,9 +10,9 @@ import (
 
 func TestDefaultEnvironment(t *testing.T) {
 	t.Parallel()
-	a := New(config.Config{})
+	a := New(config.ReplacementConfig{})
 
-	actual := a.client.Client.HostURL
+	actual := a.client.Config.BaseURL
 	expected := "https://infra-api.newrelic.com/v2/alerts/conditions"
 	if actual != expected {
 		t.Errorf("expected baseURL: %s, received: %s", expected, actual)
@@ -21,11 +21,11 @@ func TestDefaultEnvironment(t *testing.T) {
 
 func TestEUEnvironment(t *testing.T) {
 	t.Parallel()
-	a := New(config.Config{
+	a := New(config.ReplacementConfig{
 		Region: config.Region.EU,
 	})
 
-	actual := a.client.Client.HostURL
+	actual := a.client.Config.BaseURL
 	expected := "https://infra-api.eu.newrelic.com/v2/alerts/conditions"
 	if actual != expected {
 		t.Errorf("expected baseURL: %s, received: %s", expected, actual)
@@ -34,11 +34,11 @@ func TestEUEnvironment(t *testing.T) {
 
 func TestStagingEnvironment(t *testing.T) {
 	t.Parallel()
-	a := New(config.Config{
+	a := New(config.ReplacementConfig{
 		Region: config.Region.Staging,
 	})
 
-	actual := a.client.Client.HostURL
+	actual := a.client.Config.BaseURL
 	expected := "https://staging-infra-api.newrelic.com/v2/alerts/conditions"
 	if actual != expected {
 		t.Errorf("expected baseURL: %s, received: %s", expected, actual)

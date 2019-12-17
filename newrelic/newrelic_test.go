@@ -9,5 +9,5 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	New(config.Config{}, config.ReplacementConfig{})
+	New(config.ReplacementConfig{})
 }

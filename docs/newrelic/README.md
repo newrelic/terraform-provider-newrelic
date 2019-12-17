@@ -19,5 +19,5 @@ type NewRelic struct {
 #### func  New
 
 ```go
-func New(config config.Config, rconfig config.ReplacementConfig) NewRelic
+func New(config config.ReplacementConfig) NewRelic
 ```

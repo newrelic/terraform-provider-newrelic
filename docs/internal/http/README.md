@@ -201,7 +201,7 @@ func NewReplacementClient(config config.ReplacementConfig) ReplacementClient
 #### func (*ReplacementClient) Get
 
 ```go
-func (c *ReplacementClient) Get(url string, params map[string]string, reqBody interface{}, value interface{}) (*http.Response, error)
+func (c *ReplacementClient) Get(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error)
 ```
 
 #### func (*ReplacementClient) SetErrorValue

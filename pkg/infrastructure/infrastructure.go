@@ -13,7 +13,8 @@ var baseURLs = map[config.RegionType]string{
 
 // Infrastructure is used to communicate with the New Relic Infrastructure product.
 type Infrastructure struct {
-	client http.NewRelicClient
+	client http.ReplacementClient
+	pager  http.Pager
 }
 
 // ErrorResponse represents an error response from New Relic Infrastructure.
@@ -36,17 +37,17 @@ func (e *ErrorResponse) Error() string {
 }
 
 // New is used to create a new Infrastructure client instance.
-func New(config config.Config) Infrastructure {
+func New(config config.ReplacementConfig) Infrastructure {
 	if config.BaseURL == "" {
 		config.BaseURL = baseURLs[config.Region]
 	}
 
-	c := http.NewClient(config).
-		SetError(&ErrorResponse{}).
-		SetPager(&http.LinkHeaderPager{})
+	c := http.NewReplacementClient(config)
+	c.SetErrorValue(&ErrorResponse{})
 
 	pkg := Infrastructure{
 		client: c,
+		pager:  &http.LinkHeaderPager{},
 	}
 
 	return pkg

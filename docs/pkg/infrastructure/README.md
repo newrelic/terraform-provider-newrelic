@@ -72,7 +72,7 @@ Infrastructure is used to communicate with the New Relic Infrastructure product.
 #### func  New
 
 ```go
-func New(config config.Config) Infrastructure
+func New(config config.ReplacementConfig) Infrastructure
 ```
 New is used to create a new Infrastructure client instance.
 

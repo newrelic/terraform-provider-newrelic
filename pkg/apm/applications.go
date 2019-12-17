@@ -26,7 +26,7 @@ func (apm *APM) ListApplications(params *ListApplicationsParams) ([]Application,
 	paramsMap := buildListApplicationsParamsMap(params)
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, paramsMap, nil, &response)
+		resp, err := apm.client.Get(nextURL, &paramsMap, nil, &response)
 
 		if err != nil {
 			return nil, err
