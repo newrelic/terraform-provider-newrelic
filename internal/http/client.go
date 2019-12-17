@@ -28,12 +28,14 @@ var (
 	}
 )
 
+// NewRelicClient represents a client for communicating with the New Relic APIs.
 type NewRelicClient struct {
 	Client     *retryablehttp.Client
 	Config     config.Config
 	errorValue ErrorResponse
 }
 
+// NewClient is used to create a new instance of NewRelicClient.
 func NewClient(config config.Config) NewRelicClient {
 	c := http.Client{
 		Timeout: defaultTimeout,
@@ -69,11 +71,13 @@ func NewClient(config config.Config) NewRelicClient {
 	}
 }
 
+// SetErrorValue is used to unmarshal error body responses in JSON format.
 func (c *NewRelicClient) SetErrorValue(v ErrorResponse) *NewRelicClient {
 	c.errorValue = v
 	return c
 }
 
+// Get represents an HTTP GET request to a New Relic API.
 func (c *NewRelicClient) Get(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
 	return c.do(http.MethodGet, url, params, reqBody, value)
 }
