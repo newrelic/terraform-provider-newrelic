@@ -10,7 +10,7 @@ type listAlertConditionsResponse struct {
 func (i *Infrastructure) ListAlertConditions(policyID int) ([]AlertCondition, error) {
 	res := listAlertConditionsResponse{}
 	paramsMap := map[string]string{"policy_id": strconv.Itoa(policyID)}
-	_, err := i.client.Get("/alerts/conditions", &paramsMap, nil, &res)
+	_, err := i.client.Get("/alerts/conditions", &paramsMap, &res)
 
 	if err != nil {
 		return nil, err

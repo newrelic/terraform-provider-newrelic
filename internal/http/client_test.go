@@ -49,7 +49,7 @@ func TestDefaultErrorValue(t *testing.T) {
 		_, _ = w.Write([]byte(`{"error":{"title":"error message"}}`))
 	}))
 
-	_, err := c.Get("/path", nil, nil, nil)
+	_, err := c.Get("/path", nil, nil)
 
 	assert.Equal(t, err.(*ErrorUnexpectedStatusCode).err, "error message")
 }
@@ -72,7 +72,7 @@ func TestCustomErrorValue(t *testing.T) {
 
 	c.SetErrorValue(&CustomErrorResponse{})
 
-	_, err := c.Get("/path", nil, nil, nil)
+	_, err := c.Get("/path", nil, nil)
 
 	assert.Equal(t, err.(*ErrorUnexpectedStatusCode).err, "error message")
 }
@@ -89,7 +89,7 @@ func TestResponseValue(t *testing.T) {
 	}))
 
 	v := &CustomResponseValue{}
-	_, err := c.Get("/path", nil, nil, v)
+	_, err := c.Get("/path", nil, v)
 
 	assert.NoError(t, err)
 	assert.Equal(t, &CustomResponseValue{Custom: "custom response string"}, v)
@@ -115,7 +115,7 @@ func TestQueryParams(t *testing.T) {
 		assert.Equal(t, "2", b[0])
 	}))
 
-	_, _ = c.Get("/path", &queryParams, nil, nil)
+	_, _ = c.Get("/path", &queryParams, nil)
 }
 
 type TestRequestBody struct {
@@ -141,7 +141,7 @@ func TestRequestBodyMarshal(t *testing.T) {
 		assert.Equal(t, &expected, actual)
 	}))
 
-	_, _ = c.Get("/path", nil, expected, nil)
+	_, _ = c.Post("/path", nil, expected, nil)
 }
 
 type TestInvalidRequestBody struct {
@@ -156,7 +156,7 @@ func TestRequestBodyMarshalError(t *testing.T) {
 
 	c := NewTestAPIClient(nil)
 
-	_, err := c.Get("/path", nil, b, nil)
+	_, err := c.Post("/path", nil, b, nil)
 	assert.Error(t, err)
 }
 
@@ -164,7 +164,7 @@ func TestUrlParseError(t *testing.T) {
 	t.Parallel()
 	c := NewTestAPIClient(nil)
 
-	_, err := c.Get("\\", nil, nil, nil)
+	_, err := c.Get("\\", nil, nil)
 	assert.Error(t, err)
 }
 
@@ -179,7 +179,7 @@ func TestPathOnlyUrl(t *testing.T) {
 
 	c.Config.BaseURL = "https://www.mocky.io/v2"
 
-	_, _ = c.Get("/path", nil, nil, nil)
+	_, _ = c.Get("/path", nil, nil)
 }
 
 func TestHostAndPathUrl(t *testing.T) {
@@ -193,7 +193,7 @@ func TestHostAndPathUrl(t *testing.T) {
 
 	c.Config.BaseURL = "https://www.mocky.io/v2"
 
-	_, _ = c.Get("https://www.httpbin.org/path", nil, nil, nil)
+	_, _ = c.Get("https://www.httpbin.org/path", nil, nil)
 }
 
 type TestInvalidReponseBody struct {
@@ -207,7 +207,7 @@ func TestResponseUnmarshalError(t *testing.T) {
 		_, _ = w.Write([]byte(`{"channel": "test"}`))
 	}))
 
-	_, err := c.Get("/path", nil, nil, &TestInvalidReponseBody{})
+	_, err := c.Get("/path", nil, &TestInvalidReponseBody{})
 
 	assert.Error(t, err)
 }
@@ -222,7 +222,7 @@ func TestHeaders(t *testing.T) {
 		assert.Equal(t, testUserAgent, r.Header.Get("user-agent"))
 	}))
 
-	_, err := c.Get("/path", nil, nil, nil)
+	_, err := c.Get("/path", nil, nil)
 
 	assert.Nil(t, err)
 }
@@ -233,7 +233,7 @@ func TestErrNotFound(t *testing.T) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
 
-	_, err := c.Get("/path", nil, nil, nil)
+	_, err := c.Get("/path", nil, nil)
 
 	assert.IsType(t, &ErrorNotFound{}, err)
 }
@@ -244,7 +244,7 @@ func TestInternalServerError(t *testing.T) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}))
 
-	_, err := c.Get("/path", nil, nil, nil)
+	_, err := c.Get("/path", nil, nil)
 
 	assert.IsType(t, &ErrorUnexpectedStatusCode{}, err)
 }
@@ -281,7 +281,7 @@ func TestDelete(t *testing.T) {
 		_, _ = w.Write([]byte(`{}`))
 	}))
 
-	_, err := c.Delete("/path", &map[string]string{}, &struct{}{}, &struct{}{})
+	_, err := c.Delete("/path", &map[string]string{}, &struct{}{})
 
 	assert.NoError(t, err)
 }

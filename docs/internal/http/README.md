@@ -131,30 +131,65 @@ communicate with a mock server.
 #### func (*NewRelicClient) Delete
 
 ```go
-func (c *NewRelicClient) Delete(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error)
+func (c *NewRelicClient) Delete(url string,
+	queryParams *map[string]string,
+	respBody interface{},
+) (*http.Response, error)
 ```
-Delete represents an HTTP DELETE request to a New Relic API.
+Delete represents an HTTP DELETE request to a New Relic API. The queryParams
+argument can be used to add query string parameters to the requested URL. The
+respBody argument will be unmarshaled from JSON in the response body to the type
+provided. If respBody is not nil and the response body cannot be unmarshaled to
+the type provided, an error will be returned.
 
 #### func (*NewRelicClient) Get
 
 ```go
-func (c *NewRelicClient) Get(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error)
+func (c *NewRelicClient) Get(
+	url string,
+	queryParams *map[string]string,
+	respBody interface{},
+) (*http.Response, error)
 ```
-Get represents an HTTP GET request to a New Relic API.
+Get represents an HTTP GET request to a New Relic API. The queryParams argument
+can be used to add query string parameters to the requested URL. The respBody
+argument will be unmarshaled from JSON in the response body to the type
+provided. If respBody is not nil and the response body cannot be unmarshaled to
+the type provided, an error will be returned.
 
 #### func (*NewRelicClient) Post
 
 ```go
-func (c *NewRelicClient) Post(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error)
+func (c *NewRelicClient) Post(
+	url string,
+	params *map[string]string,
+	reqBody interface{},
+	respBody interface{},
+) (*http.Response, error)
 ```
-Post represents an HTTP POST request to a New Relic API.
+Post represents an HTTP POST request to a New Relic API. The queryParams
+argument can be used to add query string parameters to the requested URL. The
+reqBody argument will be marshaled to JSON from the type provided and included
+in the request body. The respBody argument will be unmarshaled from JSON in the
+response body to the type provided. If respBody is not nil and the response body
+cannot be unmarshaled to the type provided, an error will be returned.
 
 #### func (*NewRelicClient) Put
 
 ```go
-func (c *NewRelicClient) Put(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error)
+func (c *NewRelicClient) Put(
+	url string,
+	queryParams *map[string]string,
+	reqBody interface{},
+	respBody interface{},
+) (*http.Response, error)
 ```
-Put represents an HTTP PUT request to a New Relic API.
+Put represents an HTTP PUT request to a New Relic API. The queryParams argument
+can be used to add query string parameters to the requested URL. The reqBody
+argument will be marshaled to JSON from the type provided and included in the
+request body. The respBody argument will be unmarshaled from JSON in the
+response body to the type provided. If respBody is not nil and the response body
+cannot be unmarshaled to the type provided, an error will be returned.
 
 #### func (*NewRelicClient) SetErrorValue
 

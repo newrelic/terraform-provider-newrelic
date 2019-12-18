@@ -17,7 +17,7 @@ func (s *Synthetics) ListMonitors() ([]Monitor, error) {
 		"limit": strconv.Itoa(listMonitorsLimit),
 	}
 
-	_, err := s.client.Get("/monitors", &paramsMap, nil, &res)
+	_, err := s.client.Get("/monitors", &paramsMap, &res)
 
 	if err != nil {
 		return nil, err
