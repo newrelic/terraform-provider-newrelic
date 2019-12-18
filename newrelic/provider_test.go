@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	newrelic "github.com/newrelic/go-agent"
+	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
 var (
@@ -54,8 +54,10 @@ func testAccPreCheck(t *testing.T) {
 
 	// setup fake application by logging some metrics
 	if v := os.Getenv("NEWRELIC_LICENSE_KEY"); len(v) > 0 {
-		config := newrelic.NewConfig(testAccExpectedApplicationName, v)
-		app, err := newrelic.NewApplication(config)
+		app, err := newrelic.NewApplication(
+			newrelic.ConfigAppName(testAccExpectedApplicationName),
+			newrelic.ConfigLicense(v),
+		)
 		if err != nil {
 			t.Log(err)
 			t.Fatal("Error setting up New Relic application")
@@ -66,11 +68,7 @@ func testAccPreCheck(t *testing.T) {
 			t.Fatal("Unable to setup New Relic application connection")
 		}
 
-		if err := app.RecordCustomEvent("terraform test", nil); err != nil {
-			t.Log(err)
-			t.Fatal("Unable to record custom event in New Relic")
-		}
-
+		app.RecordCustomEvent("terraform test", nil)
 		app.Shutdown(30 * time.Second)
 	} else {
 		t.Log(v)
