@@ -141,9 +141,9 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_synthetics_alert_condition" "foo" {
-	policy_id   = "${newrelic_alert_policy.foo.id}"
+	policy_id   = newrelic_alert_policy.foo.id
 	name        = "tf-test-%[1]s"
-	monitor_id  = "${newrelic_synthetics_monitor.bar.id}"
+	monitor_id  = newrelic_synthetics_monitor.bar.id
 	runbook_url = "www.example.com"
 	enabled     = "true"
 }
@@ -166,9 +166,9 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_synthetics_alert_condition" "foo" {
-	policy_id   = "${newrelic_alert_policy.foo.id}"
+	policy_id   = newrelic_alert_policy.foo.id
 	name        = "tf-test-%[1]s"
-	monitor_id  = "${newrelic_synthetics_monitor.bar.id}"
+	monitor_id  = newrelic_synthetics_monitor.bar.id
 	runbook_url = "www.example-updated.com"
 	enabled     = "false"
 }

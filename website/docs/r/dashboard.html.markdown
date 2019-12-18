@@ -60,7 +60,7 @@ resource "newrelic_dashboard" "exampledash" {
     duration = 1800000
     visualization = "metric_line_chart"
     entity_ids = [
-      "${data.newrelic_application.my_application.id}",
+      data.newrelic_application.my_application.id,
     ]
     metric {
         name = "Apdex"

@@ -21,7 +21,7 @@ data "newrelic_plugin" "foo" {
 }
 
 data "newrelic_plugin_component" "foo" {
-  plugin_id = "${data.newrelic_plugin.foo.id}"
+  plugin_id = data.newrelic_plugin.foo.id
   name = "My Plugin Component"
 }
 
@@ -30,12 +30,12 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_plugins_alert_condition" "foo" {
-  policy_id          = "${newrelic_alert_policy.foo.id}"
+  policy_id          = newrelic_alert_policy.foo.id
   name               = "foo"
   metric             = "Component/Summary/Consumers[consumers]"
-  plugin_id          = "${data.newrelic_plugin.foo.id}"
-  plugin_guid        = "${data.newrelic_plugin.foo.guid}"
-  entities           = ["${data.newrelic_plugin_component.foo.id}"]
+  plugin_id          = data.newrelic_plugin.foo.id
+  plugin_guid        = data.newrelic_plugin.foo.guid
+  entities           = [data.newrelic_plugin_component.foo.id]
   value_function     = "average"
   metric_description = "Queue consumers"
 

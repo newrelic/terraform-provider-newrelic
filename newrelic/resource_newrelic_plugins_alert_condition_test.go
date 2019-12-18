@@ -208,18 +208,18 @@ data "newrelic_plugin" "foo" {
 	guid = "net.kenjij.newrelic_redis_plugin"
 }
 data "newrelic_plugin_component" "foo" {
-	plugin_id = "${data.newrelic_plugin.foo.id}"
+	plugin_id = data.newrelic_plugin.foo.id
 	name = "MyRedisServer"
 }
 resource "newrelic_alert_policy" "foo" {
 	name = "tf-test-%[1]s"
 }
 resource "newrelic_plugins_alert_condition" "foo" {
-	policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = newrelic_alert_policy.foo.id
 
 	name               = "tf-test-%[1]s"
 	enabled            = false
-	entities           = ["${data.newrelic_plugin_component.foo.id}"]
+	entities           = [data.newrelic_plugin_component.foo.id]
 	metric             = "Component/Connection/Clients[connections]"
 	runbook_url        = "https://foo.example.com"
 	metric_description = "my-metric-description"
@@ -247,23 +247,23 @@ data "newrelic_plugin" "foo" {
 	guid = "net.kenjij.newrelic_redis_plugin"
 }
 data "newrelic_plugin_component" "foo" {
-	plugin_id = "${data.newrelic_plugin.foo.id}"
+	plugin_id = data.newrelic_plugin.foo.id
 	name = "MyRedisServer"
 }
 resource "newrelic_alert_policy" "foo" {
 	name = "tf-test-updated-%[1]s"
 }
 resource "newrelic_plugins_alert_condition" "foo" {
-	policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = newrelic_alert_policy.foo.id
 
 	name               = "tf-test-updated-%[1]s"
 	enabled            = true
-	entities           = ["${data.newrelic_plugin_component.foo.id}"]
+	entities           = [data.newrelic_plugin_component.foo.id]
 	runbook_url        = "https://bar.example.com"
 	metric             = "Component/Connection/Clients[connections]"
 	metric_description = "my-metric-description"
-	plugin_id          = "${data.newrelic_plugin.foo.id}"
-	plugin_guid        = "${data.newrelic_plugin.foo.guid}"
+	plugin_id          = data.newrelic_plugin.foo.id
+	plugin_guid        = data.newrelic_plugin.foo.guid
 	value_function     = "average"
 
 	term {
@@ -286,23 +286,23 @@ data "newrelic_plugin" "foo" {
   guid = "net.kenjij.newrelic_redis_plugin"
 }
 data "newrelic_plugin_component" "foo" {
-	plugin_id = "${data.newrelic_plugin.foo.id}"
+	plugin_id = data.newrelic_plugin.foo.id
 	name = "MyRedisServer"
 }
 resource "newrelic_alert_policy" "foo" {
   name = "tf-test-%[1]s"
 }
 resource "newrelic_plugins_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name               = "really-long-name-that-is-more-than-sixtyfour-characters-long-tf-test-%[1]s"
   enabled            = false
-  entities           = ["${data.newrelic_plugin_component.foo.id}"]
+  entities           = [data.newrelic_plugin_component.foo.id]
   runbook_url        = "https://foo.example.com"
   metric             = "Component/Connection/Clients[connections]"
   metric_description = "my-metric-description"
-  plugin_id          = "${data.newrelic_plugin.foo.id}"
-  plugin_guid        = "${data.newrelic_plugin.foo.guid}"
+  plugin_id          = data.newrelic_plugin.foo.id
+  plugin_guid        = data.newrelic_plugin.foo.guid
   value_function     = "average"
 
   term {
@@ -340,23 +340,23 @@ data "newrelic_plugin" "foo" {
 	guid = "net.kenjij.newrelic_redis_plugin"
 }
 data "newrelic_plugin_component" "foo" {
-	plugin_id = "${data.newrelic_plugin.foo.id}"
+	plugin_id = data.newrelic_plugin.foo.id
 	name = "MyRedisServer"
 }
 resource "newrelic_alert_policy" "foo" {
 	name = "tf-test-%[1]s"
 }
 resource "newrelic_plugins_alert_condition" "foo" {
-	policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = newrelic_alert_policy.foo.id
 	
 	name               = ""
 	enabled            = false
-	entities           = ["${data.newrelic_plugin_component.foo.id}"]
+	entities           = [data.newrelic_plugin_component.foo.id]
 	runbook_url        = "https://foo.example.com"
 	metric             = "Component/Connection/Clients[connections]"
 	metric_description = "my-metric-description"
-	plugin_id          = "${data.newrelic_plugin.foo.id}"
-	plugin_guid        = "${data.newrelic_plugin.foo.guid}"
+	plugin_id          = data.newrelic_plugin.foo.id
+	plugin_guid        = data.newrelic_plugin.foo.guid
 	value_function     = "average"
 	
 	term {
@@ -394,23 +394,23 @@ data "newrelic_plugin" "foo" {
 	guid = "net.kenjij.newrelic_redis_plugin"
 }
 data "newrelic_plugin_component" "foo" {
-	plugin_id = "${data.newrelic_plugin.foo.id}"
+	plugin_id = data.newrelic_plugin.foo.id
 	name = "MyRedisServer"
 }
 resource "newrelic_alert_policy" "foo" {
 	name = "tf-test-%[1]s"
 }
 resource "newrelic_plugins_alert_condition" "foo" {
-	policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = newrelic_alert_policy.foo.id
 
 	name               = "tf-test-%[1]s"
 	enabled            = false
-	entities           = ["${data.newrelic_plugin_component.foo.id}"]
+	entities           = [data.newrelic_plugin_component.foo.id]
 	runbook_url        = "https://foo.example.com"
 	metric             = "Component/Connection/Clients[connections]"
 	metric_description = "my-metric-description"
-	plugin_id          = "${data.newrelic_plugin.foo.id}"
-	plugin_guid        = "${data.newrelic_plugin.foo.guid}"
+	plugin_id          = data.newrelic_plugin.foo.id
+	plugin_guid        = data.newrelic_plugin.foo.guid
 	value_function     = "average"
 
 	term {
@@ -448,23 +448,23 @@ data "newrelic_plugin" "foo" {
 	guid = "net.kenjij.newrelic_redis_plugin"
 }
 data "newrelic_plugin_component" "foo" {
-	plugin_id = "${data.newrelic_plugin.foo.id}"
+	plugin_id = data.newrelic_plugin.foo.id
 	name = "MyRedisServer"
 }
 resource "newrelic_alert_policy" "foo" {
 	name = "tf-test-%[1]s"
 }
 resource "newrelic_plugins_alert_condition" "foo" {
-	policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = newrelic_alert_policy.foo.id
 
 	name               = "tf-test-%[1]s"
 	enabled            = false
-	entities           = ["${data.newrelic_plugin_component.foo.id}"]
+	entities           = [data.newrelic_plugin_component.foo.id]
 	runbook_url        = "https://foo.example.com"
 	metric             = "Component/Connection/Clients[connections]"
 	metric_description = "my-metric-description"
-	plugin_id          = "${data.newrelic_plugin.foo.id}"
-	plugin_guid        = "${data.newrelic_plugin.foo.guid}"
+	plugin_id          = data.newrelic_plugin.foo.id
+	plugin_guid        = data.newrelic_plugin.foo.guid
 	value_function     = "average"
 
 	term {

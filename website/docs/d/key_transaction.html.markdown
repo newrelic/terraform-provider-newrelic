@@ -22,11 +22,11 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name        = "foo"
   type        = "apm_kt_metric"
-  entities    = ["${data.newrelic_key_transaction.txn.id}"]
+  entities    = [data.newrelic_key_transaction.txn.id]
   metric      = "error_percentage"
   runbook_url = "https://www.example.com"
 
