@@ -21,12 +21,35 @@ func New(config config.Config) APM
 ```
 New is used to create a new APM client instance.
 
+#### func (*APM) DeleteApplication
+
+```go
+func (apm *APM) DeleteApplication(applicationID int) (*Application, error)
+```
+DeleteApplication is used to delete a New Relic application. This process will
+only succeed if the application is no longer reporting data.
+
+#### func (*APM) GetApplication
+
+```go
+func (apm *APM) GetApplication(applicationID int) (*Application, error)
+```
+GetApplication is used to retrieve a single New Relic application.
+
 #### func (*APM) ListApplications
 
 ```go
 func (apm *APM) ListApplications(params *ListApplicationsParams) ([]Application, error)
 ```
 ListApplications is used to retrieve New Relic applications.
+
+#### func (*APM) UpdateApplication
+
+```go
+func (apm *APM) UpdateApplication(applicationID int, params UpdateApplicationParams) (*Application, error)
+```
+UpdateApplication is used to update a New Relic application's name and/or
+settings.
 
 #### type Application
 
@@ -118,3 +141,15 @@ type ListApplicationsParams struct {
 
 ListApplicationsParams represents a set of filters to be used when querying New
 Relic applications.
+
+#### type UpdateApplicationParams
+
+```go
+type UpdateApplicationParams struct {
+	Name     string
+	Settings ApplicationSettings
+}
+```
+
+UpdateApplicationParams represents a set of parameters to be used when updating
+New Relic applications.
