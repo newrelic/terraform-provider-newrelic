@@ -106,13 +106,11 @@ func TestQueryParams(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		a, ok := r.URL.Query()["a"]
-		assert.True(t, ok)
-		assert.Equal(t, "1", a[0])
+		a := r.URL.Query().Get("a")
+		assert.Equal(t, "1", a)
 
-		b, ok := r.URL.Query()["b"]
-		assert.True(t, ok)
-		assert.Equal(t, "2", b[0])
+		b := r.URL.Query().Get("b")
+		assert.Equal(t, "2", b)
 	}))
 
 	_, _ = c.Get("/path", &queryParams, nil)
