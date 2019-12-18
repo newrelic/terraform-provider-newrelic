@@ -48,8 +48,8 @@ func TestListAlertChannels(t *testing.T) {
 			ID:   2803426,
 			Name: "unit-test-alert-channel",
 			Type: "user",
-			Configuration: map[string]interface{}{
-				"user_id": "2680539",
+			Configuration: &AlertChannelConfiguration{
+				UserID: "2680539",
 			},
 			Links: AlertChannelLinks{
 				PolicyIDs: []int{},
@@ -59,9 +59,9 @@ func TestListAlertChannels(t *testing.T) {
 			ID:   2932511,
 			Name: "test@testing.com",
 			Type: "email",
-			Configuration: map[string]interface{}{
-				"include_json_attachment": "true",
-				"recipients":              "test@testing.com",
+			Configuration: &AlertChannelConfiguration{
+				Recipients:            "test@testing.com",
+				IncludeJSONAttachment: "true",
 			},
 			Links: AlertChannelLinks{
 				PolicyIDs: []int{},
@@ -111,9 +111,9 @@ func TestCreateAlertChannel(t *testing.T) {
 	channel := AlertChannel{
 		Name: "sblue@newrelic.com",
 		Type: "email",
-		Configuration: map[string]interface{}{
-			"include_json_attachment": "true",
-			"recipients":              "sblue@newrelic.com",
+		Configuration: &AlertChannelConfiguration{
+			Recipients:            "sblue@newrelic.com",
+			IncludeJSONAttachment: "true",
 		},
 	}
 
@@ -122,9 +122,9 @@ func TestCreateAlertChannel(t *testing.T) {
 			ID:   2932701,
 			Name: "sblue@newrelic.com",
 			Type: "email",
-			Configuration: map[string]interface{}{
-				"include_json_attachment": "true",
-				"recipients":              "sblue@newrelic.com",
+			Configuration: &AlertChannelConfiguration{
+				Recipients:            "sblue@newrelic.com",
+				IncludeJSONAttachment: "true",
 			},
 			Links: AlertChannelLinks{
 				PolicyIDs: []int{},
