@@ -9,3 +9,4 @@ vendor/*/*
 *.yaml
 
 .vscode/
+.DS_Store
