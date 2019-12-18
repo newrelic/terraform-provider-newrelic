@@ -248,3 +248,40 @@ func TestInternalServerError(t *testing.T) {
 
 	assert.IsType(t, &ErrorUnexpectedStatusCode{}, err)
 }
+
+func TestPost(t *testing.T) {
+	t.Parallel()
+	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{}`))
+	}))
+
+	_, err := c.Post("/path", &map[string]string{}, &struct{}{}, &struct{}{})
+
+	assert.NoError(t, err)
+}
+
+func TestPut(t *testing.T) {
+	t.Parallel()
+	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{}`))
+	}))
+
+	_, err := c.Put("/path", &map[string]string{}, &struct{}{}, &struct{}{})
+
+	assert.NoError(t, err)
+}
+
+func TestDelete(t *testing.T) {
+	t.Parallel()
+	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+
+		_, _ = w.Write([]byte(`{}`))
+	}))
+
+	_, err := c.Delete("/path", &map[string]string{}, &struct{}{}, &struct{}{})
+
+	assert.NoError(t, err)
+}

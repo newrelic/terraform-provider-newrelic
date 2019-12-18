@@ -82,6 +82,21 @@ func (c *NewRelicClient) Get(url string, params *map[string]string, reqBody inte
 	return c.do(http.MethodGet, url, params, reqBody, value)
 }
 
+// Post represents an HTTP POST request to a New Relic API.
+func (c *NewRelicClient) Post(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
+	return c.do(http.MethodPost, url, params, reqBody, value)
+}
+
+// Put represents an HTTP PUT request to a New Relic API.
+func (c *NewRelicClient) Put(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
+	return c.do(http.MethodPut, url, params, reqBody, value)
+}
+
+// Delete represents an HTTP DELETE request to a New Relic API.
+func (c *NewRelicClient) Delete(url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
+	return c.do(http.MethodDelete, url, params, reqBody, value)
+}
+
 func makeRequestBody(reqBody interface{}) (*bytes.Buffer, error) {
 	b := bytes.NewBuffer([]byte{})
 	if reqBody != nil {
