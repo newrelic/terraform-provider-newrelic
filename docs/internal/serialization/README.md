@@ -1,6 +1,6 @@
 # serialization
 --
-    import "github.com/newrelic/newrelic-client-go/internal/serialization"
+    import "."
 
 
 ## Usage

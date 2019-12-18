@@ -1,6 +1,6 @@
 # version
 --
-    import "github.com/newrelic/newrelic-client-go/internal/version"
+    import "."
 
 
 ## Usage

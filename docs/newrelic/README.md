@@ -1,6 +1,6 @@
 # newrelic
 --
-    import "github.com/newrelic/newrelic-client-go/newrelic"
+    import "."
 
 
 ## Usage
