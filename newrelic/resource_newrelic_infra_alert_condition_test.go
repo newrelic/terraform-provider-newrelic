@@ -262,7 +262,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name            = "%[1]s"
   runbook_url     = "https://foo.example.com"
@@ -287,7 +287,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name            = "%[1]s"
   runbook_url     = "https://bar.example.com"
@@ -312,7 +312,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name            = "%[1]s"
   type            = "infra_metric"
@@ -342,7 +342,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name            = "%[1]s"
   type            = "infra_metric"
@@ -366,7 +366,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name          = "%[1]s"
   type          = "infra_process_running"
@@ -389,7 +389,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name                 = "%[1]s"
   type                 = "infra_metric"
@@ -415,7 +415,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name            = "%[1]s"
   runbook_url     = "https://foo.example.com"
@@ -440,7 +440,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_infra_alert_condition" "foo" {
-	policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = newrelic_alert_policy.foo.id
 	name                 = "%[1]s"
 	type                 = "infra_metric"
 	integration_provider = "S3Bucket"

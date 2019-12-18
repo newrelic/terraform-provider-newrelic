@@ -13,13 +13,21 @@ Use this resource to update a synthetics monitor script in New Relic.
 ## Example Usage
 
 ```hcl
+resource "newrelic_synthetics_monitor" "foo" {
+  name = "foo"
+  type = "SCRIPT_BROWSER"
+  frequency = 5
+  status = "ENABLED"
+  locations = ["AWS_US_EAST_1"]
+}
+
 data "template_file" "foo_script" {
-  template = "${file("${path.module}/foo_script.tpl")}"
+  template = file("${path.module}/foo_script.tpl")
 }
 
 resource "newrelic_synthetics_monitor_script" "foo_script" {
-  monitor_id = "${newrelic_synthetics_monitor.foo.id}"
-  text = "${data.template_file.foo_script.rendered}"
+  monitor_id = newrelic_synthetics_monitor.foo.id
+  text = data.template_file.foo_script.rendered
 }
 ```
 

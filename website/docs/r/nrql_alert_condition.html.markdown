@@ -19,7 +19,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name        = "foo"
   type        = "static"
@@ -92,7 +92,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name        = "outlier-example"
   runbook_url = "https://bar.example.com"
@@ -125,4 +125,4 @@ $ terraform import newrelic_nrql_alert_condition.main 12345:67890
 
 The actual values for `policy_id` and `condition_id` can be retrieved from the following URL when looking at the alert condition:
 
-https://alerts.newrelic.com/accounts/<account_id>/policies/<policy_id>/conditions/<condition_id>/edit?selectedField=thresholds
+ht<span>tps://</span>alerts.newrelic.com/accounts/\<account_id\>/policies/**\<policy_id\>**/conditions/**\<condition_id\>**/edit?selectedField=thresholds

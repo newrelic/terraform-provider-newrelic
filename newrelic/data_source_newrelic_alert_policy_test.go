@@ -52,7 +52,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 data "newrelic_alert_policy" "policy" {
-	name = "${newrelic_alert_policy.foo.name}"
+	name = newrelic_alert_policy.foo.name
 }
 `, name)
 }

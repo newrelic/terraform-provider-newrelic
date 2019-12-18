@@ -19,7 +19,12 @@ Use the navigation to the left to read about the available resources.
 ```hcl
 # Configure the New Relic provider
 provider "newrelic" {
-  api_key = "${var.newrelic_api_key}"
+  api_key = var.newrelic_api_key
+}
+
+# Read an application resource
+data "newrelic_application" "foo" {
+  name = "foo"
 }
 
 # Create an alert policy
@@ -29,11 +34,11 @@ resource "newrelic_alert_policy" "alert" {
 
 # Add a condition
 resource "newrelic_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.alert.id}"
+  policy_id = newrelic_alert_policy.alert.id
 
   name        = "foo"
   type        = "apm_app_metric"
-  entities    = ["12345"]                             # You can look this up in New Relic
+  entities    = [data.newrelic_application.foo.id]
   metric      = "apdex"
   runbook_url = "https://docs.example.com/my-runbook"
 
@@ -59,8 +64,8 @@ resource "newrelic_alert_channel" "email" {
 
 # Link the channel to the policy
 resource "newrelic_alert_policy_channel" "alert_email" {
-  policy_id  = "${newrelic_alert_policy.alert.id}"
-  channel_id = "${newrelic_alert_channel.email.id}"
+  policy_id  = newrelic_alert_policy.alert.id
+  channel_id = newrelic_alert_channel.email.id
 }
 ```
 

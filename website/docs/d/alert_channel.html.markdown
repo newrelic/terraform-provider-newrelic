@@ -25,8 +25,8 @@ resource "newrelic_alert_policy" "foo" {
 
 # Using the data source and resource together
 resource "newrelic_alert_policy_channel" "foo" {
-  policy_id  = "${newrelic_alert_policy.foo.id}"
-  channel_id = "${data.newrelic_alert_channel.foo.id}"
+  policy_id  = newrelic_alert_policy.foo.id
+  channel_id = data.newrelic_alert_channel.foo.id
 }
 ```
 

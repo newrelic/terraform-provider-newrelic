@@ -57,7 +57,7 @@ resource "newrelic_synthetics_monitor" "foo" {
 }
 
 data "newrelic_synthetics_monitor" "bar" {
-	name = "${newrelic_synthetics_monitor.foo.name}"
+	name = newrelic_synthetics_monitor.foo.name
 }
 `, name)
 }

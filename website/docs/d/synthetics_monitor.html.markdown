@@ -18,10 +18,10 @@ data "newrelic_synthetics_monitor" "bar" {
 }
 
 resource "newrelic_synthetics_alert_condition" "baz" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name        = "baz"
-  monitor_id  = "${data.newrelic_synthetics_monitor.bar.id}"
+  monitor_id  = data.newrelic_synthetics_monitor.bar.id
   runbook_url = "https://www.example.com"
 }
 ```

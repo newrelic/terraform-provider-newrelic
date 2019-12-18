@@ -162,7 +162,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name            = "tf-test-%[1]s"
   runbook_url     = "https://foo.example.com"
@@ -195,7 +195,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name            = "tf-test-updated-%[1]s"
   runbook_url     = "https://bar.example.com"
@@ -225,7 +225,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name            = "tf-test-updated-%[1]s"
   runbook_url     = "https://bar.example.com"
