@@ -18,7 +18,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_infra_alert_condition" "high_disk_usage" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name       = "High disk usage"
   type       = "infra_metric"
@@ -41,7 +41,7 @@ resource "newrelic_infra_alert_condition" "high_disk_usage" {
 }
 
 resource "newrelic_infra_alert_condition" "high_db_conn_count" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name       = "High database connection count"
   type       = "infra_metric"
@@ -59,7 +59,7 @@ resource "newrelic_infra_alert_condition" "high_db_conn_count" {
 }
 
 resource "newrelic_infra_alert_condition" "process_not_running" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name             = "Process not running (/usr/bin/ruby)"
   type             = "infra_process_running"
@@ -73,7 +73,7 @@ resource "newrelic_infra_alert_condition" "process_not_running" {
 }
 
 resource "newrelic_infra_alert_condition" "host_not_reporting" {
-  policy_id = "${newrelic_alert_policy.foo.id}"
+  policy_id = newrelic_alert_policy.foo.id
 
   name       = "Host not reporting"
   type       = "infra_host_not_reporting"

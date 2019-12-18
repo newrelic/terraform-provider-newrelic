@@ -108,11 +108,11 @@ resource "newrelic_alert_policy" "alert_policy_name" {
 
 # Alert Condition
 resource "newrelic_alert_condition" "alert_condition_name" {
-  policy_id = "${newrelic_alert_policy.my_alert_policy_name.id}"
+  policy_id = newrelic_alert_policy.my_alert_policy_name.id
 
   name            = "My Alert Condition Name"
   type            = "apm_app_metric"
-  entities        = ["${data.newrelic_application.app_name.id}"]
+  entities        = [data.newrelic_application.app_name.id]
   metric          = "apdex"
   runbook_url     = "https://www.example.com"
   condition_scope = "application"
@@ -149,8 +149,8 @@ resource "newrelic_alert_channel" "alert_notification_email" {
 
 # Link the above notification channel to your policy
 resource "newrelic_alert_policy_channel" "alert_policy_email" {
-  policy_id  = "${newrelic_alert_policy.my_alert_policy_name.id}"
-  channel_id = "${newrelic_alert_channel.alert_notification_email.id}"
+  policy_id  = newrelic_alert_policy.my_alert_policy_name.id
+  channel_id = newrelic_alert_channel.alert_notification_email.id
 }
 ```
 

@@ -269,12 +269,12 @@ resource "newrelic_alert_policy" "foo" {
 	name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
-	policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = newrelic_alert_policy.foo.id
 
 	name            = "%[1]s"
 	enabled         = true
 	type            = "apm_app_metric"
-	entities        = ["${data.newrelic_application.app.id}"]
+	entities        = [data.newrelic_application.app.id]
 	metric          = "apdex"
 	runbook_url     = "https://foo.example.com"
 	condition_scope = "application"
@@ -299,12 +299,12 @@ resource "newrelic_alert_policy" "foo" {
 	name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
-	policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = newrelic_alert_policy.foo.id
 
 	name            = "%[1]s"
 	enabled         = false
 	type            = "apm_app_metric"
-	entities        = ["${data.newrelic_application.app.id}"]
+	entities        = [data.newrelic_application.app.id]
 	metric          = "error_percentage"
 	runbook_url     = "https://bar.example.com"
 	condition_scope = "application"
@@ -329,12 +329,12 @@ resource "newrelic_alert_policy" "foo" {
 	name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
-	policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = newrelic_alert_policy.foo.id
 
 	name            = "%[1]s"
 	enabled         = false
 	type            = "apm_app_metric"
-	entities        = ["${data.newrelic_application.app.id}"]
+	entities        = [data.newrelic_application.app.id]
 	metric          = "apdex"
 	runbook_url     = "https://foo.example.com"
 	condition_scope = "application"
@@ -359,7 +359,7 @@ resource "newrelic_alert_policy" "foo" {
 	name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
-	policy_id = "${newrelic_alert_policy.foo.id}"
+	policy_id = newrelic_alert_policy.foo.id
 	name            = "test-term-duration"
 	type            = "apm_app_metric"
 	entities        = ["12345"]

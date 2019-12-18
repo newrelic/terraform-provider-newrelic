@@ -102,7 +102,7 @@ resource "newrelic_synthetics_monitor" "foo" {
 }
 
 resource "newrelic_synthetics_monitor_script" "foo_script" {
-  monitor_id = "${newrelic_synthetics_monitor.foo.id}"
+  monitor_id = newrelic_synthetics_monitor.foo.id
   text = "%[2]s"
 }
 `, name, scriptText)

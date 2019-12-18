@@ -46,7 +46,7 @@ data "newrelic_plugin" "foo" {
 	guid = "net.kenjij.newrelic_redis_plugin"
 }
 data "newrelic_plugin_component" "foo" {
-	plugin_id = "${data.newrelic_plugin.foo.id}"
+	plugin_id = data.newrelic_plugin.foo.id
 	name = "MyRedisServer"
 }
 `

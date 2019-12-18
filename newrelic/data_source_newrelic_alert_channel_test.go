@@ -59,7 +59,7 @@ resource "newrelic_alert_channel" "foo" {
 }
 
 data "newrelic_alert_channel" "channel" {
-	name = "${newrelic_alert_channel.foo.name}"
+	name = newrelic_alert_channel.foo.name
 }
 `, name)
 }
