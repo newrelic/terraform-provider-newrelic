@@ -1,14 +1,13 @@
 ## 1.10.0 (Unreleased)
 
 IMPROVEMENTS:
-feat: add ability to import `newrelic_synthetics_monitor` ([#267](https://github.com/terraform-providers/terraform-provider-newrelic/pull/267))
-docs: multiple improvements for readability and consistency
+* feat: add ability to import `newrelic_synthetics_monitor` ([#267](https://github.com/terraform-providers/terraform-provider-newrelic/pull/267))
+* docs: multiple improvements for readability and consistency
 
 BUG FIXES:
-fix: add attribute validation for infra condition types ([#277](https://github.com/terraform-providers/terraform-provider-newrelic/pull/277))
-fix: loosen validation for threshold duration ([#277](https://github.com/terraform-providers/terraform-provider-newrelic/pull/277))
-fix: make event a computed attribute ([#277](https://github.com/terraform-providers/terraform-provider-newrelic/pull/277))
-
+* fix: add attribute validation for infra condition types ([#277](https://github.com/terraform-providers/terraform-provider-newrelic/pull/277))
+* fix: loosen validation for threshold duration ([#277](https://github.com/terraform-providers/terraform-provider-newrelic/pull/277))
+* fix: make event a computed attribute ([#277](https://github.com/terraform-providers/terraform-provider-newrelic/pull/277))
 
 ## 1.9.0 (December 05, 2019)
 
