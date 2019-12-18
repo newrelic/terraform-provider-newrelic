@@ -1,4 +1,4 @@
-## 1.10.0 (Unreleased)
+## 1.10.0 (December 18, 2019)
 
 IMPROVEMENTS:
 * feat: add ability to import `newrelic_synthetics_monitor` ([#267](https://github.com/terraform-providers/terraform-provider-newrelic/pull/267))
