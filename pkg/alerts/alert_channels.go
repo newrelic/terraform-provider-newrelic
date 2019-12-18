@@ -16,6 +16,21 @@ type listAlertChannelsResponse struct {
 	Channels []AlertChannel `json:"channels,omitempty"`
 }
 
+func (alerts *Alerts) GetAlertChannel(id int) (*AlertChannel, error) {
+	channels, err := alerts.ListAlertChannels()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, channel := range channels {
+		if channel.ID == id {
+			return &channel, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no channel found for id %d", id)
+}
+
 func (alerts *Alerts) ListAlertChannels() ([]AlertChannel, error) {
 	res := listAlertChannelsResponse{}
 	err := alerts.client.Get("/alerts_channels.json", nil, &res)

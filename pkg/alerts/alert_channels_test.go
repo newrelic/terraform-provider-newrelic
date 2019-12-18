@@ -11,6 +11,65 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
+func TestGetAlertChannel(t *testing.T) {
+	t.Parallel()
+	alerts := newMockServerClientResponse(t, `
+		{
+			"channels": [
+				{
+					"id": 2803426,
+					"name": "unit-test-alert-channel",
+					"type": "user",
+					"configuration": {
+						"user_id": "2680539"
+					},
+					"links": {
+						"policy_ids": []
+					}
+				},
+				{
+					"id": 2932511,
+					"name": "test@testing.com",
+					"type": "email",
+					"configuration": {
+						"include_json_attachment": "true",
+						"recipients": "test@testing.com"
+					},
+					"links": {
+						"policy_ids": []
+					}
+				}
+			]
+		}
+	`)
+
+	expected := AlertChannel{
+		ID:   2803426,
+		Name: "unit-test-alert-channel",
+		Type: "user",
+		Configuration: &AlertChannelConfiguration{
+			UserID: "2680539",
+		},
+		Links: AlertChannelLinks{
+			PolicyIDs: []int{},
+		},
+	}
+
+	actual, err := alerts.GetAlertChannel(2803426)
+
+	if err != nil {
+		t.Fatalf("GetAlertChannel error: %s", err)
+	}
+
+	if actual == nil {
+		t.Fatalf("GetAlertChannel result is nil")
+	}
+
+	if diff := cmp.Diff(expected, *actual); diff != "" {
+		t.Fatalf("GetAlertChannel result differs from expected: %s", diff)
+	}
+}
+
 func TestListAlertChannels(t *testing.T) {
 	t.Parallel()
 	alerts := newMockServerClientResponse(t, `
