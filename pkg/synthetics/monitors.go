@@ -49,3 +49,8 @@ func (s *Synthetics) CreateMonitor(monitor Monitor) (*Monitor, error) {
 
 	return &res, nil
 }
+
+// UpdateMonitor is used to create a New Relic Synthetics monitor.
+func (s *Synthetics) UpdateMonitor(monitor Monitor) (*Monitor, error) {
+	return nil, nil
+}

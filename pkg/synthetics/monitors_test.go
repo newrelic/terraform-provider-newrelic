@@ -160,3 +160,29 @@ func TestCreateMonitor(t *testing.T) {
 		t.Fatalf("CreateMonitor response differs from expected: %s", diff)
 	}
 }
+
+func TestUpdateMonitor(t *testing.T) {
+	t.Parallel()
+	synthetics := NewTestSynthetics(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, err := w.Write([]byte(testMonitorJson))
+
+		if err != nil {
+			t.Fatal(err)
+		}
+	}))
+
+	actual, err := synthetics.UpdateMonitor(testMonitor)
+
+	if err != nil {
+		t.Fatalf("CreateMonitor error: %s", err)
+	}
+
+	if actual == nil {
+		t.Fatalf("CreateMonitor response is nil")
+	}
+
+	if diff := cmp.Diff(&testMonitor, actual); diff != "" {
+		t.Fatalf("CreateMonitor response differs from expected: %s", diff)
+	}
+}
