@@ -52,7 +52,7 @@ func (alerts *Alerts) GetAlertPolicy(id int) (*AlertPolicy, error) {
 
 // CreateAlertPolicy creates a new alert policy for a given account.
 func (alerts *Alerts) CreateAlertPolicy(policy AlertPolicy) (*AlertPolicy, error) {
-	reqBody := createAlertPolicyRequestBody{
+	reqBody := alertPolicyRequestBody{
 		Policy: policy,
 	}
 	resp := alertPolicyResponse{}
@@ -68,7 +68,7 @@ func (alerts *Alerts) CreateAlertPolicy(policy AlertPolicy) (*AlertPolicy, error
 
 // UpdateAlertPolicy update an alert policy for a given account.
 func (alerts *Alerts) UpdateAlertPolicy(policy AlertPolicy) (*AlertPolicy, error) {
-	reqBody := updateAlertPolicyRequestBody{
+	reqBody := alertPolicyRequestBody{
 		Policy: policy,
 	}
 	resp := alertPolicyResponse{}
@@ -120,10 +120,6 @@ type alertPolicyResponse struct {
 	Policy AlertPolicy `json:"policy,omitempty"`
 }
 
-type createAlertPolicyRequestBody struct {
-	Policy AlertPolicy `json:"policy,omitempty"`
-}
-
-type updateAlertPolicyRequestBody struct {
+type alertPolicyRequestBody struct {
 	Policy AlertPolicy `json:"policy"`
 }
