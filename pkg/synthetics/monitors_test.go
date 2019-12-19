@@ -39,11 +39,11 @@ var (
 	testMonitor = Monitor{
 		ID:           testMonitorID,
 		Name:         "test-synthetics-monitor",
-		Type:         "SIMPLE",
+		Type:         MonitorTypes.Simple,
 		Frequency:    15,
 		URI:          "https://google.com",
 		Locations:    []string{"AWS_US_EAST_1"},
-		Status:       "DISABLED",
+		Status:       MonitorStatus.Disabled,
 		SLAThreshold: 7,
 		UserID:       0,
 		APIVersion:   "LATEST",
