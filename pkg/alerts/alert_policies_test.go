@@ -196,7 +196,7 @@ func TestListAlertPoliciesWithParams(t *testing.T) {
 	}
 
 	params := ListAlertPoliciesParams{
-		Name: &expectedName,
+		Name: expectedName,
 	}
 
 	actual, err := alerts.ListAlertPolicies(&params)

@@ -7,7 +7,7 @@ import (
 // ListAlertPoliciesParams represents a set of filters to be
 // used when querying New Relic alert policies.
 type ListAlertPoliciesParams struct {
-	Name *string
+	Name string
 }
 
 // ListAlertPolicies returns a list of Alert Policies for a given account.
@@ -105,8 +105,8 @@ func buildListAlertPoliciesParamsMap(params *ListAlertPoliciesParams) map[string
 		return paramsMap
 	}
 
-	if params.Name != nil {
-		paramsMap["filter[name]"] = *params.Name
+	if params.Name != "" {
+		paramsMap["filter[name]"] = params.Name
 	}
 
 	return paramsMap
