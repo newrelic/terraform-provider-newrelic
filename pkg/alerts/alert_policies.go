@@ -10,24 +10,27 @@ type ListAlertPoliciesParams struct {
 	Name *string
 }
 
-type listAlertsResponse struct {
-	AlertPolicies []AlertPolicy `json:"policies,omitempty"`
-}
+// ListAlertPolicies returns a list of Alert Policies for a given account.
+func (alerts *Alerts) ListAlertPolicies(params *ListAlertPoliciesParams) ([]AlertPolicy, error) {
+	respBody := alertPoliciesResponse{}
+	alertPolicies := []AlertPolicy{}
+	nextURL := "/alerts_policies.json"
+	paramsMap := buildListAlertPoliciesParamsMap(params)
 
-type createAlertPolicyRequestBody struct {
-	Policy AlertPolicy `json:"policy"`
-}
+	for nextURL != "" {
+		resp, err := alerts.client.Get(nextURL, &paramsMap, &respBody)
 
-type createAlertPolicyResponse struct {
-	Policy AlertPolicy `json:"policy,omitempty"`
-}
+		if err != nil {
+			return nil, err
+		}
 
-type updateAlertPolicyRequestBody struct {
-	Policy AlertPolicy `json:"policy"`
-}
+		alertPolicies = append(alertPolicies, respBody.Policies...)
 
-type updateAlertPolicyResponse struct {
-	Policy AlertPolicy `json:"policy,omitempty"`
+		paging := alerts.pager.Parse(resp)
+		nextURL = paging.Next
+	}
+
+	return alertPolicies, nil
 }
 
 // GetAlertPolicy returns a specific alert policy by ID for a given account.
@@ -47,33 +50,20 @@ func (alerts *Alerts) GetAlertPolicy(id int) (*AlertPolicy, error) {
 	return nil, fmt.Errorf("no alert policy found for id %d", id)
 }
 
-// ListAlertPolicies returns a list of Alert Policies for a given account.
-func (alerts *Alerts) ListAlertPolicies(params *ListAlertPoliciesParams) ([]AlertPolicy, error) {
-	res := listAlertsResponse{}
-	paramsMap := buildListAlertPoliciesParamsMap(params)
-	err := alerts.client.Get("/alerts_policies.json", &paramsMap, &res)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return res.AlertPolicies, nil
-}
-
 // CreateAlertPolicy creates a new alert policy for a given account.
 func (alerts *Alerts) CreateAlertPolicy(policy AlertPolicy) (*AlertPolicy, error) {
 	reqBody := createAlertPolicyRequestBody{
 		Policy: policy,
 	}
-	resp := createAlertPolicyResponse{}
+	resBody := alertPolicyResponse{}
 
-	err := alerts.client.Post("/alerts_policies.json", reqBody, &resp)
+	_, err := alerts.client.Post("/alerts_policies.json", nil, &reqBody, &resBody)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &resp.Policy, nil
+	return &resBody.Policy, nil
 }
 
 // UpdateAlertPolicy update an alert policy for a given account.
@@ -81,26 +71,31 @@ func (alerts *Alerts) UpdateAlertPolicy(policy AlertPolicy) (*AlertPolicy, error
 	reqBody := updateAlertPolicyRequestBody{
 		Policy: policy,
 	}
-	resp := updateAlertPolicyResponse{}
+	resBody := alertPolicyResponse{}
 
 	url := fmt.Sprintf("/alerts_policies/%d.json", policy.ID)
 
-	err := alerts.client.Put(url, reqBody, &resp)
+	_, err := alerts.client.Put(url, nil, reqBody, &resBody)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &resp.Policy, nil
+	return &resBody.Policy, nil
 }
 
 // DeleteAlertPolicy deletes an existing alert policy for a given account.
-func (alerts *Alerts) DeleteAlertPolicy(id int) error {
+func (alerts *Alerts) DeleteAlertPolicy(id int) (*AlertPolicy, error) {
+	respBody := alertPolicyResponse{}
 	url := fmt.Sprintf("/alerts_policies/%d.json", id)
 
-	err := alerts.client.Delete(url)
+	_, err := alerts.client.Delete(url, nil, &respBody)
 
-	return err
+	if err != nil {
+		return nil, err
+	}
+
+	return &respBody.Policy, nil
 }
 
 func buildListAlertPoliciesParamsMap(params *ListAlertPoliciesParams) map[string]string {
@@ -115,4 +110,20 @@ func buildListAlertPoliciesParamsMap(params *ListAlertPoliciesParams) map[string
 	}
 
 	return paramsMap
+}
+
+type alertPoliciesResponse struct {
+	Policies []AlertPolicy `json:"policies,omitempty"`
+}
+
+type alertPolicyResponse struct {
+	Policy AlertPolicy `json:"policy,omitempty"`
+}
+
+type createAlertPolicyRequestBody struct {
+	Policy AlertPolicy `json:"policy,omitempty"`
+}
+
+type updateAlertPolicyRequestBody struct {
+	Policy AlertPolicy `json:"policy"`
 }

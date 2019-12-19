@@ -19,16 +19,16 @@ func TestIntegrationAlertPolicyCRUD(t *testing.T) {
 		Name:               "integration-test-alert-policy",
 	}
 
-	// Create
+	// Test: Create
 	createResult := testCreateAlertPolicy(t, client, policy)
 
-	// Read
+	// Test: Read
 	readResult := testReadAlertPolicy(t, client, createResult)
 
-	// Update
+	// Test: Update
 	updateResult := testUpdateAlertPolicy(t, client, readResult)
 
-	// Delete
+	// Test: Delete
 	testDeleteAlertPolicy(t, client, updateResult)
 }
 
@@ -36,11 +36,7 @@ func testCreateAlertPolicy(t *testing.T, client Alerts, policy AlertPolicy) *Ale
 	result, err := client.CreateAlertPolicy(policy)
 
 	if err != nil {
-		t.Fatalf("CreateAlertPolicy error: %s", err)
-	}
-
-	if result == nil {
-		t.Fatalf("CreateAlertPolicy result is nil")
+		t.Fatal(err)
 	}
 
 	return result
@@ -50,11 +46,7 @@ func testReadAlertPolicy(t *testing.T, client Alerts, policy *AlertPolicy) *Aler
 	result, err := client.GetAlertPolicy(policy.ID)
 
 	if err != nil {
-		t.Fatalf("GetAlertPolicy error: %s", err)
-	}
-
-	if result == nil {
-		t.Fatalf("GetAlertPolicy result is nil")
+		t.Fatal(err)
 	}
 
 	return result
@@ -70,11 +62,7 @@ func testUpdateAlertPolicy(t *testing.T, client Alerts, policy *AlertPolicy) *Al
 	result, err := client.UpdateAlertPolicy(policyUpdated)
 
 	if err != nil {
-		t.Fatalf("UpdateAlertPolicy error: %s", err)
-	}
-
-	if result == nil {
-		t.Fatalf("UpdateAlertPolicy result is nil")
+		t.Fatal(err)
 	}
 
 	return result
@@ -82,10 +70,10 @@ func testUpdateAlertPolicy(t *testing.T, client Alerts, policy *AlertPolicy) *Al
 
 func testDeleteAlertPolicy(t *testing.T, client Alerts, policy *AlertPolicy) {
 	p := *policy
-	err := client.DeleteAlertPolicy(p.ID)
+	_, err := client.DeleteAlertPolicy(p.ID)
 
 	if err != nil {
-		t.Fatalf("DeleteAlertPolicy error: %s", err)
+		t.Fatal(err)
 	}
 }
 

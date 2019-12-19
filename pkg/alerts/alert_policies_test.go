@@ -17,7 +17,6 @@ func NewTestAlerts(handler http.Handler) Alerts {
 	c := New(config.Config{
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
-		Debug:     false,
 		UserAgent: "newrelic/newrelic-client-go",
 	})
 
@@ -342,9 +341,25 @@ func TestDeleteAlertPolicy(t *testing.T) {
 		}
 	}))
 
-	err := alerts.DeleteAlertPolicy(123)
+	expected := &AlertPolicy{
+		ID:                 123,
+		IncidentPreference: "PER_CONDITION",
+		Name:               "name-updated",
+		CreatedAt:          1575438237690,
+		UpdatedAt:          1575438237690,
+	}
+
+	actual, err := alerts.DeleteAlertPolicy(123)
 
 	if err != nil {
-		t.Fatalf("UpdateAlertPolicy error: %s", err)
+		t.Fatalf("DeleteAlertPolicy error: %s", err)
+	}
+
+	if actual == nil {
+		t.Fatalf("DeleteAlertPolicy response is nil")
+	}
+
+	if diff := cmp.Diff(expected, actual); diff != "" {
+		t.Fatalf("DeleteAlertPolicy response differs from expected: %s", diff)
 	}
 }
