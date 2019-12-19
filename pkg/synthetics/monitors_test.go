@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func NewTestSynthetics(handler http.Handler) Synthetics {
@@ -96,17 +96,9 @@ func TestListMonitors(t *testing.T) {
 
 	actual, err := synthetics.ListMonitors()
 
-	if err != nil {
-		t.Fatalf("ListMonitors error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("ListMonitors response is nil")
-	}
-
-	if diff := cmp.Diff(expected, actual); diff != "" {
-		t.Fatalf("ListMonitors response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
 }
 
 func TestGetMonitor(t *testing.T) {
@@ -122,17 +114,9 @@ func TestGetMonitor(t *testing.T) {
 
 	actual, err := synthetics.GetMonitor(testMonitorID)
 
-	if err != nil {
-		t.Fatalf("GetMonitor error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("GetMonitor response is nil")
-	}
-
-	if diff := cmp.Diff(&testMonitor, actual); diff != "" {
-		t.Fatalf("GetMonitor response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testMonitor, actual)
 }
 
 func TestCreateMonitor(t *testing.T) {
@@ -148,17 +132,9 @@ func TestCreateMonitor(t *testing.T) {
 
 	actual, err := synthetics.CreateMonitor(testMonitor)
 
-	if err != nil {
-		t.Fatalf("CreateMonitor error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("CreateMonitor response is nil")
-	}
-
-	if diff := cmp.Diff(&testMonitor, actual); diff != "" {
-		t.Fatalf("CreateMonitor response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testMonitor, actual)
 }
 
 func TestUpdateMonitor(t *testing.T) {
@@ -174,17 +150,9 @@ func TestUpdateMonitor(t *testing.T) {
 
 	actual, err := synthetics.UpdateMonitor(testMonitor)
 
-	if err != nil {
-		t.Fatalf("UpdateMonitor error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("UpdateMonitor response is nil")
-	}
-
-	if diff := cmp.Diff(&testMonitor, actual); diff != "" {
-		t.Fatalf("UpdateMonitor response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testMonitor, actual)
 }
 
 func TestDeleteMonitor(t *testing.T) {
@@ -200,15 +168,7 @@ func TestDeleteMonitor(t *testing.T) {
 
 	actual, err := synthetics.DeleteMonitor(testMonitor.ID)
 
-	if err != nil {
-		t.Fatalf("DeleteMonitor error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("DeleteMonitor response is nil")
-	}
-
-	if diff := cmp.Diff(&testMonitor, actual); diff != "" {
-		t.Fatalf("DeleteMonitor response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testMonitor, actual)
 }
