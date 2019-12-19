@@ -180,7 +180,13 @@ func (c *NewRelicClient) makeURL(url string) (*neturl.URL, error) {
 	return u, err
 }
 
-func (c *NewRelicClient) do(method string, url string, params *map[string]string, reqBody interface{}, value interface{}) (*http.Response, error) {
+func (c *NewRelicClient) do(
+	method string,
+	url string,
+	params *map[string]string,
+	reqBody interface{},
+	value interface{},
+) (*http.Response, error) {
 	reqBody, err := makeRequestBody(reqBody)
 
 	if err != nil {
@@ -219,7 +225,7 @@ func (c *NewRelicClient) do(method string, url string, params *map[string]string
 		return nil, readErr
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if !isResponseSuccess(resp) {
 		errorValue := c.errorValue
 		_ = json.Unmarshal(body, &errorValue)
 
@@ -238,4 +244,12 @@ func (c *NewRelicClient) do(method string, url string, params *map[string]string
 	}
 
 	return resp, nil
+}
+
+// Ensures the response status code falls within the
+// status codes that are commonly considered successful.
+func isResponseSuccess(resp *http.Response) bool {
+	statusCode := resp.StatusCode
+
+	return statusCode >= http.StatusOK && statusCode <= 299
 }
