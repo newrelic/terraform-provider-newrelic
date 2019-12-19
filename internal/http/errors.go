@@ -1,6 +1,9 @@
 package http
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // ErrorResponse provides an interface for obtaining
 // a single error message from an error response object.
@@ -15,11 +18,17 @@ type DefaultErrorResponse struct {
 
 // ErrorDetail represents a New Relic response error detail.
 type ErrorDetail struct {
-	Title string `json:"title"`
+	Title    string   `json:"title"`
+	Messages []string `json:"messages"`
 }
 
 func (e *DefaultErrorResponse) Error() string {
-	return e.ErrorDetail.Title
+	m := e.ErrorDetail.Title
+	if len(e.ErrorDetail.Messages) > 0 {
+		m = fmt.Sprintf("%s: %s", m, strings.Join(e.ErrorDetail.Messages, ", "))
+	}
+
+	return m
 }
 
 // ErrorNotFound is returned when a 404 response is returned
