@@ -40,5 +40,12 @@ func (s *Synthetics) GetMonitor(monitorID int) (*Monitor, error) {
 
 // CreateMonitor is used to create a New Relic Synthetics monitor.
 func (s *Synthetics) CreateMonitor(monitor Monitor) (*Monitor, error) {
-	return nil, nil
+	res := Monitor{}
+	_, err := s.client.Post("/monitors", nil, &monitor, &res)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
