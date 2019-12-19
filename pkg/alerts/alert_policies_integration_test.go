@@ -9,7 +9,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
-func TestIntegrationAlertPolicyCRUD(t *testing.T) {
+func TestIntegrationAlertPolicy(t *testing.T) {
 	t.Parallel()
 
 	client := newClient(t)
