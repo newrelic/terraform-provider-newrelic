@@ -26,7 +26,7 @@ func NewTestSynthetics(handler http.Handler) Synthetics {
 }
 
 var (
-	testMonitorID    = 1234
+	testMonitorID    = "72733a02-9701-4279-8ac3-8f6281a5a1a9"
 	testTimestamp, _ = time.Parse(time.RFC3339, "2019-11-27T19:11:05.076+0000")
 
 	testMonitorOptions = MonitorOptions{
@@ -37,7 +37,7 @@ var (
 	}
 
 	testMonitor = Monitor{
-		ID:           "72733a02-9701-4279-8ac3-8f6281a5a1a9",
+		ID:           testMonitorID,
 		Name:         "test-synthetics-monitor",
 		Type:         "SIMPLE",
 		Frequency:    15,

@@ -30,9 +30,10 @@ func (s *Synthetics) ListMonitors() ([]Monitor, error) {
 }
 
 // GetMonitor is used to retrieve a specific New Relic Synthetics monitor.
-func (s *Synthetics) GetMonitor(monitorID int) (*Monitor, error) {
+func (s *Synthetics) GetMonitor(monitorID string) (*Monitor, error) {
 	res := Monitor{}
-	_, err := s.client.Get("/monitors", nil, &res)
+	url := fmt.Sprintf("/monitors/%s", monitorID)
+	_, err := s.client.Get(url, nil, &res)
 
 	if err != nil {
 		return nil, err
