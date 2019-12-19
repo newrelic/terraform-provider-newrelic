@@ -25,3 +25,8 @@ func (s *Synthetics) ListMonitors() ([]Monitor, error) {
 
 	return res.Monitors, nil
 }
+
+// GetMonitor is used to retrieve a specific New Relic Synthetics monitor.
+func (s *Synthetics) GetMonitor(monitorID int) ([]Monitor, error) {
+	return nil, nil
+}
