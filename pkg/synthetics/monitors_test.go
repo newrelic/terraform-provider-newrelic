@@ -175,14 +175,40 @@ func TestUpdateMonitor(t *testing.T) {
 	actual, err := synthetics.UpdateMonitor(testMonitor)
 
 	if err != nil {
-		t.Fatalf("CreateMonitor error: %s", err)
+		t.Fatalf("UpdateMonitor error: %s", err)
 	}
 
 	if actual == nil {
-		t.Fatalf("CreateMonitor response is nil")
+		t.Fatalf("UpdateMonitor response is nil")
 	}
 
 	if diff := cmp.Diff(&testMonitor, actual); diff != "" {
-		t.Fatalf("CreateMonitor response differs from expected: %s", diff)
+		t.Fatalf("UpdateMonitor response differs from expected: %s", diff)
+	}
+}
+
+func TestDeleteMonitor(t *testing.T) {
+	t.Parallel()
+	synthetics := NewTestSynthetics(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, err := w.Write([]byte(testMonitorJson))
+
+		if err != nil {
+			t.Fatal(err)
+		}
+	}))
+
+	actual, err := synthetics.DeleteMonitor(testMonitor.ID)
+
+	if err != nil {
+		t.Fatalf("DeleteMonitor error: %s", err)
+	}
+
+	if actual == nil {
+		t.Fatalf("DeleteMonitor response is nil")
+	}
+
+	if diff := cmp.Diff(&testMonitor, actual); diff != "" {
+		t.Fatalf("DeleteMonitor response differs from expected: %s", diff)
 	}
 }

@@ -66,3 +66,8 @@ func (s *Synthetics) UpdateMonitor(monitor Monitor) (*Monitor, error) {
 
 	return &res, nil
 }
+
+// DeleteMonitor is used to create a New Relic Synthetics monitor.
+func (s *Synthetics) DeleteMonitor(monitorID string) (*Monitor, error) {
+	return nil, nil
+}
