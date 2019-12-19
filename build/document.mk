@@ -1,20 +1,15 @@
 #
-# Makefile fragment for auto-documenting Golang projects
+# Makefile fragment for displaying auto-generated documentation
 #
 
-GODOC        ?= godocdown
+GODOC       ?= godoc
+GODOC_HTTP  ?= "localhost:6060"
 
-documentation: document
+GO_MODULE   ?= $(shell go list -m)
 
-document:
-	@echo "=== $(PROJECT_NAME) === [ documentation    ]: Generating Godoc in Markdown..."
-	@for p in $(PACKAGES); do \
-		echo "=== $(PROJECT_NAME) === [ documentation    ]:     $$p"; \
-		mkdir -p $(DOC_DIR)/$$p ; \
-		$(GODOC) $$p > $(DOC_DIR)/$$p/README.md ; \
-	done
-	@for c in $(COMMANDS); do \
-		echo "=== $(PROJECT_NAME) === [ documentation    ]:     $$c"; \
-		mkdir -p $(DOC_DIR)/$$c ; \
-		$(GODOC) $$c > $(DOC_DIR)/$$c/README.md ; \
-	done
+docs:
+	@echo "=== $(PROJECT_NAME) === [ docs             ]: Starting godoc server..."
+	@echo "=== $(PROJECT_NAME) === [ docs             ]: Module Docs: http://$(GODOC_HTTP)/pkg/$(GO_MODULE)"
+	@$(GODOC) -http=$(GODOC_HTTP)
+
+.PHONY: docs

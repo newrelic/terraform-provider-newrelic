@@ -2,6 +2,10 @@
 # Makefile fragment for utility items
 #
 
+NATIVEOS    ?= $(shell go version | awk -F '[ /]' '{print $$4}')
+NATIVEARCH  ?= $(shell go version | awk -F '[ /]' '{print $$5}')
+
+
 check-version:
 ifdef GOOS
 ifneq "$(GOOS)" "$(NATIVEOS)"
@@ -18,3 +22,4 @@ else
 GOARCH = ${NATIVEARCH}
 endif
 
+.PHONY: check-version
