@@ -2,7 +2,18 @@
 # Makefile fragment for Testing
 #
 
+GO           ?= go
+GOLINTER     ?= golangci-lint
+COVERAGE_DIR ?= ./coverage/
+COVERMODE    ?= atomic
+GO_PKGS      ?= $(shell ${GO} list ./... | grep -v -e "/vendor/" -e "/example")
 
+GOTOOLS += github.com/golangci/golangci-lint/cmd/golangci-lint \
+           github.com/stretchr/testify/assert
+
+clean-cover:
+	@echo "=== $(PROJECT_NAME) === [ clean-cover      ]: removing coverage files..."
+	@rm -rfv $(COVERAGE_DIR)/*
 
 lint: deps
 	@echo "=== $(PROJECT_NAME) === [ lint             ]: Validating source code running $(GOLINTER)..."
@@ -13,8 +24,8 @@ test-only: test-unit test-integration
 
 test-unit:
 	@echo "=== $(PROJECT_NAME) === [ unit-test        ]: running unit tests..."
-	mkdir -p $(COVERAGE_DIR)
-	$(GO) test -parallel 4 -tags unit -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/unit.tmp $(GO_PKGS)
+	@mkdir -p $(COVERAGE_DIR)
+	@$(GO) test -parallel 4 -tags unit -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/unit.tmp $(GO_PKGS)
 
 test-integration:
 	@echo "=== $(PROJECT_NAME) === [ integration-test ]: running integration tests..."
@@ -32,4 +43,4 @@ cover-report:
 cover-view: cover-report
 	@$(GO) tool cover -html=$(COVERAGE_DIR)/coverage.out
 
-
+.PHONY: lint test test-only test-unit test-integration cover-report cover-view

@@ -2,9 +2,16 @@
 # Makefile Fragment for Compiling
 #
 
+GO         ?= go
+BUILD_DIR  ?= ./bin/
+LDFLAGS    ?= '-X main.Version=$(PROJECT_VER)'
+SRCDIR     ?= .
+
+clean-compile:
+	@echo "=== $(PROJECT_NAME) === [ clean-compile    ]: removing binaries..."
+	@rm -rfv $(BUILD_DIR)/*
+
 compile: deps compile-only
-compile-all: compile-linux compile-darwin compile-windows
-build-all: compile-linux compile-darwin compile-windows
 
 compile-only: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"
@@ -12,39 +19,18 @@ compile-only: deps-only
 	@for b in $(BINS); do \
 		echo "=== $(PROJECT_NAME) === [ compile          ]:     $(BUILD_DIR)$(GOOS)/$$b"; \
 		BUILD_FILES=`find $(SRCDIR)/cmd/$$b -type f -name "*.go"` ; \
-		$(GO) build -ldflags=$(LDFLAGS) -o $(BUILD_DIR)/$(GOOS)/$$b $$BUILD_FILES ; \
+		GOOS=$(GOOS) $(GO) build -ldflags=$(LDFLAGS) -o $(BUILD_DIR)/$(GOOS)/$$b $$BUILD_FILES ; \
 	done
 
-build-linux: compile-linux
-compile-linux: deps-only
-	@echo "=== $(PROJECT_NAME) === [ compile-linux    ]: building commands:"
-	@mkdir -p $(BUILD_DIR)/linux
-	@for b in $(BINS); do \
-		OUTPUT_FILE="$(BUILD_DIR)linux/$$b" ; \
-		echo "=== $(PROJECT_NAME) === [ compile-linux    ]:     $$OUTPUT_FILE"; \
-		BUILD_FILES=`find $(SRCDIR)/cmd/$$b -type f -name "*.go"` ; \
-		GOOS=linux $(GO) build -ldflags=$(LDFLAGS) -o $$OUTPUT_FILE $$BUILD_FILES ; \
-	done
+# Override GOOS for these specific targets
+compile-darwin: GOOS=darwin
+compile-darwin: deps-only compile-only
 
-build-darwin: compile-darwin
-compile-darwin: deps-only
-	@echo "=== $(PROJECT_NAME) === [ compile-darwin   ]: building commands:"
-	@mkdir -p $(BUILD_DIR)/darwin
-	@for b in $(BINS); do \
-		OUTPUT_FILE="$(BUILD_DIR)darwin/$$b" ; \
-		echo "=== $(PROJECT_NAME) === [ compile-darwin   ]:     $$OUTPUT_FILE"; \
-		BUILD_FILES=`find $(SRCDIR)/cmd/$$b -type f -name "*.go"` ; \
-		GOOS=darwin $(GO) build -ldflags=$(LDFLAGS) -o $$OUTPUT_FILE $$BUILD_FILES ; \
-	done
+compile-linux: GOOS=linux
+compile-linux: deps-only compile-only
 
-build-windows: compile-windows
-compile-windows: deps-only
-	@echo "=== $(PROJECT_NAME) === [ compile-windows  ]: building commands:"
-	@mkdir -p $(BUILD_DIR)/windows
-	@for b in $(BINS); do \
-		OUTPUT_FILE="$(BUILD_DIR)windows/$$b.exe" ; \
-		echo "=== $(PROJECT_NAME) === [ compile-windows  ]:     $$OUTPUT_FILE"; \
-		BUILD_FILES=`find $(SRCDIR)/cmd/$$b -type f -name "*.go"` ; \
-		GOOS=windows $(GO) build -ldflags=$(LDFLAGS) -o $$OUTPUT_FILE $$BUILD_FILES ; \
-	done
+compile-windows: GOOS=windows
+compile-windows: deps-only compile-only
 
+
+.PHONY: clean-compile compile compile-darwin compile-linux compile-only compile-windows
