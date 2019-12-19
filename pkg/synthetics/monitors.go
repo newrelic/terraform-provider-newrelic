@@ -1,6 +1,9 @@
 package synthetics
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 const (
 	listMonitorsLimit = 100
@@ -52,5 +55,13 @@ func (s *Synthetics) CreateMonitor(monitor Monitor) (*Monitor, error) {
 
 // UpdateMonitor is used to create a New Relic Synthetics monitor.
 func (s *Synthetics) UpdateMonitor(monitor Monitor) (*Monitor, error) {
-	return nil, nil
+	res := Monitor{}
+	url := fmt.Sprintf("/monitors/%s", monitor.ID)
+	_, err := s.client.Put(url, nil, &monitor, &res)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
