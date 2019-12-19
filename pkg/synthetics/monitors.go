@@ -69,5 +69,13 @@ func (s *Synthetics) UpdateMonitor(monitor Monitor) (*Monitor, error) {
 
 // DeleteMonitor is used to create a New Relic Synthetics monitor.
 func (s *Synthetics) DeleteMonitor(monitorID string) (*Monitor, error) {
-	return nil, nil
+	res := Monitor{}
+	url := fmt.Sprintf("/monitors/%s", monitorID)
+	_, err := s.client.Delete(url, nil, &res)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
