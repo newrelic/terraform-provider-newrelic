@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/newrelic/newrelic-client-go/internal/serialization"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
@@ -72,8 +74,8 @@ func TestGetAlertPolicy(t *testing.T) {
 		ID:                 579506,
 		IncidentPreference: "PER_POLICY",
 		Name:               "test-alert-policy-1",
-		CreatedAt:          1575438237690,
-		UpdatedAt:          1575438237690,
+		CreatedAt:          serialization.Epoch(time.Unix(1575438237690, 0)),
+		UpdatedAt:          serialization.Epoch(time.Unix(1575438237690, 0)),
 	}
 
 	actual, err := alerts.GetAlertPolicy(579506)
@@ -126,15 +128,15 @@ func TestListAlertPolicies(t *testing.T) {
 			ID:                 579506,
 			IncidentPreference: "PER_POLICY",
 			Name:               "test-alert-policy-1",
-			CreatedAt:          1575438237690,
-			UpdatedAt:          1575438237690,
+			CreatedAt:          serialization.Epoch(time.Unix(1575438237690, 0)),
+			UpdatedAt:          serialization.Epoch(time.Unix(1575438237690, 0)),
 		},
 		{
 			ID:                 579509,
 			IncidentPreference: "PER_POLICY",
 			Name:               "test-alert-policy-2",
-			CreatedAt:          1575438240632,
-			UpdatedAt:          1575438240632,
+			CreatedAt:          serialization.Epoch(time.Unix(1575438240632, 0)),
+			UpdatedAt:          serialization.Epoch(time.Unix(1575438240632, 0)),
 		},
 	}
 
@@ -190,8 +192,8 @@ func TestListAlertPoliciesWithParams(t *testing.T) {
 			ID:                 579506,
 			IncidentPreference: "PER_POLICY",
 			Name:               "test-alert-policy-1",
-			CreatedAt:          1575438237690,
-			UpdatedAt:          1575438237690,
+			CreatedAt:          serialization.Epoch(time.Unix(1575438237690, 0)),
+			UpdatedAt:          serialization.Epoch(time.Unix(1575438237690, 0)),
 		},
 	}
 
@@ -245,8 +247,8 @@ func TestCreateAlertPolicy(t *testing.T) {
 		ID:                 123,
 		IncidentPreference: "PER_POLICY",
 		Name:               "test-alert-policy-1",
-		CreatedAt:          1575438237690,
-		UpdatedAt:          1575438237690,
+		CreatedAt:          serialization.Epoch(time.Unix(1575438237690, 0)),
+		UpdatedAt:          serialization.Epoch(time.Unix(1575438237690, 0)),
 	}
 
 	actual, err := alerts.CreateAlertPolicy(policy)
@@ -298,8 +300,8 @@ func TestUpdateAlertPolicy(t *testing.T) {
 		ID:                 123,
 		IncidentPreference: "PER_CONDITION",
 		Name:               "name-updated",
-		CreatedAt:          1575438237690,
-		UpdatedAt:          1575438237690,
+		CreatedAt:          serialization.Epoch(time.Unix(1575438237690, 0)),
+		UpdatedAt:          serialization.Epoch(time.Unix(1575438237690, 0)),
 	}
 
 	actual, err := alerts.UpdateAlertPolicy(policy)
@@ -345,8 +347,8 @@ func TestDeleteAlertPolicy(t *testing.T) {
 		ID:                 123,
 		IncidentPreference: "PER_CONDITION",
 		Name:               "name-updated",
-		CreatedAt:          1575438237690,
-		UpdatedAt:          1575438237690,
+		CreatedAt:          serialization.Epoch(time.Unix(1575438237690, 0)),
+		UpdatedAt:          serialization.Epoch(time.Unix(1575438237690, 0)),
 	}
 
 	actual, err := alerts.DeleteAlertPolicy(123)
