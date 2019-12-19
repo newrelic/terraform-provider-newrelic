@@ -12,19 +12,19 @@ type ListAlertPoliciesParams struct {
 
 // ListAlertPolicies returns a list of Alert Policies for a given account.
 func (alerts *Alerts) ListAlertPolicies(params *ListAlertPoliciesParams) ([]AlertPolicy, error) {
-	respBody := alertPoliciesResponse{}
+	response := alertPoliciesResponse{}
 	alertPolicies := []AlertPolicy{}
 	nextURL := "/alerts_policies.json"
 	paramsMap := buildListAlertPoliciesParamsMap(params)
 
 	for nextURL != "" {
-		resp, err := alerts.client.Get(nextURL, &paramsMap, &respBody)
+		resp, err := alerts.client.Get(nextURL, &paramsMap, &response)
 
 		if err != nil {
 			return nil, err
 		}
 
-		alertPolicies = append(alertPolicies, respBody.Policies...)
+		alertPolicies = append(alertPolicies, response.Policies...)
 
 		paging := alerts.pager.Parse(resp)
 		nextURL = paging.Next
@@ -55,15 +55,15 @@ func (alerts *Alerts) CreateAlertPolicy(policy AlertPolicy) (*AlertPolicy, error
 	reqBody := createAlertPolicyRequestBody{
 		Policy: policy,
 	}
-	resBody := alertPolicyResponse{}
+	resp := alertPolicyResponse{}
 
-	_, err := alerts.client.Post("/alerts_policies.json", nil, &reqBody, &resBody)
+	_, err := alerts.client.Post("/alerts_policies.json", nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &resBody.Policy, nil
+	return &resp.Policy, nil
 }
 
 // UpdateAlertPolicy update an alert policy for a given account.
@@ -71,31 +71,31 @@ func (alerts *Alerts) UpdateAlertPolicy(policy AlertPolicy) (*AlertPolicy, error
 	reqBody := updateAlertPolicyRequestBody{
 		Policy: policy,
 	}
-	resBody := alertPolicyResponse{}
+	resp := alertPolicyResponse{}
 
 	url := fmt.Sprintf("/alerts_policies/%d.json", policy.ID)
 
-	_, err := alerts.client.Put(url, nil, reqBody, &resBody)
+	_, err := alerts.client.Put(url, nil, reqBody, &resp)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &resBody.Policy, nil
+	return &resp.Policy, nil
 }
 
 // DeleteAlertPolicy deletes an existing alert policy for a given account.
 func (alerts *Alerts) DeleteAlertPolicy(id int) (*AlertPolicy, error) {
-	respBody := alertPolicyResponse{}
+	resp := alertPolicyResponse{}
 	url := fmt.Sprintf("/alerts_policies/%d.json", id)
 
-	_, err := alerts.client.Delete(url, nil, &respBody)
+	_, err := alerts.client.Delete(url, nil, &resp)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &respBody.Policy, nil
+	return &resp.Policy, nil
 }
 
 func buildListAlertPoliciesParamsMap(params *ListAlertPoliciesParams) map[string]string {
