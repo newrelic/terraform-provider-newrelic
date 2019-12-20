@@ -3,10 +3,16 @@
 package alerts
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
+	nr "github.com/newrelic/newrelic-client-go/internal/testing"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
+)
+
+var (
+	testAlertPolicyRandStr = nr.RandSeq(5)
 )
 
 func TestIntegrationAlertPolicy(t *testing.T) {
@@ -16,7 +22,7 @@ func TestIntegrationAlertPolicy(t *testing.T) {
 
 	policy := AlertPolicy{
 		IncidentPreference: "PER_POLICY",
-		Name:               "integration-test-alert-policy",
+		Name:               fmt.Sprintf("test-alert-policy-%s", testRandStr),
 	}
 
 	// Test: Create
@@ -56,7 +62,7 @@ func testUpdateAlertPolicy(t *testing.T, client Alerts, policy *AlertPolicy) *Al
 	policyUpdated := AlertPolicy{
 		ID:                 policy.ID,
 		IncidentPreference: "PER_CONDITION",
-		Name:               "integration-test-alert-policy-updated",
+		Name:               fmt.Sprintf("test-alert-policy-updated-%s", testRandStr),
 	}
 
 	result, err := client.UpdateAlertPolicy(policyUpdated)

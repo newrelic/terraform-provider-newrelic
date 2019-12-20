@@ -27,7 +27,7 @@ func (alerts *Alerts) ListSyntheticsConditions(policyID int) ([]SyntheticsCondit
 		nextURL = paging.Next
 	}
 
-	return response.Conditions, nil
+	return conditions, nil
 }
 
 // CreateSyntheticsCondition creates a new Synthetics alert condition.

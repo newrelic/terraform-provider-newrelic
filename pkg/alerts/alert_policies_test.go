@@ -115,8 +115,8 @@ func TestListAlertPolicies(t *testing.T) {
 					"id": 579509,
 					"incident_preference": "PER_POLICY",
 					"name": "test-alert-policy-2",
-					"created_at": 1575438240632,
-					"updated_at": 1575438240632
+					"created_at": 1575438237690,
+					"updated_at": 1575438237690
 				}
 			]
 		}

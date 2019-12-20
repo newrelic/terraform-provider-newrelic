@@ -13,7 +13,6 @@ import (
 var (
 	testPolicyID            = 12345
 	testSyntheticsCondition = SyntheticsCondition{
-		PolicyID:   testPolicyID,
 		Name:       "Synthetics Condition",
 		RunbookURL: "https://example.com/runbook.md",
 		MonitorID:  "12345678-1234-1234-1234-1234567890ab",
@@ -21,7 +20,6 @@ var (
 	}
 	testSyntheticsConditionJson = `
 	{
-		"id": 12345,
 		"name": "Synthetics Condition",
 		"runbook_url": "https://example.com/runbook.md",
 		"monitor_id": "12345678-1234-1234-1234-1234567890ab",
@@ -56,18 +54,18 @@ func TestCreateSyntheticsCondition(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		_, err := w.Write([]byte(fmt.Sprintf(`
 		{
-			"synthetics_condition": [%s]
+			"synthetics_condition": %s
 		}
 		`, testSyntheticsConditionJson)))
 
 		require.NoError(t, err)
 	}))
 
-	actual, err := alerts.CreateSyntheticsCondition(testSyntheticsCondition)
+	actual, err := alerts.CreateSyntheticsCondition(testPolicyID, testSyntheticsCondition)
 
 	require.NoError(t, err)
 	require.NotNil(t, actual)
-	require.Equal(t, testSyntheticsCondition, actual)
+	require.Equal(t, &testSyntheticsCondition, actual)
 }
 
 func TestUpdateSyntheticsCondition(t *testing.T) {
@@ -77,7 +75,7 @@ func TestUpdateSyntheticsCondition(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte(fmt.Sprintf(`
 		{
-			"synthetics_condition": [%s]
+			"synthetics_condition": %s
 		}
 		`, testSyntheticsConditionJson)))
 
@@ -88,7 +86,7 @@ func TestUpdateSyntheticsCondition(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, actual)
-	require.Equal(t, testSyntheticsCondition, actual)
+	require.Equal(t, &testSyntheticsCondition, actual)
 }
 
 func TestDeleteSyntheticsCondition(t *testing.T) {
@@ -97,7 +95,7 @@ func TestDeleteSyntheticsCondition(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		_, err := w.Write([]byte(fmt.Sprintf(`
 		{
-			"synthetics_condition": [%s]
+			"synthetics_condition": %s
 		}
 		`, testSyntheticsConditionJson)))
 
@@ -108,5 +106,5 @@ func TestDeleteSyntheticsCondition(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, actual)
-	require.Equal(t, testSyntheticsCondition, actual)
+	require.Equal(t, &testSyntheticsCondition, actual)
 }
