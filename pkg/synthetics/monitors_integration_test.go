@@ -3,27 +3,17 @@
 package synthetics
 
 import (
+	"fmt"
 	"os"
 	"testing"
-	"time"
 
+	nr "github.com/newrelic/newrelic-client-go/internal/testing"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
-	testMonitorID    = "72733a02-9701-4279-8ac3-8f6281a5a1a9"
-	testTimestamp, _ = time.Parse(time.RFC3339, "2019-11-27T19:11:05.076+0000")
-
-	testMonitorOptions = MonitorOptions{
-		ValidationString:       "",
-		VerifySSL:              false,
-		BypassHEADRequest:      false,
-		TreatRedirectAsFailure: false,
-	}
-
-	testMonitor = Monitor{
-		Name:         "test-synthetics-monitor",
+	testIntegrationMonitor = Monitor{
 		Type:         MonitorTypes.Simple,
 		Frequency:    15,
 		URI:          "https://google.com",
@@ -32,7 +22,7 @@ var (
 		SLAThreshold: 7,
 		UserID:       0,
 		APIVersion:   "LATEST",
-		Options:      testMonitorOptions,
+		Options:      MonitorOptions{},
 	}
 )
 
@@ -45,48 +35,46 @@ func TestIntegrationMonitors(t *testing.T) {
 		t.Skipf("acceptance testing requires an API key")
 	}
 
-	monitors := New(config.Config{
+	synthetics := New(config.Config{
 		APIKey: apiKey,
 	})
 
-	// Test: Create
-	created, err := monitors.CreateMonitor(testMonitor)
-	if err != nil {
-		t.Fatalf("CreateMonitors error: %s", err)
-	}
+	rand := nr.RandSeq(5)
+	testIntegrationMonitor.Name = fmt.Sprintf("test-synthetics-monitor-%s", rand)
 
-	assert.NotNil(t, created)
+	// Test: Create
+	monitorID, err := synthetics.CreateMonitor(testIntegrationMonitor)
+
+	require.NoError(t, err)
+	require.NotNil(t, monitorID)
 
 	// Test: List
-	multiple, err := monitors.ListMonitors()
-	if err != nil {
-		t.Fatalf("ListMonitors error: %s", err)
-	}
+	monitors, err := synthetics.ListMonitors()
 
-	assert.NotNil(t, multiple)
+	require.NoError(t, err)
+	require.NotNil(t, monitors)
+	require.Greater(t, len(monitors), 0)
 
 	// Test: Get
-	single, err := monitors.GetMonitor(multiple[0].ID)
-	if err != nil {
-		t.Fatalf("GetMonitors error: %s", err)
-	}
+	monitor, err := synthetics.GetMonitor(monitorID)
 
-	assert.NotNil(t, single)
+	require.NoError(t, err)
+	require.NotNil(t, monitor)
 
 	// Test: Update
-	single.Name = "updated"
-	updated, err := monitors.UpdateMonitor(*single)
-	if err != nil {
-		t.Fatalf("UpdateMonitors error: %s", err)
-	}
+	updatedName := fmt.Sprintf("test-synthetics-monitor-updated-%s", rand)
+	monitor.Name = updatedName
+	err = synthetics.UpdateMonitor(*monitor)
 
-	assert.NotNil(t, updated)
+	require.NoError(t, err)
+
+	monitor, err = synthetics.GetMonitor(monitorID)
+
+	require.NoError(t, err)
+	require.Equal(t, updatedName, monitor.Name)
 
 	// Test: Delete
-	deleted, err := monitors.DeleteMonitor(updated.ID)
-	if err != nil {
-		t.Fatalf("DeleteMonitors error: %s", err)
-	}
+	err = synthetics.DeleteMonitor(monitorID)
 
-	assert.NotNil(t, deleted)
+	require.NoError(t, err)
 }
