@@ -11,15 +11,15 @@ type MonitorStatusType string
 var (
 	// MonitorTypes specifies the possible types for a Synthetics monitor.
 	MonitorTypes = struct {
-		Simple        MonitorType
-		Browser       MonitorType
-		ScriptAPI     MonitorType
-		ScriptBrowser MonitorType
+		Ping            MonitorType
+		Browser         MonitorType
+		ScriptedBrowser MonitorType
+		APITest         MonitorType
 	}{
-		Simple:        "SIMPLE",
-		Browser:       "BROWSER",
-		ScriptAPI:     "SCRIPT_API",
-		ScriptBrowser: "SCRIPT_BROWSER",
+		Ping:            "SIMPLE",
+		Browser:         "BROWSER",
+		ScriptedBrowser: "SCRIPT_BROWSER",
+		APITest:         "SCRIPT_API",
 	}
 
 	// MonitorStatus specifies the possible Synthetics monitor status types.
@@ -54,7 +54,7 @@ type Monitor struct {
 	SLAThreshold float64           `json:"slaThreshold"`
 	UserID       uint              `json:"userId,omitempty"`
 	APIVersion   string            `json:"apiVersion,omitempty"`
-	ModifiedAt   time.Time         `json:"modified_at,omitempty"`
-	CreatedAt    time.Time         `json:"created_at,omitempty"`
+	ModifiedAt   *time.Time        `json:"modified_at,omitempty"`
+	CreatedAt    *time.Time        `json:"created_at,omitempty"`
 	Options      MonitorOptions    `json:"options,omitempty"`
 }

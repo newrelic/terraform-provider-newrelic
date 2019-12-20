@@ -47,5 +47,12 @@ type ErrorUnexpectedStatusCode struct {
 }
 
 func (e *ErrorUnexpectedStatusCode) Error() string {
-	return fmt.Sprintf("%d response returned: %s", e.statusCode, e.err)
+
+	msg := fmt.Sprintf("%d response returned", e.statusCode)
+
+	if e.err != "" {
+		msg += fmt.Sprintf(": %s", e.err)
+	}
+
+	return msg
 }
