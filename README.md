@@ -1,58 +1,77 @@
 # newrelic-client-go
 
+[![CircleCI](https://circleci.com/gh/newrelic/newrelic-client-go.svg?style=svg)](https://circleci.com/gh/newrelic/newrelic-client-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/newrelic/newrelic-client-go?style=flat-square)](https://goreportcard.com/report/github.com/newrelic/newrelic-client-go)
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/newrelic/newrelic-client-go)
 [![Release](https://img.shields.io/github/release/newrelic/newrelic-client-go?style=flat-square)](https://github.com/newrelic/newrelic-client-go/releases/latest)
 
-## Auto-versioning
 
-The `Makefile` will automatically pull the version from the latest `git tag` and pass that through to the linker.  To use this feature, do the following:
+The New Relic Client provides the building blocks for tools in the [Developer Toolkit](https://newrelic.github.io/developer-toolkit/), enabling quick access to the suite of New Relic APIs. As a library, it can also be leveraged within your own custom applications.
 
-### Add a 'Version' to your main package
 
-```
-package main
+## Community
 
-import "fmt"
+New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. 
 
-var (
-  // Version is your app version (updated by Makefile, don't forget to TAG YOUR RELEASE)
-  Version = "undefined"
-)
+* [Roadmap](https://newrelic.github.io/developer-toolkit/roadmap/) - As part of the Developer Toolkit, the roadmap for this project follows the same RFC process
+* [Issues or Enhancement Requests](https://github.com/newrelic/newrelic-client-go/issues) - Issues and enhancement requests can be submitted in the Issues tab of this repository. Please search for and review the existing open issues before submitting a new issue.
+* [Contributors Guide](CONTRIBUTING.md) - Contributions are welcome (and if you submit a Enhancement Request, expect to be invited to contribute it yourself :grin:).
+* [Community discussion board](https://discuss.newrelic.com/c/build-on-new-relic/developer-toolkit) - Like all official New Relic open source projects, there's a related Community topic in the New Relic Explorers Hub.
 
-func main() {
-  fmt.Printf("Example App version: %s\n", Version)
-}
-```
+Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. If you'd like to execute our corporate CLA, or if you have any questions, please drop us an email at opensource@newrelic.com.
 
-### Create a tag before you build your release
 
-For example, to make a version 0.0.1:
+## Development
 
-```
-git tag v0.0.1
-```
+### Requirements
 
-### Example Version Strings
+* Go 1.13.0+
+* GNU Make
+* git
+
+
+### Building
+
+This package does not generate any direct usable assets (it's a library).  You can still run the build scripts to validate you code, and generate coverage information.
 
 ```
-# No Tags (latest sha):
-Example App version: g1de6b99
+# Default target is 'build'
+$ make
 
-# Clean tag:
-Example App version: v0.0.3
+# Explicitly run build
+$ make build
 
-# Latest tag: v0.0.3
-# One commit has passed since that tag
-# SHA of current commit
-Example App version: v0.0.3-1-g1de6b99
-
-# Local changes, uncommited
-Example App version: v0.0.3-1-g1de6b99-dirty
+# Locally test the CI build scripts
+# make build-ci
 ```
 
-### Notes
 
-* If you have NO commits, make will fail... Solve this with an initial commit in the repo: `git commit -m 'Initial commit'`
-* If you do not create a tag, you will get the sha as the version
-* If you have uncommitted changes, your version will end with `-dirty` (i.e. `v1.2.3-dirty`)
+### Testing
+
+Before contributing, all linting and tests must pass.  Tests can be run directly via:
+
+```
+
+# Tests and Linting
+$ make test
+```
+
+### Documentation
+
+**Note:** This requires the repo to be in your GOPATH [(godoc issue)](https://github.com/golang/go/issues/26827)
+
+```
+$ make docs
+```
+
+
+## Support
+
+New Relic has open-sourced this project. This project is provided AS-IS WITHOUT WARRANTY OR SUPPORT, although you can report issues and contribute to the project here on GitHub.
+
+_Please do not report issues with this software to New Relic Global Technical Support._
+
+
+## Open Source License
+
+This project is distributed under the [Apache 2 license](LICENSE).
