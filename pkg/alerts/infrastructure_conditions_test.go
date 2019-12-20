@@ -68,10 +68,10 @@ func TestListInfrastructureConditions(t *testing.T) {
 
 func TestGetInfrastructureConditions(t *testing.T) {
 	t.Parallel()
-	respJSON := fmt.Sprintf(`{ "data":[%s] }`, testInfrastructureConditionJson)
+	respJSON := fmt.Sprintf(`{ "data":%s }`, testInfrastructureConditionJson)
 	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
-	expected := []InfrastructureCondition{testInfrastructureCondition}
+	expected := &testInfrastructureCondition
 
 	actual, err := alerts.GetInfrastructureCondition(testInfrastructureCondition.ID)
 
@@ -82,10 +82,10 @@ func TestGetInfrastructureConditions(t *testing.T) {
 
 func TestCreateInfrastructureConditions(t *testing.T) {
 	t.Parallel()
-	respJSON := fmt.Sprintf(`{ "data":[%s] }`, testInfrastructureConditionJson)
+	respJSON := fmt.Sprintf(`{ "data":%s }`, testInfrastructureConditionJson)
 	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
-	expected := []InfrastructureCondition{testInfrastructureCondition}
+	expected := &testInfrastructureCondition
 
 	actual, err := alerts.CreateInfrastructureCondition(testInfrastructureCondition)
 
@@ -96,10 +96,10 @@ func TestCreateInfrastructureConditions(t *testing.T) {
 
 func TestUpdateInfrastructureConditions(t *testing.T) {
 	t.Parallel()
-	respJSON := fmt.Sprintf(`{ "data":[%s] }`, testInfrastructureConditionJson)
+	respJSON := fmt.Sprintf(`{ "data":%s }`, testInfrastructureConditionJson)
 	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
-	expected := []InfrastructureCondition{testInfrastructureCondition}
+	expected := &testInfrastructureCondition
 
 	actual, err := alerts.UpdateInfrastructureCondition(testInfrastructureCondition)
 
@@ -110,10 +110,10 @@ func TestUpdateInfrastructureConditions(t *testing.T) {
 
 func TestDeleteInfrastructureConditions(t *testing.T) {
 	t.Parallel()
-	respJSON := fmt.Sprintf(`{ "data":[%s] }`, testInfrastructureConditionJson)
+	respJSON := fmt.Sprintf(`{ "data":%s }`, testInfrastructureConditionJson)
 	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
-	expected := []InfrastructureCondition{testInfrastructureCondition}
+	expected := &testInfrastructureCondition
 
 	actual, err := alerts.DeleteInfrastructureCondition(testInfrastructureCondition.ID)
 
