@@ -428,6 +428,7 @@ func TestCreateDashboard(t *testing.T) {
 		t.Fatalf("CreateDashboard response differs from expected: %s", diff)
 	}
 }
+
 func TestUpdateDashboard(t *testing.T) {
 	t.Parallel()
 
