@@ -59,7 +59,63 @@ func TestListInfrastructureConditions(t *testing.T) {
 
 	expected := []InfrastructureCondition{testInfrastructureCondition}
 
-	actual, err := alerts.ListInfrastructureConditions(111111)
+	actual, err := alerts.ListInfrastructureConditions(testInfrastructureConditionPolicyId)
+
+	require.NoError(t, err)
+	require.NotNil(t, actual)
+	require.Equal(t, expected, actual)
+}
+
+func TestGetInfrastructureConditions(t *testing.T) {
+	t.Parallel()
+	respJSON := fmt.Sprintf(`{ "data":[%s] }`, testInfrastructureConditionJson)
+	alerts := newMockResponse(t, respJSON, http.StatusOK)
+
+	expected := []InfrastructureCondition{testInfrastructureCondition}
+
+	actual, err := alerts.GetInfrastructureCondition(testInfrastructureCondition.ID)
+
+	require.NoError(t, err)
+	require.NotNil(t, actual)
+	require.Equal(t, expected, actual)
+}
+
+func TestCreateInfrastructureConditions(t *testing.T) {
+	t.Parallel()
+	respJSON := fmt.Sprintf(`{ "data":[%s] }`, testInfrastructureConditionJson)
+	alerts := newMockResponse(t, respJSON, http.StatusOK)
+
+	expected := []InfrastructureCondition{testInfrastructureCondition}
+
+	actual, err := alerts.CreateInfrastructureCondition(testInfrastructureCondition)
+
+	require.NoError(t, err)
+	require.NotNil(t, actual)
+	require.Equal(t, expected, actual)
+}
+
+func TestUpdateInfrastructureConditions(t *testing.T) {
+	t.Parallel()
+	respJSON := fmt.Sprintf(`{ "data":[%s] }`, testInfrastructureConditionJson)
+	alerts := newMockResponse(t, respJSON, http.StatusOK)
+
+	expected := []InfrastructureCondition{testInfrastructureCondition}
+
+	actual, err := alerts.UpdateInfrastructureCondition(testInfrastructureCondition)
+
+	require.NoError(t, err)
+	require.NotNil(t, actual)
+	require.Equal(t, expected, actual)
+}
+
+func TestDeleteInfrastructureConditions(t *testing.T) {
+	t.Parallel()
+	respJSON := fmt.Sprintf(`{ "data":[%s] }`, testInfrastructureConditionJson)
+	alerts := newMockResponse(t, respJSON, http.StatusOK)
+
+	expected := []InfrastructureCondition{testInfrastructureCondition}
+
+	actual, err := alerts.DeleteInfrastructureCondition(testInfrastructureCondition.ID)
 
 	require.NoError(t, err)
 	require.NotNil(t, actual)
