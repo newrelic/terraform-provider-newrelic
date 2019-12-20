@@ -130,11 +130,10 @@ func TestCreateMonitor(t *testing.T) {
 		}
 	}))
 
-	actual, err := synthetics.CreateMonitor(testMonitor)
+	id, err := synthetics.CreateMonitor(testMonitor)
 
 	assert.NoError(t, err)
-	assert.NotNil(t, actual)
-	assert.Equal(t, &testMonitor, actual)
+	assert.NotNil(t, id)
 }
 
 func TestUpdateMonitor(t *testing.T) {
@@ -148,11 +147,9 @@ func TestUpdateMonitor(t *testing.T) {
 		}
 	}))
 
-	actual, err := synthetics.UpdateMonitor(testMonitor)
+	err := synthetics.UpdateMonitor(testMonitor)
 
 	assert.NoError(t, err)
-	assert.NotNil(t, actual)
-	assert.Equal(t, &testMonitor, actual)
 }
 
 func TestDeleteMonitor(t *testing.T) {
@@ -166,9 +163,7 @@ func TestDeleteMonitor(t *testing.T) {
 		}
 	}))
 
-	actual, err := synthetics.DeleteMonitor(testMonitor.ID)
+	err := synthetics.DeleteMonitor(testMonitor.ID)
 
 	assert.NoError(t, err)
-	assert.NotNil(t, actual)
-	assert.Equal(t, &testMonitor, actual)
 }
