@@ -14,7 +14,7 @@ import (
 
 var (
 	testIntegrationMonitor = Monitor{
-		Type:         MonitorTypes.Simple,
+		Type:         MonitorTypes.Ping,
 		Frequency:    15,
 		URI:          "https://google.com",
 		Locations:    []string{"AWS_US_EAST_1"},
