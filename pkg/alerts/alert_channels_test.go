@@ -9,6 +9,7 @@ import (
 
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -139,6 +140,19 @@ func TestGetAlertChannel(t *testing.T) {
 	assert.Equal(t, expected, *actual)
 }
 
+func TestGetAlertChannelNotFound(t *testing.T) {
+	t.Parallel()
+	alerts := newMockResponse(t, testListChannelsResponseJSON, http.StatusOK)
+
+	actual, err := alerts.GetAlertChannel(0)
+
+	t.Log(err.Error())
+
+	assert.Error(t, err)
+	assert.Nil(t, actual)
+	assert.Equal(t, "no channel found for id 0", err.Error())
+}
+
 func TestCreateAlertChannel(t *testing.T) {
 	t.Parallel()
 	alerts := newMockResponse(t, testCreateChannelResponseJSON, http.StatusCreated)
@@ -224,8 +238,6 @@ func newMockResponse(
 
 		_, err := w.Write([]byte(mockJsonResponse))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 	}))
 }

@@ -46,7 +46,7 @@ func (alerts *Alerts) GetAlertChannel(id int) (*AlertChannel, error) {
 // The configuration options different based on channel type.
 // For more information on the different configurations, please
 // view the New Relic API documentation for this endpoint.
-// New Relic API Explorer: https://rpm.newrelic.com/api/explore/alerts_channels/create
+// Docs: https://docs.newrelic.com/docs/alerts/rest-api-alerts/new-relic-alerts-rest-api/rest-api-calls-new-relic-alerts#channels
 func (alerts *Alerts) CreateAlertChannel(channel AlertChannel) (*AlertChannel, error) {
 	reqBody := alertChannelRequestBody{
 		Channel: channel,
