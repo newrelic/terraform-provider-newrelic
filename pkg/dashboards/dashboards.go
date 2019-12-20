@@ -125,42 +125,44 @@ func (dashboards *Dashboards) DeleteDashboard(dashboardID int) (*Dashboard, erro
 func buildListDashboardsParamsMap(params *ListDashboardsParams) map[string]string {
 	paramsMap := map[string]string{}
 
-	if params != nil {
-		if params.Title != "" {
-			paramsMap["filter[title]"] = params.Title
-		}
+	if params == nil {
+		return paramsMap
+	}
 
-		if params.Category != "" {
-			paramsMap["filter[category]"] = params.Category
-		}
+	if params.Title != "" {
+		paramsMap["filter[title]"] = params.Title
+	}
 
-		if params.CreatedBefore != nil {
-			paramsMap["filter[created_before]"] = params.CreatedBefore.Format(time.RFC3339)
-		}
+	if params.Category != "" {
+		paramsMap["filter[category]"] = params.Category
+	}
 
-		if params.CreatedAfter != nil {
-			paramsMap["filter[created_after]"] = params.CreatedAfter.Format(time.RFC3339)
-		}
+	if params.CreatedBefore != nil {
+		paramsMap["filter[created_before]"] = params.CreatedBefore.Format(time.RFC3339)
+	}
 
-		if params.UpdatedBefore != nil {
-			paramsMap["filter[updated_before]"] = params.UpdatedBefore.Format(time.RFC3339)
-		}
+	if params.CreatedAfter != nil {
+		paramsMap["filter[created_after]"] = params.CreatedAfter.Format(time.RFC3339)
+	}
 
-		if params.UpdatedAfter != nil {
-			paramsMap["filter[updated_after]"] = params.UpdatedAfter.Format(time.RFC3339)
-		}
+	if params.UpdatedBefore != nil {
+		paramsMap["filter[updated_before]"] = params.UpdatedBefore.Format(time.RFC3339)
+	}
 
-		if params.Sort != "" {
-			paramsMap["sort"] = params.Sort
-		}
+	if params.UpdatedAfter != nil {
+		paramsMap["filter[updated_after]"] = params.UpdatedAfter.Format(time.RFC3339)
+	}
 
-		if params.Page > 0 {
-			paramsMap["page"] = strconv.Itoa(params.Page)
-		}
+	if params.Sort != "" {
+		paramsMap["sort"] = params.Sort
+	}
 
-		if params.PerPage > 0 {
-			paramsMap["per_page"] = strconv.Itoa(params.PerPage)
-		}
+	if params.Page > 0 {
+		paramsMap["page"] = strconv.Itoa(params.Page)
+	}
+
+	if params.PerPage > 0 {
+		paramsMap["per_page"] = strconv.Itoa(params.PerPage)
 	}
 
 	return paramsMap
