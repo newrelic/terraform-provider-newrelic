@@ -50,28 +50,6 @@ func TestListSyntheticsConditions(t *testing.T) {
 	require.Equal(t, expected, actual)
 }
 
-func TestGetSyntheticsConditions(t *testing.T) {
-	t.Parallel()
-	alerts := NewTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"synthetics_conditions": [%s]
-		}
-		`, testSyntheticsConditionJson)))
-
-		require.NoError(t, err)
-	}))
-
-	expected := []SyntheticsCondition{testSyntheticsCondition}
-
-	actual, err := alerts.GetSyntheticsCondition(testSyntheticsCondition.ID)
-
-	require.NoError(t, err)
-	require.NotNil(t, actual)
-	require.Equal(t, expected, actual)
-}
-
 func TestCreateSyntheticsCondition(t *testing.T) {
 	t.Parallel()
 	alerts := NewTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

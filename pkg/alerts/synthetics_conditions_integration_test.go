@@ -58,48 +58,44 @@ func TestIntegrationSyntheticsConditions(t *testing.T) {
 
 	require.NoError(t, err)
 
+	// Deferred Teardown
+	defer func() {
+		// Teardown
+		_, err = alerts.DeleteAlertPolicy(policy.ID)
+		if err != nil {
+			t.Logf("Error cleaning up alert policy %d (%s): %s", policy.ID, policy.Name, err)
+		}
+
+		err = synth.DeleteMonitor(monitorID)
+		if err != nil {
+			t.Logf("Error cleaning up synthetics monitor %s (%s): %s",
+				monitorID, testIntegrationSyntheticsMonitor.Name, err)
+		}
+	}()
+
 	// Test: Create
-	testIntegrationSyntheticsCondition.PolicyID = policy.ID
 	testIntegrationSyntheticsCondition.MonitorID = monitorID
-	created, err := alerts.CreateSyntheticsCondition(testIntegrationSyntheticsCondition)
+	created, err := alerts.CreateSyntheticsCondition(policy.ID, testIntegrationSyntheticsCondition)
 
 	require.NoError(t, err)
-	require.NotNil(t, created)
+	require.NotZero(t, created)
 
 	// Test: List
 	conditions, err := alerts.ListSyntheticsConditions(policy.ID)
 
 	require.NoError(t, err)
-	require.NotNil(t, conditions)
-
-	// Test: Get
-	condition, err := alerts.GetSyntheticsCondition(created.ID)
-
-	require.NoError(t, err)
-	require.NotNil(t, condition)
+	require.NotZero(t, conditions)
 
 	// Test: Update
-	condition.Name = fmt.Sprintf("test-synthetics-alert-condition-updated-%s", testRandStr)
-	updated, err := alerts.UpdateSyntheticsCondition(*condition)
+	created.Name = fmt.Sprintf("test-synthetics-alert-condition-updated-%s", testRandStr)
+	updated, err := alerts.UpdateSyntheticsCondition(*created)
 
 	require.NoError(t, err)
-	require.NotNil(t, updated)
+	require.NotZero(t, updated)
 
 	// Test: Delete
 	deleted, err := alerts.DeleteSyntheticsCondition(updated.ID)
 
 	require.NoError(t, err)
-	require.NotNil(t, deleted)
-
-	// Teardown
-	_, err = alerts.DeleteAlertPolicy(policy.ID)
-	if err != nil {
-		t.Logf("Error cleaning up alert policy %d (%s): %s", policy.ID, policy.Name, err)
-	}
-
-	err = synth.DeleteMonitor(monitorID)
-	if err != nil {
-		t.Logf("Error cleaning up synthetics monitor %s (%s): %s",
-			monitorID, testIntegrationSyntheticsMonitor.Name, err)
-	}
+	require.NotZero(t, deleted)
 }
