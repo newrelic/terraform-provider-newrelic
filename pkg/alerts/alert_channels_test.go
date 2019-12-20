@@ -136,7 +136,7 @@ func TestGetAlertChannel(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
-	assert.Equal(t, expected, actual)
+	assert.Equal(t, expected, *actual)
 }
 
 func TestCreateAlertChannel(t *testing.T) {
@@ -169,7 +169,27 @@ func TestCreateAlertChannel(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
-	assert.Equal(t, expected, actual)
+	assert.Equal(t, expected, *actual)
+}
+
+func TestCreateAlertChannelInvalidChannelType(t *testing.T) {
+	t.Parallel()
+	alerts := newMockResponse(t, `{
+		"error": {
+			"title": "Invalid channel type"
+		}
+	}`, http.StatusUnprocessableEntity)
+
+	channel := AlertChannel{
+		Name:          "string",
+		Type:          "string",
+		Configuration: &AlertChannelConfiguration{},
+	}
+
+	actual, err := alerts.CreateAlertChannel(channel)
+
+	assert.Error(t, err)
+	assert.Nil(t, actual)
 }
 
 func TestDeleteAlertChannel(t *testing.T) {
