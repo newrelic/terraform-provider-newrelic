@@ -1,6 +1,6 @@
 // +build integration
 
-package infrastructure
+package alerts
 
 import (
 	"os"
@@ -9,7 +9,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
-func TestIntegrationListAlertConditions(t *testing.T) {
+func TestIntegrationListInfrastructureConditions(t *testing.T) {
 	t.Parallel()
 
 	apiKey := os.Getenv("NEWRELIC_API_KEY")
@@ -22,5 +22,5 @@ func TestIntegrationListAlertConditions(t *testing.T) {
 		APIKey: apiKey,
 	})
 
-	api.ListAlertConditions(1234)
+	api.ListInfrastructureConditions(1234)
 }

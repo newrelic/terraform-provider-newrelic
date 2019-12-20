@@ -9,7 +9,6 @@ import (
 
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -225,19 +224,4 @@ func newTestClient(handler http.Handler) Alerts {
 	})
 
 	return c
-}
-
-func newMockResponse(
-	t *testing.T,
-	mockJsonResponse string,
-	statusCode int,
-) Alerts {
-	return newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(statusCode)
-
-		_, err := w.Write([]byte(mockJsonResponse))
-
-		require.NoError(t, err)
-	}))
 }
