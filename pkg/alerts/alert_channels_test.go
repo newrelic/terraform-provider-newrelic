@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -81,7 +81,7 @@ var (
 
 func TestListAlertChannels(t *testing.T) {
 	t.Parallel()
-	alerts := newMockServerClientResponse(t, testListChannelsResponseJSON)
+	alerts := newMockResponse(t, testListChannelsResponseJSON, http.StatusOK)
 
 	expected := []AlertChannel{
 		{
@@ -111,22 +111,14 @@ func TestListAlertChannels(t *testing.T) {
 
 	actual, err := alerts.ListAlertChannels()
 
-	if err != nil {
-		t.Fatalf("ListAlertChannels error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("ListAlertChannels result is nil")
-	}
-
-	if diff := cmp.Diff(expected, actual); diff != "" {
-		t.Fatalf("ListAlertChannels result differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
 }
 
 func TestGetAlertChannel(t *testing.T) {
 	t.Parallel()
-	alerts := newMockServerClientResponse(t, testListChannelsResponseJSON)
+	alerts := newMockResponse(t, testListChannelsResponseJSON, http.StatusOK)
 
 	expected := AlertChannel{
 		ID:   2803426,
@@ -142,22 +134,14 @@ func TestGetAlertChannel(t *testing.T) {
 
 	actual, err := alerts.GetAlertChannel(2803426)
 
-	if err != nil {
-		t.Fatalf("GetAlertChannel error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("GetAlertChannel result is nil")
-	}
-
-	if diff := cmp.Diff(expected, *actual); diff != "" {
-		t.Fatalf("GetAlertChannel result differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
 }
 
 func TestCreateAlertChannel(t *testing.T) {
 	t.Parallel()
-	alerts := newMockServerClientResponse(t, testCreateChannelResponseJSON)
+	alerts := newMockResponse(t, testCreateChannelResponseJSON, http.StatusCreated)
 
 	channel := AlertChannel{
 		Name: "sblue@newrelic.com",
@@ -183,28 +167,18 @@ func TestCreateAlertChannel(t *testing.T) {
 
 	actual, err := alerts.CreateAlertChannel(channel)
 
-	if err != nil {
-		t.Fatalf("CreateAlertChannel error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("CreateAlertChannel result is nil")
-	}
-
-	if diff := cmp.Diff(expected, *actual); diff != "" {
-		t.Fatalf("CreateAlertChannel result differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
 }
 
 func TestDeleteAlertChannel(t *testing.T) {
 	t.Parallel()
-	alerts := newMockServerClientResponse(t, testDeleteChannelResponseJSON)
+	alerts := newMockResponse(t, testDeleteChannelResponseJSON, http.StatusOK)
 
 	_, err := alerts.DeleteAlertChannel(2932511)
 
-	if err != nil {
-		t.Fatalf("DeleteAlertChannel error: %s", err)
-	}
+	assert.NoError(t, err)
 }
 
 func newTestClient(handler http.Handler) Alerts {
@@ -219,10 +193,14 @@ func newTestClient(handler http.Handler) Alerts {
 	return c
 }
 
-func newMockServerClientResponse(t *testing.T, mockJsonResponse string) Alerts {
+func newMockResponse(
+	t *testing.T,
+	mockJsonResponse string,
+	statusCode int,
+) Alerts {
 	return newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(statusCode)
 
 		_, err := w.Write([]byte(mockJsonResponse))
 
