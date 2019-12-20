@@ -11,7 +11,7 @@ import (
 
 var (
 	testMonitorScriptLocation = MonitorScriptLocation{
-		Name: "my_vse_enabled_location",
+		Name: "AWS_US_EAST_1",
 		HMAC: "MjhiNGE4MjVlMDE1N2M4NDQ4MjNjNDFkZDEyYTRjMmUzZDE3NGJlNjU0MWFmOTJlMzNiODExOGU2ZjhkZTY4ZQ",
 	}
 	testMonitorScript = MonitorScript{
@@ -22,13 +22,7 @@ var (
 	}
 	testMonitorScriptJson = `
 	{
-		"scriptText": "dmFyIGFzc2VydCA9IHJlcXVpcmUoJ2Fzc2VydCcpOw0KYXNzZXJ0LmVxdWFsKCcxJywgJzEnKTs",
-		"scriptLocations": [
-			{
-				"name": "my_vse_enabled_location",
-				"hmac": "MjhiNGE4MjVlMDE1N2M4NDQ4MjNjNDFkZDEyYTRjMmUzZDE3NGJlNjU0MWFmOTJlMzNiODExOGU2ZjhkZTY4ZQ"
-			}
-		]
+		"scriptText": "dmFyIGFzc2VydCA9IHJlcXVpcmUoJ2Fzc2VydCcpOw0KYXNzZXJ0LmVxdWFsKCcxJywgJzEnKTs"
 	}
 	`
 )

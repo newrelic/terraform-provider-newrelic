@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	testMonitorID    = "72733a02-9701-4279-8ac3-8f6281a5a1a9"
-	testTimestamp, _ = time.Parse(time.RFC3339, "2019-11-27T19:11:05.076+0000")
+	testMonitorID = "72733a02-9701-4279-8ac3-8f6281a5a1a9"
+	testTime, _   = time.Parse(syntheticsTimeFormat, "2019-11-27T19:11:05.076+0000")
+	testTimestamp = Time(testTime)
 
 	testMonitorOptions = MonitorOptions{
 		ValidationString:       "",
@@ -33,8 +34,8 @@ var (
 		SLAThreshold: 7,
 		UserID:       0,
 		APIVersion:   "LATEST",
-		ModifiedAt:   testTimestamp,
-		CreatedAt:    testTimestamp,
+		ModifiedAt:   &testTimestamp,
+		CreatedAt:    &testTimestamp,
 		Options:      testMonitorOptions,
 	}
 

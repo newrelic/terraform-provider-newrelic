@@ -1,7 +1,5 @@
 package synthetics
 
-import "time"
-
 // MonitorType represents a Synthetics monitor type.
 type MonitorType string
 
@@ -54,7 +52,7 @@ type Monitor struct {
 	SLAThreshold float64           `json:"slaThreshold"`
 	UserID       uint              `json:"userId,omitempty"`
 	APIVersion   string            `json:"apiVersion,omitempty"`
-	ModifiedAt   *time.Time        `json:"modified_at,omitempty"`
-	CreatedAt    *time.Time        `json:"created_at,omitempty"`
+	ModifiedAt   *Time             `json:"modifiedAt,omitempty"`
+	CreatedAt    *Time             `json:"createdAt,omitempty"`
 	Options      MonitorOptions    `json:"options,omitempty"`
 }
