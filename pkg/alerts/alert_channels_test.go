@@ -89,7 +89,7 @@ func TestListAlertChannels(t *testing.T) {
 			ID:   2803426,
 			Name: "unit-test-alert-channel",
 			Type: "user",
-			Configuration: &AlertChannelConfiguration{
+			Configuration: AlertChannelConfiguration{
 				UserID: "2680539",
 			},
 			Links: AlertChannelLinks{
@@ -100,7 +100,7 @@ func TestListAlertChannels(t *testing.T) {
 			ID:   2932511,
 			Name: "test@testing.com",
 			Type: "email",
-			Configuration: &AlertChannelConfiguration{
+			Configuration: AlertChannelConfiguration{
 				Recipients:            "test@testing.com",
 				IncludeJSONAttachment: "true",
 			},
@@ -125,7 +125,7 @@ func TestGetAlertChannel(t *testing.T) {
 		ID:   2803426,
 		Name: "unit-test-alert-channel",
 		Type: "user",
-		Configuration: &AlertChannelConfiguration{
+		Configuration: AlertChannelConfiguration{
 			UserID: "2680539",
 		},
 		Links: AlertChannelLinks{
@@ -160,7 +160,7 @@ func TestCreateAlertChannel(t *testing.T) {
 	channel := AlertChannel{
 		Name: "sblue@newrelic.com",
 		Type: "email",
-		Configuration: &AlertChannelConfiguration{
+		Configuration: AlertChannelConfiguration{
 			Recipients:            "sblue@newrelic.com",
 			IncludeJSONAttachment: "true",
 		},
@@ -170,7 +170,7 @@ func TestCreateAlertChannel(t *testing.T) {
 		ID:   2932701,
 		Name: "sblue@newrelic.com",
 		Type: "email",
-		Configuration: &AlertChannelConfiguration{
+		Configuration: AlertChannelConfiguration{
 			Recipients:            "sblue@newrelic.com",
 			IncludeJSONAttachment: "true",
 		},
@@ -197,7 +197,7 @@ func TestCreateAlertChannelInvalidChannelType(t *testing.T) {
 	channel := AlertChannel{
 		Name:          "string",
 		Type:          "string",
-		Configuration: &AlertChannelConfiguration{},
+		Configuration: AlertChannelConfiguration{},
 	}
 
 	actual, err := alerts.CreateAlertChannel(channel)
