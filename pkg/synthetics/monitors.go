@@ -16,31 +16,31 @@ type listMonitorsResponse struct {
 
 // ListMonitors is used to retrieve New Relic Synthetics monitors.
 func (s *Synthetics) ListMonitors() ([]Monitor, error) {
-	res := listMonitorsResponse{}
+	resp := listMonitorsResponse{}
 	paramsMap := map[string]string{
 		"limit": strconv.Itoa(listMonitorsLimit),
 	}
 
-	_, err := s.client.Get("/monitors", &paramsMap, &res)
+	_, err := s.client.Get("/monitors", &paramsMap, &resp)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return res.Monitors, nil
+	return resp.Monitors, nil
 }
 
 // GetMonitor is used to retrieve a specific New Relic Synthetics monitor.
 func (s *Synthetics) GetMonitor(monitorID string) (*Monitor, error) {
-	res := Monitor{}
+	resp := Monitor{}
 	url := fmt.Sprintf("/monitors/%s", monitorID)
-	_, err := s.client.Get(url, nil, &res)
+	_, err := s.client.Get(url, nil, &resp)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &res, nil
+	return &resp, nil
 }
 
 // CreateMonitor is used to create a New Relic Synthetics monitor.
