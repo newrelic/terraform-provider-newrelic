@@ -113,11 +113,7 @@ func TestDeleteInfrastructureConditions(t *testing.T) {
 	respJSON := fmt.Sprintf(`{ "data":%s }`, testInfrastructureConditionJson)
 	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
-	expected := &testInfrastructureCondition
-
-	actual, err := alerts.DeleteInfrastructureCondition(testInfrastructureCondition.ID)
+	err := alerts.DeleteInfrastructureCondition(testInfrastructureCondition.ID)
 
 	require.NoError(t, err)
-	require.NotNil(t, actual)
-	require.Equal(t, expected, actual)
 }

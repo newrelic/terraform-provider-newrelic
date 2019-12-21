@@ -145,8 +145,6 @@ func TestGetAlertChannelNotFound(t *testing.T) {
 
 	actual, err := alerts.GetAlertChannel(0)
 
-	t.Log(err.Error())
-
 	assert.Error(t, err)
 	assert.Nil(t, actual)
 	assert.Equal(t, "no channel found for id 0", err.Error())

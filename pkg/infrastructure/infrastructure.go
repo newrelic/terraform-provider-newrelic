@@ -5,10 +5,11 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
-var baseURLs = map[config.RegionType]string{
-	config.Region.US:      "https://infra-api.newrelic.com/v2/alerts/conditions",
-	config.Region.EU:      "https://infra-api.eu.newrelic.com/v2/alerts/conditions",
-	config.Region.Staging: "https://staging-infra-api.newrelic.com/v2/alerts/conditions",
+// BaseURLs describes the base URLs for the Infrastructure Alerts API.
+var BaseURLs = map[config.RegionType]string{
+	config.Region.US:      "https://infra-api.newrelic.com/v2",
+	config.Region.EU:      "https://infra-api.eu.newrelic.com/v2",
+	config.Region.Staging: "https://staging-infra-api.newrelic.com/v2",
 }
 
 // Infrastructure is used to communicate with the New Relic Infrastructure product.
@@ -19,7 +20,8 @@ type Infrastructure struct {
 
 // ErrorResponse represents an error response from New Relic Infrastructure.
 type ErrorResponse struct {
-	Errors []*ErrorDetail `json:"errors,omitempty"`
+	Errors  []*ErrorDetail `json:"errors,omitempty"`
+	Message string         `json:"description,omitempty"`
 }
 
 // ErrorDetail represents the details of an error response from New Relic Infrastructure.
@@ -30,25 +32,12 @@ type ErrorDetail struct {
 
 // Error surfaces an error message from the Infrastructure error response.
 func (e *ErrorResponse) Error() string {
-	if e != nil && len(e.Errors) > 0 && e.Errors[0].Detail != "" {
+	if e.Message != "" {
+		return e.Message
+	}
+
+	if len(e.Errors) > 0 && e.Errors[0].Detail != "" {
 		return e.Errors[0].Detail
 	}
 	return "Unknown error"
-}
-
-// New is used to create a new Infrastructure client instance.
-func New(config config.Config) Infrastructure {
-	if config.BaseURL == "" {
-		config.BaseURL = baseURLs[config.Region]
-	}
-
-	c := http.NewClient(config)
-	c.SetErrorValue(&ErrorResponse{})
-
-	pkg := Infrastructure{
-		client: c,
-		pager:  &http.LinkHeaderPager{},
-	}
-
-	return pkg
 }

@@ -82,8 +82,8 @@ func TestIntegrationListInfrastructureConditions(t *testing.T) {
 	require.NotZero(t, condition)
 
 	// Test: Update
-	testIntegrationInfrastructureCondition.Name = "Updated"
-	updated, err := alerts.UpdateInfrastructureCondition(testIntegrationInfrastructureCondition)
+	created.Name = "Updated"
+	updated, err := alerts.UpdateInfrastructureCondition(*created)
 
 	require.NoError(t, err)
 	require.NotZero(t, updated)
