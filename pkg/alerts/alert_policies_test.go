@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	testTimestamp = serialization.Epoch(time.Unix(1575438237690, 0))
+	testTimestamp = serialization.EpochTime(time.Unix(1575438237690, 0))
 )
 
 func NewTestAlerts(handler http.Handler) Alerts {

@@ -15,7 +15,7 @@ var (
 	testRandStr                      = nr.RandSeq(5)
 	testIntegrationSyntheticsMonitor = synthetics.Monitor{
 		Name:         fmt.Sprintf("test-synthetics-alert-conditions-monitor-%s", testRandStr),
-		Type:         synthetics.MonitorTypes.Simple,
+		Type:         synthetics.MonitorTypes.Ping,
 		Frequency:    15,
 		URI:          "https://google.com",
 		Locations:    []string{"AWS_US_EAST_1"},
