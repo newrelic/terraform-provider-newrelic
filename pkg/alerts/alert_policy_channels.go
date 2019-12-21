@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// UpdateAlertPolicyChannels updates a policy by adding the specified notification channels.
-func (alerts *Alerts) UpdateAlertPolicyChannels(policyID int, channelIDs []int) (*AlertPolicyChannels, error) {
+// UpdatePolicyChannels updates a policy by adding the specified notification channels.
+func (alerts *Alerts) UpdatePolicyChannels(policyID int, channelIDs []int) (*PolicyChannels, error) {
 	channelIDStrings := make([]string, len(channelIDs))
 
 	for i, channelID := range channelIDs {
@@ -18,7 +18,7 @@ func (alerts *Alerts) UpdateAlertPolicyChannels(policyID int, channelIDs []int) 
 		"channel_ids": strings.Join(channelIDStrings, ","),
 	}
 
-	resp := alertPolicyChannelsResponse{}
+	resp := updatePolicyChannelsResponse{}
 
 	_, err := alerts.client.Put("/alerts_policy_channels.json", &queryParams, nil, &resp)
 
@@ -29,15 +29,15 @@ func (alerts *Alerts) UpdateAlertPolicyChannels(policyID int, channelIDs []int) 
 	return &resp.Policy, nil
 }
 
-// DeleteAlertPolicyChannel deletes a notification channel from an alert policy.
+// DeletePolicyChannel deletes a notification channel from an alert policy.
 // This method returns a response containing the AlertChannel that was deleted from the policy.
-func (alerts *Alerts) DeleteAlertPolicyChannel(policyID int, channelID int) (*AlertChannel, error) {
+func (alerts *Alerts) DeletePolicyChannel(policyID int, channelID int) (*AlertChannel, error) {
 	queryParams := map[string]string{
 		"policy_id":  strconv.Itoa(policyID),
 		"channel_id": strconv.Itoa(channelID),
 	}
 
-	resp := deleteAlertPolicyChannelResponse{}
+	resp := deletePolicyChannelResponse{}
 
 	_, err := alerts.client.Delete("/alerts_policy_channels.json", &queryParams, &resp)
 
@@ -48,11 +48,11 @@ func (alerts *Alerts) DeleteAlertPolicyChannel(policyID int, channelID int) (*Al
 	return &resp.Channel, nil
 }
 
-type alertPolicyChannelsResponse struct {
-	Policy AlertPolicyChannels `json:"policy,omitempty"`
+type updatePolicyChannelsResponse struct {
+	Policy PolicyChannels `json:"policy,omitempty"`
 }
 
-type deleteAlertPolicyChannelResponse struct {
+type deletePolicyChannelResponse struct {
 	Channel AlertChannel      `json:"channel,omitempty"`
 	Links   map[string]string `json:"channel.policy_ids,omitempty"`
 }

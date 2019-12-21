@@ -31,10 +31,10 @@ var (
 	}
 )
 
-func TestIntegrationAlertPolicyChannels(t *testing.T) {
+func TestIntegrationPolicyChannels(t *testing.T) {
 	t.Parallel()
 
-	client := newAlertPolicyChannelsTestClient(t)
+	client := newPolicyChannelsTestClient(t)
 
 	// Setup
 	policyResp, err := client.CreateAlertPolicy(testIntegrationAlertPolicy)
@@ -61,19 +61,19 @@ func TestIntegrationAlertPolicyChannels(t *testing.T) {
 	}()
 
 	// Test: Update
-	updateResult, err := client.UpdateAlertPolicyChannels(policy.ID, []int{channel.ID})
+	updateResult, err := client.UpdatePolicyChannels(policy.ID, []int{channel.ID})
 
 	require.NoError(t, err)
 	require.NotNil(t, updateResult)
 
 	// Test: Delete
-	deleteResult, err := client.DeleteAlertPolicyChannel(policy.ID, updateResult.ChannelIDs[0])
+	deleteResult, err := client.DeletePolicyChannel(policy.ID, updateResult.ChannelIDs[0])
 
 	require.NoError(t, err)
 	require.NotNil(t, deleteResult)
 }
 
-func newAlertPolicyChannelsTestClient(t *testing.T) Alerts {
+func newPolicyChannelsTestClient(t *testing.T) Alerts {
 	apiKey := os.Getenv("NEWRELIC_API_KEY")
 
 	if apiKey == "" {

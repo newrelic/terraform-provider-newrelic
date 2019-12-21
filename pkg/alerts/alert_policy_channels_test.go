@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	testUpdateAlertPolicyChannelsResponseJSON = `{
+	testUpdatePolicyChannelsResponseJSON = `{
 		"policy": {
 			"id": 593436,
 			"channel_ids": [
@@ -23,7 +23,7 @@ var (
 		}
 	}`
 
-	testDeleteAlertPolicyChannelResponseJSON = `{
+	testDeletePolicyChannelResponseJSON = `{
 		"channel": {
 			"id": 2932701,
 			"name": "devtoolkit@newrelic.com",
@@ -44,13 +44,13 @@ var (
 	}`
 )
 
-func TestUpdateAlertPolicyChannels(t *testing.T) {
+func TestUpdatePolicyChannels(t *testing.T) {
 	t.Parallel()
-	alerts := newMocknewTestAlertPolicyChannelsClientResponse(t, testUpdateAlertPolicyChannelsResponseJSON, http.StatusOK)
+	alerts := newMocknewTestPolicyChannelsClientResponse(t, testUpdatePolicyChannelsResponseJSON, http.StatusOK)
 
-	actual, err := alerts.UpdateAlertPolicyChannels(593436, []int{2932701, 2932702})
+	actual, err := alerts.UpdatePolicyChannels(593436, []int{2932701, 2932702})
 
-	expected := AlertPolicyChannels{
+	expected := PolicyChannels{
 		ID:         593436,
 		ChannelIDs: []int{2932701, 2932702},
 	}
@@ -59,9 +59,9 @@ func TestUpdateAlertPolicyChannels(t *testing.T) {
 	assert.Equal(t, expected, *actual)
 }
 
-func TestDeleteAlertPolicyChannel(t *testing.T) {
+func TestDeletePolicyChannel(t *testing.T) {
 	t.Parallel()
-	alerts := newMocknewTestAlertPolicyChannelsClientResponse(t, testDeleteAlertPolicyChannelResponseJSON, http.StatusOK)
+	alerts := newMocknewTestPolicyChannelsClientResponse(t, testDeletePolicyChannelResponseJSON, http.StatusOK)
 
 	expected := AlertChannel{
 		ID:   2932701,
@@ -76,13 +76,13 @@ func TestDeleteAlertPolicyChannel(t *testing.T) {
 		},
 	}
 
-	actual, err := alerts.DeleteAlertPolicyChannel(593436, 2932701)
+	actual, err := alerts.DeletePolicyChannel(593436, 2932701)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, *actual)
 }
 
-func newTestAlertPolicyChannelsClient(handler http.Handler) Alerts {
+func newTestPolicyChannelsClient(handler http.Handler) Alerts {
 	ts := httptest.NewServer(handler)
 
 	c := New(config.Config{
@@ -94,12 +94,12 @@ func newTestAlertPolicyChannelsClient(handler http.Handler) Alerts {
 	return c
 }
 
-func newMocknewTestAlertPolicyChannelsClientResponse(
+func newMocknewTestPolicyChannelsClientResponse(
 	t *testing.T,
 	mockJsonResponse string,
 	statusCode int,
 ) Alerts {
-	return newTestAlertPolicyChannelsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return newTestPolicyChannelsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(statusCode)
 

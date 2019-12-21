@@ -1,11 +1,6 @@
 package alerts
 
-type AlertPolicyChannels struct {
+type PolicyChannels struct {
 	ID         int   `json:"id,omitempty"`
 	ChannelIDs []int `json:"channel_ids,omitempty"`
-}
-
-type AlertPolicyChannelsParams struct {
-	PolicyID   int
-	ChannelIDs []int
 }
