@@ -1,7 +1,6 @@
 package infrastructure
 
 import (
-	"github.com/newrelic/newrelic-client-go/internal/http"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
@@ -10,12 +9,6 @@ var BaseURLs = map[config.RegionType]string{
 	config.Region.US:      "https://infra-api.newrelic.com/v2",
 	config.Region.EU:      "https://infra-api.eu.newrelic.com/v2",
 	config.Region.Staging: "https://staging-infra-api.newrelic.com/v2",
-}
-
-// Infrastructure is used to communicate with the New Relic Infrastructure product.
-type Infrastructure struct {
-	client http.NewRelicClient
-	pager  http.Pager
 }
 
 // ErrorResponse represents an error response from New Relic Infrastructure.

@@ -1,22 +1,22 @@
 package newrelic
 
 import (
+	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
-	"github.com/newrelic/newrelic-client-go/pkg/infrastructure"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
 type NewRelic struct {
-	APM            apm.APM
-	Synthetics     synthetics.Synthetics
-	Infrastructure infrastructure.Infrastructure
+	Alerts     alerts.Alerts
+	APM        apm.APM
+	Synthetics synthetics.Synthetics
 }
 
 func New(config config.Config) NewRelic {
 	return NewRelic{
-		APM:            apm.New(config),
-		Infrastructure: infrastructure.New(config),
-		Synthetics:     synthetics.New(config),
+		Alerts:     alerts.New(config),
+		APM:        apm.New(config),
+		Synthetics: synthetics.New(config),
 	}
 }

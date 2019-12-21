@@ -29,16 +29,8 @@ var (
 
 func TestListSyntheticsConditions(t *testing.T) {
 	t.Parallel()
-	alerts := NewTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"synthetics_conditions": [%s]
-		}
-		`, testSyntheticsConditionJson)))
-
-		require.NoError(t, err)
-	}))
+	respJSON := fmt.Sprintf(`{ "synthetics_conditions": [%s] }`, testSyntheticsConditionJson)
+	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
 	expected := []SyntheticsCondition{testSyntheticsCondition}
 	actual, err := alerts.ListSyntheticsConditions(testPolicyID)
@@ -50,16 +42,8 @@ func TestListSyntheticsConditions(t *testing.T) {
 
 func TestCreateSyntheticsCondition(t *testing.T) {
 	t.Parallel()
-	alerts := NewTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"synthetics_condition": %s
-		}
-		`, testSyntheticsConditionJson)))
-
-		require.NoError(t, err)
-	}))
+	respJSON := fmt.Sprintf(`{ "synthetics_condition": %s }`, testSyntheticsConditionJson)
+	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
 	actual, err := alerts.CreateSyntheticsCondition(testPolicyID, testSyntheticsCondition)
 
@@ -70,17 +54,8 @@ func TestCreateSyntheticsCondition(t *testing.T) {
 
 func TestUpdateSyntheticsCondition(t *testing.T) {
 	t.Parallel()
-	alerts := NewTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"synthetics_condition": %s
-		}
-		`, testSyntheticsConditionJson)))
-
-		require.NoError(t, err)
-	}))
+	respJSON := fmt.Sprintf(`{ "synthetics_condition": %s }`, testSyntheticsConditionJson)
+	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
 	actual, err := alerts.UpdateSyntheticsCondition(testSyntheticsCondition)
 
@@ -91,16 +66,8 @@ func TestUpdateSyntheticsCondition(t *testing.T) {
 
 func TestDeleteSyntheticsCondition(t *testing.T) {
 	t.Parallel()
-	alerts := NewTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"synthetics_condition": %s
-		}
-		`, testSyntheticsConditionJson)))
-
-		require.NoError(t, err)
-	}))
+	respJSON := fmt.Sprintf(`{ "synthetics_condition": %s }`, testSyntheticsConditionJson)
+	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
 	actual, err := alerts.DeleteSyntheticsCondition(testSyntheticsCondition.ID)
 
