@@ -3,11 +3,32 @@
 package alerts
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
+	nr "github.com/newrelic/newrelic-client-go/internal/testing"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/require"
+)
+
+var (
+	testRandStr                = nr.RandSeq(5)
+	testIntegrationAlertPolicy = AlertPolicy{
+		IncidentPreference: "PER_POLICY",
+		Name:               fmt.Sprintf("test-alert-policy-%s", testRandStr),
+	}
+	testIntegrationAlertChannel = AlertChannel{
+		Name: fmt.Sprintf("test-alert-channel-%s", testRandStr),
+		Type: "slack",
+		Configuration: AlertChannelConfiguration{
+			URL:     "https://example-org.slack.com",
+			Channel: testRandStr,
+		},
+		Links: AlertChannelLinks{
+			PolicyIDs: []int{},
+		},
+	}
 )
 
 func TestIntegrationAlertPolicyChannels(t *testing.T) {
@@ -15,26 +36,41 @@ func TestIntegrationAlertPolicyChannels(t *testing.T) {
 
 	client := newAlertPolicyChannelsTestClient(t)
 
+	// Setup
+	policyResp, err := client.CreateAlertPolicy(testIntegrationAlertPolicy)
+	policy := *policyResp
+
+	require.NoError(t, err)
+
+	channelResp, err := client.CreateAlertChannel(testIntegrationAlertChannel)
+	channel := *channelResp
+
+	require.NoError(t, err)
+
+	// Teardown
+	defer func() {
+		_, err = client.DeleteAlertPolicy(policy.ID)
+		if err != nil {
+			t.Logf("Error cleaning up alert policy %d (%s): %s", policy.ID, policy.Name, err)
+		}
+
+		_, err = client.DeleteAlertChannel(channel.ID)
+		if err != nil {
+			t.Logf("Error cleaning up alert channel %d (%s): %s", channel.ID, channel.Name, err)
+		}
+	}()
+
 	// Test: Update
-	updateResult := testUpdateAlertPolicyChannels(t, client, 586667, []int{2932701})
+	updateResult, err := client.UpdateAlertPolicyChannels(policy.ID, []int{channel.ID})
+
+	require.NoError(t, err)
+	require.NotNil(t, updateResult)
 
 	// Test: Delete
-	testDeleteAlertPolicyChannel(t, client, updateResult)
-}
-
-func testUpdateAlertPolicyChannels(t *testing.T, client Alerts, id int, channelIDs []int) *AlertPolicyChannels {
-	result, err := client.UpdateAlertPolicyChannels(id, channelIDs)
+	deleteResult, err := client.DeleteAlertPolicyChannel(policy.ID, updateResult.ChannelIDs[0])
 
 	require.NoError(t, err)
-
-	return result
-}
-
-func testDeleteAlertPolicyChannel(t *testing.T, client Alerts, alertPolicyChannels *AlertPolicyChannels) {
-	p := *alertPolicyChannels
-	_, err := client.DeleteAlertPolicyChannel(p.ID, p.ChannelIDs[0])
-
-	require.NoError(t, err)
+	require.NotNil(t, deleteResult)
 }
 
 func newAlertPolicyChannelsTestClient(t *testing.T) Alerts {
