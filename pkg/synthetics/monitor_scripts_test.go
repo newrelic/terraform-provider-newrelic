@@ -29,14 +29,7 @@ var (
 
 func TestGetMonitorScript(t *testing.T) {
 	t.Parallel()
-	synthetics := NewTestSynthetics(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(testMonitorScriptJson))
-
-		if err != nil {
-			t.Fatal(err)
-		}
-	}))
+	synthetics := newMockResponse(t, testMonitorScriptJson, http.StatusOK)
 
 	script, err := synthetics.GetMonitorScript(testMonitorID)
 
@@ -46,14 +39,7 @@ func TestGetMonitorScript(t *testing.T) {
 
 func TestUpdateMonitorScript(t *testing.T) {
 	t.Parallel()
-	synthetics := NewTestSynthetics(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(testMonitorScriptJson))
-
-		if err != nil {
-			t.Fatal(err)
-		}
-	}))
+	synthetics := newMockResponse(t, testMonitorScriptJson, http.StatusOK)
 
 	err := synthetics.UpdateMonitorScript(testMonitorID, testMonitorScript)
 

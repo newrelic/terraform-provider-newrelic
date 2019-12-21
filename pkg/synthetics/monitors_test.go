@@ -64,18 +64,8 @@ var (
 
 func TestListMonitors(t *testing.T) {
 	t.Parallel()
-	synthetics := NewTestSynthetics(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"monitors": [%s]
-		}
-		`, testMonitorJson)))
-
-		if err != nil {
-			t.Fatal(err)
-		}
-	}))
+	respJSON := fmt.Sprintf(`{ "monitors": [%s] }`, testMonitorJson)
+	synthetics := newMockResponse(t, respJSON, http.StatusOK)
 
 	expected := []Monitor{
 		testMonitor,
@@ -90,14 +80,7 @@ func TestListMonitors(t *testing.T) {
 
 func TestGetMonitor(t *testing.T) {
 	t.Parallel()
-	synthetics := NewTestSynthetics(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(testMonitorJson))
-
-		if err != nil {
-			t.Fatal(err)
-		}
-	}))
+	synthetics := newMockResponse(t, testMonitorJson, http.StatusOK)
 
 	actual, err := synthetics.GetMonitor(testMonitorID)
 
@@ -108,14 +91,7 @@ func TestGetMonitor(t *testing.T) {
 
 func TestCreateMonitor(t *testing.T) {
 	t.Parallel()
-	synthetics := NewTestSynthetics(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(testMonitorJson))
-
-		if err != nil {
-			t.Fatal(err)
-		}
-	}))
+	synthetics := newMockResponse(t, testMonitorJson, http.StatusOK)
 
 	id, err := synthetics.CreateMonitor(testMonitor)
 
@@ -125,14 +101,7 @@ func TestCreateMonitor(t *testing.T) {
 
 func TestUpdateMonitor(t *testing.T) {
 	t.Parallel()
-	synthetics := NewTestSynthetics(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(testMonitorJson))
-
-		if err != nil {
-			t.Fatal(err)
-		}
-	}))
+	synthetics := newMockResponse(t, testMonitorJson, http.StatusOK)
 
 	err := synthetics.UpdateMonitor(testMonitor)
 
@@ -141,14 +110,7 @@ func TestUpdateMonitor(t *testing.T) {
 
 func TestDeleteMonitor(t *testing.T) {
 	t.Parallel()
-	synthetics := NewTestSynthetics(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(testMonitorJson))
-
-		if err != nil {
-			t.Fatal(err)
-		}
-	}))
+	synthetics := newMockResponse(t, testMonitorJson, http.StatusOK)
 
 	err := synthetics.DeleteMonitor(testMonitor.ID)
 

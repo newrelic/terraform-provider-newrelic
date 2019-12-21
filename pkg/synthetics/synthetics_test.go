@@ -3,24 +3,13 @@
 package synthetics
 
 import (
-	"testing"
 	"net/http"
 	"net/http/httptest"
+	"testing"
 
 	"github.com/newrelic/newrelic-client-go/pkg/config"
+	"github.com/stretchr/testify/require"
 )
-
-func NewTestSynthetics(handler http.Handler) Synthetics {
-	ts := httptest.NewServer(handler)
-
-	c := New(config.Config{
-		APIKey:    "abc123",
-		BaseURL:   ts.URL,
-		UserAgent: "newrelic/newrelic-client-go",
-	})
-
-	return c
-}
 
 func TestDefaultEnvironment(t *testing.T) {
 	t.Parallel()
@@ -57,4 +46,33 @@ func TestStagingEnvironment(t *testing.T) {
 	if actual != expected {
 		t.Errorf("expected baseURL: %s, received: %s", expected, actual)
 	}
+}
+
+// nolint
+func newTestAlerts(handler http.Handler) Synthetics {
+	ts := httptest.NewServer(handler)
+
+	c := New(config.Config{
+		APIKey:    "abc123",
+		BaseURL:   ts.URL,
+		UserAgent: "newrelic/newrelic-client-go",
+	})
+
+	return c
+}
+
+// nolint
+func newMockResponse(
+	t *testing.T,
+	mockJSONResponse string,
+	statusCode int,
+) Synthetics {
+	return newTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(statusCode)
+
+		_, err := w.Write([]byte(mockJSONResponse))
+
+		require.NoError(t, err)
+	}))
 }
