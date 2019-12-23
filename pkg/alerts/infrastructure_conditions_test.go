@@ -14,7 +14,7 @@ import (
 
 var (
 	testInfrastructureConditionPolicyId  = 111111
-	testInfrastructureConditionTimestamp = serialization.Epoch(time.Unix(1490996713872, 0))
+	testInfrastructureConditionTimestamp = serialization.EpochTime(time.Unix(1490996713872, 0))
 	testInfrastructureConditionThreshold = InfrastructureConditionThreshold{
 		Duration: 6,
 		Value:    0,

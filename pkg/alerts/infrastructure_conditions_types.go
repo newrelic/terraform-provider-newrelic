@@ -5,7 +5,7 @@ import "github.com/newrelic/newrelic-client-go/internal/serialization"
 // InfrastructureCondition represents a New Relic Infrastructure alert condition.
 type InfrastructureCondition struct {
 	Comparison          string                            `json:"comparison,omitempty"`
-	CreatedAt           *serialization.Epoch              `json:"created_at_epoch_millis,omitempty"`
+	CreatedAt           *serialization.EpochTime          `json:"created_at_epoch_millis,omitempty"`
 	Critical            *InfrastructureConditionThreshold `json:"critical_threshold,omitempty"`
 	Enabled             bool                              `json:"enabled"`
 	Event               string                            `json:"event_type,omitempty"`
@@ -17,7 +17,7 @@ type InfrastructureCondition struct {
 	RunbookURL          string                            `json:"runbook_url,omitempty"`
 	Select              string                            `json:"select_value,omitempty"`
 	Type                string                            `json:"type,omitempty"`
-	UpdatedAt           *serialization.Epoch              `json:"updated_at_epoch_millis,omitempty"`
+	UpdatedAt           *serialization.EpochTime          `json:"updated_at_epoch_millis,omitempty"`
 	ViolationCloseTimer *int                              `json:"violation_close_timer,omitempty"`
 	Warning             *InfrastructureConditionThreshold `json:"warning_threshold,omitempty"`
 	Where               string                            `json:"where_clause,omitempty"`
