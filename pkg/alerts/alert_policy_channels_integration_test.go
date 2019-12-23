@@ -13,17 +13,17 @@ import (
 )
 
 var (
-	testRandStr                = nr.RandSeq(5)
-	testIntegrationAlertPolicy = AlertPolicy{
+	testPolicyNameRandStr = nr.RandSeq(5)
+	testIntegrationPolicy = AlertPolicy{
 		IncidentPreference: "PER_POLICY",
-		Name:               fmt.Sprintf("test-alert-policy-%s", testRandStr),
+		Name:               fmt.Sprintf("test-alert-policy-%s", testPolicyNameRandStr),
 	}
 	testIntegrationAlertChannel = AlertChannel{
-		Name: fmt.Sprintf("test-alert-channel-%s", testRandStr),
+		Name: fmt.Sprintf("test-alert-channel-%s", testPolicyNameRandStr),
 		Type: "slack",
 		Configuration: AlertChannelConfiguration{
 			URL:     "https://example-org.slack.com",
-			Channel: testRandStr,
+			Channel: testPolicyNameRandStr,
 		},
 		Links: AlertChannelLinks{
 			PolicyIDs: []int{},
@@ -37,7 +37,7 @@ func TestIntegrationPolicyChannels(t *testing.T) {
 	client := newPolicyChannelsTestClient(t)
 
 	// Setup
-	policyResp, err := client.CreateAlertPolicy(testIntegrationAlertPolicy)
+	policyResp, err := client.CreateAlertPolicy(testIntegrationPolicy)
 	policy := *policyResp
 
 	require.NoError(t, err)

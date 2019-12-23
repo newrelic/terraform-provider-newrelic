@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	testAlertPolicyRandStr = nr.RandSeq(5)
+	testIntegrationPolicyNameRandStr = nr.RandSeq(5)
 )
 
 func TestIntegrationAlertPolicy(t *testing.T) {
@@ -22,7 +22,7 @@ func TestIntegrationAlertPolicy(t *testing.T) {
 
 	policy := AlertPolicy{
 		IncidentPreference: "PER_POLICY",
-		Name:               fmt.Sprintf("test-alert-policy-%s", testRandStr),
+		Name:               fmt.Sprintf("test-alert-policy-%s", testIntegrationPolicyNameRandStr),
 	}
 
 	// Test: Create
@@ -62,7 +62,7 @@ func testUpdateAlertPolicy(t *testing.T, client Alerts, policy *AlertPolicy) *Al
 	policyUpdated := AlertPolicy{
 		ID:                 policy.ID,
 		IncidentPreference: "PER_CONDITION",
-		Name:               fmt.Sprintf("test-alert-policy-updated-%s", testRandStr),
+		Name:               fmt.Sprintf("test-alert-policy-updated-%s", testIntegrationPolicyNameRandStr),
 	}
 
 	result, err := client.UpdateAlertPolicy(policyUpdated)
