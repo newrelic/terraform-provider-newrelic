@@ -26,11 +26,11 @@ var (
 	testDeletePolicyChannelResponseJSON = `{
 		"channel": {
 			"id": 2932701,
-			"name": "devtoolkit@newrelic.com",
+			"name": "test@example.com",
 			"type": "email",
 			"configuration": {
 				"include_json_attachment": "true",
-				"recipients": "devtoolkit@newrelic.com"
+				"recipients": "test@example.com"
 			},
 			"links": {
 				"policy_ids": [
@@ -65,11 +65,11 @@ func TestDeletePolicyChannel(t *testing.T) {
 
 	expected := AlertChannel{
 		ID:   2932701,
-		Name: "devtoolkit@newrelic.com",
+		Name: "test@example.com",
 		Type: "email",
 		Configuration: AlertChannelConfiguration{
 			IncludeJSONAttachment: "true",
-			Recipients:            "devtoolkit@newrelic.com",
+			Recipients:            "test@example.com",
 		},
 		Links: AlertChannelLinks{
 			PolicyIDs: []int{593436},
@@ -88,7 +88,6 @@ func newTestPolicyChannelsClient(handler http.Handler) Alerts {
 	c := New(config.Config{
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
-		UserAgent: "newrelic/newrelic-client-go",
 	})
 
 	return c
