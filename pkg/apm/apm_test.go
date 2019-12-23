@@ -50,4 +50,4 @@ func newIntegrationTestClient(t *testing.T) APM {
 	return New(config.Config{
 		APIKey: apiKey,
 	})
-}
+}t 
