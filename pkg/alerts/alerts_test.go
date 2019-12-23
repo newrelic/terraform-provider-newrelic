@@ -3,6 +3,7 @@ package alerts
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/newrelic/newrelic-client-go/pkg/config"
@@ -36,4 +37,17 @@ func newMockResponse(
 
 		require.NoError(t, err)
 	}))
+}
+
+// nolint
+func newIntegrationTestClient(t *testing.T) Alerts {
+	apiKey := os.Getenv("NEWRELIC_API_KEY")
+
+	if apiKey == "" {
+		t.Skipf("acceptance testing requires an API key")
+	}
+
+	return New(config.Config{
+		APIKey: apiKey,
+	})
 }
