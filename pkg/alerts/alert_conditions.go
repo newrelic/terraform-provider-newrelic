@@ -1,6 +1,9 @@
 package alerts
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 func (alerts *Alerts) ListAlertConditions(policyID int) ([]*AlertCondition, error) {
 	response := alertConditionsResponse{}
@@ -30,6 +33,21 @@ func (alerts *Alerts) ListAlertConditions(policyID int) ([]*AlertCondition, erro
 	}
 
 	return results, nil
+}
+
+func (alerts *Alerts) GetAlertCondition(policyID int, id int) (*AlertCondition, error) {
+	conditions, err := alerts.ListAlertConditions(policyID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, condition := range conditions {
+		if condition.ID == id {
+			return condition, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no condition found for policy %d and condition ID %d", policyID, id)
 }
 
 type alertConditionsResponse struct {

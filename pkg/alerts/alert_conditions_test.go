@@ -73,3 +73,41 @@ func TestListAlertConditions(t *testing.T) {
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
+
+func TestGetAlertCondition(t *testing.T) {
+	t.Parallel()
+	alerts := newMockResponse(t, testListAlertConditionsResponseJSON, http.StatusOK)
+
+	expected := &AlertCondition{
+		PolicyID:   0,
+		ID:         123,
+		Type:       "apm_app_metric",
+		Name:       "Apdex (High)",
+		Enabled:    true,
+		Entities:   []string{"321"},
+		Metric:     "apdex",
+		RunbookURL: "",
+		Terms: []AlertConditionTerm{
+			{
+				Duration:     5,
+				Operator:     "above",
+				Priority:     "critical",
+				Threshold:    0.9,
+				TimeFunction: "all",
+			},
+		},
+		UserDefined: AlertConditionUserDefined{
+			Metric:        "",
+			ValueFunction: "",
+		},
+		Scope:               "application",
+		GCMetric:            "",
+		ViolationCloseTimer: 0,
+	}
+
+	actual, err := alerts.GetAlertCondition(0, 123)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
+}
