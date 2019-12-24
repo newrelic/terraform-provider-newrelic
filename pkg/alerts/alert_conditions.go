@@ -71,6 +71,20 @@ func (alerts *Alerts) CreateAlertCondition(condition AlertCondition) (*AlertCond
 	return &resp.Condition, nil
 }
 
+// DeleteAlertCondition delete an alert condition.
+func (alerts *Alerts) DeleteAlertCondition(id int) (*AlertCondition, error) {
+	resp := alertConditionResponse{}
+	u := fmt.Sprintf("/alerts_conditions/%d.json", id)
+
+	_, err := alerts.client.Delete(u, nil, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.Condition, nil
+}
+
 type alertConditionsResponse struct {
 	Conditions []AlertCondition `json:"conditions,omitempty"`
 }
