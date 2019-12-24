@@ -71,6 +71,25 @@ func (alerts *Alerts) CreateAlertCondition(condition AlertCondition) (*AlertCond
 	return &resp.Condition, nil
 }
 
+// UpdateAlertCondition creates an alert condition for a specified policy.
+func (alerts *Alerts) UpdateAlertCondition(condition AlertCondition) (*AlertCondition, error) {
+	reqBody := alertConditionRequestBody{
+		Condition: condition,
+	}
+	resp := alertConditionResponse{}
+
+	u := fmt.Sprintf("/alerts_conditions/%d.json", condition.ID)
+	_, err := alerts.client.Put(u, nil, reqBody, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Condition.PolicyID = condition.PolicyID
+
+	return &resp.Condition, nil
+}
+
 // DeleteAlertCondition delete an alert condition.
 func (alerts *Alerts) DeleteAlertCondition(id int) (*AlertCondition, error) {
 	resp := alertConditionResponse{}
@@ -89,10 +108,10 @@ type alertConditionsResponse struct {
 	Conditions []AlertCondition `json:"conditions,omitempty"`
 }
 
-type alertConditionRequestBody struct {
+type alertConditionResponse struct {
 	Condition AlertCondition `json:"condition,omitempty"`
 }
 
-type alertConditionResponse struct {
+type alertConditionRequestBody struct {
 	Condition AlertCondition `json:"condition,omitempty"`
 }
