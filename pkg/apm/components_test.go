@@ -27,7 +27,7 @@ func TestListComponentsWithParams(t *testing.T) {
 	expectedName := "componentName"
 	expectedIDs := "123,456"
 	expectedPluginID := "1234"
-	expectedHealthStatus := "green"
+	expectedHealthStatus := "true"
 
 	apm := newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
@@ -62,7 +62,7 @@ func TestListComponentsWithParams(t *testing.T) {
 		IDs:          []int{123, 456},
 		PluginID:     1234,
 		Name:         expectedName,
-		HealthStatus: expectedHealthStatus,
+		HealthStatus: true,
 	}
 
 	c, err := apm.ListComponents(&params)
