@@ -71,7 +71,7 @@ func (alerts *Alerts) CreateAlertCondition(condition AlertCondition) (*AlertCond
 	return &resp.Condition, nil
 }
 
-// UpdateAlertCondition creates an alert condition for a specified policy.
+// UpdateAlertCondition updates an alert condition.
 func (alerts *Alerts) UpdateAlertCondition(condition AlertCondition) (*AlertCondition, error) {
 	reqBody := alertConditionRequestBody{
 		Condition: condition,
