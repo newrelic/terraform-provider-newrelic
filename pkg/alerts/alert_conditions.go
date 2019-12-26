@@ -8,7 +8,7 @@ import (
 // ListAlertConditions returns alert conditions for a specified policy.
 func (alerts *Alerts) ListAlertConditions(policyID int) ([]*AlertCondition, error) {
 	response := alertConditionsResponse{}
-	alertConditions := []AlertCondition{}
+	alertConditions := []*AlertCondition{}
 	queryParams := map[string]string{
 		"policy_id": strconv.Itoa(policyID),
 	}
@@ -28,12 +28,7 @@ func (alerts *Alerts) ListAlertConditions(policyID int) ([]*AlertCondition, erro
 		nextURL = paging.Next
 	}
 
-	results := []*AlertCondition{}
-	for _, condition := range alertConditions {
-		results = append(results, &condition)
-	}
-
-	return results, nil
+	return alertConditions, nil
 }
 
 // GetAlertCondition gets an alert condition for a specified policy ID and condition ID.
@@ -105,7 +100,7 @@ func (alerts *Alerts) DeleteAlertCondition(id int) (*AlertCondition, error) {
 }
 
 type alertConditionsResponse struct {
-	Conditions []AlertCondition `json:"conditions,omitempty"`
+	Conditions []*AlertCondition `json:"conditions,omitempty"`
 }
 
 type alertConditionResponse struct {
