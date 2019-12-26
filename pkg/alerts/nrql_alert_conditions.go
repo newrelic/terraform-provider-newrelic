@@ -72,6 +72,25 @@ func (alerts *Alerts) CreateNrqlAlertCondition(condition NrqlCondition) (*NrqlCo
 	return &resp.NrqlCondition, nil
 }
 
+// UpdateNrqlAlertCondition updates a NRQL alert condition.
+func (alerts *Alerts) UpdateNrqlAlertCondition(condition NrqlCondition) (*NrqlCondition, error) {
+	reqBody := nrqlConditionRequestBody{
+		NrqlCondition: condition,
+	}
+	resp := nrqlConditionResponse{}
+
+	u := fmt.Sprintf("/alerts_nrql_conditions/%d.json", condition.ID)
+	_, err := alerts.client.Put(u, nil, reqBody, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp.NrqlCondition.PolicyID = condition.PolicyID
+
+	return &resp.NrqlCondition, nil
+}
+
 type nrqlConditionsResponse struct {
 	NrqlConditions []*NrqlCondition `json:"nrql_conditions,omitempty"`
 }
