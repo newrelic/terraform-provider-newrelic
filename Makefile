@@ -6,26 +6,6 @@ PROJECT_VER  := $(shell git describe --tags --always --dirty | sed -e '/^v/s/^v\
 SRCDIR       ?= .
 GO            = go
 
-# Main API Entry point
-PACKAGES = ${SRCDIR}/newrelic
-
-# Determine packages by looking into pkg/*
-ifneq ("$(wildcard ${SRCDIR}/pkg/*)","")
-	PACKAGES += $(wildcard ${SRCDIR}/pkg/*)
-endif
-ifneq ("$(wildcard ${SRCDIR}/internal/*)","")
-	PACKAGES += $(wildcard ${SRCDIR}/internal/*)
-endif
-
-# Determine commands by looking into cmd/*
-COMMANDS = $(wildcard ${SRCDIR}/cmd/*)
-
-GO_FILES := $(shell find $(COMMANDS) $(PACKAGES) -type f -name "*.go")
-
-# Determine binary names by stripping out the dir names
-BINS=$(foreach cmd,${COMMANDS},$(notdir ${cmd}))
-
-
 
 #############################
 # Targets
