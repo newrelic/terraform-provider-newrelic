@@ -95,3 +95,38 @@ func TestListNrqlAlertConditions(t *testing.T) {
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
+
+func TestGetNrqlAlertCondition(t *testing.T) {
+	t.Parallel()
+	alerts := newMockResponse(t, testListNrqlAlertConditionsResponseJSON, http.StatusOK)
+
+	expected := &NrqlCondition{
+		Nrql: NrqlQuery{
+			Query:      "SELECT count(*) FROM Transactions",
+			SinceValue: "3",
+		},
+		Terms: []AlertConditionTerm{
+			{
+				Duration:     5,
+				Operator:     "above",
+				Priority:     "critical",
+				Threshold:    1,
+				TimeFunction: "all",
+			},
+		},
+		Type:                "static",
+		Name:                "NRQL Test Alert",
+		RunbookURL:          "",
+		ValueFunction:       "single_value",
+		PolicyID:            123,
+		ID:                  12345,
+		ViolationCloseTimer: 3600,
+		Enabled:             true,
+	}
+
+	actual, err := alerts.GetNrqlAlertCondition(123, 12345)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
+}
