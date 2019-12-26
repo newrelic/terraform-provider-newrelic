@@ -37,24 +37,26 @@ var (
 	}`
 
 	testNrqlAlertConditionJSON = `{
-		"type": "static",
-		"id": 12345,
-		"name": "NRQL Test Alert",
-		"enabled": true,
-		"value_function": "single_value",
-		"violation_time_limit_seconds": 3600,
-		"terms": [
-			{
-				"duration": "5",
-				"operator": "above",
-				"priority": "critical",
-				"threshold": "1",
-				"time_function": "all"
+		"nrql_condition": {
+			"type": "static",
+			"id": 12345,
+			"name": "NRQL Test Alert",
+			"enabled": true,
+			"value_function": "single_value",
+			"violation_time_limit_seconds": 3600,
+			"terms": [
+				{
+					"duration": "5",
+					"operator": "above",
+					"priority": "critical",
+					"threshold": "1",
+					"time_function": "all"
+				}
+			],
+			"nrql": {
+				"query": "SELECT count(*) FROM Transactions",
+				"since_value": "3"
 			}
-		],
-		"nrql": {
-			"query": "SELECT count(*) FROM Transactions",
-			"since_value": "3"
 		}
 	}`
 )
@@ -125,6 +127,43 @@ func TestGetNrqlAlertCondition(t *testing.T) {
 	}
 
 	actual, err := alerts.GetNrqlAlertCondition(123, 12345)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
+}
+
+func TestCreateNrqlAlertCondition(t *testing.T) {
+	t.Parallel()
+	alerts := newMockResponse(t, testNrqlAlertConditionJSON, http.StatusCreated)
+
+	condition := NrqlCondition{
+		Nrql: NrqlQuery{
+			Query:      "SELECT count(*) FROM Transactions",
+			SinceValue: "3",
+		},
+		Terms: []AlertConditionTerm{
+			{
+				Duration:     5,
+				Operator:     "above",
+				Priority:     "critical",
+				Threshold:    1,
+				TimeFunction: "all",
+			},
+		},
+		Type:                "static",
+		Name:                "NRQL Test Alert",
+		RunbookURL:          "",
+		ValueFunction:       "single_value",
+		PolicyID:            123,
+		ID:                  12345,
+		ViolationCloseTimer: 3600,
+		Enabled:             true,
+	}
+
+	expected := &condition
+
+	actual, err := alerts.CreateNrqlAlertCondition(condition)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)

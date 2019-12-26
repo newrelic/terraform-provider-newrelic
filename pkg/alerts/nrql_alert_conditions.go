@@ -53,6 +53,33 @@ func (alerts *Alerts) GetNrqlAlertCondition(policyID int, id int) (*NrqlConditio
 	return nil, fmt.Errorf("no condition found for policy %d and condition ID %d", policyID, id)
 }
 
+// CreateNrqlAlertCondition creates a NRQL alert condition.
+func (alerts *Alerts) CreateNrqlAlertCondition(condition NrqlCondition) (*NrqlCondition, error) {
+	reqBody := nrqlConditionRequestBody{
+		NrqlCondition: condition,
+	}
+	resp := nrqlConditionResponse{}
+
+	u := fmt.Sprintf("/alerts_nrql_conditions/policies/%d.json", condition.PolicyID)
+	_, err := alerts.client.Post(u, nil, reqBody, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp.NrqlCondition.PolicyID = condition.PolicyID
+
+	return &resp.NrqlCondition, nil
+}
+
 type nrqlConditionsResponse struct {
 	NrqlConditions []*NrqlCondition `json:"nrql_conditions,omitempty"`
+}
+
+type nrqlConditionResponse struct {
+	NrqlCondition NrqlCondition `json:"nrql_condition,omitempty"`
+}
+
+type nrqlConditionRequestBody struct {
+	NrqlCondition NrqlCondition `json:"nrql_condition,omitempty"`
 }
