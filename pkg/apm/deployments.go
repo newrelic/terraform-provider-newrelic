@@ -26,6 +26,31 @@ func (apm *APM) ListDeployments(id int) ([]*Deployment, error) {
 	return deployments, nil
 }
 
+// CreateDeployment creates a deployment marker for an application.
+func (apm *APM) CreateDeployment(applicationID int, deployment Deployment) (*Deployment, error) {
+	reqBody := deploymentRequestBody{
+		Deployment: deployment,
+	}
+	resp := deploymentResponse{}
+
+	u := fmt.Sprintf("/applications/%v/deployments.json", applicationID)
+	_, err := apm.client.Post(u, nil, reqBody, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.Deployment, nil
+}
+
 type deploymentsResponse struct {
 	Deployments []*Deployment `json:"deployments,omitempty"`
+}
+
+type deploymentResponse struct {
+	Deployment Deployment `json:"deployment,omitempty"`
+}
+
+type deploymentRequestBody struct {
+	Deployment Deployment `json:"deployment,omitempty"`
 }
