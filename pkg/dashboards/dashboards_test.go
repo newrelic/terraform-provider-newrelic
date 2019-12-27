@@ -88,14 +88,14 @@ var (
 				1234,
 			},
 			CompareWith: []DashboardWidgetDataCompareWith{
-				DashboardWidgetDataCompareWith{
+				{
 					OffsetDuration: "P7D",
 					Presentation: DashboardWidgetDataCompareWithPresentation{
 						Name:  "Last week",
 						Color: "#b1b6ba",
 					},
 				},
-				DashboardWidgetDataCompareWith{
+				{
 					OffsetDuration: "P1D",
 					Presentation: DashboardWidgetDataCompareWithPresentation{
 						Name:  "Yesterday",
@@ -104,7 +104,7 @@ var (
 				},
 			},
 			Metrics: []DashboardWidgetDataMetric{
-				DashboardWidgetDataMetric{
+				{
 					Name:  "CPU/System/Utilization",
 					Units: "",
 					Scope: "",

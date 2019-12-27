@@ -244,7 +244,7 @@ func TestUpdateApplication(t *testing.T) {
 	}))
 
 	params := UpdateApplicationParams{
-		Name: testApplication.Name,
+		Name:     testApplication.Name,
 		Settings: testApplication.Settings,
 	}
 
