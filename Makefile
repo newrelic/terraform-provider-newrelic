@@ -25,7 +25,8 @@ clean: clean-cover clean-compile
 include build/compile.mk
 include build/deps.mk
 include build/document.mk
-include build/testing.mk
+include build/lint.mk
+include build/test.mk
 include build/util.mk
 
 .PHONY: all build build-ci clean
