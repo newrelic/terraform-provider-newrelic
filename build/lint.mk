@@ -1,9 +1,8 @@
 #
-# Makefile fragment for Testing
+# Makefile fragment for Linting
 #
 
 GO           ?= go
-GOLINTER     ?= golangci-lint
 MISSPELL     ?= misspell
 GOFMT        ?= gofmt
 
@@ -13,16 +12,11 @@ FILES        ?= $(shell find ${SRCDIR} -type f | grep -v -e '.git/' -e '/vendor/
 
 GOTOOLS += github.com/client9/misspell/cmd/misspell \
            github.com/fzipp/gocyclo \
-           github.com/golangci/golangci-lint/cmd/golangci-lint \
            github.com/gordonklaus/ineffassign \
            github.com/remyoudompheng/go-misc/deadcode \
            github.com/timakin/bodyclose \
            golang.org/x/lint/golint
 
-
-#lint: deps spell-check
-#	@echo "=== $(PROJECT_NAME) === [ lint             ]: Validating source code running $(GOLINTER)..."
-#	@$(GOLINTER) -v run ./...
 
 lint: deps spell-check gofmt govet golint ineffassign gocyclo deadcode bodyclose
 lint-fix: deps spell-check-fix gofmt-fix
