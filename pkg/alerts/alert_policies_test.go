@@ -110,7 +110,7 @@ func TestListAlertPoliciesWithParams(t *testing.T) {
 
 		name := values.Get("filter[name]")
 		if name != expectedName {
-			t.Errorf(`expected name filter "%s", recieved: "%s"`, expectedName, name)
+			t.Errorf(`expected name filter "%s", received: "%s"`, expectedName, name)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
