@@ -86,8 +86,8 @@ func newTestPolicyChannelsClient(handler http.Handler) Alerts {
 	ts := httptest.NewServer(handler)
 
 	c := New(config.Config{
-		APIKey:    "abc123",
-		BaseURL:   ts.URL,
+		APIKey:  "abc123",
+		BaseURL: ts.URL,
 	})
 
 	return c

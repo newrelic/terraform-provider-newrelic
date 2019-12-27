@@ -156,22 +156,22 @@ func TestListApplicationsWithParams(t *testing.T) {
 
 		name := values.Get("filter[name]")
 		if name != expectedName {
-			t.Errorf(`expected name filter "%s", recieved: "%s"`, expectedName, name)
+			t.Errorf(`expected name filter "%s", received: "%s"`, expectedName, name)
 		}
 
 		host := values.Get("filter[host]")
 		if host != expectedHost {
-			t.Errorf(`expected host filter "%s", recieved: "%s"`, expectedHost, host)
+			t.Errorf(`expected host filter "%s", received: "%s"`, expectedHost, host)
 		}
 
 		ids := values.Get("filter[ids]")
 		if ids != expectedIDs {
-			t.Errorf(`expected ids filter "%s", recieved: "%s"`, expectedIDs, ids)
+			t.Errorf(`expected ids filter "%s", received: "%s"`, expectedIDs, ids)
 		}
 
 		language := values.Get("filter[language]")
 		if language != expectedLanguage {
-			t.Errorf(`expected language filter "%s", recieved: "%s"`, expectedLanguage, language)
+			t.Errorf(`expected language filter "%s", received: "%s"`, expectedLanguage, language)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -244,7 +244,7 @@ func TestUpdateApplication(t *testing.T) {
 	}))
 
 	params := UpdateApplicationParams{
-		Name: testApplication.Name,
+		Name:     testApplication.Name,
 		Settings: testApplication.Settings,
 	}
 

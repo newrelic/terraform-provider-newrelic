@@ -7,6 +7,13 @@ BUILD_DIR  ?= ./bin/
 LDFLAGS    ?= '-X main.Version=$(PROJECT_VER)'
 SRCDIR     ?= .
 
+# Determine commands by looking into cmd/*
+COMMANDS   ?= $(wildcard ${SRCDIR}/cmd/*)
+
+# Determine binary names by stripping out the dir names
+BINS       := $(foreach cmd,${COMMANDS},$(notdir ${cmd}))
+
+
 clean-compile:
 	@echo "=== $(PROJECT_NAME) === [ clean-compile    ]: removing binaries..."
 	@rm -rfv $(BUILD_DIR)/*

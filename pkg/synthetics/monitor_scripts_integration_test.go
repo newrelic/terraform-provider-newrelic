@@ -69,4 +69,5 @@ func TestIntegrationMonitorScripts(t *testing.T) {
 
 	// Teardown
 	err = synthetics.DeleteMonitor(monitorID)
+	require.NoError(t, err)
 }

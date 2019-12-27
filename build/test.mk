@@ -4,20 +4,20 @@
 
 GO           ?= go
 GOLINTER     ?= golangci-lint
+MISSPELL     ?= misspell
+GOFMT        ?= gofmt
+
 COVERAGE_DIR ?= ./coverage/
 COVERMODE    ?= atomic
+SRCDIR       ?= .
 GO_PKGS      ?= $(shell ${GO} list ./... | grep -v -e "/vendor/" -e "/example")
+FILES        ?= $(shell find ${SRCDIR} -type f | grep -v -e '.git/' -e '/vendor/')
 
-GOTOOLS += github.com/golangci/golangci-lint/cmd/golangci-lint \
-           github.com/stretchr/testify/assert
+GOTOOLS += github.com/stretchr/testify/assert
 
 clean-cover:
 	@echo "=== $(PROJECT_NAME) === [ clean-cover      ]: removing coverage files..."
 	@rm -rfv $(COVERAGE_DIR)/*
-
-lint: deps
-	@echo "=== $(PROJECT_NAME) === [ lint             ]: Validating source code running $(GOLINTER)..."
-	@$(GOLINTER) run ./...
 
 test: test-only
 test-only: test-unit test-integration
@@ -43,4 +43,4 @@ cover-report:
 cover-view: cover-report
 	@$(GO) tool cover -html=$(COVERAGE_DIR)/coverage.out
 
-.PHONY: lint test test-only test-unit test-integration cover-report cover-view
+.PHONY: test test-only test-unit test-integration cover-report cover-view
