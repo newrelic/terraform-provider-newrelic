@@ -22,7 +22,6 @@ func (alerts *Alerts) ListNrqlAlertConditions(policyID int) ([]*NrqlCondition, e
 			return nil, err
 		}
 
-		// TODO: Is this really necessary?
 		for _, c := range response.NrqlConditions {
 			c.PolicyID = policyID
 		}
