@@ -91,6 +91,20 @@ func (alerts *Alerts) UpdateNrqlAlertCondition(condition NrqlCondition) (*NrqlCo
 	return &resp.NrqlCondition, nil
 }
 
+// DeleteNrqlAlertCondition deletes a NRQL alert condition.
+func (alerts *Alerts) DeleteNrqlAlertCondition(id int) (*NrqlCondition, error) {
+	resp := nrqlConditionResponse{}
+	u := fmt.Sprintf("/alerts_nrql_conditions/%d.json", id)
+
+	_, err := alerts.client.Delete(u, nil, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.NrqlCondition, nil
+}
+
 type nrqlConditionsResponse struct {
 	NrqlConditions []*NrqlCondition `json:"nrql_conditions,omitempty"`
 }
