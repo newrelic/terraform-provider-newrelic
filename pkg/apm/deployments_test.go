@@ -95,3 +95,26 @@ func TestCreateDeployment(t *testing.T) {
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
+
+func TestDeleteDeployment(t *testing.T) {
+	t.Parallel()
+	apm := newMockResponse(t, testDeploymentJSON, http.StatusCreated)
+
+	expected := &Deployment{
+		ID:          321,
+		Revision:    "master",
+		Changelog:   "v0.0.1",
+		Description: "testing",
+		User:        "foo",
+		Timestamp:   "2019-12-27T19:13:23+00:00",
+		Links: DeploymentLinks{
+			Application: 222,
+		},
+	}
+
+	actual, err := apm.DeleteDeployment(222, 321)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
+}

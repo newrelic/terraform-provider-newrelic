@@ -33,8 +33,22 @@ func (apm *APM) CreateDeployment(applicationID int, deployment Deployment) (*Dep
 	}
 	resp := deploymentResponse{}
 
-	u := fmt.Sprintf("/applications/%v/deployments.json", applicationID)
+	u := fmt.Sprintf("/applications/%d/deployments.json", applicationID)
 	_, err := apm.client.Post(u, nil, reqBody, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.Deployment, nil
+}
+
+// DeleteDeployment deletes a deployment marker for an application.
+func (apm *APM) DeleteDeployment(applicationID int, deploymentID int) (*Deployment, error) {
+	resp := deploymentResponse{}
+	u := fmt.Sprintf("/applications/%d/deployments/%d.json", applicationID, deploymentID)
+
+	_, err := apm.client.Delete(u, nil, &resp)
 
 	if err != nil {
 		return nil, err
