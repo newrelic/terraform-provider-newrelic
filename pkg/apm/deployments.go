@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-// ListDeployments returns deployments an application by application ID.
-func (apm *APM) ListDeployments(id int) ([]*Deployment, error) {
+// ListDeployments returns deployments for an application.
+func (apm *APM) ListDeployments(applicationID int) ([]*Deployment, error) {
 	response := deploymentsResponse{}
 	deployments := []*Deployment{}
-	nextURL := fmt.Sprintf("/applications/%d/deployments.json", id)
+	nextURL := fmt.Sprintf("/applications/%d/deployments.json", applicationID)
 
 	for nextURL != "" {
 		resp, err := apm.client.Get(nextURL, nil, &response)
@@ -34,7 +34,7 @@ func (apm *APM) CreateDeployment(applicationID int, deployment Deployment) (*Dep
 	resp := deploymentResponse{}
 
 	u := fmt.Sprintf("/applications/%d/deployments.json", applicationID)
-	_, err := apm.client.Post(u, nil, reqBody, &resp)
+	_, err := apm.client.Post(u, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err

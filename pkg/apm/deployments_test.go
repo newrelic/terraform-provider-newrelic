@@ -53,8 +53,8 @@ func TestListDeployments(t *testing.T) {
 			Description: "testing",
 			User:        "foo",
 			Timestamp:   "2019-12-27T19:13:23+00:00",
-			Links: DeploymentLinks{
-				Application: 111,
+			Links: &DeploymentLinks{
+				ApplicationID: 111,
 			},
 		},
 	}
@@ -84,8 +84,8 @@ func TestCreateDeployment(t *testing.T) {
 		Description: "testing",
 		User:        "foo",
 		Timestamp:   "2019-12-27T19:13:23+00:00",
-		Links: DeploymentLinks{
-			Application: 222,
+		Links: &DeploymentLinks{
+			ApplicationID: 222,
 		},
 	}
 
@@ -107,8 +107,8 @@ func TestDeleteDeployment(t *testing.T) {
 		Description: "testing",
 		User:        "foo",
 		Timestamp:   "2019-12-27T19:13:23+00:00",
-		Links: DeploymentLinks{
-			Application: 222,
+		Links: &DeploymentLinks{
+			ApplicationID: 222,
 		},
 	}
 
