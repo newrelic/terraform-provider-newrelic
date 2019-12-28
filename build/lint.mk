@@ -13,12 +13,11 @@ FILES        ?= $(shell find ${SRCDIR} -type f | grep -v -e '.git/' -e '/vendor/
 GOTOOLS += github.com/client9/misspell/cmd/misspell \
            github.com/fzipp/gocyclo \
            github.com/gordonklaus/ineffassign \
-           github.com/remyoudompheng/go-misc/deadcode \
            github.com/timakin/bodyclose \
            golang.org/x/lint/golint
 
 
-lint: deps spell-check gofmt govet golint ineffassign gocyclo deadcode bodyclose
+lint: deps spell-check gofmt govet golint ineffassign gocyclo bodyclose
 lint-fix: deps spell-check-fix gofmt-fix
 
 #
@@ -55,10 +54,6 @@ ineffassign: deps
 gocyclo: deps
 	@echo "=== $(PROJECT_NAME) === [ gocyclo          ]: Calculating cyclomatic complexities of functions (gocyclo)..."
 	@gocyclo -over 20 $(SRCDIR)
-
-deadcode: deps
-	@echo "=== $(PROJECT_NAME) === [ deadcode         ]: Checking for unused code (deadcode)..."
-	@deadcode $(GO_PKGS)
 
 bodyclose: deps
 	@echo "=== $(PROJECT_NAME) === [ bodyclose        ]: Checking that http response bodies are closed (bodyclose)..."
