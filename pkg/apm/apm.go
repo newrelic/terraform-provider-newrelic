@@ -1,9 +1,6 @@
 package apm
 
 import (
-	"os"
-	"testing"
-
 	"github.com/newrelic/newrelic-client-go/internal/http"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
@@ -22,17 +19,4 @@ func New(config config.Config) APM {
 	}
 
 	return pkg
-}
-
-// nolint
-func newIntegrationTestClient(t *testing.T) APM {
-	apiKey := os.Getenv("NEWRELIC_API_KEY")
-
-	if apiKey == "" {
-		t.Skipf("acceptance testing requires an API key")
-	}
-
-	return New(config.Config{
-		APIKey: apiKey,
-	})
 }
