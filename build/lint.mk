@@ -6,6 +6,7 @@ GO           ?= go
 MISSPELL     ?= misspell
 GOFMT        ?= gofmt
 
+EXCLUDEDIR   ?= .git
 SRCDIR       ?= .
 GO_PKGS      ?= $(shell ${GO} list ./... | grep -v -e "/vendor/" -e "/example")
 FILES        ?= $(shell find ${SRCDIR} -type f | grep -v -e '.git/' -e '/vendor/')
@@ -33,11 +34,11 @@ spell-check-fix: deps
 
 gofmt: deps
 	@echo "=== $(PROJECT_NAME) === [ gofmt            ]: Checking file format with $(GOFMT)..."
-	@$(GOFMT) -e -l -s -d ${SRCDIR}
+	@find . -path "$(EXCLUDEDIR)" -prune -print0 | xargs -0 $(GOFMT) -e -l -s -d ${SRCDIR}
 
 gofmt-fix: deps
 	@echo "=== $(PROJECT_NAME) === [ gofmt-fix        ]: Fixing file format with $(GOFMT)..."
-	@$(GOFMT) -e -l -s -w ${SRCDIR}
+	@find . -path "$(EXCLUDEDIR)" -prune -print0 | xargs -0 $(GOFMT) -e -l -s -w ${SRCDIR}
 
 govet: deps
 	@echo "=== $(PROJECT_NAME) === [ govet            ]: Checking file format with $(GO) vet..."
@@ -53,7 +54,7 @@ ineffassign: deps
 
 gocyclo: deps
 	@echo "=== $(PROJECT_NAME) === [ gocyclo          ]: Calculating cyclomatic complexities of functions (gocyclo)..."
-	@gocyclo -over 20 $(SRCDIR)
+	@find . -path "$(EXCLUDEDIR)" -prune -print0 | xargs -0 gocyclo -over 20 $(SRCDIR)
 
 bodyclose: deps
 	@echo "=== $(PROJECT_NAME) === [ bodyclose        ]: Checking that http response bodies are closed (bodyclose)..."
