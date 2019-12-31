@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // ListComponentsParams represents a set of filters to be
@@ -54,28 +55,164 @@ func (apm *APM) GetComponent(componentID int) (*Component, error) {
 	return &response.Component, nil
 }
 
+// ListComponentMetricsParams represents a set of parameters to be
+// used when querying New Relic component metrics.
+type ListComponentMetricsParams struct {
+	// Name allows for filtering the returned list of metrics by name.
+	Name string
+}
+
+// ListComponentMetrics is used to retrieve the metrics for a specific New Relic component.
+func (apm *APM) ListComponentMetrics(params *ListComponentMetricsParams) ([]ComponentMetric, error) {
+	m := []ComponentMetric{}
+	response := componentMetricsResponse{}
+	nextURL := fmt.Sprintf("/components/%d/metrics.json", testComponent.ID)
+	paramsMap := buildListComponentMetricsParamsMap(params)
+
+	for nextURL != "" {
+		resp, err := apm.client.Get(nextURL, &paramsMap, &response)
+
+		if err != nil {
+			return nil, err
+		}
+
+		m = append(m, response.Metrics...)
+
+		paging := apm.pager.Parse(resp)
+		nextURL = paging.Next
+	}
+
+	return m, nil
+}
+
+// GetComponentMetricDataParams represents a set of parameters to be
+// used when querying New Relic component metric data.
+type GetComponentMetricDataParams struct {
+	// Names allows retrieval of specific metrics by name.
+	// At least one metric name is required.
+	Names []string
+
+	// Values allows retrieval of specific metric values.
+	Values []string
+
+	// From specifies a begin time for the query.
+	From *time.Time
+
+	// To specifies an end time for the query.
+	To *time.Time
+
+	// Period represents the period of timeslices in seconds.
+	Period int
+
+	// Summarize will summarize the data when set to true.
+	Summarize bool
+
+	// Raw will return unformatted raw values when set to true.
+	Raw bool
+}
+
+// GetComponentMetricData is used to retrieve the metric timeslice data for a specific component metric.
+func (apm *APM) GetComponentMetricData(componentID int, params *GetComponentMetricDataParams) ([]Metric, error) {
+	m := []Metric{}
+	response := componentMetricDataResponse{}
+	nextURL := fmt.Sprintf("/components/%d/metrics/data.json", testComponent.ID)
+	paramsMap := buildGetComponentMetricDataParamsMap(params)
+
+	for nextURL != "" {
+		resp, err := apm.client.Get(nextURL, &paramsMap, &response)
+
+		if err != nil {
+			return nil, err
+		}
+
+		m = append(m, response.MetricData.Metrics...)
+
+		paging := apm.pager.Parse(resp)
+		nextURL = paging.Next
+	}
+
+	return m, nil
+}
+
+func buildListComponentMetricsParamsMap(params *ListComponentMetricsParams) map[string]string {
+	paramsMap := map[string]string{}
+
+	if params == nil {
+		return paramsMap
+	}
+
+	if params.Name != "" {
+		paramsMap["name"] = params.Name
+	}
+
+	return paramsMap
+}
+
 func buildListComponentsParamsMap(params *ListComponentsParams) map[string]string {
 	paramsMap := map[string]string{}
 
-	if params != nil {
-		if params.Name != "" {
-			paramsMap["filter[name]"] = params.Name
-
-			if params.IDs != nil {
-				ids := []string{}
-				for _, id := range params.IDs {
-					ids = append(ids, strconv.Itoa(id))
-				}
-				paramsMap["filter[ids]"] = strings.Join(ids, ",")
-			}
-		}
-
-		if params.PluginID != 0 {
-			paramsMap["filter[plugin_id]"] = strconv.Itoa(params.PluginID)
-		}
-
-		paramsMap["health_status"] = strconv.FormatBool(params.HealthStatus)
+	if params == nil {
+		return paramsMap
 	}
+
+	if params.Name != "" {
+		paramsMap["filter[name]"] = params.Name
+
+		if params.IDs != nil {
+			ids := []string{}
+			for _, id := range params.IDs {
+				ids = append(ids, strconv.Itoa(id))
+			}
+			paramsMap["filter[ids]"] = strings.Join(ids, ",")
+		}
+	}
+
+	if params.PluginID != 0 {
+		paramsMap["filter[plugin_id]"] = strconv.Itoa(params.PluginID)
+	}
+
+	paramsMap["health_status"] = strconv.FormatBool(params.HealthStatus)
+
+	return paramsMap
+}
+
+func buildGetComponentMetricDataParamsMap(params *GetComponentMetricDataParams) map[string]string {
+	paramsMap := map[string]string{}
+
+	if params == nil {
+		return paramsMap
+	}
+
+	if len(params.Names) > 0 {
+		names := []string{}
+		for _, n := range params.Names {
+			names = append(names, n)
+		}
+		paramsMap["names[]"] = strings.Join(names, ",")
+	}
+
+	if len(params.Values) > 0 {
+		values := []string{}
+		for _, v := range params.Values {
+			values = append(values, v)
+		}
+		paramsMap["values[]"] = strings.Join(values, ",")
+	}
+
+	if params.From != nil {
+		paramsMap["from"] = params.From.Format(time.RFC3339)
+	}
+
+	if params.To != nil {
+		paramsMap["to"] = params.From.Format(time.RFC3339)
+	}
+
+	if params.Period != 0 {
+		paramsMap["period"] = strconv.Itoa(params.Period)
+	}
+
+	paramsMap["summarize"] = strconv.FormatBool(params.Summarize)
+	paramsMap["raw"] = strconv.FormatBool(params.Raw)
 
 	return paramsMap
 }
@@ -86,4 +223,14 @@ type componentsResponse struct {
 
 type componentResponse struct {
 	Component Component `json:"component,omitempty"`
+}
+
+type componentMetricsResponse struct {
+	Metrics []ComponentMetric `json:"metrics,omitempty"`
+}
+
+type componentMetricDataResponse struct {
+	MetricData struct {
+		Metrics []Metric `json:"metrics,omitempty"`
+	} `json:"metric_data,omitempty"`
 }

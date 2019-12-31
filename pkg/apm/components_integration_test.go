@@ -48,4 +48,16 @@ func TestIntegrationGetComponent(t *testing.T) {
 	_, err = api.GetComponent(a[0].ID)
 
 	require.NoError(t, err)
+
+	m, err := api.ListComponentMetrics(nil)
+
+	require.NoError(t, err)
+	require.NotNil(t, m)
+
+	params := GetComponentMetricDataParams{
+		Names: []string{m[0].Name},
+	}
+	_, err = api.GetComponentMetricData(a[0].ID, &params)
+
+	require.NoError(t, err)
 }
