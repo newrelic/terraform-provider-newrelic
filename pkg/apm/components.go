@@ -63,10 +63,10 @@ type ListComponentMetricsParams struct {
 }
 
 // ListComponentMetrics is used to retrieve the metrics for a specific New Relic component.
-func (apm *APM) ListComponentMetrics(params *ListComponentMetricsParams) ([]ComponentMetric, error) {
+func (apm *APM) ListComponentMetrics(componentID int, params *ListComponentMetricsParams) ([]ComponentMetric, error) {
 	m := []ComponentMetric{}
 	response := componentMetricsResponse{}
-	nextURL := fmt.Sprintf("/components/%d/metrics.json", testComponent.ID)
+	nextURL := fmt.Sprintf("/components/%d/metrics.json", componentID)
 	paramsMap := buildListComponentMetricsParamsMap(params)
 
 	for nextURL != "" {
@@ -115,7 +115,7 @@ type GetComponentMetricDataParams struct {
 func (apm *APM) GetComponentMetricData(componentID int, params *GetComponentMetricDataParams) ([]Metric, error) {
 	m := []Metric{}
 	response := componentMetricDataResponse{}
-	nextURL := fmt.Sprintf("/components/%d/metrics/data.json", testComponent.ID)
+	nextURL := fmt.Sprintf("/components/%d/metrics/data.json", componentID)
 	paramsMap := buildGetComponentMetricDataParamsMap(params)
 
 	for nextURL != "" {

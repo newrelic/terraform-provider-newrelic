@@ -45,11 +45,12 @@ func TestIntegrationGetComponent(t *testing.T) {
 
 	require.NoError(t, err)
 
-	_, err = api.GetComponent(a[0].ID)
+	c, err := api.GetComponent(a[0].ID)
 
 	require.NoError(t, err)
+	require.NotNil(t, c)
 
-	m, err := api.ListComponentMetrics(nil)
+	m, err := api.ListComponentMetrics(c.ID, nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, m)

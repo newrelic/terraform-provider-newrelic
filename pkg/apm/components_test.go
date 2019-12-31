@@ -131,27 +131,27 @@ func TestListComponentsWithParams(t *testing.T) {
 	expectedPluginID := "1234"
 	expectedHealthStatus := "true"
 
-	apm := newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apm := newTestAPMClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		name := values.Get("filter[name]")
 		if name != expectedName {
-			t.Errorf(`expected name filter "%s", recieved: "%s"`, expectedName, name)
+			t.Errorf(`expected name filter "%s", received: "%s"`, expectedName, name)
 		}
 
 		ids := values.Get("filter[ids]")
 		if ids != expectedIDs {
-			t.Errorf(`expected ID filter "%s", recieved: "%s"`, expectedIDs, ids)
+			t.Errorf(`expected ID filter "%s", received: "%s"`, expectedIDs, ids)
 		}
 
 		pluginID := values.Get("filter[plugin_id]")
 		if pluginID != expectedPluginID {
-			t.Errorf(`expected plugin ID filter "%s", recieved: "%s"`, expectedPluginID, pluginID)
+			t.Errorf(`expected plugin ID filter "%s", received: "%s"`, expectedPluginID, pluginID)
 		}
 
 		healthStatus := values.Get("health_status")
 		if healthStatus != expectedHealthStatus {
-			t.Errorf(`expected health status filter "%s", recieved: "%s"`, expectedHealthStatus, healthStatus)
+			t.Errorf(`expected health status filter "%s", received: "%s"`, expectedHealthStatus, healthStatus)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -187,7 +187,7 @@ func TestListComponentMetrics(t *testing.T) {
 	responseJSON := fmt.Sprintf(`{"metrics": [%s]}`, testComponentMetricJSON)
 	apm := newMockResponse(t, responseJSON, http.StatusOK)
 
-	m, err := apm.ListComponentMetrics(nil)
+	m, err := apm.ListComponentMetrics(testComponent.ID, nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, m)
@@ -217,42 +217,42 @@ func TestGetComponentMetricDataWithParams(t *testing.T) {
 	expectedSummarize := "true"
 	expectedRaw := "true"
 
-	apm := newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apm := newTestAPMClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		names := values.Get("names[]")
 		if names != expectedNames {
-			t.Errorf(`expected names filter "%s", recieved: "%s"`, expectedNames, names)
+			t.Errorf(`expected names filter "%s", received: "%s"`, expectedNames, names)
 		}
 
 		v := values.Get("values[]")
 		if v != expectedValues {
-			t.Errorf(`expected values filter "%s", recieved: "%s"`, expectedValues, v)
+			t.Errorf(`expected values filter "%s", received: "%s"`, expectedValues, v)
 		}
 
 		from := values.Get("from")
 		if from != expectedFrom {
-			t.Errorf(`expected from param "%s", recieved: "%s"`, expectedFrom, from)
+			t.Errorf(`expected from param "%s", received: "%s"`, expectedFrom, from)
 		}
 
 		to := values.Get("to")
 		if to != expectedTo {
-			t.Errorf(`expected to param "%s", recieved: "%s"`, expectedTo, to)
+			t.Errorf(`expected to param "%s", received: "%s"`, expectedTo, to)
 		}
 
 		period := values.Get("period")
 		if period != expectedPeriod {
-			t.Errorf(`expected period param "%s", recieved: "%s"`, expectedPeriod, period)
+			t.Errorf(`expected period param "%s", received: "%s"`, expectedPeriod, period)
 		}
 
 		raw := values.Get("raw")
 		if raw != expectedRaw {
-			t.Errorf(`expected raw param "%s", recieved: "%s"`, expectedRaw, raw)
+			t.Errorf(`expected raw param "%s", received: "%s"`, expectedRaw, raw)
 		}
 
 		summarize := values.Get("summarize")
 		if summarize != expectedSummarize {
-			t.Errorf(`expected summarize param "%s", recieved: "%s"`, expectedSummarize, summarize)
+			t.Errorf(`expected summarize param "%s", received: "%s"`, expectedSummarize, summarize)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
