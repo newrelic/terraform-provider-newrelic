@@ -1,5 +1,8 @@
 package apm
 
+import "fmt"
+
+// ListKeyTransactions returns all key transactions for an account.
 func (apm *APM) ListKeyTransactions() ([]*KeyTransaction, error) {
 	response := keyTransactionsResponse{}
 	results := []*KeyTransaction{}
@@ -21,6 +24,24 @@ func (apm *APM) ListKeyTransactions() ([]*KeyTransaction, error) {
 	return results, nil
 }
 
+// GetKeyTransaction returns a specific key transaction by ID.
+func (apm *APM) GetKeyTransaction(id int) (*KeyTransaction, error) {
+	response := keyTransactionResponse{}
+	u := fmt.Sprintf("/key_transactions/%d.json", id)
+
+	_, err := apm.client.Get(u, nil, &response)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &response.KeyTransaction, nil
+}
+
 type keyTransactionsResponse struct {
 	KeyTransactions []*KeyTransaction `json:"key_transactions,omitempty"`
+}
+
+type keyTransactionResponse struct {
+	KeyTransaction KeyTransaction `json:"key_transaction,omitempty"`
 }
