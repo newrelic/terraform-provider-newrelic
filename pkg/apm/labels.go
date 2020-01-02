@@ -41,6 +41,33 @@ func (apm *APM) GetLabel(key string) (*Label, error) {
 	return nil, fmt.Errorf("no label found with key %s", key)
 }
 
+// CreateLabel creates a new label for an account.
+func (apm *APM) CreateLabel(label Label) (*Label, error) {
+	reqBody := labelRequestBody{
+		Label: label,
+	}
+	resp := labelResponse{}
+
+	u := fmt.Sprintf("/labels.json")
+
+	// The API currently uses a PUT request for label creation
+	_, err := apm.client.Put(u, nil, &reqBody, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.Label, nil
+}
+
 type labelsResponse struct {
 	Labels []*Label `json:"labels,omitempty"`
+}
+
+type labelResponse struct {
+	Label Label `json:"label,omitempty"`
+}
+
+type labelRequestBody struct {
+	Label Label `json:"label,omitempty"`
 }
