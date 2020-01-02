@@ -60,6 +60,19 @@ func (apm *APM) CreateLabel(label Label) (*Label, error) {
 	return &resp.Label, nil
 }
 
+func (apm *APM) DeleteLabel(key string) (*Label, error) {
+	resp := labelResponse{}
+
+	u := fmt.Sprintf("/labels/%s.json", key)
+	_, err := apm.client.Delete(u, nil, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.Label, nil
+}
+
 type labelsResponse struct {
 	Labels []*Label `json:"labels,omitempty"`
 }

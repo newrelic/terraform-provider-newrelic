@@ -133,3 +133,24 @@ func TestCreateLabel(t *testing.T) {
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
+
+func TestDeleteLabel(t *testing.T) {
+	t.Parallel()
+	apm := newMockResponse(t, testLabelJSON, http.StatusCreated)
+
+	expected := &Label{
+		Key:      "Project:example-project-label",
+		Category: "Project",
+		Name:     "example-project-label",
+		Links: LabelLinks{
+			Applications: []int{12345},
+			Servers:      []int{},
+		},
+	}
+
+	actual, err := apm.DeleteLabel("Project:example-project-label")
+
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
+}
