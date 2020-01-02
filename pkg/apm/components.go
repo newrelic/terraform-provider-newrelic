@@ -184,19 +184,11 @@ func buildGetComponentMetricDataParamsMap(params *GetComponentMetricDataParams) 
 	}
 
 	if len(params.Names) > 0 {
-		names := []string{}
-		for _, n := range params.Names {
-			names = append(names, n)
-		}
-		paramsMap["names[]"] = strings.Join(names, ",")
+		paramsMap["names[]"] = strings.Join(params.Names, ",")
 	}
 
 	if len(params.Values) > 0 {
-		values := []string{}
-		for _, v := range params.Values {
-			values = append(values, v)
-		}
-		paramsMap["values[]"] = strings.Join(values, ",")
+		paramsMap["values[]"] = strings.Join(params.Values, ",")
 	}
 
 	if params.From != nil {
