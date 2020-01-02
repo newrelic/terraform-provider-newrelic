@@ -2,7 +2,7 @@ package apm
 
 import "fmt"
 
-// ListLabels returns the labels for the account.
+// ListLabels returns the labels within an account.
 func (apm *APM) ListLabels() ([]*Label, error) {
 	response := labelsResponse{}
 	labels := []*Label{}
@@ -24,7 +24,8 @@ func (apm *APM) ListLabels() ([]*Label, error) {
 	return labels, nil
 }
 
-// GetLabel gets the label for the specified key.
+// GetLabel gets a label by key. A label's key
+// is a string hash formatted as <Category>:<Name>.
 func (apm *APM) GetLabel(key string) (*Label, error) {
 	labels, err := apm.ListLabels()
 
@@ -41,7 +42,7 @@ func (apm *APM) GetLabel(key string) (*Label, error) {
 	return nil, fmt.Errorf("no label found with key %s", key)
 }
 
-// CreateLabel creates a new label for an account.
+// CreateLabel creates a new label within an account.
 func (apm *APM) CreateLabel(label Label) (*Label, error) {
 	reqBody := labelRequestBody{
 		Label: label,
@@ -60,6 +61,8 @@ func (apm *APM) CreateLabel(label Label) (*Label, error) {
 	return &resp.Label, nil
 }
 
+// DeleteLabel deletes a label by key. A label's key
+// is a string hash formatted as <Category>:<Name>.
 func (apm *APM) DeleteLabel(key string) (*Label, error) {
 	resp := labelResponse{}
 
