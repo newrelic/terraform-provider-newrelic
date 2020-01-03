@@ -1,15 +1,27 @@
 package apm
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
+
+// ListKeyTransactionsParams represents a set of filters to be
+// used when querying New Relic key transactions.
+type ListKeyTransactionsParams struct {
+	Name string
+	IDs  []int
+}
 
 // ListKeyTransactions returns all key transactions for an account.
-func (apm *APM) ListKeyTransactions() ([]*KeyTransaction, error) {
+func (apm *APM) ListKeyTransactions(params *ListKeyTransactionsParams) ([]*KeyTransaction, error) {
 	response := keyTransactionsResponse{}
 	results := []*KeyTransaction{}
+	paramsMap := buildListKeyTransactionsParamsMap(params)
 	nextURL := "/key_transactions.json"
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, nil, &response)
+		resp, err := apm.client.Get(nextURL, &paramsMap, &response)
 
 		if err != nil {
 			return nil, err
@@ -36,6 +48,36 @@ func (apm *APM) GetKeyTransaction(id int) (*KeyTransaction, error) {
 	}
 
 	return &response.KeyTransaction, nil
+}
+
+func buildListKeyTransactionsParamsMap(params *ListKeyTransactionsParams) map[string]string {
+	paramsMap := map[string]string{}
+
+	if params == nil {
+		return paramsMap
+	}
+
+	if params.Name != "" {
+		paramsMap["filter[name]"] = params.Name
+	}
+
+	if params.IDs != nil && len(params.IDs) > 0 {
+		paramsMap["filter[ids]"] = intArrayToString(params.IDs)
+	}
+
+	return paramsMap
+}
+
+// Converts an array of integers to a comma-separated list string.
+// Example: [1, 2, 3] will be converted to "1,2,3"
+func intArrayToString(integers []int) string {
+	sArray := []string{}
+
+	for _, n := range integers {
+		sArray = append(sArray, strconv.Itoa(n))
+	}
+
+	return strings.Join(sArray, ",")
 }
 
 type keyTransactionsResponse struct {
