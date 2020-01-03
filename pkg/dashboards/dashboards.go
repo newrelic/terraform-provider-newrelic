@@ -44,10 +44,10 @@ func (dashboards *Dashboards) ListDashboards(params *ListDashboardsParams) ([]Da
 	response := dashboardsResponse{}
 	d := []Dashboard{}
 	nextURL := "/dashboards.json"
-	paramsMap := buildListDashboardsParamsMap(params)
+	queryParams := buildListDashboardsQueryParams(params)
 
 	for nextURL != "" {
-		resp, err := dashboards.client.Get(nextURL, &paramsMap, &response)
+		resp, err := dashboards.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
@@ -122,50 +122,56 @@ func (dashboards *Dashboards) DeleteDashboard(dashboardID int) (*Dashboard, erro
 	return &response.Dashboard, nil
 }
 
-func buildListDashboardsParamsMap(params *ListDashboardsParams) map[string]string {
-	paramsMap := map[string]string{}
+func buildListDashboardsQueryParams(params *ListDashboardsParams) []http.QueryParam {
+	queryParams := []http.QueryParam{}
 
 	if params == nil {
-		return paramsMap
+		return queryParams
 	}
 
 	if params.Title != "" {
-		paramsMap["filter[title]"] = params.Title
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[title]", Value: params.Title})
 	}
 
 	if params.Category != "" {
-		paramsMap["filter[category]"] = params.Category
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[category]", Value: params.Category})
 	}
 
 	if params.CreatedBefore != nil {
-		paramsMap["filter[created_before]"] = params.CreatedBefore.Format(time.RFC3339)
+		value := params.CreatedBefore.Format(time.RFC3339)
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[created_before]", Value: value})
 	}
 
 	if params.CreatedAfter != nil {
-		paramsMap["filter[created_after]"] = params.CreatedAfter.Format(time.RFC3339)
+		value := params.CreatedAfter.Format(time.RFC3339)
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[created_after]", Value: value})
 	}
 
 	if params.UpdatedBefore != nil {
-		paramsMap["filter[updated_before]"] = params.UpdatedBefore.Format(time.RFC3339)
+		value := params.UpdatedBefore.Format(time.RFC3339)
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[updated_before]", Value: value})
 	}
 
 	if params.UpdatedAfter != nil {
-		paramsMap["filter[updated_after]"] = params.UpdatedAfter.Format(time.RFC3339)
+		value := params.UpdatedAfter.Format(time.RFC3339)
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[updated_after]", Value: value})
 	}
 
 	if params.Sort != "" {
-		paramsMap["sort"] = params.Sort
+		queryParams = append(queryParams, http.QueryParam{Name: "sort", Value: params.Sort})
 	}
 
 	if params.Page > 0 {
-		paramsMap["page"] = strconv.Itoa(params.Page)
+		value := strconv.Itoa(params.Page)
+		queryParams = append(queryParams, http.QueryParam{Name: "page", Value: value})
 	}
 
 	if params.PerPage > 0 {
-		paramsMap["per_page"] = strconv.Itoa(params.PerPage)
+		value := strconv.Itoa(params.PerPage)
+		queryParams = append(queryParams, http.QueryParam{Name: "per_page", Value: value})
 	}
 
-	return paramsMap
+	return queryParams
 }
 
 type dashboardsResponse struct {

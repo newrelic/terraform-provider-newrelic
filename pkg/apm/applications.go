@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/newrelic/newrelic-client-go/internal/http"
 )
 
 // ListApplicationsParams represents a set of filters to be
 // used when querying New Relic applications.
 type ListApplicationsParams struct {
-	Name     *string
-	Host     *string
+	Name     string
+	Host     string
 	IDs      []int
-	Language *string
+	Language string
 }
 
 // ListApplications is used to retrieve New Relic applications.
@@ -20,10 +22,10 @@ func (apm *APM) ListApplications(params *ListApplicationsParams) ([]Application,
 	response := applicationsResponse{}
 	apps := []Application{}
 	nextURL := "/applications.json"
-	paramsMap := buildListApplicationsParamsMap(params)
+	queryParams := buildListApplicationsQueryParams(params)
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &paramsMap, &response)
+		resp, err := apm.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
@@ -91,32 +93,36 @@ func (apm *APM) DeleteApplication(applicationID int) (*Application, error) {
 	return &response.Application, nil
 }
 
-func buildListApplicationsParamsMap(params *ListApplicationsParams) map[string]string {
-	paramsMap := map[string]string{}
+func buildListApplicationsQueryParams(params *ListApplicationsParams) []http.QueryParam {
+	queryParams := []http.QueryParam{}
 
-	if params != nil {
-		if params.Name != nil {
-			paramsMap["filter[name]"] = *params.Name
-		}
-
-		if params.Host != nil {
-			paramsMap["filter[host]"] = *params.Host
-		}
-
-		if params.IDs != nil {
-			ids := []string{}
-			for _, id := range params.IDs {
-				ids = append(ids, strconv.Itoa(id))
-			}
-			paramsMap["filter[ids]"] = strings.Join(ids, ",")
-		}
-
-		if params.Language != nil {
-			paramsMap["filter[language]"] = *params.Language
-		}
+	if params == nil {
+		return queryParams
 	}
 
-	return paramsMap
+	if params.Name != "" {
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[name]", Value: params.Name})
+	}
+
+	if params.Host != "" {
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[host]", Value: params.Host})
+	}
+
+	if params.IDs != nil {
+		ids := []string{}
+		for _, id := range params.IDs {
+			ids = append(ids, strconv.Itoa(id))
+		}
+
+		values := strings.Join(ids, ",")
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[ids]", Value: values})
+	}
+
+	if params.Language != "" {
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[language]", Value: params.Language})
+	}
+
+	return queryParams
 }
 
 type applicationsResponse struct {

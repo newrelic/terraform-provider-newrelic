@@ -3,13 +3,17 @@ package alerts
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/newrelic/newrelic-client-go/internal/http"
 )
 
 // ListInfrastructureConditions is used to retrieve New Relic Infrastructure alert conditions.
 func (a *Alerts) ListInfrastructureConditions(policyID int) ([]InfrastructureCondition, error) {
 	resp := infrastructureConditionsResponse{}
-	paramsMap := map[string]string{"policy_id": strconv.Itoa(policyID)}
-	_, err := a.infraClient.Get("/alerts/conditions", &paramsMap, &resp)
+	queryParams := []http.QueryParam{
+		{Name: "policy_id", Value: strconv.Itoa(policyID)},
+	}
+	_, err := a.infraClient.Get("/alerts/conditions", &queryParams, &resp)
 
 	if err != nil {
 		return nil, err

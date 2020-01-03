@@ -183,10 +183,10 @@ func TestListApplicationsWithParams(t *testing.T) {
 	}))
 
 	params := ListApplicationsParams{
-		Name:     &expectedName,
-		Host:     &expectedHost,
+		Name:     expectedName,
+		Host:     expectedHost,
 		IDs:      []int{123, 456},
-		Language: &expectedLanguage,
+		Language: expectedLanguage,
 	}
 
 	_, err := apm.ListApplications(&params)

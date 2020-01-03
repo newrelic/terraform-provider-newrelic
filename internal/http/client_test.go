@@ -97,9 +97,9 @@ func TestResponseValue(t *testing.T) {
 
 func TestQueryParams(t *testing.T) {
 	t.Parallel()
-	queryParams := map[string]string{
-		"a": "1",
-		"b": "2",
+	queryParams := []QueryParam{
+		{Name: "a", Value: "1"},
+		{Name: "b", Value: "2"},
 	}
 
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -254,7 +254,7 @@ func TestPost(t *testing.T) {
 		_, _ = w.Write([]byte(`{}`))
 	}))
 
-	_, err := c.Post("/path", &map[string]string{}, &struct{}{}, &struct{}{})
+	_, err := c.Post("/path", &[]QueryParam{}, &struct{}{}, &struct{}{})
 
 	assert.NoError(t, err)
 }
@@ -266,7 +266,7 @@ func TestPut(t *testing.T) {
 		_, _ = w.Write([]byte(`{}`))
 	}))
 
-	_, err := c.Put("/path", &map[string]string{}, &struct{}{}, &struct{}{})
+	_, err := c.Put("/path", &[]QueryParam{}, &struct{}{}, &struct{}{})
 
 	assert.NoError(t, err)
 }
@@ -279,7 +279,7 @@ func TestDelete(t *testing.T) {
 		_, _ = w.Write([]byte(`{}`))
 	}))
 
-	_, err := c.Delete("/path", &map[string]string{}, &struct{}{})
+	_, err := c.Delete("/path", &[]QueryParam{}, &struct{}{})
 
 	assert.NoError(t, err)
 }

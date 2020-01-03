@@ -83,7 +83,7 @@ func (c *NewRelicClient) SetErrorValue(v ErrorResponse) *NewRelicClient {
 // If respBody is not nil and the response body cannot be unmarshaled to the type provided, an error will be returned.
 func (c *NewRelicClient) Get(
 	url string,
-	queryParams *map[string]string,
+	queryParams *[]QueryParam,
 	respBody interface{},
 ) (*http.Response, error) {
 	return c.do(http.MethodGet, url, queryParams, nil, respBody)
@@ -96,11 +96,11 @@ func (c *NewRelicClient) Get(
 // If respBody is not nil and the response body cannot be unmarshaled to the type provided, an error will be returned.
 func (c *NewRelicClient) Post(
 	url string,
-	params *map[string]string,
+	queryParams *[]QueryParam,
 	reqBody interface{},
 	respBody interface{},
 ) (*http.Response, error) {
-	return c.do(http.MethodPost, url, params, reqBody, respBody)
+	return c.do(http.MethodPost, url, queryParams, reqBody, respBody)
 }
 
 // Put represents an HTTP PUT request to a New Relic API.
@@ -110,7 +110,7 @@ func (c *NewRelicClient) Post(
 // If respBody is not nil and the response body cannot be unmarshaled to the type provided, an error will be returned.
 func (c *NewRelicClient) Put(
 	url string,
-	queryParams *map[string]string,
+	queryParams *[]QueryParam,
 	reqBody interface{},
 	respBody interface{},
 ) (*http.Response, error) {
@@ -122,10 +122,16 @@ func (c *NewRelicClient) Put(
 // The respBody argument will be unmarshaled from JSON in the response body to the type provided.
 // If respBody is not nil and the response body cannot be unmarshaled to the type provided, an error will be returned.
 func (c *NewRelicClient) Delete(url string,
-	queryParams *map[string]string,
+	queryParams *[]QueryParam,
 	respBody interface{},
 ) (*http.Response, error) {
 	return c.do(http.MethodDelete, url, queryParams, nil, respBody)
+}
+
+// QueryParam is used to pass query params to one of the client's request methods.
+type QueryParam struct {
+	Name  string
+	Value string
 }
 
 func makeRequestBody(reqBody interface{}) (*bytes.Buffer, error) {
@@ -149,15 +155,17 @@ func (c *NewRelicClient) setHeaders(req *retryablehttp.Request) {
 	req.Header.Set("User-Agent", c.Config.UserAgent)
 }
 
-func setQueryParams(req *retryablehttp.Request, params *map[string]string) {
-	if params != nil {
-		q := req.URL.Query()
-		for k, v := range *params {
-			q.Add(k, v)
-		}
-
-		req.URL.RawQuery = q.Encode()
+func setQueryParams(req *retryablehttp.Request, params *[]QueryParam) {
+	if params == nil {
+		return
 	}
+
+	q := req.URL.Query()
+	for _, p := range *params {
+		q.Add(p.Name, p.Value)
+	}
+
+	req.URL.RawQuery = q.Encode()
 }
 
 func (c *NewRelicClient) makeURL(url string) (*neturl.URL, error) {
@@ -183,7 +191,7 @@ func (c *NewRelicClient) makeURL(url string) (*neturl.URL, error) {
 func (c *NewRelicClient) do(
 	method string,
 	url string,
-	params *map[string]string,
+	params *[]QueryParam,
 	reqBody interface{},
 	value interface{},
 ) (*http.Response, error) {

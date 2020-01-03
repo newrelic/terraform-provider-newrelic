@@ -16,7 +16,7 @@ func TestIntegrationDeployments(t *testing.T) {
 	// Setup
 	appFilterName := "tf_" // Filter for integration test applications
 	appQueryParams := ListApplicationsParams{
-		Name: &appFilterName,
+		Name: appFilterName,
 	}
 	applications, err := client.ListApplications(&appQueryParams)
 

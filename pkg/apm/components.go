@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/newrelic/newrelic-client-go/internal/http"
 )
 
 // ListComponentsParams represents a set of filters to be
@@ -22,10 +24,10 @@ func (apm *APM) ListComponents(params *ListComponentsParams) ([]*Component, erro
 	response := componentsResponse{}
 	c := []*Component{}
 	nextURL := "/components.json"
-	paramsMap := buildListComponentsParamsMap(params)
+	queryParams := buildListComponentsQueryParams(params)
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &paramsMap, &response)
+		resp, err := apm.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
@@ -67,10 +69,10 @@ func (apm *APM) ListComponentMetrics(componentID int, params *ListComponentMetri
 	m := []*ComponentMetric{}
 	response := componentMetricsResponse{}
 	nextURL := fmt.Sprintf("/components/%d/metrics.json", componentID)
-	paramsMap := buildListComponentMetricsParamsMap(params)
+	queryParams := buildListComponentMetricsQueryParams(params)
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &paramsMap, &response)
+		resp, err := apm.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
@@ -116,10 +118,10 @@ func (apm *APM) GetComponentMetricData(componentID int, params *GetComponentMetr
 	m := []*Metric{}
 	response := componentMetricDataResponse{}
 	nextURL := fmt.Sprintf("/components/%d/metrics/data.json", componentID)
-	paramsMap := buildGetComponentMetricDataParamsMap(params)
+	queryParams := buildGetComponentMetricDataQueryParams(params)
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &paramsMap, &response)
+		resp, err := apm.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
@@ -134,79 +136,93 @@ func (apm *APM) GetComponentMetricData(componentID int, params *GetComponentMetr
 	return m, nil
 }
 
-func buildListComponentMetricsParamsMap(params *ListComponentMetricsParams) map[string]string {
-	paramsMap := map[string]string{}
+func buildListComponentMetricsQueryParams(params *ListComponentMetricsParams) []http.QueryParam {
+	queryParams := []http.QueryParam{}
 
 	if params == nil {
-		return paramsMap
+		return queryParams
 	}
 
 	if params.Name != "" {
-		paramsMap["name"] = params.Name
+		queryParams = append(queryParams, http.QueryParam{Name: "name", Value: params.Name})
 	}
 
-	return paramsMap
+	return queryParams
 }
 
-func buildListComponentsParamsMap(params *ListComponentsParams) map[string]string {
-	paramsMap := map[string]string{}
+func buildListComponentsQueryParams(params *ListComponentsParams) []http.QueryParam {
+	queryParams := []http.QueryParam{}
 
 	if params == nil {
-		return paramsMap
+		return queryParams
 	}
 
 	if params.Name != "" {
-		paramsMap["filter[name]"] = params.Name
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[name]", Value: params.Name})
 
 		if params.IDs != nil {
 			ids := []string{}
 			for _, id := range params.IDs {
 				ids = append(ids, strconv.Itoa(id))
 			}
-			paramsMap["filter[ids]"] = strings.Join(ids, ",")
+
+			value := strings.Join(ids, ",")
+			queryParams = append(queryParams, http.QueryParam{Name: "filter[ids]", Value: value})
 		}
 	}
 
 	if params.PluginID != 0 {
-		paramsMap["filter[plugin_id]"] = strconv.Itoa(params.PluginID)
+		value := strconv.Itoa(params.PluginID)
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[plugin_id]", Value: value})
 	}
 
-	paramsMap["health_status"] = strconv.FormatBool(params.HealthStatus)
+	value := strconv.FormatBool(params.HealthStatus)
+	queryParams = append(queryParams, http.QueryParam{Name: "health_status", Value: value})
 
-	return paramsMap
+	return queryParams
 }
 
-func buildGetComponentMetricDataParamsMap(params *GetComponentMetricDataParams) map[string]string {
-	paramsMap := map[string]string{}
+func buildGetComponentMetricDataQueryParams(params *GetComponentMetricDataParams) []http.QueryParam {
+	queryParams := []http.QueryParam{}
 
 	if params == nil {
-		return paramsMap
+		return queryParams
 	}
 
 	if len(params.Names) > 0 {
-		paramsMap["names[]"] = strings.Join(params.Names, ",")
+		for _, name := range params.Names {
+			queryParams = append(queryParams, http.QueryParam{Name: "names[]", Value: name})
+		}
 	}
 
 	if len(params.Values) > 0 {
-		paramsMap["values[]"] = strings.Join(params.Values, ",")
+		for _, value := range params.Values {
+			queryParams = append(queryParams, http.QueryParam{Name: "values[]", Value: value})
+		}
 	}
 
 	if params.From != nil {
-		paramsMap["from"] = params.From.Format(time.RFC3339)
+		value := params.From.Format(time.RFC3339)
+		queryParams = append(queryParams, http.QueryParam{Name: "from", Value: value})
 	}
 
 	if params.To != nil {
-		paramsMap["to"] = params.From.Format(time.RFC3339)
+		value := params.From.Format(time.RFC3339)
+		queryParams = append(queryParams, http.QueryParam{Name: "to", Value: value})
 	}
 
 	if params.Period != 0 {
-		paramsMap["period"] = strconv.Itoa(params.Period)
+		value := strconv.Itoa(params.Period)
+		queryParams = append(queryParams, http.QueryParam{Name: "period", Value: value})
 	}
 
-	paramsMap["summarize"] = strconv.FormatBool(params.Summarize)
-	paramsMap["raw"] = strconv.FormatBool(params.Raw)
+	value := strconv.FormatBool(params.Summarize)
+	queryParams = append(queryParams, http.QueryParam{Name: "summarize", Value: value})
 
-	return paramsMap
+	value = strconv.FormatBool(params.Raw)
+	queryParams = append(queryParams, http.QueryParam{Name: "raw", Value: value})
+
+	return queryParams
 }
 
 type componentsResponse struct {

@@ -3,6 +3,8 @@ package alerts
 import (
 	"strconv"
 	"strings"
+
+	"github.com/newrelic/newrelic-client-go/internal/http"
 )
 
 // UpdatePolicyChannels updates a policy by adding the specified notification channels.
@@ -13,9 +15,9 @@ func (alerts *Alerts) UpdatePolicyChannels(policyID int, channelIDs []int) (*Pol
 		channelIDStrings[i] = strconv.Itoa(channelID)
 	}
 
-	queryParams := map[string]string{
-		"policy_id":   strconv.Itoa(policyID),
-		"channel_ids": strings.Join(channelIDStrings, ","),
+	queryParams := []http.QueryParam{
+		{Name: "policy_id", Value: strconv.Itoa(policyID)},
+		{Name: "channel_ids", Value: strings.Join(channelIDStrings, ",")},
 	}
 
 	resp := updatePolicyChannelsResponse{}
@@ -32,9 +34,9 @@ func (alerts *Alerts) UpdatePolicyChannels(policyID int, channelIDs []int) (*Pol
 // DeletePolicyChannel deletes a notification channel from an alert policy.
 // This method returns a response containing the AlertChannel that was deleted from the policy.
 func (alerts *Alerts) DeletePolicyChannel(policyID int, channelID int) (*AlertChannel, error) {
-	queryParams := map[string]string{
-		"policy_id":  strconv.Itoa(policyID),
-		"channel_id": strconv.Itoa(channelID),
+	queryParams := []http.QueryParam{
+		{Name: "policy_id", Value: strconv.Itoa(policyID)},
+		{Name: "channel_id", Value: strconv.Itoa(channelID)},
 	}
 
 	resp := deletePolicyChannelResponse{}

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path"
 	"strconv"
+
+	"github.com/newrelic/newrelic-client-go/internal/http"
 )
 
 const (
@@ -17,11 +19,11 @@ type listMonitorsResponse struct {
 // ListMonitors is used to retrieve New Relic Synthetics monitors.
 func (s *Synthetics) ListMonitors() ([]Monitor, error) {
 	resp := listMonitorsResponse{}
-	paramsMap := map[string]string{
-		"limit": strconv.Itoa(listMonitorsLimit),
+	queryParams := []http.QueryParam{
+		{Name: "limit", Value: strconv.Itoa(listMonitorsLimit)},
 	}
 
-	_, err := s.client.Get("/monitors", &paramsMap, &resp)
+	_, err := s.client.Get("/monitors", &queryParams, &resp)
 
 	if err != nil {
 		return nil, err

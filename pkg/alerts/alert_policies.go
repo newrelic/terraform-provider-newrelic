@@ -2,6 +2,8 @@ package alerts
 
 import (
 	"fmt"
+
+	"github.com/newrelic/newrelic-client-go/internal/http"
 )
 
 // ListAlertPoliciesParams represents a set of filters to be
@@ -15,10 +17,10 @@ func (alerts *Alerts) ListAlertPolicies(params *ListAlertPoliciesParams) ([]Aler
 	response := alertPoliciesResponse{}
 	alertPolicies := []AlertPolicy{}
 	nextURL := "/alerts_policies.json"
-	paramsMap := buildListAlertPoliciesParamsMap(params)
+	queryParams := buildListAlertPoliciesQueryParams(params)
 
 	for nextURL != "" {
-		resp, err := alerts.client.Get(nextURL, &paramsMap, &response)
+		resp, err := alerts.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
@@ -98,18 +100,18 @@ func (alerts *Alerts) DeleteAlertPolicy(id int) (*AlertPolicy, error) {
 	return &resp.Policy, nil
 }
 
-func buildListAlertPoliciesParamsMap(params *ListAlertPoliciesParams) map[string]string {
-	paramsMap := map[string]string{}
+func buildListAlertPoliciesQueryParams(params *ListAlertPoliciesParams) []http.QueryParam {
+	queryParams := []http.QueryParam{}
 
 	if params == nil {
-		return paramsMap
+		return queryParams
 	}
 
 	if params.Name != "" {
-		paramsMap["filter[name]"] = params.Name
+		queryParams = append(queryParams, http.QueryParam{Name: "filter[name]", Value: params.Name})
 	}
 
-	return paramsMap
+	return queryParams
 }
 
 type alertPoliciesResponse struct {
