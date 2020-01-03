@@ -2,8 +2,8 @@ package apm
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
+
+	"github.com/newrelic/newrelic-client-go/internal/utils"
 )
 
 // ListKeyTransactionsParams represents a set of filters to be
@@ -62,22 +62,10 @@ func buildListKeyTransactionsParamsMap(params *ListKeyTransactionsParams) map[st
 	}
 
 	if params.IDs != nil && len(params.IDs) > 0 {
-		paramsMap["filter[ids]"] = intArrayToString(params.IDs)
+		paramsMap["filter[ids]"] = utils.IntArrayToString(params.IDs)
 	}
 
 	return paramsMap
-}
-
-// Converts an array of integers to a comma-separated list string.
-// Example: [1, 2, 3] will be converted to "1,2,3"
-func intArrayToString(integers []int) string {
-	sArray := []string{}
-
-	for _, n := range integers {
-		sArray = append(sArray, strconv.Itoa(n))
-	}
-
-	return strings.Join(sArray, ",")
 }
 
 type keyTransactionsResponse struct {
