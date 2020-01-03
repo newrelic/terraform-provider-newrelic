@@ -121,7 +121,7 @@ func TestListComponents(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, c)
-	require.Equal(t, testComponent, c[0])
+	require.Equal(t, &testComponent, c[0])
 }
 
 func TestListComponentsWithParams(t *testing.T) {
@@ -191,7 +191,7 @@ func TestListComponentMetrics(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, m)
-	require.Equal(t, testComponentMetric, m[0])
+	require.Equal(t, &testComponentMetric, m[0])
 }
 
 func TestGetComponentMetricData(t *testing.T) {
@@ -205,7 +205,7 @@ func TestGetComponentMetricData(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, m)
-	require.Equal(t, testMetricData, m[0])
+	require.Equal(t, &testMetricData, m[0])
 }
 
 func TestGetComponentMetricDataWithParams(t *testing.T) {

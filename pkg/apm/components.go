@@ -18,9 +18,9 @@ type ListComponentsParams struct {
 
 // ListComponents is used to retrieve the components associated with
 // a New Relic account.
-func (apm *APM) ListComponents(params *ListComponentsParams) ([]Component, error) {
+func (apm *APM) ListComponents(params *ListComponentsParams) ([]*Component, error) {
 	response := componentsResponse{}
-	c := []Component{}
+	c := []*Component{}
 	nextURL := "/components.json"
 	paramsMap := buildListComponentsParamsMap(params)
 
@@ -63,8 +63,8 @@ type ListComponentMetricsParams struct {
 }
 
 // ListComponentMetrics is used to retrieve the metrics for a specific New Relic component.
-func (apm *APM) ListComponentMetrics(componentID int, params *ListComponentMetricsParams) ([]ComponentMetric, error) {
-	m := []ComponentMetric{}
+func (apm *APM) ListComponentMetrics(componentID int, params *ListComponentMetricsParams) ([]*ComponentMetric, error) {
+	m := []*ComponentMetric{}
 	response := componentMetricsResponse{}
 	nextURL := fmt.Sprintf("/components/%d/metrics.json", componentID)
 	paramsMap := buildListComponentMetricsParamsMap(params)
@@ -112,8 +112,8 @@ type GetComponentMetricDataParams struct {
 }
 
 // GetComponentMetricData is used to retrieve the metric timeslice data for a specific component metric.
-func (apm *APM) GetComponentMetricData(componentID int, params *GetComponentMetricDataParams) ([]Metric, error) {
-	m := []Metric{}
+func (apm *APM) GetComponentMetricData(componentID int, params *GetComponentMetricDataParams) ([]*Metric, error) {
+	m := []*Metric{}
 	response := componentMetricDataResponse{}
 	nextURL := fmt.Sprintf("/components/%d/metrics/data.json", componentID)
 	paramsMap := buildGetComponentMetricDataParamsMap(params)
@@ -210,7 +210,7 @@ func buildGetComponentMetricDataParamsMap(params *GetComponentMetricDataParams) 
 }
 
 type componentsResponse struct {
-	Components []Component `json:"components,omitempty"`
+	Components []*Component `json:"components,omitempty"`
 }
 
 type componentResponse struct {
@@ -218,11 +218,11 @@ type componentResponse struct {
 }
 
 type componentMetricsResponse struct {
-	Metrics []ComponentMetric `json:"metrics,omitempty"`
+	Metrics []*ComponentMetric `json:"metrics,omitempty"`
 }
 
 type componentMetricDataResponse struct {
 	MetricData struct {
-		Metrics []Metric `json:"metrics,omitempty"`
+		Metrics []*Metric `json:"metrics,omitempty"`
 	} `json:"metric_data,omitempty"`
 }
