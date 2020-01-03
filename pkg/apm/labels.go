@@ -6,7 +6,7 @@ import "fmt"
 func (apm *APM) ListLabels() ([]*Label, error) {
 	response := labelsResponse{}
 	labels := []*Label{}
-	nextURL := fmt.Sprintf("/labels.json")
+	nextURL := "/labels.json"
 
 	for nextURL != "" {
 		resp, err := apm.client.Get(nextURL, nil, &response)
@@ -49,10 +49,8 @@ func (apm *APM) CreateLabel(label Label) (*Label, error) {
 	}
 	resp := labelResponse{}
 
-	u := fmt.Sprintf("/labels.json")
-
 	// The API currently uses a PUT request for label creation
-	_, err := apm.client.Put(u, nil, &reqBody, &resp)
+	_, err := apm.client.Put("/labels.json", nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
