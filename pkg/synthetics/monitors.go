@@ -3,24 +3,18 @@ package synthetics
 import (
 	"fmt"
 	"path"
-	"strconv"
-
-	"github.com/newrelic/newrelic-client-go/internal/http"
 )
 
 const (
 	listMonitorsLimit = 100
 )
 
-type listMonitorsResponse struct {
-	Monitors []Monitor `json:"monitors,omitempty"`
-}
-
 // ListMonitors is used to retrieve New Relic Synthetics monitors.
 func (s *Synthetics) ListMonitors() ([]Monitor, error) {
 	resp := listMonitorsResponse{}
-	queryParams := []http.QueryParam{
-		{Name: "limit", Value: strconv.Itoa(listMonitorsLimit)},
+
+	queryParams := listMonitorsParams{
+		Limit: listMonitorsLimit,
 	}
 
 	_, err := s.client.Get("/monitors", &queryParams, &resp)
@@ -82,4 +76,12 @@ func (s *Synthetics) DeleteMonitor(monitorID string) error {
 	}
 
 	return nil
+}
+
+type listMonitorsResponse struct {
+	Monitors []Monitor `json:"monitors,omitempty"`
+}
+
+type listMonitorsParams struct {
+	Limit int `url:"limit,omitempty"`
 }

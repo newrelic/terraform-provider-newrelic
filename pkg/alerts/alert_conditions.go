@@ -2,17 +2,14 @@ package alerts
 
 import (
 	"fmt"
-	"strconv"
-
-	"github.com/newrelic/newrelic-client-go/internal/http"
 )
 
 // ListAlertConditions returns alert conditions for a specified policy.
 func (alerts *Alerts) ListAlertConditions(policyID int) ([]*AlertCondition, error) {
 	response := alertConditionsResponse{}
 	alertConditions := []*AlertCondition{}
-	queryParams := []http.QueryParam{
-		{Name: "policy_id", Value: strconv.Itoa(policyID)},
+	queryParams := listAlertConditionsParams{
+		PolicyID: policyID,
 	}
 
 	nextURL := "/alerts_conditions.json"
@@ -99,6 +96,10 @@ func (alerts *Alerts) DeleteAlertCondition(id int) (*AlertCondition, error) {
 	}
 
 	return &resp.Condition, nil
+}
+
+type listAlertConditionsParams struct {
+	PolicyID int `url:"policy_id,omitempty"`
 }
 
 type alertConditionsResponse struct {

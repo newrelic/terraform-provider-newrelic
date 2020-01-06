@@ -2,9 +2,6 @@ package alerts
 
 import (
 	"fmt"
-	"strconv"
-
-	"github.com/newrelic/newrelic-client-go/internal/http"
 )
 
 // ListSyntheticsConditions returns a list of Synthetics alert conditions for a given policy.
@@ -12,8 +9,8 @@ func (alerts *Alerts) ListSyntheticsConditions(policyID int) ([]SyntheticsCondit
 	response := syntheticsConditionsResponse{}
 	conditions := []SyntheticsCondition{}
 	nextURL := fmt.Sprintf("/alerts_synthetics_conditions.json")
-	queryParams := []http.QueryParam{
-		{Name: "policy_id", Value: strconv.Itoa(policyID)},
+	queryParams := listSyntheticsConditionsParams{
+		PolicyID: policyID,
 	}
 
 	for nextURL != "" {
@@ -71,6 +68,10 @@ func (alerts *Alerts) DeleteSyntheticsCondition(conditionID int) (*SyntheticsCon
 	}
 
 	return &resp.Condition, nil
+}
+
+type listSyntheticsConditionsParams struct {
+	PolicyID int `url:"policy_id,omitempty"`
 }
 
 type syntheticsConditionsResponse struct {

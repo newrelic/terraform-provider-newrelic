@@ -2,14 +2,12 @@ package alerts
 
 import (
 	"fmt"
-
-	"github.com/newrelic/newrelic-client-go/internal/http"
 )
 
 // ListAlertPoliciesParams represents a set of filters to be
 // used when querying New Relic alert policies.
 type ListAlertPoliciesParams struct {
-	Name string
+	Name string `url:"filter[name],omitempty"`
 }
 
 // ListAlertPolicies returns a list of Alert Policies for a given account.
@@ -17,10 +15,9 @@ func (alerts *Alerts) ListAlertPolicies(params *ListAlertPoliciesParams) ([]Aler
 	response := alertPoliciesResponse{}
 	alertPolicies := []AlertPolicy{}
 	nextURL := "/alerts_policies.json"
-	queryParams := buildListAlertPoliciesQueryParams(params)
 
 	for nextURL != "" {
-		resp, err := alerts.client.Get(nextURL, &queryParams, &response)
+		resp, err := alerts.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
@@ -98,20 +95,6 @@ func (alerts *Alerts) DeleteAlertPolicy(id int) (*AlertPolicy, error) {
 	}
 
 	return &resp.Policy, nil
-}
-
-func buildListAlertPoliciesQueryParams(params *ListAlertPoliciesParams) []http.QueryParam {
-	queryParams := []http.QueryParam{}
-
-	if params == nil {
-		return queryParams
-	}
-
-	if params.Name != "" {
-		queryParams = append(queryParams, http.QueryParam{Name: "filter[name]", Value: params.Name})
-	}
-
-	return queryParams
 }
 
 type alertPoliciesResponse struct {

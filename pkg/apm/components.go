@@ -2,20 +2,16 @@ package apm
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 	"time"
-
-	"github.com/newrelic/newrelic-client-go/internal/http"
 )
 
 // ListComponentsParams represents a set of filters to be
 // used when querying New Relic applications.
 type ListComponentsParams struct {
-	Name         string
-	IDs          []int
-	PluginID     int
-	HealthStatus bool
+	Name         string `url:"filter[name],omitempty"`
+	IDs          []int  `url:"filter[ids],omitempty,comma"`
+	PluginID     int    `url:"filter[plugin_id],omitempty"`
+	HealthStatus bool   `url:"health_status,omitempty"`
 }
 
 // ListComponents is used to retrieve the components associated with
@@ -24,10 +20,9 @@ func (apm *APM) ListComponents(params *ListComponentsParams) ([]*Component, erro
 	response := componentsResponse{}
 	c := []*Component{}
 	nextURL := "/components.json"
-	queryParams := buildListComponentsQueryParams(params)
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &queryParams, &response)
+		resp, err := apm.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
@@ -61,7 +56,7 @@ func (apm *APM) GetComponent(componentID int) (*Component, error) {
 // used when querying New Relic component metrics.
 type ListComponentMetricsParams struct {
 	// Name allows for filtering the returned list of metrics by name.
-	Name string
+	Name string `url:"name,omitempty"`
 }
 
 // ListComponentMetrics is used to retrieve the metrics for a specific New Relic component.
@@ -69,10 +64,9 @@ func (apm *APM) ListComponentMetrics(componentID int, params *ListComponentMetri
 	m := []*ComponentMetric{}
 	response := componentMetricsResponse{}
 	nextURL := fmt.Sprintf("/components/%d/metrics.json", componentID)
-	queryParams := buildListComponentMetricsQueryParams(params)
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &queryParams, &response)
+		resp, err := apm.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
@@ -92,25 +86,25 @@ func (apm *APM) ListComponentMetrics(componentID int, params *ListComponentMetri
 type GetComponentMetricDataParams struct {
 	// Names allows retrieval of specific metrics by name.
 	// At least one metric name is required.
-	Names []string
+	Names []string `url:"names[],omitempty"`
 
 	// Values allows retrieval of specific metric values.
-	Values []string
+	Values []string `url:"values[],omitempty"`
 
 	// From specifies a begin time for the query.
-	From *time.Time
+	From *time.Time `url:"from,omitempty"`
 
 	// To specifies an end time for the query.
-	To *time.Time
+	To *time.Time `url:"to,omitempty"`
 
 	// Period represents the period of timeslices in seconds.
-	Period int
+	Period int `url:"period,omitempty"`
 
 	// Summarize will summarize the data when set to true.
-	Summarize bool
+	Summarize bool `url:"summarize,omitempty"`
 
 	// Raw will return unformatted raw values when set to true.
-	Raw bool
+	Raw bool `url:"raw,omitempty"`
 }
 
 // GetComponentMetricData is used to retrieve the metric timeslice data for a specific component metric.
@@ -118,10 +112,9 @@ func (apm *APM) GetComponentMetricData(componentID int, params *GetComponentMetr
 	m := []*Metric{}
 	response := componentMetricDataResponse{}
 	nextURL := fmt.Sprintf("/components/%d/metrics/data.json", componentID)
-	queryParams := buildGetComponentMetricDataQueryParams(params)
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &queryParams, &response)
+		resp, err := apm.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
@@ -134,95 +127,6 @@ func (apm *APM) GetComponentMetricData(componentID int, params *GetComponentMetr
 	}
 
 	return m, nil
-}
-
-func buildListComponentMetricsQueryParams(params *ListComponentMetricsParams) []http.QueryParam {
-	queryParams := []http.QueryParam{}
-
-	if params == nil {
-		return queryParams
-	}
-
-	if params.Name != "" {
-		queryParams = append(queryParams, http.QueryParam{Name: "name", Value: params.Name})
-	}
-
-	return queryParams
-}
-
-func buildListComponentsQueryParams(params *ListComponentsParams) []http.QueryParam {
-	queryParams := []http.QueryParam{}
-
-	if params == nil {
-		return queryParams
-	}
-
-	if params.Name != "" {
-		queryParams = append(queryParams, http.QueryParam{Name: "filter[name]", Value: params.Name})
-
-		if params.IDs != nil {
-			ids := []string{}
-			for _, id := range params.IDs {
-				ids = append(ids, strconv.Itoa(id))
-			}
-
-			value := strings.Join(ids, ",")
-			queryParams = append(queryParams, http.QueryParam{Name: "filter[ids]", Value: value})
-		}
-	}
-
-	if params.PluginID != 0 {
-		value := strconv.Itoa(params.PluginID)
-		queryParams = append(queryParams, http.QueryParam{Name: "filter[plugin_id]", Value: value})
-	}
-
-	value := strconv.FormatBool(params.HealthStatus)
-	queryParams = append(queryParams, http.QueryParam{Name: "health_status", Value: value})
-
-	return queryParams
-}
-
-func buildGetComponentMetricDataQueryParams(params *GetComponentMetricDataParams) []http.QueryParam {
-	queryParams := []http.QueryParam{}
-
-	if params == nil {
-		return queryParams
-	}
-
-	if len(params.Names) > 0 {
-		for _, name := range params.Names {
-			queryParams = append(queryParams, http.QueryParam{Name: "names[]", Value: name})
-		}
-	}
-
-	if len(params.Values) > 0 {
-		for _, value := range params.Values {
-			queryParams = append(queryParams, http.QueryParam{Name: "values[]", Value: value})
-		}
-	}
-
-	if params.From != nil {
-		value := params.From.Format(time.RFC3339)
-		queryParams = append(queryParams, http.QueryParam{Name: "from", Value: value})
-	}
-
-	if params.To != nil {
-		value := params.From.Format(time.RFC3339)
-		queryParams = append(queryParams, http.QueryParam{Name: "to", Value: value})
-	}
-
-	if params.Period != 0 {
-		value := strconv.Itoa(params.Period)
-		queryParams = append(queryParams, http.QueryParam{Name: "period", Value: value})
-	}
-
-	value := strconv.FormatBool(params.Summarize)
-	queryParams = append(queryParams, http.QueryParam{Name: "summarize", Value: value})
-
-	value = strconv.FormatBool(params.Raw)
-	queryParams = append(queryParams, http.QueryParam{Name: "raw", Value: value})
-
-	return queryParams
 }
 
 type componentsResponse struct {
