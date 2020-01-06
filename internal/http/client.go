@@ -130,12 +130,6 @@ func (c *NewRelicClient) Delete(url string,
 	return c.do(http.MethodDelete, url, queryParams, nil, respBody)
 }
 
-// QueryParam is used to pass query params to one of the client's request methods.
-type QueryParam struct {
-	Name  string
-	Value string
-}
-
 func makeRequestBody(reqBody interface{}) (*bytes.Buffer, error) {
 	b := bytes.NewBuffer([]byte{})
 	if reqBody != nil {
@@ -158,11 +152,7 @@ func (c *NewRelicClient) setHeaders(req *retryablehttp.Request) {
 }
 
 func setQueryParams(req *retryablehttp.Request, params interface{}) error {
-	if params == nil {
-		return nil
-	}
-
-	if len(req.URL.Query()) > 0 {
+	if params == nil || len(req.URL.Query()) > 0 {
 		return nil
 	}
 

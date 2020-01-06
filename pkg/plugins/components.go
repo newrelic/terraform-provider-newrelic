@@ -1,4 +1,4 @@
-package apm
+package plugins
 
 import (
 	"fmt"
@@ -16,13 +16,13 @@ type ListComponentsParams struct {
 
 // ListComponents is used to retrieve the components associated with
 // a New Relic account.
-func (apm *APM) ListComponents(params *ListComponentsParams) ([]*Component, error) {
+func (p *Plugins) ListComponents(params *ListComponentsParams) ([]*Component, error) {
 	response := componentsResponse{}
 	c := []*Component{}
 	nextURL := "/components.json"
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &params, &response)
+		resp, err := p.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
@@ -30,7 +30,7 @@ func (apm *APM) ListComponents(params *ListComponentsParams) ([]*Component, erro
 
 		c = append(c, response.Components...)
 
-		paging := apm.pager.Parse(resp)
+		paging := p.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
@@ -39,11 +39,11 @@ func (apm *APM) ListComponents(params *ListComponentsParams) ([]*Component, erro
 }
 
 // GetComponent is used to retrieve a specific New Relic component.
-func (apm *APM) GetComponent(componentID int) (*Component, error) {
+func (p *Plugins) GetComponent(componentID int) (*Component, error) {
 	response := componentResponse{}
 	url := fmt.Sprintf("/components/%d.json", componentID)
 
-	_, err := apm.client.Get(url, nil, &response)
+	_, err := p.client.Get(url, nil, &response)
 
 	if err != nil {
 		return nil, err
@@ -60,13 +60,13 @@ type ListComponentMetricsParams struct {
 }
 
 // ListComponentMetrics is used to retrieve the metrics for a specific New Relic component.
-func (apm *APM) ListComponentMetrics(componentID int, params *ListComponentMetricsParams) ([]*ComponentMetric, error) {
+func (p *Plugins) ListComponentMetrics(componentID int, params *ListComponentMetricsParams) ([]*ComponentMetric, error) {
 	m := []*ComponentMetric{}
 	response := componentMetricsResponse{}
 	nextURL := fmt.Sprintf("/components/%d/metrics.json", componentID)
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &params, &response)
+		resp, err := p.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
@@ -74,7 +74,7 @@ func (apm *APM) ListComponentMetrics(componentID int, params *ListComponentMetri
 
 		m = append(m, response.Metrics...)
 
-		paging := apm.pager.Parse(resp)
+		paging := p.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
@@ -108,13 +108,13 @@ type GetComponentMetricDataParams struct {
 }
 
 // GetComponentMetricData is used to retrieve the metric timeslice data for a specific component metric.
-func (apm *APM) GetComponentMetricData(componentID int, params *GetComponentMetricDataParams) ([]*Metric, error) {
+func (p *Plugins) GetComponentMetricData(componentID int, params *GetComponentMetricDataParams) ([]*Metric, error) {
 	m := []*Metric{}
 	response := componentMetricDataResponse{}
 	nextURL := fmt.Sprintf("/components/%d/metrics/data.json", componentID)
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &params, &response)
+		resp, err := p.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
@@ -122,7 +122,7 @@ func (apm *APM) GetComponentMetricData(componentID int, params *GetComponentMetr
 
 		m = append(m, response.MetricData.Metrics...)
 
-		paging := apm.pager.Parse(resp)
+		paging := p.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 

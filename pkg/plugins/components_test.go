@@ -1,6 +1,6 @@
 // +build unit
 
-package apm
+package plugins
 
 import (
 	"fmt"
@@ -131,7 +131,7 @@ func TestListComponentsWithParams(t *testing.T) {
 	expectedPluginID := "1234"
 	expectedHealthStatus := "true"
 
-	apm := newTestAPMClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apm := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		name := values.Get("filter[name]")
@@ -217,7 +217,7 @@ func TestGetComponentMetricDataWithParams(t *testing.T) {
 	expectedSummarize := "true"
 	expectedRaw := "true"
 
-	apm := newTestAPMClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apm := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		names := values.Get("names[]")

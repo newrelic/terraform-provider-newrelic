@@ -1,4 +1,4 @@
-package apm
+package plugins
 
 import "time"
 

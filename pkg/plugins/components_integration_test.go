@@ -1,6 +1,6 @@
 // +build integration
 
-package apm
+package plugins
 
 import (
 	"os"
