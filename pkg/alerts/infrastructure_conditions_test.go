@@ -15,15 +15,21 @@ import (
 var (
 	testInfrastructureConditionPolicyId  = 111111
 	testInfrastructureConditionTimestamp = serialization.EpochTime(time.Unix(1490996713872, 0))
-	testInfrastructureConditionThreshold = InfrastructureConditionThreshold{
+	testInfrastructureCriticalThreshold  = InfrastructureConditionThreshold{
 		Duration: 6,
-		Value:    0,
+		Function: "all",
+		Value:    12.3,
+	}
+	testInfrastructureWarningThreshold = InfrastructureConditionThreshold{
+		Duration: 6,
+		Function: "all",
+		Value:    10,
 	}
 
 	testInfrastructureCondition = InfrastructureCondition{
 		Comparison:   "equal",
 		CreatedAt:    &testInfrastructureConditionTimestamp,
-		Critical:     &testInfrastructureConditionThreshold,
+		Critical:     &testInfrastructureCriticalThreshold,
 		Enabled:      true,
 		ID:           13890,
 		Name:         "Java is running",
@@ -31,6 +37,7 @@ var (
 		ProcessWhere: "(commandName = 'java')",
 		Type:         "infra_process_running",
 		UpdatedAt:    &testInfrastructureConditionTimestamp,
+		Warning:      &testInfrastructureWarningThreshold,
 		Where:        "(hostname LIKE '%cassandra%')",
 	}
 	testInfrastructureConditionJson = `
@@ -45,8 +52,14 @@ var (
 			"policy_id":111111,
 			"comparison":"equal",
 			"critical_threshold":{
-				"value":0,
-				"duration_minutes":6
+				"value":12.3,
+				"duration_minutes":6,
+				"time_function": "all"
+			},
+			"warning_threshold": {
+				"value": 10,
+				"duration_minutes": 6,
+				"time_function": "all"
 			},
 			"process_where_clause":"(commandName = 'java')"
 		}`

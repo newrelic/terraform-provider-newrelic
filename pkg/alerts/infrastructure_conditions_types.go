@@ -25,7 +25,7 @@ type InfrastructureCondition struct {
 
 // InfrastructureConditionThreshold represents an New Relic Infrastructure alert condition threshold.
 type InfrastructureConditionThreshold struct {
-	Duration int    `json:"duration_minutes,omitempty"`
-	Function string `json:"time_function,omitempty"`
-	Value    int    `json:"value,omitempty"`
+	Duration int     `json:"duration_minutes,omitempty"`
+	Function string  `json:"time_function,omitempty"`
+	Value    float64 `json:"value,omitempty"`
 }
