@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/newrelic/newrelic-client-go/pkg/config"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,7 +52,7 @@ func TestDefaultErrorValue(t *testing.T) {
 
 	_, err := c.Get("/path", nil, nil)
 
-	assert.Equal(t, err.(*ErrorUnexpectedStatusCode).err, "error message")
+	assert.Equal(t, err.(*errors.ErrorUnexpectedStatusCode).Err, "error message")
 }
 
 type CustomErrorResponse struct {
@@ -74,7 +75,7 @@ func TestCustomErrorValue(t *testing.T) {
 
 	_, err := c.Get("/path", nil, nil)
 
-	assert.Equal(t, err.(*ErrorUnexpectedStatusCode).err, "error message")
+	assert.Equal(t, err.(*errors.ErrorUnexpectedStatusCode).Err, "error message")
 }
 
 type CustomResponseValue struct {
@@ -236,7 +237,7 @@ func TestErrNotFound(t *testing.T) {
 
 	_, err := c.Get("/path", nil, nil)
 
-	assert.IsType(t, &ErrorNotFound{}, err)
+	assert.IsType(t, &errors.ErrorNotFound{}, err)
 }
 
 func TestInternalServerError(t *testing.T) {
@@ -247,7 +248,7 @@ func TestInternalServerError(t *testing.T) {
 
 	_, err := c.Get("/path", nil, nil)
 
-	assert.IsType(t, &ErrorUnexpectedStatusCode{}, err)
+	assert.IsType(t, &errors.ErrorUnexpectedStatusCode{}, err)
 }
 
 func TestPost(t *testing.T) {
