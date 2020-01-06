@@ -2,26 +2,23 @@ package apm
 
 import (
 	"fmt"
-
-	"github.com/newrelic/newrelic-client-go/internal/utils"
 )
 
 // ListKeyTransactionsParams represents a set of filters to be
 // used when querying New Relic key transactions.
 type ListKeyTransactionsParams struct {
-	Name string
-	IDs  []int
+	Name string `url:"filter[name],omitempty"`
+	IDs  []int  `url:"filter[ids],omitempty,comma"`
 }
 
 // ListKeyTransactions returns all key transactions for an account.
 func (apm *APM) ListKeyTransactions(params *ListKeyTransactionsParams) ([]*KeyTransaction, error) {
 	response := keyTransactionsResponse{}
 	results := []*KeyTransaction{}
-	paramsMap := buildListKeyTransactionsParamsMap(params)
 	nextURL := "/key_transactions.json"
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &paramsMap, &response)
+		resp, err := apm.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
@@ -48,24 +45,6 @@ func (apm *APM) GetKeyTransaction(id int) (*KeyTransaction, error) {
 	}
 
 	return &response.KeyTransaction, nil
-}
-
-func buildListKeyTransactionsParamsMap(params *ListKeyTransactionsParams) map[string]string {
-	paramsMap := map[string]string{}
-
-	if params == nil {
-		return paramsMap
-	}
-
-	if params.Name != "" {
-		paramsMap["filter[name]"] = params.Name
-	}
-
-	if params.IDs != nil && len(params.IDs) > 0 {
-		paramsMap["filter[ids]"] = utils.IntArrayToString(params.IDs)
-	}
-
-	return paramsMap
 }
 
 type keyTransactionsResponse struct {
