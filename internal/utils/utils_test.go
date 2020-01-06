@@ -11,8 +11,17 @@ import (
 func TestIntArrayToString(t *testing.T) {
 	t.Parallel()
 
-	arr := []int{1, 2, 3, 4}
-	result := IntArrayToString(arr)
+	var result string
 
+	// empty
+	result = IntArrayToString([]int{})
+	assert.Equal(t, "", result)
+
+	// single
+	result = IntArrayToString([]int{1})
+	assert.Equal(t, "1", result)
+
+	// multiple
+	result = IntArrayToString([]int{1, 2, 3, 4})
 	assert.Equal(t, "1,2,3,4", result)
 }
