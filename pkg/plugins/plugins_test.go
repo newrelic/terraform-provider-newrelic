@@ -224,6 +224,39 @@ func TestListPluginsWithParams(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
+func TestListPluginsWithDetailedParam(t *testing.T) {
+	t.Parallel()
+
+	expectedDetailed := "true"
+
+	client := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		guid := r.URL.Query().Get("detailed")
+		require.Equal(t, expectedDetailed, guid)
+
+		w.Header().Set("Content-Type", "application/json")
+		_, err := w.Write([]byte(fmt.Sprintf(`{"plugins": [%s]}`, testPluginDetailedJSON)))
+
+		require.NoError(t, err)
+	}))
+
+	params := ListPluginsParams{
+		Detailed: true,
+	}
+
+	plugin := testPlugin
+	plugin.Details = testPluginDetails
+
+	expected := []*Plugin{
+		&plugin,
+	}
+
+	actual, err := client.ListPlugins(&params)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
+}
+
 func TestGetPlugin(t *testing.T) {
 	t.Parallel()
 

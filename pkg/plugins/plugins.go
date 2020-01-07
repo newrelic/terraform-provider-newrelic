@@ -26,11 +26,15 @@ func New(config config.Config) Plugins {
 // ListPluginsParams represents a set of query string parameters
 // used as filters when querying New Relic plugins.
 type ListPluginsParams struct {
-	GUID string `url:"filter[guid],omitempty"`
-	IDs  []int  `url:"filter[ids],omitempty,comma"`
+	GUID     string `url:"filter[guid],omitempty"`
+	IDs      []int  `url:"filter[ids],omitempty,comma"`
+	Detailed bool   `url:"detailed,omitempty"`
 }
 
 // ListPlugins returns a list of Plugins associated with an account.
+// If the query paramater `detailed=true` is provided, the plugins
+// response objects will contain an additional `details` property
+// with metadata pertaining to each plugin.
 func (plugins *Plugins) ListPlugins(params *ListPluginsParams) ([]*Plugin, error) {
 	response := pluginsResponse{}
 	results := []*Plugin{}
@@ -59,8 +63,8 @@ type GetPluginParams struct {
 }
 
 // GetPlugin returns a plugin for a given account. If the query paramater `detailed=true`
-// is provided, the response will contain an additional `details` property that contains
-// additional metadata pertaining to the plugin.
+// is provided, the response will contain an additional `details` property with
+// metadata pertaining to the plugin.
 func (plugins *Plugins) GetPlugin(id int, params *GetPluginParams) (*Plugin, error) {
 	response := pluginResponse{}
 
