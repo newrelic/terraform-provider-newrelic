@@ -21,6 +21,7 @@ func TestIntegrationComponents(t *testing.T) {
 
 	api := New(config.Config{
 		APIKey: apiKey,
+		LogLevel: "debug",
 	})
 
 	a, err := api.ListComponents(nil)

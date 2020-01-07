@@ -19,7 +19,8 @@ func TestIntegrationListApplications(t *testing.T) {
 	}
 
 	api := New(config.Config{
-		APIKey: apiKey,
+		APIKey:   apiKey,
+		LogLevel: "debug",
 	})
 
 	_, err := api.ListApplications(nil)
@@ -39,7 +40,8 @@ func TestIntegrationGetApplication(t *testing.T) {
 	}
 
 	api := New(config.Config{
-		APIKey: apiKey,
+		APIKey:   apiKey,
+		LogLevel: "debug",
 	})
 
 	a, err := api.ListApplications(nil)
@@ -65,7 +67,8 @@ func TestIntegrationUpdateApplication(t *testing.T) {
 	}
 
 	api := New(config.Config{
-		APIKey: apiKey,
+		APIKey:   apiKey,
+		LogLevel: "debug",
 	})
 
 	a, err := api.ListApplications(nil)
@@ -103,7 +106,8 @@ func TestIntegrationDeleteApplication(t *testing.T) {
 	}
 
 	api := New(config.Config{
-		APIKey: apiKey,
+		APIKey:   apiKey,
+		LogLevel: "debug",
 	})
 
 	_, err := api.DeleteApplication(0)

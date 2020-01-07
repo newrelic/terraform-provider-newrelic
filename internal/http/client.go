@@ -7,10 +7,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	neturl "net/url"
+	"os"
 	"time"
 
 	"github.com/google/go-querystring/query"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/newrelic/newrelic-client-go/internal/version"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
@@ -20,6 +22,7 @@ import (
 const (
 	defaultTimeout  = time.Second * 30
 	defaultRetryMax = 3
+	defaultLogLevel = "info"
 )
 
 var (
@@ -47,6 +50,8 @@ func NewClient(cfg config.Config) NewRelicClient {
 		if transport, ok := (*cfg.HTTPTransport).(*http.Transport); ok {
 			c.Transport = transport
 		}
+	} else {
+		c.Transport = http.DefaultTransport
 	}
 
 	if cfg.BaseURL == "" {
@@ -57,10 +62,29 @@ func NewClient(cfg config.Config) NewRelicClient {
 		cfg.UserAgent = defaultUserAgent
 	}
 
+	if config.LogLevel == "" {
+		config.LogLevel = defaultLogLevel
+	}
+
 	r := retryablehttp.NewClient()
 	r.HTTPClient = &c
 	r.RetryMax = defaultRetryMax
 	r.CheckRetry = RetryPolicy
+
+	if config.Logger != nil {
+		r.Logger = config.Logger
+	} else {
+		// Use logrus by default.
+		r.Logger = structuredLogger{}
+
+		level, err := log.ParseLevel(config.LogLevel)
+		if err != nil {
+			panic(err)
+		}
+
+		log.SetLevel(level)
+		log.SetOutput(os.Stdout)
+	}
 
 	return NewRelicClient{
 		Client:     r,

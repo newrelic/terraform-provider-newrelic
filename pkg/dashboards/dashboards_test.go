@@ -21,6 +21,7 @@ func NewTestDashboards(handler http.Handler) Dashboards {
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
 		UserAgent: "newrelic/newrelic-client-go",
+		LogLevel:  "debug",
 	})
 
 	return c

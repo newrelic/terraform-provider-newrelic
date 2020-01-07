@@ -14,6 +14,7 @@ require (
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/llorllale/go-gitlint v0.0.0-20190914155841-58c0b8cef0e5
 	github.com/remyoudompheng/go-misc v0.0.0-20190427085024-2d6ac652a50e
+	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
 	github.com/timakin/bodyclose v0.0.0-20190930140734-f7f2e9bca95e
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80

@@ -46,4 +46,17 @@ type Config struct {
 	HTTPTransport *http.RoundTripper
 	UserAgent     string
 	Region        RegionType
+
+	// LogLevel can be one of the following values:
+	// "panic", "fatal", "error", "warn", "info", "debug", "trace"
+	LogLevel string
+	Logger   Logger
+}
+
+// Logger interface implements a simple logger.
+type Logger interface {
+	Error(string, ...interface{})
+	Info(string, ...interface{})
+	Debug(string, ...interface{})
+	Warn(string, ...interface{})
 }

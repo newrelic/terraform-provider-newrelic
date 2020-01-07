@@ -20,6 +20,7 @@ func newTestPluginsClient(handler http.Handler) Plugins {
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
 		UserAgent: "newrelic/newrelic-client-go",
+		LogLevel:  "debug",
 	})
 
 	return c
@@ -50,7 +51,8 @@ func newIntegrationTestClient(t *testing.T) Plugins {
 	}
 
 	return New(config.Config{
-		APIKey: apiKey,
+		APIKey:   apiKey,
+		LogLevel: "debug",
 	})
 }
 

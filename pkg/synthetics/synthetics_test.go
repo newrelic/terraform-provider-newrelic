@@ -56,6 +56,7 @@ func newTestAlerts(handler http.Handler) Synthetics {
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
 		UserAgent: "newrelic/newrelic-client-go",
+		LogLevel:  "debug",
 	})
 
 	return c

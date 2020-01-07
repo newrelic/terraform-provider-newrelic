@@ -21,6 +21,7 @@ func TestIntegrationDashboards(t *testing.T) {
 
 	dashboards := New(config.Config{
 		APIKey: apiKey,
+		LogLevel: "debug",
 	})
 
 	d := Dashboard{

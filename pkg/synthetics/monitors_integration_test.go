@@ -37,6 +37,7 @@ func TestIntegrationMonitors(t *testing.T) {
 
 	synthetics := New(config.Config{
 		APIKey: apiKey,
+		LogLevel: "debug",
 	})
 
 	rand := nr.RandSeq(5)

@@ -18,6 +18,7 @@ func newTestAPMClient(handler http.Handler) APM {
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
 		UserAgent: "newrelic/newrelic-client-go",
+		LogLevel:  "debug",
 	})
 
 	return c
@@ -48,6 +49,7 @@ func newIntegrationTestClient(t *testing.T) APM {
 	}
 
 	return New(config.Config{
-		APIKey: apiKey,
+		APIKey:   apiKey,
+		LogLevel: "debug",
 	})
 }

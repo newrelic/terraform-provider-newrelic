@@ -48,6 +48,7 @@ func newIntegrationTestClient(t *testing.T) Alerts {
 	}
 
 	return New(config.Config{
-		APIKey: apiKey,
+		APIKey:   apiKey,
+		LogLevel: "debug",
 	})
 }
