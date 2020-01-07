@@ -8,10 +8,11 @@ import (
 	"log"
 	"net/url"
 
-	synthetics "github.com/dollarshaveclub/new-relic-synthetics-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
 	insights "github.com/newrelic/go-insights/client"
+	nrConfig "github.com/newrelic/newrelic-client-go/pkg/config"
+	synthetics "github.com/newrelic/newrelic-client-go/pkg/synthetics"
 	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
@@ -129,16 +130,18 @@ func (c *Config) ClientInsightsQuery() (*insights.QueryClient, error) {
 }
 
 // ClientSynthetics returns a new client for accessing New Relic Synthetics
-func (c *Config) ClientSynthetics() (*synthetics.Client, error) {
-	conf := func(s *synthetics.Client) {
-		s.APIKey = c.APIKey
+func (c *Config) ClientSynthetics() (*synthetics.Synthetics, error) {
+	cfg := nrConfig.Config{
+		APIKey:    c.APIKey,
+		BaseURL:   c.APIURL,
+		UserAgent: c.userAgent,
 	}
 
-	client, _ := synthetics.NewClient(conf)
+	client := synthetics.New(cfg)
 
 	log.Printf("[INFO] New Relic Synthetics client configured")
 
-	return client, nil
+	return &client, nil
 }
 
 // ProviderConfig for the custom provider
@@ -147,5 +150,5 @@ type ProviderConfig struct {
 	InsightsInsertClient *insights.InsertClient
 	InsightsQueryClient  *insights.QueryClient
 	InfraClient          *newrelic.InfraClient
-	Synthetics           *synthetics.Client
+	Synthetics           *synthetics.Synthetics
 }
