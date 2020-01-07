@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	synthetics "github.com/newrelic/newrelic-client-go/pkg/synthetics"
+	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
 func dataSourceNewRelicSyntheticsMonitor() *schema.Resource {
