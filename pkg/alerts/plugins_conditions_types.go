@@ -6,8 +6,8 @@ type AlertPlugin struct {
 	GUID string `json:"guid,omitempty"`
 }
 
-// PluginCondition represents an alert condition for New Relic Plugins.
-type PluginCondition struct {
+// PluginsCondition represents an alert condition for New Relic Plugins.
+type PluginsCondition struct {
 	PolicyID          int                  `json:"-"`
 	ID                int                  `json:"id,omitempty"`
 	Name              string               `json:"name,omitempty"`

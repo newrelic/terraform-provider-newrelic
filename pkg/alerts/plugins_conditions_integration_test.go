@@ -21,7 +21,7 @@ func TestIntegrationPluginsConditions(t *testing.T) {
 		}
 		conditionName        = fmt.Sprintf("test-integration-plugins-condition-%s", randomString)
 		conditionNameUpdated = fmt.Sprintf("test-integration-plugins-condition-updated-%s", randomString)
-		condition            = PluginCondition{
+		condition            = PluginsCondition{
 			Name:              conditionName,
 			Enabled:           true,
 			Entities:          []string{"212222915"},
@@ -64,7 +64,7 @@ func TestIntegrationPluginsConditions(t *testing.T) {
 	}()
 
 	// Test: Create
-	createResult, err := client.CreatePluginCondition(condition)
+	createResult, err := client.CreatePluginsCondition(condition)
 
 	require.NoError(t, err)
 	require.NotNil(t, createResult)
@@ -76,21 +76,21 @@ func TestIntegrationPluginsConditions(t *testing.T) {
 	require.Greater(t, len(listResult), 0)
 
 	// Test: Get
-	readResult, err := client.GetPluginCondition(createResult.PolicyID, createResult.ID)
+	readResult, err := client.GetPluginsCondition(createResult.PolicyID, createResult.ID)
 
 	require.NoError(t, err)
 	require.NotNil(t, readResult)
 
 	// Test: Update
 	createResult.Name = conditionNameUpdated
-	updateResult, err := client.UpdatePluginCondition(*createResult)
+	updateResult, err := client.UpdatePluginsCondition(*createResult)
 
 	require.NoError(t, err)
 	require.NotNil(t, updateResult)
 	require.Equal(t, conditionNameUpdated, updateResult.Name)
 
 	// Test: Delete
-	result, err := client.DeletePluginCondition(createResult.ID)
+	result, err := client.DeletePluginsCondition(createResult.ID)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)

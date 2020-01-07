@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	testPluginConditionJSON = `{
+	testPluginsConditionJSON = `{
 		"id": 333444,
 		"name": "Connected Clients (High)",
 		"enabled": true,
@@ -37,7 +37,7 @@ var (
 		}
 	}`
 
-	testPluginCondition = PluginCondition{
+	testPluginsCondition = PluginsCondition{
 		PolicyID:          123,
 		ID:                333444,
 		Name:              "Connected Clients (High)",
@@ -65,11 +65,11 @@ var (
 
 func TestListPluginsConditions(t *testing.T) {
 	t.Parallel()
-	responseJSON := fmt.Sprintf(`{"plugins_conditions": [%s]}`, testPluginConditionJSON)
+	responseJSON := fmt.Sprintf(`{"plugins_conditions": [%s]}`, testPluginsConditionJSON)
 	client := newMockResponse(t, responseJSON, http.StatusOK)
 
-	expected := []*PluginCondition{
-		&testPluginCondition,
+	expected := []*PluginsCondition{
+		&testPluginsCondition,
 	}
 
 	actual, err := client.ListPluginsConditions(123)
@@ -79,48 +79,48 @@ func TestListPluginsConditions(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
-func TestGetPluginCondition(t *testing.T) {
+func TestGetPluginsCondition(t *testing.T) {
 	t.Parallel()
-	responseJSON := fmt.Sprintf(`{"plugins_conditions": [%s]}`, testPluginConditionJSON)
+	responseJSON := fmt.Sprintf(`{"plugins_conditions": [%s]}`, testPluginsConditionJSON)
 	client := newMockResponse(t, responseJSON, http.StatusOK)
 
-	actual, err := client.GetPluginCondition(123, 333444)
+	actual, err := client.GetPluginsCondition(123, 333444)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
-	assert.Equal(t, &testPluginCondition, actual)
+	assert.Equal(t, &testPluginsCondition, actual)
 }
 
-func TestCreatePluginCondition(t *testing.T) {
+func TestCreatePluginsCondition(t *testing.T) {
 	t.Parallel()
-	responseJSON := fmt.Sprintf(`{"plugins_condition": %s}`, testPluginConditionJSON)
+	responseJSON := fmt.Sprintf(`{"plugins_condition": %s}`, testPluginsConditionJSON)
 	client := newMockResponse(t, responseJSON, http.StatusCreated)
 
-	actual, err := client.CreatePluginCondition(testPluginCondition)
+	actual, err := client.CreatePluginsCondition(testPluginsCondition)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
-	assert.Equal(t, &testPluginCondition, actual)
+	assert.Equal(t, &testPluginsCondition, actual)
 }
 
-func TestUpdatePluginCondition(t *testing.T) {
+func TestUpdatePluginsCondition(t *testing.T) {
 	t.Parallel()
-	responseJSON := fmt.Sprintf(`{"plugins_condition": %s}`, testPluginConditionJSON)
+	responseJSON := fmt.Sprintf(`{"plugins_condition": %s}`, testPluginsConditionJSON)
 	client := newMockResponse(t, responseJSON, http.StatusOK)
 
-	actual, err := client.UpdatePluginCondition(testPluginCondition)
+	actual, err := client.UpdatePluginsCondition(testPluginsCondition)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
-	assert.Equal(t, &testPluginCondition, actual)
+	assert.Equal(t, &testPluginsCondition, actual)
 }
 
-func TestDeletePluginCondition(t *testing.T) {
+func TestDeletePluginsCondition(t *testing.T) {
 	t.Parallel()
-	responseJSON := fmt.Sprintf(`{"plugins_condition": %s}`, testPluginConditionJSON)
+	responseJSON := fmt.Sprintf(`{"plugins_condition": %s}`, testPluginsConditionJSON)
 	client := newMockResponse(t, responseJSON, http.StatusOK)
 
-	expected := PluginCondition{
+	expected := PluginsCondition{
 		ID:                333444,
 		Name:              "Connected Clients (High)",
 		Enabled:           true,
@@ -144,7 +144,7 @@ func TestDeletePluginCondition(t *testing.T) {
 		},
 	}
 
-	actual, err := client.DeletePluginCondition(333444)
+	actual, err := client.DeletePluginsCondition(333444)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)

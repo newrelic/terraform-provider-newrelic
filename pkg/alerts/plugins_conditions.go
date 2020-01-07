@@ -3,9 +3,9 @@ package alerts
 import "fmt"
 
 // ListPluginsConditions returns alert conditions for New Relic plugins for an account.
-func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginCondition, error) {
+func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, error) {
 	response := pluginsConditionsResponse{}
-	conditions := []*PluginCondition{}
+	conditions := []*PluginsCondition{}
 	queryParams := listPluginsConditionsParams{
 		PolicyID: policyID,
 	}
@@ -32,9 +32,9 @@ func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginCondition, e
 	return conditions, nil
 }
 
-// GetPluginCondition gets information about an alert condition for a plugin
+// GetPluginsCondition gets information about an alert condition for a plugin
 // given a policy ID and plugin ID.
-func (alerts *Alerts) GetPluginCondition(policyID int, id int) (*PluginCondition, error) {
+func (alerts *Alerts) GetPluginsCondition(policyID int, id int) (*PluginsCondition, error) {
 	conditions, err := alerts.ListPluginsConditions(policyID)
 
 	if err != nil {
@@ -50,10 +50,10 @@ func (alerts *Alerts) GetPluginCondition(policyID int, id int) (*PluginCondition
 	return nil, fmt.Errorf("no condition found for policy %d and condition ID %d", policyID, id)
 }
 
-// CreatePluginCondition creates an alert condition for a plugin.
-func (alerts *Alerts) CreatePluginCondition(condition PluginCondition) (*PluginCondition, error) {
+// CreatePluginsCondition creates an alert condition for a plugin.
+func (alerts *Alerts) CreatePluginsCondition(condition PluginsCondition) (*PluginsCondition, error) {
 	reqBody := pluginConditionRequestBody{
-		PluginCondition: condition,
+		PluginsCondition: condition,
 	}
 	resp := pluginConditionResponse{}
 
@@ -64,15 +64,15 @@ func (alerts *Alerts) CreatePluginCondition(condition PluginCondition) (*PluginC
 		return nil, err
 	}
 
-	resp.PluginCondition.PolicyID = condition.PolicyID
+	resp.PluginsCondition.PolicyID = condition.PolicyID
 
-	return &resp.PluginCondition, nil
+	return &resp.PluginsCondition, nil
 }
 
-// UpdatePluginCondition updates an alert condition for a plugin.
-func (alerts *Alerts) UpdatePluginCondition(condition PluginCondition) (*PluginCondition, error) {
+// UpdatePluginsCondition updates an alert condition for a plugin.
+func (alerts *Alerts) UpdatePluginsCondition(condition PluginsCondition) (*PluginsCondition, error) {
 	reqBody := pluginConditionRequestBody{
-		PluginCondition: condition,
+		PluginsCondition: condition,
 	}
 	resp := pluginConditionResponse{}
 
@@ -83,13 +83,13 @@ func (alerts *Alerts) UpdatePluginCondition(condition PluginCondition) (*PluginC
 		return nil, err
 	}
 
-	resp.PluginCondition.PolicyID = condition.PolicyID
+	resp.PluginsCondition.PolicyID = condition.PolicyID
 
-	return &resp.PluginCondition, nil
+	return &resp.PluginsCondition, nil
 }
 
-// DeletePluginCondition deletes a plugin alert condition.
-func (alerts *Alerts) DeletePluginCondition(id int) (*PluginCondition, error) {
+// DeletePluginsCondition deletes a plugin alert condition.
+func (alerts *Alerts) DeletePluginsCondition(id int) (*PluginsCondition, error) {
 	resp := pluginConditionResponse{}
 	u := fmt.Sprintf("/alerts_plugins_conditions/%d.json", id)
 
@@ -99,7 +99,7 @@ func (alerts *Alerts) DeletePluginCondition(id int) (*PluginCondition, error) {
 		return nil, err
 	}
 
-	return &resp.PluginCondition, nil
+	return &resp.PluginsCondition, nil
 }
 
 type listPluginsConditionsParams struct {
@@ -107,13 +107,13 @@ type listPluginsConditionsParams struct {
 }
 
 type pluginsConditionsResponse struct {
-	PluginsConditions []*PluginCondition `json:"plugins_conditions,omitempty"`
+	PluginsConditions []*PluginsCondition `json:"plugins_conditions,omitempty"`
 }
 
 type pluginConditionResponse struct {
-	PluginCondition PluginCondition `json:"plugins_condition,omitempty"`
+	PluginsCondition PluginsCondition `json:"plugins_condition,omitempty"`
 }
 
 type pluginConditionRequestBody struct {
-	PluginCondition PluginCondition `json:"plugins_condition,omitempty"`
+	PluginsCondition PluginsCondition `json:"plugins_condition,omitempty"`
 }
