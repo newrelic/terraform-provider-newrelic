@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	synthetics "github.com/dollarshaveclub/new-relic-synthetics-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	synthetics "github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
 func dataSourceNewRelicSyntheticsMonitor() *schema.Resource {
@@ -30,32 +30,19 @@ func dataSourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interf
 
 	log.Printf("[INFO] Reading New Relic synthetics monitors")
 
-	offset := 0
-	max := 100
-	monitors, err := client.GetAllMonitors(uint(offset), uint(max))
-	var monitor *synthetics.ExtendedMonitor
 	name := d.Get("name").(string)
-	for monitors != nil {
-		if len(monitors.Monitors) > 0 && err == nil {
-			mon := *monitors
+	monitors, err := client.ListMonitors()
 
-			for i := 0; i < len(monitors.Monitors); i++ {
-				if mon.Monitors[i].Name == name {
-					monitor = mon.Monitors[i]
-					break
-				}
-			}
-		}
-
-		offset = offset + 100
-		monitors, err = client.GetAllMonitors(uint(offset), uint(max))
-
-		if len(monitors.Monitors) == 0 {
-			monitors = nil
-		}
-	}
 	if err != nil {
 		return err
+	}
+
+	var monitor *synthetics.Monitor
+	for _, m := range monitors {
+		if m.Name == name {
+			monitor = &m
+			break
+		}
 	}
 
 	if monitor == nil {

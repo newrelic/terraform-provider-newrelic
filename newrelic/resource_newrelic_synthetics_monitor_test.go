@@ -25,11 +25,6 @@ func TestAccNewRelicSyntheticsMonitor_Basic(t *testing.T) {
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
 			},
-			// Test: No diff on re-apply
-			{
-				Config:             testAccNewRelicSyntheticsMonitorConfig(rName),
-				ExpectNonEmptyPlan: false,
-			},
 			// Test: Update
 			{
 				Config: testAccNewRelicSyntheticsMonitorConfigUpdated(rName),
@@ -62,11 +57,6 @@ func TestAccNewRelicSyntheticsMonitor_OptionalArgs(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
-			},
-			// Test: No diff on re-apply
-			{
-				Config:             testAccNewRelicSyntheticsMonitorConfigOmitOptionalArgs(rName),
-				ExpectNonEmptyPlan: false,
 			},
 			// Test: Update
 			{
@@ -101,11 +91,6 @@ func TestAccNewRelicSyntheticsMonitor_Browser(t *testing.T) {
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
 			},
-			// Test: No diff on re-apply
-			{
-				Config:             testAccNewRelicSyntheticsMonitorConfigBrowser(rName),
-				ExpectNonEmptyPlan: false,
-			},
 			// Test: Update
 			{
 				Config: testAccNewRelicSyntheticsMonitorConfigBrowserUpdated(rName),
@@ -139,11 +124,6 @@ func TestAccNewRelicSyntheticsMonitor_ScriptBrowser(t *testing.T) {
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
 			},
-			// Test: No diff on re-apply
-			{
-				Config:             testAccNewRelicSyntheticsMonitorConfigScriptBrowser(rName),
-				ExpectNonEmptyPlan: false,
-			},
 			// Test: Update
 			{
 				Config: testAccNewRelicSyntheticsMonitorConfigScriptBrowserUpdated(rName),
@@ -176,11 +156,6 @@ func TestAccNewRelicSyntheticsMonitor_ScriptAPI(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
-			},
-			// Test: No diff on re-apply
-			{
-				Config:             testAccNewRelicSyntheticsMonitorConfigScriptAPI(rName),
-				ExpectNonEmptyPlan: false,
 			},
 			// Test: Update
 			{

@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -27,11 +26,6 @@ func TestAccNewRelicSyntheticsMonitorScript_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorScriptExists(resourceName),
 				),
-			},
-			// Test: No diff on re-apply
-			{
-				Config:             testAccNewRelicSyntheticsMonitorScriptConfig(rName, scriptText),
-				ExpectNonEmptyPlan: false,
 			},
 			// Test: Update
 			{
@@ -62,13 +56,13 @@ func testAccCheckNewRelicSyntheticsMonitorScriptExists(n string) resource.TestCh
 
 		client := testAccProvider.Meta().(*ProviderConfig).Synthetics
 
-		foundText, err := client.GetMonitorScript(rs.Primary.ID)
+		script, err := client.GetMonitorScript(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		if foundText != rs.Primary.Attributes["text"] {
-			return fmt.Errorf("synthetics monitor script text does not match: %v \n\n %v", foundText, rs.Primary.Attributes["text"])
+		if script.Text != rs.Primary.Attributes["text"] {
+			return fmt.Errorf("synthetics monitor script text does not match: %v \n\n %v", script.Text, rs.Primary.Attributes["text"])
 		}
 
 		return nil
@@ -82,8 +76,8 @@ func testAccCheckNewRelicSyntheticsMonitorScriptDestroy(s *terraform.State) erro
 			continue
 		}
 
-		foundText, err := client.GetMonitorScript(r.Primary.ID)
-		if err == nil || strings.TrimSpace(foundText) != "" {
+		monitorScript, err := client.GetMonitorScript(r.Primary.ID)
+		if err == nil && monitorScript != nil {
 			return fmt.Errorf("synthetics monitor script text still exists")
 		}
 	}
