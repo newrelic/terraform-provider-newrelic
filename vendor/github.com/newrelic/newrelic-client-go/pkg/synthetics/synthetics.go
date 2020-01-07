@@ -7,7 +7,8 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
-var baseURLs = map[config.RegionType]string{
+// BaseURLs represents the base API URLs for the different environments of the Synthetics API.
+var BaseURLs = map[config.RegionType]string{
 	config.Region.US:      "https://synthetics.newrelic.com/synthetics/api/v3",
 	config.Region.EU:      "https://synthetics.eu.newrelic.com/synthetics/api/v3",
 	config.Region.Staging: "https://staging-synthetics.newrelic.com/synthetics/api/v3",
@@ -56,7 +57,7 @@ func (e *ErrorResponse) Error() string {
 func New(config config.Config) Synthetics {
 
 	if config.BaseURL == "" {
-		config.BaseURL = baseURLs[config.Region]
+		config.BaseURL = BaseURLs[config.Region]
 	}
 
 	client := http.NewClient(config)
