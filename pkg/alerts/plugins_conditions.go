@@ -50,10 +50,37 @@ func (alerts *Alerts) GetPluginCondition(policyID int, id int) (*PluginCondition
 	return nil, fmt.Errorf("no condition found for policy %d and condition ID %d", policyID, id)
 }
 
+// UpdatePluginCondition updates an alert condition for a plugin.
+func (alerts *Alerts) UpdatePluginCondition(condition PluginCondition) (*PluginCondition, error) {
+	reqBody := pluginConditionRequestBody{
+		PluginCondition: condition,
+	}
+	resp := pluginConditionResponse{}
+
+	u := fmt.Sprintf("/alerts_plugins_conditions/%d.json", condition.ID)
+	_, err := alerts.client.Put(u, nil, reqBody, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp.PluginCondition.PolicyID = condition.PolicyID
+
+	return &resp.PluginCondition, nil
+}
+
 type listPluginsConditionsParams struct {
 	PolicyID int `url:"policy_id,omitempty"`
 }
 
 type pluginsConditionsResponse struct {
 	PluginsConditions []*PluginCondition `json:"plugins_conditions,omitempty"`
+}
+
+type pluginConditionResponse struct {
+	PluginCondition PluginCondition `json:"plugins_condition,omitempty"`
+}
+
+type pluginConditionRequestBody struct {
+	PluginCondition PluginCondition `json:"plugins_condition,omitempty"`
 }

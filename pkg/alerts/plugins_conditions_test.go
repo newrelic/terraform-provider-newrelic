@@ -90,3 +90,15 @@ func TestGetPluginCondition(t *testing.T) {
 	assert.NotNil(t, actual)
 	assert.Equal(t, &testPluginCondition, actual)
 }
+
+func TestUpdatePluginCondition(t *testing.T) {
+	t.Parallel()
+	responseJSON := fmt.Sprintf(`{"plugins_condition": %s}`, testPluginConditionJSON)
+	client := newMockResponse(t, responseJSON, http.StatusOK)
+
+	actual, err := client.UpdatePluginCondition(testPluginCondition)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testPluginCondition, actual)
+}
