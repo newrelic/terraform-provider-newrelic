@@ -172,6 +172,7 @@ var (
 
 func TestListPlugins(t *testing.T) {
 	t.Parallel()
+
 	responseJSON := fmt.Sprintf(`{"plugins": [%s]}`, testPluginJSON)
 	client := newMockResponse(t, responseJSON, http.StatusOK)
 
@@ -195,8 +196,8 @@ func TestListPluginsWithParams(t *testing.T) {
 	client := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
-		name := values.Get("filter[guid]")
-		require.Equal(t, guidFilter, name)
+		guid := values.Get("filter[guid]")
+		require.Equal(t, guidFilter, guid)
 
 		ids := values.Get("filter[ids]")
 		require.Equal(t, idsFilter, ids)
@@ -225,6 +226,7 @@ func TestListPluginsWithParams(t *testing.T) {
 
 func TestGetPlugin(t *testing.T) {
 	t.Parallel()
+
 	responseJSON := fmt.Sprintf(`{"plugin": %s}`, testPluginJSON)
 	client := newMockResponse(t, responseJSON, http.StatusOK)
 
