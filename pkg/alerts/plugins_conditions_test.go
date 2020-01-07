@@ -114,3 +114,39 @@ func TestUpdatePluginCondition(t *testing.T) {
 	assert.NotNil(t, actual)
 	assert.Equal(t, &testPluginCondition, actual)
 }
+
+func TestDeletePluginCondition(t *testing.T) {
+	t.Parallel()
+	responseJSON := fmt.Sprintf(`{"plugins_condition": %s}`, testPluginConditionJSON)
+	client := newMockResponse(t, responseJSON, http.StatusOK)
+
+	expected := PluginCondition{
+		ID:                333444,
+		Name:              "Connected Clients (High)",
+		Enabled:           true,
+		Entities:          []string{"111222"},
+		Metric:            "Component/Connection/Clients[connections]",
+		MetricDescription: "Connected Clients",
+		RunbookURL:        "https://example.com/runbook",
+		Terms: []AlertConditionTerm{
+			{
+				Duration:     5,
+				Operator:     "above",
+				Priority:     "critical",
+				Threshold:    10,
+				TimeFunction: "all",
+			},
+		},
+		ValueFunction: "average",
+		Plugin: AlertPlugin{
+			ID:   "222555",
+			GUID: "net.example.newrelic_redis_plugin",
+		},
+	}
+
+	actual, err := client.DeletePluginCondition(333444)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &expected, actual)
+}

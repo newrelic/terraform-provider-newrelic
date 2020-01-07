@@ -88,6 +88,20 @@ func (alerts *Alerts) UpdatePluginCondition(condition PluginCondition) (*PluginC
 	return &resp.PluginCondition, nil
 }
 
+// DeletePluginCondition deletes a plugin alert condition.
+func (alerts *Alerts) DeletePluginCondition(id int) (*PluginCondition, error) {
+	resp := pluginConditionResponse{}
+	u := fmt.Sprintf("/alerts_plugins_conditions/%d.json", id)
+
+	_, err := alerts.client.Delete(u, nil, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.PluginCondition, nil
+}
+
 type listPluginsConditionsParams struct {
 	PolicyID int `url:"policy_id,omitempty"`
 }
