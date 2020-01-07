@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
 	insights "github.com/newrelic/go-insights/client"
-	nrConfig "github.com/newrelic/newrelic-client-go/pkg/config"
-	synthetics "github.com/newrelic/newrelic-client-go/pkg/synthetics"
+	"github.com/newrelic/newrelic-client-go/pkg/config"
+	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
@@ -131,7 +131,7 @@ func (c *Config) ClientInsightsQuery() (*insights.QueryClient, error) {
 
 // ClientSynthetics returns a new client for accessing New Relic Synthetics
 func (c *Config) ClientSynthetics() (*synthetics.Synthetics, error) {
-	cfg := nrConfig.Config{
+	cfg := config.Config{
 		APIKey:    c.APIKey,
 		BaseURL:   c.APIURL,
 		UserAgent: c.userAgent,
