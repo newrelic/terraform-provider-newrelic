@@ -15,14 +15,14 @@ var (
 		HMAC: "MjhiNGE4MjVlMDE1N2M4NDQ4MjNjNDFkZDEyYTRjMmUzZDE3NGJlNjU0MWFmOTJlMzNiODExOGU2ZjhkZTY4ZQ",
 	}
 	testMonitorScript = MonitorScript{
-		Text: "dmFyIGFzc2VydCA9IHJlcXVpcmUoJ2Fzc2VydCcpOw0KYXNzZXJ0LmVxdWFsKCcxJywgJzEnKTs",
+		Text: "asdf",
 		Locations: []MonitorScriptLocation{
 			testMonitorScriptLocation,
 		},
 	}
 	testMonitorScriptJson = `
 	{
-		"scriptText": "dmFyIGFzc2VydCA9IHJlcXVpcmUoJ2Fzc2VydCcpOw0KYXNzZXJ0LmVxdWFsKCcxJywgJzEnKTs"
+		"scriptText": "asdf"
 	}
 	`
 )

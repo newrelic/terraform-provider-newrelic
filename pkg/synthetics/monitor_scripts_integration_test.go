@@ -29,7 +29,7 @@ var (
 		HMAC: "MjhiNGE4MjVlMDE1N2M4NDQ4MjNjNDFkZDEyYTRjMmUzZDE3NGJlNjU0MWFmOTJlMzNiODExOGU2ZjhkZTY4ZQ",
 	}
 	testIntegrationMonitorScript = MonitorScript{
-		Text: "dmFyIGFzc2VydCA9IHJlcXVpcmUoJ2Fzc2VydCcpOw0KYXNzZXJ0LmVxdWFsKCcxJywgJzEnKTs=",
+		Text: "asdf",
 		Locations: []MonitorScriptLocation{
 			testIntegrationMonitorScriptLocation,
 		},
@@ -65,6 +65,7 @@ func TestIntegrationMonitorScripts(t *testing.T) {
 	script, err := synthetics.GetMonitorScript(monitorID)
 
 	require.NoError(t, err)
+
 	require.Equal(t, testIntegrationMonitorScript.Text, script.Text)
 
 	// Teardown
