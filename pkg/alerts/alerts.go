@@ -32,3 +32,6 @@ func New(config config.Config) Alerts {
 
 	return pkg
 }
+
+// BaseURLs represents the base API URLs for the different environments of the New Relic REST API V2.
+var BaseURLs = config.DefaultBaseURLs

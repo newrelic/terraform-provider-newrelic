@@ -24,6 +24,9 @@ func New(config config.Config) Dashboards {
 	return pkg
 }
 
+// BaseURLs represents the base API URLs for the different environments of the New Relic REST API V2.
+var BaseURLs = config.DefaultBaseURLs
+
 // ListDashboardsParams represents a set of filters to be
 // used when querying New Relic dashboards.
 type ListDashboardsParams struct {
