@@ -135,11 +135,9 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 	log.Println("[INFO] Initializing New Relic Synthetics client")
 
 	syntheticsConfig := Config{
-		APIURL:             data.Get("synthetics_api_url").(string),
-		APIKey:             data.Get("api_key").(string),
-		userAgent:          fmt.Sprintf("%s %s/%s", httpclient.TerraformUserAgent(terraformVersion), TerraformProviderProductUserAgent, version.ProviderVersion),
-		InsecureSkipVerify: data.Get("insecure_skip_verify").(bool),
-		CACertFile:         data.Get("cacert_file").(string),
+		APIURL:    data.Get("synthetics_api_url").(string),
+		APIKey:    data.Get("api_key").(string),
+		userAgent: fmt.Sprintf("%s %s/%s", httpclient.TerraformUserAgent(terraformVersion), TerraformProviderProductUserAgent, version.ProviderVersion),
 	}
 
 	clientSynthetics, err := syntheticsConfig.ClientSynthetics()
