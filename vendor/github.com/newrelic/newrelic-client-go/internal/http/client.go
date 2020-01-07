@@ -24,11 +24,6 @@ const (
 
 var (
 	defaultUserAgent = fmt.Sprintf("newrelic/newrelic-client-go/%s (https://github.com/newrelic/newrelic-client-go)", version.Version)
-	defaultBaseURLs  = map[config.RegionType]string{
-		config.Region.US:      "https://api.newrelic.com/v2",
-		config.Region.EU:      "https://api.eu.newrelic.com/v2",
-		config.Region.Staging: "https://staging-api.newrelic.com/v2",
-	}
 )
 
 // NewRelicClient represents a client for communicating with the New Relic APIs.
@@ -39,27 +34,27 @@ type NewRelicClient struct {
 }
 
 // NewClient is used to create a new instance of NewRelicClient.
-func NewClient(config config.Config) NewRelicClient {
+func NewClient(cfg config.Config) NewRelicClient {
 	c := http.Client{
 		Timeout: defaultTimeout,
 	}
 
-	if config.Timeout != nil {
-		c.Timeout = *config.Timeout
+	if cfg.Timeout != nil {
+		c.Timeout = *cfg.Timeout
 	}
 
-	if config.HTTPTransport != nil {
-		if transport, ok := (*config.HTTPTransport).(*http.Transport); ok {
+	if cfg.HTTPTransport != nil {
+		if transport, ok := (*cfg.HTTPTransport).(*http.Transport); ok {
 			c.Transport = transport
 		}
 	}
 
-	if config.BaseURL == "" {
-		config.BaseURL = defaultBaseURLs[config.Region]
+	if cfg.BaseURL == "" {
+		cfg.BaseURL = config.DefaultBaseURLs[cfg.Region]
 	}
 
-	if config.UserAgent == "" {
-		config.UserAgent = defaultUserAgent
+	if cfg.UserAgent == "" {
+		cfg.UserAgent = defaultUserAgent
 	}
 
 	r := retryablehttp.NewClient()
@@ -69,7 +64,7 @@ func NewClient(config config.Config) NewRelicClient {
 
 	return NewRelicClient{
 		Client:     r,
-		Config:     config,
+		Config:     cfg,
 		errorValue: &DefaultErrorResponse{},
 	}
 }
