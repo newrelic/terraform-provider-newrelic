@@ -91,6 +91,18 @@ func TestGetPluginCondition(t *testing.T) {
 	assert.Equal(t, &testPluginCondition, actual)
 }
 
+func TestCreatePluginCondition(t *testing.T) {
+	t.Parallel()
+	responseJSON := fmt.Sprintf(`{"plugins_condition": %s}`, testPluginConditionJSON)
+	client := newMockResponse(t, responseJSON, http.StatusCreated)
+
+	actual, err := client.CreatePluginCondition(testPluginCondition)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testPluginCondition, actual)
+}
+
 func TestUpdatePluginCondition(t *testing.T) {
 	t.Parallel()
 	responseJSON := fmt.Sprintf(`{"plugins_condition": %s}`, testPluginConditionJSON)
