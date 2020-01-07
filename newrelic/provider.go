@@ -118,10 +118,13 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigure(data *schema.ResourceData, terraformVersion string) (interface{}, error) {
+	apiKey := data.Get("api_key").(string)
+	userAgent := fmt.Sprintf("%s %s/%s", httpclient.TerraformUserAgent(terraformVersion), TerraformProviderProductUserAgent, version.ProviderVersion)
+
 	config := Config{
-		APIKey:             data.Get("api_key").(string),
+		APIKey:             apiKey,
 		APIURL:             data.Get("api_url").(string),
-		userAgent:          fmt.Sprintf("%s %s/%s", httpclient.TerraformUserAgent(terraformVersion), TerraformProviderProductUserAgent, version.ProviderVersion),
+		userAgent:          userAgent,
 		InsecureSkipVerify: data.Get("insecure_skip_verify").(bool),
 		CACertFile:         data.Get("cacert_file").(string),
 	}
@@ -136,8 +139,8 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 
 	syntheticsConfig := Config{
 		APIURL:    data.Get("synthetics_api_url").(string),
-		APIKey:    data.Get("api_key").(string),
-		userAgent: fmt.Sprintf("%s %s/%s", httpclient.TerraformUserAgent(terraformVersion), TerraformProviderProductUserAgent, version.ProviderVersion),
+		APIKey:    apiKey,
+		userAgent: userAgent,
 	}
 
 	clientSynthetics, err := syntheticsConfig.ClientSynthetics()
@@ -166,7 +169,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 	}
 
 	infraConfig := Config{
-		APIKey: data.Get("api_key").(string),
+		APIKey: apiKey,
 		APIURL: data.Get("infra_api_url").(string),
 	}
 	log.Println("[INFO] Initializing New Relic Infra client")
