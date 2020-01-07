@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	synthetics "github.com/dollarshaveclub/new-relic-synthetics-go"
-	util "github.com/dollarshaveclub/new-relic-synthetics-go/util"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	synthetics "github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
 func resourceNewRelicSyntheticsMonitor() *schema.Resource {
@@ -86,12 +86,12 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 	}
 }
 
-func buildSyntheticsMonitorStruct(d *schema.ResourceData) *synthetics.CreateMonitorArgs {
-	monitor := synthetics.CreateMonitorArgs{
+func buildSyntheticsMonitorStruct(d *schema.ResourceData) synthetics.Monitor {
+	monitor := synthetics.Monitor{
 		Name:         d.Get("name").(string),
-		Type:         d.Get("type").(string),
+		Type:         synthetics.MonitorType(d.Get("type").(string)),
 		Frequency:    uint(d.Get("frequency").(int)),
-		Status:       d.Get("status").(string),
+		Status:       synthetics.MonitorStatusType(d.Get("status").(string)),
 		SLAThreshold: d.Get("sla_threshold").(float64),
 	}
 
@@ -106,30 +106,32 @@ func buildSyntheticsMonitorStruct(d *schema.ResourceData) *synthetics.CreateMoni
 	}
 
 	if validationString, ok := d.GetOk("validation_string"); ok {
-		monitor.ValidationString = util.StrPtr(validationString.(string))
+		monitor.Options.ValidationString = validationString.(string)
 	}
 
 	if verifySSL, ok := d.GetOkExists("verify_ssl"); ok {
-		monitor.VerifySSL = util.BoolPtr(verifySSL.(bool))
+		monitor.Options.VerifySSL = verifySSL.(bool)
 	}
 
 	if bypassHeadRequest, ok := d.GetOkExists("bypass_head_request"); ok {
-		monitor.BypassHEADRequest = util.BoolPtr(bypassHeadRequest.(bool))
+		monitor.Options.BypassHEADRequest = bypassHeadRequest.(bool)
 	}
 
 	if treatRedirectAsFailure, ok := d.GetOkExists("treat_redirect_as_failure"); ok {
-		monitor.TreatRedirectAsFailure = util.BoolPtr(treatRedirectAsFailure.(bool))
+		monitor.Options.TreatRedirectAsFailure = treatRedirectAsFailure.(bool)
 	}
 
 	monitor.Locations = locations
-	return &monitor
+	return monitor
 }
 
-func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.UpdateMonitorArgs {
-	monitor := synthetics.UpdateMonitorArgs{
+func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Monitor {
+	monitor := synthetics.Monitor{
+		ID:           d.Id(),
 		Name:         d.Get("name").(string),
+		Type:         synthetics.MonitorType(d.Get("type").(string)),
 		Frequency:    uint(d.Get("frequency").(int)),
-		Status:       d.Get("status").(string),
+		Status:       synthetics.MonitorStatusType(d.Get("status").(string)),
 		SLAThreshold: d.Get("sla_threshold").(float64),
 	}
 
@@ -144,19 +146,19 @@ func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Update
 	}
 
 	if validationString, ok := d.GetOk("validation_string"); ok {
-		monitor.ValidationString = util.StrPtr(validationString.(string))
+		monitor.Options.ValidationString = validationString.(string)
 	}
 
 	if verifySSL, ok := d.GetOkExists("verify_ssl"); ok {
-		monitor.VerifySSL = util.BoolPtr(verifySSL.(bool))
+		monitor.Options.VerifySSL = verifySSL.(bool)
 	}
 
 	if bypassHeadRequest, ok := d.GetOkExists("bypass_head_request"); ok {
-		monitor.BypassHEADRequest = util.BoolPtr(bypassHeadRequest.(bool))
+		monitor.Options.BypassHEADRequest = bypassHeadRequest.(bool)
 	}
 
 	if treatRedirectAsFailure, ok := d.GetOkExists("treat_redirect_as_failure"); ok {
-		monitor.TreatRedirectAsFailure = util.BoolPtr(treatRedirectAsFailure.(bool))
+		monitor.Options.TreatRedirectAsFailure = treatRedirectAsFailure.(bool)
 	}
 
 	monitor.Locations = locations
@@ -171,22 +173,10 @@ func readSyntheticsMonitorStruct(monitor *synthetics.Monitor, d *schema.Resource
 	d.Set("locations", monitor.Locations)
 	d.Set("status", monitor.Status)
 	d.Set("sla_threshold", monitor.SLAThreshold)
-
-	if monitor.VerifySSL != nil {
-		d.Set("verify_ssl", *monitor.VerifySSL)
-	}
-
-	if monitor.ValidationString != nil {
-		d.Set("validation_string", *monitor.ValidationString)
-	}
-
-	if monitor.BypassHEADRequest != nil {
-		d.Set("bypass_head_request", monitor.BypassHEADRequest)
-	}
-
-	if monitor.TreatRedirectAsFailure != nil {
-		d.Set("treat_redirect_as_failure", monitor.TreatRedirectAsFailure)
-	}
+	d.Set("verify_ssl", monitor.Options.VerifySSL)
+	d.Set("validation_string", monitor.Options.ValidationString)
+	d.Set("bypass_head_request", monitor.Options.BypassHEADRequest)
+	d.Set("treat_redirect_as_failure", monitor.Options.TreatRedirectAsFailure)
 
 	return nil
 }
@@ -197,12 +187,12 @@ func resourceNewRelicSyntheticsMonitorCreate(d *schema.ResourceData, meta interf
 
 	log.Printf("[INFO] Creating New Relic Synthetics monitor %s", monitor.Name)
 
-	condition, err := client.CreateMonitor(monitor)
+	id, err := client.CreateMonitor(monitor)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(condition.ID)
+	d.SetId(id)
 	return resourceNewRelicSyntheticsMonitorRead(d, meta)
 }
 
@@ -213,7 +203,7 @@ func resourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interfac
 
 	monitor, err := client.GetMonitor(d.Id())
 	if err != nil {
-		if err == synthetics.ErrMonitorNotFound {
+		if _, ok := err.(*errors.ErrorNotFound); ok {
 			d.SetId("")
 			return nil
 		}
@@ -230,7 +220,7 @@ func resourceNewRelicSyntheticsMonitorUpdate(d *schema.ResourceData, meta interf
 
 	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
 
-	_, err := client.UpdateMonitor(d.Id(), monitor)
+	err := client.UpdateMonitor(*monitor)
 	if err != nil {
 		return err
 	}

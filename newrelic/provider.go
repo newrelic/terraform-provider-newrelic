@@ -29,6 +29,11 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_URL", "https://api.newrelic.com/v2"),
 			},
+			"synthetics_api_url": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_SYNTHETICS_API_URL", "https://synthetics.newrelic.com/synthetics/api/v3"),
+			},
 			"insights_account_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -129,7 +134,15 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 
 	log.Println("[INFO] Initializing New Relic Synthetics client")
 
-	clientSynthetics, err := config.ClientSynthetics()
+	syntheticsConfig := Config{
+		APIURL:             data.Get("synthetics_api_url").(string),
+		APIKey:             data.Get("api_key").(string),
+		userAgent:          fmt.Sprintf("%s %s/%s", httpclient.TerraformUserAgent(terraformVersion), TerraformProviderProductUserAgent, version.ProviderVersion),
+		InsecureSkipVerify: data.Get("insecure_skip_verify").(bool),
+		CACertFile:         data.Get("cacert_file").(string),
+	}
+
+	clientSynthetics, err := syntheticsConfig.ClientSynthetics()
 	if err != nil {
 		return nil, fmt.Errorf("error initializing New Relic Synthetics client: %s", err)
 	}

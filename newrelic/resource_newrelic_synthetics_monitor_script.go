@@ -3,8 +3,9 @@ package newrelic
 import (
 	"log"
 
-	synthetics "github.com/dollarshaveclub/new-relic-synthetics-go"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	synthetics "github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
 func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
@@ -35,9 +36,9 @@ func importSyntheticsMonitorScript(d *schema.ResourceData, m interface{}) ([]*sc
 	return []*schema.ResourceData{d}, nil
 }
 
-func buildSyntheticsMonitorScriptStruct(d *schema.ResourceData) *synthetics.UpdateMonitorScriptArgs {
-	script := synthetics.UpdateMonitorScriptArgs{
-		ScriptText: d.Get("text").(string),
+func buildSyntheticsMonitorScriptStruct(d *schema.ResourceData) *synthetics.MonitorScript {
+	script := synthetics.MonitorScript{
+		Text: d.Get("text").(string),
 	}
 
 	return &script
@@ -50,7 +51,7 @@ func resourceNewRelicSyntheticsMonitorScriptCreate(d *schema.ResourceData, meta 
 	id := d.Get("monitor_id").(string)
 	log.Printf("[INFO] Creating New Relic Synthetics monitor script %s", id)
 
-	err := client.UpdateMonitorScript(id, script)
+	err := client.UpdateMonitorScript(id, *script)
 	if err != nil {
 		return err
 	}
@@ -64,9 +65,9 @@ func resourceNewRelicSyntheticsMonitorScriptRead(d *schema.ResourceData, meta in
 
 	log.Printf("[INFO] Reading New Relic Synthetics script %s", d.Id())
 
-	scriptText, err := client.GetMonitorScript(d.Id())
+	script, err := client.GetMonitorScript(d.Id())
 	if err != nil {
-		if err == synthetics.ErrMonitorScriptNotFound {
+		if _, ok := err.(*errors.ErrorNotFound); ok {
 			d.SetId("")
 			return nil
 		}
@@ -74,7 +75,7 @@ func resourceNewRelicSyntheticsMonitorScriptRead(d *schema.ResourceData, meta in
 		return err
 	}
 
-	d.Set("text", scriptText)
+	d.Set("text", script.Text)
 	return nil
 }
 
@@ -84,7 +85,7 @@ func resourceNewRelicSyntheticsMonitorScriptUpdate(d *schema.ResourceData, meta 
 
 	log.Printf("[INFO] Creating New Relic Synthetics monitor script %s", d.Id())
 
-	err := client.UpdateMonitorScript(d.Id(), script)
+	err := client.UpdateMonitorScript(d.Id(), *script)
 	if err != nil {
 		return err
 	}
@@ -98,11 +99,11 @@ func resourceNewRelicSyntheticsMonitorScriptDelete(d *schema.ResourceData, meta 
 
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor script %s", d.Id())
 
-	script := synthetics.UpdateMonitorScriptArgs{
-		ScriptText: " ",
+	script := synthetics.MonitorScript{
+		Text: " ",
 	}
 
-	if err := client.UpdateMonitorScript(d.Id(), &script); err != nil {
+	if err := client.UpdateMonitorScript(d.Id(), script); err != nil {
 		return err
 	}
 
