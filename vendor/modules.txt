@@ -104,9 +104,6 @@ github.com/client9/misspell
 github.com/client9/misspell/cmd/misspell
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/dollarshaveclub/new-relic-synthetics-go v0.0.0-20170605224734-4dc3dd6ae884
-github.com/dollarshaveclub/new-relic-synthetics-go
-github.com/dollarshaveclub/new-relic-synthetics-go/util
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.4.7
@@ -220,6 +217,8 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
+# github.com/google/go-querystring v1.0.0
+github.com/google/go-querystring/query
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
 # github.com/googleapis/gax-go/v2 v2.0.5
@@ -240,6 +239,8 @@ github.com/hashicorp/go-multierror
 # github.com/hashicorp/go-plugin v1.0.1
 github.com/hashicorp/go-plugin
 github.com/hashicorp/go-plugin/internal/plugin
+# github.com/hashicorp/go-retryablehttp v0.6.4
+github.com/hashicorp/go-retryablehttp
 # github.com/hashicorp/go-safetemp v1.0.0
 github.com/hashicorp/go-safetemp
 # github.com/hashicorp/go-uuid v1.0.1
@@ -379,6 +380,12 @@ github.com/newrelic/go-agent/v3/internal/utilization
 github.com/newrelic/go-agent/v3/newrelic
 # github.com/newrelic/go-insights v1.0.2
 github.com/newrelic/go-insights/client
+# github.com/newrelic/newrelic-client-go v0.0.0-20200107182120-f16c37cbdb64
+github.com/newrelic/newrelic-client-go/internal/http
+github.com/newrelic/newrelic-client-go/internal/version
+github.com/newrelic/newrelic-client-go/pkg/config
+github.com/newrelic/newrelic-client-go/pkg/errors
+github.com/newrelic/newrelic-client-go/pkg/synthetics
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
 # github.com/paultyng/go-newrelic/v4 v4.10.0
@@ -425,7 +432,7 @@ github.com/subosito/gotenv
 github.com/timakin/bodyclose/passes/bodyclose
 # github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 github.com/tomnomnom/linkheader
-# github.com/ulikunitz/xz v0.5.6
+# github.com/ulikunitz/xz v0.5.5
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
@@ -436,7 +443,7 @@ github.com/ultraware/funlen
 github.com/ultraware/whitespace
 # github.com/uudashr/gocognit v0.0.0-20190926065955-1655d0de0517
 github.com/uudashr/gocognit
-# github.com/vmihailenco/msgpack v4.0.2+incompatible
+# github.com/vmihailenco/msgpack v4.0.1+incompatible
 github.com/vmihailenco/msgpack
 github.com/vmihailenco/msgpack/codes
 # github.com/zclconf/go-cty v1.1.0
