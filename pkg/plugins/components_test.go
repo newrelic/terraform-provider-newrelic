@@ -116,8 +116,8 @@ var (
 func TestListComponents(t *testing.T) {
 	t.Parallel()
 	responseJSON := fmt.Sprintf(`{"components": [%s]}`, testComponentJSON)
-	apm := newMockResponse(t, responseJSON, http.StatusOK)
-	c, err := apm.ListComponents(nil)
+	client := newMockResponse(t, responseJSON, http.StatusOK)
+	c, err := client.ListComponents(nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, c)
@@ -131,7 +131,7 @@ func TestListComponentsWithParams(t *testing.T) {
 	expectedPluginID := "1234"
 	expectedHealthStatus := "true"
 
-	apm := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	client := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		name := values.Get("filter[name]")
@@ -167,7 +167,7 @@ func TestListComponentsWithParams(t *testing.T) {
 		HealthStatus: true,
 	}
 
-	c, err := apm.ListComponents(&params)
+	c, err := client.ListComponents(&params)
 
 	require.NoError(t, err)
 	require.NotNil(t, c)
@@ -175,8 +175,8 @@ func TestListComponentsWithParams(t *testing.T) {
 
 func TestGetComponent(t *testing.T) {
 	responseJSON := fmt.Sprintf(`{"component": %s}`, testComponentJSON)
-	apm := newMockResponse(t, responseJSON, http.StatusOK)
-	c, err := apm.GetComponent(testComponent.ID)
+	client := newMockResponse(t, responseJSON, http.StatusOK)
+	c, err := client.GetComponent(testComponent.ID)
 
 	require.NoError(t, err)
 	require.NotNil(t, c)
@@ -185,9 +185,9 @@ func TestGetComponent(t *testing.T) {
 
 func TestListComponentMetrics(t *testing.T) {
 	responseJSON := fmt.Sprintf(`{"metrics": [%s]}`, testComponentMetricJSON)
-	apm := newMockResponse(t, responseJSON, http.StatusOK)
+	client := newMockResponse(t, responseJSON, http.StatusOK)
 
-	m, err := apm.ListComponentMetrics(testComponent.ID, nil)
+	m, err := client.ListComponentMetrics(testComponent.ID, nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, m)
@@ -200,8 +200,8 @@ func TestGetComponentMetricData(t *testing.T) {
 			 "metrics": [%s]
 		}
 	}`, testMetricDataJSON)
-	apm := newMockResponse(t, responseJSON, http.StatusOK)
-	m, err := apm.GetComponentMetricData(testComponent.ID, nil)
+	client := newMockResponse(t, responseJSON, http.StatusOK)
+	m, err := client.GetComponentMetricData(testComponent.ID, nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, m)
@@ -217,7 +217,7 @@ func TestGetComponentMetricDataWithParams(t *testing.T) {
 	expectedSummarize := "true"
 	expectedRaw := "true"
 
-	apm := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	client := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		names := values.Get("names[]")
@@ -270,7 +270,7 @@ func TestGetComponentMetricDataWithParams(t *testing.T) {
 		Summarize: true,
 		Raw:       true,
 	}
-	_, err := apm.GetComponentMetricData(testComponent.ID, &params)
+	_, err := client.GetComponentMetricData(testComponent.ID, &params)
 
 	require.NoError(t, err)
 }
