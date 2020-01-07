@@ -8,11 +8,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
+	"github.com/newrelic/newrelic-client-go/pkg/config"
+	"github.com/newrelic/newrelic-client-go/pkg/infrastructure"
+	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 	"github.com/terraform-providers/terraform-provider-newrelic/version"
 )
 
 // TerraformProviderProductUserAgent string used to identify this provider in User Agent requests
 const TerraformProviderProductUserAgent = "terraform-provider-newrelic"
+
+const (
+	insightsInsertURL = "https://insights-collector.newrelic.com/v1/accounts"
+	insightsQueryURL  = "https://insights-api.newrelic.com/v1/accounts"
+)
 
 // Provider represents a resource provider in Terraform
 func Provider() terraform.ResourceProvider {
@@ -27,12 +35,12 @@ func Provider() terraform.ResourceProvider {
 			"api_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_URL", "https://api.newrelic.com/v2"),
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_URL", config.DefaultBaseURLs[config.Region.US]),
 			},
 			"synthetics_api_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_SYNTHETICS_API_URL", "https://synthetics.newrelic.com/synthetics/api/v3"),
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_SYNTHETICS_API_URL", synthetics.BaseURLs[config.Region.US]),
 			},
 			"insights_account_id": {
 				Type:        schema.TypeString,
@@ -49,7 +57,7 @@ func Provider() terraform.ResourceProvider {
 			"insights_insert_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_INSERT_URL", "https://insights-collector.newrelic.com/v1/accounts"),
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_INSERT_URL", insightsInsertURL),
 			},
 			"insights_query_key": {
 				Type:        schema.TypeString,
@@ -60,12 +68,12 @@ func Provider() terraform.ResourceProvider {
 			"insights_query_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_QUERY_URL", "https://insights-api.newrelic.com/v1/accounts"),
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_QUERY_URL", insightsQueryURL),
 			},
 			"infra_api_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INFRA_API_URL", "https://infra-api.newrelic.com/v2"),
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INFRA_API_URL", infrastructure.BaseURLs[config.Region.US]),
 			},
 			"insecure_skip_verify": {
 				Type:        schema.TypeBool,
