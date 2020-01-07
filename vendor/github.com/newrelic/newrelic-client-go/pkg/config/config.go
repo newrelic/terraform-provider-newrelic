@@ -8,6 +8,13 @@ import (
 // RegionType represents the members of the Region enumeration.
 type RegionType int
 
+// DefaultBaseURLs represents the base API URLs for the different environments of the New Relic REST API V2.
+var DefaultBaseURLs = map[RegionType]string{
+	Region.US:      "https://api.newrelic.com/v2",
+	Region.EU:      "https://api.eu.newrelic.com/v2",
+	Region.Staging: "https://staging-api.newrelic.com/v2",
+}
+
 const (
 	// US represents New Relic's US-based production deployment.
 	US = iota
