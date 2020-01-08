@@ -88,7 +88,7 @@ func TestListAlertConditions(t *testing.T) {
 
 	expected := []*AlertCondition{
 		{
-			PolicyID:   0,
+			PolicyID:   333,
 			ID:         123,
 			Type:       "apm_app_metric",
 			Name:       "Apdex (High)",
@@ -115,7 +115,7 @@ func TestListAlertConditions(t *testing.T) {
 		},
 	}
 
-	actual, err := alerts.ListAlertConditions(2233)
+	actual, err := alerts.ListAlertConditions(333)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
@@ -127,7 +127,7 @@ func TestGetAlertCondition(t *testing.T) {
 	alerts := newMockResponse(t, testListAlertConditionsResponseJSON, http.StatusOK)
 
 	expected := &AlertCondition{
-		PolicyID:   0,
+		PolicyID:   333,
 		ID:         123,
 		Type:       "apm_app_metric",
 		Name:       "Apdex (High)",
@@ -153,7 +153,7 @@ func TestGetAlertCondition(t *testing.T) {
 		ViolationCloseTimer: 0,
 	}
 
-	actual, err := alerts.GetAlertCondition(0, 123)
+	actual, err := alerts.GetAlertCondition(333, 123)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
@@ -165,7 +165,7 @@ func TestCreateAlertCondition(t *testing.T) {
 	alerts := newMockResponse(t, testAlertConditionJSON, http.StatusCreated)
 
 	condition := AlertCondition{
-		PolicyID:   0,
+		PolicyID:   333,
 		Type:       "apm_app_metric",
 		Name:       "Adpex (High)",
 		Enabled:    true,
@@ -191,7 +191,7 @@ func TestCreateAlertCondition(t *testing.T) {
 	}
 
 	expected := &AlertCondition{
-		PolicyID:   0,
+		PolicyID:   333,
 		ID:         123,
 		Type:       "apm_app_metric",
 		Name:       "Apdex (High)",
@@ -229,7 +229,7 @@ func TestUpdateAlertCondition(t *testing.T) {
 	alerts := newMockResponse(t, testAlertConditionUpdateJSON, http.StatusCreated)
 
 	condition := AlertCondition{
-		PolicyID:   0,
+		PolicyID:   333,
 		Type:       "apm_app_metric",
 		Name:       "Adpex (High)",
 		Enabled:    true,
@@ -255,7 +255,7 @@ func TestUpdateAlertCondition(t *testing.T) {
 	}
 
 	expected := &AlertCondition{
-		PolicyID:   0,
+		PolicyID:   333,
 		ID:         123,
 		Type:       "apm_app_metric",
 		Name:       "Apdex (High)",
@@ -293,7 +293,6 @@ func TestDeleteAlertCondition(t *testing.T) {
 	alerts := newMockResponse(t, testAlertConditionJSON, http.StatusOK)
 
 	expected := &AlertCondition{
-		PolicyID:   0,
 		ID:         123,
 		Type:       "apm_app_metric",
 		Name:       "Apdex (High)",

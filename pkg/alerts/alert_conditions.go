@@ -21,6 +21,10 @@ func (alerts *Alerts) ListAlertConditions(policyID int) ([]*AlertCondition, erro
 			return nil, err
 		}
 
+		for _, c := range response.Conditions {
+			c.PolicyID = policyID
+		}
+
 		alertConditions = append(alertConditions, response.Conditions...)
 
 		paging := alerts.pager.Parse(resp)
