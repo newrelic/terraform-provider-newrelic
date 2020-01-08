@@ -380,7 +380,7 @@ github.com/newrelic/go-agent/v3/internal/utilization
 github.com/newrelic/go-agent/v3/newrelic
 # github.com/newrelic/go-insights v1.0.2
 github.com/newrelic/go-insights/client
-# github.com/newrelic/newrelic-client-go v0.0.0-20200107225322-6b142960bce0
+# github.com/newrelic/newrelic-client-go v0.0.0-20200108002045-adcb168b62b4
 github.com/newrelic/newrelic-client-go/internal/http
 github.com/newrelic/newrelic-client-go/internal/version
 github.com/newrelic/newrelic-client-go/pkg/config

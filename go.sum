@@ -329,8 +329,8 @@ github.com/newrelic/go-agent/v3 v3.0.0 h1:YK9ddXLcMoWr/Bqj30T+cQo1wniFVR5SS/mVuV
 github.com/newrelic/go-agent/v3 v3.0.0/go.mod h1:H28zDNUC0U/b7kLoY4EFOhuth10Xu/9dchozUiOseQQ=
 github.com/newrelic/go-insights v1.0.2 h1:6cYvc8QsQizVrnq9rxi7txOlcFAgYtWXKyctfOKze/o=
 github.com/newrelic/go-insights v1.0.2/go.mod h1:bVk7JK0SAopD0eqTPF+/lxSRkjMsxDDvzo8SLclI1Nw=
-github.com/newrelic/newrelic-client-go v0.0.0-20200107225322-6b142960bce0 h1:84bI8Lc6eVWqjYorCUe7ic4W7VwTzk/COyqp8G1zFco=
-github.com/newrelic/newrelic-client-go v0.0.0-20200107225322-6b142960bce0/go.mod h1:9pn6q5Pzy3uM2d2AgybH9VG0uvYcDaWl6KCg7wGbHVo=
+github.com/newrelic/newrelic-client-go v0.0.0-20200108002045-adcb168b62b4 h1:jQrPzybkaTHzH+hkVmeCeYir0Oqa0GZ6su4T44BAxCY=
+github.com/newrelic/newrelic-client-go v0.0.0-20200108002045-adcb168b62b4/go.mod h1:9pn6q5Pzy3uM2d2AgybH9VG0uvYcDaWl6KCg7wGbHVo=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
