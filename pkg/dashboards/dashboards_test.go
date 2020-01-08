@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
@@ -288,7 +287,7 @@ var (
 
 func TestListDashboards(t *testing.T) {
 	t.Parallel()
-	apm := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	client := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "dashboard/json")
 		_, err := w.Write([]byte(fmt.Sprintf(`
 		{
@@ -296,26 +295,16 @@ func TestListDashboards(t *testing.T) {
 		}
 		`, testDashboardJson)))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}))
 
-	actual, err := apm.ListDashboards(nil)
+	expected := []*Dashboard{&testDashboard}
 
-	if err != nil {
-		t.Fatalf("ListDashboards error: %s", err)
-	}
+	actual, err := client.ListDashboards(nil)
 
-	if actual == nil {
-		t.Fatalf("ListDashboards response is nil")
-	}
-
-	expected := []Dashboard{testDashboard}
-
-	if diff := cmp.Diff(expected, actual); diff != "" {
-		t.Fatalf("ListDashboards response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
 }
 
 func TestListDashboardsWithParams(t *testing.T) {
@@ -327,7 +316,7 @@ func TestListDashboardsWithParams(t *testing.T) {
 	expectedSort := "sort"
 	expectedTitle := "title"
 
-	apm := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	client := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		assert.Equal(t, expectedCategory, values.Get("filter[category]"))
@@ -343,9 +332,7 @@ func TestListDashboardsWithParams(t *testing.T) {
 		w.Header().Set("Content-Type", "dashboard/json")
 		_, err := w.Write([]byte(`{"dashboards":[]}`))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}))
 
 	params := ListDashboardsParams{
@@ -360,17 +347,15 @@ func TestListDashboardsWithParams(t *testing.T) {
 		UpdatedBefore: &expectedTime,
 	}
 
-	_, err := apm.ListDashboards(&params)
+	_, err := client.ListDashboards(&params)
 
-	if err != nil {
-		t.Fatalf("ListDashboards error: %s", err)
-	}
+	assert.NoError(t, err)
 }
 
 func TestGetDashboard(t *testing.T) {
 	t.Parallel()
 
-	apm := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	client := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "dashboard/json")
 		_, err := w.Write([]byte(fmt.Sprintf(`
 		{
@@ -378,30 +363,20 @@ func TestGetDashboard(t *testing.T) {
 		}
 		`, testDashboardJson)))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}))
 
-	actual, err := apm.GetDashboard(testDashboard.ID)
+	actual, err := client.GetDashboard(testDashboard.ID)
 
-	if err != nil {
-		t.Fatalf("GetDashboard error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("GetDashboard response is nil")
-	}
-
-	if diff := cmp.Diff(&testDashboard, actual); diff != "" {
-		t.Fatalf("GetDashboard response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testDashboard, actual)
 }
 
 func TestCreateDashboard(t *testing.T) {
 	t.Parallel()
 
-	apm := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	client := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "dashboard/json")
 		_, err := w.Write([]byte(fmt.Sprintf(`
 		{
@@ -409,30 +384,20 @@ func TestCreateDashboard(t *testing.T) {
 		}
 		`, testDashboardJson)))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}))
 
-	actual, err := apm.CreateDashboard(testDashboard)
+	actual, err := client.CreateDashboard(testDashboard)
 
-	if err != nil {
-		t.Fatalf("CreateDashboard error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("CreateDashboard response is nil")
-	}
-
-	if diff := cmp.Diff(&testDashboard, actual); diff != "" {
-		t.Fatalf("CreateDashboard response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testDashboard, actual)
 }
 
 func TestUpdateDashboard(t *testing.T) {
 	t.Parallel()
 
-	apm := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	client := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "dashboard/json")
 		_, err := w.Write([]byte(fmt.Sprintf(`
 		{
@@ -440,30 +405,20 @@ func TestUpdateDashboard(t *testing.T) {
 		}
 		`, testDashboardJson)))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}))
 
-	actual, err := apm.UpdateDashboard(testDashboard)
+	actual, err := client.UpdateDashboard(testDashboard)
 
-	if err != nil {
-		t.Fatalf("UpdateDashboard error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("UpdateDashboard response is nil")
-	}
-
-	if diff := cmp.Diff(&testDashboard, actual); diff != "" {
-		t.Fatalf("UpdateDashboard response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testDashboard, actual)
 }
 
 func TestDeleteDashboard(t *testing.T) {
 	t.Parallel()
 
-	apm := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	client := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "dashboard/json")
 		_, err := w.Write([]byte(fmt.Sprintf(`
 		{
@@ -471,22 +426,12 @@ func TestDeleteDashboard(t *testing.T) {
 		}
 		`, testDashboardJson)))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}))
 
-	actual, err := apm.DeleteDashboard(testDashboard.ID)
+	actual, err := client.DeleteDashboard(testDashboard.ID)
 
-	if err != nil {
-		t.Fatalf("DeleteDashboard error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("DeleteDashboard response is nil")
-	}
-
-	if diff := cmp.Diff(&testDashboard, actual); diff != "" {
-		t.Fatalf("DeleteDashboard response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testDashboard, actual)
 }

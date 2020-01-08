@@ -42,9 +42,9 @@ type ListDashboardsParams struct {
 }
 
 // ListDashboards is used to retrieve New Relic dashboards.
-func (dashboards *Dashboards) ListDashboards(params *ListDashboardsParams) ([]Dashboard, error) {
+func (dashboards *Dashboards) ListDashboards(params *ListDashboardsParams) ([]*Dashboard, error) {
 	response := dashboardsResponse{}
-	d := []Dashboard{}
+	d := []*Dashboard{}
 	nextURL := "/dashboards.json"
 
 	for nextURL != "" {
@@ -124,7 +124,7 @@ func (dashboards *Dashboards) DeleteDashboard(dashboardID int) (*Dashboard, erro
 }
 
 type dashboardsResponse struct {
-	Dashboards []Dashboard `json:"dashboards,omitempty"`
+	Dashboards []*Dashboard `json:"dashboards,omitempty"`
 }
 
 type dashboardResponse struct {
