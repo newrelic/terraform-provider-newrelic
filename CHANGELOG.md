@@ -1,4 +1,6 @@
-## 1.10.1 (Unreleased)
+## 1.11.0 (Unreleased)
+* feat: introduce new official New Relic client for Synthetics resource operations ([#294](https://github.com/terraform-providers/terraform-provider-newrelic/pull/294))
+
 ## 1.10.0 (December 18, 2019)
 
 IMPROVEMENTS:
