@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/newrelic/newrelic-client-go/pkg/config"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationDashboards(t *testing.T) {
@@ -34,45 +34,35 @@ func TestIntegrationDashboards(t *testing.T) {
 
 	// Test: Create
 	created, err := dashboards.CreateDashboard(d)
-	if err != nil {
-		t.Fatalf("CreateDashboards error: %s", err)
-	}
 
-	assert.NotNil(t, created)
+	require.NoError(t, err)
+	require.NotNil(t, created)
 
 	// Test: List
 	params := ListDashboardsParams{
 		Title: "newrelic-client-go",
 	}
 	multiple, err := dashboards.ListDashboards(&params)
-	if err != nil {
-		t.Fatalf("ListDashboards error: %s", err)
-	}
 
-	assert.NotNil(t, multiple)
+	require.NoError(t, err)
+	require.NotNil(t, multiple)
 
 	// Test: Get
 	single, err := dashboards.GetDashboard(multiple[0].ID)
-	if err != nil {
-		t.Fatalf("GetDashboards error: %s", err)
-	}
 
-	assert.NotNil(t, single)
+	require.NoError(t, err)
+	require.NotNil(t, single)
 
 	// Test: Update
 	single.Title = "updated"
 	updated, err := dashboards.UpdateDashboard(*single)
-	if err != nil {
-		t.Fatalf("UpdateDashboards error: %s", err)
-	}
 
-	assert.NotNil(t, updated)
+	require.NoError(t, err)
+	require.NotNil(t, updated)
 
 	// Test: Delete
 	deleted, err := dashboards.DeleteDashboard(updated.ID)
-	if err != nil {
-		t.Fatalf("DeleteDashboards error: %s", err)
-	}
 
-	assert.NotNil(t, deleted)
+	require.NoError(t, err)
+	require.NotNil(t, deleted)
 }
