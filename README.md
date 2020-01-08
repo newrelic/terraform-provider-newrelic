@@ -8,6 +8,35 @@
 
 The New Relic Client provides the building blocks for tools in the [Developer Toolkit](https://newrelic.github.io/developer-toolkit/), enabling quick access to the suite of New Relic APIs. As a library, it can also be leveraged within your own custom applications.
 
+## Example
+
+```go
+import (
+    "fmt"
+
+    "github.com/newrelic/newrelic-client-go/pkg/config"
+    "github.com/newrelic/newrelic-client-go/newrelic"
+)
+
+cfg := config.Config{
+    APIKey: os.Getenv("NEWRELIC_API_KEY")
+}
+
+nr := newrelic.New(cfg)
+
+params := ListApplicationsParams{
+    Name: "RPM",
+}
+
+apps, err := nr.APM.ListApplications(params)
+
+if err != nil {
+    fmt.Print(err)
+}
+
+fmt.Printf("application count: %d", len(apps))
+```
+
 
 ## Community
 
