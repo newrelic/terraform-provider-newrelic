@@ -62,10 +62,13 @@ var incidentTestAPIHandler = http.HandlerFunc(func(w http.ResponseWriter, r *htt
 
 	body, err := json.Marshal(response)
 	if err != nil {
-		panic(fmt.Errorf("Fix for testing: %w", err))
+		panic(fmt.Errorf("error marshalling json: %w", err))
 	}
 
-	w.Write(body)
+	_, err = w.Write(body)
+	if err != nil {
+		panic(fmt.Errorf("failed to write test response body: %w", err))
+	}
 })
 
 var failingTestHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -188,10 +191,7 @@ func TestListAlertIncidentFailing(t *testing.T) {
 }
 
 func TestAcknowledgeAlertIncident(t *testing.T) {
-	c := newTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`
+	jsonResponse := `
 			{
 				"incidents": [
 			    {
@@ -207,10 +207,10 @@ func TestAcknowledgeAlertIncident(t *testing.T) {
 				}
 				]
 			}
-			`))
-	}))
+	`
+	alerts := newMockResponse(t, jsonResponse, http.StatusOK)
 
-	err := c.AcknowledgeAlertIncident(42)
+	err := alerts.AcknowledgeAlertIncident(42)
 	if err != nil {
 		t.Log(err)
 		t.Fatal("AckAlertIncident error")
@@ -227,30 +227,28 @@ func TestAcknowledgeAlertIncidentFailing(t *testing.T) {
 }
 
 func TestCloseAlertIncident(t *testing.T) {
-	c := newTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`
-			{
-				"incidents": [
-			    {
-			      "id": 42,
+	jsonResponse := `
+		{
+			"incidents": [
+		    	{
+		    	  "id": 42,
 				  "opened_at": 1575502560942,
 				  "closed_at": 1575502560943,
-			      "incident_preference": "PER_CONDITION",
-			      "links": {
-			        "violations": [
-			          123456789
-			        ],
-			        "policy_id": 12345
+		    	  "incident_preference": "PER_CONDITION",
+		    	  "links": {
+		    	    "violations": [
+		    	      123456789
+		    	    ],
+		    	    "policy_id": 12345
 				  }
 				}
-				]
-			}
-			`))
-	}))
+			]
+		}
+	`
 
-	err := c.AcknowledgeAlertIncident(42)
+	alerts := newMockResponse(t, jsonResponse, http.StatusOK)
+
+	err := alerts.AcknowledgeAlertIncident(42)
 	if err != nil {
 		t.Log(err)
 		t.Fatal("CloseAlertIncident error")
