@@ -44,11 +44,11 @@ var (
 		"channels": [
 			{
 				"id": 2932701,
-				"name": "sblue@newrelic.com",
+				"name": "test@example.com",
 				"type": "email",
 				"configuration": {
 					"include_json_attachment": "true",
-					"recipients": "sblue@newrelic.com"
+					"recipients": "test@example.com"
 				},
 				"links": {
 					"policy_ids": []
@@ -83,7 +83,7 @@ func TestListAlertChannels(t *testing.T) {
 	t.Parallel()
 	alerts := newMockResponse(t, testListChannelsResponseJSON, http.StatusOK)
 
-	expected := []AlertChannel{
+	expected := []*AlertChannel{
 		{
 			ID:   2803426,
 			Name: "unit-test-alert-channel",
@@ -120,7 +120,7 @@ func TestGetAlertChannel(t *testing.T) {
 	t.Parallel()
 	alerts := newMockResponse(t, testListChannelsResponseJSON, http.StatusOK)
 
-	expected := AlertChannel{
+	expected := &AlertChannel{
 		ID:   2803426,
 		Name: "unit-test-alert-channel",
 		Type: "user",
@@ -136,7 +136,7 @@ func TestGetAlertChannel(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
-	assert.Equal(t, expected, *actual)
+	assert.Equal(t, expected, actual)
 }
 
 func TestGetAlertChannelNotFound(t *testing.T) {
@@ -155,20 +155,20 @@ func TestCreateAlertChannel(t *testing.T) {
 	alerts := newMockResponse(t, testCreateChannelResponseJSON, http.StatusCreated)
 
 	channel := AlertChannel{
-		Name: "sblue@newrelic.com",
+		Name: "test@example.com",
 		Type: "email",
 		Configuration: AlertChannelConfiguration{
-			Recipients:            "sblue@newrelic.com",
+			Recipients:            "test@example.com",
 			IncludeJSONAttachment: "true",
 		},
 	}
 
-	expected := AlertChannel{
+	expected := &AlertChannel{
 		ID:   2932701,
-		Name: "sblue@newrelic.com",
+		Name: "test@example.com",
 		Type: "email",
 		Configuration: AlertChannelConfiguration{
-			Recipients:            "sblue@newrelic.com",
+			Recipients:            "test@example.com",
 			IncludeJSONAttachment: "true",
 		},
 		Links: AlertChannelLinks{
@@ -180,7 +180,7 @@ func TestCreateAlertChannel(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
-	assert.Equal(t, expected, *actual)
+	assert.Equal(t, expected, actual)
 }
 
 func TestCreateAlertChannelInvalidChannelType(t *testing.T) {
@@ -207,9 +207,24 @@ func TestDeleteAlertChannel(t *testing.T) {
 	t.Parallel()
 	alerts := newMockResponse(t, testDeleteChannelResponseJSON, http.StatusOK)
 
-	_, err := alerts.DeleteAlertChannel(2932511)
+	expected := &AlertChannel{
+		ID:   2932511,
+		Name: "test@example.com",
+		Type: "email",
+		Configuration: AlertChannelConfiguration{
+			Recipients:            "test@example.com",
+			IncludeJSONAttachment: "true",
+		},
+		Links: AlertChannelLinks{
+			PolicyIDs: []int{},
+		},
+	}
+
+	actual, err := alerts.DeleteAlertChannel(2932511)
 
 	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
 }
 
 func newTestClient(handler http.Handler) Alerts {

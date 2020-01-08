@@ -5,9 +5,9 @@ import (
 )
 
 // ListAlertChannels returns all alert channels for a given account.
-func (alerts *Alerts) ListAlertChannels() ([]AlertChannel, error) {
+func (alerts *Alerts) ListAlertChannels() ([]*AlertChannel, error) {
 	response := alertChannelsResponse{}
-	alertChannels := []AlertChannel{}
+	alertChannels := []*AlertChannel{}
 	nextURL := "/alerts_channels.json"
 
 	for nextURL != "" {
@@ -35,7 +35,7 @@ func (alerts *Alerts) GetAlertChannel(id int) (*AlertChannel, error) {
 
 	for _, channel := range channels {
 		if channel.ID == id {
-			return &channel, nil
+			return channel, nil
 		}
 	}
 
@@ -59,7 +59,7 @@ func (alerts *Alerts) CreateAlertChannel(channel AlertChannel) (*AlertChannel, e
 		return nil, err
 	}
 
-	return &resp.Channels[0], nil
+	return resp.Channels[0], nil
 }
 
 // DeleteAlertChannel deletes the alert channel with the specified ID.
@@ -76,7 +76,7 @@ func (alerts *Alerts) DeleteAlertChannel(id int) (*AlertChannel, error) {
 }
 
 type alertChannelsResponse struct {
-	Channels []AlertChannel `json:"channels,omitempty"`
+	Channels []*AlertChannel `json:"channels,omitempty"`
 }
 
 type alertChannelResponse struct {
