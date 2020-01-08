@@ -2,7 +2,7 @@ package alerts
 
 import "fmt"
 
-// ListPluginsConditions returns alert conditions for New Relic plugins for an account.
+// ListPluginsConditions returns alert conditions for New Relic plugins for a given alert policy.
 func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, error) {
 	response := pluginsConditionsResponse{}
 	conditions := []*PluginsCondition{}
@@ -34,7 +34,7 @@ func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, 
 
 // GetPluginsCondition gets information about an alert condition for a plugin
 // given a policy ID and plugin ID.
-func (alerts *Alerts) GetPluginsCondition(policyID int, id int) (*PluginsCondition, error) {
+func (alerts *Alerts) GetPluginsCondition(policyID int, pluginID int) (*PluginsCondition, error) {
 	conditions, err := alerts.ListPluginsConditions(policyID)
 
 	if err != nil {
@@ -42,12 +42,12 @@ func (alerts *Alerts) GetPluginsCondition(policyID int, id int) (*PluginsConditi
 	}
 
 	for _, condition := range conditions {
-		if condition.ID == id {
+		if condition.ID == pluginID {
 			return condition, nil
 		}
 	}
 
-	return nil, fmt.Errorf("no condition found for policy %d and condition ID %d", policyID, id)
+	return nil, fmt.Errorf("no condition found for policy %d and condition ID %d", policyID, pluginID)
 }
 
 // CreatePluginsCondition creates an alert condition for a plugin.
