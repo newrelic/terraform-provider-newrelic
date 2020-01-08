@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func NewTestAPM(handler http.Handler) APM {
@@ -122,26 +122,16 @@ func TestListApplications(t *testing.T) {
 		}
 		`, testApplicationJson)))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}))
 
 	actual, err := apm.ListApplications(nil)
 
-	if err != nil {
-		t.Fatalf("ListApplications error: %s", err)
-	}
+	expected := []*Application{&testApplication}
 
-	if actual == nil {
-		t.Fatalf("ListApplications response is nil")
-	}
-
-	expected := []Application{testApplication}
-
-	if diff := cmp.Diff(expected, actual); diff != "" {
-		t.Fatalf("ListApplications response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
 }
 
 func TestListApplicationsWithParams(t *testing.T) {
@@ -155,31 +145,19 @@ func TestListApplicationsWithParams(t *testing.T) {
 		values := r.URL.Query()
 
 		name := values.Get("filter[name]")
-		if name != expectedName {
-			t.Errorf(`expected name filter "%s", received: "%s"`, expectedName, name)
-		}
-
 		host := values.Get("filter[host]")
-		if host != expectedHost {
-			t.Errorf(`expected host filter "%s", received: "%s"`, expectedHost, host)
-		}
-
 		ids := values.Get("filter[ids]")
-		if ids != expectedIDs {
-			t.Errorf(`expected ids filter "%s", received: "%s"`, expectedIDs, ids)
-		}
-
 		language := values.Get("filter[language]")
-		if language != expectedLanguage {
-			t.Errorf(`expected language filter "%s", received: "%s"`, expectedLanguage, language)
-		}
+
+		assert.Equal(t, expectedName, name)
+		assert.Equal(t, expectedHost, host)
+		assert.Equal(t, expectedIDs, ids)
+		assert.Equal(t, expectedLanguage, language)
 
 		w.Header().Set("Content-Type", "application/json")
 		_, err := w.Write([]byte(`{"applications":[]}`))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}))
 
 	params := ListApplicationsParams{
@@ -191,9 +169,7 @@ func TestListApplicationsWithParams(t *testing.T) {
 
 	_, err := apm.ListApplications(&params)
 
-	if err != nil {
-		t.Fatalf("ListApplications error: %s", err)
-	}
+	assert.NoError(t, err)
 }
 
 func TestGetApplication(t *testing.T) {
@@ -207,24 +183,14 @@ func TestGetApplication(t *testing.T) {
 		}
 		`, testApplicationJson)))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}))
 
 	actual, err := apm.GetApplication(testApplication.ID)
 
-	if err != nil {
-		t.Fatalf("GetApplication error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("GetApplication response is nil")
-	}
-
-	if diff := cmp.Diff(&testApplication, actual); diff != "" {
-		t.Fatalf("GetApplication response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testApplication, actual)
 }
 
 func TestUpdateApplication(t *testing.T) {
@@ -238,9 +204,7 @@ func TestUpdateApplication(t *testing.T) {
 		}
 		`, testApplicationJson)))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}))
 
 	params := UpdateApplicationParams{
@@ -250,17 +214,9 @@ func TestUpdateApplication(t *testing.T) {
 
 	actual, err := apm.UpdateApplication(testApplication.ID, params)
 
-	if err != nil {
-		t.Fatalf("UpdateApplication error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("UpdateApplication response is nil")
-	}
-
-	if diff := cmp.Diff(&testApplication, actual); diff != "" {
-		t.Fatalf("UpdateApplication response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testApplication, actual)
 }
 
 func TestDeleteApplication(t *testing.T) {
@@ -274,22 +230,12 @@ func TestDeleteApplication(t *testing.T) {
 		}
 		`, testApplicationJson)))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}))
 
 	actual, err := apm.DeleteApplication(testApplication.ID)
 
-	if err != nil {
-		t.Fatalf("DeleteApplication error: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("DeleteApplication response is nil")
-	}
-
-	if diff := cmp.Diff(&testApplication, actual); diff != "" {
-		t.Fatalf("DeleteApplication response differs from expected: %s", diff)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, &testApplication, actual)
 }

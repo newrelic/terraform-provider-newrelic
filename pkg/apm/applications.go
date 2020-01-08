@@ -14,9 +14,9 @@ type ListApplicationsParams struct {
 }
 
 // ListApplications is used to retrieve New Relic applications.
-func (apm *APM) ListApplications(params *ListApplicationsParams) ([]Application, error) {
+func (apm *APM) ListApplications(params *ListApplicationsParams) ([]*Application, error) {
 	response := applicationsResponse{}
-	apps := []Application{}
+	apps := []*Application{}
 	nextURL := "/applications.json"
 
 	for nextURL != "" {
@@ -89,7 +89,7 @@ func (apm *APM) DeleteApplication(applicationID int) (*Application, error) {
 }
 
 type applicationsResponse struct {
-	Applications []Application `json:"applications,omitempty"`
+	Applications []*Application `json:"applications,omitempty"`
 }
 
 type applicationResponse struct {
