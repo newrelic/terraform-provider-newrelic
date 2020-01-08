@@ -1,4 +1,8 @@
-version: 2
+version: 2.1
+
+orbs:
+  snyk: snyk/snyk@0.0.8
+
 jobs:
   build:
     docker:
@@ -9,4 +13,5 @@ jobs:
       - checkout
 
       - run: make build-ci
+      - snyk/scan
 
