@@ -64,7 +64,7 @@ func (apm *APM) UpdateApplication(applicationID int, params UpdateApplicationPar
 		Fields: updateApplicationFields(params),
 	}
 
-	_, err := apm.client.Put(url, nil, reqBody, &response)
+	_, err := apm.client.Put(url, nil, &reqBody, &response)
 
 	if err != nil {
 		return nil, err

@@ -74,7 +74,7 @@ func (alerts *Alerts) UpdateAlertPolicy(policy AlertPolicy) (*AlertPolicy, error
 
 	url := fmt.Sprintf("/alerts_policies/%d.json", policy.ID)
 
-	_, err := alerts.client.Put(url, nil, reqBody, &resp)
+	_, err := alerts.client.Put(url, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err

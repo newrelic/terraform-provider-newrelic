@@ -58,7 +58,7 @@ func (alerts *Alerts) CreateAlertCondition(condition AlertCondition) (*AlertCond
 	resp := alertConditionResponse{}
 
 	u := fmt.Sprintf("/alerts_conditions/policies/%d.json", condition.PolicyID)
-	_, err := alerts.client.Post(u, nil, reqBody, &resp)
+	_, err := alerts.client.Post(u, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (alerts *Alerts) UpdateAlertCondition(condition AlertCondition) (*AlertCond
 	resp := alertConditionResponse{}
 
 	u := fmt.Sprintf("/alerts_conditions/%d.json", condition.ID)
-	_, err := alerts.client.Put(u, nil, reqBody, &resp)
+	_, err := alerts.client.Put(u, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err

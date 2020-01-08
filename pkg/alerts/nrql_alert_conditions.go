@@ -59,7 +59,7 @@ func (alerts *Alerts) CreateNrqlAlertCondition(condition NrqlCondition) (*NrqlCo
 	resp := nrqlConditionResponse{}
 
 	u := fmt.Sprintf("/alerts_nrql_conditions/policies/%d.json", condition.PolicyID)
-	_, err := alerts.client.Post(u, nil, reqBody, &resp)
+	_, err := alerts.client.Post(u, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (alerts *Alerts) UpdateNrqlAlertCondition(condition NrqlCondition) (*NrqlCo
 	resp := nrqlConditionResponse{}
 
 	u := fmt.Sprintf("/alerts_nrql_conditions/%d.json", condition.ID)
-	_, err := alerts.client.Put(u, nil, reqBody, &resp)
+	_, err := alerts.client.Put(u, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err

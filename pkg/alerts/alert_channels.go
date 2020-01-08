@@ -53,7 +53,7 @@ func (alerts *Alerts) CreateAlertChannel(channel AlertChannel) (*AlertChannel, e
 	}
 	resp := alertChannelsResponse{}
 
-	_, err := alerts.client.Post("/alerts_channels.json", nil, reqBody, &resp)
+	_, err := alerts.client.Post("/alerts_channels.json", nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err

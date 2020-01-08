@@ -100,7 +100,7 @@ func (dashboards *Dashboards) UpdateDashboard(dashboard Dashboard) (*Dashboard, 
 		Dashboard: dashboard,
 	}
 
-	_, err := dashboards.client.Put(url, nil, reqBody, &response)
+	_, err := dashboards.client.Put(url, nil, &reqBody, &response)
 
 	if err != nil {
 		return nil, err
