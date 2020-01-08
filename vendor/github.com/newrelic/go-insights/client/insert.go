@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -267,13 +268,20 @@ func (c *InsertClient) grabAndConsumeEvents(count int, eventBuf [][]byte) {
 		// only send the slice that we pulled into the buffer
 		for tries := 0; tries < c.RetryCount; tries++ {
 			if sendErr := c.sendEvents(saved[0:count]); sendErr != nil {
-				c.Logger.Errorf("Failed to send events [%d/%d]: %v", tries, c.RetryCount, sendErr)
-				atomic.AddInt64(&c.Statistics.InsightsRetryCount, 1)
-				time.Sleep(c.RetryWait)
+				if tries+1 >= c.RetryCount {
+					//failed last retry
+					c.Logger.Errorf("Failed to send insights events [%d/%d] times. Retry limit reached -- Abandoning data. Error: %v",
+						tries+1, c.RetryCount, sendErr)
+				} else {
+					c.Logger.Errorf("Failed to send insights events [%d/%d]. Will retry. Error: %v", tries+1, c.RetryCount, sendErr)
+					atomic.AddInt64(&c.Statistics.InsightsRetryCount, 1)
+					time.Sleep(c.RetryWait)
+				}
 			} else {
 				break
 			}
 		}
+		atomic.AddInt64(&c.Statistics.ProcessedEventCount, int64(count))
 	}(count, saved)
 }
 
@@ -315,8 +323,9 @@ func (c *InsertClient) jsonPostRequest(body []byte) (err error) {
 		return fmt.Errorf("%s: %v", prependText, reqErr)
 	}
 
-	client := &http.Client{Timeout: c.RequestTimeout}
-	resp, respErr := client.Do(req)
+	ctx, cancel := context.WithTimeout(req.Context(), c.RequestTimeout)
+	defer cancel()
+	resp, respErr := http.DefaultClient.Do(req.WithContext(ctx))
 	if respErr != nil {
 		return fmt.Errorf("%s: %v", prependText, respErr)
 	}
