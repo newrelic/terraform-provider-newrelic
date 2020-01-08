@@ -14,5 +14,3 @@ type AlertIncidentLink struct {
 	Violations []int `json:"violations,omitempty"`
 	PolicyID   int   `json:"policy_id"`
 }
-
-

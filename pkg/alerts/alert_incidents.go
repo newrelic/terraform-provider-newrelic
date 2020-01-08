@@ -9,7 +9,7 @@ func (alerts *Alerts) ListAlertIncidents(onlyOpen bool, excludeViolations bool) 
 	incidentsResponse := alertIncidentsResponse{}
 	incidents := []AlertIncident{}
 	queryParams := listAlertIncidentsParams{
-		OnlyOpen: onlyOpen,
+		OnlyOpen:          onlyOpen,
 		ExcludeViolations: excludeViolations,
 	}
 
@@ -48,7 +48,7 @@ func (alerts *Alerts) updateAlertIncident(id int, verb string) error {
 }
 
 type listAlertIncidentsParams struct {
-	OnlyOpen 		  bool `url:"only_open,omitempty"`
+	OnlyOpen          bool `url:"only_open,omitempty"`
 	ExcludeViolations bool `url:"exclude_violations,omitempty"`
 }
 
