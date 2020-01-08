@@ -1,3 +1,5 @@
+// +build unit
+
 package alerts
 
 import (
@@ -6,7 +8,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 )
 
 var incidentTestAPIHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -77,9 +79,11 @@ var failingTestHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Re
 })
 
 func TestListAlertIncidents(t *testing.T) {
+	t.Parallel()
+
 	c := newTestAlerts(incidentTestAPIHandler)
 
-	expected := []AlertIncident{
+	expected := []*AlertIncident{
 		{
 			ID:                 42,
 			OpenedAt:           1575502560942,
@@ -102,23 +106,18 @@ func TestListAlertIncidents(t *testing.T) {
 	}
 
 	alertIncidents, err := c.ListAlertIncidents(false, false)
-	if err != nil {
-		t.Log(err)
-		t.Fatal("GetAlertIncident error")
-	}
-	if alertIncidents == nil {
-		t.Log(err)
-		t.Fatal("GetAlertIncident error")
-	}
-	if diff := cmp.Diff(alertIncidents, expected); diff != "" {
-		t.Fatalf("Alert incidents not parsed correctly: %s", diff)
-	}
+
+	assert.NoError(t, err)
+	assert.NotNil(t, alertIncidents)
+	assert.Equal(t, expected, alertIncidents)
 }
 
 func TestOpenListAlertIncidents(t *testing.T) {
+	t.Parallel()
+
 	c := newTestAlerts(incidentTestAPIHandler)
 
-	expected := []AlertIncident{
+	expected := []*AlertIncident{
 		{
 			ID:                 42,
 			OpenedAt:           1575502560942,
@@ -131,23 +130,18 @@ func TestOpenListAlertIncidents(t *testing.T) {
 	}
 
 	alertIncidents, err := c.ListAlertIncidents(true, false)
-	if err != nil {
-		t.Log(err)
-		t.Fatal("GetAlertIncident error")
-	}
-	if alertIncidents == nil {
-		t.Log(err)
-		t.Fatal("GetAlertIncident error")
-	}
-	if diff := cmp.Diff(alertIncidents, expected); diff != "" {
-		t.Fatalf("Alert incidents not parsed correctly: %s", diff)
-	}
+
+	assert.NoError(t, err)
+	assert.NotNil(t, alertIncidents)
+	assert.Equal(t, expected, alertIncidents)
 }
 
 func TestListAlertIncidentsWithoutViolations(t *testing.T) {
+	t.Parallel()
+
 	c := newTestAlerts(incidentTestAPIHandler)
 
-	expected := []AlertIncident{
+	expected := []*AlertIncident{
 		{
 			ID:                 42,
 			OpenedAt:           1575502560942,
@@ -168,29 +162,25 @@ func TestListAlertIncidentsWithoutViolations(t *testing.T) {
 	}
 
 	alertIncidents, err := c.ListAlertIncidents(false, true)
-	if err != nil {
-		t.Log(err)
-		t.Fatal("GetAlertIncident error")
-	}
-	if alertIncidents == nil {
-		t.Log(err)
-		t.Fatal("GetAlertIncident error")
-	}
-	if diff := cmp.Diff(alertIncidents, expected); diff != "" {
-		t.Fatalf("Alert incidents not parsed correctly: %s", diff)
-	}
+
+	assert.NoError(t, err)
+	assert.NotNil(t, alertIncidents)
+	assert.Equal(t, expected, alertIncidents)
 }
 
 func TestListAlertIncidentFailing(t *testing.T) {
+	t.Parallel()
+
 	c := newTestAlerts(failingTestHandler)
 
 	_, err := c.ListAlertIncidents(false, false)
-	if err == nil {
-		t.Fatal("ListAlertIncident expected an error")
-	}
+
+	assert.Error(t, err)
 }
 
 func TestAcknowledgeAlertIncident(t *testing.T) {
+	t.Parallel()
+
 	jsonResponse := `
 			{
 				"incidents": [
@@ -210,23 +200,24 @@ func TestAcknowledgeAlertIncident(t *testing.T) {
 	`
 	alerts := newMockResponse(t, jsonResponse, http.StatusOK)
 
-	err := alerts.AcknowledgeAlertIncident(42)
-	if err != nil {
-		t.Log(err)
-		t.Fatal("AckAlertIncident error")
-	}
+	_, err := alerts.AcknowledgeAlertIncident(42)
+
+	assert.NoError(t, err)
 }
 
 func TestAcknowledgeAlertIncidentFailing(t *testing.T) {
+	t.Parallel()
+
 	c := newTestAlerts(failingTestHandler)
 
-	err := c.CloseAlertIncident(42)
-	if err == nil {
-		t.Fatal("AckAlertIncident expected an error")
-	}
+	_, err := c.CloseAlertIncident(42)
+
+	assert.Error(t, err)
 }
 
 func TestCloseAlertIncident(t *testing.T) {
+	t.Parallel()
+
 	jsonResponse := `
 		{
 			"incidents": [
@@ -248,7 +239,7 @@ func TestCloseAlertIncident(t *testing.T) {
 
 	alerts := newMockResponse(t, jsonResponse, http.StatusOK)
 
-	err := alerts.AcknowledgeAlertIncident(42)
+	_, err := alerts.AcknowledgeAlertIncident(42)
 	if err != nil {
 		t.Log(err)
 		t.Fatal("CloseAlertIncident error")
@@ -256,9 +247,11 @@ func TestCloseAlertIncident(t *testing.T) {
 }
 
 func TestCloseAlertIncidentFailing(t *testing.T) {
+	t.Parallel()
+
 	c := newTestAlerts(failingTestHandler)
 
-	err := c.CloseAlertIncident(42)
+	_, err := c.CloseAlertIncident(42)
 	if err == nil {
 		t.Fatal("CloseAlertIncident expected an error")
 	}

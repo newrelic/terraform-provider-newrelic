@@ -4,10 +4,10 @@ import (
 	"fmt"
 )
 
-// ListAlertIncidents returns all alert incidents
-func (alerts *Alerts) ListAlertIncidents(onlyOpen bool, excludeViolations bool) ([]AlertIncident, error) {
+// ListAlertIncidents returns all alert incidents.
+func (alerts *Alerts) ListAlertIncidents(onlyOpen bool, excludeViolations bool) ([]*AlertIncident, error) {
 	incidentsResponse := alertIncidentsResponse{}
-	incidents := []AlertIncident{}
+	incidents := []*AlertIncident{}
 	queryParams := listAlertIncidentsParams{
 		OnlyOpen:          onlyOpen,
 		ExcludeViolations: excludeViolations,
@@ -31,20 +31,26 @@ func (alerts *Alerts) ListAlertIncidents(onlyOpen bool, excludeViolations bool) 
 	return incidents, nil
 }
 
-// AcknowledgeAlertIncident acknowledges an existing incident
-func (alerts *Alerts) AcknowledgeAlertIncident(id int) error {
+// AcknowledgeAlertIncident acknowledges an existing incident.
+func (alerts *Alerts) AcknowledgeAlertIncident(id int) (*AlertIncident, error) {
 	return alerts.updateAlertIncident(id, "acknowledge")
 }
 
-// CloseAlertIncident closes an existing open incident
-func (alerts *Alerts) CloseAlertIncident(id int) error {
+// CloseAlertIncident closes an existing open incident.
+func (alerts *Alerts) CloseAlertIncident(id int) (*AlertIncident, error) {
 	return alerts.updateAlertIncident(id, "close")
 }
 
-func (alerts *Alerts) updateAlertIncident(id int, verb string) error {
+func (alerts *Alerts) updateAlertIncident(id int, verb string) (*AlertIncident, error) {
+	response := alertIncidentResponse{}
 	path := fmt.Sprintf("/alerts_incidents/%v/%v.json", id, verb)
-	_, err := alerts.client.Put(path, nil, nil, nil)
-	return err
+	_, err := alerts.client.Put(path, nil, nil, &response)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &response.Incident, nil
 }
 
 type listAlertIncidentsParams struct {
@@ -53,5 +59,9 @@ type listAlertIncidentsParams struct {
 }
 
 type alertIncidentsResponse struct {
-	Incidents []AlertIncident `json:"incidents,omitempty"`
+	Incidents []*AlertIncident `json:"incidents,omitempty"`
+}
+
+type alertIncidentResponse struct {
+	Incident AlertIncident `json:"incident,omitempty"`
 }
