@@ -68,14 +68,24 @@ type InsertClient struct {
 
 // Statistics about the inserted data
 type Statistics struct {
-	EventCount         int64
-	FlushCount         int64
-	ByteCount          int64
-	FullFlushCount     int64
-	PartialFlushCount  int64
-	TimerExpiredCount  int64
+	// the number of events added using EnqueueEvent
+	EventCount int64
+	// the number of events that finished processing (both successfully and not) in batch mode
+	ProcessedEventCount int64
+	// the number of times a Flush has been requested
+	FlushCount int64
+	// the number of bytes that have been attempted to be written to the insights API
+	ByteCount int64
+	// the number of times a flush has occurred with a full batch of events
+	FullFlushCount int64
+	// the number of times a flush has occurred with a partial batch of events
+	PartialFlushCount int64
+	// the number of times flush has been called because the BatchTime timer expired
+	TimerExpiredCount int64
+	// the number of times failed batches have been retried
 	InsightsRetryCount int64
-	HTTPErrorCount     int64
+	// not used
+	HTTPErrorCount int64
 }
 
 // Assumption here that responses from insights are either success or error.
