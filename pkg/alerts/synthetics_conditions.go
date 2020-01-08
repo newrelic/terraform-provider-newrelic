@@ -5,9 +5,9 @@ import (
 )
 
 // ListSyntheticsConditions returns a list of Synthetics alert conditions for a given policy.
-func (alerts *Alerts) ListSyntheticsConditions(policyID int) ([]SyntheticsCondition, error) {
+func (alerts *Alerts) ListSyntheticsConditions(policyID int) ([]*SyntheticsCondition, error) {
 	response := syntheticsConditionsResponse{}
-	conditions := []SyntheticsCondition{}
+	conditions := []*SyntheticsCondition{}
 	nextURL := fmt.Sprintf("/alerts_synthetics_conditions.json")
 	queryParams := listSyntheticsConditionsParams{
 		PolicyID: policyID,
@@ -75,7 +75,7 @@ type listSyntheticsConditionsParams struct {
 }
 
 type syntheticsConditionsResponse struct {
-	Conditions []SyntheticsCondition `json:"synthetics_conditions,omitempty"`
+	Conditions []*SyntheticsCondition `json:"synthetics_conditions,omitempty"`
 }
 
 type syntheticsConditionResponse struct {

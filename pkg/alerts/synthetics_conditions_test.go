@@ -32,7 +32,7 @@ func TestListSyntheticsConditions(t *testing.T) {
 	respJSON := fmt.Sprintf(`{ "synthetics_conditions": [%s] }`, testSyntheticsConditionJson)
 	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
-	expected := []SyntheticsCondition{testSyntheticsCondition}
+	expected := []*SyntheticsCondition{&testSyntheticsCondition}
 	actual, err := alerts.ListSyntheticsConditions(testPolicyID)
 
 	require.NoError(t, err)
