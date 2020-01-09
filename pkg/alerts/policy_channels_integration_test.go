@@ -4,37 +4,35 @@ package alerts
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	nr "github.com/newrelic/newrelic-client-go/internal/testing"
-	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/require"
-)
-
-var (
-	testPolicyNameRandStr = nr.RandSeq(5)
-	testIntegrationPolicy = Policy{
-		IncidentPreference: "PER_POLICY",
-		Name:               fmt.Sprintf("test-alert-policy-%s", testPolicyNameRandStr),
-	}
-	testIntegrationChannel = Channel{
-		Name: fmt.Sprintf("test-alert-channel-%s", testPolicyNameRandStr),
-		Type: "slack",
-		Configuration: ChannelConfiguration{
-			URL:     "https://example-org.slack.com",
-			Channel: testPolicyNameRandStr,
-		},
-		Links: ChannelLinks{
-			PolicyIDs: []int{},
-		},
-	}
 )
 
 func TestIntegrationPolicyChannels(t *testing.T) {
 	t.Parallel()
 
-	client := newPolicyChannelsTestClient(t)
+	var (
+		testPolicyNameRandStr = nr.RandSeq(5)
+		testIntegrationPolicy = Policy{
+			IncidentPreference: "PER_POLICY",
+			Name:               fmt.Sprintf("test-alert-policy-%s", testPolicyNameRandStr),
+		}
+		testIntegrationChannel = Channel{
+			Name: fmt.Sprintf("test-alert-channel-%s", testPolicyNameRandStr),
+			Type: "slack",
+			Configuration: ChannelConfiguration{
+				URL:     "https://example-org.slack.com",
+				Channel: testPolicyNameRandStr,
+			},
+			Links: ChannelLinks{
+				PolicyIDs: []int{},
+			},
+		}
+	)
+
+	client := newIntegrationTestClient(t)
 
 	// Setup
 	policyResp, err := client.CreatePolicy(testIntegrationPolicy)
@@ -71,16 +69,4 @@ func TestIntegrationPolicyChannels(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, deleteResult)
-}
-
-func newPolicyChannelsTestClient(t *testing.T) Alerts {
-	apiKey := os.Getenv("NEWRELIC_API_KEY")
-
-	if apiKey == "" {
-		t.Skipf("acceptance testing requires an API key")
-	}
-
-	return New(config.Config{
-		APIKey: apiKey,
-	})
 }

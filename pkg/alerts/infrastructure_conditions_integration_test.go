@@ -4,49 +4,39 @@ package alerts
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	nr "github.com/newrelic/newrelic-client-go/internal/testing"
-	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/require"
-)
-
-var (
-	testIntegrationInfrastructureConditionRandStr = nr.RandSeq(5)
-	testIntegrationInfrastructureConditionPolicy  = Policy{
-		Name: fmt.Sprintf("test-integration-infrastructure-conditions-%s",
-			testIntegrationInfrastructureConditionRandStr),
-		IncidentPreference: "PER_POLICY",
-	}
-	testIntegrationInfrastructureConditionThreshold = InfrastructureConditionThreshold{
-		Duration: 6,
-		Value:    0,
-	}
-
-	testIntegrationInfrastructureCondition = InfrastructureCondition{
-		Comparison:   "equal",
-		Critical:     &testIntegrationInfrastructureConditionThreshold,
-		Enabled:      true,
-		Name:         "Java is running",
-		ProcessWhere: "(commandName = 'java')",
-		Type:         "infra_process_running",
-		Where:        "(hostname LIKE '%cassandra%')",
-	}
 )
 
 func TestIntegrationListInfrastructureConditions(t *testing.T) {
 	t.Parallel()
 
-	apiKey := os.Getenv("NEWRELIC_API_KEY")
+	var (
+		testIntegrationInfrastructureConditionRandStr = nr.RandSeq(5)
+		testIntegrationInfrastructureConditionPolicy  = Policy{
+			Name: fmt.Sprintf("test-integration-infrastructure-conditions-%s",
+				testIntegrationInfrastructureConditionRandStr),
+			IncidentPreference: "PER_POLICY",
+		}
+		testIntegrationInfrastructureConditionThreshold = InfrastructureConditionThreshold{
+			Duration: 6,
+			Value:    0,
+		}
 
-	if apiKey == "" {
-		t.Skipf("acceptance testing requires an API key")
-	}
+		testIntegrationInfrastructureCondition = InfrastructureCondition{
+			Comparison:   "equal",
+			Critical:     &testIntegrationInfrastructureConditionThreshold,
+			Enabled:      true,
+			Name:         "Java is running",
+			ProcessWhere: "(commandName = 'java')",
+			Type:         "infra_process_running",
+			Where:        "(hostname LIKE '%cassandra%')",
+		}
+	)
 
-	alerts := New(config.Config{
-		APIKey: apiKey,
-	})
+	alerts := newIntegrationTestClient(t)
 
 	// Setup
 	policy, err := alerts.CreatePolicy(testIntegrationInfrastructureConditionPolicy)
