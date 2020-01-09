@@ -11,6 +11,7 @@ import (
 	_ "github.com/fzipp/gocyclo"
 	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
 	_ "github.com/gordonklaus/ineffassign"
+	_ "github.com/llorllale/go-gitlint/cmd/go-gitlint"
 	_ "github.com/remyoudompheng/go-misc/deadcode"
 	_ "github.com/timakin/bodyclose"
 	_ "golang.org/x/lint/golint"

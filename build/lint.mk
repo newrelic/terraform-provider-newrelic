@@ -6,6 +6,10 @@ GO           ?= go
 MISSPELL     ?= misspell
 GOFMT        ?= gofmt
 
+COMMIT_LINT_CMD   ?= go-gitlint
+COMMIT_LINT_REGEX ?= "(chore|docs|feat|fix|refactor|tests?)(\([^\)]+\))?: .*"
+COMMIT_LINT_START ?= "2020-01-09"
+
 EXCLUDEDIR   ?= .git
 SRCDIR       ?= .
 GO_PKGS      ?= $(shell ${GO} list ./... | grep -v -e "/vendor/" -e "/example")
@@ -15,10 +19,11 @@ GOTOOLS += github.com/client9/misspell/cmd/misspell \
            github.com/fzipp/gocyclo \
            github.com/gordonklaus/ineffassign \
            github.com/timakin/bodyclose \
-           golang.org/x/lint/golint
+           golang.org/x/lint/golint \
+           github.com/llorllale/go-gitlint/cmd/go-gitlint
 
 
-lint: deps spell-check gofmt govet golint ineffassign gocyclo bodyclose
+lint: deps spell-check gofmt govet golint ineffassign gocyclo bodyclose lint-commit
 lint-fix: deps spell-check-fix gofmt-fix
 
 #
@@ -60,4 +65,8 @@ bodyclose: deps
 	@echo "=== $(PROJECT_NAME) === [ bodyclose        ]: Checking that http response bodies are closed (bodyclose)..."
 	@$(GO) vet -vettool=$(shell which bodyclose) $(SRCDIR)/...
 
-.PHONY: lint spell-check spell-check-fix gofmt gofmt-fix lint-fix
+lint-commit: deps
+	@echo "=== $(PROJECT_NAME) === [ lint-commit      ]: Checking that commit messages are properly formatted ($(COMMIT_LINT_CMD))..."
+	@$(COMMIT_LINT_CMD) --since=$(COMMIT_LINT_START) --subject-minlen=10 --subject-maxlen=120 --subject-regex=$(COMMIT_LINT_REGEX)
+
+.PHONY: lint spell-check spell-check-fix gofmt gofmt-fix lint-fix lint-commit
