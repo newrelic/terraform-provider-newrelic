@@ -41,7 +41,8 @@ func TestUpdateMonitorScript(t *testing.T) {
 	t.Parallel()
 	synthetics := newMockResponse(t, testMonitorScriptJson, http.StatusOK)
 
-	err := synthetics.UpdateMonitorScript(testMonitorID, testMonitorScript)
+	script, err := synthetics.UpdateMonitorScript(testMonitorID, testMonitorScript)
 
 	assert.NoError(t, err)
+	assert.NotNil(t, script)
 }

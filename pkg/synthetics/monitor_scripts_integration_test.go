@@ -52,23 +52,28 @@ func TestIntegrationMonitorScripts(t *testing.T) {
 	// Setup
 	rand := nr.RandSeq(5)
 	testIntegrationScriptedMonitor.Name = fmt.Sprintf("test-synthetics-monitor-%s", rand)
-	monitorID, err := synthetics.CreateMonitor(testIntegrationScriptedMonitor)
+	monitor, err := synthetics.CreateMonitor(testIntegrationScriptedMonitor)
 
 	require.NoError(t, err)
 
 	// Test: Update
-	err = synthetics.UpdateMonitorScript(monitorID, testIntegrationMonitorScript)
+	updated, err := synthetics.UpdateMonitorScript(monitor.ID, testIntegrationMonitorScript)
 
 	require.NoError(t, err)
+	require.NotNil(t, updated)
 
 	// Test: Get
-	script, err := synthetics.GetMonitorScript(monitorID)
+	script, err := synthetics.GetMonitorScript(monitor.ID)
 
 	require.NoError(t, err)
-
 	require.Equal(t, testIntegrationMonitorScript.Text, script.Text)
 
-	// Teardown
-	err = synthetics.DeleteMonitor(monitorID)
-	require.NoError(t, err)
+	// Deferred teardown
+	defer func() {
+		err = synthetics.DeleteMonitor(monitor.ID)
+
+		if err != nil {
+			t.Logf("error cleaning up monitor %s (%s): %s", monitor.ID, monitor.Name, err)
+		}
+	}()
 }

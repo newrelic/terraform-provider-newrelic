@@ -43,10 +43,11 @@ func TestIntegrationMonitors(t *testing.T) {
 	testIntegrationMonitor.Name = fmt.Sprintf("test-synthetics-monitor-%s", rand)
 
 	// Test: Create
-	monitorID, err := synthetics.CreateMonitor(testIntegrationMonitor)
+	created, err := synthetics.CreateMonitor(testIntegrationMonitor)
+	monitorID := created.ID
 
 	require.NoError(t, err)
-	require.NotNil(t, monitorID)
+	require.NotNil(t, created)
 
 	// Test: List
 	monitors, err := synthetics.ListMonitors()
@@ -59,14 +60,15 @@ func TestIntegrationMonitors(t *testing.T) {
 	monitor, err := synthetics.GetMonitor(monitorID)
 
 	require.NoError(t, err)
-	require.NotNil(t, monitor)
+	require.NotNil(t, *monitor)
 
 	// Test: Update
 	updatedName := fmt.Sprintf("test-synthetics-monitor-updated-%s", rand)
 	monitor.Name = updatedName
-	err = synthetics.UpdateMonitor(*monitor)
+	updated, err := synthetics.UpdateMonitor(*monitor)
 
 	require.NoError(t, err)
+	require.NotNil(t, *updated)
 
 	monitor, err = synthetics.GetMonitor(monitorID)
 
