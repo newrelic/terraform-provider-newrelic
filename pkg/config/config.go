@@ -50,6 +50,7 @@ type Config struct {
 	// LogLevel can be one of the following values:
 	// "panic", "fatal", "error", "warn", "info", "debug", "trace"
 	LogLevel string
+	LogJSON  bool
 	Logger   Logger
 }
 

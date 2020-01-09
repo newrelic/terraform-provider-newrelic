@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	neturl "net/url"
-	"os"
 	"time"
 
 	"github.com/google/go-querystring/query"
@@ -77,13 +76,19 @@ func NewClient(cfg config.Config) NewRelicClient {
 		// Use logrus by default.
 		r.Logger = structuredLogger{}
 
+		log.AddHook(&defaultFieldHook{})
+
 		level, err := log.ParseLevel(config.LogLevel)
 		if err != nil {
-			panic(err)
+			log.Warn(fmt.Sprintf("could not parse log level '%s', logging will proceed at info level", config.LogLevel))
+			level = log.InfoLevel
 		}
 
 		log.SetLevel(level)
-		log.SetOutput(os.Stdout)
+
+		if config.LogJSON {
+			log.SetFormatter(&log.JSONFormatter{})
+		}
 	}
 
 	return NewRelicClient{

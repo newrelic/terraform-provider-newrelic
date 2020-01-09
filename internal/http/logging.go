@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/newrelic/newrelic-client-go/internal/version"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -32,4 +33,15 @@ func createFieldMap(fields ...interface{}) map[string]interface{} {
 	}
 
 	return m
+}
+
+type defaultFieldHook struct{}
+
+func (h *defaultFieldHook) Levels() []log.Level {
+	return log.AllLevels
+}
+
+func (h *defaultFieldHook) Fire(e *log.Entry) error {
+	e.Data["newrelic-client-go"] = version.Version
+	return nil
 }
