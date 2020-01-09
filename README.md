@@ -80,10 +80,49 @@ $ make build
 Before contributing, all linting and tests must pass.  Tests can be run directly via:
 
 ```
-
 # Tests and Linting
 $ make test
+
+# Only unit tests
+$ make test-unit
+
+# Only integration tests
+$ make test-integration
 ```
+
+### Commit Messages
+
+Using the following format for commit messages allows for auto-generation of
+the [CHANGELOG](CHANGELOG.md):
+
+#### Format:
+
+`<type>(<scope>): <subject>`
+
+| Type | Description | Change log? |
+|------| ----------- | :---------: |
+| `chore` | Maintenance type work | No |
+| `docs` | Documentation Updates | Yes |
+| `feat` | New Features | Yes |
+| `fix`  | Bug Fixes | Yes |
+| `refactor` | Code Refactoring | No |
+
+#### Scope
+
+This refers to what part of the code is the focus of the work.  For example:
+
+**General:**
+
+* `build` - Work related to the build system (linting, makefiles, CI/CD, etc)
+* `release` - Work related to cutting a new release
+
+**Package Specific:**
+
+* `newrelic` - Work related to the New Relic package
+* `http` - Work related to the `internal/http` package
+* `alerts` - Work related to the `pkg/alerts` package
+
+
 
 ### Documentation
 
