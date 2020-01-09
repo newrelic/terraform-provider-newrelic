@@ -13,6 +13,7 @@ import (
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/newrelic/newrelic-client-go/internal/logging"
 	"github.com/newrelic/newrelic-client-go/internal/version"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
@@ -73,15 +74,14 @@ func NewClient(cfg config.Config) NewRelicClient {
 	if config.Logger != nil {
 		r.Logger = config.Logger
 	} else {
-		// Use logrus by default.
-		r.Logger = structuredLogger{}
+		r.Logger = logging.StructuredLogger{}
 
-		log.AddHook(&defaultFieldHook{})
+		log.AddHook(&logging.DefaultFieldHook{})
 
 		level, err := log.ParseLevel(config.LogLevel)
 		if err != nil {
-			log.Warn(fmt.Sprintf("could not parse log level '%s', logging will proceed at info level", config.LogLevel))
-			level = log.InfoLevel
+			log.Warn(fmt.Sprintf("could not parse log level '%s', logging will proceed at %s level", config.LogLevel, defaultLogLevel))
+			level, _ = log.ParseLevel(defaultLogLevel)
 		}
 
 		log.SetLevel(level)
