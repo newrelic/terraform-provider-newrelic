@@ -4,10 +4,8 @@ package alerts
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -225,16 +223,4 @@ func TestDeleteChannel(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
-}
-
-func newTestClient(handler http.Handler) Alerts {
-	ts := httptest.NewServer(handler)
-
-	c := New(config.Config{
-		APIKey:    "abc123",
-		BaseURL:   ts.URL,
-		UserAgent: "newrelic/newrelic-client-go",
-	})
-
-	return c
 }

@@ -4,12 +4,9 @@ package alerts
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -46,7 +43,7 @@ var (
 
 func TestUpdatePolicyChannels(t *testing.T) {
 	t.Parallel()
-	alerts := newMocknewTestPolicyChannelsClientResponse(t, testUpdatePolicyChannelsResponseJSON, http.StatusOK)
+	alerts := newMockResponse(t, testUpdatePolicyChannelsResponseJSON, http.StatusOK)
 
 	actual, err := alerts.UpdatePolicyChannels(593436, []int{2932701, 2932702})
 
@@ -61,7 +58,7 @@ func TestUpdatePolicyChannels(t *testing.T) {
 
 func TestDeletePolicyChannel(t *testing.T) {
 	t.Parallel()
-	alerts := newMocknewTestPolicyChannelsClientResponse(t, testDeletePolicyChannelResponseJSON, http.StatusOK)
+	alerts := newMockResponse(t, testDeletePolicyChannelResponseJSON, http.StatusOK)
 
 	expected := Channel{
 		ID:   2932701,
@@ -80,30 +77,4 @@ func TestDeletePolicyChannel(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, *actual)
-}
-
-func newTestPolicyChannelsClient(handler http.Handler) Alerts {
-	ts := httptest.NewServer(handler)
-
-	c := New(config.Config{
-		APIKey:  "abc123",
-		BaseURL: ts.URL,
-	})
-
-	return c
-}
-
-func newMocknewTestPolicyChannelsClientResponse(
-	t *testing.T,
-	mockJsonResponse string,
-	statusCode int,
-) Alerts {
-	return newTestPolicyChannelsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(statusCode)
-
-		_, err := w.Write([]byte(mockJsonResponse))
-
-		require.NoError(t, err)
-	}))
 }
