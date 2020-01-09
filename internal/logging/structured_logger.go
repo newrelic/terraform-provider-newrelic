@@ -1,11 +1,47 @@
 package logging
 
 import (
+	"fmt"
+
 	log "github.com/sirupsen/logrus"
+)
+
+var (
+	defaultFields   map[string]string
+	defaultLogLevel = "info"
 )
 
 // StructuredLogger is a logger based on logrus.
 type StructuredLogger struct{}
+
+// SetLogLevel allows the log level to be set.
+func (l StructuredLogger) SetLogLevel(logLevel string) StructuredLogger {
+	level, err := log.ParseLevel(logLevel)
+	if err != nil {
+		log.Warn(fmt.Sprintf("could not parse log level '%s', logging will proceed at %s level", logLevel, defaultLogLevel))
+		level, _ = log.ParseLevel(defaultLogLevel)
+	}
+
+	log.SetLevel(level)
+
+	return l
+}
+
+// LogJSON determines whether or not to format the logs as JSON.
+func (l StructuredLogger) LogJSON(value bool) StructuredLogger {
+	if value {
+		log.SetFormatter(&log.JSONFormatter{})
+	}
+
+	return l
+}
+
+// SetDefaultFields sets fields to be logged on every use of the logger.
+func (l StructuredLogger) SetDefaultFields(defaultFields map[string]string) StructuredLogger {
+	log.AddHook(&defaultFieldHook{})
+
+	return l
+}
 
 // Error logs an error message.
 func (l StructuredLogger) Error(msg string, fields ...interface{}) {
@@ -37,4 +73,17 @@ func createFieldMap(fields ...interface{}) map[string]interface{} {
 	}
 
 	return m
+}
+
+type defaultFieldHook struct{}
+
+func (h *defaultFieldHook) Levels() []log.Level {
+	return log.AllLevels
+}
+
+func (h *defaultFieldHook) Fire(e *log.Entry) error {
+	for k, v := range defaultFields {
+		e.Data[k] = v
+	}
+	return nil
 }

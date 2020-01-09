@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/go-querystring/query"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/newrelic/newrelic-client-go/internal/logging"
 	"github.com/newrelic/newrelic-client-go/internal/version"
@@ -22,7 +21,6 @@ import (
 const (
 	defaultTimeout  = time.Second * 30
 	defaultRetryMax = 3
-	defaultLogLevel = "info"
 )
 
 var (
@@ -62,10 +60,6 @@ func NewClient(cfg config.Config) NewRelicClient {
 		cfg.UserAgent = defaultUserAgent
 	}
 
-	if config.LogLevel == "" {
-		config.LogLevel = defaultLogLevel
-	}
-
 	r := retryablehttp.NewClient()
 	r.HTTPClient = &c
 	r.RetryMax = defaultRetryMax
@@ -73,22 +67,14 @@ func NewClient(cfg config.Config) NewRelicClient {
 
 	if config.Logger != nil {
 		r.Logger = config.Logger
+		logging.SetLogger(config.Logger)
 	} else {
-		r.Logger = logging.StructuredLogger{}
-
-		log.AddHook(&logging.DefaultFieldHook{})
-
-		level, err := log.ParseLevel(config.LogLevel)
-		if err != nil {
-			log.Warn(fmt.Sprintf("could not parse log level '%s', logging will proceed at %s level", config.LogLevel, defaultLogLevel))
-			level, _ = log.ParseLevel(defaultLogLevel)
-		}
-
-		log.SetLevel(level)
-
-		if config.LogJSON {
-			log.SetFormatter(&log.JSONFormatter{})
-		}
+		l := logging.StructuredLogger{}.
+			SetDefaultFields(map[string]string{"newrelic-client-go": version.Version}).
+			LogJSON(config.LogJSON).
+			SetLogLevel(config.LogLevel)
+		r.Logger = l
+		logging.SetLogger(l)
 	}
 
 	return NewRelicClient{
