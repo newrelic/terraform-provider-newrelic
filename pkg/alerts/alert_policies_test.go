@@ -15,7 +15,7 @@ var (
 	testTimestamp = serialization.EpochTime(time.Unix(1575438237690, 0))
 )
 
-func TestGetAlertPolicy(t *testing.T) {
+func TestGetPolicy(t *testing.T) {
 	t.Parallel()
 	respJSON := `
 	{
@@ -38,8 +38,8 @@ func TestGetAlertPolicy(t *testing.T) {
 	}`
 	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
-	// GetAlertPolicy returns a pointer *AlertPolicy
-	expected := &AlertPolicy{
+	// GetPolicy returns a pointer *Policy
+	expected := &Policy{
 		ID:                 579506,
 		IncidentPreference: "PER_POLICY",
 		Name:               "test-alert-policy-1",
@@ -47,14 +47,14 @@ func TestGetAlertPolicy(t *testing.T) {
 		UpdatedAt:          &testTimestamp,
 	}
 
-	actual, err := alerts.GetAlertPolicy(579506)
+	actual, err := alerts.GetPolicy(579506)
 
 	require.NoError(t, err)
 	require.NotNil(t, actual)
 	require.Equal(t, expected, actual)
 }
 
-func TestListAlertPolicies(t *testing.T) {
+func TestListPolicies(t *testing.T) {
 	t.Parallel()
 	respJSON := `
 	{
@@ -77,7 +77,7 @@ func TestListAlertPolicies(t *testing.T) {
 	}`
 	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
-	expected := []AlertPolicy{
+	expected := []Policy{
 		{
 			ID:                 579506,
 			IncidentPreference: "PER_POLICY",
@@ -94,14 +94,14 @@ func TestListAlertPolicies(t *testing.T) {
 		},
 	}
 
-	actual, err := alerts.ListAlertPolicies(nil)
+	actual, err := alerts.ListPolicies(nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, actual)
 	require.Equal(t, expected, actual)
 }
 
-func TestListAlertPoliciesWithParams(t *testing.T) {
+func TestListPoliciesWithParams(t *testing.T) {
 	t.Parallel()
 	expectedName := "test-alert-policy-1"
 
@@ -133,7 +133,7 @@ func TestListAlertPoliciesWithParams(t *testing.T) {
 		}
 	}))
 
-	expected := []AlertPolicy{
+	expected := []Policy{
 		{
 			ID:                 579506,
 			IncidentPreference: "PER_POLICY",
@@ -143,18 +143,18 @@ func TestListAlertPoliciesWithParams(t *testing.T) {
 		},
 	}
 
-	params := ListAlertPoliciesParams{
+	params := ListPoliciesParams{
 		Name: expectedName,
 	}
 
-	actual, err := alerts.ListAlertPolicies(&params)
+	actual, err := alerts.ListPolicies(&params)
 
 	require.NoError(t, err)
 	require.NotNil(t, actual)
 	require.Equal(t, expected, actual)
 }
 
-func TestCreateAlertPolicy(t *testing.T) {
+func TestCreatePolicy(t *testing.T) {
 	t.Parallel()
 	respJSON := `
 	{
@@ -169,12 +169,12 @@ func TestCreateAlertPolicy(t *testing.T) {
 	`
 	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
-	policy := AlertPolicy{
+	policy := Policy{
 		IncidentPreference: "PER_POLICY",
 		Name:               "test-alert-policy-1",
 	}
 
-	expected := &AlertPolicy{
+	expected := &Policy{
 		ID:                 123,
 		IncidentPreference: "PER_POLICY",
 		Name:               "test-alert-policy-1",
@@ -182,14 +182,14 @@ func TestCreateAlertPolicy(t *testing.T) {
 		UpdatedAt:          &testTimestamp,
 	}
 
-	actual, err := alerts.CreateAlertPolicy(policy)
+	actual, err := alerts.CreatePolicy(policy)
 
 	require.NoError(t, err)
 	require.NotNil(t, actual)
 	require.Equal(t, expected, actual)
 }
 
-func TestUpdateAlertPolicy(t *testing.T) {
+func TestUpdatePolicy(t *testing.T) {
 	t.Parallel()
 	respJSON := `
 	{
@@ -205,14 +205,14 @@ func TestUpdateAlertPolicy(t *testing.T) {
 	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
 	// Original policy
-	policy := AlertPolicy{
+	policy := Policy{
 		ID:                 123,
 		IncidentPreference: "PER_POLICY",
 		Name:               "name",
 	}
 
 	// Updated policy expectation
-	expected := &AlertPolicy{
+	expected := &Policy{
 		ID:                 123,
 		IncidentPreference: "PER_CONDITION",
 		Name:               "name-updated",
@@ -220,14 +220,14 @@ func TestUpdateAlertPolicy(t *testing.T) {
 		UpdatedAt:          &testTimestamp,
 	}
 
-	actual, err := alerts.UpdateAlertPolicy(policy)
+	actual, err := alerts.UpdatePolicy(policy)
 
 	require.NoError(t, err)
 	require.NotNil(t, actual)
 	require.Equal(t, expected, actual)
 }
 
-func TestDeleteAlertPolicy(t *testing.T) {
+func TestDeletePolicy(t *testing.T) {
 	t.Parallel()
 	respJSON := `
 	{
@@ -241,7 +241,7 @@ func TestDeleteAlertPolicy(t *testing.T) {
 	}`
 	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
-	expected := &AlertPolicy{
+	expected := &Policy{
 		ID:                 123,
 		IncidentPreference: "PER_CONDITION",
 		Name:               "name-updated",
@@ -249,7 +249,7 @@ func TestDeleteAlertPolicy(t *testing.T) {
 		UpdatedAt:          &testTimestamp,
 	}
 
-	actual, err := alerts.DeleteAlertPolicy(123)
+	actual, err := alerts.DeletePolicy(123)
 
 	require.NoError(t, err)
 	require.NotNil(t, actual)

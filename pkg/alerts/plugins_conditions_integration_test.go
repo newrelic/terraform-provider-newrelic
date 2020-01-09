@@ -15,7 +15,7 @@ func TestIntegrationPluginsConditions(t *testing.T) {
 
 	var (
 		randomString = nr.RandSeq(5)
-		alertPolicy  = AlertPolicy{
+		alertPolicy  = Policy{
 			Name:               fmt.Sprintf("test-integration-plugins-policy-%s", randomString),
 			IncidentPreference: "PER_POLICY",
 		}
@@ -28,7 +28,7 @@ func TestIntegrationPluginsConditions(t *testing.T) {
 			Metric:            "Component/Connection/Clients[connections]",
 			MetricDescription: "Connected Clients",
 			RunbookURL:        "https://example.com/runbook",
-			Terms: []AlertConditionTerm{
+			Terms: []ConditionTerm{
 				{
 					Duration:     5,
 					Operator:     "above",
@@ -48,7 +48,7 @@ func TestIntegrationPluginsConditions(t *testing.T) {
 	client := newIntegrationTestClient(t)
 
 	// Setup
-	policy, err := client.CreateAlertPolicy(alertPolicy)
+	policy, err := client.CreatePolicy(alertPolicy)
 
 	require.NoError(t, err)
 
@@ -56,7 +56,7 @@ func TestIntegrationPluginsConditions(t *testing.T) {
 
 	// Deferred teardown
 	defer func() {
-		_, err := client.DeleteAlertPolicy(policy.ID)
+		_, err := client.DeletePolicy(policy.ID)
 
 		if err != nil {
 			t.Logf("error cleaning up alert policy %d (%s): %s", policy.ID, policy.Name, err)

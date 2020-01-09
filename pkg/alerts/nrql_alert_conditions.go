@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-// ListNrqlAlertConditions returns NRQL alert conditions for a specified policy.
-func (alerts *Alerts) ListNrqlAlertConditions(policyID int) ([]*NrqlCondition, error) {
+// ListNrqlConditions returns NRQL alert conditions for a specified policy.
+func (alerts *Alerts) ListNrqlConditions(policyID int) ([]*NrqlCondition, error) {
 	response := nrqlConditionsResponse{}
 	conditions := []*NrqlCondition{}
-	queryParams := listNrqlAlertConditionsParams{
+	queryParams := listNrqlConditionsParams{
 		PolicyID: policyID,
 	}
 
@@ -34,10 +34,10 @@ func (alerts *Alerts) ListNrqlAlertConditions(policyID int) ([]*NrqlCondition, e
 	return conditions, nil
 }
 
-// GetNrqlAlertCondition gets information about a NRQL alert condition
+// GetNrqlCondition gets information about a NRQL alert condition
 // for a specified policy ID and condition ID.
-func (alerts *Alerts) GetNrqlAlertCondition(policyID int, id int) (*NrqlCondition, error) {
-	conditions, err := alerts.ListNrqlAlertConditions(policyID)
+func (alerts *Alerts) GetNrqlCondition(policyID int, id int) (*NrqlCondition, error) {
+	conditions, err := alerts.ListNrqlConditions(policyID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +51,8 @@ func (alerts *Alerts) GetNrqlAlertCondition(policyID int, id int) (*NrqlConditio
 	return nil, fmt.Errorf("no condition found for policy %d and condition ID %d", policyID, id)
 }
 
-// CreateNrqlAlertCondition creates a NRQL alert condition.
-func (alerts *Alerts) CreateNrqlAlertCondition(condition NrqlCondition) (*NrqlCondition, error) {
+// CreateNrqlCondition creates a NRQL alert condition.
+func (alerts *Alerts) CreateNrqlCondition(condition NrqlCondition) (*NrqlCondition, error) {
 	reqBody := nrqlConditionRequestBody{
 		NrqlCondition: condition,
 	}
@@ -70,8 +70,8 @@ func (alerts *Alerts) CreateNrqlAlertCondition(condition NrqlCondition) (*NrqlCo
 	return &resp.NrqlCondition, nil
 }
 
-// UpdateNrqlAlertCondition updates a NRQL alert condition.
-func (alerts *Alerts) UpdateNrqlAlertCondition(condition NrqlCondition) (*NrqlCondition, error) {
+// UpdateNrqlCondition updates a NRQL alert condition.
+func (alerts *Alerts) UpdateNrqlCondition(condition NrqlCondition) (*NrqlCondition, error) {
 	reqBody := nrqlConditionRequestBody{
 		NrqlCondition: condition,
 	}
@@ -89,8 +89,8 @@ func (alerts *Alerts) UpdateNrqlAlertCondition(condition NrqlCondition) (*NrqlCo
 	return &resp.NrqlCondition, nil
 }
 
-// DeleteNrqlAlertCondition deletes a NRQL alert condition.
-func (alerts *Alerts) DeleteNrqlAlertCondition(id int) (*NrqlCondition, error) {
+// DeleteNrqlCondition deletes a NRQL alert condition.
+func (alerts *Alerts) DeleteNrqlCondition(id int) (*NrqlCondition, error) {
 	resp := nrqlConditionResponse{}
 	u := fmt.Sprintf("/alerts_nrql_conditions/%d.json", id)
 
@@ -103,7 +103,7 @@ func (alerts *Alerts) DeleteNrqlAlertCondition(id int) (*NrqlCondition, error) {
 	return &resp.NrqlCondition, nil
 }
 
-type listNrqlAlertConditionsParams struct {
+type listNrqlConditionsParams struct {
 	PolicyID int `url:"policy_id,omitempty"`
 }
 

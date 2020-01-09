@@ -10,24 +10,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIntegrationAlertConditions(t *testing.T) {
+func TestIntegrationConditions(t *testing.T) {
 	t.Parallel()
 
 	var (
-		testAlertConditionRandStr = nr.RandSeq(5)
-		testAlertConditionPolicy  = AlertPolicy{
+		testConditionRandStr = nr.RandSeq(5)
+		testConditionPolicy  = Policy{
 			Name: fmt.Sprintf("test-integration-alert-conditions-%s",
-				testAlertConditionRandStr),
+				testConditionRandStr),
 			IncidentPreference: "PER_POLICY",
 		}
-		testAlertCondition = AlertCondition{
+		testCondition = Condition{
 			Type:       "apm_app_metric",
 			Name:       "Adpex (High)",
 			Enabled:    true,
 			Entities:   []string{},
 			Metric:     "apdex",
 			RunbookURL: "",
-			Terms: []AlertConditionTerm{
+			Terms: []ConditionTerm{
 				{
 					Duration:     5,
 					Operator:     "above",
@@ -36,7 +36,7 @@ func TestIntegrationAlertConditions(t *testing.T) {
 					TimeFunction: "all",
 				},
 			},
-			UserDefined: AlertConditionUserDefined{
+			UserDefined: ConditionUserDefined{
 				Metric:        "",
 				ValueFunction: "",
 			},
@@ -49,15 +49,15 @@ func TestIntegrationAlertConditions(t *testing.T) {
 	client := newIntegrationTestClient(t)
 
 	// Setup
-	policy, err := client.CreateAlertPolicy(testAlertConditionPolicy)
+	policy, err := client.CreatePolicy(testConditionPolicy)
 
 	require.NoError(t, err)
 
-	testAlertCondition.PolicyID = policy.ID
+	testCondition.PolicyID = policy.ID
 
 	// Deferred teardown
 	defer func() {
-		_, err := client.DeleteAlertPolicy(policy.ID)
+		_, err := client.DeletePolicy(policy.ID)
 
 		if err != nil {
 			t.Logf("error cleaning up alert policy %d (%s): %s", policy.ID, policy.Name, err)
@@ -65,33 +65,33 @@ func TestIntegrationAlertConditions(t *testing.T) {
 	}()
 
 	// Test: Create
-	createResult, err := client.CreateAlertCondition(testAlertCondition)
+	createResult, err := client.CreateCondition(testCondition)
 
 	require.NoError(t, err)
 	require.NotNil(t, createResult)
 
 	// Test: Get
-	listResult, err := client.ListAlertConditions(createResult.PolicyID)
+	listResult, err := client.ListConditions(createResult.PolicyID)
 
 	require.NoError(t, err)
 	require.Greater(t, len(listResult), 0)
 
 	// Test: Get
-	readResult, err := client.GetAlertCondition(createResult.PolicyID, createResult.ID)
+	readResult, err := client.GetCondition(createResult.PolicyID, createResult.ID)
 
 	require.NoError(t, err)
 	require.NotNil(t, readResult)
 
 	// Test: Update
 	createResult.Name = "Apdex Update Test"
-	updateResult, err := client.UpdateAlertCondition(*createResult)
+	updateResult, err := client.UpdateCondition(*createResult)
 
 	require.NoError(t, err)
 	require.NotNil(t, updateResult)
 	require.Equal(t, "Apdex Update Test", updateResult.Name)
 
 	// Test: Delete
-	result, err := client.DeleteAlertCondition(updateResult.ID)
+	result, err := client.DeleteCondition(updateResult.ID)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)

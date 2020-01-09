@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIntegrationNrqlAlertConditions(t *testing.T) {
+func TestIntegrationNrqlConditions(t *testing.T) {
 	t.Parallel()
 
 	var (
 		randomString = nr.RandSeq(5)
-		alertPolicy  = AlertPolicy{
+		alertPolicy  = Policy{
 			Name:               fmt.Sprintf("test-integration-nrql-policy-%s", randomString),
 			IncidentPreference: "PER_POLICY",
 		}
@@ -26,7 +26,7 @@ func TestIntegrationNrqlAlertConditions(t *testing.T) {
 				Query:      "SELECT count(*) FROM Transactions",
 				SinceValue: "3",
 			},
-			Terms: []AlertConditionTerm{
+			Terms: []ConditionTerm{
 				{
 					Duration:     5,
 					Operator:     "above",
@@ -47,7 +47,7 @@ func TestIntegrationNrqlAlertConditions(t *testing.T) {
 	client := newIntegrationTestClient(t)
 
 	// Setup
-	policy, err := client.CreateAlertPolicy(alertPolicy)
+	policy, err := client.CreatePolicy(alertPolicy)
 
 	require.NoError(t, err)
 
@@ -55,7 +55,7 @@ func TestIntegrationNrqlAlertConditions(t *testing.T) {
 
 	// Deferred teardown
 	defer func() {
-		_, err := client.DeleteAlertPolicy(policy.ID)
+		_, err := client.DeletePolicy(policy.ID)
 
 		if err != nil {
 			t.Logf("error cleaning up alert policy %d (%s): %s", policy.ID, policy.Name, err)
@@ -63,33 +63,33 @@ func TestIntegrationNrqlAlertConditions(t *testing.T) {
 	}()
 
 	// Test: Create
-	createResult, err := client.CreateNrqlAlertCondition(nrqlCondition)
+	createResult, err := client.CreateNrqlCondition(nrqlCondition)
 
 	require.NoError(t, err)
 	require.NotNil(t, createResult)
 
 	// Test: List
-	listResult, err := client.ListNrqlAlertConditions(createResult.PolicyID)
+	listResult, err := client.ListNrqlConditions(createResult.PolicyID)
 
 	require.NoError(t, err)
 	require.Greater(t, len(listResult), 0)
 
 	// Test: Get
-	readResult, err := client.GetNrqlAlertCondition(createResult.PolicyID, createResult.ID)
+	readResult, err := client.GetNrqlCondition(createResult.PolicyID, createResult.ID)
 
 	require.NoError(t, err)
 	require.NotNil(t, readResult)
 
 	// Test: Update
 	createResult.Name = nrqlConditionNameUpdated
-	updateResult, err := client.UpdateNrqlAlertCondition(*createResult)
+	updateResult, err := client.UpdateNrqlCondition(*createResult)
 
 	require.NoError(t, err)
 	require.NotNil(t, updateResult)
 	require.Equal(t, nrqlConditionNameUpdated, updateResult.Name)
 
 	// Test: Delete
-	result, err := client.DeleteNrqlAlertCondition(updateResult.ID)
+	result, err := client.DeleteNrqlCondition(updateResult.ID)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)

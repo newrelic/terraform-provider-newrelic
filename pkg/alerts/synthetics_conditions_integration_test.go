@@ -11,42 +11,34 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	testRandStr                      = nr.RandSeq(5)
-	testIntegrationSyntheticsMonitor = synthetics.Monitor{
-		Name:         fmt.Sprintf("test-synthetics-alert-conditions-monitor-%s", testRandStr),
-		Type:         synthetics.MonitorTypes.Ping,
-		Frequency:    15,
-		URI:          "https://google.com",
-		Locations:    []string{"AWS_US_EAST_1"},
-		Status:       synthetics.MonitorStatus.Enabled,
-		SLAThreshold: 7,
-		APIVersion:   "LATEST",
-	}
-	testIntegrationAlertPolicy = AlertPolicy{
-		Name:               fmt.Sprintf("test-synthetics-alert-conditions-policy-%s", testRandStr),
-		IncidentPreference: "PER_POLICY",
-	}
-	testIntegrationSyntheticsCondition = SyntheticsCondition{
-		Name: fmt.Sprintf("test-synthetics-alert-condition-%s", testRandStr),
-	}
-)
-
 func TestIntegrationSyntheticsConditions(t *testing.T) {
 	t.Parallel()
 
-	apiKey := os.Getenv("NEWRELIC_API_KEY")
+	var (
+		testRandStr                      = nr.RandSeq(5)
+		testIntegrationSyntheticsMonitor = synthetics.Monitor{
+			Name:         fmt.Sprintf("test-synthetics-alert-conditions-monitor-%s", testRandStr),
+			Type:         synthetics.MonitorTypes.Ping,
+			Frequency:    15,
+			URI:          "https://google.com",
+			Locations:    []string{"AWS_US_EAST_1"},
+			Status:       synthetics.MonitorStatus.Enabled,
+			SLAThreshold: 7,
+			APIVersion:   "LATEST",
+		}
+		testIntegrationPolicy = Policy{
+			Name:               fmt.Sprintf("test-synthetics-alert-conditions-policy-%s", testRandStr),
+			IncidentPreference: "PER_POLICY",
+		}
+		testIntegrationSyntheticsCondition = SyntheticsCondition{
+			Name: fmt.Sprintf("test-synthetics-alert-condition-%s", testRandStr),
+		}
+	)
 
-	if apiKey == "" {
-		t.Skipf("acceptance testing requires an API key")
-	}
-
-	alerts := New(config.Config{
-		APIKey: apiKey,
-	})
+	alerts := newIntegrationTestClient(t)
 
 	synth := synthetics.New(config.Config{
-		APIKey: apiKey,
+		APIKey: os.Getenv("NEWRELIC_API_KEY"),
 	})
 
 	// Setup
@@ -54,14 +46,14 @@ func TestIntegrationSyntheticsConditions(t *testing.T) {
 
 	require.NoError(t, err)
 
-	policy, err := alerts.CreateAlertPolicy(testIntegrationAlertPolicy)
+	policy, err := alerts.CreatePolicy(testIntegrationPolicy)
 
 	require.NoError(t, err)
 
 	// Deferred Teardown
 	defer func() {
 		// Teardown
-		_, err = alerts.DeleteAlertPolicy(policy.ID)
+		_, err = alerts.DeletePolicy(policy.ID)
 		if err != nil {
 			t.Logf("Error cleaning up alert policy %d (%s): %s", policy.ID, policy.Name, err)
 		}

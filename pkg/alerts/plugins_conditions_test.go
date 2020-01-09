@@ -46,7 +46,7 @@ var (
 		Metric:            "Component/Connection/Clients[connections]",
 		MetricDescription: "Connected Clients",
 		RunbookURL:        "https://example.com/runbook",
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     5,
 				Operator:     "above",
@@ -128,7 +128,7 @@ func TestDeletePluginsCondition(t *testing.T) {
 		Metric:            "Component/Connection/Clients[connections]",
 		MetricDescription: "Connected Clients",
 		RunbookURL:        "https://example.com/runbook",
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     5,
 				Operator:     "above",

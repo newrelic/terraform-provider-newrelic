@@ -11,60 +11,60 @@ import (
 )
 
 var (
-	testAlertChannelEmail = AlertChannel{
+	testChannelEmail = Channel{
 		Name: "integration-test-email",
 		Type: "email",
-		Configuration: AlertChannelConfiguration{
+		Configuration: ChannelConfiguration{
 			Recipients:            "devtoolkittest@newrelic.com",
 			IncludeJSONAttachment: "true",
 		},
-		Links: AlertChannelLinks{
+		Links: ChannelLinks{
 			PolicyIDs: []int{},
 		},
 	}
 
-	testAlertChannelOpsGenie = AlertChannel{
+	testChannelOpsGenie = Channel{
 		Name: "integration-test-opsgenie",
 		Type: "opsgenie",
-		Configuration: AlertChannelConfiguration{
+		Configuration: ChannelConfiguration{
 			APIKey:     "abc123",
 			Teams:      "dev-toolkit",
 			Tags:       "tag1,tag2",
 			Recipients: "devtoolkittest@newrelic.com",
 		},
-		Links: AlertChannelLinks{
+		Links: ChannelLinks{
 			PolicyIDs: []int{},
 		},
 	}
 
-	testAlertChannelSlack = AlertChannel{
+	testChannelSlack = Channel{
 		Name: "integration-test-slack",
 		Type: "slack",
-		Configuration: AlertChannelConfiguration{
+		Configuration: ChannelConfiguration{
 			URL:     "https://example-org.slack.com",
 			Channel: "test-channel",
 		},
-		Links: AlertChannelLinks{
+		Links: ChannelLinks{
 			PolicyIDs: []int{},
 		},
 	}
 
-	testAlertChannelVictorops = AlertChannel{
+	testChannelVictorops = Channel{
 		Name: "integration-test-victorops",
 		Type: "victorops",
-		Configuration: AlertChannelConfiguration{
+		Configuration: ChannelConfiguration{
 			Key:      "abc123",
 			RouteKey: "/route-name",
 		},
-		Links: AlertChannelLinks{
+		Links: ChannelLinks{
 			PolicyIDs: []int{},
 		},
 	}
 
-	testAlertChannelWebhook = AlertChannel{
+	testChannelWebhook = Channel{
 		Name: "integration-test-webhook",
 		Type: "webhook",
-		Configuration: AlertChannelConfiguration{
+		Configuration: ChannelConfiguration{
 			BaseURL:      "https://test.com",
 			AuthUsername: "devtoolkit",
 			AuthPassword: "123abc",
@@ -93,56 +93,56 @@ var (
 				"x-test-header": "test-header",
 			},
 		},
-		Links: AlertChannelLinks{
+		Links: ChannelLinks{
 			PolicyIDs: []int{},
 		},
 	}
 )
 
-func TestIntegrationAlertChannel(t *testing.T) {
+func TestIntegrationChannel(t *testing.T) {
 	t.Parallel()
 
-	channels := []AlertChannel{
-		testAlertChannelEmail,
-		testAlertChannelOpsGenie,
-		testAlertChannelSlack,
-		testAlertChannelVictorops,
-		testAlertChannelWebhook,
+	channels := []Channel{
+		testChannelEmail,
+		testChannelOpsGenie,
+		testChannelSlack,
+		testChannelVictorops,
+		testChannelWebhook,
 	}
 
 	client := newChannelsTestClient(t)
 
 	for _, channel := range channels {
 		// Test: Create
-		createResult := testCreateAlertChannel(t, client, channel)
+		createResult := testCreateChannel(t, client, channel)
 
 		// Test: Read
-		readResult := testReadAlertChannel(t, client, createResult)
+		readResult := testReadChannel(t, client, createResult)
 
 		// Test: Delete
-		testDeleteAlertChannel(t, client, readResult)
+		testDeleteChannel(t, client, readResult)
 	}
 }
 
-func testCreateAlertChannel(t *testing.T, client Alerts, channel AlertChannel) *AlertChannel {
-	result, err := client.CreateAlertChannel(channel)
+func testCreateChannel(t *testing.T, client Alerts, channel Channel) *Channel {
+	result, err := client.CreateChannel(channel)
 
 	require.NoError(t, err)
 
 	return result
 }
 
-func testReadAlertChannel(t *testing.T, client Alerts, channel *AlertChannel) *AlertChannel {
-	result, err := client.GetAlertChannel(channel.ID)
+func testReadChannel(t *testing.T, client Alerts, channel *Channel) *Channel {
+	result, err := client.GetChannel(channel.ID)
 
 	require.NoError(t, err)
 
 	return result
 }
 
-func testDeleteAlertChannel(t *testing.T, client Alerts, channel *AlertChannel) {
+func testDeleteChannel(t *testing.T, client Alerts, channel *Channel) {
 	p := *channel
-	_, err := client.DeleteAlertChannel(p.ID)
+	_, err := client.DeleteChannel(p.ID)
 
 	require.NoError(t, err)
 }

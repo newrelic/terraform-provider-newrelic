@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	testListAlertConditionsResponseJSON = `{
+	testListConditionsResponseJSON = `{
 		"conditions": [
 			{
 				"id": 123,
@@ -33,7 +33,7 @@ var (
 		]
 	}`
 
-	testAlertConditionJSON = `{
+	testConditionJSON = `{
 		"condition": {
 			"id": 123,
 			"type": "apm_app_metric",
@@ -57,7 +57,7 @@ var (
 		}
 	}`
 
-	testAlertConditionUpdateJSON = `{
+	testConditionUpdateJSON = `{
 		"condition": {
 			"id": 123,
 			"type": "apm_app_metric",
@@ -82,11 +82,11 @@ var (
 	}`
 )
 
-func TestListAlertConditions(t *testing.T) {
+func TestListConditions(t *testing.T) {
 	t.Parallel()
-	alerts := newMockResponse(t, testListAlertConditionsResponseJSON, http.StatusOK)
+	alerts := newMockResponse(t, testListConditionsResponseJSON, http.StatusOK)
 
-	expected := []*AlertCondition{
+	expected := []*Condition{
 		{
 			PolicyID:   333,
 			ID:         123,
@@ -96,7 +96,7 @@ func TestListAlertConditions(t *testing.T) {
 			Entities:   []string{"321"},
 			Metric:     "apdex",
 			RunbookURL: "",
-			Terms: []AlertConditionTerm{
+			Terms: []ConditionTerm{
 				{
 					Duration:     5,
 					Operator:     "above",
@@ -105,7 +105,7 @@ func TestListAlertConditions(t *testing.T) {
 					TimeFunction: "all",
 				},
 			},
-			UserDefined: AlertConditionUserDefined{
+			UserDefined: ConditionUserDefined{
 				Metric:        "",
 				ValueFunction: "",
 			},
@@ -115,18 +115,18 @@ func TestListAlertConditions(t *testing.T) {
 		},
 	}
 
-	actual, err := alerts.ListAlertConditions(333)
+	actual, err := alerts.ListConditions(333)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
 
-func TestGetAlertCondition(t *testing.T) {
+func TestGetCondition(t *testing.T) {
 	t.Parallel()
-	alerts := newMockResponse(t, testListAlertConditionsResponseJSON, http.StatusOK)
+	alerts := newMockResponse(t, testListConditionsResponseJSON, http.StatusOK)
 
-	expected := &AlertCondition{
+	expected := &Condition{
 		PolicyID:   333,
 		ID:         123,
 		Type:       "apm_app_metric",
@@ -135,7 +135,7 @@ func TestGetAlertCondition(t *testing.T) {
 		Entities:   []string{"321"},
 		Metric:     "apdex",
 		RunbookURL: "",
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     5,
 				Operator:     "above",
@@ -144,7 +144,7 @@ func TestGetAlertCondition(t *testing.T) {
 				TimeFunction: "all",
 			},
 		},
-		UserDefined: AlertConditionUserDefined{
+		UserDefined: ConditionUserDefined{
 			Metric:        "",
 			ValueFunction: "",
 		},
@@ -153,18 +153,18 @@ func TestGetAlertCondition(t *testing.T) {
 		ViolationCloseTimer: 0,
 	}
 
-	actual, err := alerts.GetAlertCondition(333, 123)
+	actual, err := alerts.GetCondition(333, 123)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
 
-func TestCreateAlertCondition(t *testing.T) {
+func TestCreateCondition(t *testing.T) {
 	t.Parallel()
-	alerts := newMockResponse(t, testAlertConditionJSON, http.StatusCreated)
+	alerts := newMockResponse(t, testConditionJSON, http.StatusCreated)
 
-	condition := AlertCondition{
+	condition := Condition{
 		PolicyID:   333,
 		Type:       "apm_app_metric",
 		Name:       "Adpex (High)",
@@ -172,7 +172,7 @@ func TestCreateAlertCondition(t *testing.T) {
 		Entities:   []string{"321"},
 		Metric:     "apdex",
 		RunbookURL: "",
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     5,
 				Operator:     "above",
@@ -181,7 +181,7 @@ func TestCreateAlertCondition(t *testing.T) {
 				TimeFunction: "all",
 			},
 		},
-		UserDefined: AlertConditionUserDefined{
+		UserDefined: ConditionUserDefined{
 			Metric:        "",
 			ValueFunction: "",
 		},
@@ -190,7 +190,7 @@ func TestCreateAlertCondition(t *testing.T) {
 		ViolationCloseTimer: 0,
 	}
 
-	expected := &AlertCondition{
+	expected := &Condition{
 		PolicyID:   333,
 		ID:         123,
 		Type:       "apm_app_metric",
@@ -199,7 +199,7 @@ func TestCreateAlertCondition(t *testing.T) {
 		Entities:   []string{"321"},
 		Metric:     "apdex",
 		RunbookURL: "",
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     5,
 				Operator:     "above",
@@ -208,7 +208,7 @@ func TestCreateAlertCondition(t *testing.T) {
 				TimeFunction: "all",
 			},
 		},
-		UserDefined: AlertConditionUserDefined{
+		UserDefined: ConditionUserDefined{
 			Metric:        "",
 			ValueFunction: "",
 		},
@@ -217,18 +217,18 @@ func TestCreateAlertCondition(t *testing.T) {
 		ViolationCloseTimer: 0,
 	}
 
-	actual, err := alerts.CreateAlertCondition(condition)
+	actual, err := alerts.CreateCondition(condition)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
 
-func TestUpdateAlertCondition(t *testing.T) {
+func TestUpdateCondition(t *testing.T) {
 	t.Parallel()
-	alerts := newMockResponse(t, testAlertConditionUpdateJSON, http.StatusCreated)
+	alerts := newMockResponse(t, testConditionUpdateJSON, http.StatusCreated)
 
-	condition := AlertCondition{
+	condition := Condition{
 		PolicyID:   333,
 		Type:       "apm_app_metric",
 		Name:       "Adpex (High)",
@@ -236,7 +236,7 @@ func TestUpdateAlertCondition(t *testing.T) {
 		Entities:   []string{"321"},
 		Metric:     "apdex",
 		RunbookURL: "",
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     5,
 				Operator:     "above",
@@ -245,7 +245,7 @@ func TestUpdateAlertCondition(t *testing.T) {
 				TimeFunction: "all",
 			},
 		},
-		UserDefined: AlertConditionUserDefined{
+		UserDefined: ConditionUserDefined{
 			Metric:        "",
 			ValueFunction: "",
 		},
@@ -254,7 +254,7 @@ func TestUpdateAlertCondition(t *testing.T) {
 		ViolationCloseTimer: 0,
 	}
 
-	expected := &AlertCondition{
+	expected := &Condition{
 		PolicyID:   333,
 		ID:         123,
 		Type:       "apm_app_metric",
@@ -263,7 +263,7 @@ func TestUpdateAlertCondition(t *testing.T) {
 		Entities:   []string{"321"},
 		Metric:     "apdex",
 		RunbookURL: "",
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     10,
 				Operator:     "below",
@@ -272,7 +272,7 @@ func TestUpdateAlertCondition(t *testing.T) {
 				TimeFunction: "all",
 			},
 		},
-		UserDefined: AlertConditionUserDefined{
+		UserDefined: ConditionUserDefined{
 			Metric:        "",
 			ValueFunction: "",
 		},
@@ -281,18 +281,18 @@ func TestUpdateAlertCondition(t *testing.T) {
 		ViolationCloseTimer: 0,
 	}
 
-	actual, err := alerts.UpdateAlertCondition(condition)
+	actual, err := alerts.UpdateCondition(condition)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
 
-func TestDeleteAlertCondition(t *testing.T) {
+func TestDeleteCondition(t *testing.T) {
 	t.Parallel()
-	alerts := newMockResponse(t, testAlertConditionJSON, http.StatusOK)
+	alerts := newMockResponse(t, testConditionJSON, http.StatusOK)
 
-	expected := &AlertCondition{
+	expected := &Condition{
 		ID:         123,
 		Type:       "apm_app_metric",
 		Name:       "Apdex (High)",
@@ -300,7 +300,7 @@ func TestDeleteAlertCondition(t *testing.T) {
 		Entities:   []string{"321"},
 		Metric:     "apdex",
 		RunbookURL: "",
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     5,
 				Operator:     "above",
@@ -309,7 +309,7 @@ func TestDeleteAlertCondition(t *testing.T) {
 				TimeFunction: "all",
 			},
 		},
-		UserDefined: AlertConditionUserDefined{
+		UserDefined: ConditionUserDefined{
 			Metric:        "",
 			ValueFunction: "",
 		},
@@ -318,7 +318,7 @@ func TestDeleteAlertCondition(t *testing.T) {
 		ViolationCloseTimer: 0,
 	}
 
-	actual, err := alerts.DeleteAlertCondition(123)
+	actual, err := alerts.DeleteCondition(123)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)

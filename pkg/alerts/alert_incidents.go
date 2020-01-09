@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-// ListAlertIncidents returns all alert incidents.
-func (alerts *Alerts) ListAlertIncidents(onlyOpen bool, excludeViolations bool) ([]*AlertIncident, error) {
+// ListIncidents returns all alert incidents.
+func (alerts *Alerts) ListIncidents(onlyOpen bool, excludeViolations bool) ([]*Incident, error) {
 	incidentsResponse := alertIncidentsResponse{}
-	incidents := []*AlertIncident{}
-	queryParams := listAlertIncidentsParams{
+	incidents := []*Incident{}
+	queryParams := listIncidentsParams{
 		OnlyOpen:          onlyOpen,
 		ExcludeViolations: excludeViolations,
 	}
@@ -31,17 +31,17 @@ func (alerts *Alerts) ListAlertIncidents(onlyOpen bool, excludeViolations bool) 
 	return incidents, nil
 }
 
-// AcknowledgeAlertIncident acknowledges an existing incident.
-func (alerts *Alerts) AcknowledgeAlertIncident(id int) (*AlertIncident, error) {
-	return alerts.updateAlertIncident(id, "acknowledge")
+// AcknowledgeIncident acknowledges an existing incident.
+func (alerts *Alerts) AcknowledgeIncident(id int) (*Incident, error) {
+	return alerts.updateIncident(id, "acknowledge")
 }
 
-// CloseAlertIncident closes an existing open incident.
-func (alerts *Alerts) CloseAlertIncident(id int) (*AlertIncident, error) {
-	return alerts.updateAlertIncident(id, "close")
+// CloseIncident closes an existing open incident.
+func (alerts *Alerts) CloseIncident(id int) (*Incident, error) {
+	return alerts.updateIncident(id, "close")
 }
 
-func (alerts *Alerts) updateAlertIncident(id int, verb string) (*AlertIncident, error) {
+func (alerts *Alerts) updateIncident(id int, verb string) (*Incident, error) {
 	response := alertIncidentResponse{}
 	path := fmt.Sprintf("/alerts_incidents/%v/%v.json", id, verb)
 	_, err := alerts.client.Put(path, nil, nil, &response)
@@ -53,15 +53,15 @@ func (alerts *Alerts) updateAlertIncident(id int, verb string) (*AlertIncident, 
 	return &response.Incident, nil
 }
 
-type listAlertIncidentsParams struct {
+type listIncidentsParams struct {
 	OnlyOpen          bool `url:"only_open,omitempty"`
 	ExcludeViolations bool `url:"exclude_violations,omitempty"`
 }
 
 type alertIncidentsResponse struct {
-	Incidents []*AlertIncident `json:"incidents,omitempty"`
+	Incidents []*Incident `json:"incidents,omitempty"`
 }
 
 type alertIncidentResponse struct {
-	Incident AlertIncident `json:"incident,omitempty"`
+	Incident Incident `json:"incident,omitempty"`
 }

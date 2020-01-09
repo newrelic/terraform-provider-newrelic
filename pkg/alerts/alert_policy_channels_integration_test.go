@@ -14,18 +14,18 @@ import (
 
 var (
 	testPolicyNameRandStr = nr.RandSeq(5)
-	testIntegrationPolicy = AlertPolicy{
+	testIntegrationPolicy = Policy{
 		IncidentPreference: "PER_POLICY",
 		Name:               fmt.Sprintf("test-alert-policy-%s", testPolicyNameRandStr),
 	}
-	testIntegrationAlertChannel = AlertChannel{
+	testIntegrationChannel = Channel{
 		Name: fmt.Sprintf("test-alert-channel-%s", testPolicyNameRandStr),
 		Type: "slack",
-		Configuration: AlertChannelConfiguration{
+		Configuration: ChannelConfiguration{
 			URL:     "https://example-org.slack.com",
 			Channel: testPolicyNameRandStr,
 		},
-		Links: AlertChannelLinks{
+		Links: ChannelLinks{
 			PolicyIDs: []int{},
 		},
 	}
@@ -37,24 +37,24 @@ func TestIntegrationPolicyChannels(t *testing.T) {
 	client := newPolicyChannelsTestClient(t)
 
 	// Setup
-	policyResp, err := client.CreateAlertPolicy(testIntegrationPolicy)
+	policyResp, err := client.CreatePolicy(testIntegrationPolicy)
 	policy := *policyResp
 
 	require.NoError(t, err)
 
-	channelResp, err := client.CreateAlertChannel(testIntegrationAlertChannel)
+	channelResp, err := client.CreateChannel(testIntegrationChannel)
 	channel := *channelResp
 
 	require.NoError(t, err)
 
 	// Teardown
 	defer func() {
-		_, err = client.DeleteAlertPolicy(policy.ID)
+		_, err = client.DeletePolicy(policy.ID)
 		if err != nil {
 			t.Logf("Error cleaning up alert policy %d (%s): %s", policy.ID, policy.Name, err)
 		}
 
-		_, err = client.DeleteAlertChannel(channel.ID)
+		_, err = client.DeleteChannel(channel.ID)
 		if err != nil {
 			t.Logf("Error cleaning up alert channel %d (%s): %s", channel.ID, channel.Name, err)
 		}

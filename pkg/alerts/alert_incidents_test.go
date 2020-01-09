@@ -13,25 +13,25 @@ import (
 
 var incidentTestAPIHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	response := struct {
-		Incidents []AlertIncident `json:"incidents,omitempty"`
+		Incidents []Incident `json:"incidents,omitempty"`
 	}{}
 
-	openIncident := AlertIncident{
+	openIncident := Incident{
 		ID:                 42,
 		OpenedAt:           1575502560942,
 		IncidentPreference: "PER_CONDITION",
-		Links: AlertIncidentLink{
+		Links: IncidentLink{
 			Violations: []int{123456789},
 			PolicyID:   12345,
 		},
 	}
 
-	closedIncident := AlertIncident{
+	closedIncident := Incident{
 		ID:                 24,
 		OpenedAt:           1575506284796,
 		ClosedAt:           1575506342161,
 		IncidentPreference: "PER_POLICY",
-		Links: AlertIncidentLink{
+		Links: IncidentLink{
 			Violations: []int{987654321},
 			PolicyID:   54321,
 		},
@@ -78,17 +78,17 @@ var failingTestHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Re
 	w.WriteHeader(http.StatusConflict)
 })
 
-func TestListAlertIncidents(t *testing.T) {
+func TestListIncidents(t *testing.T) {
 	t.Parallel()
 
 	c := newTestAlerts(incidentTestAPIHandler)
 
-	expected := []*AlertIncident{
+	expected := []*Incident{
 		{
 			ID:                 42,
 			OpenedAt:           1575502560942,
 			IncidentPreference: "PER_CONDITION",
-			Links: AlertIncidentLink{
+			Links: IncidentLink{
 				Violations: []int{123456789},
 				PolicyID:   12345,
 			},
@@ -98,55 +98,55 @@ func TestListAlertIncidents(t *testing.T) {
 			OpenedAt:           1575506284796,
 			ClosedAt:           1575506342161,
 			IncidentPreference: "PER_POLICY",
-			Links: AlertIncidentLink{
+			Links: IncidentLink{
 				Violations: []int{987654321},
 				PolicyID:   54321,
 			},
 		},
 	}
 
-	alertIncidents, err := c.ListAlertIncidents(false, false)
+	alertIncidents, err := c.ListIncidents(false, false)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, alertIncidents)
 	assert.Equal(t, expected, alertIncidents)
 }
 
-func TestOpenListAlertIncidents(t *testing.T) {
+func TestOpenListIncidents(t *testing.T) {
 	t.Parallel()
 
 	c := newTestAlerts(incidentTestAPIHandler)
 
-	expected := []*AlertIncident{
+	expected := []*Incident{
 		{
 			ID:                 42,
 			OpenedAt:           1575502560942,
 			IncidentPreference: "PER_CONDITION",
-			Links: AlertIncidentLink{
+			Links: IncidentLink{
 				Violations: []int{123456789},
 				PolicyID:   12345,
 			},
 		},
 	}
 
-	alertIncidents, err := c.ListAlertIncidents(true, false)
+	alertIncidents, err := c.ListIncidents(true, false)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, alertIncidents)
 	assert.Equal(t, expected, alertIncidents)
 }
 
-func TestListAlertIncidentsWithoutViolations(t *testing.T) {
+func TestListIncidentsWithoutViolations(t *testing.T) {
 	t.Parallel()
 
 	c := newTestAlerts(incidentTestAPIHandler)
 
-	expected := []*AlertIncident{
+	expected := []*Incident{
 		{
 			ID:                 42,
 			OpenedAt:           1575502560942,
 			IncidentPreference: "PER_CONDITION",
-			Links: AlertIncidentLink{
+			Links: IncidentLink{
 				PolicyID: 12345,
 			},
 		},
@@ -155,30 +155,30 @@ func TestListAlertIncidentsWithoutViolations(t *testing.T) {
 			OpenedAt:           1575506284796,
 			ClosedAt:           1575506342161,
 			IncidentPreference: "PER_POLICY",
-			Links: AlertIncidentLink{
+			Links: IncidentLink{
 				PolicyID: 54321,
 			},
 		},
 	}
 
-	alertIncidents, err := c.ListAlertIncidents(false, true)
+	alertIncidents, err := c.ListIncidents(false, true)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, alertIncidents)
 	assert.Equal(t, expected, alertIncidents)
 }
 
-func TestListAlertIncidentFailing(t *testing.T) {
+func TestListIncidentFailing(t *testing.T) {
 	t.Parallel()
 
 	c := newTestAlerts(failingTestHandler)
 
-	_, err := c.ListAlertIncidents(false, false)
+	_, err := c.ListIncidents(false, false)
 
 	assert.Error(t, err)
 }
 
-func TestAcknowledgeAlertIncident(t *testing.T) {
+func TestAcknowledgeIncident(t *testing.T) {
 	t.Parallel()
 
 	jsonResponse := `
@@ -200,22 +200,22 @@ func TestAcknowledgeAlertIncident(t *testing.T) {
 	`
 	alerts := newMockResponse(t, jsonResponse, http.StatusOK)
 
-	_, err := alerts.AcknowledgeAlertIncident(42)
+	_, err := alerts.AcknowledgeIncident(42)
 
 	assert.NoError(t, err)
 }
 
-func TestAcknowledgeAlertIncidentFailing(t *testing.T) {
+func TestAcknowledgeIncidentFailing(t *testing.T) {
 	t.Parallel()
 
 	c := newTestAlerts(failingTestHandler)
 
-	_, err := c.CloseAlertIncident(42)
+	_, err := c.CloseIncident(42)
 
 	assert.Error(t, err)
 }
 
-func TestCloseAlertIncident(t *testing.T) {
+func TestCloseIncident(t *testing.T) {
 	t.Parallel()
 
 	jsonResponse := `
@@ -239,20 +239,20 @@ func TestCloseAlertIncident(t *testing.T) {
 
 	alerts := newMockResponse(t, jsonResponse, http.StatusOK)
 
-	_, err := alerts.AcknowledgeAlertIncident(42)
+	_, err := alerts.AcknowledgeIncident(42)
 	if err != nil {
 		t.Log(err)
-		t.Fatal("CloseAlertIncident error")
+		t.Fatal("CloseIncident error")
 	}
 }
 
-func TestCloseAlertIncidentFailing(t *testing.T) {
+func TestCloseIncidentFailing(t *testing.T) {
 	t.Parallel()
 
 	c := newTestAlerts(failingTestHandler)
 
-	_, err := c.CloseAlertIncident(42)
+	_, err := c.CloseIncident(42)
 	if err == nil {
-		t.Fatal("CloseAlertIncident expected an error")
+		t.Fatal("CloseIncident expected an error")
 	}
 }

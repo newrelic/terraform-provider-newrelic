@@ -29,8 +29,8 @@ func (alerts *Alerts) UpdatePolicyChannels(policyID int, channelIDs []int) (*Pol
 }
 
 // DeletePolicyChannel deletes a notification channel from an alert policy.
-// This method returns a response containing the AlertChannel that was deleted from the policy.
-func (alerts *Alerts) DeletePolicyChannel(policyID int, channelID int) (*AlertChannel, error) {
+// This method returns a response containing the Channel that was deleted from the policy.
+func (alerts *Alerts) DeletePolicyChannel(policyID int, channelID int) (*Channel, error) {
 	queryParams := deletePolicyChannelsParams{
 		PolicyID:  policyID,
 		ChannelID: channelID,
@@ -62,6 +62,6 @@ type updatePolicyChannelsResponse struct {
 }
 
 type deletePolicyChannelResponse struct {
-	Channel AlertChannel      `json:"channel,omitempty"`
+	Channel Channel           `json:"channel,omitempty"`
 	Links   map[string]string `json:"channel.policy_ids,omitempty"`
 }

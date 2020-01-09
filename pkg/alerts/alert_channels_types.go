@@ -1,21 +1,21 @@
 package alerts
 
-// AlertChannel represents a New Relic alert notification channel
-type AlertChannel struct {
-	ID            int                       `json:"id,omitempty"`
-	Name          string                    `json:"name,omitempty"`
-	Type          string                    `json:"type,omitempty"`
-	Configuration AlertChannelConfiguration `json:"configuration,omitempty"`
-	Links         AlertChannelLinks         `json:"links,omitempty"`
+// Channel represents a New Relic alert notification channel
+type Channel struct {
+	ID            int                  `json:"id,omitempty"`
+	Name          string               `json:"name,omitempty"`
+	Type          string               `json:"type,omitempty"`
+	Configuration ChannelConfiguration `json:"configuration,omitempty"`
+	Links         ChannelLinks         `json:"links,omitempty"`
 }
 
-// AlertChannelLinks represent the links between policies and alert channels
-type AlertChannelLinks struct {
+// ChannelLinks represent the links between policies and alert channels
+type ChannelLinks struct {
 	PolicyIDs []int `json:"policy_ids,omitempty"`
 }
 
-// AlertChannelConfiguration represents a Configuration type within AlertChannels
-type AlertChannelConfiguration struct {
+// ChannelConfiguration represents a Configuration type within Channels
+type ChannelConfiguration struct {
 	Recipients            string            `json:"recipients,omitempty"`
 	IncludeJSONAttachment string            `json:"include_json_attachment,omitempty"`
 	AuthToken             string            `json:"auth_token,omitempty"`

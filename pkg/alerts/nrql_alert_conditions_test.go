@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	testListNrqlAlertConditionsResponseJSON = `{
+	testListNrqlConditionsResponseJSON = `{
 		"nrql_conditions": [
 			{
 				"type": "static",
@@ -36,7 +36,7 @@ var (
 		]
 	}`
 
-	testNrqlAlertConditionJSON = `{
+	testNrqlConditionJSON = `{
 		"nrql_condition": {
 			"type": "static",
 			"id": 12345,
@@ -86,9 +86,9 @@ var (
 	}`
 )
 
-func TestListNrqlAlertConditions(t *testing.T) {
+func TestListNrqlConditions(t *testing.T) {
 	t.Parallel()
-	alerts := newMockResponse(t, testListNrqlAlertConditionsResponseJSON, http.StatusOK)
+	alerts := newMockResponse(t, testListNrqlConditionsResponseJSON, http.StatusOK)
 
 	expected := []*NrqlCondition{
 		{
@@ -96,7 +96,7 @@ func TestListNrqlAlertConditions(t *testing.T) {
 				Query:      "SELECT count(*) FROM Transactions",
 				SinceValue: "3",
 			},
-			Terms: []AlertConditionTerm{
+			Terms: []ConditionTerm{
 				{
 					Duration:     5,
 					Operator:     "above",
@@ -116,23 +116,23 @@ func TestListNrqlAlertConditions(t *testing.T) {
 		},
 	}
 
-	actual, err := alerts.ListNrqlAlertConditions(123)
+	actual, err := alerts.ListNrqlConditions(123)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
 
-func TestGetNrqlAlertCondition(t *testing.T) {
+func TestGetNrqlCondition(t *testing.T) {
 	t.Parallel()
-	alerts := newMockResponse(t, testListNrqlAlertConditionsResponseJSON, http.StatusOK)
+	alerts := newMockResponse(t, testListNrqlConditionsResponseJSON, http.StatusOK)
 
 	expected := &NrqlCondition{
 		Nrql: NrqlQuery{
 			Query:      "SELECT count(*) FROM Transactions",
 			SinceValue: "3",
 		},
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     5,
 				Operator:     "above",
@@ -151,23 +151,23 @@ func TestGetNrqlAlertCondition(t *testing.T) {
 		Enabled:             true,
 	}
 
-	actual, err := alerts.GetNrqlAlertCondition(123, 12345)
+	actual, err := alerts.GetNrqlCondition(123, 12345)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
 
-func TestCreateNrqlAlertCondition(t *testing.T) {
+func TestCreateNrqlCondition(t *testing.T) {
 	t.Parallel()
-	alerts := newMockResponse(t, testNrqlAlertConditionJSON, http.StatusCreated)
+	alerts := newMockResponse(t, testNrqlConditionJSON, http.StatusCreated)
 
 	condition := NrqlCondition{
 		Nrql: NrqlQuery{
 			Query:      "SELECT count(*) FROM Transactions",
 			SinceValue: "3",
 		},
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     5,
 				Operator:     "above",
@@ -188,14 +188,14 @@ func TestCreateNrqlAlertCondition(t *testing.T) {
 
 	expected := &condition
 
-	actual, err := alerts.CreateNrqlAlertCondition(condition)
+	actual, err := alerts.CreateNrqlCondition(condition)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
 
-func TestUpdateNrqlAlertCondition(t *testing.T) {
+func TestUpdateNrqlCondition(t *testing.T) {
 	t.Parallel()
 	alerts := newMockResponse(t, testNrqlConditionUpdatedJSON, http.StatusCreated)
 
@@ -204,7 +204,7 @@ func TestUpdateNrqlAlertCondition(t *testing.T) {
 			Query:      "SELECT count(*) FROM Transactions",
 			SinceValue: "3",
 		},
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     5,
 				Operator:     "above",
@@ -228,7 +228,7 @@ func TestUpdateNrqlAlertCondition(t *testing.T) {
 			Query:      "SELECT count(*) FROM Transactions",
 			SinceValue: "3",
 		},
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     5,
 				Operator:     "below",
@@ -247,23 +247,23 @@ func TestUpdateNrqlAlertCondition(t *testing.T) {
 		Enabled:             false,
 	}
 
-	actual, err := alerts.UpdateNrqlAlertCondition(condition)
+	actual, err := alerts.UpdateNrqlCondition(condition)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
 
-func TestDeleteNrqlAlertCondition(t *testing.T) {
+func TestDeleteNrqlCondition(t *testing.T) {
 	t.Parallel()
-	alerts := newMockResponse(t, testNrqlAlertConditionJSON, http.StatusOK)
+	alerts := newMockResponse(t, testNrqlConditionJSON, http.StatusOK)
 
 	expected := &NrqlCondition{
 		Nrql: NrqlQuery{
 			Query:      "SELECT count(*) FROM Transactions",
 			SinceValue: "3",
 		},
-		Terms: []AlertConditionTerm{
+		Terms: []ConditionTerm{
 			{
 				Duration:     5,
 				Operator:     "above",
@@ -281,7 +281,7 @@ func TestDeleteNrqlAlertCondition(t *testing.T) {
 		Enabled:             true,
 	}
 
-	actual, err := alerts.DeleteNrqlAlertCondition(12345)
+	actual, err := alerts.DeleteNrqlCondition(12345)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)

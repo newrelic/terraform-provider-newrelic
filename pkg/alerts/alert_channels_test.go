@@ -79,19 +79,19 @@ var (
 	}`
 )
 
-func TestListAlertChannels(t *testing.T) {
+func TestListChannels(t *testing.T) {
 	t.Parallel()
 	alerts := newMockResponse(t, testListChannelsResponseJSON, http.StatusOK)
 
-	expected := []*AlertChannel{
+	expected := []*Channel{
 		{
 			ID:   2803426,
 			Name: "unit-test-alert-channel",
 			Type: "user",
-			Configuration: AlertChannelConfiguration{
+			Configuration: ChannelConfiguration{
 				UserID: "2680539",
 			},
-			Links: AlertChannelLinks{
+			Links: ChannelLinks{
 				PolicyIDs: []int{},
 			},
 		},
@@ -99,91 +99,91 @@ func TestListAlertChannels(t *testing.T) {
 			ID:   2932511,
 			Name: "test@testing.com",
 			Type: "email",
-			Configuration: AlertChannelConfiguration{
+			Configuration: ChannelConfiguration{
 				Recipients:            "test@testing.com",
 				IncludeJSONAttachment: "true",
 			},
-			Links: AlertChannelLinks{
+			Links: ChannelLinks{
 				PolicyIDs: []int{},
 			},
 		},
 	}
 
-	actual, err := alerts.ListAlertChannels()
+	actual, err := alerts.ListChannels()
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
 
-func TestGetAlertChannel(t *testing.T) {
+func TestGetChannel(t *testing.T) {
 	t.Parallel()
 	alerts := newMockResponse(t, testListChannelsResponseJSON, http.StatusOK)
 
-	expected := &AlertChannel{
+	expected := &Channel{
 		ID:   2803426,
 		Name: "unit-test-alert-channel",
 		Type: "user",
-		Configuration: AlertChannelConfiguration{
+		Configuration: ChannelConfiguration{
 			UserID: "2680539",
 		},
-		Links: AlertChannelLinks{
+		Links: ChannelLinks{
 			PolicyIDs: []int{},
 		},
 	}
 
-	actual, err := alerts.GetAlertChannel(2803426)
+	actual, err := alerts.GetChannel(2803426)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
 
-func TestGetAlertChannelNotFound(t *testing.T) {
+func TestGetChannelNotFound(t *testing.T) {
 	t.Parallel()
 	alerts := newMockResponse(t, testListChannelsResponseJSON, http.StatusOK)
 
-	actual, err := alerts.GetAlertChannel(0)
+	actual, err := alerts.GetChannel(0)
 
 	assert.Error(t, err)
 	assert.Nil(t, actual)
 	assert.Equal(t, "no channel found for id 0", err.Error())
 }
 
-func TestCreateAlertChannel(t *testing.T) {
+func TestCreateChannel(t *testing.T) {
 	t.Parallel()
 	alerts := newMockResponse(t, testCreateChannelResponseJSON, http.StatusCreated)
 
-	channel := AlertChannel{
+	channel := Channel{
 		Name: "test@example.com",
 		Type: "email",
-		Configuration: AlertChannelConfiguration{
+		Configuration: ChannelConfiguration{
 			Recipients:            "test@example.com",
 			IncludeJSONAttachment: "true",
 		},
 	}
 
-	expected := &AlertChannel{
+	expected := &Channel{
 		ID:   2932701,
 		Name: "test@example.com",
 		Type: "email",
-		Configuration: AlertChannelConfiguration{
+		Configuration: ChannelConfiguration{
 			Recipients:            "test@example.com",
 			IncludeJSONAttachment: "true",
 		},
-		Links: AlertChannelLinks{
+		Links: ChannelLinks{
 			PolicyIDs: []int{},
 		},
 	}
 
-	actual, err := alerts.CreateAlertChannel(channel)
+	actual, err := alerts.CreateChannel(channel)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
 	assert.Equal(t, expected, actual)
 }
 
-func TestCreateAlertChannelInvalidChannelType(t *testing.T) {
+func TestCreateChannelInvalidChannelType(t *testing.T) {
 	t.Parallel()
 	alerts := newMockResponse(t, `{
 		"error": {
@@ -191,36 +191,36 @@ func TestCreateAlertChannelInvalidChannelType(t *testing.T) {
 		}
 	}`, http.StatusUnprocessableEntity)
 
-	channel := AlertChannel{
+	channel := Channel{
 		Name:          "string",
 		Type:          "string",
-		Configuration: AlertChannelConfiguration{},
+		Configuration: ChannelConfiguration{},
 	}
 
-	actual, err := alerts.CreateAlertChannel(channel)
+	actual, err := alerts.CreateChannel(channel)
 
 	assert.Error(t, err)
 	assert.Nil(t, actual)
 }
 
-func TestDeleteAlertChannel(t *testing.T) {
+func TestDeleteChannel(t *testing.T) {
 	t.Parallel()
 	alerts := newMockResponse(t, testDeleteChannelResponseJSON, http.StatusOK)
 
-	expected := &AlertChannel{
+	expected := &Channel{
 		ID:   2932511,
 		Name: "test@example.com",
 		Type: "email",
-		Configuration: AlertChannelConfiguration{
+		Configuration: ChannelConfiguration{
 			Recipients:            "test@example.com",
 			IncludeJSONAttachment: "true",
 		},
-		Links: AlertChannelLinks{
+		Links: ChannelLinks{
 			PolicyIDs: []int{},
 		},
 	}
 
-	actual, err := alerts.DeleteAlertChannel(2932511)
+	actual, err := alerts.DeleteChannel(2932511)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)

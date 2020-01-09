@@ -63,15 +63,15 @@ func TestDeletePolicyChannel(t *testing.T) {
 	t.Parallel()
 	alerts := newMocknewTestPolicyChannelsClientResponse(t, testDeletePolicyChannelResponseJSON, http.StatusOK)
 
-	expected := AlertChannel{
+	expected := Channel{
 		ID:   2932701,
 		Name: "test@example.com",
 		Type: "email",
-		Configuration: AlertChannelConfiguration{
+		Configuration: ChannelConfiguration{
 			IncludeJSONAttachment: "true",
 			Recipients:            "test@example.com",
 		},
-		Links: AlertChannelLinks{
+		Links: ChannelLinks{
 			PolicyIDs: []int{593436},
 		},
 	}

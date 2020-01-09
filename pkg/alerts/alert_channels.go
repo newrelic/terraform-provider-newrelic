@@ -4,10 +4,10 @@ import (
 	"fmt"
 )
 
-// ListAlertChannels returns all alert channels for a given account.
-func (alerts *Alerts) ListAlertChannels() ([]*AlertChannel, error) {
+// ListChannels returns all alert channels for a given account.
+func (alerts *Alerts) ListChannels() ([]*Channel, error) {
 	response := alertChannelsResponse{}
-	alertChannels := []*AlertChannel{}
+	alertChannels := []*Channel{}
 	nextURL := "/alerts_channels.json"
 
 	for nextURL != "" {
@@ -26,9 +26,9 @@ func (alerts *Alerts) ListAlertChannels() ([]*AlertChannel, error) {
 	return alertChannels, nil
 }
 
-// GetAlertChannel returns a specific alert channel by ID for a given account.
-func (alerts *Alerts) GetAlertChannel(id int) (*AlertChannel, error) {
-	channels, err := alerts.ListAlertChannels()
+// GetChannel returns a specific alert channel by ID for a given account.
+func (alerts *Alerts) GetChannel(id int) (*Channel, error) {
+	channels, err := alerts.ListChannels()
 	if err != nil {
 		return nil, err
 	}
@@ -42,12 +42,12 @@ func (alerts *Alerts) GetAlertChannel(id int) (*AlertChannel, error) {
 	return nil, fmt.Errorf("no channel found for id %d", id)
 }
 
-// CreateAlertChannel creates an alert channel within a given account.
+// CreateChannel creates an alert channel within a given account.
 // The configuration options different based on channel type.
 // For more information on the different configurations, please
 // view the New Relic API documentation for this endpoint.
 // Docs: https://docs.newrelic.com/docs/alerts/rest-api-alerts/new-relic-alerts-rest-api/rest-api-calls-new-relic-alerts#channels
-func (alerts *Alerts) CreateAlertChannel(channel AlertChannel) (*AlertChannel, error) {
+func (alerts *Alerts) CreateChannel(channel Channel) (*Channel, error) {
 	reqBody := alertChannelRequestBody{
 		Channel: channel,
 	}
@@ -62,8 +62,8 @@ func (alerts *Alerts) CreateAlertChannel(channel AlertChannel) (*AlertChannel, e
 	return resp.Channels[0], nil
 }
 
-// DeleteAlertChannel deletes the alert channel with the specified ID.
-func (alerts *Alerts) DeleteAlertChannel(id int) (*AlertChannel, error) {
+// DeleteChannel deletes the alert channel with the specified ID.
+func (alerts *Alerts) DeleteChannel(id int) (*Channel, error) {
 	resp := alertChannelResponse{}
 	url := fmt.Sprintf("/alerts_channels/%d.json", id)
 	_, err := alerts.client.Delete(url, nil, &resp)
@@ -76,13 +76,13 @@ func (alerts *Alerts) DeleteAlertChannel(id int) (*AlertChannel, error) {
 }
 
 type alertChannelsResponse struct {
-	Channels []*AlertChannel `json:"channels,omitempty"`
+	Channels []*Channel `json:"channels,omitempty"`
 }
 
 type alertChannelResponse struct {
-	Channel AlertChannel `json:"channel,omitempty"`
+	Channel Channel `json:"channel,omitempty"`
 }
 
 type alertChannelRequestBody struct {
-	Channel AlertChannel `json:"channel"`
+	Channel Channel `json:"channel"`
 }

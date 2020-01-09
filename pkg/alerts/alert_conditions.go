@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-// ListAlertConditions returns alert conditions for a specified policy.
-func (alerts *Alerts) ListAlertConditions(policyID int) ([]*AlertCondition, error) {
+// ListConditions returns alert conditions for a specified policy.
+func (alerts *Alerts) ListConditions(policyID int) ([]*Condition, error) {
 	response := alertConditionsResponse{}
-	alertConditions := []*AlertCondition{}
-	queryParams := listAlertConditionsParams{
+	alertConditions := []*Condition{}
+	queryParams := listConditionsParams{
 		PolicyID: policyID,
 	}
 
@@ -34,9 +34,9 @@ func (alerts *Alerts) ListAlertConditions(policyID int) ([]*AlertCondition, erro
 	return alertConditions, nil
 }
 
-// GetAlertCondition gets an alert condition for a specified policy ID and condition ID.
-func (alerts *Alerts) GetAlertCondition(policyID int, id int) (*AlertCondition, error) {
-	conditions, err := alerts.ListAlertConditions(policyID)
+// GetCondition gets an alert condition for a specified policy ID and condition ID.
+func (alerts *Alerts) GetCondition(policyID int, id int) (*Condition, error) {
+	conditions, err := alerts.ListConditions(policyID)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +50,8 @@ func (alerts *Alerts) GetAlertCondition(policyID int, id int) (*AlertCondition, 
 	return nil, fmt.Errorf("no condition found for policy %d and condition ID %d", policyID, id)
 }
 
-// CreateAlertCondition creates an alert condition for a specified policy.
-func (alerts *Alerts) CreateAlertCondition(condition AlertCondition) (*AlertCondition, error) {
+// CreateCondition creates an alert condition for a specified policy.
+func (alerts *Alerts) CreateCondition(condition Condition) (*Condition, error) {
 	reqBody := alertConditionRequestBody{
 		Condition: condition,
 	}
@@ -69,8 +69,8 @@ func (alerts *Alerts) CreateAlertCondition(condition AlertCondition) (*AlertCond
 	return &resp.Condition, nil
 }
 
-// UpdateAlertCondition updates an alert condition.
-func (alerts *Alerts) UpdateAlertCondition(condition AlertCondition) (*AlertCondition, error) {
+// UpdateCondition updates an alert condition.
+func (alerts *Alerts) UpdateCondition(condition Condition) (*Condition, error) {
 	reqBody := alertConditionRequestBody{
 		Condition: condition,
 	}
@@ -88,8 +88,8 @@ func (alerts *Alerts) UpdateAlertCondition(condition AlertCondition) (*AlertCond
 	return &resp.Condition, nil
 }
 
-// DeleteAlertCondition delete an alert condition.
-func (alerts *Alerts) DeleteAlertCondition(id int) (*AlertCondition, error) {
+// DeleteCondition delete an alert condition.
+func (alerts *Alerts) DeleteCondition(id int) (*Condition, error) {
 	resp := alertConditionResponse{}
 	u := fmt.Sprintf("/alerts_conditions/%d.json", id)
 
@@ -102,18 +102,18 @@ func (alerts *Alerts) DeleteAlertCondition(id int) (*AlertCondition, error) {
 	return &resp.Condition, nil
 }
 
-type listAlertConditionsParams struct {
+type listConditionsParams struct {
 	PolicyID int `url:"policy_id,omitempty"`
 }
 
 type alertConditionsResponse struct {
-	Conditions []*AlertCondition `json:"conditions,omitempty"`
+	Conditions []*Condition `json:"conditions,omitempty"`
 }
 
 type alertConditionResponse struct {
-	Condition AlertCondition `json:"condition,omitempty"`
+	Condition Condition `json:"condition,omitempty"`
 }
 
 type alertConditionRequestBody struct {
-	Condition AlertCondition `json:"condition,omitempty"`
+	Condition Condition `json:"condition,omitempty"`
 }

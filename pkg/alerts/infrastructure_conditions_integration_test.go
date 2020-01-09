@@ -14,7 +14,7 @@ import (
 
 var (
 	testIntegrationInfrastructureConditionRandStr = nr.RandSeq(5)
-	testIntegrationInfrastructureConditionPolicy  = AlertPolicy{
+	testIntegrationInfrastructureConditionPolicy  = Policy{
 		Name: fmt.Sprintf("test-integration-infrastructure-conditions-%s",
 			testIntegrationInfrastructureConditionRandStr),
 		IncidentPreference: "PER_POLICY",
@@ -49,13 +49,13 @@ func TestIntegrationListInfrastructureConditions(t *testing.T) {
 	})
 
 	// Setup
-	policy, err := alerts.CreateAlertPolicy(testIntegrationInfrastructureConditionPolicy)
+	policy, err := alerts.CreatePolicy(testIntegrationInfrastructureConditionPolicy)
 
 	require.NoError(t, err)
 
 	// Deferred teardown
 	defer func() {
-		_, err := alerts.DeleteAlertPolicy(policy.ID)
+		_, err := alerts.DeletePolicy(policy.ID)
 
 		if err != nil {
 			t.Logf("error cleaning up alert policy %d (%s): %s", policy.ID, policy.Name, err)

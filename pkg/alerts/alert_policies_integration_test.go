@@ -15,31 +15,31 @@ var (
 	testIntegrationPolicyNameRandStr = nr.RandSeq(5)
 )
 
-func TestIntegrationAlertPolicy(t *testing.T) {
+func TestIntegrationPolicy(t *testing.T) {
 	t.Parallel()
 
 	client := newClient(t)
 
-	policy := AlertPolicy{
+	policy := Policy{
 		IncidentPreference: "PER_POLICY",
 		Name:               fmt.Sprintf("test-alert-policy-%s", testIntegrationPolicyNameRandStr),
 	}
 
 	// Test: Create
-	createResult := testCreateAlertPolicy(t, client, policy)
+	createResult := testCreatePolicy(t, client, policy)
 
 	// Test: Read
-	readResult := testReadAlertPolicy(t, client, createResult)
+	readResult := testReadPolicy(t, client, createResult)
 
 	// Test: Update
-	updateResult := testUpdateAlertPolicy(t, client, readResult)
+	updateResult := testUpdatePolicy(t, client, readResult)
 
 	// Test: Delete
-	testDeleteAlertPolicy(t, client, updateResult)
+	testDeletePolicy(t, client, updateResult)
 }
 
-func testCreateAlertPolicy(t *testing.T, client Alerts, policy AlertPolicy) *AlertPolicy {
-	result, err := client.CreateAlertPolicy(policy)
+func testCreatePolicy(t *testing.T, client Alerts, policy Policy) *Policy {
+	result, err := client.CreatePolicy(policy)
 
 	if err != nil {
 		t.Fatal(err)
@@ -48,8 +48,8 @@ func testCreateAlertPolicy(t *testing.T, client Alerts, policy AlertPolicy) *Ale
 	return result
 }
 
-func testReadAlertPolicy(t *testing.T, client Alerts, policy *AlertPolicy) *AlertPolicy {
-	result, err := client.GetAlertPolicy(policy.ID)
+func testReadPolicy(t *testing.T, client Alerts, policy *Policy) *Policy {
+	result, err := client.GetPolicy(policy.ID)
 
 	if err != nil {
 		t.Fatal(err)
@@ -58,14 +58,14 @@ func testReadAlertPolicy(t *testing.T, client Alerts, policy *AlertPolicy) *Aler
 	return result
 }
 
-func testUpdateAlertPolicy(t *testing.T, client Alerts, policy *AlertPolicy) *AlertPolicy {
-	policyUpdated := AlertPolicy{
+func testUpdatePolicy(t *testing.T, client Alerts, policy *Policy) *Policy {
+	policyUpdated := Policy{
 		ID:                 policy.ID,
 		IncidentPreference: "PER_CONDITION",
 		Name:               fmt.Sprintf("test-alert-policy-updated-%s", testIntegrationPolicyNameRandStr),
 	}
 
-	result, err := client.UpdateAlertPolicy(policyUpdated)
+	result, err := client.UpdatePolicy(policyUpdated)
 
 	if err != nil {
 		t.Fatal(err)
@@ -74,9 +74,9 @@ func testUpdateAlertPolicy(t *testing.T, client Alerts, policy *AlertPolicy) *Al
 	return result
 }
 
-func testDeleteAlertPolicy(t *testing.T, client Alerts, policy *AlertPolicy) {
+func testDeletePolicy(t *testing.T, client Alerts, policy *Policy) {
 	p := *policy
-	_, err := client.DeleteAlertPolicy(p.ID)
+	_, err := client.DeletePolicy(p.ID)
 
 	if err != nil {
 		t.Fatal(err)
