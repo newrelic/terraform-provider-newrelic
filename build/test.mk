@@ -23,12 +23,12 @@ test: test-only
 test-only: test-unit test-integration
 
 test-unit:
-	@echo "=== $(PROJECT_NAME) === [ unit-test        ]: running unit tests..."
+	@echo "=== $(PROJECT_NAME) === [ test-unit        ]: running unit tests..."
 	@mkdir -p $(COVERAGE_DIR)
 	@$(GO) test -parallel 4 -tags unit -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/unit.tmp $(GO_PKGS)
 
 test-integration:
-	@echo "=== $(PROJECT_NAME) === [ integration-test ]: running integration tests..."
+	@echo "=== $(PROJECT_NAME) === [ test-integration ]: running integration tests..."
 	@mkdir -p $(COVERAGE_DIR)
 	@$(GO) test -v -parallel 4 -tags integration -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp $(GO_PKGS)
 
