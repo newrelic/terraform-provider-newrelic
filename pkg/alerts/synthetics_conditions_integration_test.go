@@ -50,7 +50,7 @@ func TestIntegrationSyntheticsConditions(t *testing.T) {
 	})
 
 	// Setup
-	monitorID, err := synth.CreateMonitor(testIntegrationSyntheticsMonitor)
+	monitor, err := synth.CreateMonitor(testIntegrationSyntheticsMonitor)
 
 	require.NoError(t, err)
 
@@ -66,15 +66,15 @@ func TestIntegrationSyntheticsConditions(t *testing.T) {
 			t.Logf("Error cleaning up alert policy %d (%s): %s", policy.ID, policy.Name, err)
 		}
 
-		err = synth.DeleteMonitor(monitorID)
+		err = synth.DeleteMonitor(monitor.ID)
 		if err != nil {
 			t.Logf("Error cleaning up synthetics monitor %s (%s): %s",
-				monitorID, testIntegrationSyntheticsMonitor.Name, err)
+				monitor.ID, testIntegrationSyntheticsMonitor.Name, err)
 		}
 	}()
 
 	// Test: Create
-	testIntegrationSyntheticsCondition.MonitorID = monitorID
+	testIntegrationSyntheticsCondition.MonitorID = monitor.ID
 	created, err := alerts.CreateSyntheticsCondition(policy.ID, testIntegrationSyntheticsCondition)
 
 	require.NoError(t, err)
