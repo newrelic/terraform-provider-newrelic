@@ -21,6 +21,7 @@ options:
     actions:
       - Closes
       - Fixes
+      - Resolves
 
   issues:
     prefix:
