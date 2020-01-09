@@ -67,8 +67,8 @@ func TestListMonitors(t *testing.T) {
 	respJSON := fmt.Sprintf(`{ "monitors": [%s] }`, testMonitorJson)
 	synthetics := newMockResponse(t, respJSON, http.StatusOK)
 
-	expected := []Monitor{
-		testMonitor,
+	expected := []*Monitor{
+		&testMonitor,
 	}
 
 	actual, err := synthetics.ListMonitors()
@@ -93,19 +93,20 @@ func TestCreateMonitor(t *testing.T) {
 	t.Parallel()
 	synthetics := newMockResponse(t, testMonitorJson, http.StatusOK)
 
-	id, err := synthetics.CreateMonitor(testMonitor)
+	result, err := synthetics.CreateMonitor(testMonitor)
 
 	assert.NoError(t, err)
-	assert.NotNil(t, id)
+	assert.NotNil(t, result)
 }
 
 func TestUpdateMonitor(t *testing.T) {
 	t.Parallel()
 	synthetics := newMockResponse(t, testMonitorJson, http.StatusOK)
 
-	err := synthetics.UpdateMonitor(testMonitor)
+	result, err := synthetics.UpdateMonitor(testMonitor)
 
 	assert.NoError(t, err)
+	assert.NotNil(t, result)
 }
 
 func TestDeleteMonitor(t *testing.T) {
