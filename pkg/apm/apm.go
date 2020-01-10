@@ -16,7 +16,7 @@ type APM struct {
 // New is used to create a new APM client instance.
 func New(config config.Config) APM {
 	pkg := APM{
-		client: http.NewClient(&config),
+		client: http.NewClient(config),
 		logger: config.GetLogger(),
 		pager:  &http.LinkHeaderPager{},
 	}

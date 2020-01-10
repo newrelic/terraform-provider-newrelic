@@ -19,7 +19,7 @@ type Dashboards struct {
 // New is used to create a new Dashboards client instance.
 func New(config config.Config) Dashboards {
 	pkg := Dashboards{
-		client: http.NewClient(&config),
+		client: http.NewClient(config),
 		logger: config.GetLogger(),
 		pager:  &http.LinkHeaderPager{},
 	}

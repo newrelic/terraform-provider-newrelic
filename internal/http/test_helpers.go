@@ -16,7 +16,7 @@ var (
 func NewTestAPIClient(handler http.Handler) NewRelicClient {
 	ts := httptest.NewServer(handler)
 
-	c := NewClient(&config.Config{
+	c := NewClient(config.Config{
 		APIKey:    testAPIKey,
 		BaseURL:   ts.URL,
 		UserAgent: testUserAgent,

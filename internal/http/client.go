@@ -63,7 +63,7 @@ func NewClient(cfg config.Config) NewRelicClient {
 	r.HTTPClient = &c
 	r.RetryMax = defaultRetryMax
 	r.CheckRetry = RetryPolicy
-	r.Logger = config.GetLogger()
+	r.Logger = cfg.GetLogger()
 
 	return NewRelicClient{
 		Client:     r,

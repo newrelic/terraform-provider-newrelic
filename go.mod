@@ -7,7 +7,6 @@ require (
 	github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835
 	github.com/git-chglog/git-chglog v0.0.0-20190923122001-6050f20bcdb0
 	github.com/golangci/golangci-lint v1.21.0
-	github.com/google/go-cmp v0.2.0
 	github.com/google/go-querystring v1.0.0
 	github.com/gordonklaus/ineffassign v0.0.0-20190601041439-ed7b1b5ee0f8
 	github.com/hashicorp/go-retryablehttp v0.6.4

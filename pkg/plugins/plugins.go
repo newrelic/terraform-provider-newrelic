@@ -18,7 +18,7 @@ type Plugins struct {
 // New is used to create a new Plugins client instance.
 func New(config config.Config) Plugins {
 	pkg := Plugins{
-		client: http.NewClient(&config),
+		client: http.NewClient(config),
 		logger: config.GetLogger(),
 		pager:  &http.LinkHeaderPager{},
 	}

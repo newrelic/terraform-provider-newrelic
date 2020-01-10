@@ -62,7 +62,7 @@ func New(config config.Config) Synthetics {
 		config.BaseURL = BaseURLs[config.Region]
 	}
 
-	client := http.NewClient(&config)
+	client := http.NewClient(config)
 	client.SetErrorValue(&ErrorResponse{})
 
 	pkg := Synthetics{
