@@ -6,10 +6,11 @@ import (
 	"os"
 	"testing"
 
+	mock "github.com/newrelic/newrelic-client-go/internal/testing"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
-	"github.com/stretchr/testify/require"
 )
 
+// TODO: This is used by incidents_test.go still, need to refactor
 // nolint
 func newTestAlerts(handler http.Handler) Alerts {
 	ts := httptest.NewServer(handler)
@@ -29,14 +30,13 @@ func newMockResponse(
 	mockJSONResponse string,
 	statusCode int,
 ) Alerts {
-	return newTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(statusCode)
+	ts := mock.NewMockServer(t, mockJSONResponse, statusCode)
 
-		_, err := w.Write([]byte(mockJSONResponse))
-
-		require.NoError(t, err)
-	}))
+	return New(config.Config{
+		APIKey:    "abc123",
+		BaseURL:   ts.URL,
+		UserAgent: "newrelic/newrelic-client-go",
+	})
 }
 
 // nolint

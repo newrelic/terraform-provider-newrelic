@@ -7,9 +7,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	mock "github.com/newrelic/newrelic-client-go/internal/testing"
-	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
 var (
@@ -83,13 +80,7 @@ var (
 func TestListChannels(t *testing.T) {
 	t.Parallel()
 
-	ts := mock.NewMockResponse(t, testListChannelsResponseJSON, http.StatusOK, "")
-
-	alerts := New(config.Config{
-		APIKey:    "abc123",
-		BaseURL:   ts.URL,
-		UserAgent: "newrelic/newrelic-client-go",
-	})
+	alerts := newMockResponse(t, testListChannelsResponseJSON, http.StatusOK)
 
 	expected := []*Channel{
 		{
