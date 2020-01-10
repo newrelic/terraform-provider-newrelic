@@ -5,14 +5,15 @@ import (
 
 	"github.com/newrelic/newrelic-client-go/internal/http"
 	"github.com/newrelic/newrelic-client-go/internal/logging"
+	"github.com/newrelic/newrelic-client-go/internal/region"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
 // BaseURLs represents the base API URLs for the different environments of the Synthetics API.
-var BaseURLs = map[config.RegionType]string{
-	config.Region.US:      "https://synthetics.newrelic.com/synthetics/api/v3",
-	config.Region.EU:      "https://synthetics.eu.newrelic.com/synthetics/api/v3",
-	config.Region.Staging: "https://staging-synthetics.newrelic.com/synthetics/api/v3",
+var BaseURLs = map[region.Region]string{
+	region.US:      "https://synthetics.newrelic.com/synthetics/api/v3",
+	region.EU:      "https://synthetics.eu.newrelic.com/synthetics/api/v3",
+	region.Staging: "https://staging-synthetics.newrelic.com/synthetics/api/v3",
 }
 
 // Synthetics is used to communicate with the New Relic Synthetics product.

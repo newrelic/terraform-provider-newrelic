@@ -7,8 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/require"
+
+	"github.com/newrelic/newrelic-client-go/internal/region"
+	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
 func TestDefaultEnvironment(t *testing.T) {
@@ -25,7 +27,7 @@ func TestDefaultEnvironment(t *testing.T) {
 func TestEUEnvironment(t *testing.T) {
 	t.Parallel()
 	a := New(config.Config{
-		Region: config.EU,
+		Region: region.EU,
 	})
 
 	actual := a.client.Config.BaseURL
@@ -38,7 +40,7 @@ func TestEUEnvironment(t *testing.T) {
 func TestStagingEnvironment(t *testing.T) {
 	t.Parallel()
 	a := New(config.Config{
-		Region: config.Staging,
+		Region: region.Staging,
 	})
 
 	actual := a.client.Config.BaseURL
