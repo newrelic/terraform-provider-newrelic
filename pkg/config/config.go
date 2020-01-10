@@ -9,10 +9,12 @@ import (
 
 // Config contains all the configuration data for the API Client.
 type Config struct {
+	// APIKey to authenticate API requests (REQUIRED)
+	APIKey string
+
 	// Region of the New Relic platform to use
 	// Valid values are: US, EU
 	Region string
-	APIKey string
 
 	// HTTP
 	Timeout       *time.Duration
