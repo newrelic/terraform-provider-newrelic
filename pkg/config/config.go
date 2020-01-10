@@ -61,13 +61,13 @@ type Config struct {
 func (c *Config) GetLogger() logging.Logger {
 	if c.Logger != nil {
 		return c.Logger
-	} else {
-		l := logging.NewStructuredLogger().
-			SetDefaultFields(map[string]string{"newrelic-client-go": version.Version}).
-			LogJSON(c.LogJSON).
-			SetLogLevel(c.LogLevel)
-
-		c.Logger = l
-		return l
 	}
+
+	l := logging.NewStructuredLogger().
+		SetDefaultFields(map[string]string{"newrelic-client-go": version.Version}).
+		LogJSON(c.LogJSON).
+		SetLogLevel(c.LogLevel)
+
+	c.Logger = l
+	return l
 }
