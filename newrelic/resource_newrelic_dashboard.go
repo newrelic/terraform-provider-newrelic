@@ -79,6 +79,7 @@ var (
 		"comparison_line_chart",
 		"markdown",
 		"metric_line_chart",
+		"application_breakdown",
 	}
 )
 
