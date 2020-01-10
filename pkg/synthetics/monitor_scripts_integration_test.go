@@ -46,7 +46,8 @@ func TestIntegrationMonitorScripts(t *testing.T) {
 	}
 
 	synthetics := New(config.Config{
-		APIKey: apiKey,
+		APIKey:   apiKey,
+		LogLevel: "debug",
 	})
 
 	// Setup

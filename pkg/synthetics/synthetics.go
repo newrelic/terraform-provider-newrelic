@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/newrelic/newrelic-client-go/internal/http"
+	"github.com/newrelic/newrelic-client-go/internal/logging"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
@@ -17,6 +18,7 @@ var BaseURLs = map[config.RegionType]string{
 // Synthetics is used to communicate with the New Relic Synthetics product.
 type Synthetics struct {
 	client http.NewRelicClient
+	logger logging.Logger
 	pager  http.Pager
 }
 
@@ -60,11 +62,12 @@ func New(config config.Config) Synthetics {
 		config.BaseURL = BaseURLs[config.Region]
 	}
 
-	client := http.NewClient(config)
+	client := http.NewClient(&config)
 	client.SetErrorValue(&ErrorResponse{})
 
 	pkg := Synthetics{
 		client: client,
+		logger: config.GetLogger(),
 		pager:  &http.LinkHeaderPager{},
 	}
 

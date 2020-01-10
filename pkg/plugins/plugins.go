@@ -4,19 +4,22 @@ import (
 	"fmt"
 
 	"github.com/newrelic/newrelic-client-go/internal/http"
+	"github.com/newrelic/newrelic-client-go/internal/logging"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
 // Plugins is used to communicate with the New Relic Plugins product.
 type Plugins struct {
 	client http.NewRelicClient
+	logger logging.Logger
 	pager  http.Pager
 }
 
 // New is used to create a new Plugins client instance.
 func New(config config.Config) Plugins {
 	pkg := Plugins{
-		client: http.NewClient(config),
+		client: http.NewClient(&config),
+		logger: config.GetLogger(),
 		pager:  &http.LinkHeaderPager{},
 	}
 

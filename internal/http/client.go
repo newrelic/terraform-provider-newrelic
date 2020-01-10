@@ -12,7 +12,6 @@ import (
 	"github.com/google/go-querystring/query"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 
-	"github.com/newrelic/newrelic-client-go/internal/logging"
 	"github.com/newrelic/newrelic-client-go/internal/version"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
@@ -64,18 +63,7 @@ func NewClient(cfg config.Config) NewRelicClient {
 	r.HTTPClient = &c
 	r.RetryMax = defaultRetryMax
 	r.CheckRetry = RetryPolicy
-
-	if config.Logger != nil {
-		r.Logger = config.Logger
-		logging.SetLogger(config.Logger)
-	} else {
-		l := logging.StructuredLogger{}.
-			SetDefaultFields(map[string]string{"newrelic-client-go": version.Version}).
-			LogJSON(config.LogJSON).
-			SetLogLevel(config.LogLevel)
-		r.Logger = l
-		logging.SetLogger(l)
-	}
+	r.Logger = config.GetLogger()
 
 	return NewRelicClient{
 		Client:     r,

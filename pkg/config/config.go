@@ -3,6 +3,9 @@ package config
 import (
 	"net/http"
 	"time"
+
+	"github.com/newrelic/newrelic-client-go/internal/logging"
+	"github.com/newrelic/newrelic-client-go/internal/version"
 )
 
 // RegionType represents the members of the Region enumeration.
@@ -51,13 +54,20 @@ type Config struct {
 	// "panic", "fatal", "error", "warn", "info", "debug", "trace"
 	LogLevel string
 	LogJSON  bool
-	Logger   Logger
+	Logger   logging.Logger
 }
 
-// Logger interface implements a simple logger.
-type Logger interface {
-	Error(string, ...interface{})
-	Info(string, ...interface{})
-	Debug(string, ...interface{})
-	Warn(string, ...interface{})
+// GetLogger returns a logger instance based on the config values.
+func (c *Config) GetLogger() logging.Logger {
+	if c.Logger != nil {
+		return c.Logger
+	} else {
+		l := logging.NewStructuredLogger().
+			SetDefaultFields(map[string]string{"newrelic-client-go": version.Version}).
+			LogJSON(c.LogJSON).
+			SetLogLevel(c.LogLevel)
+
+		c.Logger = l
+		return l
+	}
 }

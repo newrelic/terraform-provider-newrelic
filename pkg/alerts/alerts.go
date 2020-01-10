@@ -2,6 +2,7 @@ package alerts
 
 import (
 	"github.com/newrelic/newrelic-client-go/internal/http"
+	"github.com/newrelic/newrelic-client-go/internal/logging"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/infrastructure"
 )
@@ -10,6 +11,7 @@ import (
 type Alerts struct {
 	client      http.NewRelicClient
 	infraClient http.NewRelicClient
+	logger      logging.Logger
 	pager       http.Pager
 }
 
@@ -21,12 +23,13 @@ func New(config config.Config) Alerts {
 		infraConfig.BaseURL = infrastructure.BaseURLs[config.Region]
 	}
 
-	infraClient := http.NewClient(infraConfig)
+	infraClient := http.NewClient(&infraConfig)
 	infraClient.SetErrorValue(&infrastructure.ErrorResponse{})
 
 	pkg := Alerts{
-		client:      http.NewClient(config),
+		client:      http.NewClient(&config),
 		infraClient: infraClient,
+		logger:      config.GetLogger(),
 		pager:       &http.LinkHeaderPager{},
 	}
 
