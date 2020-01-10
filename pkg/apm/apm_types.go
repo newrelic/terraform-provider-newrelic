@@ -49,3 +49,51 @@ type ApplicationLinks struct {
 	InstanceIDs   []int `json:"application_instances,omitempty"`
 	AlertPolicyID int   `json:"alert_policy"`
 }
+
+// Deployment represents information about a New Relic application deployment.
+type Deployment struct {
+	Links       *DeploymentLinks `json:"links,omitempty"`
+	ID          int              `json:"id,omitempty"`
+	Revision    string           `json:"revision"`
+	Changelog   string           `json:"changelog,omitempty"`
+	Description string           `json:"description,omitempty"`
+	User        string           `json:"user,omitempty"`
+	Timestamp   string           `json:"timestamp,omitempty"`
+}
+
+// DeploymentLinks contain the application ID for the deployment.
+type DeploymentLinks struct {
+	ApplicationID int `json:"application,omitempty"`
+}
+
+// KeyTransaction represents information about a New Relic key transaction.
+type KeyTransaction struct {
+	ID              int                       `json:"id,omitempty"`
+	Name            string                    `json:"name,omitempty"`
+	TransactionName string                    `json:"transaction_name,omitempty"`
+	HealthStatus    string                    `json:"health_status,omitempty"`
+	LastReportedAt  string                    `json:"last_reported_at,omitempty"`
+	Reporting       bool                      `json:"reporting"`
+	Summary         ApplicationSummary        `json:"application_summary,omitempty"`
+	EndUserSummary  ApplicationEndUserSummary `json:"end_user_summary,omitempty"`
+	Links           KeyTransactionLinks       `json:"links,omitempty"`
+}
+
+// KeyTransactionLinks represents associations for a key transaction.
+type KeyTransactionLinks struct {
+	Application int `json:"application,omitempty"`
+}
+
+// Label represents a New Relic label.
+type Label struct {
+	Key      string     `json:"key,omitempty"`
+	Category string     `json:"category,omitempty"`
+	Name     string     `json:"name,omitempty"`
+	Links    LabelLinks `json:"links,omitempty"`
+}
+
+// LabelLinks represents external references on the Label.
+type LabelLinks struct {
+	Applications []int `json:"applications"`
+	Servers      []int `json:"servers"`
+}
