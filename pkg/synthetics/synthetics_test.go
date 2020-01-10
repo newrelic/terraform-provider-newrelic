@@ -14,38 +14,52 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
-func TestDefaultEnvironment(t *testing.T) {
+func TestBaseURLs(t *testing.T) {
 	t.Parallel()
+
+	pairs := map[region.Region]string{
+		region.US:      "https://synthetics.newrelic.com/synthetics/api/v3",
+		region.EU:      "https://synthetics.eu.newrelic.com/synthetics/api/v3",
+		region.Staging: "https://staging-synthetics.newrelic.com/synthetics/api/v3",
+	}
+
+	// Default should be region.US
 	a := New(config.Config{})
+	assert.Equal(t, pairs[region.US], a.client.Config.BaseURL)
 
-	assert.Equal(t, BaseURLs[region.US], a.client.Config.BaseURL)
+	for k, v := range pairs {
+		b := New(config.Config{
+			Region: k.String(),
+		})
+
+		assert.Equal(t, v, b.client.Config.BaseURL)
+	}
 }
 
-func TestUSEnvironment(t *testing.T) {
+// TestError checks that messages are reported in the correct
+// order by going through priorities backwards
+func TestError(t *testing.T) {
 	t.Parallel()
-	a := New(config.Config{
-		Region: "US",
-	})
 
-	assert.Equal(t, BaseURLs[region.US], a.client.Config.BaseURL)
-}
+	// Default empty
+	e := ErrorResponse{}
+	assert.Equal(t, "", e.Error())
 
-func TestEUEnvironment(t *testing.T) {
-	t.Parallel()
-	a := New(config.Config{
-		Region: "EU",
-	})
+	// 3rd Messages concat
+	e.Messages = []ErrorDetail{
+		{Message: "detail message"},
+		{Message: "another detail"},
+	}
+	assert.Equal(t, "detail message, another detail", e.Error())
 
-	assert.Equal(t, BaseURLs[region.EU], a.client.Config.BaseURL)
-}
+	// 2nd Message
+	e.Message = "message"
+	assert.Equal(t, "message", e.Error())
 
-func TestStagingEnvironment(t *testing.T) {
-	t.Parallel()
-	a := New(config.Config{
-		Region: "Staging",
-	})
+	// 1st Server Error Message
+	e.ServerErrorMessage = "server message"
+	assert.Equal(t, "server message", e.Error())
 
-	assert.Equal(t, BaseURLs[region.Staging], a.client.Config.BaseURL)
 }
 
 // nolint
