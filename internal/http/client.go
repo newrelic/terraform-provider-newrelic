@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-querystring/query"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 
+	"github.com/newrelic/newrelic-client-go/internal/region"
 	"github.com/newrelic/newrelic-client-go/internal/version"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
@@ -52,7 +53,7 @@ func NewClient(cfg config.Config) NewRelicClient {
 	}
 
 	if cfg.BaseURL == "" {
-		cfg.BaseURL = config.DefaultBaseURLs[cfg.Region]
+		cfg.BaseURL = region.DefaultBaseURLs[region.Parse(cfg.Region)]
 	}
 
 	if cfg.UserAgent == "" {

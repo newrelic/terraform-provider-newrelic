@@ -26,6 +26,16 @@ const (
 	Staging
 )
 
+// Default represents the region returned if nothing was specified
+const Default Region = US
+
+// DefaultBaseURLs represents the base API URLs for the different environments of the New Relic REST API V2.
+var DefaultBaseURLs = map[Region]string{
+	US:      "https://api.newrelic.com/v2",
+	EU:      "https://api.eu.newrelic.com/v2",
+	Staging: "https://staging-api.newrelic.com/v2",
+}
+
 // Parse takes a Region string and returns a RegionType
 func Parse(r string) Region {
 	switch strings.ToLower(r) {
@@ -36,7 +46,7 @@ func Parse(r string) Region {
 	case "staging":
 		return Staging
 	default:
-		return US
+		return Default
 	}
 }
 

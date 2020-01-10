@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/newrelic/newrelic-client-go/internal/region"
@@ -17,37 +18,34 @@ func TestDefaultEnvironment(t *testing.T) {
 	t.Parallel()
 	a := New(config.Config{})
 
-	actual := a.client.Config.BaseURL
-	expected := "https://synthetics.newrelic.com/synthetics/api/v3"
-	if actual != expected {
-		t.Errorf("expected baseURL: %s, received: %s", expected, actual)
-	}
+	assert.Equal(t, BaseURLs[region.US], a.client.Config.BaseURL)
+}
+
+func TestUSEnvironment(t *testing.T) {
+	t.Parallel()
+	a := New(config.Config{
+		Region: "US",
+	})
+
+	assert.Equal(t, BaseURLs[region.US], a.client.Config.BaseURL)
 }
 
 func TestEUEnvironment(t *testing.T) {
 	t.Parallel()
 	a := New(config.Config{
-		Region: region.EU,
+		Region: "EU",
 	})
 
-	actual := a.client.Config.BaseURL
-	expected := "https://synthetics.eu.newrelic.com/synthetics/api/v3"
-	if actual != expected {
-		t.Errorf("expected baseURL: %s, received: %s", expected, actual)
-	}
+	assert.Equal(t, BaseURLs[region.EU], a.client.Config.BaseURL)
 }
 
 func TestStagingEnvironment(t *testing.T) {
 	t.Parallel()
 	a := New(config.Config{
-		Region: region.Staging,
+		Region: "Staging",
 	})
 
-	actual := a.client.Config.BaseURL
-	expected := "https://staging-synthetics.newrelic.com/synthetics/api/v3"
-	if actual != expected {
-		t.Errorf("expected baseURL: %s, received: %s", expected, actual)
-	}
+	assert.Equal(t, BaseURLs[region.Staging], a.client.Config.BaseURL)
 }
 
 // nolint

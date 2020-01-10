@@ -5,24 +5,20 @@ import (
 	"time"
 
 	"github.com/newrelic/newrelic-client-go/internal/logging"
-	"github.com/newrelic/newrelic-client-go/internal/region"
 )
-
-// DefaultBaseURLs represents the base API URLs for the different environments of the New Relic REST API V2.
-var DefaultBaseURLs = map[region.Region]string{
-	region.US:      "https://api.newrelic.com/v2",
-	region.EU:      "https://api.eu.newrelic.com/v2",
-	region.Staging: "https://staging-api.newrelic.com/v2",
-}
 
 // Config contains all the configuration data for the API Client.
 type Config struct {
-	BaseURL       string
-	APIKey        string
+	// Region of the New Relic platform to use
+	// Valid values are: US, EU
+	Region string
+	APIKey string
+
+	// HTTP
 	Timeout       *time.Duration
 	HTTPTransport *http.RoundTripper
 	UserAgent     string
-	Region        region.Region
+	BaseURL       string
 
 	// LogLevel can be one of the following values:
 	// "panic", "fatal", "error", "warn", "info", "debug", "trace"

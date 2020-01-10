@@ -6,6 +6,7 @@ import (
 
 	"github.com/newrelic/newrelic-client-go/internal/http"
 	"github.com/newrelic/newrelic-client-go/internal/logging"
+	"github.com/newrelic/newrelic-client-go/internal/region"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
@@ -28,7 +29,7 @@ func New(config config.Config) Dashboards {
 }
 
 // BaseURLs represents the base API URLs for the different environments of the New Relic REST API V2.
-var BaseURLs = config.DefaultBaseURLs
+var BaseURLs = region.DefaultBaseURLs
 
 // ListDashboardsParams represents a set of filters to be
 // used when querying New Relic dashboards.

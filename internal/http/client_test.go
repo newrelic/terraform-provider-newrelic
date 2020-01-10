@@ -8,9 +8,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
+	"github.com/newrelic/newrelic-client-go/internal/region"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestConfig(t *testing.T) {
@@ -38,7 +40,7 @@ func TestConfigDefaults(t *testing.T) {
 		APIKey: testAPIKey,
 	})
 
-	assert.Equal(t, config.DefaultBaseURLs[c.Config.Region], c.Config.BaseURL)
+	assert.Equal(t, region.DefaultBaseURLs[region.Parse(c.Config.Region)], c.Config.BaseURL)
 	assert.Contains(t, c.Config.UserAgent, "newrelic/newrelic-client-go/")
 }
 

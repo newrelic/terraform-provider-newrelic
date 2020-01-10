@@ -60,7 +60,7 @@ func (e *ErrorResponse) Error() string {
 func New(config config.Config) Synthetics {
 
 	if config.BaseURL == "" {
-		config.BaseURL = BaseURLs[config.Region]
+		config.BaseURL = BaseURLs[region.Parse(config.Region)]
 	}
 
 	client := http.NewClient(config)

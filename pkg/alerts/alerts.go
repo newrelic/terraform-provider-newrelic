@@ -3,6 +3,7 @@ package alerts
 import (
 	"github.com/newrelic/newrelic-client-go/internal/http"
 	"github.com/newrelic/newrelic-client-go/internal/logging"
+	"github.com/newrelic/newrelic-client-go/internal/region"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/infrastructure"
 )
@@ -20,7 +21,7 @@ func New(config config.Config) Alerts {
 	infraConfig := config
 
 	if config.BaseURL == "" {
-		infraConfig.BaseURL = infrastructure.BaseURLs[config.Region]
+		infraConfig.BaseURL = infrastructure.BaseURLs[region.Parse(config.Region)]
 	}
 
 	infraClient := http.NewClient(infraConfig)
@@ -37,4 +38,4 @@ func New(config config.Config) Alerts {
 }
 
 // BaseURLs represents the base API URLs for the different environments of the New Relic REST API V2.
-var BaseURLs = config.DefaultBaseURLs
+var BaseURLs = region.DefaultBaseURLs
