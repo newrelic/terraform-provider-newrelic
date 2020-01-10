@@ -119,7 +119,7 @@ All nested `widget` blocks support the following common arguments:
   * `height` - (Optional) Height of the widget.  Valid values are `1` to `3` inclusive.  Defaults to `1`.
   * `notes` - (Optional) Description of the widget.
 
-Each visualization type supports an additional set of arguments:
+Each `visualization` type supports an additional set of arguments:
 
   * `billboard`, `billboard_comparison`:
     * `nrql` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
@@ -144,7 +144,10 @@ Each visualization type supports an additional set of arguments:
     * `duration` - (Required) The duration, in ms, of the time window represented in the chart.
     * `end_time` - (Optional) The end time of the time window represented in the chart in epoch time.  When not set, the time window will end at the current time.
     * `facet` - (Optional) Can be set to "host" to facet the metric data by host.
-    * `limit` - (Optional) The limit of distinct data series to display.  
+    * `limit` - (Optional) The limit of distinct data series to display.
+  * `application_breakdown`:
+    * `entity_ids` - (Required) A collection of entity IDs to display data. These are typically application IDs.
+
 
 ### Nested `filter` block
 
