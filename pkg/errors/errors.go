@@ -1,3 +1,4 @@
+// Package errors converts HTTP errors to messages
 package errors
 
 import (
