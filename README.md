@@ -12,29 +12,34 @@ The New Relic Client provides the building blocks for tools in the [Developer To
 
 ```go
 import (
-    "fmt"
+	"fmt"
+	"os"
 
-    "github.com/newrelic/newrelic-client-go/pkg/config"
-    "github.com/newrelic/newrelic-client-go/newrelic"
+	"github.com/newrelic/newrelic-client-go/newrelic"
+	"github.com/newrelic/newrelic-client-go/pkg/apm"
+	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
-cfg := config.Config{
-    APIKey: os.Getenv("NEWRELIC_API_KEY")
+func main() {
+	cfg := config.Config{
+		APIKey: os.Getenv("NEWRELIC_API_KEY"),
+	}
+
+	nr := newrelic.New(cfg)
+
+	params := apm.ListApplicationsParams{
+		Name: "RPM",
+	}
+
+	apps, err := nr.APM.ListApplications(&params)
+
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	fmt.Printf("application count: %d\n", len(apps))
 }
 
-nr := newrelic.New(cfg)
-
-params := ListApplicationsParams{
-    Name: "RPM",
-}
-
-apps, err := nr.APM.ListApplications(params)
-
-if err != nil {
-    fmt.Print(err)
-}
-
-fmt.Printf("application count: %d", len(apps))
 ```
 
 
