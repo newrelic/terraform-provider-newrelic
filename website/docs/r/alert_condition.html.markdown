@@ -76,8 +76,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Alert conditions can be imported using the `id`, e.g.
+Alert conditions can be imported using notation `alert_policy_id:alert_condition_id`, e.g.
 
 ```
-$ terraform import newrelic_alert_condition.main 12345
+$ terraform import newrelic_alert_condition.main 123456:6789012345
 ```
