@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/newrelic/newrelic-client-go/internal/logging"
+	"github.com/newrelic/newrelic-client-go/internal/version"
 )
 
 // Config contains all the configuration data for the API Client.
