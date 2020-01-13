@@ -59,7 +59,11 @@ func dataSourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}
 	d.SetId(strconv.Itoa(channel.ID))
 	d.Set("policy_ids", channel.Links.PolicyIDs)
 
-	flattenAlertChannel(channel, d)
+	err = flattenAlertChannel(channel, d)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

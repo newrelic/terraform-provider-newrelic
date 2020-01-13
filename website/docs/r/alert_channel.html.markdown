@@ -18,7 +18,7 @@ resource "newrelic_alert_channel" "foo" {
   name = "foo"
   type = "email"
 
-  configuration = {
+  config {
     recipients              = "foo@example.com"
     include_json_attachment = "1"
   }
@@ -32,7 +32,37 @@ The following arguments are supported:
 
   * `name` - (Required) The name of the channel.
   * `type` - (Required) The type of channel.  One of: `email`, `slack`, `opsgenie`, `pagerduty`, `victorops`, or `webhook`.
-  * `configuration` - (Required) A map of key / value pairs with channel type specific values. See [channel configurations](#channel-configurations) for specific configurations for the different channel types.
+  * `config` - (Optional) A nested block that describes an alert channel configuration.  Only one config block is permitted per alert channel definition.  See [Nested config blocks](#nested-`config`-blocks) below for details.
+  * `configuration` - **Deprecated** (Optional) A map of key/value pairs with channel type specific values. This argument is deprecated.  Use the `config` argument instead.
+
+### Nested `config` blocks
+
+Each alert channel type supports a specific set of arguments for the `config` block:
+
+  * `email`
+    * `recipients` - (Required) Specifies the targeted email recipients.
+    * `include_json_attachment` - (Optional) Allows a JSON attachment to be included with an alert email.
+  * `webhook`
+    * `base_url` - (Required) The base URL of the webhook destination.
+    * `auth_password` - (Optional) Specifies an authentication password for use with a channel.  Supported by the `webhook` channel type.
+    * `auth_type` - (Optional) Specifies an authentication method for use with a channel.  Supported by the `webhook` channel type.  Only HTTP basic authentication is currently supported via the value `BASIC`.
+    * `auth_username` - (Optional) Specifies an authentication username for use with a channel.  Supported by the `webhook` channel type.
+    * `headers` - (Optional) A map of key/value pairs that represents extra HTTP headers to be sent along with the webhook payload
+    * `payload` - (Optional) A map of key/value pairs that represents the webhook payload.
+  * `pagerduty`
+    * `service_key` - (Required) Specifies the service key for integrating with Pagerduty.
+  * `victorops`
+    * `key` - (Required) The key for integrating with VictorOps.
+    * `route_key` - (Required) The route key for integrating with VictorOps.
+  * `slack`
+    * `url` - (Required) The URL for integrating with Slack.
+    * `channel` - (Optional) The Slack channel to send notifications to.
+  * `opsgenie`
+    * `api_key` - (Required) The API key for integrating with OpsGenie.
+    * `region` - (Required) The data center region to store your data.  Valid values are `US` and `EU`.  Default is `US`.
+    * `teams` - (Optional) A set of teams for targeting notifications. Multiple values are comma separated.
+    * `tags` - (Optional) A set of tags for targeting notifications. Multiple values are comma separated.
+    * `recipients` - (Optional) A set of recipients for targeting notifications.  Multiple values are comma separated.
 
 ## Attributes Reference
 
