@@ -5,33 +5,63 @@ import (
 	"fmt"
 )
 
-// ErrorNotFound is returned when a 404 response is returned
-// from New Relic's APIs.
-type ErrorNotFound struct {
-	Message string
-}
-
-func (e *ErrorNotFound) Error() string {
-	if e.Message != "" {
-		return e.Message
+// NewNotFound returns a new instance of NotFound
+// with an optional custom error message.
+func NewNotFound(err string) *NotFound {
+	e := NotFound{
+		err: err,
 	}
 
-	return fmt.Sprintf("404 not found")
+	return &e
 }
 
-// ErrorUnexpectedStatusCode is returned when an unexpected
+// NewNotFoundf returns a new instance of NotFound
+// with an optional formatted custom error message.
+func NewNotFoundf(format string, args ...interface{}) *NotFound {
+	return NewNotFound(fmt.Sprintf(format, args...))
+}
+
+// NotFound is returned when the target resource
+// cannot be located.
+type NotFound struct {
+	err string
+}
+
+func (e *NotFound) Error() string {
+	if e.err == "" {
+		return "resource not found"
+	}
+
+	return e.err
+}
+
+// NewUnexpectedStatusCode returns a new instance of UnexpectedStatusCode
+// with an optional custom message.
+func NewUnexpectedStatusCode(statusCode int, err string) *UnexpectedStatusCode {
+	return &UnexpectedStatusCode{
+		err:        err,
+		statusCode: statusCode,
+	}
+}
+
+// NewUnexpectedStatusCodef returns a new instance of UnexpectedStatusCode
+// with an optional formatted custom message.
+func NewUnexpectedStatusCodef(statusCode int, format string, args ...interface{}) *UnexpectedStatusCode {
+	return NewUnexpectedStatusCode(statusCode, fmt.Sprintf(format, args...))
+}
+
+// UnexpectedStatusCode is returned when an unexpected
 // status code is returned from New Relic's APIs.
-type ErrorUnexpectedStatusCode struct {
-	Err        string
-	StatusCode int
+type UnexpectedStatusCode struct {
+	err        string
+	statusCode int
 }
 
-func (e *ErrorUnexpectedStatusCode) Error() string {
+func (e *UnexpectedStatusCode) Error() string {
+	msg := fmt.Sprintf("%d response returned", e.statusCode)
 
-	msg := fmt.Sprintf("%d response returned", e.StatusCode)
-
-	if e.Err != "" {
-		msg += fmt.Sprintf(": %s", e.Err)
+	if e.err != "" {
+		msg += fmt.Sprintf(": %s", e.err)
 	}
 
 	return msg

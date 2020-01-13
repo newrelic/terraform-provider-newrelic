@@ -51,9 +51,7 @@ func (alerts *Alerts) GetPluginsCondition(policyID int, pluginID int) (*PluginsC
 		}
 	}
 
-	return nil, &errors.ErrorNotFound{
-		Message: fmt.Sprintf("no condition found for policy %d and condition ID %d", policyID, pluginID),
-	}
+	return nil, errors.NewNotFoundf("no condition found for policy %d and condition ID %d", policyID, pluginID)
 }
 
 // CreatePluginsCondition creates an alert condition for a plugin.

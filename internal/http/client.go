@@ -228,7 +228,7 @@ func (c *NewRelicClient) do(
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, &errors.ErrorNotFound{}
+		return nil, &errors.NotFound{}
 	}
 
 	body, readErr := ioutil.ReadAll(resp.Body)
@@ -240,9 +240,7 @@ func (c *NewRelicClient) do(
 		errorValue := c.errorValue
 		_ = json.Unmarshal(body, &errorValue)
 
-		return nil, &errors.ErrorUnexpectedStatusCode{
-			StatusCode: resp.StatusCode,
-			Err:        c.errorValue.Error()}
+		return nil, errors.NewUnexpectedStatusCode(resp.StatusCode, c.errorValue.Error())
 	}
 
 	if value == nil {

@@ -40,9 +40,7 @@ func (alerts *Alerts) GetChannel(id int) (*Channel, error) {
 			return channel, nil
 		}
 	}
-	return nil, &errors.ErrorNotFound{
-		Message: fmt.Sprintf("no channel found for id %d", id),
-	}
+	return nil, errors.NewNotFoundf("no channel found for id %d", id)
 }
 
 // CreateChannel creates an alert channel within a given account.

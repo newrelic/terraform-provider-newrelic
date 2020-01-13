@@ -49,9 +49,7 @@ func (alerts *Alerts) GetCondition(policyID int, id int) (*Condition, error) {
 		}
 	}
 
-	return nil, &errors.ErrorNotFound{
-		Message: fmt.Sprintf("no condition found for policy %d and condition ID %d", policyID, id),
-	}
+	return nil, errors.NewNotFoundf("no condition found for policy %d and condition ID %d", policyID, id)
 }
 
 // CreateCondition creates an alert condition for a specified policy.

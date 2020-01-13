@@ -50,9 +50,7 @@ func (alerts *Alerts) GetNrqlCondition(policyID int, id int) (*NrqlCondition, er
 		}
 	}
 
-	return nil, &errors.ErrorNotFound{
-		Message: fmt.Sprintf("no condition found for policy %d and condition ID %d", policyID, id),
-	}
+	return nil, errors.NewNotFoundf("no condition found for policy %d and condition ID %d", policyID, id)
 }
 
 // CreateNrqlCondition creates a NRQL alert condition.

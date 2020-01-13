@@ -48,9 +48,7 @@ func (alerts *Alerts) GetPolicy(id int) (*Policy, error) {
 		}
 	}
 
-	return nil, &errors.ErrorNotFound{
-		Message: fmt.Sprintf("no alert policy found for id %d", id),
-	}
+	return nil, errors.NewNotFoundf("no alert policy found for id %d", id)
 }
 
 // CreatePolicy creates a new alert policy for a given account.

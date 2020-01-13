@@ -54,7 +54,7 @@ func TestDefaultErrorValue(t *testing.T) {
 
 	_, err := c.Get("/path", nil, nil)
 
-	assert.Equal(t, err.(*errors.ErrorUnexpectedStatusCode).Err, "error message")
+	assert.Contains(t, err.(*errors.UnexpectedStatusCode).Error(), "error message")
 }
 
 type CustomErrorResponse struct {
@@ -77,7 +77,7 @@ func TestCustomErrorValue(t *testing.T) {
 
 	_, err := c.Get("/path", nil, nil)
 
-	assert.Equal(t, err.(*errors.ErrorUnexpectedStatusCode).Err, "error message")
+	assert.Contains(t, err.(*errors.UnexpectedStatusCode).Error(), "error message")
 }
 
 type CustomResponseValue struct {
@@ -239,7 +239,7 @@ func TestErrNotFound(t *testing.T) {
 
 	_, err := c.Get("/path", nil, nil)
 
-	assert.IsType(t, &errors.ErrorNotFound{}, err)
+	assert.IsType(t, &errors.NotFound{}, err)
 }
 
 func TestInternalServerError(t *testing.T) {
@@ -250,7 +250,7 @@ func TestInternalServerError(t *testing.T) {
 
 	_, err := c.Get("/path", nil, nil)
 
-	assert.IsType(t, &errors.ErrorUnexpectedStatusCode{}, err)
+	assert.IsType(t, &errors.UnexpectedStatusCode{}, err)
 }
 
 func TestPost(t *testing.T) {

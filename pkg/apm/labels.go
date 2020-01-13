@@ -43,9 +43,7 @@ func (apm *APM) GetLabel(key string) (*Label, error) {
 		}
 	}
 
-	return nil, &errors.ErrorNotFound{
-		Message: fmt.Sprintf("no label found with key %s", key),
-	}
+	return nil, errors.NewNotFoundf("no label found with key %s", key)
 }
 
 // CreateLabel creates a new label within an account.
