@@ -184,9 +184,9 @@ func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFun
 			return fmt.Errorf("no synthetics monitor ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).Synthetics
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		found, err := client.GetMonitor(rs.Primary.ID)
+		found, err := client.Synthetics.GetMonitor(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -200,13 +200,13 @@ func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFun
 }
 
 func testAccCheckNewRelicSyntheticsMonitorDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderConfig).Synthetics
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_synthetics_monitor" {
 			continue
 		}
 
-		_, err := client.GetMonitor(r.Primary.ID)
+		_, err := client.Synthetics.GetMonitor(r.Primary.ID)
 		if err == nil {
 			return fmt.Errorf("synthetics monitor still exists")
 		}

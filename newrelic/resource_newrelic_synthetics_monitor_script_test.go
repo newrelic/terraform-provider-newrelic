@@ -54,9 +54,9 @@ func testAccCheckNewRelicSyntheticsMonitorScriptExists(n string) resource.TestCh
 			return fmt.Errorf("no synthetics monitor script ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).Synthetics
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		script, err := client.GetMonitorScript(rs.Primary.ID)
+		script, err := client.Synthetics.GetMonitorScript(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -70,13 +70,13 @@ func testAccCheckNewRelicSyntheticsMonitorScriptExists(n string) resource.TestCh
 }
 
 func testAccCheckNewRelicSyntheticsMonitorScriptDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderConfig).Synthetics
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_synthetics_monitor_script" {
 			continue
 		}
 
-		monitorScript, err := client.GetMonitorScript(r.Primary.ID)
+		monitorScript, err := client.Synthetics.GetMonitorScript(r.Primary.ID)
 		if err == nil && monitorScript != nil {
 			return fmt.Errorf("synthetics monitor script text still exists")
 		}

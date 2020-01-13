@@ -10,9 +10,8 @@ const (
 )
 
 // ListMonitors is used to retrieve New Relic Synthetics monitors.
-func (s *Synthetics) ListMonitors() ([]Monitor, error) {
+func (s *Synthetics) ListMonitors() ([]*Monitor, error) {
 	resp := listMonitorsResponse{}
-
 	queryParams := listMonitorsParams{
 		Limit: listMonitorsLimit,
 	}
@@ -40,33 +39,34 @@ func (s *Synthetics) GetMonitor(monitorID string) (*Monitor, error) {
 }
 
 // CreateMonitor is used to create a New Relic Synthetics monitor.
-// If successful it returns the ID of the created resource.
-func (s *Synthetics) CreateMonitor(monitor Monitor) (string, error) {
+func (s *Synthetics) CreateMonitor(monitor Monitor) (*Monitor, error) {
 	resp, err := s.client.Post("/monitors", nil, &monitor, nil)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	l := resp.Header.Get("location")
 	monitorID := path.Base(l)
 
-	return monitorID, nil
+	monitor.ID = monitorID
+
+	return &monitor, nil
 }
 
-// UpdateMonitor is used to create a New Relic Synthetics monitor.
-func (s *Synthetics) UpdateMonitor(monitor Monitor) error {
+// UpdateMonitor is used to update a New Relic Synthetics monitor.
+func (s *Synthetics) UpdateMonitor(monitor Monitor) (*Monitor, error) {
 	url := fmt.Sprintf("/monitors/%s", monitor.ID)
 	_, err := s.client.Put(url, nil, &monitor, nil)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &monitor, nil
 }
 
-// DeleteMonitor is used to create a New Relic Synthetics monitor.
+// DeleteMonitor is used to delete a New Relic Synthetics monitor.
 func (s *Synthetics) DeleteMonitor(monitorID string) error {
 	url := fmt.Sprintf("/monitors/%s", monitorID)
 	_, err := s.client.Delete(url, nil, nil)
@@ -79,7 +79,7 @@ func (s *Synthetics) DeleteMonitor(monitorID string) error {
 }
 
 type listMonitorsResponse struct {
-	Monitors []Monitor `json:"monitors,omitempty"`
+	Monitors []*Monitor `json:"monitors,omitempty"`
 }
 
 type listMonitorsParams struct {

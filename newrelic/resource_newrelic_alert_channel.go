@@ -194,7 +194,7 @@ func resourceNewRelicAlertChannelCreate(d *schema.ResourceData, meta interface{}
 
 	log.Printf("[INFO] Creating New Relic alert channel %s", channel.Name)
 
-	channel, err = client.Alerts.CreateAlertChannel(*channel)
+	channel, err = client.Alerts.CreateChannel(*channel)
 	if err != nil {
 		return err
 	}
@@ -214,9 +214,9 @@ func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) 
 
 	log.Printf("[INFO] Reading New Relic alert channel %v", id)
 
-	channel, err := client.Alerts.GetAlertChannel(int(id))
+	channel, err := client.Alerts.GetChannel(int(id))
 	if err != nil {
-		if _, ok := err.(*errors.ErrorNotFound); ok {
+		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
@@ -237,7 +237,7 @@ func resourceNewRelicAlertChannelDelete(d *schema.ResourceData, meta interface{}
 
 	log.Printf("[INFO] Deleting New Relic alert channel %v", id)
 
-	if _, err := client.Alerts.DeleteAlertChannel(int(id)); err != nil {
+	if _, err := client.Alerts.DeleteChannel(int(id)); err != nil {
 		return err
 	}
 

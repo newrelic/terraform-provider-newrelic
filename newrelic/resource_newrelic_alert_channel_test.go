@@ -417,7 +417,7 @@ func testAccCheckNewRelicAlertChannelDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = client.Alerts.GetAlertChannel(int(id))
+		_, err = client.Alerts.GetChannel(int(id))
 
 		if err == nil {
 			return fmt.Errorf("alert channel still exists")
@@ -444,7 +444,7 @@ func testAccCheckNewRelicAlertChannelExists(n string) resource.TestCheckFunc {
 			return err
 		}
 
-		found, err := client.Alerts.GetAlertChannel(int(id))
+		found, err := client.Alerts.GetChannel(int(id))
 		if err != nil {
 			return err
 		}
@@ -460,11 +460,11 @@ func testAccCheckNewRelicAlertChannelExists(n string) resource.TestCheckFunc {
 func testAccDeleteAlertChannel(name string) func() {
 	return func() {
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
-		alertChannels, _ := client.Alerts.ListAlertChannels()
+		alertChannels, _ := client.Alerts.ListChannels()
 
 		for _, d := range alertChannels {
 			if d.Name == name {
-				_, _ = client.Alerts.DeleteAlertChannel(d.ID)
+				_, _ = client.Alerts.DeleteChannel(d.ID)
 				break
 			}
 		}

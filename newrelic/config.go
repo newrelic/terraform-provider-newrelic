@@ -152,5 +152,4 @@ type ProviderConfig struct {
 	InsightsInsertClient *insights.InsertClient
 	InsightsQueryClient  *insights.QueryClient
 	InfraClient          *newrelic.InfraClient
-	Synthetics           *synthetics.Synthetics
 }

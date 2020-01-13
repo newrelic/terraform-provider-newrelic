@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-querystring/query"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 
+	"github.com/newrelic/newrelic-client-go/internal/region"
 	"github.com/newrelic/newrelic-client-go/internal/version"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
@@ -47,10 +48,12 @@ func NewClient(cfg config.Config) NewRelicClient {
 		if transport, ok := (*cfg.HTTPTransport).(*http.Transport); ok {
 			c.Transport = transport
 		}
+	} else {
+		c.Transport = http.DefaultTransport
 	}
 
 	if cfg.BaseURL == "" {
-		cfg.BaseURL = config.DefaultBaseURLs[cfg.Region]
+		cfg.BaseURL = region.DefaultBaseURLs[region.Parse(cfg.Region)]
 	}
 
 	if cfg.UserAgent == "" {
@@ -61,6 +64,7 @@ func NewClient(cfg config.Config) NewRelicClient {
 	r.HTTPClient = &c
 	r.RetryMax = defaultRetryMax
 	r.CheckRetry = RetryPolicy
+	r.Logger = cfg.GetLogger()
 
 	return NewRelicClient{
 		Client:     r,
@@ -224,7 +228,7 @@ func (c *NewRelicClient) do(
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, &errors.ErrorNotFound{}
+		return nil, &errors.NotFound{}
 	}
 
 	body, readErr := ioutil.ReadAll(resp.Body)
@@ -236,9 +240,7 @@ func (c *NewRelicClient) do(
 		errorValue := c.errorValue
 		_ = json.Unmarshal(body, &errorValue)
 
-		return nil, &errors.ErrorUnexpectedStatusCode{
-			StatusCode: resp.StatusCode,
-			Err:        c.errorValue.Error()}
+		return nil, errors.NewUnexpectedStatusCode(resp.StatusCode, c.errorValue.Error())
 	}
 
 	if value == nil {
