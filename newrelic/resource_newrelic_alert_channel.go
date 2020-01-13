@@ -99,9 +99,10 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							Sensitive: true,
 						},
 						"auth_type": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
+							Type:         schema.TypeString,
+							Optional:     true,
+							Sensitive:    true,
+							ValidateFunc: validation.StringInSlice([]string{"BASIC"}, false),
 						},
 						"auth_username": {
 							Type:     schema.TypeString,
@@ -146,8 +147,9 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							Optional: true,
 						},
 						"region": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringInSlice([]string{"US", "EU"}, false),
 						},
 						"route_key": {
 							Type:      schema.TypeString,
