@@ -26,12 +26,12 @@ func dataSourceNewRelicSyntheticsMonitor() *schema.Resource {
 }
 
 func dataSourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Synthetics
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic synthetics monitors")
 
 	name := d.Get("name").(string)
-	monitors, err := client.ListMonitors()
+	monitors, err := client.Synthetics.ListMonitors()
 
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func dataSourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interf
 	var monitor *synthetics.Monitor
 	for _, m := range monitors {
 		if m.Name == name {
-			monitor = &m
+			monitor = m
 			break
 		}
 	}
