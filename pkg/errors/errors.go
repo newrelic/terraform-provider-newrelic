@@ -7,9 +7,15 @@ import (
 
 // ErrorNotFound is returned when a 404 response is returned
 // from New Relic's APIs.
-type ErrorNotFound struct{}
+type ErrorNotFound struct {
+	Message string
+}
 
 func (e *ErrorNotFound) Error() string {
+	if e.Message != "" {
+		return e.Message
+	}
+
 	return fmt.Sprintf("404 not found")
 }
 

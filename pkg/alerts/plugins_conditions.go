@@ -1,6 +1,10 @@
 package alerts
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
+)
 
 // ListPluginsConditions returns alert conditions for New Relic plugins for a given alert policy.
 func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, error) {
@@ -47,7 +51,9 @@ func (alerts *Alerts) GetPluginsCondition(policyID int, pluginID int) (*PluginsC
 		}
 	}
 
-	return nil, fmt.Errorf("no condition found for policy %d and condition ID %d", policyID, pluginID)
+	return nil, &errors.ErrorNotFound{
+		Message: fmt.Sprintf("no condition found for policy %d and condition ID %d", policyID, pluginID),
+	}
 }
 
 // CreatePluginsCondition creates an alert condition for a plugin.

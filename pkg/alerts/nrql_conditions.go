@@ -2,6 +2,8 @@ package alerts
 
 import (
 	"fmt"
+
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 // ListNrqlConditions returns NRQL alert conditions for a specified policy.
@@ -48,7 +50,9 @@ func (alerts *Alerts) GetNrqlCondition(policyID int, id int) (*NrqlCondition, er
 		}
 	}
 
-	return nil, fmt.Errorf("no condition found for policy %d and condition ID %d", policyID, id)
+	return nil, &errors.ErrorNotFound{
+		Message: fmt.Sprintf("no condition found for policy %d and condition ID %d", policyID, id),
+	}
 }
 
 // CreateNrqlCondition creates a NRQL alert condition.

@@ -2,6 +2,8 @@ package alerts
 
 import (
 	"fmt"
+
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 // ListChannels returns all alert channels for a given account.
@@ -38,8 +40,9 @@ func (alerts *Alerts) GetChannel(id int) (*Channel, error) {
 			return channel, nil
 		}
 	}
-
-	return nil, fmt.Errorf("no channel found for id %d", id)
+	return nil, &errors.ErrorNotFound{
+		Message: fmt.Sprintf("no channel found for id %d", id),
+	}
 }
 
 // CreateChannel creates an alert channel within a given account.

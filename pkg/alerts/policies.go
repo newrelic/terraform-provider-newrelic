@@ -2,6 +2,8 @@ package alerts
 
 import (
 	"fmt"
+
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 // ListPoliciesParams represents a set of filters to be
@@ -46,7 +48,9 @@ func (alerts *Alerts) GetPolicy(id int) (*Policy, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("no alert policy found for id %d", id)
+	return nil, &errors.ErrorNotFound{
+		Message: fmt.Sprintf("no alert policy found for id %d", id),
+	}
 }
 
 // CreatePolicy creates a new alert policy for a given account.
