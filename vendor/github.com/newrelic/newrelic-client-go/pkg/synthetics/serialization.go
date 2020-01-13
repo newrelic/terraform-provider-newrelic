@@ -33,5 +33,4 @@ func (t *Time) UnmarshalJSON(s []byte) (err error) {
 // Equal provides a comparator for the Time type.
 func (t Time) Equal(u Time) bool {
 	return time.Time(t).Equal(time.Time(u))
-
 }

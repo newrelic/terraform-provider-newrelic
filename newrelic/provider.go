@@ -9,9 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
 	"github.com/newrelic/newrelic-client-go/newrelic"
-	"github.com/newrelic/newrelic-client-go/pkg/config"
-	"github.com/newrelic/newrelic-client-go/pkg/infrastructure"
-	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 	"github.com/terraform-providers/terraform-provider-newrelic/version"
 )
 
@@ -19,8 +16,11 @@ import (
 const TerraformProviderProductUserAgent = "terraform-provider-newrelic"
 
 const (
-	insightsInsertURL = "https://insights-collector.newrelic.com/v1/accounts"
-	insightsQueryURL  = "https://insights-api.newrelic.com/v1/accounts"
+	apiBaseURL               = "https://api.newrelic.com/v2"
+	syntheticsAPIBaseURL     = "https://synthetics.newrelic.com/synthetics/api/v3"
+	infrastructureAPIBaseURL = "https://infra-api.newrelic.com/v2"
+	insightsInsertURL        = "https://insights-collector.newrelic.com/v1/accounts"
+	insightsQueryURL         = "https://insights-api.newrelic.com/v1/accounts"
 )
 
 // Provider represents a resource provider in Terraform
@@ -36,12 +36,12 @@ func Provider() terraform.ResourceProvider {
 			"api_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_URL", config.DefaultBaseURLs[config.Region.US]),
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_URL", apiBaseURL),
 			},
 			"synthetics_api_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_SYNTHETICS_API_URL", synthetics.BaseURLs[config.Region.US]),
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_SYNTHETICS_API_URL", syntheticsAPIBaseURL),
 			},
 			"insights_account_id": {
 				Type:        schema.TypeString,
@@ -74,7 +74,7 @@ func Provider() terraform.ResourceProvider {
 			"infra_api_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INFRA_API_URL", infrastructure.BaseURLs[config.Region.US]),
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INFRA_API_URL", infrastructureAPIBaseURL),
 			},
 			"insecure_skip_verify": {
 				Type:        schema.TypeBool,
@@ -144,25 +144,11 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		return nil, fmt.Errorf("error initializing go-newrelic client: %s", err)
 	}
 
-	newCfg := config.Config{
-		APIKey:    apiKey,
-		BaseURL:   data.Get("api_url").(string),
-		UserAgent: userAgent,
-	}
 	log.Println("[INFO] Initializing newrelic-client-go")
-	newClient := newrelic.New(newCfg)
+	newClient, err := newrelic.New(apiKey, newrelic.ConfigUserAgent(userAgent))
 
-	log.Println("[INFO] Initializing New Relic Synthetics client")
-
-	syntheticsConfig := Config{
-		APIURL:    data.Get("synthetics_api_url").(string),
-		APIKey:    apiKey,
-		userAgent: userAgent,
-	}
-
-	clientSynthetics, err := syntheticsConfig.ClientSynthetics()
 	if err != nil {
-		return nil, fmt.Errorf("error initializing New Relic Synthetics client: %s", err)
+		return nil, err
 	}
 
 	insightsInsertConfig := Config{
@@ -198,11 +184,10 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 
 	providerConfig := ProviderConfig{
 		Client:               client,
-		NewClient:            &newClient,
+		NewClient:            newClient,
 		InfraClient:          clientInfra,
 		InsightsInsertClient: clientInsightsInsert,
 		InsightsQueryClient:  clientInsightsQuery,
-		Synthetics:           clientSynthetics,
 	}
 
 	return &providerConfig, nil

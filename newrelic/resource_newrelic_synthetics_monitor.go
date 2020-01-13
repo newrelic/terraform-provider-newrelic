@@ -182,28 +182,28 @@ func readSyntheticsMonitorStruct(monitor *synthetics.Monitor, d *schema.Resource
 }
 
 func resourceNewRelicSyntheticsMonitorCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Synthetics
-	monitor := buildSyntheticsMonitorStruct(d)
+	client := meta.(*ProviderConfig).NewClient
+	monitorStruct := buildSyntheticsMonitorStruct(d)
 
-	log.Printf("[INFO] Creating New Relic Synthetics monitor %s", monitor.Name)
+	log.Printf("[INFO] Creating New Relic Synthetics monitor %s", monitorStruct.Name)
 
-	id, err := client.CreateMonitor(monitor)
+	monitor, err := client.Synthetics.CreateMonitor(monitorStruct)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(id)
+	d.SetId(monitor.ID)
 	return resourceNewRelicSyntheticsMonitorRead(d, meta)
 }
 
 func resourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Synthetics
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
 
-	monitor, err := client.GetMonitor(d.Id())
+	monitor, err := client.Synthetics.GetMonitor(d.Id())
 	if err != nil {
-		if _, ok := err.(*errors.ErrorNotFound); ok {
+		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
@@ -215,12 +215,10 @@ func resourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interfac
 }
 
 func resourceNewRelicSyntheticsMonitorUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Synthetics
-	monitor := buildSyntheticsUpdateMonitorArgs(d)
-
+	client := meta.(*ProviderConfig).NewClient
 	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
 
-	err := client.UpdateMonitor(*monitor)
+	_, err := client.Synthetics.UpdateMonitor(*buildSyntheticsUpdateMonitorArgs(d))
 	if err != nil {
 		return err
 	}
@@ -229,11 +227,11 @@ func resourceNewRelicSyntheticsMonitorUpdate(d *schema.ResourceData, meta interf
 }
 
 func resourceNewRelicSyntheticsMonitorDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Synthetics
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor %s", d.Id())
 
-	if err := client.DeleteMonitor(d.Id()); err != nil {
+	if err := client.Synthetics.DeleteMonitor(d.Id()); err != nil {
 		return err
 	}
 

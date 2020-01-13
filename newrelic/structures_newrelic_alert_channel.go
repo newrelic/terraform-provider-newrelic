@@ -8,8 +8,8 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
-func expandAlertChannel(d *schema.ResourceData) (*alerts.AlertChannel, error) {
-	channel := alerts.AlertChannel{
+func expandAlertChannel(d *schema.ResourceData) (*alerts.Channel, error) {
+	channel := alerts.Channel{
 		Name: d.Get("name").(string),
 		Type: d.Get("type").(string),
 	}
@@ -41,8 +41,8 @@ func convertToStringMap(orig map[string]interface{}) map[string]string {
 	return conv
 }
 
-func expandAlertChannelConfiguration(cfg map[string]interface{}) alerts.AlertChannelConfiguration {
-	config := alerts.AlertChannelConfiguration{}
+func expandAlertChannelConfiguration(cfg map[string]interface{}) alerts.ChannelConfiguration {
+	config := alerts.ChannelConfiguration{}
 
 	if apiKey, ok := cfg["api_key"]; ok {
 		config.APIKey = apiKey.(string)
@@ -121,7 +121,7 @@ func expandAlertChannelConfiguration(cfg map[string]interface{}) alerts.AlertCha
 	return config
 }
 
-func flattenAlertChannel(channel *alerts.AlertChannel, d *schema.ResourceData) error {
+func flattenAlertChannel(channel *alerts.Channel, d *schema.ResourceData) error {
 	d.Set("name", channel.Name)
 	d.Set("type", channel.Type)
 
@@ -145,7 +145,7 @@ func flattenAlertChannel(channel *alerts.AlertChannel, d *schema.ResourceData) e
 	return nil
 }
 
-func flattenAlertChannelConfiguration(c *alerts.AlertChannelConfiguration) []interface{} {
+func flattenAlertChannelConfiguration(c *alerts.ChannelConfiguration) []interface{} {
 	if c == nil {
 		return nil
 	}
@@ -174,7 +174,7 @@ func flattenAlertChannelConfiguration(c *alerts.AlertChannelConfiguration) []int
 	return []interface{}{configResult}
 }
 
-func flattenDeprecatedAlertChannelConfiguration(c *alerts.AlertChannelConfiguration) (map[string]interface{}, error) {
+func flattenDeprecatedAlertChannelConfiguration(c *alerts.ChannelConfiguration) (map[string]interface{}, error) {
 	if c == nil {
 		return nil, nil
 	}

@@ -45,13 +45,12 @@ func buildSyntheticsMonitorScriptStruct(d *schema.ResourceData) *synthetics.Moni
 }
 
 func resourceNewRelicSyntheticsMonitorScriptCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Synthetics
-	script := buildSyntheticsMonitorScriptStruct(d)
+	client := meta.(*ProviderConfig).NewClient
 
 	id := d.Get("monitor_id").(string)
 	log.Printf("[INFO] Creating New Relic Synthetics monitor script %s", id)
 
-	err := client.UpdateMonitorScript(id, *script)
+	_, err := client.Synthetics.UpdateMonitorScript(id, *buildSyntheticsMonitorScriptStruct(d))
 	if err != nil {
 		return err
 	}
@@ -61,13 +60,13 @@ func resourceNewRelicSyntheticsMonitorScriptCreate(d *schema.ResourceData, meta 
 }
 
 func resourceNewRelicSyntheticsMonitorScriptRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Synthetics
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Synthetics script %s", d.Id())
 
-	script, err := client.GetMonitorScript(d.Id())
+	script, err := client.Synthetics.GetMonitorScript(d.Id())
 	if err != nil {
-		if _, ok := err.(*errors.ErrorNotFound); ok {
+		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
@@ -80,12 +79,11 @@ func resourceNewRelicSyntheticsMonitorScriptRead(d *schema.ResourceData, meta in
 }
 
 func resourceNewRelicSyntheticsMonitorScriptUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Synthetics
-	script := buildSyntheticsMonitorScriptStruct(d)
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Creating New Relic Synthetics monitor script %s", d.Id())
 
-	err := client.UpdateMonitorScript(d.Id(), *script)
+	_, err := client.Synthetics.UpdateMonitorScript(d.Id(), *buildSyntheticsMonitorScriptStruct(d))
 	if err != nil {
 		return err
 	}
@@ -95,7 +93,7 @@ func resourceNewRelicSyntheticsMonitorScriptUpdate(d *schema.ResourceData, meta 
 }
 
 func resourceNewRelicSyntheticsMonitorScriptDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Synthetics
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor script %s", d.Id())
 
@@ -103,7 +101,7 @@ func resourceNewRelicSyntheticsMonitorScriptDelete(d *schema.ResourceData, meta 
 		Text: " ",
 	}
 
-	if err := client.UpdateMonitorScript(d.Id(), script); err != nil {
+	if _, err := client.Synthetics.UpdateMonitorScript(d.Id(), script); err != nil {
 		return err
 	}
 
