@@ -12,7 +12,7 @@ import (
 
 // TODO: This is used by incidents_test.go still, need to refactor
 // nolint
-func newTestAlerts(handler http.Handler) Alerts {
+func newTestClient(handler http.Handler) Alerts {
 	ts := httptest.NewServer(handler)
 
 	c := New(config.Config{

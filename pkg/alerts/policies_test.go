@@ -13,12 +13,8 @@ import (
 
 var (
 	testTimestamp = serialization.EpochTime(time.Unix(1575438237690, 0))
-)
 
-func TestGetPolicy(t *testing.T) {
-	t.Parallel()
-	respJSON := `
-	{
+	testPoliciesResponseJSON = `{
 		"policies": [
 			{
 				"id": 579506,
@@ -36,9 +32,32 @@ func TestGetPolicy(t *testing.T) {
 			}
 		]
 	}`
-	alerts := newMockResponse(t, respJSON, http.StatusOK)
 
-	// GetPolicy returns a pointer *Policy
+	testPolicyResponseJSON = `{
+		"policy": {
+			"id": 579506,
+			"incident_preference": "PER_POLICY",
+			"name": "test-alert-policy-1",
+			"created_at": 1575438237690,
+			"updated_at": 1575438237690
+		}
+	}`
+
+	testPolicyResponseUpdatedJSON = `{
+		"policy": {
+			"id": 579506,
+			"incident_preference": "PER_CONDITION",
+			"name": "test-alert-policy-updated",
+			"created_at": 1575438237690,
+			"updated_at": 1575438237690
+		}
+	}`
+)
+
+func TestGetPolicy(t *testing.T) {
+	t.Parallel()
+	alerts := newMockResponse(t, testPoliciesResponseJSON, http.StatusOK)
+
 	expected := &Policy{
 		ID:                 579506,
 		IncidentPreference: "PER_POLICY",
@@ -56,26 +75,7 @@ func TestGetPolicy(t *testing.T) {
 
 func TestListPolicies(t *testing.T) {
 	t.Parallel()
-	respJSON := `
-	{
-		"policies": [
-			{
-				"id": 579506,
-				"incident_preference": "PER_POLICY",
-				"name": "test-alert-policy-1",
-				"created_at": 1575438237690,
-				"updated_at": 1575438237690
-			},
-			{
-				"id": 579509,
-				"incident_preference": "PER_POLICY",
-				"name": "test-alert-policy-2",
-				"created_at": 1575438237690,
-				"updated_at": 1575438237690
-			}
-		]
-	}`
-	alerts := newMockResponse(t, respJSON, http.StatusOK)
+	alerts := newMockResponse(t, testPoliciesResponseJSON, http.StatusOK)
 
 	expected := []Policy{
 		{
@@ -103,71 +103,36 @@ func TestListPolicies(t *testing.T) {
 
 func TestListPoliciesWithParams(t *testing.T) {
 	t.Parallel()
-	expectedName := "test-alert-policy-1"
+	expectedName := "does-not-exist"
 
-	alerts := newTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	alerts := newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		name := values.Get("filter[name]")
-		if name != expectedName {
-			t.Errorf(`expected name filter "%s", received: "%s"`, expectedName, name)
-		}
+		require.Equal(t, expectedName, name)
 
 		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(`
-		{
-			"policies": [
-				{
-					"id": 579506,
-					"incident_preference": "PER_POLICY",
-					"name": "test-alert-policy-1",
-					"created_at": 1575438237690,
-					"updated_at": 1575438237690
-				}
-			]
-		}
-		`))
+		_, err := w.Write([]byte(`{ "policies": [] }`))
 
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 	}))
-
-	expected := []Policy{
-		{
-			ID:                 579506,
-			IncidentPreference: "PER_POLICY",
-			Name:               "test-alert-policy-1",
-			CreatedAt:          &testTimestamp,
-			UpdatedAt:          &testTimestamp,
-		},
-	}
 
 	params := ListPoliciesParams{
 		Name: expectedName,
 	}
 
+	expectedCount := 0
+
 	actual, err := alerts.ListPolicies(&params)
 
 	require.NoError(t, err)
 	require.NotNil(t, actual)
-	require.Equal(t, expected, actual)
+	require.Equal(t, expectedCount, len(actual))
 }
 
 func TestCreatePolicy(t *testing.T) {
 	t.Parallel()
-	respJSON := `
-	{
-		"policy": {
-			"id": 123,
-			"incident_preference": "PER_POLICY",
-			"name": "test-alert-policy-1",
-			"created_at": 1575438237690,
-			"updated_at": 1575438237690
-		}
-	}
-	`
-	alerts := newMockResponse(t, respJSON, http.StatusOK)
+	alerts := newMockResponse(t, testPolicyResponseJSON, http.StatusOK)
 
 	policy := Policy{
 		IncidentPreference: "PER_POLICY",
@@ -175,7 +140,7 @@ func TestCreatePolicy(t *testing.T) {
 	}
 
 	expected := &Policy{
-		ID:                 123,
+		ID:                 579506,
 		IncidentPreference: "PER_POLICY",
 		Name:               "test-alert-policy-1",
 		CreatedAt:          &testTimestamp,
@@ -191,31 +156,18 @@ func TestCreatePolicy(t *testing.T) {
 
 func TestUpdatePolicy(t *testing.T) {
 	t.Parallel()
-	respJSON := `
-	{
-		"policy": {
-			"id": 123,
-			"incident_preference": "PER_CONDITION",
-			"name": "name-updated",
-			"created_at": 1575438237690,
-			"updated_at": 1575438237690
-		}
-	}`
+	alerts := newMockResponse(t, testPolicyResponseUpdatedJSON, http.StatusOK)
 
-	alerts := newMockResponse(t, respJSON, http.StatusOK)
-
-	// Original policy
 	policy := Policy{
-		ID:                 123,
+		ID:                 579506,
 		IncidentPreference: "PER_POLICY",
-		Name:               "name",
+		Name:               "test-alert-policy-1",
 	}
 
-	// Updated policy expectation
 	expected := &Policy{
-		ID:                 123,
+		ID:                 579506,
 		IncidentPreference: "PER_CONDITION",
-		Name:               "name-updated",
+		Name:               "test-alert-policy-updated",
 		CreatedAt:          &testTimestamp,
 		UpdatedAt:          &testTimestamp,
 	}
@@ -229,27 +181,17 @@ func TestUpdatePolicy(t *testing.T) {
 
 func TestDeletePolicy(t *testing.T) {
 	t.Parallel()
-	respJSON := `
-	{
-		"policy": {
-			"id": 123,
-			"incident_preference": "PER_CONDITION",
-			"name": "name-updated",
-			"created_at": 1575438237690,
-			"updated_at": 1575438237690
-		}
-	}`
-	alerts := newMockResponse(t, respJSON, http.StatusOK)
+	alerts := newMockResponse(t, testPolicyResponseJSON, http.StatusOK)
 
 	expected := &Policy{
-		ID:                 123,
-		IncidentPreference: "PER_CONDITION",
-		Name:               "name-updated",
+		ID:                 579506,
+		IncidentPreference: "PER_POLICY",
+		Name:               "test-alert-policy-1",
 		CreatedAt:          &testTimestamp,
 		UpdatedAt:          &testTimestamp,
 	}
 
-	actual, err := alerts.DeletePolicy(123)
+	actual, err := alerts.DeletePolicy(579506)
 
 	require.NoError(t, err)
 	require.NotNil(t, actual)

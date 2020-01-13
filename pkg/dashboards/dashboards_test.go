@@ -10,21 +10,34 @@ import (
 	"testing"
 	"time"
 
+	mock "github.com/newrelic/newrelic-client-go/internal/testing"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
 
-func NewTestDashboards(handler http.Handler) Dashboards {
+func newTestClient(handler http.Handler) Dashboards {
 	ts := httptest.NewServer(handler)
 
-	c := New(config.Config{
+	return New(config.Config{
 		APIKey:    "abc123",
 		BaseURL:   ts.URL,
 		UserAgent: "newrelic/newrelic-client-go",
 		LogLevel:  "debug",
 	})
+}
 
-	return c
+func newMockResponse(
+	t *testing.T,
+	mockJSONResponse string,
+	statusCode int,
+) Dashboards {
+	ts := mock.NewMockServer(t, mockJSONResponse, statusCode)
+
+	return New(config.Config{
+		APIKey:    "abc123",
+		BaseURL:   ts.URL,
+		UserAgent: "newrelic/newrelic-client-go",
+	})
 }
 
 var (
@@ -288,20 +301,12 @@ var (
 
 func TestListDashboards(t *testing.T) {
 	t.Parallel()
-	client := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "dashboard/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"dashboards": [%s]
-		}
-		`, testDashboardJson)))
-
-		assert.NoError(t, err)
-	}))
+	responseJSON := fmt.Sprintf(`{ "dashboards": [%s] }`, testDashboardJson)
+	dashboards := newMockResponse(t, responseJSON, http.StatusOK)
 
 	expected := []*Dashboard{&testDashboard}
 
-	actual, err := client.ListDashboards(nil)
+	actual, err := dashboards.ListDashboards(nil)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
@@ -317,7 +322,7 @@ func TestListDashboardsWithParams(t *testing.T) {
 	expectedSort := "sort"
 	expectedTitle := "title"
 
-	client := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	dashboards := newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		assert.Equal(t, expectedCategory, values.Get("filter[category]"))
@@ -348,26 +353,17 @@ func TestListDashboardsWithParams(t *testing.T) {
 		UpdatedBefore: &expectedTime,
 	}
 
-	_, err := client.ListDashboards(&params)
+	_, err := dashboards.ListDashboards(&params)
 
 	assert.NoError(t, err)
 }
 
 func TestGetDashboard(t *testing.T) {
 	t.Parallel()
+	responseJSON := fmt.Sprintf(`{ "dashboard": %s }`, testDashboardJson)
+	dashboards := newMockResponse(t, responseJSON, http.StatusOK)
 
-	client := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "dashboard/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"dashboard": %s
-		}
-		`, testDashboardJson)))
-
-		assert.NoError(t, err)
-	}))
-
-	actual, err := client.GetDashboard(testDashboard.ID)
+	actual, err := dashboards.GetDashboard(testDashboard.ID)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
@@ -376,19 +372,10 @@ func TestGetDashboard(t *testing.T) {
 
 func TestCreateDashboard(t *testing.T) {
 	t.Parallel()
+	responseJSON := fmt.Sprintf(`{ "dashboard": %s }`, testDashboardJson)
+	dashboards := newMockResponse(t, responseJSON, http.StatusOK)
 
-	client := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "dashboard/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"dashboard": %s
-		}
-		`, testDashboardJson)))
-
-		assert.NoError(t, err)
-	}))
-
-	actual, err := client.CreateDashboard(testDashboard)
+	actual, err := dashboards.CreateDashboard(testDashboard)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
@@ -397,19 +384,10 @@ func TestCreateDashboard(t *testing.T) {
 
 func TestUpdateDashboard(t *testing.T) {
 	t.Parallel()
+	responseJSON := fmt.Sprintf(`{ "dashboard": %s }`, testDashboardJson)
+	dashboards := newMockResponse(t, responseJSON, http.StatusOK)
 
-	client := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "dashboard/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"dashboard": %s
-		}
-		`, testDashboardJson)))
-
-		assert.NoError(t, err)
-	}))
-
-	actual, err := client.UpdateDashboard(testDashboard)
+	actual, err := dashboards.UpdateDashboard(testDashboard)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
@@ -418,19 +396,10 @@ func TestUpdateDashboard(t *testing.T) {
 
 func TestDeleteDashboard(t *testing.T) {
 	t.Parallel()
+	responseJSON := fmt.Sprintf(`{ "dashboard": %s }`, testDashboardJson)
+	dashboards := newMockResponse(t, responseJSON, http.StatusOK)
 
-	client := NewTestDashboards(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "dashboard/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"dashboard": %s
-		}
-		`, testDashboardJson)))
-
-		assert.NoError(t, err)
-	}))
-
-	actual, err := client.DeleteDashboard(testDashboard.ID)
+	actual, err := dashboards.DeleteDashboard(testDashboard.ID)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)

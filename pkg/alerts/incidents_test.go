@@ -81,7 +81,7 @@ var failingTestHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Re
 func TestListIncidents(t *testing.T) {
 	t.Parallel()
 
-	c := newTestAlerts(incidentTestAPIHandler)
+	c := newTestClient(incidentTestAPIHandler)
 
 	expected := []*Incident{
 		{
@@ -115,7 +115,7 @@ func TestListIncidents(t *testing.T) {
 func TestOpenListIncidents(t *testing.T) {
 	t.Parallel()
 
-	c := newTestAlerts(incidentTestAPIHandler)
+	c := newTestClient(incidentTestAPIHandler)
 
 	expected := []*Incident{
 		{
@@ -139,7 +139,7 @@ func TestOpenListIncidents(t *testing.T) {
 func TestListIncidentsWithoutViolations(t *testing.T) {
 	t.Parallel()
 
-	c := newTestAlerts(incidentTestAPIHandler)
+	c := newTestClient(incidentTestAPIHandler)
 
 	expected := []*Incident{
 		{
@@ -171,7 +171,7 @@ func TestListIncidentsWithoutViolations(t *testing.T) {
 func TestListIncidentFailing(t *testing.T) {
 	t.Parallel()
 
-	c := newTestAlerts(failingTestHandler)
+	c := newTestClient(failingTestHandler)
 
 	_, err := c.ListIncidents(false, false)
 
@@ -208,7 +208,7 @@ func TestAcknowledgeIncident(t *testing.T) {
 func TestAcknowledgeIncidentFailing(t *testing.T) {
 	t.Parallel()
 
-	c := newTestAlerts(failingTestHandler)
+	c := newTestClient(failingTestHandler)
 
 	_, err := c.CloseIncident(42)
 
@@ -249,7 +249,7 @@ func TestCloseIncident(t *testing.T) {
 func TestCloseIncidentFailing(t *testing.T) {
 	t.Parallel()
 
-	c := newTestAlerts(failingTestHandler)
+	c := newTestClient(failingTestHandler)
 
 	_, err := c.CloseIncident(42)
 	if err == nil {

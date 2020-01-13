@@ -116,7 +116,7 @@ func TestListKeyTransactionsWithParams(t *testing.T) {
 	keyTransactionName := "test-key-transaction"
 	idsFilter := "123,456,789"
 
-	apm := newTestAPMClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apm := newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 		name := values.Get("filter[name]")
 

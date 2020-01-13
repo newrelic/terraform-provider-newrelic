@@ -79,7 +79,6 @@ var (
 
 func TestListChannels(t *testing.T) {
 	t.Parallel()
-
 	alerts := newMockResponse(t, testListChannelsResponseJSON, http.StatusOK)
 
 	expected := []*Channel{

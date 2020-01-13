@@ -5,24 +5,10 @@ package apm
 import (
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
-
-func NewTestAPM(handler http.Handler) APM {
-	ts := httptest.NewServer(handler)
-
-	c := New(config.Config{
-		APIKey:    "abc123",
-		BaseURL:   ts.URL,
-		UserAgent: "newrelic/newrelic-client-go",
-	})
-
-	return c
-}
 
 var (
 	testApplicationSummary = ApplicationSummary{
@@ -114,16 +100,8 @@ var (
 
 func TestListApplications(t *testing.T) {
 	t.Parallel()
-	apm := NewTestAPM(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"applications": [%s]
-		}
-		`, testApplicationJson)))
-
-		assert.NoError(t, err)
-	}))
+	responseJSON := fmt.Sprintf(`{ "applications": [%s] }`, testApplicationJson)
+	apm := newMockResponse(t, responseJSON, http.StatusOK)
 
 	actual, err := apm.ListApplications(nil)
 
@@ -141,7 +119,7 @@ func TestListApplicationsWithParams(t *testing.T) {
 	expectedLanguage := "appLanguage"
 	expectedIDs := "123,456"
 
-	apm := NewTestAPM(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apm := newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		name := values.Get("filter[name]")
@@ -174,17 +152,8 @@ func TestListApplicationsWithParams(t *testing.T) {
 
 func TestGetApplication(t *testing.T) {
 	t.Parallel()
-
-	apm := NewTestAPM(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"application": %s
-		}
-		`, testApplicationJson)))
-
-		assert.NoError(t, err)
-	}))
+	responseJSON := fmt.Sprintf(`{ "application": %s}`, testApplicationJson)
+	apm := newMockResponse(t, responseJSON, http.StatusOK)
 
 	actual, err := apm.GetApplication(testApplication.ID)
 
@@ -195,17 +164,8 @@ func TestGetApplication(t *testing.T) {
 
 func TestUpdateApplication(t *testing.T) {
 	t.Parallel()
-
-	apm := NewTestAPM(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"application": %s
-		}
-		`, testApplicationJson)))
-
-		assert.NoError(t, err)
-	}))
+	responseJSON := fmt.Sprintf(`{ "application": %s}`, testApplicationJson)
+	apm := newMockResponse(t, responseJSON, http.StatusOK)
 
 	params := UpdateApplicationParams{
 		Name:     testApplication.Name,
@@ -221,17 +181,8 @@ func TestUpdateApplication(t *testing.T) {
 
 func TestDeleteApplication(t *testing.T) {
 	t.Parallel()
-
-	apm := NewTestAPM(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(fmt.Sprintf(`
-		{
-			"application": %s
-		}
-		`, testApplicationJson)))
-
-		assert.NoError(t, err)
-	}))
+	responseJSON := fmt.Sprintf(`{ "application": %s}`, testApplicationJson)
+	apm := newMockResponse(t, responseJSON, http.StatusOK)
 
 	actual, err := apm.DeleteApplication(testApplication.ID)
 

@@ -116,8 +116,9 @@ var (
 func TestListComponents(t *testing.T) {
 	t.Parallel()
 	responseJSON := fmt.Sprintf(`{"components": [%s]}`, testComponentJSON)
-	client := newMockResponse(t, responseJSON, http.StatusOK)
-	c, err := client.ListComponents(nil)
+	plugins := newMockResponse(t, responseJSON, http.StatusOK)
+
+	c, err := plugins.ListComponents(nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, c)
@@ -131,7 +132,7 @@ func TestListComponentsWithParams(t *testing.T) {
 	expectedPluginID := "1234"
 	expectedHealthStatus := "true"
 
-	client := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	plugins := newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		name := values.Get("filter[name]")
@@ -167,16 +168,18 @@ func TestListComponentsWithParams(t *testing.T) {
 		HealthStatus: true,
 	}
 
-	c, err := client.ListComponents(&params)
+	c, err := plugins.ListComponents(&params)
 
 	require.NoError(t, err)
 	require.NotNil(t, c)
 }
 
 func TestGetComponent(t *testing.T) {
+	t.Parallel();
 	responseJSON := fmt.Sprintf(`{"component": %s}`, testComponentJSON)
-	client := newMockResponse(t, responseJSON, http.StatusOK)
-	c, err := client.GetComponent(testComponent.ID)
+	plugins := newMockResponse(t, responseJSON, http.StatusOK)
+
+	c, err := plugins.GetComponent(testComponent.ID)
 
 	require.NoError(t, err)
 	require.NotNil(t, c)
@@ -184,10 +187,11 @@ func TestGetComponent(t *testing.T) {
 }
 
 func TestListComponentMetrics(t *testing.T) {
+	t.Parallel();
 	responseJSON := fmt.Sprintf(`{"metrics": [%s]}`, testComponentMetricJSON)
-	client := newMockResponse(t, responseJSON, http.StatusOK)
+	plugins := newMockResponse(t, responseJSON, http.StatusOK)
 
-	m, err := client.ListComponentMetrics(testComponent.ID, nil)
+	m, err := plugins.ListComponentMetrics(testComponent.ID, nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, m)
@@ -195,13 +199,15 @@ func TestListComponentMetrics(t *testing.T) {
 }
 
 func TestGetComponentMetricData(t *testing.T) {
+	t.Parallel();
 	responseJSON := fmt.Sprintf(`{
 		"metric_data": {
 			 "metrics": [%s]
 		}
 	}`, testMetricDataJSON)
-	client := newMockResponse(t, responseJSON, http.StatusOK)
-	m, err := client.GetComponentMetricData(testComponent.ID, nil)
+	plugins := newMockResponse(t, responseJSON, http.StatusOK)
+
+	m, err := plugins.GetComponentMetricData(testComponent.ID, nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, m)
@@ -209,6 +215,7 @@ func TestGetComponentMetricData(t *testing.T) {
 }
 
 func TestGetComponentMetricDataWithParams(t *testing.T) {
+	t.Parallel();
 	expectedNames := "componentName"
 	expectedValues := "123"
 	expectedTo := testTimestamp.Format(time.RFC3339)
@@ -217,7 +224,7 @@ func TestGetComponentMetricDataWithParams(t *testing.T) {
 	expectedSummarize := "true"
 	expectedRaw := "true"
 
-	client := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	plugins := newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		names := values.Get("names[]")
@@ -270,7 +277,7 @@ func TestGetComponentMetricDataWithParams(t *testing.T) {
 		Summarize: true,
 		Raw:       true,
 	}
-	_, err := client.GetComponentMetricData(testComponent.ID, &params)
+	_, err := plugins.GetComponentMetricData(testComponent.ID, &params)
 
 	require.NoError(t, err)
 }

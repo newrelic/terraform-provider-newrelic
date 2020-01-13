@@ -7,13 +7,14 @@ import (
 	"os"
 	"testing"
 
+	mock "github.com/newrelic/newrelic-client-go/internal/testing"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 // nolint
-func newTestPluginsClient(handler http.Handler) Plugins {
+func newTestClient(handler http.Handler) Plugins {
 	ts := httptest.NewServer(handler)
 
 	c := New(config.Config{
@@ -32,14 +33,13 @@ func newMockResponse(
 	mockJSONResponse string,
 	statusCode int,
 ) Plugins {
-	return newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(statusCode)
+	ts := mock.NewMockServer(t, mockJSONResponse, statusCode)
 
-		_, err := w.Write([]byte(mockJSONResponse))
-
-		require.NoError(t, err)
-	}))
+	return New(config.Config{
+		APIKey:    "abc123",
+		BaseURL:   ts.URL,
+		UserAgent: "newrelic/newrelic-client-go",
+	})
 }
 
 // nolint
@@ -174,15 +174,14 @@ var (
 
 func TestListPlugins(t *testing.T) {
 	t.Parallel()
-
 	responseJSON := fmt.Sprintf(`{"plugins": [%s]}`, testPluginJSON)
-	client := newMockResponse(t, responseJSON, http.StatusOK)
+	plugins := newMockResponse(t, responseJSON, http.StatusOK)
 
 	expected := []*Plugin{
 		&testPlugin,
 	}
 
-	actual, err := client.ListPlugins(nil)
+	actual, err := plugins.ListPlugins(nil)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
@@ -191,11 +190,10 @@ func TestListPlugins(t *testing.T) {
 
 func TestListPluginsWithParams(t *testing.T) {
 	t.Parallel()
-
 	guidFilter := "net.jondoe.newrelic_redis_plugin"
 	idsFilter := "999"
 
-	client := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	plugins := newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
 
 		guid := values.Get("filter[guid]")
@@ -219,7 +217,7 @@ func TestListPluginsWithParams(t *testing.T) {
 		&testPlugin,
 	}
 
-	actual, err := client.ListPlugins(&params)
+	actual, err := plugins.ListPlugins(&params)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
@@ -228,10 +226,9 @@ func TestListPluginsWithParams(t *testing.T) {
 
 func TestListPluginsWithDetailedParam(t *testing.T) {
 	t.Parallel()
-
 	expectedDetailed := "true"
 
-	client := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	plugins := newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		guid := r.URL.Query().Get("detailed")
 		require.Equal(t, expectedDetailed, guid)
 
@@ -252,7 +249,7 @@ func TestListPluginsWithDetailedParam(t *testing.T) {
 		&plugin,
 	}
 
-	actual, err := client.ListPlugins(&params)
+	actual, err := plugins.ListPlugins(&params)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
@@ -261,11 +258,10 @@ func TestListPluginsWithDetailedParam(t *testing.T) {
 
 func TestGetPlugin(t *testing.T) {
 	t.Parallel()
-
 	responseJSON := fmt.Sprintf(`{"plugin": %s}`, testPluginJSON)
-	client := newMockResponse(t, responseJSON, http.StatusOK)
+	plugins := newMockResponse(t, responseJSON, http.StatusOK)
 
-	actual, err := client.GetPlugin(999, nil)
+	actual, err := plugins.GetPlugin(999, nil)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)
@@ -276,7 +272,7 @@ func TestGetPluginWithParams(t *testing.T) {
 	t.Parallel()
 	expectedDetailed := "true"
 
-	client := newTestPluginsClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	plugins := newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		detailed := r.URL.Query().Get("detailed")
 		require.Equal(t, expectedDetailed, detailed)
 
@@ -293,7 +289,7 @@ func TestGetPluginWithParams(t *testing.T) {
 		Detailed: true,
 	}
 
-	actual, err := client.GetPlugin(999, &params)
+	actual, err := plugins.GetPlugin(999, &params)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, actual)

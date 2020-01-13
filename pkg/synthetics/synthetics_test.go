@@ -63,7 +63,7 @@ func TestError(t *testing.T) {
 }
 
 // nolint
-func newTestAlerts(handler http.Handler) Synthetics {
+func newTestClient(handler http.Handler) Synthetics {
 	ts := httptest.NewServer(handler)
 
 	c := New(config.Config{
@@ -82,7 +82,7 @@ func newMockResponse(
 	mockJSONResponse string,
 	statusCode int,
 ) Synthetics {
-	return newTestAlerts(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return newTestClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(statusCode)
 
