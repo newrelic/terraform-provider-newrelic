@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
 	insights "github.com/newrelic/go-insights/client"
+	nr "github.com/newrelic/newrelic-client-go/newrelic"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 	newrelic "github.com/paultyng/go-newrelic/v4/api"
@@ -146,6 +147,7 @@ func (c *Config) ClientSynthetics() (*synthetics.Synthetics, error) {
 
 // ProviderConfig for the custom provider
 type ProviderConfig struct {
+	NewClient            *nr.NewRelic
 	Client               *newrelic.Client
 	InsightsInsertClient *insights.InsertClient
 	InsightsQueryClient  *insights.QueryClient

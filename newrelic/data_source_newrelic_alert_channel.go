@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
 func dataSourceNewRelicAlertChannel() *schema.Resource {
@@ -33,16 +33,16 @@ func dataSourceNewRelicAlertChannel() *schema.Resource {
 }
 
 func dataSourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Alert Channels")
 
-	channels, err := client.ListAlertChannels()
+	channels, err := client.Alerts.ListAlertChannels()
 	if err != nil {
 		return err
 	}
 
-	var channel *newrelic.AlertChannel
+	var channel *alerts.AlertChannel
 	name := d.Get("name").(string)
 
 	for _, c := range channels {
@@ -57,10 +57,9 @@ func dataSourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}
 	}
 
 	d.SetId(strconv.Itoa(channel.ID))
-	d.Set("name", channel.Name)
-	d.Set("type", channel.Type)
 	d.Set("policy_ids", channel.Links.PolicyIDs)
-	d.Set("configuration", channel.Configuration)
+
+	flattenAlertChannel(channel, d)
 
 	return nil
 }

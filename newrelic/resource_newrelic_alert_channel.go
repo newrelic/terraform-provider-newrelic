@@ -1,31 +1,18 @@
 package newrelic
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 var alertChannelTypes = map[string][]string{
-	// Campfire no longer supported by New Relic (remove this option from here and docs eventually)
-	"campfire": {
-		"room",
-		"subdomain",
-		"token",
-	},
 	"email": {
 		"include_json_attachment",
 		"recipients",
-	},
-	// HipChat no longer supported by New Relic (remove this option from here and docs eventually)
-	"hipchat": {
-		"auth_token",
-		"base_url",
-		"room_id",
 	},
 	"opsgenie": {
 		"api_key",
@@ -49,7 +36,6 @@ var alertChannelTypes = map[string][]string{
 	},
 	"webhook": {
 		"auth_password",
-		"auth_type",
 		"auth_username",
 		"base_url",
 		"headers",
@@ -86,32 +72,127 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 			},
 			"configuration": {
 				Type:     schema.TypeMap,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 				//TODO: ValidateFunc: (use list of keys from map above)
-				Sensitive: true,
+				Sensitive:     true,
+				Deprecated:    "use config instead",
+				ConflictsWith: []string{"config"},
+			},
+
+			"config": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				ForceNew:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"configuration"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_key": {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+						},
+						"auth_password": {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+						},
+						"auth_type": {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+						},
+						"auth_username": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"base_url": {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+						},
+						"channel": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"headers": {
+							Type:      schema.TypeMap,
+							Elem:      &schema.Schema{Type: schema.TypeString},
+							Optional:  true,
+							Sensitive: true,
+						},
+						"key": {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+						},
+						"include_json_attachment": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"payload": {
+							Type:      schema.TypeMap,
+							Elem:      &schema.Schema{Type: schema.TypeString},
+							Sensitive: true,
+							Optional:  true,
+						},
+						"payload_type": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"recipients": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"region": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"route_key": {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+						},
+						"service_key": {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+						},
+						"tags": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"teams": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"url": {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+						},
+						"user_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
 			},
 		},
 	}
 }
 
-func buildAlertChannelStruct(d *schema.ResourceData) *newrelic.AlertChannel {
-	channel := newrelic.AlertChannel{
-		Name:          d.Get("name").(string),
-		Type:          d.Get("type").(string),
-		Configuration: d.Get("configuration").(map[string]interface{}),
-	}
-
-	return &channel
-}
-
 func resourceNewRelicAlertChannelCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
-	channel := buildAlertChannelStruct(d)
+	client := meta.(*ProviderConfig).NewClient
+	channel, err := expandAlertChannel(d)
+	if err != nil {
+		return err
+	}
 
 	log.Printf("[INFO] Creating New Relic alert channel %s", channel.Name)
 
-	channel, err := client.CreateAlertChannel(*channel)
+	channel, err = client.Alerts.CreateAlertChannel(*channel)
 	if err != nil {
 		return err
 	}
@@ -122,7 +203,7 @@ func resourceNewRelicAlertChannelCreate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	id, err := strconv.ParseInt(d.Id(), 10, 32)
 	if err != nil {
@@ -131,9 +212,9 @@ func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) 
 
 	log.Printf("[INFO] Reading New Relic alert channel %v", id)
 
-	channel, err := client.GetAlertChannel(int(id))
+	channel, err := client.Alerts.GetAlertChannel(int(id))
 	if err != nil {
-		if err == newrelic.ErrNotFound {
+		if _, ok := err.(*errors.ErrorNotFound); ok {
 			d.SetId("")
 			return nil
 		}
@@ -141,17 +222,11 @@ func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	d.Set("name", channel.Name)
-	d.Set("type", channel.Type)
-	if err := d.Set("configuration", channel.Configuration); err != nil {
-		return fmt.Errorf("[DEBUG] Error setting Alert Channel Configuration: %#v", err)
-	}
-
-	return nil
+	return flattenAlertChannel(channel, d)
 }
 
 func resourceNewRelicAlertChannelDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	id, err := strconv.ParseInt(d.Id(), 10, 32)
 	if err != nil {
@@ -160,7 +235,7 @@ func resourceNewRelicAlertChannelDelete(d *schema.ResourceData, meta interface{}
 
 	log.Printf("[INFO] Deleting New Relic alert channel %v", id)
 
-	if err := client.DeleteAlertChannel(int(id)); err != nil {
+	if _, err := client.Alerts.DeleteAlertChannel(int(id)); err != nil {
 		return err
 	}
 

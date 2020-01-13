@@ -52,7 +52,7 @@ resource "newrelic_alert_channel" "foo" {
 	name = "tf-test-%s"
 	type = "email"
 
-	configuration = {
+	config {
 		recipients = "terraform-acctest+foo@hashicorp.com"
 		include_json_attachment = "1"
 	}
@@ -70,7 +70,7 @@ resource "newrelic_alert_channel" "foo" {
 	name = "tf-test-%s"
 	type = "email"
 
-	configuration = {
+	config {
 		recipients = "terraform-acctest+foo@hashicorp.com"
 		include_json_attachment = "1"
 	}
