@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
+	"github.com/newrelic/newrelic-client-go/newrelic"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/infrastructure"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
@@ -129,19 +130,27 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 	apiKey := data.Get("api_key").(string)
 	userAgent := fmt.Sprintf("%s %s/%s", httpclient.TerraformUserAgent(terraformVersion), TerraformProviderProductUserAgent, version.ProviderVersion)
 
-	config := Config{
+	cfg := Config{
 		APIKey:             apiKey,
 		APIURL:             data.Get("api_url").(string),
 		userAgent:          userAgent,
 		InsecureSkipVerify: data.Get("insecure_skip_verify").(bool),
 		CACertFile:         data.Get("cacert_file").(string),
 	}
-	log.Println("[INFO] Initializing New Relic client")
+	log.Println("[INFO] Initializing go-newrelic client")
 
-	client, err := config.Client()
+	client, err := cfg.Client()
 	if err != nil {
-		return nil, fmt.Errorf("error initializing New Relic client: %s", err)
+		return nil, fmt.Errorf("error initializing go-newrelic client: %s", err)
 	}
+
+	newCfg := config.Config{
+		APIKey:    apiKey,
+		BaseURL:   data.Get("api_url").(string),
+		UserAgent: userAgent,
+	}
+	log.Println("[INFO] Initializing newrelic-client-go")
+	newClient := newrelic.New(newCfg)
 
 	log.Println("[INFO] Initializing New Relic Synthetics client")
 
@@ -189,6 +198,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 
 	providerConfig := ProviderConfig{
 		Client:               client,
+		NewClient:            &newClient,
 		InfraClient:          clientInfra,
 		InsightsInsertClient: clientInsightsInsert,
 		InsightsQueryClient:  clientInsightsQuery,

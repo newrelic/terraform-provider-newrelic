@@ -12,33 +12,74 @@ import (
 
 func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 	resourceName := "newrelic_alert_channel.foo"
-	rName := acctest.RandString(5)
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	rNameUpdated := fmt.Sprintf("tf-test-updated-%s", rand)
+	rNameDeprecated := fmt.Sprintf("tf-test-deprecated-%s", rand)
+	rNameDeprecatedUpdated := fmt.Sprintf("tf-test-deprecated-updated-%s", rand)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create (Deprecated)
+			{
+				Config: testAccNewRelicAlertChannelDeprecatedConfig(rNameDeprecated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertChannelExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", rNameDeprecated),
+					resource.TestCheckResourceAttr(resourceName, "type", "email"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.recipients", "terraform-acctest+foo@hashicorp.com"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.include_json_attachment", "1"),
+				),
+				// The deprecated configuration attribute requires the resource being destroyed and recreated on every `apply`.
+				ExpectNonEmptyPlan: true,
+			},
+			// Test: Update (Deprecated)
+			{
+				Config: testAccNewRelicAlertChannelDeprecatedConfigUpdated(rNameDeprecatedUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertChannelExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", rNameDeprecatedUpdated),
+					resource.TestCheckResourceAttr(resourceName, "type", "email"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.recipients", "terraform-acctest+bar@hashicorp.com"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.include_json_attachment", "0"),
+				),
+				// The deprecated configuration attribute requires the resource being destroyed and recreated on every `apply`.
+				ExpectNonEmptyPlan: true,
+			},
+			// Test: Update (Migrate configuration)
+			{
+				Config: testAccNewRelicAlertChannelConfigUpdated(rNameDeprecatedUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertChannelExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", rNameDeprecatedUpdated),
+					resource.TestCheckResourceAttr(resourceName, "type", "email"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.recipients", "terraform-acctest+bar@hashicorp.com"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.include_json_attachment", "0"),
+				),
+			},
 			// Test: Create
 			{
 				Config: testAccNewRelicAlertChannelConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertChannelExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "type", "email"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.recipients", "terraform-acctest+foo@hashicorp.com"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.include_json_attachment", "1"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.recipients", "terraform-acctest+foo@hashicorp.com"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.include_json_attachment", "1"),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicAlertChannelConfigUpdated(rName),
+				Config: testAccNewRelicAlertChannelConfigUpdated(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertChannelExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-updated-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", rNameUpdated),
 					resource.TestCheckResourceAttr(resourceName, "type", "email"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.recipients", "terraform-acctest+bar@hashicorp.com"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.include_json_attachment", "0"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.recipients", "terraform-acctest+bar@hashicorp.com"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.include_json_attachment", "0"),
 				),
 			},
 			// Test: Import
@@ -53,13 +94,32 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 
 func TestAccNewRelicAlertChannel_Slack(t *testing.T) {
 	resourceName := "newrelic_alert_channel.foo"
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	rNameDeprecated := fmt.Sprintf("tf-test-deprecated-%s", rand)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create (Deprecated)
+			{
+				Config: testAccNewRelicAlertChannelDeprecatedConfigByType(rNameDeprecated, "slack", `{
+					url = "https://example.slack.com"
+					channel = "example-channel"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertChannelExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", rNameDeprecated),
+					resource.TestCheckResourceAttr(resourceName, "type", "slack"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.url", "https://example.slack.com"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.channel", "example-channel"),
+				),
+				// The deprecated configuration attribute requires the resource being destroyed and recreated on every `apply`.
+				ExpectNonEmptyPlan: true,
+			},
+			// Test: Create
 			{
 				Config: testAccNewRelicAlertChannelConfigByType(rName, "slack", `{
 					url = "https://example.slack.com"
@@ -67,13 +127,12 @@ func TestAccNewRelicAlertChannel_Slack(t *testing.T) {
 				}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertChannelExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "type", "slack"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.url", "https://example.slack.com"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.channel", "example-channel"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.url", "https://example.slack.com"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.channel", "example-channel"),
 				),
-				// This notification channel resource requires being destroyed and recreated on every `apply`.
-				// This is due to how the New Relic API has to handle this scenario, hence we need to set this to `true`.
+				// The config block requires the resource being destroyed and recreated on every `apply`.
 				ExpectNonEmptyPlan: true,
 			},
 			// Test: Import
@@ -88,25 +147,41 @@ func TestAccNewRelicAlertChannel_Slack(t *testing.T) {
 
 func TestAccNewRelicAlertChannel_PagerDuty(t *testing.T) {
 	resourceName := "newrelic_alert_channel.foo"
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	rNameDeprecated := fmt.Sprintf("tf-test-deprecated-%s", rand)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create (Deprecated)
+			{
+				Config: testAccNewRelicAlertChannelDeprecatedConfigByType(rNameDeprecated, "pagerduty", `{
+					service_key = "abc123"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertChannelExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", rNameDeprecated),
+					resource.TestCheckResourceAttr(resourceName, "type", "pagerduty"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.service_key", "abc123"),
+				),
+				// The deprecated configuration attribute requires the resource being destroyed and recreated on every `apply`.
+				ExpectNonEmptyPlan: true,
+			},
+			// Test: Create
 			{
 				Config: testAccNewRelicAlertChannelConfigByType(rName, "pagerduty", `{
 					service_key = "abc123"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertChannelExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "type", "pagerduty"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.service_key", "abc123"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.service_key", "abc123"),
 				),
-				// This notification channel resource requires being destroyed and recreated on every `apply`.
-				// This is due to how the New Relic API has to handle this scenario, hence we need to set this to `true`.
+				// The config block requires the resource being destroyed and recreated on every `apply`.
 				ExpectNonEmptyPlan: true,
 			},
 			// Test: Import
@@ -121,13 +196,36 @@ func TestAccNewRelicAlertChannel_PagerDuty(t *testing.T) {
 
 func TestAccNewRelicAlertChannel_OpsGenie(t *testing.T) {
 	resourceName := "newrelic_alert_channel.foo"
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	rNameDeprecated := fmt.Sprintf("tf-test-deprecated-%s", rand)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create (Deprecated)
+			{
+				Config: testAccNewRelicAlertChannelDeprecatedConfigByType(rNameDeprecated, "opsgenie", `{
+					api_key = "abc123"
+					teams = "example-team"
+					tags = "tag1"
+					recipients = "example@somedomain.com"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertChannelExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", rNameDeprecated),
+					resource.TestCheckResourceAttr(resourceName, "type", "opsgenie"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.api_key", "abc123"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.teams", "example-team"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.tags", "tag1"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.recipients", "example@somedomain.com"),
+				),
+				// The deprecated configuration attribute requires the resource being destroyed and recreated on every `apply`.
+				ExpectNonEmptyPlan: true,
+			},
+			// Test: Create
 			{
 				Config: testAccNewRelicAlertChannelConfigByType(rName, "opsgenie", `{
 					api_key = "abc123"
@@ -137,15 +235,13 @@ func TestAccNewRelicAlertChannel_OpsGenie(t *testing.T) {
 				}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertChannelExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "type", "opsgenie"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.api_key", "abc123"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.teams", "example-team"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.tags", "tag1"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.recipients", "example@somedomain.com"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.teams", "example-team"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.tags", "tag1"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.recipients", "example@somedomain.com"),
 				),
-				// This notification channel resource requires being destroyed and recreated on every `apply`.
-				// This is due to how the New Relic API has to handle this scenario, hence we need to set this to `true`.
+				// The config block requires the resource being destroyed and recreated on every `apply`.
 				ExpectNonEmptyPlan: true,
 			},
 			// Test: Import
@@ -160,13 +256,32 @@ func TestAccNewRelicAlertChannel_OpsGenie(t *testing.T) {
 
 func TestAccNewRelicAlertChannel_VictorOps(t *testing.T) {
 	resourceName := "newrelic_alert_channel.foo"
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	rNameDeprecated := fmt.Sprintf("tf-test-deprecated-%s", rand)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
 		Steps: []resource.TestStep{
+			//Test: Create (Deprecated)
+			{
+				Config: testAccNewRelicAlertChannelDeprecatedConfigByType(rNameDeprecated, "victorops", `{
+					key = "abc123"
+					route_key = "/example-route"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertChannelExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", rNameDeprecated),
+					resource.TestCheckResourceAttr(resourceName, "type", "victorops"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.key", "abc123"),
+					resource.TestCheckResourceAttr(resourceName, "configuration.route_key", "/example-route"),
+				),
+				// The deprecated configuration attribute requires the resource being destroyed and recreated on every `apply`.
+				ExpectNonEmptyPlan: true,
+			},
+			// Test: Create
 			{
 				Config: testAccNewRelicAlertChannelConfigByType(rName, "victorops", `{
 					key = "abc123"
@@ -174,13 +289,12 @@ func TestAccNewRelicAlertChannel_VictorOps(t *testing.T) {
 				}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertChannelExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "type", "victorops"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.key", "abc123"),
-					resource.TestCheckResourceAttr(resourceName, "configuration.route_key", "/example-route"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.key", "abc123"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.route_key", "/example-route"),
 				),
-				// This notification channel resource requires being destroyed and recreated on every `apply`.
-				// This is due to how the New Relic API has to handle this scenario, hence we need to set this to `true`.
+				// The config block requires the resource being destroyed and recreated on every `apply`.
 				ExpectNonEmptyPlan: true,
 			},
 			// Test: Import
@@ -193,27 +307,9 @@ func TestAccNewRelicAlertChannel_VictorOps(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicAlertChannel_NoDiffOnReapply(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccNewRelicAlertChannelConfig(rName),
-			},
-			{
-				Config:             testAccNewRelicAlertChannelConfig(rName),
-				ExpectNonEmptyPlan: false,
-			},
-		},
-	})
-}
-
 func TestAccNewRelicAlertChannel_ResourceNotFound(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -231,47 +327,86 @@ func TestAccNewRelicAlertChannel_ResourceNotFound(t *testing.T) {
 	})
 }
 
-func testAccNewRelicAlertChannelConfig(rName string) string {
+func testAccNewRelicAlertChannelDeprecatedConfig(rName string) string {
 	return fmt.Sprintf(`
-resource "newrelic_alert_channel" "foo" {
-  name = "tf-test-%s"
-	type = "email"
+	resource "newrelic_alert_channel" "foo" {
+		name = "%s"
+		type = "email"
 
-	configuration = {
-		recipients = "terraform-acctest+foo@hashicorp.com"
-		include_json_attachment = "1"
+		configuration = {
+			recipients = "terraform-acctest+foo@hashicorp.com"
+			include_json_attachment = "1"
+		}
 	}
-}
 `, rName)
 }
 
-func testAccNewRelicAlertChannelConfigUpdated(rName string) string {
+func testAccNewRelicAlertChannelConfig(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_alert_channel" "foo" {
-  name = "tf-test-updated-%s"
-	type = "email"
+	resource "newrelic_alert_channel" "foo" {
+		name = "%s"
+		type = "email"
 
-	configuration = {
-		recipients = "terraform-acctest+bar@hashicorp.com"
-		include_json_attachment = "0"
+		config {
+			recipients = "terraform-acctest+foo@hashicorp.com"
+			include_json_attachment = "1"
+		}
 	}
-}
-`, rName)
+`, name)
 }
 
-func testAccNewRelicAlertChannelConfigByType(rName string, channelType string, configuration string) string {
+func testAccNewRelicAlertChannelDeprecatedConfigUpdated(name string) string {
+	return fmt.Sprintf(`
+	resource "newrelic_alert_channel" "foo" {
+		name = "%s"
+		type = "email"
+
+		configuration = {
+			recipients = "terraform-acctest+bar@hashicorp.com"
+			include_json_attachment = "0"
+		}
+	}
+`, name)
+}
+
+func testAccNewRelicAlertChannelConfigUpdated(name string) string {
+	return fmt.Sprintf(`
+	resource "newrelic_alert_channel" "foo" {
+		name = "%s"
+		type = "email"
+
+		config {
+			recipients = "terraform-acctest+bar@hashicorp.com"
+			include_json_attachment = "0"
+		}
+	}
+`, name)
+}
+
+func testAccNewRelicAlertChannelDeprecatedConfigByType(name string, channelType string, configuration string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_alert_channel" "foo" {
-			name = "tf-test-%s"
+			name = "%s"
 			type = "%s"
 
 			configuration = %s
 		}
-	`, rName, channelType, configuration)
+	`, name, channelType, configuration)
+}
+
+func testAccNewRelicAlertChannelConfigByType(name string, channelType string, configuration string) string {
+	return fmt.Sprintf(`
+		resource "newrelic_alert_channel" "foo" {
+			name = "%s"
+			type = "%s"
+
+			config %s
+		}
+	`, name, channelType, configuration)
 }
 
 func testAccCheckNewRelicAlertChannelDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderConfig).Client
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_alert_channel" {
 			continue
@@ -282,7 +417,7 @@ func testAccCheckNewRelicAlertChannelDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = client.GetAlertChannel(int(id))
+		_, err = client.Alerts.GetAlertChannel(int(id))
 
 		if err == nil {
 			return fmt.Errorf("alert channel still exists")
@@ -302,14 +437,14 @@ func testAccCheckNewRelicAlertChannelExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("no channel ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).Client
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		id, err := strconv.ParseInt(rs.Primary.ID, 10, 32)
 		if err != nil {
 			return err
 		}
 
-		found, err := client.GetAlertChannel(int(id))
+		found, err := client.Alerts.GetAlertChannel(int(id))
 		if err != nil {
 			return err
 		}
@@ -324,12 +459,12 @@ func testAccCheckNewRelicAlertChannelExists(n string) resource.TestCheckFunc {
 
 func testAccDeleteAlertChannel(name string) func() {
 	return func() {
-		client := testAccProvider.Meta().(*ProviderConfig).Client
-		alertChannels, _ := client.ListAlertChannels()
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+		alertChannels, _ := client.Alerts.ListAlertChannels()
 
 		for _, d := range alertChannels {
 			if d.Name == name {
-				_ = client.DeleteAlertChannel(d.ID)
+				_, _ = client.Alerts.DeleteAlertChannel(d.ID)
 				break
 			}
 		}
