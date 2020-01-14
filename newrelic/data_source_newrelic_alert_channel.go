@@ -3,7 +3,6 @@ package newrelic
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -156,14 +155,5 @@ func dataSourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("the name '%s' does not match any New Relic alert channel", name)
 	}
 
-	d.SetId(strconv.Itoa(channel.ID))
-	d.Set("policy_ids", channel.Links.PolicyIDs)
-
-	err = flattenAlertChannel(channel, d)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return flattenAlertChannelDataSource(channel, d)
 }

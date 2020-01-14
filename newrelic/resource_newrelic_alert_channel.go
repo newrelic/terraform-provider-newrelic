@@ -76,7 +76,7 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 				ForceNew: true,
 				//TODO: ValidateFunc: (use list of keys from map above)
 				Sensitive:     true,
-				Deprecated:    "use config instead",
+				Deprecated:    "use `config` block instead",
 				ConflictsWith: []string{"config"},
 			},
 
