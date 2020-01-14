@@ -3,6 +3,7 @@ package newrelic
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
@@ -119,6 +120,13 @@ func expandAlertChannelConfiguration(cfg map[string]interface{}) alerts.ChannelC
 	}
 
 	return config
+}
+
+func flattenAlertChannelDataSource(channel *alerts.Channel, d *schema.ResourceData) error {
+	d.SetId(strconv.Itoa(channel.ID))
+	d.Set("policy_ids", channel.Links.PolicyIDs)
+
+	return flattenAlertChannel(channel, d)
 }
 
 func flattenAlertChannel(channel *alerts.Channel, d *schema.ResourceData) error {

@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	nr "github.com/newrelic/newrelic-client-go/newrelic"
 
-	"github.com/newrelic/newrelic-client-go/newrelic"
 	"github.com/terraform-providers/terraform-provider-newrelic/version"
 )
 
@@ -16,11 +16,8 @@ import (
 const TerraformProviderProductUserAgent = "terraform-provider-newrelic"
 
 const (
-	apiBaseURL               = "https://api.newrelic.com/v2"
-	syntheticsAPIBaseURL     = "https://synthetics.newrelic.com/synthetics/api/v3"
-	infrastructureAPIBaseURL = "https://infra-api.newrelic.com/v2"
-	insightsInsertURL        = "https://insights-collector.newrelic.com/v1/accounts"
-	insightsQueryURL         = "https://insights-api.newrelic.com/v1/accounts"
+	insightsInsertURL = "https://insights-collector.newrelic.com/v1/accounts"
+	insightsQueryURL  = "https://insights-api.newrelic.com/v1/accounts"
 )
 
 // Provider represents a resource provider in Terraform
@@ -36,12 +33,12 @@ func Provider() terraform.ResourceProvider {
 			"api_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_URL", apiBaseURL),
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_URL", nil),
 			},
 			"synthetics_api_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_SYNTHETICS_API_URL", syntheticsAPIBaseURL),
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_SYNTHETICS_API_URL", nil),
 			},
 			"insights_account_id": {
 				Type:        schema.TypeString,
@@ -74,7 +71,7 @@ func Provider() terraform.ResourceProvider {
 			"infra_api_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INFRA_API_URL", infrastructureAPIBaseURL),
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INFRA_API_URL", nil),
 			},
 			"insecure_skip_verify": {
 				Type:        schema.TypeBool,
@@ -141,11 +138,11 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 
 	client, err := cfg.Client()
 	if err != nil {
-		return nil, fmt.Errorf("error initializing go-newrelic client: %s", err)
+		return nil, fmt.Errorf("error initializing go-newrelic client: %w", err)
 	}
 
 	log.Println("[INFO] Initializing newrelic-client-go")
-	newClient, err := newrelic.New(apiKey, newrelic.ConfigUserAgent(userAgent))
+	newClient, err := nr.New(apiKey, nr.ConfigUserAgent(userAgent))
 
 	if err != nil {
 		return nil, err
@@ -158,7 +155,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 	}
 	clientInsightsInsert, err := insightsInsertConfig.ClientInsightsInsert()
 	if err != nil {
-		return nil, fmt.Errorf("error initializing New Relic Insights insert client: %s", err)
+		return nil, fmt.Errorf("error initializing New Relic Insights insert client: %w", err)
 	}
 
 	insightsQueryConfig := Config{
