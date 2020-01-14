@@ -36,8 +36,6 @@ func main() {
 	if err != nil {
 		fmt.Print(err)
 	}
-
-	fmt.Printf("application count: %d\n", len(apps))
 }
 
 ```

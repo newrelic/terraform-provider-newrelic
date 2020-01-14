@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -15,7 +16,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/internal/region"
 	"github.com/newrelic/newrelic-client-go/internal/version"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	nrErrors "github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 const (
@@ -147,8 +148,15 @@ func makeRequestBody(reqBody interface{}) (*bytes.Buffer, error) {
 
 func (c *NewRelicClient) setHeaders(req *retryablehttp.Request) {
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Api-Key", c.Config.APIKey)
 	req.Header.Set("User-Agent", c.Config.UserAgent)
+
+	if c.Config.APIKey != "" {
+		req.Header.Set("X-Api-Key", c.Config.APIKey)
+	}
+
+	if c.Config.PersonalAPIKey != "" {
+		req.Header.Set("Api-Key", c.Config.PersonalAPIKey)
+	}
 }
 
 func setQueryParams(req *retryablehttp.Request, params interface{}) error {
@@ -228,7 +236,7 @@ func (c *NewRelicClient) do(
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, &errors.NotFound{}
+		return nil, &nrErrors.NotFound{}
 	}
 
 	body, readErr := ioutil.ReadAll(resp.Body)
@@ -236,11 +244,15 @@ func (c *NewRelicClient) do(
 		return nil, readErr
 	}
 
-	if !isResponseSuccess(resp) {
-		errorValue := c.errorValue
-		_ = json.Unmarshal(body, &errorValue)
+	errorValue := c.errorValue
+	_ = json.Unmarshal(body, &errorValue)
 
-		return nil, errors.NewUnexpectedStatusCode(resp.StatusCode, c.errorValue.Error())
+	if !isResponseSuccess(resp) {
+		return nil, nrErrors.NewUnexpectedStatusCode(resp.StatusCode, c.errorValue.Error())
+	}
+
+	if errorValue.Error() != "" {
+		return nil, errors.New(c.errorValue.Error())
 	}
 
 	if value == nil {
