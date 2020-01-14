@@ -40,8 +40,8 @@ The following arguments are supported:
 Each alert channel type supports a specific set of arguments for the `config` block:
 
   * `email`
-    * `recipients` - (Required) Specifies the targeted email recipients.
-    * `include_json_attachment` - (Optional) Allows a JSON attachment to be included with an alert email.
+    * `recipients` - (Required) Comma delimited list of email addresses.
+    * `include_json_attachment` - (Optional) `0` or `1`. Flag for whether or not to attach a JSON document containing information about the associated alert to the email that is sent to recipients.
   * `webhook`
     * `base_url` - (Required) The base URL of the webhook destination.
     * `auth_password` - (Optional) Specifies an authentication password for use with a channel.  Supported by the `webhook` channel type.
@@ -55,7 +55,7 @@ Each alert channel type supports a specific set of arguments for the `config` bl
     * `key` - (Required) The key for integrating with VictorOps.
     * `route_key` - (Required) The route key for integrating with VictorOps.
   * `slack`
-    * `url` - (Required) The URL for integrating with Slack.
+    * `url` - (Required) Your organization's Slack URL.
     * `channel` - (Optional) The Slack channel to send notifications to.
   * `opsgenie`
     * `api_key` - (Required) The API key for integrating with OpsGenie.
@@ -69,27 +69,6 @@ Each alert channel type supports a specific set of arguments for the `config` bl
 In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the channel.
-
-## Channel Configurations
-
-Each supported channel supports a particular set of configuration arguments.
-
-  * `email`
-    * `recipients` - (Required) Comma delimited list of email addresses.
-    * `include_json_attachment` - (Optional) `0` or `1`. Flag for whether or not to attach a JSON document containing information about the associated alert to the email that is sent to recipients. Default: `0`
-  * `slack`
-    * `url` - (Required) Your organization's Slack URL.
-    * `channel` - (Required) The Slack channel for which to send notifications.
-  * `opsgenie`
-    * `api_key` - (Required) Your OpsGenie API key.
-    * `teams` - (Optional) Comma delimited list of teams.
-    * `tags` - (Optional) Comma delimited list of tags.
-    * `recipients` - (Optional) Comma delimited list of email addresses.
-  * `pagerduty`
-    * `service_key` - (Required) Your PagerDuty service key.
-  * `victorops`
-    * `key` - (Required) Your VictorOps key.
-    * `route_key` - (Required) The route for which to send notifications.
 
 ## Additional Examples
 
@@ -112,7 +91,7 @@ resource "newrelic_alert_channel" "foo" {
   name = "opsgenie-example"
   type = "opsgenie"
 
-  configuration = {
+  config {
     api_key    = "abc123"
     teams      = "team1, team2"
     tags       = "tag1, tag2"
@@ -127,7 +106,7 @@ resource "newrelic_alert_channel" "foo" {
   name = "pagerduty-example"
   type = "pagerduty"
 
-  configuration = {
+  config {
     service_key = "abc123"
   }
 }
@@ -139,7 +118,7 @@ resource "newrelic_alert_channel" "foo" {
   name = "victorops-example"
   type = "victorops"
 
-  configuration = {
+  config {
     key       = "abc123"
     route_key = "/example"
   }
