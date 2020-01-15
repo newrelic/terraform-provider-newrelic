@@ -6,7 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/alerts"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 var thresholdConditionTypes = map[string][]string{
@@ -25,12 +26,11 @@ var thresholdConditionTypes = map[string][]string{
 }
 
 // thresholdSchema returns the schema to use for threshold.
-//
 func thresholdSchema() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"value": {
-				Type:     schema.TypeInt,
+				Type:     schema.TypeFloat,
 				Optional: true,
 			},
 			"duration": {
@@ -140,9 +140,8 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 	}
 }
 
-func buildInfraAlertConditionStruct(d *schema.ResourceData) (*newrelic.AlertInfraCondition, error) {
-
-	condition := newrelic.AlertInfraCondition{
+func expandInfraAlertCondition(d *schema.ResourceData) (*alerts.InfrastructureCondition, error) {
+	condition := alerts.InfrastructureCondition{
 		Name:       d.Get("name").(string),
 		Enabled:    d.Get("enabled").(bool),
 		PolicyID:   d.Get("policy_id").(int),
@@ -181,7 +180,7 @@ func buildInfraAlertConditionStruct(d *schema.ResourceData) (*newrelic.AlertInfr
 	return &condition, nil
 }
 
-func validateAttributesForType(c *newrelic.AlertInfraCondition) error {
+func validateAttributesForType(c *alerts.InfrastructureCondition) error {
 	switch c.Type {
 	case "infra_process_running":
 		if c.Event != "" {
@@ -227,7 +226,7 @@ func validateAttributesForType(c *newrelic.AlertInfraCondition) error {
 	return nil
 }
 
-func readInfraAlertConditionStruct(condition *newrelic.AlertInfraCondition, d *schema.ResourceData) error {
+func readInfraAlertConditionStruct(condition *alerts.InfrastructureCondition, d *schema.ResourceData) error {
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
 		return err
@@ -272,8 +271,8 @@ func readInfraAlertConditionStruct(condition *newrelic.AlertInfraCondition, d *s
 }
 
 func resourceNewRelicInfraAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).InfraClient
-	condition, err := buildInfraAlertConditionStruct(d)
+	client := meta.(*ProviderConfig).NewClient
+	condition, err := expandInfraAlertCondition(d)
 
 	if err != nil {
 		return err
@@ -281,7 +280,7 @@ func resourceNewRelicInfraAlertConditionCreate(d *schema.ResourceData, meta inte
 
 	log.Printf("[INFO] Creating New Relic Infra alert condition %s", condition.Name)
 
-	condition, err = client.CreateAlertInfraCondition(*condition)
+	condition, err = client.Alerts.CreateInfrastructureCondition(*condition)
 
 	if err != nil {
 		return err
@@ -293,8 +292,7 @@ func resourceNewRelicInfraAlertConditionCreate(d *schema.ResourceData, meta inte
 }
 
 func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).InfraClient
-	policyClient := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Infra alert condition %s", d.Id())
 
@@ -306,18 +304,18 @@ func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interf
 	policyID := ids[0]
 	id := ids[1]
 
-	_, err = policyClient.GetAlertPolicy(policyID)
+	_, err = client.Alerts.GetPolicy(policyID)
 	if err != nil {
-		if err == newrelic.ErrNotFound {
+		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
 		return err
 	}
 
-	condition, err := client.GetAlertInfraCondition(policyID, id)
+	condition, err := client.Alerts.GetInfrastructureCondition(id)
 	if err != nil {
-		if err == newrelic.ErrNotFound {
+		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
@@ -329,8 +327,8 @@ func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interf
 }
 
 func resourceNewRelicInfraAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).InfraClient
-	condition, err := buildInfraAlertConditionStruct(d)
+	client := meta.(*ProviderConfig).NewClient
+	condition, err := expandInfraAlertCondition(d)
 
 	if err != nil {
 		return err
@@ -349,7 +347,7 @@ func resourceNewRelicInfraAlertConditionUpdate(d *schema.ResourceData, meta inte
 
 	log.Printf("[INFO] Updating New Relic Infra alert condition %d", id)
 
-	_, err = client.UpdateAlertInfraCondition(*condition)
+	_, err = client.Alerts.UpdateInfrastructureCondition(*condition)
 	if err != nil {
 		return err
 	}
@@ -358,34 +356,33 @@ func resourceNewRelicInfraAlertConditionUpdate(d *schema.ResourceData, meta inte
 }
 
 func resourceNewRelicInfraAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).InfraClient
+	client := meta.(*ProviderConfig).NewClient
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
 		return err
 	}
 
-	policyID := ids[0]
 	id := ids[1]
 
 	log.Printf("[INFO] Deleting New Relic Infra alert condition %d", id)
 
-	if err := client.DeleteAlertInfraCondition(policyID, id); err != nil {
+	if err := client.Alerts.DeleteInfrastructureCondition(id); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func expandAlertThreshold(v interface{}) *newrelic.AlertInfraThreshold {
+func expandAlertThreshold(v interface{}) *alerts.InfrastructureConditionThreshold {
 	rah := v.([]interface{})[0].(map[string]interface{})
 
-	alertInfraThreshold := &newrelic.AlertInfraThreshold{
+	alertInfraThreshold := &alerts.InfrastructureConditionThreshold{
 		Duration: rah["duration"].(int),
 	}
 
 	if val, ok := rah["value"]; ok {
-		alertInfraThreshold.Value = val.(int)
+		alertInfraThreshold.Value = val.(float64)
 	}
 
 	if val, ok := rah["time_function"]; ok {
@@ -395,7 +392,7 @@ func expandAlertThreshold(v interface{}) *newrelic.AlertInfraThreshold {
 	return alertInfraThreshold
 }
 
-func flattenAlertThreshold(v *newrelic.AlertInfraThreshold) []interface{} {
+func flattenAlertThreshold(v *alerts.InfrastructureConditionThreshold) []interface{} {
 	alertInfraThreshold := map[string]interface{}{
 		"duration":      v.Duration,
 		"value":         v.Value,

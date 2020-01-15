@@ -102,6 +102,7 @@ func TestAccNewRelicInfraAlertCondition_IntegrationProvider(t *testing.T) {
 		},
 	})
 }
+
 func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 	resourceName := "newrelic_infra_alert_condition.foo"
 	rand := acctest.RandString(5)
@@ -125,6 +126,32 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 					resource.TestCheckNoResourceAttr(
 						"newrelic_infra_alert_condition.foo", "warning"),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicInfraAlertCondition_ThresholdFloatValue(t *testing.T) {
+	resourceName := "newrelic_infra_alert_condition.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicInfraAlertConditionWithThresholdFloatValue(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
 			},
 			// Test: Import
@@ -198,7 +225,7 @@ func TestAccNewRelicInfraAlertCondition_ComputedEvent(t *testing.T) {
 }
 
 func testAccCheckNewRelicInfraAlertConditionDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderConfig).InfraClient
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_infra_alert_condition" {
 			continue
@@ -209,10 +236,9 @@ func testAccCheckNewRelicInfraAlertConditionDestroy(s *terraform.State) error {
 			return err
 		}
 
-		policyID := ids[0]
 		id := ids[1]
 
-		_, err = client.GetAlertInfraCondition(policyID, id)
+		_, err = client.Alerts.GetInfrastructureCondition(id)
 		if err == nil {
 			return fmt.Errorf("infra Alert condition still exists")
 		}
@@ -231,17 +257,16 @@ func testAccCheckNewRelicInfraAlertConditionExists(n string) resource.TestCheckF
 			return fmt.Errorf("no alert condition ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).InfraClient
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		ids, err := parseIDs(rs.Primary.ID, 2)
 		if err != nil {
 			return err
 		}
 
-		policyID := ids[0]
 		id := ids[1]
 
-		found, err := client.GetAlertInfraCondition(policyID, id)
+		found, err := client.Alerts.GetInfrastructureCondition(id)
 		if err != nil {
 			return err
 		}
@@ -256,7 +281,6 @@ func testAccCheckNewRelicInfraAlertConditionExists(n string) resource.TestCheckF
 
 func testAccNewRelicInfraAlertConditionConfig(name string) string {
 	return fmt.Sprintf(`
-
 resource "newrelic_alert_policy" "foo" {
   name = "%[1]s"
 }
@@ -451,6 +475,29 @@ resource "newrelic_infra_alert_condition" "foo" {
 		duration      = "1440"
 		time_function = "all"
 		value         = "25"
+	}
+}
+`, name)
+}
+
+func testAccNewRelicInfraAlertConditionWithThresholdFloatValue(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "%[1]s"
+}
+
+resource "newrelic_infra_alert_condition" "foo" {
+	policy_id            = newrelic_alert_policy.foo.id
+	name                 = "%[1]s"
+	type                 = "infra_metric"
+	integration_provider = "S3Bucket"
+	select               = "nr.ingestTimeMs"
+	comparison           = "above"
+
+	critical {
+		duration      = "1440"
+		time_function = "all"
+		value         = "1.5"
 	}
 }
 `, name)
