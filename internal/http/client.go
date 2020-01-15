@@ -252,7 +252,7 @@ func (c *NewRelicClient) do(
 	}
 
 	if errorValue.Error() != "" {
-		return nil, errors.New(c.errorValue.Error())
+		return nil, errors.New(errorValue.Error())
 	}
 
 	if value == nil {
