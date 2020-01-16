@@ -1,4 +1,4 @@
-## 1.12.0 (Unreleased)
+## 1.12.0 (January 16, 2020)
 
 IMPROVEMENTS:
 * feat: deprecate the `configuration` attribute for `newrelic_alert_channel` ([#307](https://github.com/terraform-providers/terraform-provider-newrelic/pull/307))
