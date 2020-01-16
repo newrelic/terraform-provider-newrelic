@@ -56,7 +56,11 @@ func RetryPolicy(ctx context.Context, resp *http.Response, err error) (bool, err
 	// disallowing retries for 500 errors here as the underlying APIs use them to
 	// provide useful error validation messages that should be passed back to the
 	// end user. This will catch invalid response codes as well, like 0 and 999.
-	if resp.StatusCode == 0 || (resp.StatusCode >= 502) {
+	// 429 Too Many Requests is retried as well to handle the aggressive rate limiting
+	// of the Synthetics API.
+	if resp.StatusCode == 0 ||
+		resp.StatusCode == 429 ||
+		resp.StatusCode >= 502 {
 		return true, nil
 	}
 
