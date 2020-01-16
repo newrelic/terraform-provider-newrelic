@@ -1,4 +1,11 @@
 ## 1.12.0 (Unreleased)
+
+IMPROVEMENTS:
+* feat: deprecate the `configuration` attribute for `newrelic_alert_channel` ([#307](https://github.com/terraform-providers/terraform-provider-newrelic/pull/307))
+
+BUG FIXES:
+* fix: include `application_breakdown` as a valid visualization ([#305](https://github.com/terraform-providers/terraform-provider-newrelic/pull/305))
+
 ## 1.11.0 (January 09, 2020)
 * feat: introduce new official New Relic client for Synthetics resource operations ([#294](https://github.com/terraform-providers/terraform-provider-newrelic/pull/294))
 
