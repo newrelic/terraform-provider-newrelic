@@ -175,7 +175,7 @@ func TestListComponentsWithParams(t *testing.T) {
 }
 
 func TestGetComponent(t *testing.T) {
-	t.Parallel();
+	t.Parallel()
 	responseJSON := fmt.Sprintf(`{"component": %s}`, testComponentJSON)
 	plugins := newMockResponse(t, responseJSON, http.StatusOK)
 
@@ -187,7 +187,7 @@ func TestGetComponent(t *testing.T) {
 }
 
 func TestListComponentMetrics(t *testing.T) {
-	t.Parallel();
+	t.Parallel()
 	responseJSON := fmt.Sprintf(`{"metrics": [%s]}`, testComponentMetricJSON)
 	plugins := newMockResponse(t, responseJSON, http.StatusOK)
 
@@ -199,7 +199,7 @@ func TestListComponentMetrics(t *testing.T) {
 }
 
 func TestGetComponentMetricData(t *testing.T) {
-	t.Parallel();
+	t.Parallel()
 	responseJSON := fmt.Sprintf(`{
 		"metric_data": {
 			 "metrics": [%s]
@@ -215,7 +215,7 @@ func TestGetComponentMetricData(t *testing.T) {
 }
 
 func TestGetComponentMetricDataWithParams(t *testing.T) {
-	t.Parallel();
+	t.Parallel()
 	expectedNames := "componentName"
 	expectedValues := "123"
 	expectedTo := testTimestamp.Format(time.RFC3339)

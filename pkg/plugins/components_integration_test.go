@@ -20,7 +20,7 @@ func TestIntegrationComponents(t *testing.T) {
 	}
 
 	api := New(config.Config{
-		APIKey: apiKey,
+		APIKey:   apiKey,
 		LogLevel: "debug",
 	})
 

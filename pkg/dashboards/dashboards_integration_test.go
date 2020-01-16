@@ -20,7 +20,7 @@ func TestIntegrationDashboards(t *testing.T) {
 	}
 
 	dashboards := New(config.Config{
-		APIKey: apiKey,
+		APIKey:   apiKey,
 		LogLevel: "debug",
 	})
 
