@@ -38,7 +38,7 @@ func New(opts ...ConfigOption) (*NewRelic, error) {
 	}
 
 	if config.APIKey == "" && config.PersonalAPIKey == "" {
-		return nil, errors.New("apiKey pr personalAPIKey required")
+		return nil, errors.New("use of ConfigAPIKey and/or ConfigPersonalAPIKey is required")
 	}
 
 	nr := &NewRelic{
@@ -54,9 +54,12 @@ func New(opts ...ConfigOption) (*NewRelic, error) {
 }
 
 // ConfigOption configures the Config when provided to NewApplication.
+// https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys
 type ConfigOption func(*config.Config) error
 
 // ConfigAPIKey sets the New Relic Admin API key this client will use.
+// One of ConfigAPIKey or ConfigPersonalAPIKey must be used to create a client.
+// https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys
 func ConfigAPIKey(apiKey string) ConfigOption {
 	return func(cfg *config.Config) error {
 		cfg.APIKey = apiKey
@@ -65,6 +68,8 @@ func ConfigAPIKey(apiKey string) ConfigOption {
 }
 
 // ConfigPersonalAPIKey sets the New Relic Personal API key this client will use.
+// One of ConfigAPIKey or ConfigPersonalAPIKey must be used to create a client.
+// https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys
 func ConfigPersonalAPIKey(personalAPIKey string) ConfigOption {
 	return func(cfg *config.Config) error {
 		cfg.PersonalAPIKey = personalAPIKey
