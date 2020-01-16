@@ -10,8 +10,11 @@ import (
 
 // Config contains all the configuration data for the API Client.
 type Config struct {
-	// APIKey to authenticate API requests (REQUIRED)
+	// APIKey to authenticate API requests
 	APIKey string
+
+	// PersonalAPIKey to authenticate API requests
+	PersonalAPIKey string
 
 	// Region of the New Relic platform to use
 	// Valid values are: US, EU
