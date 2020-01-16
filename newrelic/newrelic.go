@@ -9,6 +9,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/plugins"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
@@ -18,19 +19,14 @@ type NewRelic struct {
 	Alerts     alerts.Alerts
 	APM        apm.APM
 	Dashboards dashboards.Dashboards
+	Entities   entities.Entities
 	Plugins    plugins.Plugins
 	Synthetics synthetics.Synthetics
 }
 
 // New returns a collection of New Relic APIs.
-func New(apiKey string, opts ...ConfigOption) (*NewRelic, error) {
-	if apiKey == "" {
-		return nil, errors.New("apiKey required")
-	}
-
-	config := config.Config{
-		APIKey: apiKey,
-	}
+func New(opts ...ConfigOption) (*NewRelic, error) {
+	config := config.Config{}
 
 	// Loop through config options
 	for _, fn := range opts {
@@ -41,10 +37,15 @@ func New(apiKey string, opts ...ConfigOption) (*NewRelic, error) {
 		}
 	}
 
+	if config.APIKey == "" && config.PersonalAPIKey == "" {
+		return nil, errors.New("apiKey pr personalAPIKey required")
+	}
+
 	nr := &NewRelic{
 		Alerts:     alerts.New(config),
 		APM:        apm.New(config),
 		Dashboards: dashboards.New(config),
+		Entities:   entities.New(config),
 		Plugins:    plugins.New(config),
 		Synthetics: synthetics.New(config),
 	}
@@ -55,7 +56,23 @@ func New(apiKey string, opts ...ConfigOption) (*NewRelic, error) {
 // ConfigOption configures the Config when provided to NewApplication.
 type ConfigOption func(*config.Config) error
 
-// ConfigRegion sets the New Relic Region this client will use
+// ConfigAPIKey sets the New Relic Admin API key this client will use.
+func ConfigAPIKey(apiKey string) ConfigOption {
+	return func(cfg *config.Config) error {
+		cfg.APIKey = apiKey
+		return nil
+	}
+}
+
+// ConfigPersonalAPIKey sets the New Relic Personal API key this client will use.
+func ConfigPersonalAPIKey(personalAPIKey string) ConfigOption {
+	return func(cfg *config.Config) error {
+		cfg.PersonalAPIKey = personalAPIKey
+		return nil
+	}
+}
+
+// ConfigRegion sets the New Relic Region this client will use.
 func ConfigRegion(region string) ConfigOption {
 	return func(cfg *config.Config) error {
 		cfg.Region = region
@@ -63,7 +80,7 @@ func ConfigRegion(region string) ConfigOption {
 	}
 }
 
-// ConfigHTTPTimeout sets the timeout for HTTP requests
+// ConfigHTTPTimeout sets the timeout for HTTP requests.
 func ConfigHTTPTimeout(t time.Duration) ConfigOption {
 	return func(cfg *config.Config) error {
 		var timeout = &t
@@ -72,7 +89,7 @@ func ConfigHTTPTimeout(t time.Duration) ConfigOption {
 	}
 }
 
-// ConfigHTTPTransport sets the HTTP Transporter
+// ConfigHTTPTransport sets the HTTP Transporter.
 func ConfigHTTPTransport(transport *http.RoundTripper) ConfigOption {
 	return func(cfg *config.Config) error {
 		if transport != nil {
@@ -84,7 +101,7 @@ func ConfigHTTPTransport(transport *http.RoundTripper) ConfigOption {
 	}
 }
 
-// ConfigUserAgent sets the HTTP UserAgent for API requests
+// ConfigUserAgent sets the HTTP UserAgent for API requests.
 func ConfigUserAgent(ua string) ConfigOption {
 	return func(cfg *config.Config) error {
 		if ua != "" {
@@ -96,7 +113,7 @@ func ConfigUserAgent(ua string) ConfigOption {
 	}
 }
 
-// ConfigBaseURL sets the Base URL used to make requests
+// ConfigBaseURL sets the Base URL used to make requests.
 func ConfigBaseURL(url string) ConfigOption {
 	return func(cfg *config.Config) error {
 		if url != "" {
