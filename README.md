@@ -21,11 +21,8 @@ import (
 )
 
 func main() {
-	cfg := config.Config{
-		APIKey: os.Getenv("NEWRELIC_API_KEY"),
-	}
-
-	nr := newrelic.New(cfg)
+	apiKey := os.Getenv("NEWRELIC_API_KEY")
+	nr := newrelic.New(ConfigAPIKey(apiKey))
 
 	params := apm.ListApplicationsParams{
 		Name: "RPM",
