@@ -36,6 +36,13 @@ var DefaultBaseURLs = map[Region]string{
 	Staging: "https://staging-api.newrelic.com/v2",
 }
 
+// NerdGraphBaseURLs describes the base URLs for the NerdGraph API.
+var NerdGraphBaseURLs = map[Region]string{
+	US:      "https://api.newrelic.com/graphql",
+	EU:      "https://api.eu.newrelic.com/graphql",
+	Staging: "https://staging-api.newrelic.com/graphql",
+}
+
 // Parse takes a Region string and returns a RegionType
 func Parse(r string) Region {
 	switch strings.ToLower(r) {

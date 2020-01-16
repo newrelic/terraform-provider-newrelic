@@ -291,7 +291,7 @@ github.com/hashicorp/hcl/v2/json
 github.com/hashicorp/logutils
 # github.com/hashicorp/terraform-config-inspect v0.0.0-20191115094559-17f92b0546e8
 github.com/hashicorp/terraform-config-inspect/tfconfig
-# github.com/hashicorp/terraform-plugin-sdk v1.4.1
+# github.com/hashicorp/terraform-plugin-sdk v1.5.0
 github.com/hashicorp/terraform-plugin-sdk/helper/acctest
 github.com/hashicorp/terraform-plugin-sdk/helper/hashcode
 github.com/hashicorp/terraform-plugin-sdk/helper/logging
@@ -396,7 +396,7 @@ github.com/newrelic/go-agent/v3/internal/utilization
 github.com/newrelic/go-agent/v3/newrelic
 # github.com/newrelic/go-insights v1.0.3
 github.com/newrelic/go-insights/client
-# github.com/newrelic/newrelic-client-go v0.3.0
+# github.com/newrelic/newrelic-client-go v0.4.0
 github.com/newrelic/newrelic-client-go/internal/http
 github.com/newrelic/newrelic-client-go/internal/logging
 github.com/newrelic/newrelic-client-go/internal/region
