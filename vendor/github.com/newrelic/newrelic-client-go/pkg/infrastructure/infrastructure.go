@@ -32,5 +32,6 @@ func (e *ErrorResponse) Error() string {
 	if len(e.Errors) > 0 && e.Errors[0].Detail != "" {
 		return e.Errors[0].Detail
 	}
-	return "Unknown error"
+
+	return ""
 }
