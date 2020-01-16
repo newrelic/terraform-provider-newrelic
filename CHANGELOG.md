@@ -2,6 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v0.4.0"></a>
+## [v0.4.0] - 2020-01-15
+### Bug Fixes
+- retry HTTP requests on 429 status codes
+
+### Features
+- **entities:** add entities search and entity tagging
+
+
 <a name="v0.3.0"></a>
 ## [v0.3.0] - 2020-01-13
 ### Bug Fixes
@@ -113,6 +122,7 @@
 - get TestListApplications passing
 
 
-[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.4.0...HEAD
+[v0.4.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.1.0...v0.2.0
