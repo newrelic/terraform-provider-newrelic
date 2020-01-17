@@ -78,7 +78,7 @@ resource "newrelic_alert_channel" "foo" {
   name = "slack-example"
   type = "slack"
 
-  configuration = {
+  config {
     url     = "https://<YourOrganization>.slack.com"
     channel = "example-alerts-channel"
   }
