@@ -56,7 +56,7 @@ resource "newrelic_alert_channel" "email" {
   name = "email"
   type = "email"
 
-  configuration = {
+  config {
     recipients              = "paul@example.com"
     include_json_attachment = "1"
   }

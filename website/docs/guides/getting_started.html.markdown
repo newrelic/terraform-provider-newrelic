@@ -141,7 +141,7 @@ resource "newrelic_alert_channel" "alert_notification_email" {
   name = "paul@example.com"
   type = "email"
 
-  configuration = {
+  config {
     recipients              = "paul@example.com"
     include_json_attachment = "1"
   }
