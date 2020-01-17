@@ -142,7 +142,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 	}
 
 	log.Println("[INFO] Initializing newrelic-client-go")
-	newClient, err := nr.New(apiKey, nr.ConfigUserAgent(userAgent))
+	newClient, err := nr.New(nr.ConfigUserAgent(apiKey), nr.ConfigUserAgent(userAgent))
 
 	if err != nil {
 		return nil, err
