@@ -124,7 +124,7 @@ github.com/davecgh/go-spew/spew
 github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
-# github.com/go-critic/go-critic v0.4.0
+# github.com/go-critic/go-critic v0.4.1
 github.com/go-critic/go-critic/checkers
 github.com/go-critic/go-critic/checkers/internal/lintutil
 # github.com/go-lintpack/lintpack v0.5.2
@@ -188,7 +188,7 @@ github.com/golangci/gocyclo/pkg/gocyclo
 # github.com/golangci/gofmt v0.0.0-20190930125516-244bba706f1a
 github.com/golangci/gofmt/gofmt
 github.com/golangci/gofmt/goimports
-# github.com/golangci/golangci-lint v1.22.2
+# github.com/golangci/golangci-lint v1.23.1
 github.com/golangci/golangci-lint/cmd/golangci-lint
 github.com/golangci/golangci-lint/internal/cache
 github.com/golangci/golangci-lint/internal/errorutil
@@ -345,6 +345,10 @@ github.com/hashicorp/terraform-svchost/disco
 github.com/hashicorp/yamux
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
+# github.com/jingyugao/rowserrcheck v0.0.0-20191204022205-72ab7603b68a
+github.com/jingyugao/rowserrcheck/passes/rowserr
+# github.com/jirfag/go-printf-func-name v0.0.0-20191110105641-45db9963cdd3
+github.com/jirfag/go-printf-func-name/pkg/analyzer
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
 # github.com/kisielk/gotool v1.0.0
@@ -427,7 +431,7 @@ github.com/posener/complete
 github.com/posener/complete/cmd
 github.com/posener/complete/cmd/install
 github.com/posener/complete/match
-# github.com/securego/gosec v0.0.0-20191002120514-e680875ea14d
+# github.com/securego/gosec v0.0.0-20200103095621-79fbf3af8d83
 github.com/securego/gosec
 github.com/securego/gosec/rules
 # github.com/sirupsen/logrus v1.4.2
