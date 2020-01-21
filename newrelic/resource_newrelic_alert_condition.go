@@ -1,13 +1,11 @@
 package newrelic
 
 import (
-	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 var alertConditionTypes = map[string][]string{
@@ -180,117 +178,13 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 	}
 }
 
-func buildAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertCondition {
-	entitySet := d.Get("entities").(*schema.Set).List()
-	entities := make([]string, len(entitySet))
-
-	for i, entity := range entitySet {
-		entities[i] = strconv.Itoa(entity.(int))
-	}
-
-	termSet := d.Get("term").(*schema.Set).List()
-	terms := make([]newrelic.AlertConditionTerm, len(termSet))
-
-	for i, termI := range termSet {
-		termM := termI.(map[string]interface{})
-
-		terms[i] = newrelic.AlertConditionTerm{
-			Duration:     termM["duration"].(int),
-			Operator:     termM["operator"].(string),
-			Priority:     termM["priority"].(string),
-			Threshold:    termM["threshold"].(float64),
-			TimeFunction: termM["time_function"].(string),
-		}
-	}
-
-	condition := newrelic.AlertCondition{
-		Type:                d.Get("type").(string),
-		Name:                d.Get("name").(string),
-		Enabled:             d.Get("enabled").(bool),
-		Entities:            entities,
-		Metric:              d.Get("metric").(string),
-		Terms:               terms,
-		PolicyID:            d.Get("policy_id").(int),
-		Scope:               d.Get("condition_scope").(string),
-		ViolationCloseTimer: d.Get("violation_close_timer").(int),
-		GCMetric:            d.Get("gc_metric").(string),
-	}
-
-	if attr, ok := d.GetOk("runbook_url"); ok {
-		condition.RunbookURL = attr.(string)
-	}
-
-	if attrM, ok := d.GetOk("user_defined_metric"); ok {
-		if attrVF, ok := d.GetOk("user_defined_value_function"); ok {
-			condition.UserDefined = newrelic.AlertConditionUserDefined{
-				Metric:        attrM.(string),
-				ValueFunction: attrVF.(string),
-			}
-		}
-	}
-
-	return &condition
-}
-
-func readAlertConditionStruct(condition *newrelic.AlertCondition, d *schema.ResourceData) error {
-	ids, err := parseIDs(d.Id(), 2)
-	if err != nil {
-		return err
-	}
-
-	policyID := ids[0]
-
-	entities := make([]int, len(condition.Entities))
-	for i, entity := range condition.Entities {
-		v, err := strconv.ParseInt(entity, 10, 32)
-		if err != nil {
-			return err
-		}
-		entities[i] = int(v)
-	}
-
-	d.Set("policy_id", policyID)
-	d.Set("name", condition.Name)
-	d.Set("enabled", condition.Enabled)
-	d.Set("type", condition.Type)
-	d.Set("metric", condition.Metric)
-	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("condition_scope", condition.Scope)
-	d.Set("violation_close_timer", condition.ViolationCloseTimer)
-	d.Set("gc_metric", condition.GCMetric)
-	d.Set("user_defined_metric", condition.UserDefined.Metric)
-	d.Set("user_defined_value_function", condition.UserDefined.ValueFunction)
-	if err := d.Set("entities", entities); err != nil {
-		return fmt.Errorf("[DEBUG] Error setting alert condition entities: %#v", err)
-	}
-
-	var terms []map[string]interface{}
-
-	for _, src := range condition.Terms {
-		dst := map[string]interface{}{
-			"duration":      src.Duration,
-			"operator":      src.Operator,
-			"priority":      src.Priority,
-			"threshold":     src.Threshold,
-			"time_function": src.TimeFunction,
-		}
-		terms = append(terms, dst)
-	}
-
-	if err := d.Set("term", terms); err != nil {
-		return fmt.Errorf("[DEBUG] Error setting alert condition terms: %#v", err)
-	}
-
-	return nil
-}
-
 func resourceNewRelicAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
-	condition := buildAlertConditionStruct(d)
+	client := meta.(*ProviderConfig).NewClient
+	condition := expandAlertCondition(d)
 
 	log.Printf("[INFO] Creating New Relic alert condition %s", condition.Name)
 
-	condition, err := client.CreateAlertCondition(*condition)
+	condition, err := client.Alerts.CreateCondition(*condition)
 	if err != nil {
 		return err
 	}
@@ -301,7 +195,7 @@ func resourceNewRelicAlertConditionCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic alert condition %s", d.Id())
 
@@ -313,18 +207,9 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 	policyID := ids[0]
 	id := ids[1]
 
-	_, err = client.GetAlertPolicy(policyID)
+	_, err = client.Alerts.GetPolicy(policyID)
 	if err != nil {
-		if err == newrelic.ErrNotFound {
-			d.SetId("")
-			return nil
-		}
-		return err
-	}
-
-	condition, err := client.GetAlertCondition(policyID, id)
-	if err != nil {
-		if err == newrelic.ErrNotFound {
+		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
@@ -332,12 +217,22 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	return readAlertConditionStruct(condition, d)
+	condition, err := client.Alerts.GetCondition(policyID, id)
+	if err != nil {
+		if _, ok := err.(*errors.NotFound); ok {
+			d.SetId("")
+			return nil
+		}
+
+		return err
+	}
+
+	return flattenAlertCondition(condition, d)
 }
 
 func resourceNewRelicAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
-	condition := buildAlertConditionStruct(d)
+	client := meta.(*ProviderConfig).NewClient
+	condition := expandAlertCondition(d)
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
@@ -352,12 +247,12 @@ func resourceNewRelicAlertConditionUpdate(d *schema.ResourceData, meta interface
 
 	log.Printf("[INFO] Updating New Relic alert condition %d", id)
 
-	updatedCondition, err := client.UpdateAlertCondition(*condition)
+	updatedCondition, err := client.Alerts.UpdateCondition(*condition)
 	if err != nil {
 		return err
 	}
 
-	return readAlertConditionStruct(updatedCondition, d)
+	return flattenAlertCondition(updatedCondition, d)
 }
 
 func resourceNewRelicAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
