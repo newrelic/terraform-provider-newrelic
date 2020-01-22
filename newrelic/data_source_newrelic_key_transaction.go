@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/apm"
 )
 
 func dataSourceNewRelicKeyTransaction() *schema.Resource {
@@ -23,24 +23,26 @@ func dataSourceNewRelicKeyTransaction() *schema.Resource {
 }
 
 func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic key transactions")
 
-	transactions, err := client.ListKeyTransactions()
+	name := d.Get("name").(string)
+
+	params := apm.ListKeyTransactionsParams{
+		Name: name,
+	}
+
+	transactions, err := client.APM.ListKeyTransactions(&params)
 	if err != nil {
 		return err
 	}
 
-	var transaction *newrelic.KeyTransaction
-	name, ok := d.Get("name").(string)
-	if !ok {
-		return fmt.Errorf("the name '%v' is not a string", name)
-	}
+	var transaction *apm.KeyTransaction
 
 	for _, t := range transactions {
 		if t.Name == name {
-			transaction = &t
+			transaction = t
 			break
 		}
 	}
@@ -49,8 +51,12 @@ func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("the name '%s' does not match any New Relic key transaction", name)
 	}
 
-	d.SetId(strconv.Itoa(transaction.ID))
-	d.Set("name", transaction.Name)
+	flattenKeyTransaction(transaction, d)
 
 	return nil
+}
+
+func flattenKeyTransaction(t *apm.KeyTransaction, d *schema.ResourceData) {
+	d.SetId(strconv.Itoa(t.ID))
+	d.Set("name", t.Name)
 }
