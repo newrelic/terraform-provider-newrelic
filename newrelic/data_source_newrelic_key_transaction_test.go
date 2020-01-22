@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	testAccExpectedKeyTransactionName string = "get /"
+	testAccExpectedKeyTransactionName = "get /"
 )
 
 func TestAccNewRelicKeyTransactionDataSource_Basic(t *testing.T) {
