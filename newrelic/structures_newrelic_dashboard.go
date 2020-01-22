@@ -6,22 +6,22 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 )
 
-// Assemble the *newrelic.Dashboard struct.
+// Assemble the *dashboards.Dashboard struct.
 // Used by the newrelic_dashboard Create and Update functions.
-func expandDashboard(d *schema.ResourceData) (*newrelic.Dashboard, error) {
-	metadata := newrelic.DashboardMetadata{
+func expandDashboard(d *schema.ResourceData) (*dashboards.Dashboard, error) {
+	metadata := dashboards.DashboardMetadata{
 		Version: 1,
 	}
 
-	dashboard := newrelic.Dashboard{
+	dashboard := dashboards.Dashboard{
 		Title:      d.Get("title").(string),
 		Metadata:   metadata,
 		Icon:       d.Get("icon").(string),
-		Visibility: d.Get("visibility").(string),
-		Editable:   d.Get("editable").(string),
+		Visibility: dashboards.VisibilityType(d.Get("visibility").(string)),
+		Editable:   dashboards.EditableType(d.Get("editable").(string)),
 	}
 
 	if f, ok := d.GetOk("filter"); ok {
@@ -42,8 +42,8 @@ func expandDashboard(d *schema.ResourceData) (*newrelic.Dashboard, error) {
 	return &dashboard, nil
 }
 
-func expandFilter(filter map[string]interface{}) newrelic.DashboardFilter {
-	perms := newrelic.DashboardFilter{}
+func expandFilter(filter map[string]interface{}) dashboards.DashboardFilter {
+	perms := dashboards.DashboardFilter{}
 
 	if v, ok := filter["attributes"]; ok {
 		perms.Attributes = expandStringSet(v.(*schema.Set))
@@ -56,12 +56,12 @@ func expandFilter(filter map[string]interface{}) newrelic.DashboardFilter {
 	return perms
 }
 
-func expandWidgets(widgets []interface{}) ([]newrelic.DashboardWidget, error) {
+func expandWidgets(widgets []interface{}) ([]dashboards.DashboardWidget, error) {
 	if len(widgets) < 1 {
-		return []newrelic.DashboardWidget{}, nil
+		return []dashboards.DashboardWidget{}, nil
 	}
 
-	perms := make([]newrelic.DashboardWidget, len(widgets))
+	perms := make([]dashboards.DashboardWidget, len(widgets))
 
 	for i, rawCfg := range widgets {
 		cfg := rawCfg.(map[string]interface{})
@@ -77,8 +77,8 @@ func expandWidgets(widgets []interface{}) ([]newrelic.DashboardWidget, error) {
 	return perms, nil
 }
 
-func expandWidget(cfg map[string]interface{}) (*newrelic.DashboardWidget, error) {
-	widget := &newrelic.DashboardWidget{
+func expandWidget(cfg map[string]interface{}) (*dashboards.DashboardWidget, error) {
+	widget := &dashboards.DashboardWidget{
 		Visualization: cfg["visualization"].(string),
 		ID:            cfg["widget_id"].(int),
 	}
@@ -148,8 +148,8 @@ func validateWidgetData(cfg map[string]interface{}) error {
 	return nil
 }
 
-func expandWidgetData(cfg map[string]interface{}) []newrelic.DashboardWidgetData {
-	widgetData := newrelic.DashboardWidgetData{}
+func expandWidgetData(cfg map[string]interface{}) []dashboards.DashboardWidgetData {
+	widgetData := dashboards.DashboardWidgetData{}
 
 	if nrql, ok := cfg["nrql"]; ok {
 		widgetData.NRQL = nrql.(string)
@@ -196,20 +196,20 @@ func expandWidgetData(cfg map[string]interface{}) []newrelic.DashboardWidgetData
 	}
 
 	// widget data is a slice for legacy reasons
-	return []newrelic.DashboardWidgetData{widgetData}
+	return []dashboards.DashboardWidgetData{widgetData}
 }
 
-func expandWidgetDataMetrics(metrics []interface{}) []newrelic.DashboardWidgetDataMetric {
+func expandWidgetDataMetrics(metrics []interface{}) []dashboards.DashboardWidgetDataMetric {
 	if len(metrics) < 1 {
-		return []newrelic.DashboardWidgetDataMetric{}
+		return []dashboards.DashboardWidgetDataMetric{}
 	}
 
-	perms := make([]newrelic.DashboardWidgetDataMetric, len(metrics))
+	perms := make([]dashboards.DashboardWidgetDataMetric, len(metrics))
 
 	for i, rawCfg := range metrics {
 		cfg := rawCfg.(map[string]interface{})
 
-		metric := newrelic.DashboardWidgetDataMetric{
+		metric := dashboards.DashboardWidgetDataMetric{
 			Name: cfg["name"].(string),
 		}
 		if values, ok := cfg["values"]; ok {
@@ -228,17 +228,17 @@ func expandWidgetDataMetrics(metrics []interface{}) []newrelic.DashboardWidgetDa
 	return perms
 }
 
-func expandWidgetDataCompareWith(windows []interface{}) []newrelic.DashboardWidgetDataCompareWith {
+func expandWidgetDataCompareWith(windows []interface{}) []dashboards.DashboardWidgetDataCompareWith {
 	if len(windows) < 1 {
-		return []newrelic.DashboardWidgetDataCompareWith{}
+		return []dashboards.DashboardWidgetDataCompareWith{}
 	}
 
-	perms := make([]newrelic.DashboardWidgetDataCompareWith, len(windows))
+	perms := make([]dashboards.DashboardWidgetDataCompareWith, len(windows))
 
 	for i, rawCfg := range windows {
 		cfg := rawCfg.(map[string]interface{})
 
-		perms[i] = newrelic.DashboardWidgetDataCompareWith{
+		perms[i] = dashboards.DashboardWidgetDataCompareWith{
 			OffsetDuration: cfg["offset_duration"].(string),
 			Presentation:   expandWidgetDataCompareWithPresentation(cfg["presentation"].([]interface{})[0].(map[string]interface{})),
 		}
@@ -247,8 +247,8 @@ func expandWidgetDataCompareWith(windows []interface{}) []newrelic.DashboardWidg
 	return perms
 }
 
-func expandWidgetDataCompareWithPresentation(cfg map[string]interface{}) newrelic.DashboardWidgetDataCompareWithPresentation {
-	widgetDataCompareWithPresentation := newrelic.DashboardWidgetDataCompareWithPresentation{
+func expandWidgetDataCompareWithPresentation(cfg map[string]interface{}) dashboards.DashboardWidgetDataCompareWithPresentation {
+	widgetDataCompareWithPresentation := dashboards.DashboardWidgetDataCompareWithPresentation{
 		Name:  cfg["name"].(string),
 		Color: cfg["color"].(string),
 	}
@@ -256,8 +256,8 @@ func expandWidgetDataCompareWithPresentation(cfg map[string]interface{}) newreli
 	return widgetDataCompareWithPresentation
 }
 
-func expandWidgetPresentation(cfg map[string]interface{}) newrelic.DashboardWidgetPresentation {
-	widgetPresentation := newrelic.DashboardWidgetPresentation{
+func expandWidgetPresentation(cfg map[string]interface{}) dashboards.DashboardWidgetPresentation {
+	widgetPresentation := dashboards.DashboardWidgetPresentation{
 		Title: cfg["title"].(string),
 	}
 
@@ -269,7 +269,7 @@ func expandWidgetPresentation(cfg map[string]interface{}) newrelic.DashboardWidg
 		widgetPresentation.DrilldownDashboardID = d.(int)
 	}
 
-	widgetThreshold := &newrelic.DashboardWidgetThreshold{}
+	widgetThreshold := &dashboards.DashboardWidgetThreshold{}
 
 	if red, ok := cfg["threshold_red"]; ok {
 		widgetThreshold.Red = red.(float64)
@@ -284,8 +284,8 @@ func expandWidgetPresentation(cfg map[string]interface{}) newrelic.DashboardWidg
 	return widgetPresentation
 }
 
-func expandWidgetLayout(cfg map[string]interface{}) (*newrelic.DashboardWidgetLayout, error) {
-	widgetLayout := &newrelic.DashboardWidgetLayout{
+func expandWidgetLayout(cfg map[string]interface{}) (*dashboards.DashboardWidgetLayout, error) {
+	widgetLayout := &dashboards.DashboardWidgetLayout{
 		Row:    cfg["row"].(int),
 		Column: cfg["column"].(int),
 		Width:  cfg["width"].(int),
@@ -295,10 +295,10 @@ func expandWidgetLayout(cfg map[string]interface{}) (*newrelic.DashboardWidgetLa
 	return widgetLayout, nil
 }
 
-// Unpack the *newrelic.Dashboard variable and set resource data.
+// Unpack the *dashboards.Dashboard variable and set resource data.
 //
 // Used by the newrelic_dashboard Read function (resourceNewRelicDashboardRead)
-func flattenDashboard(dashboard *newrelic.Dashboard, d *schema.ResourceData) error {
+func flattenDashboard(dashboard *dashboards.Dashboard, d *schema.ResourceData) error {
 	d.Set("title", dashboard.Title)
 	d.Set("icon", dashboard.Icon)
 	d.Set("visibility", dashboard.Visibility)
@@ -320,7 +320,7 @@ func flattenDashboard(dashboard *newrelic.Dashboard, d *schema.ResourceData) err
 
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
-func flattenWidgets(in *[]newrelic.DashboardWidget) []map[string]interface{} {
+func flattenWidgets(in *[]dashboards.DashboardWidget) []map[string]interface{} {
 	var out = make([]map[string]interface{}, len(*in))
 	for i, w := range *in {
 		m := make(map[string]interface{})
@@ -403,7 +403,7 @@ func flattenWidgets(in *[]newrelic.DashboardWidget) []map[string]interface{} {
 	return out
 }
 
-func flattenWidgetDataCompareWith(in []newrelic.DashboardWidgetDataCompareWith) []map[string]interface{} {
+func flattenWidgetDataCompareWith(in []dashboards.DashboardWidgetDataCompareWith) []map[string]interface{} {
 	var out = make([]map[string]interface{}, len(in))
 	for i, v := range in {
 		m := make(map[string]interface{})
@@ -417,7 +417,7 @@ func flattenWidgetDataCompareWith(in []newrelic.DashboardWidgetDataCompareWith) 
 	return out
 }
 
-func flattenWidgetDataCompareWithPresentation(in *newrelic.DashboardWidgetDataCompareWithPresentation) interface{} {
+func flattenWidgetDataCompareWithPresentation(in *dashboards.DashboardWidgetDataCompareWithPresentation) interface{} {
 	m := make(map[string]interface{})
 
 	m["name"] = in.Name
@@ -426,7 +426,7 @@ func flattenWidgetDataCompareWithPresentation(in *newrelic.DashboardWidgetDataCo
 	return []interface{}{m}
 }
 
-func flattenWidgetDataMetrics(in []newrelic.DashboardWidgetDataMetric) []map[string]interface{} {
+func flattenWidgetDataMetrics(in []dashboards.DashboardWidgetDataMetric) []map[string]interface{} {
 	var out = make([]map[string]interface{}, len(in))
 	for i, v := range in {
 		m := make(map[string]interface{})
@@ -445,7 +445,7 @@ func flattenWidgetDataMetrics(in []newrelic.DashboardWidgetDataMetric) []map[str
 	return out
 }
 
-func flattenFilter(f *newrelic.DashboardFilter) []interface{} {
+func flattenFilter(f *dashboards.DashboardFilter) []interface{} {
 	if f == nil {
 		return nil
 	}
