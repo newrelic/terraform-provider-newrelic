@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/apm"
 )
 
 func dataSourceNewRelicApplication() *schema.Resource {
@@ -32,22 +32,26 @@ func dataSourceNewRelicApplication() *schema.Resource {
 }
 
 func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic applications")
 
 	name := d.Get("name").(string)
-	filter := newrelic.ApplicationsFilters{Name: &name}
-	applications, err := client.QueryApplications(filter)
+	params := apm.ListApplicationsParams{
+		Name: name,
+	}
+
+	applications, err := client.APM.ListApplications(&params)
+
 	if err != nil {
 		return err
 	}
 
-	var application *newrelic.Application
+	var application *apm.Application
 
 	for _, a := range applications {
 		if a.Name == name {
-			application = &a
+			application = a
 			break
 		}
 	}
@@ -56,10 +60,14 @@ func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("the name '%s' does not match any New Relic applications", name)
 	}
 
-	d.SetId(strconv.Itoa(application.ID))
-	d.Set("name", application.Name)
-	d.Set("instance_ids", application.Links.InstanceIDs)
-	d.Set("host_ids", application.Links.HostIDs)
+	flattenApplication(application, d)
 
 	return nil
+}
+
+func flattenApplication(a *apm.Application, d *schema.ResourceData) {
+	d.SetId(strconv.Itoa(a.ID))
+	d.Set("name", a.Name)
+	d.Set("instance_ids", a.Links.InstanceIDs)
+	d.Set("host_ids", a.Links.HostIDs)
 }
