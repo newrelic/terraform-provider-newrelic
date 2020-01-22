@@ -1,13 +1,11 @@
 package newrelic
 
 import (
-	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func resourceNewRelicPluginsAlertCondition() *schema.Resource {
@@ -106,107 +104,13 @@ func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 	}
 }
 
-func buildPluginsAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertPluginsCondition {
-	entitySet := d.Get("entities").(*schema.Set).List()
-	entities := make([]string, len(entitySet))
-
-	for i, entity := range entitySet {
-		entities[i] = strconv.Itoa(entity.(int))
-	}
-
-	termSet := d.Get("term").(*schema.Set).List()
-	terms := make([]newrelic.AlertConditionTerm, len(termSet))
-
-	for i, termI := range termSet {
-		termM := termI.(map[string]interface{})
-
-		terms[i] = newrelic.AlertConditionTerm{
-			Duration:     termM["duration"].(int),
-			Operator:     termM["operator"].(string),
-			Priority:     termM["priority"].(string),
-			Threshold:    termM["threshold"].(float64),
-			TimeFunction: termM["time_function"].(string),
-		}
-	}
-
-	plugin := newrelic.AlertPlugin{ID: d.Get("plugin_id").(string), GUID: d.Get("plugin_guid").(string)}
-
-	condition := newrelic.AlertPluginsCondition{
-		Name:              d.Get("name").(string),
-		Enabled:           d.Get("enabled").(bool),
-		Entities:          entities,
-		Metric:            d.Get("metric").(string),
-		MetricDescription: d.Get("metric_description").(string),
-		ValueFunction:     d.Get("value_function").(string),
-		Terms:             terms,
-		PolicyID:          d.Get("policy_id").(int),
-		Plugin:            plugin,
-	}
-
-	if attr, ok := d.GetOk("runbook_url"); ok {
-		condition.RunbookURL = attr.(string)
-	}
-
-	return &condition
-}
-
-func readPluginsAlertConditionStruct(condition *newrelic.AlertPluginsCondition, d *schema.ResourceData) error {
-	ids, err := parseIDs(d.Id(), 2)
-	if err != nil {
-		return err
-	}
-
-	policyID := ids[0]
-
-	entities := make([]int, len(condition.Entities))
-	for i, entity := range condition.Entities {
-		v, err := strconv.ParseInt(entity, 10, 32)
-		if err != nil {
-			return err
-		}
-		entities[i] = int(v)
-	}
-
-	d.Set("policy_id", policyID)
-	d.Set("name", condition.Name)
-	d.Set("enabled", condition.Enabled)
-	d.Set("metric", condition.Metric)
-	d.Set("metric_description", condition.MetricDescription)
-	d.Set("value_function", condition.ValueFunction)
-	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("plugin_id", condition.Plugin.ID)
-	d.Set("plugin_guid", condition.Plugin.GUID)
-	if err := d.Set("entities", entities); err != nil {
-		return fmt.Errorf("[DEBUG] Error setting alert condition entities: %#v", err)
-	}
-
-	var terms []map[string]interface{}
-
-	for _, src := range condition.Terms {
-		dst := map[string]interface{}{
-			"duration":      src.Duration,
-			"operator":      src.Operator,
-			"priority":      src.Priority,
-			"threshold":     src.Threshold,
-			"time_function": src.TimeFunction,
-		}
-		terms = append(terms, dst)
-	}
-
-	if err := d.Set("term", terms); err != nil {
-		return fmt.Errorf("[DEBUG] Error setting alert condition terms: %#v", err)
-	}
-
-	return nil
-}
-
 func resourceNewRelicPluginsAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
-	condition := buildPluginsAlertConditionStruct(d)
+	client := meta.(*ProviderConfig).NewClient
+	condition := expandPluginsCondition(d)
 
 	log.Printf("[INFO] Creating New Relic alert condition %s", condition.Name)
 
-	condition, err := client.CreateAlertPluginsCondition(*condition)
+	condition, err := client.Alerts.CreatePluginsCondition(*condition)
 	if err != nil {
 		return err
 	}
@@ -217,7 +121,7 @@ func resourceNewRelicPluginsAlertConditionCreate(d *schema.ResourceData, meta in
 }
 
 func resourceNewRelicPluginsAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic alert condition %s", d.Id())
 
@@ -229,18 +133,18 @@ func resourceNewRelicPluginsAlertConditionRead(d *schema.ResourceData, meta inte
 	policyID := ids[0]
 	id := ids[1]
 
-	_, err = client.GetAlertPolicy(policyID)
+	_, err = client.Alerts.GetPolicy(policyID)
 	if err != nil {
-		if err == newrelic.ErrNotFound {
+		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
 		return err
 	}
 
-	condition, err := client.GetAlertPluginsCondition(policyID, id)
+	condition, err := client.Alerts.GetPluginsCondition(policyID, id)
 	if err != nil {
-		if err == newrelic.ErrNotFound {
+		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
@@ -248,12 +152,12 @@ func resourceNewRelicPluginsAlertConditionRead(d *schema.ResourceData, meta inte
 		return err
 	}
 
-	return readPluginsAlertConditionStruct(condition, d)
+	return flattenPluginsCondition(condition, d)
 }
 
 func resourceNewRelicPluginsAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
-	condition := buildPluginsAlertConditionStruct(d)
+	client := meta.(*ProviderConfig).NewClient
+	condition := expandPluginsCondition(d)
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
@@ -268,12 +172,12 @@ func resourceNewRelicPluginsAlertConditionUpdate(d *schema.ResourceData, meta in
 
 	log.Printf("[INFO] Updating New Relic alert condition %d", id)
 
-	updatedCondition, err := client.UpdateAlertPluginsCondition(*condition)
+	updatedCondition, err := client.Alerts.UpdatePluginsCondition(*condition)
 	if err != nil {
 		return err
 	}
 
-	return readPluginsAlertConditionStruct(updatedCondition, d)
+	return flattenPluginsCondition(updatedCondition, d)
 }
 
 func resourceNewRelicPluginsAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {

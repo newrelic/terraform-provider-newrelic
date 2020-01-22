@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/plugins"
 )
 
 func dataSourceNewRelicPlugin() *schema.Resource {
@@ -27,21 +27,26 @@ func dataSourceNewRelicPlugin() *schema.Resource {
 }
 
 func dataSourceNewRelicPluginRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Plugins")
 
-	plugins, err := client.ListPlugins()
+	guid := d.Get("guid").(string)
+
+	params := plugins.ListPluginsParams{
+		GUID: guid,
+	}
+
+	ps, err := client.Plugins.ListPlugins(&params)
 	if err != nil {
 		return err
 	}
 
-	var plugin *newrelic.Plugin
-	guid := d.Get("guid").(string)
+	var plugin *plugins.Plugin
 
-	for _, p := range plugins {
+	for _, p := range ps {
 		if p.GUID == guid {
-			plugin = &p
+			plugin = p
 			break
 		}
 	}
