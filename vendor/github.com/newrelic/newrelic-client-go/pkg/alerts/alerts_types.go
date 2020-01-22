@@ -1,6 +1,10 @@
 package alerts
 
-import "github.com/newrelic/newrelic-client-go/internal/serialization"
+import (
+	"encoding/json"
+
+	"github.com/newrelic/newrelic-client-go/internal/serialization"
+)
 
 // Channel represents a New Relic alert notification channel
 type Channel struct {
@@ -18,25 +22,29 @@ type ChannelLinks struct {
 
 // ChannelConfiguration represents a Configuration type within Channels
 type ChannelConfiguration struct {
-	Recipients            string            `json:"recipients,omitempty"`
-	IncludeJSONAttachment string            `json:"include_json_attachment,omitempty"`
-	AuthToken             string            `json:"auth_token,omitempty"`
-	APIKey                string            `json:"api_key,omitempty"`
-	Teams                 string            `json:"teams,omitempty"`
-	Tags                  string            `json:"tags,omitempty"`
-	URL                   string            `json:"url,omitempty"`
-	Channel               string            `json:"channel,omitempty"`
-	Key                   string            `json:"key,omitempty"`
-	RouteKey              string            `json:"route_key,omitempty"`
-	ServiceKey            string            `json:"service_key,omitempty"`
-	BaseURL               string            `json:"base_url,omitempty"`
-	AuthUsername          string            `json:"auth_username,omitempty"`
-	AuthPassword          string            `json:"auth_password,omitempty"`
-	PayloadType           string            `json:"payload_type,omitempty"`
-	Region                string            `json:"region,omitempty"`
-	UserID                string            `json:"user_id,omitempty"`
-	Payload               map[string]string `json:"payload,omitempty"`
-	Headers               map[string]string `json:"headers,omitempty"`
+	Recipients            string `json:"recipients,omitempty"`
+	IncludeJSONAttachment string `json:"include_json_attachment,omitempty"`
+	AuthToken             string `json:"auth_token,omitempty"`
+	APIKey                string `json:"api_key,omitempty"`
+	Teams                 string `json:"teams,omitempty"`
+	Tags                  string `json:"tags,omitempty"`
+	URL                   string `json:"url,omitempty"`
+	Channel               string `json:"channel,omitempty"`
+	Key                   string `json:"key,omitempty"`
+	RouteKey              string `json:"route_key,omitempty"`
+	ServiceKey            string `json:"service_key,omitempty"`
+	BaseURL               string `json:"base_url,omitempty"`
+	AuthUsername          string `json:"auth_username,omitempty"`
+	AuthPassword          string `json:"auth_password,omitempty"`
+	PayloadType           string `json:"payload_type,omitempty"`
+	Region                string `json:"region,omitempty"`
+	UserID                string `json:"user_id,omitempty"`
+
+	// Payload is unmarshaled to type map[string]string
+	Payload MapStringString `json:"payload,omitempty"`
+
+	// Headers is unmarshaled to type map[string]string
+	Headers MapStringString `json:"headers,omitempty"`
 }
 
 // Condition represents a New Relic alert condition.
@@ -180,4 +188,30 @@ type SyntheticsCondition struct {
 	Enabled    bool   `json:"enabled"`
 	RunbookURL string `json:"runbook_url,omitempty"`
 	MonitorID  string `json:"monitor_id,omitempty"`
+}
+
+// MapStringString is used for custom unmarshaling of
+// fields that have potentially dynamic types.
+// E.g. when a field can be a string or an object/map
+type MapStringString map[string]string
+type mapStringStringProxy MapStringString
+
+// UnmarshalJSON is a custom unmarshal method to guard against
+// fields that can have more than one type returned from an API.
+func (c *MapStringString) UnmarshalJSON(data []byte) error {
+	var mapStrStr mapStringStringProxy
+
+	// Check for empty JSON string
+	if string(data) == `""` {
+		return nil
+	}
+
+	err := json.Unmarshal(data, &mapStrStr)
+	if err != nil {
+		return err
+	}
+
+	*c = MapStringString(mapStrStr)
+
+	return nil
 }
