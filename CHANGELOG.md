@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.5.1"></a>
+## [v0.5.1] - 2020-01-21
+### Bug Fixes
+- **alerts:** custom unmarshal of channel configuration Headers and Payload fields ([#102](https://github.com/newrelic/newrelic-client-go/issues/102))
+
+
 <a name="v0.5.0"></a>
 ## [v0.5.0] - 2020-01-16
 ### Documentation Updates
@@ -128,7 +134,8 @@
 - get TestListApplications passing
 
 
-[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.5.1...HEAD
+[v0.5.1]: https://github.com/newrelic/newrelic-client-go/compare/v0.5.0...v0.5.1
 [v0.5.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.2.0...v0.3.0
