@@ -2,6 +2,8 @@ package alerts
 
 import (
 	"fmt"
+
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 // ListSyntheticsConditions returns a list of Synthetics alert conditions for a given policy.
@@ -27,6 +29,23 @@ func (alerts *Alerts) ListSyntheticsConditions(policyID int) ([]*SyntheticsCondi
 	}
 
 	return conditions, nil
+}
+
+// GetSyntheticsCondition retrieves a specific Synthetics alert condition.
+func (alerts *Alerts) GetSyntheticsCondition(policyID int, conditionID int) (*SyntheticsCondition, error) {
+	conditions, err := alerts.ListSyntheticsConditions(policyID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, c := range conditions {
+		if c.ID == conditionID {
+			return c, nil
+		}
+	}
+
+	return nil, errors.NewNotFoundf("no condition found for policy %d and condition ID %d", policyID, conditionID)
 }
 
 // CreateSyntheticsCondition creates a new Synthetics alert condition.
