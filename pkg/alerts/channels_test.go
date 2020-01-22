@@ -75,6 +75,44 @@ var (
 			"channel.policy_ids": "/v2/policies/{policy_id}"
 		}
 	}`
+
+	// Tests serialization of `headers` and `payload` fields
+	testWebhookEmptyHeadersAndPayloadResponseJSON = `{
+		"channels": [
+			{
+				"id": 1,
+				"name": "webhook-EMPTY-headers-and-payload",
+				"type": "webhook",
+				"configuration": {
+					"base_url": "http://example.com",
+					"headers": "",
+					"payload": "",
+					"payload_type": ""
+				},
+				"links": {
+					"policy_ids": []
+				}
+			},
+			{
+				"id": 2,
+				"name": "webhook-WEIRD-headers-and-payload",
+				"type": "webhook",
+				"configuration": {
+					"base_url": "http://example.com",
+					"headers": {
+						"": ""
+					},
+					"payload": {
+						"": ""
+					},
+					"payload_type": "application/json"
+				},
+				"links": {
+					"policy_ids": []
+				}
+			}
+		]
+	}`
 )
 
 func TestListChannels(t *testing.T) {
@@ -100,6 +138,50 @@ func TestListChannels(t *testing.T) {
 			Configuration: ChannelConfiguration{
 				Recipients:            "test@testing.com",
 				IncludeJSONAttachment: "true",
+			},
+			Links: ChannelLinks{
+				PolicyIDs: []int{},
+			},
+		},
+	}
+
+	actual, err := alerts.ListChannels()
+
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, expected, actual)
+}
+
+func TestListChannelsWebhookWithEmptyHeadersAndPayload(t *testing.T) {
+	t.Parallel()
+	alerts := newMockResponse(t, testWebhookEmptyHeadersAndPayloadResponseJSON, http.StatusOK)
+
+	expected := []*Channel{
+		{
+			ID:   1,
+			Name: "webhook-EMPTY-headers-and-payload",
+			Type: "webhook",
+			Configuration: ChannelConfiguration{
+				BaseURL:     "http://example.com",
+				PayloadType: "",
+			},
+			Links: ChannelLinks{
+				PolicyIDs: []int{},
+			},
+		},
+		{
+			ID:   2,
+			Name: "webhook-WEIRD-headers-and-payload",
+			Type: "webhook",
+			Configuration: ChannelConfiguration{
+				BaseURL: "http://example.com",
+				Headers: MapStringString{
+					"": "",
+				},
+				Payload: MapStringString{
+					"": "",
+				},
+				PayloadType: "application/json",
 			},
 			Links: ChannelLinks{
 				PolicyIDs: []int{},

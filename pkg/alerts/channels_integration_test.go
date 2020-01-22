@@ -3,10 +3,8 @@
 package alerts
 
 import (
-	"os"
 	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/stretchr/testify/require"
 )
 
@@ -68,33 +66,43 @@ func TestIntegrationChannel(t *testing.T) {
 			Name: "integration-test-webhook",
 			Type: "webhook",
 			Configuration: ChannelConfiguration{
-				BaseURL:      "https://test.com",
-				AuthUsername: "devtoolkit",
-				AuthPassword: "123abc",
-				PayloadType:  "application/json",
-				Payload: map[string]string{
-					"account_id":               "$ACCOUNT_ID",
-					"account_name":             "$ACCOUNT_NAME",
-					"condition_id":             "$CONDITION_ID",
-					"condition_name":           "$CONDITION_NAME",
-					"current_state":            "$EVENT_STATE",
-					"details":                  "$EVENT_DETAILS",
-					"event_type":               "$EVENT_TYPE",
-					"incident_acknowledge_url": "$INCIDENT_ACKNOWLEDGE_URL",
-					"incident_id":              "$INCIDENT_ID",
-					"incident_url":             "$INCIDENT_URL",
-					"owner":                    "$EVENT_OWNER",
-					"policy_name":              "$POLICY_NAME",
-					"policy_url":               "$POLICY_URL",
-					"runbook_url":              "$RUNBOOK_URL",
-					"severity":                 "$SEVERITY",
-					"targets":                  "$TARGETS",
-					"timestamp":                "$TIMESTAMP",
-					"violation_chart_url":      "$VIOLATION_CHART_URL",
-				},
-				Headers: map[string]string{
+				BaseURL:     "https://test.com",
+				PayloadType: "application/json",
+				Headers: MapStringString{
 					"x-test-header": "test-header",
 				},
+				Payload: MapStringString{
+					"account_id": "123",
+				},
+			},
+			Links: ChannelLinks{
+				PolicyIDs: []int{},
+			},
+		}
+
+		testChannelWebhookEmptyHeadersAndPayload = Channel{
+			Name: "integration-test-webhook-empty-headers-and-payload",
+			Type: "webhook",
+			Configuration: ChannelConfiguration{
+				BaseURL: "https://test.com",
+			},
+			Links: ChannelLinks{
+				PolicyIDs: []int{},
+			},
+		}
+
+		testChannelWebhookWeirdHeadersAndPayload = Channel{
+			Name: "integration-test-webhook-weird-headers-and-payload",
+			Type: "webhook",
+			Configuration: ChannelConfiguration{
+				BaseURL: "https://test.com",
+				Headers: MapStringString{
+					"": "",
+				},
+				Payload: MapStringString{
+					"": "",
+				},
+				PayloadType: "application/json",
 			},
 			Links: ChannelLinks{
 				PolicyIDs: []int{},
@@ -107,54 +115,30 @@ func TestIntegrationChannel(t *testing.T) {
 			testChannelSlack,
 			testChannelVictorops,
 			testChannelWebhook,
+			testChannelWebhookEmptyHeadersAndPayload,
+			testChannelWebhookWeirdHeadersAndPayload,
 		}
 	)
 
-	client := newChannelsTestClient(t)
+	client := newIntegrationTestClient(t)
 
 	for _, channel := range channels {
 		// Test: Create
-		createResult := testCreateChannel(t, client, channel)
+		created, err := client.CreateChannel(channel)
+
+		require.NoError(t, err)
+		require.NotNil(t, created)
 
 		// Test: Read
-		readResult := testReadChannel(t, client, createResult)
+		read, err := client.GetChannel(created.ID)
+
+		require.NoError(t, err)
+		require.NotNil(t, read)
 
 		// Test: Delete
-		testDeleteChannel(t, client, readResult)
+		deleted, err := client.DeleteChannel(read.ID)
+
+		require.NoError(t, err)
+		require.NotNil(t, deleted)
 	}
-}
-
-func testCreateChannel(t *testing.T, client Alerts, channel Channel) *Channel {
-	result, err := client.CreateChannel(channel)
-
-	require.NoError(t, err)
-
-	return result
-}
-
-func testReadChannel(t *testing.T, client Alerts, channel *Channel) *Channel {
-	result, err := client.GetChannel(channel.ID)
-
-	require.NoError(t, err)
-
-	return result
-}
-
-func testDeleteChannel(t *testing.T, client Alerts, channel *Channel) {
-	p := *channel
-	_, err := client.DeleteChannel(p.ID)
-
-	require.NoError(t, err)
-}
-
-func newChannelsTestClient(t *testing.T) Alerts {
-	apiKey := os.Getenv("NEWRELIC_API_KEY")
-
-	if apiKey == "" {
-		t.Skipf("acceptance testing requires an API key")
-	}
-
-	return New(config.Config{
-		APIKey: apiKey,
-	})
 }
