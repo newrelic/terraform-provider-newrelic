@@ -1,4 +1,4 @@
-## 1.12.1 (Unreleased)
+## 1.12.1 (January 22, 2020)
 
 IMPROVEMENTS:
 
