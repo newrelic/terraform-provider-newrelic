@@ -5,10 +5,9 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
 func dataSourceNewRelicAlertPolicy() *schema.Resource {
@@ -36,18 +35,22 @@ func dataSourceNewRelicAlertPolicy() *schema.Resource {
 }
 
 func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Alert Policies")
 
-	policies, err := client.ListAlertPolicies()
+	name := d.Get("name").(string)
+
+	params := alerts.ListPoliciesParams{
+		Name: name,
+	}
+
+	policies, err := client.Alerts.ListPolicies(&params)
 	if err != nil {
 		return err
 	}
 
-	var policy *newrelic.AlertPolicy
-
-	name := d.Get("name").(string)
+	var policy *alerts.Policy
 
 	for _, c := range policies {
 		if strings.EqualFold(c.Name, name) {
@@ -60,17 +63,7 @@ func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("the name '%s' does not match any New Relic alert policy", name)
 	}
 
-	// New Relic provides created_at and updated_at as millisecond unix timestamps
-	// https://www.terraform.io/docs/extend/schemas/schema-types.html#date-amp-time-data
-	// "TypeString is also used for date/time data, the preferred format is RFC 3339."
-	created := unixMillis(policy.CreatedAt).Format(time.RFC3339)
-	updated := unixMillis(policy.UpdatedAt).Format(time.RFC3339)
-
 	d.SetId(strconv.Itoa(policy.ID))
-	d.Set("name", policy.Name)
-	d.Set("incident_preference", policy.IncidentPreference)
-	d.Set("created_at", created)
-	d.Set("updated_at", updated)
 
-	return nil
+	return flattenAlertPolicyDataSource(policy, d)
 }
