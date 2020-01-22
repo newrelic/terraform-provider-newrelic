@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.6.0"></a>
+## [v0.6.0] - 2020-01-22
+### Features
+- **alerts:** add GetSyntheticsCondition method ([#105](https://github.com/newrelic/newrelic-client-go/issues/105))
+
+
 <a name="v0.5.1"></a>
 ## [v0.5.1] - 2020-01-21
 ### Bug Fixes
@@ -134,7 +140,8 @@
 - get TestListApplications passing
 
 
-[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.6.0...HEAD
+[v0.6.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.5.1...v0.6.0
 [v0.5.1]: https://github.com/newrelic/newrelic-client-go/compare/v0.5.0...v0.5.1
 [v0.5.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.3.0...v0.4.0
