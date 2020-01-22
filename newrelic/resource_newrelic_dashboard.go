@@ -6,12 +6,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 var (
-	validIconValues []string = []string{
+	validIconValues = []string{
 		"none",
 		"archive",
 		"bar-chart",
@@ -57,7 +56,7 @@ var (
 		"heart",
 	}
 
-	validWidgetVisualizationValues []string = []string{
+	validWidgetVisualizationValues = []string{
 		"billboard",
 		"gauge",
 		"billboard_comparison",
@@ -298,7 +297,7 @@ func resourceNewRelicDashboard() *schema.Resource {
 }
 
 func resourceNewRelicDashboardCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 	dashboard, err := expandDashboard(d)
 	if err != nil {
 		return err
@@ -306,7 +305,7 @@ func resourceNewRelicDashboardCreate(d *schema.ResourceData, meta interface{}) e
 
 	log.Printf("[INFO] Creating New Relic dashboard: %s", dashboard.Title)
 
-	dashboard, err = client.CreateDashboard(*dashboard)
+	dashboard, err = client.Dashboards.CreateDashboard(*dashboard)
 	if err != nil {
 		return err
 	}
@@ -317,7 +316,7 @@ func resourceNewRelicDashboardCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceNewRelicDashboardRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic dashboard %s", d.Id())
 
@@ -326,9 +325,9 @@ func resourceNewRelicDashboardRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	dashboard, err := client.GetDashboard(dashboardID)
+	dashboard, err := client.Dashboards.GetDashboard(dashboardID)
 	if err != nil {
-		if err == newrelic.ErrNotFound {
+		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
@@ -340,7 +339,7 @@ func resourceNewRelicDashboardRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceNewRelicDashboardUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 	dashboard, err := expandDashboard(d)
 	if err != nil {
 		return err
@@ -354,7 +353,7 @@ func resourceNewRelicDashboardUpdate(d *schema.ResourceData, meta interface{}) e
 	dashboard.ID = id
 	log.Printf("[INFO] Updating New Relic dashboard %d", id)
 
-	_, err = client.UpdateDashboard(*dashboard)
+	_, err = client.Dashboards.UpdateDashboard(*dashboard)
 	if err != nil {
 		return err
 	}
@@ -363,7 +362,7 @@ func resourceNewRelicDashboardUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceNewRelicDashboardDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -372,8 +371,8 @@ func resourceNewRelicDashboardDelete(d *schema.ResourceData, meta interface{}) e
 
 	log.Printf("[INFO] Deleting New Relic dashboard %v", id)
 
-	if err := client.DeleteDashboard(id); err != nil {
-		if err == newrelic.ErrNotFound {
+	if _, err := client.Dashboards.DeleteDashboard(id); err != nil {
+		if _, ok := err.(*errors.NotFound); ok {
 			return nil
 		}
 		return err
