@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/plugins"
 )
 
 func dataSourceNewRelicPluginComponent() *schema.Resource {
@@ -35,22 +35,28 @@ func dataSourceNewRelicPluginComponent() *schema.Resource {
 }
 
 func dataSourceNewRelicPluginComponentRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Plugin Components")
 
 	pluginID := d.Get("plugin_id").(int)
-	components, err := client.ListComponents(pluginID)
+	name := d.Get("name").(string)
+
+	params := plugins.ListComponentsParams{
+		PluginID: pluginID,
+		Name:     name,
+	}
+
+	components, err := client.Plugins.ListComponents(&params)
 	if err != nil {
 		return err
 	}
 
-	var component *newrelic.Component
-	name := d.Get("name").(string)
+	var component *plugins.Component
 
 	for _, c := range components {
 		if c.Name == name {
-			component = &c
+			component = c
 			break
 		}
 	}
@@ -59,10 +65,14 @@ func dataSourceNewRelicPluginComponentRead(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("the name '%s' does not match any New Relic plugin components", name)
 	}
 
+	flattenPluginsComponent(component, d)
+
+	return nil
+}
+
+func flattenPluginsComponent(component *plugins.Component, d *schema.ResourceData) {
 	d.SetId(strconv.Itoa(component.ID))
 	d.Set("id", component.ID)
 	d.Set("name", component.Name)
 	d.Set("health_status", component.HealthStatus)
-
-	return nil
 }
