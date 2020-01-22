@@ -11,4 +11,5 @@ require (
 	github.com/newrelic/go-insights v1.0.3
 	github.com/newrelic/newrelic-client-go v0.5.0
 	github.com/paultyng/go-newrelic/v4 v4.10.0
+	github.com/stretchr/testify v1.4.0
 )
