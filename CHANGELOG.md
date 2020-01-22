@@ -1,4 +1,15 @@
 ## 1.12.1 (Unreleased)
+
+IMPROVEMENTS:
+
+* refactor: rebase `newrelic_alert_policy` resource on newrelic-client-go ([#341](https://github.com/terraform-providers/terraform-provider-newrelic/pull/341))
+* refactor: migrate alert conditions to newrelic-client-go ([#338](https://github.com/terraform-providers/terraform-provider-newrelic/pull/338))
+* docs: update alert-channel examples ([#325](https://github.com/terraform-providers/terraform-provider-newrelic/pull/325))
+
+BUG FIXES:
+
+* fix: Error unmarshaling `newrelic_alert_channel` configuration headers after release v1.12.0 ([#323](https://github.com/terraform-providers/terraform-provider-newrelic/issues/323))
+
 ## 1.12.0 (January 16, 2020)
 
 IMPROVEMENTS:
