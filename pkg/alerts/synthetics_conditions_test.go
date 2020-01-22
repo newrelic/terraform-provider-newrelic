@@ -40,6 +40,19 @@ func TestListSyntheticsConditions(t *testing.T) {
 	require.Equal(t, expected, actual)
 }
 
+func TestGetSyntheticsCondition(t *testing.T) {
+	t.Parallel()
+	respJSON := fmt.Sprintf(`{ "synthetics_conditions": [%s] }`, testSyntheticsConditionJson)
+	alerts := newMockResponse(t, respJSON, http.StatusOK)
+
+	expected := &testSyntheticsCondition
+	actual, err := alerts.GetSyntheticsCondition(testPolicyID, testSyntheticsCondition.ID)
+
+	require.NoError(t, err)
+	require.NotNil(t, actual)
+	require.Equal(t, expected, actual)
+}
+
 func TestCreateSyntheticsCondition(t *testing.T) {
 	t.Parallel()
 	respJSON := fmt.Sprintf(`{ "synthetics_condition": %s }`, testSyntheticsConditionJson)

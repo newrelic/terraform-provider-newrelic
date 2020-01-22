@@ -77,9 +77,15 @@ func TestIntegrationSyntheticsConditions(t *testing.T) {
 	require.NoError(t, err)
 	require.NotZero(t, conditions)
 
+	// Test: Get
+	condition, err := alerts.GetSyntheticsCondition(policy.ID, conditions[0].ID)
+
+	require.NoError(t, err)
+	require.NotZero(t, condition)
+
 	// Test: Update
-	created.Name = fmt.Sprintf("test-synthetics-alert-condition-updated-%s", testRandStr)
-	updated, err := alerts.UpdateSyntheticsCondition(*created)
+	condition.Name = fmt.Sprintf("test-synthetics-alert-condition-updated-%s", testRandStr)
+	updated, err := alerts.UpdateSyntheticsCondition(*condition)
 
 	require.NoError(t, err)
 	require.NotZero(t, updated)
