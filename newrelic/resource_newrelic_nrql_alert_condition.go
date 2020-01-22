@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func resourceNewRelicNrqlAlertCondition() *schema.Resource {
@@ -132,116 +132,13 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 	}
 }
 
-func buildNrqlAlertConditionStruct(d *schema.ResourceData) *newrelic.AlertNrqlCondition {
-	termSet := d.Get("term").([]interface{})
-	terms := make([]newrelic.AlertConditionTerm, len(termSet))
-
-	for i, termI := range termSet {
-		termM := termI.(map[string]interface{})
-
-		terms[i] = newrelic.AlertConditionTerm{
-			Duration:     termM["duration"].(int),
-			Operator:     termM["operator"].(string),
-			Priority:     termM["priority"].(string),
-			Threshold:    termM["threshold"].(float64),
-			TimeFunction: termM["time_function"].(string),
-		}
-	}
-
-	query := newrelic.AlertNrqlQuery{}
-
-	if nrqlQuery, ok := d.GetOk("nrql.0.query"); ok {
-		query.Query = nrqlQuery.(string)
-	}
-
-	if sinceValue, ok := d.GetOk("nrql.0.since_value"); ok {
-		query.SinceValue = sinceValue.(string)
-	}
-
-	condition := newrelic.AlertNrqlCondition{
-		Name:                d.Get("name").(string),
-		Type:                d.Get("type").(string),
-		Enabled:             d.Get("enabled").(bool),
-		Terms:               terms,
-		PolicyID:            d.Get("policy_id").(int),
-		Nrql:                query,
-		ValueFunction:       d.Get("value_function").(string),
-		ViolationCloseTimer: d.Get("violation_time_limit_seconds").(int),
-	}
-
-	if attr, ok := d.GetOk("runbook_url"); ok {
-		condition.RunbookURL = attr.(string)
-	}
-
-	if attr, ok := d.GetOkExists("ignore_overlap"); ok {
-		condition.IgnoreOverlap = attr.(bool)
-	}
-
-	if attr, ok := d.GetOkExists("violation_time_limit_seconds"); ok {
-		condition.ViolationCloseTimer = attr.(int)
-	}
-
-	if attr, ok := d.GetOk("expected_groups"); ok {
-		condition.ExpectedGroups = attr.(int)
-	}
-
-	return &condition
-}
-
-func readNrqlAlertConditionStruct(condition *newrelic.AlertNrqlCondition, d *schema.ResourceData) error {
-	ids, err := parseIDs(d.Id(), 2)
-	if err != nil {
-		return err
-	}
-
-	policyID := ids[0]
-
-	d.Set("policy_id", policyID)
-	d.Set("name", condition.Name)
-	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("enabled", condition.Enabled)
-	d.Set("type", condition.Type)
-	d.Set("expected_groups", condition.ExpectedGroups)
-	d.Set("ignore_overlap", condition.IgnoreOverlap)
-	d.Set("violation_time_limit_seconds", condition.ViolationCloseTimer)
-
-	if condition.ValueFunction == "" {
-		d.Set("value_function", "single_value")
-	} else {
-		d.Set("value_function", condition.ValueFunction)
-	}
-
-	if err := d.Set("nrql", flattenNrql(condition.Nrql)); err != nil {
-		return err
-	}
-
-	var terms []map[string]interface{}
-
-	for _, src := range condition.Terms {
-		dst := map[string]interface{}{
-			"duration":      src.Duration,
-			"operator":      src.Operator,
-			"priority":      src.Priority,
-			"threshold":     src.Threshold,
-			"time_function": src.TimeFunction,
-		}
-		terms = append(terms, dst)
-	}
-
-	if err := d.Set("term", terms); err != nil {
-		return fmt.Errorf("[DEBUG] Error setting alert condition terms: %#v", err)
-	}
-
-	return nil
-}
-
 func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
-	condition := buildNrqlAlertConditionStruct(d)
+	client := meta.(*ProviderConfig).NewClient
+	condition := expandNrqlAlertConditionStruct(d)
 
 	log.Printf("[INFO] Creating New Relic NRQL alert condition %s", condition.Name)
 
-	condition, err := client.CreateAlertNrqlCondition(*condition)
+	condition, err := client.Alerts.CreateNrqlCondition(*condition)
 	if err != nil {
 		return err
 	}
@@ -252,7 +149,7 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 }
 
 func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic NRQL alert condition %s", d.Id())
 
@@ -264,18 +161,18 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 	policyID := ids[0]
 	id := ids[1]
 
-	_, err = client.GetAlertPolicy(policyID)
+	_, err = client.Alerts.GetPolicy(policyID)
 	if err != nil {
-		if err == newrelic.ErrNotFound {
+		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
 		return err
 	}
 
-	condition, err := client.GetAlertNrqlCondition(policyID, id)
+	condition, err := client.Alerts.GetNrqlCondition(policyID, id)
 	if err != nil {
-		if err == newrelic.ErrNotFound {
+		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
@@ -283,12 +180,12 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	return readNrqlAlertConditionStruct(condition, d)
+	return flattenNrqlConditionStruct(condition, d)
 }
 
 func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
-	condition := buildNrqlAlertConditionStruct(d)
+	client := meta.(*ProviderConfig).NewClient
+	condition := expandNrqlAlertConditionStruct(d)
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
@@ -303,7 +200,7 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 
 	log.Printf("[INFO] Updating New Relic NRQL alert condition %d", id)
 
-	_, err = client.UpdateAlertNrqlCondition(*condition)
+	_, err = client.Alerts.UpdateNrqlCondition(*condition)
 	if err != nil {
 		return err
 	}
@@ -312,19 +209,19 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 }
 
 func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
 		return err
 	}
 
-	policyID := ids[0]
 	id := ids[1]
 
 	log.Printf("[INFO] Deleting New Relic NRQL alert condition %d", id)
 
-	if err := client.DeleteAlertNrqlCondition(policyID, id); err != nil {
+	_, err = client.Alerts.DeleteNrqlCondition(id)
+	if err != nil {
 		return err
 	}
 
