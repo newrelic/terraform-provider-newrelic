@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 )
 
 func TestAccNewRelicDashboard_Basic(t *testing.T) {
@@ -509,14 +510,14 @@ func testAccCheckNewRelicDashboardExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("no dashboard ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).Client
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		id, err := strconv.ParseInt(rs.Primary.ID, 10, 32)
 		if err != nil {
 			return err
 		}
 
-		found, err := client.GetDashboard(int(id))
+		found, err := client.Dashboards.GetDashboard(int(id))
 		if err != nil {
 			return err
 		}
@@ -530,7 +531,7 @@ func testAccCheckNewRelicDashboardExists(n string) resource.TestCheckFunc {
 }
 
 func testAccCheckNewRelicDashboardDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderConfig).Client
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_dashboard" {
 			continue
@@ -541,7 +542,7 @@ func testAccCheckNewRelicDashboardDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = client.GetDashboard(int(id))
+		_, err = client.Dashboards.GetDashboard(int(id))
 
 		if err == nil {
 			return fmt.Errorf("dashboard still exists")
@@ -553,12 +554,17 @@ func testAccCheckNewRelicDashboardDestroy(s *terraform.State) error {
 
 func deleteDashboard(title string) func() {
 	return func() {
-		client := testAccProvider.Meta().(*ProviderConfig).Client
-		dashboards, _ := client.ListDashboards()
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+		params := dashboards.ListDashboardsParams{
+			Title: title,
+		}
+
+		dashboards, _ := client.Dashboards.ListDashboards(&params)
 
 		for _, d := range dashboards {
 			if d.Title == title {
-				_ = client.DeleteDashboard(d.ID)
+				_, _ = client.Dashboards.DeleteDashboard(d.ID)
 				break
 			}
 		}

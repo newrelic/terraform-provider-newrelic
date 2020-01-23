@@ -6,34 +6,41 @@ import (
 	"crypto/x509"
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
 	insights "github.com/newrelic/go-insights/client"
 	nr "github.com/newrelic/newrelic-client-go/newrelic"
-	"github.com/newrelic/newrelic-client-go/pkg/config"
-	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
-	newrelic "github.com/paultyng/go-newrelic/v4/api"
 )
 
 // Config contains New Relic provider settings
 type Config struct {
-	APIKey             string
-	APIURL             string
-	InsightsAccountID  string
-	InsightsInsertKey  string
-	InsightsInsertURL  string
-	InsightsQueryKey   string
-	InsightsQueryURL   string
-	userAgent          string
-	CACertFile         string
-	InsecureSkipVerify bool
+	APIKey               string
+	APIURL               string
+	CACertFile           string
+	InfrastructureAPIURL string
+	InsecureSkipVerify   bool
+	InsightsAccountID    string
+	InsightsInsertKey    string
+	InsightsInsertURL    string
+	InsightsQueryKey     string
+	InsightsQueryURL     string
+	NerdGraphAPIURL      string
+	SyntheticsAPIURL     string
+	userAgent            string
 }
 
 // Client returns a new client for accessing New Relic
-func (c *Config) Client() (*newrelic.Client, error) {
+func (c *Config) Client() (*nr.NewRelic, error) {
+	options := []nr.ConfigOption{}
+
+	options = append(options, nr.ConfigAPIKey(c.APIKey))
+	options = append(options, nr.ConfigUserAgent(c.userAgent))
+
 	tlsCfg := &tls.Config{}
+
 	if c.CACertFile != "" {
 		caCert, _, err := pathorcontents.Read(c.CACertFile)
 		if err != nil {
@@ -43,41 +50,45 @@ func (c *Config) Client() (*newrelic.Client, error) {
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM([]byte(caCert))
 		tlsCfg.RootCAs = caCertPool
-	}
 
-	if c.InsecureSkipVerify {
+		var t http.RoundTripper = &http.Transport{TLSClientConfig: tlsCfg}
+		options = append(options, nr.ConfigHTTPTransport(&t))
+	} else if c.InsecureSkipVerify {
 		tlsCfg.InsecureSkipVerify = true
+
+		var t http.RoundTripper = &http.Transport{TLSClientConfig: tlsCfg}
+		options = append(options, nr.ConfigHTTPTransport(&t))
 	}
 
-	nrConfig := newrelic.Config{
-		APIKey:    c.APIKey,
-		BaseURL:   c.APIURL,
-		Debug:     logging.IsDebugOrHigher(),
-		UserAgent: c.userAgent,
-		TLSConfig: tlsCfg,
+	if c.APIURL != "" {
+		options = append(options, nr.ConfigBaseURL(c.APIURL))
 	}
 
-	client := newrelic.New(nrConfig)
+	if c.SyntheticsAPIURL != "" {
+		options = append(options, nr.ConfigSyntheticsBaseURL(c.SyntheticsAPIURL))
+	}
+
+	if c.InfrastructureAPIURL != "" {
+		options = append(options, nr.ConfigInfrastructureBaseURL(c.InfrastructureAPIURL))
+	}
+
+	if c.NerdGraphAPIURL != "" {
+		options = append(options, nr.ConfigNerdGraphBaseURL(c.NerdGraphAPIURL))
+	}
+
+	if logging.LogLevel() != "" {
+		options = append(options, nr.ConfigLogLevel(logging.LogLevel()))
+	}
+
+	client, err := nr.New(options...)
+
+	if err != nil {
+		return nil, err
+	}
 
 	log.Printf("[INFO] New Relic client configured")
 
-	return &client, nil
-}
-
-// ClientInfra returns a new client for accessing New Relic
-func (c *Config) ClientInfra() (*newrelic.InfraClient, error) {
-	nrConfig := newrelic.Config{
-		APIKey:    c.APIKey,
-		BaseURL:   c.APIURL,
-		Debug:     logging.IsDebugOrHigher(),
-		UserAgent: c.userAgent,
-	}
-
-	client := newrelic.NewInfraClient(nrConfig)
-
-	log.Printf("[INFO] New Relic Infra client configured")
-
-	return &client, nil
+	return client, nil
 }
 
 // ClientInsightsInsert returns a new Insights insert client
@@ -130,26 +141,9 @@ func (c *Config) ClientInsightsQuery() (*insights.QueryClient, error) {
 	return client, nil
 }
 
-// ClientSynthetics returns a new client for accessing New Relic Synthetics
-func (c *Config) ClientSynthetics() (*synthetics.Synthetics, error) {
-	cfg := config.Config{
-		APIKey:    c.APIKey,
-		BaseURL:   c.APIURL,
-		UserAgent: c.userAgent,
-	}
-
-	client := synthetics.New(cfg)
-
-	log.Printf("[INFO] New Relic Synthetics client configured")
-
-	return &client, nil
-}
-
 // ProviderConfig for the custom provider
 type ProviderConfig struct {
 	NewClient            *nr.NewRelic
-	Client               *newrelic.Client
 	InsightsInsertClient *insights.InsertClient
 	InsightsQueryClient  *insights.QueryClient
-	InfraClient          *newrelic.InfraClient
 }

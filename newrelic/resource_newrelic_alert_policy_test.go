@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
 func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
@@ -120,7 +121,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 func testAccCheckNewRelicAlertPolicyDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderConfig).Client
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_alert_policy" {
 			continue
@@ -131,7 +132,7 @@ func testAccCheckNewRelicAlertPolicyDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = client.GetAlertPolicy(int(id))
+		_, err = client.Alerts.GetPolicy(int(id))
 
 		if err == nil {
 			return fmt.Errorf("policy still exists")
@@ -151,14 +152,14 @@ func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("no policy ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).Client
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		id, err := strconv.ParseInt(rs.Primary.ID, 10, 32)
 		if err != nil {
 			return err
 		}
 
-		found, err := client.GetAlertPolicy(int(id))
+		found, err := client.Alerts.GetPolicy(int(id))
 		if err != nil {
 			return err
 		}
@@ -173,12 +174,16 @@ func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 
 func testAccDeleteAlertPolicy(name string) func() {
 	return func() {
-		client := testAccProvider.Meta().(*ProviderConfig).Client
-		alertPolicies, _ := client.ListAlertPolicies()
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+		params := alerts.ListPoliciesParams{
+			Name: name,
+		}
+		alertPolicies, _ := client.Alerts.ListPolicies(&params)
 
 		for _, d := range alertPolicies {
 			if d.Name == name {
-				_ = client.DeleteAlertPolicy(d.ID)
+				_, _ = client.Alerts.DeletePolicy(d.ID)
 				break
 			}
 		}

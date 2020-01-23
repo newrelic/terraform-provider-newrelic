@@ -6,6 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+
+	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
 var (
@@ -49,12 +51,15 @@ func TestSerializeIDs_Basic(t *testing.T) {
 
 func testAccDeleteNewRelicAlertPolicy(name string) func() {
 	return func() {
-		client := testAccProvider.Meta().(*ProviderConfig).Client
-		policies, _ := client.ListAlertPolicies()
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+		params := alerts.ListPoliciesParams{
+			Name: name,
+		}
+		policies, _ := client.Alerts.ListPolicies(&params)
 
 		for _, p := range policies {
 			if p.Name == name {
-				_ = client.DeleteAlertPolicy(p.ID)
+				_, _ = client.Alerts.DeletePolicy(p.ID)
 				break
 			}
 		}

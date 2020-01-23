@@ -99,7 +99,7 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 }
 
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderConfig).Client
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_nrql_alert_condition" {
 			continue
@@ -113,7 +113,7 @@ func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 		policyID := ids[0]
 		id := ids[1]
 
-		_, err = client.GetAlertNrqlCondition(policyID, id)
+		_, err = client.Alerts.GetNrqlCondition(policyID, id)
 		if err == nil {
 			return fmt.Errorf("NRQL Alert condition still exists") //nolint:golint
 		}
@@ -132,7 +132,7 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 			return fmt.Errorf("no alert condition ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).Client
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		ids, err := parseIDs(rs.Primary.ID, 2)
 		if err != nil {
@@ -142,7 +142,7 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 		policyID := ids[0]
 		id := ids[1]
 
-		found, err := client.GetAlertNrqlCondition(policyID, id)
+		found, err := client.Alerts.GetNrqlCondition(policyID, id)
 		if err != nil {
 			return err
 		}

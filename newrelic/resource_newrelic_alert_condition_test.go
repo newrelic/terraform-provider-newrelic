@@ -201,7 +201,7 @@ func TestAccNewRelicAlertCondition_EmptyName(t *testing.T) {
 }
 
 func testAccCheckNewRelicAlertConditionDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderConfig).Client
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_alert_condition" {
 			continue
@@ -215,7 +215,7 @@ func testAccCheckNewRelicAlertConditionDestroy(s *terraform.State) error {
 		policyID := ids[0]
 		id := ids[1]
 
-		_, err = client.GetAlertCondition(policyID, id)
+		_, err = client.Alerts.GetCondition(policyID, id)
 		if err == nil {
 			return fmt.Errorf("alert condition still exists")
 		}
@@ -234,7 +234,7 @@ func testAccCheckNewRelicAlertConditionExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("no alert condition ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).Client
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		ids, err := parseIDs(rs.Primary.ID, 2)
 		if err != nil {
@@ -244,7 +244,7 @@ func testAccCheckNewRelicAlertConditionExists(n string) resource.TestCheckFunc {
 		policyID := ids[0]
 		id := ids[1]
 
-		found, err := client.GetAlertCondition(policyID, id)
+		found, err := client.Alerts.GetCondition(policyID, id)
 		if err != nil {
 			return err
 		}
