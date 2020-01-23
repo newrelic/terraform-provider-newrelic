@@ -2,6 +2,13 @@
 ## [Unreleased]
 
 
+<a name="v0.7.0"></a>
+## [v0.7.0] - 2020-01-23
+### Features
+- **newrelic:** add ConfigOptions for logging
+- **newrelic:** add the ability to configure base URLs per API
+
+
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2020-01-22
 ### Features
@@ -140,7 +147,8 @@
 - get TestListApplications passing
 
 
-[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.7.0...HEAD
+[v0.7.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.5.1...v0.6.0
 [v0.5.1]: https://github.com/newrelic/newrelic-client-go/compare/v0.5.0...v0.5.1
 [v0.5.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.4.0...v0.5.0
