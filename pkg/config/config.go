@@ -21,10 +21,13 @@ type Config struct {
 	Region string
 
 	// HTTP
-	Timeout       *time.Duration
-	HTTPTransport *http.RoundTripper
-	UserAgent     string
-	BaseURL       string
+	Timeout               *time.Duration
+	HTTPTransport         *http.RoundTripper
+	UserAgent             string
+	BaseURL               string
+	SyntheticsBaseURL     string
+	InfrastructureBaseURL string
+	NerdGraphBaseURL      string
 
 	// LogLevel can be one of the following values:
 	// "panic", "fatal", "error", "warn", "info", "debug", "trace"

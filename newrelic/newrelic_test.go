@@ -110,3 +110,41 @@ func TestNew_optionBaseURL(t *testing.T) {
 	assert.NotNil(t, nr)
 	assert.NoError(t, err)
 }
+
+func TestNew_optionInfrastructureBaseURL(t *testing.T) {
+	t.Parallel()
+
+	nr, err := New(ConfigAPIKey(testAPIkey), ConfigInfrastructureBaseURL(""))
+	assert.Nil(t, nr)
+	assert.Error(t, errors.New("Infrastructure base URL can not be empty"), err)
+
+	nr, err = New(ConfigAPIKey(testAPIkey), ConfigInfrastructureBaseURL("http://localhost/"))
+
+	assert.NotNil(t, nr)
+	assert.NoError(t, err)
+}
+
+func TestNew_optionSyntheticsBaseURL(t *testing.T) {
+	t.Parallel()
+
+	nr, err := New(ConfigAPIKey(testAPIkey), ConfigSyntheticsBaseURL(""))
+	assert.Nil(t, nr)
+	assert.Error(t, errors.New("Synthetics base URL can not be empty"), err)
+
+	nr, err = New(ConfigAPIKey(testAPIkey), ConfigSyntheticsBaseURL("http://localhost/"))
+
+	assert.NotNil(t, nr)
+	assert.NoError(t, err)
+}
+func TestNew_optionNerdGraphBaseURL(t *testing.T) {
+	t.Parallel()
+
+	nr, err := New(ConfigAPIKey(testAPIkey), ConfigNerdGraphBaseURL(""))
+	assert.Nil(t, nr)
+	assert.Error(t, errors.New("NerdGraph base URL can not be empty"), err)
+
+	nr, err = New(ConfigAPIKey(testAPIkey), ConfigNerdGraphBaseURL("http://localhost/"))
+
+	assert.NotNil(t, nr)
+	assert.NoError(t, err)
+}

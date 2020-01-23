@@ -67,10 +67,10 @@ func newTestClient(handler http.Handler) Synthetics {
 	ts := httptest.NewServer(handler)
 
 	c := New(config.Config{
-		APIKey:    "abc123",
-		BaseURL:   ts.URL,
-		UserAgent: "newrelic/newrelic-client-go",
-		LogLevel:  "debug",
+		APIKey:            "abc123",
+		SyntheticsBaseURL: ts.URL,
+		UserAgent:         "newrelic/newrelic-client-go",
+		LogLevel:          "debug",
 	})
 
 	return c
@@ -90,4 +90,12 @@ func newMockResponse(
 
 		require.NoError(t, err)
 	}))
+}
+
+func TestSetSyntheticsBaseURL(t *testing.T) {
+	a := New(config.Config{
+		SyntheticsBaseURL: "http://localhost",
+	})
+
+	assert.Equal(t, "http://localhost", a.client.Config.BaseURL)
 }

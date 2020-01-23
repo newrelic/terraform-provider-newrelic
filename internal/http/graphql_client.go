@@ -10,22 +10,24 @@ import (
 
 // GraphQLClient represents a graphQL HTTP client.
 type GraphQLClient struct {
-	client *NewRelicClient
+	Client *NewRelicClient
 	config config.Config
 	logger logging.Logger
 }
 
 // NewGraphQLClient returns a new instance of GraphQLClient.
 func NewGraphQLClient(cfg config.Config) *GraphQLClient {
-	if cfg.BaseURL == "" {
-		cfg.BaseURL = region.NerdGraphBaseURLs[region.Parse(cfg.Region)]
+	if cfg.NerdGraphBaseURL == "" {
+		cfg.NerdGraphBaseURL = region.NerdGraphBaseURLs[region.Parse(cfg.Region)]
 	}
+
+	cfg.BaseURL = cfg.NerdGraphBaseURL
 
 	c := NewClient(cfg)
 	c.SetErrorValue(&graphQLErrorResponse{})
 
 	return &GraphQLClient{
-		client: &c,
+		Client: &c,
 		config: cfg,
 		logger: cfg.GetLogger(),
 	}
@@ -42,7 +44,7 @@ func (g *GraphQLClient) Query(query string, vars map[string]interface{}, respBod
 		Data: respBody,
 	}
 
-	if _, err := g.client.Post(g.config.BaseURL, nil, &req, &resp); err != nil {
+	if _, err := g.Client.Post(g.config.BaseURL, nil, &req, &resp); err != nil {
 		return err
 	}
 

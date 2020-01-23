@@ -118,7 +118,7 @@ func ConfigUserAgent(ua string) ConfigOption {
 	}
 }
 
-// ConfigBaseURL sets the Base URL used to make requests.
+// ConfigBaseURL sets the base URL used to make requests to the REST API V2.
 func ConfigBaseURL(url string) ConfigOption {
 	return func(cfg *config.Config) error {
 		if url != "" {
@@ -127,5 +127,41 @@ func ConfigBaseURL(url string) ConfigOption {
 		}
 
 		return errors.New("base URL can not be empty")
+	}
+}
+
+// ConfigInfrastructureBaseURL sets the base URL used to make requests to the Infrastructure API.
+func ConfigInfrastructureBaseURL(url string) ConfigOption {
+	return func(cfg *config.Config) error {
+		if url != "" {
+			cfg.InfrastructureBaseURL = url
+			return nil
+		}
+
+		return errors.New("Infrastructure base URL can not be empty")
+	}
+}
+
+// ConfigSyntheticsBaseURL sets the base URL used to make requests to the Synthetics API.
+func ConfigSyntheticsBaseURL(url string) ConfigOption {
+	return func(cfg *config.Config) error {
+		if url != "" {
+			cfg.SyntheticsBaseURL = url
+			return nil
+		}
+
+		return errors.New("Synthetics base URL can not be empty")
+	}
+}
+
+// ConfigNerdGraphBaseURL sets the base URL used to make requests to the NerdGraph API.
+func ConfigNerdGraphBaseURL(url string) ConfigOption {
+	return func(cfg *config.Config) error {
+		if url != "" {
+			cfg.NerdGraphBaseURL = url
+			return nil
+		}
+
+		return errors.New("NerdGraph base URL can not be empty")
 	}
 }
