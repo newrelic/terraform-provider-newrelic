@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/newrelic/newrelic-client-go/internal/logging"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
@@ -163,5 +164,38 @@ func ConfigNerdGraphBaseURL(url string) ConfigOption {
 		}
 
 		return errors.New("NerdGraph base URL can not be empty")
+	}
+}
+
+// ConfigLogLevel sets the log level for the client.
+func ConfigLogLevel(logLevel string) ConfigOption {
+	return func(cfg *config.Config) error {
+		if logLevel != "" {
+			cfg.LogLevel = logLevel
+			return nil
+		}
+
+		return errors.New("log level can not be empty")
+	}
+}
+
+// ConfigLogJSON toggles JSON formatting on for the logger if set to true.
+func ConfigLogJSON(logJSON bool) ConfigOption {
+	return func(cfg *config.Config) error {
+		cfg.LogJSON = logJSON
+		return nil
+	}
+}
+
+// ConfigLogger can be used to customize the client's logger.
+// Custom loggers must conform to the logging.Logger interface.
+func ConfigLogger(logger logging.Logger) ConfigOption {
+	return func(cfg *config.Config) error {
+		if logger != nil {
+			cfg.Logger = logger
+			return nil
+		}
+
+		return errors.New("logger can not be nil")
 	}
 }

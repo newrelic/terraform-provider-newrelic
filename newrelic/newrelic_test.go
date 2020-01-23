@@ -148,3 +148,47 @@ func TestNew_optionNerdGraphBaseURL(t *testing.T) {
 	assert.NotNil(t, nr)
 	assert.NoError(t, err)
 }
+
+func TestNew_optionLogLevel(t *testing.T) {
+	t.Parallel()
+
+	nr, err := New(ConfigAPIKey(testAPIkey), ConfigLogLevel(""))
+	assert.Nil(t, nr)
+	assert.Error(t, errors.New("log level can not be empty"), err)
+
+	nr, err = New(ConfigAPIKey(testAPIkey), ConfigLogLevel("debug"))
+
+	assert.NotNil(t, nr)
+	assert.NoError(t, err)
+}
+
+func TestNew_optionLogJSON(t *testing.T) {
+	t.Parallel()
+
+	nr, err := New(ConfigAPIKey(testAPIkey), ConfigLogJSON(true))
+
+	assert.NotNil(t, nr)
+	assert.NoError(t, err)
+}
+
+type TestLogger struct{}
+
+func (t *TestLogger) Error(s string, a ...interface{}) {}
+func (t *TestLogger) Info(s string, a ...interface{})  {}
+func (t *TestLogger) Debug(s string, a ...interface{}) {}
+func (t *TestLogger) Warn(s string, a ...interface{})  {}
+
+func TestNew_optionLogger(t *testing.T) {
+	t.Parallel()
+
+	nr, err := New(ConfigAPIKey(testAPIkey), ConfigLogger(nil))
+	assert.Nil(t, nr)
+	assert.Error(t, errors.New("logger can not be nil"), err)
+
+	testLogger := TestLogger{}
+
+	nr, err = New(ConfigAPIKey(testAPIkey), ConfigLogger(&testLogger))
+
+	assert.NotNil(t, nr)
+	assert.NoError(t, err)
+}
