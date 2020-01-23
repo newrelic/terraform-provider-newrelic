@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/newrelic/newrelic-client-go/internal/logging"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
@@ -118,7 +119,7 @@ func ConfigUserAgent(ua string) ConfigOption {
 	}
 }
 
-// ConfigBaseURL sets the Base URL used to make requests.
+// ConfigBaseURL sets the base URL used to make requests to the REST API V2.
 func ConfigBaseURL(url string) ConfigOption {
 	return func(cfg *config.Config) error {
 		if url != "" {
@@ -127,5 +128,74 @@ func ConfigBaseURL(url string) ConfigOption {
 		}
 
 		return errors.New("base URL can not be empty")
+	}
+}
+
+// ConfigInfrastructureBaseURL sets the base URL used to make requests to the Infrastructure API.
+func ConfigInfrastructureBaseURL(url string) ConfigOption {
+	return func(cfg *config.Config) error {
+		if url != "" {
+			cfg.InfrastructureBaseURL = url
+			return nil
+		}
+
+		return errors.New("infrastructure base URL can not be empty")
+	}
+}
+
+// ConfigSyntheticsBaseURL sets the base URL used to make requests to the Synthetics API.
+func ConfigSyntheticsBaseURL(url string) ConfigOption {
+	return func(cfg *config.Config) error {
+		if url != "" {
+			cfg.SyntheticsBaseURL = url
+			return nil
+		}
+
+		return errors.New("synthetics base URL can not be empty")
+	}
+}
+
+// ConfigNerdGraphBaseURL sets the base URL used to make requests to the NerdGraph API.
+func ConfigNerdGraphBaseURL(url string) ConfigOption {
+	return func(cfg *config.Config) error {
+		if url != "" {
+			cfg.NerdGraphBaseURL = url
+			return nil
+		}
+
+		return errors.New("nerdgraph base URL can not be empty")
+	}
+}
+
+// ConfigLogLevel sets the log level for the client.
+func ConfigLogLevel(logLevel string) ConfigOption {
+	return func(cfg *config.Config) error {
+		if logLevel != "" {
+			cfg.LogLevel = logLevel
+			return nil
+		}
+
+		return errors.New("log level can not be empty")
+	}
+}
+
+// ConfigLogJSON toggles JSON formatting on for the logger if set to true.
+func ConfigLogJSON(logJSON bool) ConfigOption {
+	return func(cfg *config.Config) error {
+		cfg.LogJSON = logJSON
+		return nil
+	}
+}
+
+// ConfigLogger can be used to customize the client's logger.
+// Custom loggers must conform to the logging.Logger interface.
+func ConfigLogger(logger logging.Logger) ConfigOption {
+	return func(cfg *config.Config) error {
+		if logger != nil {
+			cfg.Logger = logger
+			return nil
+		}
+
+		return errors.New("logger can not be nil")
 	}
 }
