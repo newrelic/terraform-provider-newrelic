@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	nrInternalAccount bool = os.Getenv("NR_ACC_TESTING") != ""
+	nrInternalAccount = os.Getenv("NR_ACC_TESTING") != ""
 )
 
 func TestParseIDs_Basic(t *testing.T) {
