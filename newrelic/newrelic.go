@@ -139,7 +139,7 @@ func ConfigInfrastructureBaseURL(url string) ConfigOption {
 			return nil
 		}
 
-		return errors.New("Infrastructure base URL can not be empty")
+		return errors.New("infrastructure base URL can not be empty")
 	}
 }
 
@@ -151,7 +151,7 @@ func ConfigSyntheticsBaseURL(url string) ConfigOption {
 			return nil
 		}
 
-		return errors.New("Synthetics base URL can not be empty")
+		return errors.New("synthetics base URL can not be empty")
 	}
 }
 
@@ -163,7 +163,7 @@ func ConfigNerdGraphBaseURL(url string) ConfigOption {
 			return nil
 		}
 
-		return errors.New("NerdGraph base URL can not be empty")
+		return errors.New("nerdgraph base URL can not be empty")
 	}
 }
 

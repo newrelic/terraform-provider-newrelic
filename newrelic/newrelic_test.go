@@ -116,7 +116,7 @@ func TestNew_optionInfrastructureBaseURL(t *testing.T) {
 
 	nr, err := New(ConfigAPIKey(testAPIkey), ConfigInfrastructureBaseURL(""))
 	assert.Nil(t, nr)
-	assert.Error(t, errors.New("Infrastructure base URL can not be empty"), err)
+	assert.Error(t, errors.New("infrastructure base URL can not be empty"), err)
 
 	nr, err = New(ConfigAPIKey(testAPIkey), ConfigInfrastructureBaseURL("http://localhost/"))
 
@@ -129,7 +129,7 @@ func TestNew_optionSyntheticsBaseURL(t *testing.T) {
 
 	nr, err := New(ConfigAPIKey(testAPIkey), ConfigSyntheticsBaseURL(""))
 	assert.Nil(t, nr)
-	assert.Error(t, errors.New("Synthetics base URL can not be empty"), err)
+	assert.Error(t, errors.New("synthetics base URL can not be empty"), err)
 
 	nr, err = New(ConfigAPIKey(testAPIkey), ConfigSyntheticsBaseURL("http://localhost/"))
 
@@ -141,7 +141,7 @@ func TestNew_optionNerdGraphBaseURL(t *testing.T) {
 
 	nr, err := New(ConfigAPIKey(testAPIkey), ConfigNerdGraphBaseURL(""))
 	assert.Nil(t, nr)
-	assert.Error(t, errors.New("NerdGraph base URL can not be empty"), err)
+	assert.Error(t, errors.New("nerdgraph base URL can not be empty"), err)
 
 	nr, err = New(ConfigAPIKey(testAPIkey), ConfigNerdGraphBaseURL("http://localhost/"))
 
