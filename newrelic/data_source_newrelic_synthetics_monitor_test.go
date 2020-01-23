@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	expectedMonitorName string = fmt.Sprintf("tf-test-synthetic-%s", acctest.RandString(5))
+	expectedMonitorName = fmt.Sprintf("tf-test-synthetic-%s", acctest.RandString(5))
 )
 
 func TestAccNewRelicSyntheticsMonitorDataSource_Basic(t *testing.T) {
