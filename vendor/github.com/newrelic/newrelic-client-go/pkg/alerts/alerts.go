@@ -20,9 +20,11 @@ type Alerts struct {
 func New(config config.Config) Alerts {
 	infraConfig := config
 
-	if config.BaseURL == "" {
-		infraConfig.BaseURL = infrastructure.BaseURLs[region.Parse(config.Region)]
+	if infraConfig.InfrastructureBaseURL == "" {
+		infraConfig.InfrastructureBaseURL = infrastructure.BaseURLs[region.Parse(config.Region)]
 	}
+
+	infraConfig.BaseURL = infraConfig.InfrastructureBaseURL
 
 	infraClient := http.NewClient(infraConfig)
 	infraClient.SetErrorValue(&infrastructure.ErrorResponse{})
