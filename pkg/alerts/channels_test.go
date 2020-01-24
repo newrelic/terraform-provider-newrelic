@@ -76,8 +76,8 @@ var (
 		}
 	}`
 
-	// Tests serialization of `headers` and `payload` fields
-	testWebhookEmptyHeadersAndPayloadResponseJSON = `{
+	// Tests serialization of complex `headers` and `payload` fields
+	testWebhookComplexHeadersAndPayloadResponseJSON = `{
 		"channels": [
 			{
 				"id": 1,
@@ -104,6 +104,30 @@ var (
 					},
 					"payload": {
 						"": ""
+					},
+					"payload_type": "application/json"
+				},
+				"links": {
+					"policy_ids": []
+				}
+			},
+			{
+				"id": 3,
+				"name": "webhook-COMPLEX-payload",
+				"type": "webhook",
+				"configuration": {
+					"base_url": "http://example.com",
+					"headers": {
+						"key": "value",
+						"invalidHeader": {
+							"is": "allowed by the API"
+						}
+					},
+					"payload": {
+						"array": ["test", 1],
+						"object": {
+							"key": "value"
+						}
 					},
 					"payload_type": "application/json"
 				},
@@ -152,9 +176,9 @@ func TestListChannels(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
-func TestListChannelsWebhookWithEmptyHeadersAndPayload(t *testing.T) {
+func TestListChannelsWebhookWithComplexHeadersAndPayload(t *testing.T) {
 	t.Parallel()
-	alerts := newMockResponse(t, testWebhookEmptyHeadersAndPayloadResponseJSON, http.StatusOK)
+	alerts := newMockResponse(t, testWebhookComplexHeadersAndPayloadResponseJSON, http.StatusOK)
 
 	expected := []*Channel{
 		{
@@ -175,11 +199,35 @@ func TestListChannelsWebhookWithEmptyHeadersAndPayload(t *testing.T) {
 			Type: "webhook",
 			Configuration: ChannelConfiguration{
 				BaseURL: "http://example.com",
-				Headers: MapStringString{
+				Headers: MapStringInterface{
 					"": "",
 				},
-				Payload: MapStringString{
+				Payload: MapStringInterface{
 					"": "",
+				},
+				PayloadType: "application/json",
+			},
+			Links: ChannelLinks{
+				PolicyIDs: []int{},
+			},
+		},
+		{
+			ID:   3,
+			Name: "webhook-COMPLEX-payload",
+			Type: "webhook",
+			Configuration: ChannelConfiguration{
+				BaseURL: "http://example.com",
+				Headers: MapStringInterface{
+					"key": "value",
+					"invalidHeader": map[string]interface{}{
+						"is": "allowed by the API",
+					},
+				},
+				Payload: MapStringInterface{
+					"array": []interface{}{"test", float64(1)},
+					"object": map[string]interface{}{
+						"key": "value",
+					},
 				},
 				PayloadType: "application/json",
 			},

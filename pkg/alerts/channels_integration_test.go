@@ -68,10 +68,10 @@ func TestIntegrationChannel(t *testing.T) {
 			Configuration: ChannelConfiguration{
 				BaseURL:     "https://test.com",
 				PayloadType: "application/json",
-				Headers: MapStringString{
+				Headers: MapStringInterface{
 					"x-test-header": "test-header",
 				},
-				Payload: MapStringString{
+				Payload: MapStringInterface{
 					"account_id": "123",
 				},
 			},
@@ -96,13 +96,47 @@ func TestIntegrationChannel(t *testing.T) {
 			Type: "webhook",
 			Configuration: ChannelConfiguration{
 				BaseURL: "https://test.com",
-				Headers: MapStringString{
+				Headers: MapStringInterface{
 					"": "",
 				},
-				Payload: MapStringString{
+				Payload: MapStringInterface{
 					"": "",
 				},
 				PayloadType: "application/json",
+			},
+			Links: ChannelLinks{
+				PolicyIDs: []int{},
+			},
+		}
+
+		// Currently the v2 API has minimal validation on the data
+		// structure for Headers and Payload, so we need to test
+		// as many scenarios as possible.
+		testChannelWebhookComplexHeadersPayload = Channel{
+			Name: "integration-test-webhook",
+			Type: "webhook",
+			Configuration: ChannelConfiguration{
+				BaseURL:     "https://test.com",
+				PayloadType: "application/json",
+				Headers: MapStringInterface{
+					"x-test-header": "test-header",
+					"object": map[string]interface{}{
+						"key": "value",
+						"nestedObject": map[string]interface{}{
+							"k": "v",
+						},
+					},
+				},
+				Payload: MapStringInterface{
+					"account_id": "123",
+					"array": []interface{}{"string", 2},
+					"object": map[string]interface{}{
+						"key": "value",
+						"nestedObject": map[string]interface{}{
+							"k": "v",
+						},
+					},
+				},
 			},
 			Links: ChannelLinks{
 				PolicyIDs: []int{},
@@ -117,6 +151,7 @@ func TestIntegrationChannel(t *testing.T) {
 			testChannelWebhook,
 			testChannelWebhookEmptyHeadersAndPayload,
 			testChannelWebhookWeirdHeadersAndPayload,
+			testChannelWebhookComplexHeadersPayload,
 		}
 	)
 
