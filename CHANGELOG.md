@@ -2,6 +2,13 @@
 ## [Unreleased]
 
 
+<a name="v0.7.1"></a>
+## [v0.7.1] - 2020-01-24
+### Bug Fixes
+- **alerts:** handle more complex JSON structures in headers and/or payload
+- **logging:** use global methods for the default logger rather than a logrus instance
+
+
 <a name="v0.7.0"></a>
 ## [v0.7.0] - 2020-01-23
 ### Features
@@ -147,7 +154,8 @@
 - get TestListApplications passing
 
 
-[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.7.1...HEAD
+[v0.7.1]: https://github.com/newrelic/newrelic-client-go/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.5.1...v0.6.0
 [v0.5.1]: https://github.com/newrelic/newrelic-client-go/compare/v0.5.0...v0.5.1
