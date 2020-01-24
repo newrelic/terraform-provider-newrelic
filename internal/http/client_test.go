@@ -26,12 +26,12 @@ func TestConfig(t *testing.T) {
 		BaseURL:       testBaseURL,
 		UserAgent:     testUserAgent,
 		Timeout:       &testTimeout,
-		HTTPTransport: &testTransport,
+		HTTPTransport: testTransport,
 	})
 
 	assert.Equal(t, &testTimeout, c.Config.Timeout)
 	assert.Equal(t, testBaseURL, c.Config.BaseURL)
-	assert.Same(t, &testTransport, c.Config.HTTPTransport)
+	assert.Same(t, testTransport, c.Config.HTTPTransport)
 }
 
 func TestConfigDefaults(t *testing.T) {

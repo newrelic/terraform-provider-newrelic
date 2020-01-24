@@ -96,7 +96,7 @@ func ConfigHTTPTimeout(t time.Duration) ConfigOption {
 }
 
 // ConfigHTTPTransport sets the HTTP Transporter.
-func ConfigHTTPTransport(transport *http.RoundTripper) ConfigOption {
+func ConfigHTTPTransport(transport http.RoundTripper) ConfigOption {
 	return func(cfg *config.Config) error {
 		if transport != nil {
 			cfg.HTTPTransport = transport

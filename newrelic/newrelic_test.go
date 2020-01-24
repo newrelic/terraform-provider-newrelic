@@ -79,7 +79,7 @@ func TestNew_optionTransport(t *testing.T) {
 	assert.Error(t, errors.New("HTTP Transport can not be nil"), err)
 
 	transport := http.DefaultTransport
-	nr, err = New(ConfigAPIKey(testAPIkey), ConfigHTTPTransport(&transport))
+	nr, err = New(ConfigAPIKey(testAPIkey), ConfigHTTPTransport(transport))
 
 	assert.NotNil(t, nr)
 	assert.NoError(t, err)

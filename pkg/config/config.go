@@ -22,7 +22,7 @@ type Config struct {
 
 	// HTTP
 	Timeout               *time.Duration
-	HTTPTransport         *http.RoundTripper
+	HTTPTransport         http.RoundTripper
 	UserAgent             string
 	BaseURL               string
 	SyntheticsBaseURL     string
