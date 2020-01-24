@@ -40,6 +40,7 @@ func (c *Config) Client() (*nr.NewRelic, error) {
 	options = append(options, nr.ConfigUserAgent(c.userAgent))
 
 	tlsCfg := &tls.Config{}
+	var t = http.DefaultTransport
 
 	if c.CACertFile != "" {
 		caCert, _, err := pathorcontents.Read(c.CACertFile)
@@ -51,14 +52,19 @@ func (c *Config) Client() (*nr.NewRelic, error) {
 		caCertPool.AppendCertsFromPEM([]byte(caCert))
 		tlsCfg.RootCAs = caCertPool
 
-		var t http.RoundTripper = &http.Transport{TLSClientConfig: tlsCfg}
-		options = append(options, nr.ConfigHTTPTransport(&t))
+		t = &http.Transport{TLSClientConfig: tlsCfg}
 	} else if c.InsecureSkipVerify {
 		tlsCfg.InsecureSkipVerify = true
 
-		var t http.RoundTripper = &http.Transport{TLSClientConfig: tlsCfg}
-		options = append(options, nr.ConfigHTTPTransport(&t))
+		t = &http.Transport{TLSClientConfig: tlsCfg}
 	}
+
+	if logging.LogLevel() != "" {
+		options = append(options, nr.ConfigLogLevel(logging.LogLevel()))
+		t = logging.NewTransport("newrelic", t)
+	}
+
+	options = append(options, nr.ConfigHTTPTransport(t))
 
 	if c.APIURL != "" {
 		options = append(options, nr.ConfigBaseURL(c.APIURL))
@@ -74,10 +80,6 @@ func (c *Config) Client() (*nr.NewRelic, error) {
 
 	if c.NerdGraphAPIURL != "" {
 		options = append(options, nr.ConfigNerdGraphBaseURL(c.NerdGraphAPIURL))
-	}
-
-	if logging.LogLevel() != "" {
-		options = append(options, nr.ConfigLogLevel(logging.LogLevel()))
 	}
 
 	client, err := nr.New(options...)
