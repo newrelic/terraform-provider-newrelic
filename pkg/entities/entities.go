@@ -22,8 +22,8 @@ func New(config config.Config) Entities {
 	}
 }
 
-// ListEntitiesParams represents a set of search parameters for retrieving New Relic One entities.
-type ListEntitiesParams struct {
+// SearchEntitiesParams represents a set of search parameters for retrieving New Relic One entities.
+type SearchEntitiesParams struct {
 	AlertSeverity                 EntityAlertSeverityType `json:"alertSeverity,omitempty"`
 	Domain                        EntityDomainType        `json:"domain,omitempty"`
 	InfrastructureIntegrationType string                  `json:"infrastructureIntegrationType,omitempty"`
@@ -34,7 +34,7 @@ type ListEntitiesParams struct {
 }
 
 // SearchEntities searches New Relic One entities based on the provided search parameters.
-func (e *Entities) SearchEntities(params ListEntitiesParams) ([]*Entity, error) {
+func (e *Entities) SearchEntities(params SearchEntitiesParams) ([]*Entity, error) {
 	entities := []*Entity{}
 	var nextCursor *string
 

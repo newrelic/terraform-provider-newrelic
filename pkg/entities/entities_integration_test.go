@@ -15,7 +15,7 @@ func TestIntegrationSearchEntities(t *testing.T) {
 
 	client := newIntegrationTestClient(t)
 
-	params := ListEntitiesParams{
+	params := SearchEntitiesParams{
 		Name: "Dummy App",
 	}
 	actual, err := client.SearchEntities(params)
