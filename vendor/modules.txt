@@ -398,11 +398,7 @@ github.com/newrelic/go-agent/v3/internal/utilization
 github.com/newrelic/go-agent/v3/newrelic
 # github.com/newrelic/go-insights v1.0.3
 github.com/newrelic/go-insights/client
-<<<<<<< HEAD
 # github.com/newrelic/newrelic-client-go v0.7.1
-=======
-# github.com/newrelic/newrelic-client-go v0.7.0
->>>>>>> feat: replace provider backend with newrelic-client-go
 github.com/newrelic/newrelic-client-go/internal/http
 github.com/newrelic/newrelic-client-go/internal/logging
 github.com/newrelic/newrelic-client-go/internal/region
