@@ -1,4 +1,9 @@
 ## 1.12.2 (Unreleased)
+
+BUG FIXES:
+
+* fix: Error unmarshaling `newrelic_alert_channel` configuration headers and payload after release v1.12.1 ([#323](https://github.com/terraform-providers/terraform-provider-newrelic/issues/323))
+
 ## 1.12.1 (January 22, 2020)
 
 IMPROVEMENTS:
