@@ -1,4 +1,4 @@
-## 1.12.2 (Unreleased)
+## 1.12.2 (January 25, 2020)
 
 BUG FIXES:
 
