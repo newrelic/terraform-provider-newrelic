@@ -41,10 +41,10 @@ type ChannelConfiguration struct {
 	UserID                string `json:"user_id,omitempty"`
 
 	// Payload is unmarshaled to type map[string]string
-	Payload MapStringString `json:"payload,omitempty"`
+	Payload MapStringInterface `json:"payload,omitempty"`
 
 	// Headers is unmarshaled to type map[string]string
-	Headers MapStringString `json:"headers,omitempty"`
+	Headers MapStringInterface `json:"headers,omitempty"`
 }
 
 // Condition represents a New Relic alert condition.
@@ -190,28 +190,28 @@ type SyntheticsCondition struct {
 	MonitorID  string `json:"monitor_id,omitempty"`
 }
 
-// MapStringString is used for custom unmarshaling of
+// MapStringInterface is used for custom unmarshaling of
 // fields that have potentially dynamic types.
 // E.g. when a field can be a string or an object/map
-type MapStringString map[string]string
-type mapStringStringProxy MapStringString
+type MapStringInterface map[string]interface{}
+type mapStringInterfaceProxy MapStringInterface
 
 // UnmarshalJSON is a custom unmarshal method to guard against
 // fields that can have more than one type returned from an API.
-func (c *MapStringString) UnmarshalJSON(data []byte) error {
-	var mapStrStr mapStringStringProxy
+func (c *MapStringInterface) UnmarshalJSON(data []byte) error {
+	var mapStrInterface mapStringInterfaceProxy
 
 	// Check for empty JSON string
 	if string(data) == `""` {
 		return nil
 	}
 
-	err := json.Unmarshal(data, &mapStrStr)
+	err := json.Unmarshal(data, &mapStrInterface)
 	if err != nil {
 		return err
 	}
 
-	*c = MapStringString(mapStrStr)
+	*c = MapStringInterface(mapStrInterface)
 
 	return nil
 }

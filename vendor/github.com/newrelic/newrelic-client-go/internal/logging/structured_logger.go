@@ -12,15 +12,11 @@ var (
 )
 
 // StructuredLogger is a logger based on logrus.
-type StructuredLogger struct {
-	logger *log.Logger
-}
+type StructuredLogger struct{}
 
 // NewStructuredLogger creates a new structured logger.
 func NewStructuredLogger() StructuredLogger {
-	return StructuredLogger{
-		logger: log.New(),
-	}
+	return StructuredLogger{}
 }
 
 // SetLogLevel allows the log level to be set.
@@ -35,7 +31,7 @@ func (l StructuredLogger) SetLogLevel(logLevel string) StructuredLogger {
 		level, _ = log.ParseLevel(defaultLogLevel)
 	}
 
-	l.logger.SetLevel(level)
+	log.SetLevel(level)
 
 	return l
 }
@@ -43,7 +39,7 @@ func (l StructuredLogger) SetLogLevel(logLevel string) StructuredLogger {
 // LogJSON determines whether or not to format the logs as JSON.
 func (l StructuredLogger) LogJSON(value bool) StructuredLogger {
 	if value {
-		l.logger.SetFormatter(&log.JSONFormatter{})
+		log.SetFormatter(&log.JSONFormatter{})
 	}
 
 	return l
@@ -51,29 +47,29 @@ func (l StructuredLogger) LogJSON(value bool) StructuredLogger {
 
 // SetDefaultFields sets fields to be logged on every use of the logger.
 func (l StructuredLogger) SetDefaultFields(defaultFields map[string]string) StructuredLogger {
-	l.logger.AddHook(&defaultFieldHook{})
+	log.AddHook(&defaultFieldHook{})
 
 	return l
 }
 
 // Error logs an error message.
 func (l StructuredLogger) Error(msg string, fields ...interface{}) {
-	l.logger.WithFields(createFieldMap(fields)).Error(msg)
+	log.WithFields(createFieldMap(fields)).Error(msg)
 }
 
 // Info logs an info message.
 func (l StructuredLogger) Info(msg string, fields ...interface{}) {
-	l.logger.WithFields(createFieldMap(fields)).Info(msg)
+	log.WithFields(createFieldMap(fields)).Info(msg)
 }
 
 // Debug logs a debug message.
 func (l StructuredLogger) Debug(msg string, fields ...interface{}) {
-	l.logger.WithFields(createFieldMap(fields)).Debug(msg)
+	log.WithFields(createFieldMap(fields)).Debug(msg)
 }
 
 // Warn logs an warning message.
 func (l StructuredLogger) Warn(msg string, fields ...interface{}) {
-	l.logger.WithFields(createFieldMap(fields)).Warn(msg)
+	log.WithFields(createFieldMap(fields)).Warn(msg)
 }
 
 func createFieldMap(fields ...interface{}) map[string]interface{} {

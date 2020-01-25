@@ -59,9 +59,11 @@ func (e *ErrorResponse) Error() string {
 // New is used to create a new Synthetics client instance.
 func New(config config.Config) Synthetics {
 
-	if config.BaseURL == "" {
-		config.BaseURL = BaseURLs[region.Parse(config.Region)]
+	if config.SyntheticsBaseURL == "" {
+		config.SyntheticsBaseURL = BaseURLs[region.Parse(config.Region)]
 	}
+
+	config.BaseURL = config.SyntheticsBaseURL
 
 	client := http.NewClient(config)
 	client.SetErrorValue(&ErrorResponse{})
