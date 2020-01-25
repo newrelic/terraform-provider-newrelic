@@ -46,7 +46,7 @@ func NewClient(cfg config.Config) NewRelicClient {
 	}
 
 	if cfg.HTTPTransport != nil {
-		if transport, ok := (*cfg.HTTPTransport).(*http.Transport); ok {
+		if transport, ok := (cfg.HTTPTransport).(*http.Transport); ok {
 			c.Transport = transport
 		}
 	} else {
