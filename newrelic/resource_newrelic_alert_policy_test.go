@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
 func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
@@ -80,7 +79,7 @@ func TestAccNewRelicAlertPolicy_ResourceNotFound(t *testing.T) {
 				Config: testAccNewRelicAlertPolicyConfig(rName),
 			},
 			{
-				PreConfig: testAccDeleteAlertPolicy(rName),
+				PreConfig: testAccDeleteNewRelicAlertPolicy(rName),
 				Config:    testAccNewRelicAlertPolicyConfig(rName),
 			},
 		},
@@ -169,24 +168,6 @@ func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 		}
 
 		return nil
-	}
-}
-
-func testAccDeleteAlertPolicy(name string) func() {
-	return func() {
-		client := testAccProvider.Meta().(*ProviderConfig).NewClient
-
-		params := alerts.ListPoliciesParams{
-			Name: name,
-		}
-		alertPolicies, _ := client.Alerts.ListPolicies(&params)
-
-		for _, d := range alertPolicies {
-			if d.Name == name {
-				_, _ = client.Alerts.DeletePolicy(d.ID)
-				break
-			}
-		}
 	}
 }
 
