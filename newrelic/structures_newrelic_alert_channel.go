@@ -33,15 +33,6 @@ func expandAlertChannel(d *schema.ResourceData) (*alerts.Channel, error) {
 	return &channel, nil
 }
 
-func convertToStringMap(orig map[string]interface{}) map[string]string {
-	conv := make(map[string]string, len(orig))
-	for k, v := range orig {
-		conv[k] = v.(string)
-	}
-
-	return conv
-}
-
 func expandAlertChannelConfiguration(cfg map[string]interface{}) alerts.ChannelConfiguration {
 	config := alerts.ChannelConfiguration{}
 
@@ -71,7 +62,7 @@ func expandAlertChannelConfiguration(cfg map[string]interface{}) alerts.ChannelC
 
 	if headers, ok := cfg["headers"]; ok {
 		h := headers.(map[string]interface{})
-		config.Headers = convertToStringMap(h)
+		config.Headers = h
 	}
 
 	if includeJSONAttachment, ok := cfg["include_json_attachment"]; ok {
@@ -80,7 +71,7 @@ func expandAlertChannelConfiguration(cfg map[string]interface{}) alerts.ChannelC
 
 	if payload, ok := cfg["payload"]; ok {
 		p := payload.(map[string]interface{})
-		config.Payload = convertToStringMap(p)
+		config.Payload = p
 	}
 
 	if payloadType, ok := cfg["payload_type"]; ok {
