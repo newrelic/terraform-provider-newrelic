@@ -3,114 +3,44 @@
 package apm
 
 import (
-	"os"
 	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/config"
+	"github.com/stretchr/testify/require"
 )
 
-func TestIntegrationListApplications(t *testing.T) {
+func TestIntegrationApplications(t *testing.T) {
 	t.Parallel()
 
-	apiKey := os.Getenv("NEWRELIC_API_KEY")
+	client := newIntegrationTestClient(t)
 
-	if apiKey == "" {
-		t.Skipf("acceptance testing requires an API key")
-	}
+	a, err := client.ListApplications(nil)
+	require.NoError(t, err)
 
-	api := New(config.Config{
-		APIKey:   apiKey,
-		LogLevel: "debug",
-	})
-
-	_, err := api.ListApplications(nil)
-
-	if err != nil {
-		t.Fatalf("ListApplications error: %s", err)
-	}
-}
-
-func TestIntegrationGetApplication(t *testing.T) {
-	t.Parallel()
-
-	apiKey := os.Getenv("NEWRELIC_API_KEY")
-
-	if apiKey == "" {
-		t.Skipf("acceptance testing requires an API key")
-	}
-
-	api := New(config.Config{
-		APIKey:   apiKey,
-		LogLevel: "debug",
-	})
-
-	a, err := api.ListApplications(nil)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	_, err = api.GetApplication(a[0].ID)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestIntegrationUpdateApplication(t *testing.T) {
-	t.Parallel()
-
-	apiKey := os.Getenv("NEWRELIC_API_KEY")
-
-	if apiKey == "" {
-		t.Skipf("acceptance testing requires an API key")
-	}
-
-	api := New(config.Config{
-		APIKey:   apiKey,
-		LogLevel: "debug",
-	})
-
-	a, err := api.ListApplications(nil)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	_, err = api.GetApplication(a[0].ID)
-
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, err = client.GetApplication(a[0].ID)
+	require.NoError(t, err)
 
 	params := UpdateApplicationParams{
 		Name:     a[0].Name,
 		Settings: a[0].Settings,
 	}
 
-	_, err = api.UpdateApplication(a[0].ID, params)
+	_, err = client.UpdateApplication(a[0].ID, params)
+	require.NoError(t, err)
 
-	if err != nil {
-		t.Fatal(err)
-	}
+	n, err := client.GetMetricNames(a[0].ID, MetricNamesParams{})
+	require.NoError(t, err)
+
+	_, err = client.GetMetricData(a[0].ID, MetricDataParams{Names: []string{n[0].Name}})
+	require.NoError(t, err)
 }
 
 func TestIntegrationDeleteApplication(t *testing.T) {
-	t.Skip()
+	t.Skip("What does delete mean in the case where we have no create?")
 	t.Parallel()
 
-	apiKey := os.Getenv("NEWRELIC_API_KEY")
+	client := newIntegrationTestClient(t)
 
-	if apiKey == "" {
-		t.Skipf("acceptance testing requires an API key")
-	}
-
-	api := New(config.Config{
-		APIKey:   apiKey,
-		LogLevel: "debug",
-	})
-
-	_, err := api.DeleteApplication(0)
+	_, err := client.DeleteApplication(0)
 
 	if err != nil {
 		t.Fatal(err)
