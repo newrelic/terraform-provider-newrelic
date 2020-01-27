@@ -181,19 +181,20 @@ func resourceNewRelicPluginsAlertConditionUpdate(d *schema.ResourceData, meta in
 }
 
 func resourceNewRelicPluginsAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
 		return err
 	}
 
-	policyID := ids[0]
 	id := ids[1]
 
 	log.Printf("[INFO] Deleting New Relic alert condition %d", id)
 
-	if err := client.DeleteAlertPluginsCondition(policyID, id); err != nil {
+	_, err = client.Alerts.DeletePluginsCondition(id)
+
+	if err != nil {
 		return err
 	}
 
