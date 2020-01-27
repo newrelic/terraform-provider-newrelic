@@ -79,7 +79,7 @@ func TestAccNewRelicAlertPolicy_ResourceNotFound(t *testing.T) {
 				Config: testAccNewRelicAlertPolicyConfig(rName),
 			},
 			{
-				PreConfig: testAccDeleteAlertPolicy(rName),
+				PreConfig: testAccDeleteNewRelicAlertPolicy(rName),
 				Config:    testAccNewRelicAlertPolicyConfig(rName),
 			},
 		},
@@ -120,7 +120,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 func testAccCheckNewRelicAlertPolicyDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderConfig).Client
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_alert_policy" {
 			continue
@@ -131,7 +131,7 @@ func testAccCheckNewRelicAlertPolicyDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = client.GetAlertPolicy(int(id))
+		_, err = client.Alerts.GetPolicy(int(id))
 
 		if err == nil {
 			return fmt.Errorf("policy still exists")
@@ -151,14 +151,14 @@ func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("no policy ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).Client
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		id, err := strconv.ParseInt(rs.Primary.ID, 10, 32)
 		if err != nil {
 			return err
 		}
 
-		found, err := client.GetAlertPolicy(int(id))
+		found, err := client.Alerts.GetPolicy(int(id))
 		if err != nil {
 			return err
 		}
@@ -168,20 +168,6 @@ func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 		}
 
 		return nil
-	}
-}
-
-func testAccDeleteAlertPolicy(name string) func() {
-	return func() {
-		client := testAccProvider.Meta().(*ProviderConfig).Client
-		alertPolicies, _ := client.ListAlertPolicies()
-
-		for _, d := range alertPolicies {
-			if d.Name == name {
-				_ = client.DeleteAlertPolicy(d.ID)
-				break
-			}
-		}
 	}
 }
 

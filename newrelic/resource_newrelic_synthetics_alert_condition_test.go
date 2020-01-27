@@ -69,7 +69,7 @@ func TestAccNewRelicSyntheticsAlertCondition_MissingPolicy(t *testing.T) {
 }
 
 func testAccCheckNewRelicSyntheticsAlertConditionDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderConfig).Client
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_synthetics_alert_condition" {
 			continue
@@ -83,7 +83,7 @@ func testAccCheckNewRelicSyntheticsAlertConditionDestroy(s *terraform.State) err
 		policyID := ids[0]
 		id := ids[1]
 
-		_, err = client.GetAlertSyntheticsCondition(policyID, id)
+		_, err = client.Alerts.GetSyntheticsCondition(policyID, id)
 		if err == nil {
 			return fmt.Errorf("synthetics alert condition still exists")
 		}
@@ -102,7 +102,7 @@ func testAccCheckNewRelicSyntheticsAlertConditionExists(n string) resource.TestC
 			return fmt.Errorf("no alert condition ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).Client
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		ids, err := parseIDs(rs.Primary.ID, 2)
 		if err != nil {
@@ -112,7 +112,7 @@ func testAccCheckNewRelicSyntheticsAlertConditionExists(n string) resource.TestC
 		policyID := ids[0]
 		id := ids[1]
 
-		found, err := client.GetAlertSyntheticsCondition(policyID, id)
+		found, err := client.Alerts.GetSyntheticsCondition(policyID, id)
 		if err != nil {
 			return err
 		}

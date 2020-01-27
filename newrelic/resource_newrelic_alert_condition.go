@@ -118,7 +118,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 			},
 			"condition_scope": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 			"violation_close_timer": {
 				Type:         schema.TypeInt,
@@ -256,19 +256,19 @@ func resourceNewRelicAlertConditionUpdate(d *schema.ResourceData, meta interface
 }
 
 func resourceNewRelicAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).Client
+	client := meta.(*ProviderConfig).NewClient
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
 		return err
 	}
 
-	policyID := ids[0]
 	id := ids[1]
 
 	log.Printf("[INFO] Deleting New Relic alert condition %d", id)
 
-	if err := client.DeleteAlertCondition(policyID, id); err != nil {
+	_, err = client.Alerts.DeleteCondition(id)
+	if err != nil {
 		return err
 	}
 

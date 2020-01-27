@@ -53,7 +53,7 @@ func TestAccNewRelicAlertPolicyChannel_AlertPolicyNotFound(t *testing.T) {
 				Config: testAccNewRelicAlertPolicyConfig(rName),
 			},
 			{
-				PreConfig: testAccDeleteAlertPolicy(rName),
+				PreConfig: testAccDeleteNewRelicAlertPolicy(rName),
 				Config:    testAccNewRelicAlertPolicyChannelConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
