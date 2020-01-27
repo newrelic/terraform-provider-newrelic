@@ -156,6 +156,56 @@ resource "newrelic_alert_policy_channel" "alert_policy_email" {
 
 This example will send an email to the specified recipients whenever the associated alert condition is triggered. If you would like to send notifications via different modalities, such as Slack, you can configure updating the `type` in your [alert channel](https://www.terraform.io/docs/providers/newrelic/r/alert_channel.html).
 
+## A Note About Secrets
+
+As part of a `newrelic` resource, there is often some amount of configuration
+that is required in order for a resource to reach its full potential.  In some
+cases, once a given entity is created, API results will obscure the values for
+items that are deemed to be secret.  As a result, Terraform is unable to make
+an accurate detection of a resource state, and so marks a resource as changed
+for every run.
+
+Consider the following example.
+
+```hcl
+resource "newrelic_alert_channel" "slack" {
+  name = "slack"
+  type = "slack"
+
+  config {
+    channel = "test"
+    url     = "https://hooks.slack.com/services/xxxx/xxxxx"
+  }
+}
+```
+
+The resource above yields the following plan.
+
+    -/+ newrelic_alert_channel.slack (new resource required)
+          id:                    "2344397" => <computed> (forces new resource)
+          config.%:              "1" => "2" (forces new resource)
+          config.channel:        <sensitive> => <sensitive> (attribute changed)
+          config.url:            <sensitive> => <sensitive> (forces new resource)
+          name:                  "slack" => "slack"
+          type:                  "slack" => "slack"
+
+To avoid the resource being marked as changed every run, the following can be
+implemented for the resource.
+
+```hcl
+resource "newrelic_alert_channel" "slack" {
+  ...
+  lifecycle {
+    ignore_changes = ["config"]
+  }
+}
+  ...
+```
+
+This should avoid any of the configuration items from causing a change to the
+resource.
+
+
 
 ## Apply Your Terraform Configuration
 
