@@ -28,6 +28,24 @@ func parseIDs(serializedID string, count int) ([]int, error) {
 	return ids, nil
 }
 
+// Converts a hash of IDs into an array.
+// Examples: "12345:54432:66564" -> []int{12345,54432,66564}
+func parseHashedIDs(serializedID string) ([]int, error) {
+	rawIDs := strings.Split(serializedID, ":")
+	ids := make([]int, len(rawIDs))
+
+	for i, rawID := range rawIDs {
+		id, err := strconv.ParseInt(rawID, 10, 32)
+		if err != nil {
+			return ids, err
+		}
+
+		ids[i] = int(id)
+	}
+
+	return ids, nil
+}
+
 func serializeIDs(ids []int) string {
 	idStrings := make([]string, len(ids))
 
