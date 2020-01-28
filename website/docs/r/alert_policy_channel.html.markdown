@@ -12,13 +12,18 @@ Use this resource to map alert policies to alert channels in New Relic.
 
 ## Example Usage
 
+The example below will apply multiple alert channels to an existing New Relic alert policy.
+
 ```hcl
-resource "newrelic_alert_policy" "foo" {
-  name = "foo"
+# Fetches the data for this policy from your New Relic account
+# and is referenced in the newrelic_alert_policy_channel block below.
+data "newrelic_alert_policy" "example_policy" {
+  name = "my-alert-policy"
 }
 
-resource "newrelic_alert_channel" "foo" {
-  name = "foo"
+# Creates an email alert channel.
+resource "newrelic_alert_channel" "email_channel" {
+  name = "bar"
   type = "email"
 
   config {
@@ -27,9 +32,25 @@ resource "newrelic_alert_channel" "foo" {
   }
 }
 
+# Creates a Slack alert channel.
+resource "newrelic_alert_channel" "slack_channel" {
+  name = "slack-channel-example"
+  type = "slack"
+
+  config {
+    channel = "#example-channel"
+    url     = "http://example-org.slack.com"
+  }
+}
+
+# Applies the created channels above to the alert policy
+# referenced at the top of the config.
 resource "newrelic_alert_policy_channel" "foo" {
-  policy_id  = newrelic_alert_policy.foo.id
-  channel_id = newrelic_alert_channel.foo.id
+  policy_id  = newrelic_alert_policy.example_policy.id
+  channel_ids = [
+    data.newrelic_alert_channel.email_channel.id,
+    data.newrelic_alert_channel.slack_channel.id
+  ]
 }
 ```
 
@@ -38,4 +59,19 @@ resource "newrelic_alert_policy_channel" "foo" {
 The following arguments are supported:
 
   * `policy_id` - (Required) The ID of the policy.
-  * `channel_id` - (Required) The ID of the channel.
+  * `channel_ids` - (Optional*) Array of channel IDs to apply to the specified policy.
+  * `channel_id` - **Deprecated!** (Optional*) The ID of the channel. Please use the `channel_ids` argument instead.
+
+<sup>\*Note: Even though **channel_id** and **channel_ids** are optional, at least one of those arguments must be used for this resource to work.</sup>
+
+## Import
+
+Alert policy channels can be imported using the following notation: `<policyID>:<channelID>:<channelID>`, e.g.
+
+```
+$ terraform import newrelic_alert_policy_channel.foo 123456:3462754:2938324
+```
+
+When importing `newrelic_alert_policy_channel` resource, the attribute `channel_ids`* will be set in your Terraform state. You can import multiple channels as long as those channel IDs are included as part of the import ID hash.
+
+<sup>\*Note: The attribute **channel_id** is _deprecated_ and will not be set when importing this resource.</sup>

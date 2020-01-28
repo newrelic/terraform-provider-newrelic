@@ -12,6 +12,7 @@ import (
 func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 	resourceName := "newrelic_alert_policy_channel.foo"
 	rName := acctest.RandString(5)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -21,7 +22,7 @@ func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 			{
 				Config: testAccNewRelicAlertPolicyChannelConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
+					testAccCheckNewRelicAlertPolicyChannelExists(resourceName),
 				),
 			},
 			// Test: Update
@@ -29,6 +30,39 @@ func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 				Config: testAccNewRelicAlertPolicyChannelConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyChannelExists("newrelic_alert_policy_channel.foo"),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:     resourceName,
+				ImportState:      true,
+				ImportStateCheck: testAccNewRelicAlertPolicyImportStateCheckFunc(),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertPolicyChannel_MutipleChannels(t *testing.T) {
+	resourceName := "newrelic_alert_policy_channel.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertPolicyChannelDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicAlertPolicyChannelsConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertPolicyChannelExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicAlertPolicyChannelsConfigUpdated(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertPolicyChannelExists(resourceName),
 				),
 			},
 			// Test: Import
@@ -92,15 +126,15 @@ func testAccCheckNewRelicAlertPolicyChannelDestroy(s *terraform.State) error {
 			continue
 		}
 
-		ids, err := parseIDs(r.Primary.ID, 2)
+		ids, err := parseHashedIDs(r.Primary.ID)
 		if err != nil {
 			return err
 		}
 
 		policyID := ids[0]
-		channelID := ids[1]
+		channelIDs := ids[1:]
 
-		exists, err := policyChannelExists(client, policyID, channelID)
+		exists, err := policyChannelsExist(client, policyID, channelIDs)
 		if err != nil {
 			return err
 		}
@@ -124,15 +158,15 @@ func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFu
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		ids, err := parseIDs(rs.Primary.ID, 2)
+		ids, err := parseHashedIDs(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
 		policyID := ids[0]
-		channelID := ids[1]
+		channelIDs := ids[1:]
 
-		exists, err := policyChannelExists(client, policyID, channelID)
+		exists, err := policyChannelsExist(client, policyID, channelIDs)
 		if err != nil {
 			return err
 		}
@@ -141,6 +175,13 @@ func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFu
 		}
 
 		return nil
+	}
+}
+
+func testAccNewRelicAlertPolicyImportStateCheckFunc() resource.ImportStateCheckFunc {
+	return func(state []*terraform.InstanceState) error {
+		// Ensure import sets `channel_ids`
+		return testCheckResourceAttr(state[0], "newrelic_alert_policy_channel.foo", "channel_ids.#", "1")
 	}
 }
 
@@ -153,7 +194,7 @@ resource "newrelic_alert_policy" "foo" {
 resource "newrelic_alert_channel" "foo" {
   name = "%[1]s"
 	type = "email"
-	
+
 	config {
 		recipients = "terraform-acctest+foo@hashicorp.com"
 		include_json_attachment = "1"
@@ -176,7 +217,7 @@ resource "newrelic_alert_policy" "foo" {
 resource "newrelic_alert_channel" "foo" {
   name = "tf-test-updated-%[1]s"
 	type = "email"
-	
+
 	config {
 		recipients = "terraform-acctest+bar@hashicorp.com"
 		include_json_attachment = "0"
@@ -188,4 +229,61 @@ resource "newrelic_alert_policy_channel" "foo" {
   channel_id = newrelic_alert_channel.foo.id
 }
 `, rName)
+}
+
+func testAccNewRelicAlertPolicyChannelsConfig(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+
+resource "newrelic_alert_channel" "foo" {
+  name = "tf-test-%[1]s"
+	type = "email"
+	config {
+		recipients = "terraform-acctest+foo@hashicorp.com"
+		include_json_attachment = "1"
+	}
+}
+
+resource "newrelic_alert_policy_channel" "foo" {
+  policy_id  = newrelic_alert_policy.foo.id
+  channel_ids = [
+		newrelic_alert_channel.foo.id
+	]
+}
+`, name)
+}
+
+func testAccNewRelicAlertPolicyChannelsConfigUpdated(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+
+resource "newrelic_alert_channel" "foo" {
+  name = "tf-test-%[1]s"
+	type = "email"
+	config {
+		recipients = "terraform-acctest+foo@hashicorp.com"
+		include_json_attachment = "1"
+	}
+}
+
+resource "newrelic_alert_channel" "bar" {
+  name = "tf-test-2-%[1]s"
+	type = "email"
+	config {
+		recipients = "terraform-acctest+bar@hashicorp.com"
+	}
+}
+
+resource "newrelic_alert_policy_channel" "foo" {
+  policy_id  = newrelic_alert_policy.foo.id
+  channel_ids = [
+		newrelic_alert_channel.foo.id,
+		newrelic_alert_channel.bar.id
+	]
+}
+`, name)
 }
