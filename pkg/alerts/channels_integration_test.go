@@ -129,7 +129,7 @@ func TestIntegrationChannel(t *testing.T) {
 				},
 				Payload: MapStringInterface{
 					"account_id": "123",
-					"array": []interface{}{"string", 2},
+					"array":      []interface{}{"string", 2},
 					"object": map[string]interface{}{
 						"key": "value",
 						"nestedObject": map[string]interface{}{
