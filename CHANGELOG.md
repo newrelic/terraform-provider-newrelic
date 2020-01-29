@@ -2,6 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v0.8.0"></a>
+## [v0.8.0] - 2020-01-29
+### Bug Fixes
+- **alerts:** ensure multiple channels can be added via /alerts_policy_channel.json endpoint ([#114](https://github.com/newrelic/newrelic-client-go/issues/114))
+
+### Features
+- **apm:** Add support application metric names and data
+
+
 <a name="v0.7.1"></a>
 ## [v0.7.1] - 2020-01-24
 ### Bug Fixes
@@ -154,7 +163,8 @@
 - get TestListApplications passing
 
 
-[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.8.0...HEAD
+[v0.8.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.7.1...v0.8.0
 [v0.7.1]: https://github.com/newrelic/newrelic-client-go/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.5.1...v0.6.0
