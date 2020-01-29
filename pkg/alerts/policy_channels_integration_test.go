@@ -19,12 +19,23 @@ func TestIntegrationPolicyChannels(t *testing.T) {
 			IncidentPreference: "PER_POLICY",
 			Name:               fmt.Sprintf("test-alert-policy-%s", testPolicyNameRandStr),
 		}
-		testIntegrationChannel = Channel{
+		testIntegrationChannelA = Channel{
 			Name: fmt.Sprintf("test-alert-channel-%s", testPolicyNameRandStr),
 			Type: "slack",
 			Configuration: ChannelConfiguration{
 				URL:     "https://example-org.slack.com",
 				Channel: testPolicyNameRandStr,
+			},
+			Links: ChannelLinks{
+				PolicyIDs: []int{},
+			},
+		}
+		testIntegrationChannelB = Channel{
+			Name: fmt.Sprintf("test-alert-channel-%s", nr.RandSeq(5)),
+			Type: "slack",
+			Configuration: ChannelConfiguration{
+				URL:     "https://example-org.slack.com",
+				Channel: nr.RandSeq(5),
 			},
 			Links: ChannelLinks{
 				PolicyIDs: []int{},
@@ -40,8 +51,11 @@ func TestIntegrationPolicyChannels(t *testing.T) {
 
 	require.NoError(t, err)
 
-	channelResp, err := client.CreateChannel(testIntegrationChannel)
-	channel := *channelResp
+	channelRespA, err := client.CreateChannel(testIntegrationChannelA)
+	channelRespB, err := client.CreateChannel(testIntegrationChannelB)
+
+	channelA := *channelRespA
+	channelB := *channelRespB
 
 	require.NoError(t, err)
 
@@ -52,21 +66,32 @@ func TestIntegrationPolicyChannels(t *testing.T) {
 			t.Logf("Error cleaning up alert policy %d (%s): %s", policy.ID, policy.Name, err)
 		}
 
-		_, err = client.DeleteChannel(channel.ID)
+		_, err = client.DeleteChannel(channelA.ID)
 		if err != nil {
-			t.Logf("Error cleaning up alert channel %d (%s): %s", channel.ID, channel.Name, err)
+			t.Logf("Error cleaning up alert channel %d (%s): %s", channelA.ID, channelA.Name, err)
+		}
+
+		_, err = client.DeleteChannel(channelB.ID)
+		if err != nil {
+			t.Logf("Error cleaning up alert channel %d (%s): %s", channelB.ID, channelB.Name, err)
 		}
 	}()
 
 	// Test: Update
-	updateResult, err := client.UpdatePolicyChannels(policy.ID, []int{channel.ID})
+	updateResult, err := client.UpdatePolicyChannels(policy.ID, []int{channelA.ID, channelB.ID})
 
 	require.NoError(t, err)
 	require.NotNil(t, updateResult)
+	require.Greater(t, len(updateResult.ChannelIDs), 1)
 
 	// Test: Delete
-	deleteResult, err := client.DeletePolicyChannel(policy.ID, updateResult.ChannelIDs[0])
+	deleteResultA, err := client.DeletePolicyChannel(policy.ID, updateResult.ChannelIDs[0])
 
 	require.NoError(t, err)
-	require.NotNil(t, deleteResult)
+	require.NotNil(t, deleteResultA)
+
+	deleteResultB, err := client.DeletePolicyChannel(policy.ID, updateResult.ChannelIDs[1])
+
+	require.NoError(t, err)
+	require.NotNil(t, deleteResultB)
 }
