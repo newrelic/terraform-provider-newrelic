@@ -8,7 +8,6 @@ import (
 
 // ListSyntheticsConditions returns a list of Synthetics alert conditions for a given policy.
 func (alerts *Alerts) ListSyntheticsConditions(policyID int) ([]*SyntheticsCondition, error) {
-	response := syntheticsConditionsResponse{}
 	conditions := []*SyntheticsCondition{}
 	nextURL := fmt.Sprintf("/alerts_synthetics_conditions.json")
 	queryParams := listSyntheticsConditionsParams{
@@ -16,6 +15,7 @@ func (alerts *Alerts) ListSyntheticsConditions(policyID int) ([]*SyntheticsCondi
 	}
 
 	for nextURL != "" {
+		response := syntheticsConditionsResponse{}
 		resp, err := alerts.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
