@@ -168,6 +168,8 @@ github.com/golangci/golangci-lint v1.22.2 h1:iaihss3Tf6NvZVjun3lHimKSgofPV1+FqE/
 github.com/golangci/golangci-lint v1.22.2/go.mod h1:2Bj42k6hPQFTRxkDb7S3TQ+EsnumZXOmIYNqlQrp0FI=
 github.com/golangci/golangci-lint v1.23.1 h1:z2VTUe99YJDyZlL5mU3818G4nrZyKv0lTVqd214V7sw=
 github.com/golangci/golangci-lint v1.23.1/go.mod h1:LNexeEyqT5hQH7v47e67JekL0V51lXFUjbPkopxNSK4=
+github.com/golangci/golangci-lint v1.23.3 h1:wkACDEoy+b0CVqnSK8BbWrVkN2tsVLUA1+SIkGSm4o0=
+github.com/golangci/golangci-lint v1.23.3/go.mod h1:LNexeEyqT5hQH7v47e67JekL0V51lXFUjbPkopxNSK4=
 github.com/golangci/ineffassign v0.0.0-20190609212857-42439a7714cc h1:gLLhTLMk2/SutryVJ6D4VZCU3CUqr8YloG7FPIBWFpI=
 github.com/golangci/ineffassign v0.0.0-20190609212857-42439a7714cc/go.mod h1:e5tpTHCfVze+7EpLEozzMB3eafxo2KT5veNg1k6byQU=
 github.com/golangci/lint-1 v0.0.0-20191013205115-297bf364a8e0 h1:MfyDlzVjl1hoaPzPD4Gpb/QgoRfSBR0jdhwGyAWwMSA=
