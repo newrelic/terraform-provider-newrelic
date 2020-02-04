@@ -6,7 +6,6 @@ import (
 
 // ListIncidents returns all alert incidents.
 func (alerts *Alerts) ListIncidents(onlyOpen bool, excludeViolations bool) ([]*Incident, error) {
-	incidentsResponse := alertIncidentsResponse{}
 	incidents := []*Incident{}
 	queryParams := listIncidentsParams{
 		OnlyOpen:          onlyOpen,
@@ -16,6 +15,7 @@ func (alerts *Alerts) ListIncidents(onlyOpen bool, excludeViolations bool) ([]*I
 	nextURL := "/alerts_incidents.json"
 
 	for nextURL != "" {
+		incidentsResponse := alertIncidentsResponse{}
 		resp, err := alerts.client.Get(nextURL, queryParams, &incidentsResponse)
 
 		if err != nil {

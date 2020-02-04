@@ -7,11 +7,11 @@ import (
 
 // ListApplications is used to retrieve New Relic applications.
 func (apm *APM) ListApplications(params *ListApplicationsParams) ([]*Application, error) {
-	response := applicationsResponse{}
 	apps := []*Application{}
 	nextURL := "/applications.json"
 
 	for nextURL != "" {
+		response := applicationsResponse{}
 		resp, err := apm.client.Get(nextURL, &params, &response)
 
 		if err != nil {
