@@ -95,6 +95,20 @@ var (
 			},
 			{
 				"id": 2,
+				"name": "webhook-ESCAPED-STRING-headers-and-payload",
+				"type": "webhook",
+				"configuration": {
+					"base_url": "http://example.com",
+					"headers": "{\"key\":\"value\"}",
+					"payload": "{\"key\":\"value\"}",
+					"payload_type": "application/json"
+				},
+				"links": {
+					"policy_ids": []
+				}
+			},
+			{
+				"id": 3,
 				"name": "webhook-WEIRD-headers-and-payload",
 				"type": "webhook",
 				"configuration": {
@@ -112,7 +126,7 @@ var (
 				}
 			},
 			{
-				"id": 3,
+				"id": 4,
 				"name": "webhook-COMPLEX-payload",
 				"type": "webhook",
 				"configuration": {
@@ -195,6 +209,24 @@ func TestListChannelsWebhookWithComplexHeadersAndPayload(t *testing.T) {
 		},
 		{
 			ID:   2,
+			Name: "webhook-ESCAPED-STRING-headers-and-payload",
+			Type: "webhook",
+			Configuration: ChannelConfiguration{
+				BaseURL:     "http://example.com",
+				PayloadType: "application/json",
+				Headers: MapStringInterface{
+					"key": "value",
+				},
+				Payload: MapStringInterface{
+					"key": "value",
+				},
+			},
+			Links: ChannelLinks{
+				PolicyIDs: []int{},
+			},
+		},
+		{
+			ID:   3,
 			Name: "webhook-WEIRD-headers-and-payload",
 			Type: "webhook",
 			Configuration: ChannelConfiguration{
@@ -212,7 +244,7 @@ func TestListChannelsWebhookWithComplexHeadersAndPayload(t *testing.T) {
 			},
 		},
 		{
-			ID:   3,
+			ID:   4,
 			Name: "webhook-COMPLEX-payload",
 			Type: "webhook",
 			Configuration: ChannelConfiguration{

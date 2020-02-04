@@ -2,6 +2,8 @@ package alerts
 
 import (
 	"encoding/json"
+	"strconv"
+	"strings"
 
 	"github.com/newrelic/newrelic-client-go/internal/serialization"
 )
@@ -201,9 +203,21 @@ type mapStringInterfaceProxy MapStringInterface
 func (c *MapStringInterface) UnmarshalJSON(data []byte) error {
 	var mapStrInterface mapStringInterfaceProxy
 
+	str := string(data)
+
 	// Check for empty JSON string
-	if string(data) == `""` {
+	if str == `""` {
 		return nil
+	}
+
+	// Remove quotes if this is a string representation of JSON
+	if strings.HasPrefix(str, "\"") && strings.HasSuffix(str, "\"") {
+		s, err := strconv.Unquote(str)
+		if err != nil {
+			return nil
+		}
+
+		data = []byte(s)
 	}
 
 	err := json.Unmarshal(data, &mapStrInterface)
