@@ -2,6 +2,17 @@
 ## [Unreleased]
 
 
+<a name="v0.9.0"></a>
+## [v0.9.0] - 2020-02-05
+### Bug Fixes
+- allow string representations of JSON for alert channel webhook and payload
+- **http:** Clear client responses between pages
+
+### Features
+- **alerts:** Implement multi-location synthetics conditions
+- **http:** add trace logging with additional request info
+
+
 <a name="v0.8.0"></a>
 ## [v0.8.0] - 2020-01-29
 ### Bug Fixes
@@ -163,7 +174,8 @@
 - get TestListApplications passing
 
 
-[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.9.0...HEAD
+[v0.9.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.7.1...v0.8.0
 [v0.7.1]: https://github.com/newrelic/newrelic-client-go/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.6.0...v0.7.0
