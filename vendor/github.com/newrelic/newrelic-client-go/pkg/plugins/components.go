@@ -17,11 +17,11 @@ type ListComponentsParams struct {
 // ListComponents is used to retrieve the components associated with
 // a New Relic account.
 func (p *Plugins) ListComponents(params *ListComponentsParams) ([]*Component, error) {
-	response := componentsResponse{}
 	c := []*Component{}
 	nextURL := "/components.json"
 
 	for nextURL != "" {
+		response := componentsResponse{}
 		resp, err := p.client.Get(nextURL, &params, &response)
 
 		if err != nil {

@@ -13,11 +13,11 @@ type ListKeyTransactionsParams struct {
 
 // ListKeyTransactions returns all key transactions for an account.
 func (apm *APM) ListKeyTransactions(params *ListKeyTransactionsParams) ([]*KeyTransaction, error) {
-	response := keyTransactionsResponse{}
 	results := []*KeyTransaction{}
 	nextURL := "/key_transactions.json"
 
 	for nextURL != "" {
+		response := keyTransactionsResponse{}
 		resp, err := apm.client.Get(nextURL, &params, &response)
 
 		if err != nil {

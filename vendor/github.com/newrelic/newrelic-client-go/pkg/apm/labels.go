@@ -8,11 +8,11 @@ import (
 
 // ListLabels returns the labels within an account.
 func (apm *APM) ListLabels() ([]*Label, error) {
-	response := labelsResponse{}
 	labels := []*Label{}
 	nextURL := "/labels.json"
 
 	for nextURL != "" {
+		response := labelsResponse{}
 		resp, err := apm.client.Get(nextURL, nil, &response)
 
 		if err != nil {

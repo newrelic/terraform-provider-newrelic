@@ -1,4 +1,16 @@
-## 1.12.3 (Unreleased)
+## 1.13.0 (Unreleased)
+
+BUG FIXES:
+* fix: allow string representations of JSON for alert channel webhook and payload ([#]())
+* fix: clear client responses between pages
+
+IMPROVEMENTS:
+
+* feat: add `violation_close_timer` attribute to `newrelic_alert_condition` resource
+* feat: add optional trace-level request logging
+* docs: add debugging information to documentation website
+
+
 ## 1.12.2 (January 25, 2020)
 
 BUG FIXES:

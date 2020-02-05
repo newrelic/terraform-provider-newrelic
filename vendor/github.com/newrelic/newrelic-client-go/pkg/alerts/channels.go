@@ -8,11 +8,11 @@ import (
 
 // ListChannels returns all alert channels for a given account.
 func (alerts *Alerts) ListChannels() ([]*Channel, error) {
-	response := alertChannelsResponse{}
 	alertChannels := []*Channel{}
 	nextURL := "/alerts_channels.json"
 
 	for nextURL != "" {
+		response := alertChannelsResponse{}
 		resp, err := alerts.client.Get(nextURL, nil, &response)
 
 		if err != nil {
