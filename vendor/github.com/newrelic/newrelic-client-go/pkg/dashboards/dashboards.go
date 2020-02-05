@@ -47,11 +47,11 @@ type ListDashboardsParams struct {
 
 // ListDashboards is used to retrieve New Relic dashboards.
 func (dashboards *Dashboards) ListDashboards(params *ListDashboardsParams) ([]*Dashboard, error) {
-	response := dashboardsResponse{}
 	d := []*Dashboard{}
 	nextURL := "/dashboards.json"
 
 	for nextURL != "" {
+		response := dashboardsResponse{}
 		resp, err := dashboards.client.Get(nextURL, &params, &response)
 
 		if err != nil {

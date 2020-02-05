@@ -14,11 +14,11 @@ type ListPoliciesParams struct {
 
 // ListPolicies returns a list of Alert Policies for a given account.
 func (alerts *Alerts) ListPolicies(params *ListPoliciesParams) ([]Policy, error) {
-	response := alertPoliciesResponse{}
 	alertPolicies := []Policy{}
 	nextURL := "/alerts_policies.json"
 
 	for nextURL != "" {
+		response := alertPoliciesResponse{}
 		resp, err := alerts.client.Get(nextURL, &params, &response)
 
 		if err != nil {

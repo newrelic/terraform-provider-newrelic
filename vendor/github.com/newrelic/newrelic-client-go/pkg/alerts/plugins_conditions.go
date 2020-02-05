@@ -8,7 +8,6 @@ import (
 
 // ListPluginsConditions returns alert conditions for New Relic plugins for a given alert policy.
 func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, error) {
-	response := pluginsConditionsResponse{}
 	conditions := []*PluginsCondition{}
 	queryParams := listPluginsConditionsParams{
 		PolicyID: policyID,
@@ -17,6 +16,7 @@ func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, 
 	nextURL := "/alerts_plugins_conditions.json"
 
 	for nextURL != "" {
+		response := pluginsConditionsResponse{}
 		resp, err := alerts.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {

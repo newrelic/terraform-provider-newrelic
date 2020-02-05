@@ -39,11 +39,11 @@ type ListPluginsParams struct {
 // response objects will contain an additional `details` property
 // with metadata pertaining to each plugin.
 func (plugins *Plugins) ListPlugins(params *ListPluginsParams) ([]*Plugin, error) {
-	response := pluginsResponse{}
 	results := []*Plugin{}
 	nextURL := "/plugins.json"
 
 	for nextURL != "" {
+		response := pluginsResponse{}
 		resp, err := plugins.client.Get(nextURL, &params, &response)
 
 		if err != nil {
