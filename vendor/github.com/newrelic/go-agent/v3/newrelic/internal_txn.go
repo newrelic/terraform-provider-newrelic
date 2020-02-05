@@ -12,14 +12,10 @@ import (
 	"github.com/newrelic/go-agent/v3/internal"
 )
 
-type txnInput struct {
-	app      *app
-	Consumer dataConsumer
-	*appRun
-}
-
 type txn struct {
-	txnInput
+	app *app
+	*appRun
+
 	// This mutex is required since the consumer may call the public API
 	// interface functions from different routines.
 	sync.Mutex
@@ -77,18 +73,19 @@ func (txn *txn) markEnd(now time.Time, thread *internal.Thread) {
 	}
 }
 
-func newTxn(input txnInput, name string) *thread {
+func newTxn(app *app, run *appRun, name string) *thread {
 	txn := &txn{
-		txnInput: input,
+		app:    app,
+		appRun: run,
 	}
 	txn.markStart(time.Now())
 
 	txn.Name = name
-	txn.Attrs = internal.NewAttributes(input.AttributeConfig)
+	txn.Attrs = internal.NewAttributes(run.AttributeConfig)
 
-	if input.Config.DistributedTracer.Enabled {
+	if run.Config.DistributedTracer.Enabled {
 		txn.BetterCAT.Enabled = true
-		txn.TraceIDGenerator = input.Reply.TraceIDGenerator
+		txn.TraceIDGenerator = run.Reply.TraceIDGenerator
 		txn.BetterCAT.SetTraceAndTxnIDs(txn.TraceIDGenerator.GenerateTraceID())
 		txn.BetterCAT.Priority = txn.TraceIDGenerator.GeneratePriority()
 		txn.SpanEventsEnabled = txn.Config.SpanEvents.Enabled
@@ -108,7 +105,7 @@ func newTxn(input txnInput, name string) *thread {
 	// the top-level configuration.
 	doOldCAT := txn.Config.CrossApplicationTracer.Enabled
 	noGUID := txn.Config.DistributedTracer.Enabled
-	txn.CrossProcess.Init(doOldCAT, noGUID, input.Reply)
+	txn.CrossProcess.Init(doOldCAT, noGUID, run.Reply)
 
 	return &thread{
 		txn:    txn,
@@ -162,7 +159,7 @@ func (txn *txn) SetWebRequest(r WebRequest) error {
 
 	h := r.Header
 	if nil != h {
-		txn.Queuing = internal.QueueDuration(h, txn.Start)
+		txn.Queuing = queueDuration(h, txn.Start)
 		txn.acceptDistributedTraceHeadersLocked(r.Transport, h)
 		txn.CrossProcess.InboundHTTPRequest(h)
 	}
@@ -395,7 +392,7 @@ func (thd *thread) End(recovered interface{}) error {
 	}
 
 	if !txn.ignore {
-		txn.Consumer.Consume(txn.Reply.RunID, txn)
+		txn.app.Consume(txn.Reply.RunID, txn)
 	}
 
 	// Note that if a consumer uses `panic(nil)`, the panic will not
@@ -411,7 +408,7 @@ func (txn *txn) AddAttribute(name string, value interface{}) error {
 	txn.Lock()
 	defer txn.Unlock()
 
-	if txn.Config.HighSecurity() {
+	if txn.Config.HighSecurity {
 		return errHighSecurityEnabled
 	}
 
@@ -449,7 +446,7 @@ func (txn *txn) noticeErrorInternal(err internal.ErrorData) error {
 		txn.Errors = internal.NewTxnErrors(internal.MaxTxnErrors)
 	}
 
-	if txn.Config.HighSecurity() {
+	if txn.Config.HighSecurity {
 		err.Msg = highSecurityErrorMsg
 	}
 
@@ -575,7 +572,7 @@ func (txn *txn) NoticeError(input error) error {
 		return err
 	}
 
-	if txn.Config.HighSecurity() || !txn.Reply.SecurityPolicies.CustomParameters.Enabled() {
+	if txn.Config.HighSecurity || !txn.Reply.SecurityPolicies.CustomParameters.Enabled() {
 		data.ExtraAttributes = nil
 	}
 
@@ -744,7 +741,7 @@ func endDatastore(s *DatastoreSegment) error {
 	if txn.finished {
 		return errAlreadyEnded
 	}
-	if txn.Config.HighSecurity() {
+	if txn.Config.HighSecurity {
 		s.QueryParameters = nil
 	}
 	if !txn.Config.DatastoreTracer.QueryParameters.Enabled {
@@ -929,11 +926,13 @@ func (thd *thread) CreateDistributedTracePayload(hdrs http.Header) {
 		return
 	}
 
+	support := &txn.DistributedTracingSupport
+
 	excludeNRHeader := thd.Config.DistributedTracer.ExcludeNewRelicHeader
 	if txn.finished {
-		txn.TraceContextCreateException = true
+		support.TraceContextCreateException = true
 		if !excludeNRHeader {
-			txn.CreatePayloadException = true
+			support.CreatePayloadException = true
 		}
 		return
 	}
@@ -976,11 +975,11 @@ func (thd *thread) CreateDistributedTracePayload(hdrs http.Header) {
 		p.SetSampled(sampled)
 	}
 
-	txn.TraceContextCreateSuccess = true
+	support.TraceContextCreateSuccess = true
 
 	if !excludeNRHeader {
 		hdrs.Set(internal.DistributedTraceNewRelicHeader, p.NRHTTPSafe())
-		txn.CreatePayloadSuccess = true
+		support.CreatePayloadSuccess = true
 	}
 
 	// ID must be present in the Traceparent header when span events are
@@ -1023,22 +1022,23 @@ func (txn *txn) acceptDistributedTraceHeadersLocked(t TransportType, hdrs http.H
 	}
 
 	if txn.finished {
-		txn.AcceptPayloadException = true
 		return errAlreadyEnded
 	}
 
+	support := &txn.DistributedTracingSupport
+
 	if txn.numPayloadsCreated > 0 {
-		txn.AcceptPayloadCreateBeforeAccept = true
+		support.AcceptPayloadCreateBeforeAccept = true
 		return errOutboundPayloadCreated
 	}
 
 	if txn.BetterCAT.Inbound != nil {
-		txn.AcceptPayloadIgnoredMultiple = true
+		support.AcceptPayloadIgnoredMultiple = true
 		return errAlreadyAccepted
 	}
 
 	if nil == hdrs {
-		txn.AcceptPayloadNullPayload = true
+		support.AcceptPayloadNullPayload = true
 		return nil
 	}
 
@@ -1049,7 +1049,9 @@ func (txn *txn) acceptDistributedTraceHeadersLocked(t TransportType, hdrs http.H
 		return nil
 	}
 
-	payload, err := internal.AcceptPayload(hdrs, txn.Reply.TrustedAccountKey, &txn.DistributedTracingSupport)
+	txn.BetterCAT.TransportType = t.toString()
+
+	payload, err := internal.AcceptPayload(hdrs, txn.Reply.TrustedAccountKey, support)
 	if nil != err {
 		return err
 	}
@@ -1068,7 +1070,7 @@ func (txn *txn) acceptDistributedTraceHeadersLocked(t TransportType, hdrs http.H
 	// we just got the TraceParent header, and we still need to save that info to BetterCAT
 	// farther down.
 	if receivedTrustKey != txn.Reply.TrustedAccountKey && payload.HasNewRelicTraceInfo {
-		txn.AcceptPayloadUntrustedAccount = true
+		support.AcceptPayloadUntrustedAccount = true
 		return errTrustedAccountKey
 	}
 
@@ -1084,7 +1086,6 @@ func (txn *txn) acceptDistributedTraceHeadersLocked(t TransportType, hdrs http.H
 
 	txn.BetterCAT.Inbound = payload
 	txn.BetterCAT.TraceID = payload.TracedID
-	txn.BetterCAT.Inbound.TransportType = t.toString()
 
 	if tm := payload.Timestamp.Time(); txn.Start.After(tm) {
 		txn.BetterCAT.Inbound.TransportDuration = txn.Start.Sub(tm)

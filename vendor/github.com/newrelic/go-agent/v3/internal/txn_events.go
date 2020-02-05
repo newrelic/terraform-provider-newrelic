@@ -7,15 +7,6 @@ import (
 	"time"
 )
 
-// DatastoreExternalTotals contains overview of external and datastore calls
-// made during a transaction.
-type DatastoreExternalTotals struct {
-	externalCallCount  uint64
-	externalDuration   time.Duration
-	datastoreCallCount uint64
-	datastoreDuration  time.Duration
-}
-
 // WriteJSON prepares JSON in the format expected by the collector.
 func (e *TxnEvent) WriteJSON(buf *bytes.Buffer) {
 	w := jsonFieldsWriter{buf: buf}
@@ -133,7 +124,7 @@ func sharedBetterCATIntrinsics(e *TxnEvent, w *jsonFieldsWriter) {
 				w.stringField("parent.account", p.Account)
 				w.floatField("parent.transportDuration", p.TransportDuration.Seconds())
 			}
-			w.stringField("parent.transportType", p.TransportType)
+			w.stringField("parent.transportType", e.BetterCAT.TransportType)
 		}
 
 		w.stringField("guid", e.BetterCAT.TxnID)
