@@ -8,7 +8,6 @@ import (
 
 // ListNrqlConditions returns NRQL alert conditions for a specified policy.
 func (alerts *Alerts) ListNrqlConditions(policyID int) ([]*NrqlCondition, error) {
-	response := nrqlConditionsResponse{}
 	conditions := []*NrqlCondition{}
 	queryParams := listNrqlConditionsParams{
 		PolicyID: policyID,
@@ -17,6 +16,7 @@ func (alerts *Alerts) ListNrqlConditions(policyID int) ([]*NrqlCondition, error)
 	nextURL := "/alerts_nrql_conditions.json"
 
 	for nextURL != "" {
+		response := nrqlConditionsResponse{}
 		resp, err := alerts.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {

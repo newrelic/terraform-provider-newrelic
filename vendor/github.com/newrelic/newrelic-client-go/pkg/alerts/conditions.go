@@ -8,7 +8,6 @@ import (
 
 // ListConditions returns alert conditions for a specified policy.
 func (alerts *Alerts) ListConditions(policyID int) ([]*Condition, error) {
-	response := alertConditionsResponse{}
 	alertConditions := []*Condition{}
 	queryParams := listConditionsParams{
 		PolicyID: policyID,
@@ -17,6 +16,7 @@ func (alerts *Alerts) ListConditions(policyID int) ([]*Condition, error) {
 	nextURL := "/alerts_conditions.json"
 
 	for nextURL != "" {
+		response := alertConditionsResponse{}
 		resp, err := alerts.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
