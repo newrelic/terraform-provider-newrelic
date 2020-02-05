@@ -174,9 +174,10 @@ func TestNew_optionLogJSON(t *testing.T) {
 type TestLogger struct{}
 
 func (t *TestLogger) Error(s string, a ...interface{}) {}
+func (t *TestLogger) Warn(s string, a ...interface{})  {}
 func (t *TestLogger) Info(s string, a ...interface{})  {}
 func (t *TestLogger) Debug(s string, a ...interface{}) {}
-func (t *TestLogger) Warn(s string, a ...interface{})  {}
+func (t *TestLogger) Trace(s string, a ...interface{}) {}
 
 func TestNew_optionLogger(t *testing.T) {
 	t.Parallel()
