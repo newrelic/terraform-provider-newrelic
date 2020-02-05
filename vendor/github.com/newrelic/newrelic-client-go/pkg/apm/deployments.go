@@ -6,11 +6,11 @@ import (
 
 // ListDeployments returns deployments for an application.
 func (apm *APM) ListDeployments(applicationID int) ([]*Deployment, error) {
-	response := deploymentsResponse{}
 	deployments := []*Deployment{}
 	nextURL := fmt.Sprintf("/applications/%d/deployments.json", applicationID)
 
 	for nextURL != "" {
+		response := deploymentsResponse{}
 		resp, err := apm.client.Get(nextURL, nil, &response)
 
 		if err != nil {

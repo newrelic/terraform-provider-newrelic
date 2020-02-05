@@ -57,6 +57,11 @@ func (l StructuredLogger) Error(msg string, fields ...interface{}) {
 	log.WithFields(createFieldMap(fields)).Error(msg)
 }
 
+// Warn logs an warning message.
+func (l StructuredLogger) Warn(msg string, fields ...interface{}) {
+	log.WithFields(createFieldMap(fields)).Warn(msg)
+}
+
 // Info logs an info message.
 func (l StructuredLogger) Info(msg string, fields ...interface{}) {
 	log.WithFields(createFieldMap(fields)).Info(msg)
@@ -67,9 +72,9 @@ func (l StructuredLogger) Debug(msg string, fields ...interface{}) {
 	log.WithFields(createFieldMap(fields)).Debug(msg)
 }
 
-// Warn logs an warning message.
-func (l StructuredLogger) Warn(msg string, fields ...interface{}) {
-	log.WithFields(createFieldMap(fields)).Warn(msg)
+// Trace logs a trace message.
+func (l StructuredLogger) Trace(msg string, fields ...interface{}) {
+	log.WithFields(createFieldMap(fields)).Trace(msg)
 }
 
 func createFieldMap(fields ...interface{}) map[string]interface{} {

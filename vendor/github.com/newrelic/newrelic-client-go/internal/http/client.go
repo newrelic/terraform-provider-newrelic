@@ -65,7 +65,9 @@ func NewClient(cfg config.Config) NewRelicClient {
 	r.HTTPClient = &c
 	r.RetryMax = defaultRetryMax
 	r.CheckRetry = RetryPolicy
-	r.Logger = cfg.GetLogger()
+
+	// Disable logging in go-retryablehttp since we are logging requests directly here
+	r.Logger = nil
 
 	return NewRelicClient{
 		Client:     r,
@@ -227,6 +229,16 @@ func (c *NewRelicClient) do(
 		return nil, err
 	}
 
+	c.Config.GetLogger().Debug("performing request", "method", method, "url", req.URL)
+
+	logHeaders, err := json.Marshal(req.Header)
+
+	if err != nil {
+		return nil, err
+	}
+
+	c.Config.GetLogger().Trace("request details", "headers", string(logHeaders), "body", reqBody)
+
 	resp, retryErr := c.Client.Do(req)
 
 	if retryErr != nil {
@@ -243,6 +255,14 @@ func (c *NewRelicClient) do(
 	if readErr != nil {
 		return nil, readErr
 	}
+
+	logHeaders, err = json.Marshal(resp.Header)
+
+	if err != nil {
+		return nil, err
+	}
+
+	c.Config.GetLogger().Trace("request completed", "method", method, "url", req.URL, "status_code", resp.StatusCode, "headers", string(logHeaders), "body", string(body))
 
 	errorValue := c.errorValue
 	_ = json.Unmarshal(body, &errorValue)

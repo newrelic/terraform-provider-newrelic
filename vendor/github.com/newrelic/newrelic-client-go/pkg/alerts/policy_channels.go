@@ -49,7 +49,7 @@ func (alerts *Alerts) DeletePolicyChannel(policyID int, channelID int) (*Channel
 
 type updatePolicyChannelsParams struct {
 	PolicyID   int   `url:"policy_id,omitempty"`
-	ChannelIDs []int `url:"channel_ids,omitempty"`
+	ChannelIDs []int `url:"channel_ids,comma"`
 }
 
 type deletePolicyChannelsParams struct {
