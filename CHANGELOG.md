@@ -1,4 +1,4 @@
-## 1.13.0 (Unreleased)
+## 1.13.0 (February 06, 2020)
 
 BUG FIXES:
 * fix: allow string representations of JSON for alert channel webhook and payload ([#]())
