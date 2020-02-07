@@ -79,7 +79,6 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 				Deprecated:    "use `config` block instead",
 				ConflictsWith: []string{"config"},
 			},
-
 			"config": {
 				Type:          schema.TypeList,
 				Optional:      true,
@@ -149,9 +148,10 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							ForceNew:  true,
 						},
 						"payload_type": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:         schema.TypeString,
+							Optional:     true,
+							ForceNew:     true,
+							ValidateFunc: validation.StringInSlice([]string{"application/json", "application/x-www-form-urlencoded"}, false),
 						},
 						"recipients": {
 							Type:     schema.TypeString,

@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -316,6 +317,69 @@ func TestAccNewRelicAlertChannel_VictorOps(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertChannel_WebhookComplexPayload(t *testing.T) {
+	resourceName := "newrelic_alert_channel.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicAlertChannelConfigByType(rName, "webhook", `{
+					base_url = "https://example.com"
+					payload_type = "application/json"
+					payload = {
+						"string" = "string"
+						"object" = "{ \"key\": \"value\" }"
+						"array" = "[1,2,3]"
+					}
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertChannelExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestCheckResourceAttr(resourceName, "type", "webhook"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.base_url", "https://example.com"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.payload_type", "application/json"),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertChannel_WebhookPayloadValidation(t *testing.T) {
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	expectedErrorMsg, _ := regexp.Compile(`payload_type is required when using payload`)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create (expect error)
+			{
+				Config: testAccNewRelicAlertChannelConfigByType(rName, "webhook", `{
+					base_url = "https://example.com"
+					payload = {
+						"key" = "value"
+					}
+				}`),
+				ExpectError: expectedErrorMsg,
 			},
 		},
 	})
