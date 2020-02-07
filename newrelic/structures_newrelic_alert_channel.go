@@ -30,6 +30,12 @@ func expandAlertChannel(d *schema.ResourceData) (*alerts.Channel, error) {
 		channel.Configuration = expandAlertChannelConfiguration(configuration.(map[string]interface{}))
 	}
 
+	err := validateChannelConfiguration(channel.Configuration)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &channel, nil
 }
 
@@ -212,4 +218,12 @@ func flattenDeprecatedAlertChannelConfiguration(c *alerts.ChannelConfiguration) 
 	configResult["payload"] = string(payload)
 
 	return configResult, nil
+}
+
+func validateChannelConfiguration(config alerts.ChannelConfiguration) error {
+	if len(config.Payload) != 0 && config.PayloadType == "" {
+		return errors.New("payload_type is required when using payload")
+	}
+
+	return nil
 }
