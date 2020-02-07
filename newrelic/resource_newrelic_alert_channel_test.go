@@ -184,6 +184,20 @@ func TestAccNewRelicAlertChannel_PagerDuty(t *testing.T) {
 				// The config block requires the resource being destroyed and recreated on every `apply`.
 				ExpectNonEmptyPlan: true,
 			},
+			// Test: Update
+			{
+				Config: testAccNewRelicAlertChannelConfigByType(rName, "pagerduty", `{
+					service_key = "abc321"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertChannelExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestCheckResourceAttr(resourceName, "type", "pagerduty"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.service_key", "abc321"),
+				),
+				// The config block requires the resource being destroyed and recreated on every `apply`.
+				ExpectNonEmptyPlan: true,
+			},
 			// Test: Import
 			{
 				ResourceName:      resourceName,
