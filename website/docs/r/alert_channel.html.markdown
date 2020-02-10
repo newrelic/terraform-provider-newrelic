@@ -47,8 +47,9 @@ Each alert channel type supports a specific set of arguments for the `config` bl
     * `auth_password` - (Optional) Specifies an authentication password for use with a channel.  Supported by the `webhook` channel type.
     * `auth_type` - (Optional) Specifies an authentication method for use with a channel.  Supported by the `webhook` channel type.  Only HTTP basic authentication is currently supported via the value `BASIC`.
     * `auth_username` - (Optional) Specifies an authentication username for use with a channel.  Supported by the `webhook` channel type.
-    * `headers` - (Optional) A map of key/value pairs that represents extra HTTP headers to be sent along with the webhook payload
-    * `payload` - (Optional) A map of key/value pairs that represents the webhook payload.
+    * `headers` - (Optional) A map of key/value pairs that represents extra HTTP headers to be sent along with the webhook payload.
+    * `payload` - (Optional) A map of key/value pairs that represents the webhook payload. Must provide `payload_type` if setting this argument.
+    * `payload_type` - (Optional) Can either be `application/json` or `application/x-www-form-urlencoded`. The `payload_type` argument is _required_ if `payload` is set.
   * `pagerduty`
     * `service_key` - (Required) Specifies the service key for integrating with Pagerduty.
   * `victorops`
