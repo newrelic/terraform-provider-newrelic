@@ -129,13 +129,14 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							Elem:          &schema.Schema{Type: schema.TypeString},
 							Optional:      true,
 							Sensitive:     true,
-							ForceNew:  true,
+							ForceNew:      true,
 							ConflictsWith: []string{"config.0.headers_string"},
 						},
 						"headers_string": {
 							Type:          schema.TypeString,
 							Optional:      true,
 							Sensitive:     true,
+							ForceNew:      true,
 							ConflictsWith: []string{"config.0.headers"},
 							// Suppress the diff shown if the differences are solely due to whitespace
 							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
@@ -158,13 +159,14 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							Elem:          &schema.Schema{Type: schema.TypeString},
 							Sensitive:     true,
 							Optional:      true,
-							ForceNew:  true,
+							ForceNew:      true,
 							ConflictsWith: []string{"config.0.payload_string"},
 						},
 						"payload_string": {
 							Type:          schema.TypeString,
 							Optional:      true,
 							Sensitive:     true,
+							ForceNew:      true,
 							ConflictsWith: []string{"config.0.payload"},
 							// Suppress the diff shown if the differences are solely due to whitespace
 							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
