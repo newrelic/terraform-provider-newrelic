@@ -48,7 +48,9 @@ Each alert channel type supports a specific set of arguments for the `config` bl
     * `auth_type` - (Optional) Specifies an authentication method for use with a channel.  Supported by the `webhook` channel type.  Only HTTP basic authentication is currently supported via the value `BASIC`.
     * `auth_username` - (Optional) Specifies an authentication username for use with a channel.  Supported by the `webhook` channel type.
     * `headers` - (Optional) A map of key/value pairs that represents extra HTTP headers to be sent along with the webhook payload.
-    * `payload` - (Optional) A map of key/value pairs that represents the webhook payload. Must provide `payload_type` if setting this argument.
+    * `headers_string` - (Optional) Use instead of `headers` if the desired payload is more complex than a list of key/value pairs (e.g. a set of headers that makes use of nested objects).  The value provided should be a valid JSON string with escaped double quotes. Conflicts with `headers`.
+    * `payload` - (Optional) A map of key/value pairs that represents the webhook payload.  Must provide `payload_type` if setting this argument.
+    * `payload_string` - (Optional) Use instead of `payload` if the desired payload is more complex than a list of key/value pairs (e.g. a payload that makes use of nested objects).  The value provided should be a valid JSON string with escaped double quotes. Conflicts with `payload`.
     * `payload_type` - (Optional) Can either be `application/json` or `application/x-www-form-urlencoded`. The `payload_type` argument is _required_ if `payload` is set.
   * `pagerduty`
     * `service_key` - (Required) Specifies the service key for integrating with Pagerduty.
@@ -122,6 +124,48 @@ resource "newrelic_alert_channel" "foo" {
   config {
     key       = "abc123"
     route_key = "/example"
+  }
+}
+```
+
+##### Webhook
+```hcl
+resource "newrelic_alert_channel" "foo" {
+  name = "webhook-example"
+  type = "webhook"
+
+  config {
+    base_url = "http://www.test.com"
+    payload = {
+      condition_name: "$CONDITION_NAME"
+      policy_name: "$POLICY_NAME"
+    }
+
+    headers = {
+      header1 = value1
+      header2 = value2
+    }
+  }
+}
+```
+
+##### Webhook with complex payload
+```hcl
+resource "newrelic_alert_channel" "foo" {
+  name = "webhook-example"
+  type = "webhook"
+
+  config {
+    base_url = "http://www.test.com"
+    payload_type = "application/json"
+    payload_string = <<EOF
+{
+  "values": {
+    "condition_name": "$CONDITION_NAME",
+    "policy_name": "$POLICY_NAME"
+  }
+}
+EOF
   }
 }
 ```
