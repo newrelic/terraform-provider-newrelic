@@ -68,3 +68,10 @@ type Monitor struct {
 	CreatedAt    *Time             `json:"createdAt,omitempty"`
 	Options      MonitorOptions    `json:"options,omitempty"`
 }
+
+// MonitorLabel represents a single label for a New Relic Synthetics monitor.
+type MonitorLabel struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+	Href  string `json:"href"`
+}
