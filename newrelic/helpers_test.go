@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/stretchr/testify/require"
 
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
@@ -16,37 +17,33 @@ var (
 
 func TestParseIDs_Basic(t *testing.T) {
 	ids, err := parseIDs("1:2", 2)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	if len(ids) != 2 {
-		t.Fatal(len(ids))
-	}
-
-	if ids[0] != 1 || ids[1] != 2 {
-		t.Fatal(ids)
-	}
+	require.NoError(t, err)
+	require.Equal(t, 2, len(ids))
+	require.Equal(t, 1, ids[0])
+	require.Equal(t, 2, ids[1])
 }
 
 func TestParseIDs_BadIDs(t *testing.T) {
 	_, err := parseIDs("12", 2)
-	if err == nil {
-		t.Fatal(err)
-	}
+	require.Error(t, err)
 
 	_, err = parseIDs("a:b", 2)
-	if err == nil {
-		t.Fatal(err)
-	}
+	require.Error(t, err)
 }
 
 func TestSerializeIDs_Basic(t *testing.T) {
 	id := serializeIDs([]int{1, 2})
 
-	if id != "1:2" {
-		t.Fatal(id)
-	}
+	require.Equal(t, "1:2", id)
+}
+
+func TestStripWhitespace(t *testing.T) {
+	json := " { \"key\": \"value\" } "
+	e := "{\"key\":\"value\"}"
+	a := stripWhitespace(json)
+
+	require.Equal(t, e, a)
 }
 
 func testAccDeleteNewRelicAlertPolicy(name string) func() {

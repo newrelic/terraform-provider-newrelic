@@ -93,6 +93,99 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicAlertChannel_Webhook(t *testing.T) {
+	resourceName := "newrelic_alert_channel.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicAlertChannelConfigByType(rName, "webhook", `{
+					base_url = "http://www.test.com"
+					payload_type = "application/json"
+					payload = {
+						"test": "value"
+					}
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertChannelExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertChannel_WebhookPayloadHeaderStringConflicts(t *testing.T) {
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
+		Steps: []resource.TestStep{
+			// Test: Headers attribute conflict
+			{
+				Config: testAccNewRelicAlertChannelConfigByType(rName, "webhook", `{
+					base_url = "http://www.test.com"
+					payload_type = "application/json"
+					payload = {
+						test = "value"
+					}
+					headers_string = "{ \"test\": { \"some\": \"value\" } }"
+					headers = {
+						test = "value"
+					}
+				}`),
+				ExpectError: regexp.MustCompile("conflicts with"),
+			},
+			// Test: Payload attribute conflict
+			{
+				Config: testAccNewRelicAlertChannelConfigByType(rName, "webhook", `{
+					base_url = "http://www.test.com"
+					payload_type = "application/json"
+					payload_string = "{ \"test\": { \"some\": \"value\" } }"
+					payload = {
+						test = "value"
+					}
+				}`),
+				ExpectError: regexp.MustCompile("conflicts with"),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertChannel_WebhookPayloadHeaderString(t *testing.T) {
+	resourceName := "newrelic_alert_channel.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicAlertChannelConfigByType(rName, "webhook", `{
+					base_url = "http://www.test.com"
+					payload_type = "application/json"
+					payload_string = "{ \"test\": { \"some\": \"value\" } }"
+					headers_string = "{ \"test\": { \"some\": \"value\" } }"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertChannelExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicAlertChannel_Slack(t *testing.T) {
 	resourceName := "newrelic_alert_channel.foo"
 	rand := acctest.RandString(5)
@@ -311,45 +404,6 @@ func TestAccNewRelicAlertChannel_VictorOps(t *testing.T) {
 				),
 				// The config block requires the resource being destroyed and recreated on every `apply`.
 				ExpectNonEmptyPlan: true,
-			},
-			// Test: Import
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func TestAccNewRelicAlertChannel_WebhookComplexPayload(t *testing.T) {
-	resourceName := "newrelic_alert_channel.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-test-%s", rand)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertChannelDestroy,
-		Steps: []resource.TestStep{
-			// Test: Create
-			{
-				Config: testAccNewRelicAlertChannelConfigByType(rName, "webhook", `{
-					base_url = "https://example.com"
-					payload_type = "application/json"
-					payload = {
-						"string" = "string"
-						"object" = "{ \"key\": \"value\" }"
-						"array" = "[1,2,3]"
-					}
-				}`),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAlertChannelExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", rName),
-					resource.TestCheckResourceAttr(resourceName, "type", "webhook"),
-					resource.TestCheckResourceAttr(resourceName, "config.0.base_url", "https://example.com"),
-					resource.TestCheckResourceAttr(resourceName, "config.0.payload_type", "application/json"),
-				),
 			},
 			// Test: Import
 			{
