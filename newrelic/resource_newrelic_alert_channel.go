@@ -123,11 +123,23 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							ForceNew: true,
 						},
 						"headers": {
-							Type:      schema.TypeMap,
-							Elem:      &schema.Schema{Type: schema.TypeString},
-							Optional:  true,
-							Sensitive: true,
-							ForceNew:  true,
+							Type:          schema.TypeMap,
+							Elem:          &schema.Schema{Type: schema.TypeString},
+							Optional:      true,
+							Sensitive:     true,
+							ForceNew:      true,
+							ConflictsWith: []string{"config.0.headers_string"},
+						},
+						"headers_string": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							Sensitive:     true,
+							ForceNew:      true,
+							ConflictsWith: []string{"config.0.headers"},
+							// Suppress the diff shown if the differences are solely due to whitespace
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								return stripWhitespace(old) == stripWhitespace(new)
+							},
 						},
 						"key": {
 							Type:      schema.TypeString,
@@ -141,11 +153,23 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							ForceNew: true,
 						},
 						"payload": {
-							Type:      schema.TypeMap,
-							Elem:      &schema.Schema{Type: schema.TypeString},
-							Sensitive: true,
-							Optional:  true,
-							ForceNew:  true,
+							Type:          schema.TypeMap,
+							Elem:          &schema.Schema{Type: schema.TypeString},
+							Sensitive:     true,
+							Optional:      true,
+							ForceNew:      true,
+							ConflictsWith: []string{"config.0.payload_string"},
+						},
+						"payload_string": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							Sensitive:     true,
+							ForceNew:      true,
+							ConflictsWith: []string{"config.0.payload"},
+							// Suppress the diff shown if the differences are solely due to whitespace
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								return stripWhitespace(old) == stripWhitespace(new)
+							},
 						},
 						"payload_type": {
 							Type:         schema.TypeString,

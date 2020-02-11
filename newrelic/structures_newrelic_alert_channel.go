@@ -23,11 +23,23 @@ func expandAlertChannel(d *schema.ResourceData) (*alerts.Channel, error) {
 	}
 
 	if configOk {
-		channel.Configuration = expandAlertChannelConfiguration(config.([]interface{})[0].(map[string]interface{}))
+		c, err := expandAlertChannelConfiguration(config.([]interface{})[0].(map[string]interface{}))
+
+		if err != nil {
+			return nil, err
+		}
+
+		channel.Configuration = *c
 	}
 
 	if configurationOk {
-		channel.Configuration = expandAlertChannelConfiguration(configuration.(map[string]interface{}))
+		c, err := expandAlertChannelConfiguration(configuration.(map[string]interface{}))
+
+		if err != nil {
+			return nil, err
+		}
+
+		channel.Configuration = *c
 	}
 
 	err := validateChannelConfiguration(channel.Configuration)
@@ -39,7 +51,8 @@ func expandAlertChannel(d *schema.ResourceData) (*alerts.Channel, error) {
 	return &channel, nil
 }
 
-func expandAlertChannelConfiguration(cfg map[string]interface{}) alerts.ChannelConfiguration {
+//nolint:gocyclo
+func expandAlertChannelConfiguration(cfg map[string]interface{}) (*alerts.ChannelConfiguration, error) {
 	config := alerts.ChannelConfiguration{}
 
 	if apiKey, ok := cfg["api_key"]; ok {
@@ -71,12 +84,36 @@ func expandAlertChannelConfiguration(cfg map[string]interface{}) alerts.ChannelC
 		config.Headers = h
 	}
 
+	if headers, ok := cfg["headers_string"]; ok && headers != "" {
+		s := []byte(headers.(string))
+		var h map[string]interface{}
+		err := json.Unmarshal(s, &h)
+
+		if err != nil {
+			return nil, err
+		}
+
+		config.Headers = h
+	}
+
 	if includeJSONAttachment, ok := cfg["include_json_attachment"]; ok {
 		config.IncludeJSONAttachment = includeJSONAttachment.(string)
 	}
 
 	if payload, ok := cfg["payload"]; ok {
 		p := payload.(map[string]interface{})
+		config.Payload = p
+	}
+
+	if payload, ok := cfg["payload_string"]; ok && payload != "" {
+		s := []byte(payload.(string))
+		var p map[string]interface{}
+		err := json.Unmarshal(s, &p)
+
+		if err != nil {
+			return nil, err
+		}
+
 		config.Payload = p
 	}
 
@@ -116,7 +153,7 @@ func expandAlertChannelConfiguration(cfg map[string]interface{}) alerts.ChannelC
 		config.UserID = userID.(string)
 	}
 
-	return config
+	return &config, nil
 }
 
 func flattenAlertChannelDataSource(channel *alerts.Channel, d *schema.ResourceData) error {
@@ -130,9 +167,12 @@ func flattenAlertChannel(channel *alerts.Channel, d *schema.ResourceData) error 
 	d.Set("name", channel.Name)
 	d.Set("type", channel.Type)
 
-	config := flattenAlertChannelConfiguration(&channel.Configuration)
-	configuration, err := flattenDeprecatedAlertChannelConfiguration(&channel.Configuration)
+	config, err := flattenAlertChannelConfiguration(&channel.Configuration, d)
+	if err != nil {
+		return err
+	}
 
+	configuration, err := flattenDeprecatedAlertChannelConfiguration(&channel.Configuration)
 	if err != nil {
 		return err
 	}
@@ -150,9 +190,9 @@ func flattenAlertChannel(channel *alerts.Channel, d *schema.ResourceData) error 
 	return nil
 }
 
-func flattenAlertChannelConfiguration(c *alerts.ChannelConfiguration) []interface{} {
+func flattenAlertChannelConfiguration(c *alerts.ChannelConfiguration, d *schema.ResourceData) ([]interface{}, error) {
 	if c == nil {
-		return nil
+		return nil, nil
 	}
 
 	configResult := make(map[string]interface{})
@@ -163,9 +203,7 @@ func flattenAlertChannelConfiguration(c *alerts.ChannelConfiguration) []interfac
 	configResult["base_url"] = c.BaseURL
 	configResult["channel"] = c.Channel
 	configResult["key"] = c.Key
-	configResult["headers"] = c.Headers
 	configResult["include_json_attachment"] = c.IncludeJSONAttachment
-	configResult["payload"] = c.Payload
 	configResult["payload_type"] = c.PayloadType
 	configResult["recipients"] = c.Recipients
 	configResult["region"] = c.Region
@@ -176,7 +214,31 @@ func flattenAlertChannelConfiguration(c *alerts.ChannelConfiguration) []interfac
 	configResult["url"] = c.URL
 	configResult["user_id"] = c.UserID
 
-	return []interface{}{configResult}
+	if _, ok := d.GetOk("config.0.headers"); ok {
+		configResult["headers"] = c.Headers
+	} else if _, ok := d.GetOk("config.0.headers_string"); ok {
+		h, err := json.Marshal(c.Headers)
+
+		if err != nil {
+			return nil, err
+		}
+
+		configResult["headers_string"] = string(h)
+	}
+
+	if _, ok := d.GetOk("config.0.payload"); ok {
+		configResult["payload"] = c.Payload
+	} else if _, ok := d.GetOk("config.0.payload_string"); ok {
+		h, err := json.Marshal(c.Payload)
+
+		if err != nil {
+			return nil, err
+		}
+
+		configResult["payload_string"] = string(h)
+	}
+
+	return []interface{}{configResult}, nil
 }
 
 func flattenDeprecatedAlertChannelConfiguration(c *alerts.ChannelConfiguration) (map[string]interface{}, error) {
