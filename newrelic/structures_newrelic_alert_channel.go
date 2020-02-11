@@ -51,6 +51,7 @@ func expandAlertChannel(d *schema.ResourceData) (*alerts.Channel, error) {
 	return &channel, nil
 }
 
+//nolint:gocyclo
 func expandAlertChannelConfiguration(cfg map[string]interface{}) (*alerts.ChannelConfiguration, error) {
 	config := alerts.ChannelConfiguration{}
 
@@ -167,8 +168,11 @@ func flattenAlertChannel(channel *alerts.Channel, d *schema.ResourceData) error 
 	d.Set("type", channel.Type)
 
 	config, err := flattenAlertChannelConfiguration(&channel.Configuration, d)
-	configuration, err := flattenDeprecatedAlertChannelConfiguration(&channel.Configuration)
+	if err != nil {
+		return err
+	}
 
+	configuration, err := flattenDeprecatedAlertChannelConfiguration(&channel.Configuration)
 	if err != nil {
 		return err
 	}

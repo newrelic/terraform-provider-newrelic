@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 func parseIDs(serializedID string, count int) ([]int, error) {
@@ -43,4 +44,15 @@ func toJSON(data interface{}) string {
 	c, _ := json.MarshalIndent(data, "", "  ")
 
 	return string(c)
+}
+
+func stripWhitespace(str string) string {
+	var b strings.Builder
+	b.Grow(len(str))
+	for _, ch := range str {
+		if !unicode.IsSpace(ch) {
+			b.WriteRune(ch)
+		}
+	}
+	return b.String()
 }

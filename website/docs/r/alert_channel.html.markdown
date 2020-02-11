@@ -136,9 +136,10 @@ resource "newrelic_alert_channel" "foo" {
 
   config {
     base_url = "http://www.test.com"
+    payload_type = "application/json"
     payload = {
-      condition_name: "$CONDITION_NAME"
-      policy_name: "$POLICY_NAME"
+      condition_name = "$CONDITION_NAME"
+      policy_name = "$POLICY_NAME"
     }
 
     headers = {
@@ -160,7 +161,7 @@ resource "newrelic_alert_channel" "foo" {
     payload_type = "application/json"
     payload_string = <<EOF
 {
-  "values": {
+  "my_custom_values": {
     "condition_name": "$CONDITION_NAME",
     "policy_name": "$POLICY_NAME"
   }

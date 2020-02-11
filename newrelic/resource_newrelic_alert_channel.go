@@ -3,8 +3,6 @@ package newrelic
 import (
 	"log"
 	"strconv"
-	"strings"
-	"unicode"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -140,7 +138,7 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							ConflictsWith: []string{"config.0.headers"},
 							// Suppress the diff shown if the differences are solely due to whitespace
 							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-								return StripWhitespace(old) == StripWhitespace(new)
+								return stripWhitespace(old) == stripWhitespace(new)
 							},
 						},
 						"key": {
@@ -170,7 +168,7 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							ConflictsWith: []string{"config.0.payload"},
 							// Suppress the diff shown if the differences are solely due to whitespace
 							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-								return StripWhitespace(old) == StripWhitespace(new)
+								return stripWhitespace(old) == stripWhitespace(new)
 							},
 						},
 						"payload_type": {
@@ -287,16 +285,4 @@ func resourceNewRelicAlertChannelDelete(d *schema.ResourceData, meta interface{}
 	}
 
 	return nil
-}
-
-// StripWhitespace removes whitespace from a string.
-func StripWhitespace(str string) string {
-	var b strings.Builder
-	b.Grow(len(str))
-	for _, ch := range str {
-		if !unicode.IsSpace(ch) {
-			b.WriteRune(ch)
-		}
-	}
-	return b.String()
 }
