@@ -1,4 +1,16 @@
-## 1.14.0 (Unreleased)
+## 1.13.1 (Unreleased)
+
+BUG FIXES:
+
+* fix(alert_condition): mark condition_scope optional
+* fix(alert_channels): allow complex headers & payloads with new attributes
+* fix(alert_channel): validate payload also has payload_type specified
+* fix(newrelic_alert_channel): Force new resource for all config fields
+
+IMPROVEMENTS:
+
+* docs(alert_channel): add payload_type details to docs
+
 ## 1.13.0 (February 06, 2020)
 
 BUG FIXES:
