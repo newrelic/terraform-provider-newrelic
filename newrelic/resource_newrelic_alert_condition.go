@@ -118,7 +118,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 			},
 			"condition_scope": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"violation_close_timer": {
 				Type:         schema.TypeInt,
