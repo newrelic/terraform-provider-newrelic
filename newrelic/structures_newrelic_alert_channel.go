@@ -156,6 +156,16 @@ func expandAlertChannelConfiguration(cfg map[string]interface{}) (*alerts.Channe
 	return &config, nil
 }
 
+func expandAlertChannelIDs(channelIDs []interface{}) []int {
+	ids := make([]int, len(channelIDs))
+
+	for i := range ids {
+		ids[i] = channelIDs[i].(int)
+	}
+
+	return ids
+}
+
 func flattenAlertChannelDataSource(channel *alerts.Channel, d *schema.ResourceData) error {
 	d.SetId(strconv.Itoa(channel.ID))
 	d.Set("policy_ids", channel.Links.PolicyIDs)
