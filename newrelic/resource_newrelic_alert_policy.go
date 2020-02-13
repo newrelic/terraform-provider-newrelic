@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/newrelic/newrelic-client-go/newrelic"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
@@ -38,19 +39,47 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"channel_ids": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
+				},
+				Optional: true,
+				ForceNew: true,
+			},
 		},
 	}
 }
 
 func resourceNewRelicAlertPolicyCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
-	policy := expandAlertPolicy(d)
+	p := expandAlertPolicy(d)
 
-	log.Printf("[INFO] Creating New Relic alert policy %s", policy.Name)
+	log.Printf("[INFO] Creating New Relic alert policy %s", p.Name)
 
-	policy, err := client.Alerts.CreatePolicy(*policy)
+	policy, err := client.Alerts.CreatePolicy(*p)
+
 	if err != nil {
 		return err
+	}
+
+	channels := d.Get("channel_ids").([]interface{})
+
+	if len(channels) > 0 {
+		channelIDs := expandChannelIDs(channels)
+		matchedChannelIDs, err := findExistingChannelIDs(client, channelIDs)
+
+		if err != nil {
+			return err
+		}
+
+		log.Printf("[INFO] Adding channels %+v to policy %+v", matchedChannelIDs, policy.Name)
+
+		_, err = client.Alerts.UpdatePolicyChannels(policy.ID, matchedChannelIDs)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	d.SetId(strconv.Itoa(policy.ID))
@@ -69,6 +98,7 @@ func resourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) e
 	log.Printf("[INFO] Reading New Relic alert policy %v", id)
 
 	policy, err := client.Alerts.GetPolicy(int(id))
+
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -76,6 +106,12 @@ func resourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) e
 		}
 
 		return err
+	}
+
+	channelIDs := d.Get("channel_ids").([]interface{})
+
+	if len(channelIDs) > 0 {
+		d.Set("channel_ids", expandChannelIDs(channelIDs))
 	}
 
 	return flattenAlertPolicy(policy, d)
@@ -118,4 +154,24 @@ func resourceNewRelicAlertPolicyDelete(d *schema.ResourceData, meta interface{})
 	}
 
 	return nil
+}
+
+func findExistingChannelIDs(client *newrelic.NewRelic, channelIDs []int) ([]int, error) {
+	channels, err := client.Alerts.ListChannels()
+
+	if err != nil {
+		return nil, err
+	}
+
+	matched := make([]int, 0)
+
+	for i := range channels {
+		for n := range channelIDs {
+			if channelIDs[n] == channels[i].ID {
+				matched = append(matched, channelIDs[n])
+			}
+		}
+	}
+
+	return matched, nil
 }

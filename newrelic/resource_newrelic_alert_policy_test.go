@@ -102,21 +102,23 @@ func TestAccNewRelicAlertPolicy_ErrorThrownWhenNameEmpty(t *testing.T) {
 	})
 }
 
-func testAccNewRelicAlertPolicyConfig(name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%s"
-}
-`, name)
-}
+func TestAccNewRelicAlertPolicy_WithChannels(t *testing.T) {
+	resourceName := "newrelic_alert_policy.foo"
+	rName := acctest.RandString(5)
 
-func testAccNewRelicAlertPolicyConfigUpdated(rName string) string {
-	return fmt.Sprintf(`
-resource "newrelic_alert_policy" "foo" {
-  name                = "tf-test-updated-%s"
-  incident_preference = "PER_CONDITION"
-}
-`, rName)
+	resource.ParallelTest(t, resource.TestCase{
+		IsUnitTest:   true,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAlertPolicyConfigWithChannels(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertPolicyExists(resourceName),
+				),
+			},
+		},
+	})
 }
 
 func testAccCheckNewRelicAlertPolicyDestroy(s *terraform.State) error {
@@ -171,6 +173,23 @@ func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 	}
 }
 
+func testAccNewRelicAlertPolicyConfig(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%s"
+}
+`, name)
+}
+
+func testAccNewRelicAlertPolicyConfigUpdated(rName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+  name                = "tf-test-updated-%s"
+  incident_preference = "PER_CONDITION"
+}
+`, rName)
+}
+
 func testAlertPolicyConfigNameEmpty() string {
 	return `
 provider "newrelic" {
@@ -181,4 +200,36 @@ resource "newrelic_alert_policy" "foo" {
   name = ""
 }
 `
+}
+
+func testAccAlertPolicyConfigWithChannels(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_channel" "channel_a" {
+	name = "tf-test-%[1]s-channel-a"
+	type = "email"
+
+	config {
+		recipients = "test@testing.com"
+		include_json_attachment = "1"
+	}
+}
+
+resource "newrelic_alert_channel" "channel_b" {
+	name = "tf-test-%[1]s-channel-b"
+	type = "email"
+
+	config {
+		recipients = "example@testing.com"
+		include_json_attachment = "1"
+	}
+}
+
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+	channel_ids =  [
+		newrelic_alert_channel.channel_a.id,
+		newrelic_alert_channel.channel_b.id
+	]
+}
+`, name)
 }
