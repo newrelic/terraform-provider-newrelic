@@ -95,7 +95,7 @@ func TestAccNewRelicAlertPolicy_ErrorThrownWhenNameEmpty(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAlertPolicyConfigNameEmpty(),
+				Config:      testAccNewRelicAlertPolicyConfigNameEmpty(),
 				ExpectError: expectedErrorMsg,
 			},
 		},
@@ -107,12 +107,11 @@ func TestAccNewRelicAlertPolicy_WithChannels(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest:   true,
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAlertPolicyConfigWithChannels(rName),
+				Config: testAccNewRelicAccAlertPolicyConfigWithChannels(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyExists(resourceName),
 				),
@@ -190,7 +189,7 @@ resource "newrelic_alert_policy" "foo" {
 `, rName)
 }
 
-func testAlertPolicyConfigNameEmpty() string {
+func testAccNewRelicAlertPolicyConfigNameEmpty() string {
 	return `
 provider "newrelic" {
 	api_key = "foo"
@@ -202,7 +201,7 @@ resource "newrelic_alert_policy" "foo" {
 `
 }
 
-func testAccAlertPolicyConfigWithChannels(name string) string {
+func testAccNewRelicAccAlertPolicyConfigWithChannels(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_channel" "channel_a" {
 	name = "tf-test-%[1]s-channel-a"
