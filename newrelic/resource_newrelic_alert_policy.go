@@ -108,12 +108,6 @@ func resourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	channelIDs := d.Get("channel_ids").([]interface{})
-
-	if len(channelIDs) > 0 {
-		d.Set("channel_ids", expandAlertChannelIDs(channelIDs))
-	}
-
 	return flattenAlertPolicy(policy, d)
 }
 
