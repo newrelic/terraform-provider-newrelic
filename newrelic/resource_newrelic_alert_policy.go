@@ -66,7 +66,7 @@ func resourceNewRelicAlertPolicyCreate(d *schema.ResourceData, meta interface{})
 	channels := d.Get("channel_ids").([]interface{})
 
 	if len(channels) > 0 {
-		channelIDs := expandChannelIDs(channels)
+		channelIDs := expandAlertChannelIDs(channels)
 		matchedChannelIDs, err := findExistingChannelIDs(client, channelIDs)
 
 		if err != nil {
@@ -111,7 +111,7 @@ func resourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) e
 	channelIDs := d.Get("channel_ids").([]interface{})
 
 	if len(channelIDs) > 0 {
-		d.Set("channel_ids", expandChannelIDs(channelIDs))
+		d.Set("channel_ids", expandAlertChannelIDs(channelIDs))
 	}
 
 	return flattenAlertPolicy(policy, d)
