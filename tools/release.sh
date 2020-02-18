@@ -15,7 +15,7 @@ fi
 if [ $# -ne 1 ]; then
   printf "\n"
   printf "${COLOR_RED} Error: Release version argument required. \n\n ${COLOR_NONE}"
-  printf " Example: \n\n     ./tools/release.sh 0.9.0 \n\n"
+  printf " Example: \n\n    ./tools/release.sh 0.9.0 \n\n"
   printf "  Example (make): \n\n    make release version=0.9.0 \n"
   printf "\n"
 
