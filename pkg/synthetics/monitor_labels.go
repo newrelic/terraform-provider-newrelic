@@ -7,7 +7,7 @@ import (
 
 // GetMonitorLabels is used to retrieve all labels for a given Synthetics monitor.
 func (s *Synthetics) GetMonitorLabels(monitorID string) ([]*MonitorLabel, error) {
-	url := fmt.Sprintf("/monitors/%s/labels", monitorID)
+	url := fmt.Sprintf("/v4/monitors/%s/labels", monitorID)
 
 	resp := getMonitorLabelsResponse{}
 
@@ -21,7 +21,7 @@ func (s *Synthetics) GetMonitorLabels(monitorID string) ([]*MonitorLabel, error)
 
 // AddMonitorLabel is used to add a label to a given monitor.
 func (s *Synthetics) AddMonitorLabel(monitorID, labelKey, labelValue string) error {
-	url := fmt.Sprintf("/monitors/%s/labels", monitorID)
+	url := fmt.Sprintf("/v4/monitors/%s/labels", monitorID)
 
 	data := fmt.Sprintf("%s:%s", strings.Title(labelKey), strings.Title(labelValue))
 
@@ -37,7 +37,7 @@ func (s *Synthetics) AddMonitorLabel(monitorID, labelKey, labelValue string) err
 
 // DeleteMonitorLabel deletes a key:value label from the given Syntheics monitor.
 func (s *Synthetics) DeleteMonitorLabel(monitorID, labelKey, labelValue string) error {
-	url := fmt.Sprintf("/monitors/%s/labels/%s:%s", monitorID, strings.Title(labelKey), strings.Title(labelValue))
+	url := fmt.Sprintf("/v4/monitors/%s/labels/%s:%s", monitorID, strings.Title(labelKey), strings.Title(labelValue))
 
 	_, err := s.client.Delete(url, nil, nil)
 	if err != nil {

@@ -18,9 +18,9 @@ func TestBaseURLs(t *testing.T) {
 	t.Parallel()
 
 	pairs := map[region.Region]string{
-		region.US:      "https://synthetics.newrelic.com/synthetics/api/v4",
-		region.EU:      "https://synthetics.eu.newrelic.com/synthetics/api/v4",
-		region.Staging: "https://staging-synthetics.newrelic.com/synthetics/api/v4",
+		region.US:      "https://synthetics.newrelic.com/synthetics/api",
+		region.EU:      "https://synthetics.eu.newrelic.com/synthetics/api",
+		region.Staging: "https://staging-synthetics.newrelic.com/synthetics/api",
 	}
 
 	// Default should be region.US

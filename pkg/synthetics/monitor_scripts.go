@@ -9,7 +9,7 @@ import (
 // to a New Relic Synthetics scripted monitor.
 func (s *Synthetics) GetMonitorScript(monitorID string) (*MonitorScript, error) {
 	resp := MonitorScript{}
-	url := fmt.Sprintf("/monitors/%s/script", monitorID)
+	url := fmt.Sprintf("/v4/monitors/%s/script", monitorID)
 	_, err := s.client.Get(url, nil, &resp)
 
 	if err != nil {
@@ -31,7 +31,7 @@ func (s *Synthetics) GetMonitorScript(monitorID string) (*MonitorScript, error) 
 func (s *Synthetics) UpdateMonitorScript(monitorID string, script MonitorScript) (*MonitorScript, error) {
 	script.Text = base64.StdEncoding.EncodeToString([]byte(script.Text))
 
-	url := fmt.Sprintf("/monitors/%s/script", monitorID)
+	url := fmt.Sprintf("/v4/monitors/%s/script", monitorID)
 	_, err := s.client.Put(url, nil, &script, nil)
 
 	if err != nil {
