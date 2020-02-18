@@ -30,5 +30,6 @@ include build/document.mk
 include build/lint.mk
 include build/test.mk
 include build/util.mk
+include build/release.mk
 
 .PHONY: all build build-ci clean
