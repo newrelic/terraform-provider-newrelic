@@ -75,3 +75,12 @@ type MonitorLabel struct {
 	Value string `json:"value"`
 	Href  string `json:"href"`
 }
+
+// SecureCredential represents a Synthetics secure credential.
+type SecureCredential struct {
+	Key         string `json:"key"`
+	Description string `json:"description"`
+	Value       string `json:"value"`
+	CreatedAt   *Time  `json:"createdAt"`
+	LastUpdated *Time  `json:"lastUpdated"`
+}
