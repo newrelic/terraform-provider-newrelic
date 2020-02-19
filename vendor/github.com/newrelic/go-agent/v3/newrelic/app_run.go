@@ -20,7 +20,18 @@ type appRun struct {
 
 	// firstAppName is the value of Config.AppName up to the first semicolon.
 	firstAppName string
+
+	adaptiveSampler *adaptiveSampler
+
+	// rulesCache caches the results of creating transaction names.  It
+	// exists here since it is specific to a set of rules and is shared
+	// between transactions.
+	rulesCache *rulesCache
 }
+
+const (
+	txnNameCacheLimit = 40
+)
 
 func newAppRun(config config, reply *internal.ConnectReply) *appRun {
 	convertConfig := func(c AttributeDestinationConfig) internal.AttributeDestinationConfig {
@@ -41,7 +52,8 @@ func newAppRun(config config, reply *internal.ConnectReply) *appRun {
 			SpanEvents:        convertConfig(config.SpanEvents.Attributes),
 			TraceSegments:     convertConfig(config.TransactionTracer.Segments.Attributes),
 		}, reply.SecurityPolicies.AttributesInclude.Enabled()),
-		Config: config,
+		Config:     config,
+		rulesCache: newRulesCache(txnNameCacheLimit),
 	}
 
 	// Overwrite local settings with any server-side-config settings
@@ -99,6 +111,11 @@ func newAppRun(config config, reply *internal.ConnectReply) *appRun {
 	// Cache the first application name set on the config
 	run.firstAppName = strings.SplitN(config.AppName, ";", 2)[0]
 
+	run.adaptiveSampler = newAdaptiveSampler(
+		time.Duration(reply.SamplingTargetPeriodInSeconds)*time.Second,
+		reply.SamplingTarget,
+		time.Now())
+
 	if "" != run.Reply.RunID {
 		js, _ := json.Marshal(settings(run.Config.Config))
 		run.Config.Logger.Debug("final configuration", map[string]interface{}{
@@ -109,15 +126,16 @@ func newAppRun(config config, reply *internal.ConnectReply) *appRun {
 	return run
 }
 
+func newPlaceholderAppRun(config config) *appRun {
+	reply := internal.ConnectReplyDefaults()
+	// Do no sampling if the app isn't connected:
+	reply.SamplingTarget = 0
+	return newAppRun(config, reply)
+}
+
 const (
 	// https://source.datanerd.us/agents/agent-specs/blob/master/Lambda.md#distributed-tracing
 	serverlessDefaultPrimaryAppID = "Unknown"
-)
-
-const (
-	// https://source.datanerd.us/agents/agent-specs/blob/master/Lambda.md#adaptive-sampling
-	serverlessSamplerPeriod = 60 * time.Second
-	serverlessSamplerTarget = 10
 )
 
 func newServerlessConnectReply(config config) *internal.ConnectReply {
@@ -139,8 +157,9 @@ func newServerlessConnectReply(config config) *internal.ConnectReply {
 		reply.PrimaryAppID = serverlessDefaultPrimaryAppID
 	}
 
-	reply.AdaptiveSampler = internal.NewAdaptiveSampler(serverlessSamplerPeriod,
-		serverlessSamplerTarget, time.Now())
+	// https://source.datanerd.us/agents/agent-specs/blob/master/Lambda.md#adaptive-sampling
+	reply.SamplingTargetPeriodInSeconds = 60
+	reply.SamplingTarget = 10
 
 	return reply
 }
@@ -204,4 +223,19 @@ func (run *appRun) ReportPeriods() map[internal.HarvestTypes]time.Duration {
 		configurable: run.Reply.ConfigurablePeriod(),
 		fixed:        internal.FixedHarvestPeriod,
 	}
+}
+
+func (run *appRun) createTransactionName(input string, isWeb bool) string {
+	if name := run.rulesCache.find(input, isWeb); "" != name {
+		return name
+	}
+	name := internal.CreateFullTxnName(input, run.Reply, isWeb)
+	if "" != name {
+		// Note that we  don't cache situations where the rules say
+		// ignore.  It would increase complication (we would need to
+		// disambiguate not-found vs ignore).  Also, the ignore code
+		// path is probably extremely uncommon.
+		run.rulesCache.set(input, isWeb, name)
+	}
+	return name
 }

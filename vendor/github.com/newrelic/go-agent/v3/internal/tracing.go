@@ -69,11 +69,10 @@ type TxnData struct {
 	stamp           segmentStamp
 	threadIDCounter uint64
 
-	TraceIDGenerator       *TraceIDGenerator
-	LazilyCalculateSampled func() bool
-	SpanEventsEnabled      bool
-	rootSpanID             string
-	spanEvents             []*SpanEvent
+	TraceIDGenerator        *TraceIDGenerator
+	ShouldCollectSpanEvents func() bool
+	rootSpanID              string
+	SpanEvents              []*SpanEvent
 
 	customSegments    map[string]*metricData
 	datastoreSegments map[DatastoreMetricKey]*metricData
@@ -255,7 +254,8 @@ func StartSegment(t *TxnData, thread *Thread, now time.Time) SegmentStartTime {
 	}
 }
 
-func (t *TxnData) getRootSpanID() string {
+// GetRootSpanID returns the root span ID.
+func (t *TxnData) GetRootSpanID() string {
 	if "" == t.rootSpanID {
 		t.rootSpanID = t.TraceIDGenerator.GenerateSpanID()
 	}
@@ -266,7 +266,7 @@ func (t *TxnData) getRootSpanID() string {
 // segment stack.
 func (t *TxnData) CurrentSpanIdentifier(thread *Thread) string {
 	if 0 == len(thread.stack) {
-		return t.getRootSpanID()
+		return t.GetRootSpanID()
 	}
 	if "" == thread.stack[len(thread.stack)-1].spanID {
 		thread.stack[len(thread.stack)-1].spanID = t.TraceIDGenerator.GenerateSpanID()
@@ -276,8 +276,8 @@ func (t *TxnData) CurrentSpanIdentifier(thread *Thread) string {
 
 func (t *TxnData) saveSpanEvent(e *SpanEvent) {
 	e.Attributes = t.Attrs.filterSpanAttributes(e.Attributes, destSpan)
-	if len(t.spanEvents) < MaxSpanEvents {
-		t.spanEvents = append(t.spanEvents, e)
+	if len(t.SpanEvents) < MaxSpanEvents {
+		t.SpanEvents = append(t.SpanEvents, e)
 	}
 }
 
@@ -330,7 +330,7 @@ func endSegment(t *TxnData, thread *Thread, start SegmentStartTime, now time.Tim
 
 	thread.stack = thread.stack[0:start.Depth]
 
-	if t.SpanEventsEnabled && t.LazilyCalculateSampled() {
+	if fn := t.ShouldCollectSpanEvents; nil != fn && fn() {
 		s.SpanID = frame.spanID
 		if "" == s.SpanID {
 			s.SpanID = t.TraceIDGenerator.GenerateSpanID()
@@ -376,7 +376,7 @@ func EndBasicSegment(t *TxnData, thread *Thread, start SegmentStartTime, now tim
 
 	if evt := end.spanEvent(); evt != nil {
 		evt.Name = customSegmentMetric(name)
-		evt.Category = spanCategoryGeneric
+		evt.Category = SpanCategoryGeneric
 		t.saveSpanEvent(evt)
 	}
 
@@ -534,7 +534,7 @@ func EndMessageSegment(p EndMessageParams) error {
 
 	if evt := end.spanEvent(); evt != nil {
 		evt.Name = key.Name()
-		evt.Category = spanCategoryGeneric
+		evt.Category = SpanCategoryGeneric
 		t.saveSpanEvent(evt)
 	}
 

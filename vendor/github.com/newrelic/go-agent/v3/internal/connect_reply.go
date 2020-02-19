@@ -2,6 +2,7 @@ package internal
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 )
@@ -65,7 +66,6 @@ type ConnectReply struct {
 		Level   string `json:"level"`
 	} `json:"messages"`
 
-	AdaptiveSampler AdaptiveSampler
 	// TraceIDGenerator creates random IDs for distributed tracing.  It
 	// exists here in the connect reply so it can be modified to create
 	// deterministic identifiers in tests.
@@ -80,11 +80,6 @@ type ConnectReply struct {
 	PrimaryAppID                  string `json:"primary_application_id"`
 	SamplingTarget                uint64 `json:"sampling_target"`
 	SamplingTargetPeriodInSeconds int    `json:"sampling_target_period_in_seconds"`
-
-	// rulesCache caches the results of calling CreateFullTxnName.  It
-	// exists here in ConnectReply since it is specific to a set of rules
-	// and is shared between transactions.
-	rulesCache *rulesCache
 
 	ServerSideConfig struct {
 		TransactionTracerEnabled *bool `json:"transaction_tracer.enabled"`
@@ -173,9 +168,6 @@ func ConnectReplyDefaults() *ConnectReply {
 		CollectErrorEvents:     true,
 		CollectSpanEvents:      true,
 		MaxPayloadSizeInBytes:  MaxPayloadSizeInBytes,
-		// No transactions should be sampled before the application is
-		// connected.
-		AdaptiveSampler: sampleNothing{},
 
 		SamplingTarget:                10,
 		SamplingTargetPeriodInSeconds: 60,
@@ -197,21 +189,6 @@ func CalculateApdexThreshold(c *ConnectReply, txnName string) time.Duration {
 // construct the full transaction metric name from the name given by the
 // consumer.
 func CreateFullTxnName(input string, reply *ConnectReply, isWeb bool) string {
-	if name := reply.rulesCache.find(input, isWeb); "" != name {
-		return name
-	}
-	name := constructFullTxnName(input, reply, isWeb)
-	if "" != name {
-		// Note that we  don't cache situations where the rules say
-		// ignore.  It would increase complication (we would need to
-		// disambiguate not-found vs ignore).  Also, the ignore code
-		// path is probably extremely uncommon.
-		reply.rulesCache.set(input, isWeb, name)
-	}
-	return name
-}
-
-func constructFullTxnName(input string, reply *ConnectReply, isWeb bool) string {
 	var afterURLRules string
 	if "" != input {
 		afterURLRules = reply.URLRules.Apply(input)
@@ -242,10 +219,30 @@ func constructFullTxnName(input string, reply *ConnectReply, isWeb bool) string 
 
 // SetSampleEverything is used for testing to ensure span events get saved.
 func (r *ConnectReply) SetSampleEverything() {
-	r.AdaptiveSampler = sampleEverything{}
+	// These constants are not large enough to sample everything forever,
+	// but should satisfy our tests!
+	r.SamplingTarget = 1000 * 1000 * 1000
+	r.SamplingTargetPeriodInSeconds = 1000 * 1000 * 1000
 }
 
 // SetSampleNothing is used for testing to ensure no span events get saved.
 func (r *ConnectReply) SetSampleNothing() {
-	r.AdaptiveSampler = sampleNothing{}
+	r.SamplingTarget = 0
+}
+
+// UnmarshalConnectReply takes the body of a Connect reply, in the form of bytes, and a
+// PreconnectReply, and converts it into a *ConnectReply
+func UnmarshalConnectReply(body []byte, preconnect PreconnectReply) (*ConnectReply, error) {
+	var reply struct {
+		Reply *ConnectReply `json:"return_value"`
+	}
+	reply.Reply = ConnectReplyDefaults()
+	err := json.Unmarshal(body, &reply)
+	if nil != err {
+		return nil, fmt.Errorf("unable to parse connect reply: %v", err)
+	}
+
+	reply.Reply.PreconnectReply = preconnect
+
+	return reply.Reply, nil
 }
