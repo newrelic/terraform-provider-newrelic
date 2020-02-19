@@ -119,6 +119,17 @@ func ConfigUserAgent(ua string) ConfigOption {
 	}
 }
 
+// ConfigServiceName sets the service name logged
+func ConfigServiceName(name string) ConfigOption {
+	return func(cfg *config.Config) error {
+		if name != "" {
+			cfg.ServiceName = name
+		}
+
+		return nil
+	}
+}
+
 // ConfigBaseURL sets the base URL used to make requests to the REST API V2.
 func ConfigBaseURL(url string) ConfigOption {
 	return func(cfg *config.Config) error {
