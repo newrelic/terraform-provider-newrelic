@@ -144,7 +144,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		APIURL:               data.Get("api_url").(string),
 		SyntheticsAPIURL:     data.Get("synthetics_api_url").(string),
 		NerdGraphAPIURL:      data.Get("nerdgraph_api_url").(string),
-		InfrastructureAPIURL: data.Get("infrastructure_api_url").(string),
+		InfrastructureAPIURL: getInfraAPIURL(data),
 		userAgent:            userAgent,
 		InsecureSkipVerify:   data.Get("insecure_skip_verify").(bool),
 		CACertFile:           data.Get("cacert_file").(string),
@@ -183,4 +183,20 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 	}
 
 	return &providerConfig, nil
+}
+
+func getInfraAPIURL(data *schema.ResourceData) string {
+	oldURL, oldURLOk := data.GetOk("infra_api_url")
+	newURL, newURLOk := data.GetOk("infrastructure_api_url")
+
+	if newURLOk {
+		return newURL.(string)
+	}
+
+	if oldURLOk {
+		log.Printf("[WARN] Use of the infra_api_url attribute is deprecated.  Use infrastructure_api_url instead.")
+		return oldURL.(string)
+	}
+
+	return ""
 }
