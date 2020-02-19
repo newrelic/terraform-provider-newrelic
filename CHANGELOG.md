@@ -2,6 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v0.10.0"></a>
+## [v0.10.0] - 2020-02-18
+### Features
+- **ci:** add release make target
+- **ci:** the beginnings of some release automation
+- **synthetics:** add secure credentials resource
+- **synthetics:** implement label monitor support
+
+
 <a name="v0.9.0"></a>
 ## [v0.9.0] - 2020-02-05
 ### Bug Fixes
@@ -174,7 +183,8 @@
 - get TestListApplications passing
 
 
-[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.10.0...HEAD
+[v0.10.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.9.0...v0.10.0
 [v0.9.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.7.1...v0.8.0
 [v0.7.1]: https://github.com/newrelic/newrelic-client-go/compare/v0.7.0...v0.7.1
