@@ -20,12 +20,14 @@ import (
 )
 
 const (
-	defaultTimeout  = time.Second * 30
-	defaultRetryMax = 3
+	defaultNewRelicRequestingServiceHeader = "NewRelic-Requesting-Services"
+	defaultServiceName                     = "newrelic-client-go"
+	defaultTimeout                         = time.Second * 30
+	defaultRetryMax                        = 3
 )
 
 var (
-	defaultUserAgent = fmt.Sprintf("newrelic/newrelic-client-go/%s (https://github.com/newrelic/newrelic-client-go)", version.Version)
+	defaultUserAgent = fmt.Sprintf("newrelic/%s/%s (https://github.com/newrelic/%s)", defaultServiceName, version.Version, defaultServiceName)
 )
 
 // NewRelicClient represents a client for communicating with the New Relic APIs.
@@ -59,6 +61,13 @@ func NewClient(cfg config.Config) NewRelicClient {
 
 	if cfg.UserAgent == "" {
 		cfg.UserAgent = defaultUserAgent
+	}
+
+	// Either set or append the library name
+	if cfg.ServiceName == "" {
+		cfg.ServiceName = defaultServiceName
+	} else {
+		cfg.ServiceName = fmt.Sprintf("%s|%s", cfg.ServiceName, defaultServiceName)
 	}
 
 	r := retryablehttp.NewClient()
@@ -122,9 +131,18 @@ func (c *NewRelicClient) RawPost(
 	respBody interface{},
 ) (*http.Response, error) {
 
-	requestBody := []byte(reqBody.(string))
+	switch val := reqBody.(type) {
+	case []byte:
+		return c.do(http.MethodPost, url, queryParams, reqBody, respBody)
 
-	return c.do(http.MethodPost, url, queryParams, requestBody, respBody)
+	case string:
+		requestBody := []byte(val)
+		return c.do(http.MethodPost, url, queryParams, requestBody, respBody)
+
+	default:
+		return nil, errors.New("invalid request body")
+	}
+
 }
 
 // Put represents an HTTP PUT request to a New Relic API.
@@ -174,6 +192,7 @@ func makeRequestBody(reqBody interface{}) (*bytes.Buffer, error) {
 }
 
 func (c *NewRelicClient) setHeaders(req *retryablehttp.Request) {
+	req.Header.Set(defaultNewRelicRequestingServiceHeader, defaultServiceName)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", c.Config.UserAgent)
 

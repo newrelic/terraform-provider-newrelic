@@ -15,6 +15,10 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
+const (
+	testServiceName = "serviceName"
+)
+
 func TestConfig(t *testing.T) {
 	t.Parallel()
 	testBaseURL := "https://www.mocky.io"
@@ -24,13 +28,17 @@ func TestConfig(t *testing.T) {
 	c := NewClient(config.Config{
 		APIKey:        testAPIKey,
 		BaseURL:       testBaseURL,
-		UserAgent:     testUserAgent,
-		Timeout:       &testTimeout,
 		HTTPTransport: testTransport,
+		ServiceName:   testServiceName,
+		Timeout:       &testTimeout,
+		UserAgent:     testUserAgent,
 	})
 
 	assert.Equal(t, &testTimeout, c.Config.Timeout)
 	assert.Equal(t, testBaseURL, c.Config.BaseURL)
+	assert.Equal(t, testUserAgent, c.Config.UserAgent)
+	assert.Equal(t, c.Config.ServiceName, testServiceName+"|newrelic-client-go")
+
 	assert.Same(t, testTransport, c.Config.HTTPTransport)
 }
 
@@ -42,6 +50,7 @@ func TestConfigDefaults(t *testing.T) {
 
 	assert.Equal(t, region.DefaultBaseURLs[region.Parse(c.Config.Region)], c.Config.BaseURL)
 	assert.Contains(t, c.Config.UserAgent, "newrelic/newrelic-client-go/")
+	assert.Equal(t, c.Config.ServiceName, "newrelic-client-go")
 }
 
 func TestDefaultErrorValue(t *testing.T) {
@@ -223,7 +232,9 @@ func TestHeaders(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 
 		assert.Equal(t, testAPIKey, r.Header.Get("x-api-key"))
+		assert.Equal(t, testPersonalAPIKey, r.Header.Get("api-key"))
 		assert.Equal(t, testUserAgent, r.Header.Get("user-agent"))
+		assert.Equal(t, "newrelic-client-go", r.Header.Get("newrelic-requesting-services"))
 	}))
 
 	_, err := c.Get("/path", nil, nil)
@@ -263,6 +274,26 @@ func TestPost(t *testing.T) {
 	_, err := c.Post("/path", &struct{}{}, &struct{}{}, &struct{}{})
 
 	assert.NoError(t, err)
+}
+
+func TestRawPost(t *testing.T) {
+	t.Parallel()
+	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{}`))
+	}))
+
+	// string
+	_, err := c.RawPost("/path", &struct{}{}, "test string payload", &struct{}{})
+	assert.NoError(t, err)
+
+	// []byte
+	_, err = c.RawPost("/path", &struct{}{}, []byte(`bytes`), &struct{}{})
+	assert.NoError(t, err)
+
+	// invalid
+	_, err = c.RawPost("/path", &struct{}{}, &struct{}{}, &struct{}{})
+	assert.Error(t, err)
 }
 
 func TestPut(t *testing.T) {
