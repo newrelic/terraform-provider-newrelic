@@ -88,8 +88,7 @@ func newTxn(app *app, run *appRun, name string) *thread {
 		txn.TraceIDGenerator = run.Reply.TraceIDGenerator
 		txn.BetterCAT.SetTraceAndTxnIDs(txn.TraceIDGenerator.GenerateTraceID())
 		txn.BetterCAT.Priority = txn.TraceIDGenerator.GeneratePriority()
-		txn.SpanEventsEnabled = txn.Config.SpanEvents.Enabled
-		txn.LazilyCalculateSampled = txn.lazilyCalculateSampled
+		txn.ShouldCollectSpanEvents = txn.shouldCollectSpanEvents
 	}
 
 	txn.Attrs.Agent.Add(internal.AttributeHostDisplayName, txn.Config.HostDisplayName, nil)
@@ -127,6 +126,16 @@ func (thd *thread) logAPIError(err error, operation string, extraDetails map[str
 	thd.Config.Logger.Error("unable to "+operation, extraDetails)
 }
 
+func (txn *txn) shouldCollectSpanEvents() bool {
+	if !txn.Config.DistributedTracer.Enabled {
+		return false
+	}
+	if !txn.Config.SpanEvents.Enabled {
+		return false
+	}
+	return txn.lazilyCalculateSampled()
+}
+
 // lazilyCalculateSampled calculates and returns whether or not the transaction
 // should be sampled.  Sampled is not computed at the beginning of the
 // transaction because we want to calculate Sampled only for transactions that
@@ -138,7 +147,7 @@ func (txn *txn) lazilyCalculateSampled() bool {
 	if txn.sampledCalculated {
 		return txn.BetterCAT.Sampled
 	}
-	txn.BetterCAT.Sampled = txn.Reply.AdaptiveSampler.ComputeSampled(txn.BetterCAT.Priority.Float32(), time.Now())
+	txn.BetterCAT.Sampled = txn.appRun.adaptiveSampler.computeSampled(txn.BetterCAT.Priority.Float32(), time.Now())
 	if txn.BetterCAT.Sampled {
 		txn.BetterCAT.Priority += 1.0
 	}
@@ -202,8 +211,7 @@ func (txn *txn) freezeName() {
 	if txn.ignore || ("" != txn.FinalName) {
 		return
 	}
-
-	txn.FinalName = internal.CreateFullTxnName(txn.Name, txn.Reply, txn.IsWeb)
+	txn.FinalName = txn.appRun.createTransactionName(txn.Name, txn.IsWeb)
 	if "" == txn.FinalName {
 		txn.ignore = true
 	}
@@ -270,8 +278,8 @@ func (txn *txn) MergeIntoHarvest(h *internal.Harvest) {
 		h.SlowSQLs.Merge(txn.SlowQueries, txn.TxnEvent)
 	}
 
-	if txn.BetterCAT.Sampled && txn.SpanEventsEnabled {
-		h.SpanEvents.MergeFromTransaction(&txn.TxnData)
+	if txn.shouldCollectSpanEvents() {
+		h.SpanEvents.MergeSpanEvents(txn.TxnData.SpanEvents)
 	}
 }
 
@@ -389,6 +397,33 @@ func (thd *thread) End(recovered interface{}) error {
 			"ignored":       txn.ignore,
 			"app_connected": "" != txn.Reply.RunID,
 		})
+	}
+
+	if txn.shouldCollectSpanEvents() {
+		root := &internal.SpanEvent{
+			GUID:         txn.GetRootSpanID(),
+			Timestamp:    txn.Start,
+			Duration:     txn.Duration,
+			Name:         txn.FinalName,
+			Category:     internal.SpanCategoryGeneric,
+			IsEntrypoint: true,
+		}
+		if nil != txn.BetterCAT.Inbound {
+			root.ParentID = txn.BetterCAT.Inbound.ID
+			root.TrustedParentID = txn.BetterCAT.Inbound.TrustedParentID
+			root.TracingVendors = txn.BetterCAT.Inbound.TracingVendors
+		}
+		txn.SpanEvents = append(txn.SpanEvents, root)
+
+		// Add transaction tracing fields to span events at the end of
+		// the transaction since we could accept payload after the early
+		// segments occur.
+		for _, evt := range txn.SpanEvents {
+			evt.TraceID = txn.BetterCAT.TraceID
+			evt.TransactionID = txn.BetterCAT.TxnID
+			evt.Sampled = txn.BetterCAT.Sampled
+			evt.Priority = txn.BetterCAT.Priority
+		}
 	}
 
 	if !txn.ignore {
@@ -951,7 +986,7 @@ func (thd *thread) CreateDistributedTracePayload(hdrs http.Header) {
 	// Calculate sampled first since this also changes the value for the
 	// priority
 	sampled := txn.lazilyCalculateSampled()
-	if sampled && txn.SpanEventsEnabled {
+	if txn.shouldCollectSpanEvents() {
 		p.ID = txn.CurrentSpanIdentifier(thd.thread)
 	}
 
@@ -992,7 +1027,7 @@ func (thd *thread) CreateDistributedTracePayload(hdrs http.Header) {
 	}
 	hdrs.Set(internal.DistributedTraceW3CTraceParentHeader, p.W3CTraceParent())
 
-	if !txn.SpanEventsEnabled {
+	if !txn.Config.SpanEvents.Enabled {
 		p.ID = ""
 	}
 	if !txn.Config.TransactionEvents.Enabled {
@@ -1129,7 +1164,7 @@ func (thd *thread) GetTraceMetadata() (metadata TraceMetadata) {
 
 	if txn.BetterCAT.Enabled {
 		metadata.TraceID = txn.BetterCAT.TraceID
-		if txn.SpanEventsEnabled && txn.lazilyCalculateSampled() {
+		if txn.shouldCollectSpanEvents() {
 			metadata.SpanID = txn.CurrentSpanIdentifier(thd.thread)
 		}
 	}

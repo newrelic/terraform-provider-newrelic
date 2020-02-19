@@ -57,7 +57,7 @@ type app struct {
 	// (disconnect, license exception, shutdown).
 	err error
 
-	serverless *internal.ServerlessHarvest
+	serverless *serverlessHarvest
 }
 
 func (app *app) doHarvest(h *internal.Harvest, harvestStart time.Time, run *appRun) {
@@ -329,7 +329,7 @@ func newApp(c config) *app {
 	app := &app{
 		Logger:         c.Logger,
 		config:         c,
-		placeholderRun: newAppRun(c, internal.ConnectReplyDefaults()),
+		placeholderRun: newPlaceholderAppRun(c),
 
 		// This channel must be buffered since Shutdown makes a
 		// non-blocking send attempt.
@@ -360,7 +360,7 @@ func newApp(c config) *app {
 		if app.config.ServerlessMode.Enabled {
 			reply := newServerlessConnectReply(c)
 			app.run = newAppRun(c, reply)
-			app.serverless = internal.NewServerlessHarvest(c.Logger, Version, os.Getenv)
+			app.serverless = newServerlessHarvest(c.Logger, os.Getenv)
 		} else {
 			go app.process()
 			go app.connectRoutine()
