@@ -16,6 +16,10 @@ import (
 )
 
 const (
+	// procotolVersion is the protocol version used to communicate with NR
+	// backend.
+	procotolVersion = 17
+
 	userAgentPrefix = "NewRelic-Go-Agent/"
 
 	// Methods used in collector communication.
@@ -103,7 +107,7 @@ func rpmURL(cmd rpmCmd, cs rpmControls) string {
 
 	query := url.Values{}
 	query.Set("marshal_format", "json")
-	query.Set("protocol_version", strconv.Itoa(internal.ProcotolVersion))
+	query.Set("protocol_version", strconv.Itoa(procotolVersion))
 	query.Set("method", cmd.Name)
 	query.Set("license_key", cs.License)
 
@@ -265,7 +269,7 @@ func connectAttempt(config config, cs rpmControls) (*internal.ConnectReply, rpmR
 		return nil, resp
 	}
 
-	reply, err := internal.ConstructConnectReply(resp.body, preconnect.Preconnect)
+	reply, err := internal.UnmarshalConnectReply(resp.body, preconnect.Preconnect)
 	if nil != err {
 		return nil, rpmResponse{Err: err}
 	}
