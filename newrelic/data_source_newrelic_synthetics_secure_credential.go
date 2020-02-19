@@ -1,11 +1,11 @@
 package newrelic
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func dataSourceNewRelicSyntheticsSecureCredential() *schema.Resource {
@@ -46,9 +46,7 @@ func dataSourceNewRelicSyntheticsSecureCredentialRead(d *schema.ResourceData, me
 
 	sc, err := client.Synthetics.GetSecureCredential(key)
 	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			return err
-		}
+		return fmt.Errorf("the key '%s' does not match any New Relic Synthetics secure credential", key)
 	}
 
 	d.SetId(key)
