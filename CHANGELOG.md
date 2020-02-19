@@ -3,7 +3,7 @@
 
 
 <a name="v0.10.0"></a>
-## [v0.10.0] - 2020-02-18
+## [v0.10.0] - 2020-02-19
 ### Features
 - **ci:** add release make target
 - **ci:** the beginnings of some release automation
