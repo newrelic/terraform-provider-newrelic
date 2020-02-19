@@ -20,12 +20,14 @@ import (
 )
 
 const (
-	defaultTimeout  = time.Second * 30
-	defaultRetryMax = 3
+	defaultNewRelicRequestingServiceHeader = "NewRelic-Requesting-Services"
+	defaultServiceName                     = "newrelic-client-go"
+	defaultTimeout                         = time.Second * 30
+	defaultRetryMax                        = 3
 )
 
 var (
-	defaultUserAgent = fmt.Sprintf("newrelic/newrelic-client-go/%s (https://github.com/newrelic/newrelic-client-go)", version.Version)
+	defaultUserAgent = fmt.Sprintf("newrelic/%s/%s (https://github.com/newrelic/%s)", defaultServiceName, version.Version, defaultServiceName)
 )
 
 // NewRelicClient represents a client for communicating with the New Relic APIs.
@@ -59,6 +61,13 @@ func NewClient(cfg config.Config) NewRelicClient {
 
 	if cfg.UserAgent == "" {
 		cfg.UserAgent = defaultUserAgent
+	}
+
+	// Either set or append the library name
+	if cfg.ServiceName == "" {
+		cfg.ServiceName = defaultServiceName
+	} else {
+		cfg.ServiceName = fmt.Sprintf("%s|%s", cfg.ServiceName, defaultServiceName)
 	}
 
 	r := retryablehttp.NewClient()
@@ -105,7 +114,35 @@ func (c *NewRelicClient) Post(
 	reqBody interface{},
 	respBody interface{},
 ) (*http.Response, error) {
+
+	reqBody, err := makeRequestBody(reqBody)
+	if err != nil {
+		return nil, err
+	}
+
 	return c.do(http.MethodPost, url, queryParams, reqBody, respBody)
+}
+
+// RawPost behaves the same as Post, but without marshaling the body into JSON before making the request.  This is required at least in the case of Syntheics Labels, since the POST doesn't handle JSON.
+func (c *NewRelicClient) RawPost(
+	url string,
+	queryParams interface{},
+	reqBody interface{},
+	respBody interface{},
+) (*http.Response, error) {
+
+	switch val := reqBody.(type) {
+	case []byte:
+		return c.do(http.MethodPost, url, queryParams, reqBody, respBody)
+
+	case string:
+		requestBody := []byte(val)
+		return c.do(http.MethodPost, url, queryParams, requestBody, respBody)
+
+	default:
+		return nil, errors.New("invalid request body")
+	}
+
 }
 
 // Put represents an HTTP PUT request to a New Relic API.
@@ -119,6 +156,12 @@ func (c *NewRelicClient) Put(
 	reqBody interface{},
 	respBody interface{},
 ) (*http.Response, error) {
+
+	reqBody, err := makeRequestBody(reqBody)
+	if err != nil {
+		return nil, err
+	}
+
 	return c.do(http.MethodPut, url, queryParams, reqBody, respBody)
 }
 
@@ -149,6 +192,7 @@ func makeRequestBody(reqBody interface{}) (*bytes.Buffer, error) {
 }
 
 func (c *NewRelicClient) setHeaders(req *retryablehttp.Request) {
+	req.Header.Set(defaultNewRelicRequestingServiceHeader, defaultServiceName)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", c.Config.UserAgent)
 
@@ -204,27 +248,19 @@ func (c *NewRelicClient) do(
 	reqBody interface{},
 	value interface{},
 ) (*http.Response, error) {
-	reqBody, err := makeRequestBody(reqBody)
-
-	if err != nil {
-		return nil, err
-	}
 
 	u, err := c.makeURL(url)
-
 	if err != nil {
 		return nil, err
 	}
 
 	req, err := retryablehttp.NewRequest(method, u.String(), reqBody)
-
 	if err != nil {
 		return nil, err
 	}
 
 	c.setHeaders(req)
 	err = setQueryParams(req, params)
-
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +268,6 @@ func (c *NewRelicClient) do(
 	c.Config.GetLogger().Debug("performing request", "method", method, "url", req.URL)
 
 	logHeaders, err := json.Marshal(req.Header)
-
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +275,6 @@ func (c *NewRelicClient) do(
 	c.Config.GetLogger().Trace("request details", "headers", string(logHeaders), "body", reqBody)
 
 	resp, retryErr := c.Client.Do(req)
-
 	if retryErr != nil {
 		return nil, retryErr
 	}
@@ -257,7 +291,6 @@ func (c *NewRelicClient) do(
 	}
 
 	logHeaders, err = json.Marshal(resp.Header)
-
 	if err != nil {
 		return nil, err
 	}
