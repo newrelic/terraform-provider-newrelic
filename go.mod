@@ -10,5 +10,5 @@ require (
 	github.com/newrelic/go-agent/v3 v3.3.0
 	github.com/newrelic/go-insights v1.0.3
 	github.com/newrelic/newrelic-client-go v0.10.0
-	github.com/stretchr/testify v1.5.0
+	github.com/stretchr/testify v1.5.1
 )
