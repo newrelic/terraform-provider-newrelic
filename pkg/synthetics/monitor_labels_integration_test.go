@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-	"time"
 
 	nr "github.com/newrelic/newrelic-client-go/internal/testing"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
@@ -67,12 +66,6 @@ func TestIntegrationGetMonitorLabels(t *testing.T) {
 	// Test: Delete
 	err = synthetics.DeleteMonitorLabel(monitor.ID, "testing", rand)
 	require.NoError(t, err)
-
-	// Verify Delete
-	time.Sleep(100)
-	labels, err = synthetics.GetMonitorLabels(monitor.ID)
-	require.NoError(t, err)
-	assert.Equal(t, originalCount, len(labels))
 
 	// Deferred teardown
 	defer func() {
