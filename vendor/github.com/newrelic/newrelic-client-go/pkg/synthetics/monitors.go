@@ -16,7 +16,7 @@ func (s *Synthetics) ListMonitors() ([]*Monitor, error) {
 		Limit: listMonitorsLimit,
 	}
 
-	_, err := s.client.Get("/monitors", &queryParams, &resp)
+	_, err := s.client.Get("/v4/monitors", &queryParams, &resp)
 
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func (s *Synthetics) ListMonitors() ([]*Monitor, error) {
 // GetMonitor is used to retrieve a specific New Relic Synthetics monitor.
 func (s *Synthetics) GetMonitor(monitorID string) (*Monitor, error) {
 	resp := Monitor{}
-	url := fmt.Sprintf("/monitors/%s", monitorID)
+	url := fmt.Sprintf("/v4/monitors/%s", monitorID)
 	_, err := s.client.Get(url, nil, &resp)
 
 	if err != nil {
@@ -40,7 +40,7 @@ func (s *Synthetics) GetMonitor(monitorID string) (*Monitor, error) {
 
 // CreateMonitor is used to create a New Relic Synthetics monitor.
 func (s *Synthetics) CreateMonitor(monitor Monitor) (*Monitor, error) {
-	resp, err := s.client.Post("/monitors", nil, &monitor, nil)
+	resp, err := s.client.Post("/v4/monitors", nil, &monitor, nil)
 
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (s *Synthetics) CreateMonitor(monitor Monitor) (*Monitor, error) {
 
 // UpdateMonitor is used to update a New Relic Synthetics monitor.
 func (s *Synthetics) UpdateMonitor(monitor Monitor) (*Monitor, error) {
-	url := fmt.Sprintf("/monitors/%s", monitor.ID)
+	url := fmt.Sprintf("/v4/monitors/%s", monitor.ID)
 	_, err := s.client.Put(url, nil, &monitor, nil)
 
 	if err != nil {
@@ -68,7 +68,7 @@ func (s *Synthetics) UpdateMonitor(monitor Monitor) (*Monitor, error) {
 
 // DeleteMonitor is used to delete a New Relic Synthetics monitor.
 func (s *Synthetics) DeleteMonitor(monitorID string) error {
-	url := fmt.Sprintf("/monitors/%s", monitorID)
+	url := fmt.Sprintf("/v4/monitors/%s", monitorID)
 	_, err := s.client.Delete(url, nil, nil)
 
 	if err != nil {

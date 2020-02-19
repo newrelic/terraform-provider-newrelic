@@ -28,6 +28,7 @@ type Config struct {
 	SyntheticsBaseURL     string
 	InfrastructureBaseURL string
 	NerdGraphBaseURL      string
+	ServiceName           string
 
 	// LogLevel can be one of the following values:
 	// "panic", "fatal", "error", "warn", "info", "debug", "trace"
