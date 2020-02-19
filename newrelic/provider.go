@@ -117,6 +117,7 @@ func Provider() terraform.ResourceProvider {
 			"newrelic_synthetics_alert_condition": resourceNewRelicSyntheticsAlertCondition(),
 			"newrelic_synthetics_monitor":         resourceNewRelicSyntheticsMonitor(),
 			"newrelic_synthetics_monitor_script":  resourceNewRelicSyntheticsMonitorScript(),
+			"newrelic_synthetics_label":           resourceNewRelicSyntheticsLabel(),
 		},
 	}
 
