@@ -98,6 +98,14 @@ func TestNew_optionUserAgent(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestNew_optionServiceName(t *testing.T) {
+	t.Parallel()
+
+	nr, err := New(ConfigAPIKey(testAPIkey), ConfigServiceName("my-service"))
+	assert.NotNil(t, nr)
+	assert.NoError(t, err)
+}
+
 func TestNew_optionBaseURL(t *testing.T) {
 	t.Parallel()
 
