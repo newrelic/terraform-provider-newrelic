@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
-	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
 func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
@@ -105,34 +104,6 @@ func resourceNewRelicSyntheticsSecureCredentialDelete(d *schema.ResourceData, me
 
 	if err := client.Synthetics.DeleteSecureCredential(d.Id()); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func expandSyntheticsSecureCredential(d *schema.ResourceData) *synthetics.SecureCredential {
-	key := d.Get("key").(string)
-	key = strings.ToUpper(key)
-
-	sc := synthetics.SecureCredential{
-		Key:         key,
-		Value:       d.Get("value").(string),
-		Description: d.Get("description").(string),
-	}
-
-	return &sc
-}
-
-func flattenSyntheticsSecureCredential(sc *synthetics.SecureCredential, d *schema.ResourceData) error {
-	d.Set("key", sc.Key)
-	d.Set("description", sc.Description)
-
-	if createdAt, err := sc.CreatedAt.MarshalJSON(); err != nil {
-		d.Set("created_at", createdAt)
-	}
-
-	if lastUpdated, err := sc.LastUpdated.MarshalJSON(); err != nil {
-		d.Set("last_updated", lastUpdated)
 	}
 
 	return nil

@@ -102,6 +102,7 @@ func Provider() terraform.ResourceProvider {
 			"newrelic_plugin":             dataSourceNewRelicPlugin(),
 			"newrelic_plugin_component":   dataSourceNewRelicPluginComponent(),
 			"newrelic_synthetics_monitor": dataSourceNewRelicSyntheticsMonitor(),
+			"newrelic_synthetics_secure_credential": dataSourceNewRelicSyntheticsSecureCredential(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
