@@ -2,6 +2,13 @@
 ## [Unreleased]
 
 
+<a name="v0.10.1"></a>
+## [v0.10.1] - 2020-02-20
+### Bug Fixes
+- **entities:** tags filter needs to use type TagValue in graphql query
+- **newrelic:** Add option to set ServiceName in Config
+
+
 <a name="v0.10.0"></a>
 ## [v0.10.0] - 2020-02-19
 ### Features
@@ -183,7 +190,8 @@
 - get TestListApplications passing
 
 
-[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.10.1...HEAD
+[v0.10.1]: https://github.com/newrelic/newrelic-client-go/compare/v0.10.0...v0.10.1
 [v0.10.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.9.0...v0.10.0
 [v0.9.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.7.1...v0.8.0
