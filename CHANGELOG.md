@@ -1,4 +1,15 @@
 ## 1.14.0 (Unreleased)
+
+BUG FIXES:
+
+* fix(provider): deprecate and re-enable the use of infra_api_url ([#411](https://github.com/terraform-providers/terraform-provider-newrelic/pull/411))
+
+IMPROVEMENTS:
+
+* feat(alerts): add ability to add multiple channels to a policy ([#398](https://github.com/terraform-providers/terraform-provider-newrelic/pull/398))
+* feat(synthetics): add labels resource ([#407](https://github.com/terraform-providers/terraform-provider-newrelic/pull/407))
+* feat(synthetics): add secure credentials resource ([#409](https://github.com/terraform-providers/terraform-provider-newrelic/pull/409))
+
 ## 1.13.1 (February 12, 2020)
 
 BUG FIXES:
@@ -15,7 +26,7 @@ IMPROVEMENTS:
 ## 1.13.0 (February 06, 2020)
 
 BUG FIXES:
-* fix: allow string representations of JSON for alert channel webhook and payload ([#]())
+* fix: allow string representations of JSON for alert channel webhook and payload
 * fix: clear client responses between pages
 
 IMPROVEMENTS:
