@@ -4,8 +4,6 @@ coverage/*
 vendor/*
 
 *.csv
-*.yml
-*.yaml
 
 .vscode/
 .DS_Store
