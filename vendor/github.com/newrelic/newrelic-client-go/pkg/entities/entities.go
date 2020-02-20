@@ -29,7 +29,7 @@ type SearchEntitiesParams struct {
 	InfrastructureIntegrationType string                  `json:"infrastructureIntegrationType,omitempty"`
 	Name                          string                  `json:"name,omitempty"`
 	Reporting                     *bool                   `json:"reporting,omitempty"`
-	Tags                          []Tag                   `json:"tags,omitempty"`
+	Tags                          *TagValue               `json:"tags,omitempty"`
 	Type                          EntityType              `json:"type,omitempty"`
 }
 
