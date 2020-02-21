@@ -76,11 +76,11 @@ func resourceNewRelicAppLabelUpdate(d *schema.ResourceData, meta interface{}) er
 	label := expandAppLabel(d)
 
 	log.Printf("[INFO] Updating New Relic App label %s:%s", label.Category, label.Name)
-	errDelete:= resourceNewRelicAppLabelDelete(d, meta)
+	errDelete := resourceNewRelicAppLabelDelete(d, meta)
 	if errDelete != nil {
 		return errDelete
 	}
-	errCreate:=resourceNewRelicAppLabelCreate(d,meta)
+	errCreate := resourceNewRelicAppLabelCreate(d, meta)
 	if errCreate != nil {
 		return errCreate
 	}
