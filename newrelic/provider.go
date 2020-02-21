@@ -120,6 +120,7 @@ func Provider() terraform.ResourceProvider {
 			"newrelic_synthetics_monitor_script":    resourceNewRelicSyntheticsMonitorScript(),
 			"newrelic_synthetics_label":             resourceNewRelicSyntheticsLabel(),
 			"newrelic_synthetics_secure_credential": resourceNewRelicSyntheticsSecureCredential(),
+			"newrelic_app_label":                    resourceNewRelicAppLabel(),
 		},
 	}
 
