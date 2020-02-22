@@ -92,6 +92,6 @@ func testAccCheckNewRelicApplicationLabelExists(n string) resource.TestCheckFunc
 			return nil
 		}
 
-		return fmt.Errorf("application label not found: %v",key)
+		return fmt.Errorf("application label not found: %v", key)
 	}
 }
