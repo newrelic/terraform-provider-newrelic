@@ -205,35 +205,11 @@ resource "newrelic_alert_channel" "slack" {
 This should avoid any of the configuration items from causing a change to the
 resource.
 
-## Add a Label to the Application
-In order to have more efficient filtering and grouping let's add a label to the application.
-Below resource definition will add label `Team` with value `MyTeam` additionally such label will be
-assigned to the applications with following identifiers: `71061407,2208721`
-
-```hcl
-provider "newrelic" {}
-
-resource "newrelic_app_label" "my_app_label" {
-    name = "MyTeam"
-    category = "Team"
-    links {
-      applications = [71061407,2208721]
-      servers = []
-    }
-  }
-```
-Provider allows to:
- * create,
- * remove,
- * update, a resource.
-
-Update operation consists of: removal and creation of a given resource.
- 
 
 
 ## Apply Your Terraform Configuration
 
-To summarize, so far we've configured an Alert Policy that contains an Alert Condition that is associated with a specific application and Label, but we haven't actually provisioned these resources in our New Relic account. Let's do that now.
+To summarize, so far we've configured an Alert Policy that contains an Alert Condition that is associated with a specific application, but we haven't actually provisioned these resources in our New Relic account. Let's do that now.
 
 To apply your configuration and provision these resources in your New Relic account, run the following command.
 
@@ -248,3 +224,4 @@ Once complete, you'll be able to navigate to your Alerts tab in your New Relic a
 If you ever need to make changes to your configuration, you can run `terraform apply` again after saving your latest configuration and Terraform will update the proper resources with your changes.
 
 You can also run `terraform destroy` to tear down your resources if that's ever needed.
+

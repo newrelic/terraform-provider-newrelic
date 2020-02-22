@@ -1,19 +1,20 @@
 package newrelic
 
 import (
+	"log"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
-	"log"
-	"strings"
 )
 
-func resourceNewRelicAppLabel() *schema.Resource {
+func resourceNewRelicApplicationLabel() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicAppLabelCreate,
-		Update: resourceNewRelicAppLabelUpdate,
-		Read:   resourceNewRelicAppLabelRead,
-		Delete: resourceNewRelicAppLabelDelete,
+		Create: resourceNewRelicApplicationLabelCreate,
+		Update: resourceNewRelicApplicationLabelUpdate,
+		Read:   resourceNewRelicApplicationLabelRead,
+		Delete: resourceNewRelicApplicationLabelDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -56,11 +57,11 @@ func resourceNewRelicAppLabel() *schema.Resource {
 	}
 }
 
-func resourceNewRelicAppLabelCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicApplicationLabelCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
-	label := expandAppLabel(d)
+	label := expandApplicationLabel(d)
 
-	log.Printf("[INFO] Creating New Relic App label %s:%s", label.Category, label.Name)
+	log.Printf("[INFO] Creating New Relic Application label %s:%s", label.Category, label.Name)
 
 	_, err := client.APM.CreateLabel(label)
 	if err != nil {
@@ -72,15 +73,15 @@ func resourceNewRelicAppLabelCreate(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-func resourceNewRelicAppLabelUpdate(d *schema.ResourceData, meta interface{}) error {
-	label := expandAppLabel(d)
+func resourceNewRelicApplicationLabelUpdate(d *schema.ResourceData, meta interface{}) error {
+	label := expandApplicationLabel(d)
 
-	log.Printf("[INFO] Updating New Relic App label %s:%s", label.Category, label.Name)
-	errDelete := resourceNewRelicAppLabelDelete(d, meta)
+	log.Printf("[INFO] Updating New Relic Application label %s:%s", label.Category, label.Name)
+	errDelete := resourceNewRelicApplicationLabelDelete(d, meta)
 	if errDelete != nil {
 		return errDelete
 	}
-	errCreate := resourceNewRelicAppLabelCreate(d, meta)
+	errCreate := resourceNewRelicApplicationLabelCreate(d, meta)
 	if errCreate != nil {
 		return errCreate
 	}
@@ -88,10 +89,10 @@ func resourceNewRelicAppLabelUpdate(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-func resourceNewRelicAppLabelRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicApplicationLabelRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
 	key := d.Id()
-	log.Printf("[INFO] Reading New Relic App label %s", key)
+	log.Printf("[INFO] Reading New Relic Application label %s", key)
 
 	label, err := client.APM.GetLabel(key)
 	if err != nil {
@@ -108,10 +109,10 @@ func resourceNewRelicAppLabelRead(d *schema.ResourceData, meta interface{}) erro
 		return nil
 	}
 
-	return flattenAppLabel(label, d)
+	return flattenApplicationLabel(label, d)
 }
 
-func resourceNewRelicAppLabelDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicApplicationLabelDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
 
 	key := d.Id()
@@ -126,7 +127,7 @@ func resourceNewRelicAppLabelDelete(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-func expandAppLabel(d *schema.ResourceData) apm.Label {
+func expandApplicationLabel(d *schema.ResourceData) apm.Label {
 	label := apm.Label{
 		Category: d.Get("category").(string),
 		Name:     d.Get("name").(string),
@@ -136,7 +137,7 @@ func expandAppLabel(d *schema.ResourceData) apm.Label {
 	return label
 }
 
-func flattenAppLabel(label *apm.Label, d *schema.ResourceData) error {
+func flattenApplicationLabel(label *apm.Label, d *schema.ResourceData) error {
 	d.Set("category", label.Category)
 	d.Set("name", label.Name)
 	d.Set("links", flattenLinks(&label.Links))
