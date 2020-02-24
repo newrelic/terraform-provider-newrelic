@@ -224,3 +224,4 @@ Once complete, you'll be able to navigate to your Alerts tab in your New Relic a
 If you ever need to make changes to your configuration, you can run `terraform apply` again after saving your latest configuration and Terraform will update the proper resources with your changes.
 
 You can also run `terraform destroy` to tear down your resources if that's ever needed.
+
