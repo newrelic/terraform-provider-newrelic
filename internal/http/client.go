@@ -32,8 +32,15 @@ var (
 
 // NewRelicClient represents a client for communicating with the New Relic APIs.
 type NewRelicClient struct {
-	Client     *retryablehttp.Client
-	Config     config.Config
+	// Client represents the underlying HTTP client.
+	Client *retryablehttp.Client
+
+	// Config is the HTTP client configuration.
+	Config config.Config
+
+	// UsePersonalAPIKeyCompatability is for internal use only.
+	UsePersonalAPIKeyCompatibility bool
+
 	errorValue ErrorResponse
 }
 
@@ -202,6 +209,10 @@ func (c *NewRelicClient) setHeaders(req *retryablehttp.Request) {
 
 	if c.Config.PersonalAPIKey != "" {
 		req.Header.Set("Api-Key", c.Config.PersonalAPIKey)
+
+		if c.UsePersonalAPIKeyCompatibility {
+			req.Header.Set("Auth-Type", "User-Api-Key")
+		}
 	}
 }
 

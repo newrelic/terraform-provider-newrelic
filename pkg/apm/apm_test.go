@@ -42,13 +42,19 @@ func newMockResponse(
 // nolint
 func newIntegrationTestClient(t *testing.T) APM {
 	apiKey := os.Getenv("NEWRELIC_API_KEY")
+	personalAPIKey := os.Getenv("NEWRELIC_PERSONAL_API_KEY")
 
-	if apiKey == "" {
+	if apiKey == "" && personalAPIKey == "" {
 		t.Skipf("acceptance testing requires an API key")
 	}
 
-	return New(config.Config{
-		APIKey:   apiKey,
-		LogLevel: "debug",
+	client := New(config.Config{
+		APIKey:         apiKey,
+		PersonalAPIKey: personalAPIKey,
+		LogLevel:       "debug",
 	})
+
+	client.client.UsePersonalAPIKeyCompatibility = true
+
+	return client
 }

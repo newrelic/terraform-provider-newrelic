@@ -18,9 +18,10 @@ type APM struct {
 func New(config config.Config) APM {
 	pkg := APM{
 		client: http.NewClient(config),
-		logger: config.GetLogger(),
 		pager:  &http.LinkHeaderPager{},
 	}
+
+	pkg.client.UsePersonalAPIKeyCompatibility = true
 
 	return pkg
 }
