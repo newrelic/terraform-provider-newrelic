@@ -81,7 +81,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				},
 			},
 			"term": {
-				Type: schema.TypeList,
+				Type: schema.TypeSet,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"duration": {
