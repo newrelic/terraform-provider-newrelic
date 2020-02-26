@@ -11,6 +11,9 @@ import (
 )
 
 func TestAccNewRelicApplicationLabel(t *testing.T) {
+	// Skipping this test because we're awaiting an upstream fix on a deprecated feature.
+	t.Skip("Skipping TestAccNewRelicApplicationLabel.")
+
 	resourceName := "newrelic_application_label.foo"
 	rCategory := acctest.RandString(10)
 	rName := acctest.RandString(5)
@@ -37,6 +40,7 @@ func TestAccNewRelicApplicationLabel(t *testing.T) {
 	})
 }
 
+// nolint:deadcode,unused
 func testAccCheckNewRelicApplicationLabelDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
@@ -54,6 +58,7 @@ func testAccCheckNewRelicApplicationLabelDestroy(s *terraform.State) error {
 	return nil
 }
 
+// nolint:deadcode,unused
 func testAccNewRelicApplicationLabelConfig(category string, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_application_label" "foo" {
@@ -67,6 +72,7 @@ resource "newrelic_application_label" "foo" {
 `, category, name)
 }
 
+// nolint:deadcode,unused
 func testAccCheckNewRelicApplicationLabelExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
