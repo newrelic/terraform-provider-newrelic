@@ -8,28 +8,23 @@ import (
 )
 
 func expandNrqlAlertConditionStruct(d *schema.ResourceData) *alerts.NrqlCondition {
-	termSet := d.Get("term").([]interface{})
-	terms := expandNrqlConditionTerms(termSet)
-
-	query := alerts.NrqlQuery{}
-
-	if nrqlQuery, ok := d.GetOk("nrql.0.query"); ok {
-		query.Query = nrqlQuery.(string)
-	}
-
-	if sinceValue, ok := d.GetOk("nrql.0.since_value"); ok {
-		query.SinceValue = sinceValue.(string)
-	}
-
 	condition := alerts.NrqlCondition{
 		Name:                d.Get("name").(string),
 		Type:                d.Get("type").(string),
 		Enabled:             d.Get("enabled").(bool),
-		Terms:               terms,
 		PolicyID:            d.Get("policy_id").(int),
-		Nrql:                query,
 		ValueFunction:       d.Get("value_function").(string),
 		ViolationCloseTimer: d.Get("violation_time_limit_seconds").(int),
+	}
+
+	condition.Terms = expandNrqlConditionTerms(d.Get("term").(*schema.Set).List())
+
+	if nrqlQuery, ok := d.GetOk("nrql.0.query"); ok {
+		condition.Nrql.Query = nrqlQuery.(string)
+	}
+
+	if sinceValue, ok := d.GetOk("nrql.0.since_value"); ok {
+		condition.Nrql.SinceValue = sinceValue.(string)
 	}
 
 	if attr, ok := d.GetOk("runbook_url"); ok {
