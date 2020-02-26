@@ -60,7 +60,7 @@ resource "newrelic_application_label" "foo" {
 	category = "%s"
 	name = "%s"
 	links {
-		applications = [195474495]
+		applications = [215037795]
 		servers = []
 	}
 }
