@@ -154,8 +154,8 @@ func flattenLinks(links *apm.LabelLinks) interface{} {
 }
 
 func expandLinks(d map[string]interface{}) apm.LabelLinks {
-	appsDef := d["applications"].([]interface{})
-	serversDef := d["servers"].([]interface{})
+	appsDef := d["applications"].(*schema.Set).List()
+	serversDef := d["servers"].(*schema.Set).List()
 	apps := make([]int, len(appsDef))
 	servers := make([]int, len(serversDef))
 
