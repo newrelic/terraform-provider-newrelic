@@ -242,6 +242,41 @@ func TestHeaders(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestUsePersonalAPIKeyCompatibilityEnabled(t *testing.T) {
+	t.Parallel()
+	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		assert.Equal(t, testPersonalAPIKey, r.Header.Get("api-key"))
+		assert.Equal(t, "User-Api-Key", r.Header.Get("auth-type"))
+	}))
+
+	c.UsePersonalAPIKeyCompatibility = true
+
+	_, err := c.Get("/path", nil, nil)
+
+	assert.Nil(t, err)
+}
+
+func TestUsePersonalAPIKeyCompatibilityDisabled(t *testing.T) {
+	t.Parallel()
+	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		assert.Equal(t, "", r.Header.Get("auth-type"))
+	}))
+
+	_, err := c.Get("/path", nil, nil)
+	assert.Nil(t, err)
+
+	c.UsePersonalAPIKeyCompatibility = true
+	c.Config.PersonalAPIKey = ""
+
+	_, err = c.Get("/path", nil, nil)
+	assert.Nil(t, err)
+}
 func TestErrNotFound(t *testing.T) {
 	t.Parallel()
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
