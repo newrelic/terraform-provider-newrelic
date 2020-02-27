@@ -24,6 +24,7 @@ func NewGraphQLClient(cfg config.Config) *GraphQLClient {
 	cfg.BaseURL = cfg.NerdGraphBaseURL
 
 	c := NewClient(cfg)
+	c.AuthStrategy = &NerdGraphAuthorizer{}
 	c.SetErrorValue(&graphQLErrorResponse{})
 
 	return &GraphQLClient{
