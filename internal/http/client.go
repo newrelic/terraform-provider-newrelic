@@ -39,7 +39,7 @@ type NewRelicClient struct {
 	Config config.Config
 
 	// UsePersonalAPIKeyCompatability is for internal use only.
-	UsePersonalAPIKeyCompatibility bool
+	AuthStrategy RequestAuthorizer
 
 	errorValue ErrorResponse
 }
@@ -86,9 +86,10 @@ func NewClient(cfg config.Config) NewRelicClient {
 	r.Logger = nil
 
 	return NewRelicClient{
-		Client:     r,
-		Config:     cfg,
-		errorValue: &DefaultErrorResponse{},
+		Client:       r,
+		Config:       cfg,
+		errorValue:   &DefaultErrorResponse{},
+		AuthStrategy: &ClassicV2Authorizer{},
 	}
 }
 
@@ -202,18 +203,6 @@ func (c *NewRelicClient) setHeaders(req *retryablehttp.Request) {
 	req.Header.Set(defaultNewRelicRequestingServiceHeader, defaultServiceName)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", c.Config.UserAgent)
-
-	if c.Config.APIKey != "" {
-		req.Header.Set("X-Api-Key", c.Config.APIKey)
-	}
-
-	if c.Config.PersonalAPIKey != "" {
-		req.Header.Set("Api-Key", c.Config.PersonalAPIKey)
-
-		if c.UsePersonalAPIKeyCompatibility {
-			req.Header.Set("Auth-Type", "User-Api-Key")
-		}
-	}
 }
 
 func setQueryParams(req *retryablehttp.Request, params interface{}) error {
@@ -271,6 +260,8 @@ func (c *NewRelicClient) do(
 	}
 
 	c.setHeaders(req)
+	c.AuthStrategy.AuthorizeRequest(req, &c.Config)
+
 	err = setQueryParams(req, params)
 	if err != nil {
 		return nil, err

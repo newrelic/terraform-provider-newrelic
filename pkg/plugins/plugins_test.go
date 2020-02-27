@@ -48,7 +48,7 @@ func newIntegrationTestClient(t *testing.T) Plugins {
 	personalAPIKey := os.Getenv("NEWRELIC_PERSONAL_API_KEY")
 
 	if apiKey == "" && personalAPIKey == "" {
-		t.Skipf("acceptance testing requires an API key")
+		t.Skipf("acceptance testing requires NEWRELIC_API_KEY and NEWRELIC_PERSONAL_API_KEY")
 	}
 
 	client := New(config.Config{

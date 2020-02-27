@@ -5,6 +5,7 @@ package http
 import (
 	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -231,8 +232,6 @@ func TestHeaders(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		assert.Equal(t, testAPIKey, r.Header.Get("x-api-key"))
-		assert.Equal(t, testPersonalAPIKey, r.Header.Get("api-key"))
 		assert.Equal(t, testUserAgent, r.Header.Get("user-agent"))
 		assert.Equal(t, "newrelic-client-go", r.Header.Get("newrelic-requesting-services"))
 	}))
@@ -242,41 +241,26 @@ func TestHeaders(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestUsePersonalAPIKeyCompatibilityEnabled(t *testing.T) {
+func TestAdminAPIKeyHeader(t *testing.T) {
 	t.Parallel()
-	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		assert.Equal(t, testPersonalAPIKey, r.Header.Get("api-key"))
-		assert.Equal(t, "User-Api-Key", r.Header.Get("auth-type"))
+		assert.Equal(t, testAPIKey, r.Header.Get("x-api-key"))
 	}))
 
-	c.UsePersonalAPIKeyCompatibility = true
+	c := NewClient(config.Config{
+		APIKey:    testAPIKey,
+		BaseURL:   ts.URL,
+		UserAgent: testUserAgent,
+	})
 
 	_, err := c.Get("/path", nil, nil)
 
 	assert.Nil(t, err)
 }
 
-func TestUsePersonalAPIKeyCompatibilityDisabled(t *testing.T) {
-	t.Parallel()
-	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-
-		assert.Equal(t, "", r.Header.Get("auth-type"))
-	}))
-
-	_, err := c.Get("/path", nil, nil)
-	assert.Nil(t, err)
-
-	c.UsePersonalAPIKeyCompatibility = true
-	c.Config.PersonalAPIKey = ""
-
-	_, err = c.Get("/path", nil, nil)
-	assert.Nil(t, err)
-}
 func TestErrNotFound(t *testing.T) {
 	t.Parallel()
 	c := NewTestAPIClient(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -16,12 +16,13 @@ type APM struct {
 
 // New is used to create a new APM client instance.
 func New(config config.Config) APM {
+	client := http.NewClient(config)
+	client.AuthStrategy = &http.PersonalAPIKeyCapableV2Authorizer{}
+
 	pkg := APM{
-		client: http.NewClient(config),
+		client: client,
 		pager:  &http.LinkHeaderPager{},
 	}
-
-	pkg.client.UsePersonalAPIKeyCompatibility = true
 
 	return pkg
 }
