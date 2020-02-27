@@ -11,10 +11,11 @@ import (
 
 func resourceNewRelicApplicationLabel() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicApplicationLabelCreate,
-		Update: resourceNewRelicApplicationLabelUpdate,
-		Read:   resourceNewRelicApplicationLabelRead,
-		Delete: resourceNewRelicApplicationLabelDelete,
+		DeprecationMessage: "The `newrelic_application_label` resource is deprecated. Use at your own risk.",
+		Create:             resourceNewRelicApplicationLabelCreate,
+		Update:             resourceNewRelicApplicationLabelUpdate,
+		Read:               resourceNewRelicApplicationLabelRead,
+		Delete:             resourceNewRelicApplicationLabelDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -154,8 +155,8 @@ func flattenLinks(links *apm.LabelLinks) interface{} {
 }
 
 func expandLinks(d map[string]interface{}) apm.LabelLinks {
-	appsDef := d["applications"].([]interface{})
-	serversDef := d["servers"].([]interface{})
+	appsDef := d["applications"].(*schema.Set).List()
+	serversDef := d["servers"].(*schema.Set).List()
 	apps := make([]int, len(appsDef))
 	servers := make([]int, len(serversDef))
 
