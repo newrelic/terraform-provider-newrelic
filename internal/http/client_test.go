@@ -5,6 +5,7 @@ package http
 import (
 	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -231,11 +232,29 @@ func TestHeaders(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		assert.Equal(t, testAPIKey, r.Header.Get("x-api-key"))
-		assert.Equal(t, testPersonalAPIKey, r.Header.Get("api-key"))
 		assert.Equal(t, testUserAgent, r.Header.Get("user-agent"))
 		assert.Equal(t, "newrelic-client-go", r.Header.Get("newrelic-requesting-services"))
 	}))
+
+	_, err := c.Get("/path", nil, nil)
+
+	assert.Nil(t, err)
+}
+
+func TestAdminAPIKeyHeader(t *testing.T) {
+	t.Parallel()
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		assert.Equal(t, testAPIKey, r.Header.Get("x-api-key"))
+	}))
+
+	c := NewClient(config.Config{
+		APIKey:    testAPIKey,
+		BaseURL:   ts.URL,
+		UserAgent: testUserAgent,
+	})
 
 	_, err := c.Get("/path", nil, nil)
 
