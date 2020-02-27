@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.11.0"></a>
+## [v0.11.0] - 2020-02-27
+### Features
+- **http:** allow personal API keys to be used for alerts and APM resources
+
+
 <a name="v0.10.1"></a>
 ## [v0.10.1] - 2020-02-20
 ### Bug Fixes
@@ -190,7 +196,8 @@
 - get TestListApplications passing
 
 
-[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.10.1...HEAD
+[Unreleased]: https://github.com/newrelic/newrelic-client-go/compare/v0.11.0...HEAD
+[v0.11.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.10.1...v0.11.0
 [v0.10.1]: https://github.com/newrelic/newrelic-client-go/compare/v0.10.0...v0.10.1
 [v0.10.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.9.0...v0.10.0
 [v0.9.0]: https://github.com/newrelic/newrelic-client-go/compare/v0.8.0...v0.9.0
