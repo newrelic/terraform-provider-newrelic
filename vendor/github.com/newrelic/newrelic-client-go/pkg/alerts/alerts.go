@@ -29,8 +29,11 @@ func New(config config.Config) Alerts {
 	infraClient := http.NewClient(infraConfig)
 	infraClient.SetErrorValue(&infrastructure.ErrorResponse{})
 
+	client := http.NewClient(config)
+	client.AuthStrategy = &http.PersonalAPIKeyCapableV2Authorizer{}
+
 	pkg := Alerts{
-		client:      http.NewClient(config),
+		client:      client,
 		infraClient: infraClient,
 		logger:      config.GetLogger(),
 		pager:       &http.LinkHeaderPager{},
