@@ -15,6 +15,8 @@ import (
 	nr "github.com/newrelic/newrelic-client-go/newrelic"
 )
 
+const serviceName = "terraform-provider-newrelic"
+
 // Config contains New Relic provider settings
 type Config struct {
 	APIKey               string
@@ -36,8 +38,11 @@ type Config struct {
 func (c *Config) Client() (*nr.NewRelic, error) {
 	options := []nr.ConfigOption{}
 
-	options = append(options, nr.ConfigAPIKey(c.APIKey))
-	options = append(options, nr.ConfigUserAgent(c.userAgent))
+	options = append(options,
+		nr.ConfigAPIKey(c.APIKey),
+		nr.ConfigUserAgent(c.userAgent),
+		nr.ConfigServiceName(serviceName),
+	)
 
 	tlsCfg := &tls.Config{}
 	var t = http.DefaultTransport
