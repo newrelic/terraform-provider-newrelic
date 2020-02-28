@@ -39,7 +39,7 @@ func (c *Config) Client() (*nr.NewRelic, error) {
 	options := []nr.ConfigOption{}
 
 	options = append(options,
-		nr.ConfigAPIKey(c.APIKey),
+		nr.ConfigAdminAPIKey(c.APIKey),
 		nr.ConfigUserAgent(c.userAgent),
 		nr.ConfigServiceName(serviceName),
 	)
