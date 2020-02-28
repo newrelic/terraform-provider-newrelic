@@ -5,6 +5,13 @@ import (
 	"strings"
 )
 
+// MonitorLabel represents a single label for a New Relic Synthetics monitor.
+type MonitorLabel struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+	Href  string `json:"href"`
+}
+
 // GetMonitorLabels is used to retrieve all labels for a given Synthetics monitor.
 func (s *Synthetics) GetMonitorLabels(monitorID string) ([]*MonitorLabel, error) {
 	url := fmt.Sprintf("/v4/monitors/%s/labels", monitorID)

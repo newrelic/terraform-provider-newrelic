@@ -2,8 +2,73 @@ package apm
 
 import (
 	"fmt"
-	"time"
 )
+
+// Application represents information about a New Relic application.
+type Application struct {
+	ID             int                       `json:"id,omitempty"`
+	Name           string                    `json:"name,omitempty"`
+	Language       string                    `json:"language,omitempty"`
+	HealthStatus   string                    `json:"health_status,omitempty"`
+	Reporting      bool                      `json:"reporting"`
+	LastReportedAt string                    `json:"last_reported_at,omitempty"`
+	Summary        ApplicationSummary        `json:"application_summary,omitempty"`
+	EndUserSummary ApplicationEndUserSummary `json:"end_user_summary,omitempty"`
+	Settings       ApplicationSettings       `json:"settings,omitempty"`
+	Links          ApplicationLinks          `json:"links,omitempty"`
+}
+
+// ApplicationSummary represents performance information about a New Relic application.
+type ApplicationSummary struct {
+	ResponseTime            float64 `json:"response_time"`
+	Throughput              float64 `json:"throughput"`
+	ErrorRate               float64 `json:"error_rate"`
+	ApdexTarget             float64 `json:"apdex_target"`
+	ApdexScore              float64 `json:"apdex_score"`
+	HostCount               int     `json:"host_count"`
+	InstanceCount           int     `json:"instance_count"`
+	ConcurrentInstanceCount int     `json:"concurrent_instance_count"`
+}
+
+// ApplicationEndUserSummary represents performance information about a New Relic application.
+type ApplicationEndUserSummary struct {
+	ResponseTime float64 `json:"response_time"`
+	Throughput   float64 `json:"throughput"`
+	ApdexTarget  float64 `json:"apdex_target"`
+	ApdexScore   float64 `json:"apdex_score"`
+}
+
+// ApplicationSettings represents some of the settings of a New Relic application.
+type ApplicationSettings struct {
+	AppApdexThreshold        float64 `json:"app_apdex_threshold,omitempty"`
+	EndUserApdexThreshold    float64 `json:"end_user_apdex_threshold,omitempty"`
+	EnableRealUserMonitoring bool    `json:"enable_real_user_monitoring"`
+	UseServerSideConfig      bool    `json:"use_server_side_config"`
+}
+
+// ApplicationLinks represents all the links for a New Relic application.
+type ApplicationLinks struct {
+	ServerIDs     []int `json:"servers,omitempty"`
+	HostIDs       []int `json:"application_hosts,omitempty"`
+	InstanceIDs   []int `json:"application_instances,omitempty"`
+	AlertPolicyID int   `json:"alert_policy"`
+}
+
+// ListApplicationsParams represents a set of filters to be
+// used when querying New Relic applications.
+type ListApplicationsParams struct {
+	Name     string `url:"filter[name],omitempty"`
+	Host     string `url:"filter[host],omitempty"`
+	IDs      []int  `url:"filter[ids],omitempty,comma"`
+	Language string `url:"filter[language],omitempty"`
+}
+
+// UpdateApplicationParams represents a set of parameters to be
+// used when updating New Relic applications.
+type UpdateApplicationParams struct {
+	Name     string
+	Settings ApplicationSettings
+}
 
 // ListApplications is used to retrieve New Relic applications.
 func (apm *APM) ListApplications(params *ListApplicationsParams) ([]*Application, error) {
@@ -73,54 +138,6 @@ func (apm *APM) DeleteApplication(applicationID int) (*Application, error) {
 	return &response.Application, nil
 }
 
-// GetMetricNames is used to retrieve a list of known metrics and their value names for the given resource.
-//
-// https://rpm.newrelic.com/api/explore/applications/metric_names
-func (apm *APM) GetMetricNames(applicationID int, params MetricNamesParams) ([]*MetricName, error) {
-	response := metricNamesResponse{}
-	metrics := []*MetricName{}
-	nextURL := fmt.Sprintf("/applications/%d/metrics.json", applicationID)
-
-	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &params, &response)
-
-		if err != nil {
-			return nil, err
-		}
-
-		metrics = append(metrics, response.Metrics...)
-
-		paging := apm.pager.Parse(resp)
-		nextURL = paging.Next
-	}
-
-	return metrics, nil
-}
-
-// GetMetricData is used to retrieve a list of values for each of the requested metrics.
-//
-// https://rpm.newrelic.com/api/explore/applications/metric_data
-func (apm *APM) GetMetricData(applicationID int, params MetricDataParams) ([]*MetricData, error) {
-	response := metricDataResponse{}
-	data := []*MetricData{}
-	nextURL := fmt.Sprintf("/applications/%d/metrics/data.json", applicationID)
-
-	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &params, &response)
-
-		if err != nil {
-			return nil, err
-		}
-
-		data = append(data, response.MetricData.Metrics...)
-
-		paging := apm.pager.Parse(resp)
-		nextURL = paging.Next
-	}
-
-	return data, nil
-}
-
 type applicationsResponse struct {
 	Applications []*Application `json:"applications,omitempty"`
 }
@@ -136,18 +153,4 @@ type updateApplicationRequest struct {
 type updateApplicationFields struct {
 	Name     string              `json:"name,omitempty"`
 	Settings ApplicationSettings `json:"settings,omitempty"`
-}
-
-type metricNamesResponse struct {
-	Metrics []*MetricName
-}
-
-type metricDataResponse struct {
-	MetricData struct {
-		From            *time.Time    `json:"from"`
-		To              *time.Time    `json:"to"`
-		MetricsNotFound []string      `json:"metrics_not_found"`
-		MetricsFound    []string      `json:"metrics_found"`
-		Metrics         []*MetricData `json:"metrics"`
-	} `json:"metric_data"`
 }

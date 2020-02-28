@@ -4,6 +4,12 @@ import (
 	"strconv"
 )
 
+// PolicyChannels represents an association of alert channels to a specific alert policy.
+type PolicyChannels struct {
+	ID         int   `json:"id,omitempty"`
+	ChannelIDs []int `json:"channel_ids,omitempty"`
+}
+
 // UpdatePolicyChannels updates a policy by adding the specified notification channels.
 func (alerts *Alerts) UpdatePolicyChannels(policyID int, channelIDs []int) (*PolicyChannels, error) {
 	channelIDStrings := make([]string, len(channelIDs))

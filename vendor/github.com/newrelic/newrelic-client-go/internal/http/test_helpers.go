@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	testAPIKey         = "apiKey"
-	testPersonalAPIKey = "personalAPIKey"
+	testPersonalAPIKey = "apiKey"
+	testAdminAPIKey    = "adminAPIKey"
 	testUserAgent      = "userAgent"
 )
 
@@ -18,9 +18,9 @@ func NewTestAPIClient(handler http.Handler) NewRelicClient {
 	ts := httptest.NewServer(handler)
 
 	c := NewClient(config.Config{
-		APIKey:         testAPIKey,
-		BaseURL:        ts.URL,
 		PersonalAPIKey: testPersonalAPIKey,
+		AdminAPIKey:    testAdminAPIKey,
+		BaseURL:        ts.URL,
 		UserAgent:      testUserAgent,
 	})
 

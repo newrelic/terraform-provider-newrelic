@@ -27,7 +27,7 @@ func (a *PersonalAPIKeyCapableV2Authorizer) AuthorizeRequest(req *retryablehttp.
 		req.Header.Set("Api-Key", c.PersonalAPIKey)
 		req.Header.Set("Auth-Type", "User-Api-Key")
 	} else {
-		req.Header.Set("X-Api-Key", c.APIKey)
+		req.Header.Set("X-Api-Key", c.AdminAPIKey)
 	}
 }
 
@@ -36,5 +36,5 @@ type ClassicV2Authorizer struct{}
 
 // AuthorizeRequest is responsible for setting up auth for a request.
 func (a *ClassicV2Authorizer) AuthorizeRequest(req *retryablehttp.Request, c *config.Config) {
-	req.Header.Set("X-Api-Key", c.APIKey)
+	req.Header.Set("X-Api-Key", c.AdminAPIKey)
 }
