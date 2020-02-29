@@ -11,6 +11,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/pkg/nerdgraph"
 	"github.com/newrelic/newrelic-client-go/pkg/plugins"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
@@ -23,6 +24,7 @@ type NewRelic struct {
 	Entities   entities.Entities
 	Plugins    plugins.Plugins
 	Synthetics synthetics.Synthetics
+	NerdGraph  nerdgraph.NerdGraph
 }
 
 // New returns a collection of New Relic APIs.
@@ -38,8 +40,8 @@ func New(opts ...ConfigOption) (*NewRelic, error) {
 		}
 	}
 
-	if config.APIKey == "" && config.PersonalAPIKey == "" {
-		return nil, errors.New("use of ConfigAPIKey and/or ConfigPersonalAPIKey is required")
+	if config.PersonalAPIKey == "" && config.AdminAPIKey == "" {
+		return nil, errors.New("use of ConfigPersonalAPIKey and/or ConfigAdminAPIKey is required")
 	}
 
 	nr := &NewRelic{
@@ -49,6 +51,7 @@ func New(opts ...ConfigOption) (*NewRelic, error) {
 		Entities:   entities.New(config),
 		Plugins:    plugins.New(config),
 		Synthetics: synthetics.New(config),
+		NerdGraph:  nerdgraph.New(config),
 	}
 
 	return nr, nil
@@ -58,22 +61,22 @@ func New(opts ...ConfigOption) (*NewRelic, error) {
 // https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys
 type ConfigOption func(*config.Config) error
 
-// ConfigAPIKey sets the New Relic Admin API key this client will use.
-// One of ConfigAPIKey or ConfigPersonalAPIKey must be used to create a client.
+// ConfigPersonalAPIKey sets the New Relic Admin API key this client will use.
+// One of ConfigPersonalAPIKey or ConfigAdminAPIKey must be used to create a client.
 // https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys
-func ConfigAPIKey(apiKey string) ConfigOption {
+func ConfigPersonalAPIKey(apiKey string) ConfigOption {
 	return func(cfg *config.Config) error {
-		cfg.APIKey = apiKey
+		cfg.PersonalAPIKey = apiKey
 		return nil
 	}
 }
 
-// ConfigPersonalAPIKey sets the New Relic Personal API key this client will use.
-// One of ConfigAPIKey or ConfigPersonalAPIKey must be used to create a client.
+// ConfigAdminAPIKey sets the New Relic Admin API key this client will use.
+// One of ConfigAPIKey or ConfigAdminAPIKey must be used to create a client.
 // https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys
-func ConfigPersonalAPIKey(personalAPIKey string) ConfigOption {
+func ConfigAdminAPIKey(adminAPIKey string) ConfigOption {
 	return func(cfg *config.Config) error {
-		cfg.PersonalAPIKey = personalAPIKey
+		cfg.AdminAPIKey = adminAPIKey
 		return nil
 	}
 }

@@ -38,7 +38,7 @@ type NewRelicClient struct {
 	// Config is the HTTP client configuration.
 	Config config.Config
 
-	// UsePersonalAPIKeyCompatability is for internal use only.
+	// AuthStrategy allows us to use multiple authentication methods for API calls
 	AuthStrategy RequestAuthorizer
 
 	errorValue ErrorResponse
