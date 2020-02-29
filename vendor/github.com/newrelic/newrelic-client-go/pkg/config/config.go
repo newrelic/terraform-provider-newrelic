@@ -10,11 +10,14 @@ import (
 
 // Config contains all the configuration data for the API Client.
 type Config struct {
-	// APIKey to authenticate API requests
-	APIKey string
-
 	// PersonalAPIKey to authenticate API requests
+	// see: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#personal-api-key
 	PersonalAPIKey string
+
+	// AdminAPIKey to authenticate API requests
+	// Note this will be deprecated in the future!
+	// see: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin
+	AdminAPIKey string
 
 	// Region of the New Relic platform to use
 	// Valid values are: US, EU

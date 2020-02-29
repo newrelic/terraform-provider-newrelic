@@ -4,6 +4,15 @@ import (
 	"fmt"
 )
 
+// SecureCredential represents a Synthetics secure credential.
+type SecureCredential struct {
+	Key         string `json:"key"`
+	Description string `json:"description"`
+	Value       string `json:"value"`
+	CreatedAt   *Time  `json:"createdAt"`
+	LastUpdated *Time  `json:"lastUpdated"`
+}
+
 // GetSecureCredentials is used to retrieve all secure credentials from your New Relic account.
 func (s *Synthetics) GetSecureCredentials() ([]*SecureCredential, error) {
 	url := "/v1/secure-credentials"
