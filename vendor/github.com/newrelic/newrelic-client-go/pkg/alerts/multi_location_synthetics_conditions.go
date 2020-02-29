@@ -4,6 +4,29 @@ import (
 	"fmt"
 )
 
+// MultiLocationSyntheticsCondition represents a location-based failure condition.
+//
+// ViolationTimeLimitSeconds must be one of 3600, 7200, 14400, 28800, 43200, 86400.
+type MultiLocationSyntheticsCondition struct {
+	ID                        int                                    `json:"id,omitempty"`
+	Name                      string                                 `json:"name,omitempty"`
+	Enabled                   bool                                   `json:"enabled"`
+	RunbookURL                string                                 `json:"runbook_url,omitempty"`
+	MonitorID                 string                                 `json:"monitor_id,omitempty"`
+	Entities                  []string                               `json:"entities,omitempty"`
+	Terms                     []MultiLocationSyntheticsConditionTerm `json:"terms,omitempty"`
+	ViolationTimeLimitSeconds int                                    `json:"violation_time_limit_seconds,omitempty"`
+}
+
+// MultiLocationSyntheticsConditionTerm represents a single term for a location-based failure condition.
+//
+// Priority must be "warning" or "critical".
+// Threshold must be greater than zero.
+type MultiLocationSyntheticsConditionTerm struct {
+	Priority  string `json:"priority,omitempty"`
+	Threshold int    `json:"threshold,omitempty"`
+}
+
 // ListMultiLocationSyntheticsConditions returns alert conditions for a specified policy.
 func (alerts *Alerts) ListMultiLocationSyntheticsConditions(policyID int) ([]*MultiLocationSyntheticsCondition, error) {
 	response := multiLocationSyntheticsConditionListResponse{}
