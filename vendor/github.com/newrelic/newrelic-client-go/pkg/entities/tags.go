@@ -5,6 +5,18 @@ import (
 	"strings"
 )
 
+// Tag represents a New Relic One entity tag.
+type Tag struct {
+	Key    string
+	Values []string
+}
+
+// TagValue represents a New Relic One entity tag and value pair.
+type TagValue struct {
+	Key   string
+	Value string
+}
+
 // ListTags returns a collection of tags for a given entity by entity GUID.
 func (e *Entities) ListTags(guid string) ([]*Tag, error) {
 	resp := listTagsResponse{}
