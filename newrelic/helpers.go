@@ -3,6 +3,7 @@ package newrelic
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"unicode"
@@ -73,4 +74,11 @@ func stripWhitespace(str string) string {
 		}
 	}
 	return b.String()
+}
+
+// Mutates original slice
+func sortIntegerSlice(integers []int) {
+	sort.Slice(integers, func(i, j int) bool {
+		return integers[i] < integers[j]
+	})
 }

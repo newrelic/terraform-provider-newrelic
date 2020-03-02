@@ -60,6 +60,15 @@ func TestStripWhitespace(t *testing.T) {
 	require.Equal(t, e, a)
 }
 
+func TestSortIntegerSlice(t *testing.T) {
+	integers := []int{2, 1, 4, 3}
+	expected := []int{1, 2, 3, 4}
+
+	sortIntegerSlice(integers)
+
+	require.Equal(t, expected, integers)
+}
+
 func testAccDeleteNewRelicAlertPolicy(name string) func() {
 	return func() {
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
