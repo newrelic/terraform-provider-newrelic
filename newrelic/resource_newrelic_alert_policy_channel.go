@@ -53,6 +53,8 @@ func resourceNewRelicAlertPolicyChannelCreate(d *schema.ResourceData, meta inter
 		return err
 	}
 
+	sortIntegerSlice(policyChannels.ChannelIDs)
+
 	serializedID := serializeIDs(append(
 		[]int{policyChannels.ID},
 		policyChannels.ChannelIDs...,
@@ -84,6 +86,8 @@ func resourceNewRelicAlertPolicyChannelRead(d *schema.ResourceData, meta interfa
 
 	policyID := ids[0]
 	parsedChannelIDs := ids[1:]
+
+	sortIntegerSlice(parsedChannelIDs)
 
 	log.Printf("[INFO] Reading New Relic alert policy channel %s", d.Id())
 
