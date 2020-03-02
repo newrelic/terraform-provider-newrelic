@@ -49,7 +49,56 @@ The following arguments are supported:
   * `name` - (Required) The title of the condition. Must be between 1 and 64 characters, inclusive.
   * `type` - (Required) The type of condition. One of: `apm_app_metric`, `apm_jvm_metric`, `apm_kt_metric`, `servers_metric`, `browser_metric`, `mobile_metric`
   * `entities` - (Required) The instance IDS associated with this condition.
-  * `metric` - (Required) The metric field accepts parameters based on the `type` set.
+  * `metric` - (Required) The metric field accepts parameters based on the `type` set. One of these metrics based on `type`:
+    * `apm_app_metric`
+		  * `apdex`
+		  * `error_percentage`
+		  * `response_time_background`
+		  * `response_time_web`
+		  * `throughput_background`
+		  * `throughput_web`
+		  * `user_defined`
+	  * `apm_jvm_metric`
+		  * `cpu_utilization_time`
+	    * `deadlocked_threads`
+		  * `gc_cpu_time`
+		  * `heap_memory_usage`
+	  * `apm_kt_metric`
+		  * `apdex`
+		  * `error_count`
+		  * `error_percentage`
+		  * `response_time`
+		  * `throughput`
+	  * `browser_metric`
+		  * `ajax_response_time`
+		  * `ajax_throughput`
+		  * `dom_processing`
+		  * `end_user_apdex`
+		  * `network`
+		  * `page_rendering`
+		  * `page_view_throughput`
+		  * `page_views_with_js_errors`
+		  * `request_queuing`
+		  * `total_page_load`
+		  * `user_defined`
+		  * `web_application`
+	  * `mobile_metric`
+		  * `database`
+		  * `images`
+		  * `json`
+		  * `mobile_crash_rate`
+		  * `network_error_percentage`
+		  * `network`
+		  * `status_error_percentage`
+		  * `user_defined`
+		  * `view_loading`
+	  * `servers_metric`
+		  * `cpu_percentage`
+		  * `disk_io_percentage`
+		  * `fullest_disk_percentage`
+		  * `load_average_one_minute`
+		  * `memory_percentage`
+		  * `user_defined
   * `condition_scope` - (Required for some types) `application` or `instance`.  Choose `application` for most scenarios.  If you are using the JVM plugin in New Relic, the `instance` setting allows your condition to trigger [for specific app instances](https://docs.newrelic.com/docs/alerts/new-relic-alerts/defining-conditions/scope-alert-thresholds-specific-instances).
   * `gc_metric` - (Optional) A valid Garbage Collection metric e.g. `GC/G1 Young Generation`. This is required if you are using `apm_jvm_metric` with `gc_cpu_time` condition type.
   * `violation_close_timer` - (Optional) Automatically close instance-based violations, including JVM health metric violations, after the number of hours specified. Must be: `1`, `2`, `4`, `8`, `12` or `24`.
