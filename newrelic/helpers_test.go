@@ -6,9 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/stretchr/testify/require"
-
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -32,6 +31,21 @@ func TestParseIDs_BadIDs(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestParseHashedIDs_Basic(t *testing.T) {
+	expected := []int{1, 2, 3}
+	result, err := parseHashedIDs("1:2:3")
+
+	require.NoError(t, err)
+	require.Equal(t, 3, len(result))
+	require.Equal(t, expected, result)
+}
+
+func TestParseHashedIDs_Invalid(t *testing.T) {
+	_, err := parseHashedIDs("123:abc")
+
+	require.Error(t, err)
+}
+
 func TestSerializeIDs_Basic(t *testing.T) {
 	id := serializeIDs([]int{1, 2})
 
@@ -44,6 +58,15 @@ func TestStripWhitespace(t *testing.T) {
 	a := stripWhitespace(json)
 
 	require.Equal(t, e, a)
+}
+
+func TestSortIntegerSlice(t *testing.T) {
+	integers := []int{2, 1, 4, 3}
+	expected := []int{1, 2, 3, 4}
+
+	sortIntegerSlice(integers)
+
+	require.Equal(t, expected, integers)
 }
 
 func testAccDeleteNewRelicAlertPolicy(name string) func() {
