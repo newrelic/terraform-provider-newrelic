@@ -102,25 +102,7 @@ func resourceNewRelicAlertPolicyChannelRead(d *schema.ResourceData, meta interfa
 		return nil
 	}
 
-	d.Set("policy_id", policyID)
-
-	_, channelIDOk := d.GetOk("channel_id")
-	_, channelIDsOk := d.GetOk("channel_ids")
-
-	if channelIDOk && len(parsedChannelIDs) == 1 {
-		d.Set("channel_id", parsedChannelIDs[0])
-	}
-
-	if channelIDsOk && len(parsedChannelIDs) > 0 {
-		d.Set("channel_ids", parsedChannelIDs)
-	}
-
-	// Handle import (set `channel_ids` since this resource doesn't exist in state yet)
-	if !channelIDOk && !channelIDsOk {
-		d.Set("channel_ids", parsedChannelIDs)
-	}
-
-	return nil
+	return flattenAlertPolicyChannels(d, policyID, parsedChannelIDs)
 }
 
 func resourceNewRelicAlertPolicyChannelDelete(d *schema.ResourceData, meta interface{}) error {
