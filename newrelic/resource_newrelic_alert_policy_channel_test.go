@@ -36,7 +36,7 @@ func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 			{
 				ResourceName:     resourceName,
 				ImportState:      true,
-				ImportStateCheck: testAccNewRelicAlertPolicyImportStateCheckFunc(),
+				ImportStateCheck: testAccNewRelicAlertPolicyImportStateCheckFunc(resourceName),
 			},
 		},
 	})
@@ -178,10 +178,22 @@ func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFu
 	}
 }
 
-func testAccNewRelicAlertPolicyImportStateCheckFunc() resource.ImportStateCheckFunc {
+func testAccNewRelicAlertPolicyImportStateCheckFunc(resourceName string) resource.ImportStateCheckFunc {
 	return func(state []*terraform.InstanceState) error {
-		// Ensure import sets `channel_ids`
-		return testCheckResourceAttr(state[0], "newrelic_alert_policy_channel.foo", "channel_ids.#", "1")
+		expectedChannelsCount := "1"
+		channelsCount := state[0].Attributes["channel_ids.#"]
+
+		if channelsCount != expectedChannelsCount {
+			return fmt.Errorf(
+				"%s: Attribute '%s' expected %#v, got %#v",
+				resourceName,
+				"channel_ids.#",
+				expectedChannelsCount,
+				channelsCount,
+			)
+		}
+
+		return nil
 	}
 }
 
