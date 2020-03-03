@@ -1,12 +1,12 @@
 ---
-layout: "newrelic"
-page_title: "New Relic: newrelic_alert_policy_channel"
-sidebar_current: "docs-newrelic-resource-alert-policy-channel"
+layout: 'newrelic'
+page_title: 'New Relic: newrelic_alert_policy_channel'
+sidebar_current: 'docs-newrelic-resource-alert-policy-channel'
 description: |-
   Map alert policies to alert channels in New Relic.
 ---
 
-# Resource: newrelic\_alert\_policy\_channel
+# Resource: newrelic_alert_policy_channel
 
 Use this resource to map alert policies to alert channels in New Relic.
 
@@ -58,9 +58,9 @@ resource "newrelic_alert_policy_channel" "foo" {
 
 The following arguments are supported:
 
-  * `policy_id` - (Required) The ID of the policy.
-  * `channel_ids` - (Optional*) Array of channel IDs to apply to the specified policy.
-  * `channel_id` - **Deprecated!** (Optional*) The ID of the channel. Please use the `channel_ids` argument instead.
+- `policy_id` - (Required) The ID of the policy.
+- `channel_ids` - (Optional\*) Array of channel IDs to apply to the specified policy. We recommended sorting channel IDs in ascending order to avoid drift your Terraform state.
+- `channel_id` - **Deprecated!** (Optional\*) The ID of the channel. Please use the `channel_ids` argument instead.
 
 <sup>\*Note: Even though **channel_id** and **channel_ids** are optional, at least one of those arguments must be used for this resource to work.</sup>
 
@@ -72,6 +72,6 @@ Alert policy channels can be imported using the following notation: `<policyID>:
 $ terraform import newrelic_alert_policy_channel.foo 123456:3462754:2938324
 ```
 
-When importing `newrelic_alert_policy_channel` resource, the attribute `channel_ids`* will be set in your Terraform state. You can import multiple channels as long as those channel IDs are included as part of the import ID hash.
+When importing `newrelic_alert_policy_channel` resource, the attribute `channel_ids`\* will be set in your Terraform state. You can import multiple channels as long as those channel IDs are included as part of the import ID hash.
 
 <sup>\*Note: The attribute **channel_id** is _deprecated_ and will not be set when importing this resource.</sup>
