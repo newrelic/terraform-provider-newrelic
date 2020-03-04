@@ -1,4 +1,15 @@
 ## 1.15.0 (Unreleased)
+
+BUG FIXES:
+
+* fix(nrql_alert_condition): terms should be a TypeSet ([#421](https://github.com/terraform-providers/terraform-provider-newrelic/pull/421))
+
+IMPROVEMENTS:
+
+* feat(application_labels): Implementation of CRUD operations for NewRelic App Labels ([#417](https://github.com/terraform-providers/terraform-provider-newrelic/pull/417))
+* feat(alert_policy_channels): add ability to add multiple channels to a policy ([#365](https://github.com/terraform-providers/terraform-provider-newrelic/pull/365))
+* docs(newrelic_alert_condition): list of potential metrics for newrelic_alert_condition ([#431](https://github.com/terraform-providers/terraform-provider-newrelic/pull/431))
+
 ## 1.14.0 (February 20, 2020)
 
 BUG FIXES:
