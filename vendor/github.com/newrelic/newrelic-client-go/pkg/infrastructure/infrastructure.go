@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"github.com/newrelic/newrelic-client-go/internal/http"
 	"github.com/newrelic/newrelic-client-go/internal/region"
 )
 
@@ -34,4 +35,9 @@ func (e *ErrorResponse) Error() string {
 	}
 
 	return ""
+}
+
+// New creates a new instance of ErrorResponse.
+func (e *ErrorResponse) New() http.ErrorResponse {
+	return &ErrorResponse{}
 }

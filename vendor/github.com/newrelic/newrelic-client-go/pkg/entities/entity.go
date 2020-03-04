@@ -6,15 +6,17 @@ import (
 
 // Entity represents a New Relic One entity.
 type Entity struct {
-	AccountID     int
-	ApplicationID int
-	Domain        EntityDomainType
-	EntityType    EntityType
-	GUID          string
-	Name          string
-	Permalink     string
-	Reporting     bool
-	Type          string
+	AccountID  int
+	Domain     EntityDomainType
+	EntityType EntityType
+	GUID       string
+	Name       string
+	Permalink  string
+	Reporting  bool
+	Type       string
+
+	// Not always returned...
+	ApplicationID *int `json:",omitempty"` // Only returned from ApmApplicationEntityOutline
 }
 
 // EntityType represents a New Relic One entity type.
@@ -146,60 +148,66 @@ func (e *Entities) GetEntity(guid string) (*Entity, error) {
 
 const (
 	getEntitiesQuery = `
-    query($guids: [String!]!) {
-        actor {
-            entities(guids: $guids)  {
-				accountId
-				domain
-				entityType
-				guid
-				name
-				permalink
-				reporting
-				type
-            }
-        }
-    }
-`
+		query($guids: [String!]!) {
+			actor {
+				entities(guids: $guids)  {
+					accountId
+					domain
+					entityType
+					guid
+					name
+					permalink
+					reporting
+					type
+					... on ApmApplicationEntity {
+							applicationId
+					}
+				}
+			}
+		}`
+
 	getEntityQuery = `
-    query($guid: String!) {
-        actor {
-            entity(guid: $guid)  {
-				accountId
-				domain
-				entityType
-				guid
-				name
-				permalink
-				reporting
-				type
-            }
-        }
-    }
-`
+		query($guid: String!) {
+			actor {
+				entity(guid: $guid)  {
+					accountId
+					domain
+					entityType
+					guid
+					name
+					permalink
+					reporting
+					type
+					... on ApmApplicationEntity {
+							applicationId
+					}
+				}
+			}
+		}`
+
 	searchEntitiesQuery = `
-query($queryBuilder: EntitySearchQueryBuilder, $cursor: String) {
-  actor {
-    entitySearch(queryBuilder: $queryBuilder)  {
-      results(cursor: $cursor) {
-        nextCursor
-        entities {
-          accountId
-          domain
-          entityType
-          guid
-          name
-          permalink
-          reporting
-          type
-          ... on ApmApplicationEntityOutline {
-              applicationId
-          }
-        }
-      }
-    }
-  }
-}`
+		query($queryBuilder: EntitySearchQueryBuilder, $cursor: String) {
+			actor {
+				entitySearch(queryBuilder: $queryBuilder)  {
+					results(cursor: $cursor) {
+						nextCursor
+						entities {
+							accountId
+							domain
+							entityType
+							guid
+							name
+							permalink
+							reporting
+							type
+							... on ApmApplicationEntityOutline {
+									applicationId
+							}
+						}
+					}
+				}
+			}
+		}`
 )
 
 type searchEntitiesResponse struct {
