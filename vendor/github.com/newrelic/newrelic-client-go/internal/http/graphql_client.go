@@ -80,3 +80,7 @@ func (r *graphQLErrorResponse) Error() string {
 
 	return ""
 }
+
+func (r *graphQLErrorResponse) New() ErrorResponse {
+	return &graphQLErrorResponse{}
+}

@@ -2,6 +2,8 @@ package apm
 
 import (
 	"fmt"
+
+	"github.com/newrelic/newrelic-client-go/internal/http"
 )
 
 // Deployment represents information about a New Relic application deployment.
@@ -27,7 +29,14 @@ func (apm *APM) ListDeployments(applicationID int) ([]*Deployment, error) {
 
 	for nextURL != "" {
 		response := deploymentsResponse{}
-		resp, err := apm.client.Get(nextURL, nil, &response)
+		req, err := apm.client.NewRequest("GET", nextURL, nil, nil, &response)
+		if err != nil {
+			return nil, err
+		}
+
+		req.SetAuthStrategy(&http.PersonalAPIKeyCapableV2Authorizer{})
+
+		resp, err := apm.client.Do(req)
 
 		if err != nil {
 			return nil, err
@@ -50,7 +59,14 @@ func (apm *APM) CreateDeployment(applicationID int, deployment Deployment) (*Dep
 	resp := deploymentResponse{}
 
 	u := fmt.Sprintf("/applications/%d/deployments.json", applicationID)
-	_, err := apm.client.Post(u, nil, &reqBody, &resp)
+	req, err := apm.client.NewRequest("POST", u, nil, &reqBody, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	req.SetAuthStrategy(&http.PersonalAPIKeyCapableV2Authorizer{})
+
+	_, err = apm.client.Do(req)
 
 	if err != nil {
 		return nil, err
@@ -64,7 +80,14 @@ func (apm *APM) DeleteDeployment(applicationID int, deploymentID int) (*Deployme
 	resp := deploymentResponse{}
 	u := fmt.Sprintf("/applications/%d/deployments/%d.json", applicationID, deploymentID)
 
-	_, err := apm.client.Delete(u, nil, &resp)
+	req, err := apm.client.NewRequest("DELETE", u, nil, nil, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	req.SetAuthStrategy(&http.PersonalAPIKeyCapableV2Authorizer{})
+
+	_, err = apm.client.Do(req)
 
 	if err != nil {
 		return nil, err

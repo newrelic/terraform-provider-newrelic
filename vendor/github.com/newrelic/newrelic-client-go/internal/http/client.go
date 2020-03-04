@@ -7,10 +7,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	neturl "net/url"
 	"time"
 
-	"github.com/google/go-querystring/query"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 
 	"github.com/newrelic/newrelic-client-go/internal/region"
@@ -108,7 +106,12 @@ func (c *NewRelicClient) Get(
 	queryParams interface{},
 	respBody interface{},
 ) (*http.Response, error) {
-	return c.do(http.MethodGet, url, queryParams, nil, respBody)
+	req, err := c.NewRequest(http.MethodGet, url, queryParams, nil, respBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Do(req)
 }
 
 // Post represents an HTTP POST request to a New Relic API.
@@ -122,16 +125,16 @@ func (c *NewRelicClient) Post(
 	reqBody interface{},
 	respBody interface{},
 ) (*http.Response, error) {
-
-	reqBody, err := makeRequestBody(reqBody)
+	req, err := c.NewRequest(http.MethodPost, url, queryParams, reqBody, respBody)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.do(http.MethodPost, url, queryParams, reqBody, respBody)
+	return c.Do(req)
 }
 
-// RawPost behaves the same as Post, but without marshaling the body into JSON before making the request.  This is required at least in the case of Syntheics Labels, since the POST doesn't handle JSON.
+// RawPost behaves the same as Post, but without marshaling the body into JSON before making the request.
+// This is required at least in the case of Synthetics Labels, since the POST doesn't handle JSON.
 func (c *NewRelicClient) RawPost(
 	url string,
 	queryParams interface{},
@@ -139,18 +142,23 @@ func (c *NewRelicClient) RawPost(
 	respBody interface{},
 ) (*http.Response, error) {
 
+	var requestBody []byte
+
 	switch val := reqBody.(type) {
 	case []byte:
-		return c.do(http.MethodPost, url, queryParams, reqBody, respBody)
-
+		requestBody = val
 	case string:
-		requestBody := []byte(val)
-		return c.do(http.MethodPost, url, queryParams, requestBody, respBody)
-
+		requestBody = []byte(val)
 	default:
 		return nil, errors.New("invalid request body")
 	}
 
+	req, err := c.NewRequest(http.MethodPost, url, queryParams, requestBody, respBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Do(req)
 }
 
 // Put represents an HTTP PUT request to a New Relic API.
@@ -164,13 +172,12 @@ func (c *NewRelicClient) Put(
 	reqBody interface{},
 	respBody interface{},
 ) (*http.Response, error) {
-
-	reqBody, err := makeRequestBody(reqBody)
+	req, err := c.NewRequest(http.MethodPut, url, queryParams, reqBody, respBody)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.do(http.MethodPut, url, queryParams, reqBody, respBody)
+	return c.Do(req)
 }
 
 // Delete represents an HTTP DELETE request to a New Relic API.
@@ -181,102 +188,81 @@ func (c *NewRelicClient) Delete(url string,
 	queryParams interface{},
 	respBody interface{},
 ) (*http.Response, error) {
-	return c.do(http.MethodDelete, url, queryParams, nil, respBody)
+	req, err := c.NewRequest(http.MethodDelete, url, queryParams, nil, respBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Do(req)
 }
 
-func makeRequestBody(reqBody interface{}) (*bytes.Buffer, error) {
-	b := bytes.NewBuffer([]byte{})
-	if reqBody != nil {
-		j, err := json.Marshal(reqBody)
+// NewRequest creates a new Request struct.
+func (c *NewRelicClient) NewRequest(method string, url string, params interface{}, reqBody interface{}, value interface{}) (*Request, error) {
+	// Make a copy of the client's config
+	cfg := c.Config
 
+	req := &Request{
+		method:       method,
+		url:          url,
+		params:       params,
+		reqBody:      reqBody,
+		value:        value,
+		authStrategy: c.AuthStrategy,
+	}
+
+	req.config = cfg
+
+	u, err := req.makeURL()
+	if err != nil {
+		return nil, err
+	}
+
+	var r *retryablehttp.Request
+	if reqBody != nil {
+		if _, ok := reqBody.([]byte); !ok {
+			reqBody, err = makeRequestBodyReader(reqBody)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		r, err = retryablehttp.NewRequest(req.method, u.String(), reqBody)
 		if err != nil {
 			return nil, err
 		}
-
-		b = bytes.NewBuffer(j)
+	} else {
+		r, err = retryablehttp.NewRequest(req.method, u.String(), nil)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return b, nil
+	req.request = r
+
+	req.SetHeader(defaultNewRelicRequestingServiceHeader, defaultServiceName)
+	req.SetHeader("Content-Type", "application/json")
+	req.SetHeader("User-Agent", cfg.UserAgent)
+
+	return req, nil
 }
 
-func (c *NewRelicClient) setHeaders(req *retryablehttp.Request) {
-	req.Header.Set(defaultNewRelicRequestingServiceHeader, defaultServiceName)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", c.Config.UserAgent)
-}
-
-func setQueryParams(req *retryablehttp.Request, params interface{}) error {
-	if params == nil || len(req.URL.Query()) > 0 {
-		return nil
-	}
-
-	q, err := query.Values(params)
-
-	if err != nil {
-		return err
-	}
-
-	req.URL.RawQuery = q.Encode()
-
-	return nil
-}
-
-func (c *NewRelicClient) makeURL(url string) (*neturl.URL, error) {
-	u, err := neturl.Parse(url)
-
+// Do initiates an HTTP request as configured by the passed Request struct.
+func (c *NewRelicClient) Do(req *Request) (*http.Response, error) {
+	r, err := req.makeRequest()
 	if err != nil {
 		return nil, err
 	}
 
-	if u.Host != "" {
-		return u, nil
-	}
+	c.Config.GetLogger().Debug("performing request", "method", req.method, "url", r.URL)
 
-	u, err = neturl.Parse(c.Config.BaseURL + u.Path)
-
+	logHeaders, err := json.Marshal(r.Header)
 	if err != nil {
 		return nil, err
 	}
 
-	return u, err
-}
+	c.Config.GetLogger().Trace("request details", "headers", string(logHeaders), "body", req.reqBody)
 
-func (c *NewRelicClient) do(
-	method string,
-	url string,
-	params interface{},
-	reqBody interface{},
-	value interface{},
-) (*http.Response, error) {
-
-	u, err := c.makeURL(url)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := retryablehttp.NewRequest(method, u.String(), reqBody)
-	if err != nil {
-		return nil, err
-	}
-
-	c.setHeaders(req)
-	c.AuthStrategy.AuthorizeRequest(req, &c.Config)
-
-	err = setQueryParams(req, params)
-	if err != nil {
-		return nil, err
-	}
-
-	c.Config.GetLogger().Debug("performing request", "method", method, "url", req.URL)
-
-	logHeaders, err := json.Marshal(req.Header)
-	if err != nil {
-		return nil, err
-	}
-
-	c.Config.GetLogger().Trace("request details", "headers", string(logHeaders), "body", reqBody)
-
-	resp, retryErr := c.Client.Do(req)
+	resp, retryErr := c.Client.Do(r)
 	if retryErr != nil {
 		return nil, retryErr
 	}
@@ -297,24 +283,24 @@ func (c *NewRelicClient) do(
 		return nil, err
 	}
 
-	c.Config.GetLogger().Trace("request completed", "method", method, "url", req.URL, "status_code", resp.StatusCode, "headers", string(logHeaders), "body", string(body))
+	c.Config.GetLogger().Trace("request completed", "method", req.method, "url", r.URL, "status_code", resp.StatusCode, "headers", string(logHeaders), "body", string(body))
 
-	errorValue := c.errorValue
+	errorValue := c.errorValue.New()
 	_ = json.Unmarshal(body, &errorValue)
 
 	if !isResponseSuccess(resp) {
-		return nil, nrErrors.NewUnexpectedStatusCode(resp.StatusCode, c.errorValue.Error())
+		return nil, nrErrors.NewUnexpectedStatusCode(resp.StatusCode, errorValue.Error())
 	}
 
 	if errorValue.Error() != "" {
 		return nil, errors.New(errorValue.Error())
 	}
 
-	if value == nil {
+	if req.value == nil {
 		return resp, nil
 	}
 
-	jsonErr := json.Unmarshal(body, value)
+	jsonErr := json.Unmarshal(body, req.value)
 	if jsonErr != nil {
 		return nil, jsonErr
 	}
@@ -328,4 +314,19 @@ func isResponseSuccess(resp *http.Response) bool {
 	statusCode := resp.StatusCode
 
 	return statusCode >= http.StatusOK && statusCode <= 299
+}
+
+func makeRequestBodyReader(reqBody interface{}) (*bytes.Buffer, error) {
+	if reqBody == nil {
+		return nil, nil
+	}
+
+	j, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	b := bytes.NewBuffer(j)
+
+	return b, nil
 }
