@@ -45,8 +45,8 @@ github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/bflad/gopaniccheck v0.1.0 h1:tJftp+bv42ouERmUMWLoUn/5bi/iQZjHPznM00cP/bU=
 github.com/bflad/gopaniccheck v0.1.0/go.mod h1:ZCj2vSr7EqVeDaqVsWN4n2MwdROx1YL+LFo47TSWtsA=
-github.com/bflad/tfproviderlint v0.10.0 h1:Lje5bGiBZU18t3QVH1Z4cIjPcZars2US3415n1OYQmE=
-github.com/bflad/tfproviderlint v0.10.0/go.mod h1:MsNI3eEj7uC7P/h7XmGvzMLtsotLkrvB+NF2/w3RZGc=
+github.com/bflad/tfproviderlint v0.11.0 h1:+yxfoHoOhg8h/oNSf7YwNDs/ztAJZPXIpx4IQwrjMUg=
+github.com/bflad/tfproviderlint v0.11.0/go.mod h1:MsNI3eEj7uC7P/h7XmGvzMLtsotLkrvB+NF2/w3RZGc=
 github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d h1:xDfNPAt8lFiC1UJrqV3uuy861HCTo708pDMbjHHdCas=
 github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d/go.mod h1:6QX/PXZ00z/TKoufEY6K/a0k6AhaJrQKdFe6OfVXsa4=
 github.com/bgentry/speakeasy v0.1.0 h1:ByYyxL9InA1OWqxJqqp2A5pYHUrCiAL6K3J+LKSsQkY=
@@ -168,6 +168,7 @@ github.com/golangci/golangci-lint v1.21.0 h1:HxAxpR8Z0M8omihvQdsD3PF0qPjlqYqp2vM
 github.com/golangci/golangci-lint v1.21.0/go.mod h1:phxpHK52q7SE+5KpPnti4oZTdFCEsn/tKN+nFvCKXfk=
 github.com/golangci/golangci-lint v1.22.2 h1:iaihss3Tf6NvZVjun3lHimKSgofPV1+FqE/cbehoiRQ=
 github.com/golangci/golangci-lint v1.22.2/go.mod h1:2Bj42k6hPQFTRxkDb7S3TQ+EsnumZXOmIYNqlQrp0FI=
+github.com/golangci/golangci-lint v1.23.8 h1:NlD+Ld2TKH8qVmADy4iEvPxVmXaqPIeQu3d1cGQP4jc=
 github.com/golangci/golangci-lint v1.23.8/go.mod h1:g/38bxfhp4rI7zeWSxcdIeHTQGS58TCak8FYcyCmavQ=
 github.com/golangci/ineffassign v0.0.0-20190609212857-42439a7714cc h1:gLLhTLMk2/SutryVJ6D4VZCU3CUqr8YloG7FPIBWFpI=
 github.com/golangci/ineffassign v0.0.0-20190609212857-42439a7714cc/go.mod h1:e5tpTHCfVze+7EpLEozzMB3eafxo2KT5veNg1k6byQU=
