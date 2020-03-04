@@ -9,6 +9,7 @@ import (
 // a single error message from an error response object.
 type ErrorResponse interface {
 	Error() string
+	New() ErrorResponse
 }
 
 // DefaultErrorResponse represents the default error response from New Relic.
@@ -29,4 +30,9 @@ func (e *DefaultErrorResponse) Error() string {
 	}
 
 	return m
+}
+
+// New creates a new instance of the DefaultErrorResponse struct.
+func (e *DefaultErrorResponse) New() ErrorResponse {
+	return &DefaultErrorResponse{}
 }

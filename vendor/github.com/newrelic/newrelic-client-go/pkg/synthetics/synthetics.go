@@ -56,6 +56,11 @@ func (e *ErrorResponse) Error() string {
 	return ""
 }
 
+// New creates a new instance of ErrorResponse.
+func (e *ErrorResponse) New() http.ErrorResponse {
+	return &ErrorResponse{}
+}
+
 // New is used to create a new Synthetics client instance.
 func New(config config.Config) Synthetics {
 
