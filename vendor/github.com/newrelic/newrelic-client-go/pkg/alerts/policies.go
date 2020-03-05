@@ -8,10 +8,26 @@ import (
 	"github.com/newrelic/newrelic-client-go/internal/serialization"
 )
 
+// IncidentPreferenceType specifies rollup settings for alert policies.
+type IncidentPreferenceType string
+
+var (
+	// IncidentPreferenceTypes specifies the possible incident preferenece types for an alert policy.
+	IncidentPreferenceTypes = struct {
+		PerPolicy             IncidentPreferenceType
+		PerCondition          IncidentPreferenceType
+		PerConditionAndTarget IncidentPreferenceType
+	}{
+		PerPolicy:             "PER_POLICY",
+		PerCondition:          "PER_CONDITION",
+		PerConditionAndTarget: "PER_CONDITION_AND_TARGET",
+	}
+)
+
 // Policy represents a New Relic alert policy.
 type Policy struct {
 	ID                 int                      `json:"id,omitempty"`
-	IncidentPreference string                   `json:"incident_preference,omitempty"`
+	IncidentPreference IncidentPreferenceType   `json:"incident_preference,omitempty"`
 	Name               string                   `json:"name,omitempty"`
 	CreatedAt          *serialization.EpochTime `json:"created_at,omitempty"`
 	UpdatedAt          *serialization.EpochTime `json:"updated_at,omitempty"`
