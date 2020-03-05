@@ -54,7 +54,7 @@ func expandPluginsConditionTerms(terms []interface{}) []alerts.ConditionTerm {
 			Operator:     term["operator"].(string),
 			Priority:     term["priority"].(string),
 			Threshold:    term["threshold"].(float64),
-			TimeFunction: term["time_function"].(string),
+			TimeFunction: alerts.TimeFunctionType(term["time_function"].(string)),
 		}
 	}
 
