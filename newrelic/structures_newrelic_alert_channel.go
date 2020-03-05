@@ -12,7 +12,7 @@ import (
 func expandAlertChannel(d *schema.ResourceData) (*alerts.Channel, error) {
 	channel := alerts.Channel{
 		Name: d.Get("name").(string),
-		Type: d.Get("type").(string),
+		Type: alerts.ChannelType(d.Get("type").(string)),
 	}
 
 	config, configOk := d.GetOk("config")

@@ -35,7 +35,7 @@ func TestExpandPluginsConditionTerms(t *testing.T) {
 			"operator":      "operator",
 			"priority":      "priority",
 			"threshold":     123.456,
-			"time_function": "time_function",
+			"time_function": alerts.TimeFunctionTypes.All,
 		},
 	}
 
@@ -45,7 +45,7 @@ func TestExpandPluginsConditionTerms(t *testing.T) {
 			Operator:     "operator",
 			Priority:     "priority",
 			Threshold:    123.456,
-			TimeFunction: "time_function",
+			TimeFunction: alerts.TimeFunctionTypes.All,
 		},
 	}
 
@@ -62,7 +62,7 @@ func TestFlattenPluginsConditionTerms(t *testing.T) {
 			Operator:     "operator",
 			Priority:     "priority",
 			Threshold:    123.456,
-			TimeFunction: "time_function",
+			TimeFunction: alerts.TimeFunctionTypes.All,
 		},
 	}
 
@@ -72,7 +72,7 @@ func TestFlattenPluginsConditionTerms(t *testing.T) {
 			"operator":      "operator",
 			"priority":      "priority",
 			"threshold":     123.456,
-			"time_function": "time_function",
+			"time_function": alerts.TimeFunctionTypes.All,
 		},
 	}
 

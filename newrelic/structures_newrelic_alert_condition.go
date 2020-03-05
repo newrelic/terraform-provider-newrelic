@@ -10,10 +10,10 @@ import (
 
 func expandAlertCondition(d *schema.ResourceData) *alerts.Condition {
 	condition := alerts.Condition{
-		Type:                d.Get("type").(string),
+		Type:                alerts.ConditionType(d.Get("type").(string)),
 		Name:                d.Get("name").(string),
 		Enabled:             d.Get("enabled").(bool),
-		Metric:              d.Get("metric").(string),
+		Metric:              alerts.MetricType(d.Get("metric").(string)),
 		PolicyID:            d.Get("policy_id").(int),
 		Scope:               d.Get("condition_scope").(string),
 		ViolationCloseTimer: d.Get("violation_close_timer").(int),
@@ -31,7 +31,7 @@ func expandAlertCondition(d *schema.ResourceData) *alerts.Condition {
 		if attrVF, ok := d.GetOk("user_defined_value_function"); ok {
 			condition.UserDefined = alerts.ConditionUserDefined{
 				Metric:        attrM.(string),
-				ValueFunction: attrVF.(string),
+				ValueFunction: alerts.ValueFunctionType(attrVF.(string)),
 			}
 		}
 	}
@@ -60,7 +60,7 @@ func expandAlertConditionTerms(terms []interface{}) []alerts.ConditionTerm {
 			Operator:     term["operator"].(string),
 			Priority:     term["priority"].(string),
 			Threshold:    term["threshold"].(float64),
-			TimeFunction: term["time_function"].(string),
+			TimeFunction: term["time_function"].(alerts.TimeFunctionType),
 		}
 	}
 
