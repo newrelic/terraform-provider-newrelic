@@ -182,14 +182,16 @@ func resourceNewRelicAlertConditionCreate(d *schema.ResourceData, meta interface
 	client := meta.(*ProviderConfig).NewClient
 	condition := expandAlertCondition(d)
 
+	policyID := d.Get("policy_id").(int)
+
 	log.Printf("[INFO] Creating New Relic alert condition %s", condition.Name)
 
-	condition, err := client.Alerts.CreateCondition(*condition)
+	condition, err := client.Alerts.CreateCondition(policyID, *condition)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(serializeIDs([]int{condition.PolicyID, condition.ID}))
+	d.SetId(serializeIDs([]int{policyID, condition.ID}))
 
 	return nil
 }
@@ -241,8 +243,6 @@ func resourceNewRelicAlertConditionUpdate(d *schema.ResourceData, meta interface
 
 	policyID := ids[0]
 	id := ids[1]
-
-	condition.PolicyID = policyID
 	condition.ID = id
 
 	log.Printf("[INFO] Updating New Relic alert condition %d", id)
@@ -251,6 +251,8 @@ func resourceNewRelicAlertConditionUpdate(d *schema.ResourceData, meta interface
 	if err != nil {
 		return err
 	}
+
+	d.Set("policy_id", policyID)
 
 	return flattenAlertCondition(updatedCondition, d)
 }
