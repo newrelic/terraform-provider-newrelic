@@ -14,7 +14,7 @@ func expandAlertPolicy(d *schema.ResourceData) *alerts.Policy {
 	}
 
 	if attr, ok := d.GetOk("incident_preference"); ok {
-		policy.IncidentPreference = attr.(string)
+		policy.IncidentPreference = alerts.IncidentPreferenceType(attr.(string))
 	}
 
 	return &policy

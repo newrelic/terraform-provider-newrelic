@@ -24,7 +24,7 @@ func TestExpandNrqlConditionTerms(t *testing.T) {
 			Operator:     "above",
 			Priority:     "critical",
 			Threshold:    1.5,
-			TimeFunction: "all",
+			TimeFunction: alerts.TimeFunctionTypes.All,
 		},
 	}
 
@@ -58,7 +58,7 @@ func TestFlattenNrqlConditionTerms(t *testing.T) {
 			Operator:     "above",
 			Priority:     "critical",
 			Threshold:    1.5,
-			TimeFunction: "all",
+			TimeFunction: alerts.TimeFunctionTypes.All,
 		},
 	}
 
@@ -68,7 +68,7 @@ func TestFlattenNrqlConditionTerms(t *testing.T) {
 			"operator":      "above",
 			"priority":      "critical",
 			"threshold":     1.5,
-			"time_function": "all",
+			"time_function": alerts.TimeFunctionTypes.All,
 		},
 	}
 
