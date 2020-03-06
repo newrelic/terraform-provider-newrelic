@@ -12,7 +12,6 @@ func expandNrqlAlertConditionStruct(d *schema.ResourceData) *alerts.NrqlConditio
 		Name:                d.Get("name").(string),
 		Type:                d.Get("type").(string),
 		Enabled:             d.Get("enabled").(bool),
-		PolicyID:            d.Get("policy_id").(int),
 		ValueFunction:       d.Get("value_function").(string),
 		ViolationCloseTimer: d.Get("violation_time_limit_seconds").(int),
 	}
@@ -91,14 +90,6 @@ func flattenNrqlConditionTerms(terms []alerts.ConditionTerm) []map[string]interf
 }
 
 func flattenNrqlConditionStruct(condition *alerts.NrqlCondition, d *schema.ResourceData) error {
-	ids, err := parseIDs(d.Id(), 2)
-	if err != nil {
-		return err
-	}
-
-	policyID := ids[0]
-
-	d.Set("policy_id", policyID)
 	d.Set("name", condition.Name)
 	d.Set("runbook_url", condition.RunbookURL)
 	d.Set("enabled", condition.Enabled)
