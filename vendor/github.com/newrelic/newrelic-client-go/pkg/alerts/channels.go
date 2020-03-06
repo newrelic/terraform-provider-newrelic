@@ -8,11 +8,35 @@ import (
 	"github.com/newrelic/newrelic-client-go/internal/serialization"
 )
 
+// ChannelType specifies the channel type used when creating the alert channel.
+type ChannelType string
+
+var (
+	// ChannelTypes enumerates the possible channel types for an alert channel.
+	ChannelTypes = struct {
+		Email     ChannelType
+		OpsGenie  ChannelType
+		PagerDuty ChannelType
+		Slack     ChannelType
+		User      ChannelType
+		VictorOps ChannelType
+		Webhook   ChannelType
+	}{
+		Email:     "email",
+		OpsGenie:  "opsgenie",
+		PagerDuty: "pagerduty",
+		Slack:     "slack",
+		User:      "user",
+		VictorOps: "victorops",
+		Webhook:   "webhook",
+	}
+)
+
 // Channel represents a New Relic alert notification channel
 type Channel struct {
 	ID            int                  `json:"id,omitempty"`
 	Name          string               `json:"name,omitempty"`
-	Type          string               `json:"type,omitempty"`
+	Type          ChannelType          `json:"type,omitempty"`
 	Configuration ChannelConfiguration `json:"configuration,omitempty"`
 	Links         ChannelLinks         `json:"links,omitempty"`
 }

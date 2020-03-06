@@ -6,17 +6,17 @@ import (
 
 // Entity represents a New Relic One entity.
 type Entity struct {
-	AccountID  int
-	Domain     EntityDomainType
-	EntityType EntityType
-	GUID       string
-	Name       string
-	Permalink  string
-	Reporting  bool
-	Type       string
+	AccountID  int              `json:"accountId,omitempty"`
+	Domain     EntityDomainType `json:"domain,omitempty"`
+	EntityType EntityType       `json:"entityType,omitempty"`
+	GUID       string           `json:"guid,omitempty"`
+	Name       string           `json:"name,omitempty"`
+	Permalink  string           `json:"permalink,omitempty"`
+	Reporting  bool             `json:"reporting,omitempty"`
+	Type       string           `json:"type,omitempty"`
 
-	// Not always returned...
-	ApplicationID *int `json:",omitempty"` // Only returned from ApmApplicationEntityOutline
+	// Not always returned. Only returned from ApmApplicationEntityOutline
+	ApplicationID *int `json:"applicationId,omitempty"`
 }
 
 // EntityType represents a New Relic One entity type.
@@ -148,7 +148,7 @@ func (e *Entities) GetEntity(guid string) (*Entity, error) {
 
 const (
 	getEntitiesQuery = `
-		query($guids: [String!]!) {
+    query($guids: [String!]!) {
 			actor {
 				entities(guids: $guids)  {
 					accountId
@@ -159,15 +159,12 @@ const (
 					permalink
 					reporting
 					type
-					... on ApmApplicationEntity {
-							applicationId
-					}
 				}
 			}
-		}`
-
+    }
+	`
 	getEntityQuery = `
-		query($guid: String!) {
+    query($guid: String!) {
 			actor {
 				entity(guid: $guid)  {
 					accountId
@@ -178,13 +175,10 @@ const (
 					permalink
 					reporting
 					type
-					... on ApmApplicationEntity {
-							applicationId
-					}
 				}
 			}
-		}`
-
+    }
+	`
 	searchEntitiesQuery = `
 		query($queryBuilder: EntitySearchQueryBuilder, $cursor: String) {
 			actor {
@@ -207,7 +201,8 @@ const (
 					}
 				}
 			}
-		}`
+		}
+	`
 )
 
 type searchEntitiesResponse struct {
