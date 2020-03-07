@@ -15,7 +15,6 @@ func expandPluginsCondition(d *schema.ResourceData) *alerts.PluginsCondition {
 		Metric:            d.Get("metric").(string),
 		MetricDescription: d.Get("metric_description").(string),
 		ValueFunction:     d.Get("value_function").(string),
-		PolicyID:          d.Get("policy_id").(int),
 	}
 
 	condition.Entities = expandPluginsConditionEntities(d.Get("entities").(*schema.Set).List())
@@ -62,14 +61,6 @@ func expandPluginsConditionTerms(terms []interface{}) []alerts.ConditionTerm {
 }
 
 func flattenPluginsCondition(condition *alerts.PluginsCondition, d *schema.ResourceData) error {
-	ids, err := parseIDs(d.Id(), 2)
-	if err != nil {
-		return err
-	}
-
-	policyID := ids[0]
-
-	d.Set("policy_id", policyID)
 	d.Set("name", condition.Name)
 	d.Set("enabled", condition.Enabled)
 	d.Set("metric", condition.Metric)
