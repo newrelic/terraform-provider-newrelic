@@ -4,7 +4,6 @@ variable "service" {
 		name                       = string
 		duration                   = number
 		cpu_threshold              = number
-		apdex_threshold            = number
 		response_time_threshold    = number
 		error_percentage_threshold = number
 		throughput_threshold       = number

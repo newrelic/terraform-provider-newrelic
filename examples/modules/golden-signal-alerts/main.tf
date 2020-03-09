@@ -60,24 +60,6 @@ resource "newrelic_alert_condition" "error_percentage" {
 	}
 }
 
-resource "newrelic_alert_condition" "apdex" {
-	policy_id = newrelic_alert_policy.golden_signal_policy.id
-
-	name            = "Apdex"
-	type            = "apm_app_metric"
-	entities        = [data.newrelic_application.application.id]
-	metric          = "apdex"
-	condition_scope = "application"
-
-	term {
-		duration      = var.service.duration
-		threshold     = var.service.apdex_threshold
-		operator      = "below"
-		priority      = "critical"
-		time_function = "all"
-	}
-}
-
 resource "newrelic_infra_alert_condition" "high_cpu" {
 	policy_id = newrelic_alert_policy.golden_signal_policy.id
 
@@ -96,7 +78,6 @@ resource "newrelic_infra_alert_condition" "high_cpu" {
 }
 
 resource "newrelic_alert_policy_channel" "alert_policy_channel" {
-	count = length(var.alert_channel_ids)
 	policy_id  = newrelic_alert_policy.golden_signal_policy.id
-	channel_id  = var.alert_channel_ids[count.index]
+	channel_ids  = var.alert_channel_ids
 }
