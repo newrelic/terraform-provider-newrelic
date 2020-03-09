@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	neturl "net/url"
 
 	"github.com/google/go-querystring/query"
@@ -28,6 +29,12 @@ func (r *Request) SetHeader(key string, value string) {
 // SetAuthStrategy sets the authentication strategy for the request.
 func (r *Request) SetAuthStrategy(ra RequestAuthorizer) {
 	r.authStrategy = ra
+}
+
+// SetServiceName sets the service name for the request.
+func (r *Request) SetServiceName(serviceName string) {
+	serviceName = fmt.Sprintf("%s|%s", serviceName, defaultServiceName)
+	r.SetHeader(defaultNewRelicRequestingServiceHeader, serviceName)
 }
 
 func (r *Request) makeURL() (*neturl.URL, error) {

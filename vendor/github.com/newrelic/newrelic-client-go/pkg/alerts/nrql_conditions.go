@@ -14,7 +14,6 @@ type NrqlCondition struct {
 	Name                string          `json:"name,omitempty"`
 	RunbookURL          string          `json:"runbook_url,omitempty"`
 	ValueFunction       string          `json:"value_function,omitempty"`
-	PolicyID            int             `json:"-"`
 	ID                  int             `json:"id,omitempty"`
 	ViolationCloseTimer int             `json:"violation_time_limit_seconds,omitempty"`
 	ExpectedGroups      int             `json:"expected_groups,omitempty"`
@@ -45,10 +44,6 @@ func (alerts *Alerts) ListNrqlConditions(policyID int) ([]*NrqlCondition, error)
 			return nil, err
 		}
 
-		for _, c := range response.NrqlConditions {
-			c.PolicyID = policyID
-		}
-
 		conditions = append(conditions, response.NrqlConditions...)
 
 		paging := alerts.pager.Parse(resp)
@@ -76,20 +71,18 @@ func (alerts *Alerts) GetNrqlCondition(policyID int, id int) (*NrqlCondition, er
 }
 
 // CreateNrqlCondition creates a NRQL alert condition.
-func (alerts *Alerts) CreateNrqlCondition(condition NrqlCondition) (*NrqlCondition, error) {
+func (alerts *Alerts) CreateNrqlCondition(policyID int, condition NrqlCondition) (*NrqlCondition, error) {
 	reqBody := nrqlConditionRequestBody{
 		NrqlCondition: condition,
 	}
 	resp := nrqlConditionResponse{}
 
-	u := fmt.Sprintf("/alerts_nrql_conditions/policies/%d.json", condition.PolicyID)
+	u := fmt.Sprintf("/alerts_nrql_conditions/policies/%d.json", policyID)
 	_, err := alerts.client.Post(u, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
 	}
-
-	resp.NrqlCondition.PolicyID = condition.PolicyID
 
 	return &resp.NrqlCondition, nil
 }
@@ -107,8 +100,6 @@ func (alerts *Alerts) UpdateNrqlCondition(condition NrqlCondition) (*NrqlConditi
 	if err != nil {
 		return nil, err
 	}
-
-	resp.NrqlCondition.PolicyID = condition.PolicyID
 
 	return &resp.NrqlCondition, nil
 }

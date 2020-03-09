@@ -2,15 +2,17 @@ package alerts
 
 import (
 	"fmt"
+
+	"github.com/newrelic/newrelic-client-go/internal/serialization"
 )
 
 // Incident represents a New Relic alert incident.
 type Incident struct {
-	ID                 int          `json:"id,omitempty"`
-	OpenedAt           int          `json:"opened_at,omitempty"`
-	ClosedAt           int          `json:"closed_at,omitempty"`
-	IncidentPreference string       `json:"incident_preference,omitempty"`
-	Links              IncidentLink `json:"links"`
+	ID                 int                      `json:"id,omitempty"`
+	OpenedAt           *serialization.EpochTime `json:"opened_at,omitempty"`
+	ClosedAt           *serialization.EpochTime `json:"closed_at,omitempty"`
+	IncidentPreference string                   `json:"incident_preference,omitempty"`
+	Links              IncidentLink             `json:"links"`
 }
 
 // IncidentLink represents a link between a New Relic alert incident and its violations
