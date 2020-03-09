@@ -42,7 +42,6 @@ func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{})
 	}
 
 	applications, err := client.APM.ListApplications(&params)
-
 	if err != nil {
 		return err
 	}
@@ -60,12 +59,12 @@ func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("the name '%s' does not match any New Relic applications", name)
 	}
 
-	flattenApplication(application, d)
+	flattenApplicationData(application, d)
 
 	return nil
 }
 
-func flattenApplication(a *apm.Application, d *schema.ResourceData) {
+func flattenApplicationData(a *apm.Application, d *schema.ResourceData) {
 	d.SetId(strconv.Itoa(a.ID))
 	d.Set("name", a.Name)
 	d.Set("instance_ids", a.Links.InstanceIDs)

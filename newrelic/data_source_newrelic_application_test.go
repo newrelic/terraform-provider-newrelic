@@ -8,13 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccNewRelicApplication_Basic(t *testing.T) {
+func TestAccNewRelicApplicationData_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicApplicationConfig(),
+				Config: testAccNewRelicApplicationDataConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicApplicationExists("data.newrelic_application.app"),
 				),
@@ -41,7 +41,7 @@ func testAccCheckNewRelicApplicationExists(n string) resource.TestCheckFunc {
 }
 
 // The test application for this data source is created in provider_test.go
-func testAccNewRelicApplicationConfig() string {
+func testAccNewRelicApplicationDataConfig() string {
 	return fmt.Sprintf(`
 data "newrelic_application" "app" {
 	name = "%s"
