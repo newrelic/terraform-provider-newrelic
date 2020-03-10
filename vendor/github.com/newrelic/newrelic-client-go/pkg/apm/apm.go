@@ -2,7 +2,6 @@ package apm
 
 import (
 	"github.com/newrelic/newrelic-client-go/internal/http"
-	"github.com/newrelic/newrelic-client-go/internal/logging"
 	"github.com/newrelic/newrelic-client-go/internal/region"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
@@ -10,7 +9,6 @@ import (
 // APM is used to communicate with the New Relic APM product.
 type APM struct {
 	client http.NewRelicClient
-	logger logging.Logger
 	pager  http.Pager
 }
 

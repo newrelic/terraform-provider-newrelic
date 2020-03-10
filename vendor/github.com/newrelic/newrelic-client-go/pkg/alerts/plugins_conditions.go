@@ -8,7 +8,6 @@ import (
 
 // PluginsCondition represents an alert condition for New Relic Plugins.
 type PluginsCondition struct {
-	PolicyID          int             `json:"-"`
 	ID                int             `json:"id,omitempty"`
 	Name              string          `json:"name,omitempty"`
 	Enabled           bool            `json:"enabled"`
@@ -44,10 +43,6 @@ func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, 
 			return nil, err
 		}
 
-		for _, c := range response.PluginsConditions {
-			c.PolicyID = policyID
-		}
-
 		conditions = append(conditions, response.PluginsConditions...)
 
 		paging := alerts.pager.Parse(resp)
@@ -76,20 +71,18 @@ func (alerts *Alerts) GetPluginsCondition(policyID int, pluginID int) (*PluginsC
 }
 
 // CreatePluginsCondition creates an alert condition for a plugin.
-func (alerts *Alerts) CreatePluginsCondition(condition PluginsCondition) (*PluginsCondition, error) {
+func (alerts *Alerts) CreatePluginsCondition(policyID int, condition PluginsCondition) (*PluginsCondition, error) {
 	reqBody := pluginConditionRequestBody{
 		PluginsCondition: condition,
 	}
 	resp := pluginConditionResponse{}
 
-	u := fmt.Sprintf("/alerts_plugins_conditions/policies/%d.json", condition.PolicyID)
+	u := fmt.Sprintf("/alerts_plugins_conditions/policies/%d.json", policyID)
 	_, err := alerts.client.Post(u, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
 	}
-
-	resp.PluginsCondition.PolicyID = condition.PolicyID
 
 	return &resp.PluginsCondition, nil
 }
@@ -107,8 +100,6 @@ func (alerts *Alerts) UpdatePluginsCondition(condition PluginsCondition) (*Plugi
 	if err != nil {
 		return nil, err
 	}
-
-	resp.PluginsCondition.PolicyID = condition.PolicyID
 
 	return &resp.PluginsCondition, nil
 }

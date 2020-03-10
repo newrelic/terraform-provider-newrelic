@@ -239,7 +239,7 @@ func (c *NewRelicClient) NewRequest(method string, url string, params interface{
 
 	req.request = r
 
-	req.SetHeader(defaultNewRelicRequestingServiceHeader, defaultServiceName)
+	req.SetHeader(defaultNewRelicRequestingServiceHeader, cfg.ServiceName)
 	req.SetHeader("Content-Type", "application/json")
 	req.SetHeader("User-Agent", cfg.UserAgent)
 
