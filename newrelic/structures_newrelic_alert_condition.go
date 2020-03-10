@@ -14,7 +14,6 @@ func expandAlertCondition(d *schema.ResourceData) *alerts.Condition {
 		Name:                d.Get("name").(string),
 		Enabled:             d.Get("enabled").(bool),
 		Metric:              alerts.MetricType(d.Get("metric").(string)),
-		PolicyID:            d.Get("policy_id").(int),
 		Scope:               d.Get("condition_scope").(string),
 		ViolationCloseTimer: d.Get("violation_close_timer").(int),
 		GCMetric:            d.Get("gc_metric").(string),
@@ -68,14 +67,6 @@ func expandAlertConditionTerms(terms []interface{}) []alerts.ConditionTerm {
 }
 
 func flattenAlertCondition(condition *alerts.Condition, d *schema.ResourceData) error {
-	ids, err := parseIDs(d.Id(), 2)
-	if err != nil {
-		return err
-	}
-
-	policyID := ids[0]
-
-	d.Set("policy_id", policyID)
 	d.Set("name", condition.Name)
 	d.Set("enabled", condition.Enabled)
 	d.Set("type", condition.Type)

@@ -140,7 +140,6 @@ var (
 // Condition represents a New Relic alert condition.
 // TODO: custom unmarshal entities to ints?
 type Condition struct {
-	PolicyID            int                  `json:"-"`
 	ID                  int                  `json:"id,omitempty"`
 	Type                ConditionType        `json:"type,omitempty"`
 	Name                string               `json:"name,omitempty"`
@@ -187,10 +186,6 @@ func (alerts *Alerts) ListConditions(policyID int) ([]*Condition, error) {
 			return nil, err
 		}
 
-		for _, c := range response.Conditions {
-			c.PolicyID = policyID
-		}
-
 		alertConditions = append(alertConditions, response.Conditions...)
 
 		paging := alerts.pager.Parse(resp)
@@ -217,20 +212,18 @@ func (alerts *Alerts) GetCondition(policyID int, id int) (*Condition, error) {
 }
 
 // CreateCondition creates an alert condition for a specified policy.
-func (alerts *Alerts) CreateCondition(condition Condition) (*Condition, error) {
+func (alerts *Alerts) CreateCondition(policyID int, condition Condition) (*Condition, error) {
 	reqBody := alertConditionRequestBody{
 		Condition: condition,
 	}
 	resp := alertConditionResponse{}
 
-	u := fmt.Sprintf("/alerts_conditions/policies/%d.json", condition.PolicyID)
+	u := fmt.Sprintf("/alerts_conditions/policies/%d.json", policyID)
 	_, err := alerts.client.Post(u, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
 	}
-
-	resp.Condition.PolicyID = condition.PolicyID
 
 	return &resp.Condition, nil
 }
@@ -248,8 +241,6 @@ func (alerts *Alerts) UpdateCondition(condition Condition) (*Condition, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	resp.Condition.PolicyID = condition.PolicyID
 
 	return &resp.Condition, nil
 }
