@@ -229,6 +229,8 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
+	d.Set("policy_id", policyID)
+
 	return flattenAlertCondition(condition, d)
 }
 
