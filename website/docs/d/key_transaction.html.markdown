@@ -44,7 +44,7 @@ resource "newrelic_alert_condition" "foo" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the application in New Relic.
+* `name` - (Required) The name of the key transaction in New Relic.
 
 ## Attributes Reference
 

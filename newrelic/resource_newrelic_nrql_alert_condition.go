@@ -21,41 +21,49 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of the policy where this condition should be used.",
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The title of the condition.",
 			},
 			"runbook_url": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Runbook URL to display in notifications.",
 			},
 			"enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Whether to enable the alert condition.",
 			},
 			"expected_groups": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Number of expected groups when using outlier detection.",
 			},
 			"ignore_overlap": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to look for a convergence of groups when using outlier detection.",
 			},
 			"violation_time_limit_seconds": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: validation.IntInSlice([]int{3600, 7200, 14400, 28800, 43200, 86400}),
+				Description:  "Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are 3600, 7200, 14400, 28800, 43200, and 86400.",
 			},
 			"nrql": {
-				Type:     schema.TypeList,
-				Required: true,
-				MinItems: 1,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Required:    true,
+				MinItems:    1,
+				MaxItems:    1,
+				Description: "A NRQL query.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"query": {
@@ -81,35 +89,41 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				},
 			},
 			"term": {
-				Type: schema.TypeSet,
+				Type:        schema.TypeSet,
+				Description: "A list of terms for this condition. ",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"duration": {
 							Type:         schema.TypeInt,
 							Required:     true,
 							ValidateFunc: validation.IntBetween(1, 120),
+							Description:  "In minutes, must be in the range of 1 to 120, inclusive.",
 						},
 						"operator": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Default:      "equal",
 							ValidateFunc: validation.StringInSlice([]string{"above", "below", "equal"}, false),
+							Description:  "One of (above, below, equal). Defaults to equal.",
 						},
 						"priority": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Default:      "critical",
 							ValidateFunc: validation.StringInSlice([]string{"critical", "warning"}, false),
+							Description:  "One of (critical, warning). Defaults to critical.",
 						},
 						"threshold": {
 							Type:         schema.TypeFloat,
 							Required:     true,
 							ValidateFunc: float64Gte(0.0),
+							Description:  "Must be 0 or greater.",
 						},
 						"time_function": {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
+							Description:  "One of (all, any).",
 						},
 					},
 				},
@@ -127,6 +141,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:     true,
 				Default:      "single_value",
 				ValidateFunc: validation.StringInSlice([]string{"single_value", "sum"}, false),
+				Description:  "Possible values are single_value, sum.",
 			},
 		},
 	}

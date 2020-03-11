@@ -1,8 +1,10 @@
 package newrelic
 
 import (
+	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -60,15 +62,17 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "(Required) The name of the channel.",
 			},
 			"type": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice(validAlertChannelTypes, false),
+				Description:  fmt.Sprintf("(Required) The type of channel. One of: (%s).", strings.Join(validAlertChannelTypes, ", ")),
 			},
 			"configuration": {
 				Type:     schema.TypeMap,
@@ -78,6 +82,7 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 				Sensitive:     true,
 				Deprecated:    "use `config` block instead",
 				ConflictsWith: []string{"config"},
+				Description:   "(Optional) A nested block that describes an alert channel configuration. Only one config block is permitted per alert channel definition.",
 			},
 			"config": {
 				Type:          schema.TypeList,
@@ -85,19 +90,22 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 				ForceNew:      true,
 				MaxItems:      1,
 				ConflictsWith: []string{"configuration"},
+				Description:   "The configuration block for the alert channel.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-							ForceNew:  true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Sensitive:   true,
+							ForceNew:    true,
+							Description: "The API key for integrating with OpsGenie.",
 						},
 						"auth_password": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-							ForceNew:  true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Sensitive:   true,
+							ForceNew:    true,
+							Description: "Specifies an authentication password for use with a channel. Supported by the webhook channel type.",
 						},
 						"auth_type": {
 							Type:         schema.TypeString,
@@ -105,22 +113,26 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							Sensitive:    true,
 							ValidateFunc: validation.StringInSlice([]string{"BASIC"}, false),
 							ForceNew:     true,
+							Description:  "Specifies an authentication method for use with a channel. Supported by the webhook channel type. Only HTTP basic authentication is currently supported via the value BASIC.",
 						},
 						"auth_username": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "Specifies an authentication username for use with a channel. Supported by the webhook channel type.",
 						},
 						"base_url": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-							ForceNew:  true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Sensitive:   true,
+							ForceNew:    true,
+							Description: "The base URL of the webhook destination.",
 						},
 						"channel": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The Slack channel to send notifications to.",
 						},
 						"headers": {
 							Type:          schema.TypeMap,
@@ -129,6 +141,7 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							Sensitive:     true,
 							ForceNew:      true,
 							ConflictsWith: []string{"config.0.headers_string"},
+							Description:   "A map of key/value pairs that represents extra HTTP headers to be sent along with the webhook payload.",
 						},
 						"headers_string": {
 							Type:          schema.TypeString,
@@ -136,21 +149,24 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							Sensitive:     true,
 							ForceNew:      true,
 							ConflictsWith: []string{"config.0.headers"},
+							Description:   "Use instead of headers if the desired payload is more complex than a list of key/value pairs (e.g. a set of headers that makes use of nested objects). The value provided should be a valid JSON string with escaped double quotes. Conflicts with headers.",
 							// Suppress the diff shown if the differences are solely due to whitespace
 							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 								return stripWhitespace(old) == stripWhitespace(new)
 							},
 						},
 						"key": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-							ForceNew:  true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Sensitive:   true,
+							ForceNew:    true,
+							Description: "The key for integrating with VictorOps.",
 						},
 						"include_json_attachment": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "0 or 1. Flag for whether or not to attach a JSON document containing information about the associated alert to the email that is sent to recipients.",
 						},
 						"payload": {
 							Type:          schema.TypeMap,
@@ -159,6 +175,7 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							Optional:      true,
 							ForceNew:      true,
 							ConflictsWith: []string{"config.0.payload_string"},
+							Description:   "A map of key/value pairs that represents the webhook payload. Must provide payload_type if setting this argument.",
 						},
 						"payload_string": {
 							Type:          schema.TypeString,
@@ -166,6 +183,7 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							Sensitive:     true,
 							ForceNew:      true,
 							ConflictsWith: []string{"config.0.payload"},
+							Description:   "Use instead of payload if the desired payload is more complex than a list of key/value pairs (e.g. a payload that makes use of nested objects). The value provided should be a valid JSON string with escaped double quotes. Conflicts with payload.",
 							// Suppress the diff shown if the differences are solely due to whitespace
 							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 								return stripWhitespace(old) == stripWhitespace(new)
@@ -176,50 +194,58 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							Optional:     true,
 							ForceNew:     true,
 							ValidateFunc: validation.StringInSlice([]string{"application/json", "application/x-www-form-urlencoded"}, false),
+							Description:  "Can either be application/json or application/x-www-form-urlencoded. The payload_type argument is required if payload is set.",
 						},
 						"recipients": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "A set of recipients for targeting notifications. Multiple values are comma separated.",
 						},
 						"region": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							ValidateFunc: validation.StringInSlice([]string{"US", "EU"}, false),
 							ForceNew:     true,
+							Description:  "The data center region to store your data. Valid values are US and EU. Default is US.",
 						},
 						"route_key": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-							ForceNew:  true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Sensitive:   true,
+							Description: "The route key for integrating with VictorOps.",
 						},
 						"service_key": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-							ForceNew:  true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Sensitive:   true,
+							ForceNew:    true,
+							Description: "Specifies the service key for integrating with Pagerduty.",
 						},
 						"tags": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "A set of tags for targeting notifications. Multiple values are comma separated.",
 						},
 						"teams": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "A set of teams for targeting notifications. Multiple values are comma separated.",
 						},
 						"url": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-							ForceNew:  true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Sensitive:   true,
+							ForceNew:    true,
+							Description: "Your organization's Slack URL.",
 						},
 						"user_id": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The user ID for use with the user channel type.",
 						},
 					},
 				},

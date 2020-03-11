@@ -19,13 +19,15 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"monitor_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of the monitor to attach the script to.",
 			},
 			"text": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The plaintext representing the monitor script.",
 			},
 		},
 	}

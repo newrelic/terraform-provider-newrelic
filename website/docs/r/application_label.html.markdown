@@ -6,7 +6,7 @@ description: |-
   Create and manage an Application label in New Relic.
 ---
 
-# newrelic\_application\_label
+# Resource: newrelic\_application\_label
 
 #### DEPRECATED! Use at your own risk. This feature may be removed in the next major release.
 Use this resource to create, update, and delete an Application label in New Relic.

@@ -48,7 +48,7 @@ The following arguments are supported:
   * `policy_id` - (Required) The ID of the policy where this condition should be used.
   * `name` - (Required) The title of the condition. Must be between 1 and 64 characters, inclusive.
   * `type` - (Required) The type of condition. One of: `apm_app_metric`, `apm_jvm_metric`, `apm_kt_metric`, `browser_metric`, `mobile_metric`
-  * `entities` - (Required) The instance IDS associated with this condition.
+  * `entities` - (Required) The instance IDs associated with this condition.
   * `metric` - (Required) The metric field accepts parameters based on the `type` set. One of these metrics based on `type`:
     * `apm_app_metric`
       * `apdex`
@@ -93,6 +93,7 @@ The following arguments are supported:
       * `user_defined`
       * `view_loading`
   * `condition_scope` - (Required for some types) `application` or `instance`.  Choose `application` for most scenarios.  If you are using the JVM plugin in New Relic, the `instance` setting allows your condition to trigger [for specific app instances](https://docs.newrelic.com/docs/alerts/new-relic-alerts/defining-conditions/scope-alert-thresholds-specific-instances).
+  * `enabled` - (Optional) Whether the condition is enabled or not. Defaults to true.
   * `gc_metric` - (Optional) A valid Garbage Collection metric e.g. `GC/G1 Young Generation`. This is required if you are using `apm_jvm_metric` with `gc_cpu_time` condition type.
   * `violation_close_timer` - (Optional) Automatically close instance-based violations, including JVM health metric violations, after the number of hours specified. Must be: `1`, `2`, `4`, `8`, `12` or `24`.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.

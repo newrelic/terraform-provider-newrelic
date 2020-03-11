@@ -6,7 +6,7 @@ description: |-
   Create and manage a Synthetics label in New Relic.
 ---
 
-# newrelic\_synthetics\_label
+# Resource: newrelic\_synthetics\_label
 
 Use this resource to create, update, and delete a Synthetics label in New Relic.
 

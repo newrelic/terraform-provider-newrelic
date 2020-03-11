@@ -36,7 +36,7 @@ resource "newrelic_synthetics_monitor_script" "foo_script" {
 The following arguments are supported:
 
   * `monitor_id` - (Required) The ID of the monitor to attach the script to.
-  * `text` - (Required) plaintext of the monitor script.
+  * `text` - (Required) The plaintext representing the monitor script.
 
 ## Attributes Reference
 

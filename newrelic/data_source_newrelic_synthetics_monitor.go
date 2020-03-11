@@ -14,12 +14,14 @@ func dataSourceNewRelicSyntheticsMonitor() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name of the synthetics monitor in New Relic.",
 			},
 			"monitor_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the synthetics monitor.",
 			},
 		},
 	}

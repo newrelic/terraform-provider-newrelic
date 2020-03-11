@@ -14,18 +14,21 @@ func dataSourceNewRelicApplication() *schema.Resource {
 		Read: dataSourceNewRelicApplicationRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name of the application in New Relic.",
 			},
 			"instance_ids": {
-				Type:     schema.TypeList,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
-				Computed: true,
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+				Computed:    true,
+				Description: "A list of instance IDs associated with the application.",
 			},
 			"host_ids": {
-				Type:     schema.TypeList,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
-				Computed: true,
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+				Computed:    true,
+				Description: "A list of host IDs associated with the application.",
 			},
 		},
 	}

@@ -6,7 +6,7 @@ description: |-
   Create and manage a Synthetics monitor in New Relic.
 ---
 
-# newrelic\_synthetics\_monitor
+# Resource: newrelic\_synthetics\_monitor
 
 Use this resource to create, update, and delete a synthetics monitor in New Relic.
 
@@ -35,7 +35,7 @@ The following arguments are supported:
   * `name` - (Required) The title of this monitor.
   * `type` - (Required) The monitor type. Valid values are `SIMPLE`, `BROWSER`, `SCRIPT_BROWSER`, and `SCRIPT_API`.
   * `frequency` - (Required) The interval (in minutes) at which this monitor should run.
-  * `status` - (Required) The monitor status (i.e. `ENABLED`, `MUTED`, `DISABLED`)
+  * `status` - (Required) The monitor status (i.e. `ENABLED`, `MUTED`, `DISABLED`).
   * `locations` - (Required) The locations in which this monitor should be run.
   * `sla_threshold` - (Optional) The base threshold for the SLA report.
 
