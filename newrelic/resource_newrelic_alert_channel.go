@@ -213,6 +213,7 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Sensitive:   true,
+							ForceNew:    true,
 							Description: "The route key for integrating with VictorOps.",
 						},
 						"service_key": {

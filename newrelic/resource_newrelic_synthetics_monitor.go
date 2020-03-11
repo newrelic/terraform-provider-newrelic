@@ -41,7 +41,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: intInSlice([]int{1, 5, 10, 15, 30, 60, 360, 720, 1440}),
-				Description:  "The interval (in minutes) at which this monitor should run.",
+				Description:  "The interval (in minutes) at which this monitor should run. Valid values are 1, 5, 10, 15, 30, 60, 360, 720, or 1440.",
 			},
 			"uri": {
 				Type:        schema.TypeString,

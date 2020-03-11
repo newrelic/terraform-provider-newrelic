@@ -11,6 +11,11 @@ import (
 )
 
 func dataSourceNewRelicAlertChannel() *schema.Resource {
+	validAlertChannelTypes := make([]string, 0, len(alertChannelTypes))
+	for k := range alertChannelTypes {
+		validAlertChannelTypes = append(validAlertChannelTypes, k)
+	}
+
 	return &schema.Resource{
 		Read: dataSourceNewRelicAlertChannelRead,
 
@@ -23,7 +28,7 @@ func dataSourceNewRelicAlertChannel() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Alert channel type, either: `email`, `opsgenie`, `pagerduty`, `slack`, `victorops`, or `webhook`.",
+				Description: fmt.Sprintf("The type of channel. One of: (%s).", strings.Join(validAlertChannelTypes, ", ")),
 			},
 			"policy_ids": {
 				Type:        schema.TypeList,
