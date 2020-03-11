@@ -102,3 +102,11 @@ resource "newrelic_synthetics_monitor" "foo" {
   locations = ["AWS_US_EAST_1"]
 }
 ```
+
+## Import
+
+Synthetics monitors can be imported using the `id`, e.g.
+
+```bash
+$ terraform import newrelic_synthetics_monitor.main <id>
+```

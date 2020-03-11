@@ -43,3 +43,11 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the Synthetics monitor that the script is attached to.
+
+## Import
+
+Synthetics monitor scripts can be imported using the `id`, e.g.
+
+```bash
+$ terraform import newrelic_synthetics_monitor_script.main <id>
+```

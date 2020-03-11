@@ -41,3 +41,12 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the Synthetics alert condition.
+
+
+## Import
+
+Synthetics alert conditions can be imported using a composite ID of `<policy_id>:<condition_id>`, e.g.
+
+```
+$ terraform import newrelic_synthetics_alert_condition.main 12345:67890
+```

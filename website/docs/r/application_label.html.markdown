@@ -44,3 +44,12 @@ The following arguments are supported:
   * `links` - (Required) The resources to which label should be assigned to. At least one of the following attributes must be set.
     * `applications` - An array of application IDs.
     * `servers` - An array of server IDs.
+
+
+## Import
+
+Application labels can be imported using a concatenated `category` and `name`, e.g.
+
+```bash
+$ terraform import newrelic_application_label.my_label <CATEGORY>:<NAME>
+```

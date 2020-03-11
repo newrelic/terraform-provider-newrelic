@@ -121,3 +121,12 @@ The `critical` and `warning` threshold mapping supports the following arguments:
   * `duration` - (Required) Identifies the number of minutes the threshold must be passed or met for the alert to trigger. Threshold durations must be between 1 and 60 minutes (inclusive).
   * `value` - (Optional) Threshold value, computed against the `comparison` operator. Supported by `infra_metric` and `infra_process_running` alert condition types.
   * `time_function` - (Optional) Indicates if the condition needs to be sustained or to just break the threshold once; `all` or `any`. Supported by the `infra_metric` alert condition type.
+
+
+## Import
+
+Infrastructure alert conditions can be imported using a composite ID of `<policy_id>:<condition_id>`, e.g.
+
+```
+$ terraform import newrelic_infra_alert_condition.main 12345:67890
+```
