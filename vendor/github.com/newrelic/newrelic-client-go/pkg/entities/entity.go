@@ -8,32 +8,85 @@ import (
 type Entity struct {
 	AccountID  int              `json:"accountId,omitempty"`
 	Domain     EntityDomainType `json:"domain,omitempty"`
-	EntityType EntityType       `json:"entityType,omitempty"`
+	EntityType EntityType       `json:"entityType,omitempty"` // Full Type (ie APM_APPLICATION_ENTITY)
 	GUID       string           `json:"guid,omitempty"`
 	Name       string           `json:"name,omitempty"`
 	Permalink  string           `json:"permalink,omitempty"`
 	Reporting  bool             `json:"reporting,omitempty"`
-	Type       string           `json:"type,omitempty"`
+	Type       Type             `json:"type,omitempty"`
 
-	// Not always returned. Only returned from ApmApplicationEntityOutline
-	ApplicationID *int `json:"applicationId,omitempty"`
+	// ApmApplicationEntity, BrowserApplicationEntity
+	AlertSeverity *EntityAlertSeverityType `json:"alertSeverity,omitempty"`
+	ApplicationID *int                     `json:"applicationId,omitempty"`
+
+	// Stitch in other structs
+	ApmApplicationEntity
+	BrowserApplicationEntity
 }
 
-// EntityType represents a New Relic One entity type.
+// ApmApplicationEntity represents the unique fields returned on the ApmApplicationEntity interface
+type ApmApplicationEntity struct {
+	Language             *string                                          `json:"language,omitempty"`
+	RunningAgentVersions *ApmApplicationEntityOutlineRunningAgentVersions `json:"runningAgentVersions,omitempty"`
+	Settings             *ApmApplicationEntityOutlineSettings             `json:"settings,omitempty"`
+}
+
+type ApmApplicationEntityOutlineSettings struct {
+	ApdexTarget      *float64 `json:"apdexTarget,omitempty"`
+	ServerSideConfig *bool    `json:"serverSideConfig"`
+}
+
+type ApmApplicationEntityOutlineRunningAgentVersions struct {
+	MaxVersion *string `json:"maxVersion,omitempty"`
+	MinVersion *string `json:"minVersion,omitempty"`
+}
+
+// BrowserApplicationEntity represents the unique fields returned on the BrowserApplicationEntity interface
+type BrowserApplicationEntity struct {
+	ServingApmApplicationID *int `json:"servingApmApplicationId,omitempty"`
+}
+
+// EntityType represents a New Relic One entity type (full)
 type EntityType string
 
+// Type represents a New Relic One entity type (short)
+type Type string
+
 var (
-	// EntityTypes specifies the possible types for a New Relic One entity.
-	EntityTypes = struct {
-		Application EntityType
-		Dashboard   EntityType
-		Host        EntityType
-		Monitor     EntityType
+	// Types specifies the possible types for a New Relic One entity.
+	Types = struct {
+		Application Type
+		Dashboard   Type
+		Host        Type
+		Monitor     Type
+		Workload    Type
 	}{
 		Application: "APPLICATION",
 		Dashboard:   "DASHBOARD",
 		Host:        "HOST",
 		Monitor:     "MONITOR",
+		Workload:    "WORKLOAD",
+	}
+)
+
+var (
+	// EntityTypes specifies the possible types for a New Relic One entity.
+	EntityTypes = struct {
+		Application EntityType
+		Browser     EntityType
+		Dashboard   EntityType
+		Host        EntityType
+		Mobile      EntityType
+		Monitor     EntityType
+		Workload    EntityType
+	}{
+		Application: "APM_APPLICATION_ENTITY",
+		Browser:     "BROWSER_APPLICATION_ENTITY",
+		Dashboard:   "DASHBOARD_ENTITY",
+		Host:        "INFRASTRUCTURE_HOST_ENTITY",
+		Mobile:      "MOBILE_APPLICATION_ENTITY",
+		Monitor:     "SYNTHETIC_MONITOR_ENTITY",
+		Workload:    "WORKLOAD_ENTITY",
 	}
 )
 
@@ -47,13 +100,17 @@ var (
 		Browser        EntityDomainType
 		Infrastructure EntityDomainType
 		Mobile         EntityDomainType
+		Nr1            EntityDomainType
 		Synthetics     EntityDomainType
+		Visualization  EntityDomainType
 	}{
 		APM:            "APM",
 		Browser:        "BROWSER",
 		Infrastructure: "INFRA",
 		Mobile:         "MOBILE",
+		Nr1:            "NR1",
 		Synthetics:     "SYNTH",
+		Visualization:  "VIZ",
 	}
 )
 
@@ -68,7 +125,7 @@ var (
 		NotConfigured EntityAlertSeverityType
 		Warning       EntityAlertSeverityType
 	}{
-		Critical:      "APM",
+		Critical:      "CRITICAL",
 		NotAlerting:   "NOT_ALERTING",
 		NotConfigured: "NOT_CONFIGURED",
 		Warning:       "WARNING",
@@ -147,10 +204,9 @@ func (e *Entities) GetEntity(guid string) (*Entity, error) {
 }
 
 const (
-	getEntitiesQuery = `
-    query($guids: [String!]!) {
-			actor {
-				entities(guids: $guids)  {
+	// graphqlEntityStructFields is the set of fields that we want returned on entity queries,
+	// and should map back directly to the Entity struct
+	graphqlEntityStructFields = `
 					accountId
 					domain
 					entityType
@@ -159,50 +215,75 @@ const (
 					permalink
 					reporting
 					type
-				}
-			}
-    }
-	`
-	getEntityQuery = `
-    query($guid: String!) {
-			actor {
-				entity(guid: $guid)  {
-					accountId
-					domain
-					entityType
-					guid
-					name
-					permalink
-					reporting
-					type
-				}
-			}
-    }
-	`
+`
+
+	graphqlApmApplicationEntityFields = `
+					... on ApmApplicationEntity {
+						applicationId
+						alertSeverity
+						language
+						runningAgentVersions {
+							maxVersion
+							minVersion
+						}
+						settings {
+							apdexTarget
+							serverSideConfig
+						}
+					}`
+
+	graphqlApmApplicationEntityOutlineFields = `
+					... on ApmApplicationEntityOutline {
+						applicationId
+						alertSeverity
+						language
+						runningAgentVersions {
+							maxVersion
+							minVersion
+						}
+						settings {
+							apdexTarget
+							serverSideConfig
+						}
+					}`
+
+	graphqlBrowserApplicationEntityFields = `
+		... on BrowserApplicationEntity {
+ 			alertSeverity
+			applicationId
+			servingApmApplicationId
+	}`
+
+	graphqlBrowserApplicationEntityOutlineFields = `
+		... on BrowserApplicationEntityOutline {
+ 			alertSeverity
+			applicationId
+			servingApmApplicationId
+	}`
+
+	getEntitiesQuery = `query($guids: [String!]!) { actor { entities(guids: $guids)  {` +
+		graphqlEntityStructFields +
+		graphqlApmApplicationEntityFields +
+		graphqlBrowserApplicationEntityFields +
+		` } } }`
+
+	getEntityQuery = `query($guid: String!) { actor { entity(guid: $guid)  {` +
+		graphqlEntityStructFields +
+		graphqlApmApplicationEntityFields +
+		graphqlBrowserApplicationEntityFields +
+		` } } }`
+
 	searchEntitiesQuery = `
 		query($queryBuilder: EntitySearchQueryBuilder, $cursor: String) {
 			actor {
 				entitySearch(queryBuilder: $queryBuilder)  {
 					results(cursor: $cursor) {
 						nextCursor
-						entities {
-							accountId
-							domain
-							entityType
-							guid
-							name
-							permalink
-							reporting
-							type
-							... on ApmApplicationEntityOutline {
-									applicationId
-							}
-						}
-					}
-				}
-			}
-		}
-	`
+						entities {` +
+		graphqlEntityStructFields +
+		graphqlApmApplicationEntityOutlineFields +
+		graphqlBrowserApplicationEntityOutlineFields +
+		` } } } } }`
 )
 
 type searchEntitiesResponse struct {
