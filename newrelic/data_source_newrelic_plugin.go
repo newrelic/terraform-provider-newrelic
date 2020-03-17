@@ -15,12 +15,14 @@ func dataSourceNewRelicPlugin() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"guid": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The GUID of the plugin in New Relic.",
 			},
 			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the installed plugin instance.",
 			},
 		},
 	}

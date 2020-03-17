@@ -15,8 +15,9 @@ func dataSourceNewRelicKeyTransaction() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name of the key transaction in New Relic.",
 			},
 		},
 	}

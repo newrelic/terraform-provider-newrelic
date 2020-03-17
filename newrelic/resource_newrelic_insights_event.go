@@ -35,7 +35,7 @@ func eventSchema() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The event's name",
+				Description: "The event's name. Can be a combination of alphanumeric characters, underscores, and colons.",
 				ValidateFunc: validation.StringMatch(
 					regexp.MustCompile(`^[a-zA-Z0-9_: ]+$`),
 					"only alphanumeric characters, underscores, and colons allowed for event type",
@@ -44,17 +44,18 @@ func eventSchema() *schema.Resource {
 			},
 			"timestamp": {
 				Type:        schema.TypeInt,
-				Description: "Unix epoch timestamp in either seconds or milliseconds",
+				Description: "Must be a Unix epoch timestamp. You can define timestamps either in seconds or in milliseconds.",
 				Optional:    true,
 				ForceNew:    true,
 			},
 			"attribute": {
-				Type:     schema.TypeSet,
-				Required: true,
-				MinItems: 1,
-				MaxItems: 255,
-				Elem:     eventValueSchema(),
-				ForceNew: true,
+				Type:        schema.TypeSet,
+				Required:    true,
+				MinItems:    1,
+				MaxItems:    255,
+				Elem:        eventValueSchema(),
+				ForceNew:    true,
+				Description: "An attribute to include in your event payload. Multiple attribute blocks can be defined for an event.",
 			},
 		},
 	}
@@ -65,20 +66,20 @@ func eventValueSchema() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"key": {
 				Type:         schema.TypeString,
-				Description:  "The name for the attribute",
+				Description:  "The name of the attribute.",
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 255),
 				ForceNew:     true,
 			},
 			"value": {
 				Type:        schema.TypeString,
-				Description: "The value for the attribute",
+				Description: "The value of the attribute.",
 				Required:    true,
 				ForceNew:    true,
 			},
 			"type": {
 				Type:         schema.TypeString,
-				Description:  "Type for attribute value. Accepted values are string (default), int, or float",
+				Description:  "Specify the type for the attribute value. This is useful when passing integer or float values to Insights. Allowed values are string, int, or float. Defaults to string.",
 				ValidateFunc: validation.StringInSlice([]string{"", "int", "float", "string"}, true),
 				Optional:     true,
 				ForceNew:     true,

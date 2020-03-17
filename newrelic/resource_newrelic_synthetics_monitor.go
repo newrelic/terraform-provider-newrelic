@@ -21,9 +21,10 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The monitor type. Valid values are SIMPLE, BROWSER, SCRIPT_BROWSER, and SCRIPT_API.",
 				ValidateFunc: validation.StringInSlice([]string{
 					"SIMPLE",
 					"BROWSER",
@@ -32,28 +33,33 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				}, false),
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The title of this monitor.",
 			},
 			"frequency": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: intInSlice([]int{1, 5, 10, 15, 30, 60, 360, 720, 1440}),
+				Description:  "The interval (in minutes) at which this monitor should run. Valid values are 1, 5, 10, 15, 30, 60, 360, 720, or 1440.",
 			},
 			"uri": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The URI for the monitor to hit.",
 				// TODO: ValidateFunc (required if SIMPLE or BROWSER)
 			},
 			"locations": {
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				MinItems: 1,
-				Required: true,
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				MinItems:    1,
+				Required:    true,
+				Description: "The locations in which this monitor should be run.",
 			},
 			"status": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The monitor status (i.e. ENABLED, MUTED, DISABLED).",
 				ValidateFunc: validation.StringInSlice([]string{
 					"ENABLED",
 					"MUTED",
@@ -61,26 +67,31 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				}, false),
 			},
 			"sla_threshold": {
-				Type:     schema.TypeFloat,
-				Optional: true,
-				Default:  7,
+				Type:        schema.TypeFloat,
+				Optional:    true,
+				Default:     7,
+				Description: "The base threshold for the SLA report.",
 			},
 			// TODO: ValidationFunc (options only valid if SIMPLE or BROWSER)
 			"validation_string": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The string to validate against in the response.",
 			},
 			"verify_ssl": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Verify SSL.",
 			},
 			"bypass_head_request": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Bypass HEAD request.",
 			},
 			"treat_redirect_as_failure": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Fail the monitor check if redirected.",
 			},
 		},
 	}

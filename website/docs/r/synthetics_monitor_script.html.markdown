@@ -36,10 +36,18 @@ resource "newrelic_synthetics_monitor_script" "foo_script" {
 The following arguments are supported:
 
   * `monitor_id` - (Required) The ID of the monitor to attach the script to.
-  * `text` - (Required) plaintext of the monitor script.
+  * `text` - (Required) The plaintext representing the monitor script.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the Synthetics monitor that the script is attached to.
+
+## Import
+
+Synthetics monitor scripts can be imported using the `id`, e.g.
+
+```bash
+$ terraform import newrelic_synthetics_monitor_script.main <id>
+```

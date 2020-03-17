@@ -19,32 +19,37 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"key": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The secure credential's key name. Regardless of the case used in the configuration, the provider will provide an upcased key to the underlying API.",
 				// Case fold this attribute when diffing
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new)
 				},
 			},
 			"value": {
-				Type:      schema.TypeString,
-				Required:  true,
-				Sensitive: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
+				Description: "The secure credential's value.",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The secure credential's description.",
 			},
 			"created_at": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The time the secure credential was created.",
 			},
 			"last_updated": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The time the secure credential was last updated.",
 			},
 		},
 	}

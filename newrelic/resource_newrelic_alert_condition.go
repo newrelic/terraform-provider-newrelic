@@ -1,7 +1,9 @@
 package newrelic
 
 import (
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -82,52 +84,62 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of the policy where this condition should be used.",
 			},
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 64),
+				Description:  "The title of the condition. Must be between 1 and 64 characters, inclusive.",
 			},
 			"enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "The title of the condition. Must be between 1 and 64 characters, inclusive.",
 			},
 			"type": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringInSlice(validAlertConditionTypes, false),
+				Description:  fmt.Sprintf("The type of condition. One of: (%s).", strings.Join(validAlertConditionTypes, ", ")),
 			},
 			"entities": {
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
-				Required: true,
-				MinItems: 1,
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+				Required:    true,
+				MinItems:    1,
+				Description: "The instance IDs associated with this condition.",
 			},
 			"metric": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The metric field accepts parameters based on the type set.",
 				//TODO: ValidateFunc from map
 			},
 			"runbook_url": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Runbook URL to display in notifications.",
 			},
 			"condition_scope": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "One of (application, instance). Choose application for most scenarios. If you are using the JVM plugin in New Relic, the instance setting allows your condition to trigger for specific app instances.",
 			},
 			"violation_close_timer": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: intInSlice([]int{1, 2, 4, 8, 12, 24}),
+				Description:  "Automatically close instance-based violations, including JVM health metric violations, after the number of hours specified. Must be: 1, 2, 4, 8, 12 or 24.",
 			},
 			"gc_metric": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "A valid Garbage Collection metric e.g. GC/G1 Young Generation. This is required if you are using apm_jvm_metric with gc_cpu_time condition type.",
 			},
 			"term": {
 				Type: schema.TypeSet,
@@ -137,28 +149,33 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 							Type:         schema.TypeInt,
 							Required:     true,
 							ValidateFunc: validation.IntBetween(5, 120),
+							Description:  "In minutes, must be in the range of 5 to 120, inclusive.",
 						},
 						"operator": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Default:      "equal",
 							ValidateFunc: validation.StringInSlice([]string{"above", "below", "equal"}, false),
+							Description:  "One of (above, below, equal). Defaults to equal.",
 						},
 						"priority": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Default:      "critical",
 							ValidateFunc: validation.StringInSlice([]string{"critical", "warning"}, false),
+							Description:  "One of (critical, warning). Defaults to critical.",
 						},
 						"threshold": {
 							Type:         schema.TypeFloat,
 							Required:     true,
 							ValidateFunc: float64Gte(0.0),
+							Description:  "Must be 0 or greater.",
 						},
 						"time_function": {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
+							Description:  "One of (all, any).",
 						},
 					},
 				},
@@ -166,13 +183,15 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				MinItems: 1,
 			},
 			"user_defined_metric": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "A custom metric to be evaluated.",
 			},
 			"user_defined_value_function": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"average", "min", "max", "total", "sample_size"}, false),
+				Description:  "One of: (average, min, max, total, sample_size).",
 			},
 		},
 	}

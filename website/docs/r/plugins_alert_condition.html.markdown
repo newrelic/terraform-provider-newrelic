@@ -17,6 +17,11 @@ data "newrelic_plugin" "foo" {
   guid = "com.example.my-plugin"
 }
 
+data "newrelic_plugin_component" "foo" {
+	plugin_id = data.newrelic_plugin.foo.id
+	name = "MyPlugin"
+}
+
 resource "newrelic_alert_policy" "foo" {
   name = "foo"
 }
@@ -24,6 +29,7 @@ resource "newrelic_alert_policy" "foo" {
 resource "newrelic_plugins_alert_condition" "foo" {
   policy_id          = newrelic_alert_policy.foo.id
   name               = "foo"
+  entities           = [data.newrelic_plugin_component.foo.id]
   metric             = "Component/Summary/Consumers[consumers]"
   plugin_id          = data.newrelic_plugin.foo.id
   plugin_guid        = data.newrelic_plugin.foo.guid
@@ -46,10 +52,14 @@ The following arguments are supported:
 
   * `policy_id` - (Required) The ID of the policy where this condition should be used.
   * `name` - (Required) The title of the condition. Must be between 1 and 64 characters, inclusive.
-  * `metric` - (Required) The metric field accepts parameters based on the `type` set.
+  * `metric` - (Required) The plugin metric to evaluate.
+  * `entities` - (Required) The plugin component IDs to target.
   * `plugin_id` - (Required) The ID of the installed plugin instance which produces the metric.
   * `plugin_guid` - (Required) The GUID of the plugin which produces the metric.
+  * `metric_description` - (Required) The metric description.
+  * `value_function` - (Required) The value function to apply to the metric data.  One of `min`, `max`, `average`, `sample_size`, `total`, or `percent`.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
+  * `enabled` - (Optional) Whether or not this condition is enabled.
   * `term` - (Required) A list of terms for this condition. See [Terms](#terms) below for details.
 
 ## Terms
