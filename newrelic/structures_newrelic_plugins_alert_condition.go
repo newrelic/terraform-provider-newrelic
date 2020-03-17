@@ -50,8 +50,8 @@ func expandPluginsConditionTerms(terms []interface{}) []alerts.ConditionTerm {
 
 		perms[i] = alerts.ConditionTerm{
 			Duration:     term["duration"].(int),
-			Operator:     term["operator"].(string),
-			Priority:     term["priority"].(string),
+			Operator:     alerts.OperatorType(term["operator"].(string)),
+			Priority:     alerts.PriorityType(term["priority"].(string)),
 			Threshold:    term["threshold"].(float64),
 			TimeFunction: alerts.TimeFunctionType(term["time_function"].(string)),
 		}

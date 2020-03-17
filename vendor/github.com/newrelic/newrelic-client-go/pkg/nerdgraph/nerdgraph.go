@@ -1,3 +1,4 @@
+// Package nerdgraph provides a programmatic API for interacting with NerdGraph, New Relic One's GraphQL API.
 package nerdgraph
 
 import (
@@ -8,7 +9,7 @@ import (
 
 // NerdGraph is used to communicate with the New Relic's GraphQL API, NerdGraph.
 type NerdGraph struct {
-	client *http.GraphQLClient
+	client http.Client
 	logger logging.Logger
 }
 
@@ -23,7 +24,7 @@ type QueryResponse struct {
 // New returns a new GraphQL client for interacting with New Relic's GraphQL API, NerdGraph.
 func New(config config.Config) NerdGraph {
 	return NerdGraph{
-		client: http.NewGraphQLClient(config),
+		client: http.NewClient(config),
 		logger: config.GetLogger(),
 	}
 }
@@ -38,4 +39,10 @@ func (n *NerdGraph) Query(query string, variables map[string]interface{}) (inter
 	}
 
 	return respBody, nil
+}
+
+// AccountReference represents the NerdGraph schema for a New Relic account.
+type AccountReference struct {
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }

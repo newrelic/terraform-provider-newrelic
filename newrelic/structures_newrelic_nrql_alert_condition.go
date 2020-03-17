@@ -12,7 +12,7 @@ func expandNrqlAlertConditionStruct(d *schema.ResourceData) *alerts.NrqlConditio
 		Name:                d.Get("name").(string),
 		Type:                d.Get("type").(string),
 		Enabled:             d.Get("enabled").(bool),
-		ValueFunction:       d.Get("value_function").(string),
+		ValueFunction:       alerts.ValueFunctionType(d.Get("value_function").(string)),
 		ViolationCloseTimer: d.Get("violation_time_limit_seconds").(int),
 	}
 
@@ -46,21 +46,21 @@ func expandNrqlAlertConditionStruct(d *schema.ResourceData) *alerts.NrqlConditio
 }
 
 func expandNrqlConditionTerms(terms []interface{}) []alerts.ConditionTerm {
-	trms := make([]alerts.ConditionTerm, len(terms))
+	expanded := make([]alerts.ConditionTerm, len(terms))
 
 	for i, t := range terms {
 		term := t.(map[string]interface{})
 
-		trms[i] = alerts.ConditionTerm{
+		expanded[i] = alerts.ConditionTerm{
 			Duration:     term["duration"].(int),
-			Operator:     term["operator"].(string),
-			Priority:     term["priority"].(string),
+			Operator:     alerts.OperatorType(term["operator"].(string)),
+			Priority:     alerts.PriorityType(term["priority"].(string)),
 			Threshold:    term["threshold"].(float64),
 			TimeFunction: alerts.TimeFunctionType(term["time_function"].(string)),
 		}
 	}
 
-	return trms
+	return expanded
 }
 
 func flattenNrqlQuery(nrql alerts.NrqlQuery) []interface{} {
