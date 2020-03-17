@@ -21,35 +21,40 @@ func resourceNewRelicApplicationLabel() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"category": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "A string representing the label key/category.",
 				// Case fold this attribute when diffing
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new)
 				},
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "A string that will be assigned to the label.",
 				// Case fold this attribute when diffing
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new)
 				},
 			},
 			"links": {
-				Type:     schema.TypeList,
-				Required: true,
+				Type:        schema.TypeList,
+				Required:    true,
+				Description: "The resources to which label should be assigned to. At least one of the inner attributes must be set.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"applications": {
-							Type:     schema.TypeSet,
-							Elem:     &schema.Schema{Type: schema.TypeInt},
-							Optional: true,
+							Type:        schema.TypeSet,
+							Elem:        &schema.Schema{Type: schema.TypeInt},
+							Optional:    true,
+							Description: "An array of application IDs.",
 						},
 						"servers": {
-							Type:     schema.TypeSet,
-							Elem:     &schema.Schema{Type: schema.TypeInt},
-							Optional: true,
+							Type:        schema.TypeSet,
+							Elem:        &schema.Schema{Type: schema.TypeInt},
+							Optional:    true,
+							Description: "An array of server IDs.",
 						},
 					},
 				},

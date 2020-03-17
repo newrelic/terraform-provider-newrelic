@@ -15,20 +15,24 @@ func dataSourceNewRelicPluginComponent() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"plugin_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "The ID of the plugin instance this component belongs to.",
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name of the plugin component.",
 			},
 			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the plugin component.",
 			},
 			"health_status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The health status of the plugin component.",
 			},
 		},
 	}

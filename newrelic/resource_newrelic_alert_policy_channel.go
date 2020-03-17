@@ -20,9 +20,10 @@ func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of the policy.",
 			},
 			"channel_id": {
 				Type:          schema.TypeInt,
@@ -30,6 +31,7 @@ func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 				ForceNew:      true,
 				ConflictsWith: []string{"channel_ids"},
 				Deprecated:    "use `channel_ids` argument instead",
+				Description:   "Deprecated. The ID of the channel. Please use the channel_ids argument instead.",
 			},
 			"channel_ids": {
 				Type:          schema.TypeList,
@@ -37,6 +39,7 @@ func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 				ForceNew:      true,
 				MinItems:      1,
 				ConflictsWith: []string{"channel_id"},
+				Description:   "Array of channel IDs to apply to the specified policy. We recommended sorting channel IDs in ascending order to avoid drift your Terraform state.",
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},

@@ -6,7 +6,7 @@ description: |-
   Create and manage an Application label in New Relic.
 ---
 
-# newrelic\_application\_label
+# Resource: newrelic\_application\_label
 
 #### DEPRECATED! Use at your own risk. This feature may be removed in the next major release.
 Use this resource to create, update, and delete an Application label in New Relic.
@@ -44,3 +44,12 @@ The following arguments are supported:
   * `links` - (Required) The resources to which label should be assigned to. At least one of the following attributes must be set.
     * `applications` - An array of application IDs.
     * `servers` - An array of server IDs.
+
+
+## Import
+
+Application labels can be imported using a concatenated `category` and `name`, e.g.
+
+```bash
+$ terraform import newrelic_application_label.my_label <CATEGORY>:<NAME>
+```

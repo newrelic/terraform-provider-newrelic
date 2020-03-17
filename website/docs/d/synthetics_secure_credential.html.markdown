@@ -32,4 +32,4 @@ In addition to all arguments above, the following attributes are exported:
 
   * `description` - The secure credential's description.
   * `created_at` - The time the secure credential was created.
-  * `updated_at` - The time the secure credential was last updated.
+  * `last_updated` - The time the secure credential was last updated.
