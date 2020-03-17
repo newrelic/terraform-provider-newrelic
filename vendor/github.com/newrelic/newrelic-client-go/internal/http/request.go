@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/go-querystring/query"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
+
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
@@ -19,6 +20,56 @@ type Request struct {
 	config       config.Config
 	authStrategy RequestAuthorizer
 	request      *retryablehttp.Request
+}
+
+// NewRequest creates a new Request struct.
+func NewRequest(c Client, method string, url string, params interface{}, reqBody interface{}, value interface{}) (*Request, error) {
+	// Make a copy of the client's config
+	cfg := c.config
+
+	req := &Request{
+		method:       method,
+		url:          url,
+		params:       params,
+		reqBody:      reqBody,
+		value:        value,
+		authStrategy: c.authStrategy,
+	}
+
+	req.config = cfg
+
+	u, err := req.makeURL()
+	if err != nil {
+		return nil, err
+	}
+
+	var r *retryablehttp.Request
+	if reqBody != nil {
+		if _, ok := reqBody.([]byte); !ok {
+			reqBody, err = makeRequestBodyReader(reqBody)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		r, err = retryablehttp.NewRequest(req.method, u.String(), reqBody)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		r, err = retryablehttp.NewRequest(req.method, u.String(), nil)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req.request = r
+
+	req.SetHeader(defaultNewRelicRequestingServiceHeader, cfg.ServiceName)
+	req.SetHeader("Content-Type", "application/json")
+	req.SetHeader("User-Agent", cfg.UserAgent)
+
+	return req, nil
 }
 
 // SetHeader sets a header on the underlying request.

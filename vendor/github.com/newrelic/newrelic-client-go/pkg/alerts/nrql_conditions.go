@@ -8,17 +8,17 @@ import (
 
 // NrqlCondition represents a New Relic NRQL Alert condition.
 type NrqlCondition struct {
-	Terms               []ConditionTerm `json:"terms,omitempty"`
-	Nrql                NrqlQuery       `json:"nrql,omitempty"`
-	Type                string          `json:"type,omitempty"`
-	Name                string          `json:"name,omitempty"`
-	RunbookURL          string          `json:"runbook_url,omitempty"`
-	ValueFunction       string          `json:"value_function,omitempty"`
-	ID                  int             `json:"id,omitempty"`
-	ViolationCloseTimer int             `json:"violation_time_limit_seconds,omitempty"`
-	ExpectedGroups      int             `json:"expected_groups,omitempty"`
-	IgnoreOverlap       bool            `json:"ignore_overlap,omitempty"`
-	Enabled             bool            `json:"enabled"`
+	Terms               []ConditionTerm   `json:"terms,omitempty"`
+	Nrql                NrqlQuery         `json:"nrql,omitempty"`
+	Type                string            `json:"type,omitempty"`
+	Name                string            `json:"name,omitempty"`
+	RunbookURL          string            `json:"runbook_url,omitempty"`
+	ValueFunction       ValueFunctionType `json:"value_function,omitempty"`
+	ID                  int               `json:"id,omitempty"`
+	ViolationCloseTimer int               `json:"violation_time_limit_seconds,omitempty"`
+	ExpectedGroups      int               `json:"expected_groups,omitempty"`
+	IgnoreOverlap       bool              `json:"ignore_overlap,omitempty"`
+	Enabled             bool              `json:"enabled"`
 }
 
 // NrqlQuery represents a NRQL query to use with a NRQL alert condition
@@ -28,7 +28,7 @@ type NrqlQuery struct {
 }
 
 // ListNrqlConditions returns NRQL alert conditions for a specified policy.
-func (alerts *Alerts) ListNrqlConditions(policyID int) ([]*NrqlCondition, error) {
+func (a *Alerts) ListNrqlConditions(policyID int) ([]*NrqlCondition, error) {
 	conditions := []*NrqlCondition{}
 	queryParams := listNrqlConditionsParams{
 		PolicyID: policyID,
@@ -38,7 +38,7 @@ func (alerts *Alerts) ListNrqlConditions(policyID int) ([]*NrqlCondition, error)
 
 	for nextURL != "" {
 		response := nrqlConditionsResponse{}
-		resp, err := alerts.client.Get(nextURL, &queryParams, &response)
+		resp, err := a.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
@@ -46,7 +46,7 @@ func (alerts *Alerts) ListNrqlConditions(policyID int) ([]*NrqlCondition, error)
 
 		conditions = append(conditions, response.NrqlConditions...)
 
-		paging := alerts.pager.Parse(resp)
+		paging := a.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
@@ -55,8 +55,8 @@ func (alerts *Alerts) ListNrqlConditions(policyID int) ([]*NrqlCondition, error)
 
 // GetNrqlCondition gets information about a NRQL alert condition
 // for a specified policy ID and condition ID.
-func (alerts *Alerts) GetNrqlCondition(policyID int, id int) (*NrqlCondition, error) {
-	conditions, err := alerts.ListNrqlConditions(policyID)
+func (a *Alerts) GetNrqlCondition(policyID int, id int) (*NrqlCondition, error) {
+	conditions, err := a.ListNrqlConditions(policyID)
 	if err != nil {
 		return nil, err
 	}
@@ -71,14 +71,14 @@ func (alerts *Alerts) GetNrqlCondition(policyID int, id int) (*NrqlCondition, er
 }
 
 // CreateNrqlCondition creates a NRQL alert condition.
-func (alerts *Alerts) CreateNrqlCondition(policyID int, condition NrqlCondition) (*NrqlCondition, error) {
+func (a *Alerts) CreateNrqlCondition(policyID int, condition NrqlCondition) (*NrqlCondition, error) {
 	reqBody := nrqlConditionRequestBody{
 		NrqlCondition: condition,
 	}
 	resp := nrqlConditionResponse{}
 
 	u := fmt.Sprintf("/alerts_nrql_conditions/policies/%d.json", policyID)
-	_, err := alerts.client.Post(u, nil, &reqBody, &resp)
+	_, err := a.client.Post(u, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -88,14 +88,14 @@ func (alerts *Alerts) CreateNrqlCondition(policyID int, condition NrqlCondition)
 }
 
 // UpdateNrqlCondition updates a NRQL alert condition.
-func (alerts *Alerts) UpdateNrqlCondition(condition NrqlCondition) (*NrqlCondition, error) {
+func (a *Alerts) UpdateNrqlCondition(condition NrqlCondition) (*NrqlCondition, error) {
 	reqBody := nrqlConditionRequestBody{
 		NrqlCondition: condition,
 	}
 	resp := nrqlConditionResponse{}
 
 	u := fmt.Sprintf("/alerts_nrql_conditions/%d.json", condition.ID)
-	_, err := alerts.client.Put(u, nil, &reqBody, &resp)
+	_, err := a.client.Put(u, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -105,11 +105,11 @@ func (alerts *Alerts) UpdateNrqlCondition(condition NrqlCondition) (*NrqlConditi
 }
 
 // DeleteNrqlCondition deletes a NRQL alert condition.
-func (alerts *Alerts) DeleteNrqlCondition(id int) (*NrqlCondition, error) {
+func (a *Alerts) DeleteNrqlCondition(id int) (*NrqlCondition, error) {
 	resp := nrqlConditionResponse{}
 	u := fmt.Sprintf("/alerts_nrql_conditions/%d.json", id)
 
-	_, err := alerts.client.Delete(u, nil, &resp)
+	_, err := a.client.Delete(u, nil, &resp)
 
 	if err != nil {
 		return nil, err

@@ -1,8 +1,15 @@
 package apm
 
-import (
-	"fmt"
-)
+// ApplicationsInterface interface should be refactored to be a global interface for fetching NR type things
+type ApplicationsInterface interface {
+	find(accountID int, name string) (*Application, error)
+	list(accountID int, params *ListApplicationsParams) ([]*Application, error)
+
+	create(accountID int, name string) (*Application, error)
+	get(accountID int, applicationID int) (*Application, error)
+	update(accountID int, applicationID int, params UpdateApplicationParams) (*Application, error)
+	remove(accountID int, applicationID int) (*Application, error) // delete is a reserved word...
+}
 
 // Application represents information about a New Relic application.
 type Application struct {
@@ -71,86 +78,43 @@ type UpdateApplicationParams struct {
 }
 
 // ListApplications is used to retrieve New Relic applications.
-func (apm *APM) ListApplications(params *ListApplicationsParams) ([]*Application, error) {
-	apps := []*Application{}
-	nextURL := "/applications.json"
+func (a *APM) ListApplications(params *ListApplicationsParams) ([]*Application, error) {
+	accountID := 0
 
-	for nextURL != "" {
-		response := applicationsResponse{}
-		resp, err := apm.client.Get(nextURL, &params, &response)
-
-		if err != nil {
-			return nil, err
-		}
-
-		apps = append(apps, response.Applications...)
-
-		paging := apm.pager.Parse(resp)
-		nextURL = paging.Next
+	method := applicationsREST{
+		parent: a,
 	}
 
-	return apps, nil
+	return method.list(accountID, params)
 }
 
 // GetApplication is used to retrieve a single New Relic application.
-func (apm *APM) GetApplication(applicationID int) (*Application, error) {
-	response := applicationResponse{}
-	url := fmt.Sprintf("/applications/%d.json", applicationID)
-
-	_, err := apm.client.Get(url, nil, &response)
-
-	if err != nil {
-		return nil, err
+func (a *APM) GetApplication(applicationID int) (*Application, error) {
+	accountID := 0
+	method := applicationsREST{
+		parent: a,
 	}
 
-	return &response.Application, nil
+	return method.get(accountID, applicationID)
 }
 
 // UpdateApplication is used to update a New Relic application's name and/or settings.
-func (apm *APM) UpdateApplication(applicationID int, params UpdateApplicationParams) (*Application, error) {
-	response := applicationResponse{}
-	url := fmt.Sprintf("/applications/%d.json", applicationID)
-	reqBody := updateApplicationRequest{
-		Fields: updateApplicationFields(params),
+func (a *APM) UpdateApplication(applicationID int, params UpdateApplicationParams) (*Application, error) {
+	accountID := 0
+	method := applicationsREST{
+		parent: a,
 	}
 
-	_, err := apm.client.Put(url, nil, &reqBody, &response)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &response.Application, nil
+	return method.update(accountID, applicationID, params)
 }
 
 // DeleteApplication is used to delete a New Relic application.
 // This process will only succeed if the application is no longer reporting data.
-func (apm *APM) DeleteApplication(applicationID int) (*Application, error) {
-	response := applicationResponse{}
-	url := fmt.Sprintf("/applications/%d.json", applicationID)
-
-	_, err := apm.client.Delete(url, nil, &response)
-
-	if err != nil {
-		return nil, err
+func (a *APM) DeleteApplication(applicationID int) (*Application, error) {
+	accountID := 0
+	method := applicationsREST{
+		parent: a,
 	}
 
-	return &response.Application, nil
-}
-
-type applicationsResponse struct {
-	Applications []*Application `json:"applications,omitempty"`
-}
-
-type applicationResponse struct {
-	Application Application `json:"application,omitempty"`
-}
-
-type updateApplicationRequest struct {
-	Fields updateApplicationFields `json:"application"`
-}
-
-type updateApplicationFields struct {
-	Name     string              `json:"name,omitempty"`
-	Settings ApplicationSettings `json:"settings,omitempty"`
+	return method.remove(accountID, applicationID)
 }

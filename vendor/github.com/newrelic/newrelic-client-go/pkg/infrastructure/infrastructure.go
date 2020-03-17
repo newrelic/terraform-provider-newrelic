@@ -1,3 +1,4 @@
+// Package infrastructure provides metadata about the underlying Infrastructure API.
 package infrastructure
 
 import (

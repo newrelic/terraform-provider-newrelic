@@ -1,3 +1,4 @@
+// Package config provides cross-cutting configuration support for the newrelic-client-go project.
 package config
 
 import (
@@ -20,24 +21,57 @@ type Config struct {
 	AdminAPIKey string
 
 	// Region of the New Relic platform to use
-	// Valid values are: US, EU
-	Region string
+	Region RegionType
 
-	// HTTP
-	Timeout               *time.Duration
-	HTTPTransport         http.RoundTripper
-	UserAgent             string
-	BaseURL               string
-	SyntheticsBaseURL     string
+	// Timeout is the client timeout for HTTP requests.
+	Timeout *time.Duration
+
+	// HTTPTransport allows customization of the client's underlying transport.
+	HTTPTransport http.RoundTripper
+
+	// UserAgent updates the default user agent string used by the client.
+	UserAgent string
+
+	// BaseURL updates the default base URL used by the client during requests to
+	// the V2 REST API.
+	BaseURL string
+
+	// SyntheticsBaseURL updates the default base URL used by the client during
+	// requests to the Synthetics API.
+	SyntheticsBaseURL string
+
+	// InfrastructureBaseURL updates the default base URL used by the client during
+	// requests to the Infrastructure API.
 	InfrastructureBaseURL string
-	NerdGraphBaseURL      string
-	ServiceName           string
+
+	// NerdGraph updates the default base URL used by the client during requests
+	// to the NerdGraph API.
+	NerdGraphBaseURL string
+
+	// ServiceName is for New Relic internal use only.
+	ServiceName string
 
 	// LogLevel can be one of the following values:
 	// "panic", "fatal", "error", "warn", "info", "debug", "trace"
 	LogLevel string
-	LogJSON  bool
-	Logger   logging.Logger
+
+	// LogJSON toggles formatting of log entries in JSON format.
+	LogJSON bool
+
+	// Logger allows customization of the client's underlying logger.
+	Logger logging.Logger
+}
+
+// RegionType represents a New Relic region.
+type RegionType string
+
+// RegionTypes contains the possible values for New Relic region.
+var RegionTypes = struct {
+	US RegionType
+	EU RegionType
+}{
+	US: "US",
+	EU: "EU",
 }
 
 // GetLogger returns a logger instance based on the config values.

@@ -16,16 +16,16 @@ type SyntheticsCondition struct {
 }
 
 // ListSyntheticsConditions returns a list of Synthetics alert conditions for a given policy.
-func (alerts *Alerts) ListSyntheticsConditions(policyID int) ([]*SyntheticsCondition, error) {
+func (a *Alerts) ListSyntheticsConditions(policyID int) ([]*SyntheticsCondition, error) {
 	conditions := []*SyntheticsCondition{}
-	nextURL := fmt.Sprintf("/alerts_synthetics_conditions.json")
+	nextURL := "/alerts_synthetics_conditions.json"
 	queryParams := listSyntheticsConditionsParams{
 		PolicyID: policyID,
 	}
 
 	for nextURL != "" {
 		response := syntheticsConditionsResponse{}
-		resp, err := alerts.client.Get(nextURL, &queryParams, &response)
+		resp, err := a.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
@@ -33,7 +33,7 @@ func (alerts *Alerts) ListSyntheticsConditions(policyID int) ([]*SyntheticsCondi
 
 		conditions = append(conditions, response.Conditions...)
 
-		paging := alerts.pager.Parse(resp)
+		paging := a.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
@@ -41,8 +41,8 @@ func (alerts *Alerts) ListSyntheticsConditions(policyID int) ([]*SyntheticsCondi
 }
 
 // GetSyntheticsCondition retrieves a specific Synthetics alert condition.
-func (alerts *Alerts) GetSyntheticsCondition(policyID int, conditionID int) (*SyntheticsCondition, error) {
-	conditions, err := alerts.ListSyntheticsConditions(policyID)
+func (a *Alerts) GetSyntheticsCondition(policyID int, conditionID int) (*SyntheticsCondition, error) {
+	conditions, err := a.ListSyntheticsConditions(policyID)
 
 	if err != nil {
 		return nil, err
@@ -58,11 +58,11 @@ func (alerts *Alerts) GetSyntheticsCondition(policyID int, conditionID int) (*Sy
 }
 
 // CreateSyntheticsCondition creates a new Synthetics alert condition.
-func (alerts *Alerts) CreateSyntheticsCondition(policyID int, condition SyntheticsCondition) (*SyntheticsCondition, error) {
+func (a *Alerts) CreateSyntheticsCondition(policyID int, condition SyntheticsCondition) (*SyntheticsCondition, error) {
 	resp := syntheticsConditionResponse{}
 	reqBody := syntheticsConditionRequest{condition}
 	url := fmt.Sprintf("/alerts_synthetics_conditions/policies/%d.json", policyID)
-	_, err := alerts.client.Post(url, nil, &reqBody, &resp)
+	_, err := a.client.Post(url, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -72,11 +72,11 @@ func (alerts *Alerts) CreateSyntheticsCondition(policyID int, condition Syntheti
 }
 
 // UpdateSyntheticsCondition updates an existing Synthetics alert condition.
-func (alerts *Alerts) UpdateSyntheticsCondition(condition SyntheticsCondition) (*SyntheticsCondition, error) {
+func (a *Alerts) UpdateSyntheticsCondition(condition SyntheticsCondition) (*SyntheticsCondition, error) {
 	resp := syntheticsConditionResponse{}
 	reqBody := syntheticsConditionRequest{condition}
 	url := fmt.Sprintf("/alerts_synthetics_conditions/%d.json", condition.ID)
-	_, err := alerts.client.Put(url, nil, &reqBody, &resp)
+	_, err := a.client.Put(url, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -86,10 +86,10 @@ func (alerts *Alerts) UpdateSyntheticsCondition(condition SyntheticsCondition) (
 }
 
 // DeleteSyntheticsCondition deletes a Synthetics alert condition.
-func (alerts *Alerts) DeleteSyntheticsCondition(conditionID int) (*SyntheticsCondition, error) {
+func (a *Alerts) DeleteSyntheticsCondition(conditionID int) (*SyntheticsCondition, error) {
 	resp := syntheticsConditionResponse{}
 	url := fmt.Sprintf("/alerts_synthetics_conditions/%d.json", conditionID)
-	_, err := alerts.client.Delete(url, nil, &resp)
+	_, err := a.client.Delete(url, nil, &resp)
 
 	if err != nil {
 		return nil, err
