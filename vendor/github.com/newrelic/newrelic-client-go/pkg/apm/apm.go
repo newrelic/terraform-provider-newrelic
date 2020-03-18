@@ -1,3 +1,4 @@
+// Package apm provides a programmatic API for interacting with the New Relic APM product.
 package apm
 
 import (
@@ -8,7 +9,7 @@ import (
 
 // APM is used to communicate with the New Relic APM product.
 type APM struct {
-	client http.NewRelicClient
+	client http.Client
 	pager  http.Pager
 }
 

@@ -6,7 +6,7 @@ import "time"
 type Dashboard struct {
 	ID         int               `json:"id"`
 	Title      string            `json:"title,omitempty"`
-	Icon       string            `json:"icon,omitempty"`
+	Icon       DashboardIconType `json:"icon,omitempty"`
 	CreatedAt  time.Time         `json:"created_at,omitempty"`
 	UpdatedAt  time.Time         `json:"updated_at,omitempty"`
 	Visibility VisibilityType    `json:"visibility,omitempty"`
@@ -22,21 +22,23 @@ type Dashboard struct {
 // VisibilityType represents an option for the dashboard's visibility field.
 type VisibilityType string
 
-// EditableType represents an option for the dashboard's editable field.
-type EditableType string
-
 var (
-	// Visibility specifies the possible options for a dashboard's visibility.
-	Visibility = struct {
+	// VisibilityTypes specifies the possible options for a dashboard's visibility.
+	VisibilityTypes = struct {
 		Owner VisibilityType
 		All   VisibilityType
 	}{
 		Owner: "owner",
 		All:   "all",
 	}
+)
 
-	// Editable specifies the possible options for who can edit a dashboard.
-	Editable = struct {
+// EditableType represents an option for the dashboard's editable field.
+type EditableType string
+
+var (
+	// EditableTypes specifies the possible options for who can edit a dashboard.
+	EditableTypes = struct {
 		Owner    EditableType
 		All      EditableType
 		ReadOnly EditableType
@@ -47,6 +49,156 @@ var (
 	}
 )
 
+// DashboardIconType represents an option for the dashboard's icon field.
+type DashboardIconType string
+
+var (
+	// DashboardIconTypes specifies the possible options for dashboard icons.
+	DashboardIconTypes = struct {
+		Adjust       DashboardIconType
+		Archive      DashboardIconType
+		BarChart     DashboardIconType
+		Bell         DashboardIconType
+		Bolt         DashboardIconType
+		Bug          DashboardIconType
+		Bullhorn     DashboardIconType
+		Bullseye     DashboardIconType
+		Clock        DashboardIconType
+		Cloud        DashboardIconType
+		Cog          DashboardIconType
+		Comments     DashboardIconType
+		Crosshairs   DashboardIconType
+		Dashboard    DashboardIconType
+		Envelope     DashboardIconType
+		Fire         DashboardIconType
+		Flag         DashboardIconType
+		Flask        DashboardIconType
+		Globe        DashboardIconType
+		Heart        DashboardIconType
+		Leaf         DashboardIconType
+		Legal        DashboardIconType
+		LifeRing     DashboardIconType
+		LineChart    DashboardIconType
+		Magic        DashboardIconType
+		Mobile       DashboardIconType
+		Money        DashboardIconType
+		None         DashboardIconType
+		PaperPlane   DashboardIconType
+		PieChart     DashboardIconType
+		PuzzlePiece  DashboardIconType
+		Road         DashboardIconType
+		Rocket       DashboardIconType
+		ShoppingCart DashboardIconType
+		Sitemap      DashboardIconType
+		Sliders      DashboardIconType
+		Tablet       DashboardIconType
+		ThumbsDown   DashboardIconType
+		ThumbsUp     DashboardIconType
+		Trophy       DashboardIconType
+		USD          DashboardIconType
+		User         DashboardIconType
+		Users        DashboardIconType
+	}{
+		Adjust:       "adjust",
+		Archive:      "archive",
+		BarChart:     "bar-chart",
+		Bell:         "bell",
+		Bolt:         "bolt",
+		Bug:          "bug",
+		Bullhorn:     "bullhorn",
+		Bullseye:     "bullseye",
+		Clock:        "clock-o",
+		Cloud:        "cloud",
+		Cog:          "cog",
+		Comments:     "comments-o",
+		Crosshairs:   "crosshairs",
+		Dashboard:    "dashboard",
+		Envelope:     "envelope",
+		Fire:         "fire",
+		Flag:         "flag",
+		Flask:        "flask",
+		Globe:        "globe",
+		Heart:        "heart",
+		Leaf:         "leaf",
+		Legal:        "legal",
+		LifeRing:     "life-ring",
+		LineChart:    "line-chart",
+		Magic:        "magic",
+		Mobile:       "mobile",
+		Money:        "money",
+		None:         "none",
+		PaperPlane:   "paper-plane",
+		PieChart:     "pie-chart",
+		PuzzlePiece:  "puzzle-piece",
+		Road:         "road",
+		Rocket:       "rocket",
+		ShoppingCart: "shopping-cart",
+		Sitemap:      "sitemap",
+		Sliders:      "sliders",
+		Tablet:       "tablet",
+		ThumbsDown:   "thumbs-down",
+		ThumbsUp:     "thumbs-up",
+		Trophy:       "trophy",
+		USD:          "usd",
+		User:         "user",
+		Users:        "users",
+	}
+)
+
+// VisualizationType represents an option for adashboard widget's type.
+type VisualizationType string
+
+var (
+	// VisualizationTypes specifies the possible options for dashboard widget types.
+	VisualizationTypes = struct {
+		ApplicationBreakdown VisualizationType
+		AttributeSheet       VisualizationType
+		Billboard            VisualizationType
+		BillboardComparison  VisualizationType
+		ComparisonLineChart  VisualizationType
+		EventFeed            VisualizationType
+		EventTable           VisualizationType
+		FacetBarChart        VisualizationType
+		FacetPieChart        VisualizationType
+		FacetTable           VisualizationType
+		FacetedAreaChart     VisualizationType
+		FacetedLineChart     VisualizationType
+		Funnel               VisualizationType
+		Gauge                VisualizationType
+		Heatmap              VisualizationType
+		Histogram            VisualizationType
+		LineChart            VisualizationType
+		Markdown             VisualizationType
+		MetricLineChart      VisualizationType
+		RawJSON              VisualizationType
+		SingleEvent          VisualizationType
+		UniquesList          VisualizationType
+	}{
+		ApplicationBreakdown: "application_breakdown",
+		AttributeSheet:       "attribute_sheet",
+		Billboard:            "billboard",
+		BillboardComparison:  "billboard_comparison",
+		ComparisonLineChart:  "comparison_line_chart",
+		EventFeed:            "event_feed",
+		EventTable:           "event_table",
+		FacetBarChart:        "facet_bar_chart",
+		FacetPieChart:        "facet_pie_chart",
+		FacetTable:           "facet_table",
+		FacetedAreaChart:     "faceted_area_chart",
+		FacetedLineChart:     "faceted_line_chart",
+		Funnel:               "funnel",
+		Gauge:                "gauge",
+		Heatmap:              "heatmap",
+		Histogram:            "histogram",
+		LineChart:            "line_chart",
+		Markdown:             "markdown",
+		MetricLineChart:      "metric_line_chart",
+		RawJSON:              "raw_json",
+		SingleEvent:          "single_event",
+		UniquesList:          "uniques_list",
+	}
+)
+
 // DashboardMetadata represents metadata about the dashboard (like version)
 type DashboardMetadata struct {
 	Version int `json:"version"`
@@ -54,7 +206,7 @@ type DashboardMetadata struct {
 
 // DashboardWidget represents a widget in a dashboard.
 type DashboardWidget struct {
-	Visualization string                      `json:"visualization,omitempty"`
+	Visualization VisualizationType           `json:"visualization,omitempty"`
 	ID            int                         `json:"widget_id,omitempty"`
 	AccountID     int                         `json:"account_id,omitempty"`
 	Data          []DashboardWidgetData       `json:"data,omitempty"`

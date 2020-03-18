@@ -20,33 +20,33 @@ type ListDashboardsParams struct {
 }
 
 // ListDashboards is used to retrieve New Relic dashboards.
-func (dashboards *Dashboards) ListDashboards(params *ListDashboardsParams) ([]*Dashboard, error) {
-	d := []*Dashboard{}
+func (d *Dashboards) ListDashboards(params *ListDashboardsParams) ([]*Dashboard, error) {
+	dashboard := []*Dashboard{}
 	nextURL := "/dashboards.json"
 
 	for nextURL != "" {
 		response := dashboardsResponse{}
-		resp, err := dashboards.client.Get(nextURL, &params, &response)
+		resp, err := d.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
 		}
 
-		d = append(d, response.Dashboards...)
+		dashboard = append(dashboard, response.Dashboards...)
 
-		paging := dashboards.pager.Parse(resp)
+		paging := d.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
-	return d, nil
+	return dashboard, nil
 }
 
 // GetDashboard is used to retrieve a single New Relic dashboard.
-func (dashboards *Dashboards) GetDashboard(dashboardID int) (*Dashboard, error) {
+func (d *Dashboards) GetDashboard(dashboardID int) (*Dashboard, error) {
 	response := dashboardResponse{}
 	url := fmt.Sprintf("/dashboards/%d.json", dashboardID)
 
-	_, err := dashboards.client.Get(url, nil, &response)
+	_, err := d.client.Get(url, nil, &response)
 
 	if err != nil {
 		return nil, err
@@ -56,12 +56,12 @@ func (dashboards *Dashboards) GetDashboard(dashboardID int) (*Dashboard, error) 
 }
 
 // CreateDashboard is used to create a New Relic dashboard.
-func (dashboards *Dashboards) CreateDashboard(dashboard Dashboard) (*Dashboard, error) {
+func (d *Dashboards) CreateDashboard(dashboard Dashboard) (*Dashboard, error) {
 	response := dashboardResponse{}
 	reqBody := dashboardRequest{
 		Dashboard: dashboard,
 	}
-	_, err := dashboards.client.Post("/dashboards.json", nil, &reqBody, &response)
+	_, err := d.client.Post("/dashboards.json", nil, &reqBody, &response)
 
 	if err != nil {
 		return nil, err
@@ -71,14 +71,14 @@ func (dashboards *Dashboards) CreateDashboard(dashboard Dashboard) (*Dashboard, 
 }
 
 // UpdateDashboard is used to update a New Relic dashboard.
-func (dashboards *Dashboards) UpdateDashboard(dashboard Dashboard) (*Dashboard, error) {
+func (d *Dashboards) UpdateDashboard(dashboard Dashboard) (*Dashboard, error) {
 	response := dashboardResponse{}
 	url := fmt.Sprintf("/dashboards/%d.json", dashboard.ID)
 	reqBody := dashboardRequest{
 		Dashboard: dashboard,
 	}
 
-	_, err := dashboards.client.Put(url, nil, &reqBody, &response)
+	_, err := d.client.Put(url, nil, &reqBody, &response)
 
 	if err != nil {
 		return nil, err
@@ -88,11 +88,11 @@ func (dashboards *Dashboards) UpdateDashboard(dashboard Dashboard) (*Dashboard, 
 }
 
 // DeleteDashboard is used to delete a New Relic dashboard.
-func (dashboards *Dashboards) DeleteDashboard(dashboardID int) (*Dashboard, error) {
+func (d *Dashboards) DeleteDashboard(dashboardID int) (*Dashboard, error) {
 	response := dashboardResponse{}
 	url := fmt.Sprintf("/dashboards/%d.json", dashboardID)
 
-	_, err := dashboards.client.Delete(url, nil, &response)
+	_, err := d.client.Delete(url, nil, &response)
 
 	if err != nil {
 		return nil, err

@@ -1,3 +1,4 @@
+// Package synthetics provides a programmatic API for interacting with the New Relic Synthetics product.
 package synthetics
 
 import (
@@ -18,7 +19,7 @@ var BaseURLs = map[region.Region]string{
 
 // Synthetics is used to communicate with the New Relic Synthetics product.
 type Synthetics struct {
-	client http.NewRelicClient
+	client http.Client
 	logger logging.Logger
 	pager  http.Pager
 }
@@ -65,7 +66,7 @@ func (e *ErrorResponse) New() http.ErrorResponse {
 func New(config config.Config) Synthetics {
 
 	if config.SyntheticsBaseURL == "" {
-		config.SyntheticsBaseURL = BaseURLs[region.Parse(config.Region)]
+		config.SyntheticsBaseURL = BaseURLs[region.Parse(string(config.Region))]
 	}
 
 	config.BaseURL = config.SyntheticsBaseURL

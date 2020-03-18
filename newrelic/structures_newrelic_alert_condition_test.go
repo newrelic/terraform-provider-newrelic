@@ -32,8 +32,8 @@ func TestExpandAlertConditionTerms(t *testing.T) {
 	flattened := []interface{}{
 		map[string]interface{}{
 			"duration":      123,
-			"operator":      "operator",
-			"priority":      "priority",
+			"operator":      "above",
+			"priority":      "critical",
 			"threshold":     123.456,
 			"time_function": "all",
 		},
@@ -42,8 +42,8 @@ func TestExpandAlertConditionTerms(t *testing.T) {
 	expected := []alerts.ConditionTerm{
 		{
 			Duration:     123,
-			Operator:     "operator",
-			Priority:     "priority",
+			Operator:     alerts.OperatorTypes.Above,
+			Priority:     alerts.PriorityTypes.Critical,
 			Threshold:    123.456,
 			TimeFunction: alerts.TimeFunctionTypes.All,
 		},
@@ -59,8 +59,8 @@ func TestFlattenAlertConditionTerms(t *testing.T) {
 	expanded := []alerts.ConditionTerm{
 		{
 			Duration:     123,
-			Operator:     "operator",
-			Priority:     "priority",
+			Operator:     "above",
+			Priority:     "critical",
 			Threshold:    123.456,
 			TimeFunction: alerts.TimeFunctionTypes.All,
 		},
@@ -69,8 +69,8 @@ func TestFlattenAlertConditionTerms(t *testing.T) {
 	expected := []map[string]interface{}{
 		{
 			"duration":      123,
-			"operator":      "operator",
-			"priority":      "priority",
+			"operator":      alerts.OperatorTypes.Above,
+			"priority":      alerts.PriorityTypes.Critical,
 			"threshold":     123.456,
 			"time_function": alerts.TimeFunctionTypes.All,
 		},

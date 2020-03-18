@@ -10,8 +10,8 @@ import (
 
 // Alerts is used to communicate with New Relic Alerts.
 type Alerts struct {
-	client      http.NewRelicClient
-	infraClient http.NewRelicClient
+	client      http.Client
+	infraClient http.Client
 	logger      logging.Logger
 	pager       http.Pager
 }
@@ -21,7 +21,7 @@ func New(config config.Config) Alerts {
 	infraConfig := config
 
 	if infraConfig.InfrastructureBaseURL == "" {
-		infraConfig.InfrastructureBaseURL = infrastructure.BaseURLs[region.Parse(config.Region)]
+		infraConfig.InfrastructureBaseURL = infrastructure.BaseURLs[region.Parse(string(config.Region))]
 	}
 
 	infraConfig.BaseURL = infraConfig.InfrastructureBaseURL
@@ -30,7 +30,7 @@ func New(config config.Config) Alerts {
 	infraClient.SetErrorValue(&infrastructure.ErrorResponse{})
 
 	client := http.NewClient(config)
-	client.AuthStrategy = &http.PersonalAPIKeyCapableV2Authorizer{}
+	client.SetAuthStrategy(&http.PersonalAPIKeyCapableV2Authorizer{})
 
 	pkg := Alerts{
 		client:      client,

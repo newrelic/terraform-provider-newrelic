@@ -1,12 +1,11 @@
-// Package errors converts HTTP errors to messages
+// Package errors provides error types for specific error scenarios.
 package errors
 
 import (
 	"fmt"
 )
 
-// NewNotFound returns a new instance of NotFound
-// with an optional custom error message.
+// NewNotFound returns a new instance of NotFound with an optional custom error message.
 func NewNotFound(err string) *NotFound {
 	e := NotFound{
 		err: err,
@@ -21,8 +20,7 @@ func NewNotFoundf(format string, args ...interface{}) *NotFound {
 	return NewNotFound(fmt.Sprintf(format, args...))
 }
 
-// NotFound is returned when the target resource
-// cannot be located.
+// NotFound is returned when the target resource cannot be located.
 type NotFound struct {
 	err string
 }
@@ -50,8 +48,8 @@ func NewUnexpectedStatusCodef(statusCode int, format string, args ...interface{}
 	return NewUnexpectedStatusCode(statusCode, fmt.Sprintf(format, args...))
 }
 
-// UnexpectedStatusCode is returned when an unexpected
-// status code is returned from New Relic's APIs.
+// UnexpectedStatusCode is returned when an unexpected status code is returned
+// from New Relic's APIs.
 type UnexpectedStatusCode struct {
 	err        string
 	statusCode int

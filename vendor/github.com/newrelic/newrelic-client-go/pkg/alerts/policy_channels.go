@@ -11,7 +11,7 @@ type PolicyChannels struct {
 }
 
 // UpdatePolicyChannels updates a policy by adding the specified notification channels.
-func (alerts *Alerts) UpdatePolicyChannels(policyID int, channelIDs []int) (*PolicyChannels, error) {
+func (a *Alerts) UpdatePolicyChannels(policyID int, channelIDs []int) (*PolicyChannels, error) {
 	channelIDStrings := make([]string, len(channelIDs))
 
 	for i, channelID := range channelIDs {
@@ -25,7 +25,7 @@ func (alerts *Alerts) UpdatePolicyChannels(policyID int, channelIDs []int) (*Pol
 
 	resp := updatePolicyChannelsResponse{}
 
-	_, err := alerts.client.Put("/alerts_policy_channels.json", &queryParams, nil, &resp)
+	_, err := a.client.Put("/alerts_policy_channels.json", &queryParams, nil, &resp)
 
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (alerts *Alerts) UpdatePolicyChannels(policyID int, channelIDs []int) (*Pol
 
 // DeletePolicyChannel deletes a notification channel from an alert policy.
 // This method returns a response containing the Channel that was deleted from the policy.
-func (alerts *Alerts) DeletePolicyChannel(policyID int, channelID int) (*Channel, error) {
+func (a *Alerts) DeletePolicyChannel(policyID int, channelID int) (*Channel, error) {
 	queryParams := deletePolicyChannelsParams{
 		PolicyID:  policyID,
 		ChannelID: channelID,
@@ -44,7 +44,7 @@ func (alerts *Alerts) DeletePolicyChannel(policyID int, channelID int) (*Channel
 
 	resp := deletePolicyChannelResponse{}
 
-	_, err := alerts.client.Delete("/alerts_policy_channels.json", &queryParams, &resp)
+	_, err := a.client.Delete("/alerts_policy_channels.json", &queryParams, &resp)
 
 	if err != nil {
 		return nil, err

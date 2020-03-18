@@ -27,7 +27,7 @@ type AlertPlugin struct {
 }
 
 // ListPluginsConditions returns alert conditions for New Relic plugins for a given alert policy.
-func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, error) {
+func (a *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, error) {
 	conditions := []*PluginsCondition{}
 	queryParams := listPluginsConditionsParams{
 		PolicyID: policyID,
@@ -37,7 +37,7 @@ func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, 
 
 	for nextURL != "" {
 		response := pluginsConditionsResponse{}
-		resp, err := alerts.client.Get(nextURL, &queryParams, &response)
+		resp, err := a.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
@@ -45,7 +45,7 @@ func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, 
 
 		conditions = append(conditions, response.PluginsConditions...)
 
-		paging := alerts.pager.Parse(resp)
+		paging := a.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
@@ -54,8 +54,8 @@ func (alerts *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, 
 
 // GetPluginsCondition gets information about an alert condition for a plugin
 // given a policy ID and plugin ID.
-func (alerts *Alerts) GetPluginsCondition(policyID int, pluginID int) (*PluginsCondition, error) {
-	conditions, err := alerts.ListPluginsConditions(policyID)
+func (a *Alerts) GetPluginsCondition(policyID int, pluginID int) (*PluginsCondition, error) {
+	conditions, err := a.ListPluginsConditions(policyID)
 
 	if err != nil {
 		return nil, err
@@ -71,14 +71,14 @@ func (alerts *Alerts) GetPluginsCondition(policyID int, pluginID int) (*PluginsC
 }
 
 // CreatePluginsCondition creates an alert condition for a plugin.
-func (alerts *Alerts) CreatePluginsCondition(policyID int, condition PluginsCondition) (*PluginsCondition, error) {
+func (a *Alerts) CreatePluginsCondition(policyID int, condition PluginsCondition) (*PluginsCondition, error) {
 	reqBody := pluginConditionRequestBody{
 		PluginsCondition: condition,
 	}
 	resp := pluginConditionResponse{}
 
 	u := fmt.Sprintf("/alerts_plugins_conditions/policies/%d.json", policyID)
-	_, err := alerts.client.Post(u, nil, &reqBody, &resp)
+	_, err := a.client.Post(u, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -88,14 +88,14 @@ func (alerts *Alerts) CreatePluginsCondition(policyID int, condition PluginsCond
 }
 
 // UpdatePluginsCondition updates an alert condition for a plugin.
-func (alerts *Alerts) UpdatePluginsCondition(condition PluginsCondition) (*PluginsCondition, error) {
+func (a *Alerts) UpdatePluginsCondition(condition PluginsCondition) (*PluginsCondition, error) {
 	reqBody := pluginConditionRequestBody{
 		PluginsCondition: condition,
 	}
 	resp := pluginConditionResponse{}
 
 	u := fmt.Sprintf("/alerts_plugins_conditions/%d.json", condition.ID)
-	_, err := alerts.client.Put(u, nil, &reqBody, &resp)
+	_, err := a.client.Put(u, nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -105,11 +105,11 @@ func (alerts *Alerts) UpdatePluginsCondition(condition PluginsCondition) (*Plugi
 }
 
 // DeletePluginsCondition deletes a plugin alert condition.
-func (alerts *Alerts) DeletePluginsCondition(id int) (*PluginsCondition, error) {
+func (a *Alerts) DeletePluginsCondition(id int) (*PluginsCondition, error) {
 	resp := pluginConditionResponse{}
 	u := fmt.Sprintf("/alerts_plugins_conditions/%d.json", id)
 
-	_, err := alerts.client.Delete(u, nil, &resp)
+	_, err := a.client.Delete(u, nil, &resp)
 
 	if err != nil {
 		return nil, err
