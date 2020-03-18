@@ -118,6 +118,23 @@ func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicAlertCondition_FloatThreshold(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicAlertConditionConfigThreshold(rName, 0.5),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicAlertCondition_AlertPolicyNotFound(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
@@ -320,7 +337,7 @@ resource "newrelic_alert_condition" "foo" {
 `, name, testAccExpectedApplicationName)
 }
 
-func testAccNewRelicAlertConditionConfigThreshold(name string, threshold int) string {
+func testAccNewRelicAlertConditionConfigThreshold(name string, threshold float64) string {
 	return fmt.Sprintf(`
 data "newrelic_application" "app" {
 	name = "%[3]s"
@@ -343,7 +360,7 @@ resource "newrelic_alert_condition" "foo" {
 		duration      = 5
 		operator      = "below"
 		priority      = "critical"
-		threshold     = "%d"
+		threshold     = "%f"
 		time_function = "all"
 	}
 }
