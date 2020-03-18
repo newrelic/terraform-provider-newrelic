@@ -1,4 +1,15 @@
-## 1.16.0 (Unreleased)
+## 1.15.1 (Unreleased)
+
+BUG FIXES:
+
+* fix(newrelic_alert_condition): fix import for terms threshold ([#469](https://github.com/terraform-providers/terraform-provider-newrelic/pull/469))
+
+IMPROVEMENTS:
+
+* docs(newrelic_alert_condition): remove `servers_metric` deprecated condition type ([#447](https://github.com/terraform-providers/terraform-provider-newrelic/pull/447))
+* docs(terraform-provider-newrelic): add example modules ([#450](https://github.com/terraform-providers/terraform-provider-newrelic/pull/450))
+* docs(terraform-provider-newrelic): add description to schema fields and enforce consistency ([#458](https://github.com/terraform-providers/terraform-provider-newrelic/pull/458))
+
 ## 1.15.0 (March 04, 2020)
 
 BUG FIXES:
