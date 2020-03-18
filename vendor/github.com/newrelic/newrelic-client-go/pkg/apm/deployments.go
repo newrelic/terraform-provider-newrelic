@@ -23,20 +23,20 @@ type DeploymentLinks struct {
 }
 
 // ListDeployments returns deployments for an application.
-func (apm *APM) ListDeployments(applicationID int) ([]*Deployment, error) {
+func (a *APM) ListDeployments(applicationID int) ([]*Deployment, error) {
 	deployments := []*Deployment{}
 	nextURL := fmt.Sprintf("/applications/%d/deployments.json", applicationID)
 
 	for nextURL != "" {
 		response := deploymentsResponse{}
-		req, err := apm.client.NewRequest("GET", nextURL, nil, nil, &response)
+		req, err := http.NewRequest(a.client, "GET", nextURL, nil, nil, &response)
 		if err != nil {
 			return nil, err
 		}
 
 		req.SetAuthStrategy(&http.PersonalAPIKeyCapableV2Authorizer{})
 
-		resp, err := apm.client.Do(req)
+		resp, err := a.client.Do(req)
 
 		if err != nil {
 			return nil, err
@@ -44,7 +44,7 @@ func (apm *APM) ListDeployments(applicationID int) ([]*Deployment, error) {
 
 		deployments = append(deployments, response.Deployments...)
 
-		paging := apm.pager.Parse(resp)
+		paging := a.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
@@ -52,21 +52,21 @@ func (apm *APM) ListDeployments(applicationID int) ([]*Deployment, error) {
 }
 
 // CreateDeployment creates a deployment marker for an application.
-func (apm *APM) CreateDeployment(applicationID int, deployment Deployment) (*Deployment, error) {
+func (a *APM) CreateDeployment(applicationID int, deployment Deployment) (*Deployment, error) {
 	reqBody := deploymentRequestBody{
 		Deployment: deployment,
 	}
 	resp := deploymentResponse{}
 
 	u := fmt.Sprintf("/applications/%d/deployments.json", applicationID)
-	req, err := apm.client.NewRequest("POST", u, nil, &reqBody, &resp)
+	req, err := http.NewRequest(a.client, "POST", u, nil, &reqBody, &resp)
 	if err != nil {
 		return nil, err
 	}
 
 	req.SetAuthStrategy(&http.PersonalAPIKeyCapableV2Authorizer{})
 
-	_, err = apm.client.Do(req)
+	_, err = a.client.Do(req)
 
 	if err != nil {
 		return nil, err
@@ -76,18 +76,18 @@ func (apm *APM) CreateDeployment(applicationID int, deployment Deployment) (*Dep
 }
 
 // DeleteDeployment deletes a deployment marker for an application.
-func (apm *APM) DeleteDeployment(applicationID int, deploymentID int) (*Deployment, error) {
+func (a *APM) DeleteDeployment(applicationID int, deploymentID int) (*Deployment, error) {
 	resp := deploymentResponse{}
 	u := fmt.Sprintf("/applications/%d/deployments/%d.json", applicationID, deploymentID)
 
-	req, err := apm.client.NewRequest("DELETE", u, nil, nil, &resp)
+	req, err := http.NewRequest(a.client, "DELETE", u, nil, nil, &resp)
 	if err != nil {
 		return nil, err
 	}
 
 	req.SetAuthStrategy(&http.PersonalAPIKeyCapableV2Authorizer{})
 
-	_, err = apm.client.Do(req)
+	_, err = a.client.Do(req)
 
 	if err != nil {
 		return nil, err

@@ -1,3 +1,4 @@
+// Package plugins provides a programmatic API for interacting with the New Relic Plugins product.
 package plugins
 
 import (
@@ -10,7 +11,7 @@ import (
 
 // Plugins is used to communicate with the New Relic Plugins product.
 type Plugins struct {
-	client http.NewRelicClient
+	client http.Client
 	logger logging.Logger
 	pager  http.Pager
 }
@@ -38,13 +39,13 @@ type ListPluginsParams struct {
 // If the query paramater `detailed=true` is provided, the plugins
 // response objects will contain an additional `details` property
 // with metadata pertaining to each plugin.
-func (plugins *Plugins) ListPlugins(params *ListPluginsParams) ([]*Plugin, error) {
+func (p *Plugins) ListPlugins(params *ListPluginsParams) ([]*Plugin, error) {
 	results := []*Plugin{}
 	nextURL := "/plugins.json"
 
 	for nextURL != "" {
 		response := pluginsResponse{}
-		resp, err := plugins.client.Get(nextURL, &params, &response)
+		resp, err := p.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
@@ -52,7 +53,7 @@ func (plugins *Plugins) ListPlugins(params *ListPluginsParams) ([]*Plugin, error
 
 		results = append(results, response.Plugins...)
 
-		paging := plugins.pager.Parse(resp)
+		paging := p.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
@@ -68,11 +69,11 @@ type GetPluginParams struct {
 // GetPlugin returns a plugin for a given account. If the query paramater `detailed=true`
 // is provided, the response will contain an additional `details` property with
 // metadata pertaining to the plugin.
-func (plugins *Plugins) GetPlugin(id int, params *GetPluginParams) (*Plugin, error) {
+func (p *Plugins) GetPlugin(id int, params *GetPluginParams) (*Plugin, error) {
 	response := pluginResponse{}
 
 	u := fmt.Sprintf("/plugins/%d.json", id)
-	_, err := plugins.client.Get(u, &params, &response)
+	_, err := p.client.Get(u, &params, &response)
 
 	if err != nil {
 		return nil, err

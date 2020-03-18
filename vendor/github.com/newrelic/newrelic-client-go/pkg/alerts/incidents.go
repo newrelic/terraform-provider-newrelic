@@ -22,7 +22,7 @@ type IncidentLink struct {
 }
 
 // ListIncidents returns all alert incidents.
-func (alerts *Alerts) ListIncidents(onlyOpen bool, excludeViolations bool) ([]*Incident, error) {
+func (a *Alerts) ListIncidents(onlyOpen bool, excludeViolations bool) ([]*Incident, error) {
 	incidents := []*Incident{}
 	queryParams := listIncidentsParams{
 		OnlyOpen:          onlyOpen,
@@ -33,7 +33,7 @@ func (alerts *Alerts) ListIncidents(onlyOpen bool, excludeViolations bool) ([]*I
 
 	for nextURL != "" {
 		incidentsResponse := alertIncidentsResponse{}
-		resp, err := alerts.client.Get(nextURL, queryParams, &incidentsResponse)
+		resp, err := a.client.Get(nextURL, queryParams, &incidentsResponse)
 
 		if err != nil {
 			return nil, err
@@ -41,7 +41,7 @@ func (alerts *Alerts) ListIncidents(onlyOpen bool, excludeViolations bool) ([]*I
 
 		incidents = append(incidents, incidentsResponse.Incidents...)
 
-		paging := alerts.pager.Parse(resp)
+		paging := a.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
@@ -49,19 +49,19 @@ func (alerts *Alerts) ListIncidents(onlyOpen bool, excludeViolations bool) ([]*I
 }
 
 // AcknowledgeIncident acknowledges an existing incident.
-func (alerts *Alerts) AcknowledgeIncident(id int) (*Incident, error) {
-	return alerts.updateIncident(id, "acknowledge")
+func (a *Alerts) AcknowledgeIncident(id int) (*Incident, error) {
+	return a.updateIncident(id, "acknowledge")
 }
 
 // CloseIncident closes an existing open incident.
-func (alerts *Alerts) CloseIncident(id int) (*Incident, error) {
-	return alerts.updateIncident(id, "close")
+func (a *Alerts) CloseIncident(id int) (*Incident, error) {
+	return a.updateIncident(id, "close")
 }
 
-func (alerts *Alerts) updateIncident(id int, verb string) (*Incident, error) {
+func (a *Alerts) updateIncident(id int, verb string) (*Incident, error) {
 	response := alertIncidentResponse{}
 	path := fmt.Sprintf("/alerts_incidents/%v/%v.json", id, verb)
-	_, err := alerts.client.Put(path, nil, nil, &response)
+	_, err := a.client.Put(path, nil, nil, &response)
 
 	if err != nil {
 		return nil, err

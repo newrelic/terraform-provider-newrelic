@@ -19,7 +19,7 @@ func expandDashboard(d *schema.ResourceData) (*dashboards.Dashboard, error) {
 	dashboard := dashboards.Dashboard{
 		Title:      d.Get("title").(string),
 		Metadata:   metadata,
-		Icon:       d.Get("icon").(string),
+		Icon:       dashboards.DashboardIconType(d.Get("icon").(string)),
 		Visibility: dashboards.VisibilityType(d.Get("visibility").(string)),
 		Editable:   dashboards.EditableType(d.Get("editable").(string)),
 	}
@@ -79,7 +79,7 @@ func expandWidgets(widgets []interface{}) ([]dashboards.DashboardWidget, error) 
 
 func expandWidget(cfg map[string]interface{}) (*dashboards.DashboardWidget, error) {
 	widget := &dashboards.DashboardWidget{
-		Visualization: cfg["visualization"].(string),
+		Visualization: dashboards.VisualizationType(cfg["visualization"].(string)),
 		ID:            cfg["widget_id"].(int),
 	}
 

@@ -74,13 +74,13 @@ type ChannelConfiguration struct {
 }
 
 // ListChannels returns all alert channels for a given account.
-func (alerts *Alerts) ListChannels() ([]*Channel, error) {
+func (a *Alerts) ListChannels() ([]*Channel, error) {
 	alertChannels := []*Channel{}
 	nextURL := "/alerts_channels.json"
 
 	for nextURL != "" {
 		response := alertChannelsResponse{}
-		resp, err := alerts.client.Get(nextURL, nil, &response)
+		resp, err := a.client.Get(nextURL, nil, &response)
 
 		if err != nil {
 			return nil, err
@@ -88,7 +88,7 @@ func (alerts *Alerts) ListChannels() ([]*Channel, error) {
 
 		alertChannels = append(alertChannels, response.Channels...)
 
-		paging := alerts.pager.Parse(resp)
+		paging := a.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
@@ -96,8 +96,8 @@ func (alerts *Alerts) ListChannels() ([]*Channel, error) {
 }
 
 // GetChannel returns a specific alert channel by ID for a given account.
-func (alerts *Alerts) GetChannel(id int) (*Channel, error) {
-	channels, err := alerts.ListChannels()
+func (a *Alerts) GetChannel(id int) (*Channel, error) {
+	channels, err := a.ListChannels()
 	if err != nil {
 		return nil, err
 	}
@@ -115,13 +115,13 @@ func (alerts *Alerts) GetChannel(id int) (*Channel, error) {
 // For more information on the different configurations, please
 // view the New Relic API documentation for this endpoint.
 // Docs: https://docs.newrelic.com/docs/alerts/rest-api-alerts/new-relic-alerts-rest-api/rest-api-calls-new-relic-alerts#channels
-func (alerts *Alerts) CreateChannel(channel Channel) (*Channel, error) {
+func (a *Alerts) CreateChannel(channel Channel) (*Channel, error) {
 	reqBody := alertChannelRequestBody{
 		Channel: channel,
 	}
 	resp := alertChannelsResponse{}
 
-	_, err := alerts.client.Post("/alerts_channels.json", nil, &reqBody, &resp)
+	_, err := a.client.Post("/alerts_channels.json", nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -131,10 +131,10 @@ func (alerts *Alerts) CreateChannel(channel Channel) (*Channel, error) {
 }
 
 // DeleteChannel deletes the alert channel with the specified ID.
-func (alerts *Alerts) DeleteChannel(id int) (*Channel, error) {
+func (a *Alerts) DeleteChannel(id int) (*Channel, error) {
 	resp := alertChannelResponse{}
 	url := fmt.Sprintf("/alerts_channels/%d.json", id)
-	_, err := alerts.client.Delete(url, nil, &resp)
+	_, err := a.client.Delete(url, nil, &resp)
 
 	if err != nil {
 		return nil, err

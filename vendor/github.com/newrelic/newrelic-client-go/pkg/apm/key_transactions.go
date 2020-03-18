@@ -30,13 +30,13 @@ type ListKeyTransactionsParams struct {
 }
 
 // ListKeyTransactions returns all key transactions for an account.
-func (apm *APM) ListKeyTransactions(params *ListKeyTransactionsParams) ([]*KeyTransaction, error) {
+func (a *APM) ListKeyTransactions(params *ListKeyTransactionsParams) ([]*KeyTransaction, error) {
 	results := []*KeyTransaction{}
 	nextURL := "/key_transactions.json"
 
 	for nextURL != "" {
 		response := keyTransactionsResponse{}
-		resp, err := apm.client.Get(nextURL, &params, &response)
+		resp, err := a.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
@@ -44,7 +44,7 @@ func (apm *APM) ListKeyTransactions(params *ListKeyTransactionsParams) ([]*KeyTr
 
 		results = append(results, response.KeyTransactions...)
 
-		paging := apm.pager.Parse(resp)
+		paging := a.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
@@ -52,11 +52,11 @@ func (apm *APM) ListKeyTransactions(params *ListKeyTransactionsParams) ([]*KeyTr
 }
 
 // GetKeyTransaction returns a specific key transaction by ID.
-func (apm *APM) GetKeyTransaction(id int) (*KeyTransaction, error) {
+func (a *APM) GetKeyTransaction(id int) (*KeyTransaction, error) {
 	response := keyTransactionResponse{}
 	u := fmt.Sprintf("/key_transactions/%d.json", id)
 
-	_, err := apm.client.Get(u, nil, &response)
+	_, err := a.client.Get(u, nil, &response)
 
 	if err != nil {
 		return nil, err

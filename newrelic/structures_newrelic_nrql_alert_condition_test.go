@@ -21,8 +21,8 @@ func TestExpandNrqlConditionTerms(t *testing.T) {
 	expected := []alerts.ConditionTerm{
 		{
 			Duration:     5,
-			Operator:     "above",
-			Priority:     "critical",
+			Operator:     alerts.OperatorTypes.Above,
+			Priority:     alerts.PriorityTypes.Critical,
 			Threshold:    1.5,
 			TimeFunction: alerts.TimeFunctionTypes.All,
 		},
@@ -65,8 +65,8 @@ func TestFlattenNrqlConditionTerms(t *testing.T) {
 	expected := []map[string]interface{}{
 		{
 			"duration":      5,
-			"operator":      "above",
-			"priority":      "critical",
+			"operator":      alerts.OperatorTypes.Above,
+			"priority":      alerts.PriorityTypes.Critical,
 			"threshold":     1.5,
 			"time_function": alerts.TimeFunctionTypes.All,
 		},

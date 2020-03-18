@@ -21,13 +21,13 @@ type LabelLinks struct {
 }
 
 // ListLabels returns the labels within an account.
-func (apm *APM) ListLabels() ([]*Label, error) {
+func (a *APM) ListLabels() ([]*Label, error) {
 	labels := []*Label{}
 	nextURL := "/labels.json"
 
 	for nextURL != "" {
 		response := labelsResponse{}
-		resp, err := apm.client.Get(nextURL, nil, &response)
+		resp, err := a.client.Get(nextURL, nil, &response)
 
 		if err != nil {
 			return nil, err
@@ -35,7 +35,7 @@ func (apm *APM) ListLabels() ([]*Label, error) {
 
 		labels = append(labels, response.Labels...)
 
-		paging := apm.pager.Parse(resp)
+		paging := a.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
@@ -44,8 +44,8 @@ func (apm *APM) ListLabels() ([]*Label, error) {
 
 // GetLabel gets a label by key. A label's key
 // is a string hash formatted as <Category>:<Name>.
-func (apm *APM) GetLabel(key string) (*Label, error) {
-	labels, err := apm.ListLabels()
+func (a *APM) GetLabel(key string) (*Label, error) {
+	labels, err := a.ListLabels()
 
 	if err != nil {
 		return nil, err
@@ -61,14 +61,14 @@ func (apm *APM) GetLabel(key string) (*Label, error) {
 }
 
 // CreateLabel creates a new label within an account.
-func (apm *APM) CreateLabel(label Label) (*Label, error) {
+func (a *APM) CreateLabel(label Label) (*Label, error) {
 	reqBody := labelRequestBody{
 		Label: label,
 	}
 	resp := labelResponse{}
 
 	// The API currently uses a PUT request for label creation
-	_, err := apm.client.Put("/labels.json", nil, &reqBody, &resp)
+	_, err := a.client.Put("/labels.json", nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -79,11 +79,11 @@ func (apm *APM) CreateLabel(label Label) (*Label, error) {
 
 // DeleteLabel deletes a label by key. A label's key
 // is a string hash formatted as <Category>:<Name>.
-func (apm *APM) DeleteLabel(key string) (*Label, error) {
+func (a *APM) DeleteLabel(key string) (*Label, error) {
 	resp := labelResponse{}
 
 	u := fmt.Sprintf("/labels/%s.json", key)
-	_, err := apm.client.Delete(u, nil, &resp)
+	_, err := a.client.Delete(u, nil, &resp)
 
 	if err != nil {
 		return nil, err
