@@ -76,8 +76,8 @@ github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/bflad/gopaniccheck v0.1.0 h1:tJftp+bv42ouERmUMWLoUn/5bi/iQZjHPznM00cP/bU=
 github.com/bflad/gopaniccheck v0.1.0/go.mod h1:ZCj2vSr7EqVeDaqVsWN4n2MwdROx1YL+LFo47TSWtsA=
-github.com/bflad/tfproviderlint v0.11.0 h1:+yxfoHoOhg8h/oNSf7YwNDs/ztAJZPXIpx4IQwrjMUg=
-github.com/bflad/tfproviderlint v0.11.0/go.mod h1:MsNI3eEj7uC7P/h7XmGvzMLtsotLkrvB+NF2/w3RZGc=
+github.com/bflad/tfproviderlint v0.12.0 h1:vAl/8VOk/o3jEBbyMkWHrkCa6sisT4INDMCkXu0GNDw=
+github.com/bflad/tfproviderlint v0.12.0/go.mod h1:MsNI3eEj7uC7P/h7XmGvzMLtsotLkrvB+NF2/w3RZGc=
 github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d h1:xDfNPAt8lFiC1UJrqV3uuy861HCTo708pDMbjHHdCas=
 github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d/go.mod h1:6QX/PXZ00z/TKoufEY6K/a0k6AhaJrQKdFe6OfVXsa4=
 github.com/bgentry/speakeasy v0.1.0 h1:ByYyxL9InA1OWqxJqqp2A5pYHUrCiAL6K3J+LKSsQkY=
@@ -441,8 +441,6 @@ github.com/newrelic/go-agent/v3 v3.3.0 h1:qcdu8gEsvRWCaKIN35Fr7sdwl7fk/DyVw2r1an
 github.com/newrelic/go-agent/v3 v3.3.0/go.mod h1:H28zDNUC0U/b7kLoY4EFOhuth10Xu/9dchozUiOseQQ=
 github.com/newrelic/go-insights v1.0.3 h1:zSNp1CEZnXktzSIEsbHJk8v6ZihdPFP2WsO/fzau3OQ=
 github.com/newrelic/go-insights v1.0.3/go.mod h1:A20BoT8TNkqPGX2nS/Z2fYmKl3Cqa3iKZd4whzedCY4=
-github.com/newrelic/newrelic-client-go v0.17.0 h1:a/oqoWVGTVblKbkYCb/FSn0mX55BvUm5BR4jHdWFdO8=
-github.com/newrelic/newrelic-client-go v0.17.0/go.mod h1:A2j/O6Wcy7z1sgI49wr5LGsg+5fj171BvPLJI6DmLI4=
 github.com/newrelic/newrelic-client-go v0.17.1 h1:a6pSQ+qQ6muXf9SBhWVGV6hDW04g5EOtbzYlkno5kIM=
 github.com/newrelic/newrelic-client-go v0.17.1/go.mod h1:A2j/O6Wcy7z1sgI49wr5LGsg+5fj171BvPLJI6DmLI4=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
