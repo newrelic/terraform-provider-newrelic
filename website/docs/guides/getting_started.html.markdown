@@ -81,8 +81,8 @@ First, let's add a data source by adding a `data` block. This will store your ap
 provider "newrelic" {}
 
 # Data Source
-data "newrelic_application" "app" {
-  name = "my-app" # Note: This must be an exact match of your app name in New Relic
+data "newrelic_application" "app_name" {
+  name = "my-app" # Note: This must be an exact match of your app name in New Relic (Case sensitive)
 }
 
 resource "newrelic_alert_policy" "my_alert_policy_name" {
@@ -98,7 +98,7 @@ Now let's add the Alert Condition so we can see an alert when a particular scena
 ```hcl
 provider "newrelic" {}
 
-data "newrelic_application" "app" {
+data "newrelic_application" "app_name" {
   name = "my-app"
 }
 
@@ -150,7 +150,9 @@ resource "newrelic_alert_channel" "alert_notification_email" {
 # Link the above notification channel to your policy
 resource "newrelic_alert_policy_channel" "alert_policy_email" {
   policy_id  = newrelic_alert_policy.my_alert_policy_name.id
-  channel_id = newrelic_alert_channel.alert_notification_email.id
+  channel_ids = [
+    newrelic_alert_channel.alert_notification_email.id
+  ]
 }
 ```
 
