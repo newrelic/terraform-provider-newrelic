@@ -19,7 +19,8 @@ const serviceName = "terraform-provider-newrelic"
 
 // Config contains New Relic provider settings
 type Config struct {
-	APIKey               string
+	AdminAPIKey          string
+	PersonalAPIKey       string
 	APIURL               string
 	CACertFile           string
 	InfrastructureAPIURL string
@@ -39,7 +40,8 @@ func (c *Config) Client() (*nr.NewRelic, error) {
 	options := []nr.ConfigOption{}
 
 	options = append(options,
-		nr.ConfigAdminAPIKey(c.APIKey),
+		nr.ConfigAdminAPIKey(c.AdminAPIKey),
+		nr.ConfigPersonalAPIKey(c.PersonalAPIKey),
 		nr.ConfigUserAgent(c.userAgent),
 		nr.ConfigServiceName(serviceName),
 	)
