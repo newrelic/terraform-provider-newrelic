@@ -125,7 +125,7 @@ func resourceNewRelicWorkload() *schema.Resource {
 			"permalink": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The URL of the Workload.",
+				Description: "The URL of the workload.",
 			},
 			"scope_accounts": {
 				Type:        schema.TypeList,
@@ -185,10 +185,7 @@ func resourceNewRelicWorkloadCreate(d *schema.ResourceData, meta interface{}) er
 
 	if len(workload.ScopeAccounts.AccountIDs) > 0 {
 		var scopeAccounts workloads.ScopeAccountsInput
-		scopeAccounts.AccountIDs = []int{}
-		for _, a := range workload.ScopeAccounts.AccountIDs {
-			scopeAccounts.AccountIDs = append(scopeAccounts.AccountIDs, a)
-		}
+		scopeAccounts.AccountIDs = append(scopeAccounts.AccountIDs, workload.ScopeAccounts.AccountIDs...)
 
 		createInput.ScopeAccountsInput = &scopeAccounts
 	}
@@ -263,10 +260,7 @@ func resourceNewRelicWorkloadUpdate(d *schema.ResourceData, meta interface{}) er
 
 	if len(workload.ScopeAccounts.AccountIDs) > 0 {
 		var scopeAccounts workloads.ScopeAccountsInput
-		scopeAccounts.AccountIDs = []int{}
-		for _, a := range workload.ScopeAccounts.AccountIDs {
-			scopeAccounts.AccountIDs = append(scopeAccounts.AccountIDs, a)
-		}
+		scopeAccounts.AccountIDs = append(scopeAccounts.AccountIDs, workload.ScopeAccounts.AccountIDs...)
 
 		updateInput.ScopeAccountsInput = &scopeAccounts
 	}
@@ -276,7 +270,7 @@ func resourceNewRelicWorkloadUpdate(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	return resourceNewRelicSyntheticsMonitorRead(d, meta)
+	return resourceNewRelicWorkloadRead(d, meta)
 }
 
 func resourceNewRelicWorkloadDelete(d *schema.ResourceData, meta interface{}) error {

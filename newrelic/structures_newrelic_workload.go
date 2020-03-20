@@ -42,7 +42,7 @@ func expandWorkloadEntities(cfg []interface{}) []workloads.EntityRef {
 			GUID: &guid,
 		}
 
-		perms[i] = *&entityRef
+		perms[i] = entityRef
 	}
 
 	return perms
@@ -92,7 +92,6 @@ func expandWorkloadScopeAccounts(cfg map[string]interface{}) workloads.ScopeAcco
 }
 
 func flattenWorkload(workload *workloads.Workload, d *schema.ResourceData) error {
-	d.Set("created_at", workload.CreatedAt)
 	d.Set("guid", workload.GUID)
 	d.Set("workload_id", workload.ID)
 	d.Set("name", workload.Name)
