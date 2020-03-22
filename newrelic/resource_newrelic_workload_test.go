@@ -162,22 +162,16 @@ func testAccNewRelicWorkloadConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
-	account {
-		id = %[1]d
-	}
+	account_id = %[1]d
 
-	entity {
-		guid = "%[3]s"
-	}
+	entity_guids = ["%[3]s"]
 
 	entity_search_query {
 		name = "Example query"
 		query = "name like '%[4]s'"
 	}
 
-	scope_accounts {
-		account_ids =  [%[1]d, 1]
-	}
+	scope_account_ids =  [%[1]d, 1]
 }
 `, testAccountID, name, testEntityGUID, testApplicationName)
 }
@@ -186,22 +180,16 @@ func testAccNewRelicWorkloadConfigUpdated(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workload" "foo" {
 	name = "%[2]s-updated"
-	account {
-		id = %[1]d
-	}
+	account_id = %[1]d
 
-	entity {
-		guid = "%[3]s"
-	}
+	entity_guids = ["%[3]s"]
 
 	entity_search_query {
 		name = "Example query"
 		query = "name like '%[4]s'"
 	}
 
-	scope_accounts {
-		account_ids =  [%[1]d, 1]
-	}
+	scope_account_ids =  [%[1]d, 1]
 }
 `, testAccountID, name, testEntityGUID, testApplicationName)
 }
@@ -210,13 +198,9 @@ func testAccNewRelicWorkloadConfigEntitiesOnly(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
-	account {
-		id = %[1]d
-	}
+	account_id = %[1]d
 
-	entity {
-		guid = "%[3]s"
-	}
+	entity_guids = ["%[3]s"]
 }
 `, testAccountID, name, testEntityGUID)
 }
@@ -225,9 +209,7 @@ func testAccNewRelicWorkloadConfigEntitySearchQueriesOnly(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
-	account {
-		id = %[1]d
-	}
+	account_id = %[1]d
 
 	entity_search_query {
 		name = "Example query"
@@ -241,13 +223,9 @@ func testAccNewRelicWorkloadConfigScopeAccountsOnly(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
-	account {
-		id = %[1]d
-	}
+	account_id = %[1]d
 
-	scope_accounts {
-		account_ids =  [%[1]d, 1]
-	}
+	scope_account_ids =  [%[1]d, 1]
 }
 `, testAccountID, name)
 }

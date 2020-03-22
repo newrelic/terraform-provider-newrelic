@@ -2,62 +2,74 @@ package newrelic
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/nerdgraph"
 	"github.com/newrelic/newrelic-client-go/pkg/workloads"
 )
 
-func expandWorkload(d *schema.ResourceData) workloads.Workload {
-	workload := workloads.Workload{
+func expandWorkloadCreateInput(d *schema.ResourceData) workloads.CreateInput {
+	createInput := workloads.CreateInput{
 		Name: d.Get("name").(string),
-		ID:   d.Get("workload_id").(int),
-		GUID: d.Get("guid").(string),
 	}
 
-	if e, ok := d.GetOk("entity"); ok {
-		workload.Entities = expandWorkloadEntities(e.(*schema.Set).List())
+	if e, ok := d.GetOk("entity_guids"); ok {
+		createInput.EntityGUIDs = expandWorkloadEntityGUIDs(e.(*schema.Set).List())
 	}
 
 	if e, ok := d.GetOk("entity_search_query"); ok {
-		workload.EntitySearchQueries = expandWorkloadEntitySearchQueries(e.(*schema.Set).List())
+		createInput.EntitySearchQueries = expandWorkloadEntitySearchQueryInputs(e.(*schema.Set).List())
 	}
 
-	if e, ok := d.GetOk("scope_accounts"); ok {
-		workload.ScopeAccounts = expandWorkloadScopeAccounts(e.([]interface{})[0].(map[string]interface{}))
+	if e, ok := d.GetOk("scope_account_ids"); ok {
+		createInput.ScopeAccountsInput = expandWorkloadScopeAccountsInput(e.(*schema.Set).List())
 	}
 
-	return workload
+	return createInput
 }
 
-func expandWorkloadEntities(cfg []interface{}) []workloads.EntityRef {
-	if len(cfg) == 0 {
-		return []workloads.EntityRef{}
+func expandWorkloadUpdateInput(d *schema.ResourceData) workloads.UpdateInput {
+	name := d.Get("name").(string)
+	updateInput := workloads.UpdateInput{
+		Name: &name,
 	}
 
-	perms := make([]workloads.EntityRef, len(cfg))
+	if e, ok := d.GetOk("entity_guids"); ok {
+		updateInput.EntityGUIDs = expandWorkloadEntityGUIDs(e.(*schema.Set).List())
+	}
+
+	if e, ok := d.GetOk("entity_search_query"); ok {
+		updateInput.EntitySearchQueries = expandWorkloadEntitySearchQueryInputs(e.(*schema.Set).List())
+	}
+
+	if e, ok := d.GetOk("scope_account_ids"); ok {
+		updateInput.ScopeAccountsInput = expandWorkloadScopeAccountsInput(e.(*schema.Set).List())
+	}
+
+	return updateInput
+}
+
+func expandWorkloadEntityGUIDs(cfg []interface{}) []string {
+	if len(cfg) == 0 {
+		return []string{}
+	}
+
+	perms := make([]string, len(cfg))
 
 	for i, rawCfg := range cfg {
-		cfg := rawCfg.(map[string]interface{})
-		guid := cfg["guid"].(string)
-		entityRef := workloads.EntityRef{
-			GUID: &guid,
-		}
-
-		perms[i] = entityRef
+		perms[i] = rawCfg.(string)
 	}
 
 	return perms
 }
 
-func expandWorkloadEntitySearchQueries(cfg []interface{}) []workloads.EntitySearchQuery {
+func expandWorkloadEntitySearchQueryInputs(cfg []interface{}) []workloads.EntitySearchQueryInput {
 	if len(cfg) == 0 {
-		return []workloads.EntitySearchQuery{}
+		return []workloads.EntitySearchQueryInput{}
 	}
 
-	perms := make([]workloads.EntitySearchQuery, len(cfg))
+	perms := make([]workloads.EntitySearchQueryInput, len(cfg))
 
 	for i, rawCfg := range cfg {
 		cfg := rawCfg.(map[string]interface{})
-		entitySearchQuery := expandWorkloadEntitySearchQuery(cfg)
+		entitySearchQuery := expandWorkloadEntitySearchQueryInput(cfg)
 
 		perms[i] = entitySearchQuery
 	}
@@ -65,75 +77,51 @@ func expandWorkloadEntitySearchQueries(cfg []interface{}) []workloads.EntitySear
 	return perms
 }
 
-func expandWorkloadEntitySearchQuery(cfg map[string]interface{}) workloads.EntitySearchQuery {
-	entitySearchQuery := workloads.EntitySearchQuery{}
+func expandWorkloadEntitySearchQueryInput(cfg map[string]interface{}) workloads.EntitySearchQueryInput {
+	queryInput := workloads.EntitySearchQueryInput{}
 
 	if name, ok := cfg["name"]; ok {
-		entitySearchQuery.Name = name.(string)
+		nameStr := name.(string)
+		queryInput.Name = &nameStr
 	}
 
 	if query, ok := cfg["query"]; ok {
-		entitySearchQuery.Query = query.(string)
+		queryInput.Query = query.(string)
 	}
 
-	return entitySearchQuery
+	return queryInput
 }
 
-func expandWorkloadScopeAccounts(cfg map[string]interface{}) workloads.ScopeAccounts {
-	scopeAccounts := workloads.ScopeAccounts{}
+func expandWorkloadScopeAccountsInput(cfg []interface{}) *workloads.ScopeAccountsInput {
+	scopeAccounts := workloads.ScopeAccountsInput{}
 
-	if accountIDs, ok := cfg["account_ids"]; ok {
-		for _, a := range accountIDs.(*schema.Set).List() {
-			scopeAccounts.AccountIDs = append(scopeAccounts.AccountIDs, a.(int))
-		}
+	for _, a := range cfg {
+		scopeAccounts.AccountIDs = append(scopeAccounts.AccountIDs, a.(int))
 	}
 
-	return scopeAccounts
+	return &scopeAccounts
 }
 
 func flattenWorkload(workload *workloads.Workload, d *schema.ResourceData) error {
+	d.Set("account_id", workload.Account.ID)
 	d.Set("guid", workload.GUID)
 	d.Set("workload_id", workload.ID)
 	d.Set("name", workload.Name)
 	d.Set("permalink", workload.Permalink)
+	d.Set("composite_entity_search_query", workload.EntitySearchQuery)
 
-	d.Set("account", flattenWorkloadAccountReference(workload.Account))
-	d.Set("created_by", flattenWorkloadUserReference(workload.CreatedBy))
-	d.Set("entity", flattenWorkloadEntities(workload.Entities))
+	d.Set("entity_guids", flattenWorkloadEntityGUIDs(workload.Entities))
 	d.Set("entity_search_query", flattenWorkloadEntitySearchQueries(workload.EntitySearchQueries))
-	d.Set("scope_accounts", flattenWorkloadScopeAccounts(workload.ScopeAccounts))
+	d.Set("scope_account_ids", workload.ScopeAccounts.AccountIDs)
 
 	return nil
 }
 
-func flattenWorkloadAccountReference(in nerdgraph.AccountReference) interface{} {
-	m := make(map[string]interface{})
-
-	m["id"] = in.ID
-	m["name"] = in.Name
-
-	return []interface{}{m}
-}
-
-func flattenWorkloadUserReference(in workloads.UserReference) interface{} {
-	m := make(map[string]interface{})
-
-	m["email"] = in.Email
-	m["gravatar"] = in.Gravatar
-	m["id"] = in.ID
-	m["name"] = in.Name
-
-	return []interface{}{m}
-}
-
-func flattenWorkloadEntities(in []workloads.EntityRef) interface{} {
+func flattenWorkloadEntityGUIDs(in []workloads.EntityRef) interface{} {
 	out := make([]interface{}, len(in))
 
 	for i, e := range in {
-		m := make(map[string]interface{})
-		m["guid"] = e.GUID
-
-		out[i] = m
+		out[i] = e.GUID
 	}
 
 	return out
@@ -151,12 +139,4 @@ func flattenWorkloadEntitySearchQueries(in []workloads.EntitySearchQuery) interf
 	}
 
 	return out
-}
-
-func flattenWorkloadScopeAccounts(in workloads.ScopeAccounts) interface{} {
-	m := make(map[string]interface{})
-
-	m["account_ids"] = in.AccountIDs
-
-	return []interface{}{m}
 }

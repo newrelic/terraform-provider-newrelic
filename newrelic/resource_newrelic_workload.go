@@ -8,36 +8,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
-	"github.com/newrelic/newrelic-client-go/pkg/workloads"
 )
 
 func resourceNewRelicWorkload() *schema.Resource {
-	userReference := &schema.Schema{
-		Type:     schema.TypeList,
-		MaxItems: 1,
-		Computed: true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"email": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"gravatar": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"id": {
-					Type:     schema.TypeInt,
-					Computed: true,
-				},
-				"name": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-			},
-		},
-	}
-
 	return &schema.Resource{
 		Create: resourceNewRelicWorkloadCreate,
 		Read:   resourceNewRelicWorkloadRead,
@@ -47,46 +20,22 @@ func resourceNewRelicWorkload() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			"account": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "The account the workload belongs to.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"created_at": {
+			"account_id": {
 				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The moment when the object was created, represented in milliseconds since the Unix epoch.",
+				Required:    true,
+				Description: "The New Relic account ID where you want to create the workload.",
 			},
-			"created_by": userReference,
-			"entity": {
+			"name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The workload's name.",
+			},
+			"entity_guids": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Description: "A list of entities manually assigned to this workload.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"guid": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The unique entity identifier in New Relic.",
-						},
-					},
-				},
+				Description: "A list of entity GUIDs manually assigned to this workload.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"entity_search_query": {
 				Type:        schema.TypeSet,
@@ -107,43 +56,32 @@ func resourceNewRelicWorkload() *schema.Resource {
 					},
 				},
 			},
-			"guid": {
-				Type:        schema.TypeString,
+			"scope_account_ids": {
+				Type:        schema.TypeSet,
+				Optional:    true,
 				Computed:    true,
-				Description: "The unique entity identifier of the workload in New Relic.",
+				Description: "A list of account IDs that will be used to get entities from.",
+				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 			"workload_id": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The unique entity identifier of the workload.",
 			},
-			"name": {
+			"guid": {
 				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The workload's name.",
+				Computed:    true,
+				Description: "The unique entity identifier of the workload in New Relic.",
+			},
+			"composite_entity_search_query": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The composite query used to compose a dynamic workload.",
 			},
 			"permalink": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the workload.",
-			},
-			"scope_accounts": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "Accounts that will be used to get entities from.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"account_ids": {
-							Type:        schema.TypeSet,
-							Elem:        &schema.Schema{Type: schema.TypeInt},
-							Optional:    true,
-							MinItems:    1,
-							Description: "A list of accounts that will be used to get entities from.",
-						},
-					},
-				},
 			},
 		},
 	}
@@ -151,51 +89,23 @@ func resourceNewRelicWorkload() *schema.Resource {
 
 func resourceNewRelicWorkloadCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
-	workload := expandWorkload(d)
-	accountID := d.Get("account.0.id").(int)
+	createInput := expandWorkloadCreateInput(d)
+	accountID := d.Get("account_id").(int)
 
-	log.Printf("[INFO] Creating New Relic One workload %s", workload.Name)
-
-	createInput := workloads.CreateInput{
-		Name: workload.Name,
-	}
-
-	if len(workload.Entities) > 0 {
-		var entityGUIDs []string
-		for _, e := range workload.Entities {
-			entityGUIDs = append(entityGUIDs, *e.GUID)
-		}
-
-		createInput.EntityGUIDs = entityGUIDs
-	}
-
-	if len(workload.EntitySearchQueries) > 0 {
-		var entitySearchQueries []workloads.EntitySearchQueryInput
-		for _, q := range workload.EntitySearchQueries {
-			queryInput := workloads.EntitySearchQueryInput{
-				Name:  &q.Name,
-				Query: q.Query,
-			}
-
-			entitySearchQueries = append(entitySearchQueries, queryInput)
-		}
-
-		createInput.EntitySearchQueries = entitySearchQueries
-	}
-
-	if len(workload.ScopeAccounts.AccountIDs) > 0 {
-		var scopeAccounts workloads.ScopeAccountsInput
-		scopeAccounts.AccountIDs = append(scopeAccounts.AccountIDs, workload.ScopeAccounts.AccountIDs...)
-
-		createInput.ScopeAccountsInput = &scopeAccounts
-	}
+	log.Printf("[INFO] Creating New Relic One workload %s", createInput.Name)
 
 	created, err := client.Workloads.CreateWorkload(accountID, createInput)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(fmt.Sprintf("%d:%d:%s", accountID, created.ID, created.GUID))
+	ids := workloadIDs{
+		AccountID: accountID,
+		ID:        created.ID,
+		GUID:      created.GUID,
+	}
+
+	d.SetId(ids.String())
 	return resourceNewRelicWorkloadRead(d, meta)
 }
 
@@ -222,7 +132,7 @@ func resourceNewRelicWorkloadRead(d *schema.ResourceData, meta interface{}) erro
 
 func resourceNewRelicWorkloadUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
-	workload := expandWorkload(d)
+	updateInput := expandWorkloadUpdateInput(d)
 
 	log.Printf("[INFO] Updating New Relic One workload %s", d.Id())
 
@@ -231,44 +141,12 @@ func resourceNewRelicWorkloadUpdate(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	updateInput := workloads.UpdateInput{
-		Name: &workload.Name,
-	}
-
-	if len(workload.Entities) > 0 {
-		var entityGUIDs []string
-		for _, e := range workload.Entities {
-			entityGUIDs = append(entityGUIDs, *e.GUID)
-		}
-
-		updateInput.EntityGUIDs = entityGUIDs
-	}
-
-	if len(workload.EntitySearchQueries) > 0 {
-		var entitySearchQueries []workloads.EntitySearchQueryInput
-		for _, q := range workload.EntitySearchQueries {
-			queryInput := workloads.EntitySearchQueryInput{
-				Name:  &q.Name,
-				Query: q.Query,
-			}
-
-			entitySearchQueries = append(entitySearchQueries, queryInput)
-		}
-
-		updateInput.EntitySearchQueries = entitySearchQueries
-	}
-
-	if len(workload.ScopeAccounts.AccountIDs) > 0 {
-		var scopeAccounts workloads.ScopeAccountsInput
-		scopeAccounts.AccountIDs = append(scopeAccounts.AccountIDs, workload.ScopeAccounts.AccountIDs...)
-
-		updateInput.ScopeAccountsInput = &scopeAccounts
-	}
-
 	_, err = client.Workloads.UpdateWorkload(ids.GUID, updateInput)
 	if err != nil {
 		return err
 	}
+
+	d.SetId(ids.String())
 
 	return resourceNewRelicWorkloadRead(d, meta)
 }
