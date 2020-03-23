@@ -9,6 +9,61 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
+func TestAccNewRelicNrqlAlertCondition_NerdGraph(t *testing.T) {
+	// resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		// CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicNrqlAlertConditionConfig_Baseline(rName),
+				Check:  resource.ComposeTestCheckFunc(
+				// testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func testAccNewRelicNrqlAlertConditionConfig_Baseline(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	account_id = 2520528
+	type = "baseline"
+
+	policy_id                    = newrelic_alert_policy.foo.id
+  name                         = "tf-test-%[1]s"
+  runbook_url                  = "https://foo.example.com"
+  enabled                      = false
+
+	baseline_direction   = "LOWER_ONLY"
+	description          = "test description"
+	violation_time_limit = "ONE_HOUR"
+
+  term {
+    duration      = 120
+    operator      = "below"
+    priority      = "critical"
+    threshold     = "0.75"
+    threshold_occurrences = "AT_LEAST_ONCE"
+	}
+
+  nrql {
+    query         = "SELECT uniqueCount(hostname) FROM ComputeSample"
+    evaluation_offset   = "3"
+	}
+}
+`, name)
+}
+
 func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)

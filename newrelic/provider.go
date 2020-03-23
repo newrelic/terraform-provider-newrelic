@@ -29,6 +29,12 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_KEY", nil),
 				Sensitive:   true,
 			},
+			"personal_api_key": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_PERSONAL_API_KEY", nil),
+				Sensitive:   true,
+			},
 			"api_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -142,6 +148,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 
 	cfg := Config{
 		APIKey:               apiKey,
+		PersonalAPIKey:       data.Get("personal_api_key").(string),
 		APIURL:               data.Get("api_url").(string),
 		SyntheticsAPIURL:     data.Get("synthetics_api_url").(string),
 		NerdGraphAPIURL:      data.Get("nerdgraph_api_url").(string),
