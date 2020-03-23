@@ -446,7 +446,7 @@ github.com/nbutton23/zxcvbn-go/match
 github.com/nbutton23/zxcvbn-go/matching
 github.com/nbutton23/zxcvbn-go/scoring
 github.com/nbutton23/zxcvbn-go/utils/math
-# github.com/newrelic/go-agent/v3 v3.3.0
+# github.com/newrelic/go-agent/v3 v3.4.0
 github.com/newrelic/go-agent/v3/internal
 github.com/newrelic/go-agent/v3/internal/cat
 github.com/newrelic/go-agent/v3/internal/jsonx
