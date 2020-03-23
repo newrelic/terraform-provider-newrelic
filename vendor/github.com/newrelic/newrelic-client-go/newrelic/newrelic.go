@@ -14,6 +14,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/nerdgraph"
 	"github.com/newrelic/newrelic-client-go/pkg/plugins"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
+	"github.com/newrelic/newrelic-client-go/pkg/workloads"
 )
 
 // NewRelic is a collection of New Relic APIs.
@@ -25,6 +26,7 @@ type NewRelic struct {
 	Plugins    plugins.Plugins
 	Synthetics synthetics.Synthetics
 	NerdGraph  nerdgraph.NerdGraph
+	Workloads  workloads.Workloads
 }
 
 // New returns a collection of New Relic APIs.
@@ -52,6 +54,7 @@ func New(opts ...ConfigOption) (*NewRelic, error) {
 		Plugins:    plugins.New(config),
 		Synthetics: synthetics.New(config),
 		NerdGraph:  nerdgraph.New(config),
+		Workloads:  workloads.New(config),
 	}
 
 	return nr, nil
