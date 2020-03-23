@@ -3,10 +3,12 @@ package newrelic
 import (
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
@@ -40,23 +42,14 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
-				Description: "Whether to enable the alert condition.",
+				Description: "Whether or not to enable the alert condition.",
 			},
-			"expected_groups": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Number of expected groups when using outlier detection.",
-			},
-			"ignore_overlap": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether to look for a convergence of groups when using outlier detection.",
-			},
-			"violation_time_limit_seconds": {
-				Type:         schema.TypeInt,
+			// Note: The "outlier" type does NOT exist in NerdGraph yet
+			"type": {
+				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.IntInSlice([]int{3600, 7200, 14400, 28800, 43200, 86400}),
-				Description:  "Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are 3600, 7200, 14400, 28800, 43200, and 86400.",
+				Default:      "static",
+				ValidateFunc: validation.StringInSlice([]string{"static", "outlier", "baseline"}, false),
 			},
 			"nrql": {
 				Type:        schema.TypeList,
@@ -71,8 +64,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Required: true,
 						},
 						"since_value": {
-							Type:     schema.TypeString,
-							Required: true,
+							Deprecated:    "use `evaluation_offset` attribute instead",
+							Type:          schema.TypeString,
+							Optional:      true,
+							Description:   "NRQL queries are evaluated in one-minute time windows. The start time depends on the value you provide in the NRQL condition's `since_value`.",
+							ConflictsWith: []string{"nrql.0.evaluation_offset"},
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								valueString := val.(string)
 								v, err := strconv.Atoi(valueString)
@@ -85,74 +81,244 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 								return
 							},
 						},
+						// New attribute in NerdGraph. Equivalent to `since_value`.
+						"evaluation_offset": {
+							Type:          schema.TypeInt,
+							Optional:      true,
+							Description:   "NRQL queries are evaluated in one-minute time windows. The start time depends on the value you provide in the NRQL condition's `evaluation_offset`.",
+							ConflictsWith: []string{"nrql.0.since_value"},
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								v := val.(int)
+								if v < 1 || v > 20 {
+									errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
+								}
+								return
+							},
+						},
 					},
 				},
 			},
 			"term": {
 				Type:        schema.TypeSet,
-				Description: "A list of terms for this condition. ",
+				Required:    true,
+				MinItems:    1,
+				MaxItems:    2,
+				Description: "A set of terms for this condition. Max 2 terms allowed - at least one 1 critical term and 1 optional warning term.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						// Maps to `thresholdDuration` in NerdGraph and values are in seconds, not minutes.
+						// Validation is different in NerdGraph - Value must be within 120-3600 seconds (2-60 minutes) and a multiple of 60 for BASELINE conditions.
+						// Convert to seconds when using NerdGraph
 						"duration": {
+							Deprecated:   "use `threshold_duration` attribute instead",
 							Type:         schema.TypeInt,
-							Required:     true,
-							ValidateFunc: validation.IntBetween(1, 120),
+							Optional:     true,
 							Description:  "In minutes, must be in the range of 1 to 120, inclusive.",
+							ValidateFunc: validation.IntBetween(1, 120),
 						},
+						// Value must be uppercase when using NerdGraph
 						"operator": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Default:      "equal",
-							ValidateFunc: validation.StringInSlice([]string{"above", "below", "equal"}, false),
 							Description:  "One of (above, below, equal). Defaults to equal.",
+							ValidateFunc: validation.StringInSlice([]string{"above", "below", "equal"}, false),
 						},
+						// Value must be uppercase when using NerdGraph
 						"priority": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Default:      "critical",
+							Description:  "One of (critical, warning). Defaults to critical. At least one condition term must have priority set to critical.",
 							ValidateFunc: validation.StringInSlice([]string{"critical", "warning"}, false),
-							Description:  "One of (critical, warning). Defaults to critical.",
 						},
 						"threshold": {
 							Type:         schema.TypeFloat,
 							Required:     true,
+							Description:  "Must be 0 or greater. For baseline conditions must be in range [1, 1000].",
 							ValidateFunc: float64Gte(0.0),
-							Description:  "Must be 0 or greater.",
 						},
+						// Does not exist in NerdGraph
 						"time_function": {
+							Deprecated:   "use `threshold_occurrences` attribute instead",
 							Type:         schema.TypeString,
-							Required:     true,
+							Optional:     true,
+							Description:  "Valid values are: 'all' or 'any'",
 							ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
-							Description:  "One of (all, any).",
+						},
+
+						// NerdGraph only. Seems to be similar to `time_function`
+						"threshold_occurrences": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "Valid values are: 'ALL' or 'AT_LEAST_ONCE'",
+							ValidateFunc: validation.StringInSlice([]string{"ALL", "AT_LEAST_ONCE"}, false),
+						},
+						// NerdGraph only. Equivalent to `duration`, but in seconds
+						"threshold_duration": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "The duration of time, in seconds, that the threshold must violate for in order to create a violation. Value must be a multiple of 60 and within 120-3600 seconds for baseline conditions and 120-7200 seconds for static conditions.",
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								v := val.(int)
+
+								// Value must be a factor of 60.
+								if v%60 != 0 {
+									errs = append(errs, fmt.Errorf("%q must be a factor of 60, got: %d", key, v))
+								}
+
+								// This validation is a top-level validation check.
+								// Baseline conditions must be within range [120, 3600].
+								// Baseline condition validation lives in the "expand" functions.
+								if v < 120 || v > 7200 {
+									errs = append(errs, fmt.Errorf("%q must be between 120 and 7200 inclusive, got: %d", key, v))
+								}
+
+								return
+							},
 						},
 					},
 				},
-				Required: true,
-				MinItems: 1,
 			},
-			"type": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "static",
-				ValidateFunc: validation.StringInSlice([]string{"static", "outlier", "baseline"}, false),
+			// Outlier ONLY
+			"expected_groups": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Number of expected groups when using outlier detection.",
 			},
+			// Outlier ONLY
+			"ignore_overlap": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to look for a convergence of groups when using outlier detection.",
+			},
+			"violation_time_limit_seconds": {
+				Deprecated:    "use `violation_time_limit` attribute instead",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Description:   "Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are 3600, 7200, 14400, 28800, 43200, and 86400.",
+				ConflictsWith: []string{"violation_time_limit"},
+				ValidateFunc:  validation.IntInSlice([]int{3600, 7200, 14400, 28800, 43200, 86400}),
+			},
+			// Exists in NerdGraph, but with different values. Figure out how to handle this.
+			// Conflicts with `baseline_direction` when using NerdGraph
 			"value_function": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "single_value",
+				Description:  "Valid values are: 'single_value' or 'sum'",
 				ValidateFunc: validation.StringInSlice([]string{"single_value", "sum"}, false),
-				Description:  "Possible values are single_value, sum.",
+			},
+
+			/**
+			 * New attributes
+			 **/
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The New Relic account ID for managing your NRQL alert conditions.",
+				DefaultFunc: func() (interface{}, error) {
+					envAcctID := os.Getenv("NEWRELIC_ACCOUNT_ID")
+					if envAcctID != "" {
+						acctID, err := strconv.Atoi(envAcctID)
+
+						return acctID, err
+					}
+
+					return nil, nil
+				},
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The description of the NRQL alert condition.",
+			},
+			"violation_time_limit": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are ONE_HOUR, TWO_HOURS, FOUR_HOURS, EIGHT_HOURS, TWELVE_HOURS, TWENTY_FOUR_HOURS.",
+				ConflictsWith: []string{"violation_time_limit_seconds"},
+				ValidateFunc:  validation.StringInSlice([]string{"ONE_HOUR", "TWO_HOURS", "FOUR_HOURS", "EIGHT_HOURS", "TWELVE_HOURS", "TWENTY_FOUR_HOURS"}, false),
+			},
+			// Baseline ONLY
+			"baseline_direction": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The baseline direction of a baseline NRQL alert condition. Valid values are: 'LOWER_ONLY', 'UPPER_AND_LOWER', 'UPPER_ONLY'",
+				ConflictsWith: []string{"value_function"},
+				ValidateFunc:  validation.StringInSlice([]string{"LOWER_ONLY", "UPPER_AND_LOWER", "UPPER_ONLY"}, false),
 			},
 		},
 	}
 }
 
-func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
-	condition := expandNrqlAlertConditionStruct(d)
-	policyID := d.Get("policy_id").(int)
+// Selects the proper accountID for usage within a resource. Account IDs provided
+// within a `resource` block will override a `provider` block account ID. This ensures
+// resources can be scoped to specific accounts. Bear in mind those accounts must be
+// accessible with the provided Personal API Key (APIKS).
+//
+// TODO: make this more reusable and testable
+func selectAccountID(providerCondig *ProviderConfig, d *schema.ResourceData) int {
+	resourceAccountID := d.Get("account_id").(int)
 
-	log.Printf("[INFO] Creating New Relic NRQL alert condition %s", condition.Name)
+	if resourceAccountID != 0 {
+		return resourceAccountID
+	}
+
+	return providerCondig.AccountID
+}
+
+func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	accountID := selectAccountID(providerConfig, d)
+	policyID := d.Get("policy_id").(int)
+	conditionType := d.Get("type").(string)
+
+	if providerConfig.hasNerdGraphCredentials() && conditionType != "outlier" {
+		conditionInput, err := expandNrqlAlertConditionInput(d)
+		if err != nil {
+			return err
+		}
+
+		// fmt.Print("\n **************************** \n")
+		// fmt.Printf("\n Create Input: %+v \n", toJSON(conditionInput))
+		// fmt.Print("\n **************************** \n")
+		// time.Sleep(10 * time.Second)
+
+		log.Printf("[INFO] Creating New Relic NRQL alert condition %s via NerdGraph API", conditionInput.Name)
+
+		var nrqlCondition *alerts.NrqlAlertCondition
+
+		if conditionType == "baseline" {
+			nrqlCondition, err = client.Alerts.CreateNrqlConditionBaselineMutation(accountID, policyID, *conditionInput)
+
+			if err != nil {
+				return err
+			}
+		}
+
+		if conditionType == "static" {
+			if nrqlCondition, err = client.Alerts.CreateNrqlConditionStaticMutation(accountID, policyID, *conditionInput); err != nil {
+				return err
+			}
+		}
+
+		conditionID, err := strconv.Atoi(nrqlCondition.ID)
+		if err != nil {
+			return err
+		}
+
+		d.SetId(serializeIDs([]int{policyID, conditionID}))
+
+		return resourceNewRelicNrqlAlertConditionRead(d, meta)
+	}
+
+	// Fallback to REST API
+	condition := expandNrqlAlertConditionStruct(d)
+
+	log.Printf("[INFO] Creating New Relic NRQL alert condition %s via REST API", condition.Name)
 
 	condition, err := client.Alerts.CreateNrqlCondition(policyID, *condition)
 	if err != nil {
@@ -165,7 +331,8 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 }
 
 func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Reading New Relic NRQL alert condition %s", d.Id())
 
@@ -175,8 +342,39 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 	}
 
 	policyID := ids[0]
-	id := ids[1]
+	conditionID := ids[1]
+	conditionType := d.Get("type").(string)
+	accountID := selectAccountID(providerConfig, d)
 
+	fmt.Print("\n **************************** \n")
+	fmt.Printf(" READ B4 ids:       %+v ", ids)
+	fmt.Printf(" READ B4 accountID: %+v ", accountID)
+	fmt.Print("\n **************************** \n")
+
+	// NerdGraph
+	if providerConfig.hasNerdGraphCredentials() && conditionType != "outlier" {
+		accountID := selectAccountID(providerConfig, d)
+
+		fmt.Print("\n **************************** \n")
+		fmt.Printf(" READ ids:       %+v ", ids)
+		fmt.Printf(" READ accountID: %+v ", accountID)
+		fmt.Print("\n **************************** \n")
+		// time.Sleep(10 * time.Second)
+
+		var nrqlCondition *alerts.NrqlAlertCondition
+		nrqlCondition, err = client.Alerts.GetNrqlConditionQuery(accountID, conditionID)
+		if err != nil {
+			if _, ok := err.(*errors.NotFound); ok {
+				d.SetId("")
+				return nil
+			}
+			return err
+		}
+
+		return flattenNrqlAlertCondition(accountID, nrqlCondition, d)
+	}
+
+	// Fallback to REST API
 	_, err = client.Alerts.GetPolicy(policyID)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
@@ -186,7 +384,7 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	condition, err := client.Alerts.GetNrqlCondition(policyID, id)
+	condition, err := client.Alerts.GetNrqlCondition(policyID, conditionID)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -202,18 +400,48 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 }
 
 func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
-	condition := expandNrqlAlertConditionStruct(d)
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	accountID := selectAccountID(providerConfig, d)
+	conditionType := d.Get("type").(string)
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
 		return err
 	}
 
-	id := ids[1]
-	condition.ID = id
+	conditionID := ids[1]
 
-	log.Printf("[INFO] Updating New Relic NRQL alert condition %d", id)
+	if providerConfig.hasNerdGraphCredentials() && conditionType != "outlier" {
+		var conditionInput *alerts.NrqlConditionInput
+		conditionInput, err = expandNrqlAlertConditionInput(d)
+		if err != nil {
+			return err
+		}
+
+		if conditionType == "baseline" {
+			_, err = client.Alerts.UpdateNrqlConditionBaselineMutation(accountID, conditionID, *conditionInput)
+			if err != nil {
+				return err
+			}
+		}
+
+		if conditionType == "static" {
+			_, err = client.Alerts.UpdateNrqlConditionStaticMutation(accountID, conditionID, *conditionInput)
+			if err != nil {
+				return err
+			}
+		}
+
+		return resourceNewRelicNrqlAlertConditionRead(d, meta)
+	}
+
+	// Fallback to REST API
+	condition := expandNrqlAlertConditionStruct(d)
+	condition.ID = conditionID
+
+	log.Printf("[INFO] Updating New Relic NRQL alert condition %d", condition.ID)
 
 	_, err = client.Alerts.UpdateNrqlCondition(*condition)
 	if err != nil {
