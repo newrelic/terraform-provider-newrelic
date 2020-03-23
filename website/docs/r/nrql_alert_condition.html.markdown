@@ -19,7 +19,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  policy_id = newrelic_alert_policy.foo.id
+  policy_id = newrelic_alert_policy.foo.policy_id
 
   name        = "foo"
   type        = "static"
@@ -92,7 +92,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  policy_id = newrelic_alert_policy.foo.id
+  policy_id = newrelic_alert_policy.foo.policy_id
 
   name        = "outlier-example"
   runbook_url = "https://bar.example.com"

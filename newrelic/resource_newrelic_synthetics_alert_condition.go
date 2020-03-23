@@ -24,6 +24,12 @@ func resourceNewRelicSyntheticsAlertCondition() *schema.Resource {
 				ForceNew:    true,
 				Description: "The ID of the policy where this condition should be used.",
 			},
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The New Relic account ID to operate on.",
+				DefaultFunc: envAccountID,
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -85,6 +91,7 @@ func resourceNewRelicSyntheticsAlertConditionCreate(d *schema.ResourceData, meta
 	client := meta.(*ProviderConfig).NewClient
 
 	policyID := d.Get("policy_id").(int)
+
 	condition := expandSyntheticsCondition(d)
 
 	log.Printf("[INFO] Creating New Relic Synthetics alert condition %s", condition.Name)
@@ -111,13 +118,11 @@ func resourceNewRelicSyntheticsAlertConditionRead(d *schema.ResourceData, meta i
 
 	policyID := ids[0]
 	id := ids[1]
+	accountID := d.Get("account_id").(int)
 
-	_, err = client.Alerts.GetPolicy(policyID)
+	_, err = client.Alerts.QueryPolicy(accountID, policyID)
 	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
+		d.SetId("")
 		return err
 	}
 

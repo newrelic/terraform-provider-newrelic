@@ -22,7 +22,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_alert_condition" "foo" {
-  policy_id = newrelic_alert_policy.foo.id
+  policy_id = newrelic_alert_policy.foo.policy_id
 
   name        = "foo"
   type        = "apm_kt_metric"

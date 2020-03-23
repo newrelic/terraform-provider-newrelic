@@ -3,7 +3,6 @@ package newrelic
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -18,6 +17,12 @@ func dataSourceNewRelicAlertPolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of the alert policy in New Relic.",
+			},
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The New Relic account ID to operate on.",
+				DefaultFunc: envAccountID,
 			},
 			"incident_preference": {
 				Type:        schema.TypeString,
@@ -44,21 +49,21 @@ func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{})
 	log.Printf("[INFO] Reading New Relic Alert Policies")
 
 	name := d.Get("name").(string)
+	accountID := d.Get("account_id").(int)
 
-	params := alerts.ListPoliciesParams{
-		Name: name,
-	}
+	params := alerts.AlertsPoliciesSearchCriteriaInput{}
 
-	policies, err := client.Alerts.ListPolicies(&params)
+	policies, err := client.Alerts.QueryPolicySearch(accountID, params)
 	if err != nil {
 		return err
 	}
 
-	var policy *alerts.Policy
+	var policy *alerts.AlertsPolicy
 
 	for _, c := range policies {
 		if strings.EqualFold(c.Name, name) {
-			policy = &c
+			policy = c
+
 			break
 		}
 	}
@@ -67,7 +72,7 @@ func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("the name '%s' does not match any New Relic alert policy", name)
 	}
 
-	d.SetId(strconv.Itoa(policy.ID))
+	d.SetId(serializeIDs([]int{policy.ID, policy.AccountID}))
 
-	return flattenAlertPolicyDataSource(policy, d)
+	return flattenAlertPolicyDataSource(policy, d, accountID)
 }

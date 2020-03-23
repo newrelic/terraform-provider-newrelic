@@ -214,6 +214,7 @@ func resourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interfac
 
 	monitor, err := client.Synthetics.GetMonitor(d.Id())
 	if err != nil {
+
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
@@ -227,6 +228,7 @@ func resourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interfac
 
 func resourceNewRelicSyntheticsMonitorUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
+
 	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
 
 	_, err := client.Synthetics.UpdateMonitor(*buildSyntheticsUpdateMonitorArgs(d))

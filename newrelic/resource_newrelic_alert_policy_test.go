@@ -3,7 +3,6 @@ package newrelic
 import (
 	"fmt"
 	"regexp"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -127,15 +126,18 @@ func testAccCheckNewRelicAlertPolicyDestroy(s *terraform.State) error {
 			continue
 		}
 
-		id, err := strconv.ParseInt(r.Primary.ID, 10, 32)
+		ids, err := parseIDs(r.Primary.ID, 2)
 		if err != nil {
 			return err
 		}
 
-		_, err = client.Alerts.GetPolicy(int(id))
+		policyID := ids[0]
+		accountID := ids[1]
+
+		_, err = client.Alerts.QueryPolicy(accountID, policyID)
 
 		if err == nil {
-			return fmt.Errorf("policy still exists")
+			return fmt.Errorf("policy still exists: %s", err)
 		}
 
 	}
@@ -154,17 +156,20 @@ func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		id, err := strconv.ParseInt(rs.Primary.ID, 10, 32)
+		ids, err := parseIDs(rs.Primary.ID, 2)
 		if err != nil {
 			return err
 		}
 
-		found, err := client.Alerts.GetPolicy(int(id))
+		policyID := ids[0]
+		accountID := ids[1]
+
+		found, err := client.Alerts.QueryPolicy(accountID, policyID)
 		if err != nil {
 			return err
 		}
 
-		if strconv.Itoa(found.ID) != rs.Primary.ID {
+		if found.ID != policyID {
 			return fmt.Errorf("policy not found: %v - %v", rs.Primary.ID, found)
 		}
 

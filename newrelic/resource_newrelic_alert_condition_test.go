@@ -286,7 +286,7 @@ resource "newrelic_alert_policy" "foo" {
 	name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.foo.id
+	policy_id = newrelic_alert_policy.foo.policy_id
 
 	name            = "%[1]s"
 	enabled         = true
@@ -316,7 +316,7 @@ resource "newrelic_alert_policy" "foo" {
 	name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.foo.id
+	policy_id = newrelic_alert_policy.foo.policy_id
 
 	name            = "%[1]s"
 	enabled         = false
@@ -346,7 +346,7 @@ resource "newrelic_alert_policy" "foo" {
 	name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.foo.id
+	policy_id = newrelic_alert_policy.foo.policy_id
 
 	name            = "%[1]s"
 	enabled         = false
@@ -376,7 +376,7 @@ resource "newrelic_alert_policy" "foo" {
 	name = "%[1]s"
 }
 resource "newrelic_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.foo.id
+	policy_id = newrelic_alert_policy.foo.policy_id
 	name            = "test-term-duration"
 	type            = "apm_app_metric"
 	entities        = ["12345"]

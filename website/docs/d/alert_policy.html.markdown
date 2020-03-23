@@ -23,7 +23,7 @@ data "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_alert_policy_channel" "foo" {
-  policy_id  = data.newrelic_alert_policy.foo.id
+  policy_id  = data.newrelic_alert_policy.foo.policy_id
   channel_id = data.newrelic_alert_channel.foo.id
 }
 ```

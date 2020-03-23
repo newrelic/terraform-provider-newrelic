@@ -215,7 +215,7 @@ resource "newrelic_alert_policy" "foo" {
 	name = "tf-test-%[1]s"
 }
 resource "newrelic_plugins_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.foo.id
+	policy_id = newrelic_alert_policy.foo.policy_id
 
 	name               = "tf-test-%[1]s"
 	enabled            = false
@@ -254,7 +254,7 @@ resource "newrelic_alert_policy" "foo" {
 	name = "tf-test-updated-%[1]s"
 }
 resource "newrelic_plugins_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.foo.id
+	policy_id = newrelic_alert_policy.foo.policy_id
 
 	name               = "tf-test-updated-%[1]s"
 	enabled            = true
@@ -293,7 +293,7 @@ resource "newrelic_alert_policy" "foo" {
   name = "tf-test-%[1]s"
 }
 resource "newrelic_plugins_alert_condition" "foo" {
-  policy_id = newrelic_alert_policy.foo.id
+  policy_id = newrelic_alert_policy.foo.policy_id
 
   name               = "really-long-name-that-is-more-than-sixtyfour-characters-long-tf-test-%[1]s"
   enabled            = false
@@ -347,7 +347,7 @@ resource "newrelic_alert_policy" "foo" {
 	name = "tf-test-%[1]s"
 }
 resource "newrelic_plugins_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.foo.id
+	policy_id = newrelic_alert_policy.foo.policy_id
 	
 	name               = ""
 	enabled            = false
@@ -401,7 +401,7 @@ resource "newrelic_alert_policy" "foo" {
 	name = "tf-test-%[1]s"
 }
 resource "newrelic_plugins_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.foo.id
+	policy_id = newrelic_alert_policy.foo.policy_id
 
 	name               = "tf-test-%[1]s"
 	enabled            = false
@@ -455,7 +455,7 @@ resource "newrelic_alert_policy" "foo" {
 	name = "tf-test-%[1]s"
 }
 resource "newrelic_plugins_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.foo.id
+	policy_id = newrelic_alert_policy.foo.policy_id
 
 	name               = "tf-test-%[1]s"
 	enabled            = false

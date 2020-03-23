@@ -18,7 +18,7 @@ data "newrelic_synthetics_monitor" "foo" {
 }
 
 resource "newrelic_synthetics_alert_condition" "foo" {
-  policy_id = newrelic_alert_policy.foo.id
+  policy_id = newrelic_alert_policy.foo.policy_id
 
   name        = "foo"
   monitor_id  = data.newrelic_synthetics_monitor.foo.id

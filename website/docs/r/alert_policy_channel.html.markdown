@@ -46,7 +46,7 @@ resource "newrelic_alert_channel" "slack_channel" {
 # Applies the created channels above to the alert policy
 # referenced at the top of the config.
 resource "newrelic_alert_policy_channel" "foo" {
-  policy_id  = newrelic_alert_policy.example_policy.id
+  policy_id  = newrelic_alert_policy.example_policy.policy_id
   channel_ids = [
     data.newrelic_alert_channel.email_channel.id,
     data.newrelic_alert_channel.slack_channel.id

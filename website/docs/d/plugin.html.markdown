@@ -24,7 +24,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_plugins_alert_condition" "foo" {
-  policy_id          = newrelic_alert_policy.foo.id
+  policy_id          = newrelic_alert_policy.foo.policy_id
   name               = "foo"
   metric             = "Component/Summary/Consumers[consumers]"
   plugin_id          = data.newrelic_plugin.foo.id

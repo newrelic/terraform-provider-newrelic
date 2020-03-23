@@ -214,7 +214,7 @@ resource "newrelic_alert_channel" "foo" {
 }
 
 resource "newrelic_alert_policy_channel" "foo" {
-  policy_id  = newrelic_alert_policy.foo.id
+  policy_id  = newrelic_alert_policy.foo.policy_id
   channel_id = newrelic_alert_channel.foo.id
 }
 `, name)
@@ -237,7 +237,7 @@ resource "newrelic_alert_channel" "foo" {
 }
 
 resource "newrelic_alert_policy_channel" "foo" {
-  policy_id  = newrelic_alert_policy.foo.id
+  policy_id  = newrelic_alert_policy.foo.policy_id
   channel_id = newrelic_alert_channel.foo.id
 }
 `, rName)
@@ -259,7 +259,7 @@ resource "newrelic_alert_channel" "foo" {
 }
 
 resource "newrelic_alert_policy_channel" "foo" {
-  policy_id  = newrelic_alert_policy.foo.id
+  policy_id  = newrelic_alert_policy.foo.policy_id
   channel_ids = [
 		newrelic_alert_channel.foo.id
 	]
@@ -291,7 +291,7 @@ resource "newrelic_alert_channel" "bar" {
 }
 
 resource "newrelic_alert_policy_channel" "foo" {
-  policy_id  = newrelic_alert_policy.foo.id
+  policy_id  = newrelic_alert_policy.foo.policy_id
   channel_ids = [
 		newrelic_alert_channel.foo.id,
 		newrelic_alert_channel.bar.id
