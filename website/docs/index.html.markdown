@@ -75,7 +75,7 @@ The following arguments are supported:
 
 - `api_key` - (Required except for `newrelic_insights_event` resource) Your New Relic API key. The `NEWRELIC_API_KEY` environment variable can also be used.
 - `api_url` - (Optional) This argument changes the main REST API URL (default is https://api.newrelic.com/v2). If the New Relic account is in the EU, the API URL must be set to https://api.eu.newrelic.com/v2. The `NEWRELIC_API_URL` environment variable can also be used.
-- `synthetics_api_url` - (Optional) This argument changes the Synthetics API URL (default is https://synthetics.newrelic.com/synthetics/api/v3). If the New Relic account is in the EU. the API URL must be set to https://synthetics.eu.newrelic.com/synthetics/api/v3. The `NEWRELIC_SYNTHETICS_API_URL` environment variable can also be used.  This URL is used to provision Synthetics monitors and monitor scripts only.
+- `synthetics_api_url` - (Optional) This argument changes the Synthetics API URL (default is https://synthetics.newrelic.com/synthetics/api). If the New Relic account is in the EU, the API URL must be set to https://synthetics.eu.newrelic.com/synthetics/api. The `NEWRELIC_SYNTHETICS_API_URL` environment variable can also be used.  This URL is used to provision Synthetics monitors and monitor scripts only.
 - `infrastructure_api_url` - (Optional) This argument changes the Infrastructure API URL (default is https://infra-api.newrelic.com/v2). If the New Relic account is in the EU, the Infra API URL must be set to https://infra-api.eu.newrelic.com/v2. The `NEWRELIC_INFRASTRUCTURE_API_URL` environment variable can also be used.  This URL is used to provision Infrastructure alert conditions only.
 - `infra_api_url` - (Deprecated) This argument operates the same as `infrastructure_api_url` above, but is deprecated and will be removed in a future version of the provider.
 - `insecure_skip_verify` - (Optional) Trust self-signed SSL certificates. If omitted, the `NEWRELIC_API_SKIP_VERIFY` environment variable is used.
@@ -94,7 +94,7 @@ Setting `TF_LOG` to a value of `DEBUG` will generate request log messages from t
 
 ## Community
 
-New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. 
+New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices.
 
 * [Roadmap](https://newrelic.github.io/developer-toolkit/roadmap/) - As part of the Developer Toolkit, the roadmap for this project follows the same RFC process
 * [Issues or Enhancement Requests](https://github.com/terraform-providers/terraform-provider-newrelic/issues) - Issues and enhancement requests can be submitted in the Issues tab of this repository. Please search for and review the existing open issues before submitting a new issue.
