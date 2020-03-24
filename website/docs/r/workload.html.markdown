@@ -24,7 +24,6 @@ resource "newrelic_workload" "foo" {
 	entity_guids = ["MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1"]
 
 	entity_search_query {
-		name = "Example query"
 		query = "name like 'Example application'"
 	}
 
@@ -45,7 +44,6 @@ The following arguments are supported:
 
 All nested `entity_search_query` blocks support the following common arguments:
 
-  * `title` - (Required) The name of the query.
   * `query` - (Required) The query.
 
 ## Attributes Reference

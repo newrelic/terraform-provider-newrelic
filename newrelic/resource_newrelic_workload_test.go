@@ -167,7 +167,6 @@ resource "newrelic_workload" "foo" {
 	entity_guids = ["%[3]s"]
 
 	entity_search_query {
-		name = "Example query"
 		query = "name like '%[4]s'"
 	}
 
@@ -185,7 +184,6 @@ resource "newrelic_workload" "foo" {
 	entity_guids = ["%[3]s"]
 
 	entity_search_query {
-		name = "Example query"
 		query = "name like '%[4]s'"
 	}
 
@@ -212,7 +210,6 @@ resource "newrelic_workload" "foo" {
 	account_id = %[1]d
 
 	entity_search_query {
-		name = "Example query"
 		query = "name like 'App'"
 	}
 }

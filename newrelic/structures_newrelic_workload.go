@@ -80,11 +80,6 @@ func expandWorkloadEntitySearchQueryInputs(cfg []interface{}) []workloads.Entity
 func expandWorkloadEntitySearchQueryInput(cfg map[string]interface{}) workloads.EntitySearchQueryInput {
 	queryInput := workloads.EntitySearchQueryInput{}
 
-	if name, ok := cfg["name"]; ok {
-		nameStr := name.(string)
-		queryInput.Name = &nameStr
-	}
-
 	if query, ok := cfg["query"]; ok {
 		queryInput.Query = query.(string)
 	}
@@ -132,7 +127,6 @@ func flattenWorkloadEntitySearchQueries(in []workloads.EntitySearchQuery) interf
 
 	for i, e := range in {
 		m := make(map[string]interface{})
-		m["name"] = e.Name
 		m["query"] = e.Query
 
 		out[i] = m
