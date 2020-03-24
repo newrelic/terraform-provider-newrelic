@@ -1,4 +1,11 @@
 ## 1.16.0 (Unreleased)
+
+IMPROVEMENTS:
+
+* feat(workloads): add a New Relic One workloads resource ([#474](https://github.com/terraform-providers/terraform-provider-newrelic/pull/474))
+* docs(terraform-provider-newrelic): update getting started guide ([#473](https://github.com/terraform-providers/terraform-provider-newrelic/pull/473))
+* docs(terraform-provider-newrelic): use correct default synthetics_api_url in config docs, remove inaccessible alert condition type ([#482](https://github.com/terraform-providers/terraform-provider-newrelic/pull/482))
+
 ## 1.15.1 (March 18, 2020)
 
 BUG FIXES:
