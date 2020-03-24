@@ -31,17 +31,17 @@ type txn struct {
 	// user erroneously calls WriteHeader multiple times.
 	wroteHeader bool
 
-	internal.TxnData
+	txnData
 
-	mainThread   internal.Thread
-	asyncThreads []*internal.Thread
+	mainThread   tracingThread
+	asyncThreads []*tracingThread
 }
 
 type thread struct {
 	*txn
 	// thread does not have locking because it should only be accessed while
 	// the txn is locked.
-	thread *internal.Thread
+	thread *tracingThread
 }
 
 func (txn *txn) markStart(now time.Time) {
@@ -51,7 +51,7 @@ func (txn *txn) markStart(now time.Time) {
 
 }
 
-func (txn *txn) markEnd(now time.Time, thread *internal.Thread) {
+func (txn *txn) markEnd(now time.Time, thread *tracingThread) {
 	txn.Stop = now
 	// The thread on which End() was called is considered active now.
 	thread.RecordActivity(now)
@@ -81,20 +81,20 @@ func newTxn(app *app, run *appRun, name string) *thread {
 	txn.markStart(time.Now())
 
 	txn.Name = name
-	txn.Attrs = internal.NewAttributes(run.AttributeConfig)
+	txn.Attrs = newAttributes(run.AttributeConfig)
 
 	if run.Config.DistributedTracer.Enabled {
 		txn.BetterCAT.Enabled = true
 		txn.TraceIDGenerator = run.Reply.TraceIDGenerator
 		txn.BetterCAT.SetTraceAndTxnIDs(txn.TraceIDGenerator.GenerateTraceID())
-		txn.BetterCAT.Priority = txn.TraceIDGenerator.GeneratePriority()
+		txn.BetterCAT.Priority = newPriorityFromRandom(txn.TraceIDGenerator.Float32)
 		txn.ShouldCollectSpanEvents = txn.shouldCollectSpanEvents
 	}
 
-	txn.Attrs.Agent.Add(internal.AttributeHostDisplayName, txn.Config.HostDisplayName, nil)
+	txn.Attrs.Agent.Add(AttributeHostDisplayName, txn.Config.HostDisplayName, nil)
 	txn.TxnTrace.Enabled = txn.Config.TransactionTracer.Enabled
 	txn.TxnTrace.SegmentThreshold = txn.Config.TransactionTracer.Segments.Threshold
-	txn.StackTraceThreshold = txn.Config.TransactionTracer.Segments.StackTraceThreshold
+	txn.TxnTrace.StackTraceThreshold = txn.Config.TransactionTracer.Segments.StackTraceThreshold
 	txn.SlowQueriesEnabled = txn.Config.DatastoreTracer.SlowQuery.Enabled
 	txn.SlowQueryThreshold = txn.Config.DatastoreTracer.SlowQuery.Threshold
 
@@ -173,7 +173,7 @@ func (txn *txn) SetWebRequest(r WebRequest) error {
 		txn.CrossProcess.InboundHTTPRequest(h)
 	}
 
-	internal.RequestAgentAttributes(txn.Attrs, r.Method, h, r.URL)
+	requestAgentAttributes(txn.Attrs, r.Method, h, r.URL)
 
 	return nil
 }
@@ -202,7 +202,7 @@ func (thd *thread) SetWebResponse(w http.ResponseWriter) http.ResponseWriter {
 	}
 
 	return upgradeResponseWriter(&replacementResponseWriter{
-		txn:      txn,
+		thd:      thd,
 		original: w,
 	})
 }
@@ -231,34 +231,34 @@ func (txn *txn) shouldSaveTrace() bool {
 	return txn.Duration >= txn.txnTraceThreshold(txn.ApdexThreshold)
 }
 
-func (txn *txn) MergeIntoHarvest(h *internal.Harvest) {
+func (txn *txn) MergeIntoHarvest(h *harvest) {
 
-	var priority internal.Priority
+	var priority priority
 	if txn.BetterCAT.Enabled {
 		priority = txn.BetterCAT.Priority
 	} else {
-		priority = internal.NewPriority()
+		priority = newPriority()
 	}
 
-	internal.CreateTxnMetrics(&txn.TxnData, h.Metrics)
-	internal.MergeBreakdownMetrics(&txn.TxnData, h.Metrics)
+	createTxnMetrics(&txn.txnData, h.Metrics)
+	mergeBreakdownMetrics(&txn.txnData, h.Metrics)
 
 	if txn.Config.TransactionEvents.Enabled {
 		// Allocate a new TxnEvent to prevent a reference to the large transaction.
-		alloc := new(internal.TxnEvent)
-		*alloc = txn.TxnData.TxnEvent
+		alloc := new(txnEvent)
+		*alloc = txn.txnData.txnEvent
 		h.TxnEvents.AddTxnEvent(alloc, priority)
 	}
 
 	if txn.Reply.CollectErrors {
-		internal.MergeTxnErrors(&h.ErrorTraces, txn.Errors, txn.TxnEvent)
+		mergeTxnErrors(&h.ErrorTraces, txn.Errors, txn.txnEvent)
 	}
 
 	if txn.Config.ErrorCollector.CaptureEvents {
 		for _, e := range txn.Errors {
-			errEvent := &internal.ErrorEvent{
-				ErrorData: *e,
-				TxnEvent:  txn.TxnEvent,
+			errEvent := &errorEvent{
+				errorData: *e,
+				txnEvent:  txn.txnEvent,
 			}
 			// Since the stack trace is not used in error events, remove the reference
 			// to minimize memory.
@@ -268,22 +268,23 @@ func (txn *txn) MergeIntoHarvest(h *internal.Harvest) {
 	}
 
 	if txn.shouldSaveTrace() {
-		h.TxnTraces.Witness(internal.HarvestTrace{
-			TxnEvent: txn.TxnEvent,
+		h.TxnTraces.Witness(harvestTrace{
+			txnEvent: txn.txnEvent,
 			Trace:    txn.TxnTrace,
 		})
 	}
 
 	if nil != txn.SlowQueries {
-		h.SlowSQLs.Merge(txn.SlowQueries, txn.TxnEvent)
+		h.SlowSQLs.Merge(txn.SlowQueries, txn.txnEvent)
 	}
 
 	if txn.shouldCollectSpanEvents() {
-		h.SpanEvents.MergeSpanEvents(txn.TxnData.SpanEvents)
+		h.SpanEvents.MergeSpanEvents(txn.txnData.SpanEvents)
 	}
 }
 
-func headersJustWritten(txn *txn, code int, hdr http.Header) {
+func headersJustWritten(thd *thread, code int, hdr http.Header) {
+	txn := thd.txn
 	txn.Lock()
 	defer txn.Unlock()
 
@@ -295,13 +296,13 @@ func headersJustWritten(txn *txn, code int, hdr http.Header) {
 	}
 	txn.wroteHeader = true
 
-	internal.ResponseHeaderAttributes(txn.Attrs, hdr)
-	internal.ResponseCodeAttribute(txn.Attrs, code)
+	responseHeaderAttributes(txn.Attrs, hdr)
+	responseCodeAttribute(txn.Attrs, code)
 
 	if txn.appRun.responseCodeIsError(code) {
-		e := internal.TxnErrorFromResponseCode(time.Now(), code)
-		e.Stack = internal.GetStackTrace()
-		txn.noticeErrorInternal(e)
+		e := txnErrorFromResponseCode(time.Now(), code)
+		e.Stack = getStackTrace()
+		thd.noticeErrorInternal(e)
 	}
 }
 
@@ -322,7 +323,7 @@ func (txn *txn) responseHeader(hdr http.Header) http.Header {
 		return nil
 	}
 	txn.freezeName()
-	contentLength := internal.GetContentLengthFromHeader(hdr)
+	contentLength := getContentLengthFromHeader(hdr)
 
 	appData, err := txn.CrossProcess.CreateAppData(txn.FinalName, txn.Queuing, time.Since(txn.Start), contentLength)
 	if err != nil {
@@ -331,7 +332,7 @@ func (txn *txn) responseHeader(hdr http.Header) http.Header {
 		})
 		return nil
 	}
-	return internal.AppDataToHTTPHeader(appData)
+	return appDataToHTTPHeader(appData)
 }
 
 func addCrossProcessHeaders(txn *txn, hdr http.Header) {
@@ -358,9 +359,9 @@ func (thd *thread) End(recovered interface{}) error {
 	txn.finished = true
 
 	if nil != recovered {
-		e := internal.TxnErrorFromPanic(time.Now(), recovered)
-		e.Stack = internal.GetStackTrace()
-		txn.noticeErrorInternal(e)
+		e := txnErrorFromPanic(time.Now(), recovered)
+		e.Stack = getStackTrace()
+		thd.noticeErrorInternal(e)
 	}
 
 	txn.markEnd(time.Now(), thd.thread)
@@ -382,12 +383,12 @@ func (thd *thread) End(recovered interface{}) error {
 
 	if txn.getsApdex() {
 		if txn.HasErrors() {
-			txn.Zone = internal.ApdexFailing
+			txn.Zone = apdexFailing
 		} else {
-			txn.Zone = internal.CalculateApdexZone(txn.ApdexThreshold, txn.Duration)
+			txn.Zone = calculateApdexZone(txn.ApdexThreshold, txn.Duration)
 		}
 	} else {
-		txn.Zone = internal.ApdexNone
+		txn.Zone = apdexNone
 	}
 
 	if txn.Config.Logger.DebugEnabled() {
@@ -400,13 +401,17 @@ func (thd *thread) End(recovered interface{}) error {
 	}
 
 	if txn.shouldCollectSpanEvents() {
-		root := &internal.SpanEvent{
+		root := &spanEvent{
 			GUID:         txn.GetRootSpanID(),
 			Timestamp:    txn.Start,
 			Duration:     txn.Duration,
 			Name:         txn.FinalName,
-			Category:     internal.SpanCategoryGeneric,
+			Category:     spanCategoryGeneric,
 			IsEntrypoint: true,
+		}
+		if txn.rootSpanErrData != nil {
+			root.Attributes.addString(spanAttributeErrorClass, txn.rootSpanErrData.Klass)
+			root.Attributes.addString(spanAttributeErrorMessage, txn.rootSpanErrData.Msg)
 		}
 		if nil != txn.BetterCAT.Inbound {
 			root.ParentID = txn.BetterCAT.Inbound.ID
@@ -455,7 +460,7 @@ func (txn *txn) AddAttribute(name string, value interface{}) error {
 		return errAlreadyEnded
 	}
 
-	return internal.AddUserAttribute(txn.Attrs, name, value, internal.DestAll)
+	return addUserAttribute(txn.Attrs, name, value, destAll)
 }
 
 var (
@@ -472,13 +477,14 @@ const (
 	securityPolicyErrorMsg = "message removed by security policy"
 )
 
-func (txn *txn) noticeErrorInternal(err internal.ErrorData) error {
+func (thd *thread) noticeErrorInternal(err errorData) error {
+	txn := thd.txn
 	if !txn.Config.ErrorCollector.Enabled {
 		return errorsDisabled
 	}
 
 	if nil == txn.Errors {
-		txn.Errors = internal.NewTxnErrors(internal.MaxTxnErrors)
+		txn.Errors = newTxnErrors(maxTxnErrors)
 	}
 
 	if txn.Config.HighSecurity {
@@ -489,14 +495,36 @@ func (txn *txn) noticeErrorInternal(err internal.ErrorData) error {
 		err.Msg = securityPolicyErrorMsg
 	}
 
+	if txn.shouldCollectSpanEvents() {
+		err.SpanID = txn.CurrentSpanIdentifier(thd.thread)
+		addErrorAttrs(thd, err)
+	}
 	txn.Errors.Add(err)
-	txn.TxnData.TxnEvent.HasError = true //mark transaction as having an error
+	txn.txnData.txnEvent.HasError = true //mark transaction as having an error
 	return nil
+}
+
+var errorAttrs = []spanAttribute{
+	spanAttributeErrorClass,
+	spanAttributeErrorMessage,
+}
+
+func addErrorAttrs(t *thread, err errorData) {
+	// If there are no current segments, we'll add them to the root span when it is created later
+	if len(t.thread.stack) <= 0 {
+		t.rootSpanErrData = &err
+		return
+	}
+	for _, attr := range errorAttrs {
+		t.thread.RemoveErrorSpanAttribute(attr)
+	}
+	t.thread.AddAgentSpanAttribute(spanAttributeErrorClass, err.Klass)
+	t.thread.AddAgentSpanAttribute(spanAttributeErrorMessage, err.Msg)
 }
 
 var (
 	errTooManyErrorAttributes = fmt.Errorf("too many extra attributes: limit is %d",
-		internal.AttributeErrorLimit)
+		attributeErrorLimit)
 )
 
 // errorCause returns the error's deepest wrapped ancestor.
@@ -519,7 +547,7 @@ func errorClassMethod(err error) string {
 	return ""
 }
 
-func errorStackTraceMethod(err error) internal.StackTrace {
+func errorStackTraceMethod(err error) stackTrace {
 	if st, ok := err.(stackTracer); ok {
 		return st.StackTrace()
 	}
@@ -533,10 +561,10 @@ func errorAttributesMethod(err error) map[string]interface{} {
 	return nil
 }
 
-func errDataFromError(input error) (data internal.ErrorData, err error) {
+func errDataFromError(input error) (data errorData, err error) {
 	cause := errorCause(input)
 
-	data = internal.ErrorData{
+	data = errorData{
 		When: time.Now(),
 		Msg:  input.Error(),
 	}
@@ -560,7 +588,7 @@ func errDataFromError(input error) (data internal.ErrorData, err error) {
 		data.Stack = st
 	} else {
 		// As a final fallback, generate a StackTrace here.
-		data.Stack = internal.GetStackTrace()
+		data.Stack = getStackTrace()
 	}
 
 	var unvetted map[string]interface{}
@@ -572,14 +600,14 @@ func errDataFromError(input error) (data internal.ErrorData, err error) {
 		unvetted = errorAttributesMethod(cause)
 	}
 	if unvetted != nil {
-		if len(unvetted) > internal.AttributeErrorLimit {
+		if len(unvetted) > attributeErrorLimit {
 			err = errTooManyErrorAttributes
 			return
 		}
 
 		data.ExtraAttributes = make(map[string]interface{})
 		for key, val := range unvetted {
-			val, err = internal.ValidateUserAttribute(key, val)
+			val, err = validateUserAttribute(key, val)
 			if nil != err {
 				return
 			}
@@ -590,7 +618,8 @@ func errDataFromError(input error) (data internal.ErrorData, err error) {
 	return data, nil
 }
 
-func (txn *txn) NoticeError(input error) error {
+func (thd *thread) NoticeError(input error) error {
+	txn := thd.txn
 	txn.Lock()
 	defer txn.Unlock()
 
@@ -611,7 +640,7 @@ func (txn *txn) NoticeError(input error) error {
 		data.ExtraAttributes = nil
 	}
 
-	return txn.noticeErrorInternal(data)
+	return thd.noticeErrorInternal(data)
 }
 
 func (txn *txn) SetName(name string) error {
@@ -638,18 +667,16 @@ func (txn *txn) Ignore() error {
 }
 
 func (thd *thread) StartSegmentNow() SegmentStartTime {
-	var s internal.SegmentStartTime
+	var s segmentStartTime
 	txn := thd.txn
 	txn.Lock()
 	if !txn.finished {
-		s = internal.StartSegment(&txn.TxnData, thd.thread, time.Now())
+		s = startSegment(&txn.txnData, thd.thread, time.Now())
 	}
 	txn.Unlock()
 	return SegmentStartTime{
-		segment: segment{
-			start:  s,
-			thread: thd,
-		},
+		start:  s,
+		thread: thd,
 	}
 }
 
@@ -695,12 +722,12 @@ func (txn *txn) BrowserTimingHeader() (*BrowserTimingHeader, error) {
 
 	encodingKey := browserEncodingKey(txn.Config.License)
 
-	attrs, err := internal.Obfuscate(internal.BrowserAttributes(txn.Attrs), encodingKey)
+	attrs, err := obfuscate(browserAttributes(txn.Attrs), encodingKey)
 	if err != nil {
 		return nil, fmt.Errorf("error getting browser attributes: %v", err)
 	}
 
-	name, err := internal.Obfuscate([]byte(txn.FinalName), encodingKey)
+	name, err := obfuscate([]byte(txn.FinalName), encodingKey)
 	if err != nil {
 		return nil, fmt.Errorf("error obfuscating name: %v", err)
 	}
@@ -721,8 +748,8 @@ func (txn *txn) BrowserTimingHeader() (*BrowserTimingHeader, error) {
 	}, nil
 }
 
-func createThread(txn *txn) *internal.Thread {
-	newThread := internal.NewThread(&txn.TxnData)
+func createThread(txn *txn) *tracingThread {
+	newThread := newTracingThread(&txn.txnData)
 	txn.asyncThreads = append(txn.asyncThreads, newThread)
 	return newThread
 }
@@ -742,12 +769,7 @@ func (thd *thread) NewGoroutine() *Transaction {
 	})
 }
 
-type segment struct {
-	start  internal.SegmentStartTime
-	thread *thread
-}
-
-func endSegment(s *Segment) error {
+func endBasic(s *Segment) error {
 	thd := s.StartTime.thread
 	if nil == thd {
 		return nil
@@ -758,7 +780,7 @@ func endSegment(s *Segment) error {
 	if txn.finished {
 		err = errAlreadyEnded
 	} else {
-		err = internal.EndBasicSegment(&txn.TxnData, thd.thread, s.StartTime.start, time.Now(), s.Name)
+		err = endBasicSegment(&txn.txnData, thd.thread, s.StartTime.start, time.Now(), s.Name)
 	}
 	txn.Unlock()
 	return err
@@ -795,8 +817,8 @@ func endDatastore(s *DatastoreSegment) error {
 		s.Host = ""
 		s.PortPathOrID = ""
 	}
-	return internal.EndDatastoreSegment(internal.EndDatastoreParams{
-		TxnData:            &txn.TxnData,
+	return endDatastoreSegment(endDatastoreParams{
+		TxnData:            &txn.txnData,
 		Thread:             thd.thread,
 		Start:              s.StartTime.start,
 		Now:                time.Now(),
@@ -863,17 +885,18 @@ func endExternal(s *ExternalSegment) error {
 	if nil != err {
 		return err
 	}
-	return internal.EndExternalSegment(internal.EndExternalParams{
-		TxnData:  &txn.TxnData,
-		Thread:   thd.thread,
-		Start:    s.StartTime.start,
-		Now:      time.Now(),
-		Logger:   txn.Config.Logger,
-		Response: s.Response,
-		URL:      u,
-		Host:     s.Host,
-		Library:  s.Library,
-		Method:   externalSegmentMethod(s),
+	return endExternalSegment(endExternalParams{
+		TxnData:    &txn.txnData,
+		Thread:     thd.thread,
+		Start:      s.StartTime.start,
+		Now:        time.Now(),
+		Logger:     txn.Config.Logger,
+		Response:   s.Response,
+		URL:        u,
+		Host:       s.Host,
+		Library:    s.Library,
+		Method:     externalSegmentMethod(s),
+		StatusCode: s.statusCode,
 	})
 }
 
@@ -894,8 +917,8 @@ func endMessage(s *MessageProducerSegment) error {
 		s.DestinationType = MessageQueue
 	}
 
-	return internal.EndMessageSegment(internal.EndMessageParams{
-		TxnData:         &txn.TxnData,
+	return endMessageSegment(endMessageParams{
+		TxnData:         &txn.txnData,
 		Thread:          thd.thread,
 		Start:           s.StartTime.start,
 		Now:             time.Now(),
@@ -929,7 +952,7 @@ func oldCATOutboundHeaders(txn *txn) http.Header {
 		// based on whatever metadata was returned.
 	}
 
-	return internal.MetadataToHTTPHeader(metadata)
+	return metadataToHTTPHeader(metadata)
 }
 
 func outboundHeaders(s *ExternalSegment) http.Header {
@@ -981,7 +1004,7 @@ func (thd *thread) CreateDistributedTracePayload(hdrs http.Header) {
 
 	txn.numPayloadsCreated++
 
-	p := &internal.Payload{}
+	p := &payload{}
 
 	// Calculate sampled first since this also changes the value for the
 	// priority
@@ -990,7 +1013,7 @@ func (thd *thread) CreateDistributedTracePayload(hdrs http.Header) {
 		p.ID = txn.CurrentSpanIdentifier(thd.thread)
 	}
 
-	p.Type = internal.CallerTypeApp
+	p.Type = callerTypeApp
 	p.Account = txn.Reply.AccountID
 	p.App = txn.Reply.PrimaryAppID
 	p.TracedID = txn.BetterCAT.TraceID
@@ -1013,7 +1036,7 @@ func (thd *thread) CreateDistributedTracePayload(hdrs http.Header) {
 	support.TraceContextCreateSuccess = true
 
 	if !excludeNRHeader {
-		hdrs.Set(internal.DistributedTraceNewRelicHeader, p.NRHTTPSafe())
+		hdrs.Set(DistributedTraceNewRelicHeader, p.NRHTTPSafe())
 		support.CreatePayloadSuccess = true
 	}
 
@@ -1025,7 +1048,7 @@ func (thd *thread) CreateDistributedTracePayload(hdrs http.Header) {
 	if p.ID == "" {
 		p.ID = txn.CurrentSpanIdentifier(thd.thread)
 	}
-	hdrs.Set(internal.DistributedTraceW3CTraceParentHeader, p.W3CTraceParent())
+	hdrs.Set(DistributedTraceW3CTraceParentHeader, p.W3CTraceParent())
 
 	if !txn.Config.SpanEvents.Enabled {
 		p.ID = ""
@@ -1033,7 +1056,7 @@ func (thd *thread) CreateDistributedTracePayload(hdrs http.Header) {
 	if !txn.Config.TransactionEvents.Enabled {
 		p.TransactionID = ""
 	}
-	hdrs.Set(internal.DistributedTraceW3CTraceStateHeader, p.W3CTraceState())
+	hdrs.Set(DistributedTraceW3CTraceStateHeader, p.W3CTraceState())
 }
 
 var (
@@ -1086,7 +1109,7 @@ func (txn *txn) acceptDistributedTraceHeadersLocked(t TransportType, hdrs http.H
 
 	txn.BetterCAT.TransportType = t.toString()
 
-	payload, err := internal.AcceptPayload(hdrs, txn.Reply.TrustedAccountKey, support)
+	payload, err := acceptPayload(hdrs, txn.Reply.TrustedAccountKey, support)
 	if nil != err {
 		return err
 	}
@@ -1133,8 +1156,8 @@ func (txn *txn) Application() *Application {
 	return newApplication(txn.app)
 }
 
-func (thd *thread) AddAgentSpanAttribute(key internal.SpanAttribute, val string) {
-	thd.thread.AddAgentSpanAttribute(key, val)
+func (thd *thread) AddAgentSpanAttribute(key string, val string) {
+	thd.thread.AddAgentSpanAttribute(spanAttribute(key), val)
 }
 
 var (
@@ -1143,14 +1166,14 @@ var (
 	_ internal.AddAgentAttributer = &txn{}
 )
 
-func (txn *txn) AddAgentAttribute(id internal.AgentAttributeID, stringVal string, otherVal interface{}) {
+func (txn *txn) AddAgentAttribute(name string, stringVal string, otherVal interface{}) {
 	txn.Lock()
 	defer txn.Unlock()
 
 	if txn.finished {
 		return
 	}
-	txn.Attrs.Agent.Add(id, stringVal, otherVal)
+	txn.Attrs.Agent.Add(name, stringVal, otherVal)
 }
 
 func (thd *thread) GetTraceMetadata() (metadata TraceMetadata) {

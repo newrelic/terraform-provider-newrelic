@@ -8,10 +8,14 @@ import (
 
 const (
 	// Version is the full string version of this Go Agent.
-	Version = "3.3.0"
+	Version = "3.4.0"
+)
+
+var (
+	goVersionSimple = minorVersion(runtime.Version())
 )
 
 func init() {
 	internal.TrackUsage("Go", "Version", Version)
-	internal.TrackUsage("Go", "Runtime", "Version", internal.MinorVersion(runtime.Version()))
+	internal.TrackUsage("Go", "Runtime", "Version", goVersionSimple)
 }
