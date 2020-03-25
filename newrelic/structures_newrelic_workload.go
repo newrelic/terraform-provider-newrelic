@@ -28,7 +28,7 @@ func expandWorkloadCreateInput(d *schema.ResourceData) workloads.CreateInput {
 func expandWorkloadUpdateInput(d *schema.ResourceData) workloads.UpdateInput {
 	name := d.Get("name").(string)
 	updateInput := workloads.UpdateInput{
-		Name: &name,
+		Name: name,
 	}
 
 	if e, ok := d.GetOk("entity_guids"); ok {
