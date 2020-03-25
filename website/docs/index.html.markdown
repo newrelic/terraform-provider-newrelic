@@ -74,6 +74,7 @@ resource "newrelic_alert_policy_channel" "alert_email" {
 The following arguments are supported:
 
 - `api_key` - (Required except for `newrelic_insights_event` resource) Your New Relic API key. The `NEWRELIC_API_KEY` environment variable can also be used.
+- `personal_api_key` - (Required only for the `newrelic_workload` resource) Your New Relic Personal API key. The `NEWRELIC_PERSONAL_API_KEY` environment variable can also be used.
 - `api_url` - (Optional) This argument changes the main REST API URL (default is https://api.newrelic.com/v2). If the New Relic account is in the EU, the API URL must be set to https://api.eu.newrelic.com/v2. The `NEWRELIC_API_URL` environment variable can also be used.
 - `synthetics_api_url` - (Optional) This argument changes the Synthetics API URL (default is https://synthetics.newrelic.com/synthetics/api). If the New Relic account is in the EU, the API URL must be set to https://synthetics.eu.newrelic.com/synthetics/api. The `NEWRELIC_SYNTHETICS_API_URL` environment variable can also be used.  This URL is used to provision Synthetics monitors and monitor scripts only.
 - `infrastructure_api_url` - (Optional) This argument changes the Infrastructure API URL (default is https://infra-api.newrelic.com/v2). If the New Relic account is in the EU, the Infra API URL must be set to https://infra-api.eu.newrelic.com/v2. The `NEWRELIC_INFRASTRUCTURE_API_URL` environment variable can also be used.  This URL is used to provision Infrastructure alert conditions only.
