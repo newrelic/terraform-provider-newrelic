@@ -155,4 +155,11 @@ type ProviderConfig struct {
 	NewClient            *nr.NewRelic
 	InsightsInsertClient *insights.InsertClient
 	InsightsQueryClient  *insights.QueryClient
+	AccountID            int
+	PersonalAPIKey       string
+}
+
+// nolint:unused
+func (c *ProviderConfig) hasNerdGraphCredentials() bool {
+	return c.AccountID > 0 && c.PersonalAPIKey != ""
 }
