@@ -24,7 +24,7 @@ type Workload struct {
 
 // EntityRef represents an entity referenced by this workload.
 type EntityRef struct {
-	GUID *string `json:"guid,omitempty"`
+	GUID string `json:"guid,omitempty"`
 }
 
 // EntitySearchQuery represents an entity search used by this workload.
@@ -39,10 +39,10 @@ type EntitySearchQuery struct {
 
 // UserReference represents a user referenced by this workload's search query.
 type UserReference struct {
-	Email    *string `json:"email,omitempty"`
-	Gravatar *string `json:"gravatar,omitempty"`
-	ID       *int    `json:"id,omitempty"`
-	Name     *string `json:"name,omitempty"`
+	Email    string `json:"email,omitempty"`
+	Gravatar string `json:"gravatar,omitempty"`
+	ID       int    `json:"id,omitempty"`
+	Name     string `json:"name,omitempty"`
 }
 
 // ScopeAccounts represents the accounts used to scope this workload.
@@ -60,13 +60,13 @@ type CreateInput struct {
 
 // EntitySearchQueryInput represents an entity search query for creating or updating a workload.
 type EntitySearchQueryInput struct {
-	Name  *string `json:"name,omitempty"`
-	Query string  `json:"query,omitempty"`
+	Name  string `json:"name,omitempty"`
+	Query string `json:"query,omitempty"`
 }
 
 // UpdateCollectionEntitySearchQueryInput represents an entity search query for creating or updating a workload.
 type UpdateCollectionEntitySearchQueryInput struct {
-	ID *int `json:"id,omitempty"`
+	ID int `json:"id,omitempty"`
 	EntitySearchQueryInput
 }
 
@@ -77,14 +77,14 @@ type ScopeAccountsInput struct {
 
 // DuplicateInput represents the input object used to identify the workload to be duplicated.
 type DuplicateInput struct {
-	Name *string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // UpdateInput represents the input object used to identify the workload to be updated and its new changes.
 type UpdateInput struct {
 	EntityGUIDs         []string                 `json:"entityGuids,omitempty"`
 	EntitySearchQueries []EntitySearchQueryInput `json:"entitySearchQueries,omitempty"`
-	Name                *string                  `json:"name,omitempty"`
+	Name                string                   `json:"name,omitempty"`
 	ScopeAccountsInput  *ScopeAccountsInput      `json:"scopeAccounts,omitempty"`
 }
 
