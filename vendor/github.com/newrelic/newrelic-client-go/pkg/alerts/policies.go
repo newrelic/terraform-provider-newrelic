@@ -228,7 +228,7 @@ type alertQueryPolicyCreateResponse struct {
 }
 
 type alertQueryPolicyUpdateResponse struct {
-	QueryPolicy QueryPolicy `json:"alertsPolicyCreate"`
+	QueryPolicy QueryPolicy `json:"alertsPolicyUpdate"`
 }
 
 type alertQueryPolicyResponse struct {

@@ -41,6 +41,7 @@ func resourceNewRelicWorkload() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A list of search queries that define a dynamic workload.",
+				ForceNew:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"query": {
