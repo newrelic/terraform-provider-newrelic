@@ -23,6 +23,12 @@ const (
 func Provider() terraform.ResourceProvider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_ACCOUNT_ID", nil),
+				Sensitive:   true,
+			},
 			"api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -190,6 +196,8 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		NewClient:            client,
 		InsightsInsertClient: clientInsightsInsert,
 		InsightsQueryClient:  clientInsightsQuery,
+		PersonalAPIKey:       personalAPIKey,
+		AccountID:            data.Get("account_id").(int),
 	}
 
 	return &providerConfig, nil
