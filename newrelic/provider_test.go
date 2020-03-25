@@ -46,6 +46,19 @@ func TestProviderImpl(t *testing.T) {
 	var _ terraform.ResourceProvider = Provider()
 }
 
+func TestProviderConfig(t *testing.T) {
+	c := ProviderConfig{
+		PersonalAPIKey: "abc123",
+		AccountID:      123,
+	}
+
+	hasNerdGraphCreds := c.hasNerdGraphCredentials()
+
+	if !hasNerdGraphCreds {
+		t.Error("hasNerdGraphCreds should be true")
+	}
+}
+
 func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("NEWRELIC_API_KEY"); v == "" {
 		t.Fatal("NEWRELIC_API_KEY must be set for acceptance tests")
@@ -53,6 +66,10 @@ func testAccPreCheck(t *testing.T) {
 
 	if v := os.Getenv("NEWRELIC_LICENSE_KEY"); v == "" {
 		t.Fatal("NEWRELIC_LICENSE_KEY must be set for acceptance tests")
+	}
+
+	if v := os.Getenv("NEWRELIC_PERSONAL_API_KEY"); v == "" {
+		t.Log("[WARN] NEWRELIC_PERSONAL_API_KEY has not been set for acceptance tests")
 	}
 
 	//testAccApplicationsCleanup(t)
