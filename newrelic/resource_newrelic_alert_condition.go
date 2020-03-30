@@ -200,13 +200,16 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 
 func resourceNewRelicAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
-	condition := expandAlertCondition(d)
+	condition, err := expandAlertCondition(d)
+	if err != nil {
+		return err
+	}
 
 	policyID := d.Get("policy_id").(int)
 
 	log.Printf("[INFO] Creating New Relic alert condition %s", condition.Name)
 
-	condition, err := client.Alerts.CreateCondition(policyID, *condition)
+	condition, err = client.Alerts.CreateCondition(policyID, *condition)
 	if err != nil {
 		return err
 	}
@@ -256,7 +259,10 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 
 func resourceNewRelicAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
-	condition := expandAlertCondition(d)
+	condition, err := expandAlertCondition(d)
+	if err != nil {
+		return err
+	}
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
