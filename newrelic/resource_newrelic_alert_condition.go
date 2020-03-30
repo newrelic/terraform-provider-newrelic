@@ -126,9 +126,10 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				Description: "Runbook URL to display in notifications.",
 			},
 			"condition_scope": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "One of (application, instance). Choose application for most scenarios. If you are using the JVM plugin in New Relic, the instance setting allows your condition to trigger for specific app instances.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"application", "instance"}, false),
+				Description:  "One of (application, instance). Choose application for most scenarios. If you are using the JVM plugin in New Relic, the instance setting allows your condition to trigger for specific app instances.",
 			},
 			"violation_close_timer": {
 				Type:         schema.TypeInt,
@@ -199,13 +200,16 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 
 func resourceNewRelicAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
-	condition := expandAlertCondition(d)
+	condition, err := expandAlertCondition(d)
+	if err != nil {
+		return err
+	}
 
 	policyID := d.Get("policy_id").(int)
 
 	log.Printf("[INFO] Creating New Relic alert condition %s", condition.Name)
 
-	condition, err := client.Alerts.CreateCondition(policyID, *condition)
+	condition, err = client.Alerts.CreateCondition(policyID, *condition)
 	if err != nil {
 		return err
 	}
@@ -255,7 +259,10 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 
 func resourceNewRelicAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
-	condition := expandAlertCondition(d)
+	condition, err := expandAlertCondition(d)
+	if err != nil {
+		return err
+	}
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
