@@ -8,19 +8,27 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
-func expandAlertCondition(d *schema.ResourceData) *alerts.Condition {
+func expandAlertCondition(d *schema.ResourceData) (*alerts.Condition, error) {
 	condition := alerts.Condition{
-		Type:                alerts.ConditionType(d.Get("type").(string)),
-		Name:                d.Get("name").(string),
-		Enabled:             d.Get("enabled").(bool),
-		Metric:              alerts.MetricType(d.Get("metric").(string)),
-		Scope:               d.Get("condition_scope").(string),
-		ViolationCloseTimer: d.Get("violation_close_timer").(int),
-		GCMetric:            d.Get("gc_metric").(string),
+		Type:     alerts.ConditionType(d.Get("type").(string)),
+		Name:     d.Get("name").(string),
+		Enabled:  d.Get("enabled").(bool),
+		Metric:   alerts.MetricType(d.Get("metric").(string)),
+		Scope:    d.Get("condition_scope").(string),
+		GCMetric: d.Get("gc_metric").(string),
 	}
 
 	condition.Entities = expandAlertConditionEntities(d.Get("entities").(*schema.Set).List())
 	condition.Terms = expandAlertConditionTerms(d.Get("term").(*schema.Set).List())
+
+	if violationCloseTimer, ok := d.GetOk("violation_close_timer"); ok {
+		if condition.Scope == "instance" {
+			condition.ViolationCloseTimer = violationCloseTimer.(int)
+		} else {
+			return nil, fmt.Errorf("violation_close_timer only supported when condition_scope = 'instance'")
+		}
+
+	}
 
 	if attr, ok := d.GetOk("runbook_url"); ok {
 		condition.RunbookURL = attr.(string)
@@ -35,7 +43,7 @@ func expandAlertCondition(d *schema.ResourceData) *alerts.Condition {
 		}
 	}
 
-	return &condition
+	return &condition, nil
 }
 
 func expandAlertConditionEntities(entities []interface{}) []string {
