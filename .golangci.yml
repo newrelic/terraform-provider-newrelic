@@ -49,3 +49,7 @@ issues:
   max-per-linter: 0
   max-same-issues: 0
 
+  exclude-rules:
+    - linters:
+        - staticcheck
+      text: "SA1019: d.GetOkExists is deprecated"
