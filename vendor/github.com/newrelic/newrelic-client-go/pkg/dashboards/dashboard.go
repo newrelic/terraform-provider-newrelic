@@ -22,7 +22,7 @@ type ListDashboardsParams struct {
 // ListDashboards is used to retrieve New Relic dashboards.
 func (d *Dashboards) ListDashboards(params *ListDashboardsParams) ([]*Dashboard, error) {
 	dashboard := []*Dashboard{}
-	nextURL := "/dashboards.json"
+	nextURL := d.config.Region().RestURL("dashboards.json")
 
 	for nextURL != "" {
 		response := dashboardsResponse{}
@@ -46,7 +46,7 @@ func (d *Dashboards) GetDashboard(dashboardID int) (*Dashboard, error) {
 	response := dashboardResponse{}
 	url := fmt.Sprintf("/dashboards/%d.json", dashboardID)
 
-	_, err := d.client.Get(url, nil, &response)
+	_, err := d.client.Get(d.config.Region().RestURL(url), nil, &response)
 
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (d *Dashboards) CreateDashboard(dashboard Dashboard) (*Dashboard, error) {
 	reqBody := dashboardRequest{
 		Dashboard: dashboard,
 	}
-	_, err := d.client.Post("/dashboards.json", nil, &reqBody, &response)
+	_, err := d.client.Post(d.config.Region().RestURL("dashboards.json"), nil, &reqBody, &response)
 
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (d *Dashboards) UpdateDashboard(dashboard Dashboard) (*Dashboard, error) {
 		Dashboard: dashboard,
 	}
 
-	_, err := d.client.Put(url, nil, &reqBody, &response)
+	_, err := d.client.Put(d.config.Region().RestURL(url), nil, &reqBody, &response)
 
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func (d *Dashboards) DeleteDashboard(dashboardID int) (*Dashboard, error) {
 	response := dashboardResponse{}
 	url := fmt.Sprintf("/dashboards/%d.json", dashboardID)
 
-	_, err := d.client.Delete(url, nil, &response)
+	_, err := d.client.Delete(d.config.Region().RestURL(url), nil, &response)
 
 	if err != nil {
 		return nil, err

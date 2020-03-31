@@ -2,7 +2,6 @@ package http
 
 import (
 	"fmt"
-	neturl "net/url"
 
 	"github.com/google/go-querystring/query"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
@@ -19,13 +18,13 @@ type Request struct {
 	value        interface{}
 	config       config.Config
 	authStrategy RequestAuthorizer
+	errorValue   ErrorResponse
 	request      *retryablehttp.Request
 }
 
 // NewRequest creates a new Request struct.
-func NewRequest(c Client, method string, url string, params interface{}, reqBody interface{}, value interface{}) (*Request, error) {
-	// Make a copy of the client's config
-	cfg := c.config
+func (c *Client) NewRequest(method string, url string, params interface{}, reqBody interface{}, value interface{}) (*Request, error) {
+	var err error
 
 	req := &Request{
 		method:       method,
@@ -34,16 +33,14 @@ func NewRequest(c Client, method string, url string, params interface{}, reqBody
 		reqBody:      reqBody,
 		value:        value,
 		authStrategy: c.authStrategy,
+		errorValue:   c.errorValue,
 	}
 
+	// FIXME: We should remove this requirement on the request
+	// Make a copy of the client's config
+	cfg := c.config
 	req.config = cfg
 
-	u, err := req.makeURL()
-	if err != nil {
-		return nil, err
-	}
-
-	var r *retryablehttp.Request
 	if reqBody != nil {
 		if _, ok := reqBody.([]byte); !ok {
 			reqBody, err = makeRequestBodyReader(reqBody)
@@ -51,19 +48,12 @@ func NewRequest(c Client, method string, url string, params interface{}, reqBody
 				return nil, err
 			}
 		}
-
-		r, err = retryablehttp.NewRequest(req.method, u.String(), reqBody)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		r, err = retryablehttp.NewRequest(req.method, u.String(), nil)
-		if err != nil {
-			return nil, err
-		}
 	}
 
-	req.request = r
+	req.request, err = retryablehttp.NewRequest(req.method, url, reqBody)
+	if err != nil {
+		return nil, err
+	}
 
 	req.SetHeader(defaultNewRelicRequestingServiceHeader, cfg.ServiceName)
 	req.SetHeader("Content-Type", "application/json")
@@ -82,30 +72,15 @@ func (r *Request) SetAuthStrategy(ra RequestAuthorizer) {
 	r.authStrategy = ra
 }
 
+// SetErrorValue sets the error object for the request.
+func (r *Request) SetErrorValue(e ErrorResponse) {
+	r.errorValue = e
+}
+
 // SetServiceName sets the service name for the request.
 func (r *Request) SetServiceName(serviceName string) {
 	serviceName = fmt.Sprintf("%s|%s", serviceName, defaultServiceName)
 	r.SetHeader(defaultNewRelicRequestingServiceHeader, serviceName)
-}
-
-func (r *Request) makeURL() (*neturl.URL, error) {
-	u, err := neturl.Parse(r.url)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if u.Host != "" {
-		return u, nil
-	}
-
-	u, err = neturl.Parse(r.config.BaseURL + u.Path)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return u, err
 }
 
 func (r *Request) makeRequest() (*retryablehttp.Request, error) {

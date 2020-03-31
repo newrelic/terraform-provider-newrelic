@@ -34,7 +34,7 @@ func New(config config.Config) NerdGraph {
 func (n *NerdGraph) Query(query string, variables map[string]interface{}) (interface{}, error) {
 	respBody := QueryResponse{}
 
-	if err := n.client.Query(query, variables, &respBody); err != nil {
+	if err := n.client.NerdGraphQuery(query, variables, &respBody); err != nil {
 		return nil, err
 	}
 
@@ -45,7 +45,7 @@ func (n *NerdGraph) QuerySchema() (*Schema, error) {
 
 	schemaResponse := allTypesResponse{}
 	vars := map[string]interface{}{}
-	err := n.client.Query(allTypes, vars, &schemaResponse)
+	err := n.client.NerdGraphQuery(allTypes, vars, &schemaResponse)
 	if err != nil {
 		return nil, err
 	}

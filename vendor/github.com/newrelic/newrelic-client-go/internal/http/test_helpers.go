@@ -3,26 +3,15 @@ package http
 import (
 	"net/http"
 	"net/http/httptest"
+	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/config"
-)
-
-var (
-	testPersonalAPIKey = "apiKey"
-	testAdminAPIKey    = "adminAPIKey"
-	testUserAgent      = "userAgent"
+	mock "github.com/newrelic/newrelic-client-go/internal/testing"
 )
 
 // NewTestAPIClient returns a test Client instance that is configured to communicate with a mock server.
-func NewTestAPIClient(handler http.Handler) Client {
+func NewTestAPIClient(t *testing.T, handler http.Handler) Client {
 	ts := httptest.NewServer(handler)
+	tc := mock.NewTestConfig(t, ts)
 
-	c := NewClient(config.Config{
-		PersonalAPIKey: testPersonalAPIKey,
-		AdminAPIKey:    testAdminAPIKey,
-		BaseURL:        ts.URL,
-		UserAgent:      testUserAgent,
-	})
-
-	return c
+	return NewClient(tc)
 }

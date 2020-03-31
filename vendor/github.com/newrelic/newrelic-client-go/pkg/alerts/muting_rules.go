@@ -54,7 +54,7 @@ func (a *Alerts) ListMutingRules(accountID int) ([]MutingRule, error) {
 
 	resp := alertMutingRuleListResponse{}
 
-	if err := a.client.Query(alertsMutingRulesQuery, vars, &resp); err != nil {
+	if err := a.client.NerdGraphQuery(alertsMutingRulesQuery, vars, &resp); err != nil {
 		return nil, err
 	}
 
@@ -70,7 +70,7 @@ func (a *Alerts) GetMutingRule(accountID, ruleID int) (*MutingRule, error) {
 
 	resp := alertMutingRulesGetResponse{}
 
-	if err := a.client.Query(alertsMutingRulesGet, vars, &resp); err != nil {
+	if err := a.client.NerdGraphQuery(alertsMutingRulesGet, vars, &resp); err != nil {
 		return nil, err
 	}
 
@@ -86,7 +86,7 @@ func (a *Alerts) CreateMutingRule(accountID int, rule MutingRuleCreateInput) (*M
 
 	resp := alertMutingRuleCreateResponse{}
 
-	if err := a.client.Query(alertsMutingRulesCreate, vars, &resp); err != nil {
+	if err := a.client.NerdGraphQuery(alertsMutingRulesCreate, vars, &resp); err != nil {
 		return nil, err
 	}
 
@@ -103,7 +103,7 @@ func (a *Alerts) UpdateMutingRule(accountID int, ruleID int, rule MutingRuleUpda
 
 	resp := alertMutingRuleUpdateResponse{}
 
-	if err := a.client.Query(alertsMutingRulesUpdate, vars, &resp); err != nil {
+	if err := a.client.NerdGraphQuery(alertsMutingRulesUpdate, vars, &resp); err != nil {
 		return nil, err
 	}
 
@@ -119,7 +119,7 @@ func (a *Alerts) DeleteMutingRule(accountID int, ruleID int) error {
 
 	resp := alertMutingRuleDeleteResponse{}
 
-	if err := a.client.Query(alertsMutingRuleDelete, vars, &resp); err != nil {
+	if err := a.client.NerdGraphQuery(alertsMutingRuleDelete, vars, &resp); err != nil {
 		return err
 	}
 

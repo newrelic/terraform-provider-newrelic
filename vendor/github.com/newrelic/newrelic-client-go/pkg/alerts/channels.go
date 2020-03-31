@@ -80,7 +80,7 @@ func (a *Alerts) ListChannels() ([]*Channel, error) {
 
 	for nextURL != "" {
 		response := alertChannelsResponse{}
-		resp, err := a.client.Get(nextURL, nil, &response)
+		resp, err := a.client.Get(a.config.Region().RestURL(nextURL), nil, &response)
 
 		if err != nil {
 			return nil, err
@@ -121,7 +121,7 @@ func (a *Alerts) CreateChannel(channel Channel) (*Channel, error) {
 	}
 	resp := alertChannelsResponse{}
 
-	_, err := a.client.Post("/alerts_channels.json", nil, &reqBody, &resp)
+	_, err := a.client.Post(a.config.Region().RestURL("alerts_channels.json"), nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ func (a *Alerts) CreateChannel(channel Channel) (*Channel, error) {
 func (a *Alerts) DeleteChannel(id int) (*Channel, error) {
 	resp := alertChannelResponse{}
 	url := fmt.Sprintf("/alerts_channels/%d.json", id)
-	_, err := a.client.Delete(url, nil, &resp)
+	_, err := a.client.Delete(a.config.Region().RestURL(url), nil, &resp)
 
 	if err != nil {
 		return nil, err
