@@ -35,7 +35,7 @@ resource "newrelic_infra_alert_condition" "high_disk_usage" {
 
   warning {
     duration      = 10
-    value         = 90
+    value         = 80
     time_function = "all"
   }
 }
@@ -77,8 +77,6 @@ resource "newrelic_infra_alert_condition" "host_not_reporting" {
 
   name       = "Host not reporting"
   type       = "infra_host_not_reporting"
-  event      = "StorageSample"
-  select     = "diskUsedPercent"
   where      = "(`hostname` LIKE '%frontend%')"
 
   critical {
