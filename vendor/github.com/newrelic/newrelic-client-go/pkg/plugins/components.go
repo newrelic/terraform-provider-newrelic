@@ -2,6 +2,7 @@ package plugins
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -18,7 +19,7 @@ type ListComponentsParams struct {
 // a New Relic account.
 func (p *Plugins) ListComponents(params *ListComponentsParams) ([]*Component, error) {
 	c := []*Component{}
-	nextURL := "/components.json"
+	nextURL := p.config.Region().RestURL("components.json")
 
 	for nextURL != "" {
 		response := componentsResponse{}
@@ -43,7 +44,7 @@ func (p *Plugins) GetComponent(componentID int) (*Component, error) {
 	response := componentResponse{}
 	url := fmt.Sprintf("/components/%d.json", componentID)
 
-	_, err := p.client.Get(url, nil, &response)
+	_, err := p.client.Get(p.config.Region().RestURL(url), nil, &response)
 
 	if err != nil {
 		return nil, err
@@ -63,7 +64,7 @@ type ListComponentMetricsParams struct {
 func (p *Plugins) ListComponentMetrics(componentID int, params *ListComponentMetricsParams) ([]*ComponentMetric, error) {
 	m := []*ComponentMetric{}
 	response := componentMetricsResponse{}
-	nextURL := fmt.Sprintf("/components/%d/metrics.json", componentID)
+	nextURL := p.config.Region().RestURL("components", strconv.Itoa(componentID), "metrics.json")
 
 	for nextURL != "" {
 		resp, err := p.client.Get(nextURL, &params, &response)
@@ -111,7 +112,7 @@ type GetComponentMetricDataParams struct {
 func (p *Plugins) GetComponentMetricData(componentID int, params *GetComponentMetricDataParams) ([]*Metric, error) {
 	m := []*Metric{}
 	response := componentMetricDataResponse{}
-	nextURL := fmt.Sprintf("/components/%d/metrics/data.json", componentID)
+	nextURL := p.config.Region().RestURL("components", strconv.Itoa(componentID), "metrics/data.json")
 
 	for nextURL != "" {
 		resp, err := p.client.Get(nextURL, &params, &response)

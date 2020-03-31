@@ -155,7 +155,7 @@ func (e *Entities) SearchEntities(params SearchEntitiesParams) ([]*Entity, error
 			"cursor":       nextCursor,
 		}
 
-		if err := e.client.Query(searchEntitiesQuery, vars, &resp); err != nil {
+		if err := e.client.NerdGraphQuery(searchEntitiesQuery, vars, &resp); err != nil {
 			return nil, err
 		}
 
@@ -174,7 +174,7 @@ func (e *Entities) GetEntities(guids []string) ([]*Entity, error) {
 		"guids": guids,
 	}
 
-	if err := e.client.Query(getEntitiesQuery, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(getEntitiesQuery, vars, &resp); err != nil {
 		return nil, err
 	}
 
@@ -192,7 +192,7 @@ func (e *Entities) GetEntity(guid string) (*Entity, error) {
 		"guid": guid,
 	}
 
-	if err := e.client.Query(getEntityQuery, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(getEntityQuery, vars, &resp); err != nil {
 		return nil, err
 	}
 

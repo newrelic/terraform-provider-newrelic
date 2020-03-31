@@ -403,6 +403,8 @@ github.com/hashicorp/terraform-svchost/auth
 github.com/hashicorp/terraform-svchost/disco
 # github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d
 github.com/hashicorp/yamux
+# github.com/imdario/mergo v0.3.9
+github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
 # github.com/jingyugao/rowserrcheck v0.0.0-20191204022205-72ab7603b68a
@@ -436,7 +438,7 @@ github.com/mitchellh/go-homedir
 github.com/mitchellh/go-testing-interface
 # github.com/mitchellh/go-wordwrap v1.0.0
 github.com/mitchellh/go-wordwrap
-# github.com/mitchellh/mapstructure v1.1.2
+# github.com/mitchellh/mapstructure v1.2.2
 github.com/mitchellh/mapstructure
 # github.com/mitchellh/reflectwalk v1.0.1
 github.com/mitchellh/reflectwalk
@@ -460,11 +462,11 @@ github.com/newrelic/go-agent/v3/internal/utilization
 github.com/newrelic/go-agent/v3/newrelic
 # github.com/newrelic/go-insights v1.0.3
 github.com/newrelic/go-insights/client
-# github.com/newrelic/newrelic-client-go v0.19.0
+# github.com/newrelic/newrelic-client-go v0.20.0
 github.com/newrelic/newrelic-client-go/internal/http
 github.com/newrelic/newrelic-client-go/internal/logging
-github.com/newrelic/newrelic-client-go/internal/region
 github.com/newrelic/newrelic-client-go/internal/serialization
+github.com/newrelic/newrelic-client-go/internal/testing
 github.com/newrelic/newrelic-client-go/internal/version
 github.com/newrelic/newrelic-client-go/newrelic
 github.com/newrelic/newrelic-client-go/pkg/alerts
@@ -475,7 +477,9 @@ github.com/newrelic/newrelic-client-go/pkg/entities
 github.com/newrelic/newrelic-client-go/pkg/errors
 github.com/newrelic/newrelic-client-go/pkg/infrastructure
 github.com/newrelic/newrelic-client-go/pkg/nerdgraph
+github.com/newrelic/newrelic-client-go/pkg/nerdstorage
 github.com/newrelic/newrelic-client-go/pkg/plugins
+github.com/newrelic/newrelic-client-go/pkg/region
 github.com/newrelic/newrelic-client-go/pkg/synthetics
 github.com/newrelic/newrelic-client-go/pkg/workloads
 # github.com/oklog/run v1.0.0
@@ -494,7 +498,7 @@ github.com/posener/complete/match
 # github.com/securego/gosec v0.0.0-20200103095621-79fbf3af8d83
 github.com/securego/gosec
 github.com/securego/gosec/rules
-# github.com/sirupsen/logrus v1.4.2
+# github.com/sirupsen/logrus v1.5.0
 github.com/sirupsen/logrus
 # github.com/sourcegraph/go-diff v0.5.1
 github.com/sourcegraph/go-diff/diff
@@ -613,7 +617,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# golang.org/x/tools v0.0.0-20200317190434-d05f4d6edb1c
+# golang.org/x/tools v0.0.0-20200325203130-f53864d0dba1
 golang.org/x/tools/go/analysis
 golang.org/x/tools/go/analysis/internal/analysisflags
 golang.org/x/tools/go/analysis/internal/checker
