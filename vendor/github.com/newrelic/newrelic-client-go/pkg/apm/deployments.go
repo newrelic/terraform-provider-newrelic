@@ -2,6 +2,7 @@ package apm
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/newrelic/newrelic-client-go/internal/http"
 )
@@ -25,11 +26,11 @@ type DeploymentLinks struct {
 // ListDeployments returns deployments for an application.
 func (a *APM) ListDeployments(applicationID int) ([]*Deployment, error) {
 	deployments := []*Deployment{}
-	nextURL := fmt.Sprintf("/applications/%d/deployments.json", applicationID)
+	nextURL := a.config.Region().RestURL("applications", strconv.Itoa(applicationID), "deployments.json")
 
 	for nextURL != "" {
 		response := deploymentsResponse{}
-		req, err := http.NewRequest(a.client, "GET", nextURL, nil, nil, &response)
+		req, err := a.client.NewRequest("GET", nextURL, nil, nil, &response)
 		if err != nil {
 			return nil, err
 		}
@@ -58,8 +59,8 @@ func (a *APM) CreateDeployment(applicationID int, deployment Deployment) (*Deplo
 	}
 	resp := deploymentResponse{}
 
-	u := fmt.Sprintf("/applications/%d/deployments.json", applicationID)
-	req, err := http.NewRequest(a.client, "POST", u, nil, &reqBody, &resp)
+	url := a.config.Region().RestURL("applications", strconv.Itoa(applicationID), "deployments.json")
+	req, err := a.client.NewRequest("POST", url, nil, &reqBody, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -78,9 +79,9 @@ func (a *APM) CreateDeployment(applicationID int, deployment Deployment) (*Deplo
 // DeleteDeployment deletes a deployment marker for an application.
 func (a *APM) DeleteDeployment(applicationID int, deploymentID int) (*Deployment, error) {
 	resp := deploymentResponse{}
-	u := fmt.Sprintf("/applications/%d/deployments/%d.json", applicationID, deploymentID)
+	url := a.config.Region().RestURL("applications", strconv.Itoa(applicationID), "deployments", fmt.Sprintf("%d.json", deploymentID))
 
-	req, err := http.NewRequest(a.client, "DELETE", u, nil, nil, &resp)
+	req, err := a.client.NewRequest("DELETE", url, nil, nil, &resp)
 	if err != nil {
 		return nil, err
 	}

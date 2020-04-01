@@ -7,6 +7,7 @@ import (
 
 	"github.com/newrelic/newrelic-client-go/internal/logging"
 	"github.com/newrelic/newrelic-client-go/internal/version"
+	"github.com/newrelic/newrelic-client-go/pkg/region"
 )
 
 // Config contains all the configuration data for the API Client.
@@ -20,8 +21,8 @@ type Config struct {
 	// see: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin
 	AdminAPIKey string
 
-	// Region of the New Relic platform to use
-	Region RegionType
+	// region of the New Relic platform to use
+	region *region.Region
 
 	// Timeout is the client timeout for HTTP requests.
 	Timeout *time.Duration
@@ -31,22 +32,6 @@ type Config struct {
 
 	// UserAgent updates the default user agent string used by the client.
 	UserAgent string
-
-	// BaseURL updates the default base URL used by the client during requests to
-	// the V2 REST API.
-	BaseURL string
-
-	// SyntheticsBaseURL updates the default base URL used by the client during
-	// requests to the Synthetics API.
-	SyntheticsBaseURL string
-
-	// InfrastructureBaseURL updates the default base URL used by the client during
-	// requests to the Infrastructure API.
-	InfrastructureBaseURL string
-
-	// NerdGraph updates the default base URL used by the client during requests
-	// to the NerdGraph API.
-	NerdGraphBaseURL string
 
 	// ServiceName is for New Relic internal use only.
 	ServiceName string
@@ -62,16 +47,37 @@ type Config struct {
 	Logger logging.Logger
 }
 
-// RegionType represents a New Relic region.
-type RegionType string
+// New creates a default configuration and returns it
+func New() Config {
+	regCopy := *region.Default
 
-// RegionTypes contains the possible values for New Relic region.
-var RegionTypes = struct {
-	US RegionType
-	EU RegionType
-}{
-	US: "US",
-	EU: "EU",
+	return Config{
+		region:    &regCopy,
+		UserAgent: "newrelic/newrelic-client-go",
+		LogLevel:  "info",
+	}
+}
+
+// Region returns the region configuration struct
+// if one has not been set, use the default region
+func (c *Config) Region() *region.Region {
+	if c.region == nil {
+		regCopy := *region.Default
+		c.region = &regCopy
+	}
+
+	return c.region
+}
+
+// SetRegion configures the region
+func (c *Config) SetRegion(reg *region.Region) error {
+	if reg == nil {
+		return region.ErrorNil()
+	}
+
+	c.region = reg
+
+	return nil
 }
 
 // GetLogger returns a logger instance based on the config values.

@@ -12,7 +12,7 @@ type applicationsREST struct {
 // list is used to retrieve New Relic applications.
 func (a *applicationsREST) list(accountID int, params *ListApplicationsParams) ([]*Application, error) {
 	apps := []*Application{}
-	nextURL := "/applications.json"
+	nextURL := a.parent.config.Region().RestURL("applications.json")
 
 	for nextURL != "" {
 		response := applicationsResponse{}
@@ -46,7 +46,7 @@ func (a *applicationsREST) get(accountID int, applicationID int) (*Application, 
 	response := applicationResponse{}
 	url := fmt.Sprintf("/applications/%d.json", applicationID)
 
-	_, err := a.parent.client.Get(url, nil, &response)
+	_, err := a.parent.client.Get(a.parent.config.Region().RestURL(url), nil, &response)
 
 	if err != nil {
 		return nil, err
@@ -58,12 +58,12 @@ func (a *applicationsREST) get(accountID int, applicationID int) (*Application, 
 // update is used to update a New Relic application's name and/or settings.
 func (a *applicationsREST) update(accountID int, applicationID int, params UpdateApplicationParams) (*Application, error) {
 	response := applicationResponse{}
-	url := fmt.Sprintf("/applications/%d.json", applicationID)
 	reqBody := updateApplicationRequest{
 		Fields: updateApplicationFields(params),
 	}
+	url := fmt.Sprintf("/applications/%d.json", applicationID)
 
-	_, err := a.parent.client.Put(url, nil, &reqBody, &response)
+	_, err := a.parent.client.Put(a.parent.config.Region().RestURL(url), nil, &reqBody, &response)
 
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (a *applicationsREST) remove(accountID int, applicationID int) (*Applicatio
 	response := applicationResponse{}
 	url := fmt.Sprintf("/applications/%d.json", applicationID)
 
-	_, err := a.parent.client.Delete(url, nil, &response)
+	_, err := a.parent.client.Delete(a.parent.config.Region().RestURL(url), nil, &response)
 
 	if err != nil {
 		return nil, err

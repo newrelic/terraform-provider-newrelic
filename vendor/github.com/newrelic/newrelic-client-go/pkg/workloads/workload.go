@@ -95,7 +95,7 @@ func (e *Workloads) ListWorkloads(accountID int) ([]*Workload, error) {
 		"accountId": accountID,
 	}
 
-	if err := e.client.Query(listWorkloadsQuery, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(listWorkloadsQuery, vars, &resp); err != nil {
 		return nil, err
 	}
 
@@ -114,7 +114,7 @@ func (e *Workloads) GetWorkload(accountID int, workloadID int) (*Workload, error
 		"id":        workloadID,
 	}
 
-	if err := e.client.Query(getWorkloadQuery, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(getWorkloadQuery, vars, &resp); err != nil {
 		return nil, err
 	}
 
@@ -129,7 +129,7 @@ func (e *Workloads) CreateWorkload(accountID int, workload CreateInput) (*Worklo
 		"workload":  workload,
 	}
 
-	if err := e.client.Query(createWorkloadMutation, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(createWorkloadMutation, vars, &resp); err != nil {
 		return nil, err
 	}
 
@@ -143,7 +143,7 @@ func (e *Workloads) DeleteWorkload(guid string) (*Workload, error) {
 		"guid": guid,
 	}
 
-	if err := e.client.Query(deleteWorkloadMutation, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(deleteWorkloadMutation, vars, &resp); err != nil {
 		return nil, err
 	}
 
@@ -159,7 +159,7 @@ func (e *Workloads) DuplicateWorkload(accountID int, sourceGUID string, workload
 		"workload":   workload,
 	}
 
-	if err := e.client.Query(duplicateWorkloadMutation, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(duplicateWorkloadMutation, vars, &resp); err != nil {
 		return nil, err
 	}
 
@@ -174,7 +174,7 @@ func (e *Workloads) UpdateWorkload(guid string, workload UpdateInput) (*Workload
 		"workload": workload,
 	}
 
-	if err := e.client.Query(updateWorkloadMutation, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(updateWorkloadMutation, vars, &resp); err != nil {
 		return nil, err
 	}
 
