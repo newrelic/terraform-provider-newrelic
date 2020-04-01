@@ -25,7 +25,7 @@ func (a *Alerts) ListSyntheticsConditions(policyID int) ([]*SyntheticsCondition,
 
 	for nextURL != "" {
 		response := syntheticsConditionsResponse{}
-		resp, err := a.client.Get(nextURL, &queryParams, &response)
+		resp, err := a.client.Get(a.config.Region().RestURL(nextURL), &queryParams, &response)
 
 		if err != nil {
 			return nil, err
@@ -62,7 +62,7 @@ func (a *Alerts) CreateSyntheticsCondition(policyID int, condition SyntheticsCon
 	resp := syntheticsConditionResponse{}
 	reqBody := syntheticsConditionRequest{condition}
 	url := fmt.Sprintf("/alerts_synthetics_conditions/policies/%d.json", policyID)
-	_, err := a.client.Post(url, nil, &reqBody, &resp)
+	_, err := a.client.Post(a.config.Region().RestURL(url), nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (a *Alerts) UpdateSyntheticsCondition(condition SyntheticsCondition) (*Synt
 	resp := syntheticsConditionResponse{}
 	reqBody := syntheticsConditionRequest{condition}
 	url := fmt.Sprintf("/alerts_synthetics_conditions/%d.json", condition.ID)
-	_, err := a.client.Put(url, nil, &reqBody, &resp)
+	_, err := a.client.Put(a.config.Region().RestURL(url), nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func (a *Alerts) UpdateSyntheticsCondition(condition SyntheticsCondition) (*Synt
 func (a *Alerts) DeleteSyntheticsCondition(conditionID int) (*SyntheticsCondition, error) {
 	resp := syntheticsConditionResponse{}
 	url := fmt.Sprintf("/alerts_synthetics_conditions/%d.json", conditionID)
-	_, err := a.client.Delete(url, nil, &resp)
+	_, err := a.client.Delete(a.config.Region().RestURL(url), nil, &resp)
 
 	if err != nil {
 		return nil, err

@@ -10,7 +10,7 @@ import (
 func (s *Synthetics) GetMonitorScript(monitorID string) (*MonitorScript, error) {
 	resp := MonitorScript{}
 	url := fmt.Sprintf("/v4/monitors/%s/script", monitorID)
-	_, err := s.client.Get(url, nil, &resp)
+	_, err := s.client.Get(s.config.Region().SyntheticsURL(url), nil, &resp)
 
 	if err != nil {
 		return nil, err
@@ -31,8 +31,7 @@ func (s *Synthetics) GetMonitorScript(monitorID string) (*MonitorScript, error) 
 func (s *Synthetics) UpdateMonitorScript(monitorID string, script MonitorScript) (*MonitorScript, error) {
 	script.Text = base64.StdEncoding.EncodeToString([]byte(script.Text))
 
-	url := fmt.Sprintf("/v4/monitors/%s/script", monitorID)
-	_, err := s.client.Put(url, nil, &script, nil)
+	_, err := s.client.Put(s.config.Region().SyntheticsURL("/v4/monitors", monitorID, "/script"), nil, &script, nil)
 
 	if err != nil {
 		return nil, err

@@ -1,7 +1,7 @@
 package apm
 
 import (
-	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -53,13 +53,13 @@ type MetricTimesliceValues struct {
 // GetMetricNames is used to retrieve a list of known metrics and their value names for the given resource.
 //
 // https://rpm.newrelic.com/api/explore/applications/metric_names
-func (apm *APM) GetMetricNames(applicationID int, params MetricNamesParams) ([]*MetricName, error) {
+func (a *APM) GetMetricNames(applicationID int, params MetricNamesParams) ([]*MetricName, error) {
+	nextURL := a.config.Region().RestURL("applications", strconv.Itoa(applicationID), "metrics.json")
 	response := metricNamesResponse{}
 	metrics := []*MetricName{}
-	nextURL := fmt.Sprintf("/applications/%d/metrics.json", applicationID)
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &params, &response)
+		resp, err := a.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
@@ -67,7 +67,7 @@ func (apm *APM) GetMetricNames(applicationID int, params MetricNamesParams) ([]*
 
 		metrics = append(metrics, response.Metrics...)
 
-		paging := apm.pager.Parse(resp)
+		paging := a.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 
@@ -77,13 +77,14 @@ func (apm *APM) GetMetricNames(applicationID int, params MetricNamesParams) ([]*
 // GetMetricData is used to retrieve a list of values for each of the requested metrics.
 //
 // https://rpm.newrelic.com/api/explore/applications/metric_data
-func (apm *APM) GetMetricData(applicationID int, params MetricDataParams) ([]*MetricData, error) {
+func (a *APM) GetMetricData(applicationID int, params MetricDataParams) ([]*MetricData, error) {
+	nextURL := a.config.Region().RestURL("applications", strconv.Itoa(applicationID), "/metrics/data.json")
+
 	response := metricDataResponse{}
 	data := []*MetricData{}
-	nextURL := fmt.Sprintf("/applications/%d/metrics/data.json", applicationID)
 
 	for nextURL != "" {
-		resp, err := apm.client.Get(nextURL, &params, &response)
+		resp, err := a.client.Get(nextURL, &params, &response)
 
 		if err != nil {
 			return nil, err
@@ -91,7 +92,7 @@ func (apm *APM) GetMetricData(applicationID int, params MetricDataParams) ([]*Me
 
 		data = append(data, response.MetricData.Metrics...)
 
-		paging := apm.pager.Parse(resp)
+		paging := a.pager.Parse(resp)
 		nextURL = paging.Next
 	}
 

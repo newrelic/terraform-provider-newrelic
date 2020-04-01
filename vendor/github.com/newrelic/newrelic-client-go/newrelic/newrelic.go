@@ -12,26 +12,29 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/nerdgraph"
+	"github.com/newrelic/newrelic-client-go/pkg/nerdstorage"
 	"github.com/newrelic/newrelic-client-go/pkg/plugins"
+	"github.com/newrelic/newrelic-client-go/pkg/region"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 	"github.com/newrelic/newrelic-client-go/pkg/workloads"
 )
 
 // NewRelic is a collection of New Relic APIs.
 type NewRelic struct {
-	Alerts     alerts.Alerts
-	APM        apm.APM
-	Dashboards dashboards.Dashboards
-	Entities   entities.Entities
-	Plugins    plugins.Plugins
-	Synthetics synthetics.Synthetics
-	NerdGraph  nerdgraph.NerdGraph
-	Workloads  workloads.Workloads
+	Alerts      alerts.Alerts
+	APM         apm.APM
+	Dashboards  dashboards.Dashboards
+	Entities    entities.Entities
+	Plugins     plugins.Plugins
+	Synthetics  synthetics.Synthetics
+	NerdGraph   nerdgraph.NerdGraph
+	NerdStorage nerdstorage.NerdStorage
+	Workloads   workloads.Workloads
 }
 
 // New returns a collection of New Relic APIs.
 func New(opts ...ConfigOption) (*NewRelic, error) {
-	config := config.Config{}
+	config := config.New()
 
 	// Loop through config options
 	for _, fn := range opts {
@@ -47,14 +50,15 @@ func New(opts ...ConfigOption) (*NewRelic, error) {
 	}
 
 	nr := &NewRelic{
-		Alerts:     alerts.New(config),
-		APM:        apm.New(config),
-		Dashboards: dashboards.New(config),
-		Entities:   entities.New(config),
-		Plugins:    plugins.New(config),
-		Synthetics: synthetics.New(config),
-		NerdGraph:  nerdgraph.New(config),
-		Workloads:  workloads.New(config),
+		Alerts:      alerts.New(config),
+		APM:         apm.New(config),
+		Dashboards:  dashboards.New(config),
+		Entities:    entities.New(config),
+		Plugins:     plugins.New(config),
+		Synthetics:  synthetics.New(config),
+		NerdGraph:   nerdgraph.New(config),
+		NerdStorage: nerdstorage.New(config),
+		Workloads:   workloads.New(config),
 	}
 
 	return nr, nil
@@ -85,10 +89,14 @@ func ConfigAdminAPIKey(adminAPIKey string) ConfigOption {
 }
 
 // ConfigRegion sets the New Relic Region this client will use.
-func ConfigRegion(region config.RegionType) ConfigOption {
+func ConfigRegion(r region.Name) ConfigOption {
 	return func(cfg *config.Config) error {
-		cfg.Region = region
-		return nil
+		if region, ok := region.Regions[r]; ok {
+			regCopy := *region
+			return cfg.SetRegion(&regCopy)
+		}
+
+		return errors.New("unsupported region configured")
 	}
 }
 
@@ -140,7 +148,7 @@ func ConfigServiceName(name string) ConfigOption {
 func ConfigBaseURL(url string) ConfigOption {
 	return func(cfg *config.Config) error {
 		if url != "" {
-			cfg.BaseURL = url
+			cfg.Region().SetRestBaseURL(url)
 			return nil
 		}
 
@@ -152,7 +160,7 @@ func ConfigBaseURL(url string) ConfigOption {
 func ConfigInfrastructureBaseURL(url string) ConfigOption {
 	return func(cfg *config.Config) error {
 		if url != "" {
-			cfg.InfrastructureBaseURL = url
+			cfg.Region().SetInfrastructureBaseURL(url)
 			return nil
 		}
 
@@ -164,7 +172,7 @@ func ConfigInfrastructureBaseURL(url string) ConfigOption {
 func ConfigSyntheticsBaseURL(url string) ConfigOption {
 	return func(cfg *config.Config) error {
 		if url != "" {
-			cfg.SyntheticsBaseURL = url
+			cfg.Region().SetSyntheticsBaseURL(url)
 			return nil
 		}
 
@@ -176,7 +184,7 @@ func ConfigSyntheticsBaseURL(url string) ConfigOption {
 func ConfigNerdGraphBaseURL(url string) ConfigOption {
 	return func(cfg *config.Config) error {
 		if url != "" {
-			cfg.NerdGraphBaseURL = url
+			cfg.Region().SetNerdGraphBaseURL(url)
 			return nil
 		}
 

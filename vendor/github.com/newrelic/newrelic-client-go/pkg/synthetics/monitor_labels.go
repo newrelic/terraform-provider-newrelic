@@ -18,7 +18,7 @@ func (s *Synthetics) GetMonitorLabels(monitorID string) ([]*MonitorLabel, error)
 
 	resp := getMonitorLabelsResponse{}
 
-	_, err := s.client.Get(url, nil, &resp)
+	_, err := s.client.Get(s.config.Region().SyntheticsURL(url), nil, &resp)
 	if err != nil {
 		return []*MonitorLabel{}, err
 	}
@@ -34,7 +34,7 @@ func (s *Synthetics) AddMonitorLabel(monitorID, labelKey, labelValue string) err
 
 	// We use RawPost here due to the Syntheics API's lack of support for JSON on
 	// this call.  The values must be POSTed as bare key:value word string.
-	_, err := s.client.RawPost(url, nil, data, nil)
+	_, err := s.client.RawPost(s.config.Region().SyntheticsURL(url), nil, data, nil)
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (s *Synthetics) AddMonitorLabel(monitorID, labelKey, labelValue string) err
 func (s *Synthetics) DeleteMonitorLabel(monitorID, labelKey, labelValue string) error {
 	url := fmt.Sprintf("/v4/monitors/%s/labels/%s:%s", monitorID, strings.Title(labelKey), strings.Title(labelValue))
 
-	_, err := s.client.Delete(url, nil, nil)
+	_, err := s.client.Delete(s.config.Region().SyntheticsURL(url), nil, nil)
 	if err != nil {
 		return err
 	}

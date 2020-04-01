@@ -6,20 +6,13 @@ import (
 
 	"github.com/newrelic/newrelic-client-go/internal/http"
 	"github.com/newrelic/newrelic-client-go/internal/logging"
-	"github.com/newrelic/newrelic-client-go/internal/region"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
-
-// BaseURLs represents the base API URLs for the different environments of the Synthetics API.
-var BaseURLs = map[region.Region]string{
-	region.US:      "https://synthetics.newrelic.com/synthetics/api",
-	region.EU:      "https://synthetics.eu.newrelic.com/synthetics/api",
-	region.Staging: "https://staging-synthetics.newrelic.com/synthetics/api",
-}
 
 // Synthetics is used to communicate with the New Relic Synthetics product.
 type Synthetics struct {
 	client http.Client
+	config config.Config
 	logger logging.Logger
 	pager  http.Pager
 }
@@ -64,18 +57,12 @@ func (e *ErrorResponse) New() http.ErrorResponse {
 
 // New is used to create a new Synthetics client instance.
 func New(config config.Config) Synthetics {
-
-	if config.SyntheticsBaseURL == "" {
-		config.SyntheticsBaseURL = BaseURLs[region.Parse(string(config.Region))]
-	}
-
-	config.BaseURL = config.SyntheticsBaseURL
-
 	client := http.NewClient(config)
 	client.SetErrorValue(&ErrorResponse{})
 
 	pkg := Synthetics{
 		client: client,
+		config: config,
 		logger: config.GetLogger(),
 		pager:  &http.LinkHeaderPager{},
 	}

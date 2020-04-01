@@ -1,8 +1,6 @@
 package apm
 
 import (
-	"fmt"
-
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
@@ -23,7 +21,7 @@ type LabelLinks struct {
 // ListLabels returns the labels within an account.
 func (a *APM) ListLabels() ([]*Label, error) {
 	labels := []*Label{}
-	nextURL := "/labels.json"
+	nextURL := a.config.Region().RestURL("labels.json")
 
 	for nextURL != "" {
 		response := labelsResponse{}
@@ -68,7 +66,7 @@ func (a *APM) CreateLabel(label Label) (*Label, error) {
 	resp := labelResponse{}
 
 	// The API currently uses a PUT request for label creation
-	_, err := a.client.Put("/labels.json", nil, &reqBody, &resp)
+	_, err := a.client.Put(a.config.Region().RestURL("labels.json"), nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -82,8 +80,7 @@ func (a *APM) CreateLabel(label Label) (*Label, error) {
 func (a *APM) DeleteLabel(key string) (*Label, error) {
 	resp := labelResponse{}
 
-	u := fmt.Sprintf("/labels/%s.json", key)
-	_, err := a.client.Delete(u, nil, &resp)
+	_, err := a.client.Delete(a.config.Region().RestURL("labels", key+".json"), nil, &resp)
 
 	if err != nil {
 		return nil, err

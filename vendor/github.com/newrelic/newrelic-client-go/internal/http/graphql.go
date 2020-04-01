@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"strings"
 )
 
@@ -14,7 +15,8 @@ type graphQLResponse struct {
 }
 
 type graphQLError struct {
-	Message string `json:"message"`
+	Message            string         `json:"message"`
+	DownstreamResponse *[]interface{} `json:"downstreamResponse,omitempty"`
 }
 
 type graphQLErrorResponse struct {
@@ -25,7 +27,10 @@ func (r *graphQLErrorResponse) Error() string {
 	if len(r.Errors) > 0 {
 		messages := []string{}
 		for _, e := range r.Errors {
+			f, _ := json.Marshal(e.DownstreamResponse)
+
 			messages = append(messages, e.Message)
+			messages = append(messages, string(f))
 		}
 		return strings.Join(messages, ", ")
 	}
