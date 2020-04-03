@@ -424,12 +424,7 @@ func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta inter
 		return err
 	}
 
-	var conditionID int
-	if len(ids) > 2 {
-		conditionID = ids[2]
-	} else {
-		conditionID = ids[1]
-	}
+	conditionID := ids[1]
 
 	log.Printf("[INFO] Deleting New Relic NRQL alert condition %d", conditionID)
 
@@ -439,22 +434,6 @@ func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta inter
 	}
 
 	return nil
-}
-
-// Selects the proper accountID for usage within a resource. Account IDs provided
-// within a `resource` block will override a `provider` block account ID. This ensures
-// resources can be scoped to specific accounts. Bear in mind those accounts must be
-// accessible with the provided Personal API Key (APIKS).
-//
-// TODO: make this more reusable and testable
-func selectAccountID(providerCondig *ProviderConfig, d *schema.ResourceData) int {
-	resourceAccountID := d.Get("account_id").(int)
-
-	if resourceAccountID != 0 {
-		return resourceAccountID
-	}
-
-	return providerCondig.AccountID
 }
 
 func canUseNerdGraphNrqlAlertConditions(providerConfig *ProviderConfig, conditionType string) bool {
