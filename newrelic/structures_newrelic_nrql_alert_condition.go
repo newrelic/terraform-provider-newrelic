@@ -216,12 +216,6 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 		d.Set("value_function", strings.ToLower(string(*condition.ValueFunction)))
 	}
 
-	// fmt.Print("\n **************************** \n")
-	// fmt.Printf("\n FLATTEN desc:      %+v - %+v \n", descExists, desc)
-	// fmt.Printf("\n FLATTEN condition: %+v \n", condition)
-	// fmt.Print("\n **************************** \n")
-	// time.Sleep(10 * time.Second)
-
 	configuredNrql := d.Get("nrql.0").(map[string]interface{})
 	if err := d.Set("nrql", flattenNrql(condition.Nrql, configuredNrql)); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `nrql`: %v", err)

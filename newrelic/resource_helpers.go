@@ -76,3 +76,17 @@ func resourceImportState(defaultIDCount int, attribute string) schema.StateFunc 
 		return []*schema.ResourceData{d}, nil
 	}
 }
+
+// Selects the proper accountID for usage within a resource. An account ID provided
+// within a `resource` block will override a `provider` block account ID. This ensures
+// resources can be scoped to specific accounts. Bear in mind those accounts must be
+// accessible with the provided Personal API Key (APIKS).
+func selectAccountID(providerCondig *ProviderConfig, d *schema.ResourceData) int {
+	resourceAccountID := d.Get("account_id").(int)
+
+	if resourceAccountID != 0 {
+		return resourceAccountID
+	}
+
+	return providerCondig.AccountID
+}
