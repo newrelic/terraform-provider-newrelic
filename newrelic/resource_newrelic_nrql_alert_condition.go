@@ -19,7 +19,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 		Update: resourceNewRelicNrqlAlertConditionUpdate,
 		Delete: resourceNewRelicNrqlAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: resourceImportState(2, "type"),
 		},
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
@@ -252,49 +252,26 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 	}
 }
 
-// Selects the proper accountID for usage within a resource. Account IDs provided
-// within a `resource` block will override a `provider` block account ID. This ensures
-// resources can be scoped to specific accounts. Bear in mind those accounts must be
-// accessible with the provided Personal API Key (APIKS).
-//
-// TODO: make this more reusable and testable
-func selectAccountID(providerCondig *ProviderConfig, d *schema.ResourceData) int {
-	resourceAccountID := d.Get("account_id").(int)
-
-	if resourceAccountID != 0 {
-		return resourceAccountID
-	}
-
-	return providerCondig.AccountID
-}
-
 func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	accountID := selectAccountID(providerConfig, d)
 	policyID := d.Get("policy_id").(int)
 	conditionType := d.Get("type").(string)
 
-	if providerConfig.hasNerdGraphCredentials() && conditionType != "outlier" {
+	if canUseNerdGraphNrqlAlertConditions(providerConfig, conditionType) {
+		accountID := selectAccountID(providerConfig, d)
+
 		conditionInput, err := expandNrqlAlertConditionInput(d)
 		if err != nil {
 			return err
 		}
 
-		// fmt.Print("\n **************************** \n")
-		// fmt.Printf("\n Create Input: %+v \n", toJSON(conditionInput))
-		// fmt.Print("\n **************************** \n")
-		// time.Sleep(10 * time.Second)
-
 		log.Printf("[INFO] Creating New Relic NRQL alert condition %s via NerdGraph API", conditionInput.Name)
 
 		var nrqlCondition *alerts.NrqlAlertCondition
-
 		if conditionType == "baseline" {
-			nrqlCondition, err = client.Alerts.CreateNrqlConditionBaselineMutation(accountID, policyID, *conditionInput)
-
-			if err != nil {
+			if nrqlCondition, err = client.Alerts.CreateNrqlConditionBaselineMutation(accountID, policyID, *conditionInput); err != nil {
 				return err
 			}
 		}
@@ -336,7 +313,7 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 
 	log.Printf("[INFO] Reading New Relic NRQL alert condition %s", d.Id())
 
-	ids, err := parseIDs(d.Id(), 2)
+	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
 		return err
 	}
@@ -344,22 +321,10 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 	policyID := ids[0]
 	conditionID := ids[1]
 	conditionType := d.Get("type").(string)
-	accountID := selectAccountID(providerConfig, d)
-
-	fmt.Print("\n **************************** \n")
-	fmt.Printf(" READ B4 ids:       %+v ", ids)
-	fmt.Printf(" READ B4 accountID: %+v ", accountID)
-	fmt.Print("\n **************************** \n")
 
 	// NerdGraph
-	if providerConfig.hasNerdGraphCredentials() && conditionType != "outlier" {
+	if canUseNerdGraphNrqlAlertConditions(providerConfig, conditionType) {
 		accountID := selectAccountID(providerConfig, d)
-
-		fmt.Print("\n **************************** \n")
-		fmt.Printf(" READ ids:       %+v ", ids)
-		fmt.Printf(" READ accountID: %+v ", accountID)
-		fmt.Print("\n **************************** \n")
-		// time.Sleep(10 * time.Second)
 
 		var nrqlCondition *alerts.NrqlAlertCondition
 		nrqlCondition, err = client.Alerts.GetNrqlConditionQuery(accountID, conditionID)
@@ -403,17 +368,17 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	accountID := selectAccountID(providerConfig, d)
-	conditionType := d.Get("type").(string)
-
-	ids, err := parseIDs(d.Id(), 2)
+	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
 		return err
 	}
 
 	conditionID := ids[1]
+	conditionType := d.Get("type").(string)
 
-	if providerConfig.hasNerdGraphCredentials() && conditionType != "outlier" {
+	if canUseNerdGraphNrqlAlertConditions(providerConfig, conditionType) {
+		accountID := selectAccountID(providerConfig, d)
+
 		var conditionInput *alerts.NrqlConditionInput
 		conditionInput, err = expandNrqlAlertConditionInput(d)
 		if err != nil {
@@ -454,19 +419,44 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
 
-	ids, err := parseIDs(d.Id(), 2)
+	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
 		return err
 	}
 
-	id := ids[1]
+	var conditionID int
+	if len(ids) > 2 {
+		conditionID = ids[2]
+	} else {
+		conditionID = ids[1]
+	}
 
-	log.Printf("[INFO] Deleting New Relic NRQL alert condition %d", id)
+	log.Printf("[INFO] Deleting New Relic NRQL alert condition %d", conditionID)
 
-	_, err = client.Alerts.DeleteNrqlCondition(id)
+	_, err = client.Alerts.DeleteNrqlCondition(conditionID)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// Selects the proper accountID for usage within a resource. Account IDs provided
+// within a `resource` block will override a `provider` block account ID. This ensures
+// resources can be scoped to specific accounts. Bear in mind those accounts must be
+// accessible with the provided Personal API Key (APIKS).
+//
+// TODO: make this more reusable and testable
+func selectAccountID(providerCondig *ProviderConfig, d *schema.ResourceData) int {
+	resourceAccountID := d.Get("account_id").(int)
+
+	if resourceAccountID != 0 {
+		return resourceAccountID
+	}
+
+	return providerCondig.AccountID
+}
+
+func canUseNerdGraphNrqlAlertConditions(providerConfig *ProviderConfig, conditionType string) bool {
+	return providerConfig.hasNerdGraphCredentials() && conditionType != "outlier"
 }

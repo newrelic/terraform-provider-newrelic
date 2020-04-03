@@ -201,12 +201,12 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	conditionType := strings.ToLower(string(condition.Type))
 
 	d.Set("account_id", accountID)
+	d.Set("type", conditionType)
 	d.Set("description", condition.Description)
 	d.Set("policy_id", policyID)
 	d.Set("name", condition.Name)
 	d.Set("runbook_url", condition.RunbookURL)
 	d.Set("enabled", condition.Enabled)
-	d.Set("type", conditionType)
 
 	if conditionType == "baseline" {
 		d.Set("baseline_direction", string(*condition.BaselineDirection))
@@ -346,55 +346,7 @@ func getConfiguredTerms(configTerms []interface{}) []map[string]interface{} {
 	return setTerms
 }
 
-/*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-OLD
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/
+// Deprecated
 func expandNrqlAlertConditionStruct(d *schema.ResourceData) *alerts.NrqlCondition {
 	condition := alerts.NrqlCondition{
 		Name:                d.Get("name").(string),
@@ -433,6 +385,7 @@ func expandNrqlAlertConditionStruct(d *schema.ResourceData) *alerts.NrqlConditio
 	return &condition
 }
 
+// Deprecated
 func expandNrqlConditionTerms(terms []interface{}) []alerts.ConditionTerm {
 	expanded := make([]alerts.ConditionTerm, len(terms))
 
@@ -451,6 +404,7 @@ func expandNrqlConditionTerms(terms []interface{}) []alerts.ConditionTerm {
 	return expanded
 }
 
+// Deprecated
 func flattenNrqlQuery(nrql alerts.NrqlQuery) []interface{} {
 	m := map[string]interface{}{
 		"query":       nrql.Query,
@@ -460,6 +414,7 @@ func flattenNrqlQuery(nrql alerts.NrqlQuery) []interface{} {
 	return []interface{}{m}
 }
 
+// Deprecated
 func flattenNrqlConditionTerms(terms []alerts.ConditionTerm) []map[string]interface{} {
 	var t []map[string]interface{}
 
@@ -477,29 +432,15 @@ func flattenNrqlConditionTerms(terms []alerts.ConditionTerm) []map[string]interf
 	return t
 }
 
+// Deprecated
 func flattenNrqlConditionStruct(condition *alerts.NrqlCondition, d *schema.ResourceData) error {
 	d.Set("name", condition.Name)
 	d.Set("runbook_url", condition.RunbookURL)
 	d.Set("enabled", condition.Enabled)
 	d.Set("type", strings.ToLower(condition.Type))
+	d.Set("violation_time_limit_seconds", condition.ViolationCloseTimer)
 	d.Set("expected_groups", condition.ExpectedGroups)
 	d.Set("ignore_overlap", condition.IgnoreOverlap)
-	d.Set("violation_time_limit_seconds", condition.ViolationCloseTimer)
-
-	// if _, ok := d.GetOkExists("description"); ok {
-	// 	d.Set("expected_groups", condition.Description)
-	// }
-
-	// if _, ok := d.GetOkExists("expected_groups"); ok {
-	// 	d.Set("expected_groups", condition.ExpectedGroups)
-	// }
-
-	// if _, ok := d.GetOkExists("ignore_overlap"); ok {
-	// 	d.Set("ignore_overlap", condition.IgnoreOverlap)
-	// }
-
-	// d.Set("expected_groups", condition.ExpectedGroups)
-	// d.Set("ignore_overlap", condition.IgnoreOverlap)
 
 	if condition.ValueFunction == "" {
 		d.Set("value_function", "single_value")
