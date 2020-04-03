@@ -1,6 +1,7 @@
 package newrelic
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -93,5 +94,18 @@ func logState(t *testing.T) resource.TestCheckFunc {
 		t.Logf("State: %s\n", s)
 
 		return nil
+	}
+}
+
+func testAccImportStateIDFunc(resourceName string, metadata string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("resource not found: %s", resourceName)
+		}
+
+		idWithMetadata := fmt.Sprintf("%s:%s", rs.Primary.ID, metadata)
+
+		return idWithMetadata, nil
 	}
 }
