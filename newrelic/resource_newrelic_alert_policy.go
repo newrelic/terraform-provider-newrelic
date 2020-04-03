@@ -1,13 +1,15 @@
 package newrelic
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/newrelic/newrelic-client-go/newrelic"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
 func resourceNewRelicAlertPolicy() *schema.Resource {
@@ -17,7 +19,7 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 		Update: resourceNewRelicAlertPolicyUpdate,
 		Delete: resourceNewRelicAlertPolicyDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: resourceImportStateWithMetadata(1, "account_id"),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -26,22 +28,18 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 				Description:  "The name of the policy.",
 			},
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The New Relic account ID to operate on.",
+				DefaultFunc: envAccountID,
+			},
 			"incident_preference": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "PER_POLICY",
 				ValidateFunc: validation.StringInSlice([]string{"PER_POLICY", "PER_CONDITION", "PER_CONDITION_AND_TARGET"}, false),
 				Description:  "The rollup strategy for the policy. Options include: PER_POLICY, PER_CONDITION, or PER_CONDITION_AND_TARGET. The default is PER_POLICY.",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The time the policy was created.",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The time the policy was last updated.",
 			},
 			"channel_ids": {
 				Type: schema.TypeList,
@@ -57,13 +55,34 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 }
 
 func resourceNewRelicAlertPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
-	p := expandAlertPolicy(d)
+	providerConfig := meta.(*ProviderConfig)
 
-	log.Printf("[INFO] Creating New Relic alert policy %s", p.Name)
+	if !providerConfig.hasNerdGraphCredentials() {
+		return errors.New("err: NerdGraph support not present, but required for Create")
+	}
 
-	policy, err := client.Alerts.CreatePolicy(*p)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
+	policy := alerts.AlertsPolicyInput{}
+
+	if attr, ok := d.GetOk("incident_preference"); ok {
+		if attr.(string) != "" {
+			policy.IncidentPreference = alerts.AlertsIncidentPreference(attr.(string))
+		}
+	}
+
+	if attr, ok := d.GetOk("name"); ok {
+		policy.Name = attr.(string)
+	}
+
+	createResult, err := client.Alerts.CreatePolicyMutation(accountID, policy)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(strconv.Itoa(createResult.ID))
+	err = flattenAlertPolicy(createResult, d, accountID)
 	if err != nil {
 		return err
 	}
@@ -73,82 +92,118 @@ func resourceNewRelicAlertPolicyCreate(d *schema.ResourceData, meta interface{})
 	if len(channels) > 0 {
 		channelIDs := expandAlertChannelIDs(channels)
 		matchedChannelIDs, err := findExistingChannelIDs(client, channelIDs)
-
 		if err != nil {
 			return err
 		}
 
 		log.Printf("[INFO] Adding channels %+v to policy %+v", matchedChannelIDs, policy.Name)
 
-		_, err = client.Alerts.UpdatePolicyChannels(policy.ID, matchedChannelIDs)
-
+		_, err = client.Alerts.UpdatePolicyChannels(createResult.ID, matchedChannelIDs)
 		if err != nil {
 			return err
 		}
 	}
 
-	d.SetId(strconv.Itoa(policy.ID))
-
 	return nil
 }
 
 func resourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
 
-	id, err := strconv.ParseInt(d.Id(), 10, 32)
+	if !providerConfig.hasNerdGraphCredentials() {
+		return errors.New("err: NerdGraph support not present, but required for Read")
+	}
+
+	client := providerConfig.NewClient
+
+	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
 		return err
 	}
 
-	log.Printf("[INFO] Reading New Relic alert policy %v", id)
+	var accountID int
+	var policyID int
 
-	policy, err := client.Alerts.GetPolicy(int(id))
+	if len(ids) == 1 {
+		policyID = ids[0]
+		accountID = selectAccountID(providerConfig, d)
 
-	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
+	} else if len(ids) == 2 {
+		policyID = ids[0]
+		accountID = ids[1]
 
-		return err
+	} else {
+		return fmt.Errorf("unhandled id format %s", d.Id())
 	}
 
-	return flattenAlertPolicy(policy, d)
+	log.Printf("[INFO] Reading New Relic alert policy %d from account %d", policyID, accountID)
+
+	queryPolicy, queryErr := client.Alerts.QueryPolicy(accountID, policyID)
+	if queryErr != nil {
+		return queryErr
+	}
+
+	return flattenAlertPolicy(queryPolicy, d, accountID)
 }
 
 func resourceNewRelicAlertPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
-	policy := expandAlertPolicy(d)
+	providerConfig := meta.(*ProviderConfig)
 
-	id, err := strconv.ParseInt(d.Id(), 10, 32)
+	if !providerConfig.hasNerdGraphCredentials() {
+		return errors.New("err: NerdGraph support not present, but required for Update")
+	}
+
+	client := providerConfig.NewClient
+
+	policyID, err := strconv.ParseInt(d.Id(), 10, 32)
 	if err != nil {
 		return err
 	}
-	policy.ID = int(id)
 
-	log.Printf("[INFO] Updating New Relic alert policy %d", id)
-	respPolicy, err := client.Alerts.UpdatePolicy(*policy)
-	if err != nil {
-		return err
+	accountID := selectAccountID(providerConfig, d)
+
+	log.Printf("[INFO] Updating New Relic alert policy %d from account %d", policyID, accountID)
+
+	updatePolicy := alerts.AlertsPolicyUpdateInput{}
+
+	if attr, ok := d.GetOk("incident_preference"); ok {
+		if attr.(string) != "" {
+			updatePolicy.IncidentPreference = alerts.AlertsIncidentPreference(attr.(string))
+		}
 	}
 
-	d.Set("created_at", respPolicy.CreatedAt)
-	d.Set("updated_at", respPolicy.UpdatedAt)
+	if attr, ok := d.GetOk("name"); ok {
+		updatePolicy.Name = attr.(string)
+	}
 
-	return nil
+	updateResult, updateErr := client.Alerts.UpdatePolicyMutation(accountID, int(policyID), updatePolicy)
+	if updateErr != nil {
+		return updateErr
+	}
+
+	return flattenAlertPolicy(updateResult, d, accountID)
 }
 
 func resourceNewRelicAlertPolicyDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
 
-	id, err := strconv.ParseInt(d.Id(), 10, 32)
+	if !providerConfig.hasNerdGraphCredentials() {
+		return errors.New("err: NerdGraph support not present, but required for Delete")
+	}
+
+	client := providerConfig.NewClient
+
+	policyID, err := strconv.ParseInt(d.Id(), 10, 32)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("[INFO] Deleting New Relic alert policy %v", id)
+	accountID := selectAccountID(providerConfig, d)
 
-	if _, err := client.Alerts.DeletePolicy(int(id)); err != nil {
+	log.Printf("[INFO] Deleting New Relic alert policy %d from account %d", policyID, accountID)
+
+	_, err = client.Alerts.DeletePolicyMutation(accountID, int(policyID))
+	if err != nil {
 		return err
 	}
 

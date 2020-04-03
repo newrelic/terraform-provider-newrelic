@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -68,7 +69,33 @@ func resourceImportStateWithMetadata(defaultIDCount int, attribute string) schem
 		// If an attribute is supplied, attempt to set
 		// with any provided metadata
 		if attribute != "" {
-			d.Set(attribute, metadataValue)
+
+			// In order to set the attribute correctly, we need to make sure that we
+			// understand the attribute type, so that we don't set a string to an int
+			// value.  First we fetch the Get() the attribute to determine what
+			// interface type is returned, and then perform any necessary conversion
+			// for that attribute before finally setting the attribute.
+
+			var v int
+
+			x := d.Get(attribute)
+
+			switch t := x.(type) {
+			case int:
+				v, err = strconv.Atoi(metadataValue)
+				if err != nil {
+					log.Printf("[ERROR] unable to convert type %T: %s", t, err)
+					return []*schema.ResourceData{}, err
+				}
+				err = d.Set(attribute, v)
+			default:
+				err = d.Set(attribute, metadataValue)
+			}
+
+			if err != nil {
+				log.Printf("[ERROR] setting attribute %s: %s", attribute, err)
+				return []*schema.ResourceData{}, err
+			}
 		}
 
 		d.SetId(serializeIDs(ids))
