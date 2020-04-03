@@ -42,38 +42,38 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 				// Ignore items with deprecated fields because
 				// we don't set deprecated fields on import
 				ImportStateVerifyIgnore: []string{"term", "nrql", "violation_time_limit"},
+				ImportStateIdFunc:       testAccImportStateIDFunc(resourceName, "static"),
 			},
 		},
 	})
 }
 
 func TestAccNewRelicNrqlAlertCondition_TypeOutlier(t *testing.T) {
-	// resourceName := "newrelic_nrql_alert_condition.foo"
+	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		// CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
 				Config: testAccNewRelicNrqlAlertConditionConfigTypeOutlier(rName),
-				// Check: resource.ComposeTestCheckFunc(
-				// 	testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
-				// ),
-				Destroy:                   false,
-				PreventPostDestroyRefresh: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
 			},
 			// Test: Import
-			// {
-			// 	ResourceName:      resourceName,
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// 	// Ignore items with deprecated fields because
-			// 	// we don't set deprecated fields on import
-			// 	ImportStateVerifyIgnore: []string{"term", "nrql", "violation_time_limit"},
-			// },
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Ignore items with deprecated fields because
+				// we don't set deprecated fields on import
+				ImportStateVerifyIgnore: []string{"account_id", "term", "nrql", "violation_time_limit"},
+				ImportStateIdFunc:       testAccImportStateIDFunc(resourceName, "outlier"),
+			},
 		},
 	})
 }
@@ -163,14 +163,20 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphBaseline(t *testing.T) {
 			},
 
 			// Test: Import
-			// {
-			// 	ResourceName:      resourceName,
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// 	// ImportStateVerifyIgnore: []string{"term", "nrql"},
-			// },
-
-			// TODO: TEST ERROR SCENARIOS!!!!!!!!!
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Ignore items with deprecated fields because
+				// we don't set deprecated fields on import
+				ImportStateVerifyIgnore: []string{
+					"term",
+					"nrql",
+					"violation_time_limit",
+					"value_function", // does not exist for type `baseline`
+				},
+				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "baseline"),
+			},
 		},
 	})
 }
@@ -245,12 +251,30 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 				ImportStateVerify: true,
 				// Ignore items with deprecated fields because
 				// we don't set deprecated fields on import
-				ImportStateVerifyIgnore: []string{"term", "nrql", "violation_time_limit"},
+				ImportStateVerifyIgnore: []string{
+					"term", // contains nested attributes that are deprecated
+					"nrql", // contains nested attributes that are deprecated
+					"violation_time_limit",
+				},
+				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "static"),
 			},
 
 			// TODO: TEST ERROR SCENARIOS!!!!!!!!!
 		},
 	})
+}
+
+func testAccImportStateIDFunc(resourceName string, metadata string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("resource not found: %s", resourceName)
+		}
+
+		idWithMetadata := fmt.Sprintf("%s:%s", rs.Primary.ID, metadata)
+
+		return idWithMetadata, nil
+	}
 }
 
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
@@ -266,13 +290,21 @@ func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 		var accountID int
 		var err error
 
-		ids, err := parseIDs(r.Primary.ID, 2)
+		ids, err := parseHashedIDs(r.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		policyID := ids[0]
-		conditionID := ids[0]
+		var policyID int
+		var conditionID int
+
+		if len(ids) > 2 {
+			policyID = ids[1]
+			conditionID = ids[2]
+		} else {
+			policyID = ids[0]
+			conditionID = ids[1]
+		}
 
 		if hasNerdGraphCreds {
 			accountID = providerConfig.AccountID
@@ -316,13 +348,21 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 		var accountID int
 		var err error
 
-		ids, err := parseIDs(rs.Primary.ID, 2)
+		ids, err := parseHashedIDs(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		policyID := ids[0]
-		conditionID := ids[1]
+		var policyID int
+		var conditionID int
+
+		if len(ids) > 2 {
+			policyID = ids[1]
+			conditionID = ids[2]
+		} else {
+			policyID = ids[0]
+			conditionID = ids[1]
+		}
 
 		if hasNerdGraphCreds && rs.Primary.Attributes["type"] != "outlier" {
 			accountID = providerConfig.AccountID
@@ -415,7 +455,7 @@ resource "newrelic_alert_policy" "foo" {
 
 resource "newrelic_nrql_alert_condition" "foo" {
 	policy_id = newrelic_alert_policy.foo.id
-	name            = "tf-test-updated-%[1]s"
+	name            = "tf-test-outlier-%[1]s"
 	type            = "outlier"
   expected_groups = 2
 	ignore_overlap  = true
