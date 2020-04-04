@@ -30,14 +30,14 @@ func resourceGenerateCompoundID(idItems []string) ([]int, error) {
 // more specifically when metadata might be passed in the compoundID.
 //
 // The `defaultIDCount` argument represents the number of items that
-// make up a compound ID. This count excludes any appended metadata
+// make up a compound ID. This count excludes any appended metadata.
 //
 // e.g. "425235:2384930" contains 2 items as the default
 //
 // The optional `attribute` argument provides an opportunity to
 // set a schema attribute with a metadata value if metadata is provided
 // in the compound ID as the LAST string in the compound ID.
-func resourceImportState(defaultIDCount int, attribute string) schema.StateFunc {
+func resourceImportStateWithMetadata(defaultIDCount int, attribute string) schema.StateFunc {
 	return func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 		if defaultIDCount == 0 {
 			return []*schema.ResourceData{d}, nil

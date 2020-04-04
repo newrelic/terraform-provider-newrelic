@@ -20,7 +20,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 		Update: resourceNewRelicNrqlAlertConditionUpdate,
 		Delete: resourceNewRelicNrqlAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceImportState(2, "type"),
+			State: resourceImportStateWithMetadata(2, "type"),
 		},
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
@@ -111,11 +111,12 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 						// Validation is different in NerdGraph - Value must be within 120-3600 seconds (2-60 minutes) and a multiple of 60 for BASELINE conditions.
 						// Convert to seconds when using NerdGraph
 						"duration": {
-							Deprecated:   "use `threshold_duration` attribute instead",
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Description:  "In minutes, must be in the range of 1 to 120, inclusive.",
-							ValidateFunc: validation.IntBetween(1, 120),
+							Deprecated:    "use `threshold_duration` attribute instead",
+							Type:          schema.TypeInt,
+							Optional:      true,
+							Description:   "In minutes, must be in the range of 1 to 120, inclusive.",
+							ConflictsWith: []string{"term.0.threshold_duration"},
+							ValidateFunc:  validation.IntBetween(1, 120),
 						},
 						// Value must be uppercase when using NerdGraph
 						"operator": {
@@ -139,27 +140,33 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Description:  "Must be 0 or greater. For baseline conditions must be in range [1, 1000].",
 							ValidateFunc: float64Gte(0.0),
 						},
-						// Does not exist in NerdGraph
+						// Does not exist in NerdGraph. Equivalent to `threshold_occurrences`,
+						// but with different wording.
 						"time_function": {
-							Deprecated:   "use `threshold_occurrences` attribute instead",
-							Type:         schema.TypeString,
-							Optional:     true,
-							Description:  "Valid values are: 'all' or 'any'",
-							ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
+							Deprecated:    "use `threshold_occurrences` attribute instead",
+							Type:          schema.TypeString,
+							Optional:      true,
+							Description:   "Valid values are: 'all' or 'any'",
+							ConflictsWith: []string{"term.0.threshold_occurrences"},
+							ValidateFunc:  validation.StringInSlice([]string{"all", "any"}, false),
 						},
 
-						// NerdGraph only. Seems to be similar to `time_function`
+						// NerdGraph only. Equivalent to `time_function`,
+						// but with slightly different wording.
+						// i.e. `any` (old) vs `AT_LEAST_ONCE` (new)
 						"threshold_occurrences": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Description:  "Valid values are: 'ALL' or 'AT_LEAST_ONCE'",
-							ValidateFunc: validation.StringInSlice([]string{"ALL", "AT_LEAST_ONCE"}, false),
+							Type:          schema.TypeString,
+							Optional:      true,
+							Description:   "Valid values are: 'ALL' or 'AT_LEAST_ONCE'",
+							ConflictsWith: []string{"term.0.time_function"},
+							ValidateFunc:  validation.StringInSlice([]string{"ALL", "AT_LEAST_ONCE"}, false),
 						},
 						// NerdGraph only. Equivalent to `duration`, but in seconds
 						"threshold_duration": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "The duration of time, in seconds, that the threshold must violate for in order to create a violation. Value must be a multiple of 60 and within 120-3600 seconds for baseline conditions and 120-7200 seconds for static conditions.",
+							Type:          schema.TypeInt,
+							Optional:      true,
+							Description:   "The duration of time, in seconds, that the threshold must violate for in order to create a violation. Value must be a multiple of 60 and within 120-3600 seconds for baseline conditions and 120-7200 seconds for static conditions.",
+							ConflictsWith: []string{"term.0.duration"},
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								v := val.(int)
 
@@ -201,8 +208,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				ConflictsWith: []string{"violation_time_limit"},
 				ValidateFunc:  validation.IntInSlice([]int{3600, 7200, 14400, 28800, 43200, 86400}),
 			},
-			// Exists in NerdGraph, but with different values. Figure out how to handle this.
-			// Conflicts with `baseline_direction` when using NerdGraph
+			// Exists in NerdGraph, but with different values. Conversion
+			// between new:old and old:new is handled via maps in structures file.
+			// Conflicts with `baseline_direction` when using NerdGraph.
 			"value_function": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -213,10 +221,6 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
 			},
-
-			/**
-			 * New attributes
-			 **/
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
