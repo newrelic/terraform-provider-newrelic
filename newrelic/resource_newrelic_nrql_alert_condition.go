@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -207,7 +208,10 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:     true,
 				Default:      "single_value",
 				Description:  "Valid values are: 'single_value' or 'sum'",
-				ValidateFunc: validation.StringInSlice([]string{"single_value", "sum"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"single_value", "sum"}, true),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.EqualFold(old, new) // Case fold this attribute when diffing
+				},
 			},
 
 			/**
@@ -238,7 +242,10 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:      true,
 				Description:   "Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are ONE_HOUR, TWO_HOURS, FOUR_HOURS, EIGHT_HOURS, TWELVE_HOURS, TWENTY_FOUR_HOURS.",
 				ConflictsWith: []string{"violation_time_limit_seconds"},
-				ValidateFunc:  validation.StringInSlice([]string{"ONE_HOUR", "TWO_HOURS", "FOUR_HOURS", "EIGHT_HOURS", "TWELVE_HOURS", "TWENTY_FOUR_HOURS"}, false),
+				ValidateFunc:  validation.StringInSlice([]string{"ONE_HOUR", "TWO_HOURS", "FOUR_HOURS", "EIGHT_HOURS", "TWELVE_HOURS", "TWENTY_FOUR_HOURS"}, true),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.EqualFold(old, new) // Case fold this attribute when diffing
+				},
 			},
 			// Baseline ONLY
 			"baseline_direction": {
@@ -246,7 +253,10 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:      true,
 				Description:   "The baseline direction of a baseline NRQL alert condition. Valid values are: 'LOWER_ONLY', 'UPPER_AND_LOWER', 'UPPER_ONLY'",
 				ConflictsWith: []string{"value_function"},
-				ValidateFunc:  validation.StringInSlice([]string{"LOWER_ONLY", "UPPER_AND_LOWER", "UPPER_ONLY"}, false),
+				ValidateFunc:  validation.StringInSlice([]string{"LOWER_ONLY", "UPPER_AND_LOWER", "UPPER_ONLY"}, true),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.EqualFold(old, new) // Case fold this attribute when diffing
+				},
 			},
 		},
 	}

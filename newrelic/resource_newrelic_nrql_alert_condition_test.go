@@ -102,7 +102,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphBaseline(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
 	conditionType := "baseline"
-	conditionalAttr := `baseline_direction = "LOWER_ONLY"`
+	conditionalAttr := `baseline_direction = "lower_only"` // value transformed to UPPERCASE in expand/flatten
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -161,7 +161,6 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphBaseline(t *testing.T) {
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
 			},
-
 			// Test: Import
 			{
 				ResourceName:      resourceName,
@@ -185,7 +184,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
 	conditionType := "static"
-	conditionalAttr := `value_function = "single_value"`
+	conditionalAttr := `value_function = "Single_valuE"` // value transformed to UPPERCASE in expand/flatten
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -258,8 +257,6 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 				},
 				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "static"),
 			},
-
-			// TODO: TEST ERROR SCENARIOS!!!!!!!!!
 		},
 	})
 }
@@ -535,7 +532,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	runbook_url          = "https://foo.example.com"
 	enabled              = false
 	description          = "test description"
-	violation_time_limit = "ONE_HOUR"
+	violation_time_limit = "one_hour"
 
 	nrql {
 		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"

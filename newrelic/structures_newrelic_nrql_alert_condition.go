@@ -81,7 +81,7 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 	if violationTimeLimitSec, ok := d.GetOk("violation_time_limit_seconds"); ok {
 		input.ViolationTimeLimit = violationTimeLimitMap[violationTimeLimitSec.(int)]
 	} else if violationTimeLimit, ok := d.GetOk("violation_time_limit"); ok {
-		input.ViolationTimeLimit = alerts.NrqlConditionViolationTimeLimit(violationTimeLimit.(string))
+		input.ViolationTimeLimit = alerts.NrqlConditionViolationTimeLimit(strings.ToUpper(violationTimeLimit.(string)))
 	}
 
 	nrql, err := expandNrql(d, input)
@@ -213,7 +213,7 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	}
 
 	if conditionType == "static" {
-		d.Set("value_function", strings.ToLower(string(*condition.ValueFunction)))
+		d.Set("value_function", string(*condition.ValueFunction))
 	}
 
 	configuredNrql := d.Get("nrql.0").(map[string]interface{})
