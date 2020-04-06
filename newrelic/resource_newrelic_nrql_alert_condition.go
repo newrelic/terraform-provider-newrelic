@@ -157,7 +157,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 						"threshold_occurrences": {
 							Type:          schema.TypeString,
 							Optional:      true,
-							Description:   "Valid values are: 'ALL' or 'AT_LEAST_ONCE'",
+							Description:   "The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: 'ALL' or 'AT_LEAST_ONCE'",
 							ConflictsWith: []string{"term.0.time_function"},
 							ValidateFunc:  validation.StringInSlice([]string{"ALL", "AT_LEAST_ONCE"}, false),
 						},
