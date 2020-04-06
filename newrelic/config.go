@@ -159,7 +159,6 @@ type ProviderConfig struct {
 	PersonalAPIKey       string
 }
 
-// nolint:unused
 func (c *ProviderConfig) hasNerdGraphCredentials() bool {
 	return c.AccountID > 0 && c.PersonalAPIKey != ""
 }
