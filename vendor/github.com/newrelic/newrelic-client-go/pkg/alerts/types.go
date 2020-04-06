@@ -45,14 +45,15 @@ type AlertsMutingRuleConditionInput struct {
 	* **policyId** - The alert policy id
 	* **policyName** - The alert policy name
 	* **conditionName** - The alert condition name
-	* **conditionType** - The alert condition type, such as app_metric
+	* **conditionType** - The alert condition type, such as `metric`
 	* **conditionRunbookUrl** - The alert condition's runbook url
-	* **product** - The target product (e.g., SYNTHETICS)
+	* **product** - The target product (e.g., `SYNTHETICS`)
 	* **targetId** - The ID of the alerts target
 	* **targetName** - The name of the alerts target
 	* **nrqlEventType** - The NRQL event type
 	* **tag** - Arbitrary tags associated with some entity (e.g., FACET from a NRQL query)
-	* **nrqlQuery** - The NRQL query string */
+	* **nrqlQuery** - The NRQL query string
+	 */
 	Attribute string `json:"attribute"`
 
 	/* The operator used to compare the attribute's value with the supplied value(s). */
@@ -66,31 +67,31 @@ type AlertsMutingRuleConditionInput struct {
 type AlertsMutingRuleConditionOperator string
 
 const (
-	/* Where any. */
+	/* Where attribute is any. */
 	ANY AlertsMutingRuleConditionOperator = "ANY" // nolint:golint
-	/* Where contain value. */
+	/* Where attribute contains value. */
 	CONTAINS AlertsMutingRuleConditionOperator = "CONTAINS" // nolint:golint
-	/* Where ends with. */
+	/* Where attribute ends with value. */
 	ENDS_WITH AlertsMutingRuleConditionOperator = "ENDS_WITH" // nolint:golint
-	/* Where values equals. */
+	/* Where attribute equals value. */
 	EQUALS AlertsMutingRuleConditionOperator = "EQUALS" // nolint:golint
-	/* Where in value. */
+	/* Where attribute in values. (Limit 500) */
 	IN AlertsMutingRuleConditionOperator = "IN" // nolint:golint
-	/* Where blank. */
+	/* Where attribute is blank. */
 	IS_BLANK AlertsMutingRuleConditionOperator = "IS_BLANK" // nolint:golint
-	/* Where not blank. */
+	/* Where attribute is not blank. */
 	IS_NOT_BLANK AlertsMutingRuleConditionOperator = "IS_NOT_BLANK" // nolint:golint
-	/* Where do not contain value. */
+	/* Where attribute does not contain value. */
 	NOT_CONTAINS AlertsMutingRuleConditionOperator = "NOT_CONTAINS" // nolint:golint
-	/* Where does not end with. */
+	/* Where attribute does not end with value. */
 	NOT_ENDS_WITH AlertsMutingRuleConditionOperator = "NOT_ENDS_WITH" // nolint:golint
-	/* Where do not equal value. */
+	/* Where attribute does not equal value. */
 	NOT_EQUALS AlertsMutingRuleConditionOperator = "NOT_EQUALS" // nolint:golint
-	/* Where not in value. */
+	/* Where attribute not in values. (Limit 500) */
 	NOT_IN AlertsMutingRuleConditionOperator = "NOT_IN" // nolint:golint
-	/* Where does not start with. */
+	/* Where attribute does not start with value. */
 	NOT_STARTS_WITH AlertsMutingRuleConditionOperator = "NOT_STARTS_WITH" // nolint:golint
-	/* Where starts with. */
+	/* Where attribute starts with value. */
 	STARTS_WITH AlertsMutingRuleConditionOperator = "STARTS_WITH" // nolint:golint
 )
 

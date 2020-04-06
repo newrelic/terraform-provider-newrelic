@@ -49,10 +49,10 @@ type Config struct {
 
 // New creates a default configuration and returns it
 func New() Config {
-	regCopy := *region.Default
+	reg, _ := region.Get(region.Default)
 
 	return Config{
-		region:    &regCopy,
+		region:    reg,
 		UserAgent: "newrelic/newrelic-client-go",
 		LogLevel:  "info",
 	}
@@ -62,8 +62,8 @@ func New() Config {
 // if one has not been set, use the default region
 func (c *Config) Region() *region.Region {
 	if c.region == nil {
-		regCopy := *region.Default
-		c.region = &regCopy
+		reg, _ := region.Get(region.Default)
+		c.region = reg
 	}
 
 	return c.region

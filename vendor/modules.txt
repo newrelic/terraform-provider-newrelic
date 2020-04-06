@@ -312,7 +312,7 @@ github.com/hashicorp/go-multierror
 # github.com/hashicorp/go-plugin v1.0.1
 github.com/hashicorp/go-plugin
 github.com/hashicorp/go-plugin/internal/plugin
-# github.com/hashicorp/go-retryablehttp v0.6.4
+# github.com/hashicorp/go-retryablehttp v0.6.5
 github.com/hashicorp/go-retryablehttp
 # github.com/hashicorp/go-safetemp v1.0.0
 github.com/hashicorp/go-safetemp
@@ -462,7 +462,7 @@ github.com/newrelic/go-agent/v3/internal/utilization
 github.com/newrelic/go-agent/v3/newrelic
 # github.com/newrelic/go-insights v1.0.3
 github.com/newrelic/go-insights/client
-# github.com/newrelic/newrelic-client-go v0.20.0
+# github.com/newrelic/newrelic-client-go v0.21.0
 github.com/newrelic/newrelic-client-go/internal/http
 github.com/newrelic/newrelic-client-go/internal/logging
 github.com/newrelic/newrelic-client-go/internal/serialization
@@ -617,7 +617,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# golang.org/x/tools v0.0.0-20200325203130-f53864d0dba1
+# golang.org/x/tools v0.0.0-20200402174825-0a46fa39b051
 golang.org/x/tools/go/analysis
 golang.org/x/tools/go/analysis/internal/analysisflags
 golang.org/x/tools/go/analysis/internal/checker
@@ -673,11 +673,13 @@ golang.org/x/tools/go/ssa/ssautil
 golang.org/x/tools/go/types/objectpath
 golang.org/x/tools/go/types/typeutil
 golang.org/x/tools/imports
+golang.org/x/tools/internal/analysisinternal
 golang.org/x/tools/internal/fastwalk
 golang.org/x/tools/internal/gocommand
 golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/imports
 golang.org/x/tools/internal/packagesinternal
+golang.org/x/tools/internal/span
 # golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 golang.org/x/xerrors
 golang.org/x/xerrors/internal

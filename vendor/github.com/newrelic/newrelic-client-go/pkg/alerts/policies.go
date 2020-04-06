@@ -190,9 +190,7 @@ func (a *Alerts) QueryPolicySearch(accountID int, params AlertsPoliciesSearchCri
 			return nil, err
 		}
 
-		for _, p := range resp.Actor.Account.Alerts.PoliciesSearch.Policies {
-			policies = append(policies, &p)
-		}
+		policies = append(policies, resp.Actor.Account.Alerts.PoliciesSearch.Policies...)
 
 		nextCursor = resp.Actor.Account.Alerts.PoliciesSearch.NextCursor
 	}
@@ -235,9 +233,9 @@ type alertQueryPolicySearchResponse struct {
 		Account struct {
 			Alerts struct {
 				PoliciesSearch struct {
-					NextCursor *string        `json:"nextCursor"`
-					Policies   []AlertsPolicy `json:"policies"`
-					TotalCount int            `json:"totalCount"`
+					NextCursor *string         `json:"nextCursor"`
+					Policies   []*AlertsPolicy `json:"policies"`
+					TotalCount int             `json:"totalCount"`
 				} `json:"policiesSearch"`
 			} `json:"alerts"`
 		} `json:"account"`

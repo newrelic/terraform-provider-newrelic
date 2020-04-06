@@ -24,3 +24,29 @@ func ErrorNil() InvalidError {
 		Message: "value is nil",
 	}
 }
+
+type UnknownError struct {
+	Message string
+}
+
+func (e UnknownError) Error() string {
+	if e.Message != "" {
+		return fmt.Sprintf("unknown region: %s", e.Message)
+	}
+
+	return "unknown region"
+}
+
+// UnknownUsingDefaultError returns when the Region requested is not valid, but we want to give them something
+type UnknownUsingDefaultError struct {
+	Message string
+}
+
+// Error string reported when an InvalidError happens
+func (e UnknownUsingDefaultError) Error() string {
+	if e.Message != "" {
+		return fmt.Sprintf("unknown region: %s, using default: %s", e.Message, Default.String())
+	}
+
+	return fmt.Sprintf("unknown region, using default: %s", Default.String())
+}
