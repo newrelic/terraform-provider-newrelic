@@ -219,7 +219,7 @@ $ terraform import newrelic_nrql_alert_condition.foo 538291:6789035:static
 $ terraform import newrelic_nrql_alert_condition.foo 538291:6789035:outlier
 ```
 
-~> **NOTE:** The value of `conditionType` in the composite ID must a valid condition type - `static`, `baseline`, or `outlier.`
+~> **NOTE:** The value of `conditionType` in the import composite ID must be a valid condition type - `static`, `baseline`, or `outlier.`
 
 The actual values for `policy_id` and `condition_id` can be retrieved from the following New Relic URL when viewing the NRQL alert condition you want to import:
 
