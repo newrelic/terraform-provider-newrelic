@@ -25,8 +25,6 @@ func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
 				Config: testAccNewRelicAlertPolicyConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-%s", rName)),
-					resource.TestCheckResourceAttr(resourceName, "incident_preference", "PER_POLICY"),
 				),
 			},
 			// Test: Update
@@ -34,15 +32,14 @@ func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
 				Config: testAccNewRelicAlertPolicyConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-updated-%s", rName)),
-					resource.TestCheckResourceAttr(resourceName, "incident_preference", "PER_CONDITION"),
 				),
 			},
 			// Test: Import
 			{
-				ResourceName:      resourceName,
 				ImportState:       true,
+				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, strconv.Itoa(testAccountID)),
 				ImportStateVerify: true,
+				ResourceName:      resourceName,
 			},
 		},
 	})
@@ -127,15 +124,17 @@ func testAccCheckNewRelicAlertPolicyDestroy(s *terraform.State) error {
 			continue
 		}
 
-		id, err := strconv.ParseInt(r.Primary.ID, 10, 32)
+		idParts, err := parseHashedIDs(r.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = client.Alerts.GetPolicy(int(id))
+		policyID := idParts[0]
+
+		_, err = client.Alerts.QueryPolicy(testAccountID, policyID)
 
 		if err == nil {
-			return fmt.Errorf("policy still exists")
+			return fmt.Errorf("policy still exists: %s", err)
 		}
 
 	}
@@ -144,6 +143,7 @@ func testAccCheckNewRelicAlertPolicyDestroy(s *terraform.State) error {
 
 func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
@@ -154,17 +154,19 @@ func testAccCheckNewRelicAlertPolicyExists(n string) resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		id, err := strconv.ParseInt(rs.Primary.ID, 10, 32)
+		idParts, err := parseHashedIDs(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		found, err := client.Alerts.GetPolicy(int(id))
+		policyID := idParts[0]
+
+		found, err := client.Alerts.QueryPolicy(testAccountID, policyID)
 		if err != nil {
 			return err
 		}
 
-		if strconv.Itoa(found.ID) != rs.Primary.ID {
+		if found.ID != policyID {
 			return fmt.Errorf("policy not found: %v - %v", rs.Primary.ID, found)
 		}
 

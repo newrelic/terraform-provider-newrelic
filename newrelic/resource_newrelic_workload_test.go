@@ -10,7 +10,6 @@ import (
 )
 
 var (
-	testAccountID       = 2508259
 	testEntityGUID      = "MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1"
 	testApplicationName = "Dummy App"
 )

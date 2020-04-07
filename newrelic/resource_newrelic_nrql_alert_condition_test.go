@@ -261,19 +261,6 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 	})
 }
 
-func testAccImportStateIDFunc(resourceName string, metadata string) resource.ImportStateIdFunc {
-	return func(s *terraform.State) (string, error) {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return "", fmt.Errorf("resource not found: %s", resourceName)
-		}
-
-		idWithMetadata := fmt.Sprintf("%s:%s", rs.Primary.ID, metadata)
-
-		return idWithMetadata, nil
-	}
-}
-
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
