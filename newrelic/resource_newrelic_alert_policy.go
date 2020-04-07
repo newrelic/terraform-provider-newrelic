@@ -37,11 +37,13 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The time the policy was created.",
+				Deprecated:  "Unavailable attribute in NerdGraph.",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The time the policy was last updated.",
+				Deprecated:  "Unavailable attribute in NerdGraph.",
 			},
 			"channel_ids": {
 				Type: schema.TypeList,
