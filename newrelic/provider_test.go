@@ -19,6 +19,7 @@ var (
 	testAccAPIKey                   string
 	testAccProviders                map[string]terraform.ResourceProvider
 	testAccProvider                 *schema.Provider
+	testAccountID                   = 2520528
 	//testAccCleanupComplete          = false
 )
 
