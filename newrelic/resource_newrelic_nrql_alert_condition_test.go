@@ -416,32 +416,43 @@ resource "newrelic_nrql_alert_condition" "foo" {
 func testAccNewRelicNrqlAlertConditionConfigTypeOutlier(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+	name = "tf-test-%[1]s"
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.foo.id
-	name            = "tf-test-outlier-%[1]s"
-	type            = "outlier"
-  expected_groups = 2
+	type                         = "outlier"
+	name                         = "tf-test-outlier-%[1]s"
+	policy_id                    = newrelic_alert_policy.foo.id
+	enabled                      = false
+	runbook_url                  = "https://www.example.com"
+	violation_time_limit_seconds = 7200
+
+	# outlier type only
+	expected_groups = 2
+
+	# outlier type only
 	ignore_overlap  = true
 
-  runbook_url     = "https://bar.example.com"
-  enabled         = false
-  violation_time_limit_seconds = 7200
-
 	nrql {
-    query         = "SELECT percentile(duration, 99) FROM Transaction FACET remote_ip"
-    since_value   = "3"
-  }
+		query       = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName' FACET host"
+		since_value = "3"
+	}
 
-  term {
-    duration      = 10
-    operator      = "above"
-    priority      = "critical"
-    threshold     = "0.65"
-    time_function = "all"
-  }
+	term {
+		operator      = "above"
+		priority      = "critical"
+		threshold     = 0.065
+		duration      = 5
+		time_function = "all"
+	}
+
+	term {
+		operator      = "above"
+		priority      = "warning"
+		threshold     = 0.035
+		duration      = 10
+		time_function = "all"
+	}
 }
 `, name)
 }
