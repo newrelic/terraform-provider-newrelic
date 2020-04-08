@@ -65,7 +65,7 @@ The following arguments are supported:
 The `term` mapping supports the following arguments:
 
 - `duration` - (Required) In minutes, must be in the range of `1` to `120`, inclusive.
-- `operator` - (Optional) `above`, `below`, or `equal`. Defaults to `equal`.
+- `operator` - (Optional) `above`, `below`, or `equal`. Defaults to `equal`.  Note that when using a `type` of `outlier`, the only valid option here is `above`.
 - `priority` - (Optional) `critical` or `warning`. Defaults to `critical`.
 - `threshold` - (Required) Must be 0 or greater.
 - `time_function` - (Required) `all` or `any`.
