@@ -50,6 +50,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "static",
+				Description:  "The type of NRQL alert condition to create. Valid values are: 'static', 'outlier', 'baseline'.",
 				ValidateFunc: validation.StringInSlice([]string{"static", "outlier", "baseline"}, false),
 			},
 			"nrql": {
@@ -114,7 +115,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Deprecated:    "use `threshold_duration` attribute instead",
 							Type:          schema.TypeInt,
 							Optional:      true,
-							Description:   "In minutes, must be in the range of 1 to 120, inclusive.",
+							Description:   "In minutes, must be in the range of 1 to 120 (inclusive).",
 							ConflictsWith: []string{"term.0.threshold_duration"},
 							ValidateFunc:  validation.IntBetween(1, 120),
 						},
@@ -123,7 +124,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Default:      "equal",
-							Description:  "One of (above, below, equal). Defaults to equal.",
+							Description:  "One of (above, below, equal). Defaults to 'equal'.",
 							ValidateFunc: validation.StringInSlice([]string{"above", "below", "equal"}, false),
 						},
 						// Value must be uppercase when using NerdGraph
@@ -131,7 +132,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Default:      "critical",
-							Description:  "One of (critical, warning). Defaults to critical. At least one condition term must have priority set to critical.",
+							Description:  "One of (critical, warning). Defaults to 'critical'. At least one condition term must have priority set to 'critical'.",
 							ValidateFunc: validation.StringInSlice([]string{"critical", "warning"}, false),
 						},
 						"threshold": {
@@ -157,9 +158,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 						"threshold_occurrences": {
 							Type:          schema.TypeString,
 							Optional:      true,
-							Description:   "Valid values are: 'ALL' or 'AT_LEAST_ONCE'",
+							Description:   "The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: 'ALL' or 'AT_LEAST_ONCE' (case insensitive).",
 							ConflictsWith: []string{"term.0.time_function"},
-							ValidateFunc:  validation.StringInSlice([]string{"ALL", "AT_LEAST_ONCE"}, false),
+							ValidateFunc:  validation.StringInSlice([]string{"ALL", "AT_LEAST_ONCE"}, true),
 						},
 						// NerdGraph only. Equivalent to `duration`, but in seconds
 						"threshold_duration": {
@@ -244,7 +245,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"violation_time_limit": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Description:   "Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are ONE_HOUR, TWO_HOURS, FOUR_HOURS, EIGHT_HOURS, TWELVE_HOURS, TWENTY_FOUR_HOURS.",
+				Description:   "Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are 'ONE_HOUR', 'TWO_HOURS', 'FOUR_HOURS', 'EIGHT_HOURS', 'TWELVE_HOURS', 'TWENTY_FOUR_HOURS' (case insensitive).",
 				ConflictsWith: []string{"violation_time_limit_seconds"},
 				ValidateFunc:  validation.StringInSlice([]string{"ONE_HOUR", "TWO_HOURS", "FOUR_HOURS", "EIGHT_HOURS", "TWELVE_HOURS", "TWENTY_FOUR_HOURS"}, true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
@@ -255,7 +256,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"baseline_direction": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Description:   "The baseline direction of a baseline NRQL alert condition. Valid values are: 'LOWER_ONLY', 'UPPER_AND_LOWER', 'UPPER_ONLY'",
+				Description:   "The baseline direction of a baseline NRQL alert condition. Valid values are: 'LOWER_ONLY', 'UPPER_AND_LOWER', 'UPPER_ONLY' (case insensitive).",
 				ConflictsWith: []string{"value_function"},
 				ValidateFunc:  validation.StringInSlice([]string{"LOWER_ONLY", "UPPER_AND_LOWER", "UPPER_ONLY"}, true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
