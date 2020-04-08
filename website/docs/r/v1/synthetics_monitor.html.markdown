@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_synthetics\_monitor
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_synthetics_monitor](/docs/providers/newrelic/r/synthetics_monitor.html).
+
 Use this resource to create, update, and delete a synthetics monitor in New Relic.
 
 ## Example Usage

@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_synthetics\_alert\_condition
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_synthetics_alert_condition](/docs/providers/newrelic/r/synthetics_alert_condition.html).
+
 Use this resource to create and manage synthetics alert conditions in New Relic.
 
 ## Example Usage
@@ -32,7 +34,7 @@ The following arguments are supported:
 
   * `policy_id` - (Required) The ID of the policy where this condition should be used.
   * `name` - (Required) The title of this condition.
-  * `monitor_id` - (Required) The ID of the Synthetics monitor to be referenced in the alert condition. 
+  * `monitor_id` - (Required) The ID of the Synthetics monitor to be referenced in the alert condition.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
   * `enabled` - (Optional) Set whether to enable the alert condition. Defaults to `true`.
 

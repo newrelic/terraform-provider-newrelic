@@ -8,6 +8,8 @@ description: |-
 
 # Data Source: newrelic\_synthetics\_secure\_credential
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_synthetics_secure_credential](/docs/providers/newrelic/d/synthetics_secure_credential.html).
+
 Use this data source to get information about a specific Synthetics secure credential in New Relic that already exists.
 
 Note that the secure credential's value is not returned as an attribute for security reasons.

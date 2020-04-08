@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic_alert_policy_channel
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_alert_policy_channel](/docs/providers/newrelic/r/alert_policy_channel.html).
+
 Use this resource to map alert policies to alert channels in New Relic.
 
 ## Example Usage

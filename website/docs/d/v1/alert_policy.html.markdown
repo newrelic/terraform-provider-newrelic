@@ -8,6 +8,8 @@ description: |-
 
 # Data Source: newrelic\_alert\_policy
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_alert_policy](/docs/providers/newrelic/d/alert_policy.html).
+
 Use this data source to get information about a specific alert policy in New Relic that already exists.
 More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
 

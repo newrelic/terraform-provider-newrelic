@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_dashboard
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_dashboard](/docs/providers/newrelic/r/dashboard.html).
+
 Use this resource to create and manage New Relic dashboards.
 
 ## Example Usage: Create a New Relic Dashboard

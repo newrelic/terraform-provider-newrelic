@@ -8,6 +8,8 @@ description: |-
 
 # Data Source: newrelic\_synthetics\_monitor
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_synthetics_monitor](/docs/providers/newrelic/d/synthetics_monitor.html).
+
 Use this data source to get information about a specific synthetics monitor in New Relic that already exists. This can be used to set up a Synthetics alert condition.
 
 ## Example Usage

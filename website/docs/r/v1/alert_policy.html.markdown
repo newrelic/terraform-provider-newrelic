@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_alert\_policy
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_alert_policy](/docs/providers/newrelic/r/alert_policy.html).
+
 Use this resource to create and manage New Relic alert policies.
 
 ## Example Usage

@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic_nrql_alert_condition
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_nrql_alert_condition](/docs/providers/newrelic/r/nrql_alert_condition.html).
+
 Use this resource to create and manage NRQL alert conditions in New Relic.
 
 ## Example Usage
@@ -19,12 +21,16 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  policy_id = newrelic_alert_policy.foo.id
-
+  policy_id   = newrelic_alert_policy.foo.id
   name        = "foo"
   type        = "static"
   runbook_url = "https://www.example.com"
   enabled     = true
+
+  nrql {
+    query       = "SELECT count(*) FROM SyntheticCheck WHERE monitorId = '<monitorId>'"
+    since_value = "3"
+  }
 
   term {
     duration      = 5
@@ -34,9 +40,12 @@ resource "newrelic_nrql_alert_condition" "foo" {
     time_function = "all"
   }
 
-  nrql {
-    query       = "SELECT count(*) FROM SyntheticCheck WHERE monitorId = '<monitorId>'"
-    since_value = "3"
+  term {
+    duration      = 5
+    operator      = "below"
+    priority      = "warning"
+    threshold     = "3"
+    time_function = "all"
   }
 
   value_function = "single_value"
@@ -92,26 +101,39 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  policy_id = newrelic_alert_policy.foo.id
+  type                         = "outlier"
+  name                         = "foo"
+  policy_id                    = newrelic_alert_policy.foo.id
+  enabled                      = true
+  runbook_url                  = "https://www.example.com"
+  violation_time_limit_seconds = 7200
 
-  name        = "outlier-example"
-  runbook_url = "https://bar.example.com"
-  enabled     = true
+  # outlier type only
+  expected_groups = 2
+
+  # outlier type only
+	ignore_overlap = true
+
+  nrql {
+    query       = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName' FACET host"
+    since_value = "3"
+  }
+
+  term {
+    duration      = 5
+    priority      = "critical"
+    threshold     = 0.065
+    operator      = "above"
+    time_function = "all"
+  }
 
   term {
     duration      = 10
+    priority      = "warning"
+    threshold     = 0.035
     operator      = "above"
-    priority      = "critical"
-    threshold     = "0.65"
     time_function = "all"
   }
-  nrql {
-    query       = "SELECT percentile(duration, 99) FROM Transaction FACET remote_ip"
-    since_value = "3"
-  }
-  type            = "outlier"
-  expected_groups = 2
-  ignore_overlap  = true
 }
 ```
 

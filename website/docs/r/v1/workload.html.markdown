@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_workload
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_workload](/docs/providers/newrelic/r/workload.html).
+
 Use this resource to create, update, and delete a New Relic One workload.
 
 A New Relic Personal API key is required to provision this resource.  Set the `personal_api_key`

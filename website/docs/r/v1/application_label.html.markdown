@@ -9,6 +9,9 @@ description: |-
 # Resource: newrelic\_application\_label
 
 #### DEPRECATED! Use at your own risk. This feature may be removed in the next major release.
+
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_application_label](/docs/providers/newrelic/r/application_label.html).
+
 Use this resource to create, update, and delete an Application label in New Relic.
 
 ## Example Usage

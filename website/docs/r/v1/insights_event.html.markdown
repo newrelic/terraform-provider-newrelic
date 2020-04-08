@@ -8,6 +8,9 @@ description: |-
 
 # Resource: newrelic\_insights\_event
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_insights_event](/docs/providers/newrelic/r/insights_event.html).
+
+
 Use this resource to create one or more Insights events during a terraform run.
 
 ## Example Usage

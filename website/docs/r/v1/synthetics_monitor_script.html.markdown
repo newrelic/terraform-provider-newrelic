@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_synthetics\_monitor\_script
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_synthetics_monitor_script](/docs/providers/newrelic/r/synthetics_monitor_script.html).
+
 Use this resource to update a synthetics monitor script in New Relic.
 
 ## Example Usage

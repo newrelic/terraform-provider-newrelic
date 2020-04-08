@@ -157,54 +157,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 ##### Type: `outlier`
 
-Example outlier detection: Get notified if members of a group deviate by a key metric.
-
--> **NOTE:** The `outlier` NQRL alert condition type currently does not support new schema attributes introduced in v2.0.0 of the New Relic Terraform provider.
-
-```hcl
-resource "newrelic_alert_policy" "foo" {
-  name = "foo"
-}
-
-resource "newrelic_nrql_alert_condition" "foo" {
-  type                         = "outlier"
-  name                         = "foo"
-  policy_id                    = newrelic_alert_policy.foo.id
-  enabled                      = true
-  runbook_url                  = "https://www.example.com"
-  violation_time_limit_seconds = 7200
-
-  # outlier type only
-  expected_groups = 2
-
-  # outlier type only
-	ignore_overlap = true
-
-  nrql {
-    query       = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName' FACET host"
-    since_value = "3"
-  }
-
-  term {
-    operator      = "above"
-    priority      = "critical"
-    threshold     = 0.065
-    duration      = 5
-    time_function = "all"
-  }
-
-  term {
-    operator      = "above"
-    priority      = "warning"
-    threshold     = 0.035
-    duration      = 10
-    time_function = "all"
-  }
-}
-```
+Please refer to the [version 1.x `outlier` example](/docs/providers/newrelic/r/v1/nrql_alert_condition.html#type-outlier). Outlier detection is supported in version 2.x of the New Relic Terraform provider, however it only supports version 1.x of the schema. Outlier detection will be updated to support the new schema in a future release.
 
 ## Import
-
 
 Alert conditions can be imported using a composite ID of `<policy_id>:<condition_id>:<conditionType>`, e.g.
 

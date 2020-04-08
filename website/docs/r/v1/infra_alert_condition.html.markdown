@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_infra_alert\_condition
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_infra_alert_condition](/docs/providers/newrelic/r/infra_alert_condition.html).
+
 Use this resource to create and manage Infrastructure alert conditions in New Relic.
 
 ## Example Usage
