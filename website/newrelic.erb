@@ -1,5 +1,42 @@
 <% wrap_layout :inner do %>
 <% content_for :sidebar do %>
+
+<%#
+    Data Sources (alphabetical)
+%>
+<% @data_sources = [
+    "alert_channel",
+    "alert_policy",
+    "application",
+    "key_transaction",
+    "plugin",
+    "plugin_component",
+    "synthetics_monitor",
+    "synthetics_secure_credential",
+] %>
+
+<%#
+    Resources (alphabetical)
+%>
+<% @resources = [
+    "alert_channel",
+    "alert_condition",
+    "alert_policy",
+    "alert_policy_channel",
+    "application_label",
+    "dashboard",
+    "infra_alert_condition",
+    "insights_event",
+    "nrql_alert_condition",
+    "plugins_alert_condition",
+    "synthetics_alert_condition",
+    "synthetics_label",
+    "synthetics_monitor",
+    "synthetics_monitor_script",
+    "synthetics_secure_credential",
+    "workload",
+] %>
+
 <div class="docs-sidebar hidden-print affix-top" role="complementary">
     <ul class="nav docs-sidenav">
         <li<%= sidebar_current("docs-home") %>>
@@ -15,86 +52,51 @@
             </ul>
         </li>
 
-        <li<%= sidebar_current("docs-newrelic-datasource") %>>
+        <li <%= sidebar_current("docs-newrelic-resource") %>>
             <a href="#">Data Sources</a>
             <ul class="nav nav-visible">
-                <li<%= sidebar_current("docs-newrelic-datasource-alert-channel") %>>
-                    <a href="/docs/providers/newrelic/d/alert_channel.html">newrelic_alert_channel</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-datasource-alert-policy") %>>
-                    <a href="/docs/providers/newrelic/d/alert_policy.html">newrelic_alert_policy</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-datasource-application") %>>
-                    <a href="/docs/providers/newrelic/d/application.html">newrelic_application</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-datasource-key-transaction") %>>
-                    <a href="/docs/providers/newrelic/d/key_transaction.html">newrelic_key_transaction</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-datasource-plugin") %>>
-                    <a href="/docs/providers/newrelic/d/plugin.html">newrelic_plugin</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-datasource-plugin-component") %>>
-                    <a href="/docs/providers/newrelic/d/plugin_component.html">newrelic_plugin_component</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-datasource-synthetics-monitor") %>>
-                    <a href="/docs/providers/newrelic/d/synthetics_monitor.html">newrelic_synthetics_monitor</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-datasource-synthetics-secure-credential") %>>
-                    <a href="/docs/providers/newrelic/d/synthetics_secure_credential.html">newrelic_synthetics_secure_credential</a>
-                </li>
+                <% @data_sources.each do |data_source| -%>
+                    <li>
+                        <a href="/docs/providers/newrelic/d/<%= data_source %>.html">newrelic_<%= data_source %></a>
+                    </li>
+                <% end -%>
             </ul>
         </li>
 
         <li<%= sidebar_current("docs-newrelic-resource") %>>
             <a href="#">Resources</a>
             <ul class="nav nav-visible">
-                <li<%= sidebar_current("docs-newrelic-resource-alert-channel") %>>
-                    <a href="/docs/providers/newrelic/r/alert_channel.html">newrelic_alert_channel</a>
+                <% @resources.each do |resource| -%>
+                    <li>
+                        <a href="/docs/providers/newrelic/r/<%= resource %>.html">newrelic_<%= resource %></a>
+                    </li>
+                <% end -%>
+            </ul>
+        </li>
+
+        <!-- VERSION 1.x -->
+        <li>
+            <a href="#">Version 1.x</a>
+            <ul class="nav">
+                <li>
+                    <a href="#">Data Sources</a>
+                    <ul class="nav">
+                        <% @data_sources.each do |data_source| -%>
+                            <li>
+                                <a href="/docs/providers/newrelic/d/v1/<%= data_source %>.html">newrelic_<%= data_source %></a>
+                            </li>
+                        <% end -%>
+                    </ul>
                 </li>
-                <li<%= sidebar_current("docs-newrelic-resource-alert-condition") %>>
-                    <a href="/docs/providers/newrelic/r/alert_condition.html">newrelic_alert_condition</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-alert-policy") %>>
-                    <a href="/docs/providers/newrelic/r/alert_policy.html">newrelic_alert_policy</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-alert-policy-channel") %>>
-                    <a href="/docs/providers/newrelic/r/alert_policy_channel.html">newrelic_alert_policy_channel</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-application-label") %>>
-                    <a href="/docs/providers/newrelic/r/application_label.html">newrelic_application_label</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-dashboard") %>>
-                    <a href="/docs/providers/newrelic/r/dashboard.html">newrelic_dashboard</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-infra-alert-condition") %>>
-                    <a href="/docs/providers/newrelic/r/infra_alert_condition.html">newrelic_infra_alert_condition</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-insights-event") %>>
-                    <a href="/docs/providers/newrelic/r/insights_event.html">newrelic_insights_event</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-nrql-alert-condition") %>>
-                    <a href="/docs/providers/newrelic/r/nrql_alert_condition.html">newrelic_nrql_alert_condition</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-plugins_alert_condition") %>>
-                    <a href="/docs/providers/newrelic/r/plugins_alert_condition.html">newrelic_plugins_alert_condition</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-synthetics-alert-condition") %>>
-                    <a href="/docs/providers/newrelic/r/synthetics_alert_condition.html">newrelic_synthetics_alert_condition</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-synthetics-label") %>>
-                    <a href="/docs/providers/newrelic/r/synthetics_label.html">newrelic_synthetics_label</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-synthetics-monitor") %>>
-                    <a href="/docs/providers/newrelic/r/synthetics_monitor.html">newrelic_synthetics_monitor</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-synthetics-monitor_script") %>>
-                    <a href="/docs/providers/newrelic/r/synthetics_monitor_script.html">newrelic_synthetics_monitor_script</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-synthetics-secure-credential") %>>
-                    <a href="/docs/providers/newrelic/r/synthetics_secure_credential.html">newrelic_synthetics_secure_credential</a>
-                </li>
-                <li<%= sidebar_current("docs-newrelic-resource-workload") %>>
-                    <a href="/docs/providers/newrelic/r/workload.html">newrelic_workload</a>
+                <li>
+                    <a href="#">Resources</a>
+                    <ul class="nav">
+                        <% @resources.each do |resource| -%>
+                            <li>
+                                <a href="/docs/providers/newrelic/r/v1/<%= resource %>.html">newrelic_<%= resource %></a>
+                            </li>
+                        <% end -%>
+                    </ul>
                 </li>
             </ul>
         </li>
