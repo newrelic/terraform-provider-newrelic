@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_synthetics\_secure\_credential
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_synthetics_secure_credential](/docs/providers/newrelic/r/synthetics_secure_credential.html).
+
 Use this resource to create and manage New Relic Synthetic secure credentials.
 
 ## Example Usage
@@ -25,7 +27,7 @@ resource "newrelic_synthetics_secure_credential" "foo" {
 The following arguments are supported:
 
   * `key` - (Required) The secure credential's key name.  Regardless of the case used in the configuration, the provider will provide an upcased key to the underlying API.
-  * `value` - (Required) The secure credential's value. 
+  * `value` - (Required) The secure credential's value.
   * `description` - (Optional) The secure credential's description.
 
 ## Attributes Reference

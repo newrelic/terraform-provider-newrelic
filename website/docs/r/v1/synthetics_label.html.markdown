@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_synthetics\_label
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_synthetics_label](/docs/providers/newrelic/r/synthetics_label.html).
+
 Use this resource to create, update, and delete a Synthetics label in New Relic.
 
 ## Example Usage

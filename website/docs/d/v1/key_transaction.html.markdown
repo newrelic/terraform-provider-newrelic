@@ -8,6 +8,8 @@ description: |-
 
 # Data Source: newrelic\_key\_transaction
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_key_transaction](/docs/providers/newrelic/d/key_transaction.html).
+
 Use this data source to get information about a specific key transaction in New Relic that already exists.  More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
 
 ## Example Usage

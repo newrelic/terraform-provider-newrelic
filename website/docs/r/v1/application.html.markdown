@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic_application
 
+-> **NOTE:** This page refers to version **1.x** of the New Relic Terraform provider. For the latest documentation, please view the [latest docs for newrelic_application](/docs/providers/newrelic/r/application.html).
+
 Use this resource to manage configuration for an application that already exists in New Relic.
 
 ## Example Usage
