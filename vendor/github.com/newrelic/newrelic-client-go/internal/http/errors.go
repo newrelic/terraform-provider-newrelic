@@ -8,6 +8,7 @@ import (
 // ErrorResponse provides an interface for obtaining
 // a single error message from an error response object.
 type ErrorResponse interface {
+	IsNotFound() bool
 	Error() string
 	New() ErrorResponse
 }
@@ -30,6 +31,10 @@ func (e *DefaultErrorResponse) Error() string {
 	}
 
 	return m
+}
+
+func (e *DefaultErrorResponse) IsNotFound() bool {
+	return false
 }
 
 // New creates a new instance of the DefaultErrorResponse struct.

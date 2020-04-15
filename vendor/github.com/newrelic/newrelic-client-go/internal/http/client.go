@@ -243,6 +243,10 @@ func (c *Client) Do(req *Request) (*http.Response, error) {
 		return nil, nrErrors.NewUnexpectedStatusCode(resp.StatusCode, errorValue.Error())
 	}
 
+	if errorValue.IsNotFound() {
+		return nil, nrErrors.NewNotFound("resource not found")
+	}
+
 	if errorValue.Error() != "" {
 		return nil, errors.New(errorValue.Error())
 	}
@@ -314,7 +318,7 @@ func (c *Client) NewNerdGraphRequest(query string, vars map[string]interface{}, 
 	}
 
 	req.SetAuthStrategy(&NerdGraphAuthorizer{})
-	req.SetErrorValue(&graphQLErrorResponse{})
+	req.SetErrorValue(&GraphQLErrorResponse{})
 
 	return req, nil
 }

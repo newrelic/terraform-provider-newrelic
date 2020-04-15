@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/newrelic/newrelic-client-go/newrelic"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
+	nrErrors "github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func resourceNewRelicAlertPolicy() *schema.Resource {
@@ -139,7 +140,13 @@ func resourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) e
 	log.Printf("[INFO] Reading New Relic alert policy %d from account %d", policyID, accountID)
 
 	queryPolicy, queryErr := client.Alerts.QueryPolicy(accountID, policyID)
+
 	if queryErr != nil {
+		if _, ok := queryErr.(*nrErrors.NotFound); ok {
+			d.SetId("")
+			return nil
+		}
+
 		return queryErr
 	}
 
