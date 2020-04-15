@@ -55,6 +55,10 @@ func (e *ErrorResponse) New() http.ErrorResponse {
 	return &ErrorResponse{}
 }
 
+func (e *ErrorResponse) IsNotFound() bool {
+	return false
+}
+
 // New is used to create a new Synthetics client instance.
 func New(config config.Config) Synthetics {
 	client := http.NewClient(config)

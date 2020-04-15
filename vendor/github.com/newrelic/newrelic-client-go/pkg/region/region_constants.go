@@ -41,22 +41,27 @@ var Regions = map[Name]*Region{
 }
 
 // Default represents the region returned if nothing was specified
-var Default *Region = Regions[US]
+const Default Name = US
 
 // Parse takes a Region string and returns a RegionType
-func Parse(r string) *Region {
-	var ret Region
-
+func Parse(r string) (Name, error) {
 	switch strings.ToLower(r) {
 	case "us":
-		ret = *Regions[US]
+		return US, nil
 	case "eu":
-		ret = *Regions[EU]
+		return EU, nil
 	case "staging":
-		ret = *Regions[Staging]
+		return Staging, nil
 	default:
-		ret = *Default
+		return "", UnknownError{Message: r}
+	}
+}
+
+func Get(r Name) (*Region, error) {
+	if reg, ok := Regions[r]; ok {
+		ret := *reg // Make a copy
+		return &ret, nil
 	}
 
-	return &ret
+	return Regions[Default], UnknownUsingDefaultError{Message: r.String()}
 }

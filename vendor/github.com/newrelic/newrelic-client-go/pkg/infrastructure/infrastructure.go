@@ -34,3 +34,7 @@ func (e *ErrorResponse) Error() string {
 func (e *ErrorResponse) New() http.ErrorResponse {
 	return &ErrorResponse{}
 }
+
+func (e *ErrorResponse) IsNotFound() bool {
+	return false
+}

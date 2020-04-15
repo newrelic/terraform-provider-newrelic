@@ -32,7 +32,6 @@ type EntitySearchQuery struct {
 	CreatedAt serialization.EpochTime  `json:"createdAt,omitempty"`
 	CreatedBy UserReference            `json:"createdBy,omitempty"`
 	ID        int                      `json:"id,omitempty"`
-	Name      string                   `json:"name,omitempty"`
 	Query     string                   `json:"query,omitempty"`
 	UpdatedAt *serialization.EpochTime `json:"updatedAt,omitempty"`
 }
@@ -60,7 +59,6 @@ type CreateInput struct {
 
 // EntitySearchQueryInput represents an entity search query for creating or updating a workload.
 type EntitySearchQueryInput struct {
-	Name  string `json:"name,omitempty"`
 	Query string `json:"query,omitempty"`
 }
 

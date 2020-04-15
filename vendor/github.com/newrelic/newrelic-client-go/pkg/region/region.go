@@ -24,6 +24,11 @@ type Region struct {
 	nerdGraphBaseURL      string
 }
 
+// String returns a human readable value for the specified Region Name
+func (n Name) String() string {
+	return string(n)
+}
+
 // String returns a human readable value for the specified Region
 func (r *Region) String() string {
 	if r != nil && r.name != "" {

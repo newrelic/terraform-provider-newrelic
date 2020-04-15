@@ -60,7 +60,13 @@ func NewIntegrationTestConfig(t *testing.T) config.Config {
 	cfg.AdminAPIKey = envAdminAPIKey
 
 	if envRegion != "" {
-		err := cfg.SetRegion(region.Parse(envRegion))
+		regName, err := region.Parse(envRegion)
+		assert.NoError(t, err)
+
+		reg, err := region.Get(regName)
+		assert.NoError(t, err)
+
+		err = cfg.SetRegion(reg)
 		assert.NoError(t, err)
 	}
 

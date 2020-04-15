@@ -1,4 +1,4 @@
-//go:generate ../../bin/typegen -v
+//go:generate ../../bin/typegen -v -p $GOPACKAGE
 package alerts
 
 import (

@@ -2,18 +2,27 @@ package newrelic
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/newrelic/go-agent/v3/newrelic"
+)
+
+var (
+	testExpectedApplicationName string
 )
 
 func TestAccNewRelicApplication_Basic(t *testing.T) {
 	resourceName := "newrelic_application.app"
+	testExpectedApplicationName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicApplicationDestroy,
 		Steps: []resource.TestStep{
@@ -25,7 +34,7 @@ func TestAccNewRelicApplication_Basic(t *testing.T) {
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicApplicationConfigUpdated(testAccExpectedApplicationName),
+				Config: testAccNewRelicApplicationConfigUpdated(testExpectedApplicationName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicApplicationExists(resourceName),
 				),
@@ -54,7 +63,7 @@ resource "newrelic_application" "app" {
 	end_user_apdex_threshold = "0.8"
 	enable_real_user_monitoring = true
 }
-`, testAccExpectedApplicationName)
+`, testExpectedApplicationName)
 }
 
 func testAccNewRelicApplicationConfigUpdated(name string) string {
@@ -93,4 +102,38 @@ func testAccCheckNewRelicApplicationExists(n string) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func testPreCheck(t *testing.T) {
+	if v := os.Getenv("NEWRELIC_API_KEY"); v == "" {
+		t.Fatal("NEWRELIC_API_KEY must be set for acceptance tests")
+	}
+
+	if v := os.Getenv("NEWRELIC_LICENSE_KEY"); v == "" {
+		t.Fatal("NEWRELIC_LICENSE_KEY must be set for acceptance tests")
+	}
+
+	if v := os.Getenv("NEWRELIC_PERSONAL_API_KEY"); v == "" {
+		t.Log("[WARN] NEWRELIC_PERSONAL_API_KEY has not been set for acceptance tests")
+	}
+
+	testCreateApplication(t)
+}
+
+func testCreateApplication(t *testing.T) {
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName(testExpectedApplicationName),
+		newrelic.ConfigLicense(os.Getenv("NEWRELIC_LICENSE_KEY")),
+	)
+
+	if err != nil {
+		t.Fatalf("Error setting up New Relic application: %s", err)
+	}
+
+	if err := app.WaitForConnection(30 * time.Second); err != nil {
+		t.Fatalf("Unable to setup New Relic application connection: %s", err)
+	}
+
+	app.RecordCustomEvent("terraform test", nil)
+	app.Shutdown(30 * time.Second)
 }
