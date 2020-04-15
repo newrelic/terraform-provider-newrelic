@@ -39,11 +39,10 @@ func TestAccNewRelicWorkload_Basic(t *testing.T) {
 			},
 			// Test: Import
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// "entity_search_query" is returned as nil after a delete.
-				ImportStateVerifyIgnore: []string{"entity_search_query"},
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"entity_search_query", "composite_entity_search_query"},
 			},
 		},
 	})

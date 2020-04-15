@@ -14,16 +14,26 @@ type graphQLResponse struct {
 	Data interface{} `json:"data"`
 }
 
-type graphQLError struct {
-	Message            string         `json:"message"`
-	DownstreamResponse *[]interface{} `json:"downstreamResponse,omitempty"`
+// GraphQLError represents a single error.
+type GraphQLError struct {
+	Message            string                      `json:"message"`
+	DownstreamResponse []GraphQLDownstreamResponse `json:"downstreamResponse,omitempty"`
 }
 
-type graphQLErrorResponse struct {
-	Errors []graphQLError `json:"errors"`
+// GraphQLDownstreamResponse represents an error's downstream response.
+type GraphQLDownstreamResponse struct {
+	Extensions struct {
+		Code string `json:"code,omitempty"`
+	} `json:"extensions,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
-func (r *graphQLErrorResponse) Error() string {
+// GraphQLErrorResponse represents a default error response body.
+type GraphQLErrorResponse struct {
+	Errors []GraphQLError `json:"errors"`
+}
+
+func (r *GraphQLErrorResponse) Error() string {
 	if len(r.Errors) > 0 {
 		messages := []string{}
 		for _, e := range r.Errors {
@@ -38,6 +48,12 @@ func (r *graphQLErrorResponse) Error() string {
 	return ""
 }
 
-func (r *graphQLErrorResponse) New() ErrorResponse {
-	return &graphQLErrorResponse{}
+// IsNotFound determines if the error is due to a missing resource.
+func (r *GraphQLErrorResponse) IsNotFound() bool {
+	return false
+}
+
+// New creates a new instance of GraphQLErrorRepsonse.
+func (r *GraphQLErrorResponse) New() ErrorResponse {
+	return &GraphQLErrorResponse{}
 }
