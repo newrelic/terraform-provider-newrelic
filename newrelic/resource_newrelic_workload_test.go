@@ -37,6 +37,7 @@ func TestAccNewRelicWorkload_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkloadExists(resourceName),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 			// Test: Import
 			{
@@ -125,7 +126,7 @@ func testAccCheckNewRelicWorkloadExists(n string) resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		found, err := client.Workloads.GetWorkload(ids.AccountID, ids.ID)
+		found, err := client.Workloads.GetWorkload(ids.AccountID, ids.GUID)
 		if err != nil {
 			return err
 		}
@@ -150,7 +151,7 @@ func testAccCheckNewRelicWorkloadDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = client.Workloads.GetWorkload(ids.AccountID, ids.ID)
+		_, err = client.Workloads.GetWorkload(ids.AccountID, ids.GUID)
 		if err == nil {
 			return fmt.Errorf("workload still exists")
 		}
@@ -221,7 +222,6 @@ func testAccNewRelicWorkloadConfigScopeAccountsOnly(name string) string {
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
-
 	scope_account_ids =  [%[1]d, 1]
 }
 `, testAccountID, name)

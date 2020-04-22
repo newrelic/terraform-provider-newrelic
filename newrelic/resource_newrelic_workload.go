@@ -112,7 +112,7 @@ func resourceNewRelicWorkloadRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	workload, err := client.Workloads.GetWorkload(ids.AccountID, ids.ID)
+	workload, err := client.Workloads.GetWorkload(ids.AccountID, ids.GUID)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
