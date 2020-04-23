@@ -86,8 +86,10 @@ func enableLinterConfigs(lcs []*linter.Config, isEnabled func(lc *linter.Config)
 //nolint:funlen
 func (m Manager) GetAllSupportedLinterConfigs() []*linter.Config {
 	var govetCfg *config.GovetSettings
+	var testpackageCfg *config.TestpackageSettings
 	if m.cfg != nil {
 		govetCfg = &m.cfg.LintersSettings.Govet
+		testpackageCfg = &m.cfg.LintersSettings.Testpackage
 	}
 	const megacheckName = "megacheck"
 	lcs := []*linter.Config{
@@ -247,6 +249,20 @@ func (m Manager) GetAllSupportedLinterConfigs() []*linter.Config {
 		linter.NewConfig(golinters.NewGoMND(m.cfg)).
 			WithPresets(linter.PresetStyle).
 			WithURL("https://github.com/tommy-muehle/go-mnd"),
+		linter.NewConfig(golinters.NewGomodguard()).
+			WithPresets(linter.PresetStyle).
+			WithLoadForGoAnalysis().
+			WithURL("https://github.com/ryancurrah/gomodguard"),
+		linter.NewConfig(golinters.NewGodot()).
+			WithPresets(linter.PresetStyle).
+			WithURL("https://github.com/tetafro/godot"),
+		linter.NewConfig(golinters.NewTestpackage(testpackageCfg)).
+			WithPresets(linter.PresetStyle).
+			WithLoadForGoAnalysis().
+			WithURL("https://github.com/maratori/testpackage"),
+		linter.NewConfig(golinters.NewNestif()).
+			WithPresets(linter.PresetComplexity).
+			WithURL("https://github.com/nakabonne/nestif"),
 	}
 
 	isLocalRun := os.Getenv("GOLANGCI_COM_RUN") == ""

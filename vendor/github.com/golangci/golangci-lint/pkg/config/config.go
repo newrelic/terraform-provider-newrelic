@@ -15,6 +15,7 @@ const (
 	OutFormatCheckstyle        = "checkstyle"
 	OutFormatCodeClimate       = "code-climate"
 	OutFormatJunitXML          = "junit-xml"
+	OutFormatGithubActions     = "github-actions"
 )
 
 var OutFormats = []string{
@@ -25,6 +26,7 @@ var OutFormats = []string{
 	OutFormatCheckstyle,
 	OutFormatCodeClimate,
 	OutFormatJunitXML,
+	OutFormatGithubActions,
 }
 
 type ExcludePattern struct {
@@ -185,17 +187,32 @@ type LintersSettings struct {
 	RowsErrCheck struct {
 		Packages []string
 	}
+	Gomodguard struct {
+		Allowed struct {
+			Modules []string `mapstructure:"modules"`
+			Domains []string `mapstructure:"domains"`
+		} `mapstructure:"allowed"`
+		Blocked struct {
+			Modules []map[string]struct {
+				Recommendations []string `mapstructure:"recommendations"`
+				Reason          string   `mapstructure:"reason"`
+			} `mapstructure:"modules"`
+		} `mapstructure:"blocked"`
+	}
 
-	WSL      WSLSettings
-	Lll      LllSettings
-	Unparam  UnparamSettings
-	Nakedret NakedretSettings
-	Prealloc PreallocSettings
-	Errcheck ErrcheckSettings
-	Gocritic GocriticSettings
-	Godox    GodoxSettings
-	Dogsled  DogsledSettings
-	Gocognit GocognitSettings
+	WSL         WSLSettings
+	Lll         LllSettings
+	Unparam     UnparamSettings
+	Nakedret    NakedretSettings
+	Prealloc    PreallocSettings
+	Errcheck    ErrcheckSettings
+	Gocritic    GocriticSettings
+	Godox       GodoxSettings
+	Dogsled     DogsledSettings
+	Gocognit    GocognitSettings
+	Godot       GodotSettings
+	Testpackage TestpackageSettings
+	Nestif      NestifSettings
 
 	Custom map[string]CustomLinterSettings
 }
@@ -268,7 +285,21 @@ type WSLSettings struct {
 	AllowMultiLineAssignCuddle       bool `mapstructure:"allow-multiline-assign"`
 	AllowCuddleDeclaration           bool `mapstructure:"allow-cuddle-declarations"`
 	AllowTrailingComment             bool `mapstructure:"allow-trailing-comment"`
-	CaseForceTrailingWhitespaceLimit int  `mapstructure:"force-case-trailing-whitespace:"`
+	AllowSeparatedLeadingComment     bool `mapstructure:"allow-separated-leading-comment"`
+	ForceCuddleErrCheckAndAssign     bool `mapstructure:"force-err-cuddling"`
+	ForceCaseTrailingWhitespaceLimit int  `mapstructure:"force-case-trailing-whitespace"`
+}
+
+type GodotSettings struct {
+	CheckAll bool `mapstructure:"check-all"`
+}
+
+type TestpackageSettings struct {
+	SkipRegexp string `mapstructure:"skip-regexp"`
+}
+
+type NestifSettings struct {
+	MinComplexity int `mapstructure:"min-complexity"`
 }
 
 //nolint:gomnd
@@ -306,7 +337,15 @@ var defaultLintersSettings = LintersSettings{
 		AllowMultiLineAssignCuddle:       true,
 		AllowCuddleDeclaration:           false,
 		AllowTrailingComment:             false,
-		CaseForceTrailingWhitespaceLimit: 0,
+		AllowSeparatedLeadingComment:     false,
+		ForceCuddleErrCheckAndAssign:     false,
+		ForceCaseTrailingWhitespaceLimit: 0,
+	},
+	Testpackage: TestpackageSettings{
+		SkipRegexp: `(export|internal)_test\.go`,
+	},
+	Nestif: NestifSettings{
+		MinComplexity: 5,
 	},
 }
 
