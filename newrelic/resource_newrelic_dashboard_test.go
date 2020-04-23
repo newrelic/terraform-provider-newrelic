@@ -19,104 +19,21 @@ func TestAccNewRelicDashboard_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create
 			{
 				Config: testAccCheckNewRelicDashboardConfig(rName),
-
-				// Check exists
 				Check: resource.ComposeTestCheckFunc(
 					// logState(t),
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "title", rName),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "editable", "editable_by_all"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "icon", "bar-chart"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "visibility", "all"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.#", "4"),
-
-					// filters
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.#", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.event_types.#", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.event_types.4104882694", "Transaction"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.attributes.#", "2"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.attributes.2634578693", "appName"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "filter.0.attributes.3755723101", "envName"),
-
-					// billboard widget
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.2779494853.title", "Transaction Count"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.2779494853.visualization", "billboard"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.2779494853.threshold_red", "100"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.2779494853.threshold_yellow", "50"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.2779494853.height", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.2779494853.width", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.2779494853.row", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.2779494853.column", "1"),
-
-					// faceted_line_chart widget
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1942929817.title", "Average Transaction Duration"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1942929817.visualization", "facet_bar_chart"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1942929817.nrql", "SELECT AVERAGE(duration) from Transaction FACET appName TIMESERIES auto"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1942929817.drilldown_dashboard_id", "1234"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1942929817.height", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1942929817.width", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1942929817.row", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1942929817.column", "2"),
-
-					// markdown widget
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.4111231263.title", "Dashboard Note"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.4111231263.visualization", "markdown"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.4111231263.source", "#h1 Heading"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.4111231263.height", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.4111231263.width", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.4111231263.row", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.4111231263.column", "3"),
-
-					// metric_line_chart widget
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.title", "Apdex"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.visualization", "metric_line_chart"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.height", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.width", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.row", "2"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.column", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.compare_with.#", "2"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.compare_with.1986073529.offset_duration", "P7D"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.compare_with.1986073529.presentation.#", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.compare_with.1986073529.presentation.0.color", "#b1b6ba"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.compare_with.1986073529.presentation.0.name", "Last week"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.compare_with.4162716032.offset_duration", "P1D"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.compare_with.4162716032.presentation.#", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.compare_with.4162716032.presentation.0.color", "#77add4"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.compare_with.4162716032.presentation.0.name", "Yesterday"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.metric.1284261170.name", "Apdex"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.metric.1284261170.values.#", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.metric.1284261170.values.2136473340", "score"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.raw_metric_name", "Apdex"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.entity_ids.#", "1"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.1516746896.entity_ids.743249691", "1234"),
 				),
 			},
-
 			// Import
 			{
 				ResourceName:      "newrelic_dashboard.foo",
 				ImportState:       true,
 				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func TestAccNewRelicDashboard_NoDiffOnReapply(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckNewRelicDashboardConfig(rName),
-			},
-			{
-				Config:             testAccCheckNewRelicDashboardConfig(rName),
-				ExpectNonEmptyPlan: false,
+				// grid_column_count is not returned in the GET response
+				ImportStateVerifyIgnore: []string{"grid_column_count"},
 			},
 		},
 	})
@@ -420,7 +337,9 @@ resource "newrelic_dashboard" "foo" {
     }
     row           = 2
     column        = 1
-  }
+	}
+
+	grid_column_count = 12
 }
 `, dashboardName)
 }
