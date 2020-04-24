@@ -37,7 +37,6 @@ func TestAccNewRelicWorkload_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkloadExists(resourceName),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			// Test: Import
 			{
