@@ -12,6 +12,7 @@ import (
 // Plugins is used to communicate with the New Relic Plugins product.
 type Plugins struct {
 	client http.Client
+	config config.Config
 	logger logging.Logger
 	pager  http.Pager
 }
@@ -20,6 +21,7 @@ type Plugins struct {
 func New(config config.Config) Plugins {
 	pkg := Plugins{
 		client: http.NewClient(config),
+		config: config,
 		logger: config.GetLogger(),
 		pager:  &http.LinkHeaderPager{},
 	}
@@ -41,7 +43,7 @@ type ListPluginsParams struct {
 // with metadata pertaining to each plugin.
 func (p *Plugins) ListPlugins(params *ListPluginsParams) ([]*Plugin, error) {
 	results := []*Plugin{}
-	nextURL := "/plugins.json"
+	nextURL := p.config.Region().RestURL("plugins.json")
 
 	for nextURL != "" {
 		response := pluginsResponse{}
@@ -72,8 +74,8 @@ type GetPluginParams struct {
 func (p *Plugins) GetPlugin(id int, params *GetPluginParams) (*Plugin, error) {
 	response := pluginResponse{}
 
-	u := fmt.Sprintf("/plugins/%d.json", id)
-	_, err := p.client.Get(u, &params, &response)
+	url := fmt.Sprintf("/plugins/%d.json", id)
+	_, err := p.client.Get(p.config.Region().RestURL(url), &params, &response)
 
 	if err != nil {
 		return nil, err

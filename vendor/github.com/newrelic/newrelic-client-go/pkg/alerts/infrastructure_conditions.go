@@ -40,7 +40,7 @@ func (a *Alerts) ListInfrastructureConditions(policyID int) ([]InfrastructureCon
 	queryParams := listInfrastructureConditionsParams{
 		PolicyID: policyID,
 	}
-	_, err := a.infraClient.Get("/alerts/conditions", &queryParams, &resp)
+	_, err := a.infraClient.Get(a.config.Region().InfrastructureURL("/alerts/conditions"), &queryParams, &resp)
 
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (a *Alerts) ListInfrastructureConditions(policyID int) ([]InfrastructureCon
 func (a *Alerts) GetInfrastructureCondition(conditionID int) (*InfrastructureCondition, error) {
 	resp := infrastructureConditionResponse{}
 	url := fmt.Sprintf("/alerts/conditions/%d", conditionID)
-	_, err := a.infraClient.Get(url, nil, &resp)
+	_, err := a.infraClient.Get(a.config.Region().InfrastructureURL(url), nil, &resp)
 
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (a *Alerts) CreateInfrastructureCondition(condition InfrastructureCondition
 	resp := infrastructureConditionResponse{}
 	reqBody := infrastructureConditionRequest{condition}
 
-	_, err := a.infraClient.Post("/alerts/conditions", nil, &reqBody, &resp)
+	_, err := a.infraClient.Post(a.config.Region().InfrastructureURL("/alerts/conditions"), nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (a *Alerts) UpdateInfrastructureCondition(condition InfrastructureCondition
 	reqBody := infrastructureConditionRequest{condition}
 
 	url := fmt.Sprintf("/alerts/conditions/%d", condition.ID)
-	_, err := a.infraClient.Put(url, nil, &reqBody, &resp)
+	_, err := a.infraClient.Put(a.config.Region().InfrastructureURL(url), nil, &reqBody, &resp)
 
 	if err != nil {
 		return nil, err
@@ -94,7 +94,7 @@ func (a *Alerts) UpdateInfrastructureCondition(condition InfrastructureCondition
 // DeleteInfrastructureCondition is used to delete a New Relic Infrastructure alert condition.
 func (a *Alerts) DeleteInfrastructureCondition(conditionID int) error {
 	url := fmt.Sprintf("/alerts/conditions/%d", conditionID)
-	_, err := a.infraClient.Delete(url, nil, nil)
+	_, err := a.infraClient.Delete(a.config.Region().InfrastructureURL(url), nil, nil)
 
 	if err != nil {
 		return err

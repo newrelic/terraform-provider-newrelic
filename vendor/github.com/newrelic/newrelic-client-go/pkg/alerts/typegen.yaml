@@ -1,0 +1,9 @@
+---
+types:
+  - AlertsMutingRuleConditionInput
+  - AlertsMutingRuleInput
+  - AlertsPoliciesSearchCriteriaInput
+  - AlertsPoliciesSearchResultSet
+  - AlertsPolicy
+  - AlertsPolicyInput
+  - AlertsPolicyUpdateInput

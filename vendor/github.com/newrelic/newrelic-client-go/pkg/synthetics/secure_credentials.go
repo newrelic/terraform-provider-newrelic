@@ -1,9 +1,5 @@
 package synthetics
 
-import (
-	"fmt"
-)
-
 // SecureCredential represents a Synthetics secure credential.
 type SecureCredential struct {
 	Key         string `json:"key"`
@@ -15,10 +11,9 @@ type SecureCredential struct {
 
 // GetSecureCredentials is used to retrieve all secure credentials from your New Relic account.
 func (s *Synthetics) GetSecureCredentials() ([]*SecureCredential, error) {
-	url := "/v1/secure-credentials"
 	resp := getSecureCredentialsResponse{}
 
-	_, err := s.client.Get(url, nil, &resp)
+	_, err := s.client.Get(s.config.Region().SyntheticsURL("/v1/secure-credentials"), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -28,10 +23,9 @@ func (s *Synthetics) GetSecureCredentials() ([]*SecureCredential, error) {
 
 // GetSecureCredential is used to retrieve a specific secure credential from your New Relic account.
 func (s *Synthetics) GetSecureCredential(key string) (*SecureCredential, error) {
-	url := fmt.Sprintf("/v1/secure-credentials/%s", key)
 	var sc SecureCredential
 
-	_, err := s.client.Get(url, nil, &sc)
+	_, err := s.client.Get(s.config.Region().SyntheticsURL("/v1/secure-credentials", key), nil, &sc)
 	if err != nil {
 		return nil, err
 	}
@@ -41,14 +35,13 @@ func (s *Synthetics) GetSecureCredential(key string) (*SecureCredential, error) 
 
 // AddSecureCredential is used to add a secure credential to your New Relic account.
 func (s *Synthetics) AddSecureCredential(key, value, description string) (*SecureCredential, error) {
-	url := "/v1/secure-credentials"
 	sc := &SecureCredential{
 		Key:         key,
 		Value:       value,
 		Description: description,
 	}
 
-	_, err := s.client.Post(url, nil, sc, nil)
+	_, err := s.client.Post(s.config.Region().SyntheticsURL("/v1/secure-credentials"), nil, sc, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -58,14 +51,13 @@ func (s *Synthetics) AddSecureCredential(key, value, description string) (*Secur
 
 // UpdateSecureCredential is used to update a secure credential in your New Relic account.
 func (s *Synthetics) UpdateSecureCredential(key, value, description string) (*SecureCredential, error) {
-	url := fmt.Sprintf("/v1/secure-credentials/%s", key)
 	sc := &SecureCredential{
 		Key:         key,
 		Value:       value,
 		Description: description,
 	}
 
-	_, err := s.client.Put(url, nil, sc, nil)
+	_, err := s.client.Put(s.config.Region().SyntheticsURL("/v1/secure-credentials", key), nil, sc, nil)
 
 	if err != nil {
 		return nil, err
@@ -76,9 +68,7 @@ func (s *Synthetics) UpdateSecureCredential(key, value, description string) (*Se
 
 // DeleteSecureCredential deletes a secure credential from your New Relic account.
 func (s *Synthetics) DeleteSecureCredential(key string) error {
-	url := fmt.Sprintf("/v1/secure-credentials/%s", key)
-
-	_, err := s.client.Delete(url, nil, nil)
+	_, err := s.client.Delete(s.config.Region().SyntheticsURL("/v1/secure-credentials", key), nil, nil)
 	if err != nil {
 		return err
 	}

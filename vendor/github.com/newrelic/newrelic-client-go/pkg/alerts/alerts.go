@@ -1,9 +1,9 @@
+//go:generate ../../bin/typegen -v -p $GOPACKAGE
 package alerts
 
 import (
 	"github.com/newrelic/newrelic-client-go/internal/http"
 	"github.com/newrelic/newrelic-client-go/internal/logging"
-	"github.com/newrelic/newrelic-client-go/internal/region"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/infrastructure"
 )
@@ -11,6 +11,7 @@ import (
 // Alerts is used to communicate with New Relic Alerts.
 type Alerts struct {
 	client      http.Client
+	config      config.Config
 	infraClient http.Client
 	logger      logging.Logger
 	pager       http.Pager
@@ -20,12 +21,6 @@ type Alerts struct {
 func New(config config.Config) Alerts {
 	infraConfig := config
 
-	if infraConfig.InfrastructureBaseURL == "" {
-		infraConfig.InfrastructureBaseURL = infrastructure.BaseURLs[region.Parse(string(config.Region))]
-	}
-
-	infraConfig.BaseURL = infraConfig.InfrastructureBaseURL
-
 	infraClient := http.NewClient(infraConfig)
 	infraClient.SetErrorValue(&infrastructure.ErrorResponse{})
 
@@ -34,6 +29,7 @@ func New(config config.Config) Alerts {
 
 	pkg := Alerts{
 		client:      client,
+		config:      config,
 		infraClient: infraClient,
 		logger:      config.GetLogger(),
 		pager:       &http.LinkHeaderPager{},
@@ -41,6 +37,3 @@ func New(config config.Config) Alerts {
 
 	return pkg
 }
-
-// BaseURLs represents the base API URLs for the different environments of the New Relic REST API V2.
-var BaseURLs = region.DefaultBaseURLs

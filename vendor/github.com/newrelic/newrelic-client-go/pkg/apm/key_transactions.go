@@ -32,7 +32,7 @@ type ListKeyTransactionsParams struct {
 // ListKeyTransactions returns all key transactions for an account.
 func (a *APM) ListKeyTransactions(params *ListKeyTransactionsParams) ([]*KeyTransaction, error) {
 	results := []*KeyTransaction{}
-	nextURL := "/key_transactions.json"
+	nextURL := a.config.Region().RestURL("key_transactions.json")
 
 	for nextURL != "" {
 		response := keyTransactionsResponse{}
@@ -54,9 +54,9 @@ func (a *APM) ListKeyTransactions(params *ListKeyTransactionsParams) ([]*KeyTran
 // GetKeyTransaction returns a specific key transaction by ID.
 func (a *APM) GetKeyTransaction(id int) (*KeyTransaction, error) {
 	response := keyTransactionResponse{}
-	u := fmt.Sprintf("/key_transactions/%d.json", id)
+	url := fmt.Sprintf("/key_transactions/%d.json", id)
 
-	_, err := a.client.Get(u, nil, &response)
+	_, err := a.client.Get(a.config.Region().RestURL(url), nil, &response)
 
 	if err != nil {
 		return nil, err
