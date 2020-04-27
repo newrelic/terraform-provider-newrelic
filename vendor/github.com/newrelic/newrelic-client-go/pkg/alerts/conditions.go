@@ -111,9 +111,11 @@ var (
 	OperatorTypes = struct {
 		Above OperatorType
 		Below OperatorType
+		Equal OperatorType
 	}{
 		Above: "above",
 		Below: "below",
+		Equal: "equal",
 	}
 )
 

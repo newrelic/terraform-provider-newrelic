@@ -104,12 +104,12 @@ func (e *Workloads) ListWorkloads(accountID int) ([]*Workload, error) {
 	return resp.Actor.Account.Workload.Collections, nil
 }
 
-// GetWorkload retrieve a New Relic One workload by its ID.
-func (e *Workloads) GetWorkload(accountID int, workloadID int) (*Workload, error) {
+// GetWorkload retrieves a New Relic One workload by its GUID.
+func (e *Workloads) GetWorkload(accountID int, workloadGUID string) (*Workload, error) {
 	resp := workloadResponse{}
 	vars := map[string]interface{}{
 		"accountId": accountID,
-		"id":        workloadID,
+		"guid":      workloadGUID,
 	}
 
 	if err := e.client.NerdGraphQuery(getWorkloadQuery, vars, &resp); err != nil {
@@ -221,7 +221,7 @@ const (
 			updatedAt
 `
 
-	getWorkloadQuery = `query($id: Int!, $accountId: Int!) { actor { account(id: $accountId) { workload { collection(id: $id)  {` +
+	getWorkloadQuery = `query($guid: EntityGuid, $accountId: Int!) { actor { account(id: $accountId) { workload { collection(guid: $guid) {` +
 		graphqlWorkloadStructFields +
 		` } } } } }`
 

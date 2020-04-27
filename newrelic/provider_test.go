@@ -3,6 +3,7 @@ package newrelic
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
@@ -19,7 +20,7 @@ var (
 	testAccAPIKey                   string
 	testAccProviders                map[string]terraform.ResourceProvider
 	testAccProvider                 *schema.Provider
-	testAccountID                   = 2520528
+	testAccountID                   int
 	//testAccCleanupComplete          = false
 )
 
@@ -34,6 +35,10 @@ func init() {
 	testAccAPIKey = os.Getenv("NEWRELIC_API_KEY")
 	if v := os.Getenv("NEWRELIC_API_KEY"); v == "" {
 		testAccAPIKey = "foo"
+	}
+
+	if v, _ := strconv.Atoi(os.Getenv("NEWRELIC_ACCOUNT_ID")); v != 0 {
+		testAccountID = v
 	}
 }
 
