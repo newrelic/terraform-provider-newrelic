@@ -10,7 +10,6 @@ import (
 )
 
 var (
-	testAccountID       = 2508259
 	testEntityGUID      = "MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1"
 	testApplicationName = "Dummy App"
 )
@@ -221,6 +220,7 @@ func testAccNewRelicWorkloadConfigScopeAccountsOnly(name string) string {
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+
 	scope_account_ids =  [%[1]d, 1]
 }
 `, testAccountID, name)
