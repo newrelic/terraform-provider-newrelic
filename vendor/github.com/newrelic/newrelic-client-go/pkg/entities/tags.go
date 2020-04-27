@@ -24,7 +24,7 @@ func (e *Entities) ListTags(guid string) ([]*Tag, error) {
 		"guid": guid,
 	}
 
-	if err := e.client.Query(listTagsQuery, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(listTagsQuery, vars, &resp); err != nil {
 		return nil, err
 	}
 
@@ -39,7 +39,7 @@ func (e *Entities) AddTags(guid string, tags []Tag) error {
 		"tags": tags,
 	}
 
-	if err := e.client.Query(addTagsMutation, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(addTagsMutation, vars, &resp); err != nil {
 		return err
 	}
 
@@ -58,7 +58,7 @@ func (e *Entities) ReplaceTags(guid string, tags []Tag) error {
 		"tags": tags,
 	}
 
-	if err := e.client.Query(replaceTagsMutation, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(replaceTagsMutation, vars, &resp); err != nil {
 		return err
 	}
 
@@ -77,7 +77,7 @@ func (e *Entities) DeleteTags(guid string, tagKeys []string) error {
 		"tagKeys": tagKeys,
 	}
 
-	if err := e.client.Query(deleteTagsMutation, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(deleteTagsMutation, vars, &resp); err != nil {
 		return err
 	}
 
@@ -96,7 +96,7 @@ func (e *Entities) DeleteTagValues(guid string, tagValues []TagValue) error {
 		"tagValues": tagValues,
 	}
 
-	if err := e.client.Query(deleteTagValuesMutation, vars, &resp); err != nil {
+	if err := e.client.NerdGraphQuery(deleteTagValuesMutation, vars, &resp); err != nil {
 		return err
 	}
 

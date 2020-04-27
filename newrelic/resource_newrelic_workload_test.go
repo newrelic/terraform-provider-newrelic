@@ -10,7 +10,6 @@ import (
 )
 
 var (
-	testAccountID       = 2508259
 	testEntityGUID      = "MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1"
 	testApplicationName = "Dummy App"
 )
@@ -125,7 +124,7 @@ func testAccCheckNewRelicWorkloadExists(n string) resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		found, err := client.Workloads.GetWorkload(ids.AccountID, ids.ID)
+		found, err := client.Workloads.GetWorkload(ids.AccountID, ids.GUID)
 		if err != nil {
 			return err
 		}
@@ -150,7 +149,7 @@ func testAccCheckNewRelicWorkloadDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = client.Workloads.GetWorkload(ids.AccountID, ids.ID)
+		_, err = client.Workloads.GetWorkload(ids.AccountID, ids.GUID)
 		if err == nil {
 			return fmt.Errorf("workload still exists")
 		}

@@ -4,7 +4,6 @@ package entities
 import (
 	"github.com/newrelic/newrelic-client-go/internal/http"
 	"github.com/newrelic/newrelic-client-go/internal/logging"
-	"github.com/newrelic/newrelic-client-go/internal/region"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 )
 
@@ -21,6 +20,3 @@ func New(config config.Config) Entities {
 		logger: config.GetLogger(),
 	}
 }
-
-// BaseURLs represents the base API URLs for the different environments of the New Relic NerdGraph API.
-var BaseURLs = region.NerdGraphBaseURLs

@@ -25,7 +25,7 @@ func (a *Alerts) UpdatePolicyChannels(policyID int, channelIDs []int) (*PolicyCh
 
 	resp := updatePolicyChannelsResponse{}
 
-	_, err := a.client.Put("/alerts_policy_channels.json", &queryParams, nil, &resp)
+	_, err := a.client.Put(a.config.Region().RestURL("/alerts_policy_channels.json"), &queryParams, nil, &resp)
 
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (a *Alerts) DeletePolicyChannel(policyID int, channelID int) (*Channel, err
 
 	resp := deletePolicyChannelResponse{}
 
-	_, err := a.client.Delete("/alerts_policy_channels.json", &queryParams, &resp)
+	_, err := a.client.Delete(a.config.Region().RestURL("/alerts_policy_channels.json"), &queryParams, &resp)
 
 	if err != nil {
 		return nil, err
