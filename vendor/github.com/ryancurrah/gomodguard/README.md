@@ -14,7 +14,9 @@ If no allowed modules or domains are specified then all modules are allowed exce
 
 The linter looks for blocked modules in `go.mod` and searches for imported packages where the imported packages module is blocked. Indirect modules are not considered.
 
-Alternative modules can be optionally recommended in the blocked modules configuration.
+Alternative modules can be optionally recommended in the blocked modules list.
+
+If the linted module imports a blocked module but the linted module is in the recommended modules list the blocked module is ignored. Usually, this means the linted module wraps that blocked module for use by other modules, therefore the import of the blocked module should not be blocked.
 
 Results are printed to `stdout`.
 
