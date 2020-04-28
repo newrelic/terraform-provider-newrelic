@@ -27,6 +27,17 @@ type Recommendations struct {
 	Reason          string   `yaml:"reason"`
 }
 
+// IsRecommended returns true if the package provided is in the Recommendations list
+func (r *Recommendations) IsRecommended(pkg string) bool {
+	for n := range r.Recommendations {
+		if strings.TrimSpace(pkg) == strings.TrimSpace(r.Recommendations[n]) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // String returns the recommended modules and reason message.
 func (r *Recommendations) String() string {
 	msg := ""
@@ -57,7 +68,7 @@ func (r *Recommendations) String() string {
 
 // HasRecommendations returns true if the blocked package has
 // recommended modules.
-func (r *Recommendations) HasRecommendations(pkg string) bool {
+func (r *Recommendations) HasRecommendations() bool {
 	return len(r.Recommendations) > 0
 }
 
@@ -88,7 +99,7 @@ func (b BlockedModules) Get() []string {
 func (b BlockedModules) RecommendedModules(pkg string) *Recommendations {
 	for i := range b {
 		for blockedModule, recommendations := range b[i] {
-			if strings.HasPrefix(strings.ToLower(pkg), strings.ToLower(blockedModule)) && recommendations.HasRecommendations(pkg) {
+			if strings.HasPrefix(strings.ToLower(pkg), strings.ToLower(blockedModule)) && recommendations.HasRecommendations() {
 				return &recommendations
 			}
 
@@ -307,6 +318,7 @@ func (p *Processor) addError(fileset *token.FileSet, pos token.Pos, reason strin
 func (p *Processor) setBlockedModulesFromModFile() {
 	blockedModules := make([]string, 0, len(p.modfile.Require))
 	requiredModules := p.modfile.Require
+	lintedModule := p.modfile.Module.Mod.Path
 
 	for i := range requiredModules {
 		if !requiredModules[i].Indirect {
@@ -320,10 +332,23 @@ func (p *Processor) setBlockedModulesFromModFile() {
 				continue
 			}
 
+			requiredModuleIsBlocked := p.config.Blocked.Modules.IsBlockedModule(requiredModule)
+
 			if len(p.config.Allowed.Modules) == 0 &&
 				len(p.config.Allowed.Domains) == 0 &&
-				!p.config.Blocked.Modules.IsBlockedModule(requiredModule) {
+				!requiredModuleIsBlocked {
 				continue
+			}
+
+			// If the go.mod file being linted is a recommended module of a blocked module
+			// and it imports that blocked module, do not set as a blocked. This means
+			// that the linted module wraps that blocked module
+			if requiredModuleIsBlocked {
+				recommendedModules := p.config.Blocked.Modules.RecommendedModules(requiredModule)
+
+				if recommendedModules.IsRecommended(lintedModule) {
+					continue
+				}
 			}
 
 			blockedModules = append(blockedModules, requiredModule)

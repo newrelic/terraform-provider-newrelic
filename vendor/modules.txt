@@ -245,7 +245,7 @@ github.com/golangci/gocyclo/pkg/gocyclo
 # github.com/golangci/gofmt v0.0.0-20190930125516-244bba706f1a
 github.com/golangci/gofmt/gofmt
 github.com/golangci/gofmt/goimports
-# github.com/golangci/golangci-lint v1.25.0
+# github.com/golangci/golangci-lint v1.25.1
 github.com/golangci/golangci-lint/cmd/golangci-lint
 github.com/golangci/golangci-lint/internal/cache
 github.com/golangci/golangci-lint/internal/errorutil
@@ -499,9 +499,9 @@ github.com/posener/complete
 github.com/posener/complete/cmd
 github.com/posener/complete/cmd/install
 github.com/posener/complete/match
-# github.com/ryancurrah/gomodguard v1.0.2
+# github.com/ryancurrah/gomodguard v1.0.4
 github.com/ryancurrah/gomodguard
-# github.com/securego/gosec v0.0.0-20200103095621-79fbf3af8d83
+# github.com/securego/gosec v0.0.0-20200316084457-7da9f46445fd
 github.com/securego/gosec
 github.com/securego/gosec/rules
 # github.com/sirupsen/logrus v1.5.0
@@ -529,6 +529,8 @@ github.com/stretchr/testify/mock
 github.com/stretchr/testify/require
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
+# github.com/tdakkota/asciicheck v0.0.0-20200416190851-d7f85be797a2
+github.com/tdakkota/asciicheck
 # github.com/tetafro/godot v0.2.5
 github.com/tetafro/godot
 # github.com/timakin/bodyclose v0.0.0-20190930140734-f7f2e9bca95e
