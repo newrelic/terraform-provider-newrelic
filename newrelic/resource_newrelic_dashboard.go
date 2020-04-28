@@ -123,6 +123,13 @@ func resourceNewRelicDashboard() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"read_only", "editable_by_owner", "editable_by_all", "all"}, false),
 				Description:  "Determines who can edit the dashboard in an account. Valid values are all, editable_by_all, editable_by_owner, or read_only. Defaults to editable_by_all.",
 			},
+			"grid_column_count": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      3,
+				ValidateFunc: validation.IntInSlice([]int{3, 12}),
+				Description:  "New Relic One supports a 3 column grid or a 12 column grid. New Relic Insights supports a 3 column grid.",
+			},
 			"filter": {
 				Type:        schema.TypeList,
 				Optional:    true,
