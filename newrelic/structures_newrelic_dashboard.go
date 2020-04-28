@@ -17,11 +17,12 @@ func expandDashboard(d *schema.ResourceData) (*dashboards.Dashboard, error) {
 	}
 
 	dashboard := dashboards.Dashboard{
-		Title:      d.Get("title").(string),
-		Metadata:   metadata,
-		Icon:       dashboards.DashboardIconType(d.Get("icon").(string)),
-		Visibility: dashboards.VisibilityType(d.Get("visibility").(string)),
-		Editable:   dashboards.EditableType(d.Get("editable").(string)),
+		Title:           d.Get("title").(string),
+		Metadata:        metadata,
+		Icon:            dashboards.DashboardIconType(d.Get("icon").(string)),
+		Visibility:      dashboards.VisibilityType(d.Get("visibility").(string)),
+		Editable:        dashboards.EditableType(d.Get("editable").(string)),
+		GridColumnCount: dashboards.GridColumnCountType(d.Get("grid_column_count").(int)),
 	}
 
 	if f, ok := d.GetOk("filter"); ok {
@@ -304,6 +305,12 @@ func flattenDashboard(dashboard *dashboards.Dashboard, d *schema.ResourceData) e
 	d.Set("visibility", dashboard.Visibility)
 	d.Set("editable", dashboard.Editable)
 	d.Set("dashboard_url", dashboard.UIURL)
+
+	if gridColumnCount, ok := d.GetOk("grid_column_count"); ok {
+		d.Set("grid_column_count", gridColumnCount.(int))
+	} else {
+		d.Set("grid_column_count", 3)
+	}
 
 	if filterErr := d.Set("filter", flattenFilter(&dashboard.Filter)); filterErr != nil {
 		return filterErr
