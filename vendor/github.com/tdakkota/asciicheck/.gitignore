@@ -1,3 +1,10 @@
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
+
+# Go template
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -13,9 +20,14 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-
-/gomodguard
-
-*.xml
-
-dist/
+.idea/$CACHE_FILE$
+.idea/$PRODUCT_WORKSPACE_FILE$
+.idea/.gitignore
+.idea/codeStyles
+.idea/deployment.xml
+.idea/inspectionProfiles/
+.idea/kotlinc.xml
+.idea/misc.xml
+.idea/modules.xml
+asciicheck.iml
+go.sum
