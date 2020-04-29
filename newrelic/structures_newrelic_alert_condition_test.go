@@ -64,6 +64,13 @@ func TestFlattenAlertConditionTerms(t *testing.T) {
 			Threshold:    123.456,
 			TimeFunction: alerts.TimeFunctionTypes.All,
 		},
+		{
+			Duration:     123,
+			Operator:     "equal",
+			Priority:     "warning",
+			Threshold:    123.456,
+			TimeFunction: alerts.TimeFunctionTypes.Any,
+		},
 	}
 
 	expected := []map[string]interface{}{
@@ -73,6 +80,13 @@ func TestFlattenAlertConditionTerms(t *testing.T) {
 			"priority":      alerts.PriorityTypes.Critical,
 			"threshold":     123.456,
 			"time_function": alerts.TimeFunctionTypes.All,
+		},
+		{
+			"duration":      123,
+			"operator":      alerts.OperatorTypes.Equal,
+			"priority":      alerts.PriorityTypes.Warning,
+			"threshold":     123.456,
+			"time_function": alerts.TimeFunctionTypes.Any,
 		},
 	}
 
