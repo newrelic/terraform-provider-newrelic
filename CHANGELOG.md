@@ -1,4 +1,4 @@
-## 1.17.0 (Unreleased)
+## 1.17.0 (May 01, 2020)
 
 IMPROVEMENTS:
 * feat(dashboard): add grid_column_count to dashboard schema ([#535](https://github.com/terraform-providers/terraform-provider-newrelic/pull/535))
