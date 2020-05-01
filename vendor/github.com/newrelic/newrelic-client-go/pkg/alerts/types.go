@@ -2,43 +2,42 @@
 
 package alerts
 
-// nolint:golint
+/* AlertsIncidentPreference - Determines how incidents are created for critical violations of the conditions contained in the policy. */
 type AlertsIncidentPreference string
 
 const (
-	/* A condition will create a condition-level incident when it violates its critical threshold.
+	/* PER_CONDITION - A condition will create a condition-level incident when it violates its critical threshold.
 	Other violating conditions will create their own incidents. */
-	PER_CONDITION AlertsIncidentPreference = "PER_CONDITION" // nolint:golint
-	/* Each target of each condition will create an entity-level incident upon critical violation.
-	Other violating targets even on the same condition will create their own incidents. */
-	PER_CONDITION_AND_TARGET AlertsIncidentPreference = "PER_CONDITION_AND_TARGET" // nolint:golint
-	/* A condition will create a policy-level incident when it violates its critical threshold.
+	PER_CONDITION AlertsIncidentPreference = "PER_CONDITION"
+	/* PER_CONDITION_AND_TARGET - Each target of each condition will create an entity-level incident upon critical violation.
+	Other violating targets will create their own incidents (even on the same condition). */
+	PER_CONDITION_AND_TARGET AlertsIncidentPreference = "PER_CONDITION_AND_TARGET"
+	/* PER_POLICY - A condition will create a policy-level incident when it violates its critical threshold.
 	Other violating conditions will be grouped into this incident. */
-	PER_POLICY AlertsIncidentPreference = "PER_POLICY" // nolint:golint
+	PER_POLICY AlertsIncidentPreference = "PER_POLICY"
 )
 
-// nolint:golint
+/* AlertsMutingRuleConditionGroupInput - A group of MutingRuleConditions combined by an operator. */
 type AlertsMutingRuleConditionGroupInput struct {
-	/* The individual MutingRuleConditions within the group. */
+	/* Conditions - The individual MutingRuleConditions within the group. */
 	Conditions []AlertsMutingRuleConditionInput `json:"conditions"`
-
-	/* The operator used to combine all the MutingRuleConditions within the group. */
+	/* Operator - The operator used to combine all the MutingRuleConditions within the group. */
 	Operator AlertsMutingRuleConditionGroupOperator `json:"operator"`
 }
 
-// nolint:golint
+/* AlertsMutingRuleConditionGroupOperator - An operator used to combine MutingRuleConditions within a MutingRuleConditionGroup. */
 type AlertsMutingRuleConditionGroupOperator string
 
 const (
-	/* Match conditions by AND */
-	AND AlertsMutingRuleConditionGroupOperator = "AND" // nolint:golint
-	/* Match conditions by OR */
-	OR AlertsMutingRuleConditionGroupOperator = "OR" // nolint:golint
+	/* AND - Match conditions by AND */
+	AND AlertsMutingRuleConditionGroupOperator = "AND"
+	/* OR - Match conditions by OR */
+	OR AlertsMutingRuleConditionGroupOperator = "OR"
 )
 
-// nolint:golint
+/* AlertsMutingRuleConditionInput - A condition which describes how to target a New Relic Alerts Violation. */
 type AlertsMutingRuleConditionInput struct {
-	/* The attribute on a violation. Expects one of:
+	/* Attribute - The attribute on a violation. Expects one of:
 
 	* **accountId** - The account id
 	* **conditionId** - The alert condition id
@@ -52,113 +51,98 @@ type AlertsMutingRuleConditionInput struct {
 	* **targetName** - The name of the alerts target
 	* **nrqlEventType** - The NRQL event type
 	* **tag** - Arbitrary tags associated with some entity (e.g., FACET from a NRQL query)
-	* **nrqlQuery** - The NRQL query string
-	 */
+	* **nrqlQuery** - The NRQL query string */
 	Attribute string `json:"attribute"`
-
-	/* The operator used to compare the attribute's value with the supplied value(s). */
+	/* Operator - The operator used to compare the attribute's value with the supplied value(s). */
 	Operator AlertsMutingRuleConditionOperator `json:"operator"`
-
-	/* The value(s) to compare against the attribute's value. */
+	/* Values - The value(s) to compare against the attribute's value. */
 	Values []string `json:"values"`
 }
 
-// nolint:golint
+/* AlertsMutingRuleConditionOperator - The list of operators to be used in a MutingRuleCondition. Each operator is limited to one value in the `values` list unless otherwise specified. */
 type AlertsMutingRuleConditionOperator string
 
 const (
-	/* Where attribute is any. */
-	ANY AlertsMutingRuleConditionOperator = "ANY" // nolint:golint
-	/* Where attribute contains value. */
-	CONTAINS AlertsMutingRuleConditionOperator = "CONTAINS" // nolint:golint
-	/* Where attribute ends with value. */
-	ENDS_WITH AlertsMutingRuleConditionOperator = "ENDS_WITH" // nolint:golint
-	/* Where attribute equals value. */
-	EQUALS AlertsMutingRuleConditionOperator = "EQUALS" // nolint:golint
-	/* Where attribute in values. (Limit 500) */
-	IN AlertsMutingRuleConditionOperator = "IN" // nolint:golint
-	/* Where attribute is blank. */
-	IS_BLANK AlertsMutingRuleConditionOperator = "IS_BLANK" // nolint:golint
-	/* Where attribute is not blank. */
-	IS_NOT_BLANK AlertsMutingRuleConditionOperator = "IS_NOT_BLANK" // nolint:golint
-	/* Where attribute does not contain value. */
-	NOT_CONTAINS AlertsMutingRuleConditionOperator = "NOT_CONTAINS" // nolint:golint
-	/* Where attribute does not end with value. */
-	NOT_ENDS_WITH AlertsMutingRuleConditionOperator = "NOT_ENDS_WITH" // nolint:golint
-	/* Where attribute does not equal value. */
-	NOT_EQUALS AlertsMutingRuleConditionOperator = "NOT_EQUALS" // nolint:golint
-	/* Where attribute not in values. (Limit 500) */
-	NOT_IN AlertsMutingRuleConditionOperator = "NOT_IN" // nolint:golint
-	/* Where attribute does not start with value. */
-	NOT_STARTS_WITH AlertsMutingRuleConditionOperator = "NOT_STARTS_WITH" // nolint:golint
-	/* Where attribute starts with value. */
-	STARTS_WITH AlertsMutingRuleConditionOperator = "STARTS_WITH" // nolint:golint
+	/* ANY - Where attribute is any. */
+	ANY AlertsMutingRuleConditionOperator = "ANY"
+	/* CONTAINS - Where attribute contains value. */
+	CONTAINS AlertsMutingRuleConditionOperator = "CONTAINS"
+	/* ENDS_WITH - Where attribute ends with value. */
+	ENDS_WITH AlertsMutingRuleConditionOperator = "ENDS_WITH"
+	/* EQUALS - Where attribute equals value. */
+	EQUALS AlertsMutingRuleConditionOperator = "EQUALS"
+	/* IN - Where attribute in values. (Limit 500) */
+	IN AlertsMutingRuleConditionOperator = "IN"
+	/* IS_BLANK - Where attribute is blank. */
+	IS_BLANK AlertsMutingRuleConditionOperator = "IS_BLANK"
+	/* IS_NOT_BLANK - Where attribute is not blank. */
+	IS_NOT_BLANK AlertsMutingRuleConditionOperator = "IS_NOT_BLANK"
+	/* NOT_CONTAINS - Where attribute does not contain value. */
+	NOT_CONTAINS AlertsMutingRuleConditionOperator = "NOT_CONTAINS"
+	/* NOT_ENDS_WITH - Where attribute does not end with value. */
+	NOT_ENDS_WITH AlertsMutingRuleConditionOperator = "NOT_ENDS_WITH"
+	/* NOT_EQUALS - Where attribute does not equal value. */
+	NOT_EQUALS AlertsMutingRuleConditionOperator = "NOT_EQUALS"
+	/* NOT_IN - Where attribute not in values. (Limit 500) */
+	NOT_IN AlertsMutingRuleConditionOperator = "NOT_IN"
+	/* NOT_STARTS_WITH - Where attribute does not start with value. */
+	NOT_STARTS_WITH AlertsMutingRuleConditionOperator = "NOT_STARTS_WITH"
+	/* STARTS_WITH - Where attribute starts with value. */
+	STARTS_WITH AlertsMutingRuleConditionOperator = "STARTS_WITH"
 )
 
-// nolint:golint
+/* AlertsMutingRuleInput - Input for creating MutingRules for New Relic Alerts Violations. */
 type AlertsMutingRuleInput struct {
-	/* The condition that defines which violations to target. */
+	/* Condition - The condition that defines which violations to target. */
 	Condition AlertsMutingRuleConditionGroupInput `json:"condition"`
-
-	/* The description of the MutingRule. */
+	/* Description - The description of the MutingRule. */
 	Description string `json:"description"`
-
-	/* Whether the MutingRule is enabled */
+	/* Enabled - Whether the MutingRule is enabled */
 	Enabled bool `json:"enabled"`
-
-	/* The name of the MutingRule. */
+	/* Name - The name of the MutingRule. */
 	Name string `json:"name"`
 }
 
-// nolint:golint
+/* AlertsPoliciesSearchCriteriaInput - Search criteria for returning specific policies. */
 type AlertsPoliciesSearchCriteriaInput struct {
-	/* The list of policy ids to return. */
+	/* IDs - The list of policy ids to return. */
 	IDs []int `json:"ids"`
 }
 
-// nolint:golint
+/* AlertsPoliciesSearchResultSet - Collection of policies with pagination information. */
 type AlertsPoliciesSearchResultSet struct {
-
-	/* Cursor pointing to the end of the current page of Policy records. Null if final page. */
+	/* NextCursor - Cursor pointing to the end of the current page of policy records. Null if final page. */
 	NextCursor string `json:"nextCursor"`
-
-	/* Set of Policies returned for the supplied cursor and criteria. */
+	/* Policies - Set of policies returned for the supplied cursor and criteria. */
 	Policies []AlertsPolicy `json:"policies"`
-
-	/* Total number of Policy records for the given search criteria. */
+	/* TotalCount - Total number of policy records for the given search criteria. */
 	TotalCount int `json:"totalCount"`
 }
 
-// nolint:golint
+/* AlertsPolicy - Container for conditions with associated notifications channels. */
 type AlertsPolicy struct {
-
-	/* The account id of the Policy. */
+	/* AccountID - Account ID of the policy. */
 	AccountID int `json:"accountId"`
-
-	/* Primary key for Policies. */
+	/* ID - Primary key for policies. */
 	ID int `json:"id,string"`
-
-	/* Determines how incidents are created for critical violations of the conditions contained in the policy. */
+	/* IncidentPreference - Determines how incidents are created for critical violations of the conditions contained in the policy. */
 	IncidentPreference AlertsIncidentPreference `json:"incidentPreference"`
-
-	/* A text description of the policy for display purposes. */
+	/* Name - Description of the policy. */
 	Name string `json:"name"`
 }
 
-// nolint:golint
+/* AlertsPolicyInput - Container for conditions with associated notifications channels. */
 type AlertsPolicyInput struct {
-	/* Determines how incidents are created for critical violations of the conditions contained in the policy. */
+	/* IncidentPreference - Determines how incidents are created for critical violations of the conditions contained in the policy. */
 	IncidentPreference AlertsIncidentPreference `json:"incidentPreference"`
-
-	/* A text description of the policy for display purposes. */
+	/* Name - Description of the policy. */
 	Name string `json:"name"`
 }
 
-// nolint:golint
+/* AlertsPolicyUpdateInput - Policy fields to be updated. */
 type AlertsPolicyUpdateInput struct {
-	/* Determines how incidents are created for critical violations of the conditions contained in the policy. */
+	/* IncidentPreference - Determines how incidents are created for critical violations of the conditions contained in the policy. */
 	IncidentPreference AlertsIncidentPreference `json:"incidentPreference"`
-
-	/* A text description of the policy for display purposes. */
+	/* Name - Description of the policy. */
 	Name string `json:"name"`
 }

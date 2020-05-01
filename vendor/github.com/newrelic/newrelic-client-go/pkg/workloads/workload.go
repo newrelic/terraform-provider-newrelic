@@ -205,7 +205,6 @@ const (
 					id
 					name
 				}
-				name
 				id
 				query
 				updatedAt
