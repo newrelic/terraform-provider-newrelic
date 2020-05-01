@@ -38,3 +38,7 @@ Output
 ```sh
 Top level comment should end in a period: math/math.go:3:1
 ```
+
+See more examples in test files:
+- [for default mode](testdata/example_default.go)
+- [for using --all flag](testdata/example_checkall.go)
