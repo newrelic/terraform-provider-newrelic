@@ -30,6 +30,7 @@ var OutFormats = []string{
 }
 
 type ExcludePattern struct {
+	ID      string
 	Pattern string
 	Linter  string
 	Why     string
@@ -37,53 +38,63 @@ type ExcludePattern struct {
 
 var DefaultExcludePatterns = []ExcludePattern{
 	{
+		ID: "EXC0001",
 		Pattern: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close" +
 			"|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked",
 		Linter: "errcheck",
 		Why:    "Almost all programs ignore errors on these functions and in most cases it's ok",
 	},
 	{
+		ID: "EXC0002",
 		Pattern: "(comment on exported (method|function|type|const)|" +
 			"should have( a package)? comment|comment should be of the form)",
 		Linter: "golint",
 		Why:    "Annoying issue about not having a comment. The rare codebase has such comments",
 	},
 	{
+		ID:      "EXC0003",
 		Pattern: "func name will be used as test\\.Test.* by other packages, and that stutters; consider calling this",
 		Linter:  "golint",
 		Why:     "False positive when tests are defined in package 'test'",
 	},
 	{
+		ID:      "EXC0004",
 		Pattern: "(possible misuse of unsafe.Pointer|should have signature)",
 		Linter:  "govet",
 		Why:     "Common false positives",
 	},
 	{
+		ID:      "EXC0005",
 		Pattern: "ineffective break statement. Did you mean to break out of the outer loop",
 		Linter:  "staticcheck",
 		Why:     "Developers tend to write in C-style with an explicit 'break' in a 'switch', so it's ok to ignore",
 	},
 	{
+		ID:      "EXC0006",
 		Pattern: "Use of unsafe calls should be audited",
 		Linter:  "gosec",
 		Why:     "Too many false-positives on 'unsafe' usage",
 	},
 	{
+		ID:      "EXC0007",
 		Pattern: "Subprocess launch(ed with variable|ing should be audited)",
 		Linter:  "gosec",
 		Why:     "Too many false-positives for parametrized shell calls",
 	},
 	{
-		Pattern: "G104",
+		ID:      "EXC0008",
+		Pattern: "(G104|G307)",
 		Linter:  "gosec",
 		Why:     "Duplicated errcheck checks",
 	},
 	{
+		ID:      "EXC0009",
 		Pattern: "(Expect directory permissions to be 0750 or less|Expect file permissions to be 0600 or less)",
 		Linter:  "gosec",
 		Why:     "Too many issues in popular repos",
 	},
 	{
+		ID:      "EXC0010",
 		Pattern: "Potential file inclusion via variable",
 		Linter:  "gosec",
 		Why:     "False positive is triggered by 'src, err := ioutil.ReadFile(filename)'",
@@ -91,9 +102,20 @@ var DefaultExcludePatterns = []ExcludePattern{
 }
 
 func GetDefaultExcludePatternsStrings() []string {
+	return GetExcludePatternsStrings(nil)
+}
+
+func GetExcludePatternsStrings(include []string) []string {
+	includeMap := make(map[string]bool, len(include))
+	for _, inc := range include {
+		includeMap[inc] = true
+	}
+
 	var ret []string
 	for _, p := range DefaultExcludePatterns {
-		ret = append(ret, p.Pattern)
+		if !includeMap[p.ID] {
+			ret = append(ret, p.Pattern)
+		}
 	}
 
 	return ret
@@ -213,6 +235,7 @@ type LintersSettings struct {
 	Godot       GodotSettings
 	Testpackage TestpackageSettings
 	Nestif      NestifSettings
+	NoLintLint  NoLintLintSettings
 
 	Custom map[string]CustomLinterSettings
 }
@@ -294,6 +317,14 @@ type GodotSettings struct {
 	CheckAll bool `mapstructure:"check-all"`
 }
 
+type NoLintLintSettings struct {
+	RequireExplanation bool     `mapstructure:"require-explanation"`
+	AllowLeadingSpace  bool     `mapstructure:"allow-leading-space"`
+	RequireSpecific    bool     `mapstructure:"require-specific"`
+	AllowNoExplanation []string `mapstructure:"allow-no-explanation"`
+	AllowUnused        bool     `mapstructure:"allow-unused"`
+}
+
 type TestpackageSettings struct {
 	SkipRegexp string `mapstructure:"skip-regexp"`
 }
@@ -302,7 +333,6 @@ type NestifSettings struct {
 	MinComplexity int `mapstructure:"min-complexity"`
 }
 
-//nolint:gomnd
 var defaultLintersSettings = LintersSettings{
 	Lll: LllSettings{
 		LineLength: 120,
@@ -340,6 +370,12 @@ var defaultLintersSettings = LintersSettings{
 		AllowSeparatedLeadingComment:     false,
 		ForceCuddleErrCheckAndAssign:     false,
 		ForceCaseTrailingWhitespaceLimit: 0,
+	},
+	NoLintLint: NoLintLintSettings{
+		RequireExplanation: false,
+		AllowLeadingSpace:  true,
+		RequireSpecific:    false,
+		AllowUnused:        false,
 	},
 	Testpackage: TestpackageSettings{
 		SkipRegexp: `(export|internal)_test\.go`,
@@ -411,9 +447,11 @@ func (e ExcludeRule) Validate() error {
 }
 
 type Issues struct {
-	ExcludePatterns    []string      `mapstructure:"exclude"`
-	ExcludeRules       []ExcludeRule `mapstructure:"exclude-rules"`
-	UseDefaultExcludes bool          `mapstructure:"exclude-use-default"`
+	IncludeDefaultExcludes []string      `mapstructure:"include"`
+	ExcludeCaseSensitive   bool          `mapstructure:"exclude-case-sensitive"`
+	ExcludePatterns        []string      `mapstructure:"exclude"`
+	ExcludeRules           []ExcludeRule `mapstructure:"exclude-rules"`
+	UseDefaultExcludes     bool          `mapstructure:"exclude-use-default"`
 
 	MaxIssuesPerLinter int `mapstructure:"max-issues-per-linter"`
 	MaxSameIssues      int `mapstructure:"max-same-issues"`

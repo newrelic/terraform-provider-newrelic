@@ -17,3 +17,5 @@
 /gomodguard
 
 *.xml
+
+dist/
