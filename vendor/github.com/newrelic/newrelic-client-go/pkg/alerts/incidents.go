@@ -29,11 +29,11 @@ func (a *Alerts) ListIncidents(onlyOpen bool, excludeViolations bool) ([]*Incide
 		ExcludeViolations: excludeViolations,
 	}
 
-	nextURL := "/alerts_incidents.json"
+	nextURL := a.config.Region().RestURL("/alerts_incidents.json")
 
 	for nextURL != "" {
 		incidentsResponse := alertIncidentsResponse{}
-		resp, err := a.client.Get(a.config.Region().RestURL(nextURL), queryParams, &incidentsResponse)
+		resp, err := a.client.Get(nextURL, queryParams, &incidentsResponse)
 
 		if err != nil {
 			return nil, err

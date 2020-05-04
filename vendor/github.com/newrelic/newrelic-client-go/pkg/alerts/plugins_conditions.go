@@ -33,11 +33,11 @@ func (a *Alerts) ListPluginsConditions(policyID int) ([]*PluginsCondition, error
 		PolicyID: policyID,
 	}
 
-	nextURL := "/alerts_plugins_conditions.json"
+	nextURL := a.config.Region().RestURL("/alerts_plugins_conditions.json")
 
 	for nextURL != "" {
 		response := pluginsConditionsResponse{}
-		resp, err := a.client.Get(a.config.Region().RestURL(nextURL), &queryParams, &response)
+		resp, err := a.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
