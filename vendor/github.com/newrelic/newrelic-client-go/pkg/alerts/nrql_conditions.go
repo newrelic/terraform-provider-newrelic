@@ -205,11 +205,11 @@ func (a *Alerts) ListNrqlConditions(policyID int) ([]*NrqlCondition, error) {
 		PolicyID: policyID,
 	}
 
-	nextURL := "/alerts_nrql_conditions.json"
+	nextURL := a.config.Region().RestURL("/alerts_nrql_conditions.json")
 
 	for nextURL != "" {
 		response := nrqlConditionsResponse{}
-		resp, err := a.client.Get(a.config.Region().RestURL(nextURL), &queryParams, &response)
+		resp, err := a.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
