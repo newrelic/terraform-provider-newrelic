@@ -2,6 +2,7 @@ package alerts
 
 import (
 	"fmt"
+	"strconv"
 )
 
 // MultiLocationSyntheticsCondition represents a location-based failure condition.
@@ -35,10 +36,10 @@ func (a *Alerts) ListMultiLocationSyntheticsConditions(policyID int) ([]*MultiLo
 		PolicyID: policyID,
 	}
 
-	nextURL := fmt.Sprintf("/alerts_location_failure_conditions/policies/%d.json", policyID)
+	nextURL := a.config.Region().RestURL("/alerts_location_failure_conditions/policies/", strconv.Itoa(policyID)+".json")
 
 	for nextURL != "" {
-		resp, err := a.client.Get(a.config.Region().RestURL(nextURL), &queryParams, &response)
+		resp, err := a.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
