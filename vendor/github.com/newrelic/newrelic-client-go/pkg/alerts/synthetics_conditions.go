@@ -18,14 +18,14 @@ type SyntheticsCondition struct {
 // ListSyntheticsConditions returns a list of Synthetics alert conditions for a given policy.
 func (a *Alerts) ListSyntheticsConditions(policyID int) ([]*SyntheticsCondition, error) {
 	conditions := []*SyntheticsCondition{}
-	nextURL := "/alerts_synthetics_conditions.json"
+	nextURL := a.config.Region().RestURL("/alerts_synthetics_conditions.json")
 	queryParams := listSyntheticsConditionsParams{
 		PolicyID: policyID,
 	}
 
 	for nextURL != "" {
 		response := syntheticsConditionsResponse{}
-		resp, err := a.client.Get(a.config.Region().RestURL(nextURL), &queryParams, &response)
+		resp, err := a.client.Get(nextURL, &queryParams, &response)
 
 		if err != nil {
 			return nil, err
