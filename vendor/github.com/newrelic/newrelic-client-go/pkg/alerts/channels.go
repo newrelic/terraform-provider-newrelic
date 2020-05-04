@@ -76,11 +76,11 @@ type ChannelConfiguration struct {
 // ListChannels returns all alert channels for a given account.
 func (a *Alerts) ListChannels() ([]*Channel, error) {
 	alertChannels := []*Channel{}
-	nextURL := "/alerts_channels.json"
+	nextURL := a.config.Region().RestURL("/alerts_channels.json")
 
 	for nextURL != "" {
 		response := alertChannelsResponse{}
-		resp, err := a.client.Get(a.config.Region().RestURL(nextURL), nil, &response)
+		resp, err := a.client.Get(nextURL, nil, &response)
 
 		if err != nil {
 			return nil, err
