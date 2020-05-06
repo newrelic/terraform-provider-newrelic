@@ -164,6 +164,32 @@ func TestAccNewRelicInfraAlertCondition_ThresholdFloatValue(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicInfraAlertCondition_VoilationCloseTimerDisable(t *testing.T) {
+	resourceName := "newrelic_infra_alert_condition.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicInfraAlertConditionWithZeroValueViolationCloseTimerConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccNewRelicInfraAlertCondition_MissingPolicy(t *testing.T) {
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-test-%s", rand)
@@ -499,6 +525,30 @@ resource "newrelic_infra_alert_condition" "foo" {
 		time_function = "all"
 		value         = "1.5"
 	}
+}
+`, name)
+}
+
+func testAccNewRelicInfraAlertConditionWithZeroValueViolationCloseTimerConfig(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "%[1]s"
+}
+
+resource "newrelic_infra_alert_condition" "foo" {
+	policy_id            = newrelic_alert_policy.foo.id
+	name                 = "%[1]s"
+	type                 = "infra_metric"
+	integration_provider = "S3Bucket"
+	select               = "nr.ingestTimeMs"
+	comparison           = "above"
+
+	critical {
+		duration      = "1440"
+		time_function = "all"
+		value         = "1.5"
+	}
+	violation_close_timer = 0
 }
 `, name)
 }
