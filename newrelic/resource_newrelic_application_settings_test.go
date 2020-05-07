@@ -17,7 +17,7 @@ var (
 	testExpectedApplicationName string
 )
 
-func TestAccNewRelicApplication_Basic(t *testing.T) {
+func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
 	resourceName := "newrelic_application.app"
 	testExpectedApplicationName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 

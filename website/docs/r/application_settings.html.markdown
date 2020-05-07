@@ -1,19 +1,23 @@
 ---
 layout: "newrelic"
-page_title: "New Relic: newrelic_application"
-sidebar_current: "docs-newrelic-resource-application"
+page_title: "New Relic: newrelic_application_settings"
+sidebar_current: "docs-newrelic-resource-application-settings"
 description: |-
   Manage configuration for an existing application in New Relic.
 ---
 
-# Resource: newrelic_application
+# Resource: newrelic_application_settings
 
-Use this resource to manage configuration for an application that already exists in New Relic.
+-> **NOTE:** Applications are not created by this resource, but are created by
+a reporting agent.
+
+Use this resource to manage configuration for an application that already
+exists in New Relic.
 
 ## Example Usage
 
 ```hcl
-resource "newrelic_application" "app" {
+resource "newrelic_application_settings" "app" {
   name = "my-app"
   app_apdex_threshold = "0.7"
   end_user_apdex_threshold = "0.8"
@@ -41,9 +45,10 @@ In addition to all arguments above, the following attributes are exported:
 Applications can be imported using notation `application_id`, e.g.
 
 ```
-$ terraform import newrelic_application.main 6789012345
+$ terraform import newrelic_application_settings.main 6789012345
 ```
 
 ## Notes
 
-Applications that have reported data in the last twelve hours cannot be deleted.
+-> **NOTE:** Applications that have reported data in the last twelve hours
+cannot be deleted.
