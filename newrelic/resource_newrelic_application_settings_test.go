@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccNewRelicApplication_Basic(t *testing.T) {
+func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
 	resourceName := "newrelic_application.app"
 
 	resource.ParallelTest(t, resource.TestCase{
