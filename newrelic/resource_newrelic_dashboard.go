@@ -263,6 +263,11 @@ func resourceNewRelicDashboard() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeInt},
 							Description: "A collection of entity ids to display data for. These are typically application IDs.",
 						},
+						"account_id": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Source account to fetch data from, if not the current account.",
+						},
 						"metric": {
 							Type:        schema.TypeSet,
 							Optional:    true,

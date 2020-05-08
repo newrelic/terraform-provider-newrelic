@@ -84,6 +84,10 @@ func expandWidget(cfg map[string]interface{}) (*dashboards.DashboardWidget, erro
 		ID:            cfg["widget_id"].(int),
 	}
 
+	if accountID, ok := cfg["account_id"]; ok {
+		widget.AccountID = accountID.(int)
+	}
+
 	err := validateWidgetData(cfg)
 	if err != nil {
 		return nil, err
