@@ -210,7 +210,7 @@ resource "newrelic_alert_channel" "channel_a" {
 	type = "email"
 
 	config {
-		recipients = "test@testing.com"
+		recipients = "no-reply+a@newrelic.com"
 		include_json_attachment = "1"
 	}
 }
@@ -220,7 +220,7 @@ resource "newrelic_alert_channel" "channel_b" {
 	type = "email"
 
 	config {
-		recipients = "example@testing.com"
+		recipients = "no-reply+b@newrelic.com"
 		include_json_attachment = "1"
 	}
 }

@@ -18,7 +18,7 @@ var (
 )
 
 func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
-	resourceName := "newrelic_application.app"
+	resourceName := "newrelic_application_settings.app"
 	testExpectedApplicationName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -57,7 +57,7 @@ func testAccCheckNewRelicApplicationDestroy(s *terraform.State) error {
 // The test application for this data source is created in provider_test.go
 func testAccNewRelicApplicationConfig() string {
 	return fmt.Sprintf(`
-resource "newrelic_application" "app" {
+resource "newrelic_application_settings" "app" {
 	name = "%s"
 	app_apdex_threshold = "0.9"
 	end_user_apdex_threshold = "0.8"
@@ -68,7 +68,7 @@ resource "newrelic_application" "app" {
 
 func testAccNewRelicApplicationConfigUpdated(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_application" "app" {
+resource "newrelic_application_settings" "app" {
 	name = "%s-updated"
 	app_apdex_threshold = "0.8"
 	end_user_apdex_threshold = "0.7"
