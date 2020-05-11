@@ -106,14 +106,6 @@ func resourceNewRelicApplicationSettingsUpdate(d *schema.ResourceData, meta inte
 }
 
 func resourceNewRelicApplicationSettingsDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
-
-	userApp := expandApplication(d)
-
-	_, err := client.APM.DeleteApplication(userApp.ID)
-	if err != nil {
-		return err
-	}
-
+	// You can not delete application settings
 	return nil
 }
