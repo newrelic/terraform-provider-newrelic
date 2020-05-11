@@ -9,12 +9,12 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
 )
 
-func resourceNewRelicApplication() *schema.Resource {
+func resourceNewRelicApplicationSettings() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicApplicationCreate,
-		Read:   resourceNewRelicApplicationRead,
-		Update: resourceNewRelicApplicationUpdate,
-		Delete: resourceNewRelicApplicationDelete,
+		Create: resourceNewRelicApplicationSettingsCreate,
+		Read:   resourceNewRelicApplicationSettingsRead,
+		Update: resourceNewRelicApplicationSettingsUpdate,
+		Delete: resourceNewRelicApplicationSettingsDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -39,7 +39,7 @@ func resourceNewRelicApplication() *schema.Resource {
 	}
 }
 
-func resourceNewRelicApplicationCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicApplicationSettingsCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
 
 	userApp := expandApplication(d)
@@ -66,10 +66,10 @@ func resourceNewRelicApplicationCreate(d *schema.ResourceData, meta interface{})
 	d.SetId(strconv.Itoa(app.ID))
 
 	log.Printf("[INFO] Importing New Relic application %v", userApp.Name)
-	return resourceNewRelicApplicationUpdate(d, meta)
+	return resourceNewRelicApplicationSettingsUpdate(d, meta)
 }
 
-func resourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicApplicationSettingsRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
 
 	userApp := expandApplication(d)
@@ -85,7 +85,7 @@ func resourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{}) e
 	return flattenApplication(app, d)
 }
 
-func resourceNewRelicApplicationUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicApplicationSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
 
 	userApp := expandApplication(d)
@@ -102,10 +102,10 @@ func resourceNewRelicApplicationUpdate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	return resourceNewRelicApplicationRead(d, meta)
+	return resourceNewRelicApplicationSettingsRead(d, meta)
 }
 
-func resourceNewRelicApplicationDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicApplicationSettingsDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
 
 	userApp := expandApplication(d)
