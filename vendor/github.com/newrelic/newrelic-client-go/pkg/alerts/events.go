@@ -1,8 +1,6 @@
 package alerts
 
 import (
-	"time"
-
 	"github.com/newrelic/newrelic-client-go/internal/serialization"
 )
 
@@ -23,15 +21,13 @@ type AlertEvent struct {
 // ListAlertEventsParams represents a set of filters to be used
 // when querying New Relic alert events
 type ListAlertEventsParams struct {
-	Title         string     `url:"filter[title],omitempty"`
-	Category      string     `url:"filter[category],omitempty"`
-	CreatedAfter  *time.Time `url:"filter[created_after],omitempty"`
-	CreatedBefore *time.Time `url:"filter[created_before],omitempty"`
-	UpdatedAfter  *time.Time `url:"filter[updated_after],omitempty"`
-	UpdatedBefore *time.Time `url:"filter[updated_before],omitempty"`
-	Sort          string     `url:"sort,omitempty"`
-	Page          int        `url:"page,omitempty"`
-	PerPage       int        `url:"per_page,omitempty"`
+	Product       string `url:"filter[product],omitempty"`
+	EntityType    string `url:"filter[entity_type],omitempty"`
+	EntityGroupID int    `url:"filter[entity_group_id],omitempty"`
+	EntityID      int    `url:"filter[entity_id],omitempty"`
+	EventType     string `url:"filter[event_type],omitempty"`
+	IncidentID    int    `url:"filter[incident_id],omitempty"`
+	Page          int    `url:"page,omitempty"`
 }
 
 // ListAlertEvents is used to retrieve New Relic alert events
