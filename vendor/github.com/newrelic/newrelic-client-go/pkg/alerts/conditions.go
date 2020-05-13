@@ -178,7 +178,7 @@ type Condition struct {
 	Enabled             bool                 `json:"enabled"`
 	Entities            []string             `json:"entities,omitempty"`
 	Metric              MetricType           `json:"metric,omitempty"`
-	RunbookURL          string               `json:"runbook_url,omitempty"`
+	RunbookURL          string               `json:"runbook_url"`
 	Terms               []ConditionTerm      `json:"terms,omitempty"`
 	UserDefined         ConditionUserDefined `json:"user_defined,omitempty"`
 	Scope               string               `json:"condition_scope,omitempty"`
