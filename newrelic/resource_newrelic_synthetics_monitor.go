@@ -120,14 +120,17 @@ func buildSyntheticsMonitorStruct(d *schema.ResourceData) synthetics.Monitor {
 		monitor.Options.ValidationString = validationString.(string)
 	}
 
+	// nolint: staticcheck
 	if verifySSL, ok := d.GetOkExists("verify_ssl"); ok {
 		monitor.Options.VerifySSL = verifySSL.(bool)
 	}
 
+	// nolint: staticcheck
 	if bypassHeadRequest, ok := d.GetOkExists("bypass_head_request"); ok {
 		monitor.Options.BypassHEADRequest = bypassHeadRequest.(bool)
 	}
 
+	// nolint: staticcheck
 	if treatRedirectAsFailure, ok := d.GetOkExists("treat_redirect_as_failure"); ok {
 		monitor.Options.TreatRedirectAsFailure = treatRedirectAsFailure.(bool)
 	}
@@ -160,14 +163,17 @@ func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Monito
 		monitor.Options.ValidationString = validationString.(string)
 	}
 
+	// nolint: staticcheck
 	if verifySSL, ok := d.GetOkExists("verify_ssl"); ok {
 		monitor.Options.VerifySSL = verifySSL.(bool)
 	}
 
+	// nolint: staticcheck
 	if bypassHeadRequest, ok := d.GetOkExists("bypass_head_request"); ok {
 		monitor.Options.BypassHEADRequest = bypassHeadRequest.(bool)
 	}
 
+	// nolint: staticcheck
 	if treatRedirectAsFailure, ok := d.GetOkExists("treat_redirect_as_failure"); ok {
 		monitor.Options.TreatRedirectAsFailure = treatRedirectAsFailure.(bool)
 	}
