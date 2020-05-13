@@ -5,14 +5,12 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
 	resourceName := "newrelic_application_settings.app"
-	testAccExpectedApplicationName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
