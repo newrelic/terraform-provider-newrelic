@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/newrelic/newrelic-client-go/internal/logging"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
@@ -93,6 +95,13 @@ func ConfigRegion(r region.Name) ConfigOption {
 	return func(cfg *config.Config) error {
 		reg, err := region.Get(r)
 		if err != nil {
+			if _, ok := err.(region.UnknownUsingDefaultError); ok {
+				// If region wasn't provided, output a warning message
+				// indicating the default region "US" is being used.
+				log.Warn(err)
+				return nil
+			}
+
 			return err
 		}
 
