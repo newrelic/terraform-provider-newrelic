@@ -220,7 +220,7 @@ const (
 			updatedAt
 `
 
-	getWorkloadQuery = `query($guid: EntityGuid, $accountId: Int!) { actor { account(id: $accountId) { workload { collection(guid: $guid) {` +
+	getWorkloadQuery = `query($guid: EntityGuid!, $accountId: Int!) { actor { account(id: $accountId) { workload { collection(guid: $guid) {` +
 		graphqlWorkloadStructFields +
 		` } } } } }`
 
