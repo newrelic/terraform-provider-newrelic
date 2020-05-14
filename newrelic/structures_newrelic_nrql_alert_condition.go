@@ -30,10 +30,12 @@ func expandNrqlAlertConditionStruct(d *schema.ResourceData) *alerts.NrqlConditio
 		condition.RunbookURL = attr.(string)
 	}
 
+	// nolint: staticcheck
 	if attr, ok := d.GetOkExists("ignore_overlap"); ok {
 		condition.IgnoreOverlap = attr.(bool)
 	}
 
+	// nolint: staticcheck
 	if attr, ok := d.GetOkExists("violation_time_limit_seconds"); ok {
 		condition.ViolationCloseTimer = attr.(int)
 	}

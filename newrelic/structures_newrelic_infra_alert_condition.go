@@ -39,6 +39,7 @@ func expandInfraAlertCondition(d *schema.ResourceData) (*alerts.InfrastructureCo
 		condition.IntegrationProvider = attr.(string)
 	}
 
+	// nolint: staticcheck
 	if attr, ok := d.GetOkExists("violation_close_timer"); ok {
 		t := attr.(int)
 		condition.ViolationCloseTimer = &t

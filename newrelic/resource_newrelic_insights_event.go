@@ -120,6 +120,7 @@ func resourceNewRelicInsightsEventCreate(d *schema.ResourceData, meta interface{
 	client := meta.(*ProviderConfig).InsightsInsertClient
 	var eventsPayload []*InsightsEvent
 
+	// nolint: staticcheck
 	if v, ok := d.GetOkExists("event"); ok {
 		events := v.(*schema.Set).List()
 		eventsPayload = make([]*InsightsEvent, len(events))
