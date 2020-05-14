@@ -1,0 +1,7 @@
+#!/bin/sh
+echo
+echo "Running tests before pushing..."
+echo
+
+make test
+
