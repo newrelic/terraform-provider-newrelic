@@ -7,7 +7,7 @@ env:
   global: GOFLAGS=-mod=vendor
 
 install:
-- make tools
+- make deps
 
 script:
 - make lint
