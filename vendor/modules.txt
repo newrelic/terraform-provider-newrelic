@@ -419,7 +419,7 @@ github.com/jmespath/go-jmespath
 # github.com/kisielk/gotool v1.0.0
 github.com/kisielk/gotool
 github.com/kisielk/gotool/internal/load
-# github.com/konsorten/go-windows-terminal-sequences v1.0.1
+# github.com/konsorten/go-windows-terminal-sequences v1.0.3
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/magiconair/properties v1.8.1
 github.com/magiconair/properties
@@ -469,7 +469,7 @@ github.com/newrelic/go-agent/v3/internal/utilization
 github.com/newrelic/go-agent/v3/newrelic
 # github.com/newrelic/go-insights v1.0.3
 github.com/newrelic/go-insights/client
-# github.com/newrelic/newrelic-client-go v0.23.1
+# github.com/newrelic/newrelic-client-go v0.23.2
 github.com/newrelic/newrelic-client-go/internal/http
 github.com/newrelic/newrelic-client-go/internal/logging
 github.com/newrelic/newrelic-client-go/internal/serialization
@@ -507,7 +507,7 @@ github.com/ryancurrah/gomodguard
 # github.com/securego/gosec v0.0.0-20200316084457-7da9f46445fd
 github.com/securego/gosec
 github.com/securego/gosec/rules
-# github.com/sirupsen/logrus v1.5.0
+# github.com/sirupsen/logrus v1.6.0
 github.com/sirupsen/logrus
 # github.com/sourcegraph/go-diff v0.5.1
 github.com/sourcegraph/go-diff/diff
@@ -516,7 +516,7 @@ github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.0
 github.com/spf13/cast
-# github.com/spf13/cobra v0.0.5
+# github.com/spf13/cobra v1.0.0
 github.com/spf13/cobra
 # github.com/spf13/jwalterweatherman v1.0.0
 github.com/spf13/jwalterweatherman
