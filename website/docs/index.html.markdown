@@ -41,6 +41,7 @@ resource "newrelic_alert_condition" "foo" {
   entities    = [data.newrelic_application.foo.id]
   metric      = "apdex"
   runbook_url = "https://docs.example.com/my-runbook"
+  condition_scope = "application"
 
   term {
     duration      = 5
