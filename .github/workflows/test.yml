@@ -1,0 +1,100 @@
+name: Testing
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.14.x
+
+    - name: Add GOBIN to PATH
+      run: echo "::add-path::$(go env GOPATH)/bin"
+      shell: bash
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Full git history
+      run: |
+        git fetch --prune --unshallow
+
+    - name: Cache deps
+      uses: actions/cache@v1
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Lint
+      run: make lint
+
+  test-unit:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.14.x
+
+    - name: Add GOBIN to PATH
+      run: echo "::add-path::$(go env GOPATH)/bin"
+      shell: bash
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Cache deps
+      uses: actions/cache@v1
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Unit Tests
+      run: make test-unit
+
+
+  test-integration:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.14.x
+
+    - name: Add GOBIN to PATH
+      run: echo "::add-path::$(go env GOPATH)/bin"
+      shell: bash
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Cache deps
+      uses: actions/cache@v1
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Integration Tests
+      run: make test-integration
+#      env:
+#        NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+#        NEW_RELIC_ADMIN_API_KEY: ${{ secrets.NEW_RELIC_ADMIN_API_KEY }}
+#        NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
+#        NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+#        NEW_RELIC_REGION: ${{ secrets.NEW_RELIC_REGION }}
+
