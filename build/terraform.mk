@@ -4,13 +4,7 @@ WEBSITE_REPO  ?= github.com/hashicorp/terraform-website
 TF_LINTER     ?= tfproviderlint
 GOTOOLS       += github.com/bflad/tfproviderlint/cmd/tfproviderlint
 
-# TODO: Remove this...
-mod-vendor:
-	@echo "=== $(PROJECT_NAME) === [ mod-vendor       ]: Vendoring go modules..."
-	@$(GO) mod vendor
-
-
-lint-terraform: deps mod-vendor
+lint-terraform: deps
 	@echo "=== $(PROJECT_NAME) === [ lint-terraform   ]: running terraform linter $(TF_LINTER) ..."
 	@$(TF_LINTER) \
 		-c 1 \
