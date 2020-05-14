@@ -57,10 +57,12 @@ resource "newrelic_application_settings" "app" {
 `, testAccExpectedApplicationName)
 }
 
+// The application name should NOT be updated here since it is shared
+// between all of the other integration tests.
 func testAccNewRelicApplicationConfigUpdated(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_application_settings" "app" {
-	name = "%s-updated"
+	name = "%s"
 	app_apdex_threshold = "0.8"
 	end_user_apdex_threshold = "0.7"
 	enable_real_user_monitoring = false
