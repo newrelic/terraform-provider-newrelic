@@ -1,0 +1,8 @@
+#!/bin/sh
+
+echo
+echo "Checking commit message..."
+echo
+
+make lint-commit COMMIT_MSG_FILE=$1
+
