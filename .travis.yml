@@ -8,7 +8,6 @@ install:
 
 script:
 - make lint
-- make vet
 - make test
 - make website-test
 - make website-lint
