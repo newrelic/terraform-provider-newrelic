@@ -4,6 +4,15 @@ WEBSITE_REPO  ?= github.com/hashicorp/terraform-website
 TF_LINTER     ?= tfproviderlint
 GOTOOLS       += github.com/bflad/tfproviderlint/cmd/tfproviderlint
 
+# Required by Team City
+test-compile: deps
+	@if [ "$(TEST)" = "./..." ]; then \
+		echo "ERROR: Set TEST to a specific package. For example,"; \
+		echo "  make test-compile TEST=./$(PKG_NAME)"; \
+		exit 1; \
+	fi
+	go test -c $(TEST) $(TESTARGS)
+
 lint-terraform: deps
 	@echo "=== $(PROJECT_NAME) === [ lint-terraform   ]: running terraform linter $(TF_LINTER) ..."
 	@$(TF_LINTER) \
@@ -54,4 +63,4 @@ website-lint:
 	@echo "=== $(PKG_NAME) === [ website-lint     ]: linting website..."
 	@misspell -error -source=text website/
 
-.PHONY: lint-terraform testacc website website-lint website-test
+.PHONY: lint-terraform testacc website website-lint website-test test-compile
