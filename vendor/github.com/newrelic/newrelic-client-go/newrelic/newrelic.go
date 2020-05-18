@@ -12,6 +12,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
+	"github.com/newrelic/newrelic-client-go/pkg/edge"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/nerdgraph"
 	"github.com/newrelic/newrelic-client-go/pkg/nerdstorage"
@@ -26,6 +27,7 @@ type NewRelic struct {
 	Alerts      alerts.Alerts
 	APM         apm.APM
 	Dashboards  dashboards.Dashboards
+	Edge        edge.Edge
 	Entities    entities.Entities
 	Plugins     plugins.Plugins
 	Synthetics  synthetics.Synthetics
@@ -55,6 +57,7 @@ func New(opts ...ConfigOption) (*NewRelic, error) {
 		Alerts:      alerts.New(config),
 		APM:         apm.New(config),
 		Dashboards:  dashboards.New(config),
+		Edge:        edge.New(config),
 		Entities:    entities.New(config),
 		Plugins:     plugins.New(config),
 		Synthetics:  synthetics.New(config),
