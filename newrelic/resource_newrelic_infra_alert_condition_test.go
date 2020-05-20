@@ -341,10 +341,10 @@ resource "newrelic_infra_alert_condition" "foo" {
 
   name            = "%[1]s"
   runbook_url     = "https://bar.example.com"
-  type            = "infra_metric"
+  type            = "INFRA_METRIC"
   event           = "StorageSample"
   select          = "diskFreePercent"
-  comparison      = "below"
+  comparison      = "BELOW"
 
   critical {
 	  duration = 10
