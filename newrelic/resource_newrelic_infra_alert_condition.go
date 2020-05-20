@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -85,8 +86,11 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice(validThresholdConditionTypes, false),
+				ValidateFunc: validation.StringInSlice(validThresholdConditionTypes, true),
 				Description:  "The type of Infrastructure alert condition. Valid values are infra_process_running, infra_metric, and infra_host_not_reporting.",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.EqualFold(old, new)
+				},
 			},
 			"event": {
 				Type:        schema.TypeString,
@@ -107,8 +111,11 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 			"comparison": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"above", "below", "equal"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"above", "below", "equal"}, true),
 				Description:  "The operator used to evaluate the threshold value. Valid values are above, below, and equal. Supported by the infra_metric and infra_process_running condition types.",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.EqualFold(old, new)
+				},
 			},
 			"select": {
 				Type:        schema.TypeString,
