@@ -1,0 +1,12 @@
+blank_issues_enabled: false
+contact_links:
+  - name: New Relic Community Support
+    url: https://discuss.newrelic.com/c/build-on-new-relic/developer-toolkit
+    about: Please ask and answer questions here.
+  - name: Developer Toolkit Roadmap
+    url: https://newrelic.github.io/developer-toolkit/roadmap/
+    about: Information on upcoming work to Terraform and other Developer resources
+  - name: New Relic Provider for Terraform Docs
+    url: http://terraform.io/docs/providers/newrelic/
+    about: All of the documentation for the New Relic Terraform Provider
+
