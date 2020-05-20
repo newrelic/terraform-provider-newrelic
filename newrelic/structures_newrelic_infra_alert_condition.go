@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
@@ -13,9 +14,9 @@ func expandInfraAlertCondition(d *schema.ResourceData) (*alerts.InfrastructureCo
 		Enabled:    d.Get("enabled").(bool),
 		PolicyID:   d.Get("policy_id").(int),
 		Event:      d.Get("event").(string),
-		Comparison: d.Get("comparison").(string),
+		Comparison: strings.ToLower(d.Get("comparison").(string)),
 		Select:     d.Get("select").(string),
-		Type:       d.Get("type").(string),
+		Type:       strings.ToLower(d.Get("type").(string)),
 		Critical:   expandInfraAlertThreshold(d.Get("critical")),
 	}
 
@@ -65,7 +66,7 @@ func expandInfraAlertThreshold(v interface{}) *alerts.InfrastructureConditionThr
 	}
 
 	if val, ok := rah["time_function"]; ok {
-		alertInfraThreshold.Function = val.(string)
+		alertInfraThreshold.Function = strings.ToLower(val.(string))
 	}
 
 	return alertInfraThreshold
@@ -83,10 +84,10 @@ func flattenInfraAlertCondition(condition *alerts.InfrastructureCondition, d *sc
 	d.Set("name", condition.Name)
 	d.Set("runbook_url", condition.RunbookURL)
 	d.Set("enabled", condition.Enabled)
-	d.Set("comparison", condition.Comparison)
+	d.Set("comparison", strings.ToLower(condition.Comparison))
 	d.Set("event", condition.Event)
 	d.Set("select", condition.Select)
-	d.Set("type", condition.Type)
+	d.Set("type", strings.ToLower(condition.Type))
 	d.Set("created_at", condition.CreatedAt)
 	d.Set("updated_at", condition.UpdatedAt)
 
@@ -123,7 +124,7 @@ func flattenAlertThreshold(v *alerts.InfrastructureConditionThreshold) []interfa
 	alertInfraThreshold := map[string]interface{}{
 		"duration":      v.Duration,
 		"value":         v.Value,
-		"time_function": v.Function,
+		"time_function": strings.ToLower(v.Function),
 	}
 
 	return []interface{}{alertInfraThreshold}
