@@ -349,7 +349,7 @@ resource "newrelic_infra_alert_condition" "foo" {
   critical {
 	  duration = 10
 	  value = 10
-	  time_function = "any"
+	  time_function = "ANY"
   }
 }
 `, name)

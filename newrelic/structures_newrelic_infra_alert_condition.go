@@ -66,7 +66,7 @@ func expandInfraAlertThreshold(v interface{}) *alerts.InfrastructureConditionThr
 	}
 
 	if val, ok := rah["time_function"]; ok {
-		alertInfraThreshold.Function = val.(string)
+		alertInfraThreshold.Function = strings.ToLower(val.(string))
 	}
 
 	return alertInfraThreshold
@@ -124,7 +124,7 @@ func flattenAlertThreshold(v *alerts.InfrastructureConditionThreshold) []interfa
 	alertInfraThreshold := map[string]interface{}{
 		"duration":      v.Duration,
 		"value":         v.Value,
-		"time_function": v.Function,
+		"time_function": strings.ToLower(v.Function),
 	}
 
 	return []interface{}{alertInfraThreshold}

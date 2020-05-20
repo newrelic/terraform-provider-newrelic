@@ -39,7 +39,10 @@ func thresholdSchema() *schema.Resource {
 			"time_function": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"any", "all"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"any", "all"}, true),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.EqualFold(old, new)
+				},
 			},
 		},
 	}
