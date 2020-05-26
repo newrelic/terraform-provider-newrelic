@@ -1,4 +1,29 @@
-## 1.17.0 (Unreleased)
+## 1.19.0 (Unreleased)
+## 1.18.0 (May 15, 2020)
+
+BUG FIXES:
+
+* fix(client): update the client for pagination URL fix ([#549](https://github.com/terraform-providers/terraform-provider-newrelic/pull/549))
+* fix(alerts): infra alert condition zero value detection ([#556](https://github.com/terraform-providers/terraform-provider-newrelic/pull/556))
+* fix(alerts): allow blank runbook URL to be sent ([#563](https://github.com/terraform-providers/terraform-provider-newrelic/issues/563))
+
+IMPROVEMENTS:
+
+* feat(dashboard): add grid_column_count to dashboard schema ([#528](https://github.com/terraform-providers/terraform-provider-newrelic/pull/528))
+* feat(application): implement newrelic_application_settings resource ([#558](https://github.com/terraform-providers/terraform-provider-newrelic/pull/558))
+
+## 1.17.1 (May 04, 2020)
+
+BUG FIXES:
+
+* fix(client): update the client for pagination URL fix
+
+## 1.17.0 (May 01, 2020)
+
+IMPROVEMENTS:
+
+* feat(dashboard): add grid_column_count to dashboard schema ([#535](https://github.com/terraform-providers/terraform-provider-newrelic/pull/535))
+
 ## 1.16.0 (March 24, 2020)
 
 IMPROVEMENTS:
