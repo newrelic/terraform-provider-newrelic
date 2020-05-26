@@ -5,6 +5,7 @@ BUG FIXES:
 
 * fix(client): update the client for pagination URL fix ([#549](https://github.com/terraform-providers/terraform-provider-newrelic/pull/549))
 * fix(alerts): infra alert condition zero value detection ([#556](https://github.com/terraform-providers/terraform-provider-newrelic/pull/556))
+* fix(alerts): allow blank runbook URL to be sent ([#563](https://github.com/terraform-providers/terraform-provider-newrelic/issues/563))
 
 IMPROVEMENTS:
 
