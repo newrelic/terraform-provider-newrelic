@@ -1,6 +1,7 @@
 package serialization
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -11,17 +12,54 @@ type EpochTime time.Time
 
 // MarshalJSON is responsible for marshaling the EpochTime type.
 func (e EpochTime) MarshalJSON() ([]byte, error) {
-	return []byte(strconv.FormatInt(time.Time(e).Unix(), 10)), nil
+	ret := strconv.FormatInt(time.Time(e).Unix(), 10)
+	milli := int64(time.Time(e).Nanosecond()) / int64(time.Millisecond)
+
+	// Include milliseconds if there are some
+	if milli > 0 {
+		ret += fmt.Sprintf("%03d", milli)
+	}
+
+	return []byte(ret), nil
 }
 
 // UnmarshalJSON is responsible for unmarshaling the EpochTime type.
-func (e *EpochTime) UnmarshalJSON(s []byte) (err error) {
-	q, err := strconv.ParseInt(string(s), 10, 64)
+func (e *EpochTime) UnmarshalJSON(s []byte) error {
+	var (
+		err   error
+		sec   int64
+		milli int64
+		nano  int64
+	)
+
+	// detect type of timestamp based on length
+	switch l := len(s); {
+	case l <= 10: // seconds
+		sec, err = strconv.ParseInt(string(s), 10, 64)
+	case l > 10 && l <= 16: // milliseconds
+		milli, err = strconv.ParseInt(string(s[0:13]), 10, 64)
+		if err != nil {
+			return err
+		}
+		nano = milli * int64(time.Millisecond)
+	case l > 16: // nanoseconds
+		sec, err = strconv.ParseInt(string(s[0:10]), 10, 64)
+		if err != nil {
+			return err
+		}
+		nano, err = strconv.ParseInt(string(s[10:16]), 10, 64)
+	default:
+		return fmt.Errorf("unable to parse EpochTime: '%s'", s)
+	}
+
 	if err != nil {
 		return err
 	}
-	*(*time.Time)(e) = time.Unix(q, 0)
-	return
+
+	// Convert and self store
+	*(*time.Time)(e) = time.Unix(sec, nano)
+
+	return nil
 }
 
 // Equal provides a comparator for the EpochTime type.

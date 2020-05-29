@@ -1,4 +1,4 @@
-package testing
+package testhelpers
 
 import (
 	"net/http/httptest"

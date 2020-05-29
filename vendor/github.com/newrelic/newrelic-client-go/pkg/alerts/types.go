@@ -127,7 +127,7 @@ type AlertsMutingRuleInput struct {
 /* AlertsPoliciesSearchCriteriaInput - Search criteria for returning specific policies. */
 type AlertsPoliciesSearchCriteriaInput struct {
 	/* IDs - The list of policy ids to return. */
-	IDs []int `json:"ids"`
+	IDs []string `json:"ids"`
 }
 
 /* AlertsPoliciesSearchResultSet - Collection of policies with pagination information. */
@@ -145,7 +145,7 @@ type AlertsPolicy struct {
 	/* AccountID - Account ID of the policy. */
 	AccountID int `json:"accountId"`
 	/* ID - Primary key for policies. */
-	ID int `json:"id,string"`
+	ID string `json:"id"`
 	/* IncidentPreference - Determines how incidents are created for critical violations of the conditions contained in the policy. */
 	IncidentPreference AlertsIncidentPreference `json:"incidentPreference"`
 	/* Name - Description of the policy. */

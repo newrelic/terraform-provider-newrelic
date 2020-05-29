@@ -48,7 +48,7 @@ var (
 	}
 )
 
-// NrqlConditionValueFunction specifies the value function of NRQL alert condition.
+// NrqlConditionViolationTimeLimit specifies the value function of NRQL alert condition.
 type NrqlConditionViolationTimeLimit string
 
 var (
@@ -100,6 +100,7 @@ var (
 	}
 )
 
+// NrqlBaselineDirection
 type NrqlBaselineDirection string
 
 var (
@@ -151,7 +152,7 @@ type NrqlConditionInput struct {
 	BaselineDirection *NrqlBaselineDirection `json:"baselineDirection,omitempty"`
 
 	// ValueFunction is returned ONLY for NRQL conditions of type STATIC.
-	ValueFunction *NrqlConditionValueFunction `json:"value_function,omitempty"`
+	ValueFunction *NrqlConditionValueFunction `json:"valueFunction,omitempty"`
 }
 
 type NrqlConditionsSearchCriteria struct {
@@ -179,17 +180,17 @@ type NrqlAlertCondition struct {
 
 // NrqlCondition represents a New Relic NRQL Alert condition.
 type NrqlCondition struct {
-	Terms               []ConditionTerm   `json:"terms,omitempty"`
-	Nrql                NrqlQuery         `json:"nrql,omitempty"`
-	Type                string            `json:"type,omitempty"`
-	Name                string            `json:"name,omitempty"`
-	RunbookURL          string            `json:"runbook_url,omitempty"`
-	ValueFunction       ValueFunctionType `json:"value_function,omitempty"`
+	Enabled             bool              `json:"enabled"`
+	IgnoreOverlap       bool              `json:"ignore_overlap,omitempty"`
+	ExpectedGroups      int               `json:"expected_groups,omitempty"`
 	ID                  int               `json:"id,omitempty"`
 	ViolationCloseTimer int               `json:"violation_time_limit_seconds,omitempty"`
-	ExpectedGroups      int               `json:"expected_groups,omitempty"`
-	IgnoreOverlap       bool              `json:"ignore_overlap,omitempty"`
-	Enabled             bool              `json:"enabled"`
+	Name                string            `json:"name,omitempty"`
+	Nrql                NrqlQuery         `json:"nrql,omitempty"`
+	RunbookURL          string            `json:"runbook_url,omitempty"`
+	Terms               []ConditionTerm   `json:"terms,omitempty"`
+	Type                string            `json:"type,omitempty"`
+	ValueFunction       ValueFunctionType `json:"value_function,omitempty"`
 }
 
 // NrqlQuery represents a NRQL query to use with a NRQL alert condition
@@ -292,7 +293,7 @@ func (a *Alerts) DeleteNrqlCondition(id int) (*NrqlCondition, error) {
 // GetNrqlConditionQuery fetches a NRQL alert condition via New Relic's NerdGraph API.
 func (a *Alerts) GetNrqlConditionQuery(
 	accountID int,
-	conditionID int,
+	conditionID string,
 ) (*NrqlAlertCondition, error) {
 	resp := getNrqlConditionQueryResponse{}
 	vars := map[string]interface{}{
@@ -337,7 +338,7 @@ func (a *Alerts) SearchNrqlConditionsQuery(
 // CreateNrqlConditionBaselineMutation creates a baseline NRQL alert condition via New Relic's NerdGraph API.
 func (a *Alerts) CreateNrqlConditionBaselineMutation(
 	accountID int,
-	policyID int,
+	policyID string,
 	nrqlCondition NrqlConditionInput,
 ) (*NrqlAlertCondition, error) {
 	resp := nrqlConditionBaselineCreateResponse{}
@@ -357,7 +358,7 @@ func (a *Alerts) CreateNrqlConditionBaselineMutation(
 // UpdateNrqlConditionBaselineMutation updates a baseline NRQL alert condition via New Relic's NerdGraph API.
 func (a *Alerts) UpdateNrqlConditionBaselineMutation(
 	accountID int,
-	conditionID int,
+	conditionID string,
 	nrqlCondition NrqlConditionInput,
 ) (*NrqlAlertCondition, error) {
 	resp := nrqlConditionBaselineUpdateResponse{}
@@ -377,7 +378,7 @@ func (a *Alerts) UpdateNrqlConditionBaselineMutation(
 // CreateNrqlConditionStaticMutation creates a static NRQL alert condition via New Relic's NerdGraph API.
 func (a *Alerts) CreateNrqlConditionStaticMutation(
 	accountID int,
-	policyID int,
+	policyID string,
 	nrqlCondition NrqlConditionInput,
 ) (*NrqlAlertCondition, error) {
 	resp := nrqlConditionStaticCreateResponse{}
@@ -397,7 +398,7 @@ func (a *Alerts) CreateNrqlConditionStaticMutation(
 // UpdateNrqlConditionStaticMutation updates a static NRQL alert condition via New Relic's NerdGraph API.
 func (a *Alerts) UpdateNrqlConditionStaticMutation(
 	accountID int,
-	conditionID int,
+	conditionID string,
 	nrqlCondition NrqlConditionInput,
 ) (*NrqlAlertCondition, error) {
 	resp := nrqlConditionStaticUpdateResponse{}

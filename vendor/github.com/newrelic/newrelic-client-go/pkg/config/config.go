@@ -21,6 +21,9 @@ type Config struct {
 	// see: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin
 	AdminAPIKey string
 
+	// InsightsInsertKey to send custom events to Insights
+	InsightsInsertKey string
+
 	// region of the New Relic platform to use
 	region *region.Region
 
@@ -29,6 +32,9 @@ type Config struct {
 
 	// HTTPTransport allows customization of the client's underlying transport.
 	HTTPTransport http.RoundTripper
+
+	// Compression used in sending data in HTTP requests.
+	Compression CompressionType
 
 	// UserAgent updates the default user agent string used by the client.
 	UserAgent string
@@ -52,9 +58,9 @@ func New() Config {
 	reg, _ := region.Get(region.Default)
 
 	return Config{
-		region:    reg,
-		UserAgent: "newrelic/newrelic-client-go",
-		LogLevel:  "info",
+		region:      reg,
+		LogLevel:    "info",
+		Compression: Compression.None,
 	}
 }
 

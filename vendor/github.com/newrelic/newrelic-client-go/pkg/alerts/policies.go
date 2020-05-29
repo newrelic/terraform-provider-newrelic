@@ -140,7 +140,7 @@ func (a *Alerts) CreatePolicyMutation(accountID int, policy AlertsPolicyInput) (
 	return &resp.AlertsPolicy, nil
 }
 
-func (a *Alerts) UpdatePolicyMutation(accountID int, policyID int, policy AlertsPolicyUpdateInput) (*AlertsPolicy, error) {
+func (a *Alerts) UpdatePolicyMutation(accountID int, policyID string, policy AlertsPolicyUpdateInput) (*AlertsPolicy, error) {
 	vars := map[string]interface{}{
 		"accountID": accountID,
 		"policyID":  policyID,
@@ -158,7 +158,7 @@ func (a *Alerts) UpdatePolicyMutation(accountID int, policyID int, policy Alerts
 
 // QueryPolicy queries NerdGraph for a policy matching the given account ID and
 // policy ID.
-func (a *Alerts) QueryPolicy(accountID, id int) (*AlertsPolicy, error) {
+func (a *Alerts) QueryPolicy(accountID int, id string) (*AlertsPolicy, error) {
 	resp := alertQueryPolicyResponse{}
 	vars := map[string]interface{}{
 		"accountID": accountID,
@@ -208,7 +208,7 @@ func (a *Alerts) QueryPolicySearch(accountID int, params AlertsPoliciesSearchCri
 
 // DeletePolicyMutation is the NerdGraph mutation to delete a policy given the
 // account ID and the policy ID.
-func (a *Alerts) DeletePolicyMutation(accountID, id int) (*AlertsPolicy, error) {
+func (a *Alerts) DeletePolicyMutation(accountID int, id string) (*AlertsPolicy, error) {
 	policy := &AlertsPolicy{}
 
 	resp := alertQueryPolicyDeleteRespose{}
