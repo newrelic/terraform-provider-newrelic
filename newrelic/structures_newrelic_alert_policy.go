@@ -1,14 +1,12 @@
 package newrelic
 
 import (
-	"strconv"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
 func flattenAlertPolicyDataSource(policy *alerts.AlertsPolicy, d *schema.ResourceData, accountID int) error {
-	d.SetId(strconv.Itoa(policy.ID))
+	d.SetId(policy.ID)
 
 	var err error
 
