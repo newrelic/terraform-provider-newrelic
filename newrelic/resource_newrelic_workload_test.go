@@ -169,7 +169,7 @@ resource "newrelic_workload" "foo" {
 		query = "name like '%[4]s'"
 	}
 
-	scope_account_ids =  [%[1]d, 1]
+	scope_account_ids =  [1, %[1]d]
 }
 `, testAccountID, name, testEntityGUID, testApplicationName)
 }
@@ -186,7 +186,7 @@ resource "newrelic_workload" "foo" {
 		query = "name like '%[4]s'"
 	}
 
-	scope_account_ids =  [%[1]d, 1]
+	scope_account_ids =  [1, %[1]d]
 }
 `, testAccountID, name, testEntityGUID, testApplicationName)
 }
@@ -221,7 +221,7 @@ resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
 
-	scope_account_ids =  [%[1]d, 1]
+	scope_account_ids =  [1, %[1]d]
 }
 `, testAccountID, name)
 }
