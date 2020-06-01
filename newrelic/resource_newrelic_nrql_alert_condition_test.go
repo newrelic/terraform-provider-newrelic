@@ -280,7 +280,7 @@ func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 		}
 
 		policyID := ids[0]
-		conditionID := ids[1]
+		conditionID := strconv.Itoa(ids[1])
 
 		if hasNerdGraphCreds {
 			accountID = providerConfig.AccountID
@@ -296,7 +296,8 @@ func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 				return fmt.Errorf("NRQL Alert condition still exists") //nolint:golint
 			}
 		} else {
-			if _, err = client.Alerts.GetNrqlCondition(policyID, conditionID); err == nil {
+			id := ids[1]
+			if _, err = client.Alerts.GetNrqlCondition(policyID, id); err == nil {
 				return fmt.Errorf("NRQL Alert condition still exists") //nolint:golint
 			}
 		}
@@ -328,7 +329,7 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 		}
 
 		policyID := ids[0]
-		conditionID := ids[1]
+		conditionID := strconv.Itoa(ids[1])
 
 		if hasNerdGraphCreds && rs.Primary.Attributes["type"] != "outlier" {
 			accountID = providerConfig.AccountID
@@ -346,19 +347,19 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 				return err
 			}
 
-			if found.ID != strconv.Itoa(conditionID) {
+			if found.ID != conditionID {
 				return fmt.Errorf("alert condition not found: %v - %v", conditionID, found)
 			}
 
 			return nil
 		}
 
-		found, err := client.Alerts.GetNrqlCondition(policyID, conditionID)
+		found, err := client.Alerts.GetNrqlCondition(policyID, ids[1])
 		if err != nil {
 			return err
 		}
 
-		if found.ID != conditionID {
+		if found.ID != ids[1] {
 			return fmt.Errorf("alert condition not found: %v - %v", conditionID, found)
 		}
 
