@@ -1,4 +1,8 @@
 ## 1.19.0 (Unreleased)
+
+BUG FIXES:
+* fix(alerts): update the client for epoch serialization fux ([#610](https://github.com/terraform-providers/terraform-provider-newrelic/issues/610))
+
 ## 1.18.0 (May 15, 2020)
 
 BUG FIXES:
