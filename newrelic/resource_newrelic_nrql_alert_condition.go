@@ -215,9 +215,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			// between new:old and old:new is handled via maps in structures file.
 			// Conflicts with `baseline_direction` when using NerdGraph.
 			"value_function": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "single_value",
+				Type:     schema.TypeString,
+				Optional: true,
+				// Default:      "single_value",
 				Description:  "Valid values are: 'single_value' or 'sum'",
 				ValidateFunc: validation.StringInSlice([]string{"single_value", "sum"}, true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
@@ -269,7 +269,6 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"open_violation_on_group_overlap": {
 				Type:          schema.TypeBool,
 				Optional:      true,
-				Default:       false,
 				Description:   "Whether overlapping groups should produce a violation.",
 				ConflictsWith: []string{"ignore_overlap"},
 			},
@@ -284,58 +283,40 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 	policyID := strconv.Itoa(d.Get("policy_id").(int))
 	conditionType := d.Get("type").(string)
 
-	if canUseNerdGraphNrqlAlertConditions(providerConfig, conditionType) {
-		accountID := selectAccountID(providerConfig, d)
+	accountID := selectAccountID(providerConfig, d)
 
-		conditionInput, err := expandNrqlAlertConditionInput(d)
-		if err != nil {
-			return err
-		}
-
-		log.Printf("[INFO] Creating New Relic NRQL alert condition %s via NerdGraph API", conditionInput.Name)
-
-		id := strconv.Itoa(policyID)
-
-		var nrqlCondition *alerts.NrqlAlertCondition
-		if conditionType == "baseline" {
-			if nrqlCondition, err = client.Alerts.CreateNrqlConditionBaselineMutation(accountID, id, *conditionInput); err != nil {
-				return err
-			}
-		}
-
-		if conditionType == "static" {
-			if nrqlCondition, err = client.Alerts.CreateNrqlConditionStaticMutation(accountID, id, *conditionInput); err != nil {
-				return err
-			}
-		}
-
-		if conditionType == "outlier" {
-			if nrqlCondition, err = client.Alerts.CreateNrqlConditionOutlierMutation(accountID, policyID, *conditionInput); err != nil {
-				return err
-			}
-		}
-
-		conditionID, err := strconv.Atoi(nrqlCondition.ID)
-		if err != nil {
-			return err
-		}
-
-		d.SetId(serializeIDs([]int{d.Get("policy_id").(int), conditionID}))
-
-		return resourceNewRelicNrqlAlertConditionRead(d, meta)
-	}
-
-	// Fallback to REST API
-	condition := expandNrqlAlertConditionStruct(d)
-
-	log.Printf("[INFO] Creating New Relic NRQL alert condition %s via REST API", condition.Name)
-
-	condition, err := client.Alerts.CreateNrqlCondition(d.Get("policy_id").(int), *condition)
+	conditionInput, err := expandNrqlAlertConditionInput(d)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(serializeIDs([]int{d.Get("policy_id").(int), condition.ID}))
+	log.Printf("[INFO] Creating New Relic NRQL alert condition %s via NerdGraph API", conditionInput.Name)
+
+	var nrqlCondition *alerts.NrqlAlertCondition
+	if conditionType == "baseline" {
+		if nrqlCondition, err = client.Alerts.CreateNrqlConditionBaselineMutation(accountID, policyID, *conditionInput); err != nil {
+			return err
+		}
+	}
+
+	if conditionType == "static" {
+		if nrqlCondition, err = client.Alerts.CreateNrqlConditionStaticMutation(accountID, policyID, *conditionInput); err != nil {
+			return err
+		}
+	}
+
+	if conditionType == "outlier" {
+		if nrqlCondition, err = client.Alerts.CreateNrqlConditionOutlierMutation(accountID, policyID, *conditionInput); err != nil {
+			return err
+		}
+	}
+
+	conditionID, err := strconv.Atoi(nrqlCondition.ID)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(serializeIDs([]int{d.Get("policy_id").(int), conditionID}))
 
 	return resourceNewRelicNrqlAlertConditionRead(d, meta)
 }
@@ -351,29 +332,13 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	policyID := ids[0]
-	conditionID := strconv.Itoa(ids[1])
-	conditionType := d.Get("type").(string)
+	// policyID := ids[0]
+	conditionID := ids[1]
 
-	// NerdGraph
-	if canUseNerdGraphNrqlAlertConditions(providerConfig, conditionType) {
-		accountID := selectAccountID(providerConfig, d)
+	accountID := selectAccountID(providerConfig, d)
 
-		var nrqlCondition *alerts.NrqlAlertCondition
-		nrqlCondition, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
-		if err != nil {
-			if _, ok := err.(*errors.NotFound); ok {
-				d.SetId("")
-				return nil
-			}
-			return err
-		}
-
-		return flattenNrqlAlertCondition(accountID, nrqlCondition, d)
-	}
-
-	// Fallback to REST API
-	_, err = client.Alerts.GetPolicy(policyID)
+	var nrqlCondition *alerts.NrqlAlertCondition
+	nrqlCondition, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -382,21 +347,7 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	id := ids[1]
-
-	condition, err := client.Alerts.GetNrqlCondition(policyID, id)
-	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
-
-		return err
-	}
-
-	d.Set("policy_id", policyID)
-
-	return flattenNrqlConditionStruct(condition, d)
+	return flattenNrqlAlertCondition(accountID, nrqlCondition, d)
 }
 
 func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -410,8 +361,6 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 
 	conditionID := strconv.Itoa(ids[1])
 	conditionType := d.Get("type").(string)
-
-	// if canUseNerdGraphNrqlAlertConditions(providerConfig, conditionType) {
 	accountID := selectAccountID(providerConfig, d)
 
 	var conditionInput *alerts.NrqlConditionInput
@@ -422,33 +371,21 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 
 	if conditionType == "baseline" {
 		_, err = client.Alerts.UpdateNrqlConditionBaselineMutation(accountID, conditionID, *conditionInput)
-		if err != nil {
-			return err
-		}
 	}
 
 	if conditionType == "static" {
 		_, err = client.Alerts.UpdateNrqlConditionStaticMutation(accountID, conditionID, *conditionInput)
-		if err != nil {
-			return err
-		}
+	}
+
+	if conditionType == "outlier" {
+		_, err = client.Alerts.UpdateNrqlConditionOutlierMutation(accountID, conditionID, *conditionInput)
+	}
+
+	if err != nil {
+		return err
 	}
 
 	return resourceNewRelicNrqlAlertConditionRead(d, meta)
-	// }
-
-	// Fallback to REST API
-	// condition := expandNrqlAlertConditionStruct(d)
-	// condition.ID = conditionID
-
-	// log.Printf("[INFO] Updating New Relic NRQL alert condition %d", condition.ID)
-
-	// _, err = client.Alerts.UpdateNrqlCondition(*condition)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// return resourceNewRelicNrqlAlertConditionRead(d, meta)
 }
 
 func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
