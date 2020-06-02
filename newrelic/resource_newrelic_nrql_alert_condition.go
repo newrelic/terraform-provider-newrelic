@@ -197,9 +197,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			},
 			// Outlier ONLY
 			"ignore_overlap": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether to look for a convergence of groups when using outlier detection.",
+				Deprecated:    "use `open_violation_on_group_overlap` attribute instead",
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Description:   "Whether to look for a convergence of groups when using outlier detection.",
+				ConflictsWith: []string{"open_violation_on_group_overlap"},
 			},
 			"violation_time_limit_seconds": {
 				Deprecated:    "use `violation_time_limit` attribute instead",
@@ -262,6 +264,14 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
+			},
+			// Outlier ONLY
+			"open_violation_on_group_overlap": {
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Default:       false,
+				Description:   "Whether overlapping groups should produce a violation.",
+				ConflictsWith: []string{"ignore_overlap"},
 			},
 		},
 	}
@@ -462,5 +472,5 @@ func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta inter
 }
 
 func canUseNerdGraphNrqlAlertConditions(providerConfig *ProviderConfig, conditionType string) bool {
-	return providerConfig.hasNerdGraphCredentials() && conditionType != "outlier"
+	return providerConfig.hasNerdGraphCredentials() // && conditionType != "outlier"
 }

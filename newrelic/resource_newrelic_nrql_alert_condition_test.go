@@ -261,6 +261,64 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+	conditionType := "outlier"
+	conditionalAttr := `expected_groups = 1
+	open_violation_on_group_overlap = false`
+	facetClause := `FACET host`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create (NerdGraph)
+			{
+				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
+					rName,
+					conditionType,
+					3,
+					3600,
+					conditionalAttr,
+					facetClause,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Update (NerdGraph)
+			// {
+			// 	Config: testAccNewRelicNrqlAlertConditionNerdGraphConfig(
+			// 		rName,
+			// 		conditionType,
+			// 		3,
+			// 		1800,
+			// 		conditionalAttr,
+			// 	),
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+			// 	),
+			// },
+			// // Test: Import
+			// {
+			// 	ResourceName:      resourceName,
+			// 	ImportState:       true,
+			// 	ImportStateVerify: true,
+			// 	// Ignore items with deprecated fields because
+			// 	// we don't set deprecated fields on import
+			// 	ImportStateVerifyIgnore: []string{
+			// 		"term", // contains nested attributes that are deprecated
+			// 		"nrql", // contains nested attributes that are deprecated
+			// 		"violation_time_limit",
+			// 	},
+			// 	ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "static"),
+			// },
+		},
+	})
+}
+
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -558,4 +616,55 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	%[5]s
 }
 `, name, conditionType, nrqlEvalOffset, termDuration, conditionalAttr)
+}
+
+func testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
+	name string,
+	conditionType string,
+	nrqlEvalOffset int,
+	termDuration int,
+	conditionalAttr string,
+	facetClause string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	account_id  = 2520528
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                 = "tf-test-%[1]s"
+	type                 = "%[2]s"
+	runbook_url          = "https://foo.example.com"
+	enabled              = false
+	description          = "test description"
+	violation_time_limit = "one_hour"
+
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample %[6]s"
+		evaluation_offset = %[3]d
+	}
+
+	term {
+    operator              = "above"
+    priority              = "critical"
+    threshold             = 1.25
+		threshold_duration    = %[4]d
+		threshold_occurrences = "ALL"
+	}
+
+	term {
+    operator              = "above"
+    priority              = "warning"
+    threshold             = 1.1
+		threshold_duration    = %[4]d
+		threshold_occurrences = "AT_LEAST_ONCE"
+	}
+
+	# Will be baseline_direction or value_function depending on condition type
+	%[5]s
+}
+`, name, conditionType, nrqlEvalOffset, termDuration, conditionalAttr, facetClause)
 }
