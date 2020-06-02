@@ -74,6 +74,14 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 		}
 	}
 
+	if conditionType == "outlier" {
+		expectedGroups := d.Get("expected_groups").(int)
+		openViolationOnGroupOverlap := d.Get("open_violation_on_group_overlap").(bool)
+
+		input.ExpectedGroups = &expectedGroups
+		input.OpenViolationOnGroupOverlap = &openViolationOnGroupOverlap
+	}
+
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
 		input.RunbookURL = runbookURL.(string)
 	}
