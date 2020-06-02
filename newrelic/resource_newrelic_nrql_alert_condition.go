@@ -389,25 +389,23 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 }
 
 func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
 		return err
 	}
 
-	conditionID := ids[1]
+	conditionID := strconv.Itoa(ids[1])
 
-	log.Printf("[INFO] Deleting New Relic NRQL alert condition %d", conditionID)
+	log.Printf("[INFO] Deleting New Relic NRQL alert condition %v", conditionID)
 
-	_, err = client.Alerts.DeleteNrqlCondition(conditionID)
+	_, err = client.Alerts.DeleteNrqlConditionMutation(accountID, conditionID)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func canUseNerdGraphNrqlAlertConditions(providerConfig *ProviderConfig, conditionType string) bool {
-	return providerConfig.hasNerdGraphCredentials() // && conditionType != "outlier"
 }
