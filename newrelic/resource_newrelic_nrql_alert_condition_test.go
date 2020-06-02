@@ -266,7 +266,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
 	rName := acctest.RandString(5)
 	conditionType := "outlier"
 	conditionalAttr := `expected_groups = 1
-	open_violation_on_group_overlap = false`
+	open_violation_on_group_overlap = true`
 	facetClause := `FACET host`
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -289,32 +289,33 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
 				),
 			},
 			// Test: Update (NerdGraph)
-			// {
-			// 	Config: testAccNewRelicNrqlAlertConditionNerdGraphConfig(
-			// 		rName,
-			// 		conditionType,
-			// 		3,
-			// 		1800,
-			// 		conditionalAttr,
-			// 	),
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
-			// 	),
-			// },
-			// // Test: Import
-			// {
-			// 	ResourceName:      resourceName,
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// 	// Ignore items with deprecated fields because
-			// 	// we don't set deprecated fields on import
-			// 	ImportStateVerifyIgnore: []string{
-			// 		"term", // contains nested attributes that are deprecated
-			// 		"nrql", // contains nested attributes that are deprecated
-			// 		"violation_time_limit",
-			// 	},
-			// 	ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "static"),
-			// },
+			{
+				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
+					rName,
+					conditionType,
+					3,
+					1800,
+					conditionalAttr,
+					facetClause,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Ignore items with deprecated fields because
+				// we don't set deprecated fields on import
+				ImportStateVerifyIgnore: []string{
+					"term", // contains nested attributes that are deprecated
+					"nrql", // contains nested attributes that are deprecated
+					"violation_time_limit",
+				},
+				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "outlier"),
+			},
 		},
 	})
 }
@@ -322,7 +323,6 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
-	hasNerdGraphCreds := providerConfig.hasNerdGraphCredentials()
 
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_nrql_alert_condition" {
@@ -337,27 +337,18 @@ func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 			return err
 		}
 
-		policyID := ids[0]
-		conditionID := strconv.Itoa(ids[1])
+		conditionID := ids[1]
+		accountID = providerConfig.AccountID
 
-		if hasNerdGraphCreds {
-			accountID = providerConfig.AccountID
+		if r.Primary.Attributes["account_id"] != "" {
+			accountID, err = strconv.Atoi(r.Primary.Attributes["account_id"])
+			if err != nil {
+				return err
+			}
+		}
 
-			if r.Primary.Attributes["account_id"] != "" {
-				accountID, err = strconv.Atoi(r.Primary.Attributes["account_id"])
-				if err != nil {
-					return err
-				}
-			}
-
-			if _, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID)); err == nil {
-				return fmt.Errorf("NRQL Alert condition still exists") //nolint:golint
-			}
-		} else {
-			id := ids[1]
-			if _, err = client.Alerts.GetNrqlCondition(policyID, id); err == nil {
-				return fmt.Errorf("NRQL Alert condition still exists") //nolint:golint
-			}
+		if _, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID)); err == nil {
+			return fmt.Errorf("NRQL Alert condition still exists") //nolint:golint
 		}
 	}
 
@@ -368,7 +359,7 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 	return func(s *terraform.State) error {
 		providerConfig := testAccProvider.Meta().(*ProviderConfig)
 		client := providerConfig.NewClient
-		hasNerdGraphCreds := providerConfig.hasNerdGraphCredentials()
+		// hasNerdGraphCreds := providerConfig.hasNerdGraphCredentials()
 
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -386,38 +377,24 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 			return err
 		}
 
-		policyID := ids[0]
-		conditionID := strconv.Itoa(ids[1])
+		// policyID := ids[0]
+		conditionID := ids[1]
+		accountID = providerConfig.AccountID
 
-		if hasNerdGraphCreds && rs.Primary.Attributes["type"] != "outlier" {
-			accountID = providerConfig.AccountID
-
-			if rs.Primary.Attributes["account_id"] != "" {
-				accountID, err = strconv.Atoi(rs.Primary.Attributes["account_id"])
-				if err != nil {
-					return err
-				}
-			}
-
-			var found *alerts.NrqlAlertCondition
-			found, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
+		if rs.Primary.Attributes["account_id"] != "" {
+			accountID, err = strconv.Atoi(rs.Primary.Attributes["account_id"])
 			if err != nil {
 				return err
 			}
-
-			if found.ID != conditionID {
-				return fmt.Errorf("alert condition not found: %v - %v", conditionID, found)
-			}
-
-			return nil
 		}
 
-		found, err := client.Alerts.GetNrqlCondition(policyID, ids[1])
+		var found *alerts.NrqlAlertCondition
+		found, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
 		if err != nil {
 			return err
 		}
 
-		if found.ID != ids[1] {
+		if found.ID != strconv.Itoa(conditionID) {
 			return fmt.Errorf("alert condition not found: %v - %v", conditionID, found)
 		}
 
@@ -655,15 +632,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 		threshold_occurrences = "ALL"
 	}
 
-	term {
-    operator              = "above"
-    priority              = "warning"
-    threshold             = 1.1
-		threshold_duration    = %[4]d
-		threshold_occurrences = "AT_LEAST_ONCE"
-	}
 
-	# Will be baseline_direction or value_function depending on condition type
+
+	# Will be one of baseline_direction, value_function, expected_groups, or open_violation_on_group_overlap depending on condition type
 	%[5]s
 }
 `, name, conditionType, nrqlEvalOffset, termDuration, conditionalAttr, facetClause)

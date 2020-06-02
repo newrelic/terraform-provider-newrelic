@@ -206,6 +206,10 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 		return err
 	}
 
+	fmt.Print("\n\n****************************\n")
+	fmt.Printf("condition:  %+v", toJSON(condition))
+	fmt.Print("\n****************************\n\n")
+
 	conditionType := strings.ToLower(string(condition.Type))
 
 	d.Set("account_id", accountID)
@@ -224,6 +228,11 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 		d.Set("value_function", string(*condition.ValueFunction))
 	}
 
+	if conditionType == "outlier" {
+		d.Set("expected_groups", *condition.ExpectedGroups)
+		d.Set("open_violation_on_group_overlap", *condition.OpenViolationOnGroupOverlap)
+	}
+
 	configuredNrql := d.Get("nrql.0").(map[string]interface{})
 	if err := d.Set("nrql", flattenNrql(condition.Nrql, configuredNrql)); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `nrql`: %v", err)
@@ -239,10 +248,6 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	} else {
 		d.Set("violation_time_limit", condition.ViolationTimeLimit)
 	}
-
-	// TODO: Handle `outlier` condition type fields when added to NerdGraph
-	// d.Set("expected_groups", condition.ExpectedGroups)
-	// d.Set("ignore_overlap", condition.IgnoreOverlap)
 
 	return nil
 }
