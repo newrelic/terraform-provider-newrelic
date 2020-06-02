@@ -292,7 +292,7 @@ func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 				}
 			}
 
-			if _, err = client.Alerts.GetNrqlConditionQuery(accountID, conditionID); err == nil {
+			if _, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID)); err == nil {
 				return fmt.Errorf("NRQL Alert condition still exists") //nolint:golint
 			}
 		} else {
@@ -342,7 +342,7 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 			}
 
 			var found *alerts.NrqlAlertCondition
-			found, err = client.Alerts.GetNrqlConditionQuery(accountID, conditionID)
+			found, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
 			if err != nil {
 				return err
 			}
