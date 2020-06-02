@@ -271,7 +271,7 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	policyID := d.Get("policy_id").(int)
+	policyID := strconv.Itoa(d.Get("policy_id").(int))
 	conditionType := d.Get("type").(string)
 
 	if canUseNerdGraphNrqlAlertConditions(providerConfig, conditionType) {
@@ -299,12 +299,18 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 			}
 		}
 
+		if conditionType == "outlier" {
+			if nrqlCondition, err = client.Alerts.CreateNrqlConditionOutlierMutation(accountID, policyID, *conditionInput); err != nil {
+				return err
+			}
+		}
+
 		conditionID, err := strconv.Atoi(nrqlCondition.ID)
 		if err != nil {
 			return err
 		}
 
-		d.SetId(serializeIDs([]int{policyID, conditionID}))
+		d.SetId(serializeIDs([]int{d.Get("policy_id").(int), conditionID}))
 
 		return resourceNewRelicNrqlAlertConditionRead(d, meta)
 	}
@@ -314,12 +320,12 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 
 	log.Printf("[INFO] Creating New Relic NRQL alert condition %s via REST API", condition.Name)
 
-	condition, err := client.Alerts.CreateNrqlCondition(policyID, *condition)
+	condition, err := client.Alerts.CreateNrqlCondition(d.Get("policy_id").(int), *condition)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(serializeIDs([]int{policyID, condition.ID}))
+	d.SetId(serializeIDs([]int{d.Get("policy_id").(int), condition.ID}))
 
 	return resourceNewRelicNrqlAlertConditionRead(d, meta)
 }
@@ -344,7 +350,7 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 		accountID := selectAccountID(providerConfig, d)
 
 		var nrqlCondition *alerts.NrqlAlertCondition
-		nrqlCondition, err = client.Alerts.GetNrqlConditionQuery(accountID, conditionID)
+		nrqlCondition, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
 		if err != nil {
 			if _, ok := err.(*errors.NotFound); ok {
 				d.SetId("")
@@ -392,49 +398,47 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 		return err
 	}
 
-	conditionID := ids[1]
+	conditionID := strconv.Itoa(ids[1])
 	conditionType := d.Get("type").(string)
 
-	if canUseNerdGraphNrqlAlertConditions(providerConfig, conditionType) {
-		accountID := selectAccountID(providerConfig, d)
+	// if canUseNerdGraphNrqlAlertConditions(providerConfig, conditionType) {
+	accountID := selectAccountID(providerConfig, d)
 
-		var conditionInput *alerts.NrqlConditionInput
-		conditionInput, err = expandNrqlAlertConditionInput(d)
-		if err != nil {
-			return err
-		}
-
-		id := strconv.Itoa(conditionID)
-
-		if conditionType == "baseline" {
-			_, err = client.Alerts.UpdateNrqlConditionBaselineMutation(accountID, id, *conditionInput)
-			if err != nil {
-				return err
-			}
-		}
-
-		if conditionType == "static" {
-			_, err = client.Alerts.UpdateNrqlConditionStaticMutation(accountID, id, *conditionInput)
-			if err != nil {
-				return err
-			}
-		}
-
-		return resourceNewRelicNrqlAlertConditionRead(d, meta)
-	}
-
-	// Fallback to REST API
-	condition := expandNrqlAlertConditionStruct(d)
-	condition.ID = conditionID
-
-	log.Printf("[INFO] Updating New Relic NRQL alert condition %d", condition.ID)
-
-	_, err = client.Alerts.UpdateNrqlCondition(*condition)
+	var conditionInput *alerts.NrqlConditionInput
+	conditionInput, err = expandNrqlAlertConditionInput(d)
 	if err != nil {
 		return err
 	}
 
+	if conditionType == "baseline" {
+		_, err = client.Alerts.UpdateNrqlConditionBaselineMutation(accountID, conditionID, *conditionInput)
+		if err != nil {
+			return err
+		}
+	}
+
+	if conditionType == "static" {
+		_, err = client.Alerts.UpdateNrqlConditionStaticMutation(accountID, conditionID, *conditionInput)
+		if err != nil {
+			return err
+		}
+	}
+
 	return resourceNewRelicNrqlAlertConditionRead(d, meta)
+	// }
+
+	// Fallback to REST API
+	// condition := expandNrqlAlertConditionStruct(d)
+	// condition.ID = conditionID
+
+	// log.Printf("[INFO] Updating New Relic NRQL alert condition %d", condition.ID)
+
+	// _, err = client.Alerts.UpdateNrqlCondition(*condition)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// return resourceNewRelicNrqlAlertConditionRead(d, meta)
 }
 
 func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
