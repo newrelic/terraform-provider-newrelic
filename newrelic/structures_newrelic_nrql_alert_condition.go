@@ -61,7 +61,7 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 			direction := alerts.NrqlBaselineDirection(strings.ToUpper(attr.(string)))
 			input.BaselineDirection = &direction
 		} else {
-			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", attr, conditionType)
+			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", "baseline_direction", conditionType)
 		}
 	}
 
@@ -70,7 +70,7 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 			valFn := alerts.NrqlConditionValueFunction(strings.ToUpper(attr.(string)))
 			input.ValueFunction = &valFn
 		} else {
-			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", attr, conditionType)
+			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", "value_function", conditionType)
 		}
 	}
 
