@@ -75,6 +75,7 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 	}
 
 	if conditionType == "outlier" {
+		// TODO: check for `ignore_overlap` and set it to
 		expectedGroups := d.Get("expected_groups").(int)
 		openViolationOnGroupOverlap := d.Get("open_violation_on_group_overlap").(bool)
 
@@ -205,10 +206,6 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	if err != nil {
 		return err
 	}
-
-	fmt.Print("\n\n****************************\n")
-	fmt.Printf("condition:  %+v", toJSON(condition))
-	fmt.Print("\n****************************\n\n")
 
 	conditionType := strings.ToLower(string(condition.Type))
 

@@ -280,10 +280,8 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	policyID := strconv.Itoa(d.Get("policy_id").(int))
-	conditionType := d.Get("type").(string)
-
 	accountID := selectAccountID(providerConfig, d)
+	policyID := strconv.Itoa(d.Get("policy_id").(int))
 
 	conditionInput, err := expandNrqlAlertConditionInput(d)
 	if err != nil {
@@ -292,26 +290,22 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 
 	log.Printf("[INFO] Creating New Relic NRQL alert condition %s via NerdGraph API", conditionInput.Name)
 
-	var nrqlCondition *alerts.NrqlAlertCondition
-	if conditionType == "baseline" {
-		if nrqlCondition, err = client.Alerts.CreateNrqlConditionBaselineMutation(accountID, policyID, *conditionInput); err != nil {
-			return err
-		}
+	var condition *alerts.NrqlAlertCondition
+
+	switch d.Get("type").(string) {
+	case "baseline":
+		condition, err = client.Alerts.CreateNrqlConditionBaselineMutation(accountID, policyID, *conditionInput)
+	case "static":
+		condition, err = client.Alerts.CreateNrqlConditionStaticMutation(accountID, policyID, *conditionInput)
+	case "outlier":
+		condition, err = client.Alerts.CreateNrqlConditionOutlierMutation(accountID, policyID, *conditionInput)
 	}
 
-	if conditionType == "static" {
-		if nrqlCondition, err = client.Alerts.CreateNrqlConditionStaticMutation(accountID, policyID, *conditionInput); err != nil {
-			return err
-		}
+	if err != nil {
+		return err
 	}
 
-	if conditionType == "outlier" {
-		if nrqlCondition, err = client.Alerts.CreateNrqlConditionOutlierMutation(accountID, policyID, *conditionInput); err != nil {
-			return err
-		}
-	}
-
-	conditionID, err := strconv.Atoi(nrqlCondition.ID)
+	conditionID, err := strconv.Atoi(condition.ID)
 	if err != nil {
 		return err
 	}
@@ -324,6 +318,7 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading New Relic NRQL alert condition %s", d.Id())
 
@@ -332,13 +327,9 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	// policyID := ids[0]
 	conditionID := ids[1]
 
-	accountID := selectAccountID(providerConfig, d)
-
-	var nrqlCondition *alerts.NrqlAlertCondition
-	nrqlCondition, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
+	nrqlCondition, err := client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -353,6 +344,7 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
@@ -360,24 +352,18 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 	}
 
 	conditionID := strconv.Itoa(ids[1])
-	conditionType := d.Get("type").(string)
-	accountID := selectAccountID(providerConfig, d)
 
-	var conditionInput *alerts.NrqlConditionInput
-	conditionInput, err = expandNrqlAlertConditionInput(d)
+	conditionInput, err := expandNrqlAlertConditionInput(d)
 	if err != nil {
 		return err
 	}
 
-	if conditionType == "baseline" {
+	switch d.Get("type").(string) {
+	case "baseline":
 		_, err = client.Alerts.UpdateNrqlConditionBaselineMutation(accountID, conditionID, *conditionInput)
-	}
-
-	if conditionType == "static" {
+	case "static":
 		_, err = client.Alerts.UpdateNrqlConditionStaticMutation(accountID, conditionID, *conditionInput)
-	}
-
-	if conditionType == "outlier" {
+	case "outlier":
 		_, err = client.Alerts.UpdateNrqlConditionOutlierMutation(accountID, conditionID, *conditionInput)
 	}
 
