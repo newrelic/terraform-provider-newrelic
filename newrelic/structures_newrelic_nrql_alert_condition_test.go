@@ -181,20 +181,20 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		require.Equal(t, 7654321, d.Get("policy_id").(int))
 		require.Equal(t, nr.TestAccountID, d.Get("account_id").(int))
 
-		switch string(condition.Type) {
-		case "BASELINE":
-			require.Equal(t, "LOWER_ONLY", d.Get("baseline_direction").(string))
+		switch condition.Type {
+		case alerts.NrqlConditionTypes.Baseline:
+			require.Equal(t, string(alerts.NrqlBaselineDirections.LowerOnly), d.Get("baseline_direction").(string))
 			require.Zero(t, d.Get("value_function").(string))
 			require.Zero(t, d.Get("expected_groups").(int))
 			require.Zero(t, d.Get("open_violation_on_group_overlap").(bool))
 
-		case "STATIC":
-			require.Equal(t, "SUM", d.Get("value_function").(string))
+		case alerts.NrqlConditionTypes.Static:
+			require.Equal(t, string(alerts.NrqlConditionValueFunctions.Sum), d.Get("value_function").(string))
 			require.Zero(t, d.Get("baseline_direction").(string))
 			require.Zero(t, d.Get("expected_groups").(int))
 			require.Zero(t, d.Get("open_violation_on_group_overlap").(bool))
 
-		case "OUTLIER":
+		case alerts.NrqlConditionTypes.Outlier:
 			require.Equal(t, 2, d.Get("expected_groups").(int))
 			require.True(t, d.Get("open_violation_on_group_overlap").(bool))
 			require.Zero(t, d.Get("baseline_direction").(string))
@@ -202,74 +202,3 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		}
 	}
 }
-
-// func TestExpandNrqlConditionTerms(t *testing.T) {
-// 	flattened := []interface{}{
-// 		map[string]interface{}{
-// 			"duration":      5,
-// 			"operator":      "above",
-// 			"priority":      "critical",
-// 			"threshold":     1.5,
-// 			"time_function": "all",
-// 		},
-// 	}
-
-// 	expected := []alerts.ConditionTerm{
-// 		{
-// 			Duration:     5,
-// 			Operator:     alerts.OperatorTypes.Above,
-// 			Priority:     alerts.PriorityTypes.Critical,
-// 			Threshold:    1.5,
-// 			TimeFunction: alerts.TimeFunctionTypes.All,
-// 		},
-// 	}
-
-// 	expanded := expandNrqlConditionTerms(flattened)
-
-// 	require.NotNil(t, expanded)
-// 	require.Equal(t, expected, expanded)
-// }
-
-// func TestFlattenNrql(t *testing.T) {
-// 	expanded := alerts.NrqlQuery{
-// 		Query:      "SELECT percentile(duration, 99) FROM Transaction FACET remote_ip",
-// 		SinceValue: "3",
-// 	}
-
-// 	expected := []interface{}{map[string]interface{}{
-// 		"query":       "SELECT percentile(duration, 99) FROM Transaction FACET remote_ip",
-// 		"since_value": "3",
-// 	}}
-
-// 	flattened := flattenNrqlQuery(expanded)
-
-// 	require.NotNil(t, flattened)
-// 	require.Equal(t, expected, flattened)
-// }
-
-// func TestFlattenNrqlConditionTerms(t *testing.T) {
-// 	expanded := []alerts.ConditionTerm{
-// 		{
-// 			Duration:     5,
-// 			Operator:     "above",
-// 			Priority:     "critical",
-// 			Threshold:    1.5,
-// 			TimeFunction: alerts.TimeFunctionTypes.All,
-// 		},
-// 	}
-
-// 	expected := []map[string]interface{}{
-// 		{
-// 			"duration":      5,
-// 			"operator":      alerts.OperatorTypes.Above,
-// 			"priority":      alerts.PriorityTypes.Critical,
-// 			"threshold":     1.5,
-// 			"time_function": alerts.TimeFunctionTypes.All,
-// 		},
-// 	}
-
-// 	flattened := flattenNrqlConditionTerms(expanded)
-
-// 	require.NotNil(t, flattened)
-// 	require.Equal(t, expected, flattened)
-// }
