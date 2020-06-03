@@ -32,9 +32,9 @@ func (s *Synthetics) AddMonitorLabel(monitorID, labelKey, labelValue string) err
 
 	data := fmt.Sprintf("%s:%s", strings.Title(labelKey), strings.Title(labelValue))
 
-	// We use RawPost here due to the Syntheics API's lack of support for JSON on
-	// this call.  The values must be POSTed as bare key:value word string.
-	_, err := s.client.RawPost(s.config.Region().SyntheticsURL(url), nil, data, nil)
+	// We pass []byte of data do avoid JSON encoding due to the Syntheics API's lack of
+	// support for JSON on this call.  The values must be POSTed as bare key:value word string.
+	_, err := s.client.Post(s.config.Region().SyntheticsURL(url), nil, []byte(data), nil)
 	if err != nil {
 		return err
 	}

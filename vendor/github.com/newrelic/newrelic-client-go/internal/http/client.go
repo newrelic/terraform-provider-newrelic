@@ -1,7 +1,6 @@
 package http
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -37,6 +36,9 @@ type Client struct {
 
 	// authStrategy allows us to use multiple authentication methods for API calls
 	authStrategy RequestAuthorizer
+
+	// compressor is used to compress the body of a request, and set the content-encoding header
+	compressor RequestCompressor
 
 	errorValue ErrorResponse
 }
@@ -78,18 +80,33 @@ func NewClient(cfg config.Config) Client {
 	// Disable logging in go-retryablehttp since we are logging requests directly here
 	r.Logger = nil
 
-	return Client{
+	client := Client{
 		authStrategy: &ClassicV2Authorizer{},
 		client:       r,
 		config:       cfg,
 		errorValue:   &DefaultErrorResponse{},
 	}
+
+	switch cfg.Compression {
+	case config.Compression.Gzip:
+		client.compressor = &GzipCompressor{}
+	default:
+		client.compressor = &NoneCompressor{}
+	}
+
+	return client
 }
 
 // SetAuthStrategy is used to set the default auth strategy for this client
 // which can be overridden per request
 func (c *Client) SetAuthStrategy(da RequestAuthorizer) {
 	c.authStrategy = da
+}
+
+// SetRequestCompressor is used to enable compression on the request using
+// the RequestCompressor specified
+func (c *Client) SetRequestCompressor(compressor RequestCompressor) {
+	c.compressor = compressor
 }
 
 // SetErrorValue is used to unmarshal error body responses in JSON format.
@@ -127,34 +144,6 @@ func (c *Client) Post(
 	respBody interface{},
 ) (*http.Response, error) {
 	req, err := c.NewRequest(http.MethodPost, url, queryParams, reqBody, respBody)
-	if err != nil {
-		return nil, err
-	}
-
-	return c.Do(req)
-}
-
-// RawPost behaves the same as Post, but without marshaling the body into JSON before making the request.
-// This is required at least in the case of Synthetics Labels, since the POST doesn't handle JSON.
-func (c *Client) RawPost(
-	url string,
-	queryParams interface{},
-	reqBody interface{},
-	respBody interface{},
-) (*http.Response, error) {
-
-	var requestBody []byte
-
-	switch val := reqBody.(type) {
-	case []byte:
-		requestBody = val
-	case string:
-		requestBody = []byte(val)
-	default:
-		return nil, errors.New("invalid request body")
-	}
-
-	req, err := c.NewRequest(http.MethodPost, url, queryParams, requestBody, respBody)
 	if err != nil {
 		return nil, err
 	}
@@ -269,21 +258,6 @@ func isResponseSuccess(resp *http.Response) bool {
 	statusCode := resp.StatusCode
 
 	return statusCode >= http.StatusOK && statusCode <= 299
-}
-
-func makeRequestBodyReader(reqBody interface{}) (*bytes.Buffer, error) {
-	if reqBody == nil {
-		return nil, nil
-	}
-
-	j, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, err
-	}
-
-	b := bytes.NewBuffer(j)
-
-	return b, nil
 }
 
 // NerdGraphQuery runs a Nerdgraph query.

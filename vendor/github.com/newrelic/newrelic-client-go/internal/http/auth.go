@@ -37,3 +37,10 @@ type ClassicV2Authorizer struct{}
 func (a *ClassicV2Authorizer) AuthorizeRequest(r *Request, c *config.Config) {
 	r.SetHeader("X-Api-Key", c.AdminAPIKey)
 }
+
+// InsightsInsertKeyAuthorizer authorizes sending custom events to New Relic.
+type InsightsInsertKeyAuthorizer struct{}
+
+func (a *InsightsInsertKeyAuthorizer) AuthorizeRequest(r *Request, c *config.Config) {
+	r.SetHeader("X-Insert-Key", c.InsightsInsertKey)
+}

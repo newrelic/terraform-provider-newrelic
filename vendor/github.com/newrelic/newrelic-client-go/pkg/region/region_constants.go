@@ -20,6 +20,7 @@ var Regions = map[Name]*Region{
 	US: {
 		name:                  "US",
 		infrastructureBaseURL: "https://infra-api.newrelic.com/v2",
+		insightsBaseURL:       "https://insights-collector.newrelic.com",
 		nerdGraphBaseURL:      "https://api.newrelic.com/graphql",
 		restBaseURL:           "https://api.newrelic.com/v2",
 		syntheticsBaseURL:     "https://synthetics.newrelic.com/synthetics/api",
@@ -27,6 +28,7 @@ var Regions = map[Name]*Region{
 	EU: {
 		name:                  "EU",
 		infrastructureBaseURL: "https://infra-api.eu.newrelic.com/v2",
+		insightsBaseURL:       "https://insights-collector.eu.newrelic.com",
 		nerdGraphBaseURL:      "https://api.eu.newrelic.com/graphql",
 		restBaseURL:           "https://api.eu.newrelic.com/v2",
 		syntheticsBaseURL:     "https://synthetics.eu.newrelic.com/synthetics/api",
@@ -34,6 +36,7 @@ var Regions = map[Name]*Region{
 	Staging: {
 		name:                  "Staging",
 		infrastructureBaseURL: "https://staging-infra-api.newrelic.com/v2",
+		insightsBaseURL:       "https://staging-insights-collector.newrelic.com",
 		nerdGraphBaseURL:      "https://staging-api.newrelic.com/graphql",
 		restBaseURL:           "https://staging-api.newrelic.com/v2",
 		syntheticsBaseURL:     "https://staging-synthetics.newrelic.com/synthetics/api",
