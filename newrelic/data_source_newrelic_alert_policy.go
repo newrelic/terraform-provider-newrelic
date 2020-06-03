@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -80,7 +79,7 @@ func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("the name '%s' does not match any New Relic alert policy", name)
 	}
 
-	d.SetId(strconv.Itoa(policy.ID))
+	d.SetId(policy.ID)
 
 	return flattenAlertPolicyDataSource(policy, d, accountID)
 }

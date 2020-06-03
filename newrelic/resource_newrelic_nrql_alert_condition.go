@@ -284,15 +284,17 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 
 		log.Printf("[INFO] Creating New Relic NRQL alert condition %s via NerdGraph API", conditionInput.Name)
 
+		id := strconv.Itoa(policyID)
+
 		var nrqlCondition *alerts.NrqlAlertCondition
 		if conditionType == "baseline" {
-			if nrqlCondition, err = client.Alerts.CreateNrqlConditionBaselineMutation(accountID, policyID, *conditionInput); err != nil {
+			if nrqlCondition, err = client.Alerts.CreateNrqlConditionBaselineMutation(accountID, id, *conditionInput); err != nil {
 				return err
 			}
 		}
 
 		if conditionType == "static" {
-			if nrqlCondition, err = client.Alerts.CreateNrqlConditionStaticMutation(accountID, policyID, *conditionInput); err != nil {
+			if nrqlCondition, err = client.Alerts.CreateNrqlConditionStaticMutation(accountID, id, *conditionInput); err != nil {
 				return err
 			}
 		}
@@ -334,7 +336,7 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 	}
 
 	policyID := ids[0]
-	conditionID := ids[1]
+	conditionID := strconv.Itoa(ids[1])
 	conditionType := d.Get("type").(string)
 
 	// NerdGraph
@@ -364,7 +366,9 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	condition, err := client.Alerts.GetNrqlCondition(policyID, conditionID)
+	id := ids[1]
+
+	condition, err := client.Alerts.GetNrqlCondition(policyID, id)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -400,15 +404,17 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 			return err
 		}
 
+		id := strconv.Itoa(conditionID)
+
 		if conditionType == "baseline" {
-			_, err = client.Alerts.UpdateNrqlConditionBaselineMutation(accountID, conditionID, *conditionInput)
+			_, err = client.Alerts.UpdateNrqlConditionBaselineMutation(accountID, id, *conditionInput)
 			if err != nil {
 				return err
 			}
 		}
 
 		if conditionType == "static" {
-			_, err = client.Alerts.UpdateNrqlConditionStaticMutation(accountID, conditionID, *conditionInput)
+			_, err = client.Alerts.UpdateNrqlConditionStaticMutation(accountID, id, *conditionInput)
 			if err != nil {
 				return err
 			}
