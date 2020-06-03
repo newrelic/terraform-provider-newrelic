@@ -13,6 +13,99 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
+// termSchema returns the schema used for a critial or warning term priority.
+func termSchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			// Maps to `thresholdDuration` in NerdGraph and values are in seconds, not minutes.
+			// Validation is different in NerdGraph - Value must be within 120-3600 seconds (2-60 minutes) and a multiple of 60 for BASELINE conditions.
+			// Convert to seconds when using NerdGraph
+			"duration": {
+				Deprecated:    "use `threshold_duration` attribute instead",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Description:   "In minutes, must be in the range of 1 to 120 (inclusive).",
+				ConflictsWith: []string{"term.0.threshold_duration"},
+				ValidateFunc:  validation.IntBetween(1, 120),
+			},
+			// Value must be uppercase when using NerdGraph
+			"operator": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "equal",
+				Description:  "One of (above, below, equal). Defaults to 'equal'.",
+				ValidateFunc: validation.StringInSlice([]string{"above", "below", "equal"}, false),
+			},
+			// Value must be uppercase when using NerdGraph
+			"priority": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "critical",
+				Description:  "One of (critical, warning). Defaults to 'critical'. At least one condition term must have priority set to 'critical'.",
+				ValidateFunc: validation.StringInSlice([]string{"critical", "warning"}, false),
+			},
+			"threshold": {
+				Type:         schema.TypeFloat,
+				Required:     true,
+				Description:  "Must be 0 or greater. For baseline conditions must be in range [1, 1000].",
+				ValidateFunc: float64Gte(0.0),
+			},
+			// Does not exist in NerdGraph. Equivalent to `threshold_occurrences`,
+			// but with different wording.
+			"time_function": {
+				Deprecated:    "use `threshold_occurrences` attribute instead",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Valid values are: 'all' or 'any'",
+				ConflictsWith: []string{"term.0.threshold_occurrences"},
+				ValidateFunc:  validation.StringInSlice([]string{"all", "any"}, false),
+			},
+
+			// NerdGraph only. Equivalent to `time_function`,
+			// but with slightly different wording.
+			// i.e. `any` (old) vs `AT_LEAST_ONCE` (new)
+			"threshold_occurrences": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: 'ALL' or 'AT_LEAST_ONCE' (case insensitive).",
+				ConflictsWith: []string{"term.0.time_function"},
+				ValidateFunc:  validation.StringInSlice([]string{"ALL", "AT_LEAST_ONCE"}, true),
+			},
+			// NerdGraph only. Equivalent to `duration`, but in seconds
+			"threshold_duration": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Description:   "The duration of time, in seconds, that the threshold must violate for in order to create a violation. Value must be a multiple of 60 and within 120-3600 seconds for baseline conditions and 120-7200 seconds for static conditions.",
+				ConflictsWith: []string{"term.0.duration"},
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					v := val.(int)
+
+					// Value must be a factor of 60.
+					if v%60 != 0 {
+						errs = append(errs, fmt.Errorf("%q must be a factor of 60, got: %d", key, v))
+					}
+
+					// This validation is a top-level validation check.
+					// Baseline conditions must be within range [120, 3600].
+					// Baseline condition validation lives in the "expand" functions.
+					if v < 120 || v > 7200 {
+						errs = append(errs, fmt.Errorf("%q must be between 120 and 7200 inclusive, got: %d", key, v))
+					}
+
+					return
+				},
+			},
+		},
+	}
+}
+
+func namedPrioritySchema() *schema.Resource {
+	rec := termSchema()
+	delete(rec.Schema, "priority")
+
+	return rec
+}
+
 func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceNewRelicNrqlAlertConditionCreate,
@@ -101,93 +194,32 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				},
 			},
 			"term": {
-				Type:        schema.TypeSet,
-				Required:    true,
-				MinItems:    1,
-				MaxItems:    2,
-				Description: "A set of terms for this condition. Max 2 terms allowed - at least one 1 critical term and 1 optional warning term.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						// Maps to `thresholdDuration` in NerdGraph and values are in seconds, not minutes.
-						// Validation is different in NerdGraph - Value must be within 120-3600 seconds (2-60 minutes) and a multiple of 60 for BASELINE conditions.
-						// Convert to seconds when using NerdGraph
-						"duration": {
-							Deprecated:    "use `threshold_duration` attribute instead",
-							Type:          schema.TypeInt,
-							Optional:      true,
-							Description:   "In minutes, must be in the range of 1 to 120 (inclusive).",
-							ConflictsWith: []string{"term.0.threshold_duration"},
-							ValidateFunc:  validation.IntBetween(1, 120),
-						},
-						// Value must be uppercase when using NerdGraph
-						"operator": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Default:      "equal",
-							Description:  "One of (above, below, equal). Defaults to 'equal'.",
-							ValidateFunc: validation.StringInSlice([]string{"above", "below", "equal"}, false),
-						},
-						// Value must be uppercase when using NerdGraph
-						"priority": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Default:      "critical",
-							Description:  "One of (critical, warning). Defaults to 'critical'. At least one condition term must have priority set to 'critical'.",
-							ValidateFunc: validation.StringInSlice([]string{"critical", "warning"}, false),
-						},
-						"threshold": {
-							Type:         schema.TypeFloat,
-							Required:     true,
-							Description:  "Must be 0 or greater. For baseline conditions must be in range [1, 1000].",
-							ValidateFunc: float64Gte(0.0),
-						},
-						// Does not exist in NerdGraph. Equivalent to `threshold_occurrences`,
-						// but with different wording.
-						"time_function": {
-							Deprecated:    "use `threshold_occurrences` attribute instead",
-							Type:          schema.TypeString,
-							Optional:      true,
-							Description:   "Valid values are: 'all' or 'any'",
-							ConflictsWith: []string{"term.0.threshold_occurrences"},
-							ValidateFunc:  validation.StringInSlice([]string{"all", "any"}, false),
-						},
-
-						// NerdGraph only. Equivalent to `time_function`,
-						// but with slightly different wording.
-						// i.e. `any` (old) vs `AT_LEAST_ONCE` (new)
-						"threshold_occurrences": {
-							Type:          schema.TypeString,
-							Optional:      true,
-							Description:   "The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: 'ALL' or 'AT_LEAST_ONCE' (case insensitive).",
-							ConflictsWith: []string{"term.0.time_function"},
-							ValidateFunc:  validation.StringInSlice([]string{"ALL", "AT_LEAST_ONCE"}, true),
-						},
-						// NerdGraph only. Equivalent to `duration`, but in seconds
-						"threshold_duration": {
-							Type:          schema.TypeInt,
-							Optional:      true,
-							Description:   "The duration of time, in seconds, that the threshold must violate for in order to create a violation. Value must be a multiple of 60 and within 120-3600 seconds for baseline conditions and 120-7200 seconds for static conditions.",
-							ConflictsWith: []string{"term.0.duration"},
-							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-								v := val.(int)
-
-								// Value must be a factor of 60.
-								if v%60 != 0 {
-									errs = append(errs, fmt.Errorf("%q must be a factor of 60, got: %d", key, v))
-								}
-
-								// This validation is a top-level validation check.
-								// Baseline conditions must be within range [120, 3600].
-								// Baseline condition validation lives in the "expand" functions.
-								if v < 120 || v > 7200 {
-									errs = append(errs, fmt.Errorf("%q must be between 120 and 7200 inclusive, got: %d", key, v))
-								}
-
-								return
-							},
-						},
-					},
-				},
+				Type:          schema.TypeSet,
+				MinItems:      1,
+				MaxItems:      2,
+				Optional:      true,
+				Description:   "A set of terms for this condition. Max 2 terms allowed - at least one 1 critical term and 1 optional warning term.",
+				Elem:          termSchema(),
+				ConflictsWith: []string{"critical", "warning"},
+				Deprecated:    "use `critical` and `warning` attributes instead",
+			},
+			"critical": {
+				Type:          schema.TypeList,
+				MinItems:      1,
+				MaxItems:      1,
+				Optional:      true,
+				Elem:          namedPrioritySchema(),
+				Description:   "A condition term with priority set to critical.",
+				ConflictsWith: []string{"term.0"},
+			},
+			"warning": {
+				Type:          schema.TypeList,
+				MinItems:      1,
+				MaxItems:      1,
+				Optional:      true,
+				Elem:          namedPrioritySchema(),
+				Description:   "A condition term with priority set to warning.",
+				ConflictsWith: []string{"term.0"},
 			},
 			// Outlier ONLY
 			"expected_groups": {

@@ -19,6 +19,10 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 	expectedNrql.Nrql.Query = nrql["query"].(string)
 	expectedNrql.Nrql.EvaluationOffset = nrql["evaluation_offset"].(int)
 
+	// warningTerm := map[string]interface{}{}
+	//
+	// criticalTerm := map[string]interface{}{}
+
 	cases := map[string]struct {
 		Data         map[string]interface{}
 		ExpectErr    bool
@@ -201,4 +205,120 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Zero(t, d.Get("value_function").(string))
 		}
 	}
+}
+
+func TestExpandNrqlConditionTerm(t *testing.T) {
+
+	cases := map[string]struct {
+		ExpectErr     bool
+		ExpectReason  string
+		ConditionType string
+		Priority      string
+		Term          map[string]interface{}
+		Expected      *alerts.NrqlConditionTerm
+	}{
+		"critical default priority": {
+			Priority:      "critical",
+			ConditionType: "static",
+			Term: map[string]interface{}{
+				"threshold":             10.1,
+				"threshold_duration":    5,
+				"threshold_occurrences": "ALL",
+				"operator":              "equal",
+			},
+			Expected: &alerts.NrqlConditionTerm{
+				Operator:             alerts.NrqlConditionOperator("EQUAL"),
+				Priority:             alerts.NrqlConditionPriority("CRITICAL"),
+				Threshold:            10.1,
+				ThresholdDuration:    5,
+				ThresholdOccurrences: "ALL",
+			},
+		},
+		"critical explicit priority": {
+			Priority:      "critical",
+			ConditionType: "static",
+			Term: map[string]interface{}{
+				"threshold":             10.1,
+				"threshold_duration":    5,
+				"threshold_occurrences": "ALL",
+				"operator":              "equal",
+				"priority":              "critical",
+			},
+			Expected: &alerts.NrqlConditionTerm{
+				Operator:             alerts.NrqlConditionOperator("EQUAL"),
+				Priority:             alerts.NrqlConditionPriority("CRITICAL"),
+				Threshold:            10.1,
+				ThresholdDuration:    5,
+				ThresholdOccurrences: "ALL",
+			},
+		},
+		"warning priority passed at call": {
+			Priority:      "warning",
+			ConditionType: "static",
+			Term: map[string]interface{}{
+				"threshold":             10.9,
+				"threshold_duration":    9,
+				"threshold_occurrences": "ALL",
+				"operator":              "equal",
+			},
+			Expected: &alerts.NrqlConditionTerm{
+				Operator:             alerts.NrqlConditionOperator("EQUAL"),
+				Priority:             alerts.NrqlConditionPriority("WARNING"),
+				Threshold:            10.9,
+				ThresholdDuration:    9,
+				ThresholdOccurrences: "ALL",
+			},
+		},
+		"warning priority passed on the term": {
+			Priority:      "",
+			ConditionType: "static",
+			Term: map[string]interface{}{
+				"threshold":             10.9,
+				"threshold_duration":    9,
+				"threshold_occurrences": "ALL",
+				"operator":              "equal",
+				"priority":              "warning",
+			},
+			Expected: &alerts.NrqlConditionTerm{
+				Operator:             alerts.NrqlConditionOperator("EQUAL"),
+				Priority:             alerts.NrqlConditionPriority("WARNING"),
+				Threshold:            10.9,
+				ThresholdDuration:    9,
+				ThresholdOccurrences: "ALL",
+			},
+		},
+		"critical priority passed on the term, and warning priority passed to the method": {
+			Priority:      "warning",
+			ConditionType: "static",
+			Term: map[string]interface{}{
+				"threshold":             10.9,
+				"threshold_duration":    9,
+				"threshold_occurrences": "ALL",
+				"operator":              "equal",
+				"priority":              "critical",
+			},
+			Expected: &alerts.NrqlConditionTerm{
+				Operator:             alerts.NrqlConditionOperator("EQUAL"),
+				Priority:             alerts.NrqlConditionPriority("WARNING"),
+				Threshold:            10.9,
+				ThresholdDuration:    9,
+				ThresholdOccurrences: "ALL",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		expandedTerm, err := expandNrqlConditionTerm(tc.Term, tc.ConditionType, tc.Priority)
+		if tc.ExpectErr {
+			require.NotNil(t, err)
+			require.Equal(t, err.Error(), tc.ExpectReason)
+		} else {
+			require.Nil(t, err)
+		}
+
+		if tc.Expected != nil {
+			require.Equal(t, tc.Expected, expandedTerm)
+		}
+	}
+
 }

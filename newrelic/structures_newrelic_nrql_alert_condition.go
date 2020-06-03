@@ -126,6 +126,43 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 
 	input.Terms = terms
 
+	if len(input.Terms) == 0 {
+		if critical, ok := d.GetOk("critial"); ok {
+			x := critical.([]interface{})
+
+			// A critical attribute is a list, but is limited to a single item in the shema.
+			if len(x) > 0 {
+				single := x[0].(map[string]interface{})
+
+				criticalTerm, err := expandNrqlConditionTerm(single, conditionType, "critical")
+				if err != nil {
+					return nil, err
+				}
+				if criticalTerm != nil {
+					input.Terms = append(input.Terms, *criticalTerm)
+				}
+			}
+		}
+
+		if warning, ok := d.GetOk("warning"); ok {
+			x := warning.([]interface{})
+
+			// A warning attribute is a list, but is limited to a single item in the shema.
+			if len(x) > 0 {
+				single := x[0].(map[string]interface{})
+
+				warningTerm, err := expandNrqlConditionTerm(single, conditionType, "warning")
+				if err != nil {
+					return nil, err
+				}
+
+				if warningTerm != nil {
+					input.Terms = append(input.Terms, *warningTerm)
+				}
+			}
+		}
+	}
+
 	return &input, nil
 }
 
@@ -154,66 +191,104 @@ func expandNrql(d *schema.ResourceData, condition alerts.NrqlConditionInput) (*a
 }
 
 // NerdGraph
+func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priority string) (*alerts.NrqlConditionTerm, error) {
+
+	var durationIn int
+	if attr, ok := term["duration"]; ok {
+		durationIn = attr.(int)
+	}
+
+	thresholdDurationIn := term["threshold_duration"].(int)
+
+	if durationIn == 0 && thresholdDurationIn == 0 {
+		return nil, fmt.Errorf("one of `duration` or `threshold_duration` must be configured for block `term`")
+	}
+
+	if durationIn > 0 && thresholdDurationIn > 0 {
+		return nil, fmt.Errorf("one of `duration` or `threshold_duration` must be configured for block `term`, but not both")
+	}
+
+	var duration int
+	if durationIn > 0 {
+		duration = durationIn * 60 // convert min to sec
+	} else {
+		duration = thresholdDurationIn
+	}
+
+	// required
+	threshold := term["threshold"].(float64)
+
+	if conditionType == "baseline" {
+		if duration < 120 || duration > 3600 {
+			return nil, fmt.Errorf("for baseline conditions duration must be in range %v, got %v", "[2, 60]", duration)
+		}
+
+		if threshold < 1 || threshold > 1000 {
+			return nil, fmt.Errorf("for baseline conditions threshold must be in range %v, got %v", "[1, 1000]", threshold)
+		}
+	}
+
+	var timeFunctionIn string
+	if attr, ok := term["time_function"]; ok {
+		timeFunctionIn = attr.(string)
+	}
+
+	thresholdOccurrencesIn := term["threshold_occurrences"].(string)
+
+	if timeFunctionIn == "" && thresholdOccurrencesIn == "" {
+		return nil, fmt.Errorf("one of `time_function` or `threshold_occurrences` must be configured for block `term`")
+	}
+
+	if timeFunctionIn != "" && thresholdOccurrencesIn != "" {
+		return nil, fmt.Errorf("one of `time_function` or `threshold_occurrences` must be configured for block `term`, but not both")
+	}
+
+	var thresholdOccurrences alerts.ThresholdOccurrence
+	if timeFunctionIn != "" {
+		thresholdOccurrences = timeFunctionMap[timeFunctionIn]
+	} else {
+		thresholdOccurrences = alerts.ThresholdOccurrence(strings.ToUpper(thresholdOccurrencesIn))
+	}
+
+	// If we have not been passed a priority, then we should inspect the term we've received.
+	if priority == "" {
+		if termPriority, ok := term["priority"].(string); ok {
+			if termPriority != "" {
+				priority = termPriority
+			}
+		}
+	}
+
+	return &alerts.NrqlConditionTerm{
+		Operator:             alerts.NrqlConditionOperator(strings.ToUpper(term["operator"].(string))),
+		Priority:             alerts.NrqlConditionPriority(strings.ToUpper(priority)),
+		Threshold:            threshold,
+		ThresholdDuration:    duration,
+		ThresholdOccurrences: thresholdOccurrences,
+	}, nil
+}
+
+// NerdGraph
 func expandNrqlTerms(terms []interface{}, conditionType string) ([]alerts.NrqlConditionTerm, error) {
 	expanded := make([]alerts.NrqlConditionTerm, len(terms))
 
+	var err error
+	var errs []string
+
 	for i, t := range terms {
 		term := t.(map[string]interface{})
-		durationIn := term["duration"].(int)
-		thresholdDurationIn := term["threshold_duration"].(int)
 
-		if durationIn == 0 && thresholdDurationIn == 0 {
-			return nil, fmt.Errorf("one of `duration` or `threshold_duration` must be configured for block `term`")
+		nrqlConditionTerm, err := expandNrqlConditionTerm(term, conditionType, "")
+		if err != nil {
+			errs = append(errs, fmt.Sprintf("unable to expand NRQL condition term: %s", err))
 		}
 
-		if durationIn > 0 && thresholdDurationIn > 0 {
-			return nil, fmt.Errorf("one of `duration` or `threshold_duration` must be configured for block `term`, but not both")
-		}
+		expanded[i] = *nrqlConditionTerm
+	}
 
-		var duration int
-		if durationIn > 0 {
-			duration = durationIn * 60 // convert min to sec
-		} else {
-			duration = thresholdDurationIn
-		}
-
-		threshold := term["threshold"].(float64)
-
-		if conditionType == "baseline" {
-			if duration < 120 || duration > 3600 {
-				return nil, fmt.Errorf("for baseline conditions duration must be in range %v, got %v", "[2, 60]", duration)
-			}
-
-			if threshold < 1 || threshold > 1000 {
-				return nil, fmt.Errorf("for baseline conditions threshold must be in range %v, got %v", "[1, 1000]", threshold)
-			}
-		}
-
-		timeFunctionIn := term["time_function"].(string)
-		thresholdOccurrencesIn := term["threshold_occurrences"].(string)
-
-		if timeFunctionIn == "" && thresholdOccurrencesIn == "" {
-			return nil, fmt.Errorf("one of `time_function` or `threshold_occurrences` must be configured for block `term`")
-		}
-
-		if timeFunctionIn != "" && thresholdOccurrencesIn != "" {
-			return nil, fmt.Errorf("one of `time_function` or `threshold_occurrences` must be configured for block `term`, but not both")
-		}
-
-		var thresholdOccurrences alerts.ThresholdOccurrence
-		if timeFunctionIn != "" {
-			thresholdOccurrences = timeFunctionMap[timeFunctionIn]
-		} else {
-			thresholdOccurrences = alerts.ThresholdOccurrence(strings.ToUpper(thresholdOccurrencesIn))
-		}
-
-		expanded[i] = alerts.NrqlConditionTerm{
-			Operator:             alerts.NrqlConditionOperator(strings.ToUpper(term["operator"].(string))),
-			Priority:             alerts.NrqlConditionPriority(strings.ToUpper(term["priority"].(string))),
-			Threshold:            threshold,
-			ThresholdDuration:    duration,
-			ThresholdOccurrences: thresholdOccurrences,
-		}
+	if len(errs) > 0 {
+		err = fmt.Errorf(strings.Join(errs, ", "))
+		return expanded, err
 	}
 
 	return expanded, nil
@@ -260,9 +335,12 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `nrql`: %v", err)
 	}
 
+	// setting terms explicitly, critical/warning are not set
 	configuredTerms := d.Get("term").(*schema.Set).List()
-	if err := d.Set("term", flattenNrqlTerms(condition.Terms, configuredTerms)); err != nil {
-		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `term`: %v", err)
+	if len(configuredTerms) > 0 {
+		if err := d.Set("term", flattenNrqlTerms(condition.Terms, configuredTerms)); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `term`: %v", err)
+		}
 	}
 
 	if _, ok := d.GetOk("violation_time_limit_seconds"); ok {
