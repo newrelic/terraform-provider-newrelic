@@ -48,38 +48,12 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicNrqlAlertCondition_TypeOutlier(t *testing.T) {
-	resourceName := "newrelic_nrql_alert_condition.foo"
-	rName := acctest.RandString(5)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			// Test: Create
-			{
-				Config: testAccNewRelicNrqlAlertConditionConfigTypeOutlier(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
-				),
-			},
-			// Test: Import
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// Ignore items with deprecated fields because
-				// we don't set deprecated fields on import
-				ImportStateVerifyIgnore: []string{"account_id", "term", "nrql", "violation_time_limit"},
-				ImportStateIdFunc:       testAccImportStateIDFunc(resourceName, "outlier"),
-			},
-		},
-	})
-}
-
 func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 	rName := acctest.RandString(5)
+	conditionType := "outlier"
+	conditionalAttr := `expected_groups = 1
+	open_violation_on_group_overlap = true`
+	facetClause := `FACET host`
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -87,12 +61,26 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigTypeOutlier(rName),
+				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
+					rName,
+					conditionType,
+					3,
+					3600,
+					conditionalAttr,
+					facetClause,
+				),
 			},
 			{
 				PreConfig: testAccDeleteNewRelicAlertPolicy(fmt.Sprintf("tf-test-%s", rName)),
-				Config:    testAccNewRelicNrqlAlertConditionConfigTypeOutlier(rName),
-				Check:     testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
+				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
+					rName,
+					conditionType,
+					3,
+					3600,
+					conditionalAttr,
+					facetClause,
+				),
+				Check: testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
 			},
 		},
 	})
@@ -359,7 +347,6 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 	return func(s *terraform.State) error {
 		providerConfig := testAccProvider.Meta().(*ProviderConfig)
 		client := providerConfig.NewClient
-		// hasNerdGraphCreds := providerConfig.hasNerdGraphCredentials()
 
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -377,7 +364,6 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 			return err
 		}
 
-		// policyID := ids[0]
 		conditionID := ids[1]
 		accountID = providerConfig.AccountID
 
