@@ -135,8 +135,8 @@ func expandNrql(d *schema.ResourceData, condition alerts.NrqlConditionInput) (*a
 }
 
 // NerdGraph
-func expandNrqlTerms(terms []interface{}, conditionType string) ([]alerts.NrqlConditionTerms, error) {
-	expanded := make([]alerts.NrqlConditionTerms, len(terms))
+func expandNrqlTerms(terms []interface{}, conditionType string) ([]alerts.NrqlConditionTerm, error) {
+	expanded := make([]alerts.NrqlConditionTerm, len(terms))
 
 	for i, t := range terms {
 		term := t.(map[string]interface{})
@@ -188,7 +188,7 @@ func expandNrqlTerms(terms []interface{}, conditionType string) ([]alerts.NrqlCo
 			thresholdOccurrences = alerts.ThresholdOccurrence(strings.ToUpper(thresholdOccurrencesIn))
 		}
 
-		expanded[i] = alerts.NrqlConditionTerms{
+		expanded[i] = alerts.NrqlConditionTerm{
 			Operator:             alerts.NrqlConditionOperator(strings.ToUpper(term["operator"].(string))),
 			Priority:             alerts.NrqlConditionPriority(strings.ToUpper(term["priority"].(string))),
 			Threshold:            threshold,
@@ -268,7 +268,7 @@ func flattenNrql(nrql alerts.NrqlConditionQuery, configNrql map[string]interface
 }
 
 // NerdGraph
-func flattenNrqlTerms(terms []alerts.NrqlConditionTerms, configTerms []interface{}) []map[string]interface{} {
+func flattenNrqlTerms(terms []alerts.NrqlConditionTerm, configTerms []interface{}) []map[string]interface{} {
 	// Represents the built terms to be saved in state
 	var out []map[string]interface{}
 
@@ -308,7 +308,7 @@ func flattenNrqlTerms(terms []alerts.NrqlConditionTerms, configTerms []interface
 }
 
 // Note: We DO NOT set deprecated attributes on import for NRQL alert conditions.
-func handleImportFlattenNrqlTerms(terms []alerts.NrqlConditionTerms) []map[string]interface{} {
+func handleImportFlattenNrqlTerms(terms []alerts.NrqlConditionTerm) []map[string]interface{} {
 	var out []map[string]interface{}
 
 	for _, term := range terms {

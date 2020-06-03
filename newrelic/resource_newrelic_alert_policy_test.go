@@ -131,7 +131,7 @@ func testAccCheckNewRelicAlertPolicyDestroy(s *terraform.State) error {
 
 		policyID := strconv.Itoa(idParts[0])
 
-		_, err = client.Alerts.QueryPolicy(testAccountID, strconv.Itoa(policyID))
+		_, err = client.Alerts.QueryPolicy(testAccountID, policyID)
 
 		if err == nil {
 			return fmt.Errorf("policy still exists: %s", err)
