@@ -572,8 +572,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
 		threshold_occurrences = "ALL"
 	}
 
-
-
 	# Will be one of baseline_direction, value_function, expected_groups, or open_violation_on_group_overlap depending on condition type
 	%[5]s
 }

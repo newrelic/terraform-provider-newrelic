@@ -166,12 +166,6 @@ func resourceNewRelicAlertPolicyUpdate(d *schema.ResourceData, meta interface{})
 	}
 
 	client := providerConfig.NewClient
-
-	// policyID, err := strconv.ParseInt(d.Id(), 10, 32)
-	// if err != nil {
-	// 	return err
-	// }
-
 	policyID := d.Id()
 
 	accountID := selectAccountID(providerConfig, d)
@@ -206,12 +200,6 @@ func resourceNewRelicAlertPolicyDelete(d *schema.ResourceData, meta interface{})
 	}
 
 	client := providerConfig.NewClient
-
-	// policyID, err := strconv.ParseInt(d.Id(), 10, 32)
-	// if err != nil {
-	// 	return err
-	// }
-
 	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Deleting New Relic alert policy %s from account %d", d.Id(), accountID)
