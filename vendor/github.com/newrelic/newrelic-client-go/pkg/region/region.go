@@ -7,6 +7,7 @@ package region
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -22,6 +23,7 @@ type Region struct {
 	infrastructureBaseURL string
 	syntheticsBaseURL     string
 	nerdGraphBaseURL      string
+	insightsBaseURL       string
 }
 
 // String returns a human readable value for the specified Region Name
@@ -130,7 +132,7 @@ func (r *Region) SetSyntheticsBaseURL(url string) {
 	}
 }
 
-// SyntheticsURL returns the Full URL for Infrastructure REST API Calls, with any additional path elements appended
+// SyntheticsURL returns the Full URL for Synthetics REST API Calls, with any additional path elements appended
 func (r *Region) SyntheticsURL(path ...string) string {
 	if r == nil {
 		log.Errorf("call to nil region.SyntheticsURL")
@@ -144,6 +146,30 @@ func (r *Region) SyntheticsURL(path ...string) string {
 	}
 
 	return url
+}
+
+//
+// Insights Insert URL
+//
+
+func (r *Region) SetInsightsBaseURL(url string) {
+	if r != nil && url != "" {
+		r.insightsBaseURL = url
+	}
+}
+
+// InsightsURL returns the Full URL for Insights custom insert API calls
+func (r *Region) InsightsURL(accountID int) string {
+	if r == nil {
+		log.Errorf("call to nil region.SyntheticsURL")
+		return ""
+	}
+	if accountID < 1 {
+		log.Errorf("invalid account ID: %d", accountID)
+		return ""
+	}
+
+	return fmt.Sprintf("%s/%d/events", r.insightsBaseURL, accountID)
 }
 
 // concatURLPaths is a helper function for the URL builders below

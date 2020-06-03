@@ -291,6 +291,24 @@ func (a *Alerts) DeleteCondition(id int) (*Condition, error) {
 	return &resp.Condition, nil
 }
 
+// DeleteConditionMutation deletes any type of alert condition via New Relic's NerdGraph API.
+func (a *Alerts) DeleteConditionMutation(
+	accountID int,
+	conditionID string,
+) (string, error) {
+	resp := conditionDeleteResponse{}
+	vars := map[string]interface{}{
+		"accountId": accountID,
+		"id":        conditionID,
+	}
+
+	if err := a.client.NerdGraphQuery(deleteConditionMutation, vars, &resp); err != nil {
+		return "", err
+	}
+
+	return resp.AlertsConditionDelete.ID, nil
+}
+
 type listConditionsParams struct {
 	PolicyID int `url:"policy_id,omitempty"`
 }
@@ -306,3 +324,18 @@ type alertConditionResponse struct {
 type alertConditionRequestBody struct {
 	Condition Condition `json:"condition,omitempty"`
 }
+
+type conditionDeleteResponse struct {
+	AlertsConditionDelete struct {
+		ID string `json:"id,omitempty"`
+	} `json:"alertsConditionDelete"`
+}
+
+const (
+	deleteConditionMutation = `
+		mutation($accountId: Int!, $id: ID!) {
+			alertsConditionDelete(accountId: $accountId, id: $id) {
+				id
+			}
+		}`
+)
