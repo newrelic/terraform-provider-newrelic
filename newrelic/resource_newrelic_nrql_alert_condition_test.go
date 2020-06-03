@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
 func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
@@ -62,7 +61,7 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
-					rName,
+					fmt.Sprintf("tf-test-%s", rName),
 					conditionType,
 					3,
 					3600,
@@ -73,7 +72,7 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 			{
 				PreConfig: testAccDeleteNewRelicAlertPolicy(fmt.Sprintf("tf-test-%s", rName)),
 				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
-					rName,
+					fmt.Sprintf("tf-test-%s", rName),
 					conditionType,
 					3,
 					3600,
@@ -374,8 +373,7 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 			}
 		}
 
-		var found *alerts.NrqlAlertCondition
-		found, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
+		found, err := client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
 		if err != nil {
 			return err
 		}
@@ -433,50 +431,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	%[4]s
 }
 `, name, sinceValue, duration, conditionalAttrs)
-}
-
-func testAccNewRelicNrqlAlertConditionConfigTypeOutlier(name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_alert_policy" "foo" {
-	name = "tf-test-%[1]s"
-}
-
-resource "newrelic_nrql_alert_condition" "foo" {
-	type                         = "outlier"
-	name                         = "tf-test-outlier-%[1]s"
-	policy_id                    = newrelic_alert_policy.foo.id
-	enabled                      = false
-	runbook_url                  = "https://www.example.com"
-	violation_time_limit_seconds = 7200
-
-	# outlier type only
-	expected_groups = 2
-
-	# outlier type only
-	ignore_overlap  = true
-
-	nrql {
-		query       = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName' FACET host"
-		since_value = "3"
-	}
-
-	term {
-		operator      = "above"
-		priority      = "critical"
-		threshold     = 0.065
-		duration      = 5
-		time_function = "all"
-	}
-
-	term {
-		operator      = "above"
-		priority      = "warning"
-		threshold     = 0.035
-		duration      = 10
-		time_function = "all"
-	}
-}
-`, name)
 }
 
 // Uses deprecated attributes for test case
