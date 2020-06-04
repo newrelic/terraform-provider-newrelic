@@ -197,7 +197,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			},
 			// Outlier ONLY
 			"ignore_overlap": {
-				Deprecated:    "use `open_violation_on_group_overlap` attribute instead",
+				Deprecated:    "use `open_violation_on_group_overlap` attribute instead, but use the inverse of your boolean - e.g. if ignore_overlap = false, use open_violation_on_group_overlap = true",
 				Type:          schema.TypeBool,
 				Optional:      true,
 				Description:   "Whether to look for a convergence of groups when using outlier detection.",
