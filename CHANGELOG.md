@@ -1,7 +1,10 @@
 ## 1.19.0 (Unreleased)
 
+## 1.18.1 (June 03, 2020)
+
 BUG FIXES:
-* fix(alerts): update the client for epoch serialization fux ([#610](https://github.com/terraform-providers/terraform-provider-newrelic/issues/610))
+* fix(alerts): update the client for epoch serialization fix ([#610](https://github.com/terraform-providers/terraform-provider-newrelic/issues/610))
+* fix(test): Workloads returns ordered list of scope account IDs, update test
 
 ## 1.18.0 (May 15, 2020)
 
