@@ -299,7 +299,6 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"term", // contains nested attributes that are deprecated
 					"nrql", // contains nested attributes that are deprecated
-					"violation_time_limit",
 				},
 				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "outlier"),
 			},

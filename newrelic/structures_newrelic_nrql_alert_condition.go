@@ -75,12 +75,23 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 	}
 
 	if conditionType == "outlier" {
-		// TODO: check for `ignore_overlap` and set it to
-		expectedGroups := d.Get("expected_groups").(int)
-		openViolationOnGroupOverlap := d.Get("open_violation_on_group_overlap").(bool)
+		defaultExpectedGroups := 1
+		if expectedGroups, ok := d.GetOk("expected_groups"); ok {
+			expectedGroupsValue := expectedGroups.(int)
+			input.ExpectedGroups = &expectedGroupsValue
+		} else {
+			input.ExpectedGroups = &defaultExpectedGroups
+		}
 
-		input.ExpectedGroups = &expectedGroups
-		input.OpenViolationOnGroupOverlap = &openViolationOnGroupOverlap
+		var openViolationOnOverlap bool
+		if ignoreOverlap, ok := d.GetOkExists("ignore_overlap"); ok {
+			// Note: ignore_overlap is the inverse of open_violation_on_group_overlap
+			openViolationOnOverlap = !ignoreOverlap.(bool)
+		} else if violationOnOverlap, ok := d.GetOkExists("open_violation_on_group_overlap"); ok {
+			openViolationOnOverlap = violationOnOverlap.(bool)
+		}
+
+		input.OpenViolationOnGroupOverlap = &openViolationOnOverlap
 	}
 
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
@@ -227,7 +238,13 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 
 	if conditionType == "outlier" {
 		d.Set("expected_groups", *condition.ExpectedGroups)
-		d.Set("open_violation_on_group_overlap", *condition.OpenViolationOnGroupOverlap)
+
+		openViolationOnGroupOverlap := *condition.OpenViolationOnGroupOverlap
+		if _, ok := d.GetOkExists("ignore_overlap"); ok {
+			d.Set("ignore_overlap", !openViolationOnGroupOverlap)
+		} else {
+			d.Set("open_violation_on_group_overlap", openViolationOnGroupOverlap)
+		}
 	}
 
 	configuredNrql := d.Get("nrql.0").(map[string]interface{})
