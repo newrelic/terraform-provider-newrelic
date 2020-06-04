@@ -99,12 +99,12 @@ func resourceNewRelicAlertPolicyCreate(d *schema.ResourceData, meta interface{})
 
 		log.Printf("[INFO] Adding channels %+v to policy %+v", matchedChannelIDs, policy.Name)
 
-		policyID, err := strconv.Atoi(createResult.ID)
+		createResultID, err := strconv.Atoi(createResult.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = client.Alerts.UpdatePolicyChannels(policyID, matchedChannelIDs)
+		_, err = client.Alerts.UpdatePolicyChannels(createResultID, matchedChannelIDs)
 		if err != nil {
 			return err
 		}
@@ -144,7 +144,9 @@ func resourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) e
 
 	log.Printf("[INFO] Reading New Relic alert policy %d from account %d", policyID, accountID)
 
-	queryPolicy, queryErr := client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
+	id := strconv.Itoa(policyID)
+
+	queryPolicy, queryErr := client.Alerts.QueryPolicy(accountID, id)
 
 	if queryErr != nil {
 		if _, ok := queryErr.(*nrErrors.NotFound); ok {
@@ -166,11 +168,10 @@ func resourceNewRelicAlertPolicyUpdate(d *schema.ResourceData, meta interface{})
 	}
 
 	client := providerConfig.NewClient
-	policyID := d.Id()
 
 	accountID := selectAccountID(providerConfig, d)
 
-	log.Printf("[INFO] Updating New Relic alert policy %s from account %d", policyID, accountID)
+	log.Printf("[INFO] Updating New Relic alert policy %s from account %d", d.Id(), accountID)
 
 	updatePolicy := alerts.AlertsPolicyUpdateInput{}
 
@@ -184,7 +185,7 @@ func resourceNewRelicAlertPolicyUpdate(d *schema.ResourceData, meta interface{})
 		updatePolicy.Name = attr.(string)
 	}
 
-	updateResult, updateErr := client.Alerts.UpdatePolicyMutation(accountID, policyID, updatePolicy)
+	updateResult, updateErr := client.Alerts.UpdatePolicyMutation(accountID, d.Id(), updatePolicy)
 	if updateErr != nil {
 		return updateErr
 	}
@@ -200,6 +201,7 @@ func resourceNewRelicAlertPolicyDelete(d *schema.ResourceData, meta interface{})
 	}
 
 	client := providerConfig.NewClient
+
 	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Deleting New Relic alert policy %s from account %d", d.Id(), accountID)
