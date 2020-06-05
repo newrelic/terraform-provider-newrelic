@@ -215,9 +215,8 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			// between new:old and old:new is handled via maps in structures file.
 			// Conflicts with `baseline_direction` when using NerdGraph.
 			"value_function": {
-				Type:     schema.TypeString,
-				Optional: true,
-				// Default:      "single_value",
+				Type:         schema.TypeString,
+				Optional:     true,
 				Description:  "Valid values are: 'single_value' or 'sum'",
 				ValidateFunc: validation.StringInSlice([]string{"single_value", "sum"}, true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {

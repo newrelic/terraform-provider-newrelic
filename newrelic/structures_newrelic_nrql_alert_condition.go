@@ -87,8 +87,16 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 		if ignoreOverlap, ok := d.GetOkExists("ignore_overlap"); ok {
 			// Note: ignore_overlap is the inverse of open_violation_on_group_overlap
 			openViolationOnOverlap = !ignoreOverlap.(bool)
+
+			if *input.ExpectedGroups < 2 && openViolationOnOverlap {
+				return nil, fmt.Errorf("attribute `%s` must be set to true when `expected_groups` is 1", "ignore_overlap")
+			}
 		} else if violationOnOverlap, ok := d.GetOkExists("open_violation_on_group_overlap"); ok {
 			openViolationOnOverlap = violationOnOverlap.(bool)
+
+			if *input.ExpectedGroups < 2 && openViolationOnOverlap {
+				return nil, fmt.Errorf("attribute `%s` must be set to false when `expected_groups` is 1", "open_violation_on_group_overlap")
+			}
 		}
 
 		input.OpenViolationOnGroupOverlap = &openViolationOnOverlap
