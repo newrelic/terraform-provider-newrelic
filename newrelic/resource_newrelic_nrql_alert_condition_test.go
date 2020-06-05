@@ -50,7 +50,7 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 	rName := acctest.RandString(5)
 	conditionType := "outlier"
-	conditionalAttr := `expected_groups = 1
+	conditionalAttr := `expected_groups = 2
 	open_violation_on_group_overlap = true`
 	facetClause := `FACET host`
 
@@ -252,7 +252,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
 	conditionType := "outlier"
-	conditionalAttr := `expected_groups = 1
+	conditionalAttr := `expected_groups = 2
 	open_violation_on_group_overlap = true`
 	facetClause := `FACET host`
 
