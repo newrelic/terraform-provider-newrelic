@@ -12,7 +12,7 @@ Use this resource to create and manage NRQL alert conditions in New Relic.
 
 -> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](/docs/providers/newrelic/index.html) for configuring the provider.
 <br><br>
-Before upgrading to version 2.0.0 or later, it is recommended to upgrade to the most recent 1.x version of the provider (version 1.16.0) and ensure that your environment successfully runs `terraform plan` without unexpected changes.
+Before upgrading to version 2.0.0 or later, it is recommended to upgrade to the most recent 1.x version of the provider and ensure that your environment successfully runs `terraform plan` without unexpected changes.
 
 ## Example Usage
 
@@ -23,6 +23,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
+  account_id           = <Your Account ID>
   policy_id            = newrelic_alert_policy.foo.id
   type                 = "static"
   name                 = "foo"
@@ -72,7 +73,8 @@ The following arguments are supported:
 - `term` - (Required) A list of terms for this condition. See [Terms](#terms) below for details.
 - `value_function` - (Optional) Possible values are `single_value`, `sum` (case insensitive). Defaults to `single_value`.
 - `expected_groups` - (Optional) Number of expected groups when using `outlier` detection.
-- `ignore_overlap` - (Optional) Whether to look for a convergence of groups when using `outlier` detection.
+- `open_violation_on_group_overlap` - (Optional) Whether or not to trigger a violation when groups overlap. Set to `true` if you want to trigger a violation when groups overlap. This argument is only applicable in `outlier` conditions.
+- `ignore_overlap` - (Optional) **DEPRECATED:** Use `open_violation_on_group_overlap` instead, but use the inverse value of your boolean - e.g. if `ignore_overlap = false`, use `open_violation_on_group_overlap = true`. This argument sets whether to trigger a violation when groups overlap. If set to `true` overlapping groups will not trigger a violation. This argument is only applicable in `outlier` conditions.
 - `violation_time_limit` - (Optional) Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are `ONE_HOUR`, `TWO_HOURS`, `FOUR_HOURS`, `EIGHT_HOURS`, `TWELVE_HOURS`, `TWENTY_FOUR_HOURS` (case insensitive).
 - `violation_time_limit_seconds` - (Optional) **DEPRECATED:** Use `violation_time_limit` instead. Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are `3600`, `7200`, `14400`, `28800`, `43200`, and `86400`.
 
@@ -113,7 +115,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ##### Type: `baseline`
 
-Example baseline NRQL alert condition for alerting when transaction durations are above a specified threshold and dynamically adjusts based on data trends.
+[Baseline NRQL alert conditions](https://docs.newrelic.com/docs/alerts/new-relic-alerts/defining-conditions/create-baseline-alert-conditions) are dynamic in nature and adjust to the behavior of your data. The example below demonstrates a baseline NRQL alert condition for alerting when transaction durations are above a specified threshold and dynamically adjusts based on data trends.
 
 ```hcl
 resource "newrelic_alert_policy" "foo" {
@@ -122,6 +124,7 @@ resource "newrelic_alert_policy" "foo" {
 
 resource "newrelic_nrql_alert_condition" "foo" {
   type                 = "baseline"
+  account_id           = <Your Account ID>
   name                 = "foo"
   policy_id            = newrelic_alert_policy.foo.id
   description          = "Alert when transactions are taking too long"
@@ -155,9 +158,55 @@ resource "newrelic_nrql_alert_condition" "foo" {
 }
 ```
 
+<br>
+
 ##### Type: `outlier`
 
-Please refer to the [version 1.x `outlier` example](/docs/providers/newrelic/r/v1/nrql_alert_condition.html#type-outlier). Outlier detection is supported in version 2.x of the New Relic Terraform provider, however it only supports version 1.x of the schema. Outlier detection will be updated to support the new schema in a future release.
+In software development and operations, it is common to have a group consisting of members you expect to behave approximately the same. [Outlier detection](https://docs.newrelic.com/docs/alerts/new-relic-alerts/defining-conditions/outlier-detection-nrql-alert) facilitates alerting when the behavior of one or more common members falls outside a specified range expectation.
+
+```hcl
+resource "newrelic_alert_policy" "foo" {
+  name = "foo"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+  type                 = "outlier"
+  account_id           = <Your Account ID>
+  name                 = "foo"
+  policy_id            = newrelic_alert_policy.foo.id
+  description          = "Alert when outlier conditions occur"
+  enabled              = true
+  runbook_url          = "https://www.example.com"
+  violation_time_limit = "one_hour"
+
+  # Outlier only
+  expected_groups = 2
+
+  # Outlier only
+	open_violation_on_group_overlap = true
+
+  nrql {
+    query             = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName' FACET host"
+    evaluation_offset = 3
+  }
+
+  term {
+    operator              = "above"
+    priority              = "critical"
+    threshold             = 0.002
+    threshold_duration    = 600
+    threshold_occurrences = "all"
+  }
+
+  term {
+    operator              = "above"
+    priority              = "warning"
+    threshold             = 0.0015
+    threshold_duration    = 600
+    threshold_occurrences = "all"
+  }
+}
+```
 
 ## Import
 
@@ -174,7 +223,7 @@ $ terraform import newrelic_nrql_alert_condition.foo 538291:6789035:static
 $ terraform import newrelic_nrql_alert_condition.foo 538291:6789035:outlier
 ```
 
-~> **NOTE:** The value of `conditionType` in the import composite ID must be a valid condition type - `static`, `baseline`, or `outlier.`
+~> **NOTE:** The value of `conditionType` in the import composite ID must be a valid condition type - `static`, `baseline`, or `outlier.` Also note that deprecated arguments will *not* be set when importing.
 
 The actual values for `policy_id` and `condition_id` can be retrieved from the following New Relic URL when viewing the NRQL alert condition you want to import:
 
