@@ -127,9 +127,8 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 	input.Terms = terms
 
 	if len(input.Terms) == 0 {
-		if critical, ok := d.GetOk("critial"); ok {
+		if critical, ok := d.GetOk("critical"); ok {
 			x := critical.([]interface{})
-
 			// A critical attribute is a list, but is limited to a single item in the shema.
 			if len(x) > 0 {
 				single := x[0].(map[string]interface{})
@@ -146,7 +145,6 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 
 		if warning, ok := d.GetOk("warning"); ok {
 			x := warning.([]interface{})
-
 			// A warning attribute is a list, but is limited to a single item in the shema.
 			if len(x) > 0 {
 				single := x[0].(map[string]interface{})
@@ -337,9 +335,34 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 
 	// setting terms explicitly, critical/warning are not set
 	configuredTerms := d.Get("term").(*schema.Set).List()
+
 	if len(configuredTerms) > 0 {
 		if err := d.Set("term", flattenNrqlTerms(condition.Terms, configuredTerms)); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `term`: %v", err)
+		}
+	} else {
+		// Handle the named condition priorities.
+		conditionTerms := flattenNrqlTerms(condition.Terms, configuredTerms)
+
+		for _, term := range conditionTerms {
+			switch term["priority"].(string) {
+			case "critical":
+				t := term
+				delete(t, "priority")
+				var terms []map[string]interface{}
+				terms = append(terms, t)
+				if err := d.Set("critical", terms); err != nil {
+					return fmt.Errorf("[DEBUG] Error setting nrql alert condition `critical`: %v", err)
+				}
+			case "warning":
+				t := term
+				delete(t, "priority")
+				var terms []map[string]interface{}
+				terms = append(terms, t)
+				if err := d.Set("warning", terms); err != nil {
+					return fmt.Errorf("[DEBUG] Error setting nrql alert condition `warning`: %v", err)
+				}
+			}
 		}
 	}
 
