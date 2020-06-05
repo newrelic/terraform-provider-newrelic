@@ -5,81 +5,11 @@ import (
 
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/stretchr/testify/require"
+
+	nr "github.com/newrelic/newrelic-client-go/pkg/testhelpers"
 )
 
-func TestExpandNrqlConditionTerms(t *testing.T) {
-	flattened := []interface{}{
-		map[string]interface{}{
-			"duration":      5,
-			"operator":      "above",
-			"priority":      "critical",
-			"threshold":     1.5,
-			"time_function": "all",
-		},
-	}
-
-	expected := []alerts.ConditionTerm{
-		{
-			Duration:     5,
-			Operator:     alerts.OperatorTypes.Above,
-			Priority:     alerts.PriorityTypes.Critical,
-			Threshold:    1.5,
-			TimeFunction: alerts.TimeFunctionTypes.All,
-		},
-	}
-
-	expanded := expandNrqlConditionTerms(flattened)
-
-	require.NotNil(t, expanded)
-	require.Equal(t, expected, expanded)
-}
-
-func TestFlattenNrql(t *testing.T) {
-	expanded := alerts.NrqlQuery{
-		Query:      "SELECT percentile(duration, 99) FROM Transaction FACET remote_ip",
-		SinceValue: "3",
-	}
-
-	expected := []interface{}{map[string]interface{}{
-		"query":       "SELECT percentile(duration, 99) FROM Transaction FACET remote_ip",
-		"since_value": "3",
-	}}
-
-	flattened := flattenNrqlQuery(expanded)
-
-	require.NotNil(t, flattened)
-	require.Equal(t, expected, flattened)
-}
-
-func TestFlattenNrqlConditionTerms(t *testing.T) {
-	expanded := []alerts.ConditionTerm{
-		{
-			Duration:     5,
-			Operator:     "above",
-			Priority:     "critical",
-			Threshold:    1.5,
-			TimeFunction: alerts.TimeFunctionTypes.All,
-		},
-	}
-
-	expected := []map[string]interface{}{
-		{
-			"duration":      5,
-			"operator":      alerts.OperatorTypes.Above,
-			"priority":      alerts.PriorityTypes.Critical,
-			"threshold":     1.5,
-			"time_function": alerts.TimeFunctionTypes.All,
-		},
-	}
-
-	flattened := flattenNrqlConditionTerms(expanded)
-
-	require.NotNil(t, flattened)
-	require.Equal(t, expected, flattened)
-}
-
 func TestExpandNrqlAlertConditionInput(t *testing.T) {
-
 	nrql := map[string]interface{}{
 		"query":             "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'Dummy App'",
 		"evaluation_offset": 3,
@@ -170,7 +100,6 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 		}
 
 		if tc.Expanded != nil {
-
 			// Static conditions specific
 			if tc.Expanded.ValueFunction != nil {
 				require.Equal(t, *tc.Expanded.ValueFunction, *expanded.ValueFunction)
@@ -190,5 +119,86 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 			}
 		}
 	}
+}
 
+func TestFlattenNrqlAlertCondition(t *testing.T) {
+	r := resourceNewRelicNrqlAlertCondition()
+
+	nrqlCondition := alerts.NrqlAlertCondition{
+		ID:       "1234567",
+		PolicyID: "7654321",
+		NrqlConditionBase: alerts.NrqlConditionBase{
+			Description: "description test",
+			Enabled:     true,
+			Name:        "name-test",
+			Nrql: alerts.NrqlConditionQuery{
+				Query:            "SELECT average(duration) from Transaction where appName='Dummy App'",
+				EvaluationOffset: 3,
+			},
+			RunbookURL: "test.com",
+			Terms: []alerts.NrqlConditionTerm{
+				{
+					Threshold:            1,
+					ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
+					ThresholdDuration:    600,
+					Operator:             alerts.NrqlConditionOperators.Above,
+					Priority:             alerts.NrqlConditionPriorities.Critical,
+				},
+			},
+			ViolationTimeLimit: alerts.NrqlConditionViolationTimeLimits.OneHour,
+		},
+	}
+
+	// Baseline
+	nrqlConditionBaseline := nrqlCondition
+	nrqlConditionBaseline.Type = alerts.NrqlConditionTypes.Baseline
+	nrqlConditionBaseline.BaselineDirection = &alerts.NrqlBaselineDirections.LowerOnly
+
+	// Static
+	nrqlConditionStatic := nrqlCondition
+	nrqlConditionStatic.Type = alerts.NrqlConditionTypes.Static
+	nrqlConditionStatic.ValueFunction = &alerts.NrqlConditionValueFunctions.Sum
+
+	// Outlier
+	expectedGroups := 2
+	openViolationOnOverlap := true
+	nrqlConditionOutlier := nrqlCondition
+	nrqlConditionOutlier.Type = "OUTLIER"
+	nrqlConditionOutlier.ExpectedGroups = &expectedGroups
+	nrqlConditionOutlier.OpenViolationOnGroupOverlap = &openViolationOnOverlap
+
+	conditions := []*alerts.NrqlAlertCondition{
+		&nrqlConditionBaseline,
+		&nrqlConditionStatic,
+		&nrqlConditionOutlier,
+	}
+
+	for _, condition := range conditions {
+		d := r.TestResourceData()
+		err := flattenNrqlAlertCondition(nr.TestAccountID, condition, d)
+		require.NoError(t, err)
+
+		require.Equal(t, 7654321, d.Get("policy_id").(int))
+		require.Equal(t, nr.TestAccountID, d.Get("account_id").(int))
+
+		switch condition.Type {
+		case alerts.NrqlConditionTypes.Baseline:
+			require.Equal(t, string(alerts.NrqlBaselineDirections.LowerOnly), d.Get("baseline_direction").(string))
+			require.Zero(t, d.Get("value_function").(string))
+			require.Zero(t, d.Get("expected_groups").(int))
+			require.Zero(t, d.Get("open_violation_on_group_overlap").(bool))
+
+		case alerts.NrqlConditionTypes.Static:
+			require.Equal(t, string(alerts.NrqlConditionValueFunctions.Sum), d.Get("value_function").(string))
+			require.Zero(t, d.Get("baseline_direction").(string))
+			require.Zero(t, d.Get("expected_groups").(int))
+			require.Zero(t, d.Get("open_violation_on_group_overlap").(bool))
+
+		case alerts.NrqlConditionTypes.Outlier:
+			require.Equal(t, 2, d.Get("expected_groups").(int))
+			require.True(t, d.Get("open_violation_on_group_overlap").(bool))
+			require.Zero(t, d.Get("baseline_direction").(string))
+			require.Zero(t, d.Get("value_function").(string))
+		}
+	}
 }

@@ -74,6 +74,34 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 		}
 	}
 
+	if conditionType == "outlier" {
+		defaultExpectedGroups := 1
+		if expectedGroups, ok := d.GetOk("expected_groups"); ok {
+			expectedGroupsValue := expectedGroups.(int)
+			input.ExpectedGroups = &expectedGroupsValue
+		} else {
+			input.ExpectedGroups = &defaultExpectedGroups
+		}
+
+		var openViolationOnOverlap bool
+		if ignoreOverlap, ok := d.GetOkExists("ignore_overlap"); ok {
+			// Note: ignore_overlap is the inverse of open_violation_on_group_overlap
+			openViolationOnOverlap = !ignoreOverlap.(bool)
+
+			if *input.ExpectedGroups < 2 && openViolationOnOverlap {
+				return nil, fmt.Errorf("attribute `%s` must be set to true when `expected_groups` is 1", "ignore_overlap")
+			}
+		} else if violationOnOverlap, ok := d.GetOkExists("open_violation_on_group_overlap"); ok {
+			openViolationOnOverlap = violationOnOverlap.(bool)
+
+			if *input.ExpectedGroups < 2 && openViolationOnOverlap {
+				return nil, fmt.Errorf("attribute `%s` must be set to false when `expected_groups` is 1", "open_violation_on_group_overlap")
+			}
+		}
+
+		input.OpenViolationOnGroupOverlap = &openViolationOnOverlap
+	}
+
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
 		input.RunbookURL = runbookURL.(string)
 	}
@@ -126,8 +154,8 @@ func expandNrql(d *schema.ResourceData, condition alerts.NrqlConditionInput) (*a
 }
 
 // NerdGraph
-func expandNrqlTerms(terms []interface{}, conditionType string) ([]alerts.NrqlConditionTerms, error) {
-	expanded := make([]alerts.NrqlConditionTerms, len(terms))
+func expandNrqlTerms(terms []interface{}, conditionType string) ([]alerts.NrqlConditionTerm, error) {
+	expanded := make([]alerts.NrqlConditionTerm, len(terms))
 
 	for i, t := range terms {
 		term := t.(map[string]interface{})
@@ -179,7 +207,7 @@ func expandNrqlTerms(terms []interface{}, conditionType string) ([]alerts.NrqlCo
 			thresholdOccurrences = alerts.ThresholdOccurrence(strings.ToUpper(thresholdOccurrencesIn))
 		}
 
-		expanded[i] = alerts.NrqlConditionTerms{
+		expanded[i] = alerts.NrqlConditionTerm{
 			Operator:             alerts.NrqlConditionOperator(strings.ToUpper(term["operator"].(string))),
 			Priority:             alerts.NrqlConditionPriority(strings.ToUpper(term["priority"].(string))),
 			Threshold:            threshold,
@@ -216,6 +244,17 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 		d.Set("value_function", string(*condition.ValueFunction))
 	}
 
+	if conditionType == "outlier" {
+		d.Set("expected_groups", *condition.ExpectedGroups)
+
+		openViolationOnGroupOverlap := *condition.OpenViolationOnGroupOverlap
+		if _, ok := d.GetOkExists("ignore_overlap"); ok {
+			d.Set("ignore_overlap", !openViolationOnGroupOverlap)
+		} else {
+			d.Set("open_violation_on_group_overlap", openViolationOnGroupOverlap)
+		}
+	}
+
 	configuredNrql := d.Get("nrql.0").(map[string]interface{})
 	if err := d.Set("nrql", flattenNrql(condition.Nrql, configuredNrql)); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `nrql`: %v", err)
@@ -231,10 +270,6 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	} else {
 		d.Set("violation_time_limit", condition.ViolationTimeLimit)
 	}
-
-	// TODO: Handle `outlier` condition type fields when added to NerdGraph
-	// d.Set("expected_groups", condition.ExpectedGroups)
-	// d.Set("ignore_overlap", condition.IgnoreOverlap)
 
 	return nil
 }
@@ -258,7 +293,7 @@ func flattenNrql(nrql alerts.NrqlConditionQuery, configNrql map[string]interface
 }
 
 // NerdGraph
-func flattenNrqlTerms(terms []alerts.NrqlConditionTerms, configTerms []interface{}) []map[string]interface{} {
+func flattenNrqlTerms(terms []alerts.NrqlConditionTerm, configTerms []interface{}) []map[string]interface{} {
 	// Represents the built terms to be saved in state
 	var out []map[string]interface{}
 
@@ -298,7 +333,7 @@ func flattenNrqlTerms(terms []alerts.NrqlConditionTerms, configTerms []interface
 }
 
 // Note: We DO NOT set deprecated attributes on import for NRQL alert conditions.
-func handleImportFlattenNrqlTerms(terms []alerts.NrqlConditionTerms) []map[string]interface{} {
+func handleImportFlattenNrqlTerms(terms []alerts.NrqlConditionTerm) []map[string]interface{} {
 	var out []map[string]interface{}
 
 	for _, term := range terms {
@@ -338,119 +373,4 @@ func getConfiguredTerms(configTerms []interface{}) []map[string]interface{} {
 	}
 
 	return setTerms
-}
-
-// Deprecated
-func expandNrqlAlertConditionStruct(d *schema.ResourceData) *alerts.NrqlCondition {
-	condition := alerts.NrqlCondition{
-		Name:                d.Get("name").(string),
-		Type:                d.Get("type").(string),
-		Enabled:             d.Get("enabled").(bool),
-		ValueFunction:       alerts.ValueFunctionType(d.Get("value_function").(string)),
-		ViolationCloseTimer: d.Get("violation_time_limit_seconds").(int),
-	}
-
-	condition.Terms = expandNrqlConditionTerms(d.Get("term").(*schema.Set).List())
-
-	if nrqlQuery, ok := d.GetOk("nrql.0.query"); ok {
-		condition.Nrql.Query = nrqlQuery.(string)
-	}
-
-	if sinceValue, ok := d.GetOk("nrql.0.since_value"); ok {
-		condition.Nrql.SinceValue = sinceValue.(string)
-	}
-
-	if attr, ok := d.GetOk("runbook_url"); ok {
-		condition.RunbookURL = attr.(string)
-	}
-
-	if attr, ok := d.GetOkExists("ignore_overlap"); ok {
-		condition.IgnoreOverlap = attr.(bool)
-	}
-
-	if attr, ok := d.GetOkExists("violation_time_limit_seconds"); ok {
-		condition.ViolationCloseTimer = attr.(int)
-	}
-
-	if attr, ok := d.GetOk("expected_groups"); ok {
-		condition.ExpectedGroups = attr.(int)
-	}
-
-	return &condition
-}
-
-// Deprecated
-func expandNrqlConditionTerms(terms []interface{}) []alerts.ConditionTerm {
-	expanded := make([]alerts.ConditionTerm, len(terms))
-
-	for i, t := range terms {
-		term := t.(map[string]interface{})
-
-		expanded[i] = alerts.ConditionTerm{
-			Duration:     term["duration"].(int),
-			Operator:     alerts.OperatorType(term["operator"].(string)),
-			Priority:     alerts.PriorityType(term["priority"].(string)),
-			Threshold:    term["threshold"].(float64),
-			TimeFunction: alerts.TimeFunctionType(term["time_function"].(string)),
-		}
-	}
-
-	return expanded
-}
-
-// Deprecated
-func flattenNrqlQuery(nrql alerts.NrqlQuery) []interface{} {
-	m := map[string]interface{}{
-		"query":       nrql.Query,
-		"since_value": nrql.SinceValue,
-	}
-
-	return []interface{}{m}
-}
-
-// Deprecated
-func flattenNrqlConditionTerms(terms []alerts.ConditionTerm) []map[string]interface{} {
-	var t []map[string]interface{}
-
-	for _, src := range terms {
-		dst := map[string]interface{}{
-			"duration":      src.Duration,
-			"operator":      src.Operator,
-			"priority":      src.Priority,
-			"threshold":     src.Threshold,
-			"time_function": src.TimeFunction,
-		}
-		t = append(t, dst)
-	}
-
-	return t
-}
-
-// Deprecated
-func flattenNrqlConditionStruct(condition *alerts.NrqlCondition, d *schema.ResourceData) error {
-	d.Set("name", condition.Name)
-	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("enabled", condition.Enabled)
-	d.Set("type", strings.ToLower(condition.Type))
-	d.Set("violation_time_limit_seconds", condition.ViolationCloseTimer)
-	d.Set("expected_groups", condition.ExpectedGroups)
-	d.Set("ignore_overlap", condition.IgnoreOverlap)
-
-	if condition.ValueFunction == "" {
-		d.Set("value_function", "single_value")
-	} else {
-		d.Set("value_function", condition.ValueFunction)
-	}
-
-	if err := d.Set("nrql", flattenNrqlQuery(condition.Nrql)); err != nil {
-		return err
-	}
-
-	terms := flattenNrqlConditionTerms(condition.Terms)
-
-	if err := d.Set("term", terms); err != nil {
-		return fmt.Errorf("[DEBUG] Error setting alert condition terms: %#v", err)
-	}
-
-	return nil
 }
