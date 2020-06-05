@@ -38,17 +38,15 @@ resource "newrelic_nrql_alert_condition" "foo" {
     evaluation_offset = 3
   }
 
-  term {
+  critical {
     operator              = "above"
-    priority              = "critical"
     threshold             = 5.5
     threshold_duration    = 300
     threshold_occurrences = "ALL"
   }
 
-  term {
+  warning {
     operator              = "above"
-    priority              = "warning"
     threshold             = 3.5
     threshold_duration    = 600
     threshold_occurrences = "ALL"
@@ -70,7 +68,9 @@ The following arguments are supported:
 - `runbook_url` - (Optional) Runbook URL to display in notifications.
 - `enabled` - (Optional) Whether to enable the alert condition. Valid values are `true` and `false`. Defaults to `true`.
 - `nrql` - (Required) A NRQL query. See [NRQL](#nrql) below for details.
-- `term` - (Required) A list of terms for this condition. See [Terms](#terms) below for details.
+- `term` - (Optional) **DEPRECATED** Use `critical`, and `warning` instead.  A list of terms for this condition. See [Terms](#terms) below for details.
+- `critical` - (Required) A one-item list of a term for this condition with `critical` priority. See [Terms](#terms) below for details.
+- `warning` - (Optional) A one-item list of a term for this condition with `warning` priority. See [Terms](#terms) below for details.
 - `value_function` - (Optional) Possible values are `single_value`, `sum` (case insensitive). Defaults to `single_value`.
 - `expected_groups` - (Optional) Number of expected groups when using `outlier` detection.
 - `open_violation_on_group_overlap` - (Optional) Whether or not to trigger a violation when groups overlap. Set to `true` if you want to trigger a violation when groups overlap. This argument is only applicable in `outlier` conditions.
@@ -87,6 +87,8 @@ The `nrql` block supports the following arguments:
 - `since_value` - (Optional)  **DEPRECATED:** Use `evaluation_offset` instead. The value to be used in the `SINCE <X> minutes ago` clause for the NRQL query. Must be between 1-20 (inclusive).
 
 ## Terms
+
+~> **NOTE:** The direct use of the `term` has been deprecated, and users should use `critical` and `warning` instead.  What follows now applies to the named priority attributes for `critical` and `warning`, but for those attributes the priority is not allowed.
 
 NRQL alert conditions support up to two terms. At least one `term` must have `priority` set to `critical` and the second optional `term` must have `priority` set to `warning`.
 
