@@ -165,9 +165,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 			if k == "critical" || k == "warning" {
 				var terms []map[string]interface{}
 
-				for _, namedTerm := range v.([]map[string]interface{}) {
-					terms = append(terms, namedTerm)
-				}
+				terms = append(terms, v.([]map[string]interface{})...)
 
 				if err := d.Set(k, terms); err != nil {
 					t.Fatalf("err: %s", err)
