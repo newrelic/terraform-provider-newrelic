@@ -74,23 +74,12 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(validAlertChannelTypes, false),
 				Description:  fmt.Sprintf("(Required) The type of channel. One of: (%s).", strings.Join(validAlertChannelTypes, ", ")),
 			},
-			"configuration": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				ForceNew: true,
-				//TODO: ValidateFunc: (use list of keys from map above)
-				Sensitive:     true,
-				Deprecated:    "use `config` block instead",
-				ConflictsWith: []string{"config"},
-				Description:   "(Optional) A nested block that describes an alert channel configuration. Only one config block is permitted per alert channel definition.",
-			},
 			"config": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				ForceNew:      true,
-				MaxItems:      1,
-				ConflictsWith: []string{"configuration"},
-				Description:   "The configuration block for the alert channel.",
+				Type:        schema.TypeList,
+				Optional:    true,
+				ForceNew:    true,
+				MaxItems:    1,
+				Description: "The configuration block for the alert channel.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {

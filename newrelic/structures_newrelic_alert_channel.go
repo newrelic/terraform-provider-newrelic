@@ -16,24 +16,13 @@ func expandAlertChannel(d *schema.ResourceData) (*alerts.Channel, error) {
 	}
 
 	config, configOk := d.GetOk("config")
-	configuration, configurationOk := d.GetOk("configuration")
 
-	if !configOk && !configurationOk {
+	if !configOk {
 		return nil, errors.New("alert channel requires a config or configuration attribute")
 	}
 
 	if configOk {
 		c, err := expandAlertChannelConfiguration(config.([]interface{})[0].(map[string]interface{}))
-
-		if err != nil {
-			return nil, err
-		}
-
-		channel.Configuration = *c
-	}
-
-	if configurationOk {
-		c, err := expandAlertChannelConfiguration(configuration.(map[string]interface{}))
 
 		if err != nil {
 			return nil, err
@@ -182,19 +171,8 @@ func flattenAlertChannel(channel *alerts.Channel, d *schema.ResourceData) error 
 		return err
 	}
 
-	configuration, err := flattenDeprecatedAlertChannelConfiguration(&channel.Configuration)
-	if err != nil {
+	if err := d.Set("config", config); err != nil {
 		return err
-	}
-
-	if _, ok := d.GetOk("configuration"); ok {
-		if err := d.Set("configuration", configuration); err != nil {
-			return err
-		}
-	} else {
-		if err := d.Set("config", config); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -249,47 +227,6 @@ func flattenAlertChannelConfiguration(c *alerts.ChannelConfiguration, d *schema.
 	}
 
 	return []interface{}{configResult}, nil
-}
-
-func flattenDeprecatedAlertChannelConfiguration(c *alerts.ChannelConfiguration) (map[string]interface{}, error) {
-	if c == nil {
-		return nil, nil
-	}
-
-	configResult := make(map[string]interface{})
-
-	configResult["api_key"] = c.APIKey
-	configResult["auth_password"] = c.AuthPassword
-	configResult["auth_username"] = c.AuthUsername
-	configResult["base_url"] = c.BaseURL
-	configResult["channel"] = c.Channel
-	configResult["key"] = c.Key
-	configResult["include_json_attachment"] = c.IncludeJSONAttachment
-	configResult["payload_type"] = c.PayloadType
-	configResult["recipients"] = c.Recipients
-	configResult["region"] = c.Region
-	configResult["route_key"] = c.RouteKey
-	configResult["service_key"] = c.ServiceKey
-	configResult["tags"] = c.Tags
-	configResult["teams"] = c.Teams
-	configResult["url"] = c.URL
-	configResult["user_id"] = c.UserID
-
-	headers, err := json.Marshal(c.Headers)
-	if err != nil {
-		return nil, err
-	}
-
-	configResult["headers"] = string(headers)
-
-	payload, err := json.Marshal(c.Payload)
-	if err != nil {
-		return nil, err
-	}
-
-	configResult["payload"] = string(payload)
-
-	return configResult, nil
 }
 
 func validateChannelConfiguration(config alerts.ChannelConfiguration) error {
