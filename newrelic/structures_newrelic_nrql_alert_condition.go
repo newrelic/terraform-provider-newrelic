@@ -119,47 +119,12 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 
 	input.Nrql = *nrql
 
-	terms, err := expandNrqlTerms(d.Get("term").(*schema.Set).List(), conditionType)
+	terms, err := expandNrqlTerms(d, conditionType)
 	if err != nil {
 		return nil, err
 	}
 
 	input.Terms = terms
-
-	if len(input.Terms) == 0 {
-		if critical, ok := d.GetOk("critical"); ok {
-			x := critical.([]interface{})
-			// A critical attribute is a list, but is limited to a single item in the shema.
-			if len(x) > 0 {
-				single := x[0].(map[string]interface{})
-
-				criticalTerm, err := expandNrqlConditionTerm(single, conditionType, "critical")
-				if err != nil {
-					return nil, err
-				}
-				if criticalTerm != nil {
-					input.Terms = append(input.Terms, *criticalTerm)
-				}
-			}
-		}
-
-		if warning, ok := d.GetOk("warning"); ok {
-			x := warning.([]interface{})
-			// A warning attribute is a list, but is limited to a single item in the shema.
-			if len(x) > 0 {
-				single := x[0].(map[string]interface{})
-
-				warningTerm, err := expandNrqlConditionTerm(single, conditionType, "warning")
-				if err != nil {
-					return nil, err
-				}
-
-				if warningTerm != nil {
-					input.Terms = append(input.Terms, *warningTerm)
-				}
-			}
-		}
-	}
 
 	return &input, nil
 }
@@ -226,6 +191,30 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 		}
 	}
 
+	thresholdOccurrences, err := expandNrqlThresholdOccurrences(term)
+	if err != nil {
+		return nil, err
+	}
+
+	// If we have not been passed a priority, then we should inspect the term we've received.
+	if priority == "" {
+		if termPriority, ok := term["priority"].(string); ok {
+			if termPriority != "" {
+				priority = termPriority
+			}
+		}
+	}
+
+	return &alerts.NrqlConditionTerm{
+		Operator:             alerts.NrqlConditionOperator(strings.ToUpper(term["operator"].(string))),
+		Priority:             alerts.NrqlConditionPriority(strings.ToUpper(priority)),
+		Threshold:            threshold,
+		ThresholdDuration:    duration,
+		ThresholdOccurrences: *thresholdOccurrences,
+	}, nil
+}
+
+func expandNrqlThresholdOccurrences(term map[string]interface{}) (*alerts.ThresholdOccurrence, error) {
 	var timeFunctionIn string
 	if attr, ok := term["time_function"]; ok {
 		timeFunctionIn = attr.(string)
@@ -248,48 +237,71 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 		thresholdOccurrences = alerts.ThresholdOccurrence(strings.ToUpper(thresholdOccurrencesIn))
 	}
 
-	// If we have not been passed a priority, then we should inspect the term we've received.
-	if priority == "" {
-		if termPriority, ok := term["priority"].(string); ok {
-			if termPriority != "" {
-				priority = termPriority
-			}
-		}
-	}
-
-	return &alerts.NrqlConditionTerm{
-		Operator:             alerts.NrqlConditionOperator(strings.ToUpper(term["operator"].(string))),
-		Priority:             alerts.NrqlConditionPriority(strings.ToUpper(priority)),
-		Threshold:            threshold,
-		ThresholdDuration:    duration,
-		ThresholdOccurrences: thresholdOccurrences,
-	}, nil
+	return &thresholdOccurrences, nil
 }
 
 // NerdGraph
-func expandNrqlTerms(terms []interface{}, conditionType string) ([]alerts.NrqlConditionTerm, error) {
-	expanded := make([]alerts.NrqlConditionTerm, len(terms))
+func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.NrqlConditionTerm, error) {
+	terms := d.Get("term").(*schema.Set).List()
+
+	expandedTerms := make([]alerts.NrqlConditionTerm, len(terms))
 
 	var err error
 	var errs []string
 
 	for i, t := range terms {
 		term := t.(map[string]interface{})
+		var nrqlConditionTerm *alerts.NrqlConditionTerm
 
-		nrqlConditionTerm, err := expandNrqlConditionTerm(term, conditionType, "")
+		nrqlConditionTerm, err = expandNrqlConditionTerm(term, conditionType, "")
 		if err != nil {
 			errs = append(errs, fmt.Sprintf("unable to expand NRQL condition term: %s", err))
 		}
 
-		expanded[i] = *nrqlConditionTerm
+		expandedTerms[i] = *nrqlConditionTerm
 	}
 
 	if len(errs) > 0 {
 		err = fmt.Errorf(strings.Join(errs, ", "))
-		return expanded, err
+		return expandedTerms, err
 	}
 
-	return expanded, nil
+	if len(expandedTerms) == 0 {
+		if critical, ok := d.GetOk("critical"); ok {
+			x := critical.([]interface{})
+			// A critical attribute is a list, but is limited to a single item in the shema.
+			if len(x) > 0 {
+				single := x[0].(map[string]interface{})
+
+				criticalTerm, err := expandNrqlConditionTerm(single, conditionType, "critical")
+				if err != nil {
+					return nil, err
+				}
+				if criticalTerm != nil {
+					expandedTerms = append(expandedTerms, *criticalTerm)
+				}
+			}
+		}
+
+		if warning, ok := d.GetOk("warning"); ok {
+			x := warning.([]interface{})
+			// A warning attribute is a list, but is limited to a single item in the shema.
+			if len(x) > 0 {
+				single := x[0].(map[string]interface{})
+
+				warningTerm, err := expandNrqlConditionTerm(single, conditionType, "warning")
+				if err != nil {
+					return nil, err
+				}
+
+				if warningTerm != nil {
+					expandedTerms = append(expandedTerms, *warningTerm)
+				}
+			}
+		}
+	}
+
+	return expandedTerms, nil
 }
 
 // NerdGraph
