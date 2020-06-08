@@ -11,6 +11,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
+	"github.com/newrelic/newrelic-client-go/pkg/region"
+
 	insights "github.com/newrelic/go-insights/client"
 	nr "github.com/newrelic/newrelic-client-go/newrelic"
 )
@@ -21,6 +23,7 @@ const serviceName = "terraform-provider-newrelic"
 type Config struct {
 	AdminAPIKey          string
 	PersonalAPIKey       string
+	Region               string
 	APIURL               string
 	CACertFile           string
 	InfrastructureAPIURL string
@@ -44,6 +47,7 @@ func (c *Config) Client() (*nr.NewRelic, error) {
 		nr.ConfigPersonalAPIKey(c.PersonalAPIKey),
 		nr.ConfigUserAgent(c.userAgent),
 		nr.ConfigServiceName(serviceName),
+		nr.ConfigRegion(region.Name(c.Region)),
 	)
 
 	tlsCfg := &tls.Config{}
