@@ -89,11 +89,6 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_QUERY_URL", insightsQueryURL),
 			},
-			"infra_api_url": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INFRA_API_URL", nil),
-			},
 			"insecure_skip_verify": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -205,16 +200,10 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 }
 
 func getInfraAPIURL(data *schema.ResourceData) string {
-	oldURL, oldURLOk := data.GetOk("infra_api_url")
 	newURL, newURLOk := data.GetOk("infrastructure_api_url")
 
 	if newURLOk {
 		return newURL.(string)
-	}
-
-	if oldURLOk {
-		log.Printf("[WARN] Use of the infra_api_url attribute is deprecated.  Use infrastructure_api_url instead.")
-		return oldURL.(string)
 	}
 
 	return ""
