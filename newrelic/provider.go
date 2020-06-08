@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
@@ -21,6 +22,8 @@ const (
 
 // Provider represents a resource provider in Terraform
 func Provider() terraform.ResourceProvider {
+	deprecationMsgBaseURLs := "New Relic internal use only. API URLs are now configured based on the configured region."
+
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -41,22 +44,37 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_PERSONAL_API_KEY", nil),
 				Sensitive:   true,
 			},
+			"region": {
+				Type:         schema.TypeString,
+				Required:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("NEW_RELIC_REGION", "US"),
+				Description:  "The data center for which your New Relic account is configured. Only one region per provider block is permitted.",
+				ValidateFunc: validation.StringInSlice([]string{"US", "EU"}, true),
+			},
+			// New Relic internal use only
 			"api_url": {
+				Deprecated:  deprecationMsgBaseURLs,
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_URL", nil),
 			},
+			// New Relic internal use only
 			"synthetics_api_url": {
+				Deprecated:  deprecationMsgBaseURLs,
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_SYNTHETICS_API_URL", nil),
 			},
+			// New Relic internal use only
 			"infrastructure_api_url": {
+				Deprecated:  deprecationMsgBaseURLs,
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INFRASTRUCTURE_API_URL", nil),
 			},
+			// New Relic internal use only
 			"nerdgraph_api_url": {
+				Deprecated:  deprecationMsgBaseURLs,
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_NERDGRAPH_API_URL", nil),
@@ -152,6 +170,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 	cfg := Config{
 		AdminAPIKey:          adminAPIKey,
 		PersonalAPIKey:       personalAPIKey,
+		Region:               data.Get("region").(string),
 		APIURL:               data.Get("api_url").(string),
 		SyntheticsAPIURL:     data.Get("synthetics_api_url").(string),
 		NerdGraphAPIURL:      data.Get("nerdgraph_api_url").(string),

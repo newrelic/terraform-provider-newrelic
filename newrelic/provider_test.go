@@ -3,11 +3,13 @@ package newrelic
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -42,6 +44,20 @@ func init() {
 	}
 }
 
+func testAccNewRelicProviderConfig(region string, baseURL string, resourceName string) string {
+	return fmt.Sprintf(`
+provider "newrelic" {
+	region = "%[1]s"
+
+	%[2]s
+}
+
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[3]s"
+}
+`, region, baseURL, resourceName)
+}
+
 func TestProvider(t *testing.T) {
 	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
@@ -63,6 +79,41 @@ func TestProviderConfig(t *testing.T) {
 	if !hasNerdGraphCreds {
 		t.Error("hasNerdGraphCreds should be true")
 	}
+}
+
+func TestAccNewRelicProvider_Region(t *testing.T) {
+	// This error message will occur when configuring
+	// US region with EU API URLs when using the TF test account.
+	expectedErrorMsg := "403 response returned"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			// Test: Region "US"
+			{
+				Config: testAccNewRelicProviderConfig("US", "", rName),
+			},
+			// Test: Region "EU"
+			{
+				Config:      testAccNewRelicProviderConfig("EU", "", rName),
+				ExpectError: regexp.MustCompile(expectedErrorMsg),
+			},
+			// Test: Override US region URLs with EU region URLs (will result in an auth error)
+			{
+				Config:      testAccNewRelicProviderConfig("US", `nerdgraph_api_url = "https://api.eu.newrelic.com/graphql"`, rName),
+				ExpectError: regexp.MustCompile(expectedErrorMsg),
+			},
+			// Test: Override EU region URLs with US region URLs (should work since the TF acct is US-based)
+			{
+				Config: testAccNewRelicProviderConfig("EU", `nerdgraph_api_url = "https://api.newrelic.com/graphql"`, rName),
+			},
+			// Test: Case insensitivity
+			{
+				Config: testAccNewRelicProviderConfig("us", "", rName),
+			},
+		},
+	})
 }
 
 func testAccPreCheck(t *testing.T) {
