@@ -215,7 +215,9 @@ resource "newrelic_alert_channel" "foo" {
 
 resource "newrelic_alert_policy_channel" "foo" {
   policy_id  = newrelic_alert_policy.foo.id
-  channel_id = newrelic_alert_channel.foo.id
+  channel_ids = [
+		newrelic_alert_channel.foo.id
+	]
 }
 `, name)
 }
@@ -238,7 +240,9 @@ resource "newrelic_alert_channel" "foo" {
 
 resource "newrelic_alert_policy_channel" "foo" {
   policy_id  = newrelic_alert_policy.foo.id
-  channel_id = newrelic_alert_channel.foo.id
+  channel_ids = [
+		newrelic_alert_channel.foo.id
+	]
 }
 `, rName)
 }
