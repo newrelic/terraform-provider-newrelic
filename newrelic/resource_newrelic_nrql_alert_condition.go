@@ -36,14 +36,6 @@ func termSchema() *schema.Resource {
 				Description:  "One of (above, below, equal). Defaults to 'equal'.",
 				ValidateFunc: validation.StringInSlice([]string{"above", "below", "equal"}, false),
 			},
-			// Value must be uppercase when using NerdGraph
-			"priority": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "critical",
-				Description:  "One of (critical, warning). Defaults to 'critical'. At least one condition term must have priority set to 'critical'.",
-				ValidateFunc: validation.StringInSlice([]string{"critical", "warning"}, false),
-			},
 			"threshold": {
 				Type:         schema.TypeFloat,
 				Required:     true,
@@ -102,9 +94,18 @@ func termSchema() *schema.Resource {
 	}
 }
 
-func namedPrioritySchema() *schema.Resource {
+func termSchemaDeprecated() *schema.Resource {
 	rec := termSchema()
-	delete(rec.Schema, "priority")
+
+	prioritySchema := &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Default:      "critical",
+		Description:  "One of (critical, warning). Defaults to 'critical'. At least one condition term must have priority set to 'critical'.",
+		ValidateFunc: validation.StringInSlice([]string{"critical", "warning"}, false),
+	}
+
+	rec.Schema["priority"] = prioritySchema
 
 	return rec
 }
@@ -202,7 +203,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				MaxItems:      2,
 				Optional:      true,
 				Description:   "A set of terms for this condition. Max 2 terms allowed - at least one 1 critical term and 1 optional warning term.",
-				Elem:          termSchema(),
+				Elem:          termSchemaDeprecated(),
 				ConflictsWith: []string{"critical", "warning"},
 				Deprecated:    "use `critical` and `warning` attributes instead",
 			},
@@ -211,7 +212,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				MinItems:      1,
 				MaxItems:      1,
 				Optional:      true,
-				Elem:          namedPrioritySchema(),
+				Elem:          termSchema(),
 				Description:   "A condition term with priority set to critical.",
 				ConflictsWith: []string{"term.0"},
 			},
@@ -220,7 +221,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				MinItems:      1,
 				MaxItems:      1,
 				Optional:      true,
-				Elem:          namedPrioritySchema(),
+				Elem:          termSchema(),
 				Description:   "A condition term with priority set to warning.",
 				ConflictsWith: []string{"term.0"},
 			},
