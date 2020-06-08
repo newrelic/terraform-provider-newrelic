@@ -28,9 +28,11 @@ var (
 	NrqlConditionTypes = struct {
 		Baseline NrqlConditionType
 		Static   NrqlConditionType
+		Outlier  NrqlConditionType
 	}{
 		Baseline: "BASELINE",
 		Static:   "STATIC",
+		Outlier:  "OUTLIER",
 	}
 )
 
