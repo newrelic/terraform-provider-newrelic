@@ -15,11 +15,10 @@ resource "newrelic_alert_condition" "response_time_web" {
 	metric          = "response_time_web"
 	condition_scope = "application"
 
-	term {
+	critical {
 		duration      = var.service.duration
 		threshold     = var.service.response_time_threshold
 		operator      = "above"
-		priority      = "critical"
 		time_function = "all"
 	}
 }
@@ -33,11 +32,10 @@ resource "newrelic_alert_condition" "throughput_web" {
 	metric          = "throughput_web"
 	condition_scope = "application"
 
-	term {
+	critical {
 		duration      = var.service.duration
 		threshold     = var.service.throughput_threshold
 		operator      = "below"
-		priority      = "critical"
 		time_function = "all"
 	}
 }
@@ -51,11 +49,10 @@ resource "newrelic_alert_condition" "error_percentage" {
 	metric          = "error_percentage"
 	condition_scope = "application"
 
-	term {
+	critical {
 		duration      = var.service.duration
 		threshold     = var.service.error_percentage_threshold
 		operator      = "above"
-		priority      = "critical"
 		time_function = "all"
 	}
 }
