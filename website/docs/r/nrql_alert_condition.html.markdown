@@ -142,17 +142,15 @@ resource "newrelic_nrql_alert_condition" "foo" {
     evaluation_offset = 3
   }
 
-  term {
+  critical {
     operator              = "above"
-    priority              = "critical"
     threshold             = 5.5
     threshold_duration    = 300
     threshold_occurrences = "all"
   }
 
-  term {
+  warning {
     operator              = "above"
-    priority              = "warning"
     threshold             = 3.5
     threshold_duration    = 600
     threshold_occurrences = "all"
@@ -192,17 +190,15 @@ resource "newrelic_nrql_alert_condition" "foo" {
     evaluation_offset = 3
   }
 
-  term {
+  critical {
     operator              = "above"
-    priority              = "critical"
     threshold             = 0.002
     threshold_duration    = 600
     threshold_occurrences = "all"
   }
 
-  term {
+  warning {
     operator              = "above"
-    priority              = "warning"
     threshold             = 0.0015
     threshold_duration    = 600
     threshold_occurrences = "all"
