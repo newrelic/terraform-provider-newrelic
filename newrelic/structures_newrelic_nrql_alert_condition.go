@@ -242,14 +242,13 @@ func expandNrqlThresholdOccurrences(term map[string]interface{}) (*alerts.Thresh
 
 // NerdGraph
 func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.NrqlConditionTerm, error) {
-	terms := d.Get("term").(*schema.Set).List()
-
-	expandedTerms := make([]alerts.NrqlConditionTerm, len(terms))
-
+	var expandedTerms []alerts.NrqlConditionTerm
 	var err error
 	var errs []string
 
-	for i, t := range terms {
+	terms := d.Get("term").(*schema.Set).List()
+
+	for _, t := range terms {
 		term := t.(map[string]interface{})
 		var nrqlConditionTerm *alerts.NrqlConditionTerm
 
@@ -259,7 +258,7 @@ func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.Nrq
 		}
 
 		if nrqlConditionTerm != nil {
-			expandedTerms[i] = *nrqlConditionTerm
+			expandedTerms = append(expandedTerms, *nrqlConditionTerm)
 		}
 	}
 
