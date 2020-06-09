@@ -21,14 +21,14 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "20", "2", ""),
+				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "20", "120", ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "5", "10", ""),
+				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "5", "180", ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
@@ -387,7 +387,7 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 
 func testAccNewRelicNrqlAlertConditionConfigBasic(
 	name string,
-	sinceValue string,
+	evaluationOffset string,
 	duration string,
 	conditionalAttrs string,
 ) string {
@@ -399,37 +399,35 @@ resource "newrelic_alert_policy" "foo" {
 resource "newrelic_nrql_alert_condition" "foo" {
 	policy_id = newrelic_alert_policy.foo.id
 
-  name            = "tf-test-%[1]s"
-  runbook_url     = "https://foo.example.com"
-  enabled         = false
-  violation_time_limit_seconds = 3600
+  name                 = "tf-test-%[1]s"
+  runbook_url          = "https://foo.example.com"
+  enabled              = false
+  violation_time_limit = "EIGHT_HOURS"
 
 	nrql {
-    query         = "SELECT uniqueCount(hostname) FROM ComputeSample"
-    since_value   = "%[2]s"
+    query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+    evaluation_offset = "%[2]s"
 	}
 
-	term {
-    duration      = %[3]s
-    operator      = "above"
-    priority      = "critical"
-    threshold     = 0.75
-    time_function = "all"
+	critical {
+    operator              = "above"
+    threshold             = 0.75
+    threshold_duration    = %[3]s
+    threshold_occurrences = "ALL"
 	}
 
-	term {
-		duration      = 3
-		operator      = "above"
-		priority      = "warning"
-		threshold     = 0.5
-		time_function = "any"
+	warning {
+		operator              = "above"
+		threshold             = 0.5
+		threshold_duration    = 120
+		threshold_occurrences = "AT_LEAST_ONCE"
 	}
 
 	value_function  = "single_value"
 
 	%[4]s
 }
-`, name, sinceValue, duration, conditionalAttrs)
+`, name, evaluationOffset, duration, conditionalAttrs)
 }
 
 // Uses deprecated attributes for test case
@@ -464,7 +462,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 		duration      = %[4]d
 		operator      = "above"
 		priority      = "critical"
-		threshold     = 1.5
+		threshold     = 1.55
 		time_function = "all"
 	}
 
@@ -472,7 +470,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 		duration      = 2
 		operator      = "above"
 		priority      = "warning"
-		threshold     = 1.1
+		threshold     = 1.12
 		time_function = "any"
 	}
 
@@ -512,18 +510,16 @@ resource "newrelic_nrql_alert_condition" "foo" {
 		evaluation_offset = %[3]d
 	}
 
-	term {
+	critical {
     operator              = "above"
-    priority              = "critical"
-    threshold             = 1.25
+    threshold             = 1.25666
 		threshold_duration    = %[4]d
 		threshold_occurrences = "ALL"
 	}
 
-	term {
+	warning {
     operator              = "above"
-    priority              = "warning"
-    threshold             = 1.1
+    threshold             = 1.1666
 		threshold_duration    = %[4]d
 		threshold_occurrences = "AT_LEAST_ONCE"
 	}
@@ -563,9 +559,8 @@ resource "newrelic_nrql_alert_condition" "foo" {
 		evaluation_offset = %[3]d
 	}
 
-	term {
+	critical {
     operator              = "above"
-    priority              = "critical"
     threshold             = 1.25
 		threshold_duration    = %[4]d
 		threshold_occurrences = "ALL"
