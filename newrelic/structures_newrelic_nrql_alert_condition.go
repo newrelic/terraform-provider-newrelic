@@ -258,7 +258,9 @@ func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.Nrq
 			errs = append(errs, fmt.Sprintf("unable to expand NRQL condition term: %s", err))
 		}
 
-		expandedTerms[i] = *nrqlConditionTerm
+		if nrqlConditionTerm != nil {
+			expandedTerms[i] = *nrqlConditionTerm
+		}
 	}
 
 	if len(errs) > 0 {
