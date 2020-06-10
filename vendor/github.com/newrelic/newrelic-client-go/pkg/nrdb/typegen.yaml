@@ -1,0 +1,12 @@
+---
+imports:
+  - github.com/newrelic/newrelic-client-go/internal/serialization
+
+types:
+  - name: EpochMilliseconds
+    createAs: serialization.EpochTime
+  - name: Nrql
+    createAs: string
+  - name: NrdbResult
+    createAs: map[string]interface{}
+  - name: NrdbResultContainer
