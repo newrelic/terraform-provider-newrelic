@@ -113,8 +113,8 @@ func testPreCheck(t *testing.T) {
 		t.Fatal("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
 	}
 
-	if v := os.Getenv("NEW_RELIC_PERSONAL_API_KEY"); v == "" {
-		t.Log("[WARN] NEW_RELIC_PERSONAL_API_KEY has not been set for acceptance tests")
+	if v := os.Getenv("NEW_RELIC_ADMIN_API_KEY"); v == "" {
+		t.Log("[WARN] NEW_RELIC_ADMIN_API_KEY has not been set for acceptance tests")
 	}
 
 	testCreateApplication(t)
