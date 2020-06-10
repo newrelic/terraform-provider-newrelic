@@ -18,23 +18,23 @@ assume a basic understanding of Terraform.
 
 ## First things first: Credentials
 
-The environment variable `NEWRELIC_API_KEY` is automatically detected by the New Relic Terraform Provider when running `terraform` commands, so we recommend adding this environment variable to your machine's startup file, such as your `.bash_profile`.
+The environment variable `NEW_RELIC_API_KEY` is automatically detected by the New Relic Terraform Provider when running `terraform` commands, so we recommend adding this environment variable to your machine's startup file, such as your `.bash_profile`.
 
 This guide assumes your API key has been set with an environment variable.
 
--> <sup>You can set the environment variable `NEWRELIC_API_KEY` in your `.bash_profile` or `.bashrc` file (on UNIX machines). Or you can set the variable inline with the `terraform plan` or `terraform apply` commands (see examples below).</sup>
+-> <sup>You can set the environment variable `NEW_RELIC_API_KEY` in your `.bash_profile` or `.bashrc` file (on UNIX machines). Or you can set the variable inline with the `terraform plan` or `terraform apply` commands (see examples below).</sup>
 
 **.bash_profile**
 
 ```bash
 # Add this to your .bash_profile
-export NEWRELIC_API_KEY=abc123
+export NEW_RELIC_API_KEY=abc123
 ```
 
 Example inline with `terraform` command
 
 ```bash
-$ NEWRELIC_API_KEY=abc123 terraform apply
+$ NEW_RELIC_API_KEY=abc123 terraform apply
 ```
 
 ## Configuring the Provider
