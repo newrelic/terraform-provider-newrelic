@@ -242,14 +242,13 @@ func expandNrqlThresholdOccurrences(term map[string]interface{}) (*alerts.Thresh
 
 // NerdGraph
 func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.NrqlConditionTerm, error) {
-	terms := d.Get("term").(*schema.Set).List()
-
-	expandedTerms := make([]alerts.NrqlConditionTerm, len(terms))
-
+	var expandedTerms []alerts.NrqlConditionTerm
 	var err error
 	var errs []string
 
-	for i, t := range terms {
+	terms := d.Get("term").(*schema.Set).List()
+
+	for _, t := range terms {
 		term := t.(map[string]interface{})
 		var nrqlConditionTerm *alerts.NrqlConditionTerm
 
@@ -259,7 +258,7 @@ func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.Nrq
 		}
 
 		if nrqlConditionTerm != nil {
-			expandedTerms[i] = *nrqlConditionTerm
+			expandedTerms = append(expandedTerms, *nrqlConditionTerm)
 		}
 	}
 
@@ -350,13 +349,14 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	// setting terms explicitly, critical/warning are not set
 	configuredTerms := d.Get("term").(*schema.Set).List()
 
+	conditionTerms := flattenNrqlTerms(condition.Terms, configuredTerms)
+
 	if len(configuredTerms) > 0 {
-		if err := d.Set("term", flattenNrqlTerms(condition.Terms, configuredTerms)); err != nil {
+		if err := d.Set("term", conditionTerms); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `term`: %v", err)
 		}
 	} else {
 		// Handle the named condition priorities.
-		conditionTerms := flattenNrqlTerms(condition.Terms, configuredTerms)
 
 		for _, term := range conditionTerms {
 			switch term["priority"].(string) {
