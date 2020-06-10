@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
+	"github.com/hashicorp/terraform-plugin-sdk/meta"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
 	"github.com/terraform-providers/terraform-provider-newrelic/version"
@@ -147,7 +147,8 @@ func Provider() terraform.ResourceProvider {
 func providerConfigure(data *schema.ResourceData, terraformVersion string) (interface{}, error) {
 	adminAPIKey := data.Get("api_key").(string)
 	personalAPIKey := data.Get("personal_api_key").(string)
-	userAgent := fmt.Sprintf("%s %s/%s", httpclient.TerraformUserAgent(terraformVersion), TerraformProviderProductUserAgent, version.ProviderVersion)
+	terraformUA := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", terraformVersion, meta.SDKVersionString())
+	userAgent := fmt.Sprintf("%s %s/%s", terraformUA, TerraformProviderProductUserAgent, version.ProviderVersion)
 
 	cfg := Config{
 		AdminAPIKey:          adminAPIKey,
