@@ -261,7 +261,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:    true,
 				Description: "The New Relic account ID for managing your NRQL alert conditions.",
 				DefaultFunc: func() (interface{}, error) {
-					envAcctID := os.Getenv("NEWRELIC_ACCOUNT_ID")
+					envAcctID := os.Getenv("NEW_RELIC_ACCOUNT_ID")
 					if envAcctID != "" {
 						acctID, err := strconv.Atoi(envAcctID)
 

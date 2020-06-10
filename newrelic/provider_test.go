@@ -34,12 +34,12 @@ func init() {
 	testAccProviders = map[string]terraform.ResourceProvider{
 		"newrelic": testAccProvider,
 	}
-	testAccAPIKey = os.Getenv("NEWRELIC_API_KEY")
-	if v := os.Getenv("NEWRELIC_API_KEY"); v == "" {
+	testAccAPIKey = os.Getenv("NEW_RELIC_API_KEY")
+	if v := os.Getenv("NEW_RELIC_API_KEY"); v == "" {
 		testAccAPIKey = "foo"
 	}
 
-	if v, _ := strconv.Atoi(os.Getenv("NEWRELIC_ACCOUNT_ID")); v != 0 {
+	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_ACCOUNT_ID")); v != 0 {
 		testAccountID = v
 	}
 }
@@ -117,16 +117,16 @@ func TestAccNewRelicProvider_Region(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("NEWRELIC_API_KEY"); v == "" {
-		t.Fatal("NEWRELIC_API_KEY must be set for acceptance tests")
+	if v := os.Getenv("NEW_RELIC_API_KEY"); v == "" {
+		t.Log("[WARN] NEW_RELIC_API_KEY has not been set for acceptance tests")
 	}
 
-	if v := os.Getenv("NEWRELIC_LICENSE_KEY"); v == "" {
-		t.Fatal("NEWRELIC_LICENSE_KEY must be set for acceptance tests")
+	if v := os.Getenv("NEW_RELIC_LICENSE_KEY"); v == "" {
+		t.Fatal("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
 	}
 
-	if v := os.Getenv("NEWRELIC_PERSONAL_API_KEY"); v == "" {
-		t.Log("[WARN] NEWRELIC_PERSONAL_API_KEY has not been set for acceptance tests")
+	if v := os.Getenv("NEW_RELIC_ADMIN_API_KEY"); v == "" {
+		t.Fatal("NEW_RELIC_ADMIN_API_KEY must be set for acceptance tests")
 	}
 
 	//testAccApplicationsCleanup(t)
@@ -136,7 +136,7 @@ func testAccPreCheck(t *testing.T) {
 func testAccCreateApplication(t *testing.T) {
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName(testAccExpectedApplicationName),
-		newrelic.ConfigLicense(os.Getenv("NEWRELIC_LICENSE_KEY")),
+		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
 	)
 
 	if err != nil {
@@ -158,7 +158,7 @@ func testAccCreateApplication(t *testing.T) {
 // 	}
 
 // 	client := apm.New(config.Config{
-// 		APIKey: os.Getenv("NEWRELIC_API_KEY"),
+// 		APIKey: os.Getenv("NEW_RELIC_API_KEY"),
 // 	})
 
 // 	params := apm.ListApplicationsParams{
