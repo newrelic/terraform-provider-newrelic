@@ -16,6 +16,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/nerdgraph"
 	"github.com/newrelic/newrelic-client-go/pkg/nerdstorage"
+	"github.com/newrelic/newrelic-client-go/pkg/nrdb"
 	"github.com/newrelic/newrelic-client-go/pkg/plugins"
 	"github.com/newrelic/newrelic-client-go/pkg/region"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
@@ -24,15 +25,16 @@ import (
 
 // NewRelic is a collection of New Relic APIs.
 type NewRelic struct {
-	Alerts      alerts.Alerts
 	APM         apm.APM
+	Alerts      alerts.Alerts
 	Dashboards  dashboards.Dashboards
 	Edge        edge.Edge
 	Entities    entities.Entities
-	Plugins     plugins.Plugins
-	Synthetics  synthetics.Synthetics
 	NerdGraph   nerdgraph.NerdGraph
 	NerdStorage nerdstorage.NerdStorage
+	Nrdb        nrdb.Nrdb
+	Plugins     plugins.Plugins
+	Synthetics  synthetics.Synthetics
 	Workloads   workloads.Workloads
 }
 
@@ -54,15 +56,16 @@ func New(opts ...ConfigOption) (*NewRelic, error) {
 	}
 
 	nr := &NewRelic{
-		Alerts:      alerts.New(config),
 		APM:         apm.New(config),
+		Alerts:      alerts.New(config),
 		Dashboards:  dashboards.New(config),
 		Edge:        edge.New(config),
 		Entities:    entities.New(config),
-		Plugins:     plugins.New(config),
-		Synthetics:  synthetics.New(config),
 		NerdGraph:   nerdgraph.New(config),
 		NerdStorage: nerdstorage.New(config),
+		Nrdb:        nrdb.New(config),
+		Plugins:     plugins.New(config),
+		Synthetics:  synthetics.New(config),
 		Workloads:   workloads.New(config),
 	}
 

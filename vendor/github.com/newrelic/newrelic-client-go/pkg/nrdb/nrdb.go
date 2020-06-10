@@ -1,0 +1,51 @@
+// Package nrdb provides a programmatic API for interacting with NRDB, New Relic's Datastore
+//go:generate ../../bin/typegen -v -p $GOPACKAGE
+package nrdb
+
+import (
+	"github.com/newrelic/newrelic-client-go/internal/http"
+	"github.com/newrelic/newrelic-client-go/internal/logging"
+	"github.com/newrelic/newrelic-client-go/pkg/config"
+)
+
+// Nrdb is used to communicate with the New Relic's Datastore, NRDB.
+type Nrdb struct {
+	client http.Client
+	logger logging.Logger
+}
+
+// New returns a new GraphQL client for interacting with New Relic's Datastore
+func New(config config.Config) Nrdb {
+	return Nrdb{
+		client: http.NewClient(config),
+		logger: config.GetLogger(),
+	}
+}
+
+// Query facilitates making a NRQL query.
+func (n *Nrdb) Query(accountID int, query Nrql) (*NrdbResultContainer, error) {
+	respBody := gqlNrglQueryResponse{}
+
+	vars := map[string]interface{}{
+		"accountId": accountID,
+		"query":     query,
+	}
+
+	if err := n.client.NerdGraphQuery(gqlNrqlQuery, vars, &respBody); err != nil {
+		return nil, err
+	}
+
+	return &respBody.Actor.Account.Nrql, nil
+}
+
+const (
+	gqlNrqlQuery = `query($query: Nrql!, $accountId: Int!) { actor { account(id: $accountId) { nrql(query: $query) { results } } } }`
+)
+
+type gqlNrglQueryResponse struct {
+	Actor struct {
+		Account struct {
+			Nrql NrdbResultContainer
+		}
+	}
+}

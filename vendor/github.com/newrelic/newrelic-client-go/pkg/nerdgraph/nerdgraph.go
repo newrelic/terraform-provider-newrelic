@@ -16,9 +16,9 @@ type NerdGraph struct {
 // QueryResponse represents the top-level GraphQL response object returned
 // from a NerdGraph query request.
 type QueryResponse struct {
-	Actor          interface{} `json:"actor,omitempty"`
-	Docs           interface{} `json:"docs,omitempty"`
-	RequestContext interface{} `json:"requestContext,omitempty"`
+	Actor          interface{} `json:"actor,omitempty" yaml:"actor,omitempty"`
+	Docs           interface{} `json:"docs,omitempty" yaml:"docs,omitempty"`
+	RequestContext interface{} `json:"requestContext,omitempty" yaml:"requestContext,omitempty"`
 }
 
 // New returns a new GraphQL client for interacting with New Relic's GraphQL API, NerdGraph.
@@ -43,6 +43,6 @@ func (n *NerdGraph) Query(query string, variables map[string]interface{}) (inter
 
 // AccountReference represents the NerdGraph schema for a New Relic account.
 type AccountReference struct {
-	ID   int    `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
+	ID   int    `json:"id,omitempty" yaml:"id,omitempty"`
+	Name string `json:"name,omitempty" yaml:"name,omitempty"`
 }
