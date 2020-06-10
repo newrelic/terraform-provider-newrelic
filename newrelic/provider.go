@@ -38,10 +38,10 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_API_KEY", nil),
 				Sensitive:   true,
 			},
-			"personal_api_key": {
+			"admin_api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_PERSONAL_API_KEY", nil),
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_ADMIN_API_KEY", nil),
 				Sensitive:   true,
 			},
 			"region": {
@@ -163,8 +163,8 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigure(data *schema.ResourceData, terraformVersion string) (interface{}, error) {
-	adminAPIKey := data.Get("api_key").(string)
-	personalAPIKey := data.Get("personal_api_key").(string)
+	adminAPIKey := data.Get("admin_api_key").(string)
+	personalAPIKey := data.Get("api_key").(string)
 	userAgent := fmt.Sprintf("%s %s/%s", httpclient.TerraformUserAgent(terraformVersion), TerraformProviderProductUserAgent, version.ProviderVersion)
 
 	cfg := Config{
