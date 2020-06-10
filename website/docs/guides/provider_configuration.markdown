@@ -13,7 +13,6 @@ The New Relic Terraform Provider supports two methods of configuring the provide
 1. [Using environment variables](#configuration-via-environment-variables) (recommended)
 1. [Using the `provider` block](#configuration-via-the-provider-block)
 
-<!-- DEV NOTE: Rewrite this note. Make it better. -->
 -> <small>**Note:** If you need to configure more than one instance of the New Relic provider, such as for different regions, we've provided an [example](#configuring-multiple-instances-of-the-provider) showing how this can be accomplished.</small>
 
 ### Configuration via environment variables
@@ -26,8 +25,8 @@ If you're using Terraform locally, you can set the environment variables in your
 
 ```bash
 # Add this to your .bash_profile or .bashrc
-export NEW_RELIC_API_KEY="abc123"
-export NEW_RELIC_ADMIN_API_KEY="cba321"
+export NEW_RELIC_API_KEY="<your New Relic Personal API key>"
+export NEW_RELIC_ADMIN_API_KEY="<your New Relic Admin API key>"
 export NEW_RELIC_REGION="US"
 ```
 
@@ -37,7 +36,6 @@ Provided you have the required environment variables set, your `provider` block 
 provider "newrelic" {}
 ```
 
-<!-- DEV NOTE: Rewrite this note too. Shorter, more concise. -->
 -> <small>**Note:** When using Terraform in your CI/CD pipeline, we recommend setting your environment variables within your platform's secrets management. Each platform, such as GitHub or CircleCI, has their own way of managing secrets and environment variables, so you will need to refer to your vendor's documentation for implemenation details.</small>
 
 
@@ -56,12 +54,13 @@ The table below shows the available environment variables and how they map to th
 
 ### Configuration via the `provider` block
 
-Configuring the provider from within your HCL is a quick way to get started, however, we recommend [using environment variables](#configuration-via-environment-variables). The minimal configuration is as follows.
+Configuring the provider from within your HCL is a quick way to get started, however, we recommend [using environment variables](#configuration-via-environment-variables). The minimal recommended configuration is as follows.
 
 ```hcl
 provider "newrelic" {
   api_key = <Your Admin API key>
   personal_api_key = <Your Personal API key>
+  account_id = <your New Relic account ID>
   region = "US"
 }
 ```
