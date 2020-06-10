@@ -74,8 +74,8 @@ resource "newrelic_alert_policy_channel" "alert_email" {
 
 The following arguments are supported:
 
-- `api_key` - (Required except for `newrelic_insights_event` resource) Your New Relic API key. The `NEW_RELIC_API_KEY` environment variable can also be used.
-- `personal_api_key` - (Required only for the `newrelic_workload` resource) Your New Relic Personal API key. The `NEW_RELIC_PERSONAL_API_KEY` environment variable can also be used.
+- `api_key` - (Required) Your New Relic Personal API key. The `NEW_RELIC_API_KEY` environment variable can also be used.
+- `admin_api_key` - (Required for many resources) Your New Relic Admin API key. The `NEW_RELIC_ADMIN_API_KEY` environment variable can also be used.
 - `region` - (Required) The region for the data center for which your New Relic account is configured. The New Relic region can also be set via the environment variable `NEW_RELIC_REGION`. Valid values are `US` or `EU`. Only one region per provider block can be configured. If you have accounts in both regions, you must instantiate two providers - one for `US` and one for `EU`. See [multiple region example](add-link-here).
 - `insecure_skip_verify` - (Optional) Trust self-signed SSL certificates. If omitted, the `NEW_RELIC_API_SKIP_VERIFY` environment variable is used.
 - `insights_account_id` - (Optional) Your New Relic Account ID used when inserting Insights events via the `newrelic_insights_event` resource. Can also use `NEW_RELIC_INSIGHTS_ACCOUNT_ID` environment variable.
