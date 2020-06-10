@@ -28,7 +28,7 @@ func Provider() terraform.ResourceProvider {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
-				Optional:    true,
+				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_ACCOUNT_ID", nil),
 				Sensitive:   true,
 			},
