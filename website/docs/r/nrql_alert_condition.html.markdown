@@ -59,7 +59,7 @@ See additional [examples](#additional-examples).
 
 The following arguments are supported:
 
-- `account_id` - (Optional) The New Relic account ID of the account you wish to create the condition. Defaults to the account ID set in your environment variable `NEWRELIC_ACCOUNT_ID`.
+- `account_id` - (Optional) The New Relic account ID of the account you wish to create the condition. Defaults to the account ID set in your environment variable `NEW_RELIC_ACCOUNT_ID`.
 - `baseline_direction` - (Optional) The baseline direction of a _baseline_ NRQL alert condition. Valid values are: `lower_only`, `upper_and_lower`, `upper_only` (case insensitive).
 - `description` - (Optional) The description of the NRQL alert condition.
 - `policy_id` - (Required) The ID of the policy where this condition should be used.

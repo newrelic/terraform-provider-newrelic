@@ -3,6 +3,7 @@ package newrelic
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -28,20 +29,20 @@ func Provider() terraform.ResourceProvider {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_ACCOUNT_ID", nil),
+				Required:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_ACCOUNT_ID", nil),
 				Sensitive:   true,
 			},
 			"api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_KEY", nil),
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_API_KEY", nil),
 				Sensitive:   true,
 			},
-			"personal_api_key": {
+			"admin_api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_PERSONAL_API_KEY", nil),
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_ADMIN_API_KEY", nil),
 				Sensitive:   true,
 			},
 			"region": {
@@ -56,66 +57,60 @@ func Provider() terraform.ResourceProvider {
 				Deprecated:  deprecationMsgBaseURLs,
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_URL", nil),
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_API_URL", nil),
 			},
 			// New Relic internal use only
 			"synthetics_api_url": {
 				Deprecated:  deprecationMsgBaseURLs,
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_SYNTHETICS_API_URL", nil),
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_SYNTHETICS_API_URL", nil),
 			},
 			// New Relic internal use only
 			"infrastructure_api_url": {
 				Deprecated:  deprecationMsgBaseURLs,
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INFRASTRUCTURE_API_URL", nil),
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_INFRASTRUCTURE_API_URL", nil),
 			},
 			// New Relic internal use only
 			"nerdgraph_api_url": {
 				Deprecated:  deprecationMsgBaseURLs,
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_NERDGRAPH_API_URL", nil),
-			},
-			"insights_account_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_ACCOUNT_ID", nil),
-				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_NERDGRAPH_API_URL", nil),
 			},
 			"insights_insert_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_INSERT_KEY", nil),
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_INSIGHTS_INSERT_KEY", nil),
 				Sensitive:   true,
 			},
 			"insights_insert_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_INSERT_URL", insightsInsertURL),
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_INSIGHTS_INSERT_URL", insightsInsertURL),
 			},
 			"insights_query_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_QUERY_KEY", nil),
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_INSIGHTS_QUERY_KEY", nil),
 				Sensitive:   true,
 			},
 			"insights_query_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_INSIGHTS_QUERY_URL", insightsQueryURL),
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_INSIGHTS_QUERY_URL", insightsQueryURL),
 			},
 			"insecure_skip_verify": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_SKIP_VERIFY", false),
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_API_SKIP_VERIFY", false),
 			},
 			"cacert_file": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEWRELIC_API_CACERT", ""),
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_API_CACERT", ""),
 			},
 		},
 
@@ -163,9 +158,11 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigure(data *schema.ResourceData, terraformVersion string) (interface{}, error) {
-	adminAPIKey := data.Get("api_key").(string)
-	personalAPIKey := data.Get("personal_api_key").(string)
+	adminAPIKey := data.Get("admin_api_key").(string)
+	personalAPIKey := data.Get("api_key").(string)
 	userAgent := fmt.Sprintf("%s %s/%s", httpclient.TerraformUserAgent(terraformVersion), TerraformProviderProductUserAgent, version.ProviderVersion)
+
+	accountID := data.Get("account_id").(int)
 
 	cfg := Config{
 		AdminAPIKey:          adminAPIKey,
@@ -187,7 +184,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 	}
 
 	insightsInsertConfig := Config{
-		InsightsAccountID: data.Get("insights_account_id").(string),
+		InsightsAccountID: strconv.Itoa(accountID),
 		InsightsInsertKey: data.Get("insights_insert_key").(string),
 		InsightsInsertURL: data.Get("insights_insert_url").(string),
 	}
@@ -197,7 +194,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 	}
 
 	insightsQueryConfig := Config{
-		InsightsAccountID: data.Get("insights_account_id").(string),
+		InsightsAccountID: strconv.Itoa(accountID),
 		InsightsQueryKey:  data.Get("insights_query_key").(string),
 		InsightsQueryURL:  data.Get("insights_query_url").(string),
 	}
@@ -211,7 +208,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		InsightsInsertClient: clientInsightsInsert,
 		InsightsQueryClient:  clientInsightsQuery,
 		PersonalAPIKey:       personalAPIKey,
-		AccountID:            data.Get("account_id").(int),
+		AccountID:            accountID,
 	}
 
 	return &providerConfig, nil
