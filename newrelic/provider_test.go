@@ -118,7 +118,7 @@ func TestAccNewRelicProvider_Region(t *testing.T) {
 
 func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("NEW_RELIC_API_KEY"); v == "" {
-		t.Log("[WARN] NEW_RELIC_API_KEY has not been set for acceptance tests")
+		t.Fatal("[WARN] NEW_RELIC_API_KEY has not been set for acceptance tests")
 	}
 
 	if v := os.Getenv("NEW_RELIC_LICENSE_KEY"); v == "" {

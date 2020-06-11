@@ -95,9 +95,9 @@ All environment variables in use by the provider have been renamed.
 
 Replace all instances of environment variables named `NEWRELIC_*` with `NEW_RELIC_*`.
 
-`NEW_RELIC_PERSONAL_API_KEY` becomes `NEW_RELIC_API_KEY`.  Please note, `NEW_RELIC_API_KEY` is now a *Personal API Key*.  Set the `NEW_RELIC_ADMIN_API_KEY` variable using an *Admin API Key*.
+`NEW_RELIC_PERSONAL_API_KEY` has been replaced by `NEW_RELIC_API_KEY`.  Please note, `NEW_RELIC_API_KEY` is now a *Personal API Key*.  Set the `NEW_RELIC_ADMIN_API_KEY` variable using an *Admin API Key*.
 
-### Configuration
+### Update the `provider` block configuration
 
 Move any existing `api_key` configuration setting to `admin_api_key`.
 
