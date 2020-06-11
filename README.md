@@ -50,7 +50,7 @@ $ make test
 
 In order to run the full suite of Acceptance tests, run `make testacc`.
 
-*Note:* Acceptance tests *create real resources*, and often cost money to run. The environment variables `NEWRELIC_API_KEY` and `NEWRELIC_LICENSE_KEY` must also be set with your associated keys for acceptance tests to work properly.
+*Note:* Acceptance tests *create real resources*, and often cost money to run. The environment variables `NEW_RELIC_API_KEY` and `NEW_RELIC_LICENSE_KEY` must also be set with your associated keys for acceptance tests to work properly.
 
 ```sh
 $ make testacc

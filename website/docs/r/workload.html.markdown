@@ -10,8 +10,8 @@ description: |-
 
 Use this resource to create, update, and delete a New Relic One workload.
 
-A New Relic Personal API key is required to provision this resource.  Set the `personal_api_key`
-attribute in the `provider` block or the `NEWRELIC_PERSONAL_API_KEY` environment
+A New Relic Personal API key is required to provision this resource.  Set the `api_key`
+attribute in the `provider` block or the `NEW_RELIC_API_KEY` environment
 variable with your Personal API key.
 
 ## Example Usage

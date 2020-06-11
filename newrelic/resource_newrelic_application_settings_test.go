@@ -105,16 +105,16 @@ func testAccCheckNewRelicApplicationExists(n string) resource.TestCheckFunc {
 }
 
 func testPreCheck(t *testing.T) {
-	if v := os.Getenv("NEWRELIC_API_KEY"); v == "" {
-		t.Fatal("NEWRELIC_API_KEY must be set for acceptance tests")
+	if v := os.Getenv("NEW_RELIC_API_KEY"); v == "" {
+		t.Fatal("NEW_RELIC_API_KEY must be set for acceptance tests")
 	}
 
-	if v := os.Getenv("NEWRELIC_LICENSE_KEY"); v == "" {
-		t.Fatal("NEWRELIC_LICENSE_KEY must be set for acceptance tests")
+	if v := os.Getenv("NEW_RELIC_LICENSE_KEY"); v == "" {
+		t.Fatal("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
 	}
 
-	if v := os.Getenv("NEWRELIC_PERSONAL_API_KEY"); v == "" {
-		t.Log("[WARN] NEWRELIC_PERSONAL_API_KEY has not been set for acceptance tests")
+	if v := os.Getenv("NEW_RELIC_ADMIN_API_KEY"); v == "" {
+		t.Log("[WARN] NEW_RELIC_ADMIN_API_KEY has not been set for acceptance tests")
 	}
 
 	testCreateApplication(t)
@@ -123,7 +123,7 @@ func testPreCheck(t *testing.T) {
 func testCreateApplication(t *testing.T) {
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName(testExpectedApplicationName),
-		newrelic.ConfigLicense(os.Getenv("NEWRELIC_LICENSE_KEY")),
+		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
 	)
 
 	if err != nil {

@@ -74,14 +74,38 @@ resource "newrelic_alert_policy_channel" "alert_email" {
 
 The following arguments are supported:
 
-- `api_key` - (Required except for `newrelic_insights_event` resource) Your New Relic API key. The `NEWRELIC_API_KEY` environment variable can also be used.
-- `personal_api_key` - (Required only for the `newrelic_workload` resource) Your New Relic Personal API key. The `NEWRELIC_PERSONAL_API_KEY` environment variable can also be used.
+- `api_key` - (Required) Your New Relic Personal API key. The `NEW_RELIC_API_KEY` environment variable can also be used.
+- `admin_api_key` - (Required for many resources) Your New Relic Admin API key. The `NEW_RELIC_ADMIN_API_KEY` environment variable can also be used.
 - `region` - (Required) The region for the data center for which your New Relic account is configured. The New Relic region can also be set via the environment variable `NEW_RELIC_REGION`. Valid values are `US` or `EU`. Only one region per provider block can be configured. If you have accounts in both regions, you must instantiate two providers - one for `US` and one for `EU`. See [multiple region example](add-link-here).
-- `insecure_skip_verify` - (Optional) Trust self-signed SSL certificates. If omitted, the `NEWRELIC_API_SKIP_VERIFY` environment variable is used.
-- `insights_account_id` - (Optional) Your New Relic Account ID used when inserting Insights events via the `newrelic_insights_event` resource. Can also use `NEWRELIC_INSIGHTS_ACCOUNT_ID` environment variable.
-- `insights_insert_key` - (Optional) Your Insights insert key used when inserting Insights events via the `newrelic_insights_event` resource. Can also use `NEWRELIC_INSIGHTS_INSERT_KEY` environment variable.
-- `insights_insert_url` - (Optional) This argument changes the Insights insert URL (default is https://insights-collector.newrelic.com/v1/accounts). If the New Relic account is in the EU, the Insights API URL must be set to https://insights-collector.eu.newrelic.com/v1. The `NEWRELIC_INSIGHTS_INSERT_URL` environment variable can also be used.
-- `cacert_file` - (Optional) A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEWRELIC_API_CACERT` environment variable can also be used.
+- `insecure_skip_verify` - (Optional) Trust self-signed SSL certificates. If omitted, the `NEW_RELIC_API_SKIP_VERIFY` environment variable is used.
+- `insights_insert_key` - (Optional) Your Insights insert key used when inserting Insights events via the `newrelic_insights_event` resource. Can also use `NEW_RELIC_INSIGHTS_INSERT_KEY` environment variable.
+- `insights_insert_url` - (Optional) This argument changes the Insights insert URL (default is https://insights-collector.newrelic.com/v1/accounts). If the New Relic account is in the EU, the Insights API URL must be set to https://insights-collector.eu.newrelic.com/v1. The `NEW_RELIC_INSIGHTS_INSERT_URL` environment variable can also be used.
+- `cacert_file` - (Optional) A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEW_RELIC_API_CACERT` environment variable can also be used.
+
+
+## Upgrading to 2.x
+
+Users of the provider before version `2.x` will need to make a few adjustments to their configuration before upgrading.
+
+Please see the [latest provider configuration docs](/docs/providers/newrelic/guides/provider_configuration.html) for the current recommended configuration settings.
+
+### Update the environment
+
+All environment variables in use by the provider have been renamed.
+
+Replace all instances of environment variables named `NEWRELIC_*` with `NEW_RELIC_*`.
+
+`NEW_RELIC_PERSONAL_API_KEY` has been replaced by `NEW_RELIC_API_KEY`.  Please note, `NEW_RELIC_API_KEY` is now a *Personal API Key*.  Set the `NEW_RELIC_ADMIN_API_KEY` variable using an *Admin API Key*.
+
+### Update the `provider` block configuration
+
+Move any existing `api_key` configuration setting to `admin_api_key`.
+
+Move any existing `personal_api_key` configuration setting to `api_key`.  A Personal API key is now the default.
+
+An `account_id` configuration setting is now required.
+
+The `insights_account_id` configuration setting has been removed.  The `account_id` configuration setting is now used instead.
 
 ## Debugging
 

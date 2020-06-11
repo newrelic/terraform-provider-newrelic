@@ -45,8 +45,8 @@ The table below shows the available environment variables and how they map to th
 
 | Environment Variable      | Schema Attribute   | Description                                                   |
 | ------------------------- | ------------------ | ------------------------------------------------------------- |
-| `NEW_RELIC_API_KEY`       | `personal_api_key` | Your New Relic [personal API key]                             |
-| `NEW_RELIC_ADMIN_API_KEY` | `api_key`          | Your New Relic [admin API key]                                |
+| `NEW_RELIC_API_KEY`       | `api_key`          | Your New Relic [personal API key]                             |
+| `NEW_RELIC_ADMIN_API_KEY` | `admin_api_key`    | Your New Relic [admin API key]                                |
 | `NEW_RELIC_REGION`        | `region`           | Your New Relic account's [data center region] \(`US` or `EU`) |
 
 -> <small>**Note:** The `provider` block schema attributes take precedence over environment variables, providing the ability to override environment variables if needed. </small>
@@ -58,8 +58,8 @@ Configuring the provider from within your HCL is a quick way to get started, how
 
 ```hcl
 provider "newrelic" {
-  api_key = <Your Admin API key>
-  personal_api_key = <Your Personal API key>
+  api_key = <Your Personal API key>
+  admin_api_key = <Your Admin API key>
   account_id = <your New Relic account ID>
   region = "US"
 }

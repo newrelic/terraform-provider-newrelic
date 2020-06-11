@@ -63,6 +63,8 @@ jobs:
 
     - name: Unit Tests
       run: make test-unit
+      env:
+        NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
 
 
   test-integration:
@@ -91,8 +93,8 @@ jobs:
 
     - name: Integration Tests
       run: make test-integration
-#      env:
-#        NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+     env:
+       NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
 #        NEW_RELIC_ADMIN_API_KEY: ${{ secrets.NEW_RELIC_ADMIN_API_KEY }}
 #        NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
 #        NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
