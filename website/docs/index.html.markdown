@@ -90,6 +90,17 @@ Users of the provider before version `2.x` will need to make a few adjustments t
 
 Please see the [latest provider configuration docs](/docs/providers/newrelic/guides/provider_configuration.html) for the current recommended configuration settings.
 
+## Support for 1.x
+
+While the sun rises on the `2.x` release, the sunset of the `1.x` approaches.
+We intend to support minor bug fixes through the end of 2020, but we don't plan
+to merge any new features into `release/1.x` branch.  Please see the above
+information about upgrading the provider.  All new feature work and focus will
+be directed at the newer provider version.
+
+-> Deprecation notice: 2020-06-12
+-> End of support: 2020-01-15
+
 ### Update the environment
 
 All environment variables in use by the provider have been renamed.
