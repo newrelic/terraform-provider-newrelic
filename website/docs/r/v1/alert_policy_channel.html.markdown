@@ -64,7 +64,7 @@ The following arguments are supported:
 - `channel_ids` - (Optional\*) Array of channel IDs to apply to the specified policy. We recommended sorting channel IDs in ascending order to avoid drift your Terraform state.
 - `channel_id` - **Deprecated!** (Optional\*) The ID of the channel. Please use the `channel_ids` argument instead.
 
-<sup>\*Note: Even though **channel_id** and **channel_ids** are optional, at least one of those arguments must be used for this resource to work.</sup>
+<small>\*Note: Even though **channel_id** and **channel_ids** are optional, at least one of those arguments must be used for this resource to work.</small>
 
 ## Import
 
@@ -76,4 +76,4 @@ $ terraform import newrelic_alert_policy_channel.foo 123456:3462754:2938324
 
 When importing `newrelic_alert_policy_channel` resource, the attribute `channel_ids`\* will be set in your Terraform state. You can import multiple channels as long as those channel IDs are included as part of the import ID hash.
 
-<sup>\*Note: The attribute **channel_id** is _deprecated_ and will not be set when importing this resource.</sup>
+<small>\*Note: The attribute **channel_id** is _deprecated_ and will not be set when importing this resource.</small>

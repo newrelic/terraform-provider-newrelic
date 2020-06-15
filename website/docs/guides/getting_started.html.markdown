@@ -8,60 +8,27 @@ description: |-
 
 # Getting Started with the New Relic Provider
 
+
 ## Before You Begin
 
-* This guide assumes you already have a New Relic agent deployed. If you don't have New Relic integrated yet, check out [New Relic's introduction documentation](https://docs.newrelic.com/docs/using-new-relic/welcome-new-relic/get-started/introduction-new-relic) to get started there, then head back over here to get started with the New Relic Terraform Provider.
-* [Install Terraform](https://www.terraform.io/intro/getting-started/install.html)
-and read the Terraform getting started guide that follows. This guide will
-assume a basic understanding of Terraform.
-* Locate your Admin's API key by following [New Relic's Admin API key docs](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin).
-
-## First things first: Credentials
-
-The environment variable `NEW_RELIC_API_KEY` is automatically detected by the New Relic Terraform Provider when running `terraform` commands, so we recommend adding this environment variable to your machine's startup file, such as your `.bash_profile`.
-
-This guide assumes your API key has been set with an environment variable.
-
--> <sup>You can set the environment variable `NEW_RELIC_API_KEY` in your `.bash_profile` or `.bashrc` file (on UNIX machines). Or you can set the variable inline with the `terraform plan` or `terraform apply` commands (see examples below).</sup>
-
-**.bash_profile**
-
-```bash
-# Add this to your .bash_profile
-export NEW_RELIC_API_KEY=abc123
-```
-
-Example inline with `terraform` command
-
-```bash
-$ NEW_RELIC_API_KEY=abc123 terraform apply
-```
+* The examples below assume you already have a New Relic agent deployed. If you don't have New Relic integrated yet, check out [New Relic's introduction documentation](https://docs.newrelic.com/docs/using-new-relic/welcome-new-relic/get-started/introduction-new-relic) to get started there, then head back over here to get started with the New Relic Terraform Provider using the examples provided.
+* [Install Terraform](https://www.terraform.io/intro/getting-started/install.html) and read the Terraform getting started guide that follows. This guide will assume a basic understanding of Terraform.
+* Locate your Personal API key by following [New Relic's Personal API key docs][personal_api_key].
+* Locate your Admin's API key by following [New Relic's Admin API key docs][admin_api_key].
 
 ## Configuring the Provider
 
-Let's start with a minimal Terraform config file to create an Alert Policy.
-
-**main.tf**
-
-```hcl
-provider "newrelic" {}
-
-resource "newrelic_alert_policy" "alert_policy_name" {
-  name = "My Alert Policy Name"
-}
-```
-We'll add an Alert Condition under this policy as we move through this guide.
-
+Please see the [latest provider configuration docs](/docs/providers/newrelic/guides/provider_configuration.html) to get started with configuring the provider.
 
 ## Initialize Your Terraform Setup
 
-At this point you should be able to initialize your Terraform setup, so let's give it a try.
+Once the provider is configured, you should be able to initialize your Terraform configuration, so let's give it a try.
 
 ```bash
 $ terraform init
 ```
 
--> <sup>This is the first command that should be run for any new or existing Terraform configuration per machine. This sets up all the local data necessary to run Terraform that is typically not committed to version control. This command is always safe to run multiple times.</sup>
+-> <small>This is the first command that should be run for any new or existing Terraform configuration per machine. This sets up all the local data necessary to run Terraform that is typically not committed to version control. This command is always safe to run multiple times.</small>
 
 Once you've successfully initialized your Terraform working directory, try running the following command.
 
@@ -90,7 +57,7 @@ resource "newrelic_alert_policy" "alert_policy_name" {
 }
 ```
 
--> Terraform's data sources are read-only views into pre-existing data, or they compute new values on the fly within Terraform itself. More information on data sources can be found [here](https://www.terraform.io/docs/configuration-0-11/data-sources.html).
+-> Terraform's data sources are read-only views into pre-existing data, or they compute new values on the fly within Terraform itself. More information on data sources can be found [here][terraform_data_sources].
 
 
 Now let's add the Alert Condition so we can see an alert when a particular scenario occurs.
@@ -227,3 +194,6 @@ If you ever need to make changes to your configuration, you can run `terraform a
 
 You can also run `terraform destroy` to tear down your resources if that's ever needed.
 
+[personal_api_key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#personal-api-key
+[admin_api_key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin
+[terraform_data_sources]: https://www.terraform.io/docs/configuration/data-sources.html
