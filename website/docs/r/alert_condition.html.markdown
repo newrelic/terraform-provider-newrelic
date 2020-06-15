@@ -13,8 +13,10 @@ Use this resource to create and manage alert conditions for APM, Browser, and Mo
 ## Example Usage
 
 ```hcl
-data "newrelic_application" "app" {
+data "newrelic_entity" "app" {
   name = "my-app"
+  type = "APPLICATION"
+  domain = "APM"
 }
 
 resource "newrelic_alert_policy" "foo" {
@@ -26,7 +28,7 @@ resource "newrelic_alert_condition" "foo" {
 
   name        = "foo"
   type        = "apm_app_metric"
-  entities    = [data.newrelic_application.app.id]
+  entities    = [data.newrelic_application.app.application_id]
   metric      = "apdex"
   runbook_url = "https://www.example.com"
   condition_scope = "application"

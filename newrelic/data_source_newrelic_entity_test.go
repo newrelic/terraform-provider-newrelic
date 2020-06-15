@@ -38,8 +38,8 @@ func testAccCheckNewRelicEntityDataExists(t *testing.T, n string) resource.TestC
 			return fmt.Errorf("expected to get an entity GUID")
 		}
 
-		if a["domain_id"] == "" {
-			return fmt.Errorf("expected to get a domain ID")
+		if a["application_id"] == "" {
+			return fmt.Errorf("expected to get an application ID")
 		}
 
 		if a["name"] != testAccExpectedApplicationName {
@@ -57,6 +57,10 @@ data "newrelic_entity" "entity" {
 	name = "%s"
 	type = "APPLICATION"
 	domain = "APM"
+	tag {
+		key = "accountId"
+		value = "%d"
+	}
 }
-`, testAccExpectedApplicationName)
+`, testAccExpectedApplicationName, testAccountID)
 }

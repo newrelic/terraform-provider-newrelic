@@ -16,20 +16,20 @@ func dataSourceNewRelicEntity() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name of the entity in New Relic One.",
+				Description: "The name of the entity in New Relic One.  The first entity matching this name for the given search parameters will be returned.",
 			},
 			"type": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				Description:  "The entity's type.",
+				Description:  "The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, and WORRKLOAD.",
 				ValidateFunc: validation.StringInSlice([]string{"APPLICATION", "DASHBOARD", "HOST", "MONITOR", "WORKLOAD"}, false),
 			},
 			"domain": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				Description:  "The entity's domain.",
+				Description:  "The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, and SYNTH.",
 				ValidateFunc: validation.StringInSlice([]string{"APM", "BROWSER", "INFRA", "MOBILE", "SYNTH"}, false),
 			},
 			"tag": {
@@ -57,7 +57,7 @@ func dataSourceNewRelicEntity() *schema.Resource {
 				Computed:    true,
 				Description: "The New Relic account ID associated with this entity.",
 			},
-			"domain_id": {
+			"application_id": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The domain-specific ID of the entity (only returned for APM and Browser applications)",
@@ -78,8 +78,8 @@ func dataSourceNewRelicEntityRead(d *schema.ResourceData, meta interface{}) erro
 
 	name := d.Get("name").(string)
 	entityType := entities.EntityType(d.Get("type").(string))
-	domain := entities.EntityDomainType(d.Get("domain").(string))
 	tags := expandEntityTag(d.Get("tag").([]interface{}))
+	domain := entities.EntityDomainType(d.Get("domain").(string))
 
 	params := entities.SearchEntitiesParams{
 		Name:   name,
@@ -95,14 +95,14 @@ func dataSourceNewRelicEntityRead(d *schema.ResourceData, meta interface{}) erro
 
 	var entity *entities.Entity
 	for _, e := range entityResults {
-		if e.Name == name && e.Type == entities.Type(entityType) && e.Domain == domain {
+		if e.Name == name {
 			entity = e
 			break
 		}
 	}
 
 	if entity == nil {
-		return fmt.Errorf("the name '%s' does not match any New Relic One entity", name)
+		return fmt.Errorf("the name '%s' does not match any New Relic One entity for the given search parameters", name)
 	}
 
 	return flattenEntityData(entity, d)
@@ -137,7 +137,7 @@ func flattenEntityData(e *entities.Entity, d *schema.ResourceData) error {
 		return err
 	}
 
-	err = d.Set("domain_id", e.ApplicationID)
+	err = d.Set("application_id", e.ApplicationID)
 	if err != nil {
 		return err
 	}
