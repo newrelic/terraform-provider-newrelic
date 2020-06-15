@@ -9,6 +9,9 @@ import (
 /* EpochMilliseconds - The `EpochMilliseconds` scalar represents the number of milliseconds since the Unix epoch */
 type EpochMilliseconds serialization.EpochTime
 
+/* EpochSeconds - The `EpochSeconds` scalar represents the number of seconds since the Unix epoch */
+type EpochSeconds serialization.EpochTime
+
 /* EventAttributeDefinition - A human-readable definition of an NRDB Event Type Attribute */
 type EventAttributeDefinition struct {
 	/* Category - This attribute's category */
@@ -135,6 +138,16 @@ type NrqlFacetSuggestion struct {
 	/* Nrql - A modified version of the input NRQL, with a `FACET ...` clause appended.
 	If the original NRQL had a `FACET` clause already, it will be replaced. */
 	Nrql Nrql `json:"nrql"`
+}
+
+/* NrqlHistoricalQuery - An NRQL query executed in the past. */
+type NrqlHistoricalQuery struct {
+	/* AccountID - The Account ID queried. */
+	AccountID int `json:"accountId"`
+	/* Nrql - The NRQL query executed. */
+	Nrql Nrql `json:"nrql"`
+	/* Timestamp - The time the query was executed. */
+	Timestamp EpochSeconds `json:"timestamp"`
 }
 
 /* SuggestedNrqlQuery - Interface type representing a query suggestion. */
