@@ -83,6 +83,16 @@ The following arguments are supported:
 - `insights_insert_url` - (Optional) This argument changes the Insights insert URL (default is https://insights-collector.newrelic.com/v1/accounts). If the New Relic account is in the EU, the Insights API URL must be set to https://insights-collector.eu.newrelic.com/v1. The `NEW_RELIC_INSIGHTS_INSERT_URL` environment variable can also be used.
 - `cacert_file` - (Optional) A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEW_RELIC_API_CACERT` environment variable can also be used.
 
+## Support for 1.x
+
+While the sun rises on the `2.x` release, the sunset of the `1.x` approaches.
+We intend to support minor bug fixes through the end of 2020, but we don't plan
+to merge any new features into `release/1.x` branch.  Please see the section
+below about upgrading the provider.  All new feature work and focus will be
+directed at the newer provider version.
+
+-> <small>**Deprecation notice:** 2020-06-12<br> 
+-> **End of support:** 2020-01-15</small>
 
 ## Upgrading to 2.x
 
@@ -90,20 +100,9 @@ Users of the provider before version `2.x` will need to make a few adjustments t
 
 Please see the [latest provider configuration docs](/docs/providers/newrelic/guides/provider_configuration.html) for the current recommended configuration settings.
 
-## Support for 1.x
-
-While the sun rises on the `2.x` release, the sunset of the `1.x` approaches.
-We intend to support minor bug fixes through the end of 2020, but we don't plan
-to merge any new features into `release/1.x` branch.  Please see the above
-information about upgrading the provider.  All new feature work and focus will
-be directed at the newer provider version.
-
--> Deprecation notice: 2020-06-12
--> End of support: 2020-01-15
-
 ### Update the environment
 
-All environment variables in use by the provider have been renamed.
+-> <small>**Note:** All environment variables in use by the provider have been renamed.</small>
 
 Replace all instances of environment variables named `NEWRELIC_*` with `NEW_RELIC_*`.
 
@@ -111,13 +110,10 @@ Replace all instances of environment variables named `NEWRELIC_*` with `NEW_RELI
 
 ### Update the `provider` block configuration
 
-Move any existing `api_key` configuration setting to `admin_api_key`.
-
-Move any existing `personal_api_key` configuration setting to `api_key`.  A Personal API key is now the default.
-
-An `account_id` configuration setting is now required.
-
-The `insights_account_id` configuration setting has been removed.  The `account_id` configuration setting is now used instead.
+* Move any existing `api_key` configuration setting to `admin_api_key`.
+* Move any existing `personal_api_key` configuration setting to `api_key`.  A Personal API key is now the default.
+* An `account_id` configuration setting is now required.
+* The `insights_account_id` configuration setting has been removed.  The `account_id` configuration setting is now used instead.
 
 ## Resource endpoint authentication
 

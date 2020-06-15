@@ -12,7 +12,7 @@
 
 ## Using the provider
 
-To use a released version provider in your Terraform environment, run `terraform init` and Terraform will automatically install the provider.  To update a provider to the latest version you can use `terraform init -upgrade` command.
+To use the latest version of the provider in your Terraform environment, run `terraform init` and Terraform will automatically install the provider.
 
 If you wish to pin your environment to a specific release, you can do so with a `required_providers` statement in your Terraform manifest.
 

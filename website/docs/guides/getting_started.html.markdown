@@ -18,17 +18,17 @@ description: |-
 
 ## Configuring the Provider
 
--> <sup>Please see the [latest provider configuration docs](/docs/providers/newrelic/guides/provider_configuration.html) to get started with the provider.</sup>
+Please see the [latest provider configuration docs](/docs/providers/newrelic/guides/provider_configuration.html) to get started with configuring the provider.
 
 ## Initialize Your Terraform Setup
 
-Once the provider is configured, you should be able to initialize your Terraform repo, so let's give it a try.
+Once the provider is configured, you should be able to initialize your Terraform configuration, so let's give it a try.
 
 ```bash
 $ terraform init
 ```
 
--> <sup>This is the first command that should be run for any new or existing Terraform configuration per machine. This sets up all the local data necessary to run Terraform that is typically not committed to version control. This command is always safe to run multiple times.</sup>
+-> <small>This is the first command that should be run for any new or existing Terraform configuration per machine. This sets up all the local data necessary to run Terraform that is typically not committed to version control. This command is always safe to run multiple times.</small>
 
 Once you've successfully initialized your Terraform working directory, try running the following command.
 
