@@ -3,7 +3,6 @@ package newrelic
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -15,9 +14,6 @@ func TestAccNewRelicEntityData_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
-
-			// We need to give the entity search engine time to index the app
-			time.Sleep(5 * time.Second)
 		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

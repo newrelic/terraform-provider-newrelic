@@ -88,7 +88,8 @@ func TestAccNewRelicProvider_Region(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		Providers:    testAccProviders,
+		CheckDestroy: func(*terraform.State) error { return nil },
 		Steps: []resource.TestStep{
 			// Test: Region "US"
 			{
@@ -131,6 +132,9 @@ func testAccPreCheck(t *testing.T) {
 
 	//testAccApplicationsCleanup(t)
 	testAccCreateApplication(t)
+
+	// We need to give the entity search engine time to index the app
+	time.Sleep(5 * time.Second)
 }
 
 func testAccCreateApplication(t *testing.T) {
@@ -148,6 +152,7 @@ func testAccCreateApplication(t *testing.T) {
 	}
 
 	app.RecordCustomEvent("terraform test", nil)
+
 	app.Shutdown(30 * time.Second)
 }
 
