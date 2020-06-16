@@ -7,6 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccNewRelicEntityData_Basic(t *testing.T) {
@@ -27,6 +29,25 @@ func TestAccNewRelicEntityData_Basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestExpandEntityTag(t *testing.T) {
+	flattened := []interface{}{
+		map[string]interface{}{
+			"key":   "my-key",
+			"value": "my-value",
+		},
+	}
+
+	expected := entities.TagValue{
+		Key:   "my-key",
+		Value: "my-value",
+	}
+
+	expanded := expandEntityTag(flattened)
+
+	require.NotNil(t, expanded)
+	require.Equal(t, &expected, expanded)
 }
 
 func testAccCheckNewRelicEntityDataExists(t *testing.T, n string) resource.TestCheckFunc {
@@ -55,8 +76,8 @@ func testAccNewRelicEntityDataConfig() string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "entity" {
 	name = "%s"
-	type = "APPLICATION"
-	domain = "APM"
+	type = "application"
+	domain = "apm"
 	tag {
 		key = "accountId"
 		value = "%d"

@@ -3,6 +3,7 @@ package newrelic
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -23,14 +24,20 @@ func dataSourceNewRelicEntity() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				Description:  "The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, and WORRKLOAD.",
-				ValidateFunc: validation.StringInSlice([]string{"APPLICATION", "DASHBOARD", "HOST", "MONITOR", "WORKLOAD"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"APPLICATION", "DASHBOARD", "HOST", "MONITOR", "WORKLOAD"}, true),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.EqualFold(old, new) // Case fold this attribute when diffing
+				},
 			},
 			"domain": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				Description:  "The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, and SYNTH.",
-				ValidateFunc: validation.StringInSlice([]string{"APM", "BROWSER", "INFRA", "MOBILE", "SYNTH"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"APM", "BROWSER", "INFRA", "MOBILE", "SYNTH"}, true),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.EqualFold(old, new) // Case fold this attribute when diffing
+				},
 			},
 			"tag": {
 				Type:        schema.TypeList,
@@ -77,9 +84,9 @@ func dataSourceNewRelicEntityRead(d *schema.ResourceData, meta interface{}) erro
 	log.Printf("[INFO] Reading New Relic entities")
 
 	name := d.Get("name").(string)
-	entityType := entities.EntityType(d.Get("type").(string))
+	entityType := entities.EntityType(strings.ToUpper(d.Get("type").(string)))
 	tags := expandEntityTag(d.Get("tag").([]interface{}))
-	domain := entities.EntityDomainType(d.Get("domain").(string))
+	domain := entities.EntityDomainType(strings.ToUpper(d.Get("domain").(string)))
 
 	params := entities.SearchEntitiesParams{
 		Name:   name,
