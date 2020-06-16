@@ -24,9 +24,11 @@ provider "newrelic" {
   region = "US" # US or EU (US is default)
 }
 
-# Read an application resource
-data "newrelic_application" "foo" {
+# Read an APM application resource
+data "newrelic_entity" "foo" {
   name = "foo"
+  domain = "APM"
+  type = "APPLICATION"
 }
 
 # Create an alert policy
@@ -40,7 +42,7 @@ resource "newrelic_alert_condition" "foo" {
 
   name        = "foo"
   type        = "apm_app_metric"
-  entities    = [data.newrelic_application.foo.id]
+  entities    = [data.newrelic_application.foo.application_id]
   metric      = "apdex"
   runbook_url = "https://docs.example.com/my-runbook"
 

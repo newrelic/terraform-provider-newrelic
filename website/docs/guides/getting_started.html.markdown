@@ -48,8 +48,10 @@ First, let's add a data source by adding a `data` block. This will store your ap
 provider "newrelic" {}
 
 # Data Source
-data "newrelic_application" "app_name" {
+data "newrelic_entity" "app_name" {
   name = "my-app" # Note: This must be an exact match of your app name in New Relic (Case sensitive)
+  type = "APPLICATION"
+  domain = "APM"
 }
 
 resource "newrelic_alert_policy" "alert_policy_name" {
@@ -65,8 +67,10 @@ Now let's add the Alert Condition so we can see an alert when a particular scena
 ```hcl
 provider "newrelic" {}
 
-data "newrelic_application" "app_name" {
+data "newrelic_entity" "app_name" {
   name = "my-app"
+  type = "APPLICATION"
+  domain = "APM"
 }
 
 resource "newrelic_alert_policy" "alert_policy_name" {
@@ -79,7 +83,7 @@ resource "newrelic_alert_condition" "alert_condition_name" {
 
   name            = "My Alert Condition Name"
   type            = "apm_app_metric"
-  entities        = [data.newrelic_application.app_name.id]
+  entities        = [data.newrelic_application.app_name.application_id]
   metric          = "apdex"
   runbook_url     = "https://www.example.com"
   condition_scope = "application"

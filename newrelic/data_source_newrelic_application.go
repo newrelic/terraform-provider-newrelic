@@ -11,7 +11,8 @@ import (
 
 func dataSourceNewRelicApplication() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNewRelicApplicationRead,
+		DeprecationMessage: "Use the `newrelic_entity` data source instead.",
+		Read:               dataSourceNewRelicApplicationRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,

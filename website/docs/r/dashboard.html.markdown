@@ -13,8 +13,10 @@ Use this resource to create and manage New Relic dashboards.
 ## Example Usage: Create a New Relic Dashboard
 
 ```hcl
-data "newrelic_application" "my_application" {
+data "newrelic_entity" "my_application" {
   name = "My Application"
+  type = "APPLICATION"
+  domain = "APM"
 }
 
 resource "newrelic_dashboard" "exampledash" {
@@ -60,7 +62,7 @@ resource "newrelic_dashboard" "exampledash" {
     duration = 1800000
     visualization = "metric_line_chart"
     entity_ids = [
-      data.newrelic_application.my_application.id,
+      data.newrelic_application.my_application.application_id,
     ]
     metric {
         name = "Apdex"
