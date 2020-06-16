@@ -13,7 +13,11 @@ test-compile: deps
 	fi
 	go test -c $(TEST) $(TESTARGS)
 
-lint-terraform: deps
+mod-vendor:
+	@echo "=== $(PROJECT_NAME) === [ mod-vendor       ]: Vendoring go modules..."
+	@$(GO) mod vendor
+
+lint-terraform: deps mod-vendor
 	@echo "=== $(PROJECT_NAME) === [ lint-terraform   ]: running terraform linter $(TF_LINTER) ..."
 	@$(TF_LINTER) \
 		-c 1 \

@@ -19,7 +19,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -27,6 +26,7 @@ import (
 	"golang.org/x/tools/go/gcexportdata"
 	"golang.org/x/tools/internal/gocommand"
 	"golang.org/x/tools/internal/packagesinternal"
+	"golang.org/x/tools/internal/typesinternal"
 )
 
 // A LoadMode controls the amount of detail to return when loading.
@@ -73,9 +73,9 @@ const (
 	// NeedTypesSizes adds TypesSizes.
 	NeedTypesSizes
 
-	// TypecheckCgo enables full support for type checking cgo. Requires Go 1.15+.
+	// typecheckCgo enables full support for type checking cgo. Requires Go 1.15+.
 	// Modifies CompiledGoFiles and Types, and has no effect on its own.
-	TypecheckCgo
+	typecheckCgo
 
 	// NeedModule adds Module.
 	NeedModule
@@ -361,6 +361,7 @@ func init() {
 	packagesinternal.SetGoCmdRunner = func(config interface{}, runner *gocommand.Runner) {
 		config.(*Config).gocmdRunner = runner
 	}
+	packagesinternal.TypecheckCgo = int(typecheckCgo)
 }
 
 // An Error describes a problem with a package's metadata, syntax, or types.
@@ -921,18 +922,14 @@ func (ld *loader) loadPackage(lpkg *loaderPackage) {
 		Error: appendError,
 		Sizes: ld.sizes,
 	}
-	if (ld.Mode & TypecheckCgo) != 0 {
-		// TODO: remove this when we stop supporting 1.14.
-		rtc := reflect.ValueOf(tc).Elem()
-		usesCgo := rtc.FieldByName("UsesCgo")
-		if !usesCgo.IsValid() {
+	if (ld.Mode & typecheckCgo) != 0 {
+		if !typesinternal.SetUsesCgo(tc) {
 			appendError(Error{
-				Msg:  "TypecheckCgo requires Go 1.15+",
+				Msg:  "typecheckCgo requires Go 1.15+",
 				Kind: ListError,
 			})
 			return
 		}
-		usesCgo.SetBool(true)
 	}
 	types.NewChecker(tc, ld.Fset, lpkg.Types, lpkg.TypesInfo).Files(lpkg.Syntax)
 
