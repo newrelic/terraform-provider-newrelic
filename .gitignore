@@ -15,7 +15,6 @@
 .vagrant/
 /pkg/
 bin/
-vendor/
 coverage/
 example.tf
 modules-dev/
