@@ -1,5 +1,7 @@
-data "newrelic_application" "application" {
+data "newrelic_entity" "application" {
 	name = var.service.name
+	type = "APPLICATION"
+	domain = "APM"
 }
 
 resource "newrelic_alert_policy" "golden_signal_policy" {
@@ -11,7 +13,7 @@ resource "newrelic_alert_condition" "response_time_web" {
 
 	name            = "High Response Time (web)"
 	type            = "apm_app_metric"
-	entities        = [data.newrelic_application.application.id]
+	entities        = [data.newrelic_application.application.application_id]
 	metric          = "response_time_web"
 	condition_scope = "application"
 
@@ -28,7 +30,7 @@ resource "newrelic_alert_condition" "throughput_web" {
 
 	name            = "Low Throughput (web)"
 	type            = "apm_app_metric"
-	entities        = [data.newrelic_application.application.id]
+	entities        = [data.newrelic_application.application.application_id]
 	metric          = "throughput_web"
 	condition_scope = "application"
 
@@ -45,7 +47,7 @@ resource "newrelic_alert_condition" "error_percentage" {
 
 	name            = "High Error Percentage"
 	type            = "apm_app_metric"
-	entities        = [data.newrelic_application.application.id]
+	entities        = [data.newrelic_application.application.application_id]
 	metric          = "error_percentage"
 	condition_scope = "application"
 
@@ -65,7 +67,7 @@ resource "newrelic_infra_alert_condition" "high_cpu" {
 	event      = "SystemSample"
 	select     = "cpuPercent"
 	comparison = "above"
-	where      = "(`applicationId` = '${data.newrelic_application.application.id}')"
+	where      = "(`applicationId` = '${data.newrelic_application.application.application_id}')"
 
 	critical {
 		duration      = var.service.duration
