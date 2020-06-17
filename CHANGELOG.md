@@ -1,4 +1,52 @@
-## 1.19.0 (Unreleased)
+## 2.0.0 (Unreleased)
+
+BUG FIXES:
+
+* fix(alerts): remove DiffSuppressFunc on TypeSet to avoid test drift 
+* fix(alerts): handle a nil reference with more grace 
+* fix(deps): Revert terraform sdk to 1.10.0 
+* fix(application_settings): Remove delete, as it is not possible 
+* fix(alerts): infra alert condition zero value detection 
+* fix(newrelic): fix the failing integration tests (#519) 
+* fix(nrql_alert_condition): threshold_occurrences is case insensitive, attribute description updates 
+* fix: Require condition_scope = `instance` for validation_close_timer 
+* fix: Add validation to newrelic_alert_condtion condition_scope 
+
+IMPROVEMENTS:
+
+* feat(entity_tags): add an entity tag resource ([#679](https://github.com/terraform-providers/terraform-provider-newrelic/pull/679)) 
+* feat(entity_tags): add an entity tags resource
+* feat(provider): add region to provider schema, handle API URLs based off region 
+* feat(dashboard): add grid_column_count to dashboard schema 
+* feat(alerts): convert Alerts Policies to nerdgraph 
+* feat(nrql_alert_condition): integrate nerdgraph for nrql alert conditions 
+* feat(application): implement newrelic_application resource 
+* feat(entities): add a newrelic_entity data source
+* docs(entity_tags): add website docs for newrelic_entity_tag resource
+* docs(entities): add link to provider configuration page
+* docs: include v1 index.html in sidebar 
+* docs: DEPRECATION notice for 1.x 
+* docs: update index header with improved words 
+* docs: update getting started guide to reference new material 
+* docs: update README with new pointers 
+* docs: add table for current endpoint in use per resource 
+* docs: include documentation about upgrading the provider to 2.x 
+* docs: update API key references to match desires 
+* docs: add staging as a region, add account_id to example, cleanup comments 
+* docs(provider): add provider configuration guide page 
+* docs(provider): add region to provider docs, removing references to API base URLs 
+* docs(alerts): update examples to reflect deprecation 
+* docs(alerts): update wording to avoid implementation details 
+* docs(alerts): include deprecation notice for "terms" 
+* docs(nrql_alert_condition): add outlier example, add new attributes, deprecate old attributes, update import section 
+* docs(getting started): fix resource naming 
+* docs(alert_channel): fix broken 'nested config' anchor link 
+* docs: add callout to top of each v1.x doc page 
+* docs: prep for v2.x, isolate v1.x docs 
+* docs(nrql_alert_condition): update docs to reflect version 2.0 changes 
+* docs(alerts): include caveat about NRQL alerts condition operator usage with outliers 
+* docs(workloads): fix api key attribute name ([#489](https://github.com/terraform-providers/terraform-provider-newrelic/pull/489)) 
+
 ## 1.18.0 (May 15, 2020)
 
 BUG FIXES:
