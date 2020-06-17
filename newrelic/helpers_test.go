@@ -109,3 +109,9 @@ func testAccImportStateIDFunc(resourceName string, metadata string) resource.Imp
 		return idWithMetadata, nil
 	}
 }
+
+func avoidEmptyAccountID() {
+	if os.Getenv("NEW_RELIC_ACCOUNT_ID") == "" {
+		os.Setenv("NEW_RELIC_ACCOUNT_ID", "11111")
+	}
+}
