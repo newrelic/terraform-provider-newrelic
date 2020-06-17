@@ -62,13 +62,13 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Unit Tests
-      run: make test-unit
+      run: make test
       env:
         NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
 
 
   test-integration:
-    needs: lint
+    # needs: lint
     runs-on: ubuntu-latest
     steps:
     - name: Install Go
@@ -92,11 +92,11 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Integration Tests
-      run: make test-integration
-     env:
-       NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-#        NEW_RELIC_ADMIN_API_KEY: ${{ secrets.NEW_RELIC_ADMIN_API_KEY }}
-#        NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
-#        NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
-#        NEW_RELIC_REGION: ${{ secrets.NEW_RELIC_REGION }}
-
+      run: make testacc
+      env:
+        NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+        NEW_RELIC_ADMIN_API_KEY: ${{ secrets.NEW_RELIC_ADMIN_API_KEY }}
+        NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
+        NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+        NEW_RELIC_REGION: ${{ secrets.NEW_RELIC_REGION }}
+        NR_ACC_TESTING: ${{ secrets.NR_ACC_TESTING }}
