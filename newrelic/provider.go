@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
+	"github.com/hashicorp/terraform-plugin-sdk/meta"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
 	"github.com/terraform-providers/terraform-provider-newrelic/version"
@@ -129,18 +129,19 @@ func Provider() terraform.ResourceProvider {
 		ResourcesMap: map[string]*schema.Resource{
 			"newrelic_alert_channel":                resourceNewRelicAlertChannel(),
 			"newrelic_alert_condition":              resourceNewRelicAlertCondition(),
-			"newrelic_alert_policy_channel":         resourceNewRelicAlertPolicyChannel(),
 			"newrelic_alert_policy":                 resourceNewRelicAlertPolicy(),
+			"newrelic_alert_policy_channel":         resourceNewRelicAlertPolicyChannel(),
 			"newrelic_application_settings":         resourceNewRelicApplicationSettings(),
-			"newrelic_plugins_alert_condition":      resourceNewRelicPluginsAlertCondition(),
 			"newrelic_dashboard":                    resourceNewRelicDashboard(),
+			"newrelic_entity_tags":                  resourceNewRelicEntityTags(),
 			"newrelic_infra_alert_condition":        resourceNewRelicInfraAlertCondition(),
 			"newrelic_insights_event":               resourceNewRelicInsightsEvent(),
 			"newrelic_nrql_alert_condition":         resourceNewRelicNrqlAlertCondition(),
+			"newrelic_plugins_alert_condition":      resourceNewRelicPluginsAlertCondition(),
 			"newrelic_synthetics_alert_condition":   resourceNewRelicSyntheticsAlertCondition(),
+			"newrelic_synthetics_label":             resourceNewRelicSyntheticsLabel(),
 			"newrelic_synthetics_monitor":           resourceNewRelicSyntheticsMonitor(),
 			"newrelic_synthetics_monitor_script":    resourceNewRelicSyntheticsMonitorScript(),
-			"newrelic_synthetics_label":             resourceNewRelicSyntheticsLabel(),
 			"newrelic_synthetics_secure_credential": resourceNewRelicSyntheticsSecureCredential(),
 			"newrelic_workload":                     resourceNewRelicWorkload(),
 		},
@@ -161,8 +162,8 @@ func Provider() terraform.ResourceProvider {
 func providerConfigure(data *schema.ResourceData, terraformVersion string) (interface{}, error) {
 	adminAPIKey := data.Get("admin_api_key").(string)
 	personalAPIKey := data.Get("api_key").(string)
-	userAgent := fmt.Sprintf("%s %s/%s", httpclient.TerraformUserAgent(terraformVersion), TerraformProviderProductUserAgent, version.ProviderVersion)
-
+	terraformUA := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", terraformVersion, meta.SDKVersionString())
+	userAgent := fmt.Sprintf("%s %s/%s", terraformUA, TerraformProviderProductUserAgent, version.ProviderVersion)
 	accountID := data.Get("account_id").(int)
 
 	cfg := Config{
