@@ -10,9 +10,9 @@ description: |-
 
 Use this resource to create, update, and delete tags for a New Relic One entity.
 
-A New Relic Personal API key is required to provision this resource.  Set the `api_key`
-attribute in the `provider` block or the `NEW_RELIC_API_KEY` environment
-variable with your Personal API key.
+-> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](/docs/providers/newrelic/index.html) for configuring the provider.
+<br><br>
+Before upgrading to version 2.0.0 or later, it is recommended to upgrade to the most recent 1.x version of the provider and ensure that your environment successfully runs `terraform plan` without unexpected changes.
 
 ## Example Usage
 
