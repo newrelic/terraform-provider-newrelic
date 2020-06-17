@@ -27,7 +27,7 @@ func TestAccNewRelicEntityTags_Basic(t *testing.T) {
 			{
 				Config: testAccNewRelicEntityTagsConfigUpdated(testApplicationName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicEntityTagsExist(resourceName, []string{"test_key", "test_key_2"}),
+					testAccCheckNewRelicEntityTagsExist(resourceName, []string{"test_key_2"}),
 				),
 			},
 			// Test: Import
@@ -114,11 +114,6 @@ data "newrelic_entity" "foo" {
 
 resource "newrelic_entity_tags" "foo" {
   guid = data.newrelic_entity.foo.guid
-
-  tag {
-	key = "test_key"
-	values = ["test_value"]
-  }
 
   tag {
 	key = "test_key_2"
