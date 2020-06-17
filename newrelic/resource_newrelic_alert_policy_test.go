@@ -84,6 +84,7 @@ func TestAccNewRelicAlertPolicy_ResourceNotFound(t *testing.T) {
 }
 
 func TestAccNewRelicAlertPolicy_ErrorThrownWhenNameEmpty(t *testing.T) {
+	avoidEmptyAccountID()
 	expectedErrorMsg, _ := regexp.Compile(`name must not be empty`)
 
 	resource.ParallelTest(t, resource.TestCase{
