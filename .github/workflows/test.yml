@@ -63,12 +63,8 @@ jobs:
 
     - name: Unit Tests
       run: make test
-      env:
-        NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-
 
   test-integration:
-    # needs: lint
     runs-on: ubuntu-latest
     steps:
     - name: Install Go
