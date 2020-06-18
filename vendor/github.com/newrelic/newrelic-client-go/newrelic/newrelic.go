@@ -14,6 +14,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 	"github.com/newrelic/newrelic-client-go/pkg/edge"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/pkg/eventstometrics"
 	"github.com/newrelic/newrelic-client-go/pkg/nerdgraph"
 	"github.com/newrelic/newrelic-client-go/pkg/nerdstorage"
 	"github.com/newrelic/newrelic-client-go/pkg/nrdb"
@@ -25,17 +26,18 @@ import (
 
 // NewRelic is a collection of New Relic APIs.
 type NewRelic struct {
-	APM         apm.APM
-	Alerts      alerts.Alerts
-	Dashboards  dashboards.Dashboards
-	Edge        edge.Edge
-	Entities    entities.Entities
-	NerdGraph   nerdgraph.NerdGraph
-	NerdStorage nerdstorage.NerdStorage
-	Nrdb        nrdb.Nrdb
-	Plugins     plugins.Plugins
-	Synthetics  synthetics.Synthetics
-	Workloads   workloads.Workloads
+	APM             apm.APM
+	Alerts          alerts.Alerts
+	Dashboards      dashboards.Dashboards
+	Edge            edge.Edge
+	Entities        entities.Entities
+	EventsToMetrics eventstometrics.EventsToMetrics
+	NerdGraph       nerdgraph.NerdGraph
+	NerdStorage     nerdstorage.NerdStorage
+	Nrdb            nrdb.Nrdb
+	Plugins         plugins.Plugins
+	Synthetics      synthetics.Synthetics
+	Workloads       workloads.Workloads
 }
 
 // New returns a collection of New Relic APIs.
@@ -56,17 +58,18 @@ func New(opts ...ConfigOption) (*NewRelic, error) {
 	}
 
 	nr := &NewRelic{
-		APM:         apm.New(config),
-		Alerts:      alerts.New(config),
-		Dashboards:  dashboards.New(config),
-		Edge:        edge.New(config),
-		Entities:    entities.New(config),
-		NerdGraph:   nerdgraph.New(config),
-		NerdStorage: nerdstorage.New(config),
-		Nrdb:        nrdb.New(config),
-		Plugins:     plugins.New(config),
-		Synthetics:  synthetics.New(config),
-		Workloads:   workloads.New(config),
+		APM:             apm.New(config),
+		Alerts:          alerts.New(config),
+		Dashboards:      dashboards.New(config),
+		Edge:            edge.New(config),
+		Entities:        entities.New(config),
+		EventsToMetrics: eventstometrics.New(config),
+		NerdGraph:       nerdgraph.New(config),
+		NerdStorage:     nerdstorage.New(config),
+		Nrdb:            nrdb.New(config),
+		Plugins:         plugins.New(config),
+		Synthetics:      synthetics.New(config),
+		Workloads:       workloads.New(config),
 	}
 
 	return nr, nil

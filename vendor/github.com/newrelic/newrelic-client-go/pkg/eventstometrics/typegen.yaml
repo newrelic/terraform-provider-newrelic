@@ -1,0 +1,14 @@
+---
+types:
+  - name: EventsToMetricsAccountStitchedFields
+  - name: EventsToMetricsListRuleResult
+  - name: EventsToMetricsCreateRuleResult
+  - name: EventsToMetricsCreateRuleInput 
+  - name: EventsToMetricsCreateRuleFailure 
+  - name: EventsToMetricsDeleteRuleResult
+  - name: EventsToMetricsDeleteRuleInput 
+  - name: EventsToMetricsDeleteRuleFailure 
+  - name: EventsToMetricsUpdateRuleResult
+  - name: EventsToMetricsUpdateRuleInput 
+  - name: EventsToMetricsUpdateRuleFailure 
+  - name: EventsToMetricsRule
