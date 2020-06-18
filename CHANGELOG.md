@@ -1,4 +1,4 @@
-## 2.0.0 (Unreleased)
+## 2.0.0 (June 18, 2020)
 
 BUG FIXES:
 
