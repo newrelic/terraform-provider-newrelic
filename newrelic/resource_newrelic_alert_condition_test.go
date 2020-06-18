@@ -156,6 +156,7 @@ func TestAccNewRelicAlertCondition_AlertPolicyNotFound(t *testing.T) {
 }
 
 func TestAccNewRelicAlertCondition_ShortTermDuration(t *testing.T) {
+	avoidEmptyAccountID()
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.ParallelTest(t, resource.TestCase{
@@ -172,6 +173,7 @@ func TestAccNewRelicAlertCondition_ShortTermDuration(t *testing.T) {
 }
 
 func TestAccNewRelicAlertCondition_LongTermDuration(t *testing.T) {
+	avoidEmptyAccountID()
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.ParallelTest(t, resource.TestCase{
@@ -188,6 +190,7 @@ func TestAccNewRelicAlertCondition_LongTermDuration(t *testing.T) {
 }
 
 func TestAccNewRelicAlertCondition_LongName(t *testing.T) {
+	avoidEmptyAccountID()
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest:   true,
@@ -203,6 +206,7 @@ func TestAccNewRelicAlertCondition_LongName(t *testing.T) {
 }
 
 func TestAccNewRelicAlertCondition_EmptyName(t *testing.T) {
+	avoidEmptyAccountID()
 	expectedErrorMsg, _ := regexp.Compile(`name must not be empty`)
 	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest:   true,

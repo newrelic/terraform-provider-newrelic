@@ -184,6 +184,7 @@ func testAccCheckNewRelicPluginsAlertConditionExists(n string) resource.TestChec
 }
 
 func TestAccNewRelicPluginsAlertCondition_NameGreaterThan64Char(t *testing.T) {
+	avoidEmptyAccountID()
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	rName := acctest.RandString(5)
 	resource.ParallelTest(t, resource.TestCase{
@@ -317,6 +318,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 }
 
 func TestAccNewRelicPluginsAlertCondition_NameLessThan1Char(t *testing.T) {
+	avoidEmptyAccountID()
 	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
 	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest:   true,
@@ -371,6 +373,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 }
 
 func TestAccNewRelicPluginsAlertCondition_TermDurationGreaterThan120(t *testing.T) {
+	avoidEmptyAccountID()
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest:   true,
@@ -425,6 +428,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 }
 
 func TestAccNewRelicPluginsAlertCondition_TermDurationLessThan5(t *testing.T) {
+	avoidEmptyAccountID()
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest:   true,
