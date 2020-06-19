@@ -98,3 +98,7 @@ jobs:
         NEW_RELIC_INSIGHTS_INSERT_KEY: ${{ secrets.NEW_RELIC_INSIGHTS_INSERT_KEY }}
         NEW_RELIC_INSIGHTS_QUERY_KEY: ${{ secrets.NEW_RELIC_INSIGHTS_QUERY_KEY }}
         NR_ACC_TESTING: ${{ secrets.NR_ACC_TESTING }}
+
+    - name: Sweeper
+      if: ${{ always() }} # always run this job after integration tests regardless if they failed
+      run: go run ./sweep.go
