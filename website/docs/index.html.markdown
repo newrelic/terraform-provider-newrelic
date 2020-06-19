@@ -96,6 +96,16 @@ directed at the newer provider version.
 -> <small>**Deprecation notice:** 2020-06-12<br> 
 -> **End of support:** 2020-01-15</small>
 
+If you wish to pin your environment to a specific release, you can do so with a `required_providers` statement in your Terraform manifest.
+
+```hcl
+required_providers {
+    newrelic = "~> 1.19.0"
+}
+```
+
+See the [Terraform docs][provider_version_configugration] for more information on pinning versions.
+
 ## Upgrading to 2.x
 
 Users of the provider before version `2.x` will need to make a few adjustments to their configuration before upgrading.
@@ -164,3 +174,5 @@ Keep in mind that when you submit your pull request, you'll need to sign the CLA
 New Relic has open-sourced this project. This project is provided AS-IS WITHOUT WARRANTY OR SUPPORT, although you can report issues and contribute to the project here on GitHub.
 
 _Please do not report issues with this software to New Relic Global Technical Support._
+
+[provider_version_configugration]: https://www.terraform.io/docs/configuration/providers.html#provider-versions
