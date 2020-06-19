@@ -101,4 +101,5 @@ jobs:
 
     - name: Sweeper
       if: ${{ always() }} # always run this job after integration tests regardless if they failed
-      run: go run ./sweep.go
+      continue-on-error: true # this step is optional and should not block CI from passing
+      run: go run ./internal/sweep.go

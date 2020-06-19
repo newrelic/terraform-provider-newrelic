@@ -159,11 +159,19 @@ func Provider() terraform.ResourceProvider {
 	return provider
 }
 
+func GetProvierUserAgentString(terraformVersion string) string {
+	fmt.Print("\n****************************\n")
+	fmt.Printf("terraformVersion:  %+v", terraformVersion)
+	fmt.Print("\n****************************\n")
+
+	terraformUA := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", terraformVersion, meta.SDKVersionString())
+	return fmt.Sprintf("%s %s/%s", terraformUA, TerraformProviderProductUserAgent, version.ProviderVersion)
+}
+
 func providerConfigure(data *schema.ResourceData, terraformVersion string) (interface{}, error) {
 	adminAPIKey := data.Get("admin_api_key").(string)
 	personalAPIKey := data.Get("api_key").(string)
-	terraformUA := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", terraformVersion, meta.SDKVersionString())
-	userAgent := fmt.Sprintf("%s %s/%s", terraformUA, TerraformProviderProductUserAgent, version.ProviderVersion)
+	userAgent := GetProvierUserAgentString(terraformVersion)
 	accountID := data.Get("account_id").(int)
 
 	cfg := Config{
