@@ -160,10 +160,6 @@ func Provider() terraform.ResourceProvider {
 }
 
 func GetProvierUserAgentString(terraformVersion string) string {
-	fmt.Print("\n****************************\n")
-	fmt.Printf("terraformVersion:  %+v", terraformVersion)
-	fmt.Print("\n****************************\n")
-
 	terraformUA := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", terraformVersion, meta.SDKVersionString())
 	return fmt.Sprintf("%s %s/%s", terraformUA, TerraformProviderProductUserAgent, version.ProviderVersion)
 }

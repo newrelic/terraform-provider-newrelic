@@ -42,10 +42,6 @@ type Config struct {
 func (c *Config) Client() (*nr.NewRelic, error) {
 	options := []nr.ConfigOption{}
 
-	fmt.Print("\n****************************\n")
-	fmt.Printf("CONFIG:  %+v", c)
-	fmt.Print("\n****************************\n")
-
 	options = append(options,
 		nr.ConfigAdminAPIKey(c.AdminAPIKey),
 		nr.ConfigPersonalAPIKey(c.PersonalAPIKey),
