@@ -1,4 +1,4 @@
-## 2.1.0 (Unreleased)
+## 2.1.0 (June 22, 2020)
 
 IMPROVEMENTS:
 * feat(eventstometrics): add an events to metrics rule resource (#655)
