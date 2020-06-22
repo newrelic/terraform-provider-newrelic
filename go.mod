@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.3.0 // indirect
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20191212124732-c6ae6269b9d7 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.10.0
-	github.com/newrelic/go-agent/v3 v3.6.0
+	github.com/newrelic/go-agent/v3 v3.7.0
 	github.com/newrelic/go-insights v1.0.3
 	github.com/newrelic/newrelic-client-go v0.31.0
 	github.com/stretchr/testify v1.6.1
