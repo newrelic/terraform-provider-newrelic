@@ -1,4 +1,10 @@
 ## 2.1.0 (Unreleased)
+
+IMPROVEMENTS:
+* feat(eventstometrics): add an events to metrics rule resource (#655)
+* docs: include sidebar link for 2.x upgrade
+* docs: include information on pinning a version
+
 ## 2.0.0 (June 18, 2020)
 
 BUG FIXES:
