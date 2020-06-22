@@ -15,10 +15,11 @@ func main() {
 	nrProvider.GetProvierUserAgentString(meta.SDKVersion)
 
 	client := newClient()
+	isReporting := false
 	entities, err := client.Entities.SearchEntities(entities.SearchEntitiesParams{
-		Domain: entities.EntityDomains.APM,
-		Name:   "tf_test",
-		// Reporting: &isReporting,
+		Domain:    entities.EntityDomains.APM,
+		Name:      "tf_test",
+		Reporting: &isReporting,
 	})
 
 	if err != nil {
