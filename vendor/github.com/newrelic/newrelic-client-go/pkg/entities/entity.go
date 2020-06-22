@@ -15,7 +15,7 @@ type Entity struct {
 	Reporting  bool             `json:"reporting,omitempty"`
 	Type       Type             `json:"type,omitempty"`
 
-	// ApmApplicationEntity, BrowserApplicationEntity
+	// ApmApplicationEntity, BrowserApplicationEntity, MobileApplicationEntity
 	AlertSeverity *EntityAlertSeverityType `json:"alertSeverity,omitempty"`
 	ApplicationID *int                     `json:"applicationId,omitempty"`
 
@@ -249,28 +249,42 @@ const (
 
 	graphqlBrowserApplicationEntityFields = `
 		... on BrowserApplicationEntity {
- 			alertSeverity
+			alertSeverity
 			applicationId
 			servingApmApplicationId
 	}`
 
 	graphqlBrowserApplicationEntityOutlineFields = `
 		... on BrowserApplicationEntityOutline {
- 			alertSeverity
+			alertSeverity
 			applicationId
 			servingApmApplicationId
+	}`
+
+	graphqlMobileApplicationEntityFields = `
+		... on MobileApplicationEntity {
+			alertSeverity
+			applicationId
+	}`
+
+	graphqlMobileApplicationEntityOutlineFields = `
+		... on MobileApplicationEntityOutline {
+			alertSeverity
+			applicationId
 	}`
 
 	getEntitiesQuery = `query($guids: [String!]!) { actor { entities(guids: $guids)  {` +
 		graphqlEntityStructFields +
 		graphqlApmApplicationEntityFields +
 		graphqlBrowserApplicationEntityFields +
+		graphqlMobileApplicationEntityFields +
 		` } } }`
 
 	getEntityQuery = `query($guid: String!) { actor { entity(guid: $guid)  {` +
 		graphqlEntityStructFields +
 		graphqlApmApplicationEntityFields +
 		graphqlBrowserApplicationEntityFields +
+		graphqlMobileApplicationEntityFields +
 		` } } }`
 
 	searchEntitiesQuery = `
@@ -283,6 +297,7 @@ const (
 		graphqlEntityStructFields +
 		graphqlApmApplicationEntityOutlineFields +
 		graphqlBrowserApplicationEntityOutlineFields +
+		graphqlMobileApplicationEntityOutlineFields +
 		` } } } } }`
 )
 

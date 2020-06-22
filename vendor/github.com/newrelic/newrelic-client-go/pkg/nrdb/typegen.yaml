@@ -3,6 +3,8 @@ imports:
   - github.com/newrelic/newrelic-client-go/internal/serialization
 
 types:
+  - name: EpochSeconds
+    createAs: serialization.EpochTime
   - name: EpochMilliseconds
     createAs: serialization.EpochTime
   - name: Nrql
@@ -10,3 +12,5 @@ types:
   - name: NrdbResult
     createAs: map[string]interface{}
   - name: NrdbResultContainer
+  - name: NrqlHistoricalQuery
+
