@@ -1,4 +1,4 @@
-module github.com/terraform-providers/terraform-provider-newrelic
+module github.com/newrelic/terraform-provider-newrelic
 
 go 1.13
 

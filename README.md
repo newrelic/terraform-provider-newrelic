@@ -26,18 +26,18 @@ machine (version 1.13+ is *required*). You'll also need to correctly setup a
 [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 #### Building
-Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-newrelic`
+Clone repository to: `$GOPATH/src/github.com/newrelic/terraform-provider-newrelic`
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/terraform-providers;
-$ cd $GOPATH/src/github.com/terraform-providers
-$ git clone git@github.com:terraform-providers/terraform-provider-newrelic.git
+$ mkdir -p $GOPATH/src/github.com/newrelic;
+$ cd $GOPATH/src/github.com/newrelic
+$ git clone git@github.com:newrelic/terraform-provider-newrelic.git
 ```
 
 Enter the provider directory and build the provider. To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
 ```sh
-$ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-newrelic
+$ cd $GOPATH/src/github.com/newrelic/terraform-provider-newrelic
 $ make build
 ```
 
