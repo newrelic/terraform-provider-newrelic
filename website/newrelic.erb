@@ -39,6 +39,41 @@
     "workload",
 ] %>
 
+<%#
+    v1 Data Sources (alphabetical)
+%>
+<% @v1_data_sources = [
+    "alert_channel",
+    "alert_policy",
+    "application",
+    "key_transaction",
+    "plugin",
+    "plugin_component",
+    "synthetics_monitor",
+    "synthetics_secure_credential",
+] %>
+
+<%#
+    v1 Resources (alphabetical)
+%>
+<% @v1_resources = [
+    "alert_channel",
+    "alert_condition",
+    "alert_policy",
+    "alert_policy_channel",
+    "dashboard",
+    "infra_alert_condition",
+    "insights_event",
+    "nrql_alert_condition",
+    "plugins_alert_condition",
+    "synthetics_alert_condition",
+    "synthetics_label",
+    "synthetics_monitor",
+    "synthetics_monitor_script",
+    "synthetics_secure_credential",
+    "workload",
+] %>
+
 <div class="docs-sidebar hidden-print affix-top" role="complementary">
     <ul class="nav docs-sidenav">
         <li<%= sidebar_current("docs-home") %>>
@@ -90,7 +125,7 @@
                 <li>
                     <a href="#">Data Sources</a>
                     <ul class="nav">
-                        <% @data_sources.each do |data_source| -%>
+                        <% @v1_data_sources.each do |data_source| -%>
                             <li>
                                 <a href="/docs/providers/newrelic/d/v1/<%= data_source %>.html">newrelic_<%= data_source %></a>
                             </li>
@@ -100,7 +135,7 @@
                 <li>
                     <a href="#">Resources</a>
                     <ul class="nav">
-                        <% @resources.each do |resource| -%>
+                        <% @v1_resources.each do |resource| -%>
                             <li>
                                 <a href="/docs/providers/newrelic/r/v1/<%= resource %>.html">newrelic_<%= resource %></a>
                             </li>
