@@ -242,6 +242,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:      true,
 				Description:   "Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are 3600, 7200, 14400, 28800, 43200, and 86400.",
 				ConflictsWith: []string{"violation_time_limit"},
+				AtLeastOneOf:  []string{"violation_time_limit_seconds", "violation_time_limit"},
 				ValidateFunc:  validation.IntInSlice([]int{3600, 7200, 14400, 28800, 43200, 86400}),
 			},
 			// Exists in NerdGraph, but with different values. Conversion
@@ -281,6 +282,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:      true,
 				Description:   "Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are 'ONE_HOUR', 'TWO_HOURS', 'FOUR_HOURS', 'EIGHT_HOURS', 'TWELVE_HOURS', 'TWENTY_FOUR_HOURS' (case insensitive).",
 				ConflictsWith: []string{"violation_time_limit_seconds"},
+				AtLeastOneOf:  []string{"violation_time_limit_seconds", "violation_time_limit"},
 				ValidateFunc:  validation.StringInSlice([]string{"ONE_HOUR", "TWO_HOURS", "FOUR_HOURS", "EIGHT_HOURS", "TWELVE_HOURS", "TWENTY_FOUR_HOURS"}, true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
