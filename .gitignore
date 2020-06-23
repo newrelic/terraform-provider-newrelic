@@ -1,6 +1,13 @@
 *.dll
 *.exe
 .DS_Store
+.idea
+.terraform/
+.vagrant/
+/pkg/
+bin/
+tmp/*
+coverage/
 example.tf
 terraform.tfplan
 terraform.tfstate
