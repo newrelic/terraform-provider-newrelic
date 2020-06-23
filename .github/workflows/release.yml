@@ -30,4 +30,5 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.DEV_TOOLKIT_TOKEN }}
+          GPG_FINGERPRINT: ${{ secrets.GPG_FINGERPRINT }}
         run: make release-publish
