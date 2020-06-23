@@ -11,16 +11,19 @@ description: |-
 
 [New Relic](https://newrelic.com/) offers tools that help you fix problems
 quickly, maintain complex systems, improve your code, and accelerate your
-digital transformation.
+digital transformation. Use the navigation to the left to read about the available resources.
 
-Use the navigation to the left to read about the available resources.
+### Helpful Links
+
+- [**Migration Guide: Updating to v2.x**](guides/migration_guide_v2.html)
+- [**Configure the Provider**](guides/provider_configuration.html)
 
 ## Example Usage
 
 ```hcl
 # Configure the New Relic provider
 provider "newrelic" {
-  api_key = var.newrelic_api_key
+  api_key = var.newrelic_personal_api_key
   region = "US" # US or EU (US is default)
 }
 
@@ -85,7 +88,7 @@ The following arguments are supported:
 - `insights_insert_url` - (Optional) This argument changes the Insights insert URL (default is https://insights-collector.newrelic.com/v1/accounts). If the New Relic account is in the EU, the Insights API URL must be set to https://insights-collector.eu.newrelic.com/v1. The `NEW_RELIC_INSIGHTS_INSERT_URL` environment variable can also be used.
 - `cacert_file` - (Optional) A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEW_RELIC_API_CACERT` environment variable can also be used.
 
-## Support for 1.x
+## Support for v1.x
 
 While the sun rises on the `2.x` release, the sunset of the `1.x` approaches.
 We intend to support minor bug fixes through the end of 2020, but we don't plan
@@ -93,7 +96,7 @@ to merge any new features into `release/1.x` branch.  Please see the section
 below about upgrading the provider.  All new feature work and focus will be
 directed at the newer provider version.
 
--> <small>**Deprecation notice:** 2020-06-12<br> 
+-> <small>**Deprecation notice:** 2020-06-12<br>
 -> **End of support:** 2020-01-15</small>
 
 If you wish to pin your environment to a specific release, you can do so with a `required_providers` statement in your Terraform manifest.
@@ -106,7 +109,7 @@ required_providers {
 
 See the [Terraform docs][provider_version_configugration] for more information on pinning versions.
 
-## Upgrading to 2.x
+## Updating to v2.x
 
 Users of the provider before version `2.x` will need to make a few adjustments to their configuration before upgrading.
 
