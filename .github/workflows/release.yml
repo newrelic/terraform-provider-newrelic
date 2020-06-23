@@ -8,25 +8,24 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
-      -
-        name: Unshallow
+
+      - name: Unshallow
         run: git fetch --prune --unshallow
-      -
-        name: Set up Go
+
+      - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.14
-      -
-        name: Install PGP private key
+
+      - name: Install PGP private key
         shell: bash
         env:
           PGP_PRIVATE_KEY: ${{ secrets.PGP_PRIVATE_KEY }}
         run: echo "$PGP_PRIVATE_KEY" | gpg --batch --import
-      -
-        name: Publish Release
+
+      - name: Publish Release
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.DEV_TOOLKIT_TOKEN }}
