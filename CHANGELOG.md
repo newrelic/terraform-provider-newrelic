@@ -1,3 +1,5 @@
+<a name="v2.1.2"></a>
+## [v2.1.2] - 2020-06-23
 <a name="v2.1.1"></a>
 ## [v2.1.1] - 2020-06-23
 ### Features
@@ -259,7 +261,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.2...HEAD
+[v2.1.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.1...v2.1.2
 [v2.1.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.0...v2.1.1
 [v2.1.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.0.0...v2.1.0
 [v2.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.19.0...v2.0.0
