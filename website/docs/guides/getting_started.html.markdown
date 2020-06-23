@@ -30,7 +30,23 @@ $ terraform init
 
 -> <small>This is the first command that should be run for any new or existing Terraform configuration per machine. This sets up all the local data necessary to run Terraform that is typically not committed to version control. This command is always safe to run multiple times.</small>
 
-Once you've successfully initialized your Terraform working directory, try running the following command.
+Once you've successfully initialized your Terraform working directory, you'll want to create your first configuration file (.tf file). Let's start by creating `main.tf`.
+
+**main.tf**
+
+```hcl
+# Configure the New Relic provider
+provider "newrelic" {
+  account_id = <Your Account ID>
+  api_key = <Your Personal API Key>    # starts with 'NRAK'
+  admin_api_key = <Your Admin API Key> # starts with 'NRAA'
+  region = "US"                        # Valid regions are US and EU
+}
+```
+
+> <small>**Note:** You can also use [environment variables](guides/provider_configuration.html#configuration-via-environment-variables) to configure the provider, which can simplify your `provider` block.</small>
+
+Now let's try running the following command.
 
 ```bash
 $ terraform plan
@@ -42,10 +58,12 @@ This command will output some information into your console regarding Terraform'
 
 We started with a minimal configuration with an Alert Policy, but it doesn't contain any Alert Conditions. Let's add an Alert Condition to that policy which we'll associate the condition to an application.
 
-First, let's add a data source by adding a `data` block. This will store your application's information for Terraform to use.
+First, let's add a data source by adding a `data` block. This will store your application's information for Terraform to use. Terraform data sources operate like a `GET` request - they fetch the data of the resource that matches the criteria you provide, in the example below it's a New Relic application entity named "my-app".
 
 ```hcl
-provider "newrelic" {}
+provider "newrelic" {
+  # ...your configuration from the previous step
+}
 
 # Data Source
 data "newrelic_entity" "app_name" {
@@ -109,11 +127,11 @@ New Relic alerts are great, but they're even better when combined with good noti
 ```hcl
 # Notification channel
 resource "newrelic_alert_channel" "alert_notification_email" {
-  name = "paul@example.com"
+  name = "username@example.com"
   type = "email"
 
   config {
-    recipients              = "paul@example.com"
+    recipients              = "username@example.com"
     include_json_attachment = "1"
   }
 }
@@ -127,7 +145,7 @@ resource "newrelic_alert_policy_channel" "alert_policy_email" {
 }
 ```
 
-This example will send an email to the specified recipients whenever the associated alert condition is triggered. If you would like to send notifications via different modalities, such as Slack, you can configure updating the `type` in your [alert channel](https://www.terraform.io/docs/providers/newrelic/r/alert_channel.html).
+This example will send an email to the specified recipients whenever the associated alert condition is triggered. If you would like to send notifications via different modalities, such as Slack, the [alert channel](/docs/providers/newrelic/r/alert_channel.html) resource supports mutliple types of channels. Use the [additional alert channel examples](/docs/providers/newrelic/r/alert_channel.html#additional-examples) for assistance with configuring your different notification channels.
 
 ## A Note About Secrets
 
@@ -152,7 +170,7 @@ resource "newrelic_alert_channel" "slack" {
 }
 ```
 
-The resource above yields the following plan.
+The resource above yields the following Terraform plan.
 
     -/+ newrelic_alert_channel.slack (new resource required)
           id:                    "2344397" => <computed> (forces new resource)
@@ -177,7 +195,6 @@ resource "newrelic_alert_channel" "slack" {
 
 This should avoid any of the configuration items from causing a change to the
 resource.
-
 
 
 ## Apply Your Terraform Configuration

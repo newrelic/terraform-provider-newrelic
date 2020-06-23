@@ -11,7 +11,9 @@ description: |-
 
 [New Relic](https://newrelic.com/) offers tools that help you fix problems
 quickly, maintain complex systems, improve your code, and accelerate your
-digital transformation. Use the navigation to the left to read about the available resources.
+digital transformation.
+
+Use the navigation to the left to read about the available resources.
 
 ### Quick Links
 
@@ -23,20 +25,22 @@ digital transformation. Use the navigation to the left to read about the availab
 ```hcl
 # Configure the New Relic provider
 provider "newrelic" {
-  api_key = var.newrelic_personal_api_key
-  region = "US" # US or EU (US is default)
+  account_id = <Your Account ID>
+  api_key = <Your Personal API Key>    # starts with 'NRAK'
+  admin_api_key = <Your Admin API Key> # starts with 'NRAA'
+  region = "US"                        # Valid regions are US and EU
 }
 
 # Read an APM application resource
 data "newrelic_entity" "foo" {
-  name = "foo"
+  name = "Your App Name"
   domain = "APM"
   type = "APPLICATION"
 }
 
 # Create an alert policy
 resource "newrelic_alert_policy" "alert" {
-  name = "Alert"
+  name = "Your Concise Alert Name"
 }
 
 # Add a condition
@@ -64,7 +68,7 @@ resource "newrelic_alert_channel" "email" {
   type = "email"
 
   config {
-    recipients              = "paul@example.com"
+    recipients              = "username@example.com"
     include_json_attachment = "1"
   }
 }
@@ -72,7 +76,9 @@ resource "newrelic_alert_channel" "email" {
 # Link the channel to the policy
 resource "newrelic_alert_policy_channel" "alert_email" {
   policy_id  = newrelic_alert_policy.alert.id
-  channel_id = newrelic_alert_channel.email.id
+  channel_ids = [
+    newrelic_alert_channel.email.id
+  ]
 }
 ```
 
@@ -117,7 +123,7 @@ required_providers {
 }
 ```
 
-See the [Terraform docs][provider_version_configugration] for more information on pinning versions.
+See the [Terraform docs][provider_version_configuration] for more information on pinning versions.
 
 ## Upgrading to v2.x
 
@@ -173,4 +179,4 @@ New Relic has open-sourced this project. This project is provided AS-IS WITHOUT 
 
 _Please do not report issues with this software to New Relic Global Technical Support._
 
-[provider_version_configugration]: https://www.terraform.io/docs/configuration/providers.html#provider-versions
+[provider_version_configuration]: https://www.terraform.io/docs/configuration/providers.html#provider-versions
