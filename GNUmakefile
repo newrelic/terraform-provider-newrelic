@@ -11,7 +11,7 @@ GO            = go
 
 # The root module (from go.mod)
 PROJECT_MODULE  ?= $(shell $(GO) list -m)
-GO_PKGS         ?= $(shell $(GO) list ./... | grep -v -e "/vendor/" -e "/example")
+GO_PKGS         ?= $(shell $(GO) list ./... | grep -v -e "/example")
 
 #############################
 # Targets

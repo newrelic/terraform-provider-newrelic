@@ -34,18 +34,18 @@ machine (version 1.13+ is _required_). You'll also need to correctly setup a
 
 #### Building
 
-Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-newrelic`
+Clone repository to: `$GOPATH/src/github.com/newrelic/terraform-provider-newrelic`
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/terraform-providers;
-$ cd $GOPATH/src/github.com/terraform-providers
-$ git clone git@github.com:terraform-providers/terraform-provider-newrelic.git
+$ mkdir -p $GOPATH/src/github.com/newrelic;
+$ cd $GOPATH/src/github.com/newrelic
+$ git clone git@github.com:newrelic/terraform-provider-newrelic.git
 ```
 
 Enter the provider directory and build the provider. To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
 ```sh
-$ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-newrelic
+$ cd $GOPATH/src/github.com/newrelic/terraform-provider-newrelic
 $ make build
 ```
 
@@ -64,16 +64,5 @@ _Note:_ Acceptance tests _create real resources_, and often cost money to run. T
 ```sh
 $ make testacc
 ```
-
-#### Updating Vendor Packages
-
-This repository uses [go modules](https://github.com/golang/go/wiki/Modules) to manage dependencies found in the vendor folder.
-
-To update a dependency:
-
-1.  Ensure you have go 1.13.0 or later installed
-2.  CD to the root of this repo (not into the vendor directory)
-3.  Run `go mod tidy` to ensure `go.mod` is up to date
-4.  Run `go mod vendor` to store dependencies in the `vendor` directory
 
 [provider_docs]: https://www.terraform.io/docs/providers/newrelic/index.html

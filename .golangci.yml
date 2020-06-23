@@ -7,7 +7,7 @@ run:
 linters-settings:
   errcheck:
     ignoretests: true
-    ignore: github.com/hashicorp/terraform-plugin-sdk/helper/schema:ForceNew|Set,github.com/hashicorp/terraform-plugin-sdk/helper/schema:Set,github.com/terraform-providers/terraform-provider-newrelic/newrelic:Set,io:Close|Write
+    ignore: github.com/hashicorp/terraform-plugin-sdk/helper/schema:ForceNew|Set,github.com/hashicorp/terraform-plugin-sdk/helper/schema:Set,github.com/newrelic/terraform-provider-newrelic/newrelic:Set,io:Close|Write
   golint:
     # minimal confidence for issues, default is 0.8
     min-confidence: 0.5
