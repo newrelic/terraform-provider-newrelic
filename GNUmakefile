@@ -34,7 +34,6 @@ clean: cover-clean compile-clean release-clean
 # Import fragments
 include build/compile.mk
 include build/deps.mk
-include build/document.mk
 include build/lint.mk
 include build/release.mk
 include build/terraform.mk

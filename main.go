@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/plugin"
+
 	"github.com/newrelic/terraform-provider-newrelic/newrelic"
 )
 
