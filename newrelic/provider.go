@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/meta"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
-	"github.com/terraform-providers/terraform-provider-newrelic/version"
+	"github.com/newrelic/terraform-provider-newrelic/version"
 )
 
 // TerraformProviderProductUserAgent string used to identify this provider in User Agent requests

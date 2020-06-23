@@ -33,5 +33,5 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Compile
-      run: make build
+      run: make compile-only
 

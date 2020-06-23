@@ -11,14 +11,14 @@ MISSPELL         ?= misspell
 
 COMMIT_LINT_CMD   ?= go-gitlint
 COMMIT_LINT_REGEX ?= "(chore|docs|feat|fix|refactor|tests?)(\([^\)]+\))?: .*"
-COMMIT_LINT_START ?= "2020-06-17"
+COMMIT_LINT_START ?= "2020-06-24"
 
 
 EXCLUDEDIR      ?= .git
 SRCDIR          ?= .
-GO_PKGS         ?= $(shell ${GO} list ./... | grep -v -e "/vendor/" -e "/example")
-FILES           ?= $(shell find ${SRCDIR} -type f | grep -v -e '.git/' -e '/vendor/')
-GO_FILES        ?= $(shell find $(SRCDIR) -type f -name "*.go" | grep -v -e ".git/" -e '/vendor/' -e '/example/')
+GO_PKGS         ?= $(shell ${GO} list ./... | grep -v -e "/example")
+FILES           ?= $(shell find ${SRCDIR} -type f | grep -v -e '.git/')
+GO_FILES        ?= $(shell find $(SRCDIR) -type f -name "*.go" | grep -v -e ".git/" -e '/example/')
 PROJECT_MODULE  ?= $(shell $(GO) list -m)
 
 
