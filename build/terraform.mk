@@ -1,5 +1,5 @@
 PKG_NAME      ?= newrelic
-GO_PKGS       ?= $(shell ${GO} list ./... | grep -v -e "/vendor/" -e "/example")
+GO_PKGS       ?= $(shell ${GO} list ./... | grep -v -e "/example")
 WEBSITE_REPO  ?= github.com/hashicorp/terraform-website
 TF_LINTER     ?= tfproviderlint
 GOTOOLS       += github.com/bflad/tfproviderlint/cmd/tfproviderlint
@@ -41,7 +41,7 @@ lint-terraform: deps
 # Set a few vars and run the test suite
 testacc: TF_ACC = 1
 testacc: TEST_ARGS = "-timeout 120m"
-testacc: LDFLAGS_TEST = "-X=github.com/terraform-providers/terraform-provider-newrelic/version.ProviderVersion=acc"
+testacc: LDFLAGS_TEST = "-X=github.com/newrelic/terraform-provider-newrelic/version.ProviderVersion=acc"
 testacc: test-only
 
 

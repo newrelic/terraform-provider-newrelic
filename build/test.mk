@@ -10,8 +10,8 @@ GOFMT        ?= gofmt
 COVERAGE_DIR ?= ./coverage/
 COVERMODE    ?= atomic
 SRCDIR       ?= .
-GO_PKGS      ?= $(shell $(GO) list ./... | grep -v -e "/vendor/" -e "/example")
-FILES        ?= $(shell find $(SRCDIR) -type f | grep -v -e '.git/' -e '/vendor/')
+GO_PKGS      ?= $(shell $(GO) list ./... | grep -v -e "/example")
+FILES        ?= $(shell find $(SRCDIR) -type f | grep -v -e '.git/')
 
 PROJECT_MODULE ?= $(shell $(GO) list -m)
 
@@ -24,12 +24,12 @@ test-only: test-unit test-integration
 test-unit:
 	@echo "=== $(PROJECT_NAME) === [ test-unit        ]: running unit tests..."
 	@mkdir -p $(COVERAGE_DIR)
-	@$(GO) test -v -ldflags=$(LDFLAGS_TEST) -parallel 4 $(TEST_ARGS) -tags unit -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/unit.tmp $(GO_PKGS)
+	@$(GO) test -v -ldflags=$(LDFLAGS_TEST) -parallel 4 $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/unit.tmp $(GO_PKGS)
 
 test-integration:
 	@echo "=== $(PROJECT_NAME) === [ test-integration ]: running integration tests..."
 	@mkdir -p $(COVERAGE_DIR)
-	@$(GO) test -v -ldflags=$(LDFLAGS_TEST) -parallel 4 $(TEST_ARGS) -tags integration -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp $(GO_PKGS)
+	@$(GO) test -v -ldflags=$(LDFLAGS_TEST) -parallel 4 $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp $(GO_PKGS)
 
 test-one:
 	@if [ "$(TEST)" = "./..." ]; then \
