@@ -15,7 +15,8 @@ FILES        ?= $(shell find $(SRCDIR) -type f | grep -v -e '.git/')
 
 PROJECT_MODULE ?= $(shell $(GO) list -m)
 
-LDFLAGS_TEST ?= '-X $(PROJECT_MODULE)/internal/version.GitTag=$(PROJECT_VER_TAGGED)'
+# Set a few vars and run the test suite
+LDFLAGS_TEST ?= "-X=$(PROJECT_MODULE)/version.ProviderVersion=acc"
 GOTOOLS += github.com/stretchr/testify/assert
 
 test: test-only
@@ -24,22 +25,12 @@ test-only: test-unit test-integration
 test-unit:
 	@echo "=== $(PROJECT_NAME) === [ test-unit        ]: running unit tests..."
 	@mkdir -p $(COVERAGE_DIR)
-	@$(GO) test -v -ldflags=$(LDFLAGS_TEST) -parallel 4 $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/unit.tmp $(GO_PKGS)
+	@$(GO) test -v -parallel 4 $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/unit.tmp $(GO_PKGS)
 
 test-integration:
 	@echo "=== $(PROJECT_NAME) === [ test-integration ]: running integration tests..."
 	@mkdir -p $(COVERAGE_DIR)
-	@$(GO) test -v -ldflags=$(LDFLAGS_TEST) -parallel 4 $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp $(GO_PKGS)
-
-test-one:
-	@if [ "$(TEST)" = "./..." ]; then \
-		echo "ERROR: Set TEST to a specific package. For example,"; \
-		echo "  make test-one TEST=./$(PKG_NAME)"; \
-		exit 1; \
-	fi
-	@echo "=== $(PROJECT_NAME) === [ test-one         ]: running test: $(TEST) ..."
-	@$(GO) test -v -ldflags=$(LDFLAGS_TEST) -c $(TEST) $(TEST_ARGS)
-
+	TF_ACC=1 NR_ACC_TESTING=1 $(GO) test -timeout 120m -v -ldflags=$(LDFLAGS_TEST) -parallel 4 $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp $(GO_PKGS)
 
 #
 # Coverage

@@ -38,10 +38,6 @@ lint-terraform: deps
 		-S019 \
 		./$(PKG_NAME)
 
-# Set a few vars and run the test suite
-testacc: TF_ACC = 1
-testacc: TEST_ARGS = "-timeout 120m"
-testacc: LDFLAGS_TEST = "-X=github.com/newrelic/terraform-provider-newrelic/version.ProviderVersion=acc"
 testacc: test-only
 
 
