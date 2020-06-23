@@ -55,14 +55,3 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 ```sh
 $ make testacc
 ```
-
-#### Updating Vendor Packages
-
-This repository uses [go modules](https://github.com/golang/go/wiki/Modules) to manage dependencies found in the vendor folder.
-
-To update a dependency:
-
-1. Ensure you have go 1.13.0 or later installed
-2. CD to the root of this repo (not into the vendor directory)
-3. Run `go mod tidy` to ensure `go.mod` is up to date
-4. Run `go mod vendor` to store dependencies in the `vendor` directory
