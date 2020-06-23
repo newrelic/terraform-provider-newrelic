@@ -22,8 +22,16 @@ func expandAlertChannel(d *schema.ResourceData) (*alerts.Channel, error) {
 	}
 
 	if configOk {
-		c, err := expandAlertChannelConfiguration(config.([]interface{})[0].(map[string]interface{}))
+		var channelConfig map[string]interface{}
 
+		x := config.([]interface{})
+		if len(x) > 0 {
+			if x[0] != nil {
+				channelConfig = x[0].(map[string]interface{})
+			}
+		}
+
+		c, err := expandAlertChannelConfiguration(channelConfig)
 		if err != nil {
 			return nil, err
 		}
@@ -32,7 +40,6 @@ func expandAlertChannel(d *schema.ResourceData) (*alerts.Channel, error) {
 	}
 
 	err := validateChannelConfiguration(channel.Configuration)
-
 	if err != nil {
 		return nil, err
 	}
