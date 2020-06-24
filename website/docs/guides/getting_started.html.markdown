@@ -145,7 +145,7 @@ resource "newrelic_alert_policy_channel" "alert_policy_email" {
 }
 ```
 
-This example will send an email to the specified recipients whenever the associated alert condition is triggered. If you would like to send notifications via different modalities, such as Slack, the [alert channel](/docs/providers/newrelic/r/alert_channel.html) resource supports mutliple types of channels. Use the [additional alert channel examples](/docs/providers/newrelic/r/alert_channel.html#additional-examples) for assistance with configuring your different notification channels.
+This example will send an email to the specified recipients whenever the associated alert condition is triggered. If you would like to send notifications via different modalities, such as Slack, the [alert channel](/docs/providers/newrelic/r/alert_channel.html) resource supports multiple types of channels. Use the [additional alert channel examples](/docs/providers/newrelic/r/alert_channel.html#additional-examples) for assistance with configuring your different notification channels.
 
 ## A Note About Secrets
 
