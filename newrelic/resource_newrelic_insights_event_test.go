@@ -1,8 +1,8 @@
 package newrelic
 
 import (
-	"errors"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -72,14 +72,26 @@ func testAccCheckNewRelicInsightsEventExists(n string, nrqls []string) resource.
 		client := providerConfig.NewClient
 		accountID := providerConfig.AccountID
 
+		// Due to the asynchronous operation, we need to
+		// wait for the events to propagate.
+		time.Sleep(15 * time.Second)
+
+		var errs []string
 		for _, nrql := range nrqls {
 			resp, err := client.Nrdb.Query(accountID, nrdb.Nrql(nrql))
 			if err != nil {
-				return err
+				errs = append(errs, err.Error())
 			}
+
 			if len(resp.Results) != 1 {
-				return errors.New("did not find Insights event")
+				errs = append(errs, fmt.Sprintf("[Error] Insights event not found (likely due to async issue) - query: %v", nrql))
 			}
+		}
+
+		if len(errs) > 0 {
+			fmt.Printf("test case TestAccNewRelicInsightsEvent_Basic failed (likely due to asynchronous)")
+
+			return fmt.Errorf("%v", strings.Join(errs, "\n"))
 		}
 
 		return nil
