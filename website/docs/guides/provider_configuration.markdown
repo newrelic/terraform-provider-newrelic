@@ -41,15 +41,19 @@ provider "newrelic" {}
 
 #### Environment variables reference
 
-The table below shows the available environment variables and how they map to the provider's schema attributes. When using environment variables, you do *not* need to set the schema attributes within your `provider` block.
+The table below shows the available environment variables and how they map to the provider's schema attributes. When using environment variables, you do *not* need to set the schema attributes within your `provider` block. All schema attributes default to their equivalent environment variables.
 
-| Environment Variable      | Schema Attribute   | Description                                                   |
-| ------------------------- | ------------------ | ------------------------------------------------------------- |
-| `NEW_RELIC_API_KEY`       | `api_key`          | Your New Relic [personal API key]                             |
-| `NEW_RELIC_ADMIN_API_KEY` | `admin_api_key`    | Your New Relic [admin API key]                                |
-| `NEW_RELIC_REGION`        | `region`           | Your New Relic account's [data center region] \(`US` or `EU`) |
+| <small>Schema Attribute</small> | <small>Equivalent Env Variable</small> | <small>Required?</small> | <small>Default</small> | <small>Description</small>                                                                   |
+| ------------------------------- | -------------------------------------- | ------------------------ | ---------------------- | -------------------------------------------------------------------------------------------- |
+| `account_id`                    | `NEW_RELIC_ACCOUNT_ID`                 | required                 | `null`                 | Your New Relic [account ID].                                                                 |
+| `admin_api_key`                 | `NEW_RELIC_ADMIN_API_KEY`              | required                 | `null`                 | Your New Relic [admin API key] \(starts with `NRAA`).                                        |
+| `api_key`                       | `NEW_RELIC_API_KEY`                    | required                 | `null`                 | Your New Relic [personal API key] \(starts with `NRAK`).                                     |
+| `region`                        | `NEW_RELIC_REGION`                     | required                 | `null`                 | Your New Relic account's [data center region] \(`US` or `EU`).                               |
+| `insights_insert_key`           | `NEW_RELIC_INSIGHTS_INSERT_KEY`        | optional                 | `null`                 | Your [Insights insert API key] for Insights events.                                          |
+| `insecure_skip_verify`          | `NEW_RELIC_API_SKIP_VERIFY`            | optional                 | `null`                 | Whether or not to trust self-signed SSL certificates.                                        |
+| `cacert_file`                   | `NEW_RELIC_API_CACERT`                 | optional                 | `null`                 | A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. |
 
--> <small>**Note:** The `provider` block schema attributes take precedence over environment variables, providing the ability to override environment variables if needed. </small>
+-> <small>**Note:** The `provider` block schema attributes take precedence over environment variables, providing the ability to override environment variables if needed. This can useful when using [multiple instances of the provider](/docs/providers/newrelic/guides/provider_configuration.html#configuring-multiple-instances-of-the-provider).</small>
 
 
 ### Configuration via the `provider` block
@@ -83,7 +87,9 @@ provider "newrelic" {
 
 -> <small>**Note:** The provider supports ***one*** region per instance of the provider.</small>
 
-
+[account ID]: https://docs.newrelic.com/docs/accounts/install-new-relic/account-setup/account-id
 [personal API key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#personal-api-key
 [admin API key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin
 [data center region]: https://docs.newrelic.com/docs/using-new-relic/welcome-new-relic/get-started/our-eu-us-region-data-centers
+[Insights query API key]: https://docs.newrelic.com/docs/insights/insights-api/get-data/query-insights-event-data-api
+[Insights insert API key]: https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/introduction-event-api#register
