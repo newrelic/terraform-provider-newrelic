@@ -101,7 +101,7 @@ resource "newrelic_alert_condition" "alert_condition_name" {
 
   name            = "My Alert Condition Name"
   type            = "apm_app_metric"
-  entities        = [data.newrelic_application.app_name.application_id]
+  entities        = [data.newrelic_entity.app_name.application_id]
   metric          = "apdex"
   runbook_url     = "https://www.example.com"
   condition_scope = "application"

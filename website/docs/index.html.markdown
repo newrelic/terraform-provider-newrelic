@@ -15,10 +15,26 @@ digital transformation.
 
 Use the navigation to the left to read about the available resources.
 
-### Quick Links
+## Quick Links
 
-- [**Migration Guide: Upgrading to v2.x**](guides/migration_guide_v2.html)
 - [**Configure the Provider**](guides/provider_configuration.html)
+- [**Getting Started Guide**](guides/getting_started.html)
+- [**Migration Guide: Upgrading to v2.x**](guides/migration_guide_v2.html)
+
+## Argument Reference
+
+The following arguments are supported.
+
+|                        |          |                                                                                                                                                                             |
+| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `account_id`           | Required | Your New Relic account ID. The `NEW_RELIC_ACCOUNT_ID` environment variable can also be used.                                                                                |
+| `api_key`              | Required | Your New Relic Personal API key (starts with `NRAK`). The `NEW_RELIC_API_KEY` environment variable can also be used.                                                        |
+| `admin_api_key`        | Required | Your New Relic Admin API key (starts with `NRAA`). The `NEW_RELIC_ADMIN_API_KEY` environment variable can also be used.                                                     |
+| `region`               | Required | The region for the data center for which your New Relic account is configured. The `NEW_RELIC_REGION` environment variable can also be used. Valid values are `US` or `EU`. |
+| `insecure_skip_verify` | Optional | Trust self-signed SSL certificates. If omitted, the `NEW_RELIC_API_SKIP_VERIFY` environment variable is used.                                                               |
+| `insights_insert_url`  | Optional | Your Insights insert key used when inserting Insights events via the `newrelic_insights_event` resource. Can also use `NEW_RELIC_INSIGHTS_INSERT_KEY` environment variable. |
+| `cacert_file`          | Optional | A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEW_RELIC_API_CACERT` environment variable can also be used.              |
+
 
 ## Example Usage
 
@@ -49,7 +65,7 @@ resource "newrelic_alert_condition" "foo" {
 
   name        = "foo"
   type        = "apm_app_metric"
-  entities    = [data.newrelic_application.foo.application_id]
+  entities    = [data.newrelic_entity.foo.application_id]
   metric      = "apdex"
   runbook_url = "https://docs.example.com/my-runbook"
 
@@ -81,18 +97,6 @@ resource "newrelic_alert_policy_channel" "alert_email" {
   ]
 }
 ```
-
-## Argument Reference
-
-The following arguments are supported:
-
-- `api_key` - (Required) Your New Relic Personal API key. The `NEW_RELIC_API_KEY` environment variable can also be used.
-- `admin_api_key` - (Required for many resources) Your New Relic Admin API key. The `NEW_RELIC_ADMIN_API_KEY` environment variable can also be used.
-- `region` - (Required) The region for the data center for which your New Relic account is configured. The New Relic region can also be set via the environment variable `NEW_RELIC_REGION`. Valid values are `US` or `EU`. Only one region per provider block can be configured. If you have accounts in both regions, you must instantiate two providers - one for `US` and one for `EU`. See [multiple region example](add-link-here).
-- `insecure_skip_verify` - (Optional) Trust self-signed SSL certificates. If omitted, the `NEW_RELIC_API_SKIP_VERIFY` environment variable is used.
-- `insights_insert_key` - (Optional) Your Insights insert key used when inserting Insights events via the `newrelic_insights_event` resource. Can also use `NEW_RELIC_INSIGHTS_INSERT_KEY` environment variable.
-- `insights_insert_url` - (Optional) This argument changes the Insights insert URL (default is https://insights-collector.newrelic.com/v1/accounts). If the New Relic account is in the EU, the Insights API URL must be set to https://insights-collector.eu.newrelic.com/v1. The `NEW_RELIC_INSIGHTS_INSERT_URL` environment variable can also be used.
-- `cacert_file` - (Optional) A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEW_RELIC_API_CACERT` environment variable can also be used.
 
 ## Support for v1.x
 
