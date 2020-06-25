@@ -1,6 +1,7 @@
-# Terraform Provider
+# New Relic Terraform Provider
 
--   Website: <https://www.terraform.io>
+-   Documentation: <https://registry.terraform.io/providers/newrelic/newrelic/latest/docs>
+-   Terraform Website: <https://www.terraform.io>
 -   [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 -   Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
