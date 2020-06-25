@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/newrelic/newrelic-client-go/pkg/nrdb"
 )
 
 func TestAccNewRelicInsightsEvent_Basic(t *testing.T) {
@@ -67,10 +68,12 @@ func testAccCheckNewRelicInsightsEventExists(n string, nrqls []string) resource.
 			return fmt.Errorf("no event ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).InsightsQueryClient
+		providerConfig := testAccProvider.Meta().(*ProviderConfig)
+		client := providerConfig.NewClient
+		accountID := providerConfig.AccountID
 
 		for _, nrql := range nrqls {
-			resp, err := client.QueryEvents(nrql)
+			resp, err := client.Nrdb.Query(accountID, nrdb.Nrql(nrql))
 			if err != nil {
 				return err
 			}
