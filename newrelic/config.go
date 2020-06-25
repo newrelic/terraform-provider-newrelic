@@ -130,35 +130,10 @@ func (c *Config) ClientInsightsInsert() (*insights.InsertClient, error) {
 	return client, nil
 }
 
-// ClientInsightsQuery returns a new Insights query client
-func (c *Config) ClientInsightsQuery() (*insights.QueryClient, error) {
-	client := insights.NewQueryClient(c.InsightsQueryKey, c.InsightsAccountID)
-
-	if c.InsightsQueryURL != "" {
-		insightsURL, err := url.Parse(c.InsightsQueryURL)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing Insights URL: %q", err)
-		}
-		insightsURL.Path = fmt.Sprintf("%s/%s/query", insightsURL.Path, c.InsightsAccountID)
-		client.URL = insightsURL
-	}
-
-	if len(c.InsightsQueryKey) > 1 {
-		if err := client.Validate(); err != nil {
-			return nil, err
-		}
-	}
-
-	log.Printf("[INFO] New Relic Insights query client configured")
-
-	return client, nil
-}
-
 // ProviderConfig for the custom provider
 type ProviderConfig struct {
 	NewClient            *nr.NewRelic
 	InsightsInsertClient *insights.InsertClient
-	InsightsQueryClient  *insights.QueryClient
 	AccountID            int
 	PersonalAPIKey       string
 }

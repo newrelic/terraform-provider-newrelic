@@ -91,12 +91,6 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_INSIGHTS_INSERT_URL", insightsInsertURL),
 			},
-			"insights_query_key": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_INSIGHTS_QUERY_KEY", nil),
-				Sensitive:   true,
-			},
 			"insights_query_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -196,20 +190,9 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		return nil, fmt.Errorf("error initializing New Relic Insights insert client: %w", err)
 	}
 
-	insightsQueryConfig := Config{
-		InsightsAccountID: strconv.Itoa(accountID),
-		InsightsQueryKey:  data.Get("insights_query_key").(string),
-		InsightsQueryURL:  data.Get("insights_query_url").(string),
-	}
-	clientInsightsQuery, err := insightsQueryConfig.ClientInsightsQuery()
-	if err != nil {
-		return nil, fmt.Errorf("error initializing New Relic Insights query client: %s", err)
-	}
-
 	providerConfig := ProviderConfig{
 		NewClient:            client,
 		InsightsInsertClient: clientInsightsInsert,
-		InsightsQueryClient:  clientInsightsQuery,
 		PersonalAPIKey:       personalAPIKey,
 		AccountID:            accountID,
 	}

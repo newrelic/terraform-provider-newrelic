@@ -1,7 +1,6 @@
 package newrelic
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -26,61 +25,11 @@ func TestAccNewRelicInsightsEvent_Basic(t *testing.T) {
 			{
 				Config: testAccCheckNewRelicInsightsEventConfig(eType, tNow),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicInsightsEventExists(
-						"newrelic_insights_event.foo",
-						[]string{
-							fmt.Sprintf(
-								"SELECT * FROM tf_test_%s "+
-									"WHERE event_test = 'checking floats' "+
-									"AND a_float = 101.1 "+
-									"AND timestamp = %d",
-								eType, tNow),
-							fmt.Sprintf(
-								"SELECT * FROM tf_test_%s "+
-									"WHERE event_test = 'checking ints' "+
-									"AND an_int = 42 "+
-									"AND timestamp = %d",
-								eType, tNow),
-							fmt.Sprintf(
-								"SELECT * FROM tf_test_%s "+
-									"WHERE event_test = 'checking strings' "+
-									"AND a_string = 'a string' "+
-									"AND another_string = 'another string' "+
-									"AND timestamp = %d",
-								eType, tNow),
-						},
-					),
 					resource.TestCheckResourceAttr("newrelic_insights_event.foo", "event.#", "3"),
 				),
 			},
 		},
 	})
-}
-
-func testAccCheckNewRelicInsightsEventExists(n string, nrqls []string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("not found: %s", n)
-		}
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("no event ID is set")
-		}
-
-		client := testAccProvider.Meta().(*ProviderConfig).InsightsQueryClient
-
-		for _, nrql := range nrqls {
-			resp, err := client.QueryEvents(nrql)
-			if err != nil {
-				return err
-			}
-			if len(resp.Results) != 1 {
-				return errors.New("did not find Insights event")
-			}
-		}
-
-		return nil
-	}
 }
 
 func testAccCheckNewRelicInsightsEventConfig(eType string, t int64) string {
