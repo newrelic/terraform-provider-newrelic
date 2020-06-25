@@ -17,8 +17,9 @@ Use the navigation to the left to read about the available resources.
 
 ## Quick Links
 
-- [**Migration Guide: Upgrading to v2.x**](guides/migration_guide_v2.html)
 - [**Configure the Provider**](guides/provider_configuration.html)
+- [**Getting Started Guide**](guides/getting_started.html)
+- [**Migration Guide: Upgrading to v2.x**](guides/migration_guide_v2.html)
 
 ## Argument Reference
 
