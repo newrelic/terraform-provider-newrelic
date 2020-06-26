@@ -174,7 +174,7 @@ func flattenMultiLocationSyntheticsCondition(condition *alerts.MultiLocationSynt
 
 	policyID := ids[0]
 
-	// d.Set("policy_id", policyID)
+	d.Set("policy_id", policyID)
 	d.Set("name", condition.Name)
 	d.Set("runbook_url", condition.RunbookURL)
 	d.Set("enabled", condition.Enabled)
