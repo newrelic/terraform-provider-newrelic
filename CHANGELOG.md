@@ -1,3 +1,77 @@
+<a name="v2.1.2"></a>
+## [v2.1.2] - 2020-06-25
+### Bug Fixes
+- Require condition_scope = `instance` for validation_close_timer
+- Add validation to newrelic_alert_condtion condition_scope
+- **alerts:** require at least one violation time limit attr
+- **alerts:** improve nil handling for alert_channel
+- **alerts:** remove DiffSuppressFunc on TypeSet to avoid test drift
+- **alerts:** infra alert condition zero value detection
+- **alerts:** handle a nil reference with more grace
+- **application_settings:** Remove delete, as it is not possible
+- **deps:** Revert terraform sdk to 1.10.0
+- **newrelic:** fix the failing integration tests ([#519](https://github.com/newrelic/terraform-provider-newrelic/issues/519))
+- **nrql_alert_condition:** threshold_occurrences is case insensitive, attribute description updates
+
+### Documentation Updates
+- DEPRECATION notice for 1.x
+- prep for v2.x, isolate v1.x docs
+- add callout to top of each v1.x doc page
+- add table for current endpoint in use per resource
+- update README with new pointers
+- update getting started guide to reference new material
+- update index header with improved words
+- include information on pinning a version
+- include sidebar link for 2.x upgrade
+- include v1 index.html in sidebar
+- tidy up after review
+- update API key references to match desires
+- include documentation about upgrading the provider to 2.x
+- **alert_channel:** fix broken 'nested config' anchor link
+- **alerts:** update examples to reflect deprecation
+- **alerts:** update wording to avoid implementation details
+- **alerts:** include deprecation notice for "terms"
+- **alerts:** include caveat about NRQL alerts condition operator usage with outliers
+- **getting started:** fix resource naming
+- **nrql_alert_condition:** update docs to reflect version 2.0 changes
+- **nrql_alert_condition:** add outlier example, add new attributes, deprecate old attributes, update import section
+- **provider:** add region to provider docs, removing references to API base URLs
+- **provider:** additional v2 updates, migration guide updates
+- **provider:** update getting started example to reflect v2 updates
+- **provider:** add provider configuration guide page
+- **provider:** add account_id to argument reference, move argument reference above the fold
+- **provider:** fix incorrect newrelic_application reference in some examples
+- **provider:** add getting started guide to the quick links
+- **provider:** add environment variables and schema attribute table
+- **readme:** update title, add link to latest documentation
+- **workloads:** fix api key attribute name ([#489](https://github.com/newrelic/terraform-provider-newrelic/issues/489))
+
+### Features
+- update the release process to prepare for repo handoff
+- **alerts:** convert Alerts Policies to nerdgraph
+- **application:** implement newrelic_application resource
+- **dashboard:** add grid_column_count to dashboard schema
+- **entity_tags:** add an entity tag resource ([#679](https://github.com/newrelic/terraform-provider-newrelic/issues/679))
+- **eventstometrics:** add an events to metrics rule resource ([#690](https://github.com/newrelic/terraform-provider-newrelic/issues/690))
+- **nrql_alert_condition:** integrate nerdgraph for nrql alert conditions
+- **provider:** add region to provider schema, handle API URLs based off region
+
+<a name="v1.19.1"></a>
+## [v1.19.1] - 2020-06-24
+### Bug Fixes
+- **alerts:** infra alert condition zero value detection
+- **changelog:** remove 1.18.1 from changelog, 1.19.0 is the replacement
+- **client:** update the client for pagination URL fix
+- **test:** Workloads returns ordered list of scope account IDs, update test
+
+### Documentation Updates
+- **application_settings:** add application settings resource to sidebar ([#582](https://github.com/newrelic/terraform-provider-newrelic/issues/582))
+
+### Features
+- update the release process to prepare for repo handoff
+- **application:** implement newrelic_application resource ([#558](https://github.com/newrelic/terraform-provider-newrelic/issues/558))
+- **dashboard:** add grid_column_count to dashboard schema
+
 <a name="v2.1.1"></a>
 ## [v2.1.1] - 2020-06-23
 ### Features
@@ -263,7 +337,9 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.2...HEAD
+[v2.1.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.19.1...v2.1.2
+[v1.19.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.1...v1.19.1
 [v2.1.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.0...v2.1.1
 [v2.1.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.0.0...v2.1.0
 [v2.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.19.0...v2.0.0
