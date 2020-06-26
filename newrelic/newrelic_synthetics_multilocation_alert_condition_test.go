@@ -23,14 +23,14 @@ func TestAccNewRelicSyntheticsMultiLocationAlertCondition_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicSyntheticsMultiLocationCondition_ConfigBasic(rName, "1", "2", ""),
+				Config: testAccNewRelicSyntheticsMultiLocationConditionConfigBasic(rName, "1", "2", ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMultiLocationAlertConditionExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicSyntheticsMultiLocationCondition_ConfigBasic(rName, "11", "12", ""),
+				Config: testAccNewRelicSyntheticsMultiLocationConditionConfigBasic(rName, "11", "12", ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMultiLocationAlertConditionExists(resourceName),
 				),
@@ -85,7 +85,7 @@ func testAccCheckNewRelicSyntheticsMultiLocationAlertConditionExists(n string) r
 	}
 }
 
-func testAccNewRelicSyntheticsMultiLocationCondition_ConfigBasic(
+func testAccNewRelicSyntheticsMultiLocationConditionConfigBasic(
 	name string,
 	criticalThreshold string,
 	warningThreshold string,
