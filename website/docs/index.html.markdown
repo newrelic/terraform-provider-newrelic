@@ -25,7 +25,7 @@ Use the navigation to the left to read about the available resources.
 
 The following arguments are supported.
 
-|                        |          |                                                                                                                                                                             |
+| Argument | Required?         | Description                                                                                                                                                                            |
 | ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `account_id`           | Required | Your New Relic account ID. The `NEW_RELIC_ACCOUNT_ID` environment variable can also be used.                                                                                |
 | `api_key`              | Required | Your New Relic Personal API key (starts with `NRAK`). The `NEW_RELIC_API_KEY` environment variable can also be used.                                                        |
