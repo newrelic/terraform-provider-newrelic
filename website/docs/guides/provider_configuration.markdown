@@ -53,6 +53,8 @@ The table below shows the available environment variables and how they map to th
 | `insecure_skip_verify`          | `NEW_RELIC_API_SKIP_VERIFY`            | optional                 | `null`                 | Whether or not to trust self-signed SSL certificates.                                        |
 | `cacert_file`                   | `NEW_RELIC_API_CACERT`                 | optional                 | `null`                 | A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. |
 
+<br>
+
 -> <small>**Note:** The `provider` block schema attributes take precedence over environment variables, providing the ability to override environment variables if needed. This can useful when using [multiple instances of the provider](/docs/providers/newrelic/guides/provider_configuration.html#configuring-multiple-instances-of-the-provider).</small>
 
 
