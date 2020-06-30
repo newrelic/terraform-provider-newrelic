@@ -417,7 +417,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	}
 
 	warning {
-		operator              = "above"
+		operator              = "equals"
 		threshold             = 0.5
 		threshold_duration    = 120
 		threshold_occurrences = "AT_LEAST_ONCE"
