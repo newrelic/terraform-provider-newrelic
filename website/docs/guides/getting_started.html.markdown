@@ -38,8 +38,8 @@ Once you've successfully initialized your Terraform working directory, you'll wa
 # Configure the New Relic provider
 provider "newrelic" {
   account_id = <Your Account ID>
-  api_key = <Your Personal API Key>    # starts with 'NRAK'
-  admin_api_key = <Your Admin API Key> # starts with 'NRAA'
+  api_key = <Your Personal API Key>    # usually prefixed with 'NRAK'
+  admin_api_key = <Your Admin API Key> # usually prefixed with 'NRAA'
   region = "US"                        # Valid regions are US and EU
 }
 ```
