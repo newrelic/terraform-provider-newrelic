@@ -28,8 +28,8 @@ The following arguments are supported.
 | Argument | Required?         | Description                                                                                                                                                                            |
 | ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `account_id`           | Required | Your New Relic account ID. The `NEW_RELIC_ACCOUNT_ID` environment variable can also be used.                                                                                |
-| `api_key`              | Required | Your New Relic Personal API key (starts with `NRAK`). The `NEW_RELIC_API_KEY` environment variable can also be used.                                                        |
-| `admin_api_key`        | Required | Your New Relic Admin API key (starts with `NRAA`). The `NEW_RELIC_ADMIN_API_KEY` environment variable can also be used.                                                     |
+| `api_key`              | Required | Your New Relic Personal API key (usually prefixed with `NRAK`). The `NEW_RELIC_API_KEY` environment variable can also be used.                                                        |
+| `admin_api_key`        | Required | Your New Relic Admin API key (usually prefixed with `NRAA`). The `NEW_RELIC_ADMIN_API_KEY` environment variable can also be used.                                                     |
 | `region`               | Required | The region for the data center for which your New Relic account is configured. The `NEW_RELIC_REGION` environment variable can also be used. Valid values are `US` or `EU`. |
 | `insecure_skip_verify` | Optional | Trust self-signed SSL certificates. If omitted, the `NEW_RELIC_API_SKIP_VERIFY` environment variable is used.                                                               |
 | `insights_insert_url`  | Optional | Your Insights insert key used when inserting Insights events via the `newrelic_insights_event` resource. Can also use `NEW_RELIC_INSIGHTS_INSERT_KEY` environment variable. |
@@ -42,8 +42,8 @@ The following arguments are supported.
 # Configure the New Relic provider
 provider "newrelic" {
   account_id = <Your Account ID>
-  api_key = <Your Personal API Key>    # starts with 'NRAK'
-  admin_api_key = <Your Admin API Key> # starts with 'NRAA'
+  api_key = <Your Personal API Key>    # usually prefixed with 'NRAK'
+  admin_api_key = <Your Admin API Key> # usually prefixed with 'NRAA'
   region = "US"                        # Valid regions are US and EU
 }
 
