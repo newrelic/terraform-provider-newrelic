@@ -206,7 +206,7 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 	}
 
 	return &alerts.NrqlConditionTerm{
-		Operator:             alerts.NrqlConditionOperator(strings.ToUpper(term["operator"].(string))),
+		Operator:             alerts.AlertsNrqlConditionTermsOperator(strings.ToUpper(term["operator"].(string))),
 		Priority:             alerts.NrqlConditionPriority(strings.ToUpper(priority)),
 		Threshold:            threshold,
 		ThresholdDuration:    duration,
