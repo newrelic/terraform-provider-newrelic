@@ -17,9 +17,9 @@ func TestAccNewRelicSyntheticsMultiLocationAlertCondition_Basic(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		// CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicMultiLocationAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
@@ -332,4 +332,31 @@ func TestFlattenMultiLocationSyntheticsCondition(t *testing.T) {
 			}
 		}
 	}
+}
+
+func testAccCheckNewRelicMultiLocationAlertConditionDestroy(s *terraform.State) error {
+	providerConfig := testAccProvider.Meta().(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	for _, r := range s.RootModule().Resources {
+		if r.Type != "newrelic_nrql_alert_condition" {
+			continue
+		}
+
+		var err error
+
+		ids, err := parseHashedIDs(r.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		conditionID := ids[1]
+		policyID := ids[0]
+
+		if _, err = client.Alerts.GetMultiLocationSyntheticsCondition(policyID, conditionID); err == nil {
+			return fmt.Errorf("Synthetics multi-location condition still exists") //nolint:golint
+		}
+	}
+
+	return nil
 }
