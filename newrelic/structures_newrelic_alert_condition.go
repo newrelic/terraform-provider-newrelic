@@ -34,13 +34,12 @@ func expandAlertCondition(d *schema.ResourceData) (*alerts.Condition, error) {
 		condition.RunbookURL = attr.(string)
 	}
 
-	if attrM, ok := d.GetOk("user_defined_metric"); ok {
-		if attrVF, ok := d.GetOk("user_defined_value_function"); ok {
-			condition.UserDefined = alerts.ConditionUserDefined{
-				Metric:        attrM.(string),
-				ValueFunction: alerts.ValueFunctionType(attrVF.(string)),
-			}
-		}
+	if attr, ok := d.GetOk("user_defined_metric"); ok {
+		condition.UserDefined.Metric = attr.(string)
+	}
+
+	if attr, ok := d.GetOk("user_defined_value_function"); ok {
+		condition.UserDefined.ValueFunction = alerts.ValueFunctionType(attr.(string))
 	}
 
 	return &condition, nil
