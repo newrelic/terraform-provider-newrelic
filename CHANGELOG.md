@@ -1,5 +1,18 @@
+<a name="v2.2.0"></a>
+## [v2.2.0] - 2020-07-02
+### Bug Fixes
+- **docs:** extra whitespace below table
+- **docs:** better table header rendering
+- **nrql_alert_condition:** use better term operator
+
+### Documentation Updates
+- **alerts:** include account_id attribute for alert_policy
+
+### Features
+- **alerts:** new newrelic_alerts_location_failure_condition resource
+
 <a name="v2.1.2"></a>
-## [v2.1.2] - 2020-06-25
+## [v2.1.2] - 2020-06-26
 ### Bug Fixes
 - Require condition_scope = `instance` for validation_close_timer
 - Add validation to newrelic_alert_condtion condition_scope
@@ -337,7 +350,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.0...HEAD
+[v2.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.2...v2.2.0
 [v2.1.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.19.1...v2.1.2
 [v1.19.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.1...v1.19.1
 [v2.1.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.0...v2.1.1
