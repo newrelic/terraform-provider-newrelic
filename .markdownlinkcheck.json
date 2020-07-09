@@ -16,10 +16,6 @@
         {
             "pattern": "^/docs/providers/newrelic/",
             "replacement": "file:///github/workspace/website/docs/"
-        },
-        {
-            "pattern": "^file:///github/workspace/website/docs/guides/(.*)\\.markdown(#.*)?$",
-            "replacement": "file:///github/workspace/website/docs/guides/$1.md$2"
         }
     ]
 }
