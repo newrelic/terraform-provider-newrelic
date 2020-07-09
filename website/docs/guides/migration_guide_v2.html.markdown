@@ -92,7 +92,7 @@ If you have been using environment variables to configure the provider, you will
     }
     ```
 
-    -> <small>**Note:** Take note of where the `NRAK-***` and `NRAA-***` values switch. This is important. Your Personal API Key has the `NRAK-` prefix.</small>
+    -> <small>**Note:** Take note of where the `NRAK-***` and `NRAA-***` prefixes switch. This is important. Most Personal API Keys have the `NRAK-` prefix.</small>
 
 2. Add `account_id` to your `provider` block and set it to your New Relic account ID. Note that you can also use the environment variable `NEW_RELIC_ACCOUNT_ID`.
 
