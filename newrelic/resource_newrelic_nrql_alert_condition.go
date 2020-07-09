@@ -33,7 +33,7 @@ func termSchema() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "equals",
-				Description:  "One of (above, below, equal). Defaults to 'equal'.",
+				Description:  "One of (above, below, equals). Defaults to 'equals'.",
 				ValidateFunc: validation.StringInSlice([]string{"above", "below", "equals"}, true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new)
@@ -55,7 +55,6 @@ func termSchema() *schema.Resource {
 				ConflictsWith: []string{"term.0.threshold_occurrences"},
 				ValidateFunc:  validation.StringInSlice([]string{"all", "any"}, false),
 			},
-
 			// NerdGraph only. Equivalent to `time_function`,
 			// but with slightly different wording.
 			// i.e. `any` (old) vs `AT_LEAST_ONCE` (new)
