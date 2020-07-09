@@ -94,7 +94,6 @@ NRQL alert conditions support up to two terms. At least one `term` must have `pr
 
 The `term` block the following arguments:
 
-- `duration` - (Required) In minutes, must be in the range of `1` to `120`, inclusive.
 - `operator` - (Optional) Valid values are `above`, `below`, or `equals` (case insensitive). Defaults to `equals`. Note that when using a `type` of `outlier`, the only valid option here is `above`.
 - `priority` - (Optional) `critical` or `warning`. Defaults to `critical`.
 - `threshold` - (Required) The value which will trigger a violation. Must be `0` or greater.
