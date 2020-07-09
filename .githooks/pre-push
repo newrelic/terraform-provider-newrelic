@@ -3,5 +3,5 @@ echo
 echo "Running tests before pushing..."
 echo
 
-make test
+make test-unit
 
