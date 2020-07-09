@@ -82,33 +82,6 @@
                 <% end -%>
             </ul>
         </li>
-
-        <!-- VERSION 1.x -->
-        <li>
-            <a href="/docs/providers/newrelic/v1/index.html">Version 1.x</a>
-            <ul class="nav">
-                <li>
-                    <a href="#">Data Sources</a>
-                    <ul class="nav">
-                        <% @data_sources.each do |data_source| -%>
-                            <li>
-                                <a href="/docs/providers/newrelic/d/v1/<%= data_source %>.html">newrelic_<%= data_source %></a>
-                            </li>
-                        <% end -%>
-                    </ul>
-                </li>
-                <li>
-                    <a href="#">Resources</a>
-                    <ul class="nav">
-                        <% @resources.each do |resource| -%>
-                            <li>
-                                <a href="/docs/providers/newrelic/r/v1/<%= resource %>.html">newrelic_<%= resource %></a>
-                            </li>
-                        <% end -%>
-                    </ul>
-                </li>
-            </ul>
-        </li>
     </ul>
 </div>
 <% end %>

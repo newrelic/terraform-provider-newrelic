@@ -133,7 +133,7 @@ See the [Terraform docs][provider_version_configuration] for more information on
 
 Upgrading to v2 of the provider involves some changes to your provider configuration. Please view our [**migration guide**](guides/migration_guide_v2.html) for more information and assistance.
 
-Please see the [latest provider configuration docs](/docs/providers/newrelic/guides/provider_configuration.html) for the current recommended configuration settings.
+Please see the [latest provider configuration docs](guides/provider_configuration.html) for the current recommended configuration settings.
 
 ## Resource endpoint authentication
 
