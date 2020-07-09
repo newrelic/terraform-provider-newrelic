@@ -55,7 +55,7 @@ The table below shows the available environment variables and how they map to th
 
 <br>
 
--> <small>**Note:** The `provider` block schema attributes take precedence over environment variables, providing the ability to override environment variables if needed. This can useful when using [multiple instances of the provider](/docs/providers/newrelic/guides/provider_configuration.html#configuring-multiple-instances-of-the-provider).</small>
+-> <small>**Note:** The `provider` block schema attributes take precedence over environment variables, providing the ability to override environment variables if needed. This can useful when using [multiple instances of the provider](#configuring-multiple-instances-of-the-provider).</small>
 
 
 ### Configuration via the `provider` block
