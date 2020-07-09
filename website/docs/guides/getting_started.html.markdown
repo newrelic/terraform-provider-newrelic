@@ -18,7 +18,7 @@ description: |-
 
 ## Configuring the Provider
 
-Please see the [latest provider configuration docs](guides/provider_configuration.html) to get started with configuring the provider.
+Please see the [latest provider configuration docs](provider_configuration.html) to get started with configuring the provider.
 
 ## Initialize Your Terraform Setup
 
@@ -44,7 +44,7 @@ provider "newrelic" {
 }
 ```
 
-> <small>**Note:** You can also use [environment variables](guides/provider_configuration.html#configuration-via-environment-variables) to configure the provider, which can simplify your `provider` block.</small>
+> <small>**Note:** You can also use [environment variables](provider_configuration.html#configuration-via-environment-variables) to configure the provider, which can simplify your `provider` block.</small>
 
 Now let's try running the following command.
 
