@@ -23,6 +23,7 @@ var (
 	testAccProviders                map[string]terraform.ResourceProvider
 	testAccProvider                 *schema.Provider
 	testAccountID                   int
+	testAccountName                 string
 	//testAccCleanupComplete          = false
 )
 
@@ -41,6 +42,12 @@ func init() {
 
 	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_ACCOUNT_ID")); v != 0 {
 		testAccountID = v
+	}
+
+	if v := os.Getenv("NEW_RELIC_ACCOUNT_NAME"); v != "" {
+		testAccountName = v
+	} else {
+		testAccountName = "New Relic Terraform Provider Acceptance Testing"
 	}
 }
 
