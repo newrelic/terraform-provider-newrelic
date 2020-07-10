@@ -109,6 +109,7 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+			"newrelic_account":                      dataSourceNewRelicAccount(),
 			"newrelic_alert_channel":                dataSourceNewRelicAlertChannel(),
 			"newrelic_alert_policy":                 dataSourceNewRelicAlertPolicy(),
 			"newrelic_application":                  dataSourceNewRelicApplication(),
