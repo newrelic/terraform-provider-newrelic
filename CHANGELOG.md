@@ -1,5 +1,20 @@
+<a name="v2.2.1"></a>
+## [v2.2.1] - 2020-07-09
+### Bug Fixes
+- replacement for deadlink linter
+- replacement for deadlink linter
+- **alert_condition:** remove conditional to fix drift when using 'user_defined' attributes
+
+### Documentation Updates
+- fix broken links
+- fix broken links
+- fix broken links
+- fix broken links
+- communicate that most but not all keys have prefixes
+- **alerts:** update documentation for newrelic_nrql_alert_condition
+
 <a name="v2.2.0"></a>
-## [v2.2.0] - 2020-07-02
+## [v2.2.0] - 2020-07-08
 ### Bug Fixes
 - **docs:** extra whitespace below table
 - **docs:** better table header rendering
@@ -350,7 +365,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.1...HEAD
+[v2.2.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.0...v2.2.1
 [v2.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.2...v2.2.0
 [v2.1.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.19.1...v2.1.2
 [v1.19.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.1...v1.19.1
