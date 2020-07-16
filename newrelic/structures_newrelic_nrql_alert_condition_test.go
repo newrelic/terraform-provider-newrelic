@@ -11,6 +11,9 @@ import (
 )
 
 func TestExpandNrqlAlertConditionInput(t *testing.T) {
+	thresholdCritical := 1.0
+	thresholdWarning := 9.1
+
 	nrql := map[string]interface{}{
 		"query":             "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'Dummy App'",
 		"evaluation_offset": 3,
@@ -18,7 +21,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 
 	var criticalTerms []map[string]interface{}
 	criticalTerms = append(criticalTerms, map[string]interface{}{
-		"threshold":             1,
+		"threshold":             thresholdCritical,
 		"threshold_occurrences": alerts.ThresholdOccurrences.AtLeastOnce,
 		"threshold_duration":    600,
 		"operator":              alerts.AlertsNrqlConditionTermsOperatorTypes.ABOVE,
@@ -26,7 +29,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 
 	var warningTerms []map[string]interface{}
 	warningTerms = append(warningTerms, map[string]interface{}{
-		"threshold":             9.1,
+		"threshold":             thresholdWarning,
 		"threshold_occurrences": alerts.ThresholdOccurrences.AtLeastOnce,
 		"threshold_duration":    660,
 		"operator":              alerts.AlertsNrqlConditionTermsOperatorTypes.BELOW,
@@ -109,7 +112,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				}
 				x.Terms = []alerts.NrqlConditionTerm{
 					{
-						Threshold:            1,
+						Threshold:            &thresholdCritical,
 						ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
 						ThresholdDuration:    600,
 						Operator:             alerts.AlertsNrqlConditionTermsOperatorTypes.ABOVE,
@@ -136,14 +139,14 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				}
 				x.Terms = []alerts.NrqlConditionTerm{
 					{
-						Threshold:            1,
+						Threshold:            &thresholdCritical,
 						ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
 						ThresholdDuration:    600,
 						Operator:             alerts.AlertsNrqlConditionTermsOperatorTypes.ABOVE,
 						Priority:             alerts.NrqlConditionPriorities.Critical,
 					},
 					{
-						Threshold:            9.1,
+						Threshold:            &thresholdWarning,
 						ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
 						ThresholdDuration:    660,
 						Operator:             alerts.AlertsNrqlConditionTermsOperatorTypes.BELOW,
@@ -216,6 +219,8 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 func TestFlattenNrqlAlertCondition(t *testing.T) {
 	r := resourceNewRelicNrqlAlertCondition()
 
+	thesholdCritical := float64(1)
+	thresholdWarning := 9.1
 	nrqlCondition := alerts.NrqlAlertCondition{
 		ID:       "1234567",
 		PolicyID: "7654321",
@@ -230,14 +235,14 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			RunbookURL: "test.com",
 			Terms: []alerts.NrqlConditionTerm{
 				{
-					Threshold:            1,
+					Threshold:            &thesholdCritical,
 					ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
 					ThresholdDuration:    600,
 					Operator:             alerts.AlertsNrqlConditionTermsOperatorTypes.ABOVE,
 					Priority:             alerts.NrqlConditionPriorities.Critical,
 				},
 				{
-					Threshold:            9.1,
+					Threshold:            &thresholdWarning,
 					ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
 					ThresholdDuration:    660,
 					Operator:             alerts.AlertsNrqlConditionTermsOperatorTypes.BELOW,
@@ -319,6 +324,9 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 }
 
 func TestExpandNrqlConditionTerm(t *testing.T) {
+	thresholdCritical := 10.1
+	thresholdWarning := 10.9
+	thresholdZeroValue := float64(0)
 
 	cases := map[string]struct {
 		ExpectErr     bool
@@ -332,7 +340,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Priority:      "critical",
 			ConditionType: "static",
 			Term: map[string]interface{}{
-				"threshold":             10.1,
+				"threshold":             thresholdCritical,
 				"threshold_duration":    5,
 				"threshold_occurrences": "ALL",
 				"operator":              "equals",
@@ -340,7 +348,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Expected: &alerts.NrqlConditionTerm{
 				Operator:             alerts.AlertsNrqlConditionTermsOperator("EQUALS"),
 				Priority:             alerts.NrqlConditionPriority("CRITICAL"),
-				Threshold:            10.1,
+				Threshold:            &thresholdCritical,
 				ThresholdDuration:    5,
 				ThresholdOccurrences: "ALL",
 			},
@@ -349,7 +357,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Priority:      "critical",
 			ConditionType: "static",
 			Term: map[string]interface{}{
-				"threshold":             10.1,
+				"threshold":             thresholdCritical,
 				"threshold_duration":    5,
 				"threshold_occurrences": "ALL",
 				"operator":              "equals",
@@ -358,7 +366,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Expected: &alerts.NrqlConditionTerm{
 				Operator:             alerts.AlertsNrqlConditionTermsOperator("EQUALS"),
 				Priority:             alerts.NrqlConditionPriority("CRITICAL"),
-				Threshold:            10.1,
+				Threshold:            &thresholdCritical,
 				ThresholdDuration:    5,
 				ThresholdOccurrences: "ALL",
 			},
@@ -367,7 +375,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Priority:      "warning",
 			ConditionType: "static",
 			Term: map[string]interface{}{
-				"threshold":             10.9,
+				"threshold":             thresholdWarning,
 				"threshold_duration":    9,
 				"threshold_occurrences": "ALL",
 				"operator":              "equals",
@@ -375,7 +383,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Expected: &alerts.NrqlConditionTerm{
 				Operator:             alerts.AlertsNrqlConditionTermsOperator("EQUALS"),
 				Priority:             alerts.NrqlConditionPriority("WARNING"),
-				Threshold:            10.9,
+				Threshold:            &thresholdWarning,
 				ThresholdDuration:    9,
 				ThresholdOccurrences: "ALL",
 			},
@@ -384,7 +392,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Priority:      "",
 			ConditionType: "static",
 			Term: map[string]interface{}{
-				"threshold":             10.9,
+				"threshold":             thresholdWarning,
 				"threshold_duration":    9,
 				"threshold_occurrences": "ALL",
 				"operator":              "equals",
@@ -393,7 +401,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Expected: &alerts.NrqlConditionTerm{
 				Operator:             alerts.AlertsNrqlConditionTermsOperator("EQUALS"),
 				Priority:             alerts.NrqlConditionPriority("WARNING"),
-				Threshold:            10.9,
+				Threshold:            &thresholdWarning,
 				ThresholdDuration:    9,
 				ThresholdOccurrences: "ALL",
 			},
@@ -402,7 +410,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Priority:      "warning",
 			ConditionType: "static",
 			Term: map[string]interface{}{
-				"threshold":             10.9,
+				"threshold":             thresholdWarning,
 				"threshold_duration":    9,
 				"threshold_occurrences": "ALL",
 				"operator":              "equals",
@@ -411,7 +419,25 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Expected: &alerts.NrqlConditionTerm{
 				Operator:             alerts.AlertsNrqlConditionTermsOperator("EQUALS"),
 				Priority:             alerts.NrqlConditionPriority("WARNING"),
-				Threshold:            10.9,
+				Threshold:            &thresholdWarning,
+				ThresholdDuration:    9,
+				ThresholdOccurrences: "ALL",
+			},
+		},
+		"threshold set to 0 to test the zero-value JSON marshalling for float64 pointer": {
+			Priority:      "warning",
+			ConditionType: "static",
+			Term: map[string]interface{}{
+				"threshold":             thresholdZeroValue,
+				"threshold_duration":    9,
+				"threshold_occurrences": "ALL",
+				"operator":              "equals",
+				"priority":              "critical",
+			},
+			Expected: &alerts.NrqlConditionTerm{
+				Operator:             alerts.AlertsNrqlConditionTermsOperator("EQUALS"),
+				Priority:             alerts.NrqlConditionPriority("WARNING"),
+				Threshold:            &thresholdZeroValue,
 				ThresholdDuration:    9,
 				ThresholdOccurrences: "ALL",
 			},

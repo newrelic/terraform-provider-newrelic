@@ -155,7 +155,6 @@ func expandNrql(d *schema.ResourceData, condition alerts.NrqlConditionInput) (*a
 
 // NerdGraph
 func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priority string) (*alerts.NrqlConditionTerm, error) {
-
 	var durationIn int
 	if attr, ok := term["duration"]; ok {
 		durationIn = attr.(int)
@@ -208,7 +207,7 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 	return &alerts.NrqlConditionTerm{
 		Operator:             alerts.AlertsNrqlConditionTermsOperator(strings.ToUpper(term["operator"].(string))),
 		Priority:             alerts.NrqlConditionPriority(strings.ToUpper(priority)),
-		Threshold:            threshold,
+		Threshold:            &threshold,
 		ThresholdDuration:    duration,
 		ThresholdOccurrences: *thresholdOccurrences,
 	}, nil
