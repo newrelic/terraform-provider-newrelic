@@ -72,11 +72,16 @@ func flattenAlertCondition(condition *alerts.Condition, d *schema.ResourceData) 
 	d.Set("type", condition.Type)
 	d.Set("metric", condition.Metric)
 	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("condition_scope", condition.Scope)
 	d.Set("violation_close_timer", condition.ViolationCloseTimer)
 	d.Set("gc_metric", condition.GCMetric)
 	d.Set("user_defined_metric", condition.UserDefined.Metric)
 	d.Set("user_defined_value_function", condition.UserDefined.ValueFunction)
+
+	if condition.Scope != "" {
+		d.Set("condition_scope", condition.Scope)
+	} else if attr, ok := d.GetOk("condition_scope"); ok {
+		d.Set("condition_scope", attr.(string))
+	}
 
 	entities, err := flattenAlertConditionEntities(&condition.Entities)
 
