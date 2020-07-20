@@ -10,6 +10,11 @@ import (
 	nr "github.com/newrelic/newrelic-client-go/pkg/testhelpers"
 )
 
+var (
+	testThresholdLow  = 1.0
+	testThresholdHigh = 10.9
+)
+
 func TestExpandNrqlAlertConditionInput(t *testing.T) {
 	nrql := map[string]interface{}{
 		"query":             "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'Dummy App'",
@@ -26,7 +31,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 
 	var warningTerms []map[string]interface{}
 	warningTerms = append(warningTerms, map[string]interface{}{
-		"threshold":             9.1,
+		"threshold":             10.9,
 		"threshold_occurrences": alerts.ThresholdOccurrences.AtLeastOnce,
 		"threshold_duration":    660,
 		"operator":              alerts.AlertsNrqlConditionTermsOperatorTypes.BELOW,
@@ -109,7 +114,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				}
 				x.Terms = []alerts.NrqlConditionTerm{
 					{
-						Threshold:            1,
+						Threshold:            &testThresholdLow,
 						ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
 						ThresholdDuration:    600,
 						Operator:             alerts.AlertsNrqlConditionTermsOperatorTypes.ABOVE,
@@ -136,14 +141,14 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				}
 				x.Terms = []alerts.NrqlConditionTerm{
 					{
-						Threshold:            1,
+						Threshold:            &testThresholdLow,
 						ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
 						ThresholdDuration:    600,
 						Operator:             alerts.AlertsNrqlConditionTermsOperatorTypes.ABOVE,
 						Priority:             alerts.NrqlConditionPriorities.Critical,
 					},
 					{
-						Threshold:            9.1,
+						Threshold:            &testThresholdHigh,
 						ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
 						ThresholdDuration:    660,
 						Operator:             alerts.AlertsNrqlConditionTermsOperatorTypes.BELOW,
@@ -230,14 +235,14 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			RunbookURL: "test.com",
 			Terms: []alerts.NrqlConditionTerm{
 				{
-					Threshold:            1,
+					Threshold:            &testThresholdLow,
 					ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
 					ThresholdDuration:    600,
 					Operator:             alerts.AlertsNrqlConditionTermsOperatorTypes.ABOVE,
 					Priority:             alerts.NrqlConditionPriorities.Critical,
 				},
 				{
-					Threshold:            9.1,
+					Threshold:            &testThresholdHigh,
 					ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
 					ThresholdDuration:    660,
 					Operator:             alerts.AlertsNrqlConditionTermsOperatorTypes.BELOW,
@@ -289,7 +294,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 
 		warningTerms := d.Get("warning").([]interface{})
 		assert.Equal(t, 1, len(warningTerms))
-		assert.Equal(t, float64(9.1), warningTerms[0].(map[string]interface{})["threshold"])
+		assert.Equal(t, float64(10.9), warningTerms[0].(map[string]interface{})["threshold"])
 		assert.Equal(t, "AT_LEAST_ONCE", warningTerms[0].(map[string]interface{})["threshold_occurrences"])
 		assert.Equal(t, 660, warningTerms[0].(map[string]interface{})["threshold_duration"])
 		assert.Equal(t, "below", warningTerms[0].(map[string]interface{})["operator"])
@@ -332,7 +337,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Priority:      "critical",
 			ConditionType: "static",
 			Term: map[string]interface{}{
-				"threshold":             10.1,
+				"threshold":             10.9,
 				"threshold_duration":    5,
 				"threshold_occurrences": "ALL",
 				"operator":              "equals",
@@ -340,7 +345,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Expected: &alerts.NrqlConditionTerm{
 				Operator:             alerts.AlertsNrqlConditionTermsOperator("EQUALS"),
 				Priority:             alerts.NrqlConditionPriority("CRITICAL"),
-				Threshold:            10.1,
+				Threshold:            &testThresholdHigh,
 				ThresholdDuration:    5,
 				ThresholdOccurrences: "ALL",
 			},
@@ -349,7 +354,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Priority:      "critical",
 			ConditionType: "static",
 			Term: map[string]interface{}{
-				"threshold":             10.1,
+				"threshold":             10.9,
 				"threshold_duration":    5,
 				"threshold_occurrences": "ALL",
 				"operator":              "equals",
@@ -358,7 +363,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Expected: &alerts.NrqlConditionTerm{
 				Operator:             alerts.AlertsNrqlConditionTermsOperator("EQUALS"),
 				Priority:             alerts.NrqlConditionPriority("CRITICAL"),
-				Threshold:            10.1,
+				Threshold:            &testThresholdHigh,
 				ThresholdDuration:    5,
 				ThresholdOccurrences: "ALL",
 			},
@@ -375,7 +380,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Expected: &alerts.NrqlConditionTerm{
 				Operator:             alerts.AlertsNrqlConditionTermsOperator("EQUALS"),
 				Priority:             alerts.NrqlConditionPriority("WARNING"),
-				Threshold:            10.9,
+				Threshold:            &testThresholdHigh,
 				ThresholdDuration:    9,
 				ThresholdOccurrences: "ALL",
 			},
@@ -393,7 +398,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Expected: &alerts.NrqlConditionTerm{
 				Operator:             alerts.AlertsNrqlConditionTermsOperator("EQUALS"),
 				Priority:             alerts.NrqlConditionPriority("WARNING"),
-				Threshold:            10.9,
+				Threshold:            &testThresholdHigh,
 				ThresholdDuration:    9,
 				ThresholdOccurrences: "ALL",
 			},
@@ -411,7 +416,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Expected: &alerts.NrqlConditionTerm{
 				Operator:             alerts.AlertsNrqlConditionTermsOperator("EQUALS"),
 				Priority:             alerts.NrqlConditionPriority("WARNING"),
-				Threshold:            10.9,
+				Threshold:            &testThresholdHigh,
 				ThresholdDuration:    9,
 				ThresholdOccurrences: "ALL",
 			},
@@ -428,7 +433,11 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 		}
 
 		if tc.Expected != nil {
-			require.Equal(t, tc.Expected, expandedTerm)
+			require.Equal(t, tc.Expected.Operator, expandedTerm.Operator)
+			require.Equal(t, tc.Expected.Priority, expandedTerm.Priority)
+			require.Equal(t, *tc.Expected.Threshold, *expandedTerm.Threshold)
+			require.Equal(t, tc.Expected.ThresholdDuration, expandedTerm.ThresholdDuration)
+			require.Equal(t, tc.Expected.ThresholdOccurrences, expandedTerm.ThresholdOccurrences)
 		}
 	}
 
