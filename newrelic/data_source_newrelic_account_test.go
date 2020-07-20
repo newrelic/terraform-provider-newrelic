@@ -9,65 +9,63 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccNewRelicAccountData_Basic(t *testing.T) {
+func TestAccNewRelicAccountDataSource_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicAccountDataConfig_ByID(),
+				Config: testAccNewRelicAccountDataSourceConfigByID(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAccountDataExists("data.newrelic_account.acc"),
+					testAccCheckNewRelicAccountDataSourceExists("data.newrelic_account.acc"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccNewRelicAccountData_ByName(t *testing.T) {
+func TestAccNewRelicAccountDataSource_ByName(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicAccountDataConfig_ByName(),
+				Config: testAccNewRelicAccountDataSourceConfigByName(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAccountDataExists("data.newrelic_account.acc"),
+					testAccCheckNewRelicAccountDataSourceExists("data.newrelic_account.acc"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccNewRelicAccountData_MissingAttributes(t *testing.T) {
+func TestAccNewRelicAccountDataSource_MissingAttributes(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:   func() { testAccPreCheck(t) },
-		Providers:  testAccProviders,
-		IsUnitTest: true,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccNewRelicAccountDataConfig_MissingAttributes(),
+				Config:      testAccNewRelicAccountDataSourceConfigMissingAttributes(),
 				ExpectError: regexp.MustCompile("one of"),
 			},
 		},
 	})
 }
 
-func TestAccNewRelicAccountData_ConflictingAttributes(t *testing.T) {
+func TestAccNewRelicAccountDataSource_ConflictingAttributes(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:   func() { testAccPreCheck(t) },
-		Providers:  testAccProviders,
-		IsUnitTest: true,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccNewRelicAccountDataConfig_ConflictingAttributes(),
+				Config:      testAccNewRelicAccountDataSourceConfigConflictingAttributes(),
 				ExpectError: regexp.MustCompile("exactly one of"),
 			},
 		},
 	})
 }
 
-func testAccCheckNewRelicAccountDataExists(n string) resource.TestCheckFunc {
+func testAccCheckNewRelicAccountDataSourceExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
 		id := r.Primary.ID
@@ -89,7 +87,7 @@ func testAccCheckNewRelicAccountDataExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccNewRelicAccountDataConfig_ByID() string {
+func testAccNewRelicAccountDataSourceConfigByID() string {
 	return fmt.Sprintf(`
 data "newrelic_account" "acc" {
 	account_id = "%d"
@@ -97,7 +95,7 @@ data "newrelic_account" "acc" {
 `, testAccountID)
 }
 
-func testAccNewRelicAccountDataConfig_ByName() string {
+func testAccNewRelicAccountDataSourceConfigByName() string {
 	return fmt.Sprintf(`
 data "newrelic_account" "acc" {
 	name = "%s"
@@ -105,11 +103,11 @@ data "newrelic_account" "acc" {
 `, testAccountName)
 }
 
-func testAccNewRelicAccountDataConfig_MissingAttributes() string {
+func testAccNewRelicAccountDataSourceConfigMissingAttributes() string {
 	return `data "newrelic_account" "acc" {}`
 }
 
-func testAccNewRelicAccountDataConfig_ConflictingAttributes() string {
+func testAccNewRelicAccountDataSourceConfigConflictingAttributes() string {
 	return fmt.Sprintf(`
 data "newrelic_account" "acc" {
 	name = "%s"
