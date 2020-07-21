@@ -33,7 +33,6 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The New Relic account ID to operate on.",
-				DefaultFunc: envAccountID,
 			},
 			"incident_preference": {
 				Type:         schema.TypeString,
