@@ -47,7 +47,6 @@ jobs:
         file-extension: '.markdown'
 
   test-unit:
-    needs: lint
     runs-on: ubuntu-latest
     steps:
     - name: Install Go
