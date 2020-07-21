@@ -11,9 +11,10 @@ import (
 
 func resourceNewRelicSyntheticsLabel() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicSyntheticsLabelCreate,
-		Read:   resourceNewRelicSyntheticsLabelRead,
-		Delete: resourceNewRelicSyntheticsLabelDelete,
+		DeprecationMessage: "newrelic_synthetics_label has been deprecated.  Use newrelic_entity_tags instead.",
+		Create:             resourceNewRelicSyntheticsLabelCreate,
+		Read:               resourceNewRelicSyntheticsLabelRead,
+		Delete:             resourceNewRelicSyntheticsLabelDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
