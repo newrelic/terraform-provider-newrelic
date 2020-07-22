@@ -90,6 +90,7 @@ func testAccCheckNewRelicAccountDataSourceExists(n string) resource.TestCheckFun
 func testAccNewRelicAccountDataSourceConfigByID() string {
 	return fmt.Sprintf(`
 data "newrelic_account" "acc" {
+	scope = "global"
 	account_id = "%d"
 }
 `, testAccountID)

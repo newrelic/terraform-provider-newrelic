@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -40,7 +41,7 @@ func dataSourceNewRelicAccountRead(d *schema.ResourceData, meta interface{}) err
 
 	log.Printf("[INFO] Reading New Relic accounts")
 
-	scope := accounts.RegionScope(d.Get("scope").(string))
+	scope := accounts.RegionScope(strings.ToUpper(d.Get("scope").(string)))
 
 	id, idOk := d.GetOk("account_id")
 	name, nameOk := d.GetOk("name")
