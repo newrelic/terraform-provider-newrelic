@@ -19,4 +19,5 @@ require (
 	github.com/newrelic/newrelic-client-go v0.31.2
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37 // indirect
+	gotest.tools/gotestsum v0.5.2
 )
