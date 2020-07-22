@@ -43,7 +43,7 @@ func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 		},
 	})
@@ -118,6 +118,8 @@ func testPreCheck(t *testing.T) {
 	}
 
 	testCreateApplication(t)
+
+	time.Sleep(5 * time.Second)
 }
 
 func testCreateApplication(t *testing.T) {
