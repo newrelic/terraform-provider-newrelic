@@ -2,18 +2,21 @@ package newrelic
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
 func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
 	resourceName := "newrelic_application_settings.app"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicApplicationDestroy,
 		Steps: []resource.TestStep{
@@ -34,7 +37,7 @@ func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 		},
 	})
@@ -95,4 +98,40 @@ func testAccCheckNewRelicApplicationExists(n string) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func testPreCheck(t *testing.T) {
+	if v := os.Getenv("NEW_RELIC_API_KEY"); v == "" {
+		t.Fatal("NEW_RELIC_API_KEY must be set for acceptance tests")
+	}
+
+	if v := os.Getenv("NEW_RELIC_LICENSE_KEY"); v == "" {
+		t.Fatal("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
+	}
+
+	if v := os.Getenv("NEW_RELIC_ADMIN_API_KEY"); v == "" {
+		t.Log("[WARN] NEW_RELIC_ADMIN_API_KEY has not been set for acceptance tests")
+	}
+
+	testCreateApplication(t)
+
+	time.Sleep(5 * time.Second)
+}
+
+func testCreateApplication(t *testing.T) {
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName(testExpectedApplicationName),
+		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
+	)
+
+	if err != nil {
+		t.Fatalf("Error setting up New Relic application: %s", err)
+	}
+
+	if err := app.WaitForConnection(30 * time.Second); err != nil {
+		t.Fatalf("Unable to setup New Relic application connection: %s", err)
+	}
+
+	app.RecordCustomEvent("terraform test", nil)
+	app.Shutdown(30 * time.Second)
 }
