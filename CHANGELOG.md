@@ -1,5 +1,10 @@
+<a name="v2.3.0"></a>
+## [v2.3.0] - 2020-07-23
+### Features
+- add a newrelic_account data source
+
 <a name="v2.2.1"></a>
-## [v2.2.1] - 2020-07-09
+## [v2.2.1] - 2020-07-10
 ### Bug Fixes
 - replacement for deadlink linter
 - replacement for deadlink linter
@@ -365,7 +370,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.3.0...HEAD
+[v2.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.1...v2.3.0
 [v2.2.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.0...v2.2.1
 [v2.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.2...v2.2.0
 [v2.1.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.19.1...v2.1.2
