@@ -80,5 +80,5 @@ func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{})
 
 	d.SetId(policy.ID)
 
-	return flattenAlertPolicyDataSource(policy, d, accountID)
+	return flattenAlertPolicy(policy, d, accountID)
 }
