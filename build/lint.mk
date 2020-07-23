@@ -26,7 +26,8 @@ GOTOOLS += github.com/client9/misspell/cmd/misspell \
            github.com/llorllale/go-gitlint/cmd/go-gitlint \
            github.com/psampaz/go-mod-outdated \
            github.com/golangci/golangci-lint/cmd/golangci-lint \
-           golang.org/x/tools/cmd/goimports
+           golang.org/x/tools/cmd/goimports \
+		   gotest.tools/gotestsum
 
 
 lint: deps spell-check gofmt lint-commit golangci goimports outdated

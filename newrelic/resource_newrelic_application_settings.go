@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
@@ -97,12 +98,14 @@ func resourceNewRelicApplicationSettingsUpdate(d *schema.ResourceData, meta inte
 
 	log.Printf("[INFO] Updating New Relic application %+v with params: %+v", userApp, updateParams)
 
-	_, err := client.APM.UpdateApplication(userApp.ID, updateParams)
+	app, err := client.APM.UpdateApplication(userApp.ID, updateParams)
 	if err != nil {
 		return err
 	}
 
-	return resourceNewRelicApplicationSettingsRead(d, meta)
+	time.Sleep(2 * time.Second)
+
+	return flattenApplication(app, d)
 }
 
 func resourceNewRelicApplicationSettingsDelete(d *schema.ResourceData, meta interface{}) error {
