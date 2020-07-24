@@ -18,7 +18,8 @@ PROJECT_MODULE ?= $(shell $(GO) list -m)
 
 # Set a few vars and run the test suite
 LDFLAGS_TEST ?= "-X=$(PROJECT_MODULE)/version.ProviderVersion=acc"
-GOTOOLS += github.com/stretchr/testify/assert
+GOTOOLS += github.com/stretchr/testify/assert \
+           gotest.tools/gotestsum
 
 test: test-only
 test-only: test-unit test-integration
@@ -26,12 +27,15 @@ test-only: test-unit test-integration
 test-unit: tools
 	@echo "=== $(PROJECT_NAME) === [ test-unit        ]: running unit tests..."
 	@mkdir -p $(COVERAGE_DIR)
-	@$(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/unit.xml -- -parallel 4 -tags=unit $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/unit.tmp $(GO_PKGS)
+	@$(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/unit.xml --packages $(GO_PKGS) \
+		-- -v -parallel 4 -tags=unit $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/unit.tmp
 
 test-integration: tools
 	@echo "=== $(PROJECT_NAME) === [ test-integration ]: running integration tests..."
 	@mkdir -p $(COVERAGE_DIR)
-	TF_ACC=1 NR_ACC_TESTING=1 $(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/integration.xml --rerun-fails=3 --packages $(GO_PKGS) -- -timeout 120m -v -ldflags=$(LDFLAGS_TEST) -parallel 4 -tags=integration $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp
+	@TF_ACC=1 NR_ACC_TESTING=1 $(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/integration.xml --rerun-fails=3 --packages $(GO_PKGS) \
+		-- -v -parallel 4 -tags=integration $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp \
+		   -timeout 120m -ldflags=$(LDFLAGS_TEST)
 
 #
 # Coverage
