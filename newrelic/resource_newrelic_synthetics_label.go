@@ -61,6 +61,7 @@ func resourceNewRelicSyntheticsLabelCreate(d *schema.ResourceData, meta interfac
 
 	log.Printf("[INFO] Creating New Relic Synthetics label %s:%s", label.Type, label.Value)
 
+	// Note: AddMonitorLabel is deprecated
 	err := client.Synthetics.AddMonitorLabel(monitorID, label.Type, label.Value)
 	if err != nil {
 		return err
@@ -91,6 +92,7 @@ func resourceNewRelicSyntheticsLabelRead(d *schema.ResourceData, meta interface{
 		return err
 	}
 
+	// Note: GetMonitorLabels is deprecated
 	labels, err := client.Synthetics.GetMonitorLabels(monitorID)
 	if err != nil {
 		return err
@@ -123,6 +125,7 @@ func resourceNewRelicSyntheticsLabelDelete(d *schema.ResourceData, meta interfac
 
 	log.Printf("[INFO] Deleting New Relic alert condition %s", d.Id())
 
+	// Note: DeleteMonitorLabel is deprecated
 	err := client.Synthetics.DeleteMonitorLabel(monitorID, labelType, value)
 	if err != nil {
 		return err
