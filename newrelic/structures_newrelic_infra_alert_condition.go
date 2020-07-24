@@ -10,14 +10,15 @@ import (
 
 func expandInfraAlertCondition(d *schema.ResourceData) (*alerts.InfrastructureCondition, error) {
 	condition := alerts.InfrastructureCondition{
-		Name:       d.Get("name").(string),
-		Enabled:    d.Get("enabled").(bool),
-		PolicyID:   d.Get("policy_id").(int),
-		Event:      d.Get("event").(string),
-		Comparison: strings.ToLower(d.Get("comparison").(string)),
-		Select:     d.Get("select").(string),
-		Type:       strings.ToLower(d.Get("type").(string)),
-		Critical:   expandInfraAlertThreshold(d.Get("critical")),
+		Name:        d.Get("name").(string),
+		Enabled:     d.Get("enabled").(bool),
+		PolicyID:    d.Get("policy_id").(int),
+		Event:       d.Get("event").(string),
+		Comparison:  strings.ToLower(d.Get("comparison").(string)),
+		Select:      d.Get("select").(string),
+		Type:        strings.ToLower(d.Get("type").(string)),
+		Critical:    expandInfraAlertThreshold(d.Get("critical")),
+		Description: d.Get("description").(string),
 	}
 
 	if attr, ok := d.GetOk("runbook_url"); ok {
@@ -90,6 +91,7 @@ func flattenInfraAlertCondition(condition *alerts.InfrastructureCondition, d *sc
 	d.Set("type", strings.ToLower(condition.Type))
 	d.Set("created_at", condition.CreatedAt)
 	d.Set("updated_at", condition.UpdatedAt)
+	d.Set("description", condition.Description)
 
 	if condition.Where != "" {
 		d.Set("where", condition.Where)
