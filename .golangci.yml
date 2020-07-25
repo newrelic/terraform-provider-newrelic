@@ -50,6 +50,8 @@ issues:
   max-same-issues: 0
 
   exclude-rules:
+    # ignore deprecation warnings since they fail ci with failure exit code
+    # https://staticcheck.io/docs/checks#SA1019
     - linters:
         - staticcheck
-      text: "SA1019: d.GetOkExists is deprecated"
+      text: "SA1019:"
