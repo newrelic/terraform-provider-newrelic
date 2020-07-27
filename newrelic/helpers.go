@@ -3,6 +3,7 @@ package newrelic
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -105,4 +106,19 @@ func setIfConfigured(d *schema.ResourceData, attr string, value interface{}) err
 	}
 
 	return nil
+}
+
+// envAccountID implements the DefaultFunc to allow a resource to retrieve a number from the environment.
+func envAccountID() (interface{}, error) {
+	if v := os.Getenv("NEW_RELIC_ACCOUNT_ID"); v != "" {
+
+		accountID, err := strconv.Atoi(v)
+		if err != nil {
+			return nil, err
+		}
+
+		return accountID, nil
+	}
+
+	return nil, nil
 }
