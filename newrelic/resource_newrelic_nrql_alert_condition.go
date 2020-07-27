@@ -21,12 +21,11 @@ func termSchema() *schema.Resource {
 			// Validation is different in NerdGraph - Value must be within 120-3600 seconds (2-60 minutes) and a multiple of 60 for BASELINE conditions.
 			// Convert to seconds when using NerdGraph
 			"duration": {
-				Deprecated:    "use `threshold_duration` attribute instead",
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Description:   "In minutes, must be in the range of 1 to 120 (inclusive).",
-				ConflictsWith: []string{"term.0.threshold_duration"},
-				ValidateFunc:  validation.IntBetween(1, 120),
+				Deprecated:   "use `threshold_duration` attribute instead",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "In minutes, must be in the range of 1 to 120 (inclusive).",
+				ValidateFunc: validation.IntBetween(1, 120),
 			},
 			// Value must be uppercase when using NerdGraph
 			"operator": {
@@ -48,29 +47,26 @@ func termSchema() *schema.Resource {
 			// Does not exist in NerdGraph. Equivalent to `threshold_occurrences`,
 			// but with different wording.
 			"time_function": {
-				Deprecated:    "use `threshold_occurrences` attribute instead",
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Valid values are: 'all' or 'any'",
-				ConflictsWith: []string{"term.0.threshold_occurrences"},
-				ValidateFunc:  validation.StringInSlice([]string{"all", "any"}, false),
+				Deprecated:   "use `threshold_occurrences` attribute instead",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Valid values are: 'all' or 'any'",
+				ValidateFunc: validation.StringInSlice([]string{"all", "any"}, false),
 			},
 			// NerdGraph only. Equivalent to `time_function`,
 			// but with slightly different wording.
 			// i.e. `any` (old) vs `AT_LEAST_ONCE` (new)
 			"threshold_occurrences": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: 'ALL' or 'AT_LEAST_ONCE' (case insensitive).",
-				ConflictsWith: []string{"term.0.time_function"},
-				ValidateFunc:  validation.StringInSlice([]string{"ALL", "AT_LEAST_ONCE"}, true),
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: 'ALL' or 'AT_LEAST_ONCE' (case insensitive).",
+				ValidateFunc: validation.StringInSlice([]string{"ALL", "AT_LEAST_ONCE"}, true),
 			},
 			// NerdGraph only. Equivalent to `duration`, but in seconds
 			"threshold_duration": {
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Description:   "The duration of time, in seconds, that the threshold must violate for in order to create a violation. Value must be a multiple of 60 and within 120-3600 seconds for baseline conditions and 120-7200 seconds for static conditions.",
-				ConflictsWith: []string{"term.0.duration"},
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The duration of time, in seconds, that the threshold must violate for in order to create a violation. Value must be a multiple of 60 and within 120-3600 seconds for baseline conditions and 120-7200 seconds for static conditions.",
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					v := val.(int)
 
@@ -213,7 +209,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:      true,
 				Elem:          termSchema(),
 				Description:   "A condition term with priority set to critical.",
-				ConflictsWith: []string{"term.0"},
+				ConflictsWith: []string{"term"},
 			},
 			"warning": {
 				Type:          schema.TypeList,
@@ -222,7 +218,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:      true,
 				Elem:          termSchema(),
 				Description:   "A condition term with priority set to warning.",
-				ConflictsWith: []string{"term.0"},
+				ConflictsWith: []string{"term"},
 			},
 			// Outlier ONLY
 			"expected_groups": {
