@@ -48,4 +48,9 @@ issues:
   # disable limits on issue reporting
   max-per-linter: 0
   max-same-issues: 0
-
+  exclude-rules:
+    # ignore deprecation warnings since they fail ci with failure exit code
+    # https://staticcheck.io/docs/checks#SA1019
+    - linters:
+        - staticcheck
+      text: "SA1019:"
