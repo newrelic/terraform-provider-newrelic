@@ -13,7 +13,7 @@ func flattenAlertPolicy(policy *alerts.AlertsPolicy, d *schema.ResourceData, acc
 		return err
 	}
 
-	err = setIfConfigured(d, "incident_preference", policy.IncidentPreference)
+	err = d.Set("incident_preference", policy.IncidentPreference)
 	if err != nil {
 		return err
 	}
