@@ -1,7 +1,120 @@
+<a name="v2.3.1"></a>
+## [v2.3.1] - 2020-07-27
+### Bug Fixes
+- **alerts:** Unify how alert policy selects an account_id
+- **infra_alert_condition:** support zero-value thresholds for infra_alert_condition resource
+
+### Documentation Updates
+- **alert_policy:** update alert_policy import section, add  default to arg ref
+
+### Features
+- **infra_alert_condition:** add description attribute
+
+<a name="v1.20.1"></a>
+## [v1.20.1] - 2020-07-27
+### Bug Fixes
+- **alerts:** infra alert condition zero value detection
+- **changelog:** remove 1.18.1 from changelog, 1.19.0 is the replacement
+- **client:** update the client for pagination URL fix
+- **infra_alert_condition:** [v1.x] support zero-value thresholds for infra_alert_condition resource
+- **test:** Workloads returns ordered list of scope account IDs, update test
+
+### Documentation Updates
+- **application_settings:** add application settings resource to sidebar ([#582](https://github.com/newrelic/terraform-provider-newrelic/issues/582))
+
+### Features
+- update the release process to prepare for repo handoff
+- **application:** implement newrelic_application resource ([#558](https://github.com/newrelic/terraform-provider-newrelic/issues/558))
+- **dashboard:** add grid_column_count to dashboard schema
+
 <a name="v2.3.0"></a>
 ## [v2.3.0] - 2020-07-23
+### Bug Fixes
+- replacement for deadlink linter
+- replacement for deadlink linter
+- Require condition_scope = `instance` for validation_close_timer
+- Add validation to newrelic_alert_condtion condition_scope
+- **alert_condition:** remove conditional to fix drift when using 'user_defined' attributes
+- **alerts:** remove DiffSuppressFunc on TypeSet to avoid test drift
+- **alerts:** require at least one violation time limit attr
+- **alerts:** improve nil handling for alert_channel
+- **alerts:** infra alert condition zero value detection
+- **alerts:** handle a nil reference with more grace
+- **application_settings:** Remove delete, as it is not possible
+- **deps:** Revert terraform sdk to 1.10.0
+- **docs:** better table header rendering
+- **docs:** extra whitespace below table
+- **newrelic:** fix the failing integration tests ([#519](https://github.com/newrelic/terraform-provider-newrelic/issues/519))
+- **nrql_alert_condition:** use better term operator
+- **nrql_alert_condition:** threshold_occurrences is case insensitive, attribute description updates
+
+### Documentation Updates
+- tidy up after review
+- fix broken links
+- fix broken links
+- fix broken links
+- prep for v2.x, isolate v1.x docs
+- communicate that most but not all keys have prefixes
+- add callout to top of each v1.x doc page
+- update API key references to match desires
+- include documentation about upgrading the provider to 2.x
+- add table for current endpoint in use per resource
+- update README with new pointers
+- update getting started guide to reference new material
+- update index header with improved words
+- DEPRECATION notice for 1.x
+- include information on pinning a version
+- include sidebar link for 2.x upgrade
+- include v1 index.html in sidebar
+- fix broken links
+- **alert_channel:** fix broken 'nested config' anchor link
+- **alerts:** update wording to avoid implementation details
+- **alerts:** update documentation for newrelic_nrql_alert_condition
+- **alerts:** include account_id attribute for alert_policy
+- **alerts:** include caveat about NRQL alerts condition operator usage with outliers
+- **alerts:** include deprecation notice for "terms"
+- **alerts:** update examples to reflect deprecation
+- **getting started:** fix resource naming
+- **nrql_alert_condition:** update docs to reflect version 2.0 changes
+- **nrql_alert_condition:** add outlier example, add new attributes, deprecate old attributes, update import section
+- **provider:** additional v2 updates, migration guide updates
+- **provider:** add region to provider docs, removing references to API base URLs
+- **provider:** add provider configuration guide page
+- **provider:** add getting started guide to the quick links
+- **provider:** fix incorrect newrelic_application reference in some examples
+- **provider:** add account_id to argument reference, move argument reference above the fold
+- **provider:** add environment variables and schema attribute table
+- **provider:** update getting started example to reflect v2 updates
+- **readme:** update title, add link to latest documentation
+- **workloads:** fix api key attribute name ([#489](https://github.com/newrelic/terraform-provider-newrelic/issues/489))
+
 ### Features
 - add a newrelic_account data source
+- update the release process to prepare for repo handoff
+- **alerts:** new newrelic_alerts_location_failure_condition resource
+- **alerts:** convert Alerts Policies to nerdgraph
+- **application:** implement newrelic_application resource
+- **dashboard:** add grid_column_count to dashboard schema
+- **entity_tags:** add an entity tag resource ([#679](https://github.com/newrelic/terraform-provider-newrelic/issues/679))
+- **eventstometrics:** add an events to metrics rule resource ([#690](https://github.com/newrelic/terraform-provider-newrelic/issues/690))
+- **nrql_alert_condition:** integrate nerdgraph for nrql alert conditions
+- **provider:** add region to provider schema, handle API URLs based off region
+
+<a name="v1.20.0"></a>
+## [v1.20.0] - 2020-07-23
+### Bug Fixes
+- **alerts:** infra alert condition zero value detection
+- **changelog:** remove 1.18.1 from changelog, 1.19.0 is the replacement
+- **client:** update the client for pagination URL fix
+- **test:** Workloads returns ordered list of scope account IDs, update test
+
+### Documentation Updates
+- **application_settings:** add application settings resource to sidebar ([#582](https://github.com/newrelic/terraform-provider-newrelic/issues/582))
+
+### Features
+- update the release process to prepare for repo handoff
+- **application:** implement newrelic_application resource ([#558](https://github.com/newrelic/terraform-provider-newrelic/issues/558))
+- **dashboard:** add grid_column_count to dashboard schema
 
 <a name="v2.2.1"></a>
 ## [v2.2.1] - 2020-07-10
@@ -370,8 +483,11 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.3.0...HEAD
-[v2.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.1...v2.3.0
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.3.1...HEAD
+[v2.3.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.20.1...v2.3.1
+[v1.20.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.3.0...v1.20.1
+[v2.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.20.0...v2.3.0
+[v1.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.1...v1.20.0
 [v2.2.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.0...v2.2.1
 [v2.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.2...v2.2.0
 [v2.1.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.19.1...v2.1.2
