@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk v1.15.0
 	github.com/newrelic/go-agent/v3 v3.8.1
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go v0.33.1
+	github.com/newrelic/newrelic-client-go v0.33.2
 	github.com/stretchr/testify v1.6.1
 	gotest.tools/gotestsum v0.5.2
 )
