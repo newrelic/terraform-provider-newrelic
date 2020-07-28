@@ -1,7 +1,40 @@
+<a name="v2.4.0"></a>
+## [v2.4.0] - 2020-07-27
+### Bug Fixes
+- **alerts:** Unify how alert policy selects an account_id
+- **infra_alert_condition:** support zero-value thresholds for infra_alert_condition resource
+
+### Documentation Updates
+- **alert_policy:** update alert_policy import section, add  default to arg ref
+
+### Features
+- **infra_alert_condition:** add description attribute
+
+<a name="v1.20.1"></a>
+## [v1.20.1] - 2020-07-27
+### Bug Fixes
+- **infra_alert_condition:** [v1.x] support zero-value thresholds for infra_alert_condition resource
+
 <a name="v2.3.0"></a>
 ## [v2.3.0] - 2020-07-23
 ### Features
 - add a newrelic_account data source
+
+<a name="v1.20.0"></a>
+## [v1.20.0] - 2020-07-23
+### Bug Fixes
+- **alerts:** infra alert condition zero value detection
+- **changelog:** remove 1.18.1 from changelog, 1.19.0 is the replacement
+- **client:** update the client for pagination URL fix
+- **test:** Workloads returns ordered list of scope account IDs, update test
+
+### Documentation Updates
+- **application_settings:** add application settings resource to sidebar ([#582](https://github.com/newrelic/terraform-provider-newrelic/issues/582))
+
+### Features
+- update the release process to prepare for repo handoff
+- **application:** implement newrelic_application resource ([#558](https://github.com/newrelic/terraform-provider-newrelic/issues/558))
+- **dashboard:** add grid_column_count to dashboard schema
 
 <a name="v2.2.1"></a>
 ## [v2.2.1] - 2020-07-10
@@ -370,8 +403,11 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.3.0...HEAD
-[v2.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.1...v2.3.0
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.0...HEAD
+[v2.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.20.1...v2.4.0
+[v1.20.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.3.0...v1.20.1
+[v2.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.20.0...v2.3.0
+[v1.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.1...v1.20.0
 [v2.2.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.0...v2.2.1
 [v2.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.2...v2.2.0
 [v2.1.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.19.1...v2.1.2
