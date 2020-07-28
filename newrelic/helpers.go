@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func parseIDs(serializedID string, count int) ([]int, error) {
@@ -84,6 +86,28 @@ func sortIntegerSlice(integers []int) {
 	})
 }
 
+func stringInSlice(slice []string, str string) bool {
+	for _, s := range slice {
+		if str == s {
+			return true
+		}
+	}
+
+	return false
+}
+
+// setIfConfigured will set a resource attribute if it was found to already
+// exist in the configuration for the resource.
+func setIfConfigured(d *schema.ResourceData, attr string, value interface{}) error {
+	if d != nil && attr != "" {
+		if _, ok := d.GetOk(attr); ok {
+			return d.Set(attr, value)
+		}
+	}
+
+	return nil
+}
+
 // envAccountID implements the DefaultFunc to allow a resource to retrieve a number from the environment.
 func envAccountID() (interface{}, error) {
 	if v := os.Getenv("NEW_RELIC_ACCOUNT_ID"); v != "" {
@@ -97,14 +121,4 @@ func envAccountID() (interface{}, error) {
 	}
 
 	return nil, nil
-}
-
-func stringInSlice(slice []string, str string) bool {
-	for _, s := range slice {
-		if str == s {
-			return true
-		}
-	}
-
-	return false
 }
