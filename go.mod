@@ -9,7 +9,7 @@ require (
 	github.com/golangci/golangci-lint v1.29.0
 	github.com/goreleaser/goreleaser v0.140.1
 	github.com/hashicorp/terraform-plugin-sdk v1.15.0
-	github.com/newrelic/go-agent/v3 v3.7.0
+	github.com/newrelic/go-agent/v3 v3.8.1
 	github.com/newrelic/go-insights v1.0.3
 	github.com/newrelic/newrelic-client-go v0.33.1
 	github.com/stretchr/testify v1.6.1
