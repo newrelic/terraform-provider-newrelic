@@ -22,10 +22,10 @@ func expandAlertCondition(d *schema.ResourceData) (*alerts.Condition, error) {
 	condition.Terms = expandAlertConditionTerms(d.Get("term").(*schema.Set).List())
 
 	if violationCloseTimer, ok := d.GetOk("violation_close_timer"); ok {
-		if condition.Scope == "instance" {
+		if condition.Type == "apm_app_metric" && condition.Scope == "instance" {
 			condition.ViolationCloseTimer = violationCloseTimer.(int)
 		} else {
-			return nil, fmt.Errorf("violation_close_timer only supported when condition_scope = 'instance'")
+			return nil, fmt.Errorf("violation_close_timer only supported for apm_app_metric when condition_scope = 'instance'")
 		}
 
 	}
