@@ -22,12 +22,11 @@ func expandAlertCondition(d *schema.ResourceData) (*alerts.Condition, error) {
 	condition.Terms = expandAlertConditionTerms(d.Get("term").(*schema.Set).List())
 
 	if violationCloseTimer, ok := d.GetOk("violation_close_timer"); ok {
-		if condition.Scope == "instance" {
-			condition.ViolationCloseTimer = violationCloseTimer.(int)
-		} else {
-			return nil, fmt.Errorf("violation_close_timer only supported when condition_scope = 'instance'")
+		if condition.Type == "apm_app_metric" && condition.Scope == "application" {
+			return nil, fmt.Errorf("violation_close_timer only supported for apm_app_metric when condition_scope = 'instance'")
 		}
 
+		condition.ViolationCloseTimer = violationCloseTimer.(int)
 	}
 
 	if attr, ok := d.GetOk("runbook_url"); ok {
@@ -79,11 +78,19 @@ func flattenAlertCondition(condition *alerts.Condition, d *schema.ResourceData) 
 	d.Set("type", condition.Type)
 	d.Set("metric", condition.Metric)
 	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("condition_scope", condition.Scope)
 	d.Set("violation_close_timer", condition.ViolationCloseTimer)
 	d.Set("gc_metric", condition.GCMetric)
 	d.Set("user_defined_metric", condition.UserDefined.Metric)
 	d.Set("user_defined_value_function", condition.UserDefined.ValueFunction)
+
+	// The condition_scope field is not always returned by the API. This conditional
+	// handles flattening for all cases.
+	if condition.Scope != "" {
+		d.Set("condition_scope", condition.Scope)
+	} else {
+		conditionScope := d.Get("condition_scope")
+		d.Set("condition_scope", conditionScope)
+	}
 
 	entities, err := flattenAlertConditionEntities(&condition.Entities)
 

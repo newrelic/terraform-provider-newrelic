@@ -178,6 +178,7 @@ resource "newrelic_alert_condition" "foo" {
 	metric          = "apdex"
 	runbook_url     = "https://foo.example.com"
 	condition_scope = "application"
+
 	term {
 		duration      = %[2]d
 		operator      = "below"
@@ -187,4 +188,140 @@ resource "newrelic_alert_condition" "foo" {
 	}
 }
 `, name, duration)
+}
+
+func testAccNewRelicAlertConditionApplicationScopeWithCloseTimerConfig(rName string) string {
+	return fmt.Sprintf(`
+provider "newrelic" {
+	api_key = "%[3]s"
+}
+data "newrelic_application" "app" {
+	name = "%[2]s"
+}
+resource "newrelic_alert_policy" "foo" {
+	name = "%[1]s"
+}
+resource "newrelic_alert_condition" "foo" {
+	policy_id = newrelic_alert_policy.foo.id
+
+	name            = "%[1]s"
+	enabled         = true
+	type            = "apm_app_metric"
+	entities        = [data.newrelic_application.app.id]
+	metric          = "apdex"
+	runbook_url     = "https://foo.example.com"
+	condition_scope = "application"
+	violation_close_timer = 24
+
+	term {
+		duration      = 5
+		operator      = "below"
+		priority      = "critical"
+		threshold     = "0.75"
+		time_function = "all"
+	}
+}
+`, rName, testAccExpectedApplicationName, testAccAPIKey)
+}
+
+func testAccNewRelicAlertConditionInstanceScopeWithCloseTimerConfig(rName string) string {
+	return fmt.Sprintf(`
+provider "newrelic" {
+	api_key = "%[3]s"
+}
+data "newrelic_application" "app" {
+	name = "%[2]s"
+}
+resource "newrelic_alert_policy" "foo" {
+	name = "%[1]s"
+}
+resource "newrelic_alert_condition" "foo" {
+	policy_id = newrelic_alert_policy.foo.id
+
+	name            = "%[1]s"
+	enabled         = true
+	type            = "apm_app_metric"
+	entities        = [317250408]
+	metric          = "apdex"
+	runbook_url     = "https://foo.example.com"
+	condition_scope = "instance"
+	violation_close_timer = 24
+
+	term {
+		duration      = 5
+		operator      = "below"
+		priority      = "critical"
+		threshold     = "0.75"
+		time_function = "all"
+	}
+}
+`, rName, testAccExpectedApplicationName, testAccAPIKey)
+}
+
+func testAccNewRelicAlertConditionAPMJVMMetricApplicationScopeConfig(rName string) string {
+	return fmt.Sprintf(`
+provider "newrelic" {
+	api_key = "%[3]s"
+}
+data "newrelic_application" "app" {
+	name = "%[2]s"
+}
+resource "newrelic_alert_policy" "foo" {
+	name = "%[1]s"
+}
+resource "newrelic_alert_condition" "foo" {
+	policy_id = newrelic_alert_policy.foo.id
+
+	name            = "%[1]s"
+	enabled         = true
+	type            = "apm_jvm_metric"
+	entities        = [317250408]
+	metric          = "heap_memory_usage"
+	runbook_url     = "https://foo.example.com"
+	condition_scope = "application"
+	violation_close_timer = 24
+
+	term {
+		duration      = 5
+		operator      = "below"
+		priority      = "critical"
+		threshold     = "0.75"
+		time_function = "all"
+	}
+}
+`, rName, testAccExpectedApplicationName, testAccAPIKey)
+}
+
+func testAccNewRelicAlertConditionAPMJVMMetricInstanceScopeConfig(rName string) string {
+	return fmt.Sprintf(`
+provider "newrelic" {
+	api_key = "%[3]s"
+}
+data "newrelic_application" "app" {
+	name = "%[2]s"
+}
+resource "newrelic_alert_policy" "foo" {
+	name = "%[1]s"
+}
+resource "newrelic_alert_condition" "foo" {
+	policy_id = newrelic_alert_policy.foo.id
+
+	name            = "%[1]s"
+	enabled         = true
+	type            = "apm_jvm_metric"
+	entities        = [317250408]
+	metric          = "heap_memory_usage"
+	runbook_url     = "https://foo.example.com"
+	condition_scope = "instance"
+	violation_close_timer = 24
+
+	term {
+		duration      = 5
+		operator      = "below"
+		priority      = "critical"
+		threshold     = "0.75"
+		time_function = "all"
+	}
+}
+`, rName, testAccExpectedApplicationName, testAccAPIKey)
 }
