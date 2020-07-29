@@ -18,10 +18,11 @@ func TestExpandInfraAlertThreshold(t *testing.T) {
 		},
 	}
 
+	value := 1.5
 	expected := alerts.InfrastructureConditionThreshold{
 		Duration: 5,
 		Function: "all",
-		Value:    1.5,
+		Value:    &value,
 	}
 
 	expanded := expandInfraAlertThreshold(flattened)
@@ -31,10 +32,11 @@ func TestExpandInfraAlertThreshold(t *testing.T) {
 }
 
 func TestFlattenInfraAlertThreshold(t *testing.T) {
+	value := 1.5
 	expanded := alerts.InfrastructureConditionThreshold{
 		Duration: 5,
 		Function: "all",
-		Value:    1.5,
+		Value:    &value,
 	}
 
 	expected := []interface{}{
