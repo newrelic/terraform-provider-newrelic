@@ -4,6 +4,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -150,6 +151,66 @@ func TestAccNewRelicAlertCondition_AlertPolicyNotFound(t *testing.T) {
 				PreConfig: testAccDeleteNewRelicAlertPolicy(rName),
 				Config:    testAccNewRelicAlertConditionConfig(rName),
 				Check:     testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertCondition_ApplicationScopeWithCloseTimer(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicAlertConditionApplicationScopeWithCloseTimerConfig(rName),
+				ExpectError: regexp.MustCompile("violation_close_timer only supported for apm_app_metric when condition_scope = 'instance'"),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertCondition_InstanceScopeWithCloseTimer(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicAlertConditionInstanceScopeWithCloseTimerConfig(rName),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAlertCondition_APMJVMMetricApplicationScope(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicAlertConditionAPMJVMMetricApplicationScopeConfig(rName),
+			},
+		},
+	})
+}
+func TestAccNewRelicAlertCondition_APMJVMMetricInstanceScope(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicAlertConditionAPMJVMMetricInstanceScopeConfig(rName),
 			},
 		},
 	})
