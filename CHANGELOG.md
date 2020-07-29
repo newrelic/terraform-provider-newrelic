@@ -1,3 +1,9 @@
+<a name="v2.4.1"></a>
+## [v2.4.1] - 2020-07-29
+### Bug Fixes
+- **alerts:** flatten condition scope properly for APM JVM metrics
+- **newrelic_alert_condition:** allow instance scope for JVM app metrics
+
 <a name="v2.4.0"></a>
 ## [v2.4.0] - 2020-07-28
 ### Bug Fixes
@@ -338,8 +344,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.5.0...HEAD
-[v2.5.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.0...v2.5.0
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.1...HEAD
+[v2.4.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.0...v2.4.1
 [v2.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.3.0...v2.4.0
 [v2.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.1...v2.3.0
 [v2.2.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.0...v2.2.1
