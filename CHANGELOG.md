@@ -1,3 +1,8 @@
+<a name="v2.4.2"></a>
+## [v2.4.2] - 2020-07-30
+### Documentation Updates
+- **dashboard:** Improve docs for limit and order_by widget attributes
+
 <a name="v2.4.1"></a>
 ## [v2.4.1] - 2020-07-29
 ### Bug Fixes
@@ -344,7 +349,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.2...HEAD
+[v2.4.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.1...v2.4.2
 [v2.4.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.0...v2.4.1
 [v2.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.3.0...v2.4.0
 [v2.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.1...v2.3.0
