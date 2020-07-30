@@ -192,7 +192,6 @@ func flattenAlertChannelConfiguration(c *alerts.ChannelConfiguration, d *schema.
 
 	configResult := make(map[string]interface{})
 
-	configResult["api_key"] = c.APIKey
 	configResult["auth_password"] = c.AuthPassword
 	configResult["auth_username"] = c.AuthUsername
 	configResult["base_url"] = c.BaseURL
@@ -203,11 +202,41 @@ func flattenAlertChannelConfiguration(c *alerts.ChannelConfiguration, d *schema.
 	configResult["recipients"] = c.Recipients
 	configResult["region"] = c.Region
 	configResult["route_key"] = c.RouteKey
-	configResult["service_key"] = c.ServiceKey
 	configResult["tags"] = c.Tags
 	configResult["teams"] = c.Teams
-	configResult["url"] = c.URL
 	configResult["user_id"] = c.UserID
+
+	if attr, ok := d.GetOk("config.0.api_key"); ok {
+		if c.APIKey != "" {
+			configResult["api_key"] = c.APIKey
+		} else {
+			configResult["api_key"] = attr.(string)
+		}
+	}
+
+	if attr, ok := d.GetOk("config.0.url"); ok {
+		if c.URL != "" {
+			configResult["url"] = c.URL
+		} else {
+			configResult["url"] = attr.(string)
+		}
+	}
+
+	if attr, ok := d.GetOk("config.0.key"); ok {
+		if c.Key != "" {
+			configResult["key"] = c.Key
+		} else {
+			configResult["key"] = attr.(string)
+		}
+	}
+
+	if attr, ok := d.GetOk("config.0.service_key"); ok {
+		if c.ServiceKey != "" {
+			configResult["service_key"] = c.ServiceKey
+		} else {
+			configResult["service_key"] = attr.(string)
+		}
+	}
 
 	if _, ok := d.GetOk("config.0.headers"); ok {
 		configResult["headers"] = c.Headers

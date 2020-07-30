@@ -184,14 +184,15 @@ func TestAccNewRelicAlertChannel_Slack(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "config.0.url", "https://example.slack.com"),
 					resource.TestCheckResourceAttr(resourceName, "config.0.channel", "example-channel"),
 				),
-				// The config block requires the resource being destroyed and recreated on every `apply`.
-				ExpectNonEmptyPlan: true,
 			},
 			// Test: Import
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"config.0.url", // ignore sensitive data that's not returned from the API
+				},
 			},
 		},
 	})
@@ -218,8 +219,6 @@ func TestAccNewRelicAlertChannel_PagerDuty(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "type", "pagerduty"),
 					resource.TestCheckResourceAttr(resourceName, "config.0.service_key", "abc123"),
 				),
-				// The config block requires the resource being destroyed and recreated on every `apply`.
-				ExpectNonEmptyPlan: true,
 			},
 			// Test: Update
 			{
@@ -232,14 +231,15 @@ func TestAccNewRelicAlertChannel_PagerDuty(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "type", "pagerduty"),
 					resource.TestCheckResourceAttr(resourceName, "config.0.service_key", "abc321"),
 				),
-				// The config block requires the resource being destroyed and recreated on every `apply`.
-				ExpectNonEmptyPlan: true,
 			},
 			// Test: Import
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"config.0.service_key", // ignore sensitive data that's not returned from the API
+				},
 			},
 		},
 	})
@@ -271,14 +271,15 @@ func TestAccNewRelicAlertChannel_OpsGenie(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "config.0.tags", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "config.0.recipients", "example@somedomain.com"),
 				),
-				// The config block requires the resource being destroyed and recreated on every `apply`.
-				ExpectNonEmptyPlan: true,
 			},
 			// Test: Import
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"config.0.api_key", // ignore sensitive data that's not returned from the API
+				},
 			},
 		},
 	})
@@ -304,17 +305,17 @@ func TestAccNewRelicAlertChannel_VictorOps(t *testing.T) {
 					testAccCheckNewRelicAlertChannelExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "type", "victorops"),
-					resource.TestCheckResourceAttr(resourceName, "config.0.key", "abc123"),
 					resource.TestCheckResourceAttr(resourceName, "config.0.route_key", "/example-route"),
 				),
-				// The config block requires the resource being destroyed and recreated on every `apply`.
-				ExpectNonEmptyPlan: true,
 			},
 			// Test: Import
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"config.0.key", // ignore sensitive data that's not returned from the API
+				},
 			},
 		},
 	})
