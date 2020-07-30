@@ -249,13 +249,15 @@ func resourceNewRelicDashboard() *schema.Resource {
 							Optional: true,
 						},
 						"order_by": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Set the order of result series.  Required when using `limit`.",
 						},
 						"limit": {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							ValidateFunc: validation.IntAtLeast(1),
+							Description:  "The limit of distinct data series to display.  Requires `order_by` to be set.",
 						},
 						"entity_ids": {
 							Type:        schema.TypeSet,
