@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 var (
-	expectedMonitorName = fmt.Sprintf("tf-test-synthetic-%s", acctest.RandString(5))
+	expectedMonitorLocationName = "AWS_AF_SOUTH_1"
+	testMonitorLocationLabel    = "Cape Town, ZA"
 )
 
 func TestAccNewRelicSyntheticsMonitorLocationDataSource_Basic(t *testing.T) {
@@ -19,9 +19,9 @@ func TestAccNewRelicSyntheticsMonitorLocationDataSource_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicSyntheticsLocationDataSourceConfig(),
+				Config: testAccCheckNewRelicSyntheticsLocationDataSourceConfig(testMonitorLocationLabel),
 				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_monitor.bar"),
+					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_monitor_location.bar"),
 				),
 			},
 		},
@@ -33,22 +33,18 @@ func testAccNewRelicSyntheticsLocationDataSource(n string) resource.TestCheckFun
 		r := s.RootModule().Resources[n]
 		a := r.Primary.Attributes
 
-		if a["id"] == "" {
-			return fmt.Errorf("expected to read synthetics monitor data from New Relic")
-		}
-
-		if a["name"] != expectedMonitorName {
-			return fmt.Errorf("expected the synthetics monitor name to be: %s, but got: %s", expectedMonitorName, a["name"])
+		if a["label"] == "" {
+			return fmt.Errorf("expected to read synthetics monitor location data from New Relic")
 		}
 		return nil
 	}
 }
 
-func testAccCheckNewRelicSyntheticsLocationDataSourceConfig() string {
+func testAccCheckNewRelicSyntheticsLocationDataSourceConfig(label string) string {
 	return fmt.Sprintf(`
 
-data "newrelic_synthetics_monitor" "bar" {
-	label = Cape Town, ZA
+data "newrelic_synthetics_monitor_location" "bar" {
+	label = "%s"
 }
-`)
+`, label)
 }
