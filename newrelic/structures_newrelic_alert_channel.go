@@ -192,7 +192,6 @@ func flattenAlertChannelConfiguration(c *alerts.ChannelConfiguration, d *schema.
 
 	configResult := make(map[string]interface{})
 
-	configResult["auth_password"] = c.AuthPassword
 	configResult["auth_username"] = c.AuthUsername
 	configResult["base_url"] = c.BaseURL
 	configResult["channel"] = c.Channel
@@ -205,6 +204,14 @@ func flattenAlertChannelConfiguration(c *alerts.ChannelConfiguration, d *schema.
 	configResult["tags"] = c.Tags
 	configResult["teams"] = c.Teams
 	configResult["user_id"] = c.UserID
+
+	if attr, ok := d.GetOk("config.0.auth_password"); ok {
+		if c.AuthPassword != "" {
+			configResult["auth_password"] = c.AuthPassword
+		} else {
+			configResult["auth_password"] = attr.(string)
+		}
+	}
 
 	if attr, ok := d.GetOk("config.0.api_key"); ok {
 		if c.APIKey != "" {
