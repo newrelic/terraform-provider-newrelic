@@ -8,7 +8,7 @@ description: |-
 
 # Data Source: newrelic\_synthetics\_monitor
 
-Use this data source to get information about a specific Synthetics monitor location in New Relic that already exist.
+Use this data source to get information about a specific Synthetics monitor location in New Relic that already exists.
 
 ## Example Usage
 
