@@ -8,21 +8,25 @@ description: |-
 
 # Data Source: newrelic\_synthetics\_monitor
 
-Use this data source to get information about a specific Synthetics monitor locations in New Relic that already exist. This can be used to set up a Synthetics alert condition.
+Use this data source to get information about a specific Synthetics monitor location in New Relic that already exist.
 
 ## Example Usage
 
 ```hcl
-data "newrelic_synthetics_monitor" "bar" {
-  name = "bar"
+data "newrelic_synthetics_monitor_location" "bar" {
+  label = "My private location"
 }
 
-resource "newrelic_synthetics_alert_condition" "baz" {
-  policy_id = newrelic_alert_policy.foo.id
+resource "newrelic_synthetics_monitor" "foo" {
+  name = "foo"
+  type = "SIMPLE"
+  frequency = 5
+  status = "ENABLED"
+  locations = [data.newrelic_synthetics_monitor_location.bar.name]
 
-  name        = "baz"
-  monitor_id  = data.newrelic_synthetics_monitor_location.bar.label
-  runbook_url = "https://www.example.com"
+  uri                       = "https://example.com"               # Required for type "SIMPLE" and "BROWSER"
+  validation_string         = "add example validation check here" # Optional for type "SIMPLE" and "BROWSER"
+  verify_ssl                = true                                # Optional for type "SIMPLE" and "BROWSER"
 }
 ```
 

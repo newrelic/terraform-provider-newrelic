@@ -26,17 +26,17 @@ func dataSourceNewRelicSyntheticsMonitorLocation() *schema.Resource {
 			"high_security_mode": {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "The high security mode for the Synthetics monitor location",
+				Description: "Represents if high security mode is enabled for the location. A value of true means that high security mode is enabled, and a value of false means it is disabled.",
 			},
 			"private": {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "The private setting for the Synthetics monitor location",
+				Description: "Represents if this location is a private location. A value of true means that the location is private, and a value of false means it is public.",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The description mode for the Synthetics monitor location",
+				Description: "A description of the Synthetics monitor location.",
 			},
 		},
 	}
@@ -45,7 +45,7 @@ func dataSourceNewRelicSyntheticsMonitorLocation() *schema.Resource {
 func dataSourceNewRelicSyntheticsMonitorLocationRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
 
-	log.Printf("[INFO] Reading Synthetics monitors location")
+	log.Printf("[INFO] Reading Synthetics monitor locations")
 
 	label := d.Get("label").(string)
 	locations, err := client.Synthetics.GetMonitorLocations()
