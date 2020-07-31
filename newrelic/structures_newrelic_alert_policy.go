@@ -18,7 +18,7 @@ func flattenAlertPolicy(policy *alerts.AlertsPolicy, d *schema.ResourceData, acc
 		return err
 	}
 
-	err = setIfConfigured(d, "account_id", accountID)
+	err = d.Set("account_id", accountID)
 	if err != nil {
 		return err
 	}
