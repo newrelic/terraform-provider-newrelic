@@ -258,6 +258,7 @@ func resourceNewRelicDashboard() *schema.Resource {
 							Optional:     true,
 							ValidateFunc: validation.IntAtLeast(1),
 							Description:  "The limit of distinct data series to display.  Requires `order_by` to be set.",
+							RequiredWith: []string{"order_by"},
 						},
 						"entity_ids": {
 							Type:        schema.TypeSet,
