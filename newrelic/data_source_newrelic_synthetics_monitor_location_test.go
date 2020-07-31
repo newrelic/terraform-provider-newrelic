@@ -9,8 +9,7 @@ import (
 )
 
 var (
-	expectedMonitorLocationName = "AWS_AF_SOUTH_1"
-	testMonitorLocationLabel    = "Cape Town, ZA"
+	testMonitorLocationLabel = "Cape Town, ZA"
 )
 
 func TestAccNewRelicSyntheticsMonitorLocationDataSource_Basic(t *testing.T) {
