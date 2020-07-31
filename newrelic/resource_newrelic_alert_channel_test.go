@@ -86,11 +86,25 @@ func TestAccNewRelicAlertChannel_Webhook(t *testing.T) {
 					payload = {
 						"test": "value"
 					}
+					auth_password = "abc123"
+					auth_username = "reli"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertChannelExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// ignore sensitive data that's not returned from the API
+				ImportStateVerifyIgnore: []string{
+					"config.0.base_url",
+					"config.0.auth_password",
+					"config.0.payload",
+				},
 			},
 		},
 	})
