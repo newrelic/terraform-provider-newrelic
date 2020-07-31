@@ -3,7 +3,6 @@ package newrelic
 import (
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 
@@ -258,17 +257,8 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "The New Relic account ID for managing your NRQL alert conditions.",
-				DefaultFunc: func() (interface{}, error) {
-					envAcctID := os.Getenv("NEW_RELIC_ACCOUNT_ID")
-					if envAcctID != "" {
-						acctID, err := strconv.Atoi(envAcctID)
-
-						return acctID, err
-					}
-
-					return nil, nil
-				},
 			},
 			"description": {
 				Type:        schema.TypeString,
