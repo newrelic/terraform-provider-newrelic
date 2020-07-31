@@ -17,9 +17,9 @@ Use the navigation to the left to read about the available resources.
 
 ## Quick Links
 
-- [**Configure the Provider**](guides/provider_configuration.html)
-- [**Getting Started Guide**](guides/getting_started.html)
-- [**Migration Guide: Upgrading to v2.x**](guides/migration_guide_v2.html)
+- [**Configure the Provider**](guides/provider_configuration)
+- [**Getting Started Guide**](guides/getting_started)
+- [**Migration Guide: Upgrading to v2.x**](guides/migration_guide_v2)
 
 ## Argument Reference
 
@@ -180,9 +180,9 @@ See the [Terraform docs][provider_version_configuration] for more information on
 
 ## Upgrading to v2.x
 
-Upgrading to v2 of the provider involves some changes to your provider configuration. Please view our [**migration guide**](guides/migration_guide_v2.html) for more information and assistance.
+Upgrading to v2 of the provider involves some changes to your provider configuration. Please view our [**migration guide**](guides/migration_guide_v2) for more information and assistance.
 
-Please see the [latest provider configuration docs](guides/provider_configuration.html) for the current recommended configuration settings.
+Please see the [latest provider configuration docs](guides/provider_configuration) for the current recommended configuration settings.
 
 
 ## Debugging

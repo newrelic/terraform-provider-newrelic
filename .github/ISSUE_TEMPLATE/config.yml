@@ -7,6 +7,6 @@ contact_links:
     url: https://newrelic.github.io/developer-toolkit/roadmap/
     about: Information on upcoming work to Terraform and other Developer resources
   - name: New Relic Provider for Terraform Docs
-    url: http://terraform.io/docs/providers/newrelic/
+    url: https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/
     about: All of the documentation for the New Relic Terraform Provider
 

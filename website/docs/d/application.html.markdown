@@ -7,7 +7,7 @@ description: |-
 ---
 
 # Data Source: newrelic\_application
-~> **DEPRECATED** Use at your own risk. Use the [`newrelic_entity`](/docs/providers/newrelic/d/entity.html) data source instead. This feature may be removed in the next major release.
+~> **DEPRECATED** Use at your own risk. Use the [`newrelic_entity`](entity) data source instead. This feature may be removed in the next major release.
 
 Use this data source to get information about a specific application in New Relic that already exists. More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
 

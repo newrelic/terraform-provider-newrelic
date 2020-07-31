@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create and manage NRQL alert conditions in New Relic.
 
--> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](/docs/providers/newrelic/index.html) for configuring the provider.
+-> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](../guides/provider_configuration) for configuring the provider.
 <br><br>
 Before upgrading to version 2.0.0 or later, it is recommended to upgrade to the most recent 1.x version of the provider and ensure that your environment successfully runs `terraform plan` without unexpected changes.
 

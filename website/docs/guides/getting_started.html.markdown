@@ -18,7 +18,7 @@ description: |-
 
 ## Configuring the Provider
 
-Please see the [latest provider configuration docs](provider_configuration.html) to get started with configuring the provider.
+Please see the [latest provider configuration docs](provider_configuration) to get started with configuring the provider.
 
 ## Initialize Your Terraform Setup
 
@@ -44,7 +44,7 @@ provider "newrelic" {
 }
 ```
 
-> <small>**Note:** You can also use [environment variables](provider_configuration.html#configuration-via-environment-variables) to configure the provider, which can simplify your `provider` block.</small>
+> <small>**Note:** You can also use [environment variables](provider_configuration#configuration-via-environment-variables) to configure the provider, which can simplify your `provider` block.</small>
 
 Now let's try running the following command.
 
@@ -145,7 +145,7 @@ resource "newrelic_alert_policy_channel" "alert_policy_email" {
 }
 ```
 
-This example will send an email to the specified recipients whenever the associated alert condition is triggered. If you would like to send notifications via different modalities, such as Slack, the [alert channel](/docs/providers/newrelic/r/alert_channel.html) resource supports multiple types of channels. Use the [additional alert channel examples](/docs/providers/newrelic/r/alert_channel.html#additional-examples) for assistance with configuring your different notification channels.
+This example will send an email to the specified recipients whenever the associated alert condition is triggered. If you would like to send notifications via different modalities, such as Slack, the [alert channel](../r/alert_channel) resource supports multiple types of channels. Use the [additional alert channel examples](../r/alert_channel#additional-examples) for assistance with configuring your different notification channels.
 
 ## A Note About Secrets
 

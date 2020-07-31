@@ -66,4 +66,4 @@ _Note:_ Acceptance tests _create real resources_, and often cost money to run. T
 $ make testacc
 ```
 
-[provider_docs]: https://www.terraform.io/docs/providers/newrelic/index.html
+[provider_docs]: https://registry.terraform.io/providers/newrelic/newrelic/latest/docs
