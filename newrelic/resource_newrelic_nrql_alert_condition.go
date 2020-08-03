@@ -60,6 +60,9 @@ func termSchema() *schema.Resource {
 				Optional:     true,
 				Description:  "The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: 'ALL' or 'AT_LEAST_ONCE' (case insensitive).",
 				ValidateFunc: validation.StringInSlice([]string{"ALL", "AT_LEAST_ONCE"}, true),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.EqualFold(old, new)
+				},
 			},
 			// NerdGraph only. Equivalent to `duration`, but in seconds
 			"threshold_duration": {
