@@ -22,8 +22,8 @@ func dataSourceNewRelicAlertPolicy() *schema.Resource {
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "The New Relic account ID to operate on.",
-				DefaultFunc: envAccountID,
 			},
 			"incident_preference": {
 				Type:        schema.TypeString,
@@ -56,7 +56,7 @@ func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{})
 	log.Printf("[INFO] Reading New Relic Alert Policies")
 
 	name := d.Get("name").(string)
-	accountID := d.Get("account_id").(int)
+	accountID := selectAccountID(cfg, d)
 
 	params := alerts.AlertsPoliciesSearchCriteriaInput{}
 
@@ -81,5 +81,5 @@ func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{})
 
 	d.SetId(policy.ID)
 
-	return flattenAlertPolicyDataSource(policy, d, accountID)
+	return flattenAlertPolicy(policy, d, accountID)
 }
