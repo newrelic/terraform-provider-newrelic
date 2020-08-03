@@ -3,7 +3,6 @@ package newrelic
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -82,21 +81,6 @@ func sortIntegerSlice(integers []int) {
 	sort.Slice(integers, func(i, j int) bool {
 		return integers[i] < integers[j]
 	})
-}
-
-// envAccountID implements the DefaultFunc to allow a resource to retrieve a number from the environment.
-func envAccountID() (interface{}, error) {
-	if v := os.Getenv("NEW_RELIC_ACCOUNT_ID"); v != "" {
-
-		accountID, err := strconv.Atoi(v)
-		if err != nil {
-			return nil, err
-		}
-
-		return accountID, nil
-	}
-
-	return nil, nil
 }
 
 func stringInSlice(slice []string, str string) bool {

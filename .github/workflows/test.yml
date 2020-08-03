@@ -73,6 +73,7 @@ jobs:
       run: make test-unit
 
     - name: New Relic JUnit Reporter
+      if: ${{ always() }}
       uses: newrelic/junit-reporter-action@v0.1.1
       with:
         accountId: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
@@ -114,6 +115,7 @@ jobs:
         NR_ACC_TESTING: ${{ secrets.NR_ACC_TESTING }}
 
     - name: New Relic JUnit Reporter
+      if: ${{ always() }}
       uses: newrelic/junit-reporter-action@v0.1.1
       with:
         accountId: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
