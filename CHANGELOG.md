@@ -1,3 +1,15 @@
+<a name="v2.5.0"></a>
+## [v2.5.0] - 2020-08-03
+### Bug Fixes
+- **alert_policy:** avoid drift due to account_id inheritance in resource and data source
+- **nrql_alert_condition:** avoid drift due to account_id inheritance in NRQL alert condition
+
+### Documentation Updates
+- **synthetics_monitor_location:** Adding docs for Synthetics monitor location data source.
+
+### Features
+- **synthetics_monitor_location:** Add data source newrelic_synthetics_monitor_location.
+
 <a name="v2.4.2"></a>
 ## [v2.4.2] - 2020-07-30
 ### Documentation Updates
@@ -27,7 +39,7 @@
 - add a newrelic_account data source
 
 <a name="v2.2.1"></a>
-## [v2.2.1] - 2020-07-10
+## [v2.2.1] - 2020-07-09
 ### Bug Fixes
 - replacement for deadlink linter
 - replacement for deadlink linter
@@ -349,7 +361,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.5.0...HEAD
+[v2.5.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.2...v2.5.0
 [v2.4.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.1...v2.4.2
 [v2.4.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.0...v2.4.1
 [v2.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.3.0...v2.4.0
