@@ -32,8 +32,8 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "The New Relic account ID to operate on.",
-				DefaultFunc: envAccountID,
 			},
 			"incident_preference": {
 				Type:         schema.TypeString,
@@ -133,11 +133,9 @@ func resourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) e
 	if len(ids) == 1 {
 		policyID = ids[0]
 		accountID = selectAccountID(providerConfig, d)
-
 	} else if len(ids) == 2 {
 		policyID = ids[0]
 		accountID = ids[1]
-
 	} else {
 		return fmt.Errorf("unhandled id format %s", d.Id())
 	}

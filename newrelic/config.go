@@ -11,7 +11,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
-	"github.com/newrelic/newrelic-client-go/pkg/region"
 
 	insights "github.com/newrelic/go-insights/client"
 	nr "github.com/newrelic/newrelic-client-go/newrelic"
@@ -47,7 +46,7 @@ func (c *Config) Client() (*nr.NewRelic, error) {
 		nr.ConfigPersonalAPIKey(c.PersonalAPIKey),
 		nr.ConfigUserAgent(c.userAgent),
 		nr.ConfigServiceName(serviceName),
-		nr.ConfigRegion(region.Name(c.Region)),
+		nr.ConfigRegion(c.Region),
 	)
 
 	tlsCfg := &tls.Config{}
