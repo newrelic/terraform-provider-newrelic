@@ -106,10 +106,10 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 		input.RunbookURL = runbookURL.(string)
 	}
 
-	if violationTimeLimitSec, ok := d.GetOk("violation_time_limit_seconds"); ok {
-		input.ViolationTimeLimit = violationTimeLimitMap[violationTimeLimitSec.(int)]
-	} else if violationTimeLimit, ok := d.GetOk("violation_time_limit"); ok {
+	if violationTimeLimit, ok := d.GetOk("violation_time_limit"); ok {
 		input.ViolationTimeLimit = alerts.NrqlConditionViolationTimeLimit(strings.ToUpper(violationTimeLimit.(string)))
+	} else if violationTimeLimitSec, ok := d.GetOk("violation_time_limit_seconds"); ok {
+		input.ViolationTimeLimit = violationTimeLimitMap[violationTimeLimitSec.(int)]
 	}
 
 	nrql, err := expandNrql(d, input)
@@ -380,10 +380,12 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 		}
 	}
 
-	if _, ok := d.GetOk("violation_time_limit_seconds"); ok {
-		d.Set("violation_time_limit_seconds", violationTimeLimitMapNewOld[condition.ViolationTimeLimit])
-	} else {
+	// If we have previously set the new value before, then we should use that key when setting.
+	if _, ok := d.GetOk("violation_time_limit"); ok {
 		d.Set("violation_time_limit", condition.ViolationTimeLimit)
+	} else {
+		// The deprecated value is all we have ever known, and so we set it.
+		d.Set("violation_time_limit_seconds", violationTimeLimitMapNewOld[condition.ViolationTimeLimit])
 	}
 
 	return nil
