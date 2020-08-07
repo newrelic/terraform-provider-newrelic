@@ -89,21 +89,18 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 
 func resourceNewRelicAlertMutingRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
-	condition, err := expandAlertCondition(d)
+	// condition, err := expandAlertCondition(d)
+
+	accountID := d.Get("account_id").(int)
+
+	log.Printf("[INFO] Creating New Relic MutingRule alerts")
+
+	created, err = client.Alerts.CreateMutingRule(accountID, *created)
 	if err != nil {
 		return err
 	}
 
-	policyID := d.Get("policy_id").(int)
-
-	log.Printf("[INFO] Creating New Relic alert condition %s", condition.Name)
-
-	condition, err = client.Alerts.CreateCondition(policyID, *condition)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(serializeIDs([]int{policyID, condition.ID}))
+	d.SetId(serializeIDs([]int{accountID, created.ID}))
 
 	return nil
 }
