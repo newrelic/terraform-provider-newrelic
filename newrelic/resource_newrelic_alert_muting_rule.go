@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
@@ -87,20 +88,78 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 	}
 }
 
-func resourceNewRelicAlertMutingRuleCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
-	// condition, err := expandAlertCondition(d)
+func expandMutingRuleCondition(cfg []interface{}) []alerts.MutingRuleConditionGroup {
+	if len(cfg) == 0 {
+		return []alerts.MutingRuleConditionGroup{}
+	}
 
-	accountID := d.Get("account_id").(int)
+	conditionGroup := []alerts.MutingRuleConditionGroup{}
+
+	conditionGroup.Conditions = expandMutingRuleConditions(cfg)
+
+	if operator, ok := cfg["operator"]; ok {
+		conditionGroup.Operator = operator.(string)
+	}
+
+	return conditionGroup
+}
+
+func expandMutingRuleConditions(cfg []interface{}) []alerts.MutingRuleCondition {
+
+	conditions := []alerts.MutingRuleCondition{}
+
+	for i, rawCfg := range cfg {
+		cfg := rawCfg.(map[string]interface{})
+		if attribute, ok := cfg["attribute"]; ok {
+			conditions.Attribute = attribute.(string)
+		}
+
+		if operator, ok := cfg["operator"]; ok {
+			conditions.Operator = operator.(string)
+		}
+		if values, ok := cfg["values"]; ok {
+			conditions.Values = values.(list)
+		}
+	}
+
+	return conditions
+}
+
+func expandMutingRuleCreateInput(d *schema.ResourceData) alerts.MutingRuleCreateInput {
+	createInput := alerts.MutingRuleCreateInput{
+		// Account:     d.Get("accountId").(int),
+		Enabled:     d.Get("enabled").(bool),
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
+	}
+
+	if e, ok := d.GetOk("Condition"); ok {
+		createInput.Condition = expandMutingRuleCondition(e.(*schema.Set).List())
+	}
+
+	return createInput
+}
+
+func resourceNewRelicAlertMutingRuleCreate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ProviderConfig).NewClient // Getting instance of the client
+	expanded := expandMutingRuleCreateInput(d)
+
+	accountID := d.Get("account_id").(int) // Account ID from the schema
 
 	log.Printf("[INFO] Creating New Relic MutingRule alerts")
 
-	created, err = client.Alerts.CreateMutingRule(accountID, *created)
+	created, err := client.Alerts.CreateMutingRule(accountID, expanded)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(serializeIDs([]int{accountID, created.ID}))
+	ids := mutingRuleIDs{
+		AccountID: accountID,
+		ID:        created.ID,
+	}
+
+	// Add helper function here.
+	d.SetId(ids.String())
 
 	return nil
 }
@@ -132,3 +191,8 @@ func resourceNewRelicAlertMutingRuleRead(d *schema.ResourceData, meta interface{
 // func resourceNewRelicAlertMutingRuleUpdate(d *schema.ResourceData, meta interface{}) error {}
 
 // func resourceNewRelicAlertMutingRuleDelete(d *schema.ResourceData, meta interface{}) error {}
+
+type mutingRuleIDs struct {
+	AccountID int
+	ID        int
+}
