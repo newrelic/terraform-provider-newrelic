@@ -1,7 +1,10 @@
 package newrelic
 
 import (
+	"fmt"
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
@@ -88,14 +91,45 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 	}
 }
 
-func expandMutingRuleCondition(cfg []interface{}) []alerts.MutingRuleConditionGroup {
-	if len(cfg) == 0 {
-		return []alerts.MutingRuleConditionGroup{}
+func expandMutingRuleValues(values []interface{}) []string {
+	perms := make([]string, len(values))
+
+	for i, values := range values {
+		perms[i] = values.(string)
 	}
 
-	conditionGroup := []alerts.MutingRuleConditionGroup{}
+	return perms
+}
 
-	conditionGroup.Conditions = expandMutingRuleConditions(cfg)
+func expandMutingRuleConditions(cfg []interface{}) []alerts.MutingRuleCondition {
+
+	conditions := []alerts.MutingRuleCondition{}
+
+	for _, rawCfg := range cfg {
+
+		conditionCfg := rawCfg.(map[string]interface{})
+		condition := alerts.MutingRuleCondition{}
+
+		if attribute, ok := conditionCfg["attribute"]; ok {
+			condition.Attribute = attribute.(string)
+		}
+
+		if operator, ok := conditionCfg["operator"]; ok {
+			condition.Operator = operator.(string)
+		}
+		if values, ok := conditionCfg["values"]; ok {
+			condition.Values = expandMutingRuleValues(values.(*schema.Set).List())
+		}
+	}
+
+	return conditions
+}
+
+func expandMutingRuleCondition(cfg map[string]interface{}) alerts.MutingRuleConditionGroup {
+
+	conditionGroup := alerts.MutingRuleConditionGroup{}
+
+	conditionGroup.Conditions = expandMutingRuleConditions(cfg["condition"].(*schema.Set).List())
 
 	if operator, ok := cfg["operator"]; ok {
 		conditionGroup.Operator = operator.(string)
@@ -104,37 +138,15 @@ func expandMutingRuleCondition(cfg []interface{}) []alerts.MutingRuleConditionGr
 	return conditionGroup
 }
 
-func expandMutingRuleConditions(cfg []interface{}) []alerts.MutingRuleCondition {
-
-	conditions := []alerts.MutingRuleCondition{}
-
-	for i, rawCfg := range cfg {
-		cfg := rawCfg.(map[string]interface{})
-		if attribute, ok := cfg["attribute"]; ok {
-			conditions.Attribute = attribute.(string)
-		}
-
-		if operator, ok := cfg["operator"]; ok {
-			conditions.Operator = operator.(string)
-		}
-		if values, ok := cfg["values"]; ok {
-			conditions.Values = values.(list)
-		}
-	}
-
-	return conditions
-}
-
 func expandMutingRuleCreateInput(d *schema.ResourceData) alerts.MutingRuleCreateInput {
 	createInput := alerts.MutingRuleCreateInput{
-		// Account:     d.Get("accountId").(int),
 		Enabled:     d.Get("enabled").(bool),
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 	}
 
-	if e, ok := d.GetOk("Condition"); ok {
-		createInput.Condition = expandMutingRuleCondition(e.(*schema.Set).List())
+	if e, ok := d.GetOk("condition"); ok {
+		createInput.Condition = expandMutingRuleCondition(e.([]interface{})[0].(map[string]interface{}))
 	}
 
 	return createInput
@@ -158,7 +170,6 @@ func resourceNewRelicAlertMutingRuleCreate(d *schema.ResourceData, meta interfac
 		ID:        created.ID,
 	}
 
-	// Add helper function here.
 	d.SetId(ids.String())
 
 	return nil
@@ -169,12 +180,12 @@ func resourceNewRelicAlertMutingRuleRead(d *schema.ResourceData, meta interface{
 
 	log.Printf("[INFO] Reading New Relic MutingRule alerts")
 
-	ids, err := parseHashedIDs(d.Id())
+	ids, err := parseMutingRuleIDs(d.Id())
 	if err != nil {
 		return err
 	}
 
-	mutingRule, err := client.Alerts.GetMutingRule(ids.accountId, ids.rule)
+	mutingRule, err := client.Alerts.GetMutingRule(ids.AccountID, ids.ID)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -192,7 +203,30 @@ func resourceNewRelicAlertMutingRuleRead(d *schema.ResourceData, meta interface{
 
 // func resourceNewRelicAlertMutingRuleDelete(d *schema.ResourceData, meta interface{}) error {}
 
+func parseMutingRuleIDs(ids string) (*mutingRuleIDs, error) {
+	split := strings.Split(ids, ":")
+
+	accountID, err := strconv.ParseInt(split[0], 10, 32)
+	if err != nil {
+		return nil, err
+	}
+
+	mutingRuleID, err := strconv.ParseInt(split[1], 10, 32)
+	if err != nil {
+		return nil, err
+	}
+
+	return &mutingRuleIDs{
+		AccountID: int(accountID),
+		ID:        int(mutingRuleID),
+	}, nil
+}
+
 type mutingRuleIDs struct {
 	AccountID int
 	ID        int
+}
+
+func (w *mutingRuleIDs) String() string {
+	return fmt.Sprintf("%d:%d", w.AccountID, w.ID)
 }
