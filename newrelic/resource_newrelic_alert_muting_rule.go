@@ -98,25 +98,22 @@ func expandMutingRuleValues(values []interface{}) []string {
 	return perms
 }
 
-func expandMutingRuleCondition(cfg []interface{}) []alerts.MutingRuleCondition {
+func expandMutingRuleCondition(cfg interface{}) alerts.MutingRuleCondition {
 
-	conditions := []alerts.MutingRuleCondition{}
+	conditions := alerts.MutingRuleCondition{}
 
-	for _, rawCfg := range cfg {
+	conditionCfg := cfg.(map[string]interface{})
+	condition := alerts.MutingRuleCondition{}
 
-		conditionCfg := rawCfg.(map[string]interface{})
-		condition := alerts.MutingRuleCondition{}
+	if attribute, ok := conditionCfg["attribute"]; ok {
+		condition.Attribute = attribute.(string)
+	}
 
-		if attribute, ok := conditionCfg["attribute"]; ok {
-			condition.Attribute = attribute.(string)
-		}
-
-		if operator, ok := conditionCfg["operator"]; ok {
-			condition.Operator = operator.(string)
-		}
-		if values, ok := conditionCfg["values"]; ok {
-			condition.Values = expandMutingRuleValues(values.(*schema.Set).List())
-		}
+	if operator, ok := conditionCfg["operator"]; ok {
+		condition.Operator = operator.(string)
+	}
+	if values, ok := conditionCfg["values"]; ok {
+		condition.Values = expandMutingRuleValues(values.([]interface{}))
 	}
 
 	return conditions
@@ -125,10 +122,21 @@ func expandMutingRuleCondition(cfg []interface{}) []alerts.MutingRuleCondition {
 func expandMutingRuleConditionGroup(cfg map[string]interface{}) alerts.MutingRuleConditionGroup {
 
 	conditionGroup := alerts.MutingRuleConditionGroup{}
+	var expandedConditions []alerts.MutingRuleCondition
+
 	fmt.Println("====================")
 	fmt.Printf("cfg: %+v \n", cfg)
 	fmt.Println("====================")
-	conditionGroup.Conditions = expandMutingRuleCondition(cfg["conditions"].(*schema.Set).List())
+
+	conditions := cfg["conditions"].(*schema.Set).List()
+
+	for _, c := range conditions {
+
+		var y = expandMutingRuleCondition(c)
+		expandedConditions = append(expandedConditions, y)
+	}
+
+	conditionGroup.Conditions = expandedConditions
 
 	if operator, ok := cfg["operator"]; ok {
 		conditionGroup.Operator = operator.(string)
@@ -155,6 +163,10 @@ func resourceNewRelicAlertMutingRuleCreate(d *schema.ResourceData, meta interfac
 	client := meta.(*ProviderConfig).NewClient // Getting instance of the client
 	expanded := expandMutingRuleCreateInput(d)
 
+	fmt.Println("====================")
+	fmt.Printf("expanded: %+v \n", expanded)
+	fmt.Println("====================")
+
 	accountID := d.Get("account_id").(int) // Account ID from the schema
 
 	log.Printf("[INFO] Creating New Relic MutingRule alerts")
@@ -171,7 +183,7 @@ func resourceNewRelicAlertMutingRuleCreate(d *schema.ResourceData, meta interfac
 
 	d.SetId(ids.String())
 
-	return nil
+	return resourceNewRelicAlertMutingRuleRead(d, meta)
 }
 
 // func flattenMutingRuleValues(in []alerts.MutingRuleCondition) []string {
