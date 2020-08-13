@@ -57,6 +57,7 @@ func testAccNewRelicAlertMutingRuleBasic(
 resource "newrelic_alert_muting_rule" "foo" {
 	name = "tf-test-%[1]s"
 	enabled = true
+	description = "muting rule test."
 	condition {
 		conditions {
 			attribute 	= "product"

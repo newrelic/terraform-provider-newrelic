@@ -100,7 +100,7 @@ func expandMutingRuleValues(values []interface{}) []string {
 
 func expandMutingRuleCondition(cfg interface{}) alerts.MutingRuleCondition {
 
-	conditions := alerts.MutingRuleCondition{}
+	// conditions := alerts.MutingRuleCondition{}
 
 	conditionCfg := cfg.(map[string]interface{})
 	condition := alerts.MutingRuleCondition{}
@@ -115,8 +115,11 @@ func expandMutingRuleCondition(cfg interface{}) alerts.MutingRuleCondition {
 	if values, ok := conditionCfg["values"]; ok {
 		condition.Values = expandMutingRuleValues(values.([]interface{}))
 	}
+	fmt.Println("====================")
+	fmt.Printf("condition: %+v \n", condition)
+	fmt.Println("====================")
 
-	return conditions
+	return condition
 }
 
 func expandMutingRuleConditionGroup(cfg map[string]interface{}) alerts.MutingRuleConditionGroup {
@@ -129,6 +132,9 @@ func expandMutingRuleConditionGroup(cfg map[string]interface{}) alerts.MutingRul
 	fmt.Println("====================")
 
 	conditions := cfg["conditions"].(*schema.Set).List()
+	fmt.Println("====================")
+	fmt.Printf("conditions: %+v \n", conditions)
+	fmt.Println("====================")
 
 	for _, c := range conditions {
 
@@ -188,14 +194,14 @@ func resourceNewRelicAlertMutingRuleCreate(d *schema.ResourceData, meta interfac
 
 // func flattenMutingRuleValues(in []alerts.MutingRuleCondition) []string {
 // 	var values []map[string]interface{}
-
+//
 // 	for _, src := range *in {
 // 		dst := map[string]interface{}{
 // 			"value": src.Value,
 // 		}
 // 		values = append(values, dst)
 // 	}
-
+//
 // 	return values
 // }
 
@@ -262,7 +268,38 @@ func resourceNewRelicAlertMutingRuleRead(d *schema.ResourceData, meta interface{
 
 }
 
+// func expandMutingRuleUpdateInput(d *schema.ResourceData) alerts.MutingRuleUpdateInput {
+// 	updateInput := alerts.MutingRuleUpdateInput{
+// 		Enabled:     d.Get("enabled").(bool),
+// 		Name:        d.Get("name").(string),
+// 		Description: d.Get("description").(string),
+// 	}
+
+// 	if e, ok := d.GetOk("condition"); ok {
+// 		updateInput.Condition = expandMutingRuleConditionGroup(e.([]interface{})[0].(map[string]interface{}))
+// 	}
+
+// 	return updateInput
+// }
+
 func resourceNewRelicAlertMutingRuleUpdate(d *schema.ResourceData, meta interface{}) error {
+	// client := meta.(*ProviderConfig).NewClient
+	// updateInput := expandMutingRuleUpdateInput(d)
+
+	// log.Printf("[INFO] Updating New Relic One workload %s")
+
+	// ids, err := parseWorkloadIDs(d.Id())
+	// if err != nil {
+	// 	return err
+	// }
+
+	// _, err = client.Workloads.UpdateMutingRule(ids.AccountID, updateInput)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// d.SetId(ids.String())
+
 	return nil
 }
 
