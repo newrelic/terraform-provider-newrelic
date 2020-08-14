@@ -65,7 +65,7 @@ resource "newrelic_alert_muting_rule" "foo" {
 			values 		= ["APM"]
 		}
 		conditions {
-			attribute 	= "event"
+			attribute 	= "targetId"
 			operator 	= "EQUALS"
 			values 		= ["Muted"]
 		}
@@ -96,8 +96,8 @@ func testAccCheckNewRelicAlertMutingRuleExists(n string) resource.TestCheckFunc 
 			return err
 		}
 
-		conditionID := ids[1]
-		accountID = providerConfig.AccountID
+		accountID = ids[0]
+		mutingRuleID := ids[1]
 
 		if rs.Primary.Attributes["account_id"] != "" {
 			accountID, err = strconv.Atoi(rs.Primary.Attributes["account_id"])
@@ -106,13 +106,13 @@ func testAccCheckNewRelicAlertMutingRuleExists(n string) resource.TestCheckFunc 
 			}
 		}
 
-		found, err := client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
+		found, err := client.Alerts.GetMutingRule(accountID, mutingRuleID)
 		if err != nil {
 			return err
 		}
 
-		if found.ID != strconv.Itoa(conditionID) {
-			return fmt.Errorf("alert condition not found: %v - %v", conditionID, found)
+		if found.ID != mutingRuleID {
+			return fmt.Errorf("alert muting rule not found: %v - %v", mutingRuleID, found)
 		}
 
 		return nil
