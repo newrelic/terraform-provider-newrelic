@@ -126,8 +126,11 @@ func flattenInfraAlertCondition(condition *alerts.InfrastructureCondition, d *sc
 func flattenAlertThreshold(v *alerts.InfrastructureConditionThreshold) []interface{} {
 	alertInfraThreshold := map[string]interface{}{
 		"duration":      v.Duration,
-		"value":         *v.Value,
 		"time_function": strings.ToLower(v.Function),
+	}
+
+	if v.Value != nil {
+		alertInfraThreshold["value"] = *v.Value
 	}
 
 	return []interface{}{alertInfraThreshold}
