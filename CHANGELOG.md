@@ -1,3 +1,10 @@
+<a name="v2.5.1"></a>
+## [v2.5.1] - 2020-08-14
+### Bug Fixes
+- cannot create resource "newrelic_infra_alert_condition" of type "infra_host_not_reporting"
+- **infra:** avoid nil pointer reference
+- **infra:** avoid nil pointer reference
+
 <a name="v2.5.0"></a>
 ## [v2.5.0] - 2020-08-03
 ### Bug Fixes
@@ -39,7 +46,7 @@
 - add a newrelic_account data source
 
 <a name="v2.2.1"></a>
-## [v2.2.1] - 2020-07-09
+## [v2.2.1] - 2020-07-10
 ### Bug Fixes
 - replacement for deadlink linter
 - replacement for deadlink linter
@@ -361,7 +368,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.5.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.5.1...HEAD
+[v2.5.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.5.0...v2.5.1
 [v2.5.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.2...v2.5.0
 [v2.4.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.1...v2.4.2
 [v2.4.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.0...v2.4.1
