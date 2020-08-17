@@ -280,21 +280,42 @@ func resourceNewRelicAlertMutingRuleUpdate(d *schema.ResourceData, meta interfac
 
 	log.Printf("[INFO] Updating New Relic One workload")
 
-	ids, err := parseWorkloadIDs(d.Id())
+	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
 		return err
 	}
 
-	_, err = client.Alerts.UpdateMutingRule(ids.AccountID, ids.ID, updateInput)
+	accountID := ids[0]
+	mutingRuleID := ids[1]
+
+	_, err = client.Alerts.UpdateMutingRule(accountID, mutingRuleID, updateInput)
 	if err != nil {
-		return err
+		if _, ok := err.(*errors.NotFound); ok {
+			d.SetId("")
+			return nil
+		}
 	}
+	// 	return err
 
-	d.SetId(ids.String())
+	// d.SetId(ids.String())
 
-	return nil
+	return resourceNewRelicAlertMutingRuleRead(d, meta)
 }
 
 func resourceNewRelicAlertMutingRuleDelete(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ProviderConfig).NewClient
+
+	log.Printf("[INFO] Deleting New Relic One muting rule alert.")
+
+	ids, err := parseHashedIDs(d.Id())
+	if err != nil {
+		return err
+	}
+
+	accountID := ids[0]
+	mutingRuleID := ids[1]
+
+	client.Alerts.DeleteMutingRule(accountID, mutingRuleID)
+
 	return nil
 }
