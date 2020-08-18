@@ -32,6 +32,7 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 				Required:    true,
 				Description: "The condition that defines which violations to target.",
 				MaxItems:    1,
+				MinItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"conditions": {
@@ -124,6 +125,10 @@ func expandMutingRuleConditionGroup(cfg map[string]interface{}) alerts.MutingRul
 	conditionGroup := alerts.MutingRuleConditionGroup{}
 	var expandedConditions []alerts.MutingRuleCondition
 
+	log.Print("\n\n **************************** \n")
+	log.Printf("\n CONDITIONS TYPE:  %T \n", cfg["conditions"])
+	log.Print("\n **************************** \n\n")
+
 	conditions := cfg["conditions"].([]interface{}) //need to fix
 
 	for _, c := range conditions {
@@ -176,31 +181,32 @@ func resourceNewRelicAlertMutingRuleCreate(d *schema.ResourceData, meta interfac
 		return err
 	}
 
+	// fmt.Println("====================")
+	// fmt.Printf("CREATE RESULT: %+v \n", created)
+	// fmt.Println("====================")
+
 	d.SetId(serializeIDs([]int{accountID, created.ID}))
 
 	return resourceNewRelicAlertMutingRuleRead(d, meta)
 }
 
-func flattenMutingRuleCondition(in alerts.MutingRuleCondition) []map[string]interface{} {
-	var condition []map[string]interface{}
-
-	dst := map[string]interface{}{
+func flattenMutingRuleCondition(in alerts.MutingRuleCondition) map[string]interface{} {
+	return map[string]interface{}{
 		"attribute": in.Attribute,
 		"operator":  in.Operator,
 		"values":    in.Values,
 	}
-	condition = append(condition, dst)
-
-	return condition
-
 }
 
 func flattenMutingRuleConditionGroup(in alerts.MutingRuleConditionGroup) []map[string]interface{} {
-	var condition []map[string]interface{}
+	condition := []map[string]interface{}{
+		{
+			"operator": in.Operator,
+		},
+	}
 
 	for _, src := range in.Conditions {
 		dst := map[string]interface{}{
-			"operator":   src.Operator,
 			"conditions": flattenMutingRuleCondition(src),
 		}
 		condition = append(condition, dst)
@@ -214,6 +220,10 @@ func flattenMutingRule(mutingRule *alerts.MutingRule, d *schema.ResourceData) er
 	d.Set("condition", flattenMutingRuleConditionGroup(mutingRule.Condition))
 	d.Set("description", mutingRule.Description)
 	d.Set("name", mutingRule.Name)
+
+	log.Print("\n\n **************************** \n")
+	log.Printf("\n flattenMutingRule:  %+v \n", d.Get("condition"))
+	log.Print("\n **************************** \n\n")
 
 	return nil
 }
@@ -240,6 +250,10 @@ func resourceNewRelicAlertMutingRuleRead(d *schema.ResourceData, meta interface{
 
 		return err
 	}
+
+	// fmt.Println("====================")
+	// fmt.Printf("READ RESULT: %+v \n", mutingRule)
+	// fmt.Println("====================")
 
 	return flattenMutingRule(mutingRule, d)
 
