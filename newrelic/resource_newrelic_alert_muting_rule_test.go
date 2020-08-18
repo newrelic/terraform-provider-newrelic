@@ -19,22 +19,22 @@ func TestAccNewRelicAlertMutingRule_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
-		// CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		// CheckDestroy: testAccCheckNewRelicAlertMutingRuleDestroy,
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicAlertMutingRuleBasic(rName),
+				Config: testAccNewRelicAlertMutingRuleBasic(rName, "new muting rule", "product", "EQUALS", "APM"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertMutingRuleExists(resourceName),
 				),
 			},
 			// Test: Update
-			// {
-			// 	Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "5", "180", ""),
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
-			// 	),
-			// },
+			{
+				Config: testAccNewRelicAlertMutingRuleBasic(rName, "second muting rule", "conditionType", "NOT_EQUALS", "baseline"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertMutingRuleExists(resourceName),
+				),
+			},
 			// // Test: Import
 			// {
 			// 	ResourceName:      resourceName,
@@ -51,28 +51,32 @@ func TestAccNewRelicAlertMutingRule_Basic(t *testing.T) {
 
 func testAccNewRelicAlertMutingRuleBasic(
 	name string,
+	description string,
+	attribute string,
+	operator string,
+	values string,
 ) string {
 	return fmt.Sprintf(`
 
 resource "newrelic_alert_muting_rule" "foo" {
 	name = "tf-test-%[1]s"
 	enabled = true
-	description = "muting rule test."
+	description = "%[2]s"
 	condition {
 		conditions {
-			attribute 	= "product"
+			attribute 	= "%[3]s"
 			operator 	= "EQUALS"
-			values 		= ["APM"]
+			values 		= ["%[5]s"]
 		}
 		conditions {
-			attribute 	= "targetId"
-			operator 	= "EQUALS"
-			values 		= ["Muted"]
+			attribute 	= "conditionType"
+			operator 	= "%[4]s"
+			values 		= ["static"]
 		}
 		operator = "AND"
 	}
 }
-`, name)
+`, name, description, attribute, operator, values)
 }
 
 func testAccCheckNewRelicAlertMutingRuleExists(n string) resource.TestCheckFunc {
@@ -119,38 +123,37 @@ func testAccCheckNewRelicAlertMutingRuleExists(n string) resource.TestCheckFunc 
 	}
 }
 
-//to do
-// func testAccCheckNewRelicAlertMutingRuleDestroy(s *terraform.State) error {
-// 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
-// 	client := providerConfig.NewClient
+func testAccCheckNewRelicAlertMutingRuleDestroy(s *terraform.State) error {
+	providerConfig := testAccProvider.Meta().(*ProviderConfig)
+	client := providerConfig.NewClient
 
-// 	for _, r := range s.RootModule().Resources {
-// 		if r.Type != "newrelic_nrql_alert_condition" {
-// 			continue
-// 		}
+	for _, r := range s.RootModule().Resources {
+		if r.Type != "newrelic_alert_muting_rule" {
+			continue
+		}
 
-// 		var accountID int
-// 		var err error
+		var accountID int
+		var err error
 
-// 		ids, err := parseHashedIDs(r.Primary.ID)
-// 		if err != nil {
-// 			return err
-// 		}
+		ids, err := parseHashedIDs(r.Primary.ID)
+		if err != nil {
+			return err
+		}
 
-// 		conditionID := ids[1]
-// 		accountID = providerConfig.AccountID
+		mutingRuleID := ids[1]
+		accountID = providerConfig.AccountID
 
-// 		if r.Primary.Attributes["account_id"] != "" {
-// 			accountID, err = strconv.Atoi(r.Primary.Attributes["account_id"])
-// 			if err != nil {
-// 				return err
-// 			}
-// 		}
+		if r.Primary.Attributes["account_id"] != "" {
+			accountID, err = strconv.Atoi(r.Primary.Attributes["account_id"])
+			if err != nil {
+				return err
+			}
+		}
 
-// 		if _, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID)); err == nil {
-// 			return fmt.Errorf("NRQL Alert condition still exists") //nolint:golint
-// 		}
-// 	}
+		if _, err = client.Alerts.GetMutingRule(accountID, mutingRuleID); err == nil {
+			return fmt.Errorf("Alert muting rule still exists") //nolint:golint
+		}
+	}
 
-// 	return nil
-// }
+	return nil
+}
