@@ -25,7 +25,7 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "The muting rule's account Id.",
+				Description: "The account id of the MutingRule..",
 			},
 			"condition": {
 				Type:        schema.TypeList,
@@ -35,7 +35,7 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"conditions": {
-							Type:        schema.TypeSet,
+							Type:        schema.TypeList, //set or list
 							Optional:    true,
 							Description: "The individual MutingRuleConditions within the group.",
 							Elem: &schema.Resource{
@@ -72,7 +72,7 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 			"enabled": {
 				Type:        schema.TypeBool,
 				Required:    true,
-				Description: "Whether the MutingRule is enabled",
+				Description: "Whether the MutingRule is enabled.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -124,14 +124,16 @@ func expandMutingRuleConditionGroup(cfg map[string]interface{}) alerts.MutingRul
 	conditionGroup := alerts.MutingRuleConditionGroup{}
 	var expandedConditions []alerts.MutingRuleCondition
 
-	conditions := cfg["conditions"].(*schema.Set).List()
+	conditions := cfg["conditions"].([]interface{}) //need to fix
 
 	for _, c := range conditions {
-
+		// cast c to map string
 		var y = expandMutingRuleCondition(c)
 		expandedConditions = append(expandedConditions, y)
 	}
-
+	// sort.SliceStable(expandedConditions, func(i, j int) bool {
+	// 	return expandedConditions[i].Attribute < expandedConditions[j].Attribute
+	// })
 	conditionGroup.Conditions = expandedConditions
 
 	if operator, ok := cfg["operator"]; ok {
@@ -148,7 +150,7 @@ func expandMutingRuleCreateInput(d *schema.ResourceData) alerts.MutingRuleCreate
 		Description: d.Get("description").(string),
 	}
 
-	if e, ok := d.GetOk("condition"); ok {
+	if e, ok := d.GetOk("condition"); ok { // log
 		createInput.Condition = expandMutingRuleConditionGroup(e.([]interface{})[0].(map[string]interface{}))
 	}
 
@@ -159,13 +161,17 @@ func resourceNewRelicAlertMutingRuleCreate(d *schema.ResourceData, meta interfac
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	expanded := expandMutingRuleCreateInput(d)
+	createInput := expandMutingRuleCreateInput(d)
+
+	fmt.Println("====================")
+	fmt.Printf("createInput: %+v \n", createInput)
+	fmt.Println("====================")
 
 	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Creating New Relic MutingRule alerts")
 
-	created, err := client.Alerts.CreateMutingRule(accountID, expanded)
+	created, err := client.Alerts.CreateMutingRule(accountID, createInput)
 	if err != nil {
 		return err
 	}
@@ -174,19 +180,6 @@ func resourceNewRelicAlertMutingRuleCreate(d *schema.ResourceData, meta interfac
 
 	return resourceNewRelicAlertMutingRuleRead(d, meta)
 }
-
-// func flattenMutingRuleValues(in []alerts.MutingRuleCondition) []string {
-// 	var values []map[string]interface{}
-//
-// 	for _, src := range *in {
-// 		dst := map[string]interface{}{
-// 			"value": src.Value,
-// 		}
-// 		values = append(values, dst)
-// 	}
-//
-// 	return values
-// }
 
 func flattenMutingRuleCondition(in alerts.MutingRuleCondition) []map[string]interface{} {
 	var condition []map[string]interface{}
@@ -238,13 +231,6 @@ func resourceNewRelicAlertMutingRuleRead(d *schema.ResourceData, meta interface{
 	accountID := ids[0]
 	mutingRuleID := ids[1]
 
-	fmt.Println("====================")
-	fmt.Printf("AccountID: %+v \n", accountID)
-	fmt.Println("====================")
-	fmt.Println("====================")
-	fmt.Printf("mutingRuleID: %+v \n", mutingRuleID)
-	fmt.Println("====================")
-
 	mutingRule, err := client.Alerts.GetMutingRule(accountID, mutingRuleID)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
@@ -267,7 +253,14 @@ func expandMutingRuleUpdateInput(d *schema.ResourceData) alerts.MutingRuleUpdate
 	}
 
 	if e, ok := d.GetOk("condition"); ok { //detect if its nil
+		fmt.Println("====================")
+		fmt.Printf("e: %+v \n", e)
+		fmt.Println("====================")
 		x := expandMutingRuleConditionGroup(e.([]interface{})[0].(map[string]interface{}))
+
+		fmt.Println("====================")
+		fmt.Printf("x: %+v \n", x)
+		fmt.Println("====================")
 		updateInput.Condition = &x
 	}
 
@@ -278,7 +271,11 @@ func resourceNewRelicAlertMutingRuleUpdate(d *schema.ResourceData, meta interfac
 	client := meta.(*ProviderConfig).NewClient
 	updateInput := expandMutingRuleUpdateInput(d)
 
-	log.Printf("[INFO] Updating New Relic One workload")
+	fmt.Println("====================")
+	fmt.Printf("updateInput: %+v \n", updateInput)
+	fmt.Println("====================")
+
+	log.Printf("[INFO] Updating New Relic One alert muting rule.")
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
@@ -319,3 +316,16 @@ func resourceNewRelicAlertMutingRuleDelete(d *schema.ResourceData, meta interfac
 
 	return nil
 }
+
+// func flattenMutingRuleValues(in []alerts.MutingRuleCondition) []string {
+// 	var values []map[string]interface{}
+//
+// 	for _, src := range *in {
+// 		dst := map[string]interface{}{
+// 			"value": src.Value,
+// 		}
+// 		values = append(values, dst)
+// 	}
+//
+// 	return values
+// }
