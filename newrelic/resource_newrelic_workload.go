@@ -22,7 +22,8 @@ func resourceNewRelicWorkload() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Description: "The New Relic account ID where you want to create the workload.",
 			},
 			"name": {
