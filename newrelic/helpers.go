@@ -29,6 +29,17 @@ func parseIDs(serializedID string, count int) ([]int, error) {
 	return ids, nil
 }
 
+func parseCompositeID(id string) (p1 string, p2 string, err error) {
+	parts := strings.SplitN(id, ":", 2)
+	if len(parts) == 2 {
+		p1 = parts[0]
+		p2 = parts[1]
+	} else {
+		err = fmt.Errorf("error: Import composite ID requires two parts separated by colon, eg x:y")
+	}
+	return
+}
+
 // Converts a hash of IDs into an array.
 // Examples: "12345:54432:66564" -> []int{12345,54432,66564}
 func parseHashedIDs(serializedID string) ([]int, error) {
