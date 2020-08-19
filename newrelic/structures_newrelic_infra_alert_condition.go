@@ -126,8 +126,11 @@ func flattenInfraAlertCondition(condition *alerts.InfrastructureCondition, d *sc
 func flattenAlertThreshold(v *alerts.InfrastructureConditionThreshold) []interface{} {
 	alertInfraThreshold := map[string]interface{}{
 		"duration":      v.Duration,
-		"value":         *v.Value,
 		"time_function": strings.ToLower(v.Function),
+	}
+
+	if v.Value != nil {
+		alertInfraThreshold["value"] = *v.Value
 	}
 
 	return []interface{}{alertInfraThreshold}
@@ -171,7 +174,7 @@ func validateAttributesForType(c *alerts.InfrastructureCondition) error {
 		if c.Critical.Function != "" {
 			return fmt.Errorf("time_function is not supported by condition type %s", c.Type)
 		}
-		if *c.Critical.Value >= 0.0 {
+		if c.Critical.Value != nil && *c.Critical.Value != 0.0 {
 			return fmt.Errorf("value is not supported by condition type %s", c.Type)
 		}
 	}
