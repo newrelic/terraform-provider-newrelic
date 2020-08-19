@@ -24,8 +24,8 @@ func resourceNewRelicEventsToMetricsRule() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
-				ForceNew:    true,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Description: "Account with the event and where the metrics will be put.",
 			},
 			"name": {

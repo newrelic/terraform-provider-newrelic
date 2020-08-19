@@ -260,7 +260,7 @@ func resourceNewRelicAlertChannelCreate(d *schema.ResourceData, meta interface{}
 
 	d.SetId(strconv.Itoa(channel.ID))
 
-	return nil
+	return resourceNewRelicAlertChannelRead(d, meta)
 }
 
 func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) error {
