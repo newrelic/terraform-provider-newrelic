@@ -62,14 +62,11 @@ All nested `condition` blocks support the following arguments:
 * `values` - (Required) The value(s) to compare against the attribute's value.
 
 
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-<!-- 
-- `id` - The ID of the NRQL alert condition. This is a composite ID with the format `<policy_id>:<condition_id>` - e.g. `538291:6789035`. -->
-
-
 ## Import
+Alert conditions can be imported using a composite ID of `<account_id>:<muting_rule_id>`, e.g.
 
-<!-- Alert conditions can be imported using a composite ID of `<policy_id>:<condition_id>:<conditionType>`, e.g. -->
+```
+$ terraform import newrelic_alert_muting_rule.foo 538291:6789035
+
+```
 
