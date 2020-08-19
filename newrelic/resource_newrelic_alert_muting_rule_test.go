@@ -36,15 +36,10 @@ func TestAccNewRelicAlertMutingRule_Basic(t *testing.T) {
 				),
 			},
 			// // Test: Import
-			// {
-			// 	ResourceName:      resourceName,
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// 	// Ignore items with deprecated fields because
-			// 	// we don't set deprecated fields on import
-			// 	ImportStateVerifyIgnore: []string{"term", "nrql", "violation_time_limit"},
-			// 	ImportStateIdFunc:       testAccImportStateIDFunc(resourceName, "static"),
-			// },
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true},
 		},
 	})
 }

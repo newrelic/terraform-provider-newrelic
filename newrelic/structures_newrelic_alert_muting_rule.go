@@ -84,35 +84,71 @@ func expandMutingRuleValues(values []interface{}) []string {
 }
 
 func flattenMutingRule(mutingRule *alerts.MutingRule, d *schema.ResourceData) error {
+
+	x, ok := d.GetOk("condition")
+	configuredCondition := x.([]interface{})
+
 	d.Set("enabled", mutingRule.Enabled)
-	d.Set("condition", flattenMutingRuleConditionGroup(mutingRule.Condition))
+	err := d.Set("condition", flattenMutingRuleConditionGroup(mutingRule.Condition, configuredCondition, ok))
+	if err != nil {
+
+	}
+
 	d.Set("description", mutingRule.Description)
 	d.Set("name", mutingRule.Name)
 
 	return nil
 }
 
-func flattenMutingRuleConditionGroup(in alerts.MutingRuleConditionGroup) []map[string]interface{} {
+func flattenMutingRuleConditionGroup(in alerts.MutingRuleConditionGroup, configuredCondition []interface{}, ok bool) []map[string]interface{} {
+
 	condition := []map[string]interface{}{
 		{
 			"operator": in.Operator,
 		},
 	}
 
-	for _, src := range in.Conditions {
+	if len(in.Conditions) > 0 {
+
+		condition[0]["conditions"] = handleImportFlattenCondition(in.Conditions)
+
+	} else {
+
+		condition[0]["conditions"] = flattenMutingRuleCondition(configuredCondition)
+	}
+
+	return condition
+}
+func handleImportFlattenCondition(conditions []alerts.MutingRuleCondition) []map[string]interface{} {
+	var condition []map[string]interface{}
+
+	for _, src := range conditions {
 		dst := map[string]interface{}{
-			"conditions": flattenMutingRuleCondition(src),
+			"attribute": src.Attribute,
+			"operator":  src.Operator,
+			"values":    src.Values,
 		}
 		condition = append(condition, dst)
 	}
 
 	return condition
 }
+func flattenMutingRuleCondition(conditions []interface{}) []map[string]interface{} {
+	var condition []map[string]interface{}
 
-func flattenMutingRuleCondition(in alerts.MutingRuleCondition) map[string]interface{} {
-	return map[string]interface{}{
-		"attribute": in.Attribute,
-		"operator":  in.Operator,
-		"values":    in.Values,
+	for _, src := range conditions {
+		x := src.(map[string]interface{})
+
+		if x["values"] != nil && x["attributes"] != "" && x["operator"] != "" {
+			dst := map[string]interface{}{
+				"attribute": x["attribute"],
+				"operator":  x["operator"],
+				"values":    x["values"],
+			}
+			condition = append(condition, dst)
+		}
+
 	}
+
+	return condition
 }

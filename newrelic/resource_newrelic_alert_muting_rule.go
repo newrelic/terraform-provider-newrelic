@@ -34,7 +34,7 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"conditions": {
 							Type:        schema.TypeList,
-							Optional:    true,
+							Required:    true,
 							Description: "The individual MutingRuleConditions within the group.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
