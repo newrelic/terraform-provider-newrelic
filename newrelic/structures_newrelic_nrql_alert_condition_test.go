@@ -290,14 +290,14 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		criticalTerms := d.Get("critical").([]interface{})
 		assert.Equal(t, 1, len(criticalTerms))
 		assert.Equal(t, float64(1), criticalTerms[0].(map[string]interface{})["threshold"])
-		assert.Equal(t, "AT_LEAST_ONCE", criticalTerms[0].(map[string]interface{})["threshold_occurrences"])
+		assert.Equal(t, "at_least_once", criticalTerms[0].(map[string]interface{})["threshold_occurrences"])
 		assert.Equal(t, 600, criticalTerms[0].(map[string]interface{})["threshold_duration"])
 		assert.Equal(t, "above", criticalTerms[0].(map[string]interface{})["operator"])
 
 		warningTerms := d.Get("warning").([]interface{})
 		assert.Equal(t, 1, len(warningTerms))
 		assert.Equal(t, float64(10.9), warningTerms[0].(map[string]interface{})["threshold"])
-		assert.Equal(t, "AT_LEAST_ONCE", warningTerms[0].(map[string]interface{})["threshold_occurrences"])
+		assert.Equal(t, "at_least_once", warningTerms[0].(map[string]interface{})["threshold_occurrences"])
 		assert.Equal(t, 660, warningTerms[0].(map[string]interface{})["threshold_duration"])
 		assert.Equal(t, "below", warningTerms[0].(map[string]interface{})["operator"])
 

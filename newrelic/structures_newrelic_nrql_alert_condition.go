@@ -155,7 +155,6 @@ func expandNrql(d *schema.ResourceData, condition alerts.NrqlConditionInput) (*a
 
 // NerdGraph
 func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priority string) (*alerts.NrqlConditionTerm, error) {
-
 	var durationIn int
 	if attr, ok := term["duration"]; ok {
 		durationIn = attr.(int)
@@ -270,7 +269,7 @@ func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.Nrq
 	if len(expandedTerms) == 0 {
 		if critical, ok := d.GetOk("critical"); ok {
 			x := critical.([]interface{})
-			// A critical attribute is a list, but is limited to a single item in the shema.
+			// A critical attribute is a list, but is limited to a single item in the schema.
 			if len(x) > 0 {
 				single := x[0].(map[string]interface{})
 
@@ -438,7 +437,7 @@ func flattenNrqlTerms(terms []alerts.NrqlConditionTerm, configTerms []interface{
 		if setTimeFunction != nil && setTimeFunction.(string) != "" {
 			dst["time_function"] = timeFunctionMapNewOld[term.ThresholdOccurrences]
 		} else {
-			dst["threshold_occurrences"] = term.ThresholdOccurrences
+			dst["threshold_occurrences"] = strings.ToLower(string(term.ThresholdOccurrences))
 		}
 
 		out = append(out, dst)
@@ -457,7 +456,7 @@ func handleImportFlattenNrqlTerms(terms []alerts.NrqlConditionTerm) []map[string
 			"priority":              strings.ToLower(string(term.Priority)),
 			"threshold":             term.Threshold,
 			"threshold_duration":    term.ThresholdDuration,
-			"threshold_occurrences": term.ThresholdOccurrences,
+			"threshold_occurrences": strings.ToLower(string(term.ThresholdOccurrences)),
 		}
 
 		out = append(out, dst)
