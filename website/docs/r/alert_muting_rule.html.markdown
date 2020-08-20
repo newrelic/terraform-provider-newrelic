@@ -16,7 +16,6 @@ Before upgrading to version 2.0.0 or later, it is recommended to upgrade to the 
 
 ## Example Usage
 
-##### Type: `static` (default)
 ```hcl
 resource "newrelic_alert_muting_rule" "foo" {
 	name = "Example Muting Rule"
@@ -37,7 +36,6 @@ resource "newrelic_alert_muting_rule" "foo" {
 	}
 }
 ```
-See additional [examples](#additional-examples).
 
 ## Argument Reference
 
