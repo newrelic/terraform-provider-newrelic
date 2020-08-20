@@ -91,7 +91,7 @@ func flattenMutingRule(mutingRule *alerts.MutingRule, d *schema.ResourceData) er
 	d.Set("enabled", mutingRule.Enabled)
 	err := d.Set("condition", flattenMutingRuleConditionGroup(mutingRule.Condition, configuredCondition, ok))
 	if err != nil {
-
+		return nil
 	}
 
 	d.Set("description", mutingRule.Description)
