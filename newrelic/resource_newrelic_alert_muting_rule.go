@@ -148,10 +148,8 @@ func resourceNewRelicAlertMutingRuleUpdate(d *schema.ResourceData, meta interfac
 
 	_, err = client.Alerts.UpdateMutingRule(accountID, mutingRuleID, updateInput)
 	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
+		d.SetId("")
+		return nil
 	}
 
 	return resourceNewRelicAlertMutingRuleRead(d, meta)
@@ -170,7 +168,10 @@ func resourceNewRelicAlertMutingRuleDelete(d *schema.ResourceData, meta interfac
 	accountID := ids[0]
 	mutingRuleID := ids[1]
 
-	client.Alerts.DeleteMutingRule(accountID, mutingRuleID)
+	err = client.Alerts.DeleteMutingRule(accountID, mutingRuleID)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
