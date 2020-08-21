@@ -8,6 +8,7 @@ package newrelic
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -63,4 +64,17 @@ func avoidEmptyAccountID() {
 	if os.Getenv("NEW_RELIC_ACCOUNT_ID") == "" {
 		os.Setenv("NEW_RELIC_ACCOUNT_ID", "11111")
 	}
+}
+
+// retrieveIdsFromEnvOrSkip retrieves certain variables from the environment needed by the api access key tests.
+func retrieveIdsFromEnvOrSkip(t *testing.T, envKey string) (string, int) {
+	envValue := os.Getenv(envKey)
+	var id int
+	if envValue == "" {
+		t.Skip(fmt.Sprintf("Skipping test: config %s not set", envKey))
+	} else {
+		id, _ = strconv.Atoi(envValue)
+	}
+
+	return envValue, id
 }
