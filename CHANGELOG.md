@@ -1,5 +1,19 @@
+<a name="unreleased"></a>
+## [Unreleased]
+
+### Bug Fixes
+- **alert_channel:** avoid drift with config.auth_password
+- **alert_channel:** avoid config drift with sensitive values not returned by the API
+- **alerts:** ensure threshold_occurrences case fold comparison
+- **nrql_alert_condition:** fix drift with threshold_occurrences - store lowercase in terraform state
+### Documentation Updates
+- **alert_channel:** add note to import section regarding handling of sensitive data
+- **alert_muting_rule:** Added docs for alert muting rule.
+### Features
+- **alert_muting_rule:** Creating alert muting rule resource.
+- **newrelic_api_access_key:** Implement new resource: newrelic_api_access_key
 <a name="v2.5.1"></a>
-## [v2.5.1] - 2020-08-14
+## [v2.5.1] - 2020-08-17
 ### Bug Fixes
 - cannot create resource "newrelic_infra_alert_condition" of type "infra_host_not_reporting"
 - **infra:** avoid nil pointer reference
