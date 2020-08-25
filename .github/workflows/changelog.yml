@@ -27,6 +27,21 @@ jobs:
           make changelog
           make spell-check-fix
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: CHANGELOG.md
+          path: CHANGELOG.md
+
+      - name: Checkout the pull request base
+        uses: actions/checkout@v2
+        with:
+          ref: master
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: CHANGELOG.md
+          path: .
+
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v3
