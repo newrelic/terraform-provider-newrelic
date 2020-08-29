@@ -55,8 +55,8 @@ resource "newrelic_alert_condition" "foo" {
 The following arguments are supported:
 
 * `name` - (Required) The name of the entity in New Relic One.  The first entity matching this name for the given search parameters will be returned.
-* `type` - (Optional) The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, and WORRKLOAD.
-* `domain` - (Optional) The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, and SYNTH.
+* `type` - (Optional) The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, and WORKLOAD.
+* `domain` - (Optional) The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, SYNTH, and VIZ. If not specified, all domains are searched.
 * `tags` - (Optional) A tag applied to the entity.
 
 ## Attributes Reference
