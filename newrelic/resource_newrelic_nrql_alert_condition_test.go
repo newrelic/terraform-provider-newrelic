@@ -476,7 +476,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 		time_function = "any"
 	}
 
-	violation_time_limit_seconds = 3600
+	violation_time_limit_seconds = 86400
 
 	%[5]s
 }

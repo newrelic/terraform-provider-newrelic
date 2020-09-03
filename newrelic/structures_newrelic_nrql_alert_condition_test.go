@@ -62,14 +62,14 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 			ExpectReason: "",
 			Expanded:     expectedNrql,
 		},
-		"basline condition, requires baseline_direction attr": {
+		"baseline condition, requires baseline_direction attr": {
 			Data: map[string]interface{}{
 				"type": "baseline",
 			},
 			ExpectErr:    true,
 			ExpectReason: "attribute `baseline_direction` is required for nrql alert conditions of type `baseline`",
 		},
-		"basline condition, has baseline_direction attr": {
+		"baseline condition, has baseline_direction attr": {
 			Data: map[string]interface{}{
 				"nrql":               []interface{}{nrql},
 				"type":               "baseline",
