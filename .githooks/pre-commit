@@ -1,6 +1,0 @@
-#!/bin/sh
-echo
-echo "Running pre-commit checks..."
-echo
-
-make lint
