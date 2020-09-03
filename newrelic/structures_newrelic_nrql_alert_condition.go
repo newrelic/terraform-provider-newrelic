@@ -36,10 +36,10 @@ var (
 	violationTimeLimitMapNewOld = map[alerts.NrqlConditionViolationTimeLimit]int{
 		alerts.NrqlConditionViolationTimeLimits.OneHour:         3600,
 		alerts.NrqlConditionViolationTimeLimits.TwoHours:        7200,
-		alerts.NrqlConditionViolationTimeLimits.FourHours:       1440,
-		alerts.NrqlConditionViolationTimeLimits.EightHours:      2880,
-		alerts.NrqlConditionViolationTimeLimits.TwelveHours:     4320,
-		alerts.NrqlConditionViolationTimeLimits.TwentyFourHours: 8640,
+		alerts.NrqlConditionViolationTimeLimits.FourHours:       14400,
+		alerts.NrqlConditionViolationTimeLimits.EightHours:      28800,
+		alerts.NrqlConditionViolationTimeLimits.TwelveHours:     43200,
+		alerts.NrqlConditionViolationTimeLimits.TwentyFourHours: 86400,
 	}
 )
 
