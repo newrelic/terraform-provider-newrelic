@@ -1,8 +1,7 @@
 #!/bin/sh
 
 echo
-echo "Checking commit message..."
+echo "Checking commit message format..."
 echo
 
 make lint-commit COMMIT_MSG_FILE=$1
-
