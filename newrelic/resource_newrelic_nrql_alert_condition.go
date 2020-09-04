@@ -12,7 +12,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
-// termSchema returns the schema used for a critial or warning term priority.
+// termSchema returns the schema used for a critical or warning term priority.
 func termSchema() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -279,6 +279,37 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
+			},
+			"open_violation_on_expiration": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to create a new violation to capture that the signal expired.",
+			},
+			"close_violations_on_expiration": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to close all open violations when the signal expires.",
+			},
+			"expiration_duration": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The amount of time (in seconds) to wait before considering the signal expired.",
+			},
+			"fill_option": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Which strategy to use when filling gaps in the signal. If static, the 'fill value' will be used for filling gaps in the signal. Valid values are: 'NONE', 'LAST_VALUE', or 'STATIC' (case insensitive).",
+				ValidateFunc: validation.StringInSlice([]string{"NONE", "LAST_VALUE", "STATIC"}, true),
+				StateFunc: func(v interface{}) string {
+					// Always store lowercase to prevent state drift
+					return strings.ToLower(v.(string))
+				},
+			},
+			"fill_value": {
+				Type:         schema.TypeFloat,
+				Optional:     true,
+				Description:  "If using the 'static' fill option, this value will be used for filling gaps in the signal.",
+				RequiredWith: []string{"fill_option"},
 			},
 			// Baseline ONLY
 			"baseline_direction": {
