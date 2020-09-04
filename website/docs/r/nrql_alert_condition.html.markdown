@@ -32,6 +32,12 @@ resource "newrelic_nrql_alert_condition" "foo" {
   enabled              = true
   value_function       = "single_value"
   violation_time_limit = "one_hour"
+  fill_option          = "static"
+  fill_value           = 1.0
+
+  expiration_duration            = 120
+  open_violation_on_expiration   = true
+  close_violations_on_expiration = true
 
   nrql {
     query             = "SELECT average(duration) FROM Transaction where appName = 'Your App'"
@@ -77,6 +83,11 @@ The following arguments are supported:
 - `ignore_overlap` - (Optional) **DEPRECATED:** Use `open_violation_on_group_overlap` instead, but use the inverse value of your boolean - e.g. if `ignore_overlap = false`, use `open_violation_on_group_overlap = true`. This argument sets whether to trigger a violation when groups overlap. If set to `true` overlapping groups will not trigger a violation. This argument is only applicable in `outlier` conditions.
 - `violation_time_limit` - (Optional, however one of `violation_time_limit`, or `violation_time_limit_seconds` is Required) Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are `ONE_HOUR`, `TWO_HOURS`, `FOUR_HOURS`, `EIGHT_HOURS`, `TWELVE_HOURS`, `TWENTY_FOUR_HOURS` (case insensitive).
 - `violation_time_limit_seconds` - (Optional, however one of `violation_time_limit`, or `violation_time_limit_seconds` is Required) **DEPRECATED:** Use `violation_time_limit` instead. Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are `3600`, `7200`, `14400`, `28800`, `43200`, and `86400`.
+- `fill_option` - (Optional) - Which strategy to use when filling gaps in the signal. Possible values are `none`, `last_value` or `static`. If `static`, the `fill_value` field will be used for filling gaps in the signal. 
+- `fill_value` - (Optional, required when `fill_option` is `static`) This value will be used for filling gaps in the signal.
+- `expiration_duration` - (Optional) - The amount of time (in seconds) to wait before considering the signal expired.
+- `open_violation_on_expiration` - (Optional) - Whether to create a new violation to capture that the signal expired.
+- `close_violations_on_expiration` - (Optional) - Whether to close all open violations when the signal expires.
 
 ## NRQL
 

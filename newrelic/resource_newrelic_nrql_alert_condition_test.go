@@ -23,14 +23,14 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "20", "120", ""),
+				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "20", "120", "sTaTiC", "0", ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "5", "180", ""),
+				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "5", "180", "last_value", "null", ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
@@ -68,6 +68,8 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 					3,
 					3600,
 					conditionalAttr,
+					"none",
+					"null",
 					facetClause,
 				),
 			},
@@ -79,6 +81,8 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 					3,
 					3600,
 					conditionalAttr,
+					"none",
+					"null",
 					facetClause,
 				),
 				Check: testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
@@ -105,6 +109,8 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphBaseline(t *testing.T) {
 					conditionType,
 					1,
 					60,
+					"last_value",
+					"null",
 					conditionalAttr,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -118,6 +124,8 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphBaseline(t *testing.T) {
 					conditionType,
 					20,
 					30,
+					"static",
+					"0",
 					conditionalAttr,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -131,6 +139,8 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphBaseline(t *testing.T) {
 					conditionType,
 					5,
 					3600,
+					"last_value",
+					"null",
 					conditionalAttr,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -144,6 +154,8 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphBaseline(t *testing.T) {
 					conditionType,
 					20,
 					1800,
+					"static",
+					"0",
 					conditionalAttr,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -187,6 +199,8 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 					conditionType,
 					5,
 					60,
+					"last_value",
+					"null",
 					conditionalAttr,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -200,6 +214,8 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 					conditionType,
 					20,
 					30,
+					"static",
+					"0",
 					conditionalAttr,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -213,6 +229,8 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 					conditionType,
 					5,
 					3600,
+					"last_value",
+					"null",
 					conditionalAttr,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -226,6 +244,8 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 					conditionType,
 					20,
 					1800,
+					"static",
+					"0",
 					conditionalAttr,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -271,6 +291,8 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
 					3,
 					3600,
 					conditionalAttr,
+					"none",
+					"null",
 					facetClause,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -285,6 +307,8 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
 					3,
 					1800,
 					conditionalAttr,
+					"none",
+					"null",
 					facetClause,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -391,6 +415,8 @@ func testAccNewRelicNrqlAlertConditionConfigBasic(
 	name string,
 	evaluationOffset string,
 	duration string,
+	fillOption string,
+	fillValue string,
 	conditionalAttrs string,
 ) string {
 	return fmt.Sprintf(`
@@ -401,10 +427,15 @@ resource "newrelic_alert_policy" "foo" {
 resource "newrelic_nrql_alert_condition" "foo" {
 	policy_id = newrelic_alert_policy.foo.id
 
-  name                 = "tf-test-%[1]s"
-  runbook_url          = "https://foo.example.com"
-  enabled              = false
-  violation_time_limit = "EIGHT_HOURS"
+  name                           = "tf-test-%[1]s"
+  runbook_url                    = "https://foo.example.com"
+  enabled                        = false
+  violation_time_limit           = "EIGHT_HOURS"
+  fill_option                    = "%[4]s"
+  fill_value                     = %[5]s
+  close_violations_on_expiration = true
+  open_violation_on_expiration   = true
+  expiration_duration            = 120
 
 	nrql {
     query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
@@ -427,9 +458,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 	value_function  = "single_value"
 
-	%[4]s
+	%[6]s
 }
-`, name, evaluationOffset, duration, conditionalAttrs)
+`, name, evaluationOffset, duration, fillOption, fillValue, conditionalAttrs)
 }
 
 // Uses deprecated attributes for test case
@@ -438,6 +469,8 @@ func testAccNewRelicNrqlAlertConditionNerdGraphConfigDeprecated(
 	conditionType string,
 	nrqlEvalOffset int,
 	termDuration int,
+	fillOption string,
+	fillValue string,
 	conditionalAttr string,
 ) string {
 	return fmt.Sprintf(`
@@ -446,14 +479,18 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-	account_id  = 2520528
 	policy_id   = newrelic_alert_policy.foo.id
 
-	name        = "tf-test-%[1]s"
-	type        = "%[2]s"
-	runbook_url = "https://foo.example.com"
-	enabled     = false
-	description = "test description"
+	name                           = "tf-test-%[1]s"
+	type                           = "%[2]s"
+	runbook_url                    = "https://foo.example.com"
+	enabled                        = false
+	description                    = "test description"
+    fill_option                    = "%[5]s"
+	fill_value                     = %[6]s
+	close_violations_on_expiration = true
+	open_violation_on_expiration   = true
+	expiration_duration            = 120
 
 	nrql {
 		query       = "SELECT uniqueCount(hostname) FROM ComputeSample"
@@ -478,9 +515,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 	violation_time_limit_seconds = 86400
 
-	%[5]s
+	%[7]s
 }
-`, name, conditionType, nrqlEvalOffset, termDuration, conditionalAttr)
+`, name, conditionType, nrqlEvalOffset, termDuration, fillOption, fillValue, conditionalAttr)
 }
 
 // Uses new attributes for test case
@@ -489,6 +526,8 @@ func testAccNewRelicNrqlAlertConditionNerdGraphConfig(
 	conditionType string,
 	nrqlEvalOffset int,
 	termDuration int,
+	fillOption string,
+	fillValue string,
 	conditionalAttr string,
 ) string {
 	return fmt.Sprintf(`
@@ -497,15 +536,19 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-	account_id  = 2520528
 	policy_id   = newrelic_alert_policy.foo.id
 
-	name                 = "tf-test-%[1]s"
-	type                 = "%[2]s"
-	runbook_url          = "https://foo.example.com"
-	enabled              = false
-	description          = "test description"
-	violation_time_limit = "one_hour"
+	name                           = "tf-test-%[1]s"
+	type                           = "%[2]s"
+	runbook_url                    = "https://foo.example.com"
+	enabled                        = false
+	description                    = "test description"
+	violation_time_limit           = "one_hour"
+	fill_option                    = "%[5]s"
+	fill_value                     = %[6]s
+	close_violations_on_expiration = true
+	open_violation_on_expiration   = true
+	expiration_duration            = 120
 
 	nrql {
 		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
@@ -527,9 +570,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	}
 
 	# Will be baseline_direction or value_function depending on condition type
-	%[5]s
+	%[7]s
 }
-`, name, conditionType, nrqlEvalOffset, termDuration, conditionalAttr)
+`, name, conditionType, nrqlEvalOffset, termDuration, fillOption, fillValue, conditionalAttr)
 }
 
 func testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
@@ -538,6 +581,8 @@ func testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
 	nrqlEvalOffset int,
 	termDuration int,
 	conditionalAttr string,
+	fillOption string,
+	fillValue string,
 	facetClause string,
 ) string {
 	return fmt.Sprintf(`
@@ -546,7 +591,6 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-	account_id  = 2520528
 	policy_id   = newrelic_alert_policy.foo.id
 
 	name                 = "tf-test-%[1]s"
@@ -555,9 +599,11 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	enabled              = false
 	description          = "test description"
 	violation_time_limit = "one_hour"
+	fill_option          = "%[6]s"
+	fill_value           = %[7]s
 
 	nrql {
-		query             = "SELECT uniqueCount(hostname) FROM ComputeSample %[6]s"
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample %[8]s"
 		evaluation_offset = %[3]d
 	}
 
@@ -571,5 +617,5 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	# Will be one of baseline_direction, value_function, expected_groups, or open_violation_on_group_overlap depending on condition type
 	%[5]s
 }
-`, name, conditionType, nrqlEvalOffset, termDuration, conditionalAttr, facetClause)
+`, name, conditionType, nrqlEvalOffset, termDuration, conditionalAttr, fillOption, fillValue, facetClause)
 }
