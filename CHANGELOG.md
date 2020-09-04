@@ -1,3 +1,11 @@
+<a name="v2.7.0"></a>
+## [v2.7.0] - 2020-09-04
+### Documentation Updates
+- update changelog
+
+### Features
+- **nrql_alert_condition:** Added support for expiration (loss of signal) and extrapolation (gap filling) settings
+
 <a name="v2.6.1"></a>
 ## [v2.6.1] - 2020-09-03
 ### Bug Fixes
@@ -567,7 +575,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.6.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.0...HEAD
+[v2.7.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.6.1...v2.7.0
 [v2.6.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.6.0...v2.6.1
 [v2.6.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.5.1...v2.6.0
 [v2.5.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.5.0...v2.5.1
