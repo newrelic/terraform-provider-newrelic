@@ -90,6 +90,7 @@ func testAccPreCheck(t *testing.T) {
 
 func testAccCreateApplication(t *testing.T) {
 	app, err := newrelic.NewApplication(
+		newrelic.ConfigFromEnvironment(),
 		newrelic.ConfigAppName(testAccExpectedApplicationName),
 		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
 	)

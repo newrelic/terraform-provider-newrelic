@@ -68,8 +68,6 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 					3,
 					3600,
 					conditionalAttr,
-					"none",
-					"null",
 					facetClause,
 				),
 			},
@@ -81,8 +79,6 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 					3,
 					3600,
 					conditionalAttr,
-					"none",
-					"null",
 					facetClause,
 				),
 				Check: testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
@@ -291,8 +287,6 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
 					3,
 					3600,
 					conditionalAttr,
-					"none",
-					"null",
 					facetClause,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -307,8 +301,6 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
 					3,
 					1800,
 					conditionalAttr,
-					"none",
-					"null",
 					facetClause,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -581,8 +573,6 @@ func testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
 	nrqlEvalOffset int,
 	termDuration int,
 	conditionalAttr string,
-	fillOption string,
-	fillValue string,
 	facetClause string,
 ) string {
 	return fmt.Sprintf(`
@@ -599,11 +589,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	enabled              = false
 	description          = "test description"
 	violation_time_limit = "one_hour"
-	fill_option          = "%[6]s"
-	fill_value           = %[7]s
 
 	nrql {
-		query             = "SELECT uniqueCount(hostname) FROM ComputeSample %[8]s"
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample %[6]s"
 		evaluation_offset = %[3]d
 	}
 
@@ -617,5 +605,5 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	# Will be one of baseline_direction, value_function, expected_groups, or open_violation_on_group_overlap depending on condition type
 	%[5]s
 }
-`, name, conditionType, nrqlEvalOffset, termDuration, conditionalAttr, fillOption, fillValue, facetClause)
+`, name, conditionType, nrqlEvalOffset, termDuration, conditionalAttr, facetClause)
 }
