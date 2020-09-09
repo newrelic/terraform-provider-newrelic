@@ -43,10 +43,10 @@ var (
 	}
 
 	// old:new
-	fillOptionMap = map[string]alerts.AlertsFillOption{
-		"none":       alerts.AlertsFillOptionTypes.NONE,
-		"last_value": alerts.AlertsFillOptionTypes.LAST_VALUE,
-		"static":     alerts.AlertsFillOptionTypes.STATIC,
+	fillOptionMap = map[string]*alerts.AlertsFillOption{
+		"none":       &alerts.AlertsFillOptionTypes.NONE,
+		"last_value": &alerts.AlertsFillOptionTypes.LAST_VALUE,
+		"static":     &alerts.AlertsFillOptionTypes.STATIC,
 	}
 
 	// new:old
@@ -344,10 +344,9 @@ func expandExpiration(d *schema.ResourceData) (*alerts.AlertsNrqlConditionExpira
 
 // NerdGraph
 func expandSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionSignal, error) {
-	var signal alerts.AlertsNrqlConditionSignal
-
-	mappedFillOption := fillOptionMap[strings.ToLower(d.Get("fill_option").(string))]
-	signal.FillOption = &mappedFillOption
+	signal := alerts.AlertsNrqlConditionSignal{
+		FillOption: fillOptionMap[strings.ToLower(d.Get("fill_option").(string))],
+	}
 
 	// Due to the way that nulls are handled as zeros in Terraform 0.11, add another check that a 0 fill_value
 	// can only be applied when the fill_option is static
