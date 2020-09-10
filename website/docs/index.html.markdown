@@ -46,43 +46,44 @@ resources compared to which endpoint is in use.
 
 ### Resources
 
-| Resource                                            | Endpoint  | Authentication        | Roles        |
-| --------------------------------------------------- | --------- | --------------------- | ------------ |
-| `newrelic_alert_channel`                            | RESTv2    | `api_key`             | Admin, Owner |
-| `newrelic_alert_condition`                          | RESTv2    | `api_key`             | Admin, Owner |
-| `newrelic_alert_policy`                             | NerdGraph | `api_key`             | Admin, Owner, Alerts manager |
-| `newrelic_alert_policy_channel`                     | RESTv2    | `api_key`             | Admin, Owner |
-| `newrelic_application_settings`                     | RESTv2    | `api_key`             | Admin, Owner |
-| `newrelic_dashboard`                                | RESTv2    | `admin_api_key`       | Admin, Owner |
-| `newrelic_entity_tags`                              | NerdGraph | `api_key`             | Admin, Owner |
-| `newrelic_events_to_metrics_rule`                   | NerdGraph | `api_key`             | Admin, Owner |
-| `newrelic_infra_alert_condition`                    | RESTv2    | `api_key`             | Admin, Owner |
-| `newrelic_insights_event`                           | RESTv2    | `insights_insert_key` | Admin, Owner, Insights manager |
-| `newrelic_nrql_alert_condition`                     | NerdGraph | `api_key`             | Admin, Owner, Alerts manager |
-| `newrelic_plugins_alert_condition`                  | RESTv2    | `api_key`             | Admin, Owner |
-| `newrelic_synthetics_alert_condition`               | RESTv2    | `admin_api_key`       | Admin, Owner |
-| `newrelic_synthetics_label`                         | RESTv2    | `admin_api_key`       | Admin, Owner |
-| `newrelic_synthetics_monitor`                       | RESTv2    | `admin_api_key`       | Admin, Owner |
-| `newrelic_synthetics_monitor_script`                | RESTv2    | `admin_api_key`       | Admin, Owner |
-| `newrelic_synthetics_multilocation_alert_condition` | RESTv2    | `admin_api_key`       | Admin, Owner |
-| `newrelic_synthetics_secure_credential`             | RESTv2    | `admin_api_key`       | Admin, Owner |
-| `newrelic_workload`                                 | NerdGraph | `api_key`             | Admin, Owner, Workloads manager |
+| Resource                                            | Endpoint                | Authentication        |
+| --------------------------------------------------- | ----------------------- | --------------------- |
+| `newrelic_alert_channel`                            | RESTv2                  | `api_key`             |
+| `newrelic_alert_condition`                          | RESTv2                  | `api_key`             |
+| `newrelic_alert_muting_rule`                        | NerdGraph               | `api_key`             |
+| `newrelic_alert_policy`                             | NerdGraph               | `api_key`             |
+| `newrelic_alert_policy_channel`                     | RESTv2                  | `api_key`             |
+| `newrelic_api_access_key`                           | NerdGraph               | `api_key`             |
+| `newrelic_application_settings`                     | RESTv2                  | `api_key`             |
+| `newrelic_dashboard`                                | RESTv2                  | `api_key`             |
+| `newrelic_entity_tags`                              | NerdGraph               | `api_key`             |
+| `newrelic_events_to_metrics_rule`                   | NerdGraph               | `api_key`             |
+| `newrelic_infra_alert_condition`                    | Infrastructure REST API | `admin_api_key`       |
+| `newrelic_insights_event`                           | Insights API            | `insights_insert_key` |
+| `newrelic_nrql_alert_condition`                     | NerdGraph               | `api_key`             |
+| `newrelic_plugins_alert_condition`                  | RESTv2                  | `api_key`             |
+| `newrelic_synthetics_alert_condition`               | RESTv2                  | `api_key`             |
+| `newrelic_synthetics_monitor`                       | Synthetics REST API     | `admin_api_key`       |
+| `newrelic_synthetics_monitor_script`                | Synthetics REST API     | `admin_api_key`       |
+| `newrelic_synthetics_multilocation_alert_condition` | RESTv2                  | `api_key`             |
+| `newrelic_synthetics_secure_credential`             | Synthetics REST API     | `admin_api_key`       |
+| `newrelic_workload`                                 | NerdGraph               | `api_key`             |
 
 
 ### Data Sources
 
-| Data Source                                    | Endpoint  | Authentication        | Roles        |
-| ---------------------------------------------- | --------- | --------------------- | ------------ |
-| `newrelic_account`                             | NerdGraph | `api_key`             | Admin, Owner, User |
-| `newrelic_alert_channel`                       | RESTv2    | `api_key`             | Admin, Owner |
-| `newrelic_alert_policy`                        | NerdGraph | `api_key`             | Admin, Owner, User |
-| `newrelic_application`                         | RESTv2    | `api_key`             | Admin, Owner |
-| `newrelic_entity`                              | NerdGraph | `api_key`             | Admin, Owner, User |
-| `newrelic_key_transaction`                     | RESTv2    | `api_key`             | Admin, Owner |
-| `newrelic_plugin`                              | RESTv2    | `admin_api_key`       | Admin, Owner |
-| `newrelic_plugin_component`                    | RESTv2    | `admin_api_key`       | Admin, Owner |
-| `newrelic_synthetics_monitor`                  | RESTv2    | `admin_api_key`       | Admin, Owner |
-| `newrelic_synthetics_secure_credential`        | RESTv2    | `admin_api_key`       | Admin, Owner |
+| Data Source                                    | Endpoint            | Authentication        |
+| ---------------------------------------------- | ------------------- | --------------------- |
+| `newrelic_account`                             | NerdGraph           | `api_key`             |
+| `newrelic_alert_channel`                       | RESTv2              | `api_key`             |
+| `newrelic_alert_policy`                        | NerdGraph           | `api_key`             |
+| `newrelic_application`                         | RESTv2              | `api_key`             |
+| `newrelic_entity`                              | NerdGraph           | `api_key`             |
+| `newrelic_key_transaction`                     | RESTv2              | `api_key`             |
+| `newrelic_plugin`                              | RESTv2              | `api_key`             |
+| `newrelic_plugin_component`                    | RESTv2              | `api_key`             |
+| `newrelic_synthetics_monitor`                  | Synthetics REST API | `admin_api_key`       |
+| `newrelic_synthetics_secure_credential`        | Synthetics REST API | `admin_api_key`       |
 
 
 ## Example Usage
