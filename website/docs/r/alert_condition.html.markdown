@@ -28,7 +28,7 @@ resource "newrelic_alert_condition" "foo" {
 
   name        = "foo"
   type        = "apm_app_metric"
-  entities    = [data.newrelic_application.app.application_id]
+  entities    = [data.newrelic_entity.app.application_id]
   metric      = "apdex"
   runbook_url = "https://www.example.com"
   condition_scope = "application"
