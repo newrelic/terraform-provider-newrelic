@@ -54,9 +54,9 @@ $ terraform plan
 
 This command will output some information into your console regarding Terraform's execution plan. Running `terraform plan` is essentially a "dry run" and will not provision anything. We'll get to provisioning in the next steps.
 
-## Add an Alert Condition to an Alert Policy
+## Add an alert condition to an alert policy
 
-We started with a minimal configuration with an Alert Policy, but it doesn't contain any Alert Conditions. Let's add an Alert Condition to that policy which we'll associate the condition to an application.
+We started with a minimal configuration with an Alert Policy, but it doesn't contain any alert conditions. Let's add a NRQL alert condition to that policy which we'll associate the condition to an application.
 
 First, let's add a data source by adding a `data` block. This will store your application's information for Terraform to use. Terraform data sources operate like a `GET` request - they fetch the data of the resource that matches the criteria you provide, in the example below it's a New Relic application entity named "my-app".
 
@@ -80,7 +80,7 @@ resource "newrelic_alert_policy" "alert_policy_name" {
 -> Terraform's data sources are read-only views into pre-existing data, or they compute new values on the fly within Terraform itself. More information on data sources can be found [here][terraform_data_sources].
 
 
-Now let's add the Alert Condition so we can see an alert when a particular scenario occurs.
+Now let's add the alert condition so we can see an alert when a particular scenario occurs.
 
 ```hcl
 provider "newrelic" {}
@@ -95,34 +95,38 @@ resource "newrelic_alert_policy" "alert_policy_name" {
   name = "My Alert Policy Name"
 }
 
-# Alert Condition
-resource "newrelic_alert_condition" "alert_condition_name" {
-  policy_id = newrelic_alert_policy.alert_policy_name.id
+# NRQL alert condition
+resource "newrelic_nrql_alert_condition" "foo" {
+  policy_id            = newrelic_alert_policy.alert_policy_name.id
+  type                 = "static"
+  name                 = "foo"
+  description          = "Alert when transactions are taking too long"
+  runbook_url          = "https://www.example.com"
+  enabled              = true
+  value_function       = "single_value"
+  violation_time_limit = "one_hour"
 
-  name            = "My Alert Condition Name"
-  type            = "apm_app_metric"
-  entities        = [data.newrelic_entity.app_name.application_id]
-  metric          = "apdex"
-  runbook_url     = "https://www.example.com"
-  condition_scope = "application"
+  nrql {
+    query             = "SELECT average(duration) FROM Transaction where appName = '${data.newrelic_entity.app_name.name}'"
+    evaluation_offset = 3
+  }
 
-  term {
-    duration      = 5
-    operator      = "below"
-    priority      = "critical"
-    threshold     = "0.75"
-    time_function = "all"
+  critical {
+    operator              = "above"
+    threshold             = 5.5
+    threshold_duration    = 300
+    threshold_occurrences = "ALL"
   }
 }
 ```
 
-This alert condition will be triggered when the [Apdex score](https://docs.newrelic.com/docs/apm/new-relic-apm/apdex/apdex-measure-user-satisfaction) of your application falls below the threshold of `0.75` for 5 minutes. This alert is considered `critical` in priority based on the configuration.
+This alert condition will be triggered when the average response duration of your application rises above the threshold of `5.5` for 5 minutes. This alert is considered `critical` in priority based on the configuration.
 
 But how will you actually be alerted if this scenario occurs? To control where to send alerts, we'll need to configure a Notification Channel for the alert.
 
 ## Add a Notification Channel
 
-New Relic alerts are great, but they're even better when combined with good notifications. To wire up a notification to your previously configured Alert Condition and Alert Policy, add the following to your configuration file.
+New Relic alerts are great, but they're even better when combined with good notifications. To wire up a notification to your previously configured alert condition and alert policy, add the following to your configuration file.
 
 ```hcl
 # Notification channel
@@ -199,7 +203,7 @@ resource.
 
 ## Apply Your Terraform Configuration
 
-To summarize, so far we've configured an Alert Policy that contains an Alert Condition that is associated with a specific application, but we haven't actually provisioned these resources in our New Relic account. Let's do that now.
+To summarize, so far we've configured an alert policy that contains an alert condition that is associated with a specific application, but we haven't actually provisioned these resources in our New Relic account. Let's do that now.
 
 To apply your configuration and provision these resources in your New Relic account, run the following command.
 
