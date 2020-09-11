@@ -61,12 +61,6 @@ jobs:
           labels: |
             report
             automated pr
-          assignees: ""
-          reviewers: ""
-          team-reviewers: |
-            developer-toolkit
-          milestone: 0
-          draft: false
 
       - name: Check output
         run: |
