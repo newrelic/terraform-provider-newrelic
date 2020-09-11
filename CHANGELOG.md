@@ -1,3 +1,14 @@
+<a name="v2.7.1"></a>
+## [v2.7.1] - 2020-09-11
+### Bug Fixes
+- **nrql_alert_condition:** Fixed an issue with extrapolation (gap filling) settings
+
+### Documentation Updates
+- fix references to newrelic_entity data sources
+- update authentication table
+- replace uses of APM conditions with NRQL conditions
+- update changelog
+
 <a name="v2.7.0"></a>
 ## [v2.7.0] - 2020-09-04
 ### Documentation Updates
@@ -575,7 +586,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.1...HEAD
+[v2.7.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.0...v2.7.1
 [v2.7.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.6.1...v2.7.0
 [v2.6.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.6.0...v2.6.1
 [v2.6.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.5.1...v2.6.0
