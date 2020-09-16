@@ -3,6 +3,7 @@
 package newrelic
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
@@ -394,8 +395,31 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		&nrqlConditionOutlier,
 	}
 
-	for _, condition := range conditions {
+	// Use the API object above to construct a "user-configured" critical term.
+	// This ensures that in cases where the user has one configured, but there
+	// are two present in the API, we avoid crashing.
+	// https://github.com/newrelic/terraform-provider-newrelic/issues/882
+	term := nrqlCondition.Terms[0]
+	testingTerms := make([]map[string]interface{}, 0)
+	crit := map[string]interface{}{
+		"operator": strings.ToLower(string(term.Operator)),
+		// This is a critical term, so the priority is inferred.
+		// "priority":              strings.ToLower(string(term.Priority)),
+		"threshold":             term.Threshold,
+		"threshold_duration":    term.ThresholdDuration,
+		"threshold_occurrences": strings.ToLower(string(term.ThresholdOccurrences)),
+	}
+	testingTerms = append(testingTerms, crit)
+
+	for i, condition := range conditions {
 		d := r.TestResourceData()
+
+		// Configure the critical testingTerms for one of the conditions.
+		if i == 0 {
+			err := d.Set("critical", testingTerms)
+			require.NoError(t, err)
+		}
+
 		err := flattenNrqlAlertCondition(nr.TestAccountID, condition, d)
 		require.NoError(t, err)
 
