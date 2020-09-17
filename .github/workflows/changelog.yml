@@ -46,6 +46,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
+          base: master
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "docs: update changelog"
           committer: GitHub <noreply@github.com>
@@ -61,12 +62,6 @@ jobs:
           labels: |
             report
             automated pr
-          assignees: ""
-          reviewers: ""
-          team-reviewers: |
-            developer-toolkit
-          milestone: 0
-          draft: false
 
       - name: Check output
         run: |
