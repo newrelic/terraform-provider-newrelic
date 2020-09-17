@@ -530,16 +530,24 @@ func flattenNrqlTerms(terms []alerts.NrqlConditionTerm, configTerms []interface{
 			"threshold": term.Threshold,
 		}
 
-		setDuration := configuredTerms[i]["duration"]
-		if setDuration != nil && setDuration.(int) > 0 {
-			dst["duration"] = term.ThresholdDuration / 60 // convert to minutes for old way
+		if i < len(configuredTerms) {
+			setDuration := configuredTerms[i]["duration"]
+			if setDuration != nil && setDuration.(int) > 0 {
+				dst["duration"] = term.ThresholdDuration / 60 // convert to minutes for old way
+			} else {
+				dst["threshold_duration"] = term.ThresholdDuration
+			}
 		} else {
 			dst["threshold_duration"] = term.ThresholdDuration
 		}
 
-		setTimeFunction := configuredTerms[i]["time_function"]
-		if setTimeFunction != nil && setTimeFunction.(string) != "" {
-			dst["time_function"] = timeFunctionMapNewOld[term.ThresholdOccurrences]
+		if i < len(configuredTerms) {
+			setTimeFunction := configuredTerms[i]["time_function"]
+			if setTimeFunction != nil && setTimeFunction.(string) != "" {
+				dst["time_function"] = timeFunctionMapNewOld[term.ThresholdOccurrences]
+			} else {
+				dst["threshold_occurrences"] = strings.ToLower(string(term.ThresholdOccurrences))
+			}
 		} else {
 			dst["threshold_occurrences"] = strings.ToLower(string(term.ThresholdOccurrences))
 		}
