@@ -202,16 +202,6 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 	// required
 	threshold := term["threshold"].(float64)
 
-	if conditionType == "baseline" {
-		if duration < 120 || duration > 3600 {
-			return nil, fmt.Errorf("for baseline conditions duration must be in range %v, got %v", "[2, 60]", duration)
-		}
-
-		if threshold < 1 || threshold > 1000 {
-			return nil, fmt.Errorf("for baseline conditions threshold must be in range %v, got %v", "[1, 1000]", threshold)
-		}
-	}
-
 	thresholdOccurrences, err := expandNrqlThresholdOccurrences(term)
 	if err != nil {
 		return nil, err

@@ -4,6 +4,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -82,6 +83,73 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 					facetClause,
 				),
 				Check: testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicNrqlAlertCondition_NerdGraphThresholdDurationValidationErrors(t *testing.T) {
+	rNameBaseline := acctest.RandString(5)
+	rNameOutlier := acctest.RandString(5)
+	conditionalAttrBaseline := `baseline_direction = "lower_only"`
+	conditionalAttrOutlier := `expected_groups = 2
+	open_violation_on_group_overlap = true`
+	facetClause := `FACET host`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Baseline condition invalid `threshold_duration`
+			{
+				Config: testAccNewRelicNrqlAlertConditionNerdGraphConfig(
+					rNameBaseline,
+					"baseline",
+					20,
+					7200, // outside of accepted range [120, 3600] to test error handling
+					"static",
+					"0",
+					conditionalAttrBaseline,
+				),
+				ExpectError: regexp.MustCompile("Validation Error"),
+			},
+			// Test: Baseline condition invalid `threshold_duration`
+			{
+				Config: testAccNewRelicNrqlAlertConditionNerdGraphConfig(
+					rNameBaseline,
+					"baseline",
+					20,
+					60, // outside of accepted range [120, 3600] to test error handling
+					"static",
+					"0",
+					conditionalAttrBaseline,
+				),
+				ExpectError: regexp.MustCompile("Validation Error"),
+			},
+			// Test: Outlier condition invalid `threshold_duration`
+			{
+				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
+					rNameOutlier,
+					"outlier",
+					3,
+					7200, // outside of accepted range [120, 3600] to test error handling
+					conditionalAttrOutlier,
+					facetClause,
+				),
+				ExpectError: regexp.MustCompile("Validation Error"),
+			},
+			// Test: Outlier condition invalid `threshold_duration`
+			{
+				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
+					rNameOutlier,
+					"outlier",
+					3,
+					60, // outside of accepted range [120, 3600] to test error handling
+					conditionalAttrOutlier,
+					facetClause,
+				),
+				ExpectError: regexp.MustCompile("Validation Error"),
 			},
 		},
 	})
