@@ -72,17 +72,20 @@ func termSchema() *schema.Resource {
 				Description: "The duration of time, in seconds, that the threshold must violate for in order to create a violation. Value must be a multiple of 60 and within 120-3600 seconds for baseline conditions and 120-7200 seconds for static conditions.",
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					v := val.(int)
+					minVal := 60
+					maxVal := 7200
 
 					// Value must be a factor of 60.
 					if v%60 != 0 {
-						errs = append(errs, fmt.Errorf("%q must be a factor of 60, got: %d", key, v))
+						errs = append(errs, fmt.Errorf("%q must be a factor of %d, got: %d", key, minVal, v))
 					}
 
 					// This validation is a top-level validation check.
+					// Static conditions must be within range [60, 7200].
 					// Baseline conditions must be within range [120, 3600].
-					// Baseline condition validation lives in the "expand" functions.
-					if v < 120 || v > 7200 {
-						errs = append(errs, fmt.Errorf("%q must be between 120 and 7200 inclusive, got: %d", key, v))
+					// Outlier conditions must be within range [120, 3600].
+					if v < minVal || v > maxVal {
+						errs = append(errs, fmt.Errorf("%q must be between %d and %d inclusive, got: %d", key, minVal, maxVal, v))
 					}
 
 					return
