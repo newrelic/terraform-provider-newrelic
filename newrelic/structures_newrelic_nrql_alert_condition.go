@@ -202,16 +202,6 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 	// required
 	threshold := term["threshold"].(float64)
 
-	if conditionType == "baseline" {
-		if duration < 120 || duration > 3600 {
-			return nil, fmt.Errorf("for baseline conditions duration must be in range %v, got %v", "[2, 60]", duration)
-		}
-
-		if threshold < 1 || threshold > 1000 {
-			return nil, fmt.Errorf("for baseline conditions threshold must be in range %v, got %v", "[1, 1000]", threshold)
-		}
-	}
-
 	thresholdOccurrences, err := expandNrqlThresholdOccurrences(term)
 	if err != nil {
 		return nil, err
@@ -530,16 +520,24 @@ func flattenNrqlTerms(terms []alerts.NrqlConditionTerm, configTerms []interface{
 			"threshold": term.Threshold,
 		}
 
-		setDuration := configuredTerms[i]["duration"]
-		if setDuration != nil && setDuration.(int) > 0 {
-			dst["duration"] = term.ThresholdDuration / 60 // convert to minutes for old way
+		if i < len(configuredTerms) {
+			setDuration := configuredTerms[i]["duration"]
+			if setDuration != nil && setDuration.(int) > 0 {
+				dst["duration"] = term.ThresholdDuration / 60 // convert to minutes for old way
+			} else {
+				dst["threshold_duration"] = term.ThresholdDuration
+			}
 		} else {
 			dst["threshold_duration"] = term.ThresholdDuration
 		}
 
-		setTimeFunction := configuredTerms[i]["time_function"]
-		if setTimeFunction != nil && setTimeFunction.(string) != "" {
-			dst["time_function"] = timeFunctionMapNewOld[term.ThresholdOccurrences]
+		if i < len(configuredTerms) {
+			setTimeFunction := configuredTerms[i]["time_function"]
+			if setTimeFunction != nil && setTimeFunction.(string) != "" {
+				dst["time_function"] = timeFunctionMapNewOld[term.ThresholdOccurrences]
+			} else {
+				dst["threshold_occurrences"] = strings.ToLower(string(term.ThresholdOccurrences))
+			}
 		} else {
 			dst["threshold_occurrences"] = strings.ToLower(string(term.ThresholdOccurrences))
 		}
