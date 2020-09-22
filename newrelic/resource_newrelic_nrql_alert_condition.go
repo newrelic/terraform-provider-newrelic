@@ -12,7 +12,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
-// termSchema returns the schema used for a critial or warning term priority.
+// termSchema returns the schema used for a critical or warning term priority.
 func termSchema() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -72,17 +72,20 @@ func termSchema() *schema.Resource {
 				Description: "The duration of time, in seconds, that the threshold must violate for in order to create a violation. Value must be a multiple of 60 and within 120-3600 seconds for baseline conditions and 120-7200 seconds for static conditions.",
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					v := val.(int)
+					minVal := 60
+					maxVal := 7200
 
 					// Value must be a factor of 60.
 					if v%60 != 0 {
-						errs = append(errs, fmt.Errorf("%q must be a factor of 60, got: %d", key, v))
+						errs = append(errs, fmt.Errorf("%q must be a factor of %d, got: %d", key, minVal, v))
 					}
 
 					// This validation is a top-level validation check.
+					// Static conditions must be within range [60, 7200].
 					// Baseline conditions must be within range [120, 3600].
-					// Baseline condition validation lives in the "expand" functions.
-					if v < 120 || v > 7200 {
-						errs = append(errs, fmt.Errorf("%q must be between 120 and 7200 inclusive, got: %d", key, v))
+					// Outlier conditions must be within range [120, 3600].
+					if v < minVal || v > maxVal {
+						errs = append(errs, fmt.Errorf("%q must be between %d and %d inclusive, got: %d", key, minVal, maxVal, v))
 					}
 
 					return
@@ -279,6 +282,41 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
+			},
+			"open_violation_on_expiration": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to create a new violation to capture that the signal expired.",
+			},
+			"close_violations_on_expiration": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to close all open violations when the signal expires.",
+			},
+			"expiration_duration": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The amount of time (in seconds) to wait before considering the signal expired.",
+			},
+			"fill_option": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Which strategy to use when filling gaps in the signal. If static, the 'fill value' will be used for filling gaps in the signal. Valid values are: 'NONE', 'LAST_VALUE', or 'STATIC' (case insensitive).",
+				ValidateFunc: validation.StringInSlice([]string{"NONE", "LAST_VALUE", "STATIC"}, true),
+				StateFunc: func(v interface{}) string {
+					// Always store lowercase to prevent state drift
+					return strings.ToLower(v.(string))
+				},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// Assume that empty string and 'none' are the same for diff purposes due to API defaults
+					return (old == "" || old == "none") == (new == "" || new == "none")
+				},
+			},
+			"fill_value": {
+				Type:         schema.TypeFloat,
+				Optional:     true,
+				Description:  "If using the 'static' fill option, this value will be used for filling gaps in the signal.",
+				RequiredWith: []string{"fill_option"},
 			},
 			// Baseline ONLY
 			"baseline_direction": {
