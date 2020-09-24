@@ -1,3 +1,13 @@
+<a name="v2.7.5"></a>
+## [v2.7.5] - 2020-09-23
+### Bug Fixes
+- **entity:** add VIZ domain
+
+### Documentation Updates
+- update changelog
+- **nrql_condition:** add clarity around choosing between new and old/deprecated attributes
+- **nrql_condition:** clarify when value_function attr is 'required' vs 'not required'
+
 <a name="v2.7.4"></a>
 ## [v2.7.4] - 2020-09-18
 ### Bug Fixes
@@ -601,7 +611,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.4...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.5...HEAD
+[v2.7.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.4...v2.7.5
 [v2.7.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.3...v2.7.4
 [v2.7.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.2...v2.7.3
 [v2.7.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.1...v2.7.2
