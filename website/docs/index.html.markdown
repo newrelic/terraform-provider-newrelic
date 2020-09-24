@@ -58,7 +58,7 @@ resources compared to which endpoint is in use.
 | `newrelic_dashboard`                                | RESTv2                  | `api_key`             |
 | `newrelic_entity_tags`                              | NerdGraph               | `api_key`             |
 | `newrelic_events_to_metrics_rule`                   | NerdGraph               | `api_key`             |
-| `newrelic_infra_alert_condition`                    | Infrastructure REST API | `admin_api_key`       |
+| `newrelic_infra_alert_condition`                    | Infrastructure REST API | `api_key`             |
 | `newrelic_insights_event`                           | Insights API            | `insights_insert_key` |
 | `newrelic_nrql_alert_condition`                     | NerdGraph               | `api_key`             |
 | `newrelic_plugins_alert_condition`                  | RESTv2                  | `api_key`             |
