@@ -153,184 +153,18 @@ func resourceNewRelicDashboard() *schema.Resource {
 				},
 			},
 			"widget": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    300,
 				Description: "A nested block that describes a visualization. Up to 300 widget blocks are allowed in a dashboard definition.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"widget_id": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The ID of the widget.",
-						},
-						"title": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "A title for the widget.",
-						},
-						"visualization": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringInSlice(validWidgetVisualizationValues, false),
-							Description:  "How the widget visualizes data.",
-						},
-						"width": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Default:     1,
-							Description: "Width of the widget. Valid values are 1 to 3 inclusive. Defaults to 1.",
-						},
-						"height": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Default:     1,
-							Description: "Height of the widget. Valid values are 1 to 3 inclusive. Defaults to 1.",
-						},
-						"row": {
-							Type:        schema.TypeInt,
-							Required:    true,
-							Description: "Row position of widget from top left, starting at 1.",
-						},
-						"column": {
-							Type:        schema.TypeInt,
-							Required:    true,
-							Description: "Column position of widget from top left, starting at 1.",
-						},
-						"notes": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Description of the widget.",
-						},
-						"nrql": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Valid NRQL query string.",
-						},
-						"source": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The markdown source to be rendered in the widget.",
-						},
-						"threshold_red": {
-							Type:         schema.TypeFloat,
-							Optional:     true,
-							ValidateFunc: float64AtLeast(0),
-							Description:  "Threshold above which the displayed value will be styled with a red color.",
-						},
-						"threshold_yellow": {
-							Type:         schema.TypeFloat,
-							Optional:     true,
-							ValidateFunc: float64AtLeast(0),
-							Description:  "Threshold above which the displayed value will be styled with a yellow color.",
-						},
-						"drilldown_dashboard_id": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							ValidateFunc: validation.IntAtLeast(1),
-							Description:  "The ID of a dashboard to link to from the widget's facets.",
-						},
-						"duration": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							ValidateFunc: validation.IntAtLeast(1),
-						},
-						"end_time": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							ValidateFunc: validation.IntAtLeast(1),
-						},
-						"raw_metric_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"facet": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"order_by": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Set the order of result series.  Required when using `limit`.",
-						},
-						"limit": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							ValidateFunc: validation.IntAtLeast(1),
-							Description:  "The limit of distinct data series to display.  Requires `order_by` to be set.",
-						},
-						"entity_ids": {
-							Type:        schema.TypeSet,
-							Optional:    true,
-							Elem:        &schema.Schema{Type: schema.TypeInt},
-							Description: "A collection of entity ids to display data for. These are typically application IDs.",
-						},
-						"metric": {
-							Type:        schema.TypeSet,
-							Optional:    true,
-							Description: "A nested block that describes a metric.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The metric name to display.",
-									},
-									"units": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The metric units.",
-									},
-									"scope": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The metric scope.",
-									},
-									"values": {
-										Type:        schema.TypeSet,
-										Optional:    true,
-										Elem:        &schema.Schema{Type: schema.TypeString},
-										Description: "The metric values to display.",
-									},
-								},
-							},
-						},
-						"compare_with": {
-							Type:        schema.TypeSet,
-							Optional:    true,
-							Description: "A block describing a COMPARE WITH clause.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"offset_duration": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The offset duration for the COMPARE WITH clause.",
-									},
-									"presentation": {
-										Type:        schema.TypeList,
-										Required:    true,
-										MaxItems:    1,
-										Description: "The presentation settings for the rendered data.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"color": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The color for the rendered data.",
-												},
-												"name": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The name for the rendered data.",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
+				Elem:        widgetSchemaElem(),
+			},
+			"widgets": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    300,
+				Description: "Array of widgets to display within the dashboard.",
+				Elem:        widgetSchemaElem(),
 			},
 		},
 	}
@@ -353,6 +187,7 @@ func resourceNewRelicDashboardCreate(d *schema.ResourceData, meta interface{}) e
 	d.SetId(strconv.Itoa(dashboard.ID))
 
 	return resourceNewRelicDashboardRead(d, meta)
+	// return nil
 }
 
 func resourceNewRelicDashboardRead(d *schema.ResourceData, meta interface{}) error {

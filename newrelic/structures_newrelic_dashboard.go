@@ -5,9 +5,192 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 )
+
+func widgetSchemaElem() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The target account ID to fetch data from, if not the current account.",
+			},
+			"widget_id": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The ID of the widget.",
+			},
+			"title": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "A title for the widget.",
+			},
+			"visualization": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice(validWidgetVisualizationValues, false),
+				Description:  "How the widget visualizes data.",
+			},
+			"width": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     1,
+				Description: "Width of the widget. Valid values are 1 to 3 inclusive. Defaults to 1.",
+			},
+			"height": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     1,
+				Description: "Height of the widget. Valid values are 1 to 3 inclusive. Defaults to 1.",
+			},
+			"row": {
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Row position of widget from top left, starting at 1.",
+			},
+			"column": {
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Column position of widget from top left, starting at 1.",
+			},
+			"notes": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Description of the widget.",
+			},
+			"nrql": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Valid NRQL query string.",
+			},
+			"source": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The markdown source to be rendered in the widget.",
+			},
+			"threshold_red": {
+				Type:         schema.TypeFloat,
+				Optional:     true,
+				ValidateFunc: float64AtLeast(0),
+				Description:  "Threshold above which the displayed value will be styled with a red color.",
+			},
+			"threshold_yellow": {
+				Type:         schema.TypeFloat,
+				Optional:     true,
+				ValidateFunc: float64AtLeast(0),
+				Description:  "Threshold above which the displayed value will be styled with a yellow color.",
+			},
+			"drilldown_dashboard_id": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntAtLeast(1),
+				Description:  "The ID of a dashboard to link to from the widget's facets.",
+			},
+			"duration": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntAtLeast(1),
+			},
+			"end_time": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntAtLeast(1),
+			},
+			"raw_metric_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"facet": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"order_by": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Set the order of result series.  Required when using `limit`.",
+			},
+			"limit": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntAtLeast(1),
+				Description:  "The limit of distinct data series to display.  Requires `order_by` to be set.",
+			},
+			"entity_ids": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+				Description: "A collection of entity ids to display data for. These are typically application IDs.",
+			},
+			"metric": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "A nested block that describes a metric.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The metric name to display.",
+						},
+						"units": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The metric units.",
+						},
+						"scope": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The metric scope.",
+						},
+						"values": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "The metric values to display.",
+						},
+					},
+				},
+			},
+			"compare_with": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "A block describing a COMPARE WITH clause.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"offset_duration": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The offset duration for the COMPARE WITH clause.",
+						},
+						"presentation": {
+							Type:        schema.TypeList,
+							Required:    true,
+							MaxItems:    1,
+							Description: "The presentation settings for the rendered data.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"color": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The color for the rendered data.",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The name for the rendered data.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
 
 // Assemble the *dashboards.Dashboard struct.
 // Used by the newrelic_dashboard Create and Update functions.
@@ -31,8 +214,7 @@ func expandDashboard(d *schema.ResourceData) (*dashboards.Dashboard, error) {
 
 	log.Printf("[INFO] widget schema: %+v\n", d.Get("widget"))
 	if widgets, ok := d.GetOk("widget"); ok {
-		expandedWidgets, err := expandWidgets(widgets.(*schema.Set).List())
-
+		expandedWidgets, err := expandWidgets(widgets)
 		if err != nil {
 			return nil, err
 		}
@@ -57,31 +239,36 @@ func expandFilter(filter map[string]interface{}) dashboards.DashboardFilter {
 	return perms
 }
 
-func expandWidgets(widgets []interface{}) ([]dashboards.DashboardWidget, error) {
-	if len(widgets) < 1 {
+func expandWidgets(in interface{}) ([]dashboards.DashboardWidget, error) {
+	widgetsIn := in.([]interface{})
+	if len(widgetsIn) < 1 {
 		return []dashboards.DashboardWidget{}, nil
 	}
 
-	perms := make([]dashboards.DashboardWidget, len(widgets))
+	expanded := make([]dashboards.DashboardWidget, len(widgetsIn))
 
-	for i, rawCfg := range widgets {
-		cfg := rawCfg.(map[string]interface{})
-		expandedWidget, err := expandWidget(cfg)
+	for i, wg := range widgetsIn {
+		w := wg.(map[string]interface{})
 
+		expandedWidget, err := expandWidget(w)
 		if err != nil {
 			return nil, err
 		}
 
-		perms[i] = *expandedWidget
+		expanded[i] = *expandedWidget
 	}
 
-	return perms, nil
+	return expanded, nil
 }
 
 func expandWidget(cfg map[string]interface{}) (*dashboards.DashboardWidget, error) {
 	widget := &dashboards.DashboardWidget{
 		Visualization: dashboards.VisualizationType(cfg["visualization"].(string)),
 		ID:            cfg["widget_id"].(int),
+	}
+
+	if accountID, ok := cfg["account_id"]; ok {
+		widget.AccountID = accountID.(int)
 	}
 
 	err := validateWidgetData(cfg)
@@ -317,7 +504,7 @@ func flattenDashboard(dashboard *dashboards.Dashboard, d *schema.ResourceData) e
 	}
 
 	if dashboard.Widgets != nil && len(dashboard.Widgets) > 0 {
-		if widgetErr := d.Set("widget", flattenWidgets(&dashboard.Widgets)); widgetErr != nil {
+		if widgetErr := d.Set("widget", flattenWidgets(&dashboard.Widgets, d)); widgetErr != nil {
 			return widgetErr
 		}
 	}
@@ -325,89 +512,197 @@ func flattenDashboard(dashboard *dashboards.Dashboard, d *schema.ResourceData) e
 	return nil
 }
 
-// TODO: Reduce the cyclomatic complexity of this func
-// nolint:gocyclo
-func flattenWidgets(in *[]dashboards.DashboardWidget) []map[string]interface{} {
-	var out = make([]map[string]interface{}, len(*in))
-	for i, w := range *in {
-		m := make(map[string]interface{})
-		m["widget_id"] = w.ID
-		m["visualization"] = w.Visualization
-		m["title"] = w.Presentation.Title
-		m["notes"] = w.Presentation.Notes
-		m["row"] = w.Layout.Row
-		m["column"] = w.Layout.Column
-		m["width"] = w.Layout.Width
-		m["height"] = w.Layout.Height
+func isValidViz(viz dashboards.VisualizationType) bool {
+	vizString := string(viz)
+	for _, vizType := range validWidgetVisualizationValues {
+		if vizString == vizType {
+			return true
+		}
+	}
 
-		if w.Presentation.DrilldownDashboardID > 0 {
-			m["drilldown_dashboard_id"] = w.Presentation.DrilldownDashboardID
+	return false
+}
+
+func flattenWidgets(widgetsIn *[]dashboards.DashboardWidget, d *schema.ResourceData) []map[string]interface{} {
+	var out = make([]map[string]interface{}, len(*widgetsIn))
+
+	for i, w := range *widgetsIn {
+		widgetCfg, ok := d.GetOk("widget")
+		if !ok {
+			return []map[string]interface{}{}
 		}
 
-		if w.Presentation.Threshold != nil {
-			threshold := w.Presentation.Threshold
+		widgetConfig := widgetCfg.([]interface{})
+		wgt := widgetConfig[i].(map[string]interface{})
 
-			if threshold.Red > 0 {
-				m["threshold_red"] = threshold.Red
-			}
-
-			if threshold.Yellow > 0 {
-				m["threshold_yellow"] = threshold.Yellow
-			}
-		}
-
-		if w.Data != nil && len(w.Data) > 0 {
-			data := w.Data[0]
-
-			if data.NRQL != "" {
-				m["nrql"] = data.NRQL
-			}
-
-			if data.Source != "" {
-				m["source"] = data.Source
-			}
-
-			if data.Duration > 0 {
-				m["duration"] = data.Duration
-			}
-
-			if data.EndTime > 0 {
-				m["end_time"] = data.EndTime
-			}
-
-			if data.RawMetricName != "" {
-				m["raw_metric_name"] = data.RawMetricName
-			}
-
-			if data.Facet != "" {
-				m["facet"] = data.Facet
-			}
-
-			if data.OrderBy != "" {
-				m["order_by"] = data.OrderBy
-			}
-
-			if data.Limit > 0 {
-				m["limit"] = data.Limit
-			}
-
-			if data.EntityIds != nil && len(data.EntityIds) > 0 {
-				m["entity_ids"] = data.EntityIds
-			}
-
-			if data.CompareWith != nil && len(data.CompareWith) > 0 {
-				m["compare_with"] = flattenWidgetDataCompareWith(data.CompareWith)
-			}
-
-			if data.Metrics != nil && len(data.Metrics) > 0 {
-				m["metric"] = flattenWidgetDataMetrics(data.Metrics)
-			}
-		}
-
-		out[i] = m
+		out[i] = flattenWidget(w, wgt)
 	}
 
 	return out
+}
+
+// A helper function to get the value of the `account_id` from the HCL attribute if it was set.
+func getWidgetAcctIDHCLValue(widgetConfig map[string]interface{}) int {
+	val, ok := widgetConfig["account_id"]
+	if !ok {
+		return 0
+	}
+
+	return val.(int)
+}
+
+// SUPPORTING CROSS-ACCOUNT WIDGETS WITH THE REST API USING APIKS KEYS
+//
+// If a user sets `account_id` to a subaccount that's scoped outside of
+// the user's API key, the API returns the widget as "inaccessible" and omits data.
+// This function attempts to avoid configuration drift when certain configuration
+// scenarios are presented.
+//
+// If a user sets `account_id` that's "inaccessible" per the API, we avoid setting
+// with the API response data and just use the same ID the user provided in the HCL.
+//
+// If the user sets `account_id` to an accessible account associated with the API key,
+// we need to set this in the Terraform state to avoid drift.
+//
+// If the user does not set `account_id`, then the user is basically using the default
+// behavior and we don't need to set it in the state since it's not in the HCL.
+// nolint:gocyclo
+func flattenWidget(w dashboards.DashboardWidget, widgetCfg map[string]interface{}) map[string]interface{} {
+	m := make(map[string]interface{})
+
+	wgtConfigAcctID := getWidgetAcctIDHCLValue(widgetCfg)
+	if w.AccountID != 0 && wgtConfigAcctID > 0 {
+		m["account_id"] = w.AccountID
+	} else {
+		m["account_id"] = wgtConfigAcctID
+	}
+
+	if w.ID != 0 {
+		m["widget_id"] = w.ID
+	}
+
+	// Cross-account widgets will have a visualization
+	// set to "inaccessible" in some cases, so we must
+	// ensure a valid visualization is provided in the
+	// API's widget response.
+	if isValidViz(w.Visualization) {
+		m["visualization"] = w.Visualization
+	} else {
+		m["visualization"] = widgetCfg["visualization"]
+	}
+
+	if w.Presentation.Title != "" {
+		m["title"] = w.Presentation.Title
+	} else {
+		m["title"] = widgetCfg["title"]
+	}
+
+	if w.Presentation.Notes != "" {
+		m["notes"] = w.Presentation.Notes
+	} else {
+		m["notes"] = widgetCfg["notes"]
+	}
+
+	if w.Layout.Row != 0 {
+		m["row"] = w.Layout.Row
+	} else {
+		m["row"] = widgetCfg["row"]
+	}
+
+	if w.Layout.Column != 0 {
+		m["column"] = w.Layout.Column
+	} else {
+		m["column"] = widgetCfg["column"]
+	}
+
+	if w.Layout.Width != 0 {
+		m["width"] = w.Layout.Width
+	} else {
+		m["width"] = widgetCfg["width"]
+	}
+
+	if w.Layout.Height != 0 {
+		m["height"] = w.Layout.Height
+	} else {
+		m["height"] = widgetCfg["height"]
+	}
+
+	if w.Presentation.DrilldownDashboardID > 0 {
+		m["drilldown_dashboard_id"] = w.Presentation.DrilldownDashboardID
+	} else {
+		m["drilldown_dashboard_id"] = widgetCfg["drilldown_dashboard_id"]
+	}
+
+	if w.Presentation.Threshold != nil {
+		threshold := w.Presentation.Threshold
+
+		if threshold.Red > 0 {
+			m["threshold_red"] = threshold.Red
+		} else {
+			m["threshold_red"] = widgetCfg["threshold_red"]
+		}
+
+		if threshold.Yellow > 0 {
+			m["threshold_yellow"] = threshold.Yellow
+		} else {
+			m["threshold_yellow"] = widgetCfg["threshold_yellow"]
+		}
+	} else {
+		m["threshold_red"] = widgetCfg["threshold_red"]
+		m["threshold_yellow"] = widgetCfg["threshold_yellow"]
+	}
+
+	if w.Data != nil && len(w.Data) > 0 {
+		data := w.Data[0]
+
+		if data.NRQL != "" {
+			m["nrql"] = data.NRQL
+		}
+
+		if data.Source != "" {
+			m["source"] = data.Source
+		}
+
+		if data.Duration > 0 {
+			m["duration"] = data.Duration
+		}
+
+		if data.EndTime > 0 {
+			m["end_time"] = data.EndTime
+		}
+
+		if data.RawMetricName != "" {
+			m["raw_metric_name"] = data.RawMetricName
+		}
+
+		if data.Facet != "" {
+			m["facet"] = data.Facet
+		}
+
+		if data.OrderBy != "" {
+			m["order_by"] = data.OrderBy
+		}
+
+		if data.Limit > 0 {
+			m["limit"] = data.Limit
+		}
+
+		if data.EntityIds != nil && len(data.EntityIds) > 0 {
+			m["entity_ids"] = data.EntityIds
+		}
+
+		if data.CompareWith != nil && len(data.CompareWith) > 0 {
+			m["compare_with"] = flattenWidgetDataCompareWith(data.CompareWith)
+		}
+
+		if data.Metrics != nil && len(data.Metrics) > 0 {
+			m["metric"] = flattenWidgetDataMetrics(data.Metrics)
+		}
+	} else {
+		m["nrql"] = widgetCfg["nrql"]
+	}
+
+	return m
 }
 
 func flattenWidgetDataCompareWith(in []dashboards.DashboardWidgetDataCompareWith) []map[string]interface{} {

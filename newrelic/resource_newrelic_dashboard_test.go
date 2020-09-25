@@ -14,6 +14,54 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 )
 
+func TestAccNewRelicDashboard_CrossAccountWidget(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicDashboardWidgetConfigCrossAccountWidget(rName),
+				// Check:  resource.ComposeTestCheckFunc(
+				// 	logState(t),
+				// ),
+			},
+		},
+	})
+}
+
+func testAccCheckNewRelicDashboardWidgetConfigCrossAccountWidget(dashboardName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_dashboard" "foo" {
+  title = "%s"
+
+  filter {
+    event_types = [
+        "Transaction"
+    ]
+    attributes = [
+        "appName",
+        "envName"
+    ]
+  }
+  widget {
+		account_id = "2508259"
+    title = "Transaction Count"
+    visualization = "billboard"
+    nrql = "SELECT count(*) from Transaction since 5 minutes ago FACET appName"
+    threshold_red = 100
+    threshold_yellow = 50
+    row    = 1
+    column = 1
+  }
+
+	grid_column_count = 12
+}
+`, dashboardName)
+}
+
 func TestAccNewRelicDashboard_Basic(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	resource.ParallelTest(t, resource.TestCase{
