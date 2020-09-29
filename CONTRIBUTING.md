@@ -99,8 +99,30 @@ code.  In that case, simply building the provider binary with the correct name
 and running the plan will get you there.
 
 ```shell
-go build -o terraform-provider-newrelic && terraform init -upgrade && TF_LOG=INFO terraform plan
+export TARGET=.terraform/plugins/registry.terraform.io/newrelic/newrelic/99.0.0/darwin_amd64/
+mkdir -p $TARGET
+go build -o $TARGET/terraform-provider-newrelic && terraform init && TF_LOG=INFO terraform plan
 ```
+
+The following assumes working on MacOS.  Essentially, we're making a "99.0.0"
+fake version out of whatever we just built.  Then we can configure Terraform to
+make use of the version we just built.
+
+```hcl
+terraform {
+  required_providers {
+    newrelic = {
+      version = "~> 99.0.0"
+      source = "newrelic/newrelic"
+    }
+  }
+  required_version = ">= 0.13"
+}
+```
+
+Now Terraform will expect the binary to exist in the `$TARGET` directory above.
+See the [provider installation][provider_installation] and [provider
+requirements][provider_requirements] docs for more information.
 
 ### Developing with our [Go Client][client_go]
 
@@ -155,3 +177,7 @@ For more information on commit messages, we mostly follow [this standard][conven
 [conventional_commits]: https://www.conventionalcommits.org/en/v1.0.0/
 
 [best_practices]: https://www.terraform.io/docs/extend/best-practices/index.html
+
+[provider_installation]: https://www.terraform.io/docs/commands/cli-config.html#provider-installation
+
+[provider_requirements]: https://www.terraform.io/docs/configuration/terraform.html
