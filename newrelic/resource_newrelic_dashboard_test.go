@@ -15,51 +15,75 @@ import (
 )
 
 func TestAccNewRelicDashboard_CrossAccountWidget(t *testing.T) {
+	if testSubaccountID == 0 {
+		t.Skipf("New Relic internal testing subaccount required")
+	}
+
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	// Uses TF testing account
+	widgetPrimaryAcct := `
+		widget {
+			title = "Transaction Count (primary account)"
+			visualization = "facet_table"
+			nrql = "SELECT count(*) from Transaction since 5 minutes ago FACET appName"
+			threshold_red = 100
+			threshold_yellow = 50
+			column = 1
+			row    = 1
+			width  = 12
+		}
+	`
+
+	// Uses DTK subaccount
+	widgetSubAcct := fmt.Sprintf(`
+		widget {
+			account_id = %d
+			title = "Transaction Count (subaccount)"
+			visualization = "billboard"
+			nrql = "SELECT count(*) from Transaction since 5 minutes ago FACET appName"
+			threshold_red = 100
+			threshold_yellow = 50
+			column = 1
+			row    = 2
+			width  = 12
+		}
+	`, testSubaccountID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
 		Steps: []resource.TestStep{
+			// Test: Create
 			{
-				Config: testAccCheckNewRelicDashboardWidgetConfigCrossAccountWidget(rName),
-				// Check:  resource.ComposeTestCheckFunc(
-				// 	logState(t),
-				// ),
+				Config: testAccCheckNewRelicDashboardConfigCrossAccountWidgets(rName, widgetPrimaryAcct, widgetSubAcct),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
+				),
+			},
+			// Test: Reodering widgets should NOT drift since we sort before storing in state.
+			{
+				Config: testAccCheckNewRelicDashboardConfigCrossAccountWidgets(rName, widgetSubAcct, widgetPrimaryAcct),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:      "newrelic_dashboard.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Ignore `grid_column_count` bc is it not returned in the REST API response.
+				// Ignore `widget` when inaccessible cross-account widgets are configured.
+				// The REST API does not return data for cross-account widgets in the GET response.
+				ImportStateVerifyIgnore: []string{
+					"grid_column_count",
+					"widget",
+				},
 			},
 		},
 	})
-}
-
-func testAccCheckNewRelicDashboardWidgetConfigCrossAccountWidget(dashboardName string) string {
-	return fmt.Sprintf(`
-resource "newrelic_dashboard" "foo" {
-  title = "%s"
-
-  filter {
-    event_types = [
-        "Transaction"
-    ]
-    attributes = [
-        "appName",
-        "envName"
-    ]
-  }
-  widget {
-		account_id = "2508259"
-    title = "Transaction Count"
-    visualization = "billboard"
-    nrql = "SELECT count(*) from Transaction since 5 minutes ago FACET appName"
-    threshold_red = 100
-    threshold_yellow = 50
-    row    = 1
-    column = 1
-  }
-
-	grid_column_count = 12
-}
-`, dashboardName)
 }
 
 func TestAccNewRelicDashboard_Basic(t *testing.T) {
@@ -102,15 +126,12 @@ func TestAccNewRelicDashboard_UpdateDashboard(t *testing.T) {
 				Config: testAccCheckNewRelicDashboardConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "title", rName),
 				),
 			},
 			{
 				Config: testAccCheckNewRelicDashboardConfig(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "title", rNameUpdated),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.#", "4"),
 				),
 			},
 		},
@@ -132,8 +153,6 @@ func TestAccNewRelicDashboard_AddWidget(t *testing.T) {
 				Config: testAccCheckNewRelicDashboardWidgetConfigAdded(rDashboardName, widgetName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "title", rDashboardName),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.#", "5"),
 				),
 			},
 		},
@@ -154,9 +173,6 @@ func TestAccNewRelicDashboard_UpdateWidget(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// logState(t),
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "title", rName),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.#", "5"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.3349214025.title", widgetName),
 				),
 			},
 			{
@@ -164,9 +180,6 @@ func TestAccNewRelicDashboard_UpdateWidget(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// logState(t),
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "title", rName),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.#", "5"),
-					resource.TestCheckResourceAttr("newrelic_dashboard.foo", "widget.2318477184.title", widgetNameUpdated),
 				),
 			},
 		},
@@ -467,6 +480,49 @@ resource "newrelic_dashboard" "foo" {
   }
 }
 `, dashboardName, widgetName)
+}
+
+func testAccCheckNewRelicDashboardConfigCrossAccountWidgets(dashboardName string, widgetA string, widgetB string) string {
+	return fmt.Sprintf(`
+resource "newrelic_dashboard" "foo" {
+  title = "%s"
+  grid_column_count = 12
+  filter {
+    event_types = [
+      "Transaction"
+    ]
+    attributes = [
+    	"appName",
+      "envName"
+    ]
+  }
+
+	# Using odd ordering of widgets to test against drift
+	widget {
+    title         = "Average Page View Duration (primary account)"
+		visualization = "faceted_line_chart"
+		nrql          = "SELECT AVERAGE(duration) from PageView FACET appName TIMESERIES auto"
+    column        = 1
+		row           = 3
+		width         = 12
+	}
+
+  # Widget (order gets flipped with next widget below in test case #2)
+  %[2]s
+
+  # Widget (order gets flipped with previous widget above in test case #2)
+	%[3]s
+
+	# Using odd ordering of widgets to test against drift
+  widget {
+    title         = "Dashboard Note"
+    visualization = "markdown"
+    source        = "#h1 Heading"
+    row           = 4
+    column        = 1
+    width         = 12
+  }
+}`, dashboardName, widgetA, widgetB)
 }
 
 func testAccCheckNewRelicDashboardExists(n string) resource.TestCheckFunc {

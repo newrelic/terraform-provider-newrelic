@@ -3,194 +3,12 @@ package newrelic
 import (
 	"fmt"
 	"log"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 )
-
-func widgetSchemaElem() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"account_id": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "The target account ID to fetch data from, if not the current account.",
-			},
-			"widget_id": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The ID of the widget.",
-			},
-			"title": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "A title for the widget.",
-			},
-			"visualization": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice(validWidgetVisualizationValues, false),
-				Description:  "How the widget visualizes data.",
-			},
-			"width": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     1,
-				Description: "Width of the widget. Valid values are 1 to 3 inclusive. Defaults to 1.",
-			},
-			"height": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     1,
-				Description: "Height of the widget. Valid values are 1 to 3 inclusive. Defaults to 1.",
-			},
-			"row": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "Row position of widget from top left, starting at 1.",
-			},
-			"column": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "Column position of widget from top left, starting at 1.",
-			},
-			"notes": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Description of the widget.",
-			},
-			"nrql": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Valid NRQL query string.",
-			},
-			"source": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The markdown source to be rendered in the widget.",
-			},
-			"threshold_red": {
-				Type:         schema.TypeFloat,
-				Optional:     true,
-				ValidateFunc: float64AtLeast(0),
-				Description:  "Threshold above which the displayed value will be styled with a red color.",
-			},
-			"threshold_yellow": {
-				Type:         schema.TypeFloat,
-				Optional:     true,
-				ValidateFunc: float64AtLeast(0),
-				Description:  "Threshold above which the displayed value will be styled with a yellow color.",
-			},
-			"drilldown_dashboard_id": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validation.IntAtLeast(1),
-				Description:  "The ID of a dashboard to link to from the widget's facets.",
-			},
-			"duration": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validation.IntAtLeast(1),
-			},
-			"end_time": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validation.IntAtLeast(1),
-			},
-			"raw_metric_name": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"facet": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"order_by": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Set the order of result series.  Required when using `limit`.",
-			},
-			"limit": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validation.IntAtLeast(1),
-				Description:  "The limit of distinct data series to display.  Requires `order_by` to be set.",
-			},
-			"entity_ids": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Elem:        &schema.Schema{Type: schema.TypeInt},
-				Description: "A collection of entity ids to display data for. These are typically application IDs.",
-			},
-			"metric": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "A nested block that describes a metric.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The metric name to display.",
-						},
-						"units": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The metric units.",
-						},
-						"scope": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The metric scope.",
-						},
-						"values": {
-							Type:        schema.TypeSet,
-							Optional:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "The metric values to display.",
-						},
-					},
-				},
-			},
-			"compare_with": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "A block describing a COMPARE WITH clause.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"offset_duration": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The offset duration for the COMPARE WITH clause.",
-						},
-						"presentation": {
-							Type:        schema.TypeList,
-							Required:    true,
-							MaxItems:    1,
-							Description: "The presentation settings for the rendered data.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"color": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The color for the rendered data.",
-									},
-									"name": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The name for the rendered data.",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-}
 
 // Assemble the *dashboards.Dashboard struct.
 // Used by the newrelic_dashboard Create and Update functions.
@@ -503,6 +321,13 @@ func flattenDashboard(dashboard *dashboards.Dashboard, d *schema.ResourceData) e
 		return filterErr
 	}
 
+	// IMPORTANT! Sorting the widgets before storing in state helps prevent drift
+	// in multiple scenarios, such as when/if the API returns widgets in a different
+	// order or if the user changes the order the HCL resource configuration.
+	sort.SliceStable(dashboard.Widgets, func(i, j int) bool {
+		return dashboard.Widgets[i].ID < dashboard.Widgets[j].ID
+	})
+
 	if dashboard.Widgets != nil && len(dashboard.Widgets) > 0 {
 		if widgetErr := d.Set("widget", flattenWidgets(&dashboard.Widgets, d)); widgetErr != nil {
 			return widgetErr
@@ -526,29 +351,23 @@ func isValidViz(viz dashboards.VisualizationType) bool {
 func flattenWidgets(widgetsIn *[]dashboards.DashboardWidget, d *schema.ResourceData) []map[string]interface{} {
 	var out = make([]map[string]interface{}, len(*widgetsIn))
 
+	widgetCfg, ok := d.GetOk("widget")
+
 	for i, w := range *widgetsIn {
-		widgetCfg, ok := d.GetOk("widget")
 		if !ok {
-			return []map[string]interface{}{}
+			// If not widgets are configured, we need
+			// to provide an empty map to populate
+			// using the incoming API response widget data.
+			wgt := map[string]interface{}{}
+			out[i] = flattenWidget(w, wgt)
+		} else {
+			widgetConfig := widgetCfg.([]interface{})
+			wgt := widgetConfig[i].(map[string]interface{})
+			out[i] = flattenWidget(w, wgt)
 		}
-
-		widgetConfig := widgetCfg.([]interface{})
-		wgt := widgetConfig[i].(map[string]interface{})
-
-		out[i] = flattenWidget(w, wgt)
 	}
 
 	return out
-}
-
-// A helper function to get the value of the `account_id` from the HCL attribute if it was set.
-func getWidgetAcctIDHCLValue(widgetConfig map[string]interface{}) int {
-	val, ok := widgetConfig["account_id"]
-	if !ok {
-		return 0
-	}
-
-	return val.(int)
 }
 
 // SUPPORTING CROSS-ACCOUNT WIDGETS WITH THE REST API USING APIKS KEYS
@@ -569,9 +388,9 @@ func getWidgetAcctIDHCLValue(widgetConfig map[string]interface{}) int {
 // nolint:gocyclo
 func flattenWidget(w dashboards.DashboardWidget, widgetCfg map[string]interface{}) map[string]interface{} {
 	m := make(map[string]interface{})
+	wgtConfigAcctID := getConfiguredWidgetAcctID(widgetCfg)
 
-	wgtConfigAcctID := getWidgetAcctIDHCLValue(widgetCfg)
-	if w.AccountID != 0 && wgtConfigAcctID > 0 {
+	if wgtConfigAcctID > 0 && w.AccountID != 0 {
 		m["account_id"] = w.AccountID
 	} else {
 		m["account_id"] = wgtConfigAcctID
@@ -771,4 +590,14 @@ func flattenFilter(f *dashboards.DashboardFilter) []interface{} {
 	filterResult["attributes"] = schema.NewSet(schema.HashString, attributesList)
 	filterResult["event_types"] = schema.NewSet(schema.HashString, eventTypesList)
 	return []interface{}{filterResult}
+}
+
+// A helper function to get the value of the `account_id` from the HCL attribute if it was set.
+func getConfiguredWidgetAcctID(widgetConfig map[string]interface{}) int {
+	val, ok := widgetConfig["account_id"]
+	if !ok {
+		return 0
+	}
+
+	return val.(int)
 }
