@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk v1.16.0
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/newrelic-forks/git-chglog v0.10.0
-	github.com/newrelic/go-agent/v3 v3.8.1
+	github.com/newrelic/go-agent/v3 v3.9.0
 	github.com/newrelic/go-insights v1.0.3
 	github.com/newrelic/newrelic-client-go v0.42.0
 	github.com/stretchr/testify v1.6.1
