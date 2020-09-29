@@ -69,6 +69,16 @@ _Note:_ Acceptance tests _create real resources_, and often cost money to run. T
 $ make testacc
 ```
 
+#### Go Version Support
+
+We'll aim to support the latest supported release of Go, along with the
+previous release.  This doesn't mean that building with an older version of Go
+will not work, but we don't intend to support a Go version in this project that
+is not supported by the larger Go community.  Please see the [Go
+releases][go_releases] page for more details.
+
 [provider_docs]: https://www.terraform.io/docs/providers/newrelic/index.html
 
 [contributing]: https://github.com/newrelic/terraform-provider-newrelic/blob/master/CONTRIBUTING.md
+
+[go_releases]: https://github.com/golang/go/wiki/Go-Release-Cycle
