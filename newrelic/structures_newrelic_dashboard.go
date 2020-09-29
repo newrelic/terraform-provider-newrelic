@@ -410,18 +410,6 @@ func flattenWidget(w dashboards.DashboardWidget, widgetCfg map[string]interface{
 		m["visualization"] = widgetCfg["visualization"]
 	}
 
-	if w.Presentation.Title != "" {
-		m["title"] = w.Presentation.Title
-	} else {
-		m["title"] = widgetCfg["title"]
-	}
-
-	if w.Presentation.Notes != "" {
-		m["notes"] = w.Presentation.Notes
-	} else {
-		m["notes"] = widgetCfg["notes"]
-	}
-
 	if w.Layout.Row != 0 {
 		m["row"] = w.Layout.Row
 	} else {
@@ -444,6 +432,18 @@ func flattenWidget(w dashboards.DashboardWidget, widgetCfg map[string]interface{
 		m["height"] = w.Layout.Height
 	} else {
 		m["height"] = widgetCfg["height"]
+	}
+
+	if w.Presentation.Title != "" {
+		m["title"] = w.Presentation.Title
+	} else {
+		m["title"] = widgetCfg["title"]
+	}
+
+	if w.Presentation.Notes != "" {
+		m["notes"] = w.Presentation.Notes
+	} else {
+		m["notes"] = widgetCfg["notes"]
 	}
 
 	if w.Presentation.DrilldownDashboardID > 0 {
@@ -518,7 +518,29 @@ func flattenWidget(w dashboards.DashboardWidget, widgetCfg map[string]interface{
 			m["metric"] = flattenWidgetDataMetrics(data.Metrics)
 		}
 	} else {
-		m["nrql"] = widgetCfg["nrql"]
+		// Handle the "inaccessible" subaccount widget scenario.
+		// Populate the attributes with the values the user set
+		// within their HCL. The values are not returned from
+		// the API if an inaccessible subaccount is queried.
+		attributeKeys := []string{
+			"nrql",
+			"source",
+			"duration",
+			"end_time",
+			"raw_metric_name",
+			"facet",
+			"order_by",
+			"limit",
+			"entity_ids",
+			"compare_with",
+			"metric",
+		}
+
+		for _, k := range attributeKeys {
+			if v, ok := widgetCfg[k]; ok {
+				m[k] = v
+			}
+		}
 	}
 
 	return m

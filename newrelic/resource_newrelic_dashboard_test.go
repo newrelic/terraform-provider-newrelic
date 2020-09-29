@@ -507,19 +507,19 @@ resource "newrelic_dashboard" "foo" {
 		width         = 12
 	}
 
-  # Widget (order gets flipped with next widget below in test case #2)
+  # Widget (order gets flipped with next widget below in test case)
   %[2]s
 
-  # Widget (order gets flipped with previous widget above in test case #2)
+  # Widget (order gets flipped with previous widget above in test case)
 	%[3]s
 
 	# Using odd ordering of widgets to test against drift
   widget {
     title         = "Dashboard Note"
     visualization = "markdown"
-    source        = "#h1 Heading"
+		source        = "#h1 Heading"
+		column        = 1
     row           = 4
-    column        = 1
     width         = 12
   }
 }`, dashboardName, widgetA, widgetB)
