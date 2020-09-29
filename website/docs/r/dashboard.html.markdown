@@ -105,7 +105,7 @@ The following arguments are supported:
   * `widget` - (Optional) A nested block that describes a visualization.  Up to 300 `widget` blocks are allowed in a dashboard definition.  See [Nested widget blocks](#nested-`widget`-blocks) below for details.
   * `filter` - (Optional) A nested block that describes a dashboard filter.  Exactly one nested `filter` block is allowed. See [Nested filter block](#nested-`filter`-block) below for details.
 
-## Attribute Refence
+## Attribute Reference
 
 In addition to all arguments above, the following attributes are exported:
 
