@@ -11,7 +11,7 @@ require (
 	github.com/goreleaser/goreleaser v0.143.0
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20191212124732-c6ae6269b9d7 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.16.0
-	github.com/newrelic/go-agent/v3 v3.7.0
+	github.com/newrelic/go-agent/v3 v3.9.0
 	github.com/newrelic/go-insights v1.0.3
 	github.com/newrelic/newrelic-client-go v0.33.2
 	github.com/stretchr/testify v1.6.1
