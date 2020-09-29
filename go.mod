@@ -7,7 +7,7 @@ require (
 	github.com/bflad/tfproviderlint v0.18.0
 	github.com/client9/misspell v0.3.4
 	github.com/git-chglog/git-chglog v0.0.0-20200414013904-db796966b373
-	github.com/golangci/golangci-lint v1.29.0
+	github.com/golangci/golangci-lint v1.31.0
 	github.com/goreleaser/goreleaser v0.140.1
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20191212124732-c6ae6269b9d7 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.13.1
