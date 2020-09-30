@@ -9,17 +9,42 @@
 
 ## Requirements
 
--   [Terraform](https://www.terraform.io/downloads.html) 0.11.x
+-   [Terraform](https://www.terraform.io/downloads.html) 0.11+
 
 ## Using the provider
 
 To use the latest version of the provider in your Terraform environment, run `terraform init` and Terraform will automatically install the provider.
 
-If you wish to pin your environment to a specific release, you can do so with a `required_providers` statement in your Terraform manifest.
+If you wish to pin your environment to a specific release of the provider, you can do so with a `required_providers` statement in your Terraform manifest. The `terraform` [configuration block](https://www.terraform.io/docs/configuration/provider-requirements.html) varies slightly depending on which Terraform version you're using. See below for more examples of configuring the provider version for the different versions of Terraform.
 
+For Terraform version 0.13.x
 ```hcl
-required_providers {
-    newrelic = "~> 1.19.0"
+terraform {
+  required_version = "~> 0.13.0"
+  required_providers {
+    newrelic = {
+      source  = "newrelic/newrelic"
+      version = "~> 2.7.5"
+    }
+  }
+}
+```
+
+For Terraform version 0.12.x
+```hcl
+terraform {
+  required_providers {
+    newrelic = {
+      version = "~> 2.7.5"
+    }
+  }
+}
+```
+
+For Terraform version 0.11.x
+```hcl
+provider "newrelic" {
+  version = "~> 2.7.5"
 }
 ```
 

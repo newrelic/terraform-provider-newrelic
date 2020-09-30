@@ -26,6 +26,7 @@ var (
 	testAccProviders                map[string]terraform.ResourceProvider
 	testAccProvider                 *schema.Provider
 	testAccountID                   int
+	testSubaccountID                int
 	testAccountName                 string
 	//testAccCleanupComplete          = false
 )
@@ -45,6 +46,11 @@ func init() {
 
 	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_ACCOUNT_ID")); v != 0 {
 		testAccountID = v
+	}
+
+	// Used for cross-account scenarios if needed, such as dashboard widgets.
+	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_SUBACCOUNT_ID")); v != 0 {
+		testSubaccountID = v
 	}
 
 	if v := os.Getenv("NEW_RELIC_ACCOUNT_NAME"); v != "" {
