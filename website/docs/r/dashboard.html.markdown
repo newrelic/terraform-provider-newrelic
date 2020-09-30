@@ -172,7 +172,91 @@ The optional filter block supports the following arguments:
 
 ## Additional Examples
 
-A
+###  Create cross-account widgets in your dashboard.
+
+The example below shows how you can display data for an application from a primary account and an application from a subaccount. In order to create cross-account widgets, you must use an API key from a user with admin permissions in the primary account. Please see the [`widget` attribute documentation](#cross-account-widget-help) for more details.
+
+```hcl
+# IMPORTANT!
+# The Personal API Key must be from a user with admin permissions in the main account.
+provider "newrelic" {
+  api_key = "NRAK-*****"
+  # ... additional configuration
+}
+
+# Fetch data for an application in your primary account to reference in the dashboard
+data "newrelic_entity" "primary_account_application" {
+  # Must be a unique name, otherwise use the `tags` attribute to get more specific if needed
+  name   = "Main Account Application Name"
+  type   = "APPLICATION"
+  domain = "APM"
+}
+
+# Fetch data for an application in a subaccount to reference in the dashboard
+data "newrelic_entity" "subaccount_application" {
+  # Must be a unique name, otherwise use the `tags` attribute to get more specific if needed
+  name     = "Subaccount Application Name"
+  type     = "APPLICATION"
+  domain   = "APM"
+}
+
+resource "newrelic_dashboard" "cross_account_widget_example" {
+  title = "tf-test-cross-account-widget-dashboard"
+
+  filter {
+    event_types = [
+      "Transaction"
+    ]
+    attributes = [
+      "appName",
+      "envName"
+    ]
+  }
+
+  grid_column_count = 12
+
+  # Omitting `account_id` will make this widget pull data from the primary account.
+  widget {
+    title         = "Apdex (primary account)"
+    row           = 1
+    column        = 1
+    width         = 6
+    height        = 3
+    visualization = "metric_line_chart"
+    duration      = 1800000
+
+    metric {
+      name   = "Apdex"
+      values = ["score"]
+    }
+
+    entity_ids    = [
+      data.newrelic_entity.primary_account_application.application_id
+    ]
+  }
+
+  # Setting `account_id` to a subaccount ID will make this widget pull data from the subaccount.
+  widget {
+    account_id    = var.subaccount_id
+    title         = "Apdex (subaccount)"
+    row           = 1
+    column        = 7
+    width         = 6
+    height        = 3
+    visualization = "metric_line_chart"
+    duration      = 1800000
+
+    metric {
+      name   = "Apdex"
+      values = ["score"]
+    }
+
+    entity_ids    = [
+      data.newrelic_entity.subaccount_application.application_id
+    ]
+  }
+}
+```
 
 ## Import
 
@@ -182,4 +266,4 @@ New Relic dashboards can be imported using their ID, e.g.
 $ terraform import newrelic_dashboard.my_dashboard 8675309
 ```
 
-~> **NOTE:** Due to API restrictions, importing a dashboard resource will set the `grid_column_count` attribute to `3`. If your dashboard is a New Relic One dashboard _and_ uses a 12 column grid, you will need to make sure `grid_column_count` is set to `12` in your configuration, then run `terraform apply` after importing to sync remote state with Terraform state.
+~> **NOTE:** Due to API restrictions, importing a dashboard resource will set the `grid_column_count` attribute to `3`. If your dashboard is a New Relic One dashboard _and_ uses a 12 column grid, you will need to make sure `grid_column_count` is set to `12` in your configuration, then run `terraform apply` after importing to sync remote state with Terraform state. Also note, cross-account widgets cannot be imported due to API restrictions.
