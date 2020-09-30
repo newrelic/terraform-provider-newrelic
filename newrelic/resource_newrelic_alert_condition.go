@@ -3,6 +3,7 @@ package newrelic
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -221,7 +222,9 @@ func resourceNewRelicAlertConditionCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
+	providerConfig := meta.(*ProviderConfig)
 	client := meta.(*ProviderConfig).NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading New Relic alert condition %s", d.Id())
 
@@ -233,13 +236,12 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 	policyID := ids[0]
 	id := ids[1]
 
-	_, err = client.Alerts.GetPolicy(policyID)
+	_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
-
 		return err
 	}
 

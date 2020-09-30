@@ -109,10 +109,14 @@ func resourceImportStateWithMetadata(defaultIDCount int, attribute string) schem
 // resources can be scoped to specific accounts. Bear in mind those accounts must be
 // accessible with the provided Personal API Key (APIKS).
 func selectAccountID(providerCondig *ProviderConfig, d *schema.ResourceData) int {
-	resourceAccountID := d.Get("account_id").(int)
+	resourceAccountIDAttr := d.Get("account_id")
 
-	if resourceAccountID != 0 {
-		return resourceAccountID
+	if resourceAccountIDAttr != nil {
+		resourceAccountID := resourceAccountIDAttr.(int)
+
+		if resourceAccountID != 0 {
+			return resourceAccountID
+		}
 	}
 
 	return providerCondig.AccountID
