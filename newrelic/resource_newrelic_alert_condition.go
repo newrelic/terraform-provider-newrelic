@@ -75,10 +75,11 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Create: resourceNewRelicAlertConditionCreate,
-		Read:   resourceNewRelicAlertConditionRead,
-		Update: resourceNewRelicAlertConditionUpdate,
-		Delete: resourceNewRelicAlertConditionDelete,
+		DeprecationMessage: "`newrelic_alert_condition` has been deprecated.  Use `newrelic_nrql_alert_condition` instead.",
+		Create:             resourceNewRelicAlertConditionCreate,
+		Read:               resourceNewRelicAlertConditionRead,
+		Update:             resourceNewRelicAlertConditionUpdate,
+		Delete:             resourceNewRelicAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
