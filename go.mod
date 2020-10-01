@@ -12,7 +12,7 @@ require (
 	github.com/newrelic-forks/git-chglog v0.10.0
 	github.com/newrelic/go-agent/v3 v3.9.0
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go v0.42.0
+	github.com/newrelic/newrelic-client-go v0.42.1
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1 // indirect
 	gotest.tools/gotestsum v0.5.3
