@@ -16,6 +16,8 @@ builds:
     - '386'
     - arm
     - arm64
+  ldflags:
+    - -s -w -X version.ProviderVersion={{.Version}}
   ignore:
     - goos: darwin
       goarch: '386'
