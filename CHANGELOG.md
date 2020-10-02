@@ -1,3 +1,11 @@
+<a name="v2.9.0"></a>
+## [v2.9.0] - 2020-10-01
+### Documentation Updates
+- update changelog
+
+### Features
+- **dashboard:** enable Personal API Key auth for dashboards and some sythentics resources
+
 <a name="v2.8.0"></a>
 ## [v2.8.0] - 2020-09-30
 ### Documentation Updates
@@ -626,7 +634,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.8.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...HEAD
+[v2.9.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.8.0...v2.9.0
 [v2.8.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.5...v2.8.0
 [v2.7.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.4...v2.7.5
 [v2.7.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.3...v2.7.4
