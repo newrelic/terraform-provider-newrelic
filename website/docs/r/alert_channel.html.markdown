@@ -57,7 +57,7 @@ Each alert channel type supports a specific set of arguments for the `config` bl
     * `key` - (Required) The key for integrating with VictorOps.
     * `route_key` - (Required) The route key for integrating with VictorOps.
   * `slack`
-    * `url` - (Required) Your organization's Slack URL.
+    * `url` - (Required) [Slack Webhook URL](https://slack.com/intl/en-es/help/articles/115005265063-Incoming-webhooks-for-Slack).
     * `channel` - (Optional) The Slack channel to send notifications to.
   * `opsgenie`
     * `api_key` - (Required) The API key for integrating with OpsGenie.
@@ -81,7 +81,7 @@ resource "newrelic_alert_channel" "foo" {
   type = "slack"
 
   config {
-    url     = "https://<YourOrganization>.slack.com"
+    url     = "https://hooks.slack.com/services/XXXXXXX/XXXXXXX/XXXXXXXXXX"
     channel = "example-alerts-channel"
   }
 }
