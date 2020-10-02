@@ -31,21 +31,26 @@ resource "newrelic_alert_policy" "foo" {
   name = "foo"
 }
 
-resource "newrelic_alert_condition" "foo" {
-  policy_id = newrelic_alert_policy.foo.id
+resource "newrelic_nrql_alert_condition" "foo" {
+  policy_id            = newrelic_alert_policy.foo.id
+  type                 = "static"
+  name                 = "foo"
+  description          = "Alert when transactions are taking too long"
+  runbook_url          = "https://www.example.com"
+  enabled              = true
+  value_function       = "single_value"
+  violation_time_limit = "one_hour"
 
-  name        = "foo"
-  type        = "apm_app_metric"
-  entities    = [data.newrelic_application.app.application_id]
-  metric      = "apdex"
-  runbook_url = "https://www.example.com"
+  nrql {
+    query             = "SELECT average(duration) FROM Transaction where appName = '${data.newrelic_entity.app.name}'"
+    evaluation_offset = 3
+  }
 
-  term {
-    duration      = 5
-    operator      = "below"
-    priority      = "critical"
-    threshold     = "0.75"
-    time_function = "all"
+  critical {
+    operator              = "above"
+    threshold             = 5.5
+    threshold_duration    = 300
+    threshold_occurrences = "ALL"
   }
 }
 ```
@@ -55,8 +60,8 @@ resource "newrelic_alert_condition" "foo" {
 The following arguments are supported:
 
 * `name` - (Required) The name of the entity in New Relic One.  The first entity matching this name for the given search parameters will be returned.
-* `type` - (Optional) The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, and WORRKLOAD.
-* `domain` - (Optional) The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, and SYNTH.
+* `type` - (Optional) The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, and WORKLOAD.
+* `domain` - (Optional) The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, SYNTH, and VIZ. If not specified, all domains are searched.
 * `tags` - (Optional) A tag applied to the entity.
 
 ## Attributes Reference

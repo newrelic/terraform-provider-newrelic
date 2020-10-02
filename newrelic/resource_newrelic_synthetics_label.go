@@ -11,7 +11,7 @@ import (
 
 func resourceNewRelicSyntheticsLabel() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: "newrelic_synthetics_label has been deprecated.  Use newrelic_entity_tags instead.",
+		DeprecationMessage: "`newrelic_synthetics_label` has been deprecated.  Use `newrelic_entity_tags` instead.",
 		Create:             resourceNewRelicSyntheticsLabelCreate,
 		Read:               resourceNewRelicSyntheticsLabelRead,
 		Delete:             resourceNewRelicSyntheticsLabelDelete,
