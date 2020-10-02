@@ -103,8 +103,8 @@ The following arguments are supported:
   * `visibility` - (Optional) Determines who can see the dashboard in an account. Valid values are `all` or `owner`.  Defaults to `all`.
   * `editable` - (Optional) Determines who can edit the dashboard in an account. Valid values are `all`,  `editable_by_all`, `editable_by_owner`, or `read_only`.  Defaults to `editable_by_all`.
   * `grid_column_count` - (Optional) The number of columns to use when organizing and displaying widgets. New Relic One supports a 3 column grid and a 12 column grid. New Relic Insights supports a 3 column grid.
-  * `filter` - (Optional) A nested block that describes a dashboard filter.  Exactly one nested `filter` block is allowed. See [Nested filter block](#nested-`filter`-block) below for details.
-  * `widget` - (Optional) A nested block that describes a visualization.  Up to 300 `widget` blocks are allowed in a dashboard definition. See [Nested widget blocks](#nested-`widget`-blocks) below for details.
+  * `filter` - (Optional) A nested block that describes a dashboard filter.  Exactly one nested `filter` block is allowed. See [Nested filter block](#nested-filter-block) below for details.
+  * `widget` - (Optional) A nested block that describes a visualization.  Up to 300 `widget` blocks are allowed in a dashboard definition. See [Nested widget blocks](#nested-widget-blocks) below for details.
 
   <a name="widget-configuration-recommendation"></a>
 
@@ -131,7 +131,7 @@ All nested `widget` blocks support the following common arguments:
 
 <a name="cross-account-widget-help"></a>
 
- -> **Configurating cross-account widgets:** To configure a cross-account widget with an account different from the account associated with your API key, you must set the widget's `account_id` attribute to the account ID you wish to pull data from. Also note, the provider must be configured with an API Key that is scoped to a user with proper permissions to access and perform operations in other accounts that fall within or under the account associated with your API key. To facilitate cross-account widgets, we recommend [configuring the provider with a Personal API Key](/docs/providers/newrelic/guides/provider_configuration.html#configuration-via-the-provider-block) from a user with **admin permissions** and access to the subaccount you would like to display data for in the widget.
+ -> **Configuring cross-account widgets:** To configure a cross-account widget with an account different from the account associated with your API key, you must set the widget's `account_id` attribute to the account ID you wish to pull data from. Also note, the provider must be configured with an API Key that is scoped to a user with proper permissions to access and perform operations in other accounts that fall within or under the account associated with your API key. To facilitate cross-account widgets, we recommend [configuring the provider with a Personal API Key](../guides/provider_configuration.html#configuration-via-the-provider-block) from a user with **admin permissions** and access to the subaccount you would like to display data for in the widget.
 
 Each `visualization` type supports an additional set of arguments:
 
