@@ -5,8 +5,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
@@ -39,7 +39,6 @@ func dataSourceNewRelicAlertChannel() *schema.Resource {
 			"config": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				MaxItems:    1,
 				Description: "Alert channel configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

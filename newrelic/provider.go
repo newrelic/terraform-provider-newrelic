@@ -5,10 +5,9 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/hashicorp/terraform-plugin-sdk/meta"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 
 	"github.com/newrelic/terraform-provider-newrelic/v2/version"
 )
@@ -22,7 +21,7 @@ const (
 )
 
 // Provider represents a resource provider in Terraform
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	deprecationMsgBaseURLs := "New Relic internal use only. API URLs are now configured based on the configured region."
 
 	provider := &schema.Provider{

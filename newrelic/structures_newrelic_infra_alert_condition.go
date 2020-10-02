@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
@@ -90,8 +90,8 @@ func flattenInfraAlertCondition(condition *alerts.InfrastructureCondition, d *sc
 	d.Set("event", condition.Event)
 	d.Set("select", condition.Select)
 	d.Set("type", strings.ToLower(condition.Type))
-	d.Set("created_at", condition.CreatedAt)
-	d.Set("updated_at", condition.UpdatedAt)
+	//d.Set("created_at", int(condition.CreatedAt))
+	//d.Set("updated_at", int(condition.UpdatedAt))
 	d.Set("description", condition.Description)
 
 	if condition.Where != "" {

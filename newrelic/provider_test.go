@@ -12,9 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
@@ -23,7 +22,7 @@ var (
 	testAccExpectedApplicationName  string
 	testAccExpectedAlertPolicyName  string
 	testAccAPIKey                   string
-	testAccProviders                map[string]terraform.ResourceProvider
+	testAccProviders                map[string]*schema.Provider
 	testAccProvider                 *schema.Provider
 	testAccountID                   int
 	testSubaccountID                int
@@ -35,8 +34,8 @@ func init() {
 	testAccExpectedAlertChannelName = fmt.Sprintf("%s tf-test@example.com", acctest.RandString(5))
 	testAccExpectedApplicationName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	testAccExpectedAlertPolicyName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
-	testAccProvider = Provider().(*schema.Provider)
-	testAccProviders = map[string]terraform.ResourceProvider{
+	testAccProvider = Provider()
+	testAccProviders = map[string]*schema.Provider{
 		"newrelic": testAccProvider,
 	}
 	testAccAPIKey = os.Getenv("NEW_RELIC_API_KEY")

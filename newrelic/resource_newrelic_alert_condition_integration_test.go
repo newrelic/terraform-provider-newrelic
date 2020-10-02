@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
@@ -26,32 +26,6 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 				Config: testAccNewRelicAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "name", rName),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "type", "apm_app_metric"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "enabled", "true"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "runbook_url", "https://foo.example.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "entities.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "metric", "apdex"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "condition_scope", "application"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1025554152.duration", "5"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1025554152.operator", "below"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1025554152.priority", "critical"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1025554152.threshold", "0.75"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1025554152.time_function", "all"),
 				),
 			},
 			// Test: Check no diff on re-apply
@@ -64,32 +38,6 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 				Config: testAccNewRelicAlertConditionConfigUpdated(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertConditionExists("newrelic_alert_condition.foo"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "name", rNameUpdated),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "type", "apm_app_metric"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "enabled", "false"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "runbook_url", "https://bar.example.com"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "entities.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "metric", "error_percentage"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "condition_scope", "application"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.3409672004.duration", "10"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.3409672004.operator", "above"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.3409672004.priority", "critical"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.3409672004.threshold", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.3409672004.time_function", "any"),
 				),
 			},
 			// Test: Import

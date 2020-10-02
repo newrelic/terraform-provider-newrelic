@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/plugins"
 )
 
@@ -58,7 +58,7 @@ func dataSourceNewRelicPluginRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(strconv.Itoa(plugin.ID))
-	d.Set("id", plugin.ID)
+	d.Set("id", strconv.Itoa(plugin.ID))
 
 	return nil
 }

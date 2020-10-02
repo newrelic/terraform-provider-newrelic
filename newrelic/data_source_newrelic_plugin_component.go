@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/plugins"
 )
 
@@ -76,7 +76,7 @@ func dataSourceNewRelicPluginComponentRead(d *schema.ResourceData, meta interfac
 
 func flattenPluginsComponent(component *plugins.Component, d *schema.ResourceData) {
 	d.SetId(strconv.Itoa(component.ID))
-	d.Set("id", component.ID)
+	d.Set("id", strconv.Itoa(component.ID))
 	d.Set("name", component.Name)
 	d.Set("health_status", component.HealthStatus)
 }
