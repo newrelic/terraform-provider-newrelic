@@ -10,6 +10,8 @@ description: |-
 
 Use this resource to create, update, and delete a New Relic Synthetics Location Alerts.
 
+-> **NOTE:** The [newrelic_nrql_alert_condition](nrql_alert_condition.html) resource is preferred for configuring alerts conditions. In most cases feature parity can be achieved with a NRQL query. Other condition types may be deprecated in the future and receive fewer product updates.
+
 ## Example Usage
 
 ```hcl

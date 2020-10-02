@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_plugins\_alert\_condition
 
+~> **DEPRECATED** Use at your own risk. Use the [`newrelic_nrql_alert_condition`](nrql_alert_condition.html) resource instead. This feature may be removed in the next major release.
+
 Use this resource to create and manage plugins alert conditions in New Relic.
 
 ## Example Usage

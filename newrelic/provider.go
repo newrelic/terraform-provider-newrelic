@@ -138,7 +138,6 @@ func Provider() terraform.ResourceProvider {
 			"newrelic_nrql_alert_condition":                     resourceNewRelicNrqlAlertCondition(),
 			"newrelic_plugins_alert_condition":                  resourceNewRelicPluginsAlertCondition(),
 			"newrelic_synthetics_alert_condition":               resourceNewRelicSyntheticsAlertCondition(),
-			"newrelic_synthetics_label":                         resourceNewRelicSyntheticsLabel(),
 			"newrelic_synthetics_monitor":                       resourceNewRelicSyntheticsMonitor(),
 			"newrelic_synthetics_monitor_script":                resourceNewRelicSyntheticsMonitorScript(),
 			"newrelic_synthetics_multilocation_alert_condition": resourceNewRelicSyntheticsMultiLocationAlertCondition(),
