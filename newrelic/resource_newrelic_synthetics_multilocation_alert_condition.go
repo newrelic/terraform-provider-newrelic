@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -108,7 +109,9 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionCreate(d *schema.Resou
 }
 
 func resourceNewRelicSyntheticsMultiLocationAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading New Relic Alerts multi-location failure condition %s", d.Id())
 
@@ -120,7 +123,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionRead(d *schema.Resourc
 	policyID := ids[0]
 	id := ids[1]
 
-	_, err = client.Alerts.GetPolicy(policyID)
+	_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")

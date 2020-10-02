@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
@@ -100,7 +101,9 @@ func resourceNewRelicSyntheticsAlertConditionCreate(d *schema.ResourceData, meta
 }
 
 func resourceNewRelicSyntheticsAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading New Relic Synthetics alert condition %s", d.Id())
 
@@ -112,7 +115,7 @@ func resourceNewRelicSyntheticsAlertConditionRead(d *schema.ResourceData, meta i
 	policyID := ids[0]
 	id := ids[1]
 
-	_, err = client.Alerts.GetPolicy(policyID)
+	_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
