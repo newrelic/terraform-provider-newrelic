@@ -14,7 +14,6 @@ description: |-
 * The examples below assume you already have a New Relic agent deployed. If you don't have New Relic integrated yet, check out [New Relic's introduction documentation](https://docs.newrelic.com/docs/using-new-relic/welcome-new-relic/get-started/introduction-new-relic) to get started there, then head back over here to get started with the New Relic Terraform Provider using the examples provided.
 * [Install Terraform](https://www.terraform.io/intro/getting-started/install.html) and read the Terraform getting started guide that follows. This guide will assume a basic understanding of Terraform.
 * Locate your Personal API key by following [New Relic's Personal API key docs][personal_api_key].
-* Locate your Admin's API key by following [New Relic's Admin API key docs][admin_api_key].
 
 ## Configuring the Provider
 
@@ -35,11 +34,21 @@ Once you've successfully initialized your Terraform working directory, you'll wa
 **main.tf**
 
 ```hcl
+# Configure terraform
+terraform {
+  required_version = "~> 0.13.0"
+  required_providers {
+    newrelic = {
+      source  = "newrelic/newrelic"
+      version = "~> 2.9.0"
+    }
+  }
+}
+
 # Configure the New Relic provider
 provider "newrelic" {
   account_id = <Your Account ID>
   api_key = <Your Personal API Key>    # usually prefixed with 'NRAK'
-  admin_api_key = <Your Admin API Key> # usually prefixed with 'NRAA'
   region = "US"                        # Valid regions are US and EU
 }
 ```
@@ -220,5 +229,4 @@ If you ever need to make changes to your configuration, you can run `terraform a
 You can also run `terraform destroy` to tear down your resources if that's ever needed.
 
 [personal_api_key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#personal-api-key
-[admin_api_key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin
 [terraform_data_sources]: https://www.terraform.io/docs/configuration/data-sources.html

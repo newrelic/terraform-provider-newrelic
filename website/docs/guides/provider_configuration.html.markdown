@@ -26,7 +26,6 @@ If you're using Terraform locally, you can set the environment variables in your
 ```bash
 # Add this to your .bash_profile or .bashrc
 export NEW_RELIC_API_KEY="<your New Relic Personal API key>"
-export NEW_RELIC_ADMIN_API_KEY="<your New Relic Admin API key>"
 export NEW_RELIC_REGION="US"
 ```
 
@@ -46,7 +45,6 @@ The table below shows the available environment variables and how they map to th
 | <small>Schema Attribute</small> | <small>Equivalent Env Variable</small> | <small>Required?</small> | <small>Default</small> | <small>Description</small>                                                                   |
 | ------------------------------- | -------------------------------------- | ------------------------ | ---------------------- | -------------------------------------------------------------------------------------------- |
 | `account_id`                    | `NEW_RELIC_ACCOUNT_ID`                 | required                 | `null`                 | Your New Relic [account ID].                                                                 |
-| `admin_api_key`                 | `NEW_RELIC_ADMIN_API_KEY`              | required                 | `null`                 | Your New Relic [admin API key] \(usually prefixed with `NRAA`).                                        |
 | `api_key`                       | `NEW_RELIC_API_KEY`                    | required                 | `null`                 | Your New Relic [personal API key] \(usually prefixed with `NRAK`).                                     |
 | `region`                        | `NEW_RELIC_REGION`                     | required                 | `null`                 | Your New Relic account's [data center region] \(`US` or `EU`).                               |
 | `insights_insert_key`           | `NEW_RELIC_INSIGHTS_INSERT_KEY`        | optional                 | `null`                 | Your [Insights insert API key] for Insights events.                                          |
@@ -65,7 +63,6 @@ Configuring the provider from within your HCL is a quick way to get started, how
 ```hcl
 provider "newrelic" {
   api_key = <Your Personal API key>
-  admin_api_key = <Your Admin API key>
   account_id = <your New Relic account ID>
   region = "US"
 }
@@ -91,7 +88,6 @@ provider "newrelic" {
 
 [account ID]: https://docs.newrelic.com/docs/accounts/install-new-relic/account-setup/account-id
 [personal API key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#personal-api-key
-[admin API key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin
 [data center region]: https://docs.newrelic.com/docs/using-new-relic/welcome-new-relic/get-started/our-eu-us-region-data-centers
 [Insights query API key]: https://docs.newrelic.com/docs/insights/insights-api/get-data/query-insights-event-data-api
 [Insights insert API key]: https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/introduction-event-api#register
