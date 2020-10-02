@@ -27,7 +27,7 @@ resource "newrelic_infra_alert_condition" "high_disk_usage" {
   event      = "StorageSample"
   select     = "diskUsedPercent"
   comparison = "above"
-  where      = "(`hostname` LIKE '%frontend%')"
+  where      = "(hostname LIKE '%frontend%')"
 
   critical {
     duration      = 25
@@ -50,7 +50,7 @@ resource "newrelic_infra_alert_condition" "high_db_conn_count" {
   event      = "DatastoreSample"
   select     = "provider.databaseConnections.Average"
   comparison = "above"
-  where      = "(`hostname` LIKE '%db%')"
+  where      = "(hostname LIKE '%db%')"
   integration_provider = "RdsDbInstance"
 
   critical {
@@ -66,7 +66,8 @@ resource "newrelic_infra_alert_condition" "process_not_running" {
   name             = "Process not running (/usr/bin/ruby)"
   type             = "infra_process_running"
   comparison       = "equal"
-  process_where    = "`commandName` = '/usr/bin/ruby'"
+  where            = "hostname = 'web01'"
+  process_where    = "commandName = '/usr/bin/ruby'"
 
   critical {
     duration      = 5
@@ -79,7 +80,7 @@ resource "newrelic_infra_alert_condition" "host_not_reporting" {
 
   name       = "Host not reporting"
   type       = "infra_host_not_reporting"
-  where      = "(`hostname` LIKE '%frontend%')"
+  where      = "(hostname LIKE '%frontend%')"
 
   critical {
     duration = 5
@@ -101,7 +102,7 @@ The following arguments are supported:
   * `warning` - (Optional) Identifies the threshold parameters for opening a warning alert violation. See [Thresholds](#thresholds) below for details.
   * `enabled` - (Optional) Whether the condition is turned on or off.  Valid values are `true` and `false`.  Defaults to `true`.
   * `where` - (Optional) If applicable, this identifies any Infrastructure host filters used; for example: `hostname LIKE '%cassandra%'`.
-  * `process_where` - (Optional) Any filters applied to processes; for example: `commandName = 'java'`.  Supported by the `infra_process_running` condition type.
+  * `process_where` - (Optional) Any filters applied to processes; for example: `commandName = 'java'`.  Required by the `infra_process_running` condition type.
   * `integration_provider` - (Optional) For alerts on integrations, use this instead of `event`.  Supported by the `infra_metric` condition type.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
   * `violation_close_timer` - (Optional) Determines how much time will pass before a violation is automatically closed. Setting the time limit to 0 prevents a violation from being force-closed.
