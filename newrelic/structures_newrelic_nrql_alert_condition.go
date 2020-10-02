@@ -297,7 +297,7 @@ func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.Nrq
 
 		if warning, ok := d.GetOk("warning"); ok {
 			x := warning.([]interface{})
-			// A warning attribute is a list, but is limited to a single item in the shema.
+			// A warning attribute is a list, but is limited to a single item in the schema.
 			if len(x) > 0 {
 				single := x[0].(map[string]interface{})
 
@@ -345,6 +345,11 @@ func expandSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionSignal, er
 		if v != 0 || (signal.FillOption != nil && *signal.FillOption == alerts.AlertsFillOptionTypes.STATIC) {
 			signal.FillValue = &v
 		}
+	}
+
+	if aggregationWindow, ok := d.GetOk("aggregation_window"); ok {
+		v := aggregationWindow.(int)
+		signal.AggregationWindow = &v
 	}
 
 	return &signal, nil
@@ -467,6 +472,10 @@ func flattenExpiration(d *schema.ResourceData, expiration *alerts.AlertsNrqlCond
 func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSignal) error {
 	if signal == nil {
 		return nil
+	}
+
+	if err := d.Set("aggregation_window", signal.AggregationWindow); err != nil {
+		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_window`: %v", err)
 	}
 
 	if err := d.Set("fill_value", signal.FillValue); err != nil {

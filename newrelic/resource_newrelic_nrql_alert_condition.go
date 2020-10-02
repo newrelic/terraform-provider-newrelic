@@ -293,6 +293,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:    true,
 				Description: "Whether to close all open violations when the signal expires.",
 			},
+			"aggregation_window": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The duration of the time window used to evaluate the NRQL query, in seconds.",
+			},
 			"expiration_duration": {
 				Type:        schema.TypeInt,
 				Optional:    true,
