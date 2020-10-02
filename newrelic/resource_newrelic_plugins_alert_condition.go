@@ -11,10 +11,11 @@ import (
 
 func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicPluginsAlertConditionCreate,
-		Read:   resourceNewRelicPluginsAlertConditionRead,
-		Update: resourceNewRelicPluginsAlertConditionUpdate,
-		Delete: resourceNewRelicPluginsAlertConditionDelete,
+		DeprecationMessage: "`newrelic_plugins_alert_condition` has been deprecated.  Use `newrelic_nrql_alert_condition` instead.",
+		Create:             resourceNewRelicPluginsAlertConditionCreate,
+		Read:               resourceNewRelicPluginsAlertConditionRead,
+		Update:             resourceNewRelicPluginsAlertConditionUpdate,
+		Delete:             resourceNewRelicPluginsAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
