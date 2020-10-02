@@ -9,17 +9,42 @@
 
 ## Requirements
 
--   [Terraform](https://www.terraform.io/downloads.html) 0.11.x
+-   [Terraform](https://www.terraform.io/downloads.html) 0.11+
 
 ## Using the provider
 
 To use the latest version of the provider in your Terraform environment, run `terraform init` and Terraform will automatically install the provider.
 
-If you wish to pin your environment to a specific release, you can do so with a `required_providers` statement in your Terraform manifest.
+If you wish to pin your environment to a specific release of the provider, you can do so with a `required_providers` statement in your Terraform manifest. The `terraform` [configuration block](https://www.terraform.io/docs/configuration/provider-requirements.html) varies slightly depending on which Terraform version you're using. See below for more examples of configuring the provider version for the different versions of Terraform.
 
+For Terraform version 0.13.x
 ```hcl
-required_providers {
-    newrelic = "~> 1.19.0"
+terraform {
+  required_version = "~> 0.13.0"
+  required_providers {
+    newrelic = {
+      source  = "newrelic/newrelic"
+      version = "~> 2.7.5"
+    }
+  }
+}
+```
+
+For Terraform version 0.12.x
+```hcl
+terraform {
+  required_providers {
+    newrelic = {
+      version = "~> 2.7.5"
+    }
+  }
+}
+```
+
+For Terraform version 0.11.x
+```hcl
+provider "newrelic" {
+  version = "~> 2.7.5"
 }
 ```
 
@@ -69,6 +94,16 @@ _Note:_ Acceptance tests _create real resources_, and often cost money to run. T
 $ make testacc
 ```
 
+#### Go Version Support
+
+We'll aim to support the latest supported release of Go, along with the
+previous release.  This doesn't mean that building with an older version of Go
+will not work, but we don't intend to support a Go version in this project that
+is not supported by the larger Go community.  Please see the [Go
+releases][go_releases] page for more details.
+
 [provider_docs]: https://www.terraform.io/docs/providers/newrelic/index.html
 
 [contributing]: https://github.com/newrelic/terraform-provider-newrelic/blob/master/CONTRIBUTING.md
+
+[go_releases]: https://github.com/golang/go/wiki/Go-Release-Cycle

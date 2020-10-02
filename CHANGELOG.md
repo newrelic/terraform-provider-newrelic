@@ -1,3 +1,26 @@
+<a name="v2.9.0"></a>
+## [v2.9.0] - 2020-10-01
+### Documentation Updates
+- update changelog
+
+### Features
+- **dashboard:** enable Personal API Key auth for dashboards and some sythentics resources
+
+<a name="v2.8.0"></a>
+## [v2.8.0] - 2020-09-30
+### Documentation Updates
+- update infra alert condition api key type
+- update changelog
+- update development instructions for new TF version
+- DEPRECATION notice for newrelic_alert_condition
+- update supported Go information and test config
+- **README:** update provider configuration pin version examples
+- **dashboard:** update docs with info regarding widget.account_id and cross-account widgets
+- **dashboard:** add cross-account example
+
+### Features
+- **dashboard:** support cross-account widgets :)
+
 <a name="v2.7.5"></a>
 ## [v2.7.5] - 2020-09-23
 ### Bug Fixes
@@ -611,7 +634,9 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.5...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...HEAD
+[v2.9.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.8.0...v2.9.0
+[v2.8.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.5...v2.8.0
 [v2.7.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.4...v2.7.5
 [v2.7.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.3...v2.7.4
 [v2.7.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.7.2...v2.7.3
