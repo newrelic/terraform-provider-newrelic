@@ -30,8 +30,15 @@ resource "newrelic_nrql_alert_condition" "foo" {
   description          = "Alert when transactions are taking too long"
   runbook_url          = "https://www.example.com"
   enabled              = true
-  value_function       = "single_value"
   violation_time_limit = "one_hour"
+  value_function       = "single_value"
+
+  fill_option          = "static"
+  fill_value           = 1.0
+
+  expiration_duration            = 120
+  open_violation_on_expiration   = true
+  close_violations_on_expiration = true
 
   nrql {
     query             = "SELECT average(duration) FROM Transaction where appName = 'Your App'"
@@ -71,20 +78,32 @@ The following arguments are supported:
 - `term` - (Optional) **DEPRECATED** Use `critical`, and `warning` instead.  A list of terms for this condition. See [Terms](#terms) below for details.
 - `critical` - (Required) A list containing the `critical` threshold values. See [Terms](#terms) below for details.
 - `warning` - (Optional) A list containing the `warning` threshold values. See [Terms](#terms) below for details.
-- `value_function` - (Optional) Possible values are `single_value`, `sum` (case insensitive). Defaults to `single_value`.
+- `value_function` - (Required if `type` is `static`, optional when `type` is `baseline` or `outlier` ) Possible values are `single_value`, `sum` (case insensitive).
 - `expected_groups` - (Optional) Number of expected groups when using `outlier` detection.
 - `open_violation_on_group_overlap` - (Optional) Whether or not to trigger a violation when groups overlap. Set to `true` if you want to trigger a violation when groups overlap. This argument is only applicable in `outlier` conditions.
 - `ignore_overlap` - (Optional) **DEPRECATED:** Use `open_violation_on_group_overlap` instead, but use the inverse value of your boolean - e.g. if `ignore_overlap = false`, use `open_violation_on_group_overlap = true`. This argument sets whether to trigger a violation when groups overlap. If set to `true` overlapping groups will not trigger a violation. This argument is only applicable in `outlier` conditions.
-- `violation_time_limit` - (Optional, however one of `violation_time_limit`, or `violation_time_limit_seconds` is Required) Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are `ONE_HOUR`, `TWO_HOURS`, `FOUR_HOURS`, `EIGHT_HOURS`, `TWELVE_HOURS`, `TWENTY_FOUR_HOURS` (case insensitive).
-- `violation_time_limit_seconds` - (Optional, however one of `violation_time_limit`, or `violation_time_limit_seconds` is Required) **DEPRECATED:** Use `violation_time_limit` instead. Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are `3600`, `7200`, `14400`, `28800`, `43200`, and `86400`.
+- `violation_time_limit` - (Optional*) Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are `ONE_HOUR`, `TWO_HOURS`, `FOUR_HOURS`, `EIGHT_HOURS`, `TWELVE_HOURS`, `TWENTY_FOUR_HOURS` (case insensitive).<br>
+<small>\***Note**: One of `violation_time_limit` _or_ `violation_time_limit_seconds` must be set, but not both.</small>
+
+- `violation_time_limit_seconds` - (Optional*) **DEPRECATED:** Use `violation_time_limit` instead. Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are `3600`, `7200`, `14400`, `28800`, `43200`, and `86400`.<br>
+<small>\***Note**: One of `violation_time_limit` _or_ `violation_time_limit_seconds` must be set, but not both.</small>
+
+- `fill_option` - (Optional) - Which strategy to use when filling gaps in the signal. Possible values are `none`, `last_value` or `static`. If `static`, the `fill_value` field will be used for filling gaps in the signal.
+- `fill_value` - (Optional, required when `fill_option` is `static`) This value will be used for filling gaps in the signal.
+- `expiration_duration` - (Optional) - The amount of time (in seconds) to wait before considering the signal expired.
+- `open_violation_on_expiration` - (Optional) - Whether to create a new violation to capture that the signal expired.
+- `close_violations_on_expiration` - (Optional) - Whether to close all open violations when the signal expires.
 
 ## NRQL
 
 The `nrql` block supports the following arguments:
 
 - `query` - (Required) The NRQL query to execute for the condition.
-- `evaluation_offset` - (Optional) Represented in minutes and must be within 1-20 minutes (inclusive). NRQL queries are evaluated in one-minute time windows. The start time depends on this value. It's recommended to set this to 3 minutes. An offset of less than 3 minutes will trigger violations sooner, but you may see more false positives and negatives due to data latency. With `evaluation_offset` set to 3 minutes, the NRQL time window applied to your query will be: `SINCE 3 minutes ago UNTIL 2 minutes ago`.
-- `since_value` - (Optional)  **DEPRECATED:** Use `evaluation_offset` instead. The value to be used in the `SINCE <X> minutes ago` clause for the NRQL query. Must be between 1-20 (inclusive).
+- `evaluation_offset` - (Optional*) Represented in minutes and must be within 1-20 minutes (inclusive). NRQL queries are evaluated in one-minute time windows. The start time depends on this value. It's recommended to set this to 3 minutes. An offset of less than 3 minutes will trigger violations sooner, but you may see more false positives and negatives due to data latency. With `evaluation_offset` set to 3 minutes, the NRQL time window applied to your query will be: `SINCE 3 minutes ago UNTIL 2 minutes ago`.<br>
+<small>\***Note**: One of `evaluation_offset` _or_ `since_value` must be set, but not both.</small>
+
+- `since_value` - (Optional*)  **DEPRECATED:** Use `evaluation_offset` instead. The value to be used in the `SINCE <X> minutes ago` clause for the NRQL query. Must be between 1-20 (inclusive). <br>
+<small>\***Note**: One of `evaluation_offset` _or_ `since_value` must be set, but not both.</small>
 
 ## Terms
 

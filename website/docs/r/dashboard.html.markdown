@@ -62,7 +62,7 @@ resource "newrelic_dashboard" "exampledash" {
     duration = 1800000
     visualization = "metric_line_chart"
     entity_ids = [
-      data.newrelic_application.my_application.application_id,
+      data.newrelic_entity.my_application.application_id,
     ]
     metric {
         name = "Apdex"
@@ -92,6 +92,7 @@ resource "newrelic_dashboard" "exampledash" {
   }
 }
 ```
+See additional [examples](#additional-examples).
 
 ## Argument Reference
 
@@ -102,10 +103,14 @@ The following arguments are supported:
   * `visibility` - (Optional) Determines who can see the dashboard in an account. Valid values are `all` or `owner`.  Defaults to `all`.
   * `editable` - (Optional) Determines who can edit the dashboard in an account. Valid values are `all`,  `editable_by_all`, `editable_by_owner`, or `read_only`.  Defaults to `editable_by_all`.
   * `grid_column_count` - (Optional) The number of columns to use when organizing and displaying widgets. New Relic One supports a 3 column grid and a 12 column grid. New Relic Insights supports a 3 column grid.
-  * `widget` - (Optional) A nested block that describes a visualization.  Up to 300 `widget` blocks are allowed in a dashboard definition.  See [Nested widget blocks](#nested-`widget`-blocks) below for details.
-  * `filter` - (Optional) A nested block that describes a dashboard filter.  Exactly one nested `filter` block is allowed. See [Nested filter block](#nested-`filter`-block) below for details.
+  * `filter` - (Optional) A nested block that describes a dashboard filter.  Exactly one nested `filter` block is allowed. See [Nested filter block](#nested-filter-block) below for details.
+  * `widget` - (Optional) A nested block that describes a visualization.  Up to 300 `widget` blocks are allowed in a dashboard definition. See [Nested widget blocks](#nested-widget-blocks) below for details.
 
-## Attribute Refence
+  <a name="widget-configuration-recommendation"></a>
+
+  -> **Widget configuration recommendation:** While the `newrelic_dashboard` resource attempts to avoid configuration drift where possible, there is still potential for drift to occur due to underlying API limitations, usually involving [cross-account widgets](#account_id). To better facilitate the prevention of configuration drift with widgets, we recommend ordering your widgets in a consistent manner and maintaining that order if possible. An example could be ordering the `widget` blocks in the order they appear your New Relic Dashboard UI. The first `widget` block would be the widget displayed at the top left of your dashboard and the last `widget` block would be the widget at the bottom right of the dashboard.
+
+## Attribute Reference
 
 In addition to all arguments above, the following attributes are exported:
 
@@ -122,6 +127,11 @@ All nested `widget` blocks support the following common arguments:
   * `width` - (Optional) Width of the widget.  Valid values are `1` to `3` inclusive.  Defaults to `1`.
   * `height` - (Optional) Height of the widget.  Valid values are `1` to `3` inclusive.  Defaults to `1`.
   * `notes` - (Optional) Description of the widget.
+  * `account_id` - (Optional) The account ID to use when querying data. If `account_id` is omitted, the widget will use the account ID associated with the API key used in your provider configuration. You can also use `account_id` to configure cross-account widgets or simply to be explicit about which account the widget will be pulling data from.
+
+<a name="cross-account-widget-help"></a>
+
+ -> **Configuring cross-account widgets:** To configure a cross-account widget with an account different from the account associated with your API key, you must set the widget's `account_id` attribute to the account ID you wish to pull data from. Also note, the provider must be configured with an API Key that is scoped to a user with proper permissions to access and perform operations in other accounts that fall within or under the account associated with your API key. To facilitate cross-account widgets, we recommend [configuring the provider with a Personal API Key](../guides/provider_configuration.html#configuration-via-the-provider-block) from a user with **admin permissions** and access to the subaccount you would like to display data for in the widget.
 
 Each `visualization` type supports an additional set of arguments:
 
@@ -160,6 +170,94 @@ The optional filter block supports the following arguments:
   * `event_types` - (Optional) A list of event types to enable filtering for.
   * `attributes` - (Optional) A list of attributes belonging to the specified event types to enable filtering for.
 
+## Additional Examples
+
+###  Create cross-account widgets in your dashboard.
+
+The example below shows how you can display data for an application from a primary account and an application from a subaccount. In order to create cross-account widgets, you must use an API key from a user with admin permissions in the primary account. Please see the [`widget` attribute documentation](#cross-account-widget-help) for more details.
+
+```hcl
+# IMPORTANT!
+# The Personal API Key must be from a user with admin permissions in the main account.
+provider "newrelic" {
+  api_key = "NRAK-*****"
+  # ... additional configuration
+}
+
+# Fetch data for an application in your primary account to reference in the dashboard
+data "newrelic_entity" "primary_account_application" {
+  # Must be a unique name, otherwise use the `tags` attribute to get more specific if needed
+  name   = "Main Account Application Name"
+  type   = "APPLICATION"
+  domain = "APM"
+}
+
+# Fetch data for an application in a subaccount to reference in the dashboard
+data "newrelic_entity" "subaccount_application" {
+  # Must be a unique name, otherwise use the `tags` attribute to get more specific if needed
+  name     = "Subaccount Application Name"
+  type     = "APPLICATION"
+  domain   = "APM"
+}
+
+resource "newrelic_dashboard" "cross_account_widget_example" {
+  title = "tf-test-cross-account-widget-dashboard"
+
+  filter {
+    event_types = [
+      "Transaction"
+    ]
+    attributes = [
+      "appName",
+      "envName"
+    ]
+  }
+
+  grid_column_count = 12
+
+  # Omitting `account_id` will make this widget pull data from the primary account.
+  widget {
+    title         = "Apdex (primary account)"
+    row           = 1
+    column        = 1
+    width         = 6
+    height        = 3
+    visualization = "metric_line_chart"
+    duration      = 1800000
+
+    metric {
+      name   = "Apdex"
+      values = ["score"]
+    }
+
+    entity_ids    = [
+      data.newrelic_entity.primary_account_application.application_id
+    ]
+  }
+
+  # Setting `account_id` to a subaccount ID will make this widget pull data from the subaccount.
+  widget {
+    account_id    = var.subaccount_id
+    title         = "Apdex (subaccount)"
+    row           = 1
+    column        = 7
+    width         = 6
+    height        = 3
+    visualization = "metric_line_chart"
+    duration      = 1800000
+
+    metric {
+      name   = "Apdex"
+      values = ["score"]
+    }
+
+    entity_ids    = [
+      data.newrelic_entity.subaccount_application.application_id
+    ]
+  }
+}
+```
+
 ## Import
 
 New Relic dashboards can be imported using their ID, e.g.
@@ -168,4 +266,4 @@ New Relic dashboards can be imported using their ID, e.g.
 $ terraform import newrelic_dashboard.my_dashboard 8675309
 ```
 
-~> **NOTE:** Due to API restrictions, importing a dashboard resource will set the `grid_column_count` attribute to `3`. If your dashboard is a New Relic One dashboard _and_ uses a 12 column grid, you will need to make sure `grid_column_count` is set to `12` in your configuration, then run `terraform apply` after importing to sync remote state with Terraform state.
+~> **NOTE:** Due to API restrictions, importing a dashboard resource will set the `grid_column_count` attribute to `3`. If your dashboard is a New Relic One dashboard _and_ uses a 12 column grid, you will need to make sure `grid_column_count` is set to `12` in your configuration, then run `terraform apply` after importing to sync remote state with Terraform state. Also note, cross-account widgets cannot be imported due to API restrictions.

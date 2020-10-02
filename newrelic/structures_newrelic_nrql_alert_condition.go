@@ -36,10 +36,24 @@ var (
 	violationTimeLimitMapNewOld = map[alerts.NrqlConditionViolationTimeLimit]int{
 		alerts.NrqlConditionViolationTimeLimits.OneHour:         3600,
 		alerts.NrqlConditionViolationTimeLimits.TwoHours:        7200,
-		alerts.NrqlConditionViolationTimeLimits.FourHours:       1440,
-		alerts.NrqlConditionViolationTimeLimits.EightHours:      2880,
-		alerts.NrqlConditionViolationTimeLimits.TwelveHours:     4320,
-		alerts.NrqlConditionViolationTimeLimits.TwentyFourHours: 8640,
+		alerts.NrqlConditionViolationTimeLimits.FourHours:       14400,
+		alerts.NrqlConditionViolationTimeLimits.EightHours:      28800,
+		alerts.NrqlConditionViolationTimeLimits.TwelveHours:     43200,
+		alerts.NrqlConditionViolationTimeLimits.TwentyFourHours: 86400,
+	}
+
+	// old:new
+	fillOptionMap = map[string]*alerts.AlertsFillOption{
+		"none":       &alerts.AlertsFillOptionTypes.NONE,
+		"last_value": &alerts.AlertsFillOptionTypes.LAST_VALUE,
+		"static":     &alerts.AlertsFillOptionTypes.STATIC,
+	}
+
+	// new:old
+	fillOptionMapNewOld = map[alerts.AlertsFillOption]string{
+		alerts.AlertsFillOptionTypes.NONE:       "none",
+		alerts.AlertsFillOptionTypes.LAST_VALUE: "last_value",
+		alerts.AlertsFillOptionTypes.STATIC:     "static",
 	}
 )
 
@@ -126,6 +140,14 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 
 	input.Terms = terms
 
+	if input.Expiration, err = expandExpiration(d); err != nil {
+		return nil, err
+	}
+
+	if input.Signal, err = expandSignal(d); err != nil {
+		return nil, err
+	}
+
 	return &input, nil
 }
 
@@ -179,16 +201,6 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 
 	// required
 	threshold := term["threshold"].(float64)
-
-	if conditionType == "baseline" {
-		if duration < 120 || duration > 3600 {
-			return nil, fmt.Errorf("for baseline conditions duration must be in range %v, got %v", "[2, 60]", duration)
-		}
-
-		if threshold < 1 || threshold > 1000 {
-			return nil, fmt.Errorf("for baseline conditions threshold must be in range %v, got %v", "[1, 1000]", threshold)
-		}
-	}
 
 	thresholdOccurrences, err := expandNrqlThresholdOccurrences(term)
 	if err != nil {
@@ -305,6 +317,40 @@ func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.Nrq
 }
 
 // NerdGraph
+func expandExpiration(d *schema.ResourceData) (*alerts.AlertsNrqlConditionExpiration, error) {
+	var expiration alerts.AlertsNrqlConditionExpiration
+
+	expiration.OpenViolationOnExpiration = d.Get("open_violation_on_expiration").(bool)
+	expiration.CloseViolationsOnExpiration = d.Get("close_violations_on_expiration").(bool)
+
+	// 0 is not a valid expiration duration so don't set it if it's nonexistent
+	if expirationDuration, ok := d.GetOk("expiration_duration"); ok {
+		v := expirationDuration.(int)
+		expiration.ExpirationDuration = &v
+	}
+
+	return &expiration, nil
+}
+
+// NerdGraph
+func expandSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionSignal, error) {
+	signal := alerts.AlertsNrqlConditionSignal{
+		FillOption: fillOptionMap[strings.ToLower(d.Get("fill_option").(string))],
+	}
+
+	// Due to the way that nulls are handled as zeros in Terraform 0.11, add another check that a 0 fill_value
+	// can only be applied when the fill_option is static
+	if fillValue, ok := d.GetOkExists("fill_value"); ok {
+		v := fillValue.(float64)
+		if v != 0 || (signal.FillOption != nil && *signal.FillOption == alerts.AlertsFillOptionTypes.STATIC) {
+			signal.FillValue = &v
+		}
+	}
+
+	return &signal, nil
+}
+
+// NerdGraph
 func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertCondition, d *schema.ResourceData) error {
 	policyID, err := strconv.Atoi(condition.PolicyID)
 	if err != nil {
@@ -385,6 +431,54 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 		d.Set("violation_time_limit", condition.ViolationTimeLimit)
 	}
 
+	if err := flattenExpiration(d, condition.Expiration); err != nil {
+		return err
+	}
+
+	if err := flattenSignal(d, condition.Signal); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// NerdGraph
+func flattenExpiration(d *schema.ResourceData, expiration *alerts.AlertsNrqlConditionExpiration) error {
+	if expiration == nil {
+		return nil
+	}
+
+	if err := d.Set("open_violation_on_expiration", expiration.OpenViolationOnExpiration); err != nil {
+		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `open_violation_on_expiration`: %v", err)
+	}
+
+	if err := d.Set("close_violations_on_expiration", expiration.CloseViolationsOnExpiration); err != nil {
+		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `close_violations_on_expiration`: %v", err)
+	}
+
+	if err := d.Set("expiration_duration", expiration.ExpirationDuration); err != nil {
+		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `expiration_duration`: %v", err)
+	}
+
+	return nil
+}
+
+// NerdGraph
+func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSignal) error {
+	if signal == nil {
+		return nil
+	}
+
+	if err := d.Set("fill_value", signal.FillValue); err != nil {
+		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `fill_value`: %v", err)
+	}
+
+	if signal.FillOption != nil {
+		if err := d.Set("fill_option", fillOptionMapNewOld[*signal.FillOption]); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `fill_option`: %v", err)
+		}
+	}
+
 	return nil
 }
 
@@ -426,16 +520,24 @@ func flattenNrqlTerms(terms []alerts.NrqlConditionTerm, configTerms []interface{
 			"threshold": term.Threshold,
 		}
 
-		setDuration := configuredTerms[i]["duration"]
-		if setDuration != nil && setDuration.(int) > 0 {
-			dst["duration"] = term.ThresholdDuration / 60 // convert to minutes for old way
+		if i < len(configuredTerms) {
+			setDuration := configuredTerms[i]["duration"]
+			if setDuration != nil && setDuration.(int) > 0 {
+				dst["duration"] = term.ThresholdDuration / 60 // convert to minutes for old way
+			} else {
+				dst["threshold_duration"] = term.ThresholdDuration
+			}
 		} else {
 			dst["threshold_duration"] = term.ThresholdDuration
 		}
 
-		setTimeFunction := configuredTerms[i]["time_function"]
-		if setTimeFunction != nil && setTimeFunction.(string) != "" {
-			dst["time_function"] = timeFunctionMapNewOld[term.ThresholdOccurrences]
+		if i < len(configuredTerms) {
+			setTimeFunction := configuredTerms[i]["time_function"]
+			if setTimeFunction != nil && setTimeFunction.(string) != "" {
+				dst["time_function"] = timeFunctionMapNewOld[term.ThresholdOccurrences]
+			} else {
+				dst["threshold_occurrences"] = strings.ToLower(string(term.ThresholdOccurrences))
+			}
 		} else {
 			dst["threshold_occurrences"] = strings.ToLower(string(term.ThresholdOccurrences))
 		}
