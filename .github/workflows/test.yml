@@ -104,6 +104,7 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Integration Tests
+      if: github.event.pull_request.head.repo.full_name == github.repository
       run: make test-integration
       env:
         NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
