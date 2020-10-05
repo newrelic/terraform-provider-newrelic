@@ -88,6 +88,7 @@ func TestAccNewRelicAlertPolicy_WithChannels(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
 		Steps: []resource.TestStep{

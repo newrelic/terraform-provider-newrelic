@@ -76,15 +76,15 @@ resource "newrelic_alert_policy" "foo" {
 
 func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("NEW_RELIC_API_KEY"); v == "" {
-		t.Fatal("[WARN] NEW_RELIC_API_KEY has not been set for acceptance tests")
+		t.Skipf("[WARN] NEW_RELIC_API_KEY has not been set for acceptance tests")
 	}
 
 	if v := os.Getenv("NEW_RELIC_LICENSE_KEY"); v == "" {
-		t.Fatal("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
+		t.Skipf("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
 	}
 
-	if v := os.Getenv("NEW_RELIC_ADMIN_API_KEY"); v == "" {
-		t.Fatal("NEW_RELIC_ADMIN_API_KEY must be set for acceptance tests")
+	if v := os.Getenv("NEW_RELIC_ACCOUNT_ID"); v == "" {
+		t.Skipf("NEW_RELIC_ACCOUNT_ID must be set for acceptance tests")
 	}
 
 	//testAccApplicationsCleanup(t)

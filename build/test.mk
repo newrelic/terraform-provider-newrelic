@@ -33,7 +33,7 @@ test-unit: tools
 test-integration: tools
 	@echo "=== $(PROJECT_NAME) === [ test-integration ]: running integration tests..."
 	@mkdir -p $(COVERAGE_DIR)
-	@TF_ACC=1 NR_ACC_TESTING=1 $(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/integration.xml --rerun-fails=3 --packages $(GO_PKGS) \
+	@TF_ACC=1 NR_ACC_TESTING=1 $(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/integration.xml --rerun-fails=3 --packages "$(GO_PKGS)" \
 		-- -v -parallel 4 -tags=integration $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp \
 		   -timeout 120m -ldflags=$(LDFLAGS_TEST)
 
