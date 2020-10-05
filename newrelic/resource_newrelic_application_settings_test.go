@@ -24,7 +24,7 @@ func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
 	testExpectedApplicationName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testPreCheck(t) },
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicApplicationDestroy,
 		Steps: []resource.TestStep{
