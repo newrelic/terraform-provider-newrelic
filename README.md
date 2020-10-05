@@ -80,18 +80,31 @@ $ make build
 
 #### Testing
 
-In order to test the provider, run `make test`. This will run the unit test suite.
+In order to test the provider, run `make test`. This will run the full test suite.
 
 ```sh
 $ make test
 ```
 
-In order to run the full suite of Acceptance tests, run `make testacc`.
+In order to run the unit test suite only, run `make test-unit`.
+```sh
+$ make test-unit
+```
 
-_Note:_ Acceptance tests _create real resources_, and often cost money to run. The environment variables `NEW_RELIC_API_KEY` and `NEW_RELIC_LICENSE_KEY` must also be set with your associated keys for acceptance tests to work properly.
+In order to run the acceptance test suite only, run `make test-integration`.
+```sh
+$ make test-integration
+```
+
+_Note:_ Acceptance tests _create real resources_. The following environment
+variables must bet set for acceptance tests to run:
 
 ```sh
-$ make testacc
+NEW_RELIC_API_KEY
+NEW_RELIC_ACCOUNT_ID
+NEW_RELIC_INSIGHTS_INSERT_KEY
+NEW_RELIC_LICENSE_KEY
+NEW_RELIC_REGION
 ```
 
 #### Go Version Support

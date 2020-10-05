@@ -29,6 +29,7 @@ func TestAccNewRelicProvider_Region(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: func(*terraform.State) error { return nil },
 		Steps: []resource.TestStep{
