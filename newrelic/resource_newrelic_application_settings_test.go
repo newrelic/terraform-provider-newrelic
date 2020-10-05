@@ -24,7 +24,7 @@ func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
 	testExpectedApplicationName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicApplicationDestroy,
 		Steps: []resource.TestStep{
@@ -108,15 +108,11 @@ func testAccCheckNewRelicApplicationExists(n string) resource.TestCheckFunc {
 
 func testPreCheck(t *testing.T) {
 	if v := os.Getenv("NEW_RELIC_API_KEY"); v == "" {
-		t.Fatal("NEW_RELIC_API_KEY must be set for acceptance tests")
+		t.Skipf("NEW_RELIC_API_KEY must be set for acceptance tests")
 	}
 
 	if v := os.Getenv("NEW_RELIC_LICENSE_KEY"); v == "" {
-		t.Fatal("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
-	}
-
-	if v := os.Getenv("NEW_RELIC_ADMIN_API_KEY"); v == "" {
-		t.Log("[WARN] NEW_RELIC_ADMIN_API_KEY has not been set for acceptance tests")
+		t.Skipf("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
 	}
 
 	testCreateApplication(t)
