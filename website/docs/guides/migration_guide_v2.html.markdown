@@ -14,7 +14,7 @@ Version 2.0 of the provider introduces some changes to the provider's configurat
 
 Your New Relic [**Personal API Key**](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#personal-api-key) is now considered the default and standard API key for the provider.
 
-New Relic [**Admin API keys**](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin) are no longer used for authentication within the New Rrelic Terraform provider.
+New Relic [**Admin API keys**](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin) are no longer used for authentication within the New Relic Terraform provider.
 
 -> <small>**Please note the following formatting for the provider's API key.** <br>Your **Personal API Key** has a prefix of `NRAK-` </small>
 
