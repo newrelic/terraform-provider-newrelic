@@ -162,6 +162,30 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				return &x
 			}(),
 		},
+		"aggregation window non-zero": {
+			Data: map[string]interface{}{
+				"nrql":               []interface{}{nrql},
+				"aggregation_window": 60,
+			},
+			Expanded: &alerts.NrqlConditionInput{
+				NrqlConditionBase: alerts.NrqlConditionBase{
+					Signal: &alerts.AlertsNrqlConditionSignal{
+						AggregationWindow: &[]int{60}[0],
+					},
+				},
+			},
+		},
+		"aggregation window nil": {
+			Data: map[string]interface{}{
+				"nrql":               []interface{}{nrql},
+				"aggregation_window": nil,
+			},
+			Expanded: &alerts.NrqlConditionInput{
+				NrqlConditionBase: alerts.NrqlConditionBase{
+					Signal: &alerts.AlertsNrqlConditionSignal{},
+				},
+			},
+		},
 		"gap filling static non-zero": {
 			Data: map[string]interface{}{
 				"nrql":        []interface{}{nrql},
