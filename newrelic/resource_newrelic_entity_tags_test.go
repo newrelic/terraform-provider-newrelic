@@ -20,14 +20,14 @@ func TestAccNewRelicEntityTags_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicEntityTagsConfig(testApplicationName),
+				Config: testAccNewRelicEntityTagsConfig(testAccExpectedApplicationName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicEntityTagsExist(resourceName, []string{"test_key"}),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicEntityTagsConfigUpdated(testApplicationName),
+				Config: testAccNewRelicEntityTagsConfigUpdated(testAccExpectedApplicationName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicEntityTagsExist(resourceName, []string{"test_key_2"}),
 				),

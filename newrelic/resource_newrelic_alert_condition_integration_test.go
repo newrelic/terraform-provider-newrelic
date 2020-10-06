@@ -173,6 +173,10 @@ func TestAccNewRelicAlertCondition_ApplicationScopeWithCloseTimer(t *testing.T) 
 }
 
 func TestAccNewRelicAlertCondition_InstanceScopeWithCloseTimer(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -188,6 +192,10 @@ func TestAccNewRelicAlertCondition_InstanceScopeWithCloseTimer(t *testing.T) {
 }
 
 func TestAccNewRelicAlertCondition_APMJVMMetricApplicationScope(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -202,6 +210,10 @@ func TestAccNewRelicAlertCondition_APMJVMMetricApplicationScope(t *testing.T) {
 	})
 }
 func TestAccNewRelicAlertCondition_APMJVMMetricInstanceScope(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
