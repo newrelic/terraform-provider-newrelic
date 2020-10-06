@@ -11,11 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-var (
-	testEntityGUID      = "MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1"
-	testApplicationName = "Dummy App"
-)
-
 func TestAccNewRelicWorkload_Basic(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
 	rName := acctest.RandString(5)
@@ -160,47 +155,66 @@ func testAccCheckNewRelicWorkloadDestroy(s *terraform.State) error {
 
 func testAccNewRelicWorkloadConfig(name string) string {
 	return fmt.Sprintf(`
+
+data "newrelic_entity" "app" {
+	name = "%[3]s"
+	domain = "APM"
+	type = "APPLICATION"
+}
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
 
-	entity_guids = ["%[3]s"]
+	entity_guids = [data.newrelic_entity.app.guid]
 
 	entity_search_query {
-		query = "name like '%[4]s'"
+		query = "name like '%[3]s'"
 	}
 
 	scope_account_ids =  [%[1]d, 1]
 }
-`, testAccountID, name, testEntityGUID, testApplicationName)
+`, testAccountID, name, testAccExpectedApplicationName)
 }
 
 func testAccNewRelicWorkloadConfigUpdated(name string) string {
 	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name = "%[3]s"
+	domain = "APM"
+	type = "APPLICATION"
+}
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s-updated"
 	account_id = %[1]d
 
-	entity_guids = ["%[3]s"]
+	entity_guids = [data.newrelic_entity.app.guid]
 
 	entity_search_query {
-		query = "name like '%[4]s'"
+		query = "name like '%[3]s'"
 	}
 
 	scope_account_ids =  [%[1]d, 1]
 }
-`, testAccountID, name, testEntityGUID, testApplicationName)
+`, testAccountID, name, testAccExpectedApplicationName)
 }
 
 func testAccNewRelicWorkloadConfigEntitiesOnly(name string) string {
 	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name = "%[3]s"
+	domain = "APM"
+	type = "APPLICATION"
+}
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
 
-	entity_guids = ["%[3]s"]
+	entity_guids = [data.newrelic_entity.app.guid]
 }
-`, testAccountID, name, testEntityGUID)
+`, testAccountID, name, testAccExpectedApplicationName)
 }
 
 func testAccNewRelicWorkloadConfigEntitySearchQueriesOnly(name string) string {

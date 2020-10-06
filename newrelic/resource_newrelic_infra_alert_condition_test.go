@@ -141,6 +141,10 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 }
 
 func TestAccNewRelicInfraAlertCondition_ThresholdFloatValue(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
 	resourceName := "newrelic_infra_alert_condition.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-test-%s", rand)
@@ -166,7 +170,11 @@ func TestAccNewRelicInfraAlertCondition_ThresholdFloatValue(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicInfraAlertCondition_VoilationCloseTimerDisable(t *testing.T) {
+func TestAccNewRelicInfraAlertCondition_ViolationCloseTimerDisable(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
 	resourceName := "newrelic_infra_alert_condition.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-test-%s", rand)
