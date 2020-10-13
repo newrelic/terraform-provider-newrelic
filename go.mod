@@ -15,5 +15,5 @@ require (
 	github.com/newrelic/newrelic-client-go v0.45.0
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1 // indirect
-	gotest.tools/gotestsum v0.5.3
+	gotest.tools/gotestsum v0.5.4
 )
