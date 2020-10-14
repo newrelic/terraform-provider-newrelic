@@ -46,6 +46,8 @@ cloud.google.com/go/storage v1.10.0 h1:STgFzyU5/8miMl0//zKh2aQeTyeaUH3WN9bSUiJ09
 cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9ullr3+Kg0=
 code.gitea.io/sdk/gitea v0.12.1 h1:bMgjEqPnNX/i6TpVwXwpjJtFOnUSuC9P6yy/jjy8sjY=
 code.gitea.io/sdk/gitea v0.12.1/go.mod h1:z3uwDV/b9Ls47NGukYM9XhnHtqPh/J+t40lsUrR6JDY=
+code.gitea.io/sdk/gitea v0.13.1 h1:Y7bpH2iO6Q0KhhMJfjP/LZ0AmiYITeRQlCD8b0oYqhk=
+code.gitea.io/sdk/gitea v0.13.1/go.mod h1:z3uwDV/b9Ls47NGukYM9XhnHtqPh/J+t40lsUrR6JDY=
 contrib.go.opencensus.io/exporter/aws v0.0.0-20181029163544-2befc13012d0/go.mod h1:uu1P0UCM/6RbsMrgPa98ll8ZcHM858i/AD06a9aLRCA=
 contrib.go.opencensus.io/exporter/stackdriver v0.12.1/go.mod h1:iwB6wGarfphGGe/e5CWqyUk/cLzKnWsOKPVW3no6OTw=
 contrib.go.opencensus.io/integrations/ocsql v0.1.4/go.mod h1:8DsSdjz3F+APR+0z0WkU1aRorQCFfRxvqjUUPMbF3fE=
@@ -401,6 +403,8 @@ github.com/google/pprof v0.0.0-20200708004538-1a94d8640e99/go.mod h1:ZgVRPoUq/hf
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
 github.com/google/rpmpack v0.0.0-20200731134257-3685799e8fdf h1:xQ7p/g2T1UVcqtW+YDU+HxHbmSrmzMwIOwtU3itfx6E=
 github.com/google/rpmpack v0.0.0-20200731134257-3685799e8fdf/go.mod h1:+y9lKiqDhR4zkLl+V9h4q0rdyrYVsWWm6LLCQP33DIk=
+github.com/google/rpmpack v0.0.0-20200919095143-1c1eea455332 h1:/7+8vH2OZt7aaatqFUE9STn3NHVt15l21vI+jJog5gw=
+github.com/google/rpmpack v0.0.0-20200919095143-1c1eea455332/go.mod h1:+y9lKiqDhR4zkLl+V9h4q0rdyrYVsWWm6LLCQP33DIk=
 github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 h1:El6M4kTTCOh6aBiKaUGG7oYTSPP8MxqL4YI3kZKwcP4=
 github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510/go.mod h1:pupxD2MaaD3pAXIBCelhxNneeOaAeabZDe5s4K6zSpQ=
 github.com/google/subcommands v1.0.1/go.mod h1:ZjhPrFU+Olkh9WazFPsl27BQ4UPiG37m3yTrtFlrHVk=
@@ -425,8 +429,12 @@ github.com/goreleaser/goreleaser v0.142.0 h1:AVpq6UyylX0piGA/gzsfBmqaVx5656oU+Fl
 github.com/goreleaser/goreleaser v0.142.0/go.mod h1:B+JD1cCHxp0nmWvNXJAm+qA4Hs5abIbVFGbi1DnwyTc=
 github.com/goreleaser/goreleaser v0.143.0 h1:O/oQFIdg/nGso0iQ7/W4J4aqsERWvkDhnFzcVcpIBOs=
 github.com/goreleaser/goreleaser v0.143.0/go.mod h1:/zq84GQ8WZFnspGTONdZO0Kgf5BzOD3CzufXyw+ut4A=
+github.com/goreleaser/goreleaser v0.144.1 h1:J72AlOtMYSevnVZw4Mxwx8PoopTHu2jWXyM2lAo33Aw=
+github.com/goreleaser/goreleaser v0.144.1/go.mod h1:32a2GK3/pyd2AB0OXdga3ntCq4QcwXOiaughHMdh2QM=
 github.com/goreleaser/nfpm v1.7.0 h1:ZUBnaYNOO5zMKkwGmzRG9jIOBBGKM86iylBorQjZfuU=
 github.com/goreleaser/nfpm v1.7.0/go.mod h1:V6xp021JRvYdBYpGFoP6m6YsuedzgB6IO2ub2NNBohs=
+github.com/goreleaser/nfpm v1.8.0 h1:m9V++/nknxOZRVeWQfdGQpA64jyYjNsKZjsFkzQCsLI=
+github.com/goreleaser/nfpm v1.8.0/go.mod h1:dRO71ehHR5XFrUimGhgw+xsar6gYTgKUL7wHixW1NiQ=
 github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gostaticanalysis/analysisutil v0.0.0-20190318220348-4088753ea4d3/go.mod h1:eEOZF4jCKGi+aprrirO9e7WKB3beBRtWgqGunKl6pKE=
@@ -693,8 +701,6 @@ github.com/newrelic/go-agent/v3 v3.9.0 h1:5bcTbdk/Up5cIYIkQjCG92Y+uNoett9wmhuz4k
 github.com/newrelic/go-agent/v3 v3.9.0/go.mod h1:1A1dssWBwzB7UemzRU6ZVaGDsI+cEn5/bNxI0wiYlIc=
 github.com/newrelic/go-insights v1.0.3 h1:zSNp1CEZnXktzSIEsbHJk8v6ZihdPFP2WsO/fzau3OQ=
 github.com/newrelic/go-insights v1.0.3/go.mod h1:A20BoT8TNkqPGX2nS/Z2fYmKl3Cqa3iKZd4whzedCY4=
-github.com/newrelic/newrelic-client-go v0.43.0 h1:zylZ69RlM1rKc08d6+xcMWrI1zbRRo7s4kbgpt4z6mU=
-github.com/newrelic/newrelic-client-go v0.43.0/go.mod h1:+Cyma1K2JrCBaOg+X4Qg1RFMdZwh8wqyZotYFwxyxfg=
 github.com/newrelic/newrelic-client-go v0.45.0 h1:uPMmvx9bR+KvANE1sj7TaeMcL4mAEOzEX4lvsgzsOwY=
 github.com/newrelic/newrelic-client-go v0.45.0/go.mod h1:+Cyma1K2JrCBaOg+X4Qg1RFMdZwh8wqyZotYFwxyxfg=
 github.com/newrelic/tutone v0.2.3/go.mod h1:tfWM773ZGUHqQu70NV3DPjrFmxQ9+p8/++7UJ1J1gmE=
@@ -920,6 +926,8 @@ github.com/xanzy/go-gitlab v0.36.0 h1:YSYC7Kh31bPtfJwMCa+cxoSymw2EJxvgXNi1B3IvwE
 github.com/xanzy/go-gitlab v0.36.0/go.mod h1:sPLojNBn68fMUWSxIJtdVVIP8uSBYqesTfDUseX11Ug=
 github.com/xanzy/go-gitlab v0.37.0 h1:Z/CQkjj5VwbWVYVL7S70kS/TFj5H/pJumV7xbJ0YUQ8=
 github.com/xanzy/go-gitlab v0.37.0/go.mod h1:sPLojNBn68fMUWSxIJtdVVIP8uSBYqesTfDUseX11Ug=
+github.com/xanzy/go-gitlab v0.38.1 h1:st5/Ag4h8CqVfp3LpOWW0Jd4jYHTGETwu0KksYDPnYE=
+github.com/xanzy/go-gitlab v0.38.1/go.mod h1:sPLojNBn68fMUWSxIJtdVVIP8uSBYqesTfDUseX11Ug=
 github.com/xanzy/ssh-agent v0.2.0/go.mod h1:0NyE30eGUDliuLEHJgYte/zncp2zdTStcOnWhgSqHD8=
 github.com/xanzy/ssh-agent v0.2.1 h1:TCbipTQL2JiiCprBWx9frJ2eJlCYT00NmctrHxVAr70=
 github.com/xanzy/ssh-agent v0.2.1/go.mod h1:mLlQY/MoOhWBj+gOGMQkOeiEvkx+8pJSI+0Bx9h2kr4=
@@ -1343,6 +1351,8 @@ gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c h1:grhR+C34yXImVGp7EzNk+DTIk
 gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gotest.tools/gotestsum v0.5.3 h1:9SkwB5ou8GYUqSgbCCYCMk9BVXueDmzwk5WjaZeZW2o=
 gotest.tools/gotestsum v0.5.3/go.mod h1:hC9TQserDVTWcJuARh76Ydp3ZwuE+pIIWpt2BzDLD6M=
+gotest.tools/gotestsum v0.5.4 h1:vQEcRcp3ODCC4PvvhPNxYOd5NGkmQdazy/yIVR0Zej4=
+gotest.tools/gotestsum v0.5.4/go.mod h1:hC9TQserDVTWcJuARh76Ydp3ZwuE+pIIWpt2BzDLD6M=
 gotest.tools/v3 v3.0.2 h1:kG1BFyqVHuQoVQiR1bWGnfz/fmHvvuiSPIV7rvl360E=
 gotest.tools/v3 v3.0.2/go.mod h1:3SzNCllyD9/Y+b5r9JIKQ474KzkZyqLqEfYqMsX94Bk=
 honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
