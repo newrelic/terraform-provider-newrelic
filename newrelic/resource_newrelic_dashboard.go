@@ -179,7 +179,7 @@ func resourceNewRelicDashboard() *schema.Resource {
 // reverts the previous change and hopefully allows those that
 // upgraded to v2.8+ to continue to upgrade to which ever version
 // this is released in. In the future, we should always use state
-// migration is an attribute changes its schema type.
+// migration if an attribute changes its schema type.
 func resourceV0() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceNewRelicDashboardCreate,
