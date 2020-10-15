@@ -21,13 +21,9 @@ resource "newrelic_synthetics_monitor" "foo" {
   locations = ["AWS_US_EAST_1"]
 }
 
-data "template_file" "foo_script" {
-  template = file("${path.module}/foo_script.tpl")
-}
-
 resource "newrelic_synthetics_monitor_script" "foo_script" {
   monitor_id = newrelic_synthetics_monitor.foo.id
-  text = data.template_file.foo_script.rendered
+  text = file("${path.module}/foo_script.js")
 }
 ```
 
