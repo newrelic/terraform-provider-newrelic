@@ -57,14 +57,9 @@ func TestAccNewRelicDashboard_CrossAccountWidget(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccCheckNewRelicDashboardConfigCrossAccountWidgets(rName, widgetPrimaryAcct, widgetSubAcct),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
-				),
-			},
-			// Test: Reodering widgets should NOT drift since we sort before storing in state.
-			{
-				Config: testAccCheckNewRelicDashboardConfigCrossAccountWidgets(rName, widgetSubAcct, widgetPrimaryAcct),
+				// cross-account widgets cause drift due to the API not returning that data
+				ExpectNonEmptyPlan: true,
+				Config:             testAccCheckNewRelicDashboardConfigCrossAccountWidgets(rName, widgetPrimaryAcct, widgetSubAcct),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
 				),
