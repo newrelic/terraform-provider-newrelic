@@ -1,3 +1,13 @@
+<a name="v2.12.1"></a>
+## [v2.12.1] - 2020-10-15
+### Bug Fixes
+- **dashboard:** use state migration to fix 500 error when upgrading from v2.7.5 to v2.8 and beyond
+- **nrql_alert_condition:** avoid drift using computed value
+
+### Documentation Updates
+- add instructions for New Relic One users to get an api key
+- **dashboard:** update docs regarding cross-account widget config drift
+
 <a name="v2.12.0"></a>
 ## [v2.12.0] - 2020-10-08
 ### Features
@@ -497,7 +507,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...HEAD
+[v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
 [v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
 [2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
 [v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1

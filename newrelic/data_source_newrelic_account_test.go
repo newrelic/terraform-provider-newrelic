@@ -30,7 +30,7 @@ func TestAccNewRelicAccountDataSource_ByName(t *testing.T) {
 	if !nrInternalAccount {
 		t.Skipf("New Relic internal testing account required")
 	}
-	
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

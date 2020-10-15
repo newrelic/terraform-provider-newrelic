@@ -108,7 +108,7 @@ The following arguments are supported:
 
   <a name="widget-configuration-recommendation"></a>
 
-  -> **Widget configuration recommendation:** While the `newrelic_dashboard` resource attempts to avoid configuration drift where possible, there is still potential for drift to occur due to underlying API limitations, usually involving [cross-account widgets](#account_id). To better facilitate the prevention of configuration drift with widgets, we recommend ordering your widgets in a consistent manner and maintaining that order if possible. An example could be ordering the `widget` blocks in the order they appear your New Relic Dashboard UI. The first `widget` block would be the widget displayed at the top left of your dashboard and the last `widget` block would be the widget at the bottom right of the dashboard.
+  -> **Widget configuration recommendation** While the `newrelic_dashboard` resource attempts to avoid configuration drift where possible, there is still potential for drift to occur due to underlying API limitations, usually involving [cross-account widgets](#account_id). Also, even though the ordering of your widgets can be arbitrary, we recommend ordering your widgets in a consistent manner and maintaining that order if possible. An example could be ordering the `widget` blocks in the order they appear your New Relic Dashboard UI. The first `widget` block would be the widget displayed at the top left of your dashboard and the last `widget` block would be the widget at the bottom right of the dashboard.
 
 ## Attribute Reference
 
@@ -131,7 +131,9 @@ All nested `widget` blocks support the following common arguments:
 
 <a name="cross-account-widget-help"></a>
 
- -> **Configuring cross-account widgets:** To configure a cross-account widget with an account different from the account associated with your API key, you must set the widget's `account_id` attribute to the account ID you wish to pull data from. Also note, the provider must be configured with an API Key that is scoped to a user with proper permissions to access and perform operations in other accounts that fall within or under the account associated with your API key. To facilitate cross-account widgets, we recommend [configuring the provider with a Personal API Key](../guides/provider_configuration.html#configuration-via-the-provider-block) from a user with **admin permissions** and access to the subaccount you would like to display data for in the widget.
+-> **Configuring cross-account widgets** To configure a cross-account widget with an account different from the account associated with your API key, you must set the widget's `account_id` attribute to the account ID you wish to pull data from. Also note, the provider must be configured with an API Key that is scoped to a user with proper permissions to access and perform operations in other accounts that fall within or under the account associated with your API key. To facilitate cross-account widgets, we recommend [configuring the provider with a Personal API Key](../guides/provider_configuration.html#configuration-via-the-provider-block) from a user with **admin permissions** and access to the subaccount you would like to display data for in the widget.
+
+~> **Note** Due to API limitations, cross-account widgets can cause configuration drift due to the API response omitting data for widgets that that pull data from New Relic accounts outside the primary scope of the API key being used. If you need to configure cross-account widgets and also want to bypass the configuration drift for widgets, you can use Terraform's [`ignore_changes`](https://www.terraform.io/docs/configuration/resources.html#ignore_changes) using Terraforms `lifecycle` block. <br><br> ``` lifecycle { ignore_changes = [widget] }```
 
 Each `visualization` type supports an additional set of arguments:
 
@@ -266,4 +268,4 @@ New Relic dashboards can be imported using their ID, e.g.
 $ terraform import newrelic_dashboard.my_dashboard 8675309
 ```
 
-~> **NOTE:** Due to API restrictions, importing a dashboard resource will set the `grid_column_count` attribute to `3`. If your dashboard is a New Relic One dashboard _and_ uses a 12 column grid, you will need to make sure `grid_column_count` is set to `12` in your configuration, then run `terraform apply` after importing to sync remote state with Terraform state. Also note, cross-account widgets cannot be imported due to API restrictions.
+~> **NOTE** Due to API restrictions, importing a dashboard resource will set the `grid_column_count` attribute to `3`. If your dashboard is a New Relic One dashboard _and_ uses a 12 column grid, you will need to make sure `grid_column_count` is set to `12` in your configuration, then run `terraform apply` after importing to sync remote state with Terraform state. Also note, cross-account widgets cannot be imported due to API restrictions.
