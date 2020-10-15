@@ -296,6 +296,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"aggregation_window": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "The duration of the time window used to evaluate the NRQL query, in seconds.",
 			},
 			"expiration_duration": {
