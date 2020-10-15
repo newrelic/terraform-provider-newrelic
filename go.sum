@@ -429,8 +429,8 @@ github.com/goreleaser/goreleaser v0.142.0 h1:AVpq6UyylX0piGA/gzsfBmqaVx5656oU+Fl
 github.com/goreleaser/goreleaser v0.142.0/go.mod h1:B+JD1cCHxp0nmWvNXJAm+qA4Hs5abIbVFGbi1DnwyTc=
 github.com/goreleaser/goreleaser v0.143.0 h1:O/oQFIdg/nGso0iQ7/W4J4aqsERWvkDhnFzcVcpIBOs=
 github.com/goreleaser/goreleaser v0.143.0/go.mod h1:/zq84GQ8WZFnspGTONdZO0Kgf5BzOD3CzufXyw+ut4A=
-github.com/goreleaser/goreleaser v0.144.1 h1:J72AlOtMYSevnVZw4Mxwx8PoopTHu2jWXyM2lAo33Aw=
-github.com/goreleaser/goreleaser v0.144.1/go.mod h1:32a2GK3/pyd2AB0OXdga3ntCq4QcwXOiaughHMdh2QM=
+github.com/goreleaser/goreleaser v0.145.0 h1:Pwr15XciCMFPpMgWnA5lxxYJGxyEeu5AJGfafFDUj+0=
+github.com/goreleaser/goreleaser v0.145.0/go.mod h1:32a2GK3/pyd2AB0OXdga3ntCq4QcwXOiaughHMdh2QM=
 github.com/goreleaser/nfpm v1.7.0 h1:ZUBnaYNOO5zMKkwGmzRG9jIOBBGKM86iylBorQjZfuU=
 github.com/goreleaser/nfpm v1.7.0/go.mod h1:V6xp021JRvYdBYpGFoP6m6YsuedzgB6IO2ub2NNBohs=
 github.com/goreleaser/nfpm v1.8.0 h1:m9V++/nknxOZRVeWQfdGQpA64jyYjNsKZjsFkzQCsLI=
