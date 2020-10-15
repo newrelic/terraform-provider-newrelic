@@ -71,7 +71,7 @@ func expandWidgets(widgets []interface{}) ([]dashboards.DashboardWidget, error) 
 		return []dashboards.DashboardWidget{}, nil
 	}
 
-	perms := make([]dashboards.DashboardWidget, len(widgets))
+	expanded := make([]dashboards.DashboardWidget, len(widgets))
 
 	for i, rawCfg := range widgets {
 		cfg := rawCfg.(map[string]interface{})
@@ -81,10 +81,10 @@ func expandWidgets(widgets []interface{}) ([]dashboards.DashboardWidget, error) 
 			return nil, err
 		}
 
-		perms[i] = *expandedWidget
+		expanded[i] = *expandedWidget
 	}
 
-	return perms, nil
+	return expanded, nil
 }
 
 func expandWidget(cfg map[string]interface{}) (*dashboards.DashboardWidget, error) {
@@ -342,9 +342,6 @@ func flattenDashboard(dashboard *dashboards.Dashboard, d *schema.ResourceData) e
 // nolint:gocyclo
 func flattenWidgets(in *[]dashboards.DashboardWidget, d *schema.ResourceData) []map[string]interface{} {
 	var out = make([]map[string]interface{}, len(*in))
-
-	// wgts := d.Get("widget")
-	// configuredWidgets := wgts.(*schema.Set).List()
 
 	for i, w := range *in {
 		m := make(map[string]interface{})
