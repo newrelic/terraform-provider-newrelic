@@ -172,14 +172,14 @@ func resourceNewRelicDashboard() *schema.Resource {
 }
 
 // v2.8.0 changed `widget` from TypeSet to TypeList, but we didn't
-// use state migration. Since this change broke things for folks
-// trying to upgrade from v2.7.5 to v2.8.0 in some cases, we have
-// to switch back to TypeSet. So this time we need to make sure we
-// migrate the state to the latest SchemaVersion, this basically
-// reverts the previous change and hopefully allows those that
-// upgraded to v2.8+ to continue to upgrade to which ever version
-// this is released in. In the future, we should always use state
-// migration if an attribute changes its schema type.
+// use state migration. Since this change broke things for some
+// folks trying to upgrade from v2.7.5 to v2.8.0, we have to switch
+// back to TypeSet. So this time we need to make sure we migrate
+// the state to the latest SchemaVersion, this basically reverts
+// the previous change and hopefully allows those that upgraded to
+// v2.8+ to continue to upgrade to which ever version this is
+// released in. In the future, we should always use state migration
+// if an attribute changes its schema type.
 func resourceV0() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceNewRelicDashboardCreate,
