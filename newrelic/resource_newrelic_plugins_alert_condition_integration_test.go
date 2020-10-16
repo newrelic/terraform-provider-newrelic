@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccNewRelicPluginsAlertCondition_Basic(t *testing.T) {
+	t.Skip()
+
 	if !nrInternalAccount {
 		t.Skipf("New Relic internal testing account required")
 	}
@@ -78,6 +80,8 @@ func TestAccNewRelicPluginsAlertCondition_Basic(t *testing.T) {
 }
 
 func TestAccNewRelicPluginsAlertCondition(t *testing.T) {
+	t.Skip()
+
 	if !nrInternalAccount {
 		t.Skipf("New Relic internal testing account required")
 	}
@@ -104,6 +108,8 @@ func TestAccNewRelicPluginsAlertCondition(t *testing.T) {
 }
 
 func TestAccNewRelicPluginsAlertCondition_MissingPolicy(t *testing.T) {
+	t.Skip()
+
 	if !nrInternalAccount {
 		t.Skipf("New Relic internal testing account required")
 	}
