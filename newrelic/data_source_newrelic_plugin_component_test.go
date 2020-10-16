@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccNewRelicPluginComponent_Basic(t *testing.T) {
+	t.Skip()
+
 	if !nrInternalAccount {
 		t.Skipf("New Relic internal testing account required")
 	}
