@@ -1,3 +1,11 @@
+<a name="v2.13.0"></a>
+## [v2.13.0] - 2020-10-16
+### Documentation Updates
+- **newrelic_synthetics_monitor_script:** Use file method instead of template_file data source
+
+### Features
+- **client:** update newrelic-client-go (retry on nerdgraph timeouts)
+
 <a name="v2.12.1"></a>
 ## [v2.12.1] - 2020-10-15
 ### Bug Fixes
@@ -507,7 +515,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...HEAD
+[v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
 [v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
 [2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
