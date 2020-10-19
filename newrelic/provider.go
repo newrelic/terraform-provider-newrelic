@@ -9,8 +9,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/meta"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+)
 
-	"github.com/newrelic/terraform-provider-newrelic/v2/version"
+var (
+	// ProviderVersion is set during the release process to the
+	// release version of the binary via `-ldflags`. This is technically
+	// set in main.go which sets the variable below.
+	//
+	// Note: This is a temporary workaround until we figure out why the original way
+	// no longer works.
+	ProviderVersion = "dev"
 )
 
 // TerraformProviderProductUserAgent string used to identify this provider in User Agent requests
@@ -162,8 +170,10 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 	adminAPIKey := data.Get("admin_api_key").(string)
 	personalAPIKey := data.Get("api_key").(string)
 	terraformUA := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", terraformVersion, meta.SDKVersionString())
-	userAgent := fmt.Sprintf("%s %s/%s", terraformUA, TerraformProviderProductUserAgent, version.ProviderVersion)
+	userAgent := fmt.Sprintf("%s %s/%s", terraformUA, TerraformProviderProductUserAgent, ProviderVersion)
 	accountID := data.Get("account_id").(int)
+
+	log.Printf("[INFO] UserAgent: %s", userAgent)
 
 	cfg := Config{
 		AdminAPIKey:          adminAPIKey,
