@@ -10,11 +10,13 @@ description: |-
 
 Version 2.0 of the provider introduces some changes to the provider's configuration. Users wanting to upgrade from v1.x to v2.x will need to make a few adjustments to their configuration prior to upgrading.
 
+-> The usage of [**Admin API keys**](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin) was removed in version **2.10.2** of the provider. If you are upgrading to version *v2.9.0 or prior*, please select the corresponding version from the version dropdown located in the docs website header above.
+
 ### A Note About API Key Format
 
 Your New Relic [**Personal API Key**](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#personal-api-key) is now considered the default and standard API key for the provider.
 
-New Relic [**Admin API keys**](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin) are no longer used for authentication within the New Relic Terraform provider.
+As of version 2.10.2, New Relic [**Admin API keys**](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin) are no longer used for authentication within the New Relic Terraform provider.
 
 -> <small>**Please note the following formatting for the provider's API key.** <br>Your **Personal API Key** has a prefix of `NRAK-` </small>
 
