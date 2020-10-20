@@ -48,8 +48,8 @@ resource "newrelic_alert_channel" "slack_channel" {
 resource "newrelic_alert_policy_channel" "foo" {
   policy_id  = newrelic_alert_policy.example_policy.id
   channel_ids = [
-    data.newrelic_alert_channel.email_channel.id,
-    data.newrelic_alert_channel.slack_channel.id
+    newrelic_alert_channel.email_channel.id,
+    newrelic_alert_channel.slack_channel.id
   ]
 }
 ```
