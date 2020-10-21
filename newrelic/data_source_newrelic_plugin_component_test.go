@@ -29,6 +29,7 @@ func TestAccNewRelicPluginComponent_Basic(t *testing.T) {
 	})
 }
 
+// nolint: unused
 func testAccCheckNewRelicPluginComponentDataSource(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
@@ -42,6 +43,7 @@ func testAccCheckNewRelicPluginComponentDataSource(n string) resource.TestCheckF
 	}
 }
 
+// nolint: unused
 func testAccNewRelicPluginComponentConfig() string {
 	return `
 data "newrelic_plugin" "foo" {

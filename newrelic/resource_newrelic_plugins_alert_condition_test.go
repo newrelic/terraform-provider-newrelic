@@ -156,6 +156,7 @@ func testAccCheckNewRelicPluginsAlertConditionDestroy(s *terraform.State) error 
 	return nil
 }
 
+// nolint: unused
 func testAccCheckNewRelicPluginsAlertConditionExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -205,6 +206,7 @@ func TestAccNewRelicPluginsAlertCondition_NameGreaterThan64Char(t *testing.T) {
 	})
 }
 
+// nolint: unused
 func testAccCheckNewRelicPluginsAlertConditionConfig(rName string) string {
 	return fmt.Sprintf(`
 data "newrelic_application" "app" {
@@ -244,6 +246,7 @@ resource "newrelic_plugins_alert_condition" "foo" {
 `, rName, testAccExpectedApplicationName)
 }
 
+// nolint: unused
 func testAccCheckNewRelicPluginsAlertConditionConfigUpdated(rName string) string {
 	return fmt.Sprintf(`
 data "newrelic_application" "app" {
