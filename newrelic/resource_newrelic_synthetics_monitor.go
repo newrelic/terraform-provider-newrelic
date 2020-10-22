@@ -218,17 +218,7 @@ func resourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interfac
 	var monitor *synthetics.Monitor
 	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 		monitor, err = client.Synthetics.GetMonitor(d.Id())
-
-		if err != nil {
-			switch err.(type) {
-			case *errors.NotFound:
-				return resource.NonRetryableError(err)
-			default:
-				return resource.RetryableError(err)
-			}
-		}
-
-		return nil
+		return isRetryableError(err)
 	})
 
 	if err != nil {

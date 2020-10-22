@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func dataSourceNewRelicApplication() *schema.Resource {
@@ -52,17 +51,7 @@ func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{})
 	var applications []*apm.Application
 	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 		applications, err = client.APM.ListApplications(&params)
-
-		if err != nil {
-			switch err.(type) {
-			case *errors.NotFound:
-				return resource.NonRetryableError(err)
-			default:
-				return resource.RetryableError(err)
-			}
-		}
-
-		return nil
+		return isRetryableError(err)
 	})
 
 	if err != nil {

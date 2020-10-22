@@ -404,17 +404,7 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 
 	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 		_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
-
-		if err != nil {
-			switch err.(type) {
-			case *errors.NotFound:
-				return resource.NonRetryableError(err)
-			default:
-				return resource.RetryableError(err)
-			}
-		}
-
-		return nil
+		return isRetryableError(err)
 	})
 
 	if err != nil {
@@ -430,17 +420,7 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 	if err != nil {
 		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 			nrqlCondition, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
-
-			if err != nil {
-				switch err.(type) {
-				case *errors.NotFound:
-					return resource.NonRetryableError(err)
-				default:
-					return resource.RetryableError(err)
-				}
-			}
-
-			return nil
+			return isRetryableError(err)
 		})
 	}
 

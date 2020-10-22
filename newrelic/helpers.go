@@ -7,6 +7,9 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func parseIDs(serializedID string, count int) ([]int, error) {
@@ -102,4 +105,17 @@ func stringInSlice(slice []string, str string) bool {
 	}
 
 	return false
+}
+
+func isRetryableError(err error) *resource.RetryError {
+	if err != nil {
+		switch err.(type) {
+		case *errors.NotFound:
+			return resource.NonRetryableError(err)
+		default:
+			return resource.RetryableError(err)
+		}
+	}
+
+	return nil
 }

@@ -149,17 +149,7 @@ func resourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) e
 	var queryPolicy *alerts.AlertsPolicy
 	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 		queryPolicy, err = client.Alerts.QueryPolicy(accountID, id)
-
-		if err != nil {
-			switch err.(type) {
-			case *nrErrors.NotFound:
-				return resource.NonRetryableError(err)
-			default:
-				return resource.RetryableError(err)
-			}
-		}
-
-		return nil
+		return isRetryableError(err)
 	})
 
 	if err != nil {

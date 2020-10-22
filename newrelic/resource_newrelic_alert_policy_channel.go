@@ -90,17 +90,7 @@ func resourceNewRelicAlertPolicyChannelRead(d *schema.ResourceData, meta interfa
 	var exists bool
 	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 		exists, err = policyChannelsExist(client, policyID, parsedChannelIDs)
-
-		if err != nil {
-			switch err.(type) {
-			case *errors.NotFound:
-				return resource.NonRetryableError(err)
-			default:
-				return resource.RetryableError(err)
-			}
-		}
-
-		return nil
+		return isRetryableError(err)
 	})
 
 	if err != nil {

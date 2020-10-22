@@ -279,17 +279,7 @@ func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) 
 	var channel *alerts.Channel
 	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 		channel, err = client.Alerts.GetChannel(int(id))
-
-		if err != nil {
-			switch err.(type) {
-			case *errors.NotFound:
-				return resource.NonRetryableError(err)
-			default:
-				return resource.RetryableError(err)
-			}
-		}
-
-		return nil
+		return isRetryableError(err)
 	})
 
 	if err != nil {

@@ -240,17 +240,7 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 
 	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 		_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
-
-		if err != nil {
-			switch err.(type) {
-			case *errors.NotFound:
-				return resource.NonRetryableError(err)
-			default:
-				return resource.RetryableError(err)
-			}
-		}
-
-		return nil
+		return isRetryableError(err)
 	})
 
 	if err != nil {
@@ -265,17 +255,7 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 	var condition *alerts.Condition
 	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 		condition, err = client.Alerts.GetCondition(policyID, id)
-
-		if err != nil {
-			switch err.(type) {
-			case *errors.NotFound:
-				return resource.NonRetryableError(err)
-			default:
-				return resource.RetryableError(err)
-			}
-		}
-
-		return nil
+		return isRetryableError(err)
 	})
 
 	if err != nil {

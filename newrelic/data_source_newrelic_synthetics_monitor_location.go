@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
@@ -56,17 +55,7 @@ func dataSourceNewRelicSyntheticsMonitorLocationRead(d *schema.ResourceData, met
 	var locations []*synthetics.MonitorLocation
 	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 		locations, err = client.Synthetics.GetMonitorLocations()
-
-		if err != nil {
-			switch err.(type) {
-			case *errors.NotFound:
-				return resource.NonRetryableError(err)
-			default:
-				return resource.RetryableError(err)
-			}
-		}
-
-		return nil
+		return isRetryableError(err)
 	})
 
 	if err != nil {
