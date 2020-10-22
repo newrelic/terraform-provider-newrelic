@@ -429,7 +429,6 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 	nrqlCondition, err := client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
 	if err != nil {
 		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
-			var err error
 			nrqlCondition, err = client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
 
 			if err != nil {
