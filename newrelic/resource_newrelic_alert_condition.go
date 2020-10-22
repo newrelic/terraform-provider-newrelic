@@ -5,9 +5,12 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
@@ -235,22 +238,50 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 	policyID := ids[0]
 	id := ids[1]
 
-	_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
+	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+		_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
+
+		if err != nil {
+			switch err.(type) {
+			case *errors.NotFound:
+				return resource.NonRetryableError(err)
+			default:
+				return resource.RetryableError(err)
+			}
+		}
+
+		return nil
+	})
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
+
 		return err
 	}
 
-	condition, err := client.Alerts.GetCondition(policyID, id)
+	var condition *alerts.Condition
+	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+		condition, err = client.Alerts.GetCondition(policyID, id)
+
+		if err != nil {
+			switch err.(type) {
+			case *errors.NotFound:
+				return resource.NonRetryableError(err)
+			default:
+				return resource.RetryableError(err)
+			}
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
-
 		return err
 	}
 

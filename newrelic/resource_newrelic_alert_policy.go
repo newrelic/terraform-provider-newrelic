@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/newrelic/newrelic-client-go/newrelic"
@@ -144,15 +146,29 @@ func resourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) e
 
 	id := strconv.Itoa(policyID)
 
-	queryPolicy, queryErr := client.Alerts.QueryPolicy(accountID, id)
+	var queryPolicy *alerts.AlertsPolicy
+	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+		queryPolicy, err = client.Alerts.QueryPolicy(accountID, id)
 
-	if queryErr != nil {
-		if _, ok := queryErr.(*nrErrors.NotFound); ok {
+		if err != nil {
+			switch err.(type) {
+			case *nrErrors.NotFound:
+				return resource.NonRetryableError(err)
+			default:
+				return resource.RetryableError(err)
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		if _, ok := err.(*nrErrors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
 
-		return queryErr
+		return err
 	}
 
 	return flattenAlertPolicy(queryPolicy, d, accountID)

@@ -2,7 +2,9 @@ package newrelic
 
 import (
 	"log"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/newrelic"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
@@ -85,7 +87,21 @@ func resourceNewRelicAlertPolicyChannelRead(d *schema.ResourceData, meta interfa
 
 	log.Printf("[INFO] Reading New Relic alert policy channel %s", d.Id())
 
-	exists, err := policyChannelsExist(client, policyID, parsedChannelIDs)
+	var exists bool
+	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+		exists, err = policyChannelsExist(client, policyID, parsedChannelIDs)
+
+		if err != nil {
+			switch err.(type) {
+			case *errors.NotFound:
+				return resource.NonRetryableError(err)
+			default:
+				return resource.RetryableError(err)
+			}
+		}
+
+		return nil
+	})
 
 	if err != nil {
 		return err

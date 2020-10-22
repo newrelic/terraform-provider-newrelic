@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func dataSourceNewRelicApplication() *schema.Resource {
@@ -45,7 +48,23 @@ func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{})
 		Name: name,
 	}
 
-	applications, err := client.APM.ListApplications(&params)
+	var err error
+	var applications []*apm.Application
+	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+		applications, err = client.APM.ListApplications(&params)
+
+		if err != nil {
+			switch err.(type) {
+			case *errors.NotFound:
+				return resource.NonRetryableError(err)
+			default:
+				return resource.RetryableError(err)
+			}
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		return err
 	}

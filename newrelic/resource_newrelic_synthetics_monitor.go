@@ -3,7 +3,9 @@ package newrelic
 import (
 	"fmt"
 	"log"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
@@ -212,7 +214,23 @@ func resourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interfac
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
 
-	monitor, err := client.Synthetics.GetMonitor(d.Id())
+	var err error
+	var monitor *synthetics.Monitor
+	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+		monitor, err = client.Synthetics.GetMonitor(d.Id())
+
+		if err != nil {
+			switch err.(type) {
+			case *errors.NotFound:
+				return resource.NonRetryableError(err)
+			default:
+				return resource.RetryableError(err)
+			}
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")

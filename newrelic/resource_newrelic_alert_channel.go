@@ -5,9 +5,12 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
@@ -273,7 +276,22 @@ func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) 
 
 	log.Printf("[INFO] Reading New Relic alert channel %v", id)
 
-	channel, err := client.Alerts.GetChannel(int(id))
+	var channel *alerts.Channel
+	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+		channel, err = client.Alerts.GetChannel(int(id))
+
+		if err != nil {
+			switch err.(type) {
+			case *errors.NotFound:
+				return resource.NonRetryableError(err)
+			default:
+				return resource.RetryableError(err)
+			}
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
