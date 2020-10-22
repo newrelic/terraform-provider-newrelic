@@ -82,7 +82,7 @@ func dataSourceNewRelicSyntheticsMonitorLocationRead(d *schema.ResourceData, met
 	}
 
 	if location == nil {
-		return fmt.Errorf("th elabel '%s' does not match any Synthetics monitor locations", label)
+		return fmt.Errorf("the label '%s' does not match any Synthetics monitor locations", label)
 	}
 
 	d.SetId(location.Name)
