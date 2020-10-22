@@ -252,6 +252,7 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 
 		return nil
 	})
+
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -282,6 +283,7 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 			d.SetId("")
 			return nil
 		}
+
 		return err
 	}
 
