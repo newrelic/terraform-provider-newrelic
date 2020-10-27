@@ -315,7 +315,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					// Assume that empty string and 'none' are the same for diff purposes due to API defaults
-					return (old == "" || old == "none") == (new == "" || new == "none")
+					return (old == "" || old == "none") && (new == "" || new == "none")
 				},
 			},
 			"fill_value": {
