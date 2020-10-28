@@ -1,3 +1,11 @@
+<a name="v2.13.3"></a>
+## [v2.13.3] - 2020-10-27
+### Bug Fixes
+- **nrql_alert_condition:** fix fill_option DiffSuppressFunc
+
+### Documentation Updates
+- **alert_condition:** document apm_jvm_metric
+
 <a name="v2.13.2"></a>
 ## [v2.13.2] - 2020-10-26
 ### Documentation Updates
@@ -522,7 +530,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.3...HEAD
+[v2.13.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.2...v2.13.3
 [v2.13.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.1...v2.13.2
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
