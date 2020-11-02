@@ -358,6 +358,8 @@ github.com/golangci/golangci-lint v1.31.0 h1:+m9I3LEmxXLpymkXRPkDQGzOVBmBYm16UtD
 github.com/golangci/golangci-lint v1.31.0/go.mod h1:aMQuNCA+NDU5+4jLL5pEuFHoue0IznKE2+/GsFvvs8A=
 github.com/golangci/golangci-lint v1.32.0 h1:3wL5pvhTpRvlvtosoZecS+hu40IAiJl1qlZQuXIFBAg=
 github.com/golangci/golangci-lint v1.32.0/go.mod h1:aEG8mkR2s0W900N8YVtSAhhemMGLRWZzASgaHc7eLt4=
+github.com/golangci/golangci-lint v1.32.1 h1:XaDrjRo5VmoAwhCTKKlE2EpjWmrAoK2qaJ3xoooqFmw=
+github.com/golangci/golangci-lint v1.32.1/go.mod h1:8lqePWOtRXUYRU0BpoPyp+uZCYKMWxxCLEPBMto6HUg=
 github.com/golangci/ineffassign v0.0.0-20190609212857-42439a7714cc h1:gLLhTLMk2/SutryVJ6D4VZCU3CUqr8YloG7FPIBWFpI=
 github.com/golangci/ineffassign v0.0.0-20190609212857-42439a7714cc/go.mod h1:e5tpTHCfVze+7EpLEozzMB3eafxo2KT5veNg1k6byQU=
 github.com/golangci/lint-1 v0.0.0-20191013205115-297bf364a8e0 h1:MfyDlzVjl1hoaPzPD4Gpb/QgoRfSBR0jdhwGyAWwMSA=
@@ -662,6 +664,8 @@ github.com/mattn/goveralls v0.0.2/go.mod h1:8d1ZMHsd7fW6IRPKQh46F2WRpyib5/X4FOpe
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/mbilski/exhaustivestruct v1.0.1 h1:FouWZOuwqC4YFgkbODefMA0lcuTLKArZLLpzKzjCMF0=
 github.com/mbilski/exhaustivestruct v1.0.1/go.mod h1:OeTBVxQWoEmB2J2JCHmXWPJ0aksxSUOUy+nvtVEfzXc=
+github.com/mbilski/exhaustivestruct v1.1.0 h1:4ykwscnAFeHJruT+EY3M3vdeP8uXMh0VV2E61iR7XD8=
+github.com/mbilski/exhaustivestruct v1.1.0/go.mod h1:OeTBVxQWoEmB2J2JCHmXWPJ0aksxSUOUy+nvtVEfzXc=
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b h1:j7+1HpAFS1zy5+Q4qx1fWh90gTKwiN4QCGoY9TWyyO4=
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=
 github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d h1:5PJl274Y63IEHC+7izoQE9x6ikvDFZS2mDVS3drnohI=
