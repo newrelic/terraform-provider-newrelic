@@ -432,8 +432,6 @@ github.com/goreleaser/chglog v0.1.1 h1:UaY3enMEVeavOaZyCraLn+2iM7/2T0yji8Mh7ZFsD
 github.com/goreleaser/chglog v0.1.1/go.mod h1:xSDa/73C0TxBcLvoT2JHh47QyXpCx5rrNVzJKyeFGPw=
 github.com/goreleaser/goreleaser v0.143.0 h1:O/oQFIdg/nGso0iQ7/W4J4aqsERWvkDhnFzcVcpIBOs=
 github.com/goreleaser/goreleaser v0.143.0/go.mod h1:/zq84GQ8WZFnspGTONdZO0Kgf5BzOD3CzufXyw+ut4A=
-github.com/goreleaser/goreleaser v0.145.0 h1:Pwr15XciCMFPpMgWnA5lxxYJGxyEeu5AJGfafFDUj+0=
-github.com/goreleaser/goreleaser v0.145.0/go.mod h1:32a2GK3/pyd2AB0OXdga3ntCq4QcwXOiaughHMdh2QM=
 github.com/goreleaser/goreleaser v0.146.0 h1:RgwW5BMHziFt96kJiBuB4UuiF4HMXzuEgcRaxnixunA=
 github.com/goreleaser/goreleaser v0.146.0/go.mod h1:C+pS/pScRDsZyiS1IKz8nlHKpG2rwierZcveQ2kV808=
 github.com/goreleaser/nfpm v1.7.0 h1:ZUBnaYNOO5zMKkwGmzRG9jIOBBGKM86iylBorQjZfuU=
@@ -717,8 +715,8 @@ github.com/newrelic/go-agent/v3 v3.9.0 h1:5bcTbdk/Up5cIYIkQjCG92Y+uNoett9wmhuz4k
 github.com/newrelic/go-agent/v3 v3.9.0/go.mod h1:1A1dssWBwzB7UemzRU6ZVaGDsI+cEn5/bNxI0wiYlIc=
 github.com/newrelic/go-insights v1.0.3 h1:zSNp1CEZnXktzSIEsbHJk8v6ZihdPFP2WsO/fzau3OQ=
 github.com/newrelic/go-insights v1.0.3/go.mod h1:A20BoT8TNkqPGX2nS/Z2fYmKl3Cqa3iKZd4whzedCY4=
-github.com/newrelic/newrelic-client-go v0.47.2 h1:95xfkWSN7+p6Mz6gzf11PD80EJ7VAMgkkcBmW/om2yk=
-github.com/newrelic/newrelic-client-go v0.47.2/go.mod h1:wVYbNLgb7r4grxHUCkwqdjc5JVwqFAK2aGSSuB18ycY=
+github.com/newrelic/newrelic-client-go v0.47.3 h1:BsFIN06drKTZC7FvAAjF0DOn0CVuIa8gdqviQPwIY8w=
+github.com/newrelic/newrelic-client-go v0.47.3/go.mod h1:DXWmWwZBWgvNMI7KNAvy/s+szaIQE27jXlhKjlGaQI4=
 github.com/newrelic/tutone v0.2.5/go.mod h1:Jv8miaLyP2pjx4wqvAdx1nLXMx/Cl7kmsNiKZlCeIds=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWbfPhv4DMiApHyliiK5xCTNVSPiaAs=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
