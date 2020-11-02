@@ -438,8 +438,6 @@ github.com/goreleaser/chglog v0.1.1 h1:UaY3enMEVeavOaZyCraLn+2iM7/2T0yji8Mh7ZFsD
 github.com/goreleaser/chglog v0.1.1/go.mod h1:xSDa/73C0TxBcLvoT2JHh47QyXpCx5rrNVzJKyeFGPw=
 github.com/goreleaser/goreleaser v0.143.0 h1:O/oQFIdg/nGso0iQ7/W4J4aqsERWvkDhnFzcVcpIBOs=
 github.com/goreleaser/goreleaser v0.143.0/go.mod h1:/zq84GQ8WZFnspGTONdZO0Kgf5BzOD3CzufXyw+ut4A=
-github.com/goreleaser/goreleaser v0.145.0 h1:Pwr15XciCMFPpMgWnA5lxxYJGxyEeu5AJGfafFDUj+0=
-github.com/goreleaser/goreleaser v0.145.0/go.mod h1:32a2GK3/pyd2AB0OXdga3ntCq4QcwXOiaughHMdh2QM=
 github.com/goreleaser/goreleaser v0.146.0 h1:RgwW5BMHziFt96kJiBuB4UuiF4HMXzuEgcRaxnixunA=
 github.com/goreleaser/goreleaser v0.146.0/go.mod h1:C+pS/pScRDsZyiS1IKz8nlHKpG2rwierZcveQ2kV808=
 github.com/goreleaser/nfpm v1.7.0 h1:ZUBnaYNOO5zMKkwGmzRG9jIOBBGKM86iylBorQjZfuU=
@@ -725,8 +723,8 @@ github.com/newrelic/go-agent/v3 v3.9.0 h1:5bcTbdk/Up5cIYIkQjCG92Y+uNoett9wmhuz4k
 github.com/newrelic/go-agent/v3 v3.9.0/go.mod h1:1A1dssWBwzB7UemzRU6ZVaGDsI+cEn5/bNxI0wiYlIc=
 github.com/newrelic/go-insights v1.0.3 h1:zSNp1CEZnXktzSIEsbHJk8v6ZihdPFP2WsO/fzau3OQ=
 github.com/newrelic/go-insights v1.0.3/go.mod h1:A20BoT8TNkqPGX2nS/Z2fYmKl3Cqa3iKZd4whzedCY4=
-github.com/newrelic/newrelic-client-go v0.47.1 h1:XiXC7tTRVMN03n1xyx2MrD0AUYpQ65bRGaw+ciUiRVc=
-github.com/newrelic/newrelic-client-go v0.47.1/go.mod h1:SRy/dX0pmFKfhuW+Ee5HN9PjF/u2jPXXoSWgyFIhkNY=
+github.com/newrelic/newrelic-client-go v0.47.3 h1:BsFIN06drKTZC7FvAAjF0DOn0CVuIa8gdqviQPwIY8w=
+github.com/newrelic/newrelic-client-go v0.47.3/go.mod h1:DXWmWwZBWgvNMI7KNAvy/s+szaIQE27jXlhKjlGaQI4=
 github.com/newrelic/tutone v0.2.5/go.mod h1:Jv8miaLyP2pjx4wqvAdx1nLXMx/Cl7kmsNiKZlCeIds=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWbfPhv4DMiApHyliiK5xCTNVSPiaAs=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
@@ -1410,11 +1408,8 @@ gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c h1:dUUwHk2QECo/6vqA44rthZ8ie
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c h1:grhR+C34yXImVGp7EzNk+DTIk+323eIUWOmEevy6bDo=
 gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
-gotest.tools/gotestsum v0.5.4/go.mod h1:hC9TQserDVTWcJuARh76Ydp3ZwuE+pIIWpt2BzDLD6M=
 gotest.tools/gotestsum v0.6.0 h1:0zIxynXq9gkAcRpboAi3qOQIkZkCt/stfQzd7ab7Czs=
 gotest.tools/gotestsum v0.6.0/go.mod h1:LEX+ioCVdeWhZc8GYfiBRag360eBhwixWJ62R9eDQtI=
-gotest.tools/v3 v3.0.2 h1:kG1BFyqVHuQoVQiR1bWGnfz/fmHvvuiSPIV7rvl360E=
-gotest.tools/v3 v3.0.2/go.mod h1:3SzNCllyD9/Y+b5r9JIKQ474KzkZyqLqEfYqMsX94Bk=
 gotest.tools/v3 v3.0.3 h1:4AuOwCGf4lLR9u3YOe2awrHygurzhO/HeQ6laiA6Sx0=
 gotest.tools/v3 v3.0.3/go.mod h1:Z7Lb0S5l+klDB31fvDQX8ss/FlKDxtlFlw3Oa8Ymbl8=
 honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
