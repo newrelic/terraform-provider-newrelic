@@ -241,13 +241,12 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				ConflictsWith: []string{"open_violation_on_group_overlap"},
 			},
 			"violation_time_limit_seconds": {
-				Deprecated:    "use `violation_time_limit` attribute instead",
 				Type:          schema.TypeInt,
 				Optional:      true,
-				Description:   "Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are 3600, 7200, 14400, 28800, 43200, and 86400.",
+				Description:   "Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select.  Must be in the range of 300 to 2592000 (inclusive)",
 				ConflictsWith: []string{"violation_time_limit"},
 				AtLeastOneOf:  []string{"violation_time_limit_seconds", "violation_time_limit"},
-				ValidateFunc:  validation.IntInSlice([]int{3600, 7200, 14400, 28800, 43200, 86400}),
+				ValidateFunc:  validation.IntBetween(300, 2592000),
 			},
 			// Exists in NerdGraph, but with different values. Conversion
 			// between new:old and old:new is handled via maps in structures file.
@@ -274,7 +273,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			},
 			"violation_time_limit": {
 				Type:          schema.TypeString,
+				Deprecated:    "use `violation_time_limit_seconds` attribute instead",
 				Optional:      true,
+				Computed:      true,
 				Description:   "Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are 'ONE_HOUR', 'TWO_HOURS', 'FOUR_HOURS', 'EIGHT_HOURS', 'TWELVE_HOURS', 'TWENTY_FOUR_HOURS', 'THIRTY_DAYS' (case insensitive).",
 				ConflictsWith: []string{"violation_time_limit_seconds"},
 				AtLeastOneOf:  []string{"violation_time_limit_seconds", "violation_time_limit"},
