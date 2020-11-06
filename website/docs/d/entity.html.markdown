@@ -32,14 +32,14 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  policy_id            = newrelic_alert_policy.foo.id
-  type                 = "static"
-  name                 = "foo"
-  description          = "Alert when transactions are taking too long"
-  runbook_url          = "https://www.example.com"
-  enabled              = true
-  value_function       = "single_value"
-  violation_time_limit = "one_hour"
+  policy_id                    = newrelic_alert_policy.foo.id
+  type                         = "static"
+  name                         = "foo"
+  description                  = "Alert when transactions are taking too long"
+  runbook_url                  = "https://www.example.com"
+  enabled                      = true
+  value_function               = "single_value"
+  violation_time_limit_seconds = 3600
 
   nrql {
     query             = "SELECT average(duration) FROM Transaction where appName = '${data.newrelic_entity.app.name}'"
