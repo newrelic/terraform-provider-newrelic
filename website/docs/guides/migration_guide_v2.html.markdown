@@ -20,6 +20,11 @@ As of version 2.10.2, New Relic [**Admin API keys**](https://docs.newrelic.com/d
 
 -> <small>**Please note the following formatting for the provider's API key.** <br>Your **Personal API Key** has a prefix of `NRAK-` </small>
 
+**IMPORTANT** Please make sure that the Personal API Key has access to the
+account and resources you expect to be manipulating.  If the Personal API Key
+does not have access, Terraform may not be able to detect existing resources
+correctly and may behave strangely.
+
 ### Environment Variable Updates
 
 If you have been using environment variables to configure the provider, you will need to take note of the following updates and make the necessary changes to your environment variables.
