@@ -67,7 +67,12 @@ func dataSourceNewRelicEntity() *schema.Resource {
 			"application_id": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "The domain-specific ID of the entity (only returned for APM and Browser applications)",
+				Description: "The domain-specific ID of the entity (only returned for APM and Browser applications).",
+			},
+			"serving_apm_application_id": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The browser-specific ID of the backing APM entity. (only returned for Browser applications)",
 			},
 			"guid": {
 				Type:        schema.TypeString,
@@ -147,6 +152,13 @@ func flattenEntityData(e *entities.Entity, d *schema.ResourceData) error {
 	err = d.Set("application_id", e.ApplicationID)
 	if err != nil {
 		return err
+	}
+
+	if e.ServingApmApplicationID != nil {
+		err = d.Set("serving_apm_application_id", *e.ServingApmApplicationID)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
