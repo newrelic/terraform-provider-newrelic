@@ -491,6 +491,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 
 		case alerts.NrqlConditionTypes.Outlier:
 			require.Equal(t, 2, d.Get("expected_groups").(int))
+			require.Zero(t, d.Get("ignore_overlap").(bool))
 			require.True(t, d.Get("open_violation_on_group_overlap").(bool))
 			require.Zero(t, d.Get("baseline_direction").(string))
 			require.Zero(t, d.Get("value_function").(string))
