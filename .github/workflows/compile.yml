@@ -21,15 +21,6 @@ jobs:
           - windows-latest
     runs-on: ${{ matrix.platform }}
     steps:
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ matrix.go-version }}
-
-    - name: Add GOBIN to PATH
-      run: echo "::add-path::$(go env GOPATH)/bin"
-      shell: bash
-
     - name: Checkout code
       uses: actions/checkout@v2
 
