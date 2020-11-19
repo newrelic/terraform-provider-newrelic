@@ -16,7 +16,7 @@ description: |-
 * Locate your Personal API key by following [New Relic's Personal API key docs][personal_api_key].
 
   Note: For New Relic One users, you will need to create and view your Personal API key via NerdGraph, as folows:
-  1. Access the [NerdGraph Explorer](https://api.newrelic.com/graphiql)
+  1. Access the [NerdGraph Explorer](https://api.newrelic.com/graphiql) ([NerdGraph Explorer for EU accounts](https://api.eu.newrelic.com/graphiql))
   1. If this is the first time, you'll need to create the API key:
      1. Next to "GraphiQL" are three buttons: a play button and two drop downs.  Select the last drop down.
      1. In the drop down is a label "Create a new API Key", and under that is your account number.  Select your account number.
