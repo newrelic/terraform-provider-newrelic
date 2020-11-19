@@ -12,8 +12,8 @@ this provider.
 
 For those new to Terraform, the following might be good starting places.
 
--   [How Terraform Works][how_terraform_works]
--   [Plugin Types - Providers][how_terraform_works]
+- [How Terraform Works][how_terraform_works]
+- [Plugin Types - Providers][terraform_providers]
 
 For those who are already familiar with Terraform, there are still plenty of
 good resources on the [Extending Terraform][extending_terraform] page that are
@@ -158,7 +158,9 @@ require that that commit messages adhere to a standard.
 
 TL;DR The commit message must match this regular expression.
 
-    (chore|docs|feat|fix|refactor|tests?)(\([^\)]+\))?: .*
+
+  (chore|docs|feat|fix|refactor|tests?)(\([^\)]+\))?: .*
+
 
 For more information on commit messages, we mostly follow [this standard][conventional_commits].
 
@@ -201,7 +203,6 @@ Keep in mind that when you submit your Pull Request, you'll need to sign the CLA
 For more information about CLAs, please check out Alex Russell’s excellent post,
 [“Why Do I Need to Sign This?”](https://infrequently.org/2008/06/why-do-i-need-to-sign-this/).
 
-# Slack
+## Slack
 
 For contributors and maintainers of open source projects hosted by New Relic, we host a public Slack with a channel dedicated to this project. If you are contributing to this project, you're welcome to request access to that  community space.
-
