@@ -505,8 +505,8 @@ resource "newrelic_infra_alert_condition" "foo" {
 	policy_id = newrelic_alert_policy.foo.id
 	name                 = "%[1]s"
 	type                 = "infra_metric"
-	integration_provider = "S3Bucket"
 	select               = "nr.ingestTimeMs"
+	event                = "SystemSample"
 	comparison = "above"
 
 	critical {
@@ -528,9 +528,9 @@ resource "newrelic_infra_alert_condition" "foo" {
 	policy_id            = newrelic_alert_policy.foo.id
 	name                 = "%[1]s"
 	type                 = "infra_metric"
-	integration_provider = "S3Bucket"
 	select               = "nr.ingestTimeMs"
 	comparison           = "above"
+	event                = "SystemSample"
 
 	critical {
 		duration      = "1440"
@@ -551,9 +551,9 @@ resource "newrelic_infra_alert_condition" "foo" {
 	policy_id            = newrelic_alert_policy.foo.id
 	name                 = "%[1]s"
 	type                 = "infra_metric"
-	integration_provider = "S3Bucket"
 	select               = "nr.ingestTimeMs"
 	comparison           = "above"
+	event                = "SystemSample"
 
 	critical {
 		duration      = "1440"
