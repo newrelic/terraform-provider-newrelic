@@ -2,108 +2,123 @@ name: Testing
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.x
 
-    - name: Install Go
-      uses: actions/setup-go@v2
+      - name: Add GOBIN to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+        shell: bash
 
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Full git history
-      run: |
-        git fetch --prune --unshallow
+      - name: Full git history
+        run: |
+          git fetch --prune --unshallow
 
-    - name: Cache deps
-      uses: actions/cache@v2
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
+      - name: Cache deps
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
-    - name: Lint
-      run: make lint
+      - name: Lint
+        run: make lint
 
-    - name: Check links
-      uses: gaurav-nelson/github-action-markdown-link-check@v1
-      with:
-        use-quiet-mode: 'yes'
-        use-verbose-mode: 'yes'
-        config-file: '.markdownlinkcheck.json'
-        folder-path: 'website/docs'
-        file-extension: '.markdown'
+      - name: Check links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          use-verbose-mode: 'yes'
+          config-file: '.markdownlinkcheck.json'
+          folder-path: 'website/docs'
+          file-extension: '.markdown'
 
   test-unit:
     runs-on: ubuntu-latest
     steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.x
 
-    - name: Install Go
-      uses: actions/setup-go@v2
+      - name: Add GOBIN to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+        shell: bash
 
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Cache deps
-      uses: actions/cache@v2
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
+      - name: Cache deps
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
-    - name: Unit Tests
-      run: make test-unit
+      - name: Unit Tests
+        run: make test-unit
 
-    - name: New Relic JUnit Reporter
-      if: github.event.pull_request.head.repo.full_name == github.repository
-      uses: newrelic/junit-reporter-action@v0.1.1
-      with:
-        accountId: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-        insertApiKey: ${{ secrets.NEW_RELIC_INSIGHTS_INSERT_KEY }}
-        testOutputPath: coverage/unit.xml
+      - name: New Relic JUnit Reporter
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: newrelic/junit-reporter-action@v0.1.1
+        with:
+          accountId: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+          insertApiKey: ${{ secrets.NEW_RELIC_INSIGHTS_INSERT_KEY }}
+          testOutputPath: coverage/unit.xml
 
   test-integration:
     runs-on: ubuntu-latest
     steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.x
 
-    - name: Install Go
-      uses: actions/setup-go@v2
+      - name: Add GOBIN to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+        shell: bash
 
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Cache deps
-      uses: actions/cache@v2
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
+      - name: Cache deps
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
-    - name: Integration Tests
-      if: github.event.pull_request.head.repo.full_name == github.repository
-      run: make test-integration
-      env:
-        NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-        NEW_RELIC_ADMIN_API_KEY: ${{ secrets.NEW_RELIC_ADMIN_API_KEY }}
-        NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
-        NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
-        NEW_RELIC_REGION: ${{ secrets.NEW_RELIC_REGION }}
-        NEW_RELIC_INSIGHTS_INSERT_KEY: ${{ secrets.NEW_RELIC_INSIGHTS_INSERT_KEY }}
-        NR_ACC_TESTING: ${{ secrets.NR_ACC_TESTING }}
+      - name: Integration Tests
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        run: make test-integration
+        env:
+          NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+          NEW_RELIC_ADMIN_API_KEY: ${{ secrets.NEW_RELIC_ADMIN_API_KEY }}
+          NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
+          NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+          NEW_RELIC_REGION: ${{ secrets.NEW_RELIC_REGION }}
+          NEW_RELIC_INSIGHTS_INSERT_KEY: ${{ secrets.NEW_RELIC_INSIGHTS_INSERT_KEY }}
+          NR_ACC_TESTING: ${{ secrets.NR_ACC_TESTING }}
 
-    - name: New Relic JUnit Reporter
-      if: github.event.pull_request.head.repo.full_name == github.repository
-      uses: newrelic/junit-reporter-action@v0.1.1
-      with:
-        accountId: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-        insertApiKey: ${{ secrets.NEW_RELIC_INSIGHTS_INSERT_KEY }}
-        testOutputPath: coverage/integration.xml
+      - name: New Relic JUnit Reporter
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: newrelic/junit-reporter-action@v0.1.1
+        with:
+          accountId: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+          insertApiKey: ${{ secrets.NEW_RELIC_INSIGHTS_INSERT_KEY }}
+          testOutputPath: coverage/integration.xml
