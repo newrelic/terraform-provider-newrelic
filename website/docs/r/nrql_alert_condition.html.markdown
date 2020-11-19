@@ -246,3 +246,65 @@ $ terraform import newrelic_nrql_alert_condition.foo 538291:6789035:outlier
 The actual values for `policy_id` and `condition_id` can be retrieved from the following New Relic URL when viewing the NRQL alert condition you want to import:
 
 <small>alerts.newrelic.com/accounts/**\<account_id\>**/policies/**\<policy_id\>**/conditions/**\<condition_id\>**/edit</small>
+
+## Upgrade from 1.x to 2.x
+
+There have been several deprecations in the `newrelic_nrql_alert_condition`
+resource.  Users will need to make some updates in order to have a smooth
+upgrade.
+
+An example resource from 1.x might look like the following.
+
+```hcl
+resource "newrelic_nrql_alert_condition" "z" {
+  policy_id = newrelic_alert_policy.z.id
+
+  name                 = "zleslie-test"
+  type                 = "static"
+  runbook_url          = "https://localhost"
+  enabled              = true
+  value_function       = "sum"
+  violation_time_limit = "TWENTY_FOUR_HOURS"
+
+  critical {
+    operator              = "above"
+    threshold_duration    = 120
+    threshold             = 3
+    threshold_occurrences = "AT_LEAST_ONCE"
+  }
+
+  nrql {
+    query             = "SELECT count(*) FROM TransactionError WHERE appName like '%Dummy App%' FACET appName"
+    evaluation_offset = 2
+  }
+}
+```
+
+After making the appropriate adjustments mentioned in the deprecation warnings,
+the resource now looks like the following.
+
+```hcl
+resource "newrelic_nrql_alert_condition" "z" {
+  policy_id = newrelic_alert_policy.z.id
+
+  name                         = "zleslie-test"
+  type                         = "static"
+  runbook_url                  = "https://localhost"
+  enabled                      = true
+  value_function               = "sum"
+  violation_time_limit_seconds = 86400
+
+  term {
+    priority      = "critical"
+    operator      = "above"
+    threshold     = 3
+    duration      = 5
+    time_function = "any"
+  }
+
+  nrql {
+    query       = "SELECT count(*) FROM TransactionError WHERE appName like '%Dummy App%' FACET appName"
+    since_value = 3
+  }
+}
+```
