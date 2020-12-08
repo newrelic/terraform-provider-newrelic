@@ -74,7 +74,7 @@ func resourceNewRelicEventsToMetricsRuleCreate(d *schema.ResourceData, meta inte
 			AccountID:   d.Get("account_id").(int),
 			Description: d.Get("description").(string),
 			Name:        d.Get("name").(string),
-			Nrql:        d.Get("nrql").(string),
+			NRQL:        d.Get("nrql").(string),
 		},
 	}
 
@@ -150,7 +150,7 @@ func resourceNewRelicEventsToMetricsRuleRead(d *schema.ResourceData, meta interf
 		return err
 	}
 
-	if err := d.Set("nrql", rule.Nrql); err != nil {
+	if err := d.Set("nrql", rule.NRQL); err != nil {
 		return err
 	}
 
