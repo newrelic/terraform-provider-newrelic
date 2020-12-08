@@ -23,15 +23,15 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  account_id           = <Your Account ID>
-  policy_id            = newrelic_alert_policy.foo.id
-  type                 = "static"
-  name                 = "foo"
-  description          = "Alert when transactions are taking too long"
-  runbook_url          = "https://www.example.com"
-  enabled              = true
-  violation_time_limit = "one_hour"
-  value_function       = "single_value"
+  account_id                   = <Your Account ID>
+  policy_id                    = newrelic_alert_policy.foo.id
+  type                         = "static"
+  name                         = "foo"
+  description                  = "Alert when transactions are taking too long"
+  runbook_url                  = "https://www.example.com"
+  enabled                      = true
+  violation_time_limit_seconds = 3600
+  value_function               = "single_value"
 
   fill_option          = "static"
   fill_value           = 1.0
@@ -83,10 +83,10 @@ The following arguments are supported:
 - `expected_groups` - (Optional) Number of expected groups when using `outlier` detection.
 - `open_violation_on_group_overlap` - (Optional) Whether or not to trigger a violation when groups overlap. Set to `true` if you want to trigger a violation when groups overlap. This argument is only applicable in `outlier` conditions.
 - `ignore_overlap` - (Optional) **DEPRECATED:** Use `open_violation_on_group_overlap` instead, but use the inverse value of your boolean - e.g. if `ignore_overlap = false`, use `open_violation_on_group_overlap = true`. This argument sets whether to trigger a violation when groups overlap. If set to `true` overlapping groups will not trigger a violation. This argument is only applicable in `outlier` conditions.
-- `violation_time_limit` - (Optional*) Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are `ONE_HOUR`, `TWO_HOURS`, `FOUR_HOURS`, `EIGHT_HOURS`, `TWELVE_HOURS`, `TWENTY_FOUR_HOURS`, `THIRTY_DAYS` (case insensitive).<br>
+- `violation_time_limit` - (Optional*) **DEPRECATED:** Use `violation_time_limit_seconds` instead. Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are `ONE_HOUR`, `TWO_HOURS`, `FOUR_HOURS`, `EIGHT_HOURS`, `TWELVE_HOURS`, `TWENTY_FOUR_HOURS`, `THIRTY_DAYS` (case insensitive).<br>
 <small>\***Note**: One of `violation_time_limit` _or_ `violation_time_limit_seconds` must be set, but not both.</small>
 
-- `violation_time_limit_seconds` - (Optional*) **DEPRECATED:** Use `violation_time_limit` instead. Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are `3600`, `7200`, `14400`, `28800`, `43200`, and `86400`.<br>
+- `violation_time_limit_seconds` - (Optional*) Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select. The value must be between 300 seconds (5 minutes) to 2592000 seconds (30 days) (inclusive). <br>
 <small>\***Note**: One of `violation_time_limit` _or_ `violation_time_limit_seconds` must be set, but not both.</small>
 
 - `fill_option` - (Optional) Which strategy to use when filling gaps in the signal. Possible values are `none`, `last_value` or `static`. If `static`, the `fill_value` field will be used for filling gaps in the signal.
@@ -145,14 +145,14 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  type                 = "baseline"
-  account_id           = <Your Account ID>
-  name                 = "foo"
-  policy_id            = newrelic_alert_policy.foo.id
-  description          = "Alert when transactions are taking too long"
-  enabled              = true
-  runbook_url          = "https://www.example.com"
-  violation_time_limit = "one_hour"
+  type                         = "baseline"
+  account_id                   = <Your Account ID>
+  name                         = "foo"
+  policy_id                    = newrelic_alert_policy.foo.id
+  description                  = "Alert when transactions are taking too long"
+  enabled                      = true
+  runbook_url                  = "https://www.example.com"
+  violation_time_limit_seconds = 3600
 
   # baseline type only
   baseline_direction = "upper_only"
@@ -190,14 +190,14 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  type                 = "outlier"
-  account_id           = <Your Account ID>
-  name                 = "foo"
-  policy_id            = newrelic_alert_policy.foo.id
-  description          = "Alert when outlier conditions occur"
-  enabled              = true
-  runbook_url          = "https://www.example.com"
-  violation_time_limit = "one_hour"
+  type                         = "outlier"
+  account_id                   = <Your Account ID>
+  name                         = "foo"
+  policy_id                    = newrelic_alert_policy.foo.id
+  description                  = "Alert when outlier conditions occur"
+  enabled                      = true
+  runbook_url                  = "https://www.example.com"
+  violation_time_limit_seconds = 3600
 
   # Outlier only
   expected_groups = 2
