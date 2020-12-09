@@ -1,3 +1,15 @@
+<a name="v2.14.0"></a>
+## [v2.14.0] - 2020-12-09
+### Bug Fixes
+- **infra_alert_condition:** fix integration tests
+
+### Documentation Updates
+- update getting started guide with a link to EU graphiql
+- **nrql_alert_condition:** include notes about upgrading from 1.x
+
+### Features
+- **nrql_alert_condition:** swap deprecation of violation_time_limit fields
+
 <a name="v2.13.5"></a>
 ## [v2.13.5] - 2020-11-13
 ### Bug Fixes
@@ -544,7 +556,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.5...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.14.0...HEAD
+[v2.14.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.5...v2.14.0
 [v2.13.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.4...v2.13.5
 [v2.13.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.3...v2.13.4
 [v2.13.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.2...v2.13.3
