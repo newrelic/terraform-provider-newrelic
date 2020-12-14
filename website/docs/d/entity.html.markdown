@@ -53,6 +53,20 @@ resource "newrelic_nrql_alert_condition" "foo" {
     threshold_occurrences = "ALL"
   }
 }
+
+// Filter by account ID.
+// The `accountId` tag is automatically added to all entities by the platform.
+
+data "newrelic_entity" "app" {
+  name = "my-app"
+  domain = "APM"
+  type = "APPLICATION"
+  tag {
+    key = "accountID"
+    value = "12345"
+  }
+}
+
 ```
 
 ## Argument Reference
