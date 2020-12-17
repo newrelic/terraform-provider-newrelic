@@ -23,26 +23,6 @@ var (
 	}
 
 	// old:new
-	violationTimeLimitMap = map[int]alerts.NrqlConditionViolationTimeLimit{
-		3600:  alerts.NrqlConditionViolationTimeLimits.OneHour,
-		7200:  alerts.NrqlConditionViolationTimeLimits.TwoHours,
-		14400: alerts.NrqlConditionViolationTimeLimits.FourHours,
-		28800: alerts.NrqlConditionViolationTimeLimits.EightHours,
-		43200: alerts.NrqlConditionViolationTimeLimits.TwelveHours,
-		86400: alerts.NrqlConditionViolationTimeLimits.TwentyFourHours,
-	}
-
-	// new:old
-	violationTimeLimitMapNewOld = map[alerts.NrqlConditionViolationTimeLimit]int{
-		alerts.NrqlConditionViolationTimeLimits.OneHour:         3600,
-		alerts.NrqlConditionViolationTimeLimits.TwoHours:        7200,
-		alerts.NrqlConditionViolationTimeLimits.FourHours:       14400,
-		alerts.NrqlConditionViolationTimeLimits.EightHours:      28800,
-		alerts.NrqlConditionViolationTimeLimits.TwelveHours:     43200,
-		alerts.NrqlConditionViolationTimeLimits.TwentyFourHours: 86400,
-	}
-
-	// old:new
 	fillOptionMap = map[string]*alerts.AlertsFillOption{
 		"none":       &alerts.AlertsFillOptionTypes.NONE,
 		"last_value": &alerts.AlertsFillOptionTypes.LAST_VALUE,
@@ -61,10 +41,9 @@ var (
 func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditionInput, error) {
 	input := alerts.NrqlConditionInput{
 		NrqlConditionBase: alerts.NrqlConditionBase{
-			Description:        d.Get("description").(string),
-			Enabled:            d.Get("enabled").(bool),
-			Name:               d.Get("name").(string),
-			ViolationTimeLimit: alerts.NrqlConditionViolationTimeLimit(strings.ToUpper(d.Get("violation_time_limit").(string))),
+			Description: d.Get("description").(string),
+			Enabled:     d.Get("enabled").(bool),
+			Name:        d.Get("name").(string),
 		},
 	}
 
@@ -121,7 +100,7 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 	}
 
 	if violationTimeLimitSec, ok := d.GetOk("violation_time_limit_seconds"); ok {
-		input.ViolationTimeLimit = violationTimeLimitMap[violationTimeLimitSec.(int)]
+		input.ViolationTimeLimitSeconds = violationTimeLimitSec.(int)
 	} else if violationTimeLimit, ok := d.GetOk("violation_time_limit"); ok {
 		input.ViolationTimeLimit = alerts.NrqlConditionViolationTimeLimit(strings.ToUpper(violationTimeLimit.(string)))
 	}
@@ -217,7 +196,7 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 	}
 
 	return &alerts.NrqlConditionTerm{
-		Operator:             alerts.AlertsNrqlConditionTermsOperator(strings.ToUpper(term["operator"].(string))),
+		Operator:             alerts.AlertsNRQLConditionTermsOperator(strings.ToUpper(term["operator"].(string))),
 		Priority:             alerts.NrqlConditionPriority(strings.ToUpper(priority)),
 		Threshold:            &threshold,
 		ThresholdDuration:    duration,
@@ -433,7 +412,7 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	}
 
 	if _, ok := d.GetOk("violation_time_limit_seconds"); ok {
-		d.Set("violation_time_limit_seconds", violationTimeLimitMapNewOld[condition.ViolationTimeLimit])
+		d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
 	} else {
 		d.Set("violation_time_limit", condition.ViolationTimeLimit)
 	}

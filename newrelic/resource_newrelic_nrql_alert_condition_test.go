@@ -43,8 +43,12 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 				ImportStateVerify: true,
 				// Ignore items with deprecated fields because
 				// we don't set deprecated fields on import
-				ImportStateVerifyIgnore: []string{"term", "nrql", "violation_time_limit"},
-				ImportStateIdFunc:       testAccImportStateIDFunc(resourceName, "static"),
+				ImportStateVerifyIgnore: []string{
+					"term",                 // contains nested attributes that are deprecated
+					"nrql",                 // contains nested attributes that are deprecated
+					"violation_time_limit", // deprecated in favor of violation_time_limit_seconds
+				},
+				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "static"),
 			},
 		},
 	})
@@ -324,9 +328,9 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 				// Ignore items with deprecated fields because
 				// we don't set deprecated fields on import
 				ImportStateVerifyIgnore: []string{
-					"term", // contains nested attributes that are deprecated
-					"nrql", // contains nested attributes that are deprecated
-					"violation_time_limit",
+					"term",                 // contains nested attributes that are deprecated
+					"nrql",                 // contains nested attributes that are deprecated
+					"violation_time_limit", // deprecated in favor of violation_time_limit_seconds
 				},
 				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "static"),
 			},
@@ -383,8 +387,9 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
 				// Ignore items with deprecated fields because
 				// we don't set deprecated fields on import
 				ImportStateVerifyIgnore: []string{
-					"term", // contains nested attributes that are deprecated
-					"nrql", // contains nested attributes that are deprecated
+					"term",                 // contains nested attributes that are deprecated
+					"nrql",                 // contains nested attributes that are deprecated
+					"violation_time_limit", // deprecated in favor of violation_time_limit_seconds
 				},
 				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "outlier"),
 			},
@@ -491,7 +496,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   name                           = "tf-test-%[1]s"
   runbook_url                    = "https://foo.example.com"
   enabled                        = false
-  violation_time_limit           = "EIGHT_HOURS"
+  violation_time_limit_seconds   = 28800
   fill_option                    = "%[4]s"
   fill_value                     = %[5]s
   aggregation_window             = %[7]s
@@ -606,7 +611,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	runbook_url                    = "https://foo.example.com"
 	enabled                        = false
 	description                    = "test description"
-	violation_time_limit           = "one_hour"
+	violation_time_limit_seconds   = 3600
 	fill_option                    = "%[5]s"
 	fill_value                     = %[6]s
 	close_violations_on_expiration = true
@@ -660,7 +665,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	runbook_url          = "https://foo.example.com"
 	enabled              = false
 	description          = "test description"
-	violation_time_limit = "one_hour"
+	violation_time_limit_seconds = 3600
 	aggregation_window   = 60
 
 	nrql {
