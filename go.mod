@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/bflad/tfproviderlint v0.21.0
 	github.com/client9/misspell v0.3.4
-	github.com/golangci/golangci-lint v1.34.0
+	github.com/golangci/golangci-lint v1.34.1
 	github.com/goreleaser/goreleaser v0.149.0
 	github.com/hashicorp/terraform-plugin-sdk v1.16.0
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
