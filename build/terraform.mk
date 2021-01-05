@@ -2,7 +2,6 @@ PKG_NAME      ?= newrelic
 GO_PKGS       ?= $(shell ${GO} list ./... | grep -v -e "/example")
 WEBSITE_REPO  ?= github.com/hashicorp/terraform-website
 TF_LINTER     ?= tfproviderlint
-GOTOOLS       += github.com/bflad/tfproviderlint/cmd/tfproviderlint
 
 # Required by Team City
 test-compile: deps
