@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
 
 func TestAccNewRelicEntityTags_Basic(t *testing.T) {
@@ -49,7 +50,7 @@ func testAccCheckNewRelicEntityTagsDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := client.Entities.ListTags(r.Primary.ID)
+		_, err := client.Entities.ListTags(entities.EntityGUID(r.Primary.ID))
 
 		if err != nil {
 			return fmt.Errorf("entity tags still exist: %s", err)
@@ -72,7 +73,7 @@ func testAccCheckNewRelicEntityTagsExist(n string, keysToCheck []string) resourc
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		tags, err := client.Entities.ListTags(rs.Primary.ID)
+		tags, err := client.Entities.ListTags(entities.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
