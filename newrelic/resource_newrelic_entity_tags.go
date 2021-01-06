@@ -74,7 +74,7 @@ func resourceNewRelicEntityTagsCreate(d *schema.ResourceData, meta interface{}) 
 
 	client := providerConfig.NewClient
 
-	guid := d.Get("guid").(string)
+	guid := entities.EntityGUID(d.Get("guid").(string))
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 
 	err := client.Entities.AddTags(guid, tags)
@@ -82,7 +82,7 @@ func resourceNewRelicEntityTagsCreate(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	d.SetId(guid)
+	d.SetId(string(guid))
 
 	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		currentTags, err := client.Entities.ListTags(guid)
@@ -117,7 +117,7 @@ func resourceNewRelicEntityTagsRead(d *schema.ResourceData, meta interface{}) er
 
 	log.Printf("[INFO] Reading New Relic entity tags for entity guid %s", d.Id())
 
-	tags, err := client.Entities.ListTags(d.Id())
+	tags, err := client.Entities.ListTags(entities.EntityGUID(d.Id()))
 
 	if err != nil {
 		if _, ok := err.(*nrErrors.NotFound); ok {
@@ -144,12 +144,12 @@ func resourceNewRelicEntityTagsUpdate(d *schema.ResourceData, meta interface{}) 
 
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 
-	if err := client.Entities.ReplaceTags(d.Id(), tags); err != nil {
+	if err := client.Entities.ReplaceTags(entities.EntityGUID(d.Id()), tags); err != nil {
 		return err
 	}
 
 	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		currentTags, err := client.Entities.ListTags(d.Id())
+		currentTags, err := client.Entities.ListTags(entities.EntityGUID(d.Id()))
 
 		if err != nil {
 			return resource.NonRetryableError(fmt.Errorf("error retrieving entity tags for guid %s: %s", d.Id(), err))
@@ -184,7 +184,7 @@ func resourceNewRelicEntityTagsDelete(d *schema.ResourceData, meta interface{}) 
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 	tagKeys := getTagKeys(tags)
 
-	if err := client.Entities.DeleteTags(d.Id(), tagKeys); err != nil {
+	if err := client.Entities.DeleteTags(entities.EntityGUID(d.Id()), tagKeys); err != nil {
 		return err
 	}
 
