@@ -1,7 +1,5 @@
 RELEASE_SCRIPT ?= ./scripts/release.sh
 
-GOTOOLS += github.com/goreleaser/goreleaser
-
 REL_CMD ?= goreleaser
 DIST_DIR ?= ./dist
 

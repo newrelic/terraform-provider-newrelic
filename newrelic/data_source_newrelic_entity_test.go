@@ -17,13 +17,15 @@ func TestExpandEntityTag(t *testing.T) {
 		},
 	}
 
-	expected := entities.TagValue{
-		Key:   "my-key",
-		Value: "my-value",
+	expected := []entities.EntitySearchQueryBuilderTag{
+		entities.EntitySearchQueryBuilderTag{
+			Key:   "my-key",
+			Value: "my-value",
+		},
 	}
 
 	expanded := expandEntityTag(flattened)
 
 	require.NotNil(t, expanded)
-	require.Equal(t, &expected, expanded)
+	require.Equal(t, expected, expanded)
 }

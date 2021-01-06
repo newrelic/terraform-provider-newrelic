@@ -18,8 +18,6 @@ PROJECT_MODULE ?= $(shell $(GO) list -m)
 
 # Set a few vars and run the test suite
 LDFLAGS_TEST ?= "-X=$(PROJECT_MODULE)/version.ProviderVersion=acc"
-GOTOOLS += github.com/stretchr/testify/assert \
-           gotest.tools/gotestsum
 
 test: test-only
 test-only: test-unit test-integration

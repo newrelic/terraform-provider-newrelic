@@ -89,26 +89,26 @@ func dataSourceNewRelicEntityRead(d *schema.ResourceData, meta interface{}) erro
 	log.Printf("[INFO] Reading New Relic entities")
 
 	name := d.Get("name").(string)
-	entityType := entities.EntityType(strings.ToUpper(d.Get("type").(string)))
+	entityType := entities.EntitySearchQueryBuilderType(strings.ToUpper(d.Get("type").(string)))
 	tags := expandEntityTag(d.Get("tag").([]interface{}))
-	domain := entities.EntityDomainType(strings.ToUpper(d.Get("domain").(string)))
+	domain := entities.EntitySearchQueryBuilderDomain(strings.ToUpper(d.Get("domain").(string)))
 
-	params := entities.SearchEntitiesParams{
+	params := entities.EntitySearchQueryBuilder{
 		Name:   name,
 		Type:   entityType,
 		Tags:   tags,
 		Domain: domain,
 	}
 
-	entityResults, err := client.Entities.SearchEntities(params)
+	entityResults, err := client.Entities.GetEntitySearch(entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
 	if err != nil {
 		return err
 	}
 
-	var entity *entities.Entity
-	for _, e := range entityResults {
-		if e.Name == name {
-			entity = e
+	var entity *entities.EntityOutlineInterface
+	for _, e := range entityResults.Results.Entities {
+		if e.GetName() == name {
+			entity = &e
 			break
 		}
 	}
@@ -120,66 +120,81 @@ func dataSourceNewRelicEntityRead(d *schema.ResourceData, meta interface{}) erro
 	return flattenEntityData(entity, d)
 }
 
-func flattenEntityData(e *entities.Entity, d *schema.ResourceData) error {
-	d.SetId(e.GUID)
+func flattenEntityData(entity *entities.EntityOutlineInterface, d *schema.ResourceData) error {
 	var err error
 
-	err = d.Set("name", e.Name)
-	if err != nil {
+	d.SetId(string((*entity).GetGUID()))
+
+	if err = d.Set("name", (*entity).GetName()); err != nil {
 		return err
 	}
 
-	err = d.Set("guid", e.GUID)
-	if err != nil {
+	if err = d.Set("guid", (*entity).GetGUID()); err != nil {
 		return err
 	}
 
-	err = d.Set("type", e.Type)
-	if err != nil {
+	if err = d.Set("type", (*entity).GetType()); err != nil {
 		return err
 	}
 
-	err = d.Set("domain", e.Domain)
-	if err != nil {
+	if err = d.Set("domain", (*entity).GetDomain()); err != nil {
 		return err
 	}
 
-	err = d.Set("account_id", e.AccountID)
-	if err != nil {
+	if err = d.Set("account_id", (*entity).GetAccountID()); err != nil {
 		return err
 	}
 
-	err = d.Set("application_id", e.ApplicationID)
-	if err != nil {
-		return err
-	}
-
-	if e.ServingApmApplicationID != nil {
-		err = d.Set("serving_apm_application_id", *e.ServingApmApplicationID)
-		if err != nil {
+	// store extra values per Entity Type, have to repeat code here due to
+	// go handling of type switching
+	switch e := (*entity).(type) {
+	case *entities.ApmApplicationEntityOutline:
+		if err = d.Set("application_id", e.ApplicationID); err != nil {
 			return err
+		}
+	case *entities.MobileApplicationEntityOutline:
+		if err = d.Set("application_id", e.ApplicationID); err != nil {
+			return err
+		}
+	case *entities.BrowserApplicationEntityOutline:
+		if err = d.Set("application_id", e.ApplicationID); err != nil {
+			return err
+		}
+
+		if e.ServingApmApplicationID > 0 {
+			err = d.Set("serving_apm_application_id", e.ServingApmApplicationID)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func expandEntityTag(cfg []interface{}) *entities.TagValue {
+func expandEntityTag(cfg []interface{}) []entities.EntitySearchQueryBuilderTag {
+	var tags []entities.EntitySearchQueryBuilderTag
+
 	if len(cfg) == 0 {
-		return nil
+		return tags
 	}
 
-	cfgTag := cfg[0].(map[string]interface{})
+	tags = make([]entities.EntitySearchQueryBuilderTag, 0, len(cfg))
 
-	tag := &entities.TagValue{}
+	for _, t := range cfg {
+		cfgTag := t.(map[string]interface{})
 
-	if k, ok := cfgTag["key"]; ok {
-		tag.Key = k.(string)
+		tag := entities.EntitySearchQueryBuilderTag{}
+
+		if k, ok := cfgTag["key"]; ok {
+			tag.Key = k.(string)
+			if v, ok := cfgTag["value"]; ok {
+				tag.Value = v.(string)
+
+				tags = append(tags, tag)
+			}
+		}
 	}
 
-	if v, ok := cfgTag["value"]; ok {
-		tag.Value = v.(string)
-	}
-
-	return tag
+	return tags
 }
