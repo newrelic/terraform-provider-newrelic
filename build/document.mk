@@ -2,8 +2,6 @@
 # Makefile fragment for displaying auto-generated documentation
 #
 
-GOTOOLS     += golang.org/x/tools/cmd/godoc \
-               github.com/newrelic-forks/git-chglog/cmd/git-chglog
 GODOC       ?= godoc
 GODOC_HTTP  ?= "localhost:6060"
 
