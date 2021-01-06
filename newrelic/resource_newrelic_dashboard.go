@@ -163,8 +163,8 @@ func resourceNewRelicDashboard() *schema.Resource {
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
-				Type:    resourceV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: migrateStateV0toV1,
+				Type:    resourceNewRelicDashboardV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: migrateStateNewRelicDashboardV0toV1,
 				Version: 0,
 			},
 		},
@@ -180,12 +180,13 @@ func resourceNewRelicDashboard() *schema.Resource {
 // v2.8+ to continue to upgrade to which ever version this is
 // released in. In the future, we should always use state migration
 // if an attribute changes its schema type.
-func resourceV0() *schema.Resource {
+func resourceNewRelicDashboardV0() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicDashboardCreate,
-		Read:   resourceNewRelicDashboardRead,
-		Update: resourceNewRelicDashboardUpdate,
-		Delete: resourceNewRelicDashboardDelete,
+		SchemaVersion: 0,
+		Create:        resourceNewRelicDashboardCreate,
+		Read:          resourceNewRelicDashboardRead,
+		Update:        resourceNewRelicDashboardUpdate,
+		Delete:        resourceNewRelicDashboardDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
