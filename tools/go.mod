@@ -11,6 +11,6 @@ require (
 	github.com/newrelic-forks/git-chglog v0.10.0
 	github.com/psampaz/go-mod-outdated v0.7.0
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/tools v0.0.0-20210105210202-9ed45478a130
+	golang.org/x/tools v0.0.0-20210106214847-113979e3529a
 	gotest.tools/gotestsum v0.6.0
 )
