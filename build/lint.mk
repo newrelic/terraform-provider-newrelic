@@ -55,7 +55,7 @@ golangci: deps
 	@echo "=== $(PROJECT_NAME) === [ golangci-lint    ]: Linting using $(GOLINTER) ($(COMMIT_LINT_CMD))..."
 	@$(GOLINTER) run
 
-outdated: deps
+outdated: deps tools-outdated
 	@echo "=== $(PROJECT_NAME) === [ outdated         ]: Finding outdated deps with $(GO_MOD_OUTDATED)..."
 	@$(GO) list -u -m -json all | $(GO_MOD_OUTDATED) -direct -update
 
