@@ -144,6 +144,7 @@ func Provider() terraform.ResourceProvider {
 			"newrelic_infra_alert_condition":                    resourceNewRelicInfraAlertCondition(),
 			"newrelic_insights_event":                           resourceNewRelicInsightsEvent(),
 			"newrelic_nrql_alert_condition":                     resourceNewRelicNrqlAlertCondition(),
+			"newrelic_one_dashboard":                            resourceNewRelicOneDashboard(),
 			"newrelic_plugins_alert_condition":                  resourceNewRelicPluginsAlertCondition(),
 			"newrelic_synthetics_alert_condition":               resourceNewRelicSyntheticsAlertCondition(),
 			"newrelic_synthetics_monitor":                       resourceNewRelicSyntheticsMonitor(),
