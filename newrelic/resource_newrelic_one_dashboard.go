@@ -316,6 +316,7 @@ func resourceNewRelicOneDashboardCreate(d *schema.ResourceData, meta interface{}
 	return resourceNewRelicOneDashboardRead(d, meta)
 }
 
+// resourceNewRelicOneDashboardRead NerdGraph => Terraform reader
 func resourceNewRelicOneDashboardRead(d *schema.ResourceData, meta interface{}) error {
 	providerConfig := meta.(*ProviderConfig)
 
@@ -337,7 +338,7 @@ func resourceNewRelicOneDashboardRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	return flattenOneDashboard(dashboard, d)
+	return flattenDashboardEntity(dashboard, d)
 }
 
 func resourceNewRelicOneDashboardUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -356,12 +357,14 @@ func resourceNewRelicOneDashboardUpdate(d *schema.ResourceData, meta interface{}
 
 	log.Printf("[INFO] Updating New Relic One dashboard '%s' (%s)", dashboard.Name, d.Id())
 
-	_, err = client.Dashboards.DashboardUpdate(*dashboard, entities.EntityGUID(d.Id()))
+	result, err := client.Dashboards.DashboardUpdate(*dashboard, entities.EntityGUID(d.Id()))
 	if err != nil {
 		return err
 	}
 
-	return resourceNewRelicOneDashboardRead(d, meta)
+	// We have to use the Update Result, not a re-read of the entity as the changes take
+	// some amount of time to be re-indexed
+	return flattenDashboardUpdateResult(result, d)
 }
 
 func resourceNewRelicOneDashboardDelete(d *schema.ResourceData, meta interface{}) error {

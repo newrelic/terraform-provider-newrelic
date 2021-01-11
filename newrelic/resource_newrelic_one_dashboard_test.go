@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -13,19 +14,19 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
 
-func TestAccNewRelicOneDashboard_Basic(t *testing.T) {
+// TestAccNewRelicOneDashboard_CreateOnePage Ensure that we can create a NR1 Dashboard
+func TestAccNewRelicOneDashboard_CreateOnePage(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccCheckNewRelicOneDashboardConfig(rName, strconv.Itoa(testAccountID)),
+				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFull(rName, strconv.Itoa(testAccountID)),
 				Check: resource.ComposeTestCheckFunc(
-					// logState(t),
-					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar"),
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
 				),
 			},
 			// Import
@@ -38,239 +39,108 @@ func TestAccNewRelicOneDashboard_Basic(t *testing.T) {
 	})
 }
 
-/*
-func TestAccNewRelicDashboard_UpdateDashboard(t *testing.T) {
+// TestAccNewRelicOneDashboard_CreateTwoPages Ensure we can create a Two page NR1 Dashboard
+func TestAccNewRelicOneDashboard_CreateTwoPages(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_TwoPageBasic(rName, strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					// logState(t),
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			// Import
+			{
+				ResourceName:      "newrelic_one_dashboard.bar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_PageRename Ensure we can change the name of a NR1 Dashboard
+func TestAccNewRelicOneDashboard_PageRename(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	rNameUpdated := fmt.Sprintf("%s-updated", rName)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicDashboardConfig(rName),
+				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFull(rName, strconv.Itoa(testAccountID)),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
 				),
 			},
 			{
-				Config: testAccCheckNewRelicDashboardConfig(rNameUpdated),
+				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFull(rNameUpdated, strconv.Itoa(testAccountID)),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 5), // Sleep waiting for entity re-indexing
 				),
 			},
 		},
 	})
 }
 
-func TestAccNewRelicDashboard_AddWidget(t *testing.T) {
-	rDashboardName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-	widgetName := "Page Views"
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckNewRelicDashboardConfig(rDashboardName),
-			},
-			{
-				Config: testAccCheckNewRelicDashboardWidgetConfigAdded(rDashboardName, widgetName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccNewRelicDashboard_UpdateWidget(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-	widgetName := "Page Views"
-	widgetNameUpdated := "Page Views Updated"
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckNewRelicDashboardWidgetConfigAdded(rName, widgetName),
-				Check: resource.ComposeTestCheckFunc(
-					// logState(t),
-					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
-				),
-			},
-			{
-				Config: testAccCheckNewRelicDashboardWidgetConfigAdded(rName, widgetNameUpdated),
-				Check: resource.ComposeTestCheckFunc(
-					// logState(t),
-					testAccCheckNewRelicDashboardExists("newrelic_dashboard.foo"),
-				),
-			},
-		},
-	})
-}
-
-func TestNewRelicDashboard_WidgetValidation(t *testing.T) {
-	cases := []struct {
-		cfg            map[string]interface{}
-		visualizations []string
-		condition      string
-	}{
-		{
-			condition: "nrql field missing",
-			visualizations: []string{
-				"attribute_sheet",
-				"billboard",
-				"billboard_comparison",
-				"comparison_line_chart",
-				"event_feed",
-				"event_table",
-				"facet_bar_chart",
-				"facet_pie_chart",
-				"facet_table",
-				"faceted_area_chart",
-				"faceted_line_chart",
-				"funnel",
-				"gauge",
-				"heatmap",
-				"histogram",
-				"line_chart",
-				"raw_json",
-				"single_event",
-				"uniques_list",
-			},
-			cfg: map[string]interface{}{
-				"title":         "title",
-				"widget_id":     1234,
-				"threshold_red": 1,
-				"row":           1,
-				"column":        1,
-				"width":         1,
-				"height":        1,
-			},
-		},
-		{
-			condition: "threshold_red field missing",
-			visualizations: []string{
-				"gauge",
-			},
-			cfg: map[string]interface{}{
-				"title":     "title",
-				"nrql":      "nrql",
-				"widget_id": 1234,
-				"row":       1,
-				"column":    1,
-				"width":     1,
-				"height":    1,
-			},
-		},
-		{
-			condition: "source field missing",
-			visualizations: []string{
-				"markdown",
-			},
-			cfg: map[string]interface{}{
-				"title":     "title",
-				"widget_id": 1234,
-				"row":       1,
-				"column":    1,
-				"width":     1,
-				"height":    1,
-			},
-		},
-		{
-			condition: "metric field missing",
-			visualizations: []string{
-				"metric_line_chart",
-			},
-			cfg: map[string]interface{}{
-				"title":      "title",
-				"widget_id":  1234,
-				"entity_ids": schema.NewSet(schema.HashInt, []interface{}{1234}),
-				"duration":   1800000,
-				"row":        1,
-				"column":     1,
-				"width":      1,
-				"height":     1,
-			},
-		},
-		{
-			condition: "entity_ids field missing",
-			visualizations: []string{
-				"application_breakdown",
-				"metric_line_chart",
-			},
-			cfg: map[string]interface{}{
-				"title":     "title",
-				"widget_id": 1234,
-				"metric":    schema.NewSet(schema.HashString, []interface{}{}),
-				"duration":  1800000,
-				"row":       1,
-				"column":    1,
-				"width":     1,
-				"height":    1,
-			},
-		},
-		{
-			condition: "duration field missing",
-			visualizations: []string{
-				"metric_line_chart",
-			},
-			cfg: map[string]interface{}{
-				"title":      "title",
-				"widget_id":  1234,
-				"entity_ids": schema.NewSet(schema.HashInt, []interface{}{1234}),
-				"metric":     schema.NewSet(schema.HashString, []interface{}{}),
-				"row":        1,
-				"column":     1,
-				"width":      1,
-				"height":     1,
-			},
-		},
-	}
-
-	for _, c := range cases {
-		for _, v := range c.visualizations {
-			c.cfg["visualization"] = v
-
-			_, err := expandWidget(c.cfg)
-
-			if err == nil {
-				t.Errorf("validation error expected when %s for %s visualization", c.condition, v)
-			}
-		}
-	}
-}
-
-func TestAccNewRelicDashboard_MissingDashboard(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicDashboardDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckNewRelicDashboardConfig(rName),
-			},
-			{
-				PreConfig: deleteDashboard(rName),
-				Config:    testAccCheckNewRelicDashboardConfig(rName),
-			},
-		},
-	})
-}
-*/
-
-func testAccCheckNewRelicOneDashboardConfig(dashboardName string, accountID string) string {
+// testAccCheckNewRelicOneDashboardConfig_TwoPageBasic generates a TF config snippet for a simple
+// two page dashboard.
+func testAccCheckNewRelicOneDashboardConfig_TwoPageBasic(dashboardName string, accountID string) string {
 	return `
 resource "newrelic_one_dashboard" "bar" {
   name = "` + dashboardName + `"
   permissions = "private"
 
+` + testAccCheckNewRelicOneDashboardConfig_PageFull(dashboardName, accountID) + `
+` + testAccCheckNewRelicOneDashboardConfig_PageSimple("Page 2", accountID) + `
+}
+`
+}
+
+// testAccCheckNewRelicOneDashboardConfig contains all the config options for a single page dashboard
+func testAccCheckNewRelicOneDashboardConfig_OnePageFull(dashboardName string, accountID string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+` + testAccCheckNewRelicOneDashboardConfig_PageFull(dashboardName, accountID) + `
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_PageSimple generates a basic dashboard page
+func testAccCheckNewRelicOneDashboardConfig_PageSimple(pageName string, accountID string) string {
+	return `
   page {
-    name = "` + dashboardName + `"
+    name = "` + pageName + `"
+
+    widget_bar {
+      title = "foo"
+      row = 4
+      column = 1
+      query {
+        account_id = ` + accountID + `
+        nrql = "FROM Transaction SELECT count(*) FACET name"
+      }
+    }
+  }
+`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_PageFull generates a TF config snippet that is
+// an entire dashboard page, with all widget types
+func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID string) string {
+	return `
+  page {
+    name = "` + pageName + `"
 
     widget_area {
       title = "Area 51"
@@ -349,78 +219,12 @@ resource "newrelic_one_dashboard" "bar" {
       }
     }
   }
-}
 `
 }
 
-/*
-func testAccCheckNewRelicDashboardWidgetConfigAdded(dashboardName string, widgetName string) string {
-	return fmt.Sprintf(`
-resource "newrelic_dashboard" "foo" {
-  title                = "%s"
-  widget {
-    title = "Transaction Count"
-    visualization = "billboard"
-    nrql = "SELECT count(*) from Transaction since 5 minutes ago facet appName"
-    threshold_red = 100
-    threshold_yellow = 50
-    row    = 1
-    column = 1
-  }
-  widget {
-    title         		   = "Average Transaction Duration"
-    visualization 		   = "facet_bar_chart"
-	nrql          		   = "SELECT AVERAGE(duration) from Transaction FACET appName TIMESERIES auto"
-	drilldown_dashboard_id = 1234
-    row           		   = 1
-	column        		   = 2
-  }
-  widget {
-    title         = "Dashboard Note"
-    visualization = "markdown"
-    source        = "#h1 Heading"
-    row           = 1
-    column        = 3
-  }
-  widget {
-    title         = "Apdex"
-    visualization = "metric_line_chart"
-    duration = 1800000
-    entity_ids = [ 1234 ]
-    compare_with {
-        offset_duration = "P1D"
-        presentation {
-            color = "#77add4"
-            name = "Yesterday"
-        }
-    }
-
-    compare_with {
-        offset_duration = "P7D"
-        presentation {
-            color = "#b1b6ba"
-            name = "Last week"
-        }
-    }
-    metric {
-        name = "Apdex"
-        values = [ "score" ]
-    }
-    row           = 2
-    column        = 1
-  }
-  widget {
-    title         = "%s"
-	visualization = "faceted_line_chart"
-	column        = 2
-	row           = 2
-    nrql          = "SELECT AVERAGE(duration) from PageView FACET appName TIMESERIES auto"
-  }
-}
-`, dashboardName, widgetName)
-}
-*/
-func testAccCheckNewRelicOneDashboardExists(name string) resource.TestCheckFunc {
+// testAccCheckNewRelicOneDashboardExists fetches the dashboard back, with an optional sleep time
+// used when we know the async nature of the API will mess with consistent testing.
+func testAccCheckNewRelicOneDashboardExists(name string, sleepSeconds int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -429,6 +233,8 @@ func testAccCheckNewRelicOneDashboardExists(name string) resource.TestCheckFunc 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no dashboard ID is set")
 		}
+
+		time.Sleep(time.Duration(sleepSeconds) * time.Second)
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
@@ -445,45 +251,21 @@ func testAccCheckNewRelicOneDashboardExists(name string) resource.TestCheckFunc 
 	}
 }
 
-/*
-func testAccCheckNewRelicDashboardDestroy(s *terraform.State) error {
+// testAccCheckNewRelicOneDashboardDestroy expects the dashboard read to fail,
+// and errors if we DO get the dashboard back.
+func testAccCheckNewRelicOneDashboardDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
 	for _, r := range s.RootModule().Resources {
-		if r.Type != "newrelic_dashboard" {
+		if r.Type != "newrelic_one_dashboard" {
 			continue
 		}
 
-		id, err := strconv.ParseInt(r.Primary.ID, 10, 32)
-		if err != nil {
-			return err
-		}
-
-		_, err = client.Dashboards.GetDashboard(int(id))
-
+		_, err := client.Dashboards.GetDashboardEntity(entities.EntityGUID(r.Primary.ID))
 		if err == nil {
-			return fmt.Errorf("dashboard still exists")
+			return fmt.Errorf("one_dashboard still exists")
 		}
 
 	}
 	return nil
 }
-
-func deleteDashboard(title string) func() {
-	return func() {
-		client := testAccProvider.Meta().(*ProviderConfig).NewClient
-
-		params := dashboards.ListDashboardsParams{
-			Title: title,
-		}
-
-		dashboards, _ := client.Dashboards.ListDashboards(&params)
-
-		for _, d := range dashboards {
-			if d.Title == title {
-				_, _ = client.Dashboards.DeleteDashboard(d.ID)
-				break
-			}
-		}
-	}
-}
-*/
