@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -355,11 +354,41 @@ func expandDashboardWidgetQueryInput(queries []interface{}) ([]dashboards.Dashbo
 // Unpack the *dashboards.Dashboard variable and set resource data.
 //
 // Used by the newrelic_dashboard Read function (resourceNewRelicDashboardRead)
-func flattenOneDashboard(dashboard *entities.DashboardEntity, d *schema.ResourceData) error {
+func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.ResourceData) error {
 	d.Set("account_id", dashboard.AccountID)
 	d.Set("guid", dashboard.GUID)
 	d.Set("name", dashboard.Name)
 	d.Set("permalink", dashboard.Permalink)
+	d.Set("permissions", strings.ToLower(string(dashboard.Permissions)))
+
+	if dashboard.Description != "" {
+		d.Set("description", dashboard.Description)
+	}
+
+	if dashboard.Pages != nil && len(dashboard.Pages) > 0 {
+		pages := flattenDashboardPage(&dashboard.Pages)
+		if err := d.Set("page", pages); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Unpack the *dashboards.Dashboard variable and set resource data.
+//
+// Used by the newrelic_dashboard Read function (resourceNewRelicDashboardRead)
+func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *schema.ResourceData) error {
+	if result == nil {
+		return fmt.Errorf("can not flatten nil DashboardUpdateResult")
+	}
+
+	dashboard := result.EntityResult // dashboard.DashboardEntityResult
+
+	d.Set("account_id", dashboard.AccountID)
+	d.Set("guid", dashboard.GUID)
+	d.Set("name", dashboard.Name)
+	//d.Set("permalink", dashboard.Permalink)
 	d.Set("permissions", strings.ToLower(string(dashboard.Permissions)))
 
 	if dashboard.Description != "" {
@@ -427,7 +456,6 @@ func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
 		out[i] = m
 	}
 
-	log.Printf("flattenDashboardPage: '%+v'", out)
 	return out
 }
 
