@@ -13,58 +13,8 @@ description: |-
 
 * The examples below assume you already have a New Relic agent deployed. If you don't have New Relic integrated yet, check out [New Relic's introduction documentation](https://docs.newrelic.com/docs/using-new-relic/welcome-new-relic/get-started/introduction-new-relic) to get started there, then head back over here to get started with the New Relic Terraform Provider using the examples provided.
 * [Install Terraform](https://www.terraform.io/intro/getting-started/install.html) and read the Terraform getting started guide that follows. This guide will assume a basic understanding of Terraform.
-* Locate your Personal API key by following [New Relic's Personal API key docs][personal_api_key].
+* Locate your Personal API key by following [New Relic's Personal API key docs][personal_api_key]. <br> <small>Note: To to locate or create your API key via our NerdGraph API, please follow these [instructions][personal_api_key_via_nerdgraph].
 
-  Note: For New Relic One users, you will need to create and view your Personal API key via NerdGraph, as folows:
-
-  1. Access the [NerdGraph Explorer](https://api.newrelic.com/graphiql) ([NerdGraph Explorer for EU accounts](https://api.eu.newrelic.com/graphiql))
-  1. If this is the first time, you'll need to create the API key:
-     1. Next to "GraphiQL" are three buttons: a play button and two drop downs.  Select the last drop down.
-     1. In the drop down is a label "Create a new API Key", and under that is your account number.  Select your account number.
-     1. This should create your key, although you cannot view it without running a query (next).
-  1. To view the API key, execute the follownig query:
-  
-     ```graphql
-     {
-       actor {
-         apiAccess {
-           keySearch(query: {types: USER}) {
-             nextCursor
-             keys {
-               ... on ApiAccessUserKey {
-                 key
-                 name
-                 id
-               }
-             }
-           }
-         }
-       }
-     }
-     ```
-  1. This will return a JSON object like so:
-  
-     ```json
-     {
-       "data": { 
-         "actor": {
-           "apiAccess": {
-             "keySearch": {
-               "keys": [
-                 {
-                   "key": "NRAK-«lots of other stuff»",
-                   "name": "API Key for Account XXX"
-                 }
-               ],
-               "nextCursor": null
-             }
-           }
-         }
-       }
-     }
-     ```
-  1. The value for data→actor→apiAccess→keySearch→keys→key is the key.
-  
 
 ## Configuring the Provider
 
@@ -280,4 +230,5 @@ If you ever need to make changes to your configuration, you can run `terraform a
 You can also run `terraform destroy` to tear down your resources if that's ever needed.
 
 [personal_api_key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#personal-api-key
+[personal_api_key_via_nerdgraph]: https://docs.newrelic.com/docs/apis/nerdgraph/examples/use-nerdgraph-manage-license-keys-user-keys
 [terraform_data_sources]: https://www.terraform.io/docs/configuration/data-sources.html
