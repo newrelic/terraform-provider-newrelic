@@ -9,12 +9,12 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 )
 
-// migrateStateV0toV1 currently facilitates migrating the `widgets`
-// attribute from TypeList to TypeSet. Since the underlying
+// migrateStateNewRelicDashboardV0toV1 currently facilitates migrating
+// the `widgets` attribute from TypeList to TypeSet. Since the underlying
 // data structure is []map[string]interface{} for both, we don't
 // need to do anything other than return the state and Terraform
 // will handle the rest.
-func migrateStateV0toV1(rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+func migrateStateNewRelicDashboardV0toV1(rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
 	return rawState, nil
 }
 

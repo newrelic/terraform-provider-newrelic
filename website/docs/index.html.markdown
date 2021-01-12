@@ -60,6 +60,7 @@ resources compared to which endpoint is in use.
 | `newrelic_infra_alert_condition`                    | Infrastructure REST API | `api_key`             |
 | `newrelic_insights_event`                           | Insights API            | `insights_insert_key` |
 | `newrelic_nrql_alert_condition`                     | NerdGraph               | `api_key`             |
+| `newrelic_one_dashboard`                            | NerdGraph               | `api_key              |
 | `newrelic_plugins_alert_condition`                  | RESTv2                  | `api_key`             |
 | `newrelic_synthetics_alert_condition`               | RESTv2                  | `api_key`             |
 | `newrelic_synthetics_monitor`                       | Synthetics REST API     | `api_key`             |
