@@ -13,8 +13,7 @@ description: |-
 
 * The examples below assume you already have a New Relic agent deployed. If you don't have New Relic integrated yet, check out [New Relic's introduction documentation](https://docs.newrelic.com/docs/using-new-relic/welcome-new-relic/get-started/introduction-new-relic) to get started there, then head back over here to get started with the New Relic Terraform Provider using the examples provided.
 * [Install Terraform](https://www.terraform.io/intro/getting-started/install.html) and read the Terraform getting started guide that follows. This guide will assume a basic understanding of Terraform.
-* Locate your Personal API key by following [New Relic's Personal API key docs][personal_api_key]. <br> <small>Note: To to locate or create your API key via our NerdGraph API, please follow these [instructions][personal_api_key_via_nerdgraph].
-
+* Locate your User API key by following [New Relic's User API key docs][user_api_key] (previously referred to as "personal API key"). <br> <small>Note: To to locate or create your API key via our NerdGraph API, please follow these [instructions][user_api_key_via_nerdgraph].</small>
 
 ## Configuring the Provider
 
@@ -229,6 +228,6 @@ If you ever need to make changes to your configuration, you can run `terraform a
 
 You can also run `terraform destroy` to tear down your resources if that's ever needed.
 
-[personal_api_key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#personal-api-key
-[personal_api_key_via_nerdgraph]: https://docs.newrelic.com/docs/apis/nerdgraph/examples/use-nerdgraph-manage-license-keys-user-keys
+[user_api_key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key
+[user_api_key_via_nerdgraph]: https://docs.newrelic.com/docs/apis/nerdgraph/examples/use-nerdgraph-manage-license-keys-user-keys
 [terraform_data_sources]: https://www.terraform.io/docs/configuration/data-sources.html
