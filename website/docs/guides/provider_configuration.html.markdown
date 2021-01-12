@@ -25,7 +25,7 @@ If you're using Terraform locally, you can set the environment variables in your
 
 ```bash
 # Add this to your .bash_profile or .bashrc
-export NEW_RELIC_API_KEY="<your New Relic Personal API key>"
+export NEW_RELIC_API_KEY="<your New Relic User API key>"
 export NEW_RELIC_REGION="US"
 ```
 
@@ -45,7 +45,7 @@ The table below shows the available environment variables and how they map to th
 | <small>Schema Attribute</small> | <small>Equivalent Env Variable</small> | <small>Required?</small> | <small>Default</small> | <small>Description</small>                                                                   |
 | ------------------------------- | -------------------------------------- | ------------------------ | ---------------------- | -------------------------------------------------------------------------------------------- |
 | `account_id`                    | `NEW_RELIC_ACCOUNT_ID`                 | required                 | `null`                 | Your New Relic [account ID].                                                                 |
-| `api_key`                       | `NEW_RELIC_API_KEY`                    | required                 | `null`                 | Your New Relic [personal API key] \(usually prefixed with `NRAK`).                                     |
+| `api_key`                       | `NEW_RELIC_API_KEY`                    | required                 | `null`                 | Your New Relic [User API key] \(usually prefixed with `NRAK`).                                     |
 | `region`                        | `NEW_RELIC_REGION`                     | required                 | `null`                 | Your New Relic account's [data center region] \(`US` or `EU`).                               |
 | `insights_insert_key`           | `NEW_RELIC_INSIGHTS_INSERT_KEY`        | optional                 | `null`                 | Your [Insights insert API key] for Insights events.                                          |
 | `insecure_skip_verify`          | `NEW_RELIC_API_SKIP_VERIFY`            | optional                 | `null`                 | Whether or not to trust self-signed SSL certificates.                                        |
@@ -62,7 +62,7 @@ Configuring the provider from within your HCL is a quick way to get started, how
 
 ```hcl
 provider "newrelic" {
-  api_key = <Your Personal API key>
+  api_key = <Your User API key>
   account_id = <your New Relic account ID>
   region = "US"
 }
@@ -87,7 +87,7 @@ provider "newrelic" {
 -> <small>**Note:** The provider supports ***one*** region per instance of the provider.</small>
 
 [account ID]: https://docs.newrelic.com/docs/accounts/install-new-relic/account-setup/account-id
-[personal API key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#personal-api-key
+[User API key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key
 [data center region]: https://docs.newrelic.com/docs/using-new-relic/welcome-new-relic/get-started/our-eu-us-region-data-centers
 [Insights query API key]: https://docs.newrelic.com/docs/insights/insights-api/get-data/query-insights-event-data-api
 [Insights insert API key]: https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/introduction-event-api#register

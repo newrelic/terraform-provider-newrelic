@@ -82,7 +82,7 @@ First export the necessary environment variables.
 
 ```bash
 # Add this to your .bash_profile or .bashrc
-export NEW_RELIC_API_KEY="<your New Relic Personal API key>"
+export NEW_RELIC_API_KEY="<your New Relic User API key>"
 export NEW_RELIC_ADMIN_API_KEY="<your New Relic Admin API key>"
 export NEW_RELIC_REGION="US"
 ```
