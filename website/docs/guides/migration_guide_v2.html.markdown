@@ -14,14 +14,14 @@ Version 2.0 of the provider introduces some changes to the provider's configurat
 
 ### A Note About API Key Format
 
-Your New Relic [**Personal API Key**](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#personal-api-key) is now considered the default and standard API key for the provider.
+Your New Relic [**User API Key**](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key) is now considered the default and standard API key for the provider.
 
 As of version 2.10.2, New Relic [**Admin API keys**](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#admin) are no longer used for authentication within the New Relic Terraform provider.
 
--> <small>**Please note the following formatting for the provider's API key.** <br>Your **Personal API Key** has a prefix of `NRAK-` </small>
+-> <small>**Please note the following formatting for the provider's API key.** <br>Your **User API Key** has a prefix of `NRAK-` </small>
 
-**IMPORTANT** Please make sure that the Personal API Key has access to the
-account and resources you expect to be manipulating.  If the Personal API Key
+**IMPORTANT** Please make sure that the User API Key has access to the
+account and resources you expect to be manipulating.  If the User API Key
 does not have access, Terraform may not be able to detect existing resources
 correctly and may behave strangely.
 
@@ -31,7 +31,7 @@ If you have been using environment variables to configure the provider, you will
 
 1. **IMPORTANT:** All environment variables in use by the provider have been renamed with a new naming convention. The `NEWRELIC_*` prefix has been changed to `NEW_RELIC_*`. This will be the naming convention for environment variables moving forward.
 
-2. The environment variable `NEWRELIC_PERSONAL_API_KEY` has been replaced with `NEW_RELIC_API_KEY`. The Personal API Key is now considered the default and standard API key for the provider.
+2. The environment variable `NEWRELIC_PERSONAL_API_KEY` has been replaced with `NEW_RELIC_API_KEY`. The User API Key is now considered the default and standard API key for the provider.
 
     ```diff
     - NEWRELIC_PERSONAL_API_KEY
@@ -88,7 +88,7 @@ If you have been using environment variables to configure the provider, you will
 
 ### Provider Block Schema Updates
 
-1. Replace any existing `api_key` configuration setting with the value of the existing `personal_api_key` configuration setting. The Personal API Key is now considered the default and standard API key for the provider.
+1. Replace any existing `api_key` configuration setting with the value of the existing `personal_api_key` configuration setting. The User API Key is now considered the default and standard API key for the provider.
 
     ```diff
     provider "newrelic" {
@@ -99,10 +99,10 @@ If you have been using environment variables to configure the provider, you will
     }
     ```
 
-    -> <small>**Note:** Take note of where the `NRAK-***` and `NRAA-***` prefixes switch. This is important. Most Personal API Keys have the `NRAK-` prefix.</small>
+    -> <small>**Note:** Take note of where the `NRAK-***` and `NRAA-***` prefixes switch. This is important. Most User API keys have the `NRAK-` prefix.</small>
 
 2. Add `account_id` to your `provider` block and set it to your New Relic account ID. Note that you can also use the environment variable `NEW_RELIC_ACCOUNT_ID`.
 
 3. The `insights_account_id` configuration setting has been removed. The `account_id` configuration setting is now used instead.
 
-[nr-personal-api-key-url]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#personal-api-key
+[nr-personal-api-key-url]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key
