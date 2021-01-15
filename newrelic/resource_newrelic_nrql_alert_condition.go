@@ -69,7 +69,7 @@ func termSchema() *schema.Resource {
 			"threshold_duration": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The duration of time, in seconds, that the threshold must violate for in order to create a violation. Value must be a multiple of 60 and within 120-3600 seconds for baseline conditions and 120-7200 seconds for static conditions.",
+				Description: "The duration, in seconds, that the threshold must violate in order to create a violation. Value must be a multiple of the 'aggregation_window' (which has a default of 60 seconds). Value must be within 120-3600 seconds for baseline and outlier conditions, within 120-7200 seconds for static conditions with the sum value function, and within 60-7200 seconds for static conditions with the single_value value function.",
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					v := val.(int)
 					minVal := 60
@@ -81,7 +81,8 @@ func termSchema() *schema.Resource {
 					}
 
 					// This validation is a top-level validation check.
-					// Static conditions must be within range [60, 7200].
+					// Static conditions with a single_value value function must be within range [60, 7200].
+					// Static conditions with a sum value function must be within range [120, 7200].
 					// Baseline conditions must be within range [120, 3600].
 					// Outlier conditions must be within range [120, 3600].
 					if v < minVal || v > maxVal {
