@@ -32,7 +32,7 @@ resource "newrelic_one_dashboard" "exampledash" {
       row = 1
       column = 1
 
-      query {
+      nrql_query {
         account_id = <Your Account ID>
         nrql       = "FROM Transaction SELECT rate(count(*), 1 minute)"
       }
@@ -43,7 +43,7 @@ resource "newrelic_one_dashboard" "exampledash" {
       row = 1
       column = 5
 
-      query {
+      nrql_query {
         account_id = <Your Account ID>
         nrql       = "FROM Transaction SELECT average(duration) FACET appName"
       }
@@ -113,22 +113,22 @@ All nested `widget` blocks support the following common arguments:
 Each widget type supports an additional set of arguments:
 
   * `widget_area`, `widget_bar`, `widget_line`, `widget_pie`, `widget_table`
-    * `query` - (Required) A nested block that describes a NRQL Query. See [Nested query blocks](#nested-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
   * `widget_billboard`
-    * `query` - (Required) A nested block that describes a NRQL Query. See [Nested query blocks](#nested-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `critical` - (Optional) Threshold above which the displayed value will be styled with a red color.
     * `warning` - (Optional) Threshold above which the displayed value will be styled with a yellow color.
   * `widget_markdown`:
     * `text` - (Required) The markdown source to be rendered in the widget.
 
-### Nested `query` blocks
+### Nested `nrql_query` blocks
 
-Nested query blocks allow you to make one or more NRQL queries within a widget, against a specified account.
+Nested `nrql_query` blocks allow you to make one or more NRQL queries within a widget, against a specified account.
 
 The following arguments are supported:
 
   * `account_id` - (Required) The New Relic account ID to issue the query against.
-  * `nrql` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
+  * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
 
 ## Additional Examples
 
@@ -151,9 +151,9 @@ resource "newrelic_one_dashboard" "multi_page_dashboard" {
       row    = 1
       column = 1
 
-      query {
+      nrql_query {
         account_id = <Your Account ID>
-        nrql       = "FROM Transaction SELECT count(*) FACET name"
+        query      = "FROM Transaction SELECT count(*) FACET name"
       }
     }
   }
@@ -166,13 +166,13 @@ resource "newrelic_one_dashboard" "multi_page_dashboard" {
       row    = 1
       column = 1
       width  = 12
-      query {
+      nrql_query {
         account_id = <First Account ID>
-        nrql       = "FROM Metric SELECT rate(count(apm.service.transaction.duration), 1 minute) as 'First Account Throughput' TIMESERIES"
+        query      = "FROM Metric SELECT rate(count(apm.service.transaction.duration), 1 minute) as 'First Account Throughput' TIMESERIES"
       }
-      query {
+      nrql_query {
         account_id = <Second Account ID>
-        nrql       = "FROM Metric SELECT rate(count(apm.service.transaction.duration), 1 minute) as 'Second Account Throughput' TIMESERIES"
+        query      = "FROM Metric SELECT rate(count(apm.service.transaction.duration), 1 minute) as 'Second Account Throughput' TIMESERIES"
       }
     }
   }

@@ -133,10 +133,10 @@ func dashboardPageSchemaElem() *schema.Resource {
 	}
 }
 
-// dashboardWidgetQuerySchemaElem defines a NRQL query for use on a dashboard
+// dashboardWidgetNRQLQuerySchemaElem defines a NRQL query for use on a dashboard
 //
 // see: newrelic/newrelic-client-go/pkg/entities/DashboardWidgetQuery
-func dashboardWidgetQuerySchemaElem() *schema.Resource {
+func dashboardWidgetNRQLQuerySchemaElem() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -144,7 +144,7 @@ func dashboardWidgetQuerySchemaElem() *schema.Resource {
 				Required:    true,
 				Description: "The account id used for the NRQL query.",
 			},
-			"nrql": {
+			"query": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The NRQL query.",
@@ -181,10 +181,10 @@ func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 				Default:      4,
 				ValidateFunc: validation.IntBetween(1, 12),
 			},
-			"query": {
+			"nrql_query": {
 				Type:     schema.TypeList,
 				Required: true,
-				Elem:     dashboardWidgetQuerySchemaElem(),
+				Elem:     dashboardWidgetNRQLQuerySchemaElem(),
 			},
 			"title": {
 				Type:        schema.TypeString,
@@ -234,10 +234,10 @@ func dashboardWidgetGraphSchemaElem() *schema.Resource {
 				Default:      4,
 				ValidateFunc: validation.IntBetween(1, 12),
 			},
-			"query": {
+			"nrql_query": {
 				Type:     schema.TypeList,
 				Required: true,
-				Elem:     dashboardWidgetQuerySchemaElem(),
+				Elem:     dashboardWidgetNRQLQuerySchemaElem(),
 			},
 			"title": {
 				Type:        schema.TypeString,

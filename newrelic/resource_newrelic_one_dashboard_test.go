@@ -126,9 +126,9 @@ func testAccCheckNewRelicOneDashboardConfig_PageSimple(pageName string, accountI
       title = "foo"
       row = 4
       column = 1
-      query {
+      nrql_query {
         account_id = ` + accountID + `
-        nrql = "FROM Transaction SELECT count(*) FACET name"
+        query      = "FROM Transaction SELECT count(*) FACET name"
       }
     }
   }
@@ -149,9 +149,9 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       height = 3
       width = 12
 
-      query {
+      nrql_query {
         account_id = ` + accountID + `
-        nrql = "FROM Transaction SELECT 51 TIMESERIES"
+        query      = "FROM Transaction SELECT 51 TIMESERIES"
       }
     }
 
@@ -159,9 +159,9 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       title = "foo"
       row = 4
       column = 1
-      query {
+      nrql_query {
         account_id = ` + accountID + `
-        nrql = "FROM Transaction SELECT count(*) FACET name"
+        query      = "FROM Transaction SELECT count(*) FACET name"
       }
     }
 
@@ -169,9 +169,9 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       title = "top 40"
       row = 4
       column = 5
-      query {
+      nrql_query {
         account_id = ` + accountID + `
-        nrql = "FROM Transaction SELECT count(*)"
+        query      = "FROM Transaction SELECT count(*)"
       }
 
       warning = 1
@@ -182,13 +182,13 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       title = "over the"
       row = 4
       column = 9
-      query {
+      nrql_query {
         account_id = ` + accountID + `
-        nrql = "FROM Transaction SELECT 1 TIMESERIES"
+        query      = "FROM Transaction SELECT 1 TIMESERIES"
       }
-      query {
+      nrql_query {
         account_id = ` + accountID + `
-        nrql = "FROM Transaction SELECT 2 TIMESERIES"
+        query      = "FROM Transaction SELECT 2 TIMESERIES"
       }
     }
 
@@ -203,9 +203,9 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       title = "3.14"
       row = 7
       column = 5
-      query {
+      nrql_query {
         account_id = ` + accountID + `
-        nrql = "FROM Transaction SELECT count(*) FACET name"
+        query      = "FROM Transaction SELECT count(*) FACET name"
       }
     }
 
@@ -213,9 +213,9 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       title = "Round"
       row = 7
       column = 9
-      query {
+      nrql_query {
         account_id = ` + accountID + `
-        nrql = "FROM Transaction SELECT *"
+        query      = "FROM Transaction SELECT *"
       }
     }
   }
