@@ -101,34 +101,50 @@ results of how Terraform will behave.
 
 The simplest case is when the API calls you want to make are already in the [Go
 Client][client_go] and the only changes you need to make are in the provider
-code.  In that case, simply building the provider binary with the correct name
-and running the plan will get you there.
+code.
 
-```shell
-export TARGET=.terraform/plugins/registry.terraform.io/newrelic/newrelic/99.0.0/darwin_amd64/
-mkdir -p $TARGET
-go build -o $TARGET/terraform-provider-newrelic && terraform init && TF_LOG=INFO terraform plan
-```
-
-The following assumes working on MacOS.  Essentially, we're making a "99.0.0"
-fake version out of whatever we just built.  Then we can configure Terraform to
-make use of the version we just built.
+To start, create a file that specifies
+[development override](development_overrides) settings:
 
 ```hcl
-terraform {
-  required_providers {
-    newrelic = {
-      version = "~> 99.0.0"
-      source = "newrelic/newrelic"
-    }
+# Save this to e.g. /Users/yourname/dev.tfrc
+
+provider_installation {
+  # This disables the version and checksum verifications for this provider and
+  # forces Terraform to look for the provider plugin in the given directory.
+  dev_overrides {
+    "newrelic/newrelic" = "/your/path/to/terraform-provider-newrelic"
   }
-  required_version = ">= 0.13"
+
+  # For all other providers, install them directly from their origin provider
+  # registries as normal. If you omit this, Terraform will _only_ use
+  # the dev_overrides block, and so no other providers will be available.
+  direct {}
 }
 ```
 
-Now Terraform will expect the binary to exist in the `$TARGET` directory above.
-See the [provider installation][provider_installation] and [provider
-requirements][provider_requirements] docs for more information.
+Then, set an environment variable to make Terraform use your overrides, and you
+are ready to try out your local build of the provider:
+
+```bash
+export TF_CLI_CONFIG_FILE=/Users/yourname/dev.tfrc
+terraform init
+go build && terraform plan
+```
+
+After making changes in the provider code, no need to rerun init, just rebuild and plan:
+
+```bash
+go build && terraform plan
+```
+
+`TF_LOG=TRACE` is the only way to see log output from the provider (e.g.
+`log.Println("[INFO] Hello")`), but it can generate quite a lot of text. It
+can be helpful to send stdout and stderr to a file:
+
+```bash
+go build && TF_LOG=TRACE terraform plan |& > out.txt
+```
 
 ### Developing with our [Go Client][client_go]
 
@@ -186,9 +202,7 @@ For more information on commit messages, we mostly follow [this standard][conven
 
 [best_practices]: https://www.terraform.io/docs/extend/best-practices/index.html
 
-[provider_installation]: https://www.terraform.io/docs/commands/cli-config.html#provider-installation
-
-[provider_requirements]: https://www.terraform.io/docs/configuration/terraform.html
+[development_overrides]: https://www.terraform.io/docs/commands/cli-config.html#development-overrides-for-provider-developers
 
 ## Feature Requests
 

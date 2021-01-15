@@ -26,6 +26,8 @@ website/.vagrant
 website/build
 website/node_modules
 dist/*
+/terraform-provider-newrelic
+/vendor
 
 website/vendor
 
