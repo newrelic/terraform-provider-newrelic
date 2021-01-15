@@ -190,8 +190,8 @@ func expandDashboardAreaWidgetConfigurationInput(i map[string]interface{}) (*das
 	var err error
 
 	// just has queries
-	if q, ok := i["query"]; ok {
-		cfg.Queries, err = expandDashboardWidgetQueryInput(q.([]interface{}))
+	if q, ok := i["nrql_query"]; ok {
+		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}))
 		if err != nil {
 			return nil, err
 		}
@@ -204,8 +204,8 @@ func expandDashboardBarWidgetConfigurationInput(i map[string]interface{}) (*dash
 	var err error
 
 	// just has queries
-	if q, ok := i["query"]; ok {
-		cfg.Queries, err = expandDashboardWidgetQueryInput(q.([]interface{}))
+	if q, ok := i["nrql_query"]; ok {
+		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}))
 		if err != nil {
 			return nil, err
 		}
@@ -218,8 +218,8 @@ func expandDashboardBillboardWidgetConfigurationInput(i map[string]interface{}) 
 	var cfg dashboards.DashboardBillboardWidgetConfigurationInput
 	var err error
 
-	if q, ok := i["query"]; ok {
-		cfg.Queries, err = expandDashboardWidgetQueryInput(q.([]interface{}))
+	if q, ok := i["nrql_query"]; ok {
+		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}))
 		if err != nil {
 			return nil, err
 		}
@@ -249,8 +249,8 @@ func expandDashboardLineWidgetConfigurationInput(i map[string]interface{}) (*das
 	var err error
 
 	// just has queries
-	if q, ok := i["query"]; ok {
-		cfg.Queries, err = expandDashboardWidgetQueryInput(q.([]interface{}))
+	if q, ok := i["nrql_query"]; ok {
+		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}))
 		if err != nil {
 			return nil, err
 		}
@@ -275,8 +275,8 @@ func expandDashboardPieWidgetConfigurationInput(i map[string]interface{}) (*dash
 	var err error
 
 	// just has queries
-	if q, ok := i["query"]; ok {
-		cfg.Queries, err = expandDashboardWidgetQueryInput(q.([]interface{}))
+	if q, ok := i["nrql_query"]; ok {
+		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}))
 		if err != nil {
 			return nil, err
 		}
@@ -289,8 +289,8 @@ func expandDashboardTableWidgetConfigurationInput(i map[string]interface{}) (*da
 	var err error
 
 	// just has queries
-	if q, ok := i["query"]; ok {
-		cfg.Queries, err = expandDashboardWidgetQueryInput(q.([]interface{}))
+	if q, ok := i["nrql_query"]; ok {
+		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}))
 		if err != nil {
 			return nil, err
 		}
@@ -326,23 +326,23 @@ func expandDashboardWidgetInput(w map[string]interface{}) (dashboards.DashboardW
 	return widget, nil
 }
 
-func expandDashboardWidgetQueryInput(queries []interface{}) ([]dashboards.DashboardWidgetQueryInput, error) {
+func expandDashboardWidgetNRQLQueryInput(queries []interface{}) ([]dashboards.DashboardWidgetNRQLQueryInput, error) {
 	if len(queries) < 1 {
-		return []dashboards.DashboardWidgetQueryInput{}, nil
+		return []dashboards.DashboardWidgetNRQLQueryInput{}, nil
 	}
 
-	expanded := make([]dashboards.DashboardWidgetQueryInput, len(queries))
+	expanded := make([]dashboards.DashboardWidgetNRQLQueryInput, len(queries))
 
 	for i, v := range queries {
-		var query dashboards.DashboardWidgetQueryInput
+		var query dashboards.DashboardWidgetNRQLQueryInput
 		q := v.(map[string]interface{})
 
 		if acct, ok := q["account_id"]; ok {
 			query.AccountID = acct.(int)
 		}
 
-		if nrql, ok := q["nrql"]; ok {
-			query.NRQL = nrdb.NRQL(nrql.(string))
+		if nrql, ok := q["query"]; ok {
+			query.Query = nrdb.NRQL(nrql.(string))
 		}
 
 		expanded[i] = query
@@ -473,16 +473,16 @@ func flattenDashboardWidget(in *entities.DashboardWidget) map[string]interface{}
 
 	switch in.Visualization.ID {
 	case "viz.area":
-		if len(in.Configuration.Area.Queries) > 0 {
-			out["query"] = flattenDashboardWidgetQuery(&in.Configuration.Area.Queries)
+		if len(in.Configuration.Area.NRQLQueries) > 0 {
+			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Area.NRQLQueries)
 		}
 	case "viz.bar":
-		if len(in.Configuration.Bar.Queries) > 0 {
-			out["query"] = flattenDashboardWidgetQuery(&in.Configuration.Bar.Queries)
+		if len(in.Configuration.Bar.NRQLQueries) > 0 {
+			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Bar.NRQLQueries)
 		}
 	case "viz.billboard":
-		if len(in.Configuration.Billboard.Queries) > 0 {
-			out["query"] = flattenDashboardWidgetQuery(&in.Configuration.Billboard.Queries)
+		if len(in.Configuration.Billboard.NRQLQueries) > 0 {
+			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Billboard.NRQLQueries)
 		}
 		if len(in.Configuration.Billboard.Thresholds) > 0 {
 			for _, v := range in.Configuration.Billboard.Thresholds {
@@ -495,34 +495,34 @@ func flattenDashboardWidget(in *entities.DashboardWidget) map[string]interface{}
 			}
 		}
 	case "viz.line":
-		if len(in.Configuration.Line.Queries) > 0 {
-			out["query"] = flattenDashboardWidgetQuery(&in.Configuration.Line.Queries)
+		if len(in.Configuration.Line.NRQLQueries) > 0 {
+			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Line.NRQLQueries)
 		}
 	case "viz.markdown":
 		if in.Configuration.Markdown.Text != "" {
 			out["text"] = in.Configuration.Markdown.Text
 		}
 	case "viz.pie":
-		if len(in.Configuration.Pie.Queries) > 0 {
-			out["query"] = flattenDashboardWidgetQuery(&in.Configuration.Pie.Queries)
+		if len(in.Configuration.Pie.NRQLQueries) > 0 {
+			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Pie.NRQLQueries)
 		}
 	case "viz.table":
-		if len(in.Configuration.Table.Queries) > 0 {
-			out["query"] = flattenDashboardWidgetQuery(&in.Configuration.Table.Queries)
+		if len(in.Configuration.Table.NRQLQueries) > 0 {
+			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Table.NRQLQueries)
 		}
 	}
 
 	return out
 }
 
-func flattenDashboardWidgetQuery(in *[]entities.DashboardWidgetQuery) []interface{} {
+func flattenDashboardWidgetNRQLQuery(in *[]entities.DashboardWidgetNRQLQuery) []interface{} {
 	out := make([]interface{}, len(*in))
 
 	for i, v := range *in {
 		m := make(map[string]interface{})
 
 		m["account_id"] = v.AccountID
-		m["nrql"] = v.NRQL
+		m["query"] = v.Query
 
 		out[i] = m
 	}
