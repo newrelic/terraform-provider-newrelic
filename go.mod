@@ -15,5 +15,5 @@ require (
 	github.com/newrelic/go-insights v1.0.3
 	github.com/newrelic/newrelic-client-go v0.47.3
 	github.com/stretchr/testify v1.6.1
-	gotest.tools/gotestsum v0.6.0
+	gotest.tools/gotestsum v1.6.1
 )
