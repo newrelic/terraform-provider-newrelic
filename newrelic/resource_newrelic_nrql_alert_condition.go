@@ -5,11 +5,11 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 // termSchema returns the schema used for a critical or warning term priority.
@@ -387,6 +387,9 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 	return resourceNewRelicNrqlAlertConditionRead(d, meta)
 }
 
+var nrqlConditionsCacheMutex = &sync.Mutex{}
+var nrqlConditionsCache map[int]map[string]*alerts.NrqlAlertCondition = make(map[int]map[string]*alerts.NrqlAlertCondition)
+
 func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -402,22 +405,26 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 	policyID := ids[0]
 	conditionID := ids[1]
 
-	_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
-	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
+	nrqlConditionsCacheMutex.Lock()
+	policyCache, found := nrqlConditionsCache[policyID]
+	if !found {
+		search := alerts.NrqlConditionsSearchCriteria{ PolicyID: strconv.Itoa(policyID) }
+		conditions, err := client.Alerts.SearchNrqlConditionsQuery(accountID, search)
+		if err != nil {
+			return err
 		}
-		return err
+		policyCache = make(map[string]*alerts.NrqlAlertCondition)
+		for _, condition := range conditions {
+			policyCache[condition.ID] = condition
+		}
+		nrqlConditionsCache[policyID] = policyCache
 	}
+	nrqlConditionsCacheMutex.Unlock()
 
-	nrqlCondition, err := client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
-	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
-		return err
+	nrqlCondition, found := policyCache[strconv.Itoa(conditionID)]
+	if !found {
+		d.SetId("")
+		return nil
 	}
 
 	return flattenNrqlAlertCondition(accountID, nrqlCondition, d)

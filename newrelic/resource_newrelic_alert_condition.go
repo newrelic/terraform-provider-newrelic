@@ -3,12 +3,12 @@ package newrelic
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
+	"sync"
 
+	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 var alertConditionTypes = map[string][]string{
@@ -220,10 +220,11 @@ func resourceNewRelicAlertConditionCreate(d *schema.ResourceData, meta interface
 	return nil
 }
 
+var alertConditionsCacheMutex = &sync.Mutex{}
+var alertConditionsCache map[int]map[int]*alerts.Condition = make(map[int]map[int]*alerts.Condition)
+
 func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
-	providerConfig := meta.(*ProviderConfig)
 	client := meta.(*ProviderConfig).NewClient
-	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading New Relic alert condition %s", d.Id())
 
@@ -233,25 +234,27 @@ func resourceNewRelicAlertConditionRead(d *schema.ResourceData, meta interface{}
 	}
 
 	policyID := ids[0]
-	id := ids[1]
+	conditionID := ids[1]
 
-	_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
-	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
+	alertConditionsCacheMutex.Lock()
+	policyCache, found := alertConditionsCache[policyID]
+	if !found {
+		conditions, err := client.Alerts.ListConditions(policyID)
+		if err != nil {
+			return err
 		}
-		return err
+		policyCache = make(map[int]*alerts.Condition)
+		for _, condition := range conditions {
+			policyCache[condition.ID] = condition
+		}
+		alertConditionsCache[policyID] = policyCache
 	}
+	alertConditionsCacheMutex.Unlock()
 
-	condition, err := client.Alerts.GetCondition(policyID, id)
-	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
-
-		return err
+	condition, found := policyCache[conditionID]
+	if !found {
+		d.SetId("")
+		return nil
 	}
 
 	d.Set("policy_id", policyID)
