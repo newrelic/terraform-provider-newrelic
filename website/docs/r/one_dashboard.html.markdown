@@ -15,12 +15,6 @@ Use this resource to create and manage New Relic One dashboards.
 ## Example Usage: Create a New Relic One Dashboard
 
 ```hcl
-data "newrelic_entity" "my_application" {
-  name = "My Application"
-  type = "APPLICATION"
-  domain = "APM"
-}
-
 resource "newrelic_one_dashboard" "exampledash" {
   name = "New Relic Terraform Example"
 
