@@ -323,7 +323,30 @@ func expandDashboardWidgetInput(w map[string]interface{}) (dashboards.DashboardW
 		widget.Title = i.(string)
 	}
 
+	// log.Print("\n\n **************************** \n")
+	// log.Printf("\n Expand Widget t:  %+v \n", w["title"])
+	// log.Printf("\n Expand Widget:    %+v \n", w)
+
+	if i, ok := w["linked_entity_guids"]; ok {
+		widget.LinkedEntityGUIDs = expandLinkedEntityGUIDs(i.([]interface{}))
+	}
+
 	return widget, nil
+}
+
+func expandLinkedEntityGUIDs(guids []interface{}) []entities.EntityGUID {
+	out := make([]entities.EntityGUID, len(guids))
+
+	for i := range out {
+		out[i] = entities.EntityGUID(guids[i].(string))
+	}
+
+	// log.Printf("\n LinkedEntities Count:  %+v \n", len(out))
+	// log.Printf("\n LinkedEntities :       %+v \n", out)
+	// log.Print("\n **************************** \n\n")
+	// time.Sleep(2 * time.Second)
+
+	return out
 }
 
 func expandDashboardWidgetNRQLQueryInput(queries []interface{}) ([]dashboards.DashboardWidgetNRQLQueryInput, error) {
@@ -459,6 +482,16 @@ func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
 	return out
 }
 
+func flattenLinkedEntityGUIDs(linkedEntities []entities.EntityOutlineInterface) []string {
+	out := make([]string, len(linkedEntities))
+
+	for i, entity := range linkedEntities {
+		out[i] = string(entity.GetGUID())
+	}
+
+	return out
+}
+
 func flattenDashboardWidget(in *entities.DashboardWidget) map[string]interface{} {
 	out := make(map[string]interface{})
 
@@ -471,6 +504,13 @@ func flattenDashboardWidget(in *entities.DashboardWidget) map[string]interface{}
 		out["title"] = in.Title
 	}
 
+	// NOTE: The widget types that currently support linked entities
+	// are faceted widgets - i.e. bar, line, pie
+	if len(in.LinkedEntities) > 0 {
+		out["linked_entity_guids"] = flattenLinkedEntityGUIDs(in.LinkedEntities)
+	}
+
+	// Note: Linked Entities is only supported by faceted widgets - bar, line, pie.
 	switch in.Visualization.ID {
 	case "viz.area":
 		if len(in.Configuration.Area.NRQLQueries) > 0 {
