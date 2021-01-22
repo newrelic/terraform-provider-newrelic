@@ -1,3 +1,8 @@
+<a name="v2.15.1"></a>
+## [v2.15.1] - 2021-01-22
+### Documentation Updates
+- **one_dashboard:** remove unused entity reference in example
+
 <a name="v2.15.0"></a>
 ## [v2.15.0] - 2021-01-14
 ### Documentation Updates
@@ -571,7 +576,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.15.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.15.1...HEAD
+[v2.15.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.15.0...v2.15.1
 [v2.15.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.14.1...v2.15.0
 [v2.14.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.14.0...v2.14.1
 [v2.14.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.5...v2.14.0
