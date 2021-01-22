@@ -143,7 +143,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
     name = "` + pageName + `"
 
     widget_area {
-      title = "Area 51"
+      title = "area widget"
       row = 1
       column = 1
       height = 3
@@ -152,21 +152,22 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 51 TIMESERIES"
-      }
+			}
     }
 
     widget_bar {
-      title = "foo"
+      title = "bar widget"
       row = 4
       column = 1
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT count(*) FACET name"
-      }
+			}
+			linked_entity_guids =["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_billboard {
-      title = "top 40"
+      title = "billboard widget"
       row = 4
       column = 5
       nrql_query {
@@ -175,11 +176,11 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       }
 
       warning = 1
-      critical = 2
+			critical = 2
     }
 
     widget_line {
-      title = "over the"
+      title = "line widget"
       row = 4
       column = 9
       nrql_query {
@@ -189,34 +190,36 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 2 TIMESERIES"
-      }
+			}
+			linked_entity_guids =["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_markdown {
-      title = "My cool widget"
+      title = "markdown widget"
       row = 7
       column = 1
-      text = "# Header text"
+			text = "# Header text"
     }
 
     widget_pie {
-      title = "3.14"
+      title = "3.14 widget"
       row = 7
       column = 5
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT count(*) FACET name"
-      }
+			}
+			linked_entity_guids =["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_table {
-      title = "Round"
+      title = "table widget"
       row = 7
       column = 9
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT *"
-      }
+			}
     }
   }
 `
