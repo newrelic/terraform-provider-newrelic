@@ -444,11 +444,14 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.NoError(t, err)
 		}
 
-		err := flattenNrqlAlertCondition(nr.TestAccountID, condition, d)
+		testAccountID, err := nr.GetTestAccountID()
+		require.NoError(t, err)
+
+		err = flattenNrqlAlertCondition(testAccountID, condition, d)
 		require.NoError(t, err)
 
 		require.Equal(t, 7654321, d.Get("policy_id").(int))
-		require.Equal(t, nr.TestAccountID, d.Get("account_id").(int))
+		require.Equal(t, testAccountID, d.Get("account_id").(int))
 
 		criticalTerms := d.Get("critical").([]interface{})
 		assert.Equal(t, 1, len(criticalTerms))
