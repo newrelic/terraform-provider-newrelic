@@ -28,7 +28,7 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       nrql_query {
         account_id = <Your Account ID>
-        nrql       = "FROM Transaction SELECT rate(count(*), 1 minute)"
+        query       = "FROM Transaction SELECT rate(count(*), 1 minute)"
       }
     }
 
@@ -39,7 +39,7 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       nrql_query {
         account_id = <Your Account ID>
-        nrql       = "FROM Transaction SELECT average(duration) FACET appName"
+        query       = "FROM Transaction SELECT average(duration) FACET appName"
       }
     }
 
