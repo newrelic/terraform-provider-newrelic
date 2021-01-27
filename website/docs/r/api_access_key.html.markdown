@@ -9,10 +9,10 @@ description: |-
 # Resource: newrelic_api_access_key
 
 Use this resource to programmatically create and manage the following types of keys:
-- [User API keys](https://docs.newrelic.co/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key)
+- [User API keys](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key)
 - License (or ingest) keys, including:
-    - General [license key](https://docs.newrelic.co/docs/accounts/install-new-relic/account-setup/license-key) used for APM
-    - [Browser license key](https://docs.newrelic.co/docs/browser/new-relic-browser/configuration/copy-browser-monitoring-license-key-app-id)
+    - General [license key](https://docs.newrelic.com/docs/accounts/install-new-relic/account-setup/license-key) used for APM
+    - [Browser license key](https://docs.newrelic.com/docs/browser/new-relic-browser/configuration/copy-browser-monitoring-license-key-app-id)
 
 Please visit the New Relic article ['Use NerdGraph to manage license keys and User API keys'](https://docs.newrelic.com/docs/apis/nerdgraph/examples/use-nerdgraph-manage-license-keys-user-keys)
 for more information.
