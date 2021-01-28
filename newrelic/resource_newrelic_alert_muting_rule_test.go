@@ -3,7 +3,9 @@
 package newrelic
 
 import (
+	"errors"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"strconv"
 	"testing"
 
@@ -151,4 +153,31 @@ func testAccCheckNewRelicAlertMutingRuleDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func TestValidateMutingRuleConditionAttribute_ValidTag(t *testing.T) {
+	// It should accept a dot-separated tag and value
+	validTag := "tag.EC2Timezone with sp aces"
+	resourceName := "condition.0.conditions.0.attribute"
+
+	warns, errs := validateMutingRuleConditionAttribute(validTag, resourceName)
+	expectedErrs := []error(nil)
+	expectedWarns := []string([]string(nil))
+
+	require.Equal(t, expectedWarns, warns)
+	require.Equal(t, expectedErrs, errs)
+
+}
+
+func TestValidateMutingRuleConditionAttribute_InvalidTag(t *testing.T) {
+	// It should reject "tag" without value
+	invalidTag := "tag"
+	resourceName := "condition.0.conditions.0.attribute"
+
+	warns, errs := validateMutingRuleConditionAttribute(invalidTag, resourceName)
+	expectedErrs := []error{errors.New("\"condition.0.attribute\" of \"tag\" must be in the format tag.tag_name")}
+	expectedWarns := []string([]string(nil))
+
+	require.Equal(t, expectedWarns, warns)
+	require.Equal(t, expectedErrs, errs)
 }
