@@ -8,10 +8,6 @@ description: |-
 
 # Resource: newrelic\_one\_dashboard
 
-**NOTE:** This feature is currently in **CLOSED BETA**, and will **NOT WORK** for most New Relic customers and is subject to **BREAKING CHANGES**.
-
-Use this resource to create and manage New Relic One dashboards.
-
 ## Example Usage: Create a New Relic One Dashboard
 
 ```hcl
