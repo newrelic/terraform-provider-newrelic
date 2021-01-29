@@ -37,6 +37,9 @@ resource "newrelic_one_dashboard" "exampledash" {
         account_id = <Your Account ID>
         query       = "FROM Transaction SELECT average(duration) FACET appName"
       }
+
+      # Must be another dashboard GUID
+      linked_entity_guids = ["abc123"]
     }
 
     widget_markdown {
@@ -102,7 +105,10 @@ All nested `widget` blocks support the following common arguments:
 
 Each widget type supports an additional set of arguments:
 
-  * `widget_area`, `widget_bar`, `widget_line`, `widget_pie`, `widget_table`
+  * `widget_bar`, `widget_line`, `widget_pie`
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `linked_entity_guids`: (Optional) Related entities. Currently only supports Dashboard entities.
+  * `widget_table`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
   * `widget_billboard`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
@@ -145,6 +151,9 @@ resource "newrelic_one_dashboard" "multi_page_dashboard" {
         account_id = <Your Account ID>
         query      = "FROM Transaction SELECT count(*) FACET name"
       }
+
+      # Must be another dashboard GUID
+      linked_entity_guids = ["abc123"]
     }
   }
 
@@ -176,4 +185,3 @@ New Relic dashboards can be imported using their GUID, e.g.
 ```
 $ terraform import newrelic_one_dashboard.my_dashboard <Dashboard GUID>
 ```
-
