@@ -605,6 +605,32 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 				ThresholdOccurrences: "ALL",
 			},
 		},
+		"non-ABOVE operator when using baseline condition": {
+			Priority:      "warning",
+			ConditionType: "baseline",
+			Term: map[string]interface{}{
+				"threshold":             10.9,
+				"threshold_duration":    9,
+				"threshold_occurrences": "ALL",
+				"operator":              "equals",
+				"priority":              "critical",
+			},
+			ExpectErr:    true,
+			ExpectReason: "only ABOVE operator is allowed for `baseline` and `outlier` condition types",
+		},
+		"non-ABOVE operator when using outlier condition": {
+			Priority:      "warning",
+			ConditionType: "outlier",
+			Term: map[string]interface{}{
+				"threshold":             10.9,
+				"threshold_duration":    9,
+				"threshold_occurrences": "ALL",
+				"operator":              "equals",
+				"priority":              "critical",
+			},
+			ExpectErr:    true,
+			ExpectReason: "only ABOVE operator is allowed for `baseline` and `outlier` condition types",
+		},
 	}
 
 	for _, tc := range cases {
