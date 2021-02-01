@@ -483,6 +483,7 @@ func flattenLinkedEntityGUIDs(linkedEntities []entities.EntityOutlineInterface) 
 	return out
 }
 
+// nolint:gocyclo
 func flattenDashboardWidget(in *entities.DashboardWidget) map[string]interface{} {
 	out := make(map[string]interface{})
 
