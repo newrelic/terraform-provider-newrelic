@@ -1,5 +1,8 @@
 <a name="v2.17.0"></a>
 ## [v2.17.0] - 2021-02-01
+### Bug Fixes
+- **nrql_alert_condition:** validate operator based on condition type
+
 ### Documentation Updates
 - **one_dashboard:** add linked_entity_guids to newrelic_one_dashboard resource docs
 
