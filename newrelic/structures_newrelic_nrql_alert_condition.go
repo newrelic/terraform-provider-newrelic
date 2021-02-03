@@ -171,6 +171,15 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 		return nil, fmt.Errorf("one of `duration` or `threshold_duration` must be configured for block `term`, but not both")
 	}
 
+	operator := alerts.AlertsNRQLConditionTermsOperator(strings.ToUpper(term["operator"].(string)))
+
+	switch conditionType {
+	case "baseline", "outlier":
+		if operator != alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE {
+			return nil, fmt.Errorf("only ABOVE operator is allowed for `baseline` and `outlier` condition types")
+		}
+	}
+
 	var duration int
 	if durationIn > 0 {
 		duration = durationIn * 60 // convert min to sec
@@ -196,7 +205,7 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 	}
 
 	return &alerts.NrqlConditionTerm{
-		Operator:             alerts.AlertsNRQLConditionTermsOperator(strings.ToUpper(term["operator"].(string))),
+		Operator:             operator,
 		Priority:             alerts.NrqlConditionPriority(strings.ToUpper(priority)),
 		Threshold:            &threshold,
 		ThresholdDuration:    duration,

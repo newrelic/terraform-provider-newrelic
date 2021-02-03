@@ -97,7 +97,7 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "A bar widget.",
-				Elem:        dashboardWidgetGraphSchemaElem(),
+				Elem:        dashboardWidgetBarSchemaElem(),
 			},
 			"widget_billboard": {
 				Type:        schema.TypeList,
@@ -109,7 +109,7 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "A line widget.",
-				Elem:        dashboardWidgetGraphSchemaElem(),
+				Elem:        dashboardWidgetLineSchemaElem(),
 			},
 			"widget_markdown": {
 				Type:        schema.TypeList,
@@ -121,7 +121,7 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "A pie widget.",
-				Elem:        dashboardWidgetGraphSchemaElem(),
+				Elem:        dashboardWidgetPieSchemaElem(),
 			},
 			"widget_table": {
 				Type:        schema.TypeList,
@@ -129,6 +129,41 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Description: "A table widget.",
 				Elem:        dashboardWidgetGraphSchemaElem(),
 			},
+		},
+	}
+}
+
+func dashboardWidgetSchemaBase() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The ID of the widget.",
+		},
+		"title": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "A title for the widget.",
+		},
+		"column": {
+			Type:     schema.TypeInt,
+			Required: true,
+		},
+		"height": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      3,
+			ValidateFunc: validation.IntAtLeast(1),
+		},
+		"row": {
+			Type:     schema.TypeInt,
+			Required: true,
+		},
+		"width": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      4,
+			ValidateFunc: validation.IntBetween(1, 12),
 		},
 	}
 }
@@ -153,139 +188,117 @@ func dashboardWidgetNRQLQuerySchemaElem() *schema.Resource {
 	}
 }
 
-func dashboardWidgetBillboardSchemaElem() *schema.Resource {
+// dashboardWidgetGraphSchemaElem is a reusable schema element for graphs
+func dashboardWidgetGraphSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	s["nrql_query"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Required: true,
+		Elem:     dashboardWidgetNRQLQuerySchemaElem(),
+	}
+
 	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the widget.",
-			},
-			"column": {
-				Type:     schema.TypeInt,
-				Required: true,
-			},
-			"height": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      3,
-				ValidateFunc: validation.IntAtLeast(1),
-			},
-			"row": {
-				Type:     schema.TypeInt,
-				Required: true,
-			},
-			"width": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      4,
-				ValidateFunc: validation.IntBetween(1, 12),
-			},
-			"nrql_query": {
-				Type:     schema.TypeList,
-				Required: true,
-				Elem:     dashboardWidgetNRQLQuerySchemaElem(),
-			},
-			"title": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "A title for the widget.",
-			},
-			"critical": {
-				Type:        schema.TypeFloat,
-				Optional:    true,
-				Description: "The critical threshold value.",
-			},
-			"warning": {
-				Type:        schema.TypeFloat,
-				Optional:    true,
-				Description: "The warning threshold value.",
-			},
-		},
+		Schema: s,
 	}
 }
 
-// dashboardWidgetGraphSchemaElem is a reusable schema element for graphs
-func dashboardWidgetGraphSchemaElem() *schema.Resource {
+func dashboardWidgetBarSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	s["nrql_query"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Required: true,
+		Elem:     dashboardWidgetNRQLQuerySchemaElem(),
+	}
+
+	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
+
 	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the widget.",
-			},
-			"column": {
-				Type:     schema.TypeInt,
-				Required: true,
-			},
-			"height": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      3,
-				ValidateFunc: validation.IntAtLeast(1),
-			},
-			"row": {
-				Type:     schema.TypeInt,
-				Required: true,
-			},
-			"width": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      4,
-				ValidateFunc: validation.IntBetween(1, 12),
-			},
-			"nrql_query": {
-				Type:     schema.TypeList,
-				Required: true,
-				Elem:     dashboardWidgetNRQLQuerySchemaElem(),
-			},
-			"title": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "A title for the widget.",
-			},
-		},
+		Schema: s,
 	}
 }
-func dashboardWidgetMarkdownSchemaElem() *schema.Resource {
+
+func dashboardWidgetLineSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	s["nrql_query"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Required: true,
+		Elem:     dashboardWidgetNRQLQuerySchemaElem(),
+	}
+
+	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
+
 	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the widget.",
-			},
-			"column": {
-				Type:     schema.TypeInt,
-				Required: true,
-			},
-			"height": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      3,
-				ValidateFunc: validation.IntAtLeast(1),
-			},
-			"row": {
-				Type:     schema.TypeInt,
-				Required: true,
-			},
-			"width": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      4,
-				ValidateFunc: validation.IntBetween(1, 12),
-			},
-			"text": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "",
-			},
-			"title": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "A title for the widget.",
-			},
+		Schema: s,
+	}
+}
+
+func dashboardWidgetPieSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	s["nrql_query"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Required: true,
+		Elem:     dashboardWidgetNRQLQuerySchemaElem(),
+	}
+
+	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetBillboardSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	s["nrql_query"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Required: true,
+		Elem:     dashboardWidgetNRQLQuerySchemaElem(),
+	}
+
+	s["critical"] = &schema.Schema{
+		Type:        schema.TypeFloat,
+		Optional:    true,
+		Description: "The critical threshold value.",
+	}
+
+	s["warning"] = &schema.Schema{
+		Type:        schema.TypeFloat,
+		Optional:    true,
+		Description: "The warning threshold value.",
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetMarkdownSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	s["text"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Optional: true,
+		Default:  "",
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetLinkedEntityGUIDsSchema() *schema.Schema {
+	return &schema.Schema{
+		Type: schema.TypeList,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
 		},
+		Optional:    true,
+		Description: "Related entities. Currently only supports Dashboard entities, but may allow other cases in the future.",
 	}
 }
 
