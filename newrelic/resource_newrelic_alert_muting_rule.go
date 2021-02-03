@@ -1,12 +1,31 @@
 package newrelic
 
 import (
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"log"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
+
+func validateMutingRuleConditionAttribute(val interface{}, key string) (warns []string, errs []error) {
+	valueString := val.(string)
+	attemptedTagRegex := regexp.MustCompile(`^tag`)
+	correctTagRegex := regexp.MustCompile(`^tag\..+$`)
+
+	// tag.SomeValue attempted but does not match allowed format
+	if attemptedTagRegex.Match([]byte(valueString)) {
+		if !correctTagRegex.Match([]byte(valueString)) {
+			errs = append(errs, fmt.Errorf("%#v of %#v must be in the format tag.tag_name", key, valueString))
+			return
+		}
+		return
+	}
+	v := validation.StringInSlice([]string{"accountId", "conditionId", "policyId", "policyName", "conditionName", "conditionType", "conditionRunbookUrl", "product", "targetId", "targetName", "nrqlEventType", "tag", "nrqlQuery"}, false)
+	return v(valueString, key)
+}
 
 func resourceNewRelicAlertMutingRule() *schema.Resource {
 	return &schema.Resource{
@@ -41,7 +60,7 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 									"attribute": {
 										Type:         schema.TypeString,
 										Required:     true,
-										ValidateFunc: validation.StringInSlice([]string{"accountId", "conditionId", "policyId", "policyName", "conditionName", "conditionType", "conditionRunbookUrl", "product", "targetId", "targetName", "nrqlEventType", "tag", "nrqlQuery"}, false),
+										ValidateFunc: validateMutingRuleConditionAttribute,
 										Description:  "The attribute on a violation.",
 									},
 									"operator": {
