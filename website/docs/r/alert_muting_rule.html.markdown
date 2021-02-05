@@ -34,6 +34,14 @@ resource "newrelic_alert_muting_rule" "foo" {
 		}
 		operator = "AND"
 	}
+    schedule {
+      start_time = "2021-01-28T15:30:00"
+      end_time = "2021-01-28T16:30:00"
+      time_zone = "America/Los_Angeles"
+      repeat = "WEEKLY"
+      weekly_repeat_days = ["MONDAY", "WEDNESDAY", "FRIDAY"]
+      repeat_count = 42
+    }
 }
 ```
 
@@ -45,6 +53,7 @@ The following arguments are supported:
   * `enabled` - (Required) Whether the MutingRule is enabled.
   * `name` - The name of the MutingRule.
   * `description` - The description of the MutingRule.
+  * `schedule` - (Optional) Specify a schedule for enabling the MutingRule. See [Schedule](#schedule) below for details
 
 
 ### Nested `condition` blocks
@@ -59,6 +68,14 @@ All nested `condition` blocks support the following arguments:
 * `operator` - (Required) The operator used to compare the attribute's value with the supplied value(s)
 * `values` - (Required) The value(s) to compare against the attribute's value.
 
+### Schedule
+* `start_time` (Optional) The datetime stamp that represents when the muting rule starts. This is in local ISO 8601 format without an offset. Example: '2020-07-08T14:30:00'
+* `end_time` (Optional) The datetime stamp that represents when the muting rule ends. This is in local ISO 8601 format without an offset. Example: '2020-07-15T14:30:00'
+* `timeZone` (Required) The time zone that applies to the muting rule schedule. Example: 'America/Los_Angeles'. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+* `repeat` (Optional) The frequency the muting rule schedule repeats. If it does not repeat, omit this field. Options are DAILY, WEEKLY, MONTHLY
+* `end_repeat` (Optional) The datetime stamp when the muting rule schedule stops repeating. This is in local ISO 8601 format without an offset. Example: '2020-07-10T15:00:00'. Conflicts with `repeat_count`
+* `repeat_count` (Optional) The number of times the muting rule schedule repeats. This includes the original schedule. For example, a repeatCount of 2 will recur one time. Conflicts with `end_repeat`
+* `weekly_repeat_days` (Optional) The day(s) of the week that a muting rule should repeat when the repeat field is set to 'WEEKLY'. Example: ['MONDAY', 'WEDNESDAY']
 
 ## Import
 Alert conditions can be imported using a composite ID of `<account_id>:<muting_rule_id>`, e.g.
@@ -67,4 +84,3 @@ Alert conditions can be imported using a composite ID of `<account_id>:<muting_r
 $ terraform import newrelic_alert_muting_rule.foo 538291:6789035
 
 ```
-

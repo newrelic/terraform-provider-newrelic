@@ -18,7 +18,7 @@ func TestExpandEntityTag(t *testing.T) {
 	}
 
 	expected := []entities.EntitySearchQueryBuilderTag{
-		entities.EntitySearchQueryBuilderTag{
+		{
 			Key:   "my-key",
 			Value: "my-value",
 		},
