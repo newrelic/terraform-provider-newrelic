@@ -23,7 +23,6 @@ resource "newrelic_one_dashboard" "exampledash" {
       column = 1
 
       nrql_query {
-        account_id = <Your Account ID>
         query       = "FROM Transaction SELECT rate(count(*), 1 minute)"
       }
     }
@@ -34,7 +33,7 @@ resource "newrelic_one_dashboard" "exampledash" {
       column = 5
 
       nrql_query {
-        account_id = <Your Account ID>
+        account_id = <Another Account ID>
         query       = "FROM Transaction SELECT average(duration) FACET appName"
       }
 
@@ -123,7 +122,7 @@ Nested `nrql_query` blocks allow you to make one or more NRQL queries within a w
 
 The following arguments are supported:
 
-  * `account_id` - (Required) The New Relic account ID to issue the query against.
+  * `account_id` - (Optional) The New Relic account ID to issue the query against. Defaults to the Account ID where the dashboard was created.
   * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
 
 ## Additional Examples
@@ -148,7 +147,6 @@ resource "newrelic_one_dashboard" "multi_page_dashboard" {
       column = 1
 
       nrql_query {
-        account_id = <Your Account ID>
         query      = "FROM Transaction SELECT count(*) FACET name"
       }
 
