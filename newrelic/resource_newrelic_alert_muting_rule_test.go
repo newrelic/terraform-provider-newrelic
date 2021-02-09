@@ -351,7 +351,7 @@ func TestValidateMutingRuleConditionAttribute_InvalidTag(t *testing.T) {
 	resourceName := "condition.0.conditions.0.attribute"
 
 	warns, errs := validateMutingRuleConditionAttribute(invalidTag, resourceName)
-	expectedErrs := []error{errors.New("\"condition.0.attribute\" of \"tag\" must be in the format tag.tag_name")}
+	expectedErrs := []error{errors.New("\"condition.0.conditions.0.attribute\" of \"tag\" must be in the format tag.tag_name")}
 	expectedWarns := []string([]string(nil))
 
 	require.Equal(t, expectedWarns, warns)
