@@ -409,8 +409,6 @@ github.com/newrelic/go-agent/v3 v3.10.0 h1:qHcDwtC1DjOTI0r0nCtf8jT2LfEoNQ6gSo2tc
 github.com/newrelic/go-agent/v3 v3.10.0/go.mod h1:1A1dssWBwzB7UemzRU6ZVaGDsI+cEn5/bNxI0wiYlIc=
 github.com/newrelic/go-insights v1.0.3 h1:zSNp1CEZnXktzSIEsbHJk8v6ZihdPFP2WsO/fzau3OQ=
 github.com/newrelic/go-insights v1.0.3/go.mod h1:A20BoT8TNkqPGX2nS/Z2fYmKl3Cqa3iKZd4whzedCY4=
-github.com/newrelic/newrelic-client-go v0.57.1 h1:NnMETNhk7XY2cPE/6dK9u3IZHiFCqXI06DIxUoDrvLA=
-github.com/newrelic/newrelic-client-go v0.57.1/go.mod h1:k6e8L+H4I1n7oimYAwAe1b07wyutjNTkFpw0yGIEbug=
 github.com/newrelic/newrelic-client-go v0.57.2 h1:33pPUEoS9nYmlW2V8m5ai9762TtnWMMkaoPZFKggKrQ=
 github.com/newrelic/newrelic-client-go v0.57.2/go.mod h1:k6e8L+H4I1n7oimYAwAe1b07wyutjNTkFpw0yGIEbug=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWbfPhv4DMiApHyliiK5xCTNVSPiaAs=
