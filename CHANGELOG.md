@@ -1,5 +1,17 @@
+<a name="v2.18.0"></a>
+## [v2.18.0] - 2021-02-09
+### Bug Fixes
+- **alert_muting_rule:** update test expectation to match input
+- **alert_muting_rule:** condition tag validation
+
+### Features
+- **alert_muting_rule:** add schedule support
+
 <a name="v2.17.0"></a>
 ## [v2.17.0] - 2021-02-01
+### Bug Fixes
+- **nrql_alert_condition:** validate operator based on condition type
+
 ### Documentation Updates
 - **one_dashboard:** add linked_entity_guids to newrelic_one_dashboard resource docs
 
@@ -764,7 +776,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.17.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.18.0...HEAD
+[v2.18.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.17.0...v2.18.0
 [v2.17.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.16.0...v2.17.0
 [v2.16.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.15.1...v2.16.0
 [v2.15.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.15.0...v2.15.1
