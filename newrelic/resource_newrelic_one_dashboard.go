@@ -176,7 +176,8 @@ func dashboardWidgetNRQLQuerySchemaElem() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Description: "The account id used for the NRQL query.",
 			},
 			"query": {
@@ -312,7 +313,10 @@ func resourceNewRelicOneDashboardCreate(d *schema.ResourceData, meta interface{}
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	dashboard, err := expandDashboardInput(d)
+	defaultInfo := map[string]interface{}{
+		"account_id": accountID,
+	}
+	dashboard, err := expandDashboardInput(d, defaultInfo)
 	if err != nil {
 		return err
 	}
@@ -362,8 +366,12 @@ func resourceNewRelicOneDashboardUpdate(d *schema.ResourceData, meta interface{}
 	}
 
 	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
-	dashboard, err := expandDashboardInput(d)
+	defaultInfo := map[string]interface{}{
+		"account_id": accountID,
+	}
+	dashboard, err := expandDashboardInput(d, defaultInfo)
 	if err != nil {
 		return err
 	}

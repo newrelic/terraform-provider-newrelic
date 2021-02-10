@@ -65,6 +65,31 @@ func TestAccNewRelicOneDashboard_CreateTwoPages(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboard_CrossAccountQueries Ensures we can have different account IDs for NRQL queries
+func TestAccNewRelicOneDashboard_CrossAccountQueries(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_TwoPageBasic(rName, "1"), // Hard-coded accountID for NRQL queries
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			// Import
+			{
+				ResourceName:      "newrelic_one_dashboard.bar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 // TestAccNewRelicOneDashboard_PageRename Ensure we can change the name of a NR1 Dashboard
 func TestAccNewRelicOneDashboard_PageRename(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
@@ -100,7 +125,7 @@ resource "newrelic_one_dashboard" "bar" {
   permissions = "private"
 
 ` + testAccCheckNewRelicOneDashboardConfig_PageFull(dashboardName, accountID) + `
-` + testAccCheckNewRelicOneDashboardConfig_PageSimple("Page 2", accountID) + `
+` + testAccCheckNewRelicOneDashboardConfig_PageSimple("Page 2") + `
 }
 `
 }
@@ -117,7 +142,7 @@ resource "newrelic_one_dashboard" "bar" {
 }
 
 // testAccCheckNewRelicOneDashboardConfig_PageSimple generates a basic dashboard page
-func testAccCheckNewRelicOneDashboardConfig_PageSimple(pageName string, accountID string) string {
+func testAccCheckNewRelicOneDashboardConfig_PageSimple(pageName string) string {
 	return `
   page {
     name = "` + pageName + `"
@@ -127,7 +152,6 @@ func testAccCheckNewRelicOneDashboardConfig_PageSimple(pageName string, accountI
       row = 4
       column = 1
       nrql_query {
-        account_id = ` + accountID + `
         query      = "FROM Transaction SELECT count(*) FACET name"
       }
     }
