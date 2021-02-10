@@ -2,13 +2,15 @@ package newrelic
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"regexp"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+
+	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
-	"log"
-	"time"
 )
 
 func validateMutingRuleConditionAttribute(val interface{}, key string) (warns []string, errs []error) {

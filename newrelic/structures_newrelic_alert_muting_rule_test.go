@@ -3,9 +3,10 @@
 package newrelic
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/stretchr/testify/require"
