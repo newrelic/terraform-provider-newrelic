@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	nrErrors "github.com/newrelic/newrelic-client-go/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/pkg/eventstometrics"
 )

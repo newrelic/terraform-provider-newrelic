@@ -2,14 +2,13 @@ package newrelic
 
 import (
 	"fmt"
-	"regexp"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-
 	"log"
+	"regexp"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 

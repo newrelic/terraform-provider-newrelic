@@ -9,8 +9,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 
 	insights "github.com/newrelic/go-insights/client"
 	nr "github.com/newrelic/newrelic-client-go/newrelic"
@@ -53,7 +52,7 @@ func (c *Config) Client() (*nr.NewRelic, error) {
 	var t = http.DefaultTransport
 
 	if c.CACertFile != "" {
-		caCert, _, err := pathorcontents.Read(c.CACertFile)
+		caCert, _, err := pathOrContents(c.CACertFile)
 		if err != nil {
 			log.Printf("Error reading CA Cert: %s", err)
 			return nil, err
