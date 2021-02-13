@@ -25,14 +25,14 @@ Use the navigation to the left to read about the available resources.
 
 The following arguments are supported.
 
-| Argument | Required?         | Description                                                                                                                                                                      |
-| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `account_id`           | Required | Your New Relic account ID. The `NEW_RELIC_ACCOUNT_ID` environment variable can also be used.                                                                                |
-| `api_key`              | Required | Your New Relic Personal API key (usually prefixed with `NRAK`). The `NEW_RELIC_API_KEY` environment variable can also be used.                                              |
-| `region`               | Required | The region for the data center for which your New Relic account is configured. The `NEW_RELIC_REGION` environment variable can also be used. Valid values are `US` or `EU`. |
-| `insecure_skip_verify` | Optional | Trust self-signed SSL certificates. If omitted, the `NEW_RELIC_API_SKIP_VERIFY` environment variable is used.                                                               |
-| `insights_insert_key`  | Optional | Your Insights insert key used when inserting Insights events via the `newrelic_insights_event` resource. Can also use `NEW_RELIC_INSIGHTS_INSERT_KEY` environment variable. |
-| `cacert_file`          | Optional | A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEW_RELIC_API_CACERT` environment variable can also be used.              |
+| Argument               | Required? | Description                                                                                                                                                                 |
+| ---------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `account_id`           | Required  | Your New Relic account ID. The `NEW_RELIC_ACCOUNT_ID` environment variable can also be used.                                                                                |
+| `api_key`              | Required  | Your New Relic Personal API key (usually prefixed with `NRAK`). The `NEW_RELIC_API_KEY` environment variable can also be used.                                              |
+| `region`               | Required  | The region for the data center for which your New Relic account is configured. The `NEW_RELIC_REGION` environment variable can also be used. Valid values are `US` or `EU`. |
+| `insecure_skip_verify` | Optional  | Trust self-signed SSL certificates. If omitted, the `NEW_RELIC_API_SKIP_VERIFY` environment variable is used.                                                               |
+| `insights_insert_key`  | Optional  | Your Insights insert key used when inserting Insights events via the `newrelic_insights_event` resource. Can also use `NEW_RELIC_INSIGHTS_INSERT_KEY` environment variable. |
+| `cacert_file`          | Optional  | A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEW_RELIC_API_CACERT` environment variable can also be used.              |
 
 
 ## Authentication Requirements
@@ -60,7 +60,8 @@ resources compared to which endpoint is in use.
 | `newrelic_infra_alert_condition`                    | Infrastructure REST API | `api_key`             |
 | `newrelic_insights_event`                           | Insights API            | `insights_insert_key` |
 | `newrelic_nrql_alert_condition`                     | NerdGraph               | `api_key`             |
-| `newrelic_one_dashboard`                            | NerdGraph               | `api_key`              |
+| `newrelic_nrql_drop_rule`                           | NerdGraph               | `api_key`             |
+| `newrelic_one_dashboard`                            | NerdGraph               | `api_key`             |
 | `newrelic_plugins_alert_condition`                  | RESTv2                  | `api_key`             |
 | `newrelic_synthetics_alert_condition`               | RESTv2                  | `api_key`             |
 | `newrelic_synthetics_monitor`                       | Synthetics REST API     | `api_key`             |
@@ -71,18 +72,18 @@ resources compared to which endpoint is in use.
 
 ### Data Sources
 
-| Data Source                                    | Endpoint            | Authentication        |
-| ---------------------------------------------- | ------------------- | --------------------- |
-| `newrelic_account`                             | NerdGraph           | `api_key`             |
-| `newrelic_alert_channel`                       | RESTv2              | `api_key`             |
-| `newrelic_alert_policy`                        | NerdGraph           | `api_key`             |
-| `newrelic_application`                         | RESTv2              | `api_key`             |
-| `newrelic_entity`                              | NerdGraph           | `api_key`             |
-| `newrelic_key_transaction`                     | RESTv2              | `api_key`             |
-| `newrelic_plugin`                              | RESTv2              | `api_key`             |
-| `newrelic_plugin_component`                    | RESTv2              | `api_key`             |
-| `newrelic_synthetics_monitor`                  | Synthetics REST API | `api_key`             |
-| `newrelic_synthetics_secure_credential`        | Synthetics REST API | `api_key`             |
+| Data Source                             | Endpoint            | Authentication |
+| --------------------------------------- | ------------------- | -------------- |
+| `newrelic_account`                      | NerdGraph           | `api_key`      |
+| `newrelic_alert_channel`                | RESTv2              | `api_key`      |
+| `newrelic_alert_policy`                 | NerdGraph           | `api_key`      |
+| `newrelic_application`                  | RESTv2              | `api_key`      |
+| `newrelic_entity`                       | NerdGraph           | `api_key`      |
+| `newrelic_key_transaction`              | RESTv2              | `api_key`      |
+| `newrelic_plugin`                       | RESTv2              | `api_key`      |
+| `newrelic_plugin_component`             | RESTv2              | `api_key`      |
+| `newrelic_synthetics_monitor`           | Synthetics REST API | `api_key`      |
+| `newrelic_synthetics_secure_credential` | Synthetics REST API | `api_key`      |
 
 ## Example Usage
 
