@@ -3,7 +3,7 @@ module github.com/newrelic/terraform-provider-newrelic/v2/tools
 go 1.15
 
 require (
-	github.com/bflad/tfproviderlint v0.21.0
+	github.com/bflad/tfproviderlint v0.22.0
 	github.com/client9/misspell v0.3.4
 	github.com/golangci/golangci-lint v1.36.0
 	github.com/goreleaser/goreleaser v0.155.2
