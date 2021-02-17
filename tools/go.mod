@@ -6,7 +6,7 @@ require (
 	github.com/bflad/tfproviderlint v0.22.0
 	github.com/client9/misspell v0.3.4
 	github.com/golangci/golangci-lint v1.37.0
-	github.com/goreleaser/goreleaser v0.155.2
+	github.com/goreleaser/goreleaser v0.156.2
 	github.com/llorllale/go-gitlint v0.0.0-20200802191503-5984945d4b80
 	github.com/newrelic-forks/git-chglog v0.10.0
 	github.com/psampaz/go-mod-outdated v0.7.0
