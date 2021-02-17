@@ -91,7 +91,7 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "An area widget.",
-				Elem:        dashboardWidgetGraphSchemaElem(),
+				Elem:        dashboardWidgetAreaSchemaElem(),
 			},
 			"widget_bar": {
 				Type:        schema.TypeList,
@@ -127,7 +127,7 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "A table widget.",
-				Elem:        dashboardWidgetGraphSchemaElem(),
+				Elem:        dashboardWidgetTableSchemaElem(),
 			},
 		},
 	}
@@ -165,6 +165,11 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 			Default:      4,
 			ValidateFunc: validation.IntBetween(1, 12),
 		},
+		"nrql_query": {
+			Type:     schema.TypeList,
+			Required: true,
+			Elem:     dashboardWidgetNRQLQuerySchemaElem(),
+		},
 	}
 }
 
@@ -189,15 +194,8 @@ func dashboardWidgetNRQLQuerySchemaElem() *schema.Resource {
 	}
 }
 
-// dashboardWidgetGraphSchemaElem is a reusable schema element for graphs
-func dashboardWidgetGraphSchemaElem() *schema.Resource {
+func dashboardWidgetAreaSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
-
-	s["nrql_query"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Required: true,
-		Elem:     dashboardWidgetNRQLQuerySchemaElem(),
-	}
 
 	return &schema.Resource{
 		Schema: s,
@@ -206,44 +204,6 @@ func dashboardWidgetGraphSchemaElem() *schema.Resource {
 
 func dashboardWidgetBarSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
-
-	s["nrql_query"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Required: true,
-		Elem:     dashboardWidgetNRQLQuerySchemaElem(),
-	}
-
-	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
-
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-func dashboardWidgetLineSchemaElem() *schema.Resource {
-	s := dashboardWidgetSchemaBase()
-
-	s["nrql_query"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Required: true,
-		Elem:     dashboardWidgetNRQLQuerySchemaElem(),
-	}
-
-	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
-
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-func dashboardWidgetPieSchemaElem() *schema.Resource {
-	s := dashboardWidgetSchemaBase()
-
-	s["nrql_query"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Required: true,
-		Elem:     dashboardWidgetNRQLQuerySchemaElem(),
-	}
 
 	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
 
@@ -254,12 +214,6 @@ func dashboardWidgetPieSchemaElem() *schema.Resource {
 
 func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
-
-	s["nrql_query"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Required: true,
-		Elem:     dashboardWidgetNRQLQuerySchemaElem(),
-	}
 
 	s["critical"] = &schema.Schema{
 		Type:        schema.TypeFloat,
@@ -278,14 +232,44 @@ func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 	}
 }
 
+func dashboardWidgetLineSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
 func dashboardWidgetMarkdownSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
+
+	delete(s, "nrql_query") // No queries for Markdown
 
 	s["text"] = &schema.Schema{
 		Type:     schema.TypeString,
 		Optional: true,
 		Default:  "",
 	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetPieSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetTableSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
 
 	return &schema.Resource{
 		Schema: s,

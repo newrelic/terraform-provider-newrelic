@@ -187,7 +187,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT count(*) FACET name"
 			}
-			linked_entity_guids =["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_billboard {
@@ -215,7 +215,6 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 2 TIMESERIES"
 			}
-			linked_entity_guids =["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_markdown {
@@ -233,7 +232,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT count(*) FACET name"
 			}
-			linked_entity_guids =["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_table {
@@ -242,8 +241,9 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       column = 9
       nrql_query {
         account_id = ` + accountID + `
-        query      = "FROM Transaction SELECT *"
+        query      = "FROM Transaction SELECT average(duration) FACET appName"
 			}
+			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
   }
 `
