@@ -184,7 +184,6 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       row = 4
       column = 1
       nrql_query {
-        account_id = ` + accountID + `
         query      = "FROM Transaction SELECT count(*) FACET name"
 			}
 			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
@@ -195,7 +194,6 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       row = 4
       column = 5
       nrql_query {
-        account_id = ` + accountID + `
         query      = "FROM Transaction SELECT count(*)"
       }
 
@@ -213,10 +211,18 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       }
     }
 
+    widget_funnel {
+      title = "funnel widget"
+      row = 7
+      column = 1
+      nrql_query {
+        query = "FROM Transaction SELECT funnel(response.status, WHERE name = 'WebTransaction/Expressjs/GET//', WHERE name = 'WebTransaction/Expressjs/GET//api/inventory')"
+      }
+    }
     widget_heatmap {
       title = "heatmap widget"
       row = 7
-      column = 1
+      column = 5
       nrql_query {
         query = "FROM Transaction SELECT histogram(duration, buckets: 100, width: 0.1) FACET appName"
       }
@@ -225,30 +231,28 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
     widget_line {
       title = "line widget"
       row = 7
-      column = 5
+      column = 9
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 1 TIMESERIES"
       }
       nrql_query {
-        account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 2 TIMESERIES"
 			}
     }
 
     widget_markdown {
       title = "markdown widget"
-      row = 7
-      column = 9
+      row = 10
+      column = 1
 			text = "# Header text"
     }
 
     widget_pie {
       title = "3.14 widget"
       row = 10
-      column = 1
+      column = 5
       nrql_query {
-        account_id = ` + accountID + `
         query      = "FROM Transaction SELECT count(*) FACET name"
 			}
 			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
@@ -257,9 +261,8 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
     widget_table {
       title = "table widget"
       row = 10
-      column = 5
+      column = 9
       nrql_query {
-        account_id = ` + accountID + `
         query      = "FROM Transaction SELECT average(duration) FACET appName"
 			}
 			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
