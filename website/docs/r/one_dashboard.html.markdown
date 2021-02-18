@@ -115,7 +115,7 @@ Each widget type supports an additional set of arguments:
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `critical` - (Optional) Threshold above which the displayed value will be styled with a red color.
     * `warning` - (Optional) Threshold above which the displayed value will be styled with a yellow color.
-  * `widget_heatmap`
+  * `widget_bullet`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `limit` - (Optional) Visualization limit for the widget.
   * `widget_heatmap`
