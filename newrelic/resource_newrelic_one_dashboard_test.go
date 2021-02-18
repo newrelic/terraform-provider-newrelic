@@ -184,10 +184,9 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       row = 4
       column = 1
       nrql_query {
-        account_id = ` + accountID + `
         query      = "FROM Transaction SELECT count(*) FACET name"
 			}
-			linked_entity_guids =["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_billboard {
@@ -195,7 +194,6 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       row = 4
       column = 5
       nrql_query {
-        account_id = ` + accountID + `
         query      = "FROM Transaction SELECT count(*)"
       }
 
@@ -203,47 +201,81 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
 			critical = 2
     }
 
-    widget_line {
-      title = "line widget"
+    widget_bullet {
+      title = "bullet widget"
       row = 4
       column = 9
+      limit = 1.5
+      nrql_query {
+        query  = "FROM Transaction SELECT count(*)"
+      }
+    }
+
+    widget_funnel {
+      title = "funnel widget"
+      row = 7
+      column = 1
+      nrql_query {
+        query = "FROM Transaction SELECT funnel(response.status, WHERE name = 'WebTransaction/Expressjs/GET//', WHERE name = 'WebTransaction/Expressjs/GET//api/inventory')"
+      }
+    }
+
+    widget_heatmap {
+      title = "heatmap widget"
+      row = 7
+      column = 5
+      nrql_query {
+        query = "FROM Transaction SELECT histogram(duration, buckets: 100, width: 0.1) FACET appName"
+      }
+    }
+
+    widget_histogram {
+      title = "histogram widget"
+      row = 7
+      column = 9
+      nrql_query {
+        query = "FROM Transaction SELECT histogram(duration * 100, buckets: 500, width: 1)"
+      }
+    }
+
+    widget_line {
+      title = "line widget"
+      row = 10
+      column = 1
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 1 TIMESERIES"
       }
       nrql_query {
-        account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 2 TIMESERIES"
 			}
-			linked_entity_guids =["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_markdown {
       title = "markdown widget"
-      row = 7
-      column = 1
+      row = 10
+      column = 5
 			text = "# Header text"
     }
 
     widget_pie {
       title = "3.14 widget"
-      row = 7
-      column = 5
+      row = 10
+      column = 9
       nrql_query {
-        account_id = ` + accountID + `
         query      = "FROM Transaction SELECT count(*) FACET name"
 			}
-			linked_entity_guids =["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_table {
       title = "table widget"
-      row = 7
-      column = 9
+      row = 13
+      column = 1
       nrql_query {
-        account_id = ` + accountID + `
-        query      = "FROM Transaction SELECT *"
+        query      = "FROM Transaction SELECT average(duration) FACET appName"
 			}
+			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
   }
 `
