@@ -219,6 +219,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         query = "FROM Transaction SELECT funnel(response.status, WHERE name = 'WebTransaction/Expressjs/GET//', WHERE name = 'WebTransaction/Expressjs/GET//api/inventory')"
       }
     }
+
     widget_heatmap {
       title = "heatmap widget"
       row = 7
@@ -228,10 +229,19 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       }
     }
 
-    widget_line {
-      title = "line widget"
+    widget_histogram {
+      title = "histogram widget"
       row = 7
       column = 9
+      nrql_query {
+        query = "FROM Transaction SELECT histogram(duration * 100, buckets: 500, width: 1)"
+      }
+    }
+
+    widget_line {
+      title = "line widget"
+      row = 10
+      column = 1
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 1 TIMESERIES"
@@ -244,14 +254,14 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
     widget_markdown {
       title = "markdown widget"
       row = 10
-      column = 1
+      column = 5
 			text = "# Header text"
     }
 
     widget_pie {
       title = "3.14 widget"
       row = 10
-      column = 5
+      column = 9
       nrql_query {
         query      = "FROM Transaction SELECT count(*) FACET name"
 			}
@@ -260,8 +270,8 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
 
     widget_table {
       title = "table widget"
-      row = 10
-      column = 9
+      row = 13
+      column = 1
       nrql_query {
         query      = "FROM Transaction SELECT average(duration) FACET appName"
 			}
