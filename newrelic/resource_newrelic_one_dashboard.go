@@ -111,6 +111,12 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Description: "A bullet widget.",
 				Elem:        dashboardWidgetBulletSchemaElem(),
 			},
+			"widget_funnel": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A funnel widget.",
+				Elem:        dashboardWidgetFunnelSchemaElem(),
+			},
 			"widget_heatmap": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -252,6 +258,14 @@ func dashboardWidgetBulletSchemaElem() *schema.Resource {
 		Optional:    true,
 		Description: "The maximum value for the visualization",
 	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetFunnelSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
 
 	return &schema.Resource{
 		Schema: s,

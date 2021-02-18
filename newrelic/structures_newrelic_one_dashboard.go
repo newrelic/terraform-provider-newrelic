@@ -131,6 +131,22 @@ func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboar
 				page.Widgets = append(page.Widgets, widget)
 			}
 		}
+		if widgets, ok := p["widget_funnel"]; ok {
+			for _, v := range widgets.([]interface{}) {
+				// Get generic properties set
+				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
+				if err != nil {
+					return nil, err
+				}
+				widget.RawConfiguration, err = expandDashboardFunnelWidgetRawConfigurationInput(v.(map[string]interface{}), meta)
+				if err != nil {
+					return nil, err
+				}
+				widget.Visualization.ID = "viz.funnel"
+
+				page.Widgets = append(page.Widgets, widget)
+			}
+		}
 		if widgets, ok := p["widget_heatmap"]; ok {
 			for _, v := range widgets.([]interface{}) {
 				// Get generic properties set
@@ -279,7 +295,6 @@ func expandDashboardBillboardWidgetConfigurationInput(i map[string]interface{}, 
 
 func expandDashboardBulletWidgetRawConfigurationInput(i map[string]interface{}, meta interface{}) ([]byte, error) {
 	var err error
-	var ret []byte
 	cfg := struct {
 		Limit       float64                                    `json:"limit,omitempty"`
 		NRQLQueries []dashboards.DashboardWidgetNRQLQueryInput `json:"nrqlQueries"`
@@ -288,23 +303,18 @@ func expandDashboardBulletWidgetRawConfigurationInput(i map[string]interface{}, 
 	if q, ok := i["nrql_query"]; ok {
 		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
 		if err != nil {
-			return ret, err
+			return nil, err
 		}
 	}
 	if l, ok := i["limit"]; ok {
 		cfg.Limit = l.(float64)
 	}
 
-	ret, err = json.Marshal(cfg)
-	if err != nil {
-		return []byte{}, err
-	}
-	return ret, nil
+	return json.Marshal(cfg)
 }
 
-func expandDashboardHeatmapWidgetRawConfigurationInput(i map[string]interface{}, meta interface{}) ([]byte, error) {
+func expandDashboardFunnelWidgetRawConfigurationInput(i map[string]interface{}, meta interface{}) ([]byte, error) {
 	var err error
-	var ret []byte
 	cfg := struct {
 		NRQLQueries []dashboards.DashboardWidgetNRQLQueryInput `json:"nrqlQueries"`
 	}{}
@@ -313,14 +323,27 @@ func expandDashboardHeatmapWidgetRawConfigurationInput(i map[string]interface{},
 	if q, ok := i["nrql_query"]; ok {
 		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
 		if err != nil {
-			return ret, err
-		}
-		ret, err = json.Marshal(cfg)
-		if err != nil {
-			return []byte{}, err
+			return nil, err
 		}
 	}
-	return ret, nil
+	return json.Marshal(cfg)
+}
+
+func expandDashboardHeatmapWidgetRawConfigurationInput(i map[string]interface{}, meta interface{}) ([]byte, error) {
+	var err error
+	cfg := struct {
+		NRQLQueries []dashboards.DashboardWidgetNRQLQueryInput `json:"nrqlQueries"`
+	}{}
+
+	// just has queries
+	if q, ok := i["nrql_query"]; ok {
+		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return json.Marshal(cfg)
 }
 
 func expandDashboardLineWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardLineWidgetConfigurationInput, error) {
@@ -603,6 +626,16 @@ func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]in
 			}{}
 			if err := json.Unmarshal(in.RawConfiguration, &cfg); err == nil {
 				out["limit"] = cfg.Limit
+				out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&cfg.NRQLQueries)
+			}
+		}
+	case "viz.funnel":
+		widgetType = "widget_funnel"
+		if len(in.RawConfiguration) > 0 {
+			cfg := struct {
+				NRQLQueries []entities.DashboardWidgetNRQLQuery `json:"nrqlQueries"`
+			}{}
+			if err := json.Unmarshal(in.RawConfiguration, &cfg); err == nil {
 				out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&cfg.NRQLQueries)
 			}
 		}
