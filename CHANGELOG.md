@@ -1,3 +1,18 @@
+<a name="v2.19.0"></a>
+## [v2.19.0] - 2021-02-17
+### Bug Fixes
+- **one_dashboard:** Table Widget should have filter on them
+- **one_dashboard:** Inherit nrql_query account_id from dashboard by default
+
+### Documentation Updates
+- update changelog
+
+### Features
+- **one_dashboard:** Add support for widget_histogram
+- **one_dashboard:** Add support for widget_funnel
+- **one_dashboard:** Add support for widget_bullet
+- **one_dashboard:** Add widget_heatmap
+
 <a name="v2.18.0"></a>
 ## [v2.18.0] - 2021-02-09
 ### Bug Fixes
@@ -776,7 +791,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.18.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.19.0...HEAD
+[v2.19.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.18.0...v2.19.0
 [v2.18.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.17.0...v2.18.0
 [v2.17.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.16.0...v2.17.0
 [v2.16.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.15.1...v2.16.0
