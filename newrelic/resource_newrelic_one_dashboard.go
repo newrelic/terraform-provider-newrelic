@@ -123,6 +123,12 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Description: "A heatmap widget.",
 				Elem:        dashboardWidgetHeatmapSchemaElem(),
 			},
+			"widget_histogram": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A histogram widget.",
+				Elem:        dashboardWidgetHistogramSchemaElem(),
+			},
 			"widget_line": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -273,6 +279,14 @@ func dashboardWidgetFunnelSchemaElem() *schema.Resource {
 }
 
 func dashboardWidgetHeatmapSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetHistogramSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
 
 	return &schema.Resource{
