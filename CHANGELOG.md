@@ -1,3 +1,9 @@
+<a name="v2.19.1"></a>
+## [v2.19.1] - 2021-02-18
+### Bug Fixes
+- **deps:** Update module newrelic/newrelic-client-go to v0.58.2
+- **deps:** update module goreleaser/goreleaser to v0.157.0
+
 <a name="v2.19.0"></a>
 ## [v2.19.0] - 2021-02-18
 ### Bug Fixes
@@ -5,6 +11,7 @@
 - **one_dashboard:** Inherit nrql_query account_id from dashboard by default
 
 ### Documentation Updates
+- update changelog
 - update changelog
 
 ### Features
@@ -791,7 +798,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.19.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.19.1...HEAD
+[v2.19.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.19.0...v2.19.1
 [v2.19.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.18.0...v2.19.0
 [v2.18.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.17.0...v2.18.0
 [v2.17.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.16.0...v2.17.0
