@@ -1,6 +1,7 @@
 package newrelic
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -110,6 +111,22 @@ func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboar
 				if err != nil {
 					return nil, err
 				}
+
+				page.Widgets = append(page.Widgets, widget)
+			}
+		}
+		if widgets, ok := p["widget_heatmap"]; ok {
+			for _, v := range widgets.([]interface{}) {
+				// Get generic properties set
+				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
+				if err != nil {
+					return nil, err
+				}
+				widget.RawConfiguration, err = expandDashboardHeatmapWidgetRawConfigurationInput(v.(map[string]interface{}), meta)
+				if err != nil {
+					return nil, err
+				}
+				widget.Visualization.ID = "viz.heatmap"
 
 				page.Widgets = append(page.Widgets, widget)
 			}
@@ -244,6 +261,27 @@ func expandDashboardBillboardWidgetConfigurationInput(i map[string]interface{}, 
 	return &cfg, nil
 }
 
+func expandDashboardHeatmapWidgetRawConfigurationInput(i map[string]interface{}, meta interface{}) ([]byte, error) {
+	var err error
+	var ret []byte
+	cfg := struct {
+		NRQLQueries []dashboards.DashboardWidgetNRQLQueryInput `json:"nrqlQueries"`
+	}{}
+
+	// just has queries
+	if q, ok := i["nrql_query"]; ok {
+		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
+		if err != nil {
+			return ret, err
+		}
+		ret, err = json.Marshal(cfg)
+		if err != nil {
+			return []byte{}, err
+		}
+	}
+	return ret, nil
+}
+
 func expandDashboardLineWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardLineWidgetConfigurationInput, error) {
 	var cfg dashboards.DashboardLineWidgetConfigurationInput
 	var err error
@@ -258,6 +296,7 @@ func expandDashboardLineWidgetConfigurationInput(i map[string]interface{}, meta 
 	}
 	return nil, nil
 }
+
 func expandDashboardMarkdownWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardMarkdownWidgetConfigurationInput, error) {
 	var cfg dashboards.DashboardMarkdownWidgetConfigurationInput
 
@@ -443,6 +482,7 @@ func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
 		m["widget_area"] = []interface{}{}
 		m["widget_bar"] = []interface{}{}
 		m["widget_billboard"] = []interface{}{}
+		m["widget_heatmap"] = []interface{}{}
 		m["widget_line"] = []interface{}{}
 		m["widget_markdown"] = []interface{}{}
 		m["widget_pie"] = []interface{}{}
@@ -459,6 +499,8 @@ func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
 				widgetType = "widget_bar"
 			case "viz.billboard":
 				widgetType = "widget_billboard"
+			case "viz.heatmap":
+				widgetType = "widget_heatmap"
 			case "viz.line":
 				widgetType = "widget_line"
 			case "viz.markdown":
@@ -532,6 +574,16 @@ func flattenDashboardWidget(in *entities.DashboardWidget) map[string]interface{}
 				}
 			}
 		}
+	case "viz.heatmap":
+		if len(in.RawConfiguration) > 0 {
+			cfg := struct {
+				NRQLQueries []entities.DashboardWidgetNRQLQuery `json:"nrqlQueries"`
+			}{}
+			if err := json.Unmarshal(in.RawConfiguration, &cfg); err == nil {
+				out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&cfg.NRQLQueries)
+			}
+		}
+
 	case "viz.line":
 		if len(in.Configuration.Line.NRQLQueries) > 0 {
 			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Line.NRQLQueries)

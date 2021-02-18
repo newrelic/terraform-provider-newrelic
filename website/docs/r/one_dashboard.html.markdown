@@ -82,6 +82,8 @@ The following arguments are supported:
   * `widget_area` - (Optional) A nested block that describes an Area widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_bar` - (Optional) A nested block that describes a Bar widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_billboard` - (Optional) A nested block that describes a Billboard widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+  * `widget_bullet` - (Optional) A nested block that describes a Bullet widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+  * `widget_heatmap` - (Optional) A nested block that describes a Heatmap widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_line` - (Optional) A nested block that describes a Line widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_markdown` - (Optional) A nested block that describes a Markdown widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_pie` - (Optional) A nested block that describes a Pie widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
@@ -104,17 +106,30 @@ All nested `widget` blocks support the following common arguments:
 
 Each widget type supports an additional set of arguments:
 
-  * `widget_bar`, `widget_line`, `widget_pie`
+  * `widget_area`
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+  * `widget_bar`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
-  * `widget_table`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
   * `widget_billboard`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `critical` - (Optional) Threshold above which the displayed value will be styled with a red color.
     * `warning` - (Optional) Threshold above which the displayed value will be styled with a yellow color.
+  * `widget_heatmap`
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `limit` - (Optional) Visualization limit for the widget.
+  * `widget_heatmap`
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+  * `widget_line`
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
   * `widget_markdown`:
     * `text` - (Required) The markdown source to be rendered in the widget.
+  * `widget_pie`
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
+  * `widget_table`
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
 
 ### Nested `nrql_query` blocks
 
