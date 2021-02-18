@@ -105,6 +105,12 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Description: "A billboard widget.",
 				Elem:        dashboardWidgetBillboardSchemaElem(),
 			},
+			"widget_bullet": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A bullet widget.",
+				Elem:        dashboardWidgetBulletSchemaElem(),
+			},
 			"widget_heatmap": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -231,6 +237,20 @@ func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 		Type:        schema.TypeFloat,
 		Optional:    true,
 		Description: "The warning threshold value.",
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetBulletSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	s["limit"] = &schema.Schema{
+		Type:        schema.TypeFloat,
+		Optional:    true,
+		Description: "The maximum value for the visualization",
 	}
 
 	return &schema.Resource{

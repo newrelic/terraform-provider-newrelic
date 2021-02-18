@@ -203,10 +203,20 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
 			critical = 2
     }
 
-    widget_heatmap {
-      title = "heatmap widget"
+    widget_bullet {
+      title = "bullet widget"
       row = 4
       column = 9
+      limit = 1.5
+      nrql_query {
+        query  = "FROM Transaction SELECT count(*)"
+      }
+    }
+
+    widget_heatmap {
+      title = "heatmap widget"
+      row = 7
+      column = 1
       nrql_query {
         query = "FROM Transaction SELECT histogram(duration, buckets: 100, width: 0.1) FACET appName"
       }
@@ -215,7 +225,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
     widget_line {
       title = "line widget"
       row = 7
-      column = 1
+      column = 5
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 1 TIMESERIES"
@@ -229,14 +239,14 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
     widget_markdown {
       title = "markdown widget"
       row = 7
-      column = 5
+      column = 9
 			text = "# Header text"
     }
 
     widget_pie {
       title = "3.14 widget"
-      row = 7
-      column = 9
+      row = 10
+      column = 1
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT count(*) FACET name"
@@ -247,7 +257,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
     widget_table {
       title = "table widget"
       row = 10
-      column = 1
+      column = 5
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT average(duration) FACET appName"
