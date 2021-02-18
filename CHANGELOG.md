@@ -1,5 +1,5 @@
 <a name="v2.19.0"></a>
-## [v2.19.0] - 2021-02-17
+## [v2.19.0] - 2021-02-18
 ### Bug Fixes
 - **one_dashboard:** Table Widget should have filter on them
 - **one_dashboard:** Inherit nrql_query account_id from dashboard by default
