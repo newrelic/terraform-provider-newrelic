@@ -105,6 +105,12 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Description: "A billboard widget.",
 				Elem:        dashboardWidgetBillboardSchemaElem(),
 			},
+			"widget_heatmap": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A heatmap widget.",
+				Elem:        dashboardWidgetHeatmapSchemaElem(),
+			},
 			"widget_line": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -226,6 +232,14 @@ func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 		Optional:    true,
 		Description: "The warning threshold value.",
 	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetHeatmapSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
 
 	return &schema.Resource{
 		Schema: s,
