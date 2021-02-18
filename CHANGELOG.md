@@ -6,6 +6,7 @@
 
 ### Documentation Updates
 - update changelog
+- update changelog
 
 ### Features
 - **one_dashboard:** Add support for widget_histogram
