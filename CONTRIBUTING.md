@@ -87,7 +87,7 @@ export NEW_RELIC_ADMIN_API_KEY="<your New Relic Admin API key>"
 export NEW_RELIC_REGION="US"
 ```
 
-Then configure the provider.
+Then configure the provider (e.g. in /Users/yourname/my-test-terraform-dir/main.tf):
 
 ```hcl
 provider "newrelic" {}
@@ -128,14 +128,14 @@ are ready to try out your local build of the provider:
 
 ```bash
 export TF_CLI_CONFIG_FILE=/Users/yourname/dev.tfrc
-terraform init
-go build && terraform plan
+terraform init /Users/yourname/my-test-terraform-dir
+go build && terraform plan /Users/yourname/my-test-terraform-dir
 ```
 
 After making changes in the provider code, no need to rerun init, just rebuild and plan:
 
 ```bash
-go build && terraform plan
+go build && terraform plan /Users/yourname/my-test-terraform-dir
 ```
 
 `TF_LOG=TRACE` is the only way to see log output from the provider (e.g.
@@ -143,7 +143,7 @@ go build && terraform plan
 can be helpful to send stdout and stderr to a file:
 
 ```bash
-go build && TF_LOG=TRACE terraform plan |& > out.txt
+go build && TF_LOG=TRACE terraform plan /Users/yourname/my-test-terraform-dir |& > out.txt
 ```
 
 ### Developing with our [Go Client][client_go]

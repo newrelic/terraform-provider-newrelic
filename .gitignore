@@ -28,6 +28,7 @@ website/node_modules
 dist/*
 /terraform-provider-newrelic
 /vendor
+/.terraform.lock.hcl
 
 website/vendor
 

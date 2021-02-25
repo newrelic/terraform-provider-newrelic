@@ -5,11 +5,11 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 // termSchema returns the schema used for a critical or warning term priority.
@@ -362,6 +362,8 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 
 	log.Printf("[INFO] Creating New Relic NRQL alert condition %s via NerdGraph API", conditionInput.Name)
 
+	client.Alerts.InvalidateCachedNrqlConditionPolicy(accountID, policyID)
+
 	var condition *alerts.NrqlAlertCondition
 
 	switch d.Get("type").(string) {
@@ -387,9 +389,6 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 	return resourceNewRelicNrqlAlertConditionRead(d, meta)
 }
 
-var nrqlConditionsCacheMutex = &sync.Mutex{}
-var nrqlConditionsCache map[int]map[string]*alerts.NrqlAlertCondition = make(map[int]map[string]*alerts.NrqlAlertCondition)
-
 func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -402,29 +401,25 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	policyID := ids[0]
-	conditionID := ids[1]
+	policyID := strconv.Itoa(ids[0])
+	conditionID := strconv.Itoa(ids[1])
 
-	nrqlConditionsCacheMutex.Lock()
-	policyCache, found := nrqlConditionsCache[policyID]
-	if !found {
-		search := alerts.NrqlConditionsSearchCriteria{ PolicyID: strconv.Itoa(policyID) }
-		conditions, err := client.Alerts.SearchNrqlConditionsQuery(accountID, search)
-		if err != nil {
-			return err
+	_, err = client.Alerts.QueryPolicy(accountID, policyID)
+	if err != nil {
+		if _, ok := err.(*errors.NotFound); ok {
+			d.SetId("")
+			return nil
 		}
-		policyCache = make(map[string]*alerts.NrqlAlertCondition)
-		for _, condition := range conditions {
-			policyCache[condition.ID] = condition
-		}
-		nrqlConditionsCache[policyID] = policyCache
+		return err
 	}
-	nrqlConditionsCacheMutex.Unlock()
 
-	nrqlCondition, found := policyCache[strconv.Itoa(conditionID)]
-	if !found {
-		d.SetId("")
-		return nil
+	nrqlCondition, err := client.Alerts.GetNrqlConditionQuery(accountID, conditionID)
+	if err != nil {
+		if _, ok := err.(*errors.NotFound); ok {
+			d.SetId("")
+			return nil
+		}
+		return err
 	}
 
 	return flattenNrqlAlertCondition(accountID, nrqlCondition, d)
@@ -440,12 +435,15 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 		return err
 	}
 
+	policyID := strconv.Itoa(ids[0])
 	conditionID := strconv.Itoa(ids[1])
 
 	conditionInput, err := expandNrqlAlertConditionInput(d)
 	if err != nil {
 		return err
 	}
+
+	client.Alerts.InvalidateCachedNrqlConditionPolicy(accountID, policyID)
 
 	switch d.Get("type").(string) {
 	case "baseline":
@@ -473,9 +471,12 @@ func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta inter
 		return err
 	}
 
+	policyID := strconv.Itoa(ids[0])
 	conditionID := strconv.Itoa(ids[1])
 
 	log.Printf("[INFO] Deleting New Relic NRQL alert condition %v", conditionID)
+
+	client.Alerts.InvalidateCachedNrqlConditionPolicy(accountID, policyID)
 
 	_, err = client.Alerts.DeleteNrqlConditionMutation(accountID, conditionID)
 	if err != nil {
