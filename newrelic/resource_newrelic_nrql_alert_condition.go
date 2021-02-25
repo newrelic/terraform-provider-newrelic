@@ -413,7 +413,7 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	nrqlCondition, err := client.Alerts.GetNrqlConditionQuery(accountID, conditionID)
+	nrqlCondition, err := client.Alerts.CachedGetNrqlConditionQuery(accountID, policyID, conditionID)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
