@@ -4,6 +4,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 	"time"
@@ -111,6 +112,23 @@ func TestAccNewRelicOneDashboard_PageRename(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 5), // Sleep waiting for entity re-indexing
 				),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_InvalidNRQL checks for proper response if a widget is not configured correctly
+func TestAccNewRelicOneDashboard_InvalidNRQL(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(rName),
+				ExpectError: regexp.MustCompile("err: newrelic_one_dashboard Create failed:.*"),
 			},
 		},
 	})
@@ -279,6 +297,28 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
     }
   }
 `
+}
+
+// testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL generates a basic dashboard page
+func testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_line {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+        query      = "THIS IS INVALID NRQL"
+      }
+    }
+  }
+}`
 }
 
 // testAccCheckNewRelicOneDashboardExists fetches the dashboard back, with an optional sleep time
