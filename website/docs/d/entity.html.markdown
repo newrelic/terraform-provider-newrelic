@@ -56,7 +56,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 // Filter by account ID.
 // The `accountId` tag is automatically added to all entities by the platform.
-
 data "newrelic_entity" "app" {
   name = "my-app"
   domain = "APM"
@@ -66,6 +65,14 @@ data "newrelic_entity" "app" {
     value = "12345"
   }
 }
+
+// Ignore name case
+data "newrelic_entity" "app" {
+  name = "mY-aPP"
+  ignore_case = true
+  domain = "APM"
+  type = "APPLICATION"
+}
 ```
 
 ## Argument Reference
@@ -73,6 +80,7 @@ data "newrelic_entity" "app" {
 The following arguments are supported:
 
 * `name` - (Required) The name of the entity in New Relic One.  The first entity matching this name for the given search parameters will be returned.
+* `ignore_case` - (Optional) Ignore case of the `name` when searching for the entity. Defaults to false.
 * `type` - (Optional) The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, and WORKLOAD.
 * `domain` - (Optional) The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, SYNTH, and VIZ. If not specified, all domains are searched.
 * `tags` - (Optional) A tag applied to the entity.
