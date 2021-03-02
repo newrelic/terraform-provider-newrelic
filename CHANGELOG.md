@@ -1,5 +1,10 @@
+<a name="v2.20.0"></a>
+## [v2.20.0] - 2021-03-02
+### Features
+- **newrelic_entity:** Add ignore_case to name search for entity
+
 <a name="v2.19.1"></a>
-## [v2.19.1] - 2021-02-23
+## [v2.19.1] - 2021-02-25
 ### Bug Fixes
 - **deps:** update module gotest.tools/gotestsum to v1.6.2
 - **deps:** update module github.com/golangci/golangci-lint to v1.37.1
@@ -800,7 +805,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.19.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.20.0...HEAD
+[v2.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.19.1...v2.20.0
 [v2.19.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.19.0...v2.19.1
 [v2.19.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.18.0...v2.19.0
 [v2.18.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.17.0...v2.18.0
