@@ -374,6 +374,15 @@ func resourceNewRelicOneDashboardCreate(d *schema.ResourceData, meta interface{}
 		return err
 	}
 	guid := created.EntityResult.GUID
+	if guid == "" {
+		var errMessages string
+		for _, e := range created.Errors {
+			errMessages += "[" + string(e.Type) + ": " + e.Description + "]"
+		}
+
+		return fmt.Errorf("err: newrelic_one_dashboard Create failed: %s", errMessages)
+	}
+
 	d.SetId(string(guid))
 
 	return resourceNewRelicOneDashboardRead(d, meta)
