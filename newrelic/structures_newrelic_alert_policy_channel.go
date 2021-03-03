@@ -8,13 +8,13 @@ import (
 )
 
 func expandAlertPolicyChannels(d *schema.ResourceData) (*alerts.PolicyChannels, error) {
-	channelIDs := d.Get("channel_ids").([]interface{})
+	channelIDs := d.Get("channel_ids").(*schema.Set)
 
-	if len(channelIDs) == 0 {
+	if channelIDs.Len() == 0 {
 		return nil, fmt.Errorf("must provide channel_ids for resource newrelic_alert_policy_channel")
 	}
 
-	ids := expandChannelIDs(channelIDs)
+	ids := expandChannelIDs(channelIDs.List())
 
 	policyChannels := alerts.PolicyChannels{
 		ID:         d.Get("policy_id").(int),

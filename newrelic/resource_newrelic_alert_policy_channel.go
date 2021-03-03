@@ -26,7 +26,7 @@ func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 				Description: "The ID of the policy.",
 			},
 			"channel_ids": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Required:    true,
 				ForceNew:    true,
 				MinItems:    1,
