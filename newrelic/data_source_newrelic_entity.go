@@ -19,6 +19,12 @@ func dataSourceNewRelicEntity() *schema.Resource {
 				Required:    true,
 				Description: "The name of the entity in New Relic One.  The first entity matching this name for the given search parameters will be returned.",
 			},
+			"ignore_case": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Ignore case when searching the entity name.",
+			},
 			"type": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -89,6 +95,7 @@ func dataSourceNewRelicEntityRead(d *schema.ResourceData, meta interface{}) erro
 	log.Printf("[INFO] Reading New Relic entities")
 
 	name := d.Get("name").(string)
+	ignoreCase := d.Get("ignore_case").(bool)
 	entityType := entities.EntitySearchQueryBuilderType(strings.ToUpper(d.Get("type").(string)))
 	tags := expandEntityTag(d.Get("tag").([]interface{}))
 	domain := entities.EntitySearchQueryBuilderDomain(strings.ToUpper(d.Get("domain").(string)))
@@ -107,14 +114,15 @@ func dataSourceNewRelicEntityRead(d *schema.ResourceData, meta interface{}) erro
 
 	var entity *entities.EntityOutlineInterface
 	for _, e := range entityResults.Results.Entities {
-		if e.GetName() == name {
+		// Conditional on case sensitive match
+		if e.GetName() == name || (ignoreCase && strings.EqualFold(e.GetName(), name)) {
 			entity = &e
 			break
 		}
 	}
 
 	if entity == nil {
-		return fmt.Errorf("the name '%s' does not match any New Relic One entity for the given search parameters", name)
+		return fmt.Errorf("the name '%s' does not match any New Relic One entity for the given search parameters (ignore_case: %t)", name, ignoreCase)
 	}
 
 	return flattenEntityData(entity, d)

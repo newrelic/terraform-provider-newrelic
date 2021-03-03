@@ -4,6 +4,8 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -18,16 +20,48 @@ func TestAccNewRelicEntityData_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicEntityDataConfig(),
+				Config: testAccNewRelicEntityDataConfig(testAccExpectedApplicationName, testAccountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity"),
+					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", testAccExpectedApplicationName),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckNewRelicEntityDataExists(t *testing.T, n string) resource.TestCheckFunc {
+func TestAccNewRelicEntityData_Missing(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicEntityDataConfig(strings.ToUpper(testAccExpectedApplicationName), testAccountID),
+				ExpectError: regexp.MustCompile(`the name '.*' does not match any New Relic One entity for the given search parameters \(ignore_case: false\)`),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicEntityData_IgnoreCase(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicEntityDataConfig_IgnoreCase(strings.ToUpper(testAccExpectedApplicationName), testAccountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", testAccExpectedApplicationName),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckNewRelicEntityDataExists(t *testing.T, n string, appName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
 		a := r.Primary.Attributes
@@ -40,8 +74,8 @@ func testAccCheckNewRelicEntityDataExists(t *testing.T, n string) resource.TestC
 			return fmt.Errorf("expected to get an application ID")
 		}
 
-		if a["name"] != testAccExpectedApplicationName {
-			return fmt.Errorf("expected the entity name to be: %s, but got: %s", testAccExpectedApplicationName, a["name"])
+		if a["name"] != appName {
+			return fmt.Errorf("expected the entity name to be: %s, but got: %s", appName, a["name"])
 		}
 
 		return nil
@@ -49,7 +83,7 @@ func testAccCheckNewRelicEntityDataExists(t *testing.T, n string) resource.TestC
 }
 
 // The test entity for this data source is created in provider_test.go
-func testAccNewRelicEntityDataConfig() string {
+func testAccNewRelicEntityDataConfig(name string, accountId int) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "entity" {
 	name = "%s"
@@ -60,5 +94,21 @@ data "newrelic_entity" "entity" {
 		value = "%d"
 	}
 }
-`, testAccExpectedApplicationName, testAccountID)
+`, name, accountId)
+}
+
+// The test entity for this data source is created in provider_test.go
+func testAccNewRelicEntityDataConfig_IgnoreCase(name string, accountId int) string {
+	return fmt.Sprintf(`
+data "newrelic_entity" "entity" {
+	name = "%s"
+	ignore_case = true
+	type = "application"
+	domain = "apm"
+	tag {
+		key = "accountId"
+		value = "%d"
+	}
+}
+`, name, accountId)
 }
