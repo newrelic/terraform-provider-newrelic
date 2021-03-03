@@ -16,8 +16,8 @@ GOTOOLS ?= $(shell cd $(TOOL_DIR) && go list -f '{{ .Imports }}' -tags tools |tr
 
 tools: check-version
 	@echo "=== $(PROJECT_NAME) === [ tools            ]: Installing tools required by the project..."
-	@cd $(TOOL_DIR) && $(GO) install $(GOTOOLS)
 	@cd $(TOOL_DIR) && $(VENDOR_CMD)
+	@cd $(TOOL_DIR) && $(GO) install $(GOTOOLS)
 
 tools-outdated: check-version
 	@echo "=== $(PROJECT_NAME) === [ tools-outdated   ]: Finding outdated tool deps with $(GO_MOD_OUTDATED)..."
@@ -25,6 +25,7 @@ tools-outdated: check-version
 
 tools-update: check-version
 	@echo "=== $(PROJECT_NAME) === [ tools-update     ]: Updating tools required by the project..."
+	@cd $(TOOL_DIR) && $(VENDOR_CMD)
 	@cd $(TOOL_DIR) && for x in $(GOTOOLS); do \
 		$(GO) get -u $$x; \
 	done
