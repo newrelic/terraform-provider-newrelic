@@ -211,7 +211,7 @@ resource "newrelic_alert_channel" "foo" {
 
 	config {
 		recipients = "terraform-acctest+foo@hashicorp.com"
-		include_json_attachment = "1"
+		include_json_attachment = "true"
 	}
 }
 
@@ -236,7 +236,7 @@ resource "newrelic_alert_channel" "foo" {
 
 	config {
 		recipients = "terraform-acctest+bar@hashicorp.com"
-		include_json_attachment = "0"
+		include_json_attachment = "false"
 	}
 }
 
@@ -260,7 +260,7 @@ resource "newrelic_alert_channel" "foo" {
 	type = "email"
 	config {
 		recipients = "terraform-acctest+foo@hashicorp.com"
-		include_json_attachment = "1"
+		include_json_attachment = "true"
 	}
 }
 
@@ -284,7 +284,7 @@ resource "newrelic_alert_channel" "foo" {
 	type = "email"
 	config {
 		recipients = "terraform-acctest+foo@hashicorp.com"
-		include_json_attachment = "1"
+		include_json_attachment = "true"
 	}
 }
 
