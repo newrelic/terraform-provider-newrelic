@@ -33,7 +33,7 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", rNameDeprecatedUpdated),
 					resource.TestCheckResourceAttr(resourceName, "type", "email"),
 					resource.TestCheckResourceAttr(resourceName, "config.0.recipients", "terraform-acctest+bar@hashicorp.com"),
-					resource.TestCheckResourceAttr(resourceName, "config.0.include_json_attachment", "0"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.include_json_attachment", "false"),
 				),
 			},
 			// Test: Create
@@ -44,7 +44,7 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "type", "email"),
 					resource.TestCheckResourceAttr(resourceName, "config.0.recipients", "terraform-acctest+foo@hashicorp.com"),
-					resource.TestCheckResourceAttr(resourceName, "config.0.include_json_attachment", "1"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.include_json_attachment", "true"),
 				),
 			},
 			// Test: Update
@@ -55,7 +55,7 @@ func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", rNameUpdated),
 					resource.TestCheckResourceAttr(resourceName, "type", "email"),
 					resource.TestCheckResourceAttr(resourceName, "config.0.recipients", "terraform-acctest+bar@hashicorp.com"),
-					resource.TestCheckResourceAttr(resourceName, "config.0.include_json_attachment", "0"),
+					resource.TestCheckResourceAttr(resourceName, "config.0.include_json_attachment", "false"),
 				),
 			},
 			// Test: Import

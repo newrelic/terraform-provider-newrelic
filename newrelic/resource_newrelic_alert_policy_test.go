@@ -107,7 +107,7 @@ resource "newrelic_alert_channel" "channel_a" {
 
 	config {
 		recipients = "no-reply+a@newrelic.com"
-		include_json_attachment = "1"
+		include_json_attachment = "true"
 	}
 }
 
