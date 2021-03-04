@@ -1,3 +1,12 @@
+<a name="v2.21.0"></a>
+## [v2.21.0] - 2021-03-04
+### Bug Fixes
+- **alert_channel:** Ensure include_json_attachment is sent to API as `true` or `false` string
+- **alert_policy_channel:** Ignore configured channel_id order  (convert to Set)
+
+### Features
+- Add NRQL Drop Rule support
+
 <a name="v2.20.0"></a>
 ## [v2.20.0] - 2021-03-02
 ### Features
@@ -805,7 +814,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.20.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.0...HEAD
+[v2.21.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.20.0...v2.21.0
 [v2.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.19.1...v2.20.0
 [v2.19.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.19.0...v2.19.1
 [v2.19.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.18.0...v2.19.0
