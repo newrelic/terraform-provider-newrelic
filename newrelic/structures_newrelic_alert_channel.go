@@ -92,8 +92,13 @@ func expandAlertChannelConfiguration(cfg map[string]interface{}) (*alerts.Channe
 		config.Headers = h
 	}
 
-	if includeJSONAttachment, ok := cfg["include_json_attachment"]; ok {
-		config.IncludeJSONAttachment = includeJSONAttachment.(string)
+	// accept any type of "true" or "false", but the API requires one of those two strings
+	if includeJSONAttachment, ok := cfg["include_json_attachment"]; ok && includeJSONAttachment != "" {
+		if a, err := strconv.ParseBool(includeJSONAttachment.(string)); err == nil {
+			config.IncludeJSONAttachment = strconv.FormatBool(a)
+		} else {
+			return nil, err
+		}
 	}
 
 	if payload, ok := cfg["payload"]; ok {

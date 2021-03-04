@@ -20,7 +20,7 @@ resource "newrelic_alert_channel" "foo" {
 
   config {
     recipients              = "foo@example.com"
-    include_json_attachment = "1"
+    include_json_attachment = "true"
   }
 }
 ```
@@ -40,7 +40,7 @@ Each alert channel type supports a specific set of arguments for the `config` bl
 
   * `email`
     * `recipients` - (Required) Comma delimited list of email addresses.
-    * `include_json_attachment` - (Optional) `0` or `1`. Flag for whether or not to attach a JSON document containing information about the associated alert to the email that is sent to recipients.
+    * `include_json_attachment` - (Optional) `true` or `false`. Flag for whether or not to attach a JSON document containing information about the associated alert to the email that is sent to recipients.
   * `webhook`
     * `base_url` - (Required) The base URL of the webhook destination.
     * `auth_password` - (Optional) Specifies an authentication password for use with a channel.  Supported by the `webhook` channel type.

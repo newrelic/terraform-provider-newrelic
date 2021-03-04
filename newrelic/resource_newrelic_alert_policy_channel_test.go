@@ -44,6 +44,26 @@ func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicAlertPolicyChannel_ChannelOrder(t *testing.T) {
+	resourceName := "newrelic_alert_policy_channel.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertPolicyChannelDestroy,
+		Steps: []resource.TestStep{
+			// Test: Change channel_id config order
+			{
+				Config: testAccNewRelicAlertPolicyChannelsOrder(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertPolicyChannelExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicAlertPolicyChannel_MutipleChannels(t *testing.T) {
 	resourceName := "newrelic_alert_policy_channel.foo"
 	rName := acctest.RandString(5)
@@ -211,7 +231,7 @@ resource "newrelic_alert_channel" "foo" {
 
 	config {
 		recipients = "terraform-acctest+foo@hashicorp.com"
-		include_json_attachment = "1"
+		include_json_attachment = "true"
 	}
 }
 
@@ -236,7 +256,7 @@ resource "newrelic_alert_channel" "foo" {
 
 	config {
 		recipients = "terraform-acctest+bar@hashicorp.com"
-		include_json_attachment = "0"
+		include_json_attachment = "false"
 	}
 }
 
@@ -260,7 +280,7 @@ resource "newrelic_alert_channel" "foo" {
 	type = "email"
 	config {
 		recipients = "terraform-acctest+foo@hashicorp.com"
-		include_json_attachment = "1"
+		include_json_attachment = "true"
 	}
 }
 
@@ -284,7 +304,7 @@ resource "newrelic_alert_channel" "foo" {
 	type = "email"
 	config {
 		recipients = "terraform-acctest+foo@hashicorp.com"
-		include_json_attachment = "1"
+		include_json_attachment = "true"
 	}
 }
 
@@ -300,7 +320,50 @@ resource "newrelic_alert_policy_channel" "foo" {
   policy_id  = newrelic_alert_policy.foo.id
   channel_ids = [
 		newrelic_alert_channel.foo.id,
-		newrelic_alert_channel.bar.id
+		newrelic_alert_channel.bar.id,
+	]
+}
+`, name)
+}
+
+// swap channel_ids order
+func testAccNewRelicAlertPolicyChannelsOrder(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+
+resource "newrelic_alert_channel" "foo" {
+  name = "tf-test-foo-%[1]s"
+	type = "email"
+	config {
+		recipients = "terraform-acctest+foo@hashicorp.com"
+		include_json_attachment = "true"
+	}
+}
+
+resource "newrelic_alert_channel" "bar" {
+  name = "tf-test-bar-%[1]s"
+	type = "email"
+	config {
+		recipients = "terraform-acctest+bar@hashicorp.com"
+	}
+}
+
+resource "newrelic_alert_channel" "baz" {
+  name = "tf-test-baz-%[1]s"
+	type = "email"
+	config {
+		recipients = "terraform-acctest+bar@hashicorp.com"
+	}
+}
+
+resource "newrelic_alert_policy_channel" "foo" {
+  policy_id  = newrelic_alert_policy.foo.id
+  channel_ids = [
+		newrelic_alert_channel.bar.id,
+		newrelic_alert_channel.foo.id,
+		newrelic_alert_channel.baz.id,
 	]
 }
 `, name)

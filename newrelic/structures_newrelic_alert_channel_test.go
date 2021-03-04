@@ -1,4 +1,4 @@
-// +build integration
+// +build unit
 
 package newrelic
 
@@ -38,6 +38,44 @@ func TestExpandAlertChannel(t *testing.T) {
 				Name: "testing123",
 				Configuration: alerts.ChannelConfiguration{
 					URL: "https://example.com",
+				},
+			},
+		},
+		"email attachment": {
+			Data: map[string]interface{}{
+				"name": "testing123",
+				"type": "email",
+				"config": []interface{}{
+					map[string]interface{}{
+						"recipients":              "test@example.com",
+						"include_json_attachment": "true",
+					},
+				},
+			},
+			Expanded: &alerts.Channel{
+				Name: "testing123",
+				Configuration: alerts.ChannelConfiguration{
+					Recipients:            "test@example.com",
+					IncludeJSONAttachment: "true",
+				},
+			},
+		},
+		"email attachment 1": {
+			Data: map[string]interface{}{
+				"name": "testing123",
+				"type": "email",
+				"config": []interface{}{
+					map[string]interface{}{
+						"recipients":              "test@example.com",
+						"include_json_attachment": "1",
+					},
+				},
+			},
+			Expanded: &alerts.Channel{
+				Name: "testing123",
+				Configuration: alerts.ChannelConfiguration{
+					Recipients:            "test@example.com",
+					IncludeJSONAttachment: "true",
 				},
 			},
 		},
