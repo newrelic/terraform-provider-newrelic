@@ -152,10 +152,26 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 							Description: "The key for integrating with VictorOps.",
 						},
 						"include_json_attachment": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							ForceNew:    true,
-							Description: "0 or 1. Flag for whether or not to attach a JSON document containing information about the associated alert to the email that is sent to recipients.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ForceNew:     true,
+							Description:  "true or false. Flag for whether or not to attach a JSON document containing information about the associated alert to the email that is sent to recipients.",
+							ValidateFunc: validation.StringInSlice([]string{"true", "false", "1", "0"}, true),
+							DiffSuppressFunc: func(k, old, current string, d *schema.ResourceData) bool {
+								if old != "" && current != "" {
+									oldBool, err := strconv.ParseBool(old)
+									if err != nil {
+										return false
+									}
+									curBool, err := strconv.ParseBool(current)
+									if err != nil {
+										return false
+									}
+
+									return oldBool == curBool
+								}
+								return false
+							},
 						},
 						"payload": {
 							Type:          schema.TypeMap,
