@@ -7,6 +7,14 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
+// migrateStateNewRelicAlertPolicyChannelV0toV1 currently facilitates migrating
+// the `channel_ids` attribute from TypeList to TypeSet. Since the underlying
+// data structure is []int for both, we don't need to do anything other than
+// return the state and Terraform will handle the rest.
+func migrateStateNewRelicAlertPolicyChannelV0toV1(rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	return rawState, nil
+}
+
 func expandAlertPolicyChannels(d *schema.ResourceData) (*alerts.PolicyChannels, error) {
 	channelIDs := d.Get("channel_ids").(*schema.Set)
 

@@ -36,9 +36,47 @@ func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 				},
 			},
 		},
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    resourceNewRelicAlertPolicyChannelV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: migrateStateNewRelicAlertPolicyChannelV0toV1,
+				Version: 0,
+			},
+		},
 	}
 }
 
+func resourceNewRelicAlertPolicyChannelV0() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceNewRelicAlertPolicyChannelCreate,
+		Read:   resourceNewRelicAlertPolicyChannelRead,
+		// Update: Not currently supported in API
+		Delete: resourceNewRelicAlertPolicyChannelDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Schema: map[string]*schema.Schema{
+			"policy_id": {
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of the policy.",
+			},
+			"channel_ids": {
+				Type:        schema.TypeList,
+				Required:    true,
+				ForceNew:    true,
+				MinItems:    1,
+				Description: "Array of channel IDs to apply to the specified policy. We recommended sorting channel IDs in ascending order to avoid drift your Terraform state.",
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
+				},
+			},
+		},
+		SchemaVersion: 0,
+	}
+}
 func resourceNewRelicAlertPolicyChannelCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderConfig).NewClient
 	policyChannels, err := expandAlertPolicyChannels(d)
