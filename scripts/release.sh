@@ -30,7 +30,7 @@ echo "Generating release for v${RELEASE_VERSION} using git user ${GIT_USER}"
 git checkout -b release/v${RELEASE_VERSION}
 
 # Auto-generate CHANGELOG updates
-git-chglog --next-tag v${RELEASE_VERSION} -o CHANGELOG.md
+git-chglog --next-tag v${RELEASE_VERSION} -o CHANGELOG.md --sort semver
 
 # Commit CHANGELOG updates
 git add CHANGELOG.md
