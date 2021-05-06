@@ -194,7 +194,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 51 TIMESERIES"
-			}
+      }
     }
 
     widget_bar {
@@ -203,8 +203,8 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       column = 1
       nrql_query {
         query      = "FROM Transaction SELECT count(*) FACET name"
-			}
-			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+      }
+      linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_billboard {
@@ -216,7 +216,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       }
 
       warning = 1
-			critical = 2
+      critical = 2
     }
 
     widget_bullet {
@@ -266,14 +266,14 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       }
       nrql_query {
         query      = "FROM Transaction SELECT 2 TIMESERIES"
-			}
+      }
     }
 
     widget_markdown {
       title = "markdown widget"
       row = 10
       column = 5
-			text = "# Header text"
+      text = "# Header text"
     }
 
     widget_pie {
@@ -282,8 +282,8 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       column = 9
       nrql_query {
         query      = "FROM Transaction SELECT count(*) FACET name"
-			}
-			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+      }
+      linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_table {
@@ -292,8 +292,17 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       column = 1
       nrql_query {
         query      = "FROM Transaction SELECT average(duration) FACET appName"
-			}
-			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+      }
+      linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+    }
+
+    widget_json {
+      title = "JSON widget"
+      row = 13
+      column = 1
+      nrql_query {
+        query      = "FROM Transaction SELECT average(duration) FACET appName"
+      }
     }
   }
 `
