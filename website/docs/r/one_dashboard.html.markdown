@@ -84,6 +84,7 @@ The following arguments are supported:
   * `widget_billboard` - (Optional) A nested block that describes a Billboard widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_bullet` - (Optional) A nested block that describes a Bullet widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_funnel` - (Optional) A nested block that describes a Funnel widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+  * `widget_json` - (Optional) A nested block that describes a JSON widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_heatmap` - (Optional) A nested block that describes a Heatmap widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_histogram` - (Optional) A nested block that describes a Histogram widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_line` - (Optional) A nested block that describes a Line widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
@@ -121,6 +122,8 @@ Each widget type supports an additional set of arguments:
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `limit` - (Optional) Visualization limit for the widget.
   * `widget_funnel`
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+  * `widget_json`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
   * `widget_heatmap`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
