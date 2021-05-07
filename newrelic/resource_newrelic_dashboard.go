@@ -84,10 +84,11 @@ var (
 
 func resourceNewRelicDashboard() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicDashboardCreate,
-		Read:   resourceNewRelicDashboardRead,
-		Update: resourceNewRelicDashboardUpdate,
-		Delete: resourceNewRelicDashboardDelete,
+		DeprecationMessage: "Please use 'newrelic_one_dashboard' instead, for more information check out https://github.com/newrelic/terraform-provider-newrelic/issues/1297'",
+		Create:             resourceNewRelicDashboardCreate,
+		Read:               resourceNewRelicDashboardRead,
+		Update:             resourceNewRelicDashboardUpdate,
+		Delete:             resourceNewRelicDashboardDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
