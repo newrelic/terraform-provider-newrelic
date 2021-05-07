@@ -1,3 +1,8 @@
+<a name="v2.21.2"></a>
+## [v2.21.2] - 2021-05-06
+### Features
+- **newrelic_one_dashboard:** add JSON widgets
+
 <a name="v2.21.1"></a>
 ## [v2.21.1] - 2021-04-16
 <a name="v2.21.0"></a>
@@ -638,7 +643,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.2...HEAD
+[v2.21.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.1...v2.21.2
 [v2.21.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.0...v2.21.1
 [v2.21.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.20.0...v2.21.0
 [v2.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.19.1...v2.20.0
