@@ -153,6 +153,12 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Description: "A table widget.",
 				Elem:        dashboardWidgetTableSchemaElem(),
 			},
+			"widget_json": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A JSON widget.",
+				Elem:        dashboardWidgetJSONSchemaElem(),
+			},
 		},
 	}
 }
@@ -295,6 +301,14 @@ func dashboardWidgetHistogramSchemaElem() *schema.Resource {
 }
 
 func dashboardWidgetLineSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetJSONSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
 
 	return &schema.Resource{
