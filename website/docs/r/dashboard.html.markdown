@@ -1,14 +1,16 @@
 ---
 layout: "newrelic"
-page_title: "New Relic: newrelic_dashboard"
+page_title: "New Relic: newrelic_dashboard (Deprecated)"
 sidebar_current: "docs-newrelic-resource-dashboard"
 description: |-
-  Create and manage dashboards in New Relic.
+  Create and manage dashboards in New Relic. (Deprecated)
 ---
 
-# Resource: newrelic\_dashboard
+# Resource: newrelic\_dashboard (Deprecated)
 
 Use this resource to create and manage New Relic dashboards.
+
+-> **IMPORTANT!** The `newrelic_dashboard` resource is being deprecated, please move your dashboards to the new `newrelic_one_dashboard` resource. For more information check out [this Github issue](https://github.com/newrelic/terraform-provider-newrelic/issues/1297).
 
 ## Example Usage: Create a New Relic Dashboard
 
