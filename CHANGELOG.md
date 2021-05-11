@@ -1,3 +1,11 @@
+<a name="v2.22.0"></a>
+## [v2.22.0] - 2021-05-07
+### Bug Fixes
+- **infra_alert_condition:** Added missing documentation, fixes [#1280](https://github.com/newrelic/terraform-provider-newrelic/issues/1280)
+
+### Features
+- **resource_newrelic_dashboard:** Added deprecation notice
+
 <a name="v2.21.2"></a>
 ## [v2.21.2] - 2021-05-06
 ### Features
@@ -643,7 +651,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.22.0...HEAD
+[v2.22.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.2...v2.22.0
 [v2.21.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.1...v2.21.2
 [v2.21.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.0...v2.21.1
 [v2.21.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.20.0...v2.21.0
