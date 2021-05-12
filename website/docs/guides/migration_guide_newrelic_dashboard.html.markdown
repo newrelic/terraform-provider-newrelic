@@ -62,7 +62,7 @@ After the import has completed succesfully, you can delete the old `newrelic_das
 
 To automate the process New Relic provides a Python script to read all dashboards from your existing `terraform.tfstate` and automatically generates the HCL, removes the old dashboard from state and imports the new. You still need to manually implement any dynamic elements like variables and loops.
 
-Make sure you take a backup of your state and terraform resources before running running the code below. To run the code you need Python 3 and a CLI. Simply copy the code into a file, for example `migrate.py` and run it with python `python3 migrate.py` inside your Terraform diractory.
+Make sure you take a backup of your state and terraform resources before running running the code below. To run the code you need Python 3 and the [New Relic CLI](https://github.com/newrelic/newrelic-cli). Simply copy the code into a file, for example `migrate.py` and run it with python `python3 migrate.py` inside your Terraform diractory.
 
 ```python
 #!/usr/bin/env python3
