@@ -24,7 +24,7 @@ To help you migrate your `newrelic_dashboard` to the new `newrelic_one_dashboard
 - [Manual process](#manual-process): This guide will take you step by step through the process to migrate your dashboards
 - [Automated process](#automated-process): This guide and Python 3 code will automate a part of the process to migrate your dashboards
 
-Which process to choose depends on the number of Terraform `newrelic_dashboard` you need to move and the complexicity of your environment. In general we advice to run the manual process at least once so you gain confidence with the process, before switching to the automated task.
+Which process to choose depends on the number of Terraform `newrelic_dashboard` you need to move and the complexity of your environment. In general we advise to run the manual process at least once so you gain confidence with the process, before switching to the automated task.
 
 #### Manual process
 
