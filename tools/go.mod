@@ -11,6 +11,6 @@ require (
 	github.com/llorllale/go-gitlint v0.0.0-20200802191503-5984945d4b80
 	github.com/psampaz/go-mod-outdated v0.8.0
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/tools v0.1.1-0.20210430200834-7a6108e9b210
+	golang.org/x/tools v0.1.1
 	gotest.tools/gotestsum v1.6.4
 )
