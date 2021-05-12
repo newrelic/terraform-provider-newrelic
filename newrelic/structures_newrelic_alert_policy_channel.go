@@ -1,6 +1,7 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,7 +12,7 @@ import (
 // the `channel_ids` attribute from TypeList to TypeSet. Since the underlying
 // data structure is []int for both, we don't need to do anything other than
 // return the state and Terraform will handle the rest.
-func migrateStateNewRelicAlertPolicyChannelV0toV1(rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+func migrateStateNewRelicAlertPolicyChannelV0toV1(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
 	return rawState, nil
 }
 
