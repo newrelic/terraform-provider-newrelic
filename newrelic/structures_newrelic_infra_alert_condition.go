@@ -3,6 +3,7 @@ package newrelic
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
@@ -94,8 +95,8 @@ func flattenInfraAlertCondition(condition *alerts.InfrastructureCondition, d *sc
 	d.Set("event", condition.Event)
 	d.Set("select", condition.Select)
 	d.Set("type", strings.ToLower(condition.Type))
-	d.Set("created_at", condition.CreatedAt)
-	d.Set("updated_at", condition.UpdatedAt)
+	d.Set("created_at", time.Time(*condition.CreatedAt).Unix()) // TODO: Add Unix() to serialization.EpochTime
+	d.Set("updated_at", time.Time(*condition.UpdatedAt).Unix())
 	d.Set("description", condition.Description)
 
 	if condition.Where != "" {

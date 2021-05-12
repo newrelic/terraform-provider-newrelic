@@ -11,7 +11,8 @@ import (
 
 func dataSourceNewRelicPlugin() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNewRelicPluginRead,
+		DeprecationMessage: "As of December 2, 2020, plugin access has been limited to accounts that have accessed a legacy plugin in the past 30 days. The legacy plugin experience will reach end of life (EoL) as of June 16, 2021.",
+		Read:               dataSourceNewRelicPluginRead,
 
 		Schema: map[string]*schema.Schema{
 			"guid": {
@@ -58,7 +59,7 @@ func dataSourceNewRelicPluginRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(strconv.Itoa(plugin.ID))
-	d.Set("id", plugin.ID)
+	d.Set("id", strconv.Itoa(plugin.ID))
 
 	return nil
 }

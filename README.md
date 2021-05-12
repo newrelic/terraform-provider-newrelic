@@ -9,7 +9,7 @@
 
 ## Requirements
 
--   [Terraform](https://www.terraform.io/downloads.html) 0.11+
+-   [Terraform](https://www.terraform.io/downloads.html) 0.12+
 
 ## Using the provider
 
@@ -41,12 +41,6 @@ terraform {
 }
 ```
 
-For Terraform version 0.11.x
-```hcl
-provider "newrelic" {
-  version = "~> 2.7.5"
-}
-```
 
 If you're developing and building the provider, follow the instructions to [install it as a plugin](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin). After placing the provider your plugins directory, run `terraform init` to initialize it.
 
