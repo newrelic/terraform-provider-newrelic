@@ -10,7 +10,7 @@ require (
 	github.com/golangci/golangci-lint v1.32.2
 	github.com/goreleaser/goreleaser v0.146.0
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20191212124732-c6ae6269b9d7 // indirect
-	github.com/hashicorp/terraform-plugin-sdk v1.16.0
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.6.1
 	github.com/newrelic/go-agent/v3 v3.9.0
 	github.com/newrelic/go-insights v1.0.3
 	github.com/newrelic/newrelic-client-go v0.47.3
