@@ -83,6 +83,25 @@ func TestAccNewRelicWorkload_EntitySearchQueriesOnly(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicWorkload_EntityMultiSearchQueriesOnly(t *testing.T) {
+	resourceName := "newrelic_workload.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicWorkloadDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicWorkloadConfigEntityMultiSearchQueriesOnly(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkloadExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicWorkload_EntityScopeAccountsOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
 	rName := acctest.RandString(5)
@@ -225,6 +244,23 @@ resource "newrelic_workload" "foo" {
 
 	entity_search_query {
 		query = "name like 'App'"
+	}
+}
+`, testAccountID, name)
+}
+
+func testAccNewRelicWorkloadConfigEntityMultiSearchQueriesOnly(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_workload" "foo" {
+	name = "%[2]s"
+	account_id = %[1]d
+
+	entity_search_query {
+		query = "tags.namespace like '%%Alkami%%' "
+	}
+
+	entity_search_query {
+		query = "type = 'DASHBOARD' and name like '%%Alkami%%' "
 	}
 }
 `, testAccountID, name)
