@@ -9,6 +9,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	"github.com/newrelic/terraform-provider-newrelic/v2/internal/tftesting"
 )
 
 func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
@@ -42,16 +44,14 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 						"newrelic_alert_condition.foo", "condition_scope", "application"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "term.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1025554152.duration", "5"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1025554152.operator", "below"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1025554152.priority", "critical"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1025554152.threshold", "0.75"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.1025554152.time_function", "all"),
+					tftesting.TestCheckTypeSetElemNestedAttrs("newrelic_alert_condition.foo", "term.*",
+						map[string]string{
+							"duration":      "5",
+							"operator":      "below",
+							"priority":      "critical",
+							"threshold":     "0.75",
+							"time_function": "all",
+						}),
 				),
 			},
 			// Test: Check no diff on re-apply
@@ -80,16 +80,14 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 						"newrelic_alert_condition.foo", "condition_scope", "application"),
 					resource.TestCheckResourceAttr(
 						"newrelic_alert_condition.foo", "term.#", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.3409672004.duration", "10"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.3409672004.operator", "above"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.3409672004.priority", "critical"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.3409672004.threshold", "1"),
-					resource.TestCheckResourceAttr(
-						"newrelic_alert_condition.foo", "term.3409672004.time_function", "any"),
+					tftesting.TestCheckTypeSetElemNestedAttrs("newrelic_alert_condition.foo", "term.*",
+						map[string]string{
+							"duration":      "10",
+							"operator":      "above",
+							"priority":      "critical",
+							"threshold":     "1",
+							"time_function": "any",
+						}),
 				),
 			},
 			// Test: Import
