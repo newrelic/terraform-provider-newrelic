@@ -256,11 +256,11 @@ resource "newrelic_workload" "foo" {
 	account_id = %[1]d
 
 	entity_search_query {
-		query = "tags.namespace like '%%Alkami%%' "
+		query = "tags.namespace like '%%App%%' "
 	}
 
 	entity_search_query {
-		query = "type = 'DASHBOARD' and name like '%%Alkami%%' "
+		query = "type = 'DASHBOARD' and name like '%%App%%' "
 	}
 }
 `, testAccountID, name)
