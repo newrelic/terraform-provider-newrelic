@@ -56,6 +56,10 @@ func expandInfraAlertCondition(d *schema.ResourceData) (*alerts.InfrastructureCo
 }
 
 func expandInfraAlertThreshold(v interface{}) *alerts.InfrastructureConditionThreshold {
+	if len(v.([]interface{})) < 1 {
+		return nil
+	}
+
 	rah := v.([]interface{})[0].(map[string]interface{})
 
 	alertInfraThreshold := &alerts.InfrastructureConditionThreshold{
