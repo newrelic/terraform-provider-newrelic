@@ -100,7 +100,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
-				Description: "The title of the condition. Must be between 1 and 64 characters, inclusive.",
+				Description: "Whether the condition is enabled.",
 			},
 			"type": {
 				Type:         schema.TypeString,
