@@ -93,14 +93,14 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringLenBetween(1, 64),
-				Description:  "The title of the condition. Must be between 1 and 64 characters, inclusive.",
+				ValidateFunc: validation.StringLenBetween(1, 128),
+				Description:  "The title of the condition. Must be between 1 and 128 characters, inclusive.",
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
-				Description: "The title of the condition. Must be between 1 and 64 characters, inclusive.",
+				Description: "Whether the condition is enabled.",
 			},
 			"type": {
 				Type:         schema.TypeString,
