@@ -47,7 +47,7 @@ func TestAccNewRelicAlertCondition_LongTermDuration(t *testing.T) {
 
 func TestAccNewRelicAlertCondition_LongName(t *testing.T) {
 	avoidEmptyAccountID()
-	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 64\)`)
+	expectedErrorMsg, _ := regexp.Compile(`expected length of name to be in the range \(1 \- 128\)`)
 	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest:   true,
 		Providers:    testAccProviders,
