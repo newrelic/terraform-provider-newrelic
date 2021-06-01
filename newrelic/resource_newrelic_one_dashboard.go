@@ -6,7 +6,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
@@ -160,6 +162,12 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Description: "A JSON widget.",
 				Elem:        dashboardWidgetJSONSchemaElem(),
 			},
+			"widget": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A generic widget configuration. Visualization id is required.",
+				Elem:        dashboardWidgetRawSchemaElem(),
+			},
 		},
 	}
 }
@@ -311,6 +319,31 @@ func dashboardWidgetLineSchemaElem() *schema.Resource {
 
 func dashboardWidgetJSONSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetRawSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	delete(s, "nrql_query") // No queries for Raw
+
+	// Possibly call it VisualizationId
+	s["visualization_id"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The visualization ID of the widget.",
+	}
+
+	// TODO: raw_configuration
+	s["configuration"] = &schema.Schema{
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      "The configuration of the widget.",
+		DiffSuppressFunc: structure.SuppressJsonDiff,
+	}
 
 	return &schema.Resource{
 		Schema: s,

@@ -259,6 +259,28 @@ func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboar
 				page.Widgets = append(page.Widgets, widget)
 			}
 		}
+		if widgets, ok := p["widget"]; ok {
+			for _, v := range widgets.([]interface{}) {
+				// Get generic properties set
+				properties := v.(map[string]interface{})
+				widget, err := expandDashboardWidgetInput(properties, meta)
+				if err != nil {
+					return nil, err
+				}
+
+				// Get and set raw widget properties
+				if q, ok := properties["configuration"]; ok {
+					widget.RawConfiguration = []byte(q.(string))
+				}
+
+				// Get and set widget visualization_id
+				if q, ok := properties["visualization_id"]; ok {
+					widget.Visualization.ID = q.(string)
+				}
+
+				page.Widgets = append(page.Widgets, widget)
+			}
+		}
 
 		expanded[i] = page
 	}
@@ -753,6 +775,13 @@ func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]in
 		widgetType = "widget_table"
 		if len(in.Configuration.Table.NRQLQueries) > 0 {
 			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Table.NRQLQueries)
+		}
+	// This probably means we have a dynamic widget
+	default:
+		widgetType = "widget"
+		out["visualization_id"] = in.Visualization.ID
+		if len(in.RawConfiguration) > 0 {
+			out["configuration"] = string(in.RawConfiguration)
 		}
 	}
 
