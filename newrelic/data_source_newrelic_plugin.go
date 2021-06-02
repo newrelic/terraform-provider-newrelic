@@ -11,6 +11,7 @@ import (
 
 func dataSourceNewRelicPlugin() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: "`newrelic_plugin` has been deprecated and will not be supported as of June 16, 2021",
 		Read: dataSourceNewRelicPluginRead,
 
 		Schema: map[string]*schema.Schema{
