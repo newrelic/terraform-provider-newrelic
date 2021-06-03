@@ -8,6 +8,8 @@ description: |-
 
 # Data Source: newrelic\_plugin\_component
 
+~> **DEPRECATED** This data source is deprecated and will stop being supported as of June 16, 2021. For more information, check out [https://discuss.newrelic.com/t/new-relic-plugin-eol-wednesday-june-16th-2021/127267](https://discuss.newrelic.com/t/new-relic-plugin-eol-wednesday-june-16th-2021/127267)
+
 Use this data source to get information about a single plugin component in New Relic that already exists.
 More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
 
