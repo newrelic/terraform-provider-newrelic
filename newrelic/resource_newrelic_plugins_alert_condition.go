@@ -11,7 +11,7 @@ import (
 
 func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: "`newrelic_plugins_alert_condition` has been deprecated.  Use `newrelic_nrql_alert_condition` instead.",
+		DeprecationMessage: "`newrelic_plugins_alert_condition` has been deprecated and will not be supported as of June 16, 2021.  Use `newrelic_nrql_alert_condition` instead.",
 		Create:             resourceNewRelicPluginsAlertConditionCreate,
 		Read:               resourceNewRelicPluginsAlertConditionRead,
 		Update:             resourceNewRelicPluginsAlertConditionUpdate,
