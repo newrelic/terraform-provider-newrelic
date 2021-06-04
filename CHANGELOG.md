@@ -1,3 +1,16 @@
+<a name="v2.22.2"></a>
+## [v2.22.2] - 2021-06-04
+### Bug Fixes
+- **AlertCondition:** Fix TestAccNewRelicAlertCondition_LongName unit test
+- **newrelic_infra_alert_condition:** Prevent index out of range on expandIfraAlertThreshold ([#606](https://github.com/newrelic/terraform-provider-newrelic/issues/606))
+- **plugins:** Run gofmt
+- **resource_newrelic_alert_condition:** update unit test to match resource
+- **resource_newrelic_alert_condition:** adapted name length to fit API definition
+- **resource_newrelic_alert_condition:** incorrect description field
+
+### Documentation Updates
+- **plugins:** Update website with deprecation notices
+
 <a name="v2.22.1"></a>
 ## [v2.22.1] - 2021-05-12
 ### Bug Fixes
@@ -42,6 +55,10 @@
 - **deps:** update module github.com/golangci/golangci-lint to v1.37.1
 - **deps:** Update module newrelic/newrelic-client-go to v0.58.2
 - **deps:** update module goreleaser/goreleaser to v0.157.0
+
+<a name="v2.19.0"></a>
+## [v2.19.0] - 2021-02-18
+### Bug Fixes
 - **one_dashboard:** Table Widget should have filter on them
 - **one_dashboard:** Inherit nrql_query account_id from dashboard by default
 
@@ -165,10 +182,10 @@
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="2.11.1"></a>
-## [2.11.1] - 2020-10-07
 <a name="v2.11.1"></a>
 ## [v2.11.1] - 2020-10-07
+<a name="2.11.1"></a>
+## [2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -655,18 +672,196 @@
 ## [v1.0.1] - 2018-06-06
 <a name="v1.0.0"></a>
 ## [v1.0.0] - 2018-02-12
+<a name="v0.11.0"></a>
+## [v0.11.0] - 2020-02-27
+### Features
+- **http:** allow personal API keys to be used for alerts and APM resources
+
+<a name="v0.10.1"></a>
+## [v0.10.1] - 2020-02-20
+### Bug Fixes
+- **entities:** tags filter needs to use type TagValue in graphql query
+- **newrelic:** Add option to set ServiceName in Config
+
+<a name="v0.10.0"></a>
+## [v0.10.0] - 2020-02-19
+### Features
+- **ci:** add release make target
+- **ci:** the beginnings of some release automation
+- **synthetics:** add secure credentials resource
+- **synthetics:** implement label monitor support
+
+<a name="v0.9.0"></a>
+## [v0.9.0] - 2020-02-05
+### Bug Fixes
+- allow string representations of JSON for alert channel webhook and payload
+- **http:** Clear client responses between pages
+
+### Features
+- **alerts:** Implement multi-location synthetics conditions
+- **http:** add trace logging with additional request info
+
+<a name="v0.8.0"></a>
+## [v0.8.0] - 2020-01-29
+### Bug Fixes
+- **alerts:** ensure multiple channels can be added via /alerts_policy_channel.json endpoint ([#114](https://github.com/newrelic/terraform-provider-newrelic/issues/114))
+
+### Features
+- **apm:** Add support application metric names and data
+
+<a name="v0.7.1"></a>
+## [v0.7.1] - 2020-01-24
+### Bug Fixes
+- **alerts:** handle more complex JSON structures in headers and/or payload
+- **logging:** use global methods for the default logger rather than a logrus instance
+
+<a name="v0.7.0"></a>
+## [v0.7.0] - 2020-01-23
+### Features
+- **newrelic:** add ConfigOptions for logging
+- **newrelic:** add the ability to configure base URLs per API
+
+<a name="v0.6.0"></a>
+## [v0.6.0] - 2020-01-22
+### Features
+- **alerts:** add GetSyntheticsCondition method ([#105](https://github.com/newrelic/terraform-provider-newrelic/issues/105))
+
+<a name="v0.5.1"></a>
+## [v0.5.1] - 2020-01-21
+### Bug Fixes
+- **alerts:** custom unmarshal of channel configuration Headers and Payload fields ([#102](https://github.com/newrelic/terraform-provider-newrelic/issues/102))
+
+<a name="v0.5.0"></a>
+## [v0.5.0] - 2020-01-16
+### Documentation Updates
+- **newrelic:** update API key configuration documentation
+
+<a name="v0.4.0"></a>
+## [v0.4.0] - 2020-01-15
+### Bug Fixes
+- retry HTTP requests on 429 status codes
+
+### Features
+- **entities:** add entities search and entity tagging
+
+<a name="v0.3.0"></a>
+## [v0.3.0] - 2020-01-13
+### Bug Fixes
+- make use of ErrorNotFound type for Get methods that are based on List methods
+- add policy ID to alert condition
+
+### Documentation Updates
+- update example
+- **build:** Update README for commit message format
+- **changelog:** Add auto-generation of CHANGELOG from git comments via `make changelog`
+
+### Features
+- add top-level logging package for convenience
+- add option for JSON logging and fail gracefully when log level cannot be parsed
+- introduce logging
+- update monitor scripts with return design pattern, update tests
+
+<a name="v0.2.0"></a>
+## [v0.2.0] - 2020-01-08
+### Bug Fixes
+- rename variables to fix redeclared error
+- update unit tests to use new method sigs
+- fix monitor ID type and GetMonitor URL
+- http client needs to handle other 'success' response status codes such as 201
+- add godoc as a dep, and a warning about GOPATH and godoc
+- fix paging bug for v2 API
+- **lint:** formatting fixes for linter
+
+### Documentation Updates
+- update readme example
+- add alerts package docs
+- temporarily checking in broken import paths in generated markdown docs
+- add inline documentation
+- add badges to README
+- fill in missing inline documentation
+- document some methods
+
+### Features
+- add DeletePluginCondition
+- add CreatePluginCondition
+- add UpdatePluginCondition
+- add GetPluginCondition
+- add ListPluginsConditions
+- encode monitor script text
+- add ability to use 'detailed' query param in ListPlugins method
+- add GetPlugin
+- add ListPlugins
+- publicly expose error types
+- finish components endpoints
+- add Components
+- add internal utils package, move IntArrayToString() util to new home
+- add integration tests for key transactions
+- add query param filters for ListKeyTransactions
+- add GetKeyTransaction
+- add ListKeyTransactions
+- add DeleteLabel
+- add CreateLabel
+- add ListLabels, add GetLabel
+- add DeleteDeployment
+- add CreateDeployment
+- add ListDeployments
+- centralize apm test helpers
+- add DeleteNrqlAlertCondition
+- add UpdateNrqlAlertCondition
+- add CreateNrqlAlertCondition
+- add GetNrqlAlertCondition
+- add ListNrqlAlertConditions
+- add UpdateAlertPolicy
+- add DeleteAlertCondition
+- add CreateAlertCondition
+- add GetAlertCondition
+- add ListAlertConditions
+- get infra condition integration tests passing
+- add InfrastructureConditions
+- add MonitorScripts
+- add MonitorScript
+- add DeleteAlertPolicyChannel, update unit tests, add integration test (might need to remove this)
+- add alert policy channels
+- add synthetics alert conditions
+- add synthetics alert conditions
+- add GetAlertChannel method
+- add CreateAlertChannel, ListAlertChannels, DeleteAlertChannel
+- add DeleteMonitor
+- add UpdateMonitor
+- add CreateMonitor
+- add dashboards
+- add DeleteAlertPolicy method
+- add UpdateAlertPolicy method
+- add CreateAlertPolicy method
+- add GetAlertPolicy method
+- add ListAlertPolicies method
+- alerts package
+- create remaining CRUD methods for application resource
+- add new dependency-free client implementation
+- add version.go per auto-versioning docs
+- add ListAlertConditions for infrastructure
+- add infra namespace
+- add catchall newrelic package
+- add New Relic environment enum
+- maximize page size for ListMonitors
+- add ListMonitors method for Synthetics monitors
+- add application filtering for ListApplications
+- get TestListApplications passing
+
 <a name="v0.1.1"></a>
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.22.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.22.2...HEAD
+[v2.22.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.22.1...v2.22.2
 [v2.22.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.22.0...v2.22.1
 [v2.22.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.2...v2.22.0
 [v2.21.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.1...v2.21.2
 [v2.21.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.0...v2.21.1
 [v2.21.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.20.0...v2.21.0
 [v2.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.19.1...v2.20.0
-[v2.19.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.18.0...v2.19.1
+[v2.19.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.19.0...v2.19.1
+[v2.19.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.18.0...v2.19.0
 [v2.18.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.17.0...v2.18.0
 [v2.17.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.16.0...v2.17.0
 [v2.16.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.15.1...v2.16.0
@@ -681,9 +876,9 @@
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2
@@ -739,5 +934,18 @@
 [v1.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.1.0...v1.2.0
 [v1.1.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.0.1...v1.1.0
 [v1.0.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.0.0...v1.0.1
-[v1.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.1.1...v1.0.0
+[v1.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.11.0...v1.0.0
+[v0.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.10.1...v0.11.0
+[v0.10.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.10.0...v0.10.1
+[v0.10.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.9.0...v0.10.0
+[v0.9.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.8.0...v0.9.0
+[v0.8.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.7.1...v0.8.0
+[v0.7.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.7.0...v0.7.1
+[v0.7.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.6.0...v0.7.0
+[v0.6.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.5.1...v0.6.0
+[v0.5.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.5.0...v0.5.1
+[v0.5.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.4.0...v0.5.0
+[v0.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.3.0...v0.4.0
+[v0.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.2.0...v0.3.0
+[v0.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.1.1...v0.2.0
 [v0.1.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.1.0...v0.1.1
