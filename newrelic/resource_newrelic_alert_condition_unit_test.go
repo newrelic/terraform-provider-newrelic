@@ -54,7 +54,7 @@ func TestAccNewRelicAlertCondition_LongName(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccNewRelicAlertConditionConfig("really-long-name-longer-than-sixty-four-characters-so-it-causes-an-error"),
+				Config:      testAccNewRelicAlertConditionConfig("really-long-name-longer-than-one-hundred-and-twenty-eight-characters-so-it-causes-an-error-because-really-long-name-causes-an-error"),
 				ExpectError: expectedErrorMsg,
 			},
 		},
