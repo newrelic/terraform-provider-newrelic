@@ -1,18 +1,20 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
 )
 
 func dataSourceNewRelicApplication() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: "Use the `newrelic_entity` data source instead.",
-		Read:               dataSourceNewRelicApplicationRead,
+		ReadContext:        dataSourceNewRelicApplicationRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -35,7 +37,7 @@ func dataSourceNewRelicApplication() *schema.Resource {
 	}
 }
 
-func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceNewRelicApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic applications")
@@ -47,7 +49,7 @@ func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{})
 
 	applications, err := client.APM.ListApplications(&params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var application *apm.Application
@@ -60,10 +62,10 @@ func dataSourceNewRelicApplicationRead(d *schema.ResourceData, meta interface{})
 	}
 
 	if application == nil {
-		return fmt.Errorf("the name '%s' does not match any New Relic applications", name)
+		return diag.FromErr(fmt.Errorf("the name '%s' does not match any New Relic applications", name))
 	}
 
-	return flattenApplicationData(application, d)
+	return diag.FromErr(flattenApplicationData(application, d))
 }
 
 func flattenApplicationData(a *apm.Application, d *schema.ResourceData) error {

@@ -1,13 +1,15 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
@@ -53,10 +55,10 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Create: resourceNewRelicAlertChannelCreate,
-		Read:   resourceNewRelicAlertChannelRead,
+		CreateContext: resourceNewRelicAlertChannelCreate,
+		ReadContext:   resourceNewRelicAlertChannelRead,
 		// Update: Not currently supported in API
-		Delete: resourceNewRelicAlertChannelDelete,
+		DeleteContext: resourceNewRelicAlertChannelDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -260,31 +262,31 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 	}
 }
 
-func resourceNewRelicAlertChannelCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicAlertChannelCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	channel, err := expandAlertChannel(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating New Relic alert channel %s", channel.Name)
 
 	channel, err = client.Alerts.CreateChannel(*channel)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(strconv.Itoa(channel.ID))
 
-	return resourceNewRelicAlertChannelRead(d, meta)
+	return resourceNewRelicAlertChannelRead(ctx, d, meta)
 }
 
-func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicAlertChannelRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	id, err := strconv.ParseInt(d.Id(), 10, 32)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Reading New Relic alert channel %v", id)
@@ -296,24 +298,24 @@ func resourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) 
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenAlertChannel(channel, d)
+	return diag.FromErr(flattenAlertChannel(channel, d))
 }
 
-func resourceNewRelicAlertChannelDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicAlertChannelDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	id, err := strconv.ParseInt(d.Id(), 10, 32)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Deleting New Relic alert channel %v", id)
 
 	if _, err := client.Alerts.DeleteChannel(int(id)); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

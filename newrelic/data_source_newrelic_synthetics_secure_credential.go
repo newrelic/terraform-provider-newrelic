@@ -1,17 +1,17 @@
 package newrelic
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNewRelicSyntheticsSecureCredentialRead,
-
+		ReadContext: dataSourceNewRelicSyntheticsSecureCredentialRead,
 		Schema: map[string]*schema.Schema{
 			"key": {
 				Type:        schema.TypeString,
@@ -40,7 +40,7 @@ func dataSourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 	}
 }
 
-func dataSourceNewRelicSyntheticsSecureCredentialRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Synthetics secure credential")
@@ -50,10 +50,10 @@ func dataSourceNewRelicSyntheticsSecureCredentialRead(d *schema.ResourceData, me
 
 	sc, err := client.Synthetics.GetSecureCredential(key)
 	if err != nil {
-		return fmt.Errorf("the key '%s' does not match any New Relic Synthetics secure credential", key)
+		return diag.Errorf("the key '%s' does not match any New Relic Synthetics secure credential", key)
 	}
 
 	d.SetId(key)
 
-	return flattenSyntheticsSecureCredential(sc, d)
+	return diag.FromErr(flattenSyntheticsSecureCredential(sc, d))
 }

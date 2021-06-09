@@ -1,10 +1,11 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 )
@@ -14,7 +15,7 @@ import (
 // data structure is []map[string]interface{} for both, we don't
 // need to do anything other than return the state and Terraform
 // will handle the rest.
-func migrateStateNewRelicDashboardV0toV1(rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+func migrateStateNewRelicDashboardV0toV1(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
 	return rawState, nil
 }
 

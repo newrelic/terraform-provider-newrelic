@@ -1,12 +1,14 @@
 package newrelic
 
 import (
+	"context"
 	"log"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
@@ -56,12 +58,12 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Create: resourceNewRelicInfraAlertConditionCreate,
-		Read:   resourceNewRelicInfraAlertConditionRead,
-		Update: resourceNewRelicInfraAlertConditionUpdate,
-		Delete: resourceNewRelicInfraAlertConditionDelete,
+		CreateContext: resourceNewRelicInfraAlertConditionCreate,
+		ReadContext:   resourceNewRelicInfraAlertConditionRead,
+		UpdateContext: resourceNewRelicInfraAlertConditionUpdate,
+		DeleteContext: resourceNewRelicInfraAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
@@ -176,12 +178,12 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 	}
 }
 
-func resourceNewRelicInfraAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicInfraAlertConditionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	condition, err := expandInfraAlertCondition(d)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating New Relic Infra alert condition %s", condition.Name)
@@ -189,15 +191,15 @@ func resourceNewRelicInfraAlertConditionCreate(d *schema.ResourceData, meta inte
 	condition, err = client.Alerts.CreateInfrastructureCondition(*condition)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(serializeIDs([]int{condition.PolicyID, condition.ID}))
 
-	return resourceNewRelicInfraAlertConditionRead(d, meta)
+	return resourceNewRelicInfraAlertConditionRead(ctx, d, meta)
 }
 
-func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicInfraAlertConditionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := meta.(*ProviderConfig).NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -206,7 +208,7 @@ func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interf
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	policyID := ids[0]
@@ -218,7 +220,7 @@ func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interf
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	condition, err := client.Alerts.GetInfrastructureCondition(id)
@@ -228,23 +230,23 @@ func resourceNewRelicInfraAlertConditionRead(d *schema.ResourceData, meta interf
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenInfraAlertCondition(condition, d)
+	return diag.FromErr(flattenInfraAlertCondition(condition, d))
 }
 
-func resourceNewRelicInfraAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicInfraAlertConditionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	condition, err := expandInfraAlertCondition(d)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	policyID := ids[0]
@@ -257,18 +259,18 @@ func resourceNewRelicInfraAlertConditionUpdate(d *schema.ResourceData, meta inte
 
 	_, err = client.Alerts.UpdateInfrastructureCondition(*condition)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicInfraAlertConditionRead(d, meta)
+	return resourceNewRelicInfraAlertConditionRead(ctx, d, meta)
 }
 
-func resourceNewRelicInfraAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicInfraAlertConditionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	id := ids[1]
@@ -276,7 +278,7 @@ func resourceNewRelicInfraAlertConditionDelete(d *schema.ResourceData, meta inte
 	log.Printf("[INFO] Deleting New Relic Infra alert condition %d", id)
 
 	if err := client.Alerts.DeleteInfrastructureCondition(id); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

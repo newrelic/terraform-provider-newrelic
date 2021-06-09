@@ -1,9 +1,11 @@
 package newrelic
 
 import (
+	"context"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/newrelic"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
@@ -11,12 +13,12 @@ import (
 
 func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicAlertPolicyChannelCreate,
-		Read:   resourceNewRelicAlertPolicyChannelRead,
+		CreateContext: resourceNewRelicAlertPolicyChannelCreate,
+		ReadContext:   resourceNewRelicAlertPolicyChannelRead,
 		// Update: Not currently supported in API
-		Delete: resourceNewRelicAlertPolicyChannelDelete,
+		DeleteContext: resourceNewRelicAlertPolicyChannelDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
@@ -49,10 +51,10 @@ func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 
 func resourceNewRelicAlertPolicyChannelV0() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicAlertPolicyChannelCreate,
-		Read:   resourceNewRelicAlertPolicyChannelRead,
+		CreateContext: resourceNewRelicAlertPolicyChannelCreate,
+		ReadContext:   resourceNewRelicAlertPolicyChannelRead,
 		// Update: Not currently supported in API
-		Delete: resourceNewRelicAlertPolicyChannelDelete,
+		DeleteContext: resourceNewRelicAlertPolicyChannelDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -77,12 +79,12 @@ func resourceNewRelicAlertPolicyChannelV0() *schema.Resource {
 		SchemaVersion: 0,
 	}
 }
-func resourceNewRelicAlertPolicyChannelCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicAlertPolicyChannelCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	policyChannels, err := expandAlertPolicyChannels(d)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	sortIntegerSlice(policyChannels.ChannelIDs)
@@ -100,20 +102,20 @@ func resourceNewRelicAlertPolicyChannelCreate(d *schema.ResourceData, meta inter
 	)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(serializedID)
 
-	return resourceNewRelicAlertPolicyChannelRead(d, meta)
+	return resourceNewRelicAlertPolicyChannelRead(ctx, d, meta)
 }
 
-func resourceNewRelicAlertPolicyChannelRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicAlertPolicyChannelRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	policyID := ids[0]
@@ -126,7 +128,7 @@ func resourceNewRelicAlertPolicyChannelRead(d *schema.ResourceData, meta interfa
 	exists, err := policyChannelsExist(client, policyID, parsedChannelIDs)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if !exists {
@@ -134,15 +136,15 @@ func resourceNewRelicAlertPolicyChannelRead(d *schema.ResourceData, meta interfa
 		return nil
 	}
 
-	return flattenAlertPolicyChannels(d, policyID, parsedChannelIDs)
+	return diag.FromErr(flattenAlertPolicyChannels(d, policyID, parsedChannelIDs))
 }
 
-func resourceNewRelicAlertPolicyChannelDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicAlertPolicyChannelDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	policyID := ids[0]
@@ -152,7 +154,7 @@ func resourceNewRelicAlertPolicyChannelDelete(d *schema.ResourceData, meta inter
 
 	exists, err := policyChannelsExist(client, policyID, channelIDs)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if exists {
@@ -161,7 +163,7 @@ func resourceNewRelicAlertPolicyChannelDelete(d *schema.ResourceData, meta inter
 				if _, ok := err.(*errors.NotFound); ok {
 					return nil
 				}
-				return err
+				return diag.FromErr(err)
 			}
 		}
 	}

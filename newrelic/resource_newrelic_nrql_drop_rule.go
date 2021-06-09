@@ -1,14 +1,16 @@
 package newrelic
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/newrelic"
 	nrErrors "github.com/newrelic/newrelic-client-go/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/pkg/nrqldroprules"
@@ -16,11 +18,11 @@ import (
 
 func resourceNewRelicNRQLDropRule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicNRQLDropRuleCreate,
-		Read:   resourceNewRelicNRQLDropRuleRead,
-		Delete: resourceNewRelicNRQLDropRuleDelete,
+		CreateContext: resourceNewRelicNRQLDropRuleCreate,
+		ReadContext:   resourceNewRelicNRQLDropRuleRead,
+		DeleteContext: resourceNewRelicNRQLDropRuleDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -57,11 +59,11 @@ func resourceNewRelicNRQLDropRule() *schema.Resource {
 	}
 }
 
-func resourceNewRelicNRQLDropRuleCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicNRQLDropRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Create")
+		return diag.Errorf("err: NerdGraph support not present, but required for Create")
 	}
 
 	client := providerConfig.NewClient
@@ -78,11 +80,11 @@ func resourceNewRelicNRQLDropRuleCreate(d *schema.ResourceData, meta interface{}
 
 	created, err := client.Nrqldroprules.NRQLDropRulesCreate(accountID, createInput)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if created == nil {
-		return errors.New("err: drop rule create result wasn't returned")
+		return diag.Errorf("err: drop rule create result wasn't returned")
 	}
 	rule := created.Successes[0]
 
@@ -90,14 +92,14 @@ func resourceNewRelicNRQLDropRuleCreate(d *schema.ResourceData, meta interface{}
 
 	d.SetId(id)
 
-	return resourceNewRelicNRQLDropRuleRead(d, meta)
+	return resourceNewRelicNRQLDropRuleRead(ctx, d, meta)
 }
 
-func resourceNewRelicNRQLDropRuleRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicNRQLDropRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Read")
+		return diag.Errorf("err: NerdGraph support not present, but required for Read")
 	}
 
 	client := providerConfig.NewClient
@@ -106,7 +108,7 @@ func resourceNewRelicNRQLDropRuleRead(d *schema.ResourceData, meta interface{}) 
 
 	accountID, ruleID, err := parseNRQLDropRuleIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	rule, err := getNRQLDropRuleByID(client, accountID, ruleID)
@@ -117,37 +119,37 @@ func resourceNewRelicNRQLDropRuleRead(d *schema.ResourceData, meta interface{}) 
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("account_id", accountID); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("rule_id", ruleID); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("action", strings.ToLower(string(rule.Action))); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("description", rule.Description); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("nrql", rule.NRQL); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func resourceNewRelicNRQLDropRuleDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicNRQLDropRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Delete")
+		return diag.Errorf("err: NerdGraph support not present, but required for Delete")
 	}
 
 	client := providerConfig.NewClient
@@ -156,14 +158,14 @@ func resourceNewRelicNRQLDropRuleDelete(d *schema.ResourceData, meta interface{}
 
 	accountID, ruleID, err := parseNRQLDropRuleIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	deleteInput := []string{ruleID}
 
 	_, err = client.Nrqldroprules.NRQLDropRulesDelete(accountID, deleteInput)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
