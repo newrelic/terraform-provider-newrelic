@@ -1,21 +1,23 @@
 package newrelic
 
 import (
+	"context"
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicSyntheticsSecureCredentialCreate,
-		Read:   resourceNewRelicSyntheticsSecureCredentialRead,
-		Update: resourceNewRelicSyntheticsSecureCredentialUpdate,
-		Delete: resourceNewRelicSyntheticsSecureCredentialDelete,
+		CreateContext: resourceNewRelicSyntheticsSecureCredentialCreate,
+		ReadContext:   resourceNewRelicSyntheticsSecureCredentialRead,
+		UpdateContext: resourceNewRelicSyntheticsSecureCredentialUpdate,
+		DeleteContext: resourceNewRelicSyntheticsSecureCredentialDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"key": {
@@ -55,7 +57,7 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 	}
 }
 
-func resourceNewRelicSyntheticsSecureCredentialCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	sc := expandSyntheticsSecureCredential(d)
 
@@ -63,14 +65,14 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(d *schema.ResourceData, me
 
 	sc, err := client.Synthetics.AddSecureCredential(sc.Key, sc.Value, sc.Description)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(sc.Key)
-	return resourceNewRelicSyntheticsSecureCredentialRead(d, meta)
+	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
 }
 
-func resourceNewRelicSyntheticsSecureCredentialRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Synthetics secure credential %s", d.Id())
@@ -82,13 +84,13 @@ func resourceNewRelicSyntheticsSecureCredentialRead(d *schema.ResourceData, meta
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenSyntheticsSecureCredential(sc, d)
+	return diag.FromErr(flattenSyntheticsSecureCredential(sc, d))
 }
 
-func resourceNewRelicSyntheticsSecureCredentialUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsSecureCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	log.Printf("[INFO] Updating New Relic Synthetics secure credential %s", d.Id())
 
@@ -96,19 +98,19 @@ func resourceNewRelicSyntheticsSecureCredentialUpdate(d *schema.ResourceData, me
 
 	_, err := client.Synthetics.UpdateSecureCredential(sc.Key, sc.Value, sc.Description)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicSyntheticsSecureCredentialRead(d, meta)
+	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
 }
 
-func resourceNewRelicSyntheticsSecureCredentialDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsSecureCredentialDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Deleting New Relic Synthetics secure credential %s", d.Id())
 
 	if err := client.Synthetics.DeleteSecureCredential(d.Id()); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

@@ -1,21 +1,23 @@
 package newrelic
 
 import (
+	"context"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
 func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicSyntheticsMonitorScriptCreate,
-		Read:   resourceNewRelicSyntheticsMonitorScriptRead,
-		Update: resourceNewRelicSyntheticsMonitorScriptUpdate,
-		Delete: resourceNewRelicSyntheticsMonitorScriptDelete,
+		CreateContext: resourceNewRelicSyntheticsMonitorScriptCreate,
+		ReadContext:   resourceNewRelicSyntheticsMonitorScriptRead,
+		UpdateContext: resourceNewRelicSyntheticsMonitorScriptUpdate,
+		DeleteContext: resourceNewRelicSyntheticsMonitorScriptDelete,
 		Importer: &schema.ResourceImporter{
-			State: importSyntheticsMonitorScript,
+			StateContext: importSyntheticsMonitorScript,
 		},
 		Schema: map[string]*schema.Schema{
 			"monitor_id": {
@@ -33,7 +35,7 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 	}
 }
 
-func importSyntheticsMonitorScript(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+func importSyntheticsMonitorScript(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 	d.Set("monitor_id", d.Id())
 	return []*schema.ResourceData{d}, nil
 }
@@ -46,7 +48,7 @@ func buildSyntheticsMonitorScriptStruct(d *schema.ResourceData) *synthetics.Moni
 	return &script
 }
 
-func resourceNewRelicSyntheticsMonitorScriptCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsMonitorScriptCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	id := d.Get("monitor_id").(string)
@@ -54,14 +56,14 @@ func resourceNewRelicSyntheticsMonitorScriptCreate(d *schema.ResourceData, meta 
 
 	_, err := client.Synthetics.UpdateMonitorScript(id, *buildSyntheticsMonitorScriptStruct(d))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(id)
-	return resourceNewRelicSyntheticsMonitorScriptRead(d, meta)
+	return resourceNewRelicSyntheticsMonitorScriptRead(ctx, d, meta)
 }
 
-func resourceNewRelicSyntheticsMonitorScriptRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsMonitorScriptRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Synthetics script %s", d.Id())
@@ -73,28 +75,28 @@ func resourceNewRelicSyntheticsMonitorScriptRead(d *schema.ResourceData, meta in
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.Set("text", script.Text)
 	return nil
 }
 
-func resourceNewRelicSyntheticsMonitorScriptUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsMonitorScriptUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Creating New Relic Synthetics monitor script %s", d.Id())
 
 	_, err := client.Synthetics.UpdateMonitorScript(d.Id(), *buildSyntheticsMonitorScriptStruct(d))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(d.Id())
-	return resourceNewRelicSyntheticsMonitorScriptRead(d, meta)
+	return resourceNewRelicSyntheticsMonitorScriptRead(ctx, d, meta)
 }
 
-func resourceNewRelicSyntheticsMonitorScriptDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsMonitorScriptDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor script %s", d.Id())
@@ -104,7 +106,7 @@ func resourceNewRelicSyntheticsMonitorScriptDelete(d *schema.ResourceData, meta 
 	}
 
 	if _, err := client.Synthetics.UpdateMonitorScript(d.Id(), script); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

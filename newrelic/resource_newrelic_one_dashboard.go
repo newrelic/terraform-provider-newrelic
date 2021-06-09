@@ -1,23 +1,24 @@
 package newrelic
 
 import (
-	"fmt"
+	"context"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func resourceNewRelicOneDashboard() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicOneDashboardCreate,
-		Read:   resourceNewRelicOneDashboardRead,
-		Update: resourceNewRelicOneDashboardUpdate,
-		Delete: resourceNewRelicOneDashboardDelete,
+		CreateContext: resourceNewRelicOneDashboardCreate,
+		ReadContext:   resourceNewRelicOneDashboardRead,
+		UpdateContext: resourceNewRelicOneDashboardUpdate,
+		DeleteContext: resourceNewRelicOneDashboardDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			// Required
@@ -363,11 +364,11 @@ func dashboardWidgetLinkedEntityGUIDsSchema() *schema.Schema {
 	}
 }
 
-func resourceNewRelicOneDashboardCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return fmt.Errorf("err: NerdGraph support not present, but required for Create")
+		return diag.Errorf("err: NerdGraph support not present, but required for Create")
 	}
 
 	client := providerConfig.NewClient
@@ -378,14 +379,14 @@ func resourceNewRelicOneDashboardCreate(d *schema.ResourceData, meta interface{}
 	}
 	dashboard, err := expandDashboardInput(d, defaultInfo)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating New Relic One dashboard: %s", dashboard.Name)
 
 	created, err := client.Dashboards.DashboardCreate(accountID, *dashboard)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	guid := created.EntityResult.GUID
 	if guid == "" {
@@ -394,20 +395,20 @@ func resourceNewRelicOneDashboardCreate(d *schema.ResourceData, meta interface{}
 			errMessages += "[" + string(e.Type) + ": " + e.Description + "]"
 		}
 
-		return fmt.Errorf("err: newrelic_one_dashboard Create failed: %s", errMessages)
+		return diag.Errorf("err: newrelic_one_dashboard Create failed: %s", errMessages)
 	}
 
 	d.SetId(string(guid))
 
-	return resourceNewRelicOneDashboardRead(d, meta)
+	return resourceNewRelicOneDashboardRead(ctx, d, meta)
 }
 
 // resourceNewRelicOneDashboardRead NerdGraph => Terraform reader
-func resourceNewRelicOneDashboardRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicOneDashboardRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return fmt.Errorf("err: NerdGraph support not present, but required for Read")
+		return diag.Errorf("err: NerdGraph support not present, but required for Read")
 	}
 
 	client := providerConfig.NewClient
@@ -421,17 +422,17 @@ func resourceNewRelicOneDashboardRead(d *schema.ResourceData, meta interface{}) 
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenDashboardEntity(dashboard, d)
+	return diag.FromErr(flattenDashboardEntity(dashboard, d))
 }
 
-func resourceNewRelicOneDashboardUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return fmt.Errorf("err: NerdGraph support not present, but required for Update")
+		return diag.Errorf("err: NerdGraph support not present, but required for Update")
 	}
 
 	client := providerConfig.NewClient
@@ -442,22 +443,22 @@ func resourceNewRelicOneDashboardUpdate(d *schema.ResourceData, meta interface{}
 	}
 	dashboard, err := expandDashboardInput(d, defaultInfo)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Updating New Relic One dashboard '%s' (%s)", dashboard.Name, d.Id())
 
 	result, err := client.Dashboards.DashboardUpdate(*dashboard, entities.EntityGUID(d.Id()))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// We have to use the Update Result, not a re-read of the entity as the changes take
 	// some amount of time to be re-indexed
-	return flattenDashboardUpdateResult(result, d)
+	return diag.FromErr(flattenDashboardUpdateResult(result, d))
 }
 
-func resourceNewRelicOneDashboardDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicOneDashboardDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Deleting New Relic One dashboard %v", d.Id())
@@ -466,7 +467,7 @@ func resourceNewRelicOneDashboardDelete(d *schema.ResourceData, meta interface{}
 		if _, ok := err.(*errors.NotFound); ok {
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

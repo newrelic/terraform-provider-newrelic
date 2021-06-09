@@ -1,11 +1,13 @@
 package newrelic
 
 import (
+	"context"
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
@@ -85,12 +87,12 @@ var (
 func resourceNewRelicDashboard() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: "Please use 'newrelic_one_dashboard' instead, for more information check out https://github.com/newrelic/terraform-provider-newrelic/issues/1297'",
-		Create:             resourceNewRelicDashboardCreate,
-		Read:               resourceNewRelicDashboardRead,
-		Update:             resourceNewRelicDashboardUpdate,
-		Delete:             resourceNewRelicDashboardDelete,
+		CreateContext:      resourceNewRelicDashboardCreate,
+		ReadContext:        resourceNewRelicDashboardRead,
+		UpdateContext:      resourceNewRelicDashboardUpdate,
+		DeleteContext:      resourceNewRelicDashboardDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"title": {
@@ -184,12 +186,12 @@ func resourceNewRelicDashboard() *schema.Resource {
 func resourceNewRelicDashboardV0() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 0,
-		Create:        resourceNewRelicDashboardCreate,
-		Read:          resourceNewRelicDashboardRead,
-		Update:        resourceNewRelicDashboardUpdate,
-		Delete:        resourceNewRelicDashboardDelete,
+		CreateContext: resourceNewRelicDashboardCreate,
+		ReadContext:   resourceNewRelicDashboardRead,
+		UpdateContext: resourceNewRelicDashboardUpdate,
+		DeleteContext: resourceNewRelicDashboardDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"title": {
@@ -445,33 +447,33 @@ func widgetSchemaElem() *schema.Resource {
 	}
 }
 
-func resourceNewRelicDashboardCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicDashboardCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	dashboard, err := expandDashboard(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating New Relic dashboard: %s", dashboard.Title)
 
 	dashboard, err = client.Dashboards.CreateDashboard(*dashboard)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(strconv.Itoa(dashboard.ID))
 
-	return resourceNewRelicDashboardRead(d, meta)
+	return resourceNewRelicDashboardRead(ctx, d, meta)
 }
 
-func resourceNewRelicDashboardRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicDashboardRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic dashboard %s", d.Id())
 
 	dashboardID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	dashboard, err := client.Dashboards.GetDashboard(dashboardID)
@@ -481,22 +483,22 @@ func resourceNewRelicDashboardRead(d *schema.ResourceData, meta interface{}) err
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenDashboard(dashboard, d)
+	return diag.FromErr(flattenDashboard(dashboard, d))
 }
 
-func resourceNewRelicDashboardUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicDashboardUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	dashboard, err := expandDashboard(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	dashboard.ID = id
@@ -504,18 +506,18 @@ func resourceNewRelicDashboardUpdate(d *schema.ResourceData, meta interface{}) e
 
 	_, err = client.Dashboards.UpdateDashboard(*dashboard)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicDashboardRead(d, meta)
+	return resourceNewRelicDashboardRead(ctx, d, meta)
 }
 
-func resourceNewRelicDashboardDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicDashboardDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Deleting New Relic dashboard %v", id)
@@ -524,7 +526,7 @@ func resourceNewRelicDashboardDelete(d *schema.ResourceData, meta interface{}) e
 		if _, ok := err.(*errors.NotFound); ok {
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
