@@ -164,7 +164,7 @@ func resourceNewRelicAlertPolicyUpdate(ctx context.Context, d *schema.ResourceDa
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Update"))
+		return diag.Errorf("err: NerdGraph support not present, but required for Update")
 	}
 
 	client := providerConfig.NewClient

@@ -60,5 +60,5 @@ func dataSourceNewRelicKeyTransactionRead(ctx context.Context, d *schema.Resourc
 
 func flattenKeyTransaction(t *apm.KeyTransaction, d *schema.ResourceData) {
 	d.SetId(strconv.Itoa(t.ID))
-	d.Set("name", t.Name)
+	_ = d.Set("name", t.Name)
 }

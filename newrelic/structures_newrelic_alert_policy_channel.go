@@ -44,17 +44,17 @@ func expandChannelIDs(channelIDs []interface{}) []int {
 }
 
 func flattenAlertPolicyChannels(d *schema.ResourceData, policyID int, channelIDs []int) error {
-	d.Set("policy_id", policyID)
+	_ = d.Set("policy_id", policyID)
 
 	_, channelIDsOk := d.GetOk("channel_ids")
 
 	if channelIDsOk && len(channelIDs) > 0 {
-		d.Set("channel_ids", channelIDs)
+		_ = d.Set("channel_ids", channelIDs)
 	}
 
 	// Handle import (set `channel_ids` since this resource doesn't exist in state yet)
 	if !channelIDsOk {
-		d.Set("channel_ids", channelIDs)
+		_ = d.Set("channel_ids", channelIDs)
 	}
 
 	return nil

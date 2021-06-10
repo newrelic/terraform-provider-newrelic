@@ -3,6 +3,7 @@ package newrelic
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
@@ -86,32 +87,32 @@ func flattenInfraAlertCondition(condition *alerts.InfrastructureCondition, d *sc
 
 	policyID := ids[0]
 
-	d.Set("policy_id", policyID)
-	d.Set("name", condition.Name)
-	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("enabled", condition.Enabled)
-	d.Set("comparison", strings.ToLower(condition.Comparison))
-	d.Set("event", condition.Event)
-	d.Set("select", condition.Select)
-	d.Set("type", strings.ToLower(condition.Type))
-	d.Set("created_at", condition.CreatedAt)
-	d.Set("updated_at", condition.UpdatedAt)
-	d.Set("description", condition.Description)
+	_ = d.Set("policy_id", policyID)
+	_ = d.Set("name", condition.Name)
+	_ = d.Set("runbook_url", condition.RunbookURL)
+	_ = d.Set("enabled", condition.Enabled)
+	_ = d.Set("comparison", strings.ToLower(condition.Comparison))
+	_ = d.Set("event", condition.Event)
+	_ = d.Set("select", condition.Select)
+	_ = d.Set("type", strings.ToLower(condition.Type))
+	_ = d.Set("description", condition.Description)
+	_ = d.Set("created_at", time.Time(*condition.CreatedAt).Unix())
+	_ = d.Set("updated_at", time.Time(*condition.UpdatedAt).Unix())
 
 	if condition.Where != "" {
-		d.Set("where", condition.Where)
+		_ = d.Set("where", condition.Where)
 	}
 
 	if condition.ProcessWhere != "" {
-		d.Set("process_where", condition.ProcessWhere)
+		_ = d.Set("process_where", condition.ProcessWhere)
 	}
 
 	if condition.IntegrationProvider != "" {
-		d.Set("integration_provider", condition.IntegrationProvider)
+		_ = d.Set("integration_provider", condition.IntegrationProvider)
 	}
 
 	if condition.ViolationCloseTimer != nil {
-		d.Set("violation_close_timer", condition.ViolationCloseTimer)
+		_ = d.Set("violation_close_timer", condition.ViolationCloseTimer)
 	}
 
 	if err := d.Set("critical", flattenAlertThreshold(condition.Critical)); err != nil {

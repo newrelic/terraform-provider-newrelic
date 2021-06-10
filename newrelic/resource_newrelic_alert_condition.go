@@ -256,7 +256,7 @@ func resourceNewRelicAlertConditionRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.Set("policy_id", policyID)
+	_ = d.Set("policy_id", policyID)
 
 	return diag.FromErr(flattenAlertCondition(condition, d))
 }
@@ -284,7 +284,7 @@ func resourceNewRelicAlertConditionUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	d.Set("policy_id", policyID)
+	_ = d.Set("policy_id", policyID)
 
 	return diag.FromErr(flattenAlertCondition(updatedCondition, d))
 }
