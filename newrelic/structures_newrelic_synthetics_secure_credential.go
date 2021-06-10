@@ -22,14 +22,14 @@ func expandSyntheticsSecureCredential(d *schema.ResourceData) *synthetics.Secure
 }
 
 func flattenSyntheticsSecureCredential(sc *synthetics.SecureCredential, d *schema.ResourceData) error {
-	d.Set("key", sc.Key)
-	d.Set("description", sc.Description)
+	_ = d.Set("key", sc.Key)
+	_ = d.Set("description", sc.Description)
 
 	createdAt := time.Time(*sc.CreatedAt).Format(time.RFC3339)
-	d.Set("created_at", createdAt)
+	_ = d.Set("created_at", createdAt)
 
 	lastUpdated := time.Time(*sc.CreatedAt).Format(time.RFC3339)
-	d.Set("last_updated", lastUpdated)
+	_ = d.Set("last_updated", lastUpdated)
 
 	return nil
 }

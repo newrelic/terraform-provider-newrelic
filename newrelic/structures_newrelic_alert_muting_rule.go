@@ -267,14 +267,14 @@ func flattenMutingRule(mutingRule *alerts.MutingRule, d *schema.ResourceData) er
 	x := d.Get("condition")
 	configuredCondition := x.([]interface{})
 
-	d.Set("enabled", mutingRule.Enabled)
+	_ = d.Set("enabled", mutingRule.Enabled)
 	err := d.Set("condition", flattenMutingRuleConditionGroup(mutingRule.Condition, configuredCondition))
 	if err != nil {
 		return nil
 	}
 
-	d.Set("description", mutingRule.Description)
-	d.Set("name", mutingRule.Name)
+	_ = d.Set("description", mutingRule.Description)
+	_ = d.Set("name", mutingRule.Name)
 
 	if mutingRule.Schedule != nil {
 		if err := d.Set("schedule", flattenSchedule(mutingRule.Schedule)); err != nil {

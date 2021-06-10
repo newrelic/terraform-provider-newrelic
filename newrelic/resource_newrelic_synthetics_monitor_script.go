@@ -36,7 +36,7 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 }
 
 func importSyntheticsMonitorScript(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	d.Set("monitor_id", d.Id())
+	_ = d.Set("monitor_id", d.Id())
 	return []*schema.ResourceData{d}, nil
 }
 
@@ -78,7 +78,7 @@ func resourceNewRelicSyntheticsMonitorScriptRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	d.Set("text", script.Text)
+	_ = d.Set("text", script.Text)
 	return nil
 }
 

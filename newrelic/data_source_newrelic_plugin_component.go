@@ -78,7 +78,7 @@ func dataSourceNewRelicPluginComponentRead(ctx context.Context, d *schema.Resour
 
 func flattenPluginsComponent(component *plugins.Component, d *schema.ResourceData) {
 	d.SetId(strconv.Itoa(component.ID))
-	d.Set("id", component.ID)
-	d.Set("name", component.Name)
-	d.Set("health_status", component.HealthStatus)
+	_ = d.Set("id", component.ID)
+	_ = d.Set("name", component.Name)
+	_ = d.Set("health_status", component.HealthStatus)
 }

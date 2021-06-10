@@ -52,8 +52,8 @@ func dataSourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Reso
 	}
 
 	d.SetId(monitor.ID)
-	d.Set("name", monitor.Name)
-	d.Set("monitor_id", monitor.ID)
+	_ = d.Set("name", monitor.Name)
+	_ = d.Set("monitor_id", monitor.ID)
 
 	return nil
 }

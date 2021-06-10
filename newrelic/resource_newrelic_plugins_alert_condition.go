@@ -174,7 +174,7 @@ func resourceNewRelicPluginsAlertConditionRead(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	d.Set("policy_id", policyID)
+	_ = d.Set("policy_id", policyID)
 
 	return diag.FromErr(flattenPluginsCondition(condition, d))
 }

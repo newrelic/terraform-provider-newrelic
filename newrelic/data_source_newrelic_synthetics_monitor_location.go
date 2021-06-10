@@ -67,11 +67,11 @@ func dataSourceNewRelicSyntheticsMonitorLocationRead(ctx context.Context, d *sch
 	}
 
 	d.SetId(location.Name)
-	d.Set("name", location.Name)
-	d.Set("label", location.Label)
-	d.Set("high_security_mode", location.HighSecurityMode)
-	d.Set("private", location.Private)
-	d.Set("description", location.Description)
+	_ = d.Set("name", location.Name)
+	_ = d.Set("label", location.Label)
+	_ = d.Set("high_security_mode", location.HighSecurityMode)
+	_ = d.Set("private", location.Private)
+	_ = d.Set("description", location.Description)
 
 	return nil
 }

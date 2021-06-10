@@ -59,8 +59,9 @@ func dataSourceNewRelicPluginRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("the GUID '%s' does not match any New Relic plugins", guid))
 	}
 
-	d.SetId(strconv.Itoa(plugin.ID))
-	d.Set("id", plugin.ID)
+	id := strconv.Itoa(plugin.ID)
+	d.SetId(id)
+	_ = d.Set("id", id)
 
 	return nil
 }

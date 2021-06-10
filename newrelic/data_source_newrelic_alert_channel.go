@@ -40,7 +40,6 @@ func dataSourceNewRelicAlertChannel() *schema.Resource {
 			"config": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				MaxItems:    1,
 				Description: "Alert channel configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

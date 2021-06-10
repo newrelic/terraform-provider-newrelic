@@ -179,17 +179,17 @@ func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Monito
 }
 
 func readSyntheticsMonitorStruct(monitor *synthetics.Monitor, d *schema.ResourceData) {
-	d.Set("name", monitor.Name)
-	d.Set("type", monitor.Type)
-	d.Set("frequency", monitor.Frequency)
-	d.Set("uri", monitor.URI)
-	d.Set("locations", monitor.Locations)
-	d.Set("status", monitor.Status)
-	d.Set("sla_threshold", monitor.SLAThreshold)
-	d.Set("verify_ssl", monitor.Options.VerifySSL)
-	d.Set("validation_string", monitor.Options.ValidationString)
-	d.Set("bypass_head_request", monitor.Options.BypassHEADRequest)
-	d.Set("treat_redirect_as_failure", monitor.Options.TreatRedirectAsFailure)
+	_ = d.Set("name", monitor.Name)
+	_ = d.Set("type", monitor.Type)
+	_ = d.Set("frequency", monitor.Frequency)
+	_ = d.Set("uri", monitor.URI)
+	_ = d.Set("locations", monitor.Locations)
+	_ = d.Set("status", monitor.Status)
+	_ = d.Set("sla_threshold", monitor.SLAThreshold)
+	_ = d.Set("verify_ssl", monitor.Options.VerifySSL)
+	_ = d.Set("validation_string", monitor.Options.ValidationString)
+	_ = d.Set("bypass_head_request", monitor.Options.BypassHEADRequest)
+	_ = d.Set("treat_redirect_as_failure", monitor.Options.TreatRedirectAsFailure)
 }
 
 func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

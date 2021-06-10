@@ -75,11 +75,11 @@ func flattenSyntheticsCondition(condition *alerts.SyntheticsCondition, d *schema
 
 	policyID := ids[0]
 
-	d.Set("policy_id", policyID)
-	d.Set("monitor_id", condition.MonitorID)
-	d.Set("name", condition.Name)
-	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("enabled", condition.Enabled)
+	_ = d.Set("policy_id", policyID)
+	_ = d.Set("monitor_id", condition.MonitorID)
+	_ = d.Set("name", condition.Name)
+	_ = d.Set("runbook_url", condition.RunbookURL)
+	_ = d.Set("enabled", condition.Enabled)
 
 	return nil
 }
