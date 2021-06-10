@@ -1,17 +1,18 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
 func dataSourceNewRelicSyntheticsMonitorLocation() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNewRelicSyntheticsMonitorLocationRead,
-
+		ReadContext: dataSourceNewRelicSyntheticsMonitorLocationRead,
 		Schema: map[string]*schema.Schema{
 			"label": {
 				Type:        schema.TypeString,
@@ -42,16 +43,15 @@ func dataSourceNewRelicSyntheticsMonitorLocation() *schema.Resource {
 	}
 }
 
-func dataSourceNewRelicSyntheticsMonitorLocationRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceNewRelicSyntheticsMonitorLocationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading Synthetics monitor locations")
 
 	label := d.Get("label").(string)
 	locations, err := client.Synthetics.GetMonitorLocations()
-
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var location *synthetics.MonitorLocation
@@ -63,15 +63,15 @@ func dataSourceNewRelicSyntheticsMonitorLocationRead(d *schema.ResourceData, met
 	}
 
 	if location == nil {
-		return fmt.Errorf("the label '%s' does not match any Synthetics monitor locations", label)
+		return diag.FromErr(fmt.Errorf("the label '%s' does not match any Synthetics monitor locations", label))
 	}
 
 	d.SetId(location.Name)
-	d.Set("name", location.Name)
-	d.Set("label", location.Label)
-	d.Set("high_security_mode", location.HighSecurityMode)
-	d.Set("private", location.Private)
-	d.Set("description", location.Description)
+	_ = d.Set("name", location.Name)
+	_ = d.Set("label", location.Label)
+	_ = d.Set("high_security_mode", location.HighSecurityMode)
+	_ = d.Set("private", location.Private)
+	_ = d.Set("description", location.Description)
 
 	return nil
 }

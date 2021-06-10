@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
@@ -352,32 +352,32 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 
 	conditionType := strings.ToLower(string(condition.Type))
 
-	d.Set("account_id", accountID)
-	d.Set("type", conditionType)
-	d.Set("description", condition.Description)
-	d.Set("policy_id", policyID)
-	d.Set("name", condition.Name)
-	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("enabled", condition.Enabled)
+	_ = d.Set("account_id", accountID)
+	_ = d.Set("type", conditionType)
+	_ = d.Set("description", condition.Description)
+	_ = d.Set("policy_id", policyID)
+	_ = d.Set("name", condition.Name)
+	_ = d.Set("runbook_url", condition.RunbookURL)
+	_ = d.Set("enabled", condition.Enabled)
 
 	if conditionType == "baseline" {
-		d.Set("baseline_direction", string(*condition.BaselineDirection))
+		_ = d.Set("baseline_direction", string(*condition.BaselineDirection))
 	}
 
 	if conditionType == "static" {
-		d.Set("value_function", string(*condition.ValueFunction))
+		_ = d.Set("value_function", string(*condition.ValueFunction))
 	}
 
 	if conditionType == "outlier" {
-		d.Set("expected_groups", *condition.ExpectedGroups)
+		_ = d.Set("expected_groups", *condition.ExpectedGroups)
 
 		openViolationOnGroupOverlap := *condition.OpenViolationOnGroupOverlap
 		if _, ok := d.GetOkExists("open_violation_on_group_overlap"); ok {
-			d.Set("open_violation_on_group_overlap", openViolationOnGroupOverlap)
+			_ = d.Set("open_violation_on_group_overlap", openViolationOnGroupOverlap)
 		} else if _, ok := d.GetOkExists("ignore_overlap"); ok {
-			d.Set("ignore_overlap", !openViolationOnGroupOverlap)
+			_ = d.Set("ignore_overlap", !openViolationOnGroupOverlap)
 		} else {
-			d.Set("open_violation_on_group_overlap", openViolationOnGroupOverlap)
+			_ = d.Set("open_violation_on_group_overlap", openViolationOnGroupOverlap)
 		}
 	}
 
@@ -421,9 +421,9 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	}
 
 	if _, ok := d.GetOk("violation_time_limit_seconds"); ok {
-		d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
+		_ = d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
 	} else {
-		d.Set("violation_time_limit", condition.ViolationTimeLimit)
+		_ = d.Set("violation_time_limit", condition.ViolationTimeLimit)
 	}
 
 	if err := flattenExpiration(d, condition.Expiration); err != nil {

@@ -1,13 +1,15 @@
 package newrelic
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	nrErrors "github.com/newrelic/newrelic-client-go/pkg/errors"
 )
@@ -23,12 +25,12 @@ var (
 
 func resourceNewRelicEntityTags() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicEntityTagsCreate,
-		Read:   resourceNewRelicEntityTagsRead,
-		Update: resourceNewRelicEntityTagsUpdate,
-		Delete: resourceNewRelicEntityTagsDelete,
+		CreateContext: resourceNewRelicEntityTagsCreate,
+		ReadContext:   resourceNewRelicEntityTagsRead,
+		UpdateContext: resourceNewRelicEntityTagsUpdate,
+		DeleteContext: resourceNewRelicEntityTagsDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"guid": {
@@ -65,11 +67,11 @@ func resourceNewRelicEntityTags() *schema.Resource {
 	}
 }
 
-func resourceNewRelicEntityTagsCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicEntityTagsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Create")
+		return diag.Errorf("err: NerdGraph support not present, but required for Create")
 	}
 
 	client := providerConfig.NewClient
@@ -77,14 +79,13 @@ func resourceNewRelicEntityTagsCreate(d *schema.ResourceData, meta interface{}) 
 	guid := entities.EntityGUID(d.Get("guid").(string))
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 
-	err := client.Entities.AddTags(guid, tags)
-	if err != nil {
-		return err
+	if err := client.Entities.AddTags(guid, tags); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(string(guid))
 
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		currentTags, err := client.Entities.ListTags(guid)
 
 		if err != nil {
@@ -102,15 +103,26 @@ func resourceNewRelicEntityTagsCreate(d *schema.ResourceData, meta interface{}) 
 			}
 		}
 
-		return resource.NonRetryableError(resourceNewRelicEntityTagsRead(d, meta))
+		diag := resourceNewRelicEntityTagsRead(ctx, d, meta)
+		if diag.HasError() {
+			return resource.RetryableError(errors.New("error reading tag values after creation"))
+		}
+
+		return nil
 	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
+
+	return nil
 }
 
-func resourceNewRelicEntityTagsRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicEntityTagsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Read")
+		return diag.Errorf("err: NerdGraph support not present, but required for Read")
 	}
 
 	client := providerConfig.NewClient
@@ -125,17 +137,17 @@ func resourceNewRelicEntityTagsRead(d *schema.ResourceData, meta interface{}) er
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenEntityTags(d, tags)
+	return diag.FromErr(flattenEntityTags(d, tags))
 }
 
-func resourceNewRelicEntityTagsUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicEntityTagsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Update")
+		return diag.Errorf("err: NerdGraph support not present, but required for Update")
 	}
 
 	client := providerConfig.NewClient
@@ -145,10 +157,10 @@ func resourceNewRelicEntityTagsUpdate(d *schema.ResourceData, meta interface{}) 
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 
 	if err := client.Entities.ReplaceTags(entities.EntityGUID(d.Id()), tags); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	retryErr := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		currentTags, err := client.Entities.ListTags(entities.EntityGUID(d.Id()))
 
 		if err != nil {
@@ -166,15 +178,26 @@ func resourceNewRelicEntityTagsUpdate(d *schema.ResourceData, meta interface{}) 
 			}
 		}
 
-		return resource.NonRetryableError(resourceNewRelicEntityTagsRead(d, meta))
+		diag := resourceNewRelicEntityTagsRead(ctx, d, meta)
+		if diag.HasError() {
+			return resource.RetryableError(errors.New("error reading tag values after creation"))
+		}
+
+		return nil
 	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
+
+	return nil
 }
 
-func resourceNewRelicEntityTagsDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicEntityTagsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Delete")
+		return diag.Errorf("err: NerdGraph support not present, but required for Delete")
 	}
 
 	client := providerConfig.NewClient
@@ -185,7 +208,7 @@ func resourceNewRelicEntityTagsDelete(d *schema.ResourceData, meta interface{}) 
 	tagKeys := getTagKeys(tags)
 
 	if err := client.Entities.DeleteTags(entities.EntityGUID(d.Id()), tagKeys); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

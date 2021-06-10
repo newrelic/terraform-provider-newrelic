@@ -1,11 +1,13 @@
 package newrelic
 
 import (
+	"context"
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
@@ -24,12 +26,12 @@ func syntheticsMultiLocationConditionTermSchema() *schema.Resource {
 
 func resourceNewRelicSyntheticsMultiLocationAlertCondition() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicSyntheticsMultiLocationAlertConditionCreate,
-		Read:   resourceNewRelicSyntheticsMultiLocationAlertConditionRead,
-		Update: resourceNewRelicSyntheticsMultiLocationAlertConditionUpdate,
-		Delete: resourceNewRelicSyntheticsMultiLocationAlertConditionDelete,
+		CreateContext: resourceNewRelicSyntheticsMultiLocationAlertConditionCreate,
+		ReadContext:   resourceNewRelicSyntheticsMultiLocationAlertConditionRead,
+		UpdateContext: resourceNewRelicSyntheticsMultiLocationAlertConditionUpdate,
+		DeleteContext: resourceNewRelicSyntheticsMultiLocationAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -87,28 +89,28 @@ func resourceNewRelicSyntheticsMultiLocationAlertCondition() *schema.Resource {
 	}
 }
 
-func resourceNewRelicSyntheticsMultiLocationAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsMultiLocationAlertConditionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	policyID := d.Get("policy_id").(int)
 	condition, err := expandMultiLocationSyntheticsCondition(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating New Relic Alerts multi-location failure condition %s", condition.Name)
 
 	condition, err = client.Alerts.CreateMultiLocationSyntheticsCondition(*condition, policyID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(serializeIDs([]int{policyID, condition.ID}))
 
-	return resourceNewRelicSyntheticsMultiLocationAlertConditionRead(d, meta)
+	return resourceNewRelicSyntheticsMultiLocationAlertConditionRead(ctx, d, meta)
 }
 
-func resourceNewRelicSyntheticsMultiLocationAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsMultiLocationAlertConditionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -117,7 +119,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionRead(d *schema.Resourc
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	policyID := ids[0]
@@ -129,7 +131,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionRead(d *schema.Resourc
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	condition, err := client.Alerts.GetMultiLocationSyntheticsCondition(policyID, id)
@@ -139,22 +141,22 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionRead(d *schema.Resourc
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenMultiLocationSyntheticsCondition(condition, d)
+	return diag.FromErr(flattenMultiLocationSyntheticsCondition(condition, d))
 }
 
-func resourceNewRelicSyntheticsMultiLocationAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsMultiLocationAlertConditionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	condition, err := expandMultiLocationSyntheticsCondition(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	id := ids[1]
@@ -165,18 +167,18 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionUpdate(d *schema.Resou
 
 	_, err = client.Alerts.UpdateMultiLocationSyntheticsCondition(*condition)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicSyntheticsMultiLocationAlertConditionRead(d, meta)
+	return resourceNewRelicSyntheticsMultiLocationAlertConditionRead(ctx, d, meta)
 }
 
-func resourceNewRelicSyntheticsMultiLocationAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsMultiLocationAlertConditionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	id := ids[1]
@@ -186,7 +188,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionDelete(d *schema.Resou
 	_, err = client.Alerts.DeleteMultiLocationSyntheticsCondition(id)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

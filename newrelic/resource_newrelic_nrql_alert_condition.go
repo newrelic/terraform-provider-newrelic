@@ -1,13 +1,15 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
@@ -114,12 +116,12 @@ func termSchemaDeprecated() *schema.Resource {
 
 func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicNrqlAlertConditionCreate,
-		Read:   resourceNewRelicNrqlAlertConditionRead,
-		Update: resourceNewRelicNrqlAlertConditionUpdate,
-		Delete: resourceNewRelicNrqlAlertConditionDelete,
+		CreateContext: resourceNewRelicNrqlAlertConditionCreate,
+		ReadContext:   resourceNewRelicNrqlAlertConditionRead,
+		UpdateContext: resourceNewRelicNrqlAlertConditionUpdate,
+		DeleteContext: resourceNewRelicNrqlAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceImportStateWithMetadata(2, "type"),
+			StateContext: resourceImportStateWithMetadata(2, "type"),
 		},
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
@@ -348,7 +350,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 	}
 }
 
-func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
@@ -357,7 +359,7 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 
 	conditionInput, err := expandNrqlAlertConditionInput(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating New Relic NRQL alert condition %s via NerdGraph API", conditionInput.Name)
@@ -374,20 +376,20 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 	}
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	conditionID, err := strconv.Atoi(condition.ID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(serializeIDs([]int{d.Get("policy_id").(int), conditionID}))
 
-	return resourceNewRelicNrqlAlertConditionRead(d, meta)
+	return resourceNewRelicNrqlAlertConditionRead(ctx, d, meta)
 }
 
-func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicNrqlAlertConditionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -396,7 +398,7 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	policyID := ids[0]
@@ -408,7 +410,7 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	nrqlCondition, err := client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
@@ -417,27 +419,27 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenNrqlAlertCondition(accountID, nrqlCondition, d)
+	return diag.FromErr(flattenNrqlAlertCondition(accountID, nrqlCondition, d))
 }
 
-func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicNrqlAlertConditionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	conditionID := strconv.Itoa(ids[1])
 
 	conditionInput, err := expandNrqlAlertConditionInput(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	switch d.Get("type").(string) {
@@ -450,20 +452,20 @@ func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta inter
 	}
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicNrqlAlertConditionRead(d, meta)
+	return resourceNewRelicNrqlAlertConditionRead(ctx, d, meta)
 }
 
-func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicNrqlAlertConditionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	conditionID := strconv.Itoa(ids[1])
@@ -472,7 +474,7 @@ func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta inter
 
 	_, err = client.Alerts.DeleteNrqlConditionMutation(accountID, conditionID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

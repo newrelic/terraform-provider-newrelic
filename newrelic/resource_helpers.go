@@ -1,12 +1,13 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Generates a compound ID out of a slice of strings.
@@ -38,8 +39,8 @@ func resourceGenerateCompoundID(idItems []string) ([]int, error) {
 // The optional `attribute` argument provides an opportunity to
 // set a schema attribute with a metadata value if metadata is provided
 // in the compound ID as the LAST string in the compound ID.
-func resourceImportStateWithMetadata(defaultIDCount int, attribute string) schema.StateFunc {
-	return func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceImportStateWithMetadata(defaultIDCount int, attribute string) schema.StateContextFunc {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 		if defaultIDCount == 0 {
 			return []*schema.ResourceData{d}, nil
 		}

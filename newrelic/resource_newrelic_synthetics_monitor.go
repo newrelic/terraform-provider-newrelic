@@ -1,23 +1,25 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
 func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicSyntheticsMonitorCreate,
-		Read:   resourceNewRelicSyntheticsMonitorRead,
-		Update: resourceNewRelicSyntheticsMonitorUpdate,
-		Delete: resourceNewRelicSyntheticsMonitorDelete,
+		CreateContext: resourceNewRelicSyntheticsMonitorCreate,
+		ReadContext:   resourceNewRelicSyntheticsMonitorRead,
+		UpdateContext: resourceNewRelicSyntheticsMonitorUpdate,
+		DeleteContext: resourceNewRelicSyntheticsMonitorDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"type": {
@@ -176,23 +178,21 @@ func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Monito
 	return &monitor
 }
 
-func readSyntheticsMonitorStruct(monitor *synthetics.Monitor, d *schema.ResourceData) error {
-	d.Set("name", monitor.Name)
-	d.Set("type", monitor.Type)
-	d.Set("frequency", monitor.Frequency)
-	d.Set("uri", monitor.URI)
-	d.Set("locations", monitor.Locations)
-	d.Set("status", monitor.Status)
-	d.Set("sla_threshold", monitor.SLAThreshold)
-	d.Set("verify_ssl", monitor.Options.VerifySSL)
-	d.Set("validation_string", monitor.Options.ValidationString)
-	d.Set("bypass_head_request", monitor.Options.BypassHEADRequest)
-	d.Set("treat_redirect_as_failure", monitor.Options.TreatRedirectAsFailure)
-
-	return nil
+func readSyntheticsMonitorStruct(monitor *synthetics.Monitor, d *schema.ResourceData) {
+	_ = d.Set("name", monitor.Name)
+	_ = d.Set("type", monitor.Type)
+	_ = d.Set("frequency", monitor.Frequency)
+	_ = d.Set("uri", monitor.URI)
+	_ = d.Set("locations", monitor.Locations)
+	_ = d.Set("status", monitor.Status)
+	_ = d.Set("sla_threshold", monitor.SLAThreshold)
+	_ = d.Set("verify_ssl", monitor.Options.VerifySSL)
+	_ = d.Set("validation_string", monitor.Options.ValidationString)
+	_ = d.Set("bypass_head_request", monitor.Options.BypassHEADRequest)
+	_ = d.Set("treat_redirect_as_failure", monitor.Options.TreatRedirectAsFailure)
 }
 
-func resourceNewRelicSyntheticsMonitorCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	monitorStruct := buildSyntheticsMonitorStruct(d)
 
@@ -200,14 +200,14 @@ func resourceNewRelicSyntheticsMonitorCreate(d *schema.ResourceData, meta interf
 
 	monitor, err := client.Synthetics.CreateMonitor(monitorStruct)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(monitor.ID)
-	return resourceNewRelicSyntheticsMonitorRead(d, meta)
+	return resourceNewRelicSyntheticsMonitorRead(ctx, d, meta)
 }
 
-func resourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
@@ -219,31 +219,33 @@ func resourceNewRelicSyntheticsMonitorRead(d *schema.ResourceData, meta interfac
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	return readSyntheticsMonitorStruct(monitor, d)
+	readSyntheticsMonitorStruct(monitor, d)
+
+	return nil
 }
 
-func resourceNewRelicSyntheticsMonitorUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
 
 	_, err := client.Synthetics.UpdateMonitor(*buildSyntheticsUpdateMonitorArgs(d))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicSyntheticsMonitorRead(d, meta)
+	return resourceNewRelicSyntheticsMonitorRead(ctx, d, meta)
 }
 
-func resourceNewRelicSyntheticsMonitorDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor %s", d.Id())
 
 	if err := client.Synthetics.DeleteMonitor(d.Id()); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
