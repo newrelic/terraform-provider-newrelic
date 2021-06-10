@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
@@ -544,14 +544,14 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 //
 // Used by the newrelic_one_dashboard Read function (resourceNewRelicOneDashboardRead)
 func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.ResourceData) error {
-	d.Set("account_id", dashboard.AccountID)
-	d.Set("guid", dashboard.GUID)
-	d.Set("name", dashboard.Name)
-	d.Set("permalink", dashboard.Permalink)
-	d.Set("permissions", strings.ToLower(string(dashboard.Permissions)))
+	_ = d.Set("account_id", dashboard.AccountID)
+	_ = d.Set("guid", dashboard.GUID)
+	_ = d.Set("name", dashboard.Name)
+	_ = d.Set("permalink", dashboard.Permalink)
+	_ = d.Set("permissions", strings.ToLower(string(dashboard.Permissions)))
 
 	if dashboard.Description != "" {
-		d.Set("description", dashboard.Description)
+		_ = d.Set("description", dashboard.Description)
 	}
 
 	if dashboard.Pages != nil && len(dashboard.Pages) > 0 {
@@ -574,14 +574,14 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 
 	dashboard := result.EntityResult // dashboard.DashboardEntityResult
 
-	d.Set("account_id", dashboard.AccountID)
-	d.Set("guid", dashboard.GUID)
-	d.Set("name", dashboard.Name)
+	_ = d.Set("account_id", dashboard.AccountID)
+	_ = d.Set("guid", dashboard.GUID)
+	_ = d.Set("name", dashboard.Name)
 	//d.Set("permalink", dashboard.Permalink)
-	d.Set("permissions", strings.ToLower(string(dashboard.Permissions)))
+	_ = d.Set("permissions", strings.ToLower(string(dashboard.Permissions)))
 
 	if dashboard.Description != "" {
-		d.Set("description", dashboard.Description)
+		_ = d.Set("description", dashboard.Description)
 	}
 
 	if dashboard.Pages != nil && len(dashboard.Pages) > 0 {

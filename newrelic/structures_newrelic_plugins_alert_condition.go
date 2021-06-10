@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
@@ -61,21 +61,21 @@ func expandPluginsConditionTerms(terms []interface{}) []alerts.ConditionTerm {
 }
 
 func flattenPluginsCondition(condition *alerts.PluginsCondition, d *schema.ResourceData) error {
-	d.Set("name", condition.Name)
-	d.Set("enabled", condition.Enabled)
-	d.Set("metric", condition.Metric)
-	d.Set("metric_description", condition.MetricDescription)
-	d.Set("value_function", condition.ValueFunction)
-	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("plugin_id", condition.Plugin.ID)
-	d.Set("plugin_guid", condition.Plugin.GUID)
+	_ = d.Set("name", condition.Name)
+	_ = d.Set("enabled", condition.Enabled)
+	_ = d.Set("metric", condition.Metric)
+	_ = d.Set("metric_description", condition.MetricDescription)
+	_ = d.Set("value_function", condition.ValueFunction)
+	_ = d.Set("runbook_url", condition.RunbookURL)
+	_ = d.Set("plugin_id", condition.Plugin.ID)
+	_ = d.Set("plugin_guid", condition.Plugin.GUID)
 
 	entities, err := flattenPluginsConditionEntities(condition.Entities)
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Error setting alert condition entities: %#v", err)
 	}
 
-	d.Set("entities", entities)
+	_ = d.Set("entities", entities)
 
 	if err := d.Set("term", flattenPluginsConditionTerms(condition.Terms)); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting alert condition terms: %#v", err)

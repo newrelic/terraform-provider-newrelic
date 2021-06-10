@@ -1,25 +1,27 @@
 package newrelic
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	nrErrors "github.com/newrelic/newrelic-client-go/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/pkg/eventstometrics"
 )
 
 func resourceNewRelicEventsToMetricsRule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicEventsToMetricsRuleCreate,
-		Read:   resourceNewRelicEventsToMetricsRuleRead,
-		Update: resourceNewRelicEventsToMetricsRuleUpdate,
-		Delete: resourceNewRelicEventsToMetricsRuleDelete,
+		CreateContext: resourceNewRelicEventsToMetricsRuleCreate,
+		ReadContext:   resourceNewRelicEventsToMetricsRuleRead,
+		UpdateContext: resourceNewRelicEventsToMetricsRuleUpdate,
+		DeleteContext: resourceNewRelicEventsToMetricsRuleDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -60,11 +62,11 @@ func resourceNewRelicEventsToMetricsRule() *schema.Resource {
 	}
 }
 
-func resourceNewRelicEventsToMetricsRuleCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicEventsToMetricsRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Create")
+		return diag.Errorf("err: NerdGraph support not present, but required for Create")
 	}
 
 	client := providerConfig.NewClient
@@ -80,7 +82,7 @@ func resourceNewRelicEventsToMetricsRuleCreate(d *schema.ResourceData, meta inte
 
 	rules, err := client.EventsToMetrics.CreateRules(createInput)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	rule := rules[0]
@@ -100,18 +102,18 @@ func resourceNewRelicEventsToMetricsRuleCreate(d *schema.ResourceData, meta inte
 
 		_, err := client.EventsToMetrics.UpdateRules(updateInput)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceNewRelicEventsToMetricsRuleRead(d, meta)
+	return resourceNewRelicEventsToMetricsRuleRead(ctx, d, meta)
 }
 
-func resourceNewRelicEventsToMetricsRuleRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicEventsToMetricsRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Read")
+		return diag.Errorf("err: NerdGraph support not present, but required for Read")
 	}
 
 	client := providerConfig.NewClient
@@ -120,7 +122,7 @@ func resourceNewRelicEventsToMetricsRuleRead(d *schema.ResourceData, meta interf
 
 	accountID, ruleID, err := getEventsToMetricsRuleIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	rule, err := client.EventsToMetrics.GetRule(accountID, ruleID)
@@ -131,44 +133,44 @@ func resourceNewRelicEventsToMetricsRuleRead(d *schema.ResourceData, meta interf
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("account_id", accountID); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("rule_id", ruleID); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("name", rule.Name); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("description", rule.Description); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("nrql", rule.NRQL); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_, ok := d.GetOk("enabled")
 	if ok {
 		if err := d.Set("enabled", rule.Enabled); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	return nil
 }
 
-func resourceNewRelicEventsToMetricsRuleUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicEventsToMetricsRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Update")
+		return diag.Errorf("err: NerdGraph support not present, but required for Update")
 	}
 
 	client := providerConfig.NewClient
@@ -177,7 +179,7 @@ func resourceNewRelicEventsToMetricsRuleUpdate(d *schema.ResourceData, meta inte
 
 	accountID, ruleID, err := getEventsToMetricsRuleIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	updateInput := []eventstometrics.EventsToMetricsUpdateRuleInput{
@@ -190,17 +192,17 @@ func resourceNewRelicEventsToMetricsRuleUpdate(d *schema.ResourceData, meta inte
 
 	_, err = client.EventsToMetrics.UpdateRules(updateInput)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicEventsToMetricsRuleRead(d, meta)
+	return resourceNewRelicEventsToMetricsRuleRead(ctx, d, meta)
 }
 
-func resourceNewRelicEventsToMetricsRuleDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicEventsToMetricsRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Delete")
+		return diag.Errorf("err: NerdGraph support not present, but required for Delete")
 	}
 
 	client := providerConfig.NewClient
@@ -209,7 +211,7 @@ func resourceNewRelicEventsToMetricsRuleDelete(d *schema.ResourceData, meta inte
 
 	accountID, ruleID, err := getEventsToMetricsRuleIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	deleteInput := []eventstometrics.EventsToMetricsDeleteRuleInput{
@@ -221,7 +223,7 @@ func resourceNewRelicEventsToMetricsRuleDelete(d *schema.ResourceData, meta inte
 
 	_, err = client.EventsToMetrics.DeleteRules(deleteInput)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

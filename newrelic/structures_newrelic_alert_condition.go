@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
@@ -73,23 +73,23 @@ func expandAlertConditionTerms(terms []interface{}) []alerts.ConditionTerm {
 }
 
 func flattenAlertCondition(condition *alerts.Condition, d *schema.ResourceData) error {
-	d.Set("name", condition.Name)
-	d.Set("enabled", condition.Enabled)
-	d.Set("type", condition.Type)
-	d.Set("metric", condition.Metric)
-	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("violation_close_timer", condition.ViolationCloseTimer)
-	d.Set("gc_metric", condition.GCMetric)
-	d.Set("user_defined_metric", condition.UserDefined.Metric)
-	d.Set("user_defined_value_function", condition.UserDefined.ValueFunction)
+	_ = d.Set("name", condition.Name)
+	_ = d.Set("enabled", condition.Enabled)
+	_ = d.Set("type", condition.Type)
+	_ = d.Set("metric", condition.Metric)
+	_ = d.Set("runbook_url", condition.RunbookURL)
+	_ = d.Set("violation_close_timer", condition.ViolationCloseTimer)
+	_ = d.Set("gc_metric", condition.GCMetric)
+	_ = d.Set("user_defined_metric", condition.UserDefined.Metric)
+	_ = d.Set("user_defined_value_function", condition.UserDefined.ValueFunction)
 
 	// The condition_scope field is not always returned by the API. This conditional
 	// handles flattening for all cases.
 	if condition.Scope != "" {
-		d.Set("condition_scope", condition.Scope)
+		_ = d.Set("condition_scope", condition.Scope)
 	} else {
 		conditionScope := d.Get("condition_scope")
-		d.Set("condition_scope", conditionScope)
+		_ = d.Set("condition_scope", conditionScope)
 	}
 
 	entities, err := flattenAlertConditionEntities(&condition.Entities)
@@ -98,7 +98,7 @@ func flattenAlertCondition(condition *alerts.Condition, d *schema.ResourceData) 
 		return fmt.Errorf("[DEBUG] Error setting alert condition entities: %#v", err)
 	}
 
-	d.Set("entities", entities)
+	_ = d.Set("entities", entities)
 
 	if err := d.Set("term", flattenAlertConditionTerms(&condition.Terms)); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting alert condition terms: %#v", err)

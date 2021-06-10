@@ -1,22 +1,24 @@
 package newrelic
 
 import (
+	"context"
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func resourceNewRelicSyntheticsAlertCondition() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicSyntheticsAlertConditionCreate,
-		Read:   resourceNewRelicSyntheticsAlertConditionRead,
-		Update: resourceNewRelicSyntheticsAlertConditionUpdate,
-		Delete: resourceNewRelicSyntheticsAlertConditionDelete,
+		CreateContext: resourceNewRelicSyntheticsAlertConditionCreate,
+		ReadContext:   resourceNewRelicSyntheticsAlertConditionRead,
+		UpdateContext: resourceNewRelicSyntheticsAlertConditionUpdate,
+		DeleteContext: resourceNewRelicSyntheticsAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
@@ -73,16 +75,16 @@ func flattenSyntheticsCondition(condition *alerts.SyntheticsCondition, d *schema
 
 	policyID := ids[0]
 
-	d.Set("policy_id", policyID)
-	d.Set("monitor_id", condition.MonitorID)
-	d.Set("name", condition.Name)
-	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("enabled", condition.Enabled)
+	_ = d.Set("policy_id", policyID)
+	_ = d.Set("monitor_id", condition.MonitorID)
+	_ = d.Set("name", condition.Name)
+	_ = d.Set("runbook_url", condition.RunbookURL)
+	_ = d.Set("enabled", condition.Enabled)
 
 	return nil
 }
 
-func resourceNewRelicSyntheticsAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsAlertConditionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	policyID := d.Get("policy_id").(int)
@@ -92,15 +94,15 @@ func resourceNewRelicSyntheticsAlertConditionCreate(d *schema.ResourceData, meta
 
 	condition, err := client.Alerts.CreateSyntheticsCondition(policyID, *condition)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(serializeIDs([]int{policyID, condition.ID}))
 
-	return resourceNewRelicSyntheticsAlertConditionRead(d, meta)
+	return resourceNewRelicSyntheticsAlertConditionRead(ctx, d, meta)
 }
 
-func resourceNewRelicSyntheticsAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsAlertConditionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -109,7 +111,7 @@ func resourceNewRelicSyntheticsAlertConditionRead(d *schema.ResourceData, meta i
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	policyID := ids[0]
@@ -121,7 +123,7 @@ func resourceNewRelicSyntheticsAlertConditionRead(d *schema.ResourceData, meta i
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	condition, err := client.Alerts.GetSyntheticsCondition(policyID, id)
@@ -131,19 +133,19 @@ func resourceNewRelicSyntheticsAlertConditionRead(d *schema.ResourceData, meta i
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenSyntheticsCondition(condition, d)
+	return diag.FromErr(flattenSyntheticsCondition(condition, d))
 }
 
-func resourceNewRelicSyntheticsAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsAlertConditionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	condition := expandSyntheticsCondition(d)
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	id := ids[1]
@@ -154,18 +156,18 @@ func resourceNewRelicSyntheticsAlertConditionUpdate(d *schema.ResourceData, meta
 
 	_, err = client.Alerts.UpdateSyntheticsCondition(*condition)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicSyntheticsAlertConditionRead(d, meta)
+	return resourceNewRelicSyntheticsAlertConditionRead(ctx, d, meta)
 }
 
-func resourceNewRelicSyntheticsAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicSyntheticsAlertConditionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	id := ids[1]
@@ -175,7 +177,7 @@ func resourceNewRelicSyntheticsAlertConditionDelete(d *schema.ResourceData, meta
 	_, err = client.Alerts.DeleteSyntheticsCondition(id)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

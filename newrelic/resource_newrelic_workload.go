@@ -1,23 +1,25 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func resourceNewRelicWorkload() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicWorkloadCreate,
-		Read:   resourceNewRelicWorkloadRead,
-		Update: resourceNewRelicWorkloadUpdate,
-		Delete: resourceNewRelicWorkloadDelete,
+		CreateContext: resourceNewRelicWorkloadCreate,
+		ReadContext:   resourceNewRelicWorkloadRead,
+		UpdateContext: resourceNewRelicWorkloadUpdate,
+		DeleteContext: resourceNewRelicWorkloadDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -84,7 +86,7 @@ func resourceNewRelicWorkload() *schema.Resource {
 	}
 }
 
-func resourceNewRelicWorkloadCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicWorkloadCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	createInput := expandWorkloadCreateInput(d)
 	accountID := d.Get("account_id").(int)
@@ -93,7 +95,7 @@ func resourceNewRelicWorkloadCreate(d *schema.ResourceData, meta interface{}) er
 
 	created, err := client.Workloads.CreateWorkload(accountID, createInput)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	ids := workloadIDs{
@@ -103,15 +105,15 @@ func resourceNewRelicWorkloadCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	d.SetId(ids.String())
-	return resourceNewRelicWorkloadRead(d, meta)
+	return resourceNewRelicWorkloadRead(ctx, d, meta)
 }
 
-func resourceNewRelicWorkloadRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	ids, err := parseWorkloadIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	workload, err := client.Workloads.GetWorkload(ids.AccountID, ids.GUID)
@@ -121,13 +123,13 @@ func resourceNewRelicWorkloadRead(d *schema.ResourceData, meta interface{}) erro
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenWorkload(workload, d)
+	return diag.FromErr(flattenWorkload(workload, d))
 }
 
-func resourceNewRelicWorkloadUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicWorkloadUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	updateInput := expandWorkloadUpdateInput(d)
 
@@ -135,31 +137,31 @@ func resourceNewRelicWorkloadUpdate(d *schema.ResourceData, meta interface{}) er
 
 	ids, err := parseWorkloadIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_, err = client.Workloads.UpdateWorkload(ids.GUID, updateInput)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(ids.String())
 
-	return resourceNewRelicWorkloadRead(d, meta)
+	return resourceNewRelicWorkloadRead(ctx, d, meta)
 }
 
-func resourceNewRelicWorkloadDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicWorkloadDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Deleting New Relic One workload %s", d.Id())
 
 	ids, err := parseWorkloadIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if _, err := client.Workloads.DeleteWorkload(ids.GUID); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
