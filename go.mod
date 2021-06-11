@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/terraform-exec v0.13.3 // indirect
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.3
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/newrelic/go-agent/v3 v3.11.0
+	github.com/newrelic/go-agent/v3 v3.13.0
 	github.com/newrelic/go-insights v1.0.3
 	github.com/newrelic/newrelic-client-go v0.59.4
 	github.com/stretchr/testify v1.7.0
