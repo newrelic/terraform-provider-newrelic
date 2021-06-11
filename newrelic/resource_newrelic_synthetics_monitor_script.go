@@ -10,6 +10,23 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
+func syntheticsMonitorScriptLocationSchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The monitor script location name",
+			},
+			"hmac": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The monitor script authentication code for the location",
+			},
+		},
+	}
+}
+
 func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicSyntheticsMonitorScriptCreate,
@@ -31,6 +48,11 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 				Required:    true,
 				Description: "The plaintext representing the monitor script.",
 			},
+			"locations": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     syntheticsMonitorScriptLocationSchema(),
+			},
 		},
 	}
 }
@@ -42,7 +64,8 @@ func importSyntheticsMonitorScript(ctx context.Context, d *schema.ResourceData, 
 
 func buildSyntheticsMonitorScriptStruct(d *schema.ResourceData) *synthetics.MonitorScript {
 	script := synthetics.MonitorScript{
-		Text: d.Get("text").(string),
+		Text:      d.Get("text").(string),
+		Locations: d.Get("locations").([]synthetics.MonitorScriptLocation),
 	}
 
 	return &script
