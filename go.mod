@@ -13,7 +13,11 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk v1.16.0
 	github.com/newrelic/go-agent/v3 v3.9.0
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go v0.47.3
-	github.com/stretchr/testify v1.6.1
+	github.com/newrelic/newrelic-client-go v0.59.4
+	github.com/stretchr/testify v1.7.0
+	github.com/tsuyoshiwada/go-gitcmd v0.0.0-20180205145712-5f1f5f9475df // indirect
+	github.com/urfave/cli v1.22.5 // indirect
+	gopkg.in/AlecAivazis/survey.v1 v1.8.8 // indirect
+	gopkg.in/kyokomi/emoji.v1 v1.5.1 // indirect
 	gotest.tools/gotestsum v0.6.0
 )
