@@ -1,6 +1,6 @@
 {
   "baseBranches": [
-    "master",
+    "main",
     "release/v1.x"
   ],
   "extends": [
