@@ -1,3 +1,16 @@
+<a name="v2.23.0"></a>
+## [v2.23.0] - 2021-06-10
+### Bug Fixes
+- **AlertCondition:** Fix TestAccNewRelicAlertCondition_LongName unit test
+- **newrelic_infra_alert_condition:** Prevent index out of range on expandIfraAlertThreshold ([#606](https://github.com/newrelic/terraform-provider-newrelic/issues/606))
+- **plugins:** Run gofmt
+- **resource_newrelic_alert_condition:** update unit test to match resource
+- **resource_newrelic_alert_condition:** adapted name length to fit API definition
+- **resource_newrelic_alert_condition:** incorrect description field
+
+### Documentation Updates
+- **plugins:** Update website with deprecation notices
+
 <a name="v2.22.1"></a>
 ## [v2.22.1] - 2021-05-12
 ### Bug Fixes
@@ -659,7 +672,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.22.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.23.0...HEAD
+[v2.23.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.22.1...v2.23.0
 [v2.22.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.22.0...v2.22.1
 [v2.22.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.2...v2.22.0
 [v2.21.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.21.1...v2.21.2
