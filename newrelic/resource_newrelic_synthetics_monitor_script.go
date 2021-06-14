@@ -54,7 +54,7 @@ func resourceNewRelicSyntheticsMonitorScriptCreate(ctx context.Context, d *schem
 	id := d.Get("monitor_id").(string)
 	log.Printf("[INFO] Creating New Relic Synthetics monitor script %s", id)
 
-	_, err := client.Synthetics.UpdateMonitorScript(id, *buildSyntheticsMonitorScriptStruct(d))
+	_, err := client.Synthetics.UpdateMonitorScriptWithContext(ctx, id, *buildSyntheticsMonitorScriptStruct(d))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -68,7 +68,7 @@ func resourceNewRelicSyntheticsMonitorScriptRead(ctx context.Context, d *schema.
 
 	log.Printf("[INFO] Reading New Relic Synthetics script %s", d.Id())
 
-	script, err := client.Synthetics.GetMonitorScript(d.Id())
+	script, err := client.Synthetics.GetMonitorScriptWithContext(ctx, d.Id())
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -87,7 +87,7 @@ func resourceNewRelicSyntheticsMonitorScriptUpdate(ctx context.Context, d *schem
 
 	log.Printf("[INFO] Creating New Relic Synthetics monitor script %s", d.Id())
 
-	_, err := client.Synthetics.UpdateMonitorScript(d.Id(), *buildSyntheticsMonitorScriptStruct(d))
+	_, err := client.Synthetics.UpdateMonitorScriptWithContext(ctx, d.Id(), *buildSyntheticsMonitorScriptStruct(d))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -105,7 +105,7 @@ func resourceNewRelicSyntheticsMonitorScriptDelete(ctx context.Context, d *schem
 		Text: " ",
 	}
 
-	if _, err := client.Synthetics.UpdateMonitorScript(d.Id(), script); err != nil {
+	if _, err := client.Synthetics.UpdateMonitorScriptWithContext(ctx, d.Id(), script); err != nil {
 		return diag.FromErr(err)
 	}
 

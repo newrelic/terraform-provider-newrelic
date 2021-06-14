@@ -34,7 +34,7 @@ func dataSourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Reso
 	log.Printf("[INFO] Reading New Relic synthetics monitors")
 
 	name := d.Get("name").(string)
-	monitors, err := client.Synthetics.ListMonitors()
+	monitors, err := client.Synthetics.ListMonitorsWithContext(ctx)
 	if err != nil {
 		return diag.FromErr(err)
 	}

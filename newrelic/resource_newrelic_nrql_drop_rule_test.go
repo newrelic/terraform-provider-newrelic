@@ -3,6 +3,7 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -104,7 +105,7 @@ func testAccCheckNewRelicNRQLDropRuleDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = getNRQLDropRuleByID(client, accountID, ruleID)
+		_, err = getNRQLDropRuleByID(context.Background(), client, accountID, ruleID)
 
 		if err == nil {
 			return fmt.Errorf("drop rule still exists: %s", err)
