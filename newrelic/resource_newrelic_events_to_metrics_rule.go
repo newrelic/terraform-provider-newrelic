@@ -80,7 +80,7 @@ func resourceNewRelicEventsToMetricsRuleCreate(ctx context.Context, d *schema.Re
 		},
 	}
 
-	rules, err := client.EventsToMetrics.CreateRules(createInput)
+	rules, err := client.EventsToMetrics.CreateRulesWithContext(ctx, createInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -100,7 +100,7 @@ func resourceNewRelicEventsToMetricsRuleCreate(ctx context.Context, d *schema.Re
 			},
 		}
 
-		_, err := client.EventsToMetrics.UpdateRules(updateInput)
+		_, err := client.EventsToMetrics.UpdateRulesWithContext(ctx, updateInput)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -125,7 +125,7 @@ func resourceNewRelicEventsToMetricsRuleRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	rule, err := client.EventsToMetrics.GetRule(accountID, ruleID)
+	rule, err := client.EventsToMetrics.GetRuleWithContext(ctx, accountID, ruleID)
 
 	if err != nil {
 		if _, ok := err.(*nrErrors.NotFound); ok {
@@ -190,7 +190,7 @@ func resourceNewRelicEventsToMetricsRuleUpdate(ctx context.Context, d *schema.Re
 		},
 	}
 
-	_, err = client.EventsToMetrics.UpdateRules(updateInput)
+	_, err = client.EventsToMetrics.UpdateRulesWithContext(ctx, updateInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -221,7 +221,7 @@ func resourceNewRelicEventsToMetricsRuleDelete(ctx context.Context, d *schema.Re
 		},
 	}
 
-	_, err = client.EventsToMetrics.DeleteRules(deleteInput)
+	_, err = client.EventsToMetrics.DeleteRulesWithContext(ctx, deleteInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}

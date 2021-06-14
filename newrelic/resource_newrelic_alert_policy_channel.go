@@ -96,7 +96,8 @@ func resourceNewRelicAlertPolicyChannelCreate(ctx context.Context, d *schema.Res
 
 	log.Printf("[INFO] Creating New Relic alert policy channel %s", serializedID)
 
-	_, err = client.Alerts.UpdatePolicyChannels(
+	_, err = client.Alerts.UpdatePolicyChannelsWithContext(
+		ctx,
 		policyChannels.ID,
 		policyChannels.ChannelIDs,
 	)
@@ -125,7 +126,7 @@ func resourceNewRelicAlertPolicyChannelRead(ctx context.Context, d *schema.Resou
 
 	log.Printf("[INFO] Reading New Relic alert policy channel %s", d.Id())
 
-	exists, err := policyChannelsExist(client, policyID, parsedChannelIDs)
+	exists, err := policyChannelsExist(ctx, client, policyID, parsedChannelIDs)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -152,14 +153,14 @@ func resourceNewRelicAlertPolicyChannelDelete(ctx context.Context, d *schema.Res
 
 	log.Printf("[INFO] Deleting New Relic alert policy channel %s", d.Id())
 
-	exists, err := policyChannelsExist(client, policyID, channelIDs)
+	exists, err := policyChannelsExist(ctx, client, policyID, channelIDs)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	if exists {
 		for _, id := range channelIDs {
-			if _, err := client.Alerts.DeletePolicyChannel(policyID, id); err != nil {
+			if _, err := client.Alerts.DeletePolicyChannelWithContext(ctx, policyID, id); err != nil {
 				if _, ok := err.(*errors.NotFound); ok {
 					return nil
 				}
@@ -172,11 +173,12 @@ func resourceNewRelicAlertPolicyChannelDelete(ctx context.Context, d *schema.Res
 }
 
 func policyChannelsExist(
+	ctx context.Context,
 	client *newrelic.NewRelic,
 	policyID int,
 	channelIDs []int,
 ) (bool, error) {
-	channels, err := client.Alerts.ListChannels()
+	channels, err := client.Alerts.ListChannelsWithContext(ctx)
 
 	if err != nil {
 		return false, err

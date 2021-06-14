@@ -52,7 +52,7 @@ func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, 
 		Scope: &scope,
 	}
 
-	accts, err := client.Accounts.ListAccounts(params)
+	accts, err := client.Accounts.ListAccountsWithContext(ctx, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}

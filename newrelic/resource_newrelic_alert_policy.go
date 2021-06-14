@@ -79,7 +79,7 @@ func resourceNewRelicAlertPolicyCreate(ctx context.Context, d *schema.ResourceDa
 		policy.Name = attr.(string)
 	}
 
-	createResult, err := client.Alerts.CreatePolicyMutation(accountID, policy)
+	createResult, err := client.Alerts.CreatePolicyMutationWithContext(ctx, accountID, policy)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -93,7 +93,7 @@ func resourceNewRelicAlertPolicyCreate(ctx context.Context, d *schema.ResourceDa
 
 	if len(channels) > 0 {
 		channelIDs := expandAlertChannelIDs(channels)
-		matchedChannelIDs, err := findExistingChannelIDs(client, channelIDs)
+		matchedChannelIDs, err := findExistingChannelIDs(ctx, client, channelIDs)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -105,7 +105,7 @@ func resourceNewRelicAlertPolicyCreate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		_, err = client.Alerts.UpdatePolicyChannels(createResultID, matchedChannelIDs)
+		_, err = client.Alerts.UpdatePolicyChannelsWithContext(ctx, createResultID, matchedChannelIDs)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -146,7 +146,7 @@ func resourceNewRelicAlertPolicyRead(ctx context.Context, d *schema.ResourceData
 
 	id := strconv.Itoa(policyID)
 
-	queryPolicy, queryErr := client.Alerts.QueryPolicy(accountID, id)
+	queryPolicy, queryErr := client.Alerts.QueryPolicyWithContext(ctx, accountID, id)
 
 	if queryErr != nil {
 		if _, ok := queryErr.(*nrErrors.NotFound); ok {
@@ -185,7 +185,7 @@ func resourceNewRelicAlertPolicyUpdate(ctx context.Context, d *schema.ResourceDa
 		updatePolicy.Name = attr.(string)
 	}
 
-	updateResult, updateErr := client.Alerts.UpdatePolicyMutation(accountID, d.Id(), updatePolicy)
+	updateResult, updateErr := client.Alerts.UpdatePolicyMutationWithContext(ctx, accountID, d.Id(), updatePolicy)
 	if updateErr != nil {
 		return diag.FromErr(updateErr)
 	}
@@ -207,7 +207,7 @@ func resourceNewRelicAlertPolicyDelete(ctx context.Context, d *schema.ResourceDa
 
 	log.Printf("[INFO] Deleting New Relic alert policy %s from account %d", d.Id(), accountID)
 
-	_, err := client.Alerts.DeletePolicyMutation(accountID, d.Id())
+	_, err := client.Alerts.DeletePolicyMutationWithContext(ctx, accountID, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -215,8 +215,8 @@ func resourceNewRelicAlertPolicyDelete(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func findExistingChannelIDs(client *newrelic.NewRelic, channelIDs []int) ([]int, error) {
-	channels, err := client.Alerts.ListChannels()
+func findExistingChannelIDs(ctx context.Context, client *newrelic.NewRelic, channelIDs []int) ([]int, error) {
+	channels, err := client.Alerts.ListChannelsWithContext(ctx)
 
 	if err != nil {
 		return nil, err

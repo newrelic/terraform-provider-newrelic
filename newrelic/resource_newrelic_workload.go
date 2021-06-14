@@ -93,7 +93,7 @@ func resourceNewRelicWorkloadCreate(ctx context.Context, d *schema.ResourceData,
 
 	log.Printf("[INFO] Creating New Relic One workload %s", createInput.Name)
 
-	created, err := client.Workloads.CreateWorkload(accountID, createInput)
+	created, err := client.Workloads.CreateWorkloadWithContext(ctx, accountID, createInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -116,7 +116,7 @@ func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	workload, err := client.Workloads.GetWorkload(ids.AccountID, ids.GUID)
+	workload, err := client.Workloads.GetWorkloadWithContext(ctx, ids.AccountID, ids.GUID)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -140,7 +140,7 @@ func resourceNewRelicWorkloadUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_, err = client.Workloads.UpdateWorkload(ids.GUID, updateInput)
+	_, err = client.Workloads.UpdateWorkloadWithContext(ctx, ids.GUID, updateInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -160,7 +160,7 @@ func resourceNewRelicWorkloadDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	if _, err := client.Workloads.DeleteWorkload(ids.GUID); err != nil {
+	if _, err := client.Workloads.DeleteWorkloadWithContext(ctx, ids.GUID); err != nil {
 		return diag.FromErr(err)
 	}
 

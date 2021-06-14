@@ -20,6 +20,7 @@ var (
 		"accountId",
 		"language",
 		"trustedAccountId",
+		"guid",
 	}
 )
 
@@ -79,21 +80,23 @@ func resourceNewRelicEntityTagsCreate(ctx context.Context, d *schema.ResourceDat
 	guid := entities.EntityGUID(d.Get("guid").(string))
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 
-	if err := client.Entities.AddTags(guid, tags); err != nil {
+	_, err := client.Entities.TaggingAddTagsToEntityWithContext(ctx, guid, tags)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(string(guid))
 
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		currentTags, err := client.Entities.ListTags(guid)
-
+		t, err := client.Entities.GetTagsForEntity(guid)
 		if err != nil {
 			return resource.NonRetryableError(fmt.Errorf("error retrieving entity tags for guid %s: %s", d.Id(), err))
 		}
 
+		currentTags := convertTagTypes(t)
+
 		for _, t := range tags {
-			var tag *entities.Tag
+			var tag *entities.TaggingTagInput
 			if tag = getTag(currentTags, t.Key); tag == nil {
 				return resource.RetryableError(fmt.Errorf("expected entity tag %s to have been updated but was not found", t.Key))
 			}
@@ -129,7 +132,7 @@ func resourceNewRelicEntityTagsRead(ctx context.Context, d *schema.ResourceData,
 
 	log.Printf("[INFO] Reading New Relic entity tags for entity guid %s", d.Id())
 
-	tags, err := client.Entities.ListTags(entities.EntityGUID(d.Id()))
+	t, err := client.Entities.GetTagsForEntity(entities.EntityGUID(d.Id()))
 
 	if err != nil {
 		if _, ok := err.(*nrErrors.NotFound); ok {
@@ -139,6 +142,8 @@ func resourceNewRelicEntityTagsRead(ctx context.Context, d *schema.ResourceData,
 
 		return diag.FromErr(err)
 	}
+
+	tags := convertTagTypes(t)
 
 	return diag.FromErr(flattenEntityTags(d, tags))
 }
@@ -156,19 +161,25 @@ func resourceNewRelicEntityTagsUpdate(ctx context.Context, d *schema.ResourceDat
 
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 
-	if err := client.Entities.ReplaceTags(entities.EntityGUID(d.Id()), tags); err != nil {
+	_, err := client.Entities.TaggingReplaceTagsOnEntityWithContext(ctx, entities.EntityGUID(d.Id()), tags)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	retryErr := resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		currentTags, err := client.Entities.ListTags(entities.EntityGUID(d.Id()))
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		t, err := client.Entities.GetTagsForEntity(entities.EntityGUID(d.Id()))
+		if err != nil {
+			return resource.NonRetryableError(fmt.Errorf("error retrieving entity tags for guid %s: %s", d.Id(), err))
+		}
+
+		currentTags := convertTagTypes(t)
 
 		if err != nil {
 			return resource.NonRetryableError(fmt.Errorf("error retrieving entity tags for guid %s: %s", d.Id(), err))
 		}
 
 		for _, t := range tags {
-			var tag *entities.Tag
+			var tag *entities.TaggingTagInput
 			if tag = getTag(currentTags, t.Key); tag == nil {
 				return resource.RetryableError(fmt.Errorf("expected entity tag %s to have been updated but was not found", t.Key))
 			}
@@ -193,6 +204,20 @@ func resourceNewRelicEntityTagsUpdate(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
+// This is needed until the client implements a GetTags method with the same
+// tag type as the rest of the methods.
+func convertTagTypes(tags []*entities.EntityTag) []*entities.TaggingTagInput {
+	var t []*entities.TaggingTagInput
+	for _, tag := range tags {
+		t = append(t, &entities.TaggingTagInput{
+			Key:    tag.Key,
+			Values: tag.Values,
+		})
+	}
+
+	return t
+}
+
 func resourceNewRelicEntityTagsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
@@ -207,19 +232,20 @@ func resourceNewRelicEntityTagsDelete(ctx context.Context, d *schema.ResourceDat
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 	tagKeys := getTagKeys(tags)
 
-	if err := client.Entities.DeleteTags(entities.EntityGUID(d.Id()), tagKeys); err != nil {
+	_, err := client.Entities.TaggingDeleteTagFromEntityWithContext(ctx, entities.EntityGUID(d.Id()), tagKeys)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func expandEntityTags(tags []interface{}) []entities.Tag {
-	out := make([]entities.Tag, len(tags))
+func expandEntityTags(tags []interface{}) []entities.TaggingTagInput {
+	out := make([]entities.TaggingTagInput, len(tags))
 
 	for i, rawCfg := range tags {
 		cfg := rawCfg.(map[string]interface{})
-		expanded := entities.Tag{
+		expanded := entities.TaggingTagInput{
 			Key:    cfg["key"].(string),
 			Values: expandEntityTagValues(cfg["values"].(*schema.Set).List()),
 		}
@@ -240,7 +266,7 @@ func expandEntityTagValues(values []interface{}) []string {
 	return perms
 }
 
-func flattenEntityTags(d *schema.ResourceData, tags []*entities.Tag) error {
+func flattenEntityTags(d *schema.ResourceData, tags []*entities.TaggingTagInput) error {
 	out := []map[string]interface{}{}
 	for _, t := range tags {
 		if stringInSlice(defaultTags, t.Key) {
@@ -265,7 +291,7 @@ func flattenEntityTags(d *schema.ResourceData, tags []*entities.Tag) error {
 	return nil
 }
 
-func getTagKeys(tags []entities.Tag) []string {
+func getTagKeys(tags []entities.TaggingTagInput) []string {
 	tagKeys := []string{}
 
 	for _, t := range tags {
@@ -274,7 +300,7 @@ func getTagKeys(tags []entities.Tag) []string {
 	return tagKeys
 }
 
-func tagValuesExist(t *entities.Tag, values []string) bool {
+func tagValuesExist(t *entities.TaggingTagInput, values []string) bool {
 	for _, v := range values {
 		if !stringInSlice(t.Values, v) {
 			return false
@@ -284,7 +310,7 @@ func tagValuesExist(t *entities.Tag, values []string) bool {
 	return true
 }
 
-func getTag(tags []*entities.Tag, key string) *entities.Tag {
+func getTag(tags []*entities.TaggingTagInput, key string) *entities.TaggingTagInput {
 	for _, t := range tags {
 		if t.Key == key {
 			return t
