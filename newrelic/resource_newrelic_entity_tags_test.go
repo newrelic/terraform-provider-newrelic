@@ -73,10 +73,12 @@ func testAccCheckNewRelicEntityTagsExist(n string, keysToCheck []string) resourc
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		tags, err := client.Entities.ListTags(entities.EntityGUID(rs.Primary.ID))
+		t, err := client.Entities.GetTagsForEntity(entities.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
+
+		tags := convertTagTypes(t)
 
 		for _, keyToCheck := range keysToCheck {
 			if tag := getTag(tags, keyToCheck); tag == nil {

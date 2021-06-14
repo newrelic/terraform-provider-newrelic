@@ -48,7 +48,7 @@ func dataSourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sc
 	key := d.Get("key").(string)
 	key = strings.ToUpper(key)
 
-	sc, err := client.Synthetics.GetSecureCredential(key)
+	sc, err := client.Synthetics.GetSecureCredentialWithContext(ctx, key)
 	if err != nil {
 		return diag.Errorf("the key '%s' does not match any New Relic Synthetics secure credential", key)
 	}

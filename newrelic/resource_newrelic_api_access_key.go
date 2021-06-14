@@ -157,7 +157,7 @@ func resourceNewRelicAPIAccessKeyCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	keys, createErr := client.APIAccess.CreateAPIAccessKeys(opts)
+	keys, createErr := client.APIAccess.CreateAPIAccessKeysWithContext(ctx, opts)
 	if createErr != nil {
 		return diag.FromErr(createErr)
 	}
@@ -177,7 +177,7 @@ func resourceNewRelicAPIAccessKeyCreate(ctx context.Context, d *schema.ResourceD
 func resourceNewRelicAPIAccessKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
-	key, readErr := client.APIAccess.GetAPIAccessKey(d.Id(), apiaccess.APIAccessKeyType(getAPIAccessKeyType(d)))
+	key, readErr := client.APIAccess.GetAPIAccessKeyWithContext(ctx, d.Id(), apiaccess.APIAccessKeyType(getAPIAccessKeyType(d)))
 	if readErr != nil {
 		return diag.FromErr(readErr)
 	}
@@ -261,7 +261,7 @@ func resourceNewRelicAPIAccessKeyUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.Errorf("unknown api access key type: %s", keyType)
 	}
 
-	keys, updateErr := client.APIAccess.UpdateAPIAccessKeys(opts)
+	keys, updateErr := client.APIAccess.UpdateAPIAccessKeysWithContext(ctx, opts)
 	if updateErr != nil {
 		return diag.FromErr(updateErr)
 	}
@@ -291,7 +291,7 @@ func resourceNewRelicAPIAccessKeyDelete(ctx context.Context, d *schema.ResourceD
 		return diag.Errorf("unknown api access key type: %s", keyType)
 	}
 
-	_, deleteErr := client.APIAccess.DeleteAPIAccessKey(opts)
+	_, deleteErr := client.APIAccess.DeleteAPIAccessKeyWithContext(ctx, opts)
 	if deleteErr != nil {
 		return diag.FromErr(deleteErr)
 	}

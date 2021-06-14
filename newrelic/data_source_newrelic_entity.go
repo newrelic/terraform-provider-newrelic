@@ -109,7 +109,7 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 		Domain: domain,
 	}
 
-	entityResults, err := client.Entities.GetEntitySearch(entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
+	entityResults, err := client.Entities.GetEntitySearchWithContext(ctx, entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
 	if err != nil {
 		return diag.FromErr(err)
 	}

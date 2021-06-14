@@ -193,7 +193,7 @@ func resourceNewRelicAlertMutingRuleCreate(ctx context.Context, d *schema.Resour
 
 	log.Printf("[INFO] Creating New Relic alert muting rule.")
 
-	created, err := client.Alerts.CreateMutingRule(accountID, createInput)
+	created, err := client.Alerts.CreateMutingRuleWithContext(ctx, accountID, createInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -216,7 +216,7 @@ func resourceNewRelicAlertMutingRuleRead(ctx context.Context, d *schema.Resource
 	accountID := ids[0]
 	mutingRuleID := ids[1]
 
-	mutingRule, err := client.Alerts.GetMutingRule(accountID, mutingRuleID)
+	mutingRule, err := client.Alerts.GetMutingRuleWithContext(ctx, accountID, mutingRuleID)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -248,7 +248,7 @@ func resourceNewRelicAlertMutingRuleUpdate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_, err = client.Alerts.UpdateMutingRule(accountID, mutingRuleID, updateInput)
+	_, err = client.Alerts.UpdateMutingRuleWithContext(ctx, accountID, mutingRuleID, updateInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -269,7 +269,7 @@ func resourceNewRelicAlertMutingRuleDelete(ctx context.Context, d *schema.Resour
 	accountID := ids[0]
 	mutingRuleID := ids[1]
 
-	err = client.Alerts.DeleteMutingRule(accountID, mutingRuleID)
+	err = client.Alerts.DeleteMutingRuleWithContext(ctx, accountID, mutingRuleID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

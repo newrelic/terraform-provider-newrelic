@@ -198,7 +198,7 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 
 	log.Printf("[INFO] Creating New Relic Synthetics monitor %s", monitorStruct.Name)
 
-	monitor, err := client.Synthetics.CreateMonitor(monitorStruct)
+	monitor, err := client.Synthetics.CreateMonitorWithContext(ctx, monitorStruct)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -212,7 +212,7 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
 
-	monitor, err := client.Synthetics.GetMonitor(d.Id())
+	monitor, err := client.Synthetics.GetMonitorWithContext(ctx, d.Id())
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -231,7 +231,7 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 	client := meta.(*ProviderConfig).NewClient
 	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
 
-	_, err := client.Synthetics.UpdateMonitor(*buildSyntheticsUpdateMonitorArgs(d))
+	_, err := client.Synthetics.UpdateMonitorWithContext(ctx, *buildSyntheticsUpdateMonitorArgs(d))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -244,7 +244,7 @@ func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.Reso
 
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor %s", d.Id())
 
-	if err := client.Synthetics.DeleteMonitor(d.Id()); err != nil {
+	if err := client.Synthetics.DeleteMonitorWithContext(ctx, d.Id()); err != nil {
 		return diag.FromErr(err)
 	}
 

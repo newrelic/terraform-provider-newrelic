@@ -3,6 +3,7 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -156,7 +157,7 @@ func testAccCheckNewRelicAlertPolicyChannelDestroy(s *terraform.State) error {
 		policyID := ids[0]
 		channelIDs := ids[1:]
 
-		exists, err := policyChannelsExist(client, policyID, channelIDs)
+		exists, err := policyChannelsExist(context.Background(), client, policyID, channelIDs)
 		if err != nil {
 			return err
 		}
@@ -188,7 +189,7 @@ func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFu
 		policyID := ids[0]
 		channelIDs := ids[1:]
 
-		exists, err := policyChannelsExist(client, policyID, channelIDs)
+		exists, err := policyChannelsExist(context.Background(), client, policyID, channelIDs)
 		if err != nil {
 			return err
 		}

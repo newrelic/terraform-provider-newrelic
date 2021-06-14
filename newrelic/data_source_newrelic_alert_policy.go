@@ -61,7 +61,7 @@ func dataSourceNewRelicAlertPolicyRead(ctx context.Context, d *schema.ResourceDa
 
 	params := alerts.AlertsPoliciesSearchCriteriaInput{}
 
-	policies, err := client.Alerts.QueryPolicySearch(accountID, params)
+	policies, err := client.Alerts.QueryPolicySearchWithContext(ctx, accountID, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}

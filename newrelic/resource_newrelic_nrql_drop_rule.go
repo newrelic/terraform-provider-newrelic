@@ -78,7 +78,7 @@ func resourceNewRelicNRQLDropRuleCreate(ctx context.Context, d *schema.ResourceD
 		},
 	}
 
-	created, err := client.Nrqldroprules.NRQLDropRulesCreate(accountID, createInput)
+	created, err := client.Nrqldroprules.NRQLDropRulesCreateWithContext(ctx, accountID, createInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -111,7 +111,7 @@ func resourceNewRelicNRQLDropRuleRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	rule, err := getNRQLDropRuleByID(client, accountID, ruleID)
+	rule, err := getNRQLDropRuleByID(ctx, client, accountID, ruleID)
 
 	if err != nil {
 		if _, ok := err.(*nrErrors.NotFound); ok {
@@ -163,7 +163,7 @@ func resourceNewRelicNRQLDropRuleDelete(ctx context.Context, d *schema.ResourceD
 
 	deleteInput := []string{ruleID}
 
-	_, err = client.Nrqldroprules.NRQLDropRulesDelete(accountID, deleteInput)
+	_, err = client.Nrqldroprules.NRQLDropRulesDeleteWithContext(ctx, accountID, deleteInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -186,8 +186,8 @@ func parseNRQLDropRuleIDs(id string) (int, string, error) {
 	return accountID, strIDs[1], nil
 }
 
-func getNRQLDropRuleByID(client *newrelic.NewRelic, accountID int, ruleID string) (*nrqldroprules.NRQLDropRulesDropRule, error) {
-	rules, err := client.Nrqldroprules.GetList(accountID)
+func getNRQLDropRuleByID(ctx context.Context, client *newrelic.NewRelic, accountID int, ruleID string) (*nrqldroprules.NRQLDropRulesDropRule, error) {
+	rules, err := client.Nrqldroprules.GetListWithContext(ctx, accountID)
 	if err != nil {
 		return nil, err
 	}

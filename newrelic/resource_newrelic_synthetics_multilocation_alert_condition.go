@@ -100,7 +100,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionCreate(ctx context.Con
 
 	log.Printf("[INFO] Creating New Relic Alerts multi-location failure condition %s", condition.Name)
 
-	condition, err = client.Alerts.CreateMultiLocationSyntheticsCondition(*condition, policyID)
+	condition, err = client.Alerts.CreateMultiLocationSyntheticsConditionWithContext(ctx, *condition, policyID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,7 +125,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionRead(ctx context.Conte
 	policyID := ids[0]
 	id := ids[1]
 
-	_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
+	_, err = client.Alerts.QueryPolicyWithContext(ctx, accountID, strconv.Itoa(policyID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -134,7 +134,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionRead(ctx context.Conte
 		return diag.FromErr(err)
 	}
 
-	condition, err := client.Alerts.GetMultiLocationSyntheticsCondition(policyID, id)
+	condition, err := client.Alerts.GetMultiLocationSyntheticsConditionWithContext(ctx, policyID, id)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -165,7 +165,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionUpdate(ctx context.Con
 
 	log.Printf("[INFO] Udpating New Relic Alerts multi-location failure condition %d", id)
 
-	_, err = client.Alerts.UpdateMultiLocationSyntheticsCondition(*condition)
+	_, err = client.Alerts.UpdateMultiLocationSyntheticsConditionWithContext(ctx, *condition)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -185,7 +185,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionDelete(ctx context.Con
 
 	log.Printf("[INFO] Deleting New Relic Alerts multi-location failure condition %d", id)
 
-	_, err = client.Alerts.DeleteMultiLocationSyntheticsCondition(id)
+	_, err = client.Alerts.DeleteMultiLocationSyntheticsConditionWithContext(ctx, id)
 
 	if err != nil {
 		return diag.FromErr(err)
