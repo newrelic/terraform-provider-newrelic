@@ -49,7 +49,7 @@ func dataSourceNewRelicSyntheticsMonitorLocationRead(ctx context.Context, d *sch
 	log.Printf("[INFO] Reading Synthetics monitor locations")
 
 	label := d.Get("label").(string)
-	locations, err := client.Synthetics.GetMonitorLocations()
+	locations, err := client.Synthetics.GetMonitorLocationsWithContext(ctx)
 	if err != nil {
 		return diag.FromErr(err)
 	}

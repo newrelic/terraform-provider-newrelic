@@ -92,7 +92,7 @@ func resourceNewRelicSyntheticsAlertConditionCreate(ctx context.Context, d *sche
 
 	log.Printf("[INFO] Creating New Relic Synthetics alert condition %s", condition.Name)
 
-	condition, err := client.Alerts.CreateSyntheticsCondition(policyID, *condition)
+	condition, err := client.Alerts.CreateSyntheticsConditionWithContext(ctx, policyID, *condition)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -117,7 +117,7 @@ func resourceNewRelicSyntheticsAlertConditionRead(ctx context.Context, d *schema
 	policyID := ids[0]
 	id := ids[1]
 
-	_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
+	_, err = client.Alerts.QueryPolicyWithContext(ctx, accountID, strconv.Itoa(policyID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -126,7 +126,7 @@ func resourceNewRelicSyntheticsAlertConditionRead(ctx context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	condition, err := client.Alerts.GetSyntheticsCondition(policyID, id)
+	condition, err := client.Alerts.GetSyntheticsConditionWithContext(ctx, policyID, id)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -154,7 +154,7 @@ func resourceNewRelicSyntheticsAlertConditionUpdate(ctx context.Context, d *sche
 
 	log.Printf("[INFO] Updating New Relic Synthetics alert condition %d", id)
 
-	_, err = client.Alerts.UpdateSyntheticsCondition(*condition)
+	_, err = client.Alerts.UpdateSyntheticsConditionWithContext(ctx, *condition)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -174,7 +174,7 @@ func resourceNewRelicSyntheticsAlertConditionDelete(ctx context.Context, d *sche
 
 	log.Printf("[INFO] Deleting New Relic Synthetics alert condition %d", id)
 
-	_, err = client.Alerts.DeleteSyntheticsCondition(id)
+	_, err = client.Alerts.DeleteSyntheticsConditionWithContext(ctx, id)
 
 	if err != nil {
 		return diag.FromErr(err)

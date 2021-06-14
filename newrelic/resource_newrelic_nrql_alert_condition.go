@@ -368,11 +368,11 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 
 	switch d.Get("type").(string) {
 	case "baseline":
-		condition, err = client.Alerts.CreateNrqlConditionBaselineMutation(accountID, policyID, *conditionInput)
+		condition, err = client.Alerts.CreateNrqlConditionBaselineMutationWithContext(ctx, accountID, policyID, *conditionInput)
 	case "static":
-		condition, err = client.Alerts.CreateNrqlConditionStaticMutation(accountID, policyID, *conditionInput)
+		condition, err = client.Alerts.CreateNrqlConditionStaticMutationWithContext(ctx, accountID, policyID, *conditionInput)
 	case "outlier":
-		condition, err = client.Alerts.CreateNrqlConditionOutlierMutation(accountID, policyID, *conditionInput)
+		condition, err = client.Alerts.CreateNrqlConditionOutlierMutationWithContext(ctx, accountID, policyID, *conditionInput)
 	}
 
 	if err != nil {
@@ -404,7 +404,7 @@ func resourceNewRelicNrqlAlertConditionRead(ctx context.Context, d *schema.Resou
 	policyID := ids[0]
 	conditionID := ids[1]
 
-	_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
+	_, err = client.Alerts.QueryPolicyWithContext(ctx, accountID, strconv.Itoa(policyID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -413,7 +413,7 @@ func resourceNewRelicNrqlAlertConditionRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	nrqlCondition, err := client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
+	nrqlCondition, err := client.Alerts.GetNrqlConditionQueryWithContext(ctx, accountID, strconv.Itoa(conditionID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -444,11 +444,11 @@ func resourceNewRelicNrqlAlertConditionUpdate(ctx context.Context, d *schema.Res
 
 	switch d.Get("type").(string) {
 	case "baseline":
-		_, err = client.Alerts.UpdateNrqlConditionBaselineMutation(accountID, conditionID, *conditionInput)
+		_, err = client.Alerts.UpdateNrqlConditionBaselineMutationWithContext(ctx, accountID, conditionID, *conditionInput)
 	case "static":
-		_, err = client.Alerts.UpdateNrqlConditionStaticMutation(accountID, conditionID, *conditionInput)
+		_, err = client.Alerts.UpdateNrqlConditionStaticMutationWithContext(ctx, accountID, conditionID, *conditionInput)
 	case "outlier":
-		_, err = client.Alerts.UpdateNrqlConditionOutlierMutation(accountID, conditionID, *conditionInput)
+		_, err = client.Alerts.UpdateNrqlConditionOutlierMutationWithContext(ctx, accountID, conditionID, *conditionInput)
 	}
 
 	if err != nil {
@@ -472,7 +472,7 @@ func resourceNewRelicNrqlAlertConditionDelete(ctx context.Context, d *schema.Res
 
 	log.Printf("[INFO] Deleting New Relic NRQL alert condition %v", conditionID)
 
-	_, err = client.Alerts.DeleteNrqlConditionMutation(accountID, conditionID)
+	_, err = client.Alerts.DeleteNrqlConditionMutationWithContext(ctx, accountID, conditionID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

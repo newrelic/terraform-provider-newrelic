@@ -145,7 +145,7 @@ func dataSourceNewRelicAlertChannelRead(ctx context.Context, d *schema.ResourceD
 
 	log.Printf("[INFO] Reading New Relic Alert Channels")
 
-	channels, err := client.Alerts.ListChannels()
+	channels, err := client.Alerts.ListChannelsWithContext(ctx)
 	if err != nil {
 		return diag.FromErr(err)
 	}

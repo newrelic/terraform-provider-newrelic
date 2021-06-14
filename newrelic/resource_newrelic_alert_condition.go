@@ -212,7 +212,7 @@ func resourceNewRelicAlertConditionCreate(ctx context.Context, d *schema.Resourc
 
 	log.Printf("[INFO] Creating New Relic alert condition %s", condition.Name)
 
-	condition, err = client.Alerts.CreateCondition(policyID, *condition)
+	condition, err = client.Alerts.CreateConditionWithContext(ctx, policyID, *condition)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -237,7 +237,7 @@ func resourceNewRelicAlertConditionRead(ctx context.Context, d *schema.ResourceD
 	policyID := ids[0]
 	id := ids[1]
 
-	_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
+	_, err = client.Alerts.QueryPolicyWithContext(ctx, accountID, strconv.Itoa(policyID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -246,7 +246,7 @@ func resourceNewRelicAlertConditionRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	condition, err := client.Alerts.GetCondition(policyID, id)
+	condition, err := client.Alerts.GetConditionWithContext(ctx, policyID, id)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -279,7 +279,7 @@ func resourceNewRelicAlertConditionUpdate(ctx context.Context, d *schema.Resourc
 
 	log.Printf("[INFO] Updating New Relic alert condition %d", id)
 
-	updatedCondition, err := client.Alerts.UpdateCondition(*condition)
+	updatedCondition, err := client.Alerts.UpdateConditionWithContext(ctx, *condition)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -301,7 +301,7 @@ func resourceNewRelicAlertConditionDelete(ctx context.Context, d *schema.Resourc
 
 	log.Printf("[INFO] Deleting New Relic alert condition %d", id)
 
-	_, err = client.Alerts.DeleteCondition(id)
+	_, err = client.Alerts.DeleteConditionWithContext(ctx, id)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -63,7 +63,7 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 
 	log.Printf("[INFO] Creating New Relic Synthetics secure credential %s", sc.Key)
 
-	sc, err := client.Synthetics.AddSecureCredential(sc.Key, sc.Value, sc.Description)
+	sc, err := client.Synthetics.AddSecureCredentialWithContext(ctx, sc.Key, sc.Value, sc.Description)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -77,7 +77,7 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 
 	log.Printf("[INFO] Reading New Relic Synthetics secure credential %s", d.Id())
 
-	sc, err := client.Synthetics.GetSecureCredential(d.Id())
+	sc, err := client.Synthetics.GetSecureCredentialWithContext(ctx, d.Id())
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -96,7 +96,7 @@ func resourceNewRelicSyntheticsSecureCredentialUpdate(ctx context.Context, d *sc
 
 	sc := expandSyntheticsSecureCredential(d)
 
-	_, err := client.Synthetics.UpdateSecureCredential(sc.Key, sc.Value, sc.Description)
+	_, err := client.Synthetics.UpdateSecureCredentialWithContext(ctx, sc.Key, sc.Value, sc.Description)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -109,7 +109,7 @@ func resourceNewRelicSyntheticsSecureCredentialDelete(ctx context.Context, d *sc
 
 	log.Printf("[INFO] Deleting New Relic Synthetics secure credential %s", d.Id())
 
-	if err := client.Synthetics.DeleteSecureCredential(d.Id()); err != nil {
+	if err := client.Synthetics.DeleteSecureCredentialWithContext(ctx, d.Id()); err != nil {
 		return diag.FromErr(err)
 	}
 

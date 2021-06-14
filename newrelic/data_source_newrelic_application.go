@@ -47,7 +47,7 @@ func dataSourceNewRelicApplicationRead(ctx context.Context, d *schema.ResourceDa
 		Name: name,
 	}
 
-	applications, err := client.APM.ListApplications(&params)
+	applications, err := client.APM.ListApplicationsWithContext(ctx, &params)
 	if err != nil {
 		return diag.FromErr(err)
 	}

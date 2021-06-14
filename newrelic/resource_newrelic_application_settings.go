@@ -50,7 +50,7 @@ func resourceNewRelicApplicationSettingsCreate(ctx context.Context, d *schema.Re
 		Name: userApp.Name,
 	}
 
-	result, err := client.APM.ListApplications(&listParams)
+	result, err := client.APM.ListApplicationsWithContext(ctx, &listParams)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -77,7 +77,7 @@ func resourceNewRelicApplicationSettingsRead(ctx context.Context, d *schema.Reso
 	userApp := expandApplication(d)
 	log.Printf("[INFO] Reading New Relic application %+v", userApp)
 
-	app, err := client.APM.GetApplication(userApp.ID)
+	app, err := client.APM.GetApplicationWithContext(ctx, userApp.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -99,7 +99,7 @@ func resourceNewRelicApplicationSettingsUpdate(ctx context.Context, d *schema.Re
 
 	log.Printf("[INFO] Updating New Relic application %+v with params: %+v", userApp, updateParams)
 
-	app, err := client.APM.UpdateApplication(userApp.ID, updateParams)
+	app, err := client.APM.UpdateApplicationWithContext(ctx, userApp.ID, updateParams)
 	if err != nil {
 		return diag.FromErr(err)
 	}

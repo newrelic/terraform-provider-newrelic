@@ -35,7 +35,7 @@ func dataSourceNewRelicKeyTransactionRead(ctx context.Context, d *schema.Resourc
 		Name: name,
 	}
 
-	transactions, err := client.APM.ListKeyTransactions(&params)
+	transactions, err := client.APM.ListKeyTransactionsWithContext(ctx, &params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
