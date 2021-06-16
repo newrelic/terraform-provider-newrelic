@@ -10,23 +10,6 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
-func syntheticsMonitorScriptLocationSchema() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The monitor script location name",
-			},
-			"hmac": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The monitor script authentication code for the location",
-			},
-		},
-	}
-}
-
 func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicSyntheticsMonitorScriptCreate,
@@ -51,7 +34,20 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 			"locations": {
 				Type:     schema.TypeList,
 				Optional: true,
-				Elem:     syntheticsMonitorScriptLocationSchema(),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The monitor script location name",
+						},
+						"hmac": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The monitor script authentication code for the location",
+						},
+					},
+				},
 			},
 		},
 	}
@@ -65,7 +61,7 @@ func importSyntheticsMonitorScript(ctx context.Context, d *schema.ResourceData, 
 func buildSyntheticsMonitorScriptStruct(d *schema.ResourceData) *synthetics.MonitorScript {
 	script := synthetics.MonitorScript{
 		Text:      d.Get("text").(string),
-		Locations: d.Get("locations").([]synthetics.MonitorScriptLocation),
+		Locations: expandMonitorScriptLocations(d.Get("locations").([]interface{})),
 	}
 
 	return &script
@@ -102,6 +98,8 @@ func resourceNewRelicSyntheticsMonitorScriptRead(ctx context.Context, d *schema.
 	}
 
 	_ = d.Set("text", script.Text)
+	_ = d.Set("locations", script.Locations)
+
 	return nil
 }
 
@@ -125,7 +123,8 @@ func resourceNewRelicSyntheticsMonitorScriptDelete(ctx context.Context, d *schem
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor script %s", d.Id())
 
 	script := synthetics.MonitorScript{
-		Text: " ",
+		Text:      " ",
+		Locations: make([]synthetics.MonitorScriptLocation, 0),
 	}
 
 	if _, err := client.Synthetics.UpdateMonitorScriptWithContext(ctx, d.Id(), script); err != nil {
@@ -133,4 +132,30 @@ func resourceNewRelicSyntheticsMonitorScriptDelete(ctx context.Context, d *schem
 	}
 
 	return nil
+}
+
+func expandMonitorScriptLocations(cfg []interface{}) []synthetics.MonitorScriptLocation {
+	var locations []synthetics.MonitorScriptLocation
+
+	if len(locations) == 0 {
+		return locations
+	}
+
+	locations = make([]synthetics.MonitorScriptLocation, 0, len(cfg))
+
+	for _, l := range cfg {
+		cfgLocation := l.(map[string]interface{})
+
+		location := synthetics.MonitorScriptLocation{}
+
+		if n, ok := cfgLocation["name"]; ok {
+			location.Name = n.(string)
+			if h, ok := cfgLocation["hmac"]; ok {
+				location.HMAC = h.(string)
+
+				locations = append(locations, location)
+			}
+		}
+	}
+	return locations
 }
