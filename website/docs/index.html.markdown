@@ -34,13 +34,12 @@ The following arguments are supported.
 | `insights_insert_key`  | Optional  | Your Insights insert key used when inserting Insights events via the `newrelic_insights_event` resource. Can also use `NEW_RELIC_INSIGHTS_INSERT_KEY` environment variable. |
 | `cacert_file`          | Optional  | A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEW_RELIC_API_CACERT` environment variable can also be used.              |
 
-
 ## Authentication Requirements
 
 This provider is in the midst of migrating away from our older REST based APIs
-to a newer GraphQL based API that we lovingly call NerdGraph.  During this
+to a newer GraphQL based API that we lovingly call NerdGraph. During this
 transition, the provider will be using different endpoints depending on which
-resource is in use.  Below is a table that reflects the current state of the
+resource is in use. Below is a table that reflects the current state of the
 resources compared to which endpoint is in use.
 
 ### Resources
@@ -148,16 +147,16 @@ resource "newrelic_alert_policy_channel" "alert_email" {
 }
 ```
 
-## Support for v1.x
+## Support for v2.x
 
-While the sun rises on the `2.x` release, the sunset of the `1.x` approaches.
-We intend to support minor bug fixes through the end of 2020, but we don't plan
-to merge any new features into `release/1.x` branch.  Please see the section
-below about upgrading the provider.  All new feature work and focus will be
+While the sun rises on the `3.x` release, the sunset of the `2.x` approaches.
+We intend to support minor bug fixes through the end of 2021, but we don't plan
+to merge any new features into `release/2.x` branch. Please see the section
+below about upgrading the provider. All new feature work and focus will be
 directed at the newer provider version.
 
--> <small>**Deprecation notice:** 2020-06-12<br>
--> **End of support:** 2020-01-15</small>
+-> <small>**Deprecation notice:** 2021-06-16<br>
+-> **End of support:** 2022-01-07</small>
 
 If you wish to pin your environment to a specific release, you can do so with a `required_providers` statement in your Terraform manifest. You can also pin the version within your `provider` block.
 
@@ -184,6 +183,10 @@ See the [Terraform docs][provider_version_configuration] for more information on
 Upgrading to v2 of the provider involves some changes to your provider configuration. Please view our [**migration guide**](guides/migration_guide_v2.html) for more information and assistance.
 
 Please see the [latest provider configuration docs](guides/provider_configuration.html) for the current recommended configuration settings.
+
+## Support for v1.x
+
+Support for v1.x ended on January 15th, 2021.
 
 ## Debugging
 
