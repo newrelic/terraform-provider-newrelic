@@ -3,20 +3,16 @@ package newrelic
 import (
 	"errors"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: "`newrelic_plugins_alert_condition` has been deprecated and will not be supported as of June 16, 2021.  Use `newrelic_nrql_alert_condition` instead.",
-		CreateContext:      resourceNewRelicPluginsAlertConditionCreate,
-		ReadContext:        resourceNewRelicPluginsAlertConditionRead,
-		UpdateContext:      resourceNewRelicPluginsAlertConditionUpdate,
-		DeleteContext:      resourceNewRelicPluginsAlertConditionDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Create: resourceNewRelicPluginsAlertConditionCreate,
+		Read:   resourceNewRelicPluginsAlertConditionRead,
+		Update: resourceNewRelicPluginsAlertConditionUpdate,
+		Delete: resourceNewRelicPluginsAlertConditionDelete,
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
 				Type:        schema.TypeInt,
@@ -89,10 +85,9 @@ func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 							Description:  "One of `critical` or `warning`. Defaults to critical.",
 						},
 						"threshold": {
-							Type:         schema.TypeFloat,
-							Required:     true,
-							ValidateFunc: float64Gte(0.0),
-							Description:  "Must be 0 or greater.",
+							Type:        schema.TypeFloat,
+							Required:    true,
+							Description: "Must be 0 or greater.",
 						},
 						"time_function": {
 							Type:         schema.TypeString,
