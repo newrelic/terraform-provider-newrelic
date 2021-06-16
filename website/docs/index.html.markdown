@@ -78,8 +78,6 @@ resources compared to which endpoint is in use.
 | `newrelic_application`                  | RESTv2              | `api_key`      |
 | `newrelic_entity`                       | NerdGraph           | `api_key`      |
 | `newrelic_key_transaction`              | RESTv2              | `api_key`      |
-| `newrelic_plugin`                       | RESTv2              | `api_key`      |
-| `newrelic_plugin_component`             | RESTv2              | `api_key`      |
 | `newrelic_synthetics_monitor`           | Synthetics REST API | `api_key`      |
 | `newrelic_synthetics_secure_credential` | Synthetics REST API | `api_key`      |
 
