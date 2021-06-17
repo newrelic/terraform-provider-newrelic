@@ -90,6 +90,12 @@ func dashboardPageSchemaElem() *schema.Resource {
 			},
 
 			// All the widget types below
+			"widget": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A generic widget configuration. Visualization id is required.",
+				Elem:        dashboardWidgetRawSchemaElem(),
+			},
 			"widget_area": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -161,12 +167,6 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Optional:    true,
 				Description: "A JSON widget.",
 				Elem:        dashboardWidgetJSONSchemaElem(),
-			},
-			"widget": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "A generic widget configuration. Visualization id is required.",
-				Elem:        dashboardWidgetRawSchemaElem(),
 			},
 		},
 	}

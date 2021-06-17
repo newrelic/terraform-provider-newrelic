@@ -12,6 +12,23 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/nrdb"
 )
 
+// knownWidgetTypes is a list of widget blocks in the form of `widget_<type>` that
+// all get handled the same.
+var knownWidgetTypes = []string{
+	"area",
+	"bar",
+	"billboard",
+	"bullet",
+	"funnel",
+	"heatmap",
+	"histogram",
+	"json",
+	"line",
+	"markdown",
+	"pie",
+	"table",
+}
+
 // Assemble the *dashboards.DashboardInput struct.
 // Used by the newrelic_one_dashboard Create function.
 func expandDashboardInput(d *schema.ResourceData, meta interface{}) (*dashboards.DashboardInput, error) {
@@ -38,8 +55,8 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}) (*dashboards
 	return &dash, nil
 }
 
-// TODO: Reduce the cyclomatic complexity of this func
-// nolint:gocyclo
+// expandDashboardPageInput converts the HCL for a Page into the complex GraphQL structure required
+// to create a page.
 func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboards.DashboardPageInput, error) {
 	if len(pages) < 1 {
 		return []dashboards.DashboardPageInput{}, nil
@@ -67,198 +84,6 @@ func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboar
 		}
 
 		// For each of the widget type, we need to expand them as well
-		if widgets, ok := p["widget_area"]; ok {
-			for _, v := range widgets.([]interface{}) {
-				// Get generic properties set
-				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				widget.Configuration.Area, err = expandDashboardAreaWidgetConfigurationInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				page.Widgets = append(page.Widgets, widget)
-			}
-		}
-		if widgets, ok := p["widget_bar"]; ok {
-			for _, v := range widgets.([]interface{}) {
-				// Get generic properties set
-				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				widget.Configuration.Bar, err = expandDashboardBarWidgetConfigurationInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				page.Widgets = append(page.Widgets, widget)
-			}
-		}
-		if widgets, ok := p["widget_billboard"]; ok {
-			for _, v := range widgets.([]interface{}) {
-				// Get generic properties set
-				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				widget.Configuration.Billboard, err = expandDashboardBillboardWidgetConfigurationInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				page.Widgets = append(page.Widgets, widget)
-			}
-		}
-		if widgets, ok := p["widget_bullet"]; ok {
-			for _, v := range widgets.([]interface{}) {
-				// Get generic properties set
-				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-				widget.RawConfiguration, err = expandDashboardBulletWidgetRawConfigurationInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-				widget.Visualization.ID = "viz.bullet"
-
-				page.Widgets = append(page.Widgets, widget)
-			}
-		}
-		if widgets, ok := p["widget_funnel"]; ok {
-			for _, v := range widgets.([]interface{}) {
-				// Get generic properties set
-				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-				widget.RawConfiguration, err = expandDashboardFunnelWidgetRawConfigurationInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-				widget.Visualization.ID = "viz.funnel"
-
-				page.Widgets = append(page.Widgets, widget)
-			}
-		}
-		if widgets, ok := p["widget_heatmap"]; ok {
-			for _, v := range widgets.([]interface{}) {
-				// Get generic properties set
-				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-				widget.RawConfiguration, err = expandDashboardHeatmapWidgetRawConfigurationInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-				widget.Visualization.ID = "viz.heatmap"
-
-				page.Widgets = append(page.Widgets, widget)
-			}
-		}
-		if widgets, ok := p["widget_histogram"]; ok {
-			for _, v := range widgets.([]interface{}) {
-				// Get generic properties set
-				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-				widget.RawConfiguration, err = expandDashboardHistogramWidgetRawConfigurationInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-				widget.Visualization.ID = "viz.histogram"
-
-				page.Widgets = append(page.Widgets, widget)
-			}
-		}
-		if widgets, ok := p["widget_line"]; ok {
-			for _, v := range widgets.([]interface{}) {
-				// Get generic properties set
-				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				widget.Configuration.Line, err = expandDashboardLineWidgetConfigurationInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				page.Widgets = append(page.Widgets, widget)
-			}
-		}
-		if widgets, ok := p["widget_markdown"]; ok {
-			for _, v := range widgets.([]interface{}) {
-				// Get generic properties set
-				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				widget.Configuration.Markdown, err = expandDashboardMarkdownWidgetConfigurationInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				page.Widgets = append(page.Widgets, widget)
-			}
-		}
-		if widgets, ok := p["widget_pie"]; ok {
-			for _, v := range widgets.([]interface{}) {
-				// Get generic properties set
-				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				widget.Configuration.Pie, err = expandDashboardPieWidgetConfigurationInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				page.Widgets = append(page.Widgets, widget)
-			}
-		}
-		if widgets, ok := p["widget_table"]; ok {
-			for _, v := range widgets.([]interface{}) {
-				// Get generic properties set
-				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				widget.Configuration.Table, err = expandDashboardTableWidgetConfigurationInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-
-				page.Widgets = append(page.Widgets, widget)
-			}
-		}
-		if widgets, ok := p["widget_json"]; ok {
-			for _, v := range widgets.([]interface{}) {
-				// Get generic properties set
-				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-				widget.RawConfiguration, err = expandDashboardJSONWidgetRawConfigurationInput(v.(map[string]interface{}), meta)
-				if err != nil {
-					return nil, err
-				}
-				widget.Visualization.ID = "viz.json"
-
-				page.Widgets = append(page.Widgets, widget)
-			}
-		}
 		if widgets, ok := p["widget"]; ok {
 			for _, v := range widgets.([]interface{}) {
 				// Get generic properties set
@@ -270,7 +95,7 @@ func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboar
 
 				// Get and set raw widget properties
 				if q, ok := properties["configuration"]; ok {
-					widget.RawConfiguration = []byte(q.(string))
+					widget.RawConfiguration = entities.DashboardWidgetRawConfiguration(q.(string))
 				}
 
 				// Get and set widget visualization_id
@@ -282,54 +107,65 @@ func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboar
 			}
 		}
 
+		// For `widget_<type>` blocks, loop through and handle them all the same
+		for _, wType := range knownWidgetTypes {
+			if widgets, ok := p["widget_"+wType]; ok {
+				for _, v := range widgets.([]interface{}) {
+					// Get generic properties set
+					widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
+					if err != nil {
+						return nil, err
+					}
+
+					widget.Visualization.ID = "viz." + wType
+					widget.RawConfiguration, err = expandDashboardWidgetRawConfigurationInput(v.(map[string]interface{}), meta)
+					if err != nil {
+						return nil, err
+					}
+
+					page.Widgets = append(page.Widgets, widget)
+				}
+			}
+		}
+
 		expanded[i] = page
 	}
 
 	return expanded, nil
 }
 
-func expandDashboardAreaWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardAreaWidgetConfigurationInput, error) {
-	var cfg dashboards.DashboardAreaWidgetConfigurationInput
+//
+// expandDashboardWidgetRawConfigurationInput is a generic HCL Block to Raw configuration translator
+//
+func expandDashboardWidgetRawConfigurationInput(i map[string]interface{}, meta interface{}) ([]byte, error) {
 	var err error
+	cfg := struct {
+		Limit       float64                                             `json:"limit,omitempty"`
+		NRQLQueries []dashboards.DashboardWidgetNRQLQueryInput          `json:"nrqlQueries,omitempty"`
+		Thresholds  []dashboards.DashboardBillboardWidgetThresholdInput `json:"thresholds,omitempty"`
+		Text        string                                              `json:"text,omitempty"`
+	}{}
 
-	// just has queries
-	if q, ok := i["nrql_query"]; ok {
-		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
-		if err != nil {
-			return nil, err
-		}
-		return &cfg, nil
-	}
-	return nil, nil
-}
-func expandDashboardBarWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardBarWidgetConfigurationInput, error) {
-	var cfg dashboards.DashboardBarWidgetConfigurationInput
-	var err error
-
-	// just has queries
-	if q, ok := i["nrql_query"]; ok {
-		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
-		if err != nil {
-			return nil, err
-		}
-		return &cfg, nil
-	}
-	return nil, nil
-}
-
-func expandDashboardBillboardWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardBillboardWidgetConfigurationInput, error) {
-	var cfg dashboards.DashboardBillboardWidgetConfigurationInput
-	var err error
-
+	// All except Markdown
 	if q, ok := i["nrql_query"]; ok {
 		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
 		if err != nil {
 			return nil, err
 		}
 	}
+	// bar, bullet,
+	if l, ok := i["limit"]; ok {
+		cfg.Limit = l.(float64)
+	}
 
-	// optional, order is important (API returns them sorted alpha)
-	cfg.Thresholds = []dashboards.DashboardBillboardWidgetThresholdInput{}
+	// markdown
+	if l, ok := i["text"]; ok {
+		if l.(string) != "" {
+			cfg.Text = l.(string)
+		}
+	}
+
+	// billboard
 	if t, ok := i["critical"]; ok {
 		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
 			AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
@@ -337,6 +173,7 @@ func expandDashboardBillboardWidgetConfigurationInput(i map[string]interface{}, 
 		})
 	}
 
+	// billboard
 	if t, ok := i["warning"]; ok {
 		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
 			AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
@@ -344,149 +181,7 @@ func expandDashboardBillboardWidgetConfigurationInput(i map[string]interface{}, 
 		})
 	}
 
-	return &cfg, nil
-}
-
-func expandDashboardBulletWidgetRawConfigurationInput(i map[string]interface{}, meta interface{}) ([]byte, error) {
-	var err error
-	cfg := struct {
-		Limit       float64                                    `json:"limit,omitempty"`
-		NRQLQueries []dashboards.DashboardWidgetNRQLQueryInput `json:"nrqlQueries"`
-	}{}
-
-	if q, ok := i["nrql_query"]; ok {
-		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if l, ok := i["limit"]; ok {
-		cfg.Limit = l.(float64)
-	}
-
 	return json.Marshal(cfg)
-}
-
-func expandDashboardFunnelWidgetRawConfigurationInput(i map[string]interface{}, meta interface{}) ([]byte, error) {
-	var err error
-	cfg := struct {
-		NRQLQueries []dashboards.DashboardWidgetNRQLQueryInput `json:"nrqlQueries"`
-	}{}
-
-	// just has queries
-	if q, ok := i["nrql_query"]; ok {
-		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return json.Marshal(cfg)
-}
-
-func expandDashboardHeatmapWidgetRawConfigurationInput(i map[string]interface{}, meta interface{}) ([]byte, error) {
-	var err error
-	cfg := struct {
-		NRQLQueries []dashboards.DashboardWidgetNRQLQueryInput `json:"nrqlQueries"`
-	}{}
-
-	// just has queries
-	if q, ok := i["nrql_query"]; ok {
-		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return json.Marshal(cfg)
-}
-
-func expandDashboardHistogramWidgetRawConfigurationInput(i map[string]interface{}, meta interface{}) ([]byte, error) {
-	var err error
-	cfg := struct {
-		NRQLQueries []dashboards.DashboardWidgetNRQLQueryInput `json:"nrqlQueries"`
-	}{}
-
-	// just has queries
-	if q, ok := i["nrql_query"]; ok {
-		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return json.Marshal(cfg)
-}
-
-func expandDashboardJSONWidgetRawConfigurationInput(i map[string]interface{}, meta interface{}) ([]byte, error) {
-	var err error
-	cfg := struct {
-		NRQLQueries []dashboards.DashboardWidgetNRQLQueryInput `json:"nrqlQueries"`
-	}{}
-
-	if q, ok := i["nrql_query"]; ok {
-		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return json.Marshal(cfg)
-}
-
-func expandDashboardLineWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardLineWidgetConfigurationInput, error) {
-	var cfg dashboards.DashboardLineWidgetConfigurationInput
-	var err error
-
-	// just has queries
-	if q, ok := i["nrql_query"]; ok {
-		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
-		if err != nil {
-			return nil, err
-		}
-		return &cfg, nil
-	}
-	return nil, nil
-}
-
-func expandDashboardMarkdownWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardMarkdownWidgetConfigurationInput, error) {
-	var cfg dashboards.DashboardMarkdownWidgetConfigurationInput
-
-	if t, ok := i["text"]; ok {
-		if t.(string) != "" {
-			cfg.Text = t.(string)
-		}
-
-		return &cfg, nil
-	}
-	return nil, nil
-}
-func expandDashboardPieWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardPieWidgetConfigurationInput, error) {
-	var cfg dashboards.DashboardPieWidgetConfigurationInput
-	var err error
-
-	// just has queries
-	if q, ok := i["nrql_query"]; ok {
-		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
-		if err != nil {
-			return nil, err
-		}
-		return &cfg, nil
-	}
-	return nil, nil
-}
-func expandDashboardTableWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardTableWidgetConfigurationInput, error) {
-	var cfg dashboards.DashboardTableWidgetConfigurationInput
-	var err error
-
-	// just has queries
-	if q, ok := i["nrql_query"]; ok {
-		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
-		if err != nil {
-			return nil, err
-		}
-		return &cfg, nil
-	}
-	return nil, nil
 }
 
 // expandDashboardWidgetInput expands the common items in WidgetInput, but not the configuration
