@@ -31,7 +31,7 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 				Required:    true,
 				Description: "The plaintext representing the monitor script.",
 			},
-			"locations": {
+			"location": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
@@ -43,7 +43,7 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 						},
 						"hmac": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 							Description: "The monitor script authentication code for the location",
 						},
 					},
@@ -61,7 +61,7 @@ func importSyntheticsMonitorScript(ctx context.Context, d *schema.ResourceData, 
 func buildSyntheticsMonitorScriptStruct(d *schema.ResourceData) *synthetics.MonitorScript {
 	script := synthetics.MonitorScript{
 		Text:      d.Get("text").(string),
-		Locations: expandMonitorScriptLocations(d.Get("locations").([]interface{})),
+		Locations: expandMonitorScriptLocations(d.Get("location").([]interface{})),
 	}
 
 	return &script
@@ -98,7 +98,6 @@ func resourceNewRelicSyntheticsMonitorScriptRead(ctx context.Context, d *schema.
 	}
 
 	_ = d.Set("text", script.Text)
-	_ = d.Set("locations", script.Locations)
 
 	return nil
 }
@@ -137,7 +136,7 @@ func resourceNewRelicSyntheticsMonitorScriptDelete(ctx context.Context, d *schem
 func expandMonitorScriptLocations(cfg []interface{}) []synthetics.MonitorScriptLocation {
 	var locations []synthetics.MonitorScriptLocation
 
-	if len(locations) == 0 {
+	if len(cfg) == 0 {
 		return locations
 	}
 
