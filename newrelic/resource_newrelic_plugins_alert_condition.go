@@ -1,23 +1,25 @@
 package newrelic
 
 import (
+	"context"
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: "`newrelic_plugins_alert_condition` has been deprecated and will not be supported as of June 16, 2021.  Use `newrelic_nrql_alert_condition` instead.",
-		Create:             resourceNewRelicPluginsAlertConditionCreate,
-		Read:               resourceNewRelicPluginsAlertConditionRead,
-		Update:             resourceNewRelicPluginsAlertConditionUpdate,
-		Delete:             resourceNewRelicPluginsAlertConditionDelete,
+		CreateContext:      resourceNewRelicPluginsAlertConditionCreate,
+		ReadContext:        resourceNewRelicPluginsAlertConditionRead,
+		UpdateContext:      resourceNewRelicPluginsAlertConditionUpdate,
+		DeleteContext:      resourceNewRelicPluginsAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
@@ -121,7 +123,7 @@ func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 	}
 }
 
-func resourceNewRelicPluginsAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicPluginsAlertConditionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	condition := expandPluginsCondition(d)
 	policyID := d.Get("policy_id").(int)
@@ -130,7 +132,7 @@ func resourceNewRelicPluginsAlertConditionCreate(d *schema.ResourceData, meta in
 
 	condition, err := client.Alerts.CreatePluginsCondition(policyID, *condition)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(serializeIDs([]int{policyID, condition.ID}))
@@ -138,7 +140,7 @@ func resourceNewRelicPluginsAlertConditionCreate(d *schema.ResourceData, meta in
 	return nil
 }
 
-func resourceNewRelicPluginsAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicPluginsAlertConditionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := meta.(*ProviderConfig).NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -147,7 +149,7 @@ func resourceNewRelicPluginsAlertConditionRead(d *schema.ResourceData, meta inte
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	policyID := ids[0]
@@ -159,7 +161,7 @@ func resourceNewRelicPluginsAlertConditionRead(d *schema.ResourceData, meta inte
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	condition, err := client.Alerts.GetPluginsCondition(policyID, id)
@@ -169,21 +171,21 @@ func resourceNewRelicPluginsAlertConditionRead(d *schema.ResourceData, meta inte
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	d.Set("policy_id", policyID)
+	_ = d.Set("policy_id", policyID)
 
-	return flattenPluginsCondition(condition, d)
+	return diag.FromErr(flattenPluginsCondition(condition, d))
 }
 
-func resourceNewRelicPluginsAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicPluginsAlertConditionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	condition := expandPluginsCondition(d)
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	id := ids[1]
@@ -193,18 +195,18 @@ func resourceNewRelicPluginsAlertConditionUpdate(d *schema.ResourceData, meta in
 
 	updatedCondition, err := client.Alerts.UpdatePluginsCondition(*condition)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenPluginsCondition(updatedCondition, d)
+	return diag.FromErr(flattenPluginsCondition(updatedCondition, d))
 }
 
-func resourceNewRelicPluginsAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicPluginsAlertConditionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	id := ids[1]
@@ -214,7 +216,7 @@ func resourceNewRelicPluginsAlertConditionDelete(d *schema.ResourceData, meta in
 	_, err = client.Alerts.DeletePluginsCondition(id)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

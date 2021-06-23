@@ -1,13 +1,15 @@
 package newrelic
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	nrErrors "github.com/newrelic/newrelic-client-go/pkg/errors"
 )
@@ -18,17 +20,18 @@ var (
 		"accountId",
 		"language",
 		"trustedAccountId",
+		"guid",
 	}
 )
 
 func resourceNewRelicEntityTags() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicEntityTagsCreate,
-		Read:   resourceNewRelicEntityTagsRead,
-		Update: resourceNewRelicEntityTagsUpdate,
-		Delete: resourceNewRelicEntityTagsDelete,
+		CreateContext: resourceNewRelicEntityTagsCreate,
+		ReadContext:   resourceNewRelicEntityTagsRead,
+		UpdateContext: resourceNewRelicEntityTagsUpdate,
+		DeleteContext: resourceNewRelicEntityTagsDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"guid": {
@@ -65,11 +68,11 @@ func resourceNewRelicEntityTags() *schema.Resource {
 	}
 }
 
-func resourceNewRelicEntityTagsCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicEntityTagsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Create")
+		return diag.Errorf("err: NerdGraph support not present, but required for Create")
 	}
 
 	client := providerConfig.NewClient
@@ -77,22 +80,23 @@ func resourceNewRelicEntityTagsCreate(d *schema.ResourceData, meta interface{}) 
 	guid := entities.EntityGUID(d.Get("guid").(string))
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 
-	err := client.Entities.AddTags(guid, tags)
+	_, err := client.Entities.TaggingAddTagsToEntityWithContext(ctx, guid, tags)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(string(guid))
 
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		currentTags, err := client.Entities.ListTags(guid)
-
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		t, err := client.Entities.GetTagsForEntity(guid)
 		if err != nil {
 			return resource.NonRetryableError(fmt.Errorf("error retrieving entity tags for guid %s: %s", d.Id(), err))
 		}
 
+		currentTags := convertTagTypes(t)
+
 		for _, t := range tags {
-			var tag *entities.Tag
+			var tag *entities.TaggingTagInput
 			if tag = getTag(currentTags, t.Key); tag == nil {
 				return resource.RetryableError(fmt.Errorf("expected entity tag %s to have been updated but was not found", t.Key))
 			}
@@ -102,22 +106,33 @@ func resourceNewRelicEntityTagsCreate(d *schema.ResourceData, meta interface{}) 
 			}
 		}
 
-		return resource.NonRetryableError(resourceNewRelicEntityTagsRead(d, meta))
+		diag := resourceNewRelicEntityTagsRead(ctx, d, meta)
+		if diag.HasError() {
+			return resource.RetryableError(errors.New("error reading tag values after creation"))
+		}
+
+		return nil
 	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
+
+	return nil
 }
 
-func resourceNewRelicEntityTagsRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicEntityTagsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Read")
+		return diag.Errorf("err: NerdGraph support not present, but required for Read")
 	}
 
 	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Reading New Relic entity tags for entity guid %s", d.Id())
 
-	tags, err := client.Entities.ListTags(entities.EntityGUID(d.Id()))
+	t, err := client.Entities.GetTagsForEntity(entities.EntityGUID(d.Id()))
 
 	if err != nil {
 		if _, ok := err.(*nrErrors.NotFound); ok {
@@ -125,17 +140,19 @@ func resourceNewRelicEntityTagsRead(d *schema.ResourceData, meta interface{}) er
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenEntityTags(d, tags)
+	tags := convertTagTypes(t)
+
+	return diag.FromErr(flattenEntityTags(d, tags))
 }
 
-func resourceNewRelicEntityTagsUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicEntityTagsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Update")
+		return diag.Errorf("err: NerdGraph support not present, but required for Update")
 	}
 
 	client := providerConfig.NewClient
@@ -144,19 +161,25 @@ func resourceNewRelicEntityTagsUpdate(d *schema.ResourceData, meta interface{}) 
 
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 
-	if err := client.Entities.ReplaceTags(entities.EntityGUID(d.Id()), tags); err != nil {
-		return err
+	_, err := client.Entities.TaggingReplaceTagsOnEntityWithContext(ctx, entities.EntityGUID(d.Id()), tags)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		currentTags, err := client.Entities.ListTags(entities.EntityGUID(d.Id()))
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		t, err := client.Entities.GetTagsForEntity(entities.EntityGUID(d.Id()))
+		if err != nil {
+			return resource.NonRetryableError(fmt.Errorf("error retrieving entity tags for guid %s: %s", d.Id(), err))
+		}
+
+		currentTags := convertTagTypes(t)
 
 		if err != nil {
 			return resource.NonRetryableError(fmt.Errorf("error retrieving entity tags for guid %s: %s", d.Id(), err))
 		}
 
 		for _, t := range tags {
-			var tag *entities.Tag
+			var tag *entities.TaggingTagInput
 			if tag = getTag(currentTags, t.Key); tag == nil {
 				return resource.RetryableError(fmt.Errorf("expected entity tag %s to have been updated but was not found", t.Key))
 			}
@@ -166,15 +189,40 @@ func resourceNewRelicEntityTagsUpdate(d *schema.ResourceData, meta interface{}) 
 			}
 		}
 
-		return resource.NonRetryableError(resourceNewRelicEntityTagsRead(d, meta))
+		diag := resourceNewRelicEntityTagsRead(ctx, d, meta)
+		if diag.HasError() {
+			return resource.RetryableError(errors.New("error reading tag values after creation"))
+		}
+
+		return nil
 	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
+
+	return nil
 }
 
-func resourceNewRelicEntityTagsDelete(d *schema.ResourceData, meta interface{}) error {
+// This is needed until the client implements a GetTags method with the same
+// tag type as the rest of the methods.
+func convertTagTypes(tags []*entities.EntityTag) []*entities.TaggingTagInput {
+	var t []*entities.TaggingTagInput
+	for _, tag := range tags {
+		t = append(t, &entities.TaggingTagInput{
+			Key:    tag.Key,
+			Values: tag.Values,
+		})
+	}
+
+	return t
+}
+
+func resourceNewRelicEntityTagsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Delete")
+		return diag.Errorf("err: NerdGraph support not present, but required for Delete")
 	}
 
 	client := providerConfig.NewClient
@@ -184,19 +232,20 @@ func resourceNewRelicEntityTagsDelete(d *schema.ResourceData, meta interface{}) 
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 	tagKeys := getTagKeys(tags)
 
-	if err := client.Entities.DeleteTags(entities.EntityGUID(d.Id()), tagKeys); err != nil {
-		return err
+	_, err := client.Entities.TaggingDeleteTagFromEntityWithContext(ctx, entities.EntityGUID(d.Id()), tagKeys)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func expandEntityTags(tags []interface{}) []entities.Tag {
-	out := make([]entities.Tag, len(tags))
+func expandEntityTags(tags []interface{}) []entities.TaggingTagInput {
+	out := make([]entities.TaggingTagInput, len(tags))
 
 	for i, rawCfg := range tags {
 		cfg := rawCfg.(map[string]interface{})
-		expanded := entities.Tag{
+		expanded := entities.TaggingTagInput{
 			Key:    cfg["key"].(string),
 			Values: expandEntityTagValues(cfg["values"].(*schema.Set).List()),
 		}
@@ -217,7 +266,7 @@ func expandEntityTagValues(values []interface{}) []string {
 	return perms
 }
 
-func flattenEntityTags(d *schema.ResourceData, tags []*entities.Tag) error {
+func flattenEntityTags(d *schema.ResourceData, tags []*entities.TaggingTagInput) error {
 	out := []map[string]interface{}{}
 	for _, t := range tags {
 		if stringInSlice(defaultTags, t.Key) {
@@ -242,7 +291,7 @@ func flattenEntityTags(d *schema.ResourceData, tags []*entities.Tag) error {
 	return nil
 }
 
-func getTagKeys(tags []entities.Tag) []string {
+func getTagKeys(tags []entities.TaggingTagInput) []string {
 	tagKeys := []string{}
 
 	for _, t := range tags {
@@ -251,7 +300,7 @@ func getTagKeys(tags []entities.Tag) []string {
 	return tagKeys
 }
 
-func tagValuesExist(t *entities.Tag, values []string) bool {
+func tagValuesExist(t *entities.TaggingTagInput, values []string) bool {
 	for _, v := range values {
 		if !stringInSlice(t.Values, v) {
 			return false
@@ -261,7 +310,7 @@ func tagValuesExist(t *entities.Tag, values []string) bool {
 	return true
 }
 
-func getTag(tags []*entities.Tag, key string) *entities.Tag {
+func getTag(tags []*entities.TaggingTagInput, key string) *entities.TaggingTagInput {
 	for _, t := range tags {
 		if t.Key == key {
 			return t

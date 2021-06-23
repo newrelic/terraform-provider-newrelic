@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
 
@@ -73,10 +73,12 @@ func testAccCheckNewRelicEntityTagsExist(n string, keysToCheck []string) resourc
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		tags, err := client.Entities.ListTags(entities.EntityGUID(rs.Primary.ID))
+		t, err := client.Entities.GetTagsForEntity(entities.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
+
+		tags := convertTagTypes(t)
 
 		for _, keyToCheck := range keysToCheck {
 			if tag := getTag(tags, keyToCheck); tag == nil {

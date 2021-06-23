@@ -1,10 +1,11 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 )
@@ -14,7 +15,7 @@ import (
 // data structure is []map[string]interface{} for both, we don't
 // need to do anything other than return the state and Terraform
 // will handle the rest.
-func migrateStateNewRelicDashboardV0toV1(rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+func migrateStateNewRelicDashboardV0toV1(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
 	return rawState, nil
 }
 
@@ -313,16 +314,16 @@ func expandWidgetLayout(cfg map[string]interface{}) (*dashboards.DashboardWidget
 //
 // Used by the newrelic_dashboard Read function (resourceNewRelicDashboardRead)
 func flattenDashboard(dashboard *dashboards.Dashboard, d *schema.ResourceData) error {
-	d.Set("title", dashboard.Title)
-	d.Set("icon", dashboard.Icon)
-	d.Set("visibility", dashboard.Visibility)
-	d.Set("editable", dashboard.Editable)
-	d.Set("dashboard_url", dashboard.UIURL)
+	_ = d.Set("title", dashboard.Title)
+	_ = d.Set("icon", dashboard.Icon)
+	_ = d.Set("visibility", dashboard.Visibility)
+	_ = d.Set("editable", dashboard.Editable)
+	_ = d.Set("dashboard_url", dashboard.UIURL)
 
 	if gridColumnCount, ok := d.GetOk("grid_column_count"); ok {
-		d.Set("grid_column_count", gridColumnCount.(int))
+		_ = d.Set("grid_column_count", gridColumnCount.(int))
 	} else {
-		d.Set("grid_column_count", 3)
+		_ = d.Set("grid_column_count", 3)
 	}
 
 	if filterErr := d.Set("filter", flattenFilter(&dashboard.Filter)); filterErr != nil {

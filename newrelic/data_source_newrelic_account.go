@@ -1,19 +1,21 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/accounts"
 )
 
 func dataSourceNewRelicAccount() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNewRelicAccountRead,
+		ReadContext: dataSourceNewRelicAccountRead,
 		Schema: map[string]*schema.Schema{
 			"scope": {
 				Type:         schema.TypeString,
@@ -36,7 +38,7 @@ func dataSourceNewRelicAccount() *schema.Resource {
 	}
 }
 
-func dataSourceNewRelicAccountRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic accounts")
@@ -50,19 +52,19 @@ func dataSourceNewRelicAccountRead(d *schema.ResourceData, meta interface{}) err
 		Scope: &scope,
 	}
 
-	accts, err := client.Accounts.ListAccounts(params)
+	accts, err := client.Accounts.ListAccountsWithContext(ctx, params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var account *accounts.AccountOutline
 
 	if !idOk && !nameOk {
-		return fmt.Errorf(`one of "name" or "account_id" is required to locate a New Relic account`)
+		return diag.FromErr(fmt.Errorf(`one of "name" or "account_id" is required to locate a New Relic account`))
 	}
 
 	if idOk && nameOk {
-		return fmt.Errorf(`exactly one of "name" or "account_id" is required to locate a New Relic account`)
+		return diag.FromErr(fmt.Errorf(`exactly one of "name" or "account_id" is required to locate a New Relic account`))
 	}
 
 	if nameOk {
@@ -74,7 +76,7 @@ func dataSourceNewRelicAccountRead(d *schema.ResourceData, meta interface{}) err
 		}
 
 		if account == nil {
-			return fmt.Errorf("the name '%s' does not match any New Relic accounts", name)
+			return diag.FromErr(fmt.Errorf("the name '%s' does not match any New Relic accounts", name))
 		}
 	}
 
@@ -87,11 +89,11 @@ func dataSourceNewRelicAccountRead(d *schema.ResourceData, meta interface{}) err
 		}
 
 		if account == nil {
-			return fmt.Errorf("the id '%d' does not match any New Relic accounts", id)
+			return diag.FromErr(fmt.Errorf("the id '%d' does not match any New Relic accounts", id))
 		}
 	}
 
-	return flattenAccountData(account, d)
+	return diag.FromErr(flattenAccountData(account, d))
 }
 
 func flattenAccountData(a *accounts.AccountOutline, d *schema.ResourceData) error {

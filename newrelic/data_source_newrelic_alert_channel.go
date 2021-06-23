@@ -1,12 +1,14 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
@@ -17,8 +19,7 @@ func dataSourceNewRelicAlertChannel() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Read: dataSourceNewRelicAlertChannelRead,
-
+		ReadContext: dataSourceNewRelicAlertChannelRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -39,7 +40,6 @@ func dataSourceNewRelicAlertChannel() *schema.Resource {
 			"config": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				MaxItems:    1,
 				Description: "Alert channel configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -140,14 +140,14 @@ func dataSourceNewRelicAlertChannel() *schema.Resource {
 	}
 }
 
-func dataSourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceNewRelicAlertChannelRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Alert Channels")
 
-	channels, err := client.Alerts.ListChannels()
+	channels, err := client.Alerts.ListChannelsWithContext(ctx)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var channel *alerts.Channel
@@ -161,8 +161,8 @@ func dataSourceNewRelicAlertChannelRead(d *schema.ResourceData, meta interface{}
 	}
 
 	if channel == nil {
-		return fmt.Errorf("the name '%s' does not match any New Relic alert channel", name)
+		return diag.FromErr(fmt.Errorf("the name '%s' does not match any New Relic alert channel", name))
 	}
 
-	return flattenAlertChannelDataSource(channel, d)
+	return diag.FromErr(flattenAlertChannelDataSource(channel, d))
 }
