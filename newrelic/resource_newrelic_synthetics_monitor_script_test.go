@@ -100,7 +100,7 @@ resource "newrelic_synthetics_monitor" "foo" {
 resource "newrelic_synthetics_monitor_script" "foo_script" {
   monitor_id = newrelic_synthetics_monitor.foo.id
   text = "%[2]s"
-	locations {
+	location {
 		name = "AWS_US_EAST_1"
 		hmac = "MjhiNGE4MjVlMDE1N2M4NDQ4MjNjNDFkZDEyYTRjMmUzZDE3NGJlNjU0MWFmOTJlMzNiODExOGU2ZjhkZTY4ZQ"
 	}
