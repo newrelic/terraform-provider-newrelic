@@ -32,8 +32,8 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 				Description: "The plaintext representing the monitor script.",
 			},
 			"location": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:        schema.TypeList,
+				Optional:    true,
 				Description: "A list of locations for a monitor script.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

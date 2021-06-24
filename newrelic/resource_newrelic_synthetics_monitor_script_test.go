@@ -38,9 +38,9 @@ func TestAccNewRelicSyntheticsMonitorScript_Basic(t *testing.T) {
 			},
 			// Test: Import
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"location"},
 			},
 		},
