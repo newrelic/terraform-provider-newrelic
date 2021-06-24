@@ -24,6 +24,10 @@ resource "newrelic_synthetics_monitor" "foo" {
 resource "newrelic_synthetics_monitor_script" "foo_script" {
   monitor_id = newrelic_synthetics_monitor.foo.id
   text = file("${path.module}/foo_script.js")
+  location {
+    name = "YWJjZAo="
+    hmac = "ZmFrZWxvY2F0aW9uc2NyaXB0ZmFrZQ=="
+  }
 }
 ```
 
@@ -33,6 +37,14 @@ The following arguments are supported:
 
   * `monitor_id` - (Required) The ID of the monitor to attach the script to.
   * `text` - (Required) The plaintext representing the monitor script.
+  * `location` - (Optional) A nested block that describes a monitor script location. See [Nested location blocks](#nested-`location`-blocks) below for details
+
+### Nested `location` blocks
+
+All nested `location` blocks support the following common arguments:
+
+  * `name` - (Required) The monitor script location name.
+  * `hmac` - (Optional) The monitor script authentication code for the location.
 
 ## Attributes Reference
 
