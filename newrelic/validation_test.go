@@ -10,9 +10,34 @@ import (
 )
 
 type testCase struct {
-	val         interface{}
-	f           schema.SchemaValidateFunc
-	expectedErr *regexp.Regexp
+	val          interface{}
+	f            schema.SchemaValidateFunc
+	expectedErr  *regexp.Regexp
+	expectedWarn *regexp.Regexp
+}
+
+func TestValidationValidateViolationCloseTimer(t *testing.T) {
+	runTestCases(t, []testCase{
+		{
+			val:         0,
+			f:           validateViolationCloseTimer(),
+			expectedWarn: regexp.MustCompile(`0 is no longer a valid value. Using the default value of 24`),
+		},
+		{
+			val: 2,
+			f:   validateViolationCloseTimer(),
+		},
+		{
+			val:         13,
+			f:           validateViolationCloseTimer(),
+			expectedErr: regexp.MustCompile(`expected [\w]+ to be one of 1, 2, 4, 8, 12, 24, 48, 72, got 13`),
+		},
+		{
+			val:         "foo",
+			f:           intInSlice([]int{1, 2, 3}),
+			expectedErr: regexp.MustCompile(`expected type of [\w]+ to be int`),
+		},
+	})
 }
 
 func TestValidationIntInInSlice(t *testing.T) {
@@ -92,8 +117,25 @@ func runTestCases(t *testing.T, cases []testCase) {
 		return false
 	}
 
+	matchWarn := func(warnings []string, r *regexp.Regexp) bool {
+		// warning must match one provided
+		for _, warn := range warnings {
+			if r.MatchString(warn) {
+				return true
+			}
+		}
+
+		return false
+	}
+
 	for i, tc := range cases {
-		_, errs := tc.f(tc.val, "test_property")
+		warnings, errs := tc.f(tc.val, "test_property")
+		if len(warnings) == 0 && tc.expectedWarn == nil {
+			continue
+		}
+		if !matchWarn(warnings, tc.expectedWarn) {
+			t.Fatalf("expected test case %d to produce warning matching \"%s\", got %v", i, tc.expectedWarn, warnings)
+		}
 
 		if len(errs) == 0 && tc.expectedErr == nil {
 			continue
