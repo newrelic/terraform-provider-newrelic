@@ -103,7 +103,7 @@ The following arguments are supported:
   * `process_where` - (Optional) Any filters applied to processes; for example: `commandName = 'java'`.  Required by the `infra_process_running` condition type.
   * `integration_provider` - (Optional) For alerts on integrations, use this instead of `event`.  Supported by the `infra_metric` condition type.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
-  * `violation_close_timer` - (Optional) Determines how much time will pass before a violation is automatically closed. Setting the time limit to 0 prevents a violation from being force-closed.
+  * `violation_close_timer` - (Optional) Determines how much time will pass (in hours) before a violation is automatically closed. Valid values are `1 2 4 8 12 24 48 72`. Defaults to 24.
 
 ## Attributes Reference
 
