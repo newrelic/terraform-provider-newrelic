@@ -13,9 +13,6 @@ type testCase struct {
 	val          interface{}
 	f            schema.SchemaValidateFunc
 	expectedErr  *regexp.Regexp
-	val          interface{}
-	f            schema.SchemaValidateFunc
-	expectedErr  *regexp.Regexp
 	expectedWarn *regexp.Regexp
 }
 
