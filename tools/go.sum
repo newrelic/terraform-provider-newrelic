@@ -534,8 +534,8 @@ github.com/goreleaser/chglog v0.1.2 h1:tdzAb/ILeMnphzI9zQ7Nkq+T8R9qyXli8GydD8plF
 github.com/goreleaser/chglog v0.1.2/go.mod h1:tTZsFuSZK4epDXfjMkxzcGbrIOXprf0JFp47BjIr3B8=
 github.com/goreleaser/fileglob v1.2.0 h1:OErqbdzeg/eibfDGPHDQDN8jL5u1jNyxA5IQzNPLLoU=
 github.com/goreleaser/fileglob v1.2.0/go.mod h1:rFyb2pXaK3YdnYnSjn6lifw0h2Q6s8OfOsx6I6bXkKE=
-github.com/goreleaser/goreleaser v0.171.0 h1:aM9boGNCuwst7uHr3QxsxAwdjHEQvKu84GxMJhVtofk=
-github.com/goreleaser/goreleaser v0.171.0/go.mod h1:oxH1VQjOnAu+MFl4WdZyz9xbQr/MglE/CCgE1AnSxWc=
+github.com/goreleaser/goreleaser v0.172.1 h1:i85uRTojKy6ShlaZew6GZ/q5nAEHGVTwOC7FZj51XoE=
+github.com/goreleaser/goreleaser v0.172.1/go.mod h1:oxH1VQjOnAu+MFl4WdZyz9xbQr/MglE/CCgE1AnSxWc=
 github.com/goreleaser/nfpm/v2 v2.5.1 h1:xZpdwr/wgp2OmfxjqJcw5CeHHnrVvz75ZRzCpSXeSNo=
 github.com/goreleaser/nfpm/v2 v2.5.1/go.mod h1:Bq9OBKhvhTmdPh6lHUbVBKa3JCw61OgIFEau+vs2CO0=
 github.com/gorhill/cronexpr v0.0.0-20180427100037-88b0669f7d75/go.mod h1:g2644b03hfBX9Ov0ZBDgXXens4rxSxmqFBbhvKv2yVA=
@@ -1480,8 +1480,9 @@ golang.org/x/tools v0.0.0-20210105154028-b0ab187a4818/go.mod h1:emZCQorbCU4vsT4f
 golang.org/x/tools v0.0.0-20210108195828-e2f9c7f1fc8e/go.mod h1:emZCQorbCU4vsT4fOWvOPXz4eW1wZW4PmDk9uLelYpA=
 golang.org/x/tools v0.1.0/go.mod h1:xkSsbof2nBLbhDlRMhhhyNLN/zl3eTqcnHD5viDpcZ0=
 golang.org/x/tools v0.1.2/go.mod h1:o0xws9oXOQQZyjljx8fwUC0k7L1pTE6eaCbjGeHmOkk=
-golang.org/x/tools v0.1.3 h1:L69ShwSZEyCsLKoAxDKeMvLDZkumEe8gXUZAjab0tX8=
 golang.org/x/tools v0.1.3/go.mod h1:o0xws9oXOQQZyjljx8fwUC0k7L1pTE6eaCbjGeHmOkk=
+golang.org/x/tools v0.1.4 h1:cVngSRcfgyZCzys3KYOpCFa+4dqX/Oub9tAq00ttGVs=
+golang.org/x/tools v0.1.4/go.mod h1:o0xws9oXOQQZyjljx8fwUC0k7L1pTE6eaCbjGeHmOkk=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
