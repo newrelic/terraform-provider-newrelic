@@ -31,6 +31,25 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 				Required:    true,
 				Description: "The plaintext representing the monitor script.",
 			},
+			"location": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A list of locations for a monitor script.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The monitor script location name",
+						},
+						"hmac": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The monitor script authentication code for the location",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -42,7 +61,8 @@ func importSyntheticsMonitorScript(ctx context.Context, d *schema.ResourceData, 
 
 func buildSyntheticsMonitorScriptStruct(d *schema.ResourceData) *synthetics.MonitorScript {
 	script := synthetics.MonitorScript{
-		Text: d.Get("text").(string),
+		Text:      d.Get("text").(string),
+		Locations: expandMonitorScriptLocations(d.Get("location").([]interface{})),
 	}
 
 	return &script
@@ -79,6 +99,7 @@ func resourceNewRelicSyntheticsMonitorScriptRead(ctx context.Context, d *schema.
 	}
 
 	_ = d.Set("text", script.Text)
+
 	return nil
 }
 
@@ -102,7 +123,8 @@ func resourceNewRelicSyntheticsMonitorScriptDelete(ctx context.Context, d *schem
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor script %s", d.Id())
 
 	script := synthetics.MonitorScript{
-		Text: " ",
+		Text:      " ",
+		Locations: make([]synthetics.MonitorScriptLocation, 0),
 	}
 
 	if _, err := client.Synthetics.UpdateMonitorScriptWithContext(ctx, d.Id(), script); err != nil {
@@ -110,4 +132,30 @@ func resourceNewRelicSyntheticsMonitorScriptDelete(ctx context.Context, d *schem
 	}
 
 	return nil
+}
+
+func expandMonitorScriptLocations(cfg []interface{}) []synthetics.MonitorScriptLocation {
+	var locations []synthetics.MonitorScriptLocation
+
+	if len(cfg) == 0 {
+		return locations
+	}
+
+	locations = make([]synthetics.MonitorScriptLocation, 0, len(cfg))
+
+	for _, l := range cfg {
+		cfgLocation := l.(map[string]interface{})
+
+		location := synthetics.MonitorScriptLocation{}
+
+		if n, ok := cfgLocation["name"]; ok {
+			location.Name = n.(string)
+			if h, ok := cfgLocation["hmac"]; ok {
+				location.HMAC = h.(string)
+
+				locations = append(locations, location)
+			}
+		}
+	}
+	return locations
 }
