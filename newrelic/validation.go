@@ -6,6 +6,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+func validateViolationCloseTimer() schema.SchemaValidateFunc {
+	return func(i interface{}, k string) (warnings []string, errors []error) {
+		val, ok := i.(int)
+		if !ok {
+			errors = append(errors, fmt.Errorf("expected type of %s to be int", k))
+			return
+		}
+		switch val {
+		case 1, 2, 4, 8, 12, 24, 48, 72:
+		case 0:
+			warnings = append(warnings, "0 is no longer a valid value. Using the default value of 24. You will experience configuration drift during the apply phase until a valid value is provided.")
+		default:
+			errors = append(errors, fmt.Errorf("expected %s to be one of %s, got %v", k, "1, 2, 4, 8, 12, 24, 48, 72", val))
+		}
+		return warnings, errors
+	}
+}
+
 func float64Gte(gte float64) schema.SchemaValidateFunc {
 	return func(i interface{}, k string) (s []string, es []error) {
 		v, ok := i.(float64)
