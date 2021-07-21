@@ -128,7 +128,7 @@ func TestAccNewRelicOneDashboard_InvalidNRQL(t *testing.T) {
 			// Test: Create
 			{
 				Config:      testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(rName),
-				ExpectError: regexp.MustCompile("err: newrelic_one_dashboard Create failed:.*"),
+				ExpectError: regexp.MustCompile("Invalid widget input"),
 			},
 		},
 	})
@@ -215,7 +215,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         query      = "FROM Transaction SELECT count(*)"
       }
 
-      warning = 1
+      warning = 0
       critical = 2
     }
 
