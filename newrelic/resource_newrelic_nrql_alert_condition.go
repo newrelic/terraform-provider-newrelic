@@ -60,8 +60,8 @@ func termSchema() *schema.Resource {
 			"threshold_occurrences": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Description:  "The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: 'ALL' or 'AT_LEAST_ONCE' (case insensitive).",
-				ValidateFunc: validation.StringInSlice([]string{"ALL", "AT_LEAST_ONCE"}, true),
+				Description:  "The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: 'ALL' or ANY' (case insensitive).",
+				ValidateFunc: validation.StringInSlice([]string{"ALL", "ANY"}, true),
 				StateFunc: func(v interface{}) string {
 					// Always store lowercase to prevent state drift
 					return strings.ToLower(v.(string))
