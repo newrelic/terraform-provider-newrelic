@@ -513,14 +513,14 @@ resource "newrelic_nrql_alert_condition" "foo" {
     operator              = "above"
     threshold             = 0.75
     threshold_duration    = %[3]s
-    threshold_occurrences = "ANY"
+    threshold_occurrences = "all"
 	}
 
 	warning {
 		operator              = "equals"
 		threshold             = 0.5
 		threshold_duration    = 120
-		threshold_occurrences = "ALL"
+		threshold_occurrences = "ANY"
 	}
 
 	value_function  = "single_value"
@@ -578,7 +578,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 		operator      = "above"
 		priority      = "warning"
 		threshold     = 1.12
-		time_function = ""
+		time_function = "any"
 	}
 
 	violation_time_limit_seconds = 86400
@@ -628,14 +628,14 @@ resource "newrelic_nrql_alert_condition" "foo" {
     operator              = "above"
     threshold             = 1.25666
 		threshold_duration    = %[4]d
-		threshold_occurrences = "ANY"
+		threshold_occurrences = "ALL"
 	}
 
 	warning {
     operator              = "above"
     threshold             = 1.1666
 		threshold_duration    = %[4]d
-		threshold_occurrences = "All"
+		threshold_occurrences = "ANY"
 	}
 
 	# Will be baseline_direction or value_function depending on condition type
@@ -677,7 +677,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
     operator              = "above"
     threshold             = 1.25
 		threshold_duration    = %[4]d
-		threshold_occurrences = "ANY"
+		threshold_occurrences = "ALL"
 	}
 
 	# Will be one of baseline_direction, value_function, expected_groups, or open_violation_on_group_overlap depending on condition type
