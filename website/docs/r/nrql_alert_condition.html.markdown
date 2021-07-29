@@ -271,7 +271,7 @@ resource "newrelic_nrql_alert_condition" "z" {
     operator              = "above"
     threshold_duration    = 120
     threshold             = 3
-    threshold_occurrences = "any"
+    threshold_occurrences = "ANY"
   }
 
   nrql {
