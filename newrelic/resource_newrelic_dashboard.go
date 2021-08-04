@@ -2,13 +2,10 @@ package newrelic
 
 import (
 	"context"
-	"log"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 var (
@@ -167,7 +164,6 @@ func resourceNewRelicDashboard() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{
 				Type:    resourceNewRelicDashboardV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: migrateStateNewRelicDashboardV0toV1,
 				Version: 0,
 			},
 		},
@@ -448,86 +444,17 @@ func widgetSchemaElem() *schema.Resource {
 }
 
 func resourceNewRelicDashboardCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
-	dashboard, err := expandDashboard(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	log.Printf("[INFO] Creating New Relic dashboard: %s", dashboard.Title)
-
-	dashboard, err = client.Dashboards.CreateDashboard(*dashboard)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(strconv.Itoa(dashboard.ID))
-
-	return resourceNewRelicDashboardRead(ctx, d, meta)
+	return diag.Errorf("legacy dashboards have reached end of life, use `newrelic_one_dashboard` or `newrelic_one_dashboard_raw` instead")
 }
 
 func resourceNewRelicDashboardRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
-
-	log.Printf("[INFO] Reading New Relic dashboard %s", d.Id())
-
-	dashboardID, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	dashboard, err := client.Dashboards.GetDashboard(dashboardID)
-	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	return diag.FromErr(flattenDashboard(dashboard, d))
+	return diag.Errorf("legacy dashboards have reached end of life, use `newrelic_one_dashboard` or `newrelic_one_dashboard_raw` instead")
 }
 
 func resourceNewRelicDashboardUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
-	dashboard, err := expandDashboard(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	dashboard.ID = id
-	log.Printf("[INFO] Updating New Relic dashboard %d", id)
-
-	_, err = client.Dashboards.UpdateDashboard(*dashboard)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return resourceNewRelicDashboardRead(ctx, d, meta)
+	return diag.Errorf("legacy dashboards have reached end of life, use `newrelic_one_dashboard` or `newrelic_one_dashboard_raw` instead")
 }
 
 func resourceNewRelicDashboardDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
-
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	log.Printf("[INFO] Deleting New Relic dashboard %v", id)
-
-	if _, err := client.Dashboards.DeleteDashboard(id); err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
-	return nil
+	return diag.Errorf("legacy dashboards have reached end of life, use `newrelic_one_dashboard` or `newrelic_one_dashboard_raw` instead")
 }
