@@ -2,13 +2,10 @@ package newrelic
 
 import (
 	"context"
-	"log"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 var (
@@ -164,104 +161,6 @@ func resourceNewRelicDashboard() *schema.Resource {
 			},
 		},
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    resourceNewRelicDashboardV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: migrateStateNewRelicDashboardV0toV1,
-				Version: 0,
-			},
-		},
-	}
-}
-
-// v2.8.0 changed `widget` from TypeSet to TypeList, but we didn't
-// use state migration. Since this change broke things for some
-// folks trying to upgrade from v2.7.5 to v2.8.0, we have to switch
-// back to TypeSet. So this time we need to make sure we migrate
-// the state to the latest SchemaVersion, this basically reverts
-// the previous change and hopefully allows those that upgraded to
-// v2.8+ to continue to upgrade to which ever version this is
-// released in. In the future, we should always use state migration
-// if an attribute changes its schema type.
-func resourceNewRelicDashboardV0() *schema.Resource {
-	return &schema.Resource{
-		SchemaVersion: 0,
-		CreateContext: resourceNewRelicDashboardCreate,
-		ReadContext:   resourceNewRelicDashboardRead,
-		UpdateContext: resourceNewRelicDashboardUpdate,
-		DeleteContext: resourceNewRelicDashboardDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Schema: map[string]*schema.Schema{
-			"title": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The title of the dashboard.",
-			},
-			"icon": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "bar-chart",
-				ValidateFunc: validation.StringInSlice(validIconValues, false),
-				Description:  "The icon for the dashboard.",
-			},
-			"visibility": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "all",
-				ValidateFunc: validation.StringInSlice([]string{"owner", "all"}, false),
-				Description:  "Determines who can see the dashboard in an account. Valid values are all or owner. Defaults to all.",
-			},
-			"dashboard_url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The URL for viewing the dashboard.",
-			},
-			"editable": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "editable_by_all",
-				ValidateFunc: validation.StringInSlice([]string{"read_only", "editable_by_owner", "editable_by_all", "all"}, false),
-				Description:  "Determines who can edit the dashboard in an account. Valid values are all, editable_by_all, editable_by_owner, or read_only. Defaults to editable_by_all.",
-			},
-			"grid_column_count": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      3,
-				ValidateFunc: validation.IntInSlice([]int{3, 12}),
-				Description:  "New Relic One supports a 3 column grid or a 12 column grid. New Relic Insights supports a 3 column grid.",
-			},
-			"filter": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "A nested block that describes a dashboard filter. Exactly one nested filter block is allowed.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"event_types": {
-							Type:     schema.TypeSet,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-							Required: true,
-							Set:      schema.HashString,
-						},
-						"attributes": {
-							Type:     schema.TypeSet,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-							Optional: true,
-							Set:      schema.HashString,
-						},
-					},
-				},
-			},
-			"widget": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    300,
-				Description: "A nested block that describes a visualization. Up to 300 widget blocks are allowed in a dashboard definition.",
-				Elem:        widgetSchemaElem(),
-			},
-		},
 	}
 }
 
@@ -448,86 +347,17 @@ func widgetSchemaElem() *schema.Resource {
 }
 
 func resourceNewRelicDashboardCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
-	dashboard, err := expandDashboard(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	log.Printf("[INFO] Creating New Relic dashboard: %s", dashboard.Title)
-
-	dashboard, err = client.Dashboards.CreateDashboard(*dashboard)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(strconv.Itoa(dashboard.ID))
-
-	return resourceNewRelicDashboardRead(ctx, d, meta)
+	return diag.Errorf("legacy dashboards have reached end of life, use `newrelic_one_dashboard` or `newrelic_one_dashboard_raw` instead")
 }
 
 func resourceNewRelicDashboardRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
-
-	log.Printf("[INFO] Reading New Relic dashboard %s", d.Id())
-
-	dashboardID, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	dashboard, err := client.Dashboards.GetDashboard(dashboardID)
-	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	return diag.FromErr(flattenDashboard(dashboard, d))
+	return diag.Errorf("legacy dashboards have reached end of life, use `newrelic_one_dashboard` or `newrelic_one_dashboard_raw` instead")
 }
 
 func resourceNewRelicDashboardUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
-	dashboard, err := expandDashboard(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	dashboard.ID = id
-	log.Printf("[INFO] Updating New Relic dashboard %d", id)
-
-	_, err = client.Dashboards.UpdateDashboard(*dashboard)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return resourceNewRelicDashboardRead(ctx, d, meta)
+	return diag.Errorf("legacy dashboards have reached end of life, use `newrelic_one_dashboard` or `newrelic_one_dashboard_raw` instead")
 }
 
 func resourceNewRelicDashboardDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
-
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	log.Printf("[INFO] Deleting New Relic dashboard %v", id)
-
-	if _, err := client.Dashboards.DeleteDashboard(id); err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
-	return nil
+	return diag.Errorf("legacy dashboards have reached end of life, use `newrelic_one_dashboard` or `newrelic_one_dashboard_raw` instead")
 }
