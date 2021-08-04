@@ -6,6 +6,7 @@ import (
 
 // Takes the result of flatmap.Expand for an array of ints
 // and returns a []*int
+// nolint:unused,deadcode
 func expandIntList(configured []interface{}) []int {
 	vs := make([]int, 0, len(configured))
 	for _, v := range configured {
@@ -16,6 +17,7 @@ func expandIntList(configured []interface{}) []int {
 	return vs
 }
 
+// nolint:unused,deadcode
 // Takes the result of schema.Set of strings and returns a []int
 func expandIntSet(configured *schema.Set) []int {
 	return expandIntList(configured.List())
@@ -23,6 +25,7 @@ func expandIntSet(configured *schema.Set) []int {
 
 // Takes the result of flatmap.Expand for an array of strings
 // and returns a []*string
+// nolint:unused,deadcode
 func expandStringList(configured []interface{}) []string {
 	vs := make([]string, 0, len(configured))
 	for _, v := range configured {
@@ -35,6 +38,7 @@ func expandStringList(configured []interface{}) []string {
 }
 
 // Takes the result of schema.Set of strings and returns a []string
+// nolint:unused,deadcode
 func expandStringSet(configured *schema.Set) []string {
 	return expandStringList(configured.List())
 }
