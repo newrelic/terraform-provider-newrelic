@@ -1,7 +1,7 @@
 ---
-layout: 'newrelic'
-page_title: 'Provider: New Relic'
-sidebar_current: 'docs-newrelic-index'
+layout: "newrelic"
+page_title: "Provider: New Relic"
+sidebar_current: "docs-newrelic-index"
 description: |-
   New Relic offers a performance management solution enabling developers to
   diagnose and fix application performance problems in real time.
@@ -53,7 +53,6 @@ resources compared to which endpoint is in use.
 | `newrelic_alert_policy_channel`                     | RESTv2                  | `api_key`             |
 | `newrelic_api_access_key`                           | NerdGraph               | `api_key`             |
 | `newrelic_application_settings`                     | RESTv2                  | `api_key`             |
-| `newrelic_dashboard`                                | RESTv2                  | `api_key`             |
 | `newrelic_entity_tags`                              | NerdGraph               | `api_key`             |
 | `newrelic_events_to_metrics_rule`                   | NerdGraph               | `api_key`             |
 | `newrelic_infra_alert_condition`                    | Infrastructure REST API | `api_key`             |
