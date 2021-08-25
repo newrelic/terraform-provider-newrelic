@@ -15,7 +15,7 @@
 - fix tests
 - 0 violation TTL for Infra Conditions returns warning
 - **MonitorScript:** Add monitor script locations
-- **dashbaord_raw:** add newrelic_one_dashboard_raw
+- **dashboard_raw:** add newrelic_one_dashboard_raw
 - **docs:** added documentation links to the dashboard migration guide
 
 <a name="v2.23.0"></a>
