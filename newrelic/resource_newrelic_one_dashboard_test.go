@@ -215,8 +215,10 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         query      = "FROM Transaction SELECT count(*)"
       }
 
-      warning = 0
-      critical = 2
+      threshold = {
+        warning = 0
+        critical = 2
+      }
     }
 
     widget_bullet {

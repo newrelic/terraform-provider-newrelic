@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"log"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -246,18 +247,13 @@ func dashboardWidgetBarSchemaElem() *schema.Resource {
 func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
 
-	s["critical"] = &schema.Schema{
-		Type:        schema.TypeFloat,
-		Optional:    true,
-		Description: "The critical threshold value.",
+	s["threshold"] = &schema.Schema{
+		Type:             schema.TypeMap,
+		Optional:         true,
+		Description:      "The thresholds to use billboard display.",
+		Elem:             &schema.Schema{Type: schema.TypeFloat},
+		ValidateDiagFunc: validation.MapKeyMatch(regexp.MustCompile("^(warning|critical)$"), "Expected 'warning' or 'critical' for threshold keys. Invalid threshold key"),
 	}
-
-	s["warning"] = &schema.Schema{
-		Type:        schema.TypeFloat,
-		Optional:    true,
-		Description: "The warning threshold value.",
-	}
-
 	return &schema.Resource{
 		Schema: s,
 	}

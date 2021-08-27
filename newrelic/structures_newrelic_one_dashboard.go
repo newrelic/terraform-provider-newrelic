@@ -308,18 +308,21 @@ func expandDashboardBillboardWidgetConfigurationInput(i map[string]interface{}, 
 
 	// optional, order is important (API returns them sorted alpha)
 	cfg.Thresholds = []dashboards.DashboardBillboardWidgetThresholdInput{}
-	if t, ok := i["critical"]; ok {
-		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
-			AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
-			Value:         t.(float64),
-		})
-	}
+	if t, ok := i["threshold"]; ok {
+		t := t.(map[string]interface{})
+		if c, ok := t["critical"]; ok {
+			cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+				AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
+				Value:         c.(float64),
+			})
+		}
 
-	if t, ok := i["warning"]; ok {
-		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
-			AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
-			Value:         t.(float64),
-		})
+		if w, ok := t["warning"]; ok {
+			cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+				AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
+				Value:         w.(float64),
+			})
+		}
 	}
 
 	return &cfg, nil
@@ -673,12 +676,14 @@ func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]in
 			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Billboard.NRQLQueries)
 		}
 		if len(in.Configuration.Billboard.Thresholds) > 0 {
+			t := make(map[string]interface{})
+			out["threshold"] = t
 			for _, v := range in.Configuration.Billboard.Thresholds {
 				switch v.AlertSeverity {
 				case entities.DashboardAlertSeverityTypes.CRITICAL:
-					out["critical"] = v.Value
+					t["critical"] = v.Value
 				case entities.DashboardAlertSeverityTypes.WARNING:
-					out["warning"] = v.Value
+					t["warning"] = v.Value
 				}
 			}
 		}
