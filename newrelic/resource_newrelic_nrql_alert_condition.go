@@ -394,8 +394,31 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 		condition, err = client.Alerts.CreateNrqlConditionOutlierMutationWithContext(ctx, accountID, policyID, *conditionInput)
 	}
 
-	if err != nil {
-		return diag.FromErr(err)
+	var diags diag.Diagnostics
+
+	if graphQLError, ok := err.(*alerts.GraphQLErrorResponse); ok {
+		for _, e := range graphQLError.Errors {
+			var message string = e.Message
+			var errorClass string = e.Extensions.ErrorClass
+			var validationErrors = e.Extensions.ValidationErrors
+
+			if len(validationErrors) == 0 {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  message + ": " + errorClass,
+				})
+			} else {
+				for _, validationError := range validationErrors {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  message + ": " + errorClass,
+						Detail:   validationError.Name + ": " + validationError.Reason,
+					})
+				}
+			}
+		}
+
+		return diags
 	}
 
 	conditionID, err := strconv.Atoi(condition.ID)
@@ -470,8 +493,31 @@ func resourceNewRelicNrqlAlertConditionUpdate(ctx context.Context, d *schema.Res
 		_, err = client.Alerts.UpdateNrqlConditionOutlierMutationWithContext(ctx, accountID, conditionID, *conditionInput)
 	}
 
-	if err != nil {
-		return diag.FromErr(err)
+	var diags diag.Diagnostics
+
+	if graphQLError, ok := err.(*alerts.GraphQLErrorResponse); ok {
+		for _, e := range graphQLError.Errors {
+			var message string = e.Message
+			var errorClass string = e.Extensions.ErrorClass
+			var validationErrors = e.Extensions.ValidationErrors
+
+			if len(validationErrors) == 0 {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  message + ": " + errorClass,
+				})
+			} else {
+				for _, validationError := range validationErrors {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  message + ": " + errorClass,
+						Detail:   validationError.Name + ": " + validationError.Reason,
+					})
+				}
+			}
+		}
+
+		return diags
 	}
 
 	return resourceNewRelicNrqlAlertConditionRead(ctx, d, meta)
