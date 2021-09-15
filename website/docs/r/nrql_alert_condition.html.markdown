@@ -59,6 +59,12 @@ resource "newrelic_nrql_alert_condition" "foo" {
     threshold_duration    = 600
     threshold_occurrences = "ALL"
   }
+
+  signal {
+    aggregation_window = 60
+    aggregation_method = "event_flow"
+    aggregation_delay = 120
+  } 
 }
 ```
 See additional [examples](#additional-examples).
@@ -95,7 +101,7 @@ The following arguments are supported:
 - `expiration_duration` - (Optional) The amount of time (in seconds) to wait before considering the signal expired.
 - `open_violation_on_expiration` - (Optional) Whether to create a new violation to capture that the signal expired.
 - `close_violations_on_expiration` - (Optional) Whether to close all open violations when the signal expires.
-
+- `signal` - (Optional) Configuration that defines the signal that the NRQL condition will use to evaluate. See [SIGNAL](#signal) below for details.
 ## NRQL
 
 The `nrql` block supports the following arguments:
@@ -126,6 +132,21 @@ The `term` block the following arguments:
 - `threshold_occurrences` - (Optional) The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: `all` or `at_least_once` (case insensitive).
 - `duration` - (Optional) **DEPRECATED:** Use `threshold_duration` instead. The duration of time, in _minutes_, that the threshold must violate for in order to create a violation. Must be within 1-120 (inclusive).
 - `time_function` - (Optional) **DEPRECATED:** Use `threshold_occurrences` instead. The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: `all` or `any`.
+
+## Signal
+
+The stream of telemetry data that's watched and alerted on. [Configuration of the signal](https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/alert-conditions/create-nrql-alert-conditions/#advanced-signal) defines what the NRQL condition will use to evaluate.
+
+For more information, see [Streaming Alerts](https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/advanced-alerts/understand-technical-concepts/streaming-alerts-key-terms-concepts/).
+
+The `signal` block supports the following arguments:
+
+- `aggregation_window` - controls the duration of the time window used to evaluate the NRQL query, in seconds. The value must be at least 30 seconds, and no more than 15 minutes (900 seconds). Default is 60 seconds.
+- `fill_option` - determines the type of value that should be used to fill gaps (empty windows). Defaults to `STATIC`. Outlier NRQL conditions may only use `NONE`.
+- `fillValue` - used for filling if using the `STATIC` fill option. Defaults to 0.
+- `aggregation_method` - determines when we consider an aggregation window to be complete so that we can evaluate the signal for violations. Default is `CADENCE`.
+- `aggregation_delay` - how long we wait for data that belongs in each aggregation window. Depending on your data, a longer delay may increase accuracy but delay notifications. Use `aggregationDelay` with the `EVENT_FLOW` and `CADENCE` methods. The maximum delay is 1200 seconds (20 minutes) when using `EVENT_FLOW` and 3600 seconds (60 minutes) when using `CADENCE`. In both cases, the minimum delay is 0 seconds and the default is 120 seconds.
+- `aggregation_timer` - how long we wait after each data point arrives to make sure we've processed the whole batch. Use `aggregationTimer` with the `EVENT_TIMER` method. The timer value can range from 0 seconds to 1200 seconds (20 minutes); the default is 60 seconds.
 
 ## Attributes Reference
 
