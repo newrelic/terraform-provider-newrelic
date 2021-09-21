@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/pkg/common"
 )
 
 // TestAccNewRelicOneDashboardRaw_CreateOnePage Ensure that we can create a NR1 Dashboard
@@ -114,7 +114,7 @@ func testAccCheckNewRelicOneDashboardRawDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := client.Dashboards.GetDashboardEntity(entities.EntityGUID(r.Primary.ID))
+		_, err := client.Dashboards.GetDashboardEntity(common.EntityGUID(r.Primary.ID))
 		if err == nil {
 			return fmt.Errorf("one_dashboard still exists")
 		}
