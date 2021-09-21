@@ -1,4 +1,6 @@
+//go:build integration || unit
 // +build integration unit
+
 //
 // Test helpers
 //
