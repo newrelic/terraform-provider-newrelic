@@ -60,7 +60,7 @@ Once the `newrelic_one_dashboard` is in a good state we need to import the new s
 
 `terraform import newrelic_one_dashboard.[[NAME_OF_RESOURCE]] [[DASHBOARD_GUID]]`
 
-After the import has completed succesfully, you can delete the old `newrelic_dashboard` from the Terraform state. Make sure you replace `[[NAME_OF_RESOURCE]]` with the right resource name.
+After the import has completed successfully, you can delete the old `newrelic_dashboard` from the Terraform state. Make sure you replace `[[NAME_OF_RESOURCE]]` with the right resource name.
 
 `terraform state rm 'newrelic_dashboard.[[NAME_OF_RESOURCE]]`
 

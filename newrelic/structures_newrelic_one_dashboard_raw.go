@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
@@ -61,7 +62,7 @@ func expandDashboardRawPageInput(pages []interface{}, meta interface{}) ([]dashb
 
 		// GUID exists for Update, null for new page
 		if guid, ok := p["guid"]; ok {
-			page.GUID = entities.EntityGUID(guid.(string))
+			page.GUID = common.EntityGUID(guid.(string))
 		}
 
 		if widgets, ok := p["widget"]; ok {
