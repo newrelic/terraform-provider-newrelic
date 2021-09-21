@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	nrErrors "github.com/newrelic/newrelic-client-go/pkg/errors"
 )
@@ -77,7 +78,7 @@ func resourceNewRelicEntityTagsCreate(ctx context.Context, d *schema.ResourceDat
 
 	client := providerConfig.NewClient
 
-	guid := entities.EntityGUID(d.Get("guid").(string))
+	guid := common.EntityGUID(d.Get("guid").(string))
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 
 	_, err := client.Entities.TaggingAddTagsToEntityWithContext(ctx, guid, tags)
@@ -132,7 +133,7 @@ func resourceNewRelicEntityTagsRead(ctx context.Context, d *schema.ResourceData,
 
 	log.Printf("[INFO] Reading New Relic entity tags for entity guid %s", d.Id())
 
-	t, err := client.Entities.GetTagsForEntity(entities.EntityGUID(d.Id()))
+	t, err := client.Entities.GetTagsForEntity(common.EntityGUID(d.Id()))
 
 	if err != nil {
 		if _, ok := err.(*nrErrors.NotFound); ok {
@@ -161,13 +162,13 @@ func resourceNewRelicEntityTagsUpdate(ctx context.Context, d *schema.ResourceDat
 
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 
-	_, err := client.Entities.TaggingReplaceTagsOnEntityWithContext(ctx, entities.EntityGUID(d.Id()), tags)
+	_, err := client.Entities.TaggingReplaceTagsOnEntityWithContext(ctx, common.EntityGUID(d.Id()), tags)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		t, err := client.Entities.GetTagsForEntity(entities.EntityGUID(d.Id()))
+		t, err := client.Entities.GetTagsForEntity(common.EntityGUID(d.Id()))
 		if err != nil {
 			return resource.NonRetryableError(fmt.Errorf("error retrieving entity tags for guid %s: %s", d.Id(), err))
 		}
@@ -232,7 +233,7 @@ func resourceNewRelicEntityTagsDelete(ctx context.Context, d *schema.ResourceDat
 	tags := expandEntityTags(d.Get("tag").(*schema.Set).List())
 	tagKeys := getTagKeys(tags)
 
-	_, err := client.Entities.TaggingDeleteTagFromEntityWithContext(ctx, entities.EntityGUID(d.Id()), tagKeys)
+	_, err := client.Entities.TaggingDeleteTagFromEntityWithContext(ctx, common.EntityGUID(d.Id()), tagKeys)
 	if err != nil {
 		return diag.FromErr(err)
 	}

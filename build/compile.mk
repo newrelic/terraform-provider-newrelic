@@ -29,9 +29,9 @@ compile-all: deps-only
 compile-only: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"
 	@mkdir -p $(BUILD_DIR)/$(GOOS)
-	echo "=== $(PROJECT_NAME) === [ compile          ]:     $(BUILD_DIR)$(GOOS)/$(BINARY)"; \
-	BUILD_FILES=`find $(SRCDIR)/newrelic -type f -name "*.go"` ; \
-	GOOS=$(GOOS) $(GO) build -ldflags=$(LDFLAGS) -o $(BUILD_DIR)/$(GOOS)/$(BINARY) $$BUILD_FILES ; \
+	@echo "=== $(PROJECT_NAME) === [ compile          ]:     $(BUILD_DIR)$(GOOS)/$(BINARY)"
+	@BUILD_FILES=`find $(SRCDIR)/newrelic -type f -name "*.go"` ; \
+		GOOS=$(GOOS) $(GO) build -ldflags=$(LDFLAGS) -o $(BUILD_DIR)/$(GOOS)/$(BINARY) $$BUILD_FILES ; \
 
 # Override GOOS for these specific targets
 compile-darwin: GOOS=darwin
