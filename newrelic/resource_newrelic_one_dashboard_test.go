@@ -297,10 +297,19 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
+	widget_stacked_bar {
+		title = "stacked bar widget"
+		row = 13
+		column = 5
+		nrql_query {
+		  query      = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES"
+		}
+	  }
+
     widget_json {
       title = "JSON widget"
       row = 13
-      column = 1
+      column = 9
       nrql_query {
         query      = "FROM Transaction SELECT average(duration) FACET appName"
       }

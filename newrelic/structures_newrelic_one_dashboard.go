@@ -196,6 +196,22 @@ func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboar
 				page.Widgets = append(page.Widgets, widget)
 			}
 		}
+		if widgets, ok := p["widget_stacked_bar"]; ok {
+			for _, v := range widgets.([]interface{}) {
+				// Get generic properties set
+				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
+				if err != nil {
+					return nil, err
+				}
+				widget.RawConfiguration, err = expandDashboardStackedBarWidgetRawConfigurationInput(v.(map[string]interface{}), meta)
+				if err != nil {
+					return nil, err
+				}
+				widget.Visualization.ID = "viz.stacked-bar"
+
+				page.Widgets = append(page.Widgets, widget)
+			}
+		}
 		if widgets, ok := p["widget_markdown"]; ok {
 			for _, v := range widgets.([]interface{}) {
 				// Get generic properties set
@@ -425,6 +441,23 @@ func expandDashboardLineWidgetConfigurationInput(i map[string]interface{}, meta 
 		return &cfg, nil
 	}
 	return nil, nil
+}
+
+func expandDashboardStackedBarWidgetRawConfigurationInput(i map[string]interface{}, meta interface{}) ([]byte, error) {
+	var err error
+	cfg := struct {
+		NRQLQueries []dashboards.DashboardWidgetNRQLQueryInput `json:"nrqlQueries"`
+	}{}
+
+	// just has queries
+	if q, ok := i["nrql_query"]; ok {
+		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return json.Marshal(cfg)
 }
 
 func expandDashboardMarkdownWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardMarkdownWidgetConfigurationInput, error) {
@@ -739,6 +772,16 @@ func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]in
 		widgetType = "widget_line"
 		if len(in.Configuration.Line.NRQLQueries) > 0 {
 			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Line.NRQLQueries)
+		}
+	case "viz.stacked-bar":
+		widgetType = "widget_stacked_bar"
+		if len(in.RawConfiguration) > 0 {
+			cfg := struct {
+				NRQLQueries []entities.DashboardWidgetNRQLQuery `json:"nrqlQueries"`
+			}{}
+			if err := json.Unmarshal(in.RawConfiguration, &cfg); err == nil {
+				out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&cfg.NRQLQueries)
+			}
 		}
 	case "viz.markdown":
 		widgetType = "widget_markdown"
