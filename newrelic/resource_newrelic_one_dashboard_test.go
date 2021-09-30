@@ -135,6 +135,68 @@ func TestAccNewRelicOneDashboard_InvalidNRQL(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboard_FilterCurrentDashboard Checks if linked_entity_guid is set after updating
+func TestAccNewRelicOneDashboard_FilterCurrentDashboard(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(rName, strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboard_FilterCurrentDashboard("newrelic_one_dashboard.bar", 5),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+// testAccCheckNewRelicOneDashboard_FilterCurrentDashboard fetches the dashboard resource after creation, with an optional sleep time
+// used when we know the async nature of the API will mess with consistent testing. The filter_current_dashboard requires a second call to update
+// the linked_entity_guid to add the page GUID. This also checks to make sure the page GUID matches what has been added.
+func testAccCheckNewRelicOneDashboard_FilterCurrentDashboard(name string, sleepSeconds int) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("not found: %s", name)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no dashboard ID is set")
+		}
+
+		time.Sleep(time.Duration(sleepSeconds) * time.Second)
+
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+		found, err := client.Dashboards.GetDashboardEntity(common.EntityGUID(rs.Primary.ID))
+		if err != nil {
+			return err
+		}
+
+		if string(found.GUID) != rs.Primary.ID {
+			return fmt.Errorf("dashboard not found: %v - %v", rs.Primary.ID, found)
+		}
+
+		if found.Pages[0].Widgets[0].LinkedEntities == nil {
+			return fmt.Errorf("No linked entities found")
+		}
+
+		if len(found.Pages[0].Widgets[0].LinkedEntities) > 1 {
+			return fmt.Errorf("Greater than 1 linked entity found: %d", len(found.Pages[0].Widgets[0].LinkedEntities))
+		}
+
+		if found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID() != rs.Primary.page[0].widget_bar[0].linked_entity_guids[0] {
+			return fmt.Errorf("Page GUID did not match LinkedEntity: %s", found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID())
+		}
+
+		return nil
+	}
+}
+
 // testAccCheckNewRelicOneDashboardConfig_TwoPageBasic generates a TF config snippet for a simple
 // two page dashboard.
 func testAccCheckNewRelicOneDashboardConfig_TwoPageBasic(dashboardName string, accountID string) string {
@@ -178,6 +240,34 @@ func testAccCheckNewRelicOneDashboardConfig_PageSimple(pageName string) string {
 `
 }
 
+func testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(dashboardName string, accountID string) string {
+	return `
+	resource "newrelic_one_dashboard" "bar" {
+
+		name = "` + dashboardName + `"
+	  
+		page {
+		  name = "` + dashboardName + `"
+	  
+		  widget_bar {
+			title = "Average transaction duration, by application"
+			row = 1
+			column = 1
+	  
+			nrql_query {
+			  account_id = ` + accountID + `
+			  query      = "FROM Transaction SELECT average(duration) FACET appName"
+			}
+	  
+			# Linking to self
+			filter_current_dashboard = true
+		  }
+		}
+	  }
+	  
+`
+}
+
 // testAccCheckNewRelicOneDashboardConfig_PageFull generates a TF config snippet that is
 // an entire dashboard page, with all widget types
 func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID string) string {
@@ -206,7 +296,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         query      = "FROM Transaction SELECT count(*) FACET name"
       }
       linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
-    }
+	}
 
     widget_billboard {
       title = "billboard widget"

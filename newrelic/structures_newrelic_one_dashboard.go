@@ -3,6 +3,7 @@ package newrelic
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -773,4 +774,139 @@ func flattenDashboardWidgetNRQLQuery(in *[]entities.DashboardWidgetNRQLQuery) []
 	}
 
 	return out
+}
+
+// Function to find all of the widgets that have filter_current_dashboard set and return the title and layout location to identify later.
+func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interface{}, error) {
+
+	var widgetList []interface{}
+
+	pages := d.Get("page").([]interface{})
+
+	for _, v := range pages {
+		p := v.(map[string]interface{})
+
+		// For each of the widget type, we need to expand them as well
+		if widgets, ok := p["widget_pie"]; ok {
+			for _, widget := range widgets.([]interface{}) {
+				w := widget.(map[string]interface{})
+				if _, ok := w["filter_current_dashboard"]; ok {
+					unqWidget := make(map[string]interface{})
+					if t, ok := w["title"]; ok {
+						unqWidget["title"] = t.(string)
+					}
+					if r, ok := w["row"]; ok {
+						unqWidget["row"] = r.(int)
+					}
+					if c, ok := w["column"]; ok {
+						unqWidget["column"] = c.(int)
+					}
+					widgetList = append(widgetList, unqWidget)
+				}
+			}
+		}
+
+		if widgets, ok := p["widget_table"]; ok {
+			for _, widget := range widgets.([]interface{}) {
+				w := widget.(map[string]interface{})
+				if _, ok := w["filter_current_dashboard"]; ok {
+					unqWidget := make(map[string]interface{})
+					if t, ok := w["title"]; ok {
+						unqWidget["title"] = t.(string)
+					}
+					if r, ok := w["row"]; ok {
+						unqWidget["row"] = r.(int)
+					}
+					if c, ok := w["column"]; ok {
+						unqWidget["column"] = c.(int)
+					}
+					widgetList = append(widgetList, unqWidget)
+				}
+			}
+		}
+
+		if widgets, ok := p["widget_bar"]; ok {
+			for _, widget := range widgets.([]interface{}) {
+				w := widget.(map[string]interface{})
+				if _, ok := w["filter_current_dashboard"]; ok {
+					unqWidget := make(map[string]interface{})
+					if t, ok := w["title"]; ok {
+						unqWidget["title"] = t.(string)
+					}
+					if r, ok := w["row"]; ok {
+						unqWidget["row"] = r.(int)
+					}
+					if c, ok := w["column"]; ok {
+						unqWidget["column"] = c.(int)
+					}
+					widgetList = append(widgetList, unqWidget)
+				}
+			}
+		}
+	}
+
+	return widgetList, nil
+
+}
+
+// Function to set the page guid as the linked entity now that the page is created
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint:gocyclo
+func setDashboardWidgetFilterCurrentDashboardLinkedEntity(d *schema.ResourceData, filterWidgets []interface{}) error {
+
+	if len(filterWidgets) < 1 {
+		log.Printf("[INFO] Empty list of widgets to filter")
+		return nil
+	}
+
+	linkedEntityList := make([]interface{}, 1)
+
+	pages := d.Get("page").([]interface{})
+	for _, v := range pages {
+		p := v.(map[string]interface{})
+		if widgets, ok := p["widget_pie"]; ok {
+			for _, k := range widgets.([]interface{}) {
+				w := k.(map[string]interface{})
+				for _, f := range filterWidgets {
+					e := f.(map[string]interface{})
+					if w["title"] == e["title"] && w["column"] == e["column"] && w["row"] == e["row"] {
+						linkedEntityList[0] = p["guid"]
+						w["linked_entity_guids"] = linkedEntityList
+					}
+				}
+			}
+		}
+
+		if widgets, ok := p["widget_bar"]; ok {
+			for _, k := range widgets.([]interface{}) {
+				w := k.(map[string]interface{})
+				for _, f := range filterWidgets {
+					e := f.(map[string]interface{})
+					if w["title"] == e["title"] && w["column"] == e["column"] && w["row"] == e["row"] {
+						linkedEntityList[0] = p["guid"]
+						w["linked_entity_guids"] = linkedEntityList
+					}
+				}
+			}
+		}
+
+		if widgets, ok := p["widget_table"]; ok {
+			for _, k := range widgets.([]interface{}) {
+				w := k.(map[string]interface{})
+				for _, f := range filterWidgets {
+					e := f.(map[string]interface{})
+					if w["title"] == e["title"] && w["column"] == e["column"] && w["row"] == e["row"] {
+						linkedEntityList[0] = p["guid"]
+						w["linked_entity_guids"] = linkedEntityList
+					}
+				}
+			}
+		}
+	}
+
+	if err := d.Set("page", pages); err != nil {
+		return err
+	}
+
+	return nil
 }
