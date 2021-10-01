@@ -147,6 +147,7 @@ func Provider() *schema.Provider {
 			"newrelic_one_dashboard":                            resourceNewRelicOneDashboard(),
 			"newrelic_one_dashboard_raw":                        resourceNewRelicOneDashboardRaw(),
 			"newrelic_plugins_alert_condition":                  resourceNewRelicPluginsAlertCondition(),
+			"newrelic_service_level":                            resourceNewRelicServiceLevel(),
 			"newrelic_synthetics_alert_condition":               resourceNewRelicSyntheticsAlertCondition(),
 			"newrelic_synthetics_monitor":                       resourceNewRelicSyntheticsMonitor(),
 			"newrelic_synthetics_monitor_script":                resourceNewRelicSyntheticsMonitorScript(),
