@@ -119,6 +119,17 @@ func dashboardRawWidgetSchemaElem() *schema.Resource {
 		DiffSuppressFunc: structure.SuppressJsonDiff,
 	}
 
+	// Expose linked_entity_guids
+	s["linked_entity_guids"] = &schema.Schema{
+		Type: schema.TypeList,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+		Optional:         true,
+		Description:      "(Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.",
+		DiffSuppressFunc: structure.SuppressJsonDiff,
+	}
+
 	return &schema.Resource{
 		Schema: s,
 	}
