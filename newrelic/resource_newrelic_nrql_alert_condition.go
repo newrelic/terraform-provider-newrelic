@@ -167,7 +167,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Required: true,
 						},
 						"since_value": {
-							Deprecated:    "use `evaluation_offset` attribute instead",
+							Deprecated:    "use `signal.aggregation_method` attribute instead",
 							Type:          schema.TypeString,
 							Optional:      true,
 							Description:   "NRQL queries are evaluated in one-minute time windows. The start time depends on the value you provide in the NRQL condition's `since_value`.",
@@ -184,8 +184,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 								return
 							},
 						},
-						// New attribute in NerdGraph. Equivalent to `since_value`.
+						// Equivalent to `since_value`.
 						"evaluation_offset": {
+							Deprecated:    "use `signal.aggregation_method` attribute instead",
 							Type:          schema.TypeInt,
 							Optional:      true,
 							Description:   "NRQL queries are evaluated in one-minute time windows. The start time depends on the value you provide in the NRQL condition's `evaluation_offset`.",
@@ -328,6 +329,24 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Description:  "If using the 'static' fill option, this value will be used for filling gaps in the signal.",
 				RequiredWith: []string{"fill_option"},
 			},
+			"aggregation_method": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"CADENCE", "EVENT_FLOW", "EVENT_TIMER"}, true),
+				Description:  "The method that determines when we consider an aggregation window to be complete so that we can evaluate the signal for violations. Default is CADENCE.",
+			},
+			"aggregation_delay": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "How long we wait for data that belongs in each aggregation window. Depending on your data, a longer delay may increase accuracy but delay notifications. Use aggregationDelay with the EVENT_FLOW and CADENCE aggregation methods.",
+				RequiredWith: []string{"aggregation_method"},
+			},
+			"aggregation_timer": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "How long we wait after each data point arrives to make sure we've processed the whole batch. Use aggregationTimer with the EVENT_TIMER aggregation method.",
+				RequiredWith: []string{"aggregation_method"},
+			},
 			// Baseline ONLY
 			"baseline_direction": {
 				Type:          schema.TypeString,
@@ -357,7 +376,7 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 	accountID := selectAccountID(providerConfig, d)
 	policyID := strconv.Itoa(d.Get("policy_id").(int))
 
-	conditionInput, err := expandNrqlAlertConditionInput(d)
+	conditionInput, err := expandNrqlAlertConditionCreateInput(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -437,7 +456,7 @@ func resourceNewRelicNrqlAlertConditionUpdate(ctx context.Context, d *schema.Res
 
 	conditionID := strconv.Itoa(ids[1])
 
-	conditionInput, err := expandNrqlAlertConditionInput(d)
+	conditionInput, err := expandNrqlAlertConditionUpdateInput(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
