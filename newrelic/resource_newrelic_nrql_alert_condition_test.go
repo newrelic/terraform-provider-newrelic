@@ -510,7 +510,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphValidationErrorBadUserInputOnCre
 					"60",
 				),
 
-				ExpectError: regexp.MustCompile("fill_value: required for static fill option\n"),
+				ExpectError: regexp.MustCompile("Validation Error: BAD_USER_INPUT"),
 			},
 		},
 	})
