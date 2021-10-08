@@ -100,6 +100,28 @@ func testAccCheckNewRelicOneDashboardRawConfig_PageFull(pageName string, account
       }
       EOT
     }
+    widget {
+      title  = "Docker Server CPU"
+      row    = 1
+      column = 3
+      height = 1
+      width  = 1
+      visualization_id = "viz.bar"
+      configuration = jsonencode(
+        {
+          "facet": {
+            "showOtherSeries": false
+          },
+          "nrqlQueries": [
+            {
+	          "accountId": ` + accountID + `,
+	          "query": "SELECT average(cpuPercent) FROM SystemSample since 3 hours ago facet hostname limit 400"
+            }
+          ]
+        }
+      )
+      linked_entity_guids = ["MzI5ODAxNnxWSVp8REFTSEJPQVJEfDI2MTcxNDc"]
+    }
   }
 `
 }
