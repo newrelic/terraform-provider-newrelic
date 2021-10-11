@@ -45,7 +45,7 @@ resource "newrelic_service_level" "foo" {
         name = "Realistic"
         description = "A realistic objective."
         target = 99.00
-        timeWindow {
+        time_window {
             rolling {
                 count = 7
                 unit = "DAY"
