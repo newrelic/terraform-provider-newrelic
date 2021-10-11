@@ -189,7 +189,7 @@ func testAccCheckNewRelicOneDashboard_FilterCurrentDashboard(name string, sleepS
 			return fmt.Errorf("Greater than 1 linked entity found: %d", len(found.Pages[0].Widgets[0].LinkedEntities))
 		}
 
-		if found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID() != rs.Primary.page[0].widget_bar[0].linked_entity_guids[0] {
+		if found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID() != found.Pages[0].GUID {
 			return fmt.Errorf("Page GUID did not match LinkedEntity: %s", found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID())
 		}
 

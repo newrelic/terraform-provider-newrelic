@@ -782,67 +782,38 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 	var widgetList []interface{}
 
 	pages := d.Get("page").([]interface{})
+	selfLinkingWidgets := []string{"widget_bar", "widget_pie", "widget_table"}
 
 	for _, v := range pages {
 		p := v.(map[string]interface{})
 
 		// For each of the widget type, we need to expand them as well
-		if widgets, ok := p["widget_pie"]; ok {
-			for _, widget := range widgets.([]interface{}) {
-				w := widget.(map[string]interface{})
-				if _, ok := w["filter_current_dashboard"]; ok {
-					unqWidget := make(map[string]interface{})
-					if t, ok := w["title"]; ok {
-						unqWidget["title"] = t.(string)
+		for _, widgetType := range selfLinkingWidgets {
+			if widgets, ok := p[widgetType]; ok {
+				for _, widget := range widgets.([]interface{}) {
+					w := widget.(map[string]interface{})
+					if _, ok := w["filter_current_dashboard"]; ok {
+
+						if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) > 0 {
+							return nil, fmt.Errorf("err: filter_current_dashboard can't be set if linked_entity_guids is configured")
+						}
+
+						unqWidget := make(map[string]interface{})
+						if t, ok := w["title"]; ok {
+							unqWidget["title"] = t.(string)
+						}
+						if r, ok := w["row"]; ok {
+							unqWidget["row"] = r.(int)
+						}
+						if c, ok := w["column"]; ok {
+							unqWidget["column"] = c.(int)
+						}
+						widgetList = append(widgetList, unqWidget)
 					}
-					if r, ok := w["row"]; ok {
-						unqWidget["row"] = r.(int)
-					}
-					if c, ok := w["column"]; ok {
-						unqWidget["column"] = c.(int)
-					}
-					widgetList = append(widgetList, unqWidget)
 				}
 			}
 		}
 
-		if widgets, ok := p["widget_table"]; ok {
-			for _, widget := range widgets.([]interface{}) {
-				w := widget.(map[string]interface{})
-				if _, ok := w["filter_current_dashboard"]; ok {
-					unqWidget := make(map[string]interface{})
-					if t, ok := w["title"]; ok {
-						unqWidget["title"] = t.(string)
-					}
-					if r, ok := w["row"]; ok {
-						unqWidget["row"] = r.(int)
-					}
-					if c, ok := w["column"]; ok {
-						unqWidget["column"] = c.(int)
-					}
-					widgetList = append(widgetList, unqWidget)
-				}
-			}
-		}
-
-		if widgets, ok := p["widget_bar"]; ok {
-			for _, widget := range widgets.([]interface{}) {
-				w := widget.(map[string]interface{})
-				if _, ok := w["filter_current_dashboard"]; ok {
-					unqWidget := make(map[string]interface{})
-					if t, ok := w["title"]; ok {
-						unqWidget["title"] = t.(string)
-					}
-					if r, ok := w["row"]; ok {
-						unqWidget["row"] = r.(int)
-					}
-					if c, ok := w["column"]; ok {
-						unqWidget["column"] = c.(int)
-					}
-					widgetList = append(widgetList, unqWidget)
-				}
-			}
-		}
 	}
 
 	return widgetList, nil
@@ -850,8 +821,6 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 }
 
 // Function to set the page guid as the linked entity now that the page is created
-// TODO: Reduce the cyclomatic complexity of this func
-// nolint:gocyclo
 func setDashboardWidgetFilterCurrentDashboardLinkedEntity(d *schema.ResourceData, filterWidgets []interface{}) error {
 
 	if len(filterWidgets) < 1 {
@@ -860,44 +829,21 @@ func setDashboardWidgetFilterCurrentDashboardLinkedEntity(d *schema.ResourceData
 	}
 
 	linkedEntityList := make([]interface{}, 1)
+	selfLinkingWidgets := []string{"widget_bar", "widget_pie", "widget_table"}
 
 	pages := d.Get("page").([]interface{})
 	for _, v := range pages {
 		p := v.(map[string]interface{})
-		if widgets, ok := p["widget_pie"]; ok {
-			for _, k := range widgets.([]interface{}) {
-				w := k.(map[string]interface{})
-				for _, f := range filterWidgets {
-					e := f.(map[string]interface{})
-					if w["title"] == e["title"] && w["column"] == e["column"] && w["row"] == e["row"] {
-						linkedEntityList[0] = p["guid"]
-						w["linked_entity_guids"] = linkedEntityList
-					}
-				}
-			}
-		}
-
-		if widgets, ok := p["widget_bar"]; ok {
-			for _, k := range widgets.([]interface{}) {
-				w := k.(map[string]interface{})
-				for _, f := range filterWidgets {
-					e := f.(map[string]interface{})
-					if w["title"] == e["title"] && w["column"] == e["column"] && w["row"] == e["row"] {
-						linkedEntityList[0] = p["guid"]
-						w["linked_entity_guids"] = linkedEntityList
-					}
-				}
-			}
-		}
-
-		if widgets, ok := p["widget_table"]; ok {
-			for _, k := range widgets.([]interface{}) {
-				w := k.(map[string]interface{})
-				for _, f := range filterWidgets {
-					e := f.(map[string]interface{})
-					if w["title"] == e["title"] && w["column"] == e["column"] && w["row"] == e["row"] {
-						linkedEntityList[0] = p["guid"]
-						w["linked_entity_guids"] = linkedEntityList
+		linkedEntityList[0] = p["guid"]
+		for _, widgetType := range selfLinkingWidgets {
+			if widgets, ok := p[widgetType]; ok {
+				for _, k := range widgets.([]interface{}) {
+					w := k.(map[string]interface{})
+					for _, f := range filterWidgets {
+						e := f.(map[string]interface{})
+						if w["title"] == e["title"] && w["column"] == e["column"] && w["row"] == e["row"] {
+							w["linked_entity_guids"] = linkedEntityList
+						}
 					}
 				}
 			}

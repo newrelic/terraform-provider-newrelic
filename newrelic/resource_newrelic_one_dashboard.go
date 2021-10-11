@@ -363,6 +363,7 @@ func dashboardWidgetLinkedEntityGUIDsSchema() *schema.Schema {
 			Type: schema.TypeString,
 		},
 		Optional:    true,
+		Computed:    true,
 		Description: "Related entities. Currently only supports Dashboard entities, but may allow other cases in the future.",
 	}
 }
@@ -419,6 +420,9 @@ func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceD
 	d.SetId(string(guid))
 
 	res := resourceNewRelicOneDashboardRead(ctx, d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	log.Printf("[INFO] Number of widgets with filter_current_dashboard: %d", len(filterWidgets))
 	if len(filterWidgets) > 0 {
