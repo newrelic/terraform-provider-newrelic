@@ -1,15 +1,15 @@
 # New Relic Terraform Provider
 
--   Documentation: <https://registry.terraform.io/providers/newrelic/newrelic/latest/docs>
--   Terraform Website: <https://www.terraform.io>
--   [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
--   Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
+- Documentation: <https://registry.terraform.io/providers/newrelic/newrelic/latest/docs>
+- Terraform Website: <https://www.terraform.io>
+- [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
+- Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
 <img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
 
 ## Requirements
 
--   [Terraform](https://www.terraform.io/downloads.html) 0.11+
+- [Terraform](https://www.terraform.io/downloads.html) 0.11+
 
 ## Using the provider
 
@@ -18,6 +18,7 @@ To use the latest version of the provider in your Terraform environment, run `te
 If you wish to pin your environment to a specific release of the provider, you can do so with a `required_providers` statement in your Terraform manifest. The `terraform` [configuration block](https://www.terraform.io/docs/configuration/provider-requirements.html) varies slightly depending on which Terraform version you're using. See below for more examples of configuring the provider version for the different versions of Terraform.
 
 For Terraform version 0.13.x
+
 ```hcl
 terraform {
   required_version = "~> 0.13.0"
@@ -31,6 +32,7 @@ terraform {
 ```
 
 For Terraform version 0.12.x
+
 ```hcl
 terraform {
   required_providers {
@@ -42,6 +44,7 @@ terraform {
 ```
 
 For Terraform version 0.11.x
+
 ```hcl
 provider "newrelic" {
   version = "~> 2.7.5"
@@ -87,11 +90,13 @@ $ make test
 ```
 
 In order to run the unit test suite only, run `make test-unit`.
+
 ```sh
 $ make test-unit
 ```
 
 In order to run the acceptance test suite only, run `make test-integration`.
+
 ```sh
 $ make test-integration
 ```
@@ -110,13 +115,11 @@ NEW_RELIC_REGION
 #### Go Version Support
 
 We'll aim to support the latest supported release of Go, along with the
-previous release.  This doesn't mean that building with an older version of Go
+previous release. This doesn't mean that building with an older version of Go
 will not work, but we don't intend to support a Go version in this project that
-is not supported by the larger Go community.  Please see the [Go
+is not supported by the larger Go community. Please see the [Go
 releases][go_releases] page for more details.
 
 [provider_docs]: https://www.terraform.io/docs/providers/newrelic/index.html
-
-[contributing]: https://github.com/newrelic/terraform-provider-newrelic/blob/master/CONTRIBUTING.md
-
+[contributing]: https://github.com/newrelic/terraform-provider-newrelic/blob/main/CONTRIBUTING.md
 [go_releases]: https://github.com/golang/go/wiki/Go-Release-Cycle

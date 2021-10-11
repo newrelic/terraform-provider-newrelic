@@ -1,7 +1,7 @@
 package newrelic
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/workloads"
 )
 
@@ -98,16 +98,16 @@ func expandWorkloadScopeAccountsInput(cfg []interface{}) *workloads.ScopeAccount
 }
 
 func flattenWorkload(workload *workloads.Workload, d *schema.ResourceData) error {
-	d.Set("account_id", workload.Account.ID)
-	d.Set("guid", workload.GUID)
-	d.Set("workload_id", workload.ID)
-	d.Set("name", workload.Name)
-	d.Set("permalink", workload.Permalink)
-	d.Set("composite_entity_search_query", workload.EntitySearchQuery)
+	_ = d.Set("account_id", workload.Account.ID)
+	_ = d.Set("guid", workload.GUID)
+	_ = d.Set("workload_id", workload.ID)
+	_ = d.Set("name", workload.Name)
+	_ = d.Set("permalink", workload.Permalink)
+	_ = d.Set("composite_entity_search_query", workload.EntitySearchQuery)
 
-	d.Set("entity_guids", flattenWorkloadEntityGUIDs(workload.Entities))
-	d.Set("entity_search_query", flattenWorkloadEntitySearchQueries(workload.EntitySearchQueries))
-	d.Set("scope_account_ids", workload.ScopeAccounts.AccountIDs)
+	_ = d.Set("entity_guids", flattenWorkloadEntityGUIDs(workload.Entities))
+	_ = d.Set("entity_search_query", flattenWorkloadEntitySearchQueries(workload.EntitySearchQueries))
+	_ = d.Set("scope_account_ids", workload.ScopeAccounts.AccountIDs)
 
 	return nil
 }

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
@@ -35,12 +35,26 @@ var (
 		alerts.AlertsFillOptionTypes.LAST_VALUE: "last_value",
 		alerts.AlertsFillOptionTypes.STATIC:     "static",
 	}
+
+	// old:new
+	aggregationMethodMap = map[string]*alerts.NrqlConditionAggregationMethod{
+		"cadence":     &alerts.NrqlConditionAggregationMethodTypes.Cadence,
+		"event_flow":  &alerts.NrqlConditionAggregationMethodTypes.EventFlow,
+		"event_timer": &alerts.NrqlConditionAggregationMethodTypes.EventTimer,
+	}
+
+	// new:old
+	aggregationMethodMapNewOld = map[alerts.NrqlConditionAggregationMethod]string{
+		alerts.NrqlConditionAggregationMethodTypes.Cadence:    "cadence",
+		alerts.NrqlConditionAggregationMethodTypes.EventFlow:  "event_flow",
+		alerts.NrqlConditionAggregationMethodTypes.EventTimer: "event_timer",
+	}
 )
 
 // NerdGraph
-func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditionInput, error) {
-	input := alerts.NrqlConditionInput{
-		NrqlConditionBase: alerts.NrqlConditionBase{
+func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlConditionCreateInput, error) {
+	input := alerts.NrqlConditionCreateInput{
+		NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
 			Description: d.Get("description").(string),
 			Enabled:     d.Get("enabled").(bool),
 			Name:        d.Get("name").(string),
@@ -105,7 +119,7 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 		input.ViolationTimeLimit = alerts.NrqlConditionViolationTimeLimit(strings.ToUpper(violationTimeLimit.(string)))
 	}
 
-	nrql, err := expandNrql(d, input)
+	nrql, err := expandCreateNrql(d, input)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +137,99 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 		return nil, err
 	}
 
-	if input.Signal, err = expandSignal(d); err != nil {
+	if input.Signal, err = expandCreateSignal(d); err != nil {
+		return nil, err
+	}
+
+	return &input, nil
+}
+
+func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlConditionUpdateInput, error) {
+	input := alerts.NrqlConditionUpdateInput{
+		NrqlConditionUpdateBase: alerts.NrqlConditionUpdateBase{
+			Description: d.Get("description").(string),
+			Enabled:     d.Get("enabled").(bool),
+			Name:        d.Get("name").(string),
+		},
+	}
+
+	conditionType := strings.ToLower(d.Get("type").(string))
+
+	if conditionType == "baseline" {
+		if attr, ok := d.GetOk("baseline_direction"); ok {
+			direction := alerts.NrqlBaselineDirection(strings.ToUpper(attr.(string)))
+			input.BaselineDirection = &direction
+		} else {
+			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", "baseline_direction", conditionType)
+		}
+	}
+
+	if conditionType == "static" {
+		if attr, ok := d.GetOk("value_function"); ok {
+			valFn := alerts.NrqlConditionValueFunction(strings.ToUpper(attr.(string)))
+			input.ValueFunction = &valFn
+		} else {
+			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", "value_function", conditionType)
+		}
+	}
+
+	if conditionType == "outlier" {
+		defaultExpectedGroups := 1
+		if expectedGroups, ok := d.GetOk("expected_groups"); ok {
+			expectedGroupsValue := expectedGroups.(int)
+			input.ExpectedGroups = &expectedGroupsValue
+		} else {
+			input.ExpectedGroups = &defaultExpectedGroups
+		}
+
+		var openViolationOnOverlap bool
+		if violationOnOverlap, ok := d.GetOkExists("open_violation_on_group_overlap"); ok {
+			openViolationOnOverlap = violationOnOverlap.(bool)
+
+			if *input.ExpectedGroups < 2 && openViolationOnOverlap {
+				return nil, fmt.Errorf("attribute `%s` must be set to false when `expected_groups` is 1", "open_violation_on_group_overlap")
+			}
+		} else if ignoreOverlap, ok := d.GetOkExists("ignore_overlap"); ok {
+			// Note: ignore_overlap is the inverse of open_violation_on_group_overlap
+			openViolationOnOverlap = !ignoreOverlap.(bool)
+
+			if *input.ExpectedGroups < 2 && openViolationOnOverlap {
+				return nil, fmt.Errorf("attribute `%s` must be set to true when `expected_groups` is 1", "ignore_overlap")
+			}
+		}
+
+		input.OpenViolationOnGroupOverlap = &openViolationOnOverlap
+	}
+
+	if runbookURL, ok := d.GetOk("runbook_url"); ok {
+		input.RunbookURL = runbookURL.(string)
+	}
+
+	if violationTimeLimitSec, ok := d.GetOk("violation_time_limit_seconds"); ok {
+		input.ViolationTimeLimitSeconds = violationTimeLimitSec.(int)
+	} else if violationTimeLimit, ok := d.GetOk("violation_time_limit"); ok {
+		input.ViolationTimeLimit = alerts.NrqlConditionViolationTimeLimit(strings.ToUpper(violationTimeLimit.(string)))
+	}
+
+	nrql, err := expandUpdateNrql(d, input)
+	if err != nil {
+		return nil, err
+	}
+
+	input.Nrql = *nrql
+
+	terms, err := expandNrqlTerms(d, conditionType)
+	if err != nil {
+		return nil, err
+	}
+
+	input.Terms = terms
+
+	if input.Expiration, err = expandExpiration(d); err != nil {
+		return nil, err
+	}
+
+	if input.Signal, err = expandUpdateSignal(d); err != nil {
 		return nil, err
 	}
 
@@ -131,8 +237,8 @@ func expandNrqlAlertConditionInput(d *schema.ResourceData) (*alerts.NrqlConditio
 }
 
 // NerdGraph
-func expandNrql(d *schema.ResourceData, condition alerts.NrqlConditionInput) (*alerts.NrqlConditionQuery, error) {
-	var nrql alerts.NrqlConditionQuery
+func expandCreateNrql(d *schema.ResourceData, condition alerts.NrqlConditionCreateInput) (*alerts.NrqlConditionCreateQuery, error) {
+	var nrql alerts.NrqlConditionCreateQuery
 
 	if nrqlQuery, ok := d.GetOk("nrql.0.query"); ok {
 		nrql.Query = nrqlQuery.(string)
@@ -144,11 +250,33 @@ func expandNrql(d *schema.ResourceData, condition alerts.NrqlConditionInput) (*a
 			return nil, err
 		}
 
-		nrql.EvaluationOffset = sv
+		nrql.EvaluationOffset = &sv
 	} else if evalOffset, ok := d.GetOk("nrql.0.evaluation_offset"); ok {
-		nrql.EvaluationOffset = evalOffset.(int)
-	} else {
-		return nil, fmt.Errorf("one of `since_value` or `evaluation_offset` must be configured for block `nrql`")
+		eo := evalOffset.(int)
+		nrql.EvaluationOffset = &eo
+	}
+
+	return &nrql, nil
+}
+
+// NerdGraph
+func expandUpdateNrql(d *schema.ResourceData, condition alerts.NrqlConditionUpdateInput) (*alerts.NrqlConditionUpdateQuery, error) {
+	var nrql alerts.NrqlConditionUpdateQuery
+
+	if nrqlQuery, ok := d.GetOk("nrql.0.query"); ok {
+		nrql.Query = nrqlQuery.(string)
+	}
+
+	if sinceValue, ok := d.GetOk("nrql.0.since_value"); ok {
+		sv, err := strconv.Atoi(sinceValue.(string))
+		if err != nil {
+			return nil, err
+		}
+
+		nrql.EvaluationOffset = &sv
+	} else if evalOffset, ok := d.GetOk("nrql.0.evaluation_offset"); ok {
+		eo := evalOffset.(int)
+		nrql.EvaluationOffset = &eo
 	}
 
 	return &nrql, nil
@@ -321,8 +449,8 @@ func expandExpiration(d *schema.ResourceData) (*alerts.AlertsNrqlConditionExpira
 }
 
 // NerdGraph
-func expandSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionSignal, error) {
-	signal := alerts.AlertsNrqlConditionSignal{
+func expandCreateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionCreateSignal, error) {
+	signal := alerts.AlertsNrqlConditionCreateSignal{
 		FillOption: fillOptionMap[strings.ToLower(d.Get("fill_option").(string))],
 	}
 
@@ -340,6 +468,65 @@ func expandSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionSignal, er
 		signal.AggregationWindow = &v
 	}
 
+	if _, ok := d.GetOk("aggregation_method"); ok {
+		v := aggregationMethodMap[strings.ToLower(d.Get("aggregation_method").(string))]
+
+		signal.AggregationMethod = v
+	}
+
+	if aggregationDelay, ok := d.GetOk("aggregation_delay"); ok {
+		v := aggregationDelay.(int)
+
+		signal.AggregationDelay = &v
+	}
+
+	if aggregationTimer, ok := d.GetOk("aggregation_timer"); ok {
+		v := aggregationTimer.(int)
+
+		signal.AggregationTimer = &v
+	}
+
+	return &signal, nil
+}
+
+// NerdGraph
+func expandUpdateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionUpdateSignal, error) {
+	signal := alerts.AlertsNrqlConditionUpdateSignal{
+		FillOption: fillOptionMap[strings.ToLower(d.Get("fill_option").(string))],
+	}
+
+	// Due to the way that nulls are handled as zeros in Terraform 0.11, add another check that a 0 fill_value
+	// can only be applied when the fill_option is static
+	if fillValue, ok := d.GetOkExists("fill_value"); ok {
+		v := fillValue.(float64)
+		if v != 0 || (signal.FillOption != nil && *signal.FillOption == alerts.AlertsFillOptionTypes.STATIC) {
+			signal.FillValue = &v
+		}
+	}
+
+	if aggregationWindow, ok := d.GetOk("aggregation_window"); ok {
+		v := aggregationWindow.(int)
+		signal.AggregationWindow = &v
+	}
+
+	if _, ok := d.GetOk("aggregation_method"); ok {
+		v := aggregationMethodMap[strings.ToLower(d.Get("aggregation_method").(string))]
+
+		signal.AggregationMethod = v
+	}
+
+	if aggregationDelay, ok := d.GetOk("aggregation_delay"); ok {
+		v := aggregationDelay.(int)
+
+		signal.AggregationDelay = &v
+	}
+
+	if aggregationTimer, ok := d.GetOk("aggregation_timer"); ok {
+		v := aggregationTimer.(int)
+
+		signal.AggregationTimer = &v
+	}
+
 	return &signal, nil
 }
 
@@ -352,32 +539,32 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 
 	conditionType := strings.ToLower(string(condition.Type))
 
-	d.Set("account_id", accountID)
-	d.Set("type", conditionType)
-	d.Set("description", condition.Description)
-	d.Set("policy_id", policyID)
-	d.Set("name", condition.Name)
-	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("enabled", condition.Enabled)
+	_ = d.Set("account_id", accountID)
+	_ = d.Set("type", conditionType)
+	_ = d.Set("description", condition.Description)
+	_ = d.Set("policy_id", policyID)
+	_ = d.Set("name", condition.Name)
+	_ = d.Set("runbook_url", condition.RunbookURL)
+	_ = d.Set("enabled", condition.Enabled)
 
 	if conditionType == "baseline" {
-		d.Set("baseline_direction", string(*condition.BaselineDirection))
+		_ = d.Set("baseline_direction", string(*condition.BaselineDirection))
 	}
 
 	if conditionType == "static" {
-		d.Set("value_function", string(*condition.ValueFunction))
+		_ = d.Set("value_function", string(*condition.ValueFunction))
 	}
 
 	if conditionType == "outlier" {
-		d.Set("expected_groups", *condition.ExpectedGroups)
+		_ = d.Set("expected_groups", *condition.ExpectedGroups)
 
 		openViolationOnGroupOverlap := *condition.OpenViolationOnGroupOverlap
 		if _, ok := d.GetOkExists("open_violation_on_group_overlap"); ok {
-			d.Set("open_violation_on_group_overlap", openViolationOnGroupOverlap)
+			_ = d.Set("open_violation_on_group_overlap", openViolationOnGroupOverlap)
 		} else if _, ok := d.GetOkExists("ignore_overlap"); ok {
-			d.Set("ignore_overlap", !openViolationOnGroupOverlap)
+			_ = d.Set("ignore_overlap", !openViolationOnGroupOverlap)
 		} else {
-			d.Set("open_violation_on_group_overlap", openViolationOnGroupOverlap)
+			_ = d.Set("open_violation_on_group_overlap", openViolationOnGroupOverlap)
 		}
 	}
 
@@ -421,9 +608,9 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	}
 
 	if _, ok := d.GetOk("violation_time_limit_seconds"); ok {
-		d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
+		_ = d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
 	} else {
-		d.Set("violation_time_limit", condition.ViolationTimeLimit)
+		_ = d.Set("violation_time_limit", condition.ViolationTimeLimit)
 	}
 
 	if err := flattenExpiration(d, condition.Expiration); err != nil {
@@ -478,6 +665,24 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 		}
 	}
 
+	if signal.AggregationMethod != nil {
+		if err := d.Set("aggregation_method", aggregationMethodMapNewOld[*signal.AggregationMethod]); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_method`: %v", err)
+		}
+	}
+
+	if signal.AggregationDelay != nil {
+		if err := d.Set("aggregation_delay", signal.AggregationDelay); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_delay`: %v", err)
+		}
+	}
+
+	if signal.AggregationTimer != nil {
+		if err := d.Set("aggregation_timer", signal.AggregationTimer); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_timer`: %v", err)
+		}
+	}
+
 	return nil
 }
 
@@ -491,7 +696,8 @@ func flattenNrql(nrql alerts.NrqlConditionQuery, configNrql map[string]interface
 
 	// Handle deprecated
 	if svRaw != nil && svRaw.(string) != "" {
-		out["since_value"] = strconv.Itoa(nrql.EvaluationOffset)
+		evalOffset := nrql.EvaluationOffset
+		out["since_value"] = strconv.Itoa(*evalOffset)
 	} else {
 		out["evaluation_offset"] = nrql.EvaluationOffset
 	}

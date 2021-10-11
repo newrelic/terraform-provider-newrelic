@@ -1,21 +1,23 @@
 package newrelic
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
 	"regexp"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNewRelicInsightsEvent() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicInsightsEventCreate,
-		Read:   schema.Noop,
-		Delete: schema.RemoveFromState,
+		CreateContext: resourceNewRelicInsightsEventCreate,
+		ReadContext:   schema.NoopContext,
+		Delete:        schema.RemoveFromState,
 
 		Schema: map[string]*schema.Schema{
 			"event": {
@@ -116,7 +118,7 @@ func (e *InsightsEvent) MarshalJSON() ([]byte, error) {
 	return b, nil
 }
 
-func resourceNewRelicInsightsEventCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicInsightsEventCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).InsightsInsertClient
 	var eventsPayload []*InsightsEvent
 
@@ -141,19 +143,19 @@ func resourceNewRelicInsightsEventCreate(d *schema.ResourceData, meta interface{
 				case "int":
 					f, err := strconv.Atoi(val.(string))
 					if err != nil {
-						return fmt.Errorf("unable to convert value %q to an int", val)
+						return diag.Errorf("unable to convert value %q to an int", val)
 					}
 					val = f
 				case "float":
 					f, err := strconv.ParseFloat(val.(string), 64)
 					if err != nil {
-						return fmt.Errorf("unable to convert value %q to a float", val)
+						return diag.Errorf("unable to convert value %q to a float", val)
 					}
 					val = f
 				case "string": // do nothing
 				case "": // do nothing
 				default:
-					return fmt.Errorf("%q is not a valid type for an attribute value", valType)
+					return diag.Errorf("%q is not a valid type for an attribute value", valType)
 				}
 
 				eventPayload.Attributes[i] = map[string]interface{}{key: val}
@@ -163,7 +165,7 @@ func resourceNewRelicInsightsEventCreate(d *schema.ResourceData, meta interface{
 	}
 
 	if err := client.PostEvent(eventsPayload); err != nil {
-		return fmt.Errorf("error occurreed while posting events to Insights: %q", err)
+		return diag.Errorf("error occurreed while posting events to Insights: %q", err)
 	}
 
 	d.SetId(fmt.Sprintf("%d", rand.Int()))

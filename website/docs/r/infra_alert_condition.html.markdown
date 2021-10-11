@@ -22,12 +22,13 @@ resource "newrelic_alert_policy" "foo" {
 resource "newrelic_infra_alert_condition" "high_disk_usage" {
   policy_id = newrelic_alert_policy.foo.id
 
-  name       = "High disk usage"
-  type       = "infra_metric"
-  event      = "StorageSample"
-  select     = "diskUsedPercent"
-  comparison = "above"
-  where      = "(hostname LIKE '%frontend%')"
+  name        = "High disk usage"
+  description = "Warning if disk usage goes above 80% and critical alert if goes above 90%"
+  type        = "infra_metric"
+  event       = "StorageSample"
+  select      = "diskUsedPercent"
+  comparison  = "above"
+  where       = "(hostname LIKE '%frontend%')"
 
   critical {
     duration      = 25
@@ -45,12 +46,13 @@ resource "newrelic_infra_alert_condition" "high_disk_usage" {
 resource "newrelic_infra_alert_condition" "high_db_conn_count" {
   policy_id = newrelic_alert_policy.foo.id
 
-  name       = "High database connection count"
-  type       = "infra_metric"
-  event      = "DatastoreSample"
-  select     = "provider.databaseConnections.Average"
-  comparison = "above"
-  where      = "(hostname LIKE '%db%')"
+  name        = "High database connection count"
+  description = "Critical alert when the number of database connections goes above 90"
+  type        = "infra_metric"
+  event       = "DatastoreSample"
+  select      = "provider.databaseConnections.Average"
+  comparison  = "above"
+  where       = "(hostname LIKE '%db%')"
   integration_provider = "RdsDbInstance"
 
   critical {
@@ -64,6 +66,7 @@ resource "newrelic_infra_alert_condition" "process_not_running" {
   policy_id = newrelic_alert_policy.foo.id
 
   name             = "Process not running (/usr/bin/ruby)"
+  description      = "Critical alert when ruby isn't running"
   type             = "infra_process_running"
   comparison       = "equal"
   where            = "hostname = 'web01'"
@@ -78,9 +81,10 @@ resource "newrelic_infra_alert_condition" "process_not_running" {
 resource "newrelic_infra_alert_condition" "host_not_reporting" {
   policy_id = newrelic_alert_policy.foo.id
 
-  name       = "Host not reporting"
-  type       = "infra_host_not_reporting"
-  where      = "(hostname LIKE '%frontend%')"
+  name        = "Host not reporting"
+  description = "Critical alert when the host is not reporting"
+  type        = "infra_host_not_reporting"
+  where       = "(hostname LIKE '%frontend%')"
 
   critical {
     duration = 5
@@ -104,8 +108,9 @@ The following arguments are supported:
   * `where` - (Optional) If applicable, this identifies any Infrastructure host filters used; for example: `hostname LIKE '%cassandra%'`.
   * `process_where` - (Optional) Any filters applied to processes; for example: `commandName = 'java'`.  Required by the `infra_process_running` condition type.
   * `integration_provider` - (Optional) For alerts on integrations, use this instead of `event`.  Supported by the `infra_metric` condition type.
+  * `description` - (Optional) The description of the Infrastructure alert condition.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
-  * `violation_close_timer` - (Optional) Determines how much time will pass before a violation is automatically closed. Setting the time limit to 0 prevents a violation from being force-closed.
+  * `violation_close_timer` - (Optional) Determines how much time will pass (in hours) before a violation is automatically closed. Valid values are `1 2 4 8 12 24 48 72`. Defaults to 24. If `0` is provided, default of `24` is used and will have configuration drift during the apply phase until a valid value is provided. 
 
 ## Attributes Reference
 

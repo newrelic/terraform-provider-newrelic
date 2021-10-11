@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package newrelic
@@ -9,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/newrelic/newrelic-client-go/pkg/common"
 )
 
 // TestAccNewRelicOneDashboard_CreateOnePage Ensure that we can create a NR1 Dashboard
@@ -128,7 +129,7 @@ func TestAccNewRelicOneDashboard_InvalidNRQL(t *testing.T) {
 			// Test: Create
 			{
 				Config:      testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(rName),
-				ExpectError: regexp.MustCompile("err: newrelic_one_dashboard Create failed:.*"),
+				ExpectError: regexp.MustCompile("Invalid widget input"),
 			},
 		},
 	})
@@ -194,7 +195,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       nrql_query {
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 51 TIMESERIES"
-			}
+      }
     }
 
     widget_bar {
@@ -203,8 +204,8 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       column = 1
       nrql_query {
         query      = "FROM Transaction SELECT count(*) FACET name"
-			}
-			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+      }
+      linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_billboard {
@@ -215,8 +216,8 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         query      = "FROM Transaction SELECT count(*)"
       }
 
-      warning = 1
-			critical = 2
+      warning = 0
+      critical = 2
     }
 
     widget_bullet {
@@ -266,14 +267,14 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       }
       nrql_query {
         query      = "FROM Transaction SELECT 2 TIMESERIES"
-			}
+      }
     }
 
     widget_markdown {
       title = "markdown widget"
       row = 10
       column = 5
-			text = "# Header text"
+      text = "# Header text"
     }
 
     widget_pie {
@@ -282,8 +283,8 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       column = 9
       nrql_query {
         query      = "FROM Transaction SELECT count(*) FACET name"
-			}
-			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+      }
+      linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
     widget_table {
@@ -292,8 +293,17 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       column = 1
       nrql_query {
         query      = "FROM Transaction SELECT average(duration) FACET appName"
-			}
-			linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+      }
+      linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+    }
+
+    widget_json {
+      title = "JSON widget"
+      row = 13
+      column = 1
+      nrql_query {
+        query      = "FROM Transaction SELECT average(duration) FACET appName"
+      }
     }
   }
 `
@@ -337,7 +347,7 @@ func testAccCheckNewRelicOneDashboardExists(name string, sleepSeconds int) resou
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		found, err := client.Dashboards.GetDashboardEntity(entities.EntityGUID(rs.Primary.ID))
+		found, err := client.Dashboards.GetDashboardEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
@@ -360,7 +370,7 @@ func testAccCheckNewRelicOneDashboardDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := client.Dashboards.GetDashboardEntity(entities.EntityGUID(r.Primary.ID))
+		_, err := client.Dashboards.GetDashboardEntity(common.EntityGUID(r.Primary.ID))
 		if err == nil {
 			return fmt.Errorf("one_dashboard still exists")
 		}

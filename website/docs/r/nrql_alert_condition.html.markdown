@@ -23,27 +23,26 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  account_id                   = <Your Account ID>
-  policy_id                    = newrelic_alert_policy.foo.id
-  type                         = "static"
-  name                         = "foo"
-  description                  = "Alert when transactions are taking too long"
-  runbook_url                  = "https://www.example.com"
-  enabled                      = true
-  violation_time_limit_seconds = 3600
-  value_function               = "single_value"
-
-  fill_option          = "static"
-  fill_value           = 1.0
-
+  account_id                     = <Your Account ID>
+  policy_id                      = newrelic_alert_policy.foo.id
+  type                           = "static"
+  name                           = "foo"
+  description                    = "Alert when transactions are taking too long"
+  runbook_url                    = "https://www.example.com"
+  enabled                        = true
+  violation_time_limit_seconds   = 3600
+  value_function                 = "single_value"
+  fill_option                    = "static"
+  fill_value                     = 1.0
   aggregation_window             = 60
+  aggregation_method             = "event_flow"
+  aggregation_delay              = 120
   expiration_duration            = 120
   open_violation_on_expiration   = true
   close_violations_on_expiration = true
 
   nrql {
-    query             = "SELECT average(duration) FROM Transaction where appName = 'Your App'"
-    evaluation_offset = 3
+    query = "SELECT average(duration) FROM Transaction where appName = 'Your App'"
   }
 
   critical {
@@ -79,7 +78,7 @@ The following arguments are supported:
 - `term` - (Optional) **DEPRECATED** Use `critical`, and `warning` instead.  A list of terms for this condition. See [Terms](#terms) below for details.
 - `critical` - (Required) A list containing the `critical` threshold values. See [Terms](#terms) below for details.
 - `warning` - (Optional) A list containing the `warning` threshold values. See [Terms](#terms) below for details.
-- `value_function` - (Required if `type` is `static`, optional when `type` is `baseline` or `outlier` ) Possible values are `single_value`, `sum` (case insensitive).
+- `value_function` - (Required if `type` is `static`, omit when `type` is `baseline` or `outlier` ) Possible values are `single_value`, `sum` (case insensitive).
 - `expected_groups` - (Optional) Number of expected groups when using `outlier` detection.
 - `open_violation_on_group_overlap` - (Optional) Whether or not to trigger a violation when groups overlap. Set to `true` if you want to trigger a violation when groups overlap. This argument is only applicable in `outlier` conditions.
 - `ignore_overlap` - (Optional) **DEPRECATED:** Use `open_violation_on_group_overlap` instead, but use the inverse value of your boolean - e.g. if `ignore_overlap = false`, use `open_violation_on_group_overlap = true`. This argument sets whether to trigger a violation when groups overlap. If set to `true` overlapping groups will not trigger a violation. This argument is only applicable in `outlier` conditions.
@@ -95,17 +94,17 @@ The following arguments are supported:
 - `expiration_duration` - (Optional) The amount of time (in seconds) to wait before considering the signal expired.
 - `open_violation_on_expiration` - (Optional) Whether to create a new violation to capture that the signal expired.
 - `close_violations_on_expiration` - (Optional) Whether to close all open violations when the signal expires.
+- `aggregation_method` - (Optional) Determines when we consider an aggregation window to be complete so that we can evaluate the signal for violations. Possible values are `cadence`, `event_flow` or `event_timer`. Default is `event_flow`. `aggregation_method` cannot be set with `nrql.evaluation_offset`.
+- `aggregation_delay` - (Optional) How long we wait for data that belongs in each aggregation window. Depending on your data, a longer delay may increase accuracy but delay notifications. Use `aggregation_delay` with the `event_flow` and `cadence` methods. The maximum delay is 1200 seconds (20 minutes) when using `event_flow` and 3600 seconds (60 minutes) when using `cadence`. In both cases, the minimum delay is 0 seconds and the default is 120 seconds. `aggregation_delay` cannot be set with `nrql.evaluation_offset`.
+- `aggregation_timer` - (Optional) How long we wait after each data point arrives to make sure we've processed the whole batch. Use `aggregation_timer` with the `event_timer` method. The timer value can range from 0 seconds to 1200 seconds (20 minutes); the default is 60 seconds. `aggregation_timer` cannot be set with `nrql.evaluation_offset`.
 
 ## NRQL
 
 The `nrql` block supports the following arguments:
 
 - `query` - (Required) The NRQL query to execute for the condition.
-- `evaluation_offset` - (Optional*) Represented in minutes and must be within 1-20 minutes (inclusive). NRQL queries are evaluated in one-minute time windows. The start time depends on this value. It's recommended to set this to 3 minutes. An offset of less than 3 minutes will trigger violations sooner, but you may see more false positives and negatives due to data latency. With `evaluation_offset` set to 3 minutes, the NRQL time window applied to your query will be: `SINCE 3 minutes ago UNTIL 2 minutes ago`.<br>
-<small>\***Note**: One of `evaluation_offset` _or_ `since_value` must be set, but not both.</small>
-
-- `since_value` - (Optional*)  **DEPRECATED:** Use `evaluation_offset` instead. The value to be used in the `SINCE <X> minutes ago` clause for the NRQL query. Must be between 1-20 (inclusive). <br>
-<small>\***Note**: One of `evaluation_offset` _or_ `since_value` must be set, but not both.</small>
+- `evaluation_offset` - (Optional) **DEPRECATED:** Use `aggregation_method` instead. Represented in minutes and must be within 1-20 minutes (inclusive). NRQL queries are evaluated based on their `aggregation_window` size. The start time depends on this value. It's recommended to set this to 3 windows. An offset of less than 3 windows will trigger violations sooner, but you may see more false positives and negatives due to data latency. With `evaluation_offset` set to 3 windows and an `aggregation_window` of 60 seconds, the NRQL time window applied to your query will be: `SINCE 3 minutes ago UNTIL 2 minutes ago`. `evaluation_offset` cannot be set with `aggregation_method`, `aggregation_delay`, or `aggregation_timer`.<br>
+- `since_value` - (Optional)  **DEPRECATED:** Use `aggregation_method` instead. The value to be used in the `SINCE <X> minutes ago` clause for the NRQL query. Must be between 1-20 (inclusive). <br>
 
 ## Terms
 
@@ -115,7 +114,7 @@ NRQL alert conditions support up to two terms. At least one `term` must have `pr
 
 The `term` block the following arguments:
 
-- `operator` - (Optional) Valid values are `above`, `below`, or `equals` (case insensitive). Defaults to `equals`. Note that when using a `type` of `outlier`, the only valid option here is `above`.
+- `operator` - (Optional) Valid values are `above`, `below`, or `equals` (case insensitive). Defaults to `equals`. Note that when using a `type` of `outlier` or `baseline`, the only valid option here is `above`.
 - `priority` - (Optional) `critical` or `warning`. Defaults to `critical`.
 - `threshold` - (Required) The value which will trigger a violation. Must be `0` or greater.
 <br>For _baseline_ NRQL alert conditions, the value must be in the range [1, 1000]. The value is the number of standard deviations from the baseline that the metric must exceed in order to create a violation.
@@ -155,13 +154,14 @@ resource "newrelic_nrql_alert_condition" "foo" {
   enabled                      = true
   runbook_url                  = "https://www.example.com"
   violation_time_limit_seconds = 3600
+  aggregation_method           = "event_flow"
+  aggregation_delay            = 120
 
   # baseline type only
   baseline_direction = "upper_only"
 
   nrql {
-    query             = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName'"
-    evaluation_offset = 3
+    query = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName'"
   }
 
   critical {
@@ -200,6 +200,8 @@ resource "newrelic_nrql_alert_condition" "foo" {
   enabled                      = true
   runbook_url                  = "https://www.example.com"
   violation_time_limit_seconds = 3600
+  aggregation_method           = "event_flow"
+  aggregation_delay            = 120
 
   # Outlier only
   expected_groups = 2
@@ -208,8 +210,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	open_violation_on_group_overlap = true
 
   nrql {
-    query             = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName' FACET host"
-    evaluation_offset = 3
+    query = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName' FACET host"
   }
 
   critical {
@@ -276,8 +277,7 @@ resource "newrelic_nrql_alert_condition" "z" {
   }
 
   nrql {
-    query             = "SELECT count(*) FROM TransactionError WHERE appName like '%Dummy App%' FACET appName"
-    evaluation_offset = 2
+    query = "SELECT count(*) FROM TransactionError WHERE appName like '%Dummy App%' FACET appName"
   }
 }
 ```
@@ -305,8 +305,7 @@ resource "newrelic_nrql_alert_condition" "z" {
   }
 
   nrql {
-    query       = "SELECT count(*) FROM TransactionError WHERE appName like '%Dummy App%' FACET appName"
-    since_value = 3
+    query = "SELECT count(*) FROM TransactionError WHERE appName like '%Dummy App%' FACET appName"
   }
 }
 ```

@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package newrelic
@@ -8,9 +9,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
@@ -397,6 +398,124 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_NerdGraphStreamingMethods(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+	delay := "null"
+	timer := "null"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create (NerdGraph) condition with streaming method cadence
+			{
+				Config: testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
+					rName,
+					"cadence",
+					"60",
+					timer,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Update (NerdGraph) condition with streaming method event_timer
+			{
+				Config: testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
+					rName,
+					"event_timer",
+					delay,
+					"120",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicNrqlAlertCondition_NerdGraphNrqlEvaluationOffset(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+	delay := "null"
+	timer := "null"
+	method := "null"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create (NerdGraph) condition with nrql.evaluationOffset
+			{
+				Config: testAccNewRelicNrqlAlertConditionNrqlEvaluationOffsetNerdGraphConfig(
+					rName,
+					method,
+					delay,
+					timer,
+					20,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Update (NerdGraph) condition to remove nrql.evaluationOffset and replace with streaming methods
+			{
+				Config: testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
+					rName,
+					"event_timer",
+					delay,
+					"120",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			//Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Ignore items with deprecated fields because
+				// we don't set deprecated fields on import
+				ImportStateVerifyIgnore: []string{
+					"term",                 // contains nested attributes that are deprecated
+					"nrql",                 // contains nested attributes that are deprecated
+					"violation_time_limit", // deprecated in favor of violation_time_limit_seconds
+				},
+				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "static"),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicNrqlAlertCondition_NerdGraphValidationErrorBadUserInputOnCreate(t *testing.T) {
+	rNameStatic := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create fails with error: `fillOption` of static must be provided with `fillValue`
+			{
+				Config: testAccNewRelicNrqlAlertStaticNerdGraphConfigInvalid(
+					rNameStatic,
+					"20",
+					"120",
+					"",
+					"60",
+				),
+
+				ExpectError: regexp.MustCompile("Validation Error: BAD_USER_INPUT"),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -684,4 +803,136 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	%[5]s
 }
 `, name, conditionType, nrqlEvalOffset, termDuration, conditionalAttr, facetClause)
+}
+
+func testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
+	name string,
+	method string,
+	delay string,
+	timer string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                           = "tf-test-%[1]s"
+	type                           = "static"
+	runbook_url                    = "https://foo.example.com"
+	enabled                        = false
+	description                    = "test description"
+	violation_time_limit_seconds   = 3600
+	close_violations_on_expiration = true
+	open_violation_on_expiration   = true
+	expiration_duration            = 120
+	aggregation_window             = 60
+	value_function 				   = "single_value"
+
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+    operator              = "above"
+    threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
+	aggregation_method = "%[2]s"
+	aggregation_delay = %[3]s
+	aggregation_timer = %[4]s
+}
+`, name, method, delay, timer)
+}
+
+func testAccNewRelicNrqlAlertConditionNrqlEvaluationOffsetNerdGraphConfig(
+	name string,
+	method string,
+	delay string,
+	timer string,
+	nrqlEvalOffset int,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                           = "tf-test-%[1]s"
+	type                           = "static"
+	runbook_url                    = "https://foo.example.com"
+	enabled                        = false
+	description                    = "test description"
+	violation_time_limit_seconds   = 3600
+	close_violations_on_expiration = true
+	open_violation_on_expiration   = true
+	expiration_duration            = 120
+	aggregation_window             = 60
+	value_function 				   = "single_value"
+
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+		evaluation_offset = %[5]d
+	}
+
+	critical {
+    operator              = "above"
+    threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
+	aggregation_delay = %[3]s
+	aggregation_timer = %[4]s
+}
+`, name, method, delay, timer, nrqlEvalOffset)
+}
+
+// `fill_option` of `static` must provide `fill_value`
+func testAccNewRelicNrqlAlertStaticNerdGraphConfigInvalid(
+	name string,
+	evaluationOffset string,
+	duration string,
+	conditionalAttrs string,
+	aggregationWindow string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id = newrelic_alert_policy.foo.id
+  name                           = "tf-test-%[1]s"
+  runbook_url                    = "https://foo.example.com"
+  enabled                        = false
+  violation_time_limit_seconds   = 28800
+  fill_option                    = "static"
+  aggregation_window             = %[5]s
+  close_violations_on_expiration = true
+  open_violation_on_expiration   = true
+  expiration_duration            = 120
+	nrql {
+    query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+    evaluation_offset = "%[2]s"
+	}
+	critical {
+    operator              = "above"
+    threshold             = 0.75
+    threshold_duration    = %[3]s
+    threshold_occurrences = "all"
+	}
+	warning {
+		operator              = "equals"
+		threshold             = 0.5
+		threshold_duration    = 120
+		threshold_occurrences = "AT_LEAST_ONCE"
+	}
+	value_function  = "single_value"
+	%[4]s
+}
+`, name, evaluationOffset, duration, conditionalAttrs, aggregationWindow)
 }

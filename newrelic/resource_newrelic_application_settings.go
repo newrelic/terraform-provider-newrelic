@@ -1,23 +1,24 @@
 package newrelic
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
 )
 
 func resourceNewRelicApplicationSettings() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicApplicationSettingsCreate,
-		Read:   resourceNewRelicApplicationSettingsRead,
-		Update: resourceNewRelicApplicationSettingsUpdate,
-		Delete: resourceNewRelicApplicationSettingsDelete,
+		CreateContext: resourceNewRelicApplicationSettingsCreate,
+		ReadContext:   resourceNewRelicApplicationSettingsRead,
+		UpdateContext: resourceNewRelicApplicationSettingsUpdate,
+		DeleteContext: resourceNewRelicApplicationSettingsDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -40,7 +41,7 @@ func resourceNewRelicApplicationSettings() *schema.Resource {
 	}
 }
 
-func resourceNewRelicApplicationSettingsCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicApplicationSettingsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	userApp := expandApplication(d)
@@ -49,44 +50,44 @@ func resourceNewRelicApplicationSettingsCreate(d *schema.ResourceData, meta inte
 		Name: userApp.Name,
 	}
 
-	result, err := client.APM.ListApplications(&listParams)
+	result, err := client.APM.ListApplicationsWithContext(ctx, &listParams)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if len(result) != 1 {
-		return fmt.Errorf("more/less than one result from query for %s", userApp.Name)
+		return diag.Errorf("more/less than one result from query for %s", userApp.Name)
 	}
 
 	app := *result[0]
 
 	if app.Name != userApp.Name {
-		return fmt.Errorf("the result name %s does not match requested name %s", app.Name, userApp.Name)
+		return diag.Errorf("the result name %s does not match requested name %s", app.Name, userApp.Name)
 	}
 
 	d.SetId(strconv.Itoa(app.ID))
 
 	log.Printf("[INFO] Importing New Relic application %v", userApp.Name)
-	return resourceNewRelicApplicationSettingsUpdate(d, meta)
+	return resourceNewRelicApplicationSettingsUpdate(ctx, d, meta)
 }
 
-func resourceNewRelicApplicationSettingsRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicApplicationSettingsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	userApp := expandApplication(d)
 	log.Printf("[INFO] Reading New Relic application %+v", userApp)
 
-	app, err := client.APM.GetApplication(userApp.ID)
+	app, err := client.APM.GetApplicationWithContext(ctx, userApp.ID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Read found New Relic application %+v\n\n\n", app)
 
-	return flattenApplication(app, d)
+	return diag.FromErr(flattenApplication(app, d))
 }
 
-func resourceNewRelicApplicationSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicApplicationSettingsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	userApp := expandApplication(d)
@@ -98,17 +99,17 @@ func resourceNewRelicApplicationSettingsUpdate(d *schema.ResourceData, meta inte
 
 	log.Printf("[INFO] Updating New Relic application %+v with params: %+v", userApp, updateParams)
 
-	app, err := client.APM.UpdateApplication(userApp.ID, updateParams)
+	app, err := client.APM.UpdateApplicationWithContext(ctx, userApp.ID, updateParams)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	time.Sleep(2 * time.Second)
 
-	return flattenApplication(app, d)
+	return diag.FromErr(flattenApplication(app, d))
 }
 
-func resourceNewRelicApplicationSettingsDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicApplicationSettingsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// You can not delete application settings
 	return nil
 }

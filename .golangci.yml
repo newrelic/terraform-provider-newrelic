@@ -8,18 +8,18 @@ linters-settings:
   errcheck:
     ignoretests: true
     ignore: github.com/hashicorp/terraform-plugin-sdk/helper/schema:ForceNew|Set,github.com/hashicorp/terraform-plugin-sdk/helper/schema:Set,github.com/newrelic/terraform-provider-newrelic/newrelic:Set,io:Close|Write
-  golint:
-    # minimal confidence for issues, default is 0.8
-    min-confidence: 0.5
   gocyclo:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 20
   govet:
     # report about shadowed variables
     check-shadowing: true
-  maligned:
-    # print struct with more effective memory layout or not, false by default
-    suggest-new: true
+    enable:
+      - assign
+      - bools
+      - framepointer
+      - stringintconv
+      - structtag
   misspell:
     ignore-words:
       - newrelic
@@ -31,12 +31,11 @@ linters:
     - errcheck
     - gocyclo
     - gofmt
-    - golint
     - gosimple
     - govet
     - ineffassign
-    - maligned
     - misspell
+    - revive
     - staticcheck
     - structcheck
     - unconvert

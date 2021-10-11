@@ -1,18 +1,19 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/apm"
 )
 
 func dataSourceNewRelicKeyTransaction() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNewRelicKeyTransactionRead,
-
+		ReadContext: dataSourceNewRelicKeyTransactionRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -23,7 +24,7 @@ func dataSourceNewRelicKeyTransaction() *schema.Resource {
 	}
 }
 
-func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceNewRelicKeyTransactionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic key transactions")
@@ -34,9 +35,9 @@ func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface
 		Name: name,
 	}
 
-	transactions, err := client.APM.ListKeyTransactions(&params)
+	transactions, err := client.APM.ListKeyTransactionsWithContext(ctx, &params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var transaction *apm.KeyTransaction
@@ -49,7 +50,7 @@ func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface
 	}
 
 	if transaction == nil {
-		return fmt.Errorf("the name '%s' does not match any New Relic key transaction", name)
+		return diag.FromErr(fmt.Errorf("the name '%s' does not match any New Relic key transaction", name))
 	}
 
 	flattenKeyTransaction(transaction, d)
@@ -59,5 +60,5 @@ func dataSourceNewRelicKeyTransactionRead(d *schema.ResourceData, meta interface
 
 func flattenKeyTransaction(t *apm.KeyTransaction, d *schema.ResourceData) {
 	d.SetId(strconv.Itoa(t.ID))
-	d.Set("name", t.Name)
+	_ = d.Set("name", t.Name)
 }
