@@ -1,18 +1,20 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
 
 func dataSourceNewRelicEntity() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNewRelicEntityRead,
+		ReadContext: dataSourceNewRelicEntityRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -89,7 +91,7 @@ func dataSourceNewRelicEntity() *schema.Resource {
 	}
 }
 
-func dataSourceNewRelicEntityRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic entities")
@@ -107,9 +109,9 @@ func dataSourceNewRelicEntityRead(d *schema.ResourceData, meta interface{}) erro
 		Domain: domain,
 	}
 
-	entityResults, err := client.Entities.GetEntitySearch(entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
+	entityResults, err := client.Entities.GetEntitySearchWithContext(ctx, entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var entity *entities.EntityOutlineInterface
@@ -122,10 +124,10 @@ func dataSourceNewRelicEntityRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if entity == nil {
-		return fmt.Errorf("the name '%s' does not match any New Relic One entity for the given search parameters (ignore_case: %t)", name, ignoreCase)
+		return diag.FromErr(fmt.Errorf("the name '%s' does not match any New Relic One entity for the given search parameters (ignore_case: %t)", name, ignoreCase))
 	}
 
-	return flattenEntityData(entity, d)
+	return diag.FromErr(flattenEntityData(entity, d))
 }
 
 func flattenEntityData(entity *entities.EntityOutlineInterface, d *schema.ResourceData) error {

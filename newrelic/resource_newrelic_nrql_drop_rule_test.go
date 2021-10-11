@@ -1,14 +1,16 @@
+//go:build integration
 // +build integration
 
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNewRelicNRQLDropRule_Data(t *testing.T) {
@@ -104,7 +106,7 @@ func testAccCheckNewRelicNRQLDropRuleDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = getNRQLDropRuleByID(client, accountID, ruleID)
+		_, err = getNRQLDropRuleByID(context.Background(), client, accountID, ruleID)
 
 		if err == nil {
 			return fmt.Errorf("drop rule still exists: %s", err)

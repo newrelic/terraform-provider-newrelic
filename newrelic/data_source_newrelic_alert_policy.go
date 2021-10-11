@@ -1,18 +1,19 @@
 package newrelic
 
 import (
-	"errors"
+	"context"
 	"fmt"
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
 func dataSourceNewRelicAlertPolicy() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNewRelicAlertPolicyRead,
+		ReadContext: dataSourceNewRelicAlertPolicyRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -44,11 +45,11 @@ func dataSourceNewRelicAlertPolicy() *schema.Resource {
 	}
 }
 
-func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceNewRelicAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cfg := meta.(*ProviderConfig)
 
 	if !cfg.hasNerdGraphCredentials() {
-		return errors.New("err: NerdGraph support not present, but required for Read")
+		return diag.Errorf("err: NerdGraph support not present, but required for Read")
 	}
 
 	client := cfg.NewClient
@@ -60,9 +61,9 @@ func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{})
 
 	params := alerts.AlertsPoliciesSearchCriteriaInput{}
 
-	policies, err := client.Alerts.QueryPolicySearch(accountID, params)
+	policies, err := client.Alerts.QueryPolicySearchWithContext(ctx, accountID, params)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var policy *alerts.AlertsPolicy
@@ -76,10 +77,10 @@ func dataSourceNewRelicAlertPolicyRead(d *schema.ResourceData, meta interface{})
 	}
 
 	if policy == nil {
-		return fmt.Errorf("the name '%s' does not match any New Relic alert policy", name)
+		return diag.FromErr(fmt.Errorf("the name '%s' does not match any New Relic alert policy", name))
 	}
 
 	d.SetId(policy.ID)
 
-	return flattenAlertPolicy(policy, d, accountID)
+	return diag.FromErr(flattenAlertPolicy(policy, d, accountID))
 }

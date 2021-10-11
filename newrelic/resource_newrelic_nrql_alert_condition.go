@@ -1,13 +1,15 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
@@ -114,12 +116,12 @@ func termSchemaDeprecated() *schema.Resource {
 
 func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicNrqlAlertConditionCreate,
-		Read:   resourceNewRelicNrqlAlertConditionRead,
-		Update: resourceNewRelicNrqlAlertConditionUpdate,
-		Delete: resourceNewRelicNrqlAlertConditionDelete,
+		CreateContext: resourceNewRelicNrqlAlertConditionCreate,
+		ReadContext:   resourceNewRelicNrqlAlertConditionRead,
+		UpdateContext: resourceNewRelicNrqlAlertConditionUpdate,
+		DeleteContext: resourceNewRelicNrqlAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceImportStateWithMetadata(2, "type"),
+			StateContext: resourceImportStateWithMetadata(2, "type"),
 		},
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
@@ -165,7 +167,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Required: true,
 						},
 						"since_value": {
-							Deprecated:    "use `evaluation_offset` attribute instead",
+							Deprecated:    "use `signal.aggregation_method` attribute instead",
 							Type:          schema.TypeString,
 							Optional:      true,
 							Description:   "NRQL queries are evaluated in one-minute time windows. The start time depends on the value you provide in the NRQL condition's `since_value`.",
@@ -182,8 +184,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 								return
 							},
 						},
-						// New attribute in NerdGraph. Equivalent to `since_value`.
+						// Equivalent to `since_value`.
 						"evaluation_offset": {
+							Deprecated:    "use `signal.aggregation_method` attribute instead",
 							Type:          schema.TypeInt,
 							Optional:      true,
 							Description:   "NRQL queries are evaluated in one-minute time windows. The start time depends on the value you provide in the NRQL condition's `evaluation_offset`.",
@@ -326,6 +329,24 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Description:  "If using the 'static' fill option, this value will be used for filling gaps in the signal.",
 				RequiredWith: []string{"fill_option"},
 			},
+			"aggregation_method": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"CADENCE", "EVENT_FLOW", "EVENT_TIMER"}, true),
+				Description:  "The method that determines when we consider an aggregation window to be complete so that we can evaluate the signal for violations. Default is CADENCE.",
+			},
+			"aggregation_delay": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "How long we wait for data that belongs in each aggregation window. Depending on your data, a longer delay may increase accuracy but delay notifications. Use aggregationDelay with the EVENT_FLOW and CADENCE aggregation methods.",
+				RequiredWith: []string{"aggregation_method"},
+			},
+			"aggregation_timer": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "How long we wait after each data point arrives to make sure we've processed the whole batch. Use aggregationTimer with the EVENT_TIMER aggregation method.",
+				RequiredWith: []string{"aggregation_method"},
+			},
 			// Baseline ONLY
 			"baseline_direction": {
 				Type:          schema.TypeString,
@@ -348,16 +369,16 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 	}
 }
 
-func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
 	accountID := selectAccountID(providerConfig, d)
 	policyID := strconv.Itoa(d.Get("policy_id").(int))
 
-	conditionInput, err := expandNrqlAlertConditionInput(d)
+	conditionInput, err := expandNrqlAlertConditionCreateInput(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating New Relic NRQL alert condition %s via NerdGraph API", conditionInput.Name)
@@ -366,28 +387,51 @@ func resourceNewRelicNrqlAlertConditionCreate(d *schema.ResourceData, meta inter
 
 	switch d.Get("type").(string) {
 	case "baseline":
-		condition, err = client.Alerts.CreateNrqlConditionBaselineMutation(accountID, policyID, *conditionInput)
+		condition, err = client.Alerts.CreateNrqlConditionBaselineMutationWithContext(ctx, accountID, policyID, *conditionInput)
 	case "static":
-		condition, err = client.Alerts.CreateNrqlConditionStaticMutation(accountID, policyID, *conditionInput)
+		condition, err = client.Alerts.CreateNrqlConditionStaticMutationWithContext(ctx, accountID, policyID, *conditionInput)
 	case "outlier":
-		condition, err = client.Alerts.CreateNrqlConditionOutlierMutation(accountID, policyID, *conditionInput)
+		condition, err = client.Alerts.CreateNrqlConditionOutlierMutationWithContext(ctx, accountID, policyID, *conditionInput)
 	}
 
-	if err != nil {
-		return err
+	var diags diag.Diagnostics
+
+	if graphQLError, ok := err.(*alerts.GraphQLErrorResponse); ok {
+		for _, e := range graphQLError.Errors {
+			var message string = e.Message
+			var errorClass string = e.Extensions.ErrorClass
+			var validationErrors = e.Extensions.ValidationErrors
+
+			if len(validationErrors) == 0 {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  message + ": " + errorClass,
+				})
+			} else {
+				for _, validationError := range validationErrors {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  message + ": " + errorClass,
+						Detail:   validationError.Name + ": " + validationError.Reason,
+					})
+				}
+			}
+		}
+
+		return diags
 	}
 
 	conditionID, err := strconv.Atoi(condition.ID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(serializeIDs([]int{d.Get("policy_id").(int), conditionID}))
 
-	return resourceNewRelicNrqlAlertConditionRead(d, meta)
+	return resourceNewRelicNrqlAlertConditionRead(ctx, d, meta)
 }
 
-func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicNrqlAlertConditionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -396,83 +440,106 @@ func resourceNewRelicNrqlAlertConditionRead(d *schema.ResourceData, meta interfa
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	policyID := ids[0]
 	conditionID := ids[1]
 
-	_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
+	_, err = client.Alerts.QueryPolicyWithContext(ctx, accountID, strconv.Itoa(policyID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
-	nrqlCondition, err := client.Alerts.GetNrqlConditionQuery(accountID, strconv.Itoa(conditionID))
+	nrqlCondition, err := client.Alerts.GetNrqlConditionQueryWithContext(ctx, accountID, strconv.Itoa(conditionID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenNrqlAlertCondition(accountID, nrqlCondition, d)
+	return diag.FromErr(flattenNrqlAlertCondition(accountID, nrqlCondition, d))
 }
 
-func resourceNewRelicNrqlAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicNrqlAlertConditionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	conditionID := strconv.Itoa(ids[1])
 
-	conditionInput, err := expandNrqlAlertConditionInput(d)
+	conditionInput, err := expandNrqlAlertConditionUpdateInput(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	switch d.Get("type").(string) {
 	case "baseline":
-		_, err = client.Alerts.UpdateNrqlConditionBaselineMutation(accountID, conditionID, *conditionInput)
+		_, err = client.Alerts.UpdateNrqlConditionBaselineMutationWithContext(ctx, accountID, conditionID, *conditionInput)
 	case "static":
-		_, err = client.Alerts.UpdateNrqlConditionStaticMutation(accountID, conditionID, *conditionInput)
+		_, err = client.Alerts.UpdateNrqlConditionStaticMutationWithContext(ctx, accountID, conditionID, *conditionInput)
 	case "outlier":
-		_, err = client.Alerts.UpdateNrqlConditionOutlierMutation(accountID, conditionID, *conditionInput)
+		_, err = client.Alerts.UpdateNrqlConditionOutlierMutationWithContext(ctx, accountID, conditionID, *conditionInput)
 	}
 
-	if err != nil {
-		return err
+	var diags diag.Diagnostics
+
+	if graphQLError, ok := err.(*alerts.GraphQLErrorResponse); ok {
+		for _, e := range graphQLError.Errors {
+			var message string = e.Message
+			var errorClass string = e.Extensions.ErrorClass
+			var validationErrors = e.Extensions.ValidationErrors
+
+			if len(validationErrors) == 0 {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  message + ": " + errorClass,
+				})
+			} else {
+				for _, validationError := range validationErrors {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  message + ": " + errorClass,
+						Detail:   validationError.Name + ": " + validationError.Reason,
+					})
+				}
+			}
+		}
+
+		return diags
 	}
 
-	return resourceNewRelicNrqlAlertConditionRead(d, meta)
+	return resourceNewRelicNrqlAlertConditionRead(ctx, d, meta)
 }
 
-func resourceNewRelicNrqlAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicNrqlAlertConditionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	conditionID := strconv.Itoa(ids[1])
 
 	log.Printf("[INFO] Deleting New Relic NRQL alert condition %v", conditionID)
 
-	_, err = client.Alerts.DeleteNrqlConditionMutation(accountID, conditionID)
+	_, err = client.Alerts.DeleteNrqlConditionMutationWithContext(ctx, accountID, conditionID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

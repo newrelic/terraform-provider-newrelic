@@ -1,24 +1,18 @@
 package newrelic
 
 import (
-	"log"
-	"strconv"
+	"errors"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: "`newrelic_plugins_alert_condition` has been deprecated.  Use `newrelic_nrql_alert_condition` instead.",
-		Create:             resourceNewRelicPluginsAlertConditionCreate,
-		Read:               resourceNewRelicPluginsAlertConditionRead,
-		Update:             resourceNewRelicPluginsAlertConditionUpdate,
-		Delete:             resourceNewRelicPluginsAlertConditionDelete,
-		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
-		},
+		Create: resourceNewRelicPluginsAlertConditionCreate,
+		Read:   resourceNewRelicPluginsAlertConditionRead,
+		Update: resourceNewRelicPluginsAlertConditionUpdate,
+		Delete: resourceNewRelicPluginsAlertConditionDelete,
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
 				Type:        schema.TypeInt,
@@ -91,10 +85,9 @@ func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 							Description:  "One of `critical` or `warning`. Defaults to critical.",
 						},
 						"threshold": {
-							Type:         schema.TypeFloat,
-							Required:     true,
-							ValidateFunc: float64Gte(0.0),
-							Description:  "Must be 0 or greater.",
+							Type:        schema.TypeFloat,
+							Required:    true,
+							Description: "Must be 0 or greater.",
 						},
 						"time_function": {
 							Type:         schema.TypeString,
@@ -122,100 +115,17 @@ func resourceNewRelicPluginsAlertCondition() *schema.Resource {
 }
 
 func resourceNewRelicPluginsAlertConditionCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
-	condition := expandPluginsCondition(d)
-	policyID := d.Get("policy_id").(int)
-
-	log.Printf("[INFO] Creating New Relic alert condition %s", condition.Name)
-
-	condition, err := client.Alerts.CreatePluginsCondition(policyID, *condition)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(serializeIDs([]int{policyID, condition.ID}))
-
-	return nil
+	return errors.New("plugins have reached end of life, use `newrelic_nrql_alert_condition` instead")
 }
 
 func resourceNewRelicPluginsAlertConditionRead(d *schema.ResourceData, meta interface{}) error {
-	providerConfig := meta.(*ProviderConfig)
-	client := meta.(*ProviderConfig).NewClient
-	accountID := selectAccountID(providerConfig, d)
-
-	log.Printf("[INFO] Reading New Relic alert condition %s", d.Id())
-
-	ids, err := parseIDs(d.Id(), 2)
-	if err != nil {
-		return err
-	}
-
-	policyID := ids[0]
-	id := ids[1]
-
-	_, err = client.Alerts.QueryPolicy(accountID, strconv.Itoa(policyID))
-	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
-		return err
-	}
-
-	condition, err := client.Alerts.GetPluginsCondition(policyID, id)
-	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
-
-		return err
-	}
-
-	d.Set("policy_id", policyID)
-
-	return flattenPluginsCondition(condition, d)
+	return errors.New("plugins have reached end of life, use `newrelic_nrql_alert_condition` instead")
 }
 
 func resourceNewRelicPluginsAlertConditionUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
-	condition := expandPluginsCondition(d)
-
-	ids, err := parseIDs(d.Id(), 2)
-	if err != nil {
-		return err
-	}
-
-	id := ids[1]
-	condition.ID = id
-
-	log.Printf("[INFO] Updating New Relic alert condition %d", id)
-
-	updatedCondition, err := client.Alerts.UpdatePluginsCondition(*condition)
-	if err != nil {
-		return err
-	}
-
-	return flattenPluginsCondition(updatedCondition, d)
+	return errors.New("plugins have reached end of life, use `newrelic_nrql_alert_condition` instead")
 }
 
 func resourceNewRelicPluginsAlertConditionDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderConfig).NewClient
-
-	ids, err := parseIDs(d.Id(), 2)
-	if err != nil {
-		return err
-	}
-
-	id := ids[1]
-
-	log.Printf("[INFO] Deleting New Relic alert condition %d", id)
-
-	_, err = client.Alerts.DeletePluginsCondition(id)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return errors.New("plugins have reached end of life, use `newrelic_nrql_alert_condition` instead")
 }

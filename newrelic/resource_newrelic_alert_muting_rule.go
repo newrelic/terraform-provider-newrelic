@@ -1,15 +1,17 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
@@ -94,12 +96,12 @@ func scheduleSchema() *schema.Resource {
 
 func resourceNewRelicAlertMutingRule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNewRelicAlertMutingRuleCreate,
-		Read:   resourceNewRelicAlertMutingRuleRead,
-		Update: resourceNewRelicAlertMutingRuleUpdate,
-		Delete: resourceNewRelicAlertMutingRuleDelete,
+		CreateContext: resourceNewRelicAlertMutingRuleCreate,
+		ReadContext:   resourceNewRelicAlertMutingRuleRead,
+		UpdateContext: resourceNewRelicAlertMutingRuleUpdate,
+		DeleteContext: resourceNewRelicAlertMutingRuleDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -178,56 +180,56 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 	}
 }
 
-func resourceNewRelicAlertMutingRuleCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicAlertMutingRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
 	createInput, err := expandMutingRuleCreateInput(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Creating New Relic alert muting rule.")
 
-	created, err := client.Alerts.CreateMutingRule(accountID, createInput)
+	created, err := client.Alerts.CreateMutingRuleWithContext(ctx, accountID, createInput)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(serializeIDs([]int{accountID, created.ID}))
 
-	return resourceNewRelicAlertMutingRuleRead(d, meta)
+	return resourceNewRelicAlertMutingRuleRead(ctx, d, meta)
 }
 
-func resourceNewRelicAlertMutingRuleRead(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicAlertMutingRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic alert muting rule.")
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	accountID := ids[0]
 	mutingRuleID := ids[1]
 
-	mutingRule, err := client.Alerts.GetMutingRule(accountID, mutingRuleID)
+	mutingRule, err := client.Alerts.GetMutingRuleWithContext(ctx, accountID, mutingRuleID)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 
-	return flattenMutingRule(mutingRule, d)
+	return diag.FromErr(flattenMutingRule(mutingRule, d))
 }
 
-func resourceNewRelicAlertMutingRuleUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicAlertMutingRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -236,40 +238,40 @@ func resourceNewRelicAlertMutingRuleUpdate(d *schema.ResourceData, meta interfac
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	mutingRuleID := ids[1]
 
 	updateInput, err := expandMutingRuleUpdateInput(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	_, err = client.Alerts.UpdateMutingRule(accountID, mutingRuleID, updateInput)
+	_, err = client.Alerts.UpdateMutingRuleWithContext(ctx, accountID, mutingRuleID, updateInput)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicAlertMutingRuleRead(d, meta)
+	return resourceNewRelicAlertMutingRuleRead(ctx, d, meta)
 }
 
-func resourceNewRelicAlertMutingRuleDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceNewRelicAlertMutingRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Deleting New Relic One muting rule alert.")
 
 	ids, err := parseHashedIDs(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	accountID := ids[0]
 	mutingRuleID := ids[1]
 
-	err = client.Alerts.DeleteMutingRule(accountID, mutingRuleID)
+	err = client.Alerts.DeleteMutingRuleWithContext(ctx, accountID, mutingRuleID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
