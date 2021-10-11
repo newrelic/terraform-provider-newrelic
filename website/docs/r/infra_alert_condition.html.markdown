@@ -110,7 +110,7 @@ The following arguments are supported:
   * `integration_provider` - (Optional) For alerts on integrations, use this instead of `event`.  Supported by the `infra_metric` condition type.
   * `description` - (Optional) The description of the Infrastructure alert condition.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
-  * `violation_close_timer` - (Optional) Determines how much time will pass before a violation is automatically closed. Setting the time limit to 0 prevents a violation from being force-closed.
+  * `violation_close_timer` - (Optional) Determines how much time will pass (in hours) before a violation is automatically closed. Valid values are `1 2 4 8 12 24 48 72`. Defaults to 24. If `0` is provided, default of `24` is used and will have configuration drift during the apply phase until a valid value is provided. 
 
 ## Attributes Reference
 

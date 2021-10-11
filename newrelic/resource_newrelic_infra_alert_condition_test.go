@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package newrelic
@@ -170,7 +171,7 @@ func TestAccNewRelicInfraAlertCondition_ThresholdFloatValue(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicInfraAlertCondition_ViolationCloseTimerDisable(t *testing.T) {
+func TestAccNewRelicInfraAlertCondition_ViolationCloseTimer(t *testing.T) {
 	if !nrInternalAccount {
 		t.Skipf("New Relic internal testing account required")
 	}
@@ -185,10 +186,41 @@ func TestAccNewRelicInfraAlertCondition_ViolationCloseTimerDisable(t *testing.T)
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicInfraAlertConditionWithZeroValueViolationCloseTimerConfig(rName),
+				Config: testAccNewRelicInfraAlertConditionWithViolationCloseTimerConfig(rName, 24),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicInfraAlertCondition_ViolationCloseTimerZeroValue(t *testing.T) {
+	if !nrInternalAccount {
+		t.Skipf("New Relic internal testing account required")
+	}
+
+	resourceName := "newrelic_infra_alert_condition.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-test-%s", rand)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicInfraAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicInfraAlertConditionWithViolationCloseTimerConfig(rName, 0),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
+				),
+				ExpectNonEmptyPlan: true,
 			},
 			// Test: Import
 			{
@@ -541,7 +573,7 @@ resource "newrelic_infra_alert_condition" "foo" {
 `, name)
 }
 
-func testAccNewRelicInfraAlertConditionWithZeroValueViolationCloseTimerConfig(name string) string {
+func testAccNewRelicInfraAlertConditionWithViolationCloseTimerConfig(name string, violationCloseTimer int) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
 	name = "%[1]s"
@@ -560,7 +592,7 @@ resource "newrelic_infra_alert_condition" "foo" {
 		time_function = "all"
 		value         = "1.5"
 	}
-	violation_close_timer = 0
+	violation_close_timer = %[2]d
 }
-`, name)
+`, name, violationCloseTimer)
 }

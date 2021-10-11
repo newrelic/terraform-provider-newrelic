@@ -31,6 +31,8 @@ git checkout -b release/v${RELEASE_VERSION}
 
 # Auto-generate CHANGELOG updates
 git-chglog --next-tag v${RELEASE_VERSION} -o CHANGELOG.md --sort semver
+# Fix any spelling issues in the CHANGELOG
+misspell -source text -w CHANGELOG.md
 
 # Commit CHANGELOG updates
 git add CHANGELOG.md

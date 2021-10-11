@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/nrdb"
@@ -63,7 +64,7 @@ func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboar
 
 		// GUID exists for Update, null for new page
 		if guid, ok := p["guid"]; ok {
-			page.GUID = entities.EntityGUID(guid.(string))
+			page.GUID = common.EntityGUID(guid.(string))
 		}
 
 		// For each of the widget type, we need to expand them as well
@@ -498,11 +499,11 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}) (das
 	return widget, nil
 }
 
-func expandLinkedEntityGUIDs(guids []interface{}) []entities.EntityGUID {
-	out := make([]entities.EntityGUID, len(guids))
+func expandLinkedEntityGUIDs(guids []interface{}) []common.EntityGUID {
+	out := make([]common.EntityGUID, len(guids))
 
 	for i := range out {
-		out[i] = entities.EntityGUID(guids[i].(string))
+		out[i] = common.EntityGUID(guids[i].(string))
 	}
 
 	return out

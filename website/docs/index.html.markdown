@@ -1,7 +1,7 @@
 ---
-layout: 'newrelic'
-page_title: 'Provider: New Relic'
-sidebar_current: 'docs-newrelic-index'
+layout: "newrelic"
+page_title: "Provider: New Relic"
+sidebar_current: "docs-newrelic-index"
 description: |-
   New Relic offers a performance management solution enabling developers to
   diagnose and fix application performance problems in real time.
@@ -53,7 +53,6 @@ resources compared to which endpoint is in use.
 | `newrelic_alert_policy_channel`                     | RESTv2                  | `api_key`             |
 | `newrelic_api_access_key`                           | NerdGraph               | `api_key`             |
 | `newrelic_application_settings`                     | RESTv2                  | `api_key`             |
-| `newrelic_dashboard`                                | RESTv2                  | `api_key`             |
 | `newrelic_entity_tags`                              | NerdGraph               | `api_key`             |
 | `newrelic_events_to_metrics_rule`                   | NerdGraph               | `api_key`             |
 | `newrelic_infra_alert_condition`                    | Infrastructure REST API | `api_key`             |
@@ -61,7 +60,6 @@ resources compared to which endpoint is in use.
 | `newrelic_nrql_alert_condition`                     | NerdGraph               | `api_key`             |
 | `newrelic_nrql_drop_rule`                           | NerdGraph               | `api_key`             |
 | `newrelic_one_dashboard`                            | NerdGraph               | `api_key`             |
-| `newrelic_plugins_alert_condition`                  | RESTv2                  | `api_key`             |
 | `newrelic_synthetics_alert_condition`               | RESTv2                  | `api_key`             |
 | `newrelic_synthetics_monitor`                       | Synthetics REST API     | `api_key`             |
 | `newrelic_synthetics_monitor_script`                | Synthetics REST API     | `api_key`             |
@@ -79,8 +77,6 @@ resources compared to which endpoint is in use.
 | `newrelic_application`                  | RESTv2              | `api_key`      |
 | `newrelic_entity`                       | NerdGraph           | `api_key`      |
 | `newrelic_key_transaction`              | RESTv2              | `api_key`      |
-| `newrelic_plugin`                       | RESTv2              | `api_key`      |
-| `newrelic_plugin_component`             | RESTv2              | `api_key`      |
 | `newrelic_synthetics_monitor`           | Synthetics REST API | `api_key`      |
 | `newrelic_synthetics_secure_credential` | Synthetics REST API | `api_key`      |
 

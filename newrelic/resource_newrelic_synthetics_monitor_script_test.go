@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package newrelic
@@ -38,9 +39,10 @@ func TestAccNewRelicSyntheticsMonitorScript_Basic(t *testing.T) {
 			},
 			// Test: Import
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"location"},
 			},
 		},
 	})
@@ -100,6 +102,10 @@ resource "newrelic_synthetics_monitor" "foo" {
 resource "newrelic_synthetics_monitor_script" "foo_script" {
   monitor_id = newrelic_synthetics_monitor.foo.id
   text = "%[2]s"
+	location {
+		name = "AWS_US_EAST_1"
+		hmac = "MjhiNGE4MjVlMDE1N2M4NDQ4MjNjNDFkZDEyYTRjMmUzZDE3NGJlNjU0MWFmOTJlMzNiODExOGU2ZjhkZTY4ZQ"
+	}
 }
 `, name, scriptText)
 }

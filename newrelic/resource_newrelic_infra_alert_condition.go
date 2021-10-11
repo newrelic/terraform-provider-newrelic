@@ -166,8 +166,8 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      24,
-				ValidateFunc: intInSlice([]int{0, 1, 2, 4, 8, 12, 24, 48, 72}),
-				Description:  "Determines how much time, in minutes, will pass before a violation is automatically closed. Setting the time limit to 0 prevents a violation from being force-closed. Valid values are 0, 1, 2, 4, 8, 12, 24, 48, or 72",
+				ValidateFunc: validateViolationCloseTimer(),
+				Description:  "Determines how much time, in hours, will pass before a violation is automatically closed. Valid values are 1, 2, 4, 8, 12, 24, 48, or 72",
 			},
 			"description": {
 				Type:        schema.TypeString,

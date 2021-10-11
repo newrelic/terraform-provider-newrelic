@@ -1,4 +1,6 @@
+//go:build integration || unit
 // +build integration unit
+
 //
 // Test Helpers
 //
@@ -22,15 +24,15 @@ var (
 
 func testAccDeleteNewRelicAlertPolicy(name string) func() {
 	return func() {
-		client := testAccProvider.Meta().(*ProviderConfig).NewClient
-		params := alerts.ListPoliciesParams{
-			Name: name,
-		}
-		policies, _ := client.Alerts.ListPolicies(&params)
+		providerConfig := testAccProvider.Meta().(*ProviderConfig)
+		client := providerConfig.NewClient
+
+		params := alerts.AlertsPoliciesSearchCriteriaInput{}
+		policies, _ := client.Alerts.QueryPolicySearch(providerConfig.AccountID, params)
 
 		for _, p := range policies {
 			if p.Name == name {
-				_, _ = client.Alerts.DeletePolicy(p.ID)
+				_, _ = client.Alerts.DeletePolicyMutation(providerConfig.AccountID, p.ID)
 				break
 			}
 		}
