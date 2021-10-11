@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
@@ -169,14 +169,14 @@ func expandAlertChannelIDs(channelIDs []interface{}) []int {
 
 func flattenAlertChannelDataSource(channel *alerts.Channel, d *schema.ResourceData) error {
 	d.SetId(strconv.Itoa(channel.ID))
-	d.Set("policy_ids", channel.Links.PolicyIDs)
+	_ = d.Set("policy_ids", channel.Links.PolicyIDs)
 
 	return flattenAlertChannel(channel, d)
 }
 
 func flattenAlertChannel(channel *alerts.Channel, d *schema.ResourceData) error {
-	d.Set("name", channel.Name)
-	d.Set("type", channel.Type)
+	_ = d.Set("name", channel.Name)
+	_ = d.Set("type", channel.Type)
 
 	config, err := flattenAlertChannelConfiguration(&channel.Configuration, d)
 	if err != nil {

@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package newrelic
@@ -40,21 +41,17 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 		"operator":              alerts.AlertsNRQLConditionTermsOperatorTypes.BELOW,
 	})
 
-	expectedNrql := &alerts.NrqlConditionInput{}
+	expectedNrql := &alerts.NrqlConditionCreateInput{}
 	expectedNrql.Nrql.Query = nrql["query"].(string)
-	expectedNrql.Nrql.EvaluationOffset = nrql["evaluation_offset"].(int)
+	evalOffset := nrql["evaluation_offset"].(int)
+	expectedNrql.Nrql.EvaluationOffset = &evalOffset
 
 	cases := map[string]struct {
 		Data         map[string]interface{}
 		ExpectErr    bool
 		ExpectReason string
-		Expanded     *alerts.NrqlConditionInput
+		Expanded     *alerts.NrqlConditionCreateInput
 	}{
-		"invalid nrql": {
-			Data:         map[string]interface{}{},
-			ExpectErr:    true,
-			ExpectReason: "one of `since_value` or `evaluation_offset` must be configured for block `nrql`",
-		},
 		"valid nrql": {
 			Data: map[string]interface{}{
 				"nrql": []interface{}{nrql},
@@ -78,7 +75,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 			},
 			ExpectErr:    false,
 			ExpectReason: "",
-			Expanded: &alerts.NrqlConditionInput{
+			Expanded: &alerts.NrqlConditionCreateInput{
 				BaselineDirection: &alerts.NrqlBaselineDirections.LowerOnly,
 			},
 		},
@@ -98,7 +95,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 			},
 			ExpectErr:    false,
 			ExpectReason: "",
-			Expanded: &alerts.NrqlConditionInput{
+			Expanded: &alerts.NrqlConditionCreateInput{
 				ValueFunction: &alerts.NrqlConditionValueFunctions.SingleValue,
 			},
 		},
@@ -111,8 +108,8 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 			},
 			ExpectErr:    false,
 			ExpectReason: "",
-			Expanded: func() *alerts.NrqlConditionInput {
-				x := alerts.NrqlConditionInput{
+			Expanded: func() *alerts.NrqlConditionCreateInput {
+				x := alerts.NrqlConditionCreateInput{
 					ValueFunction: &alerts.NrqlConditionValueFunctions.SingleValue,
 				}
 				x.Terms = []alerts.NrqlConditionTerm{
@@ -138,8 +135,8 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 			},
 			ExpectErr:    false,
 			ExpectReason: "",
-			Expanded: func() *alerts.NrqlConditionInput {
-				x := alerts.NrqlConditionInput{
+			Expanded: func() *alerts.NrqlConditionCreateInput {
+				x := alerts.NrqlConditionCreateInput{
 					ValueFunction: &alerts.NrqlConditionValueFunctions.SingleValue,
 				}
 				x.Terms = []alerts.NrqlConditionTerm{
@@ -167,9 +164,9 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				"nrql":               []interface{}{nrql},
 				"aggregation_window": 60,
 			},
-			Expanded: &alerts.NrqlConditionInput{
-				NrqlConditionBase: alerts.NrqlConditionBase{
-					Signal: &alerts.AlertsNrqlConditionSignal{
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
 						AggregationWindow: &[]int{60}[0],
 					},
 				},
@@ -180,9 +177,9 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				"nrql":               []interface{}{nrql},
 				"aggregation_window": nil,
 			},
-			Expanded: &alerts.NrqlConditionInput{
-				NrqlConditionBase: alerts.NrqlConditionBase{
-					Signal: &alerts.AlertsNrqlConditionSignal{},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{},
 				},
 			},
 		},
@@ -192,9 +189,9 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				"fill_option": "static",
 				"fill_value":  1.0,
 			},
-			Expanded: &alerts.NrqlConditionInput{
-				NrqlConditionBase: alerts.NrqlConditionBase{
-					Signal: &alerts.AlertsNrqlConditionSignal{
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
 						FillOption: &alerts.AlertsFillOptionTypes.STATIC,
 						FillValue:  &[]float64{1.0}[0],
 					},
@@ -207,9 +204,9 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				"fill_option": "static",
 				"fill_value":  0.0,
 			},
-			Expanded: &alerts.NrqlConditionInput{
-				NrqlConditionBase: alerts.NrqlConditionBase{
-					Signal: &alerts.AlertsNrqlConditionSignal{
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
 						FillOption: &alerts.AlertsFillOptionTypes.STATIC,
 						FillValue:  &[]float64{0.0}[0],
 					},
@@ -222,9 +219,9 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				"fill_option": "sTaTiC",
 				"fill_value":  0.0,
 			},
-			Expanded: &alerts.NrqlConditionInput{
-				NrqlConditionBase: alerts.NrqlConditionBase{
-					Signal: &alerts.AlertsNrqlConditionSignal{
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
 						FillOption: &alerts.AlertsFillOptionTypes.STATIC,
 						FillValue:  &[]float64{0.0}[0],
 					},
@@ -236,9 +233,9 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				"nrql":        []interface{}{nrql},
 				"fill_option": "last_value",
 			},
-			Expanded: &alerts.NrqlConditionInput{
-				NrqlConditionBase: alerts.NrqlConditionBase{
-					Signal: &alerts.AlertsNrqlConditionSignal{
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
 						FillOption: &alerts.AlertsFillOptionTypes.LAST_VALUE,
 					},
 				},
@@ -249,9 +246,9 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				"nrql":        []interface{}{nrql},
 				"fill_option": "none",
 			},
-			Expanded: &alerts.NrqlConditionInput{
-				NrqlConditionBase: alerts.NrqlConditionBase{
-					Signal: &alerts.AlertsNrqlConditionSignal{
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
 						FillOption: &alerts.AlertsFillOptionTypes.NONE,
 					},
 				},
@@ -264,13 +261,85 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				"open_violation_on_expiration":   true,
 				"close_violations_on_expiration": true,
 			},
-			Expanded: &alerts.NrqlConditionInput{
-				NrqlConditionBase: alerts.NrqlConditionBase{
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
 					Expiration: &alerts.AlertsNrqlConditionExpiration{
 						ExpirationDuration:          &[]int{120}[0],
 						CloseViolationsOnExpiration: true,
 						OpenViolationOnExpiration:   true,
 					},
+				},
+			},
+		},
+		"aggregation method exists": {
+			Data: map[string]interface{}{
+				"nrql":               []interface{}{nrql},
+				"aggregation_method": "cadence",
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
+						AggregationMethod: &alerts.NrqlConditionAggregationMethodTypes.Cadence,
+					},
+				},
+			},
+		},
+		"aggregation method nil": {
+			Data: map[string]interface{}{
+				"nrql":               []interface{}{nrql},
+				"aggregation_method": nil,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{},
+				},
+			},
+		},
+		"aggregation delay not nil": {
+			Data: map[string]interface{}{
+				"nrql":              []interface{}{nrql},
+				"aggregation_delay": 60,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
+						AggregationDelay: &[]int{60}[0],
+					},
+				},
+			},
+		},
+		"aggregation delay nil": {
+			Data: map[string]interface{}{
+				"nrql":              []interface{}{nrql},
+				"aggregation_delay": nil,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{},
+				},
+			},
+		},
+		"aggregation timer not nil": {
+			Data: map[string]interface{}{
+				"nrql":              []interface{}{nrql},
+				"aggregation_timer": 60,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
+						AggregationTimer: &[]int{60}[0],
+					},
+				},
+			},
+		},
+		"aggregation timer nil": {
+			Data: map[string]interface{}{
+				"nrql":              []interface{}{nrql},
+				"aggregation_timer": nil,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{},
 				},
 			},
 		},
@@ -299,7 +368,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				}
 			}
 
-			expanded, err := expandNrqlAlertConditionInput(d)
+			expanded, err := expandNrqlAlertConditionCreateInput(d)
 
 			if tc.ExpectErr {
 				require.NotNil(t, err)
@@ -323,7 +392,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 					require.Equal(t, tc.Expanded.Nrql.Query, expanded.Nrql.Query)
 				}
 
-				if tc.Expanded.Nrql.EvaluationOffset > 0 {
+				if tc.Expanded.Nrql.EvaluationOffset != nil {
 					require.Equal(t, tc.Expanded.Nrql.EvaluationOffset, expanded.Nrql.EvaluationOffset)
 				}
 
@@ -345,6 +414,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 
 func TestFlattenNrqlAlertCondition(t *testing.T) {
 	r := resourceNewRelicNrqlAlertCondition()
+	evalOffset := 3
 
 	nrqlCondition := alerts.NrqlAlertCondition{
 		ID:       "1234567",
@@ -355,7 +425,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			Name:        "name-test",
 			Nrql: alerts.NrqlConditionQuery{
 				Query:            "SELECT average(duration) from Transaction where appName='Dummy App'",
-				EvaluationOffset: 3,
+				EvaluationOffset: &evalOffset,
 			},
 			RunbookURL: "test.com",
 			Terms: []alerts.NrqlConditionTerm{
@@ -376,7 +446,10 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			},
 			ViolationTimeLimit: alerts.NrqlConditionViolationTimeLimits.OneHour,
 			Signal: &alerts.AlertsNrqlConditionSignal{
-				FillOption: &alerts.AlertsFillOptionTypes.LAST_VALUE,
+				FillOption:        &alerts.AlertsFillOptionTypes.LAST_VALUE,
+				AggregationMethod: &alerts.NrqlConditionAggregationMethodTypes.Cadence,
+				AggregationDelay:  &[]int{60}[0],
+				AggregationTimer:  &[]int{60}[0],
 			},
 			Expiration: &alerts.AlertsNrqlConditionExpiration{
 				ExpirationDuration:          &[]int{120}[0],
@@ -390,8 +463,11 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	nrqlConditionBaseline := nrqlCondition
 	zero := 0.0
 	nrqlConditionBaseline.Signal = &alerts.AlertsNrqlConditionSignal{
-		FillOption: &alerts.AlertsFillOptionTypes.STATIC,
-		FillValue:  &zero,
+		FillOption:        &alerts.AlertsFillOptionTypes.STATIC,
+		FillValue:         &zero,
+		AggregationMethod: &alerts.NrqlConditionAggregationMethodTypes.Cadence,
+		AggregationDelay:  &[]int{60}[0],
+		AggregationTimer:  &[]int{60}[0],
 	}
 	nrqlConditionBaseline.Type = alerts.NrqlConditionTypes.Baseline
 	nrqlConditionBaseline.BaselineDirection = &alerts.NrqlBaselineDirections.LowerOnly
@@ -409,7 +485,10 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	nrqlConditionOutlier.ExpectedGroups = &expectedGroups
 	nrqlConditionOutlier.OpenViolationOnGroupOverlap = &openViolationOnOverlap
 	nrqlConditionOutlier.Signal = &alerts.AlertsNrqlConditionSignal{
-		FillOption: &alerts.AlertsFillOptionTypes.NONE,
+		FillOption:        &alerts.AlertsFillOptionTypes.NONE,
+		AggregationMethod: &alerts.NrqlConditionAggregationMethodTypes.Cadence,
+		AggregationDelay:  &[]int{60}[0],
+		AggregationTimer:  &[]int{60}[0],
 	}
 	nrqlConditionOutlier.Expiration = nil
 
@@ -480,6 +559,9 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.True(t, d.Get("close_violations_on_expiration").(bool))
 			require.Equal(t, "static", d.Get("fill_option").(string))
 			require.Equal(t, 0.0, d.Get("fill_value").(float64))
+			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
+			require.Equal(t, 60, d.Get("aggregation_delay").(int))
+			require.Equal(t, 60, d.Get("aggregation_timer").(int))
 
 		case alerts.NrqlConditionTypes.Static:
 			require.Equal(t, string(alerts.NrqlConditionValueFunctions.Sum), d.Get("value_function").(string))
@@ -491,6 +573,9 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.True(t, d.Get("close_violations_on_expiration").(bool))
 			require.Equal(t, "last_value", d.Get("fill_option").(string))
 			require.Zero(t, d.Get("fill_value").(float64))
+			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
+			require.Equal(t, 60, d.Get("aggregation_delay").(int))
+			require.Equal(t, 60, d.Get("aggregation_timer").(int))
 
 		case alerts.NrqlConditionTypes.Outlier:
 			require.Equal(t, 2, d.Get("expected_groups").(int))
@@ -503,6 +588,9 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Zero(t, d.Get("close_violations_on_expiration").(bool))
 			require.Equal(t, "none", d.Get("fill_option").(string))
 			require.Zero(t, d.Get("fill_value").(float64))
+			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
+			require.Equal(t, 60, d.Get("aggregation_delay").(int))
+			require.Equal(t, 60, d.Get("aggregation_timer").(int))
 		}
 	}
 }

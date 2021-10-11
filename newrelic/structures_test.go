@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package newrelic
@@ -5,7 +6,7 @@ package newrelic
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func TestExpandIntList_Basic(t *testing.T) {

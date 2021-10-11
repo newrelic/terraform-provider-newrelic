@@ -4,9 +4,9 @@ COLOR_RED='\033[0;31m'
 COLOR_NONE='\033[0m'
 CURRENT_GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-if [ $CURRENT_GIT_BRANCH != 'master' ]; then
+if [ $CURRENT_GIT_BRANCH != 'main' ]; then
   printf "\n"
-  printf "${COLOR_RED} Error: The release.sh script must be run while on the master branch. \n ${COLOR_NONE}"
+  printf "${COLOR_RED} Error: The release.sh script must be run while on the main branch. \n ${COLOR_NONE}"
   printf "\n"
 
   exit 1
@@ -31,6 +31,8 @@ git checkout -b release/v${RELEASE_VERSION}
 
 # Auto-generate CHANGELOG updates
 git-chglog --next-tag v${RELEASE_VERSION} -o CHANGELOG.md --sort semver
+# Fix any spelling issues in the CHANGELOG
+misspell -source text -w CHANGELOG.md
 
 # Commit CHANGELOG updates
 git add CHANGELOG.md

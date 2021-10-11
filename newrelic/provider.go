@@ -5,10 +5,9 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/hashicorp/terraform-plugin-sdk/meta"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 )
 
 var (
@@ -30,7 +29,7 @@ const (
 )
 
 // Provider represents a resource provider in Terraform
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	deprecationMsgBaseURLs := "New Relic internal use only. API URLs are now configured based on the configured region."
 
 	provider := &schema.Provider{
@@ -146,7 +145,9 @@ func Provider() terraform.ResourceProvider {
 			"newrelic_nrql_alert_condition":                     resourceNewRelicNrqlAlertCondition(),
 			"newrelic_nrql_drop_rule":                           resourceNewRelicNRQLDropRule(),
 			"newrelic_one_dashboard":                            resourceNewRelicOneDashboard(),
+			"newrelic_one_dashboard_raw":                        resourceNewRelicOneDashboardRaw(),
 			"newrelic_plugins_alert_condition":                  resourceNewRelicPluginsAlertCondition(),
+			"newrelic_service_level":                            resourceNewRelicServiceLevel(),
 			"newrelic_synthetics_alert_condition":               resourceNewRelicSyntheticsAlertCondition(),
 			"newrelic_synthetics_monitor":                       resourceNewRelicSyntheticsMonitor(),
 			"newrelic_synthetics_monitor_script":                resourceNewRelicSyntheticsMonitorScript(),

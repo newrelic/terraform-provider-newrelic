@@ -1,14 +1,16 @@
+//go:build integration
 // +build integration
 
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
@@ -156,7 +158,7 @@ func testAccCheckNewRelicAlertPolicyChannelDestroy(s *terraform.State) error {
 		policyID := ids[0]
 		channelIDs := ids[1:]
 
-		exists, err := policyChannelsExist(client, policyID, channelIDs)
+		exists, err := policyChannelsExist(context.Background(), client, policyID, channelIDs)
 		if err != nil {
 			return err
 		}
@@ -188,7 +190,7 @@ func testAccCheckNewRelicAlertPolicyChannelExists(n string) resource.TestCheckFu
 		policyID := ids[0]
 		channelIDs := ids[1:]
 
-		exists, err := policyChannelsExist(client, policyID, channelIDs)
+		exists, err := policyChannelsExist(context.Background(), client, policyID, channelIDs)
 		if err != nil {
 			return err
 		}

@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package newrelic
@@ -6,7 +7,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccNewRelicAlertPolicy_ErrorThrownWhenNameEmpty(t *testing.T) {

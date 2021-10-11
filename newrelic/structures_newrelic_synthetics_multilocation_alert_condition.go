@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
@@ -93,13 +93,13 @@ func flattenMultiLocationSyntheticsCondition(condition *alerts.MultiLocationSynt
 
 	policyID := ids[0]
 
-	d.Set("policy_id", policyID)
-	d.Set("name", condition.Name)
-	d.Set("runbook_url", condition.RunbookURL)
-	d.Set("enabled", condition.Enabled)
-	d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
-	d.Set("entities", condition.Entities)
-	d.Set("policy_id", policyID)
+	_ = d.Set("policy_id", policyID)
+	_ = d.Set("name", condition.Name)
+	_ = d.Set("runbook_url", condition.RunbookURL)
+	_ = d.Set("enabled", condition.Enabled)
+	_ = d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
+	_ = d.Set("entities", condition.Entities)
+	_ = d.Set("policy_id", policyID)
 
 	for _, term := range condition.Terms {
 		switch term.Priority {

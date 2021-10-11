@@ -17,6 +17,12 @@ For more information check out [this Github issue](https://github.com/newrelic/t
 * Latest version of the New Relic CLI: https://github.com/newrelic/newrelic-cli
 * Python 3
 
+### Documentation
+
+* [Transition to New Relic One from Insights](https://docs.newrelic.com/docs/new-relic-one/use-new-relic-one/core-concepts/transition-new-relic-one-insights/)
+* [Dashboard API migration: from Insights API to NerdGraph](https://docs.newrelic.com/docs/new-relic-one/use-new-relic-one/core-concepts/dashboards-api-migration-insights-api-nerdgraph/)
+* [Visualizations mapping table from Insights Dashboard to New Relic One dashboard](https://docs.newrelic.com/docs/new-relic-one/use-new-relic-one/core-concepts/dashboards-api-migration-insights-api-nerdgraph/#visualization-mapping-table)
+
 ### Process
 
 To help you migrate your `newrelic_dashboard` to the new `newrelic_one_dashboard` resource we provide two options:
@@ -54,7 +60,7 @@ Once the `newrelic_one_dashboard` is in a good state we need to import the new s
 
 `terraform import newrelic_one_dashboard.[[NAME_OF_RESOURCE]] [[DASHBOARD_GUID]]`
 
-After the import has completed succesfully, you can delete the old `newrelic_dashboard` from the Terraform state. Make sure you replace `[[NAME_OF_RESOURCE]]` with the right resource name.
+After the import has completed successfully, you can delete the old `newrelic_dashboard` from the Terraform state. Make sure you replace `[[NAME_OF_RESOURCE]]` with the right resource name.
 
 `terraform state rm 'newrelic_dashboard.[[NAME_OF_RESOURCE]]`
 

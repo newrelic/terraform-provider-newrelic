@@ -2,9 +2,9 @@ name: Compiling
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   # Compile on all supported OSes
