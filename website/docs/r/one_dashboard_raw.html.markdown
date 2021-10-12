@@ -60,6 +60,28 @@ resource "newrelic_one_dashboard_raw" "exampledash" {
       }
       EOT
     }
+    widget {
+      title  = "Docker Server CPU"
+      row    = 1
+      column = 3
+      height = 1
+      width  = 1
+      visualization_id = "viz.bar"
+      configuration = jsonencode(
+      {
+        "facet": {
+          "showOtherSeries": false
+        },
+        "nrqlQueries": [
+          {
+            "accountId": local.accountID,
+            "query": "SELECT average(cpuPercent) FROM SystemSample since 3 hours ago facet hostname limit 400"
+          }
+        ]
+      }
+      )
+      linked_entity_guids = ["MzI5ODAxNnxWSVp8REFTSEJPQVJEfDI2MTcxNDc"]
+    }
   }
 }
 ```
@@ -107,3 +129,4 @@ Nested `widget` blocks support the following common arguments:
 - `height` - (Optional) Height of the widget. Valid values are `1` to `12` inclusive. Defaults to `3`.
 - `visualization_id` - (Required) The visualization ID of the widget
 - `configuration` - (Required) The configuration of the widget.
+- `linked_entity_guids` - (Optional) Related entity GUIDs. 

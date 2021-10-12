@@ -492,6 +492,30 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphNrqlEvaluationOffset(t *testing.
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_NerdGraphValidationErrorBadUserInputOnCreate(t *testing.T) {
+	rNameStatic := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create fails with error: `fillOption` of static must be provided with `fillValue`
+			{
+				Config: testAccNewRelicNrqlAlertStaticNerdGraphConfigInvalid(
+					rNameStatic,
+					"20",
+					"120",
+					"",
+					"60",
+				),
+
+				ExpectError: regexp.MustCompile("Validation Error: BAD_USER_INPUT"),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -866,4 +890,49 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	aggregation_timer = %[4]s
 }
 `, name, method, delay, timer, nrqlEvalOffset)
+}
+
+// `fill_option` of `static` must provide `fill_value`
+func testAccNewRelicNrqlAlertStaticNerdGraphConfigInvalid(
+	name string,
+	evaluationOffset string,
+	duration string,
+	conditionalAttrs string,
+	aggregationWindow string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+  name = "tf-test-%[1]s"
+}
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id = newrelic_alert_policy.foo.id
+  name                           = "tf-test-%[1]s"
+  runbook_url                    = "https://foo.example.com"
+  enabled                        = false
+  violation_time_limit_seconds   = 28800
+  fill_option                    = "static"
+  aggregation_window             = %[5]s
+  close_violations_on_expiration = true
+  open_violation_on_expiration   = true
+  expiration_duration            = 120
+	nrql {
+    query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+    evaluation_offset = "%[2]s"
+	}
+	critical {
+    operator              = "above"
+    threshold             = 0.75
+    threshold_duration    = %[3]s
+    threshold_occurrences = "all"
+	}
+	warning {
+		operator              = "equals"
+		threshold             = 0.5
+		threshold_duration    = 120
+		threshold_occurrences = "AT_LEAST_ONCE"
+	}
+	value_function  = "single_value"
+	%[4]s
+}
+`, name, evaluationOffset, duration, conditionalAttrs, aggregationWindow)
 }

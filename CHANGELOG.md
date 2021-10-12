@@ -1,3 +1,22 @@
+<a name="v2.28.0"></a>
+## [v2.28.0] - 2021-10-08
+### Bug Fixes
+- update expected error text
+- **docs:** added new replacement pattern
+
+### Documentation Updates
+- Modifying referenced hyperlinks
+- **Alerts:** Clean-up and clarify NRQL alert condition documentation
+- **linked_entity_guids:** Documentation and some tests
+- **servicelevel:** Add Service Level documentation
+
+### Features
+- **Alerts:** Enhance alerts nrql condition errors
+- **linked_entity_guids:** Expose linked_entity_guids for dashboard_raw
+
+<a name="v2.27.1"></a>
+## [v2.27.1] - 2021-10-06
+
 <a name="v2.27.0"></a>
 ## [v2.27.0] - 2021-10-05
 ### Features
@@ -884,7 +903,9 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.27.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.28.0...HEAD
+[v2.28.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.27.1...v2.28.0
+[v2.27.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.27.0...v2.27.1
 [v2.27.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.26.0...v2.27.0
 [v2.26.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.25.0...v2.26.0
 [v2.25.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.24.1...v2.25.0
