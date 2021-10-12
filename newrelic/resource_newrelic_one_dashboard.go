@@ -160,6 +160,12 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Description: "A JSON widget.",
 				Elem:        dashboardWidgetJSONSchemaElem(),
 			},
+			"widget_stacked_bar": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A stacked bar widget.",
+				Elem:        dashboardWidgetStackedBarSchemaElem(),
+			},
 		},
 	}
 }
@@ -328,6 +334,14 @@ func dashboardWidgetMarkdownSchemaElem() *schema.Resource {
 		Optional: true,
 		Default:  "",
 	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetStackedBarSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
 
 	return &schema.Resource{
 		Schema: s,
