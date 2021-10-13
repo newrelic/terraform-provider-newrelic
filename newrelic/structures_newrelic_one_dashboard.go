@@ -836,7 +836,7 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 			if widgets, ok := p[widgetType]; ok {
 				for _, widget := range widgets.([]interface{}) {
 					w := widget.(map[string]interface{})
-					if _, ok := w["filter_current_dashboard"]; ok {
+					if v, ok := w["filter_current_dashboard"]; ok && v.(bool) {
 
 						if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) > 0 {
 							return nil, fmt.Errorf("err: filter_current_dashboard can't be set if linked_entity_guids is configured")
