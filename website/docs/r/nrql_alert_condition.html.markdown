@@ -112,7 +112,7 @@ The `nrql` block supports the following arguments:
 
 NRQL alert conditions support up to two terms. At least one `term` must have `priority` set to `critical` and the second optional `term` must have `priority` set to `warning`.
 
-The `term` block the following arguments:
+The `term` block supports the following arguments:
 
 - `operator` - (Optional) Valid values are `above`, `below`, or `equals` (case insensitive). Defaults to `equals`. Note that when using a `type` of `outlier` or `baseline`, the only valid option here is `above`.
 - `priority` - (Optional) `critical` or `warning`. Defaults to `critical`.
