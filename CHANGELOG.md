@@ -1,3 +1,11 @@
+<a name="v2.29.0"></a>
+## [v2.29.0] - 2021-10-12
+### Documentation Updates
+- change timeWindow to time_window
+
+### Features
+- **dashboard:** added widget_stacked_bar
+
 <a name="v2.28.0"></a>
 ## [v2.28.0] - 2021-10-08
 ### Bug Fixes
@@ -902,7 +910,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.28.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.29.0...HEAD
+[v2.29.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.28.0...v2.29.0
 [v2.28.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.27.1...v2.28.0
 [v2.27.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.27.0...v2.27.1
 [v2.27.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.26.0...v2.27.0
