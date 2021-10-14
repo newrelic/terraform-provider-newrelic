@@ -1,3 +1,14 @@
+<a name="v2.30.0"></a>
+## [v2.30.0] - 2021-10-14
+### Documentation Updates
+- update docs to explain baseline thresholds
+- fixing grammar error / missing word
+
+### Features
+- added another check that filter_current_dashboard is set before collecting widget details
+- Added validation for if linked_entity_guids is set. Reworked complexity of finding and setting linked page entity
+- added filter_current_dashboard support and added a test to verify functionality
+
 <a name="v2.29.0"></a>
 ## [v2.29.0] - 2021-10-12
 ### Documentation Updates
@@ -910,7 +921,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.29.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.0...HEAD
+[v2.30.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.29.0...v2.30.0
 [v2.29.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.28.0...v2.29.0
 [v2.28.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.27.1...v2.28.0
 [v2.27.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.27.0...v2.27.1
