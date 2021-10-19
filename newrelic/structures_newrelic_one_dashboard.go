@@ -822,15 +822,13 @@ func flattenDashboardWidgetNRQLQuery(in *[]entities.DashboardWidgetNRQLQuery) []
 
 // Function to find all of the widgets that have filter_current_dashboard set and return the title and layout location to identify later.
 func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interface{}, error) {
-
 	var widgetList []interface{}
 
 	pages := d.Get("page").([]interface{})
 	selfLinkingWidgets := []string{"widget_bar", "widget_pie", "widget_table"}
 
-	for _, v := range pages {
+	for i, v := range pages {
 		p := v.(map[string]interface{})
-
 		// For each of the widget type, we need to expand them as well
 		for _, widgetType := range selfLinkingWidgets {
 			if widgets, ok := p[widgetType]; ok {
@@ -852,6 +850,9 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 						if c, ok := w["column"]; ok {
 							unqWidget["column"] = c.(int)
 						}
+
+						unqWidget["page"] = i
+
 						widgetList = append(widgetList, unqWidget)
 					}
 				}
@@ -872,21 +873,21 @@ func setDashboardWidgetFilterCurrentDashboardLinkedEntity(d *schema.ResourceData
 		return nil
 	}
 
-	linkedEntityList := make([]interface{}, 1)
 	selfLinkingWidgets := []string{"widget_bar", "widget_pie", "widget_table"}
 
 	pages := d.Get("page").([]interface{})
-	for _, v := range pages {
+	for i, v := range pages {
 		p := v.(map[string]interface{})
-		linkedEntityList[0] = p["guid"]
 		for _, widgetType := range selfLinkingWidgets {
 			if widgets, ok := p[widgetType]; ok {
 				for _, k := range widgets.([]interface{}) {
 					w := k.(map[string]interface{})
 					for _, f := range filterWidgets {
 						e := f.(map[string]interface{})
-						if w["title"] == e["title"] && w["column"] == e["column"] && w["row"] == e["row"] {
-							w["linked_entity_guids"] = linkedEntityList
+						if e["page"] == i {
+							if w["title"] == e["title"] && w["column"] == e["column"] && w["row"] == e["row"] {
+								w["linked_entity_guids"] = []string{p["guid"].(string)}
+							}
 						}
 					}
 				}
