@@ -41,6 +41,20 @@ resource "newrelic_one_dashboard" "exampledash" {
       linked_entity_guids = ["abc123"]
     }
 
+    widget_bar {
+      title = "Average transaction duration, by application"
+      row = 1
+      column = 5
+
+      nrql_query {
+        account_id = <Another Account ID>
+        query       = "FROM Transaction SELECT average(duration) FACET appName"
+      }
+
+      # Must be another dashboard GUID
+      filter_current_dashboard = true
+    }
+
     widget_markdown {
       title = "Dashboard Note"
       row    = 1
@@ -142,6 +156,7 @@ Each widget type supports an additional set of arguments:
   * `widget_table`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
+    * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
 
 ### Nested `nrql_query` blocks
 
