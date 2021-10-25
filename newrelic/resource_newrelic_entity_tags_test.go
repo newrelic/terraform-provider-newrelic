@@ -25,6 +25,7 @@ func TestAccNewRelicEntityTags_Basic(t *testing.T) {
 				Config: testAccNewRelicEntityTagsConfig(testAccExpectedApplicationName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicEntityTagsExist(resourceName, []string{"test_key"}),
+					testAccCheckNewRelicEntityUnmutableExists(resourceName, []string{"account", "guid", "language"}),
 				),
 			},
 			// Test: Update
@@ -32,6 +33,7 @@ func TestAccNewRelicEntityTags_Basic(t *testing.T) {
 				Config: testAccNewRelicEntityTagsConfigUpdated(testAccExpectedApplicationName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicEntityTagsExist(resourceName, []string{"test_key_2"}),
+					testAccCheckNewRelicEntityUnmutableExists(resourceName, []string{"account", "guid", "language"}),
 				),
 			},
 			// Test: Import
@@ -74,7 +76,7 @@ func testAccCheckNewRelicEntityTagsExist(n string, keysToCheck []string) resourc
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		t, err := client.Entities.GetTagsForEntity(common.EntityGUID(rs.Primary.ID))
+		t, err := client.Entities.GetTagsForEntityMutable(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
@@ -84,6 +86,34 @@ func testAccCheckNewRelicEntityTagsExist(n string, keysToCheck []string) resourc
 		for _, keyToCheck := range keysToCheck {
 			if tag := getTag(tags, keyToCheck); tag == nil {
 				return fmt.Errorf("entity tag %s not found for GUID %s", keyToCheck, rs.Primary.ID)
+			}
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckNewRelicEntityUnmutableExists(n string, keysToCheck []string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no entity GUID is set")
+		}
+
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+		t, err := client.Entities.GetTagsForEntityMutable(common.EntityGUID(rs.Primary.ID))
+		if err != nil {
+			return err
+		}
+
+		tags := convertTagTypes(t)
+
+		for _, keyToCheck := range keysToCheck {
+			if tag := getTag(tags, keyToCheck); tag != nil {
+				return fmt.Errorf("unmutable entity tag %s found for GUID %s", keyToCheck, rs.Primary.ID)
 			}
 		}
 
