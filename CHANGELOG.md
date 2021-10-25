@@ -1,3 +1,11 @@
+<a name="v2.30.1"></a>
+## [v2.30.1] - 2021-10-22
+### Bug Fixes
+- resolved an issue where multiple pages would link to the wrong page
+
+### Features
+- Added documentation for filter_current_dashboard
+
 <a name="v2.30.0"></a>
 ## [v2.30.0] - 2021-10-14
 ### Documentation Updates
@@ -921,7 +929,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.1...HEAD
+[v2.30.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.0...v2.30.1
 [v2.30.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.29.0...v2.30.0
 [v2.29.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.28.0...v2.29.0
 [v2.28.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.27.1...v2.28.0
