@@ -13,7 +13,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
-)
+) 
 
 func validateMutingRuleConditionAttribute(val interface{}, key string) (warns []string, errs []error) {
 	valueString := val.(string)
@@ -134,6 +134,7 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 										Type:        schema.TypeString,
 										Required:    true,
 										Description: "The operator used to compare the attribute's value with the supplied value(s).",
+										ValidateFunc: validation.StringInSlice([]string{"ANY", "CONTAINS", "ENDS_WITH", "EQUALS", "IN", "IS_BLANK", "IS_NOT_BLANK", "NOT_CONTAINS", "NOT_ENDS_WITH", "NOT_EQUALS", "NOT_IN", "NOT_STARTS_WITH", "STARTS_WITH"}, true),
 									},
 									"values": {
 										Type:        schema.TypeList,
