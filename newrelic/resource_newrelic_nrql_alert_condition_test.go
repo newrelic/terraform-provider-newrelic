@@ -615,7 +615,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
   name                           = "tf-test-%[1]s"
   runbook_url                    = "https://foo.example.com"
   enabled                        = false
-  violation_time_limit_seconds   = 28800
   fill_option                    = "%[4]s"
   fill_value                     = %[5]s
   aggregation_window             = %[7]s
