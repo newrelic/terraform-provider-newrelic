@@ -89,7 +89,7 @@ func resourceNewRelicEntityTagsCreate(ctx context.Context, d *schema.ResourceDat
 	d.SetId(string(guid))
 
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		t, err := client.Entities.GetTagsForEntity(guid)
+		t, err := client.Entities.GetTagsForEntityMutable(guid)
 		if err != nil {
 			return resource.NonRetryableError(fmt.Errorf("error retrieving entity tags for guid %s: %s", d.Id(), err))
 		}
@@ -133,7 +133,7 @@ func resourceNewRelicEntityTagsRead(ctx context.Context, d *schema.ResourceData,
 
 	log.Printf("[INFO] Reading New Relic entity tags for entity guid %s", d.Id())
 
-	t, err := client.Entities.GetTagsForEntity(common.EntityGUID(d.Id()))
+	t, err := client.Entities.GetTagsForEntityMutable(common.EntityGUID(d.Id()))
 
 	if err != nil {
 		if _, ok := err.(*nrErrors.NotFound); ok {
@@ -168,7 +168,7 @@ func resourceNewRelicEntityTagsUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		t, err := client.Entities.GetTagsForEntity(common.EntityGUID(d.Id()))
+		t, err := client.Entities.GetTagsForEntityMutable(common.EntityGUID(d.Id()))
 		if err != nil {
 			return resource.NonRetryableError(fmt.Errorf("error retrieving entity tags for guid %s: %s", d.Id(), err))
 		}
