@@ -6,6 +6,7 @@ package newrelic
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -94,6 +95,23 @@ func TestAccNewRelicAlertMutingRule_Basic(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true},
+		},
+	})
+}
+
+func TestAccNewRelicAlertMutingRule_BadInput(t *testing.T) {
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertMutingRuleDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicAlertMutingRuleBadInput(rName, "new muting rule", "product", "EQUALS", "APM", "BROWSER"),
+				ExpectError: regexp.MustCompile("Validation Error: BAD_USER_INPUT"),
+			},
 		},
 	})
 }
@@ -219,6 +237,37 @@ resource "newrelic_alert_muting_rule" "foo" {
 	}
 }
 `, name, description, attribute, operator, values)
+}
+
+func testAccNewRelicAlertMutingRuleBadInput(
+	name string,
+	description string,
+	attribute string,
+	operator string,
+	value1 string,
+	value2 string,
+) string {
+	return fmt.Sprintf(`
+
+resource "newrelic_alert_muting_rule" "foo" {
+	name = "tf-test-%[1]s"
+	enabled = true
+	description = "%[2]s"
+	condition {
+		conditions {
+			attribute 	= "%[3]s"
+			operator 	= "EQUALS"
+			values 		= ["%[5]s", "%[6]s"]
+		}
+		conditions {
+			attribute 	= "conditionType"
+			operator 	= "%[4]s"
+			values 		= ["static"]
+		}
+		operator = "AND"
+	}
+}
+`, name, description, attribute, operator, value1, value2)
 }
 
 func testAccNewRelicAlertMutingRuleWithSchedule(
