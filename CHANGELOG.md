@@ -1,3 +1,13 @@
+<a name="v2.30.2"></a>
+## [v2.30.2] - 2021-10-26
+### Bug Fixes
+- update docs and validation for muting rule condition operator
+- remove AtLeastOneOf to make violation_time_limit_seconds optional
+- **resource_newrelic_entity_tags:** immutable tags are no longer returned
+
+### Features
+- improve error messaging for alert_muting_rule
+
 <a name="v2.30.1"></a>
 ## [v2.30.1] - 2021-10-22
 ### Bug Fixes
@@ -929,7 +939,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.2...HEAD
+[v2.30.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.1...v2.30.2
 [v2.30.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.0...v2.30.1
 [v2.30.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.29.0...v2.30.0
 [v2.29.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.28.0...v2.29.0
