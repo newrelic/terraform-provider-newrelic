@@ -132,9 +132,10 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 										Description:  "The attribute on a violation.",
 									},
 									"operator": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The operator used to compare the attribute's value with the supplied value(s).",
+										Type:         schema.TypeString,
+										Required:     true,
+										Description:  "The operator used to compare the attribute's value with the supplied value(s).",
+										ValidateFunc: validation.StringInSlice([]string{"ANY", "CONTAINS", "ENDS_WITH", "EQUALS", "IN", "IS_BLANK", "IS_NOT_BLANK", "NOT_CONTAINS", "NOT_ENDS_WITH", "NOT_EQUALS", "NOT_IN", "NOT_STARTS_WITH", "STARTS_WITH"}, true),
 									},
 									"values": {
 										Type:        schema.TypeList,
