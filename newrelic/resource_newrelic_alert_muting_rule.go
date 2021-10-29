@@ -18,8 +18,8 @@ import (
 
 func validateMutingRuleConditionAttribute(val interface{}, key string) (warns []string, errs []error) {
 	valueString := val.(string)
-	attemptedTagRegex := regexp.MustCompile(`^tag`)
-	correctTagRegex := regexp.MustCompile(`^tag\..+$`)
+	attemptedTagRegex := regexp.MustCompile(`^tags?`)
+	correctTagRegex := regexp.MustCompile(`^tags?\..+$`)
 
 	// tag.SomeValue attempted but does not match allowed format
 	if attemptedTagRegex.Match([]byte(valueString)) {
@@ -29,7 +29,7 @@ func validateMutingRuleConditionAttribute(val interface{}, key string) (warns []
 		}
 		return
 	}
-	v := validation.StringInSlice([]string{"accountId", "conditionId", "policyId", "policyName", "conditionName", "conditionType", "conditionRunbookUrl", "product", "targetId", "targetName", "nrqlEventType", "tag", "nrqlQuery"}, false)
+	v := validation.StringInSlice([]string{"accountId", "conditionId", "entity.guid", "policyId", "policyName", "conditionName", "conditionType", "conditionRunbookUrl", "product", "targetId", "targetName", "nrqlEventType", "tags", "nrqlQuery"}, false)
 	return v(valueString, key)
 }
 func validateNaiveDateTime(val interface{}, key string) (warns []string, errs []error) {
