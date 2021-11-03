@@ -148,11 +148,21 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			},
 			// Note: The "outlier" type does NOT exist in NerdGraph yet
 			"type": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "static",
-				Description:  "The type of NRQL alert condition to create. Valid values are: 'static', 'outlier', 'baseline'.",
-				ValidateFunc: validation.StringInSlice([]string{"static", "outlier", "baseline"}, false),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "static",
+				Description: "The type of NRQL alert condition to create. Valid values are: 'static', 'baseline', 'outlier' (deprecated).",
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					valueString := val.(string)
+
+					v := validation.StringInSlice([]string{"static", "outlier", "baseline"}, false)
+					warns, errs = v(valueString, key)
+
+					if valueString == "outlier" {
+						warns = append(warns, "We're removing outlier conditions Feb 1, 2022. More Info: https://discuss.newrelic.com/t/nrql-outlier-alert-conditions-end-of-life/164167")
+					}
+					return
+				},
 			},
 			"nrql": {
 				Type:        schema.TypeList,
