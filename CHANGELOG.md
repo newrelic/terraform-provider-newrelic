@@ -1,3 +1,8 @@
+<a name="v2.31.0"></a>
+## [v2.31.0] - 2021-11-04
+### Features
+- **alert_muting_rule:** Accept entity.guid and tags.NAME attrs
+
 <a name="v2.30.2"></a>
 ## [v2.30.2] - 2021-10-26
 ### Bug Fixes
@@ -939,7 +944,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.31.0...HEAD
+[v2.31.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.2...v2.31.0
 [v2.30.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.1...v2.30.2
 [v2.30.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.0...v2.30.1
 [v2.30.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.29.0...v2.30.0
