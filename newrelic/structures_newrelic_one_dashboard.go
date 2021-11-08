@@ -645,7 +645,7 @@ func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
 		}
 
 		for _, widget := range p.Widgets {
-			widgetType, w := flattenDashboardWidget(&widget)
+			widgetType, w := flattenDashboardWidget(&widget, p.GUID)
 
 			if widgetType != "" {
 				if _, ok := m[widgetType]; !ok {
@@ -673,7 +673,7 @@ func flattenLinkedEntityGUIDs(linkedEntities []entities.EntityOutlineInterface) 
 }
 
 // nolint:gocyclo
-func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]interface{}) {
+func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID common.EntityGUID) (string, map[string]interface{}) {
 	var widgetType string
 	out := make(map[string]interface{})
 
@@ -689,7 +689,16 @@ func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]in
 	// NOTE: The widget types that currently support linked entities
 	// are faceted widgets - i.e. bar, line, pie
 	if len(in.LinkedEntities) > 0 {
-		out["linked_entity_guids"] = flattenLinkedEntityGUIDs(in.LinkedEntities)
+		for _, entity := range in.LinkedEntities {
+			if entity.GetGUID() == pageGUID {
+				out["filter_current_dashboard"] = true
+			}
+		}
+
+		if _, ok := out["filter_current_dashboard"]; ok && out["filter_current_dashboard"] != true {
+			out["linked_entity_guids"] = flattenLinkedEntityGUIDs(in.LinkedEntities)
+		}
+
 	}
 
 	switch in.Visualization.ID {
