@@ -508,14 +508,24 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 
 	log.Printf("[INFO] Updating New Relic One dashboard '%s' (%s)", dashboard.Name, d.Id())
 
-	result, err := client.Dashboards.DashboardUpdateWithContext(ctx, *dashboard, common.EntityGUID(d.Id()))
+	updated, err := client.Dashboards.DashboardUpdateWithContext(ctx, *dashboard, common.EntityGUID(d.Id()))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	guid := updated.EntityResult.GUID
+	if guid == "" {
+		var errMessages string
+		for _, e := range updated.Errors {
+			errMessages += "[" + string(e.Type) + ": " + e.Description + "]"
+		}
+
+		return diag.Errorf("err: newrelic_one_dashboard Update failed: %s", errMessages)
+	}
+
 	// We have to use the Update Result, not a re-read of the entity as the changes take
 	// some amount of time to be re-indexed
-	return diag.FromErr(flattenDashboardUpdateResult(result, d))
+	return diag.FromErr(flattenDashboardUpdateResult(updated, d))
 }
 
 func resourceNewRelicOneDashboardDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
