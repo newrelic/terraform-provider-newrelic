@@ -327,16 +327,30 @@ func expandDashboardBillboardWidgetConfigurationInput(i map[string]interface{}, 
 	// optional, order is important (API returns them sorted alpha)
 	cfg.Thresholds = []dashboards.DashboardBillboardWidgetThresholdInput{}
 	if t, ok := i["critical"]; ok {
+		value := t.(float64)
 		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
 			AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
-			Value:         t.(float64),
+			Value:         &value,
+		})
+	} else {
+		// if the threshold is not set, we send back a nil value
+		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+			AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
+			Value:         nil,
 		})
 	}
 
 	if t, ok := i["warning"]; ok {
+		value := t.(float64)
 		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
 			AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
-			Value:         t.(float64),
+			Value:         &value,
+		})
+	} else {
+		// if the threshold is not set, we send back a nil value
+		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+			AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
+			Value:         nil,
 		})
 	}
 
