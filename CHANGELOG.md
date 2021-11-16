@@ -1,6 +1,7 @@
 <a name="v2.31.1"></a>
-## [v2.31.1] - 2021-11-04
+## [v2.31.1] - 2021-11-08
 ### Documentation Updates
+- Fix synthetics_multilocation_alert_condition.markdown
 - **servicelevel:** Fix example in the docs
 
 ### Features
