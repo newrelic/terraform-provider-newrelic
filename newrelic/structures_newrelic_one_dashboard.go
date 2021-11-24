@@ -23,7 +23,7 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}) (*dashboards
 		Name: d.Get("name").(string),
 	}
 
-	dash.Pages, err = expandDashboardPageInput(d.Get("page").([]interface{}), meta)
+	dash.Pages, err = expandDashboardPageInput(d, d.Get("page").([]interface{}), meta)
 	if err != nil {
 		return nil, err
 	}
@@ -42,14 +42,14 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}) (*dashboards
 
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
-func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboards.DashboardPageInput, error) {
+func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta interface{}) ([]dashboards.DashboardPageInput, error) {
 	if len(pages) < 1 {
 		return []dashboards.DashboardPageInput{}, nil
 	}
 
 	expanded := make([]dashboards.DashboardPageInput, len(pages))
 
-	for i, v := range pages {
+	for pageIndex, v := range pages {
 		var page dashboards.DashboardPageInput
 		p := v.(map[string]interface{})
 
@@ -102,14 +102,14 @@ func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboar
 			}
 		}
 		if widgets, ok := p["widget_billboard"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for widgetIndex, v := range widgets.([]interface{}) {
 				// Get generic properties set
 				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
 				if err != nil {
 					return nil, err
 				}
 
-				widget.Configuration.Billboard, err = expandDashboardBillboardWidgetConfigurationInput(v.(map[string]interface{}), meta)
+				widget.Configuration.Billboard, err = expandDashboardBillboardWidgetConfigurationInput(d, v.(map[string]interface{}), meta, pageIndex, widgetIndex)
 				if err != nil {
 					return nil, err
 				}
@@ -278,7 +278,7 @@ func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboar
 			}
 		}
 
-		expanded[i] = page
+		expanded[pageIndex] = page
 	}
 
 	return expanded, nil
@@ -313,7 +313,7 @@ func expandDashboardBarWidgetConfigurationInput(i map[string]interface{}, meta i
 	return nil, nil
 }
 
-func expandDashboardBillboardWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardBillboardWidgetConfigurationInput, error) {
+func expandDashboardBillboardWidgetConfigurationInput(d *schema.ResourceData, i map[string]interface{}, meta interface{}, pageIndex int, widgetIndex int) (*dashboards.DashboardBillboardWidgetConfigurationInput, error) {
 	var cfg dashboards.DashboardBillboardWidgetConfigurationInput
 	var err error
 
@@ -326,30 +326,32 @@ func expandDashboardBillboardWidgetConfigurationInput(i map[string]interface{}, 
 
 	// optional, order is important (API returns them sorted alpha)
 	cfg.Thresholds = []dashboards.DashboardBillboardWidgetThresholdInput{}
-	if t, ok := i["critical"]; ok {
-		value := t.(float64)
-		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
-			AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
-			Value:         &value,
-		})
+	if _, ok := d.GetOk(fmt.Sprintf("page.%d.widget_billboard.%d.critical", pageIndex, widgetIndex)); ok {
+		if t, ok := i["critical"]; ok {
+			value := t.(float64)
+			cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+				AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
+				Value:         &value,
+			})
+		}
 	} else {
-		// if the threshold is not set, we send back a nil value
 		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
 			AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
 			Value:         nil,
 		})
 	}
 
-	if t, ok := i["warning"]; ok {
-		value := t.(float64)
+	if _, ok := d.GetOk(fmt.Sprintf("page.%d.widget_billboard.%d.warning", pageIndex, widgetIndex)); ok {
+		if t, ok := i["warning"]; ok {
+			value := t.(float64)
+			cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+				AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
+				Value:         &value,
+			})
+		}
+	} else {
 		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
 			AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
-			Value:         &value,
-		})
-	} else {
-		// if the threshold is not set, we send back a nil value
-		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
-			AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
 			Value:         nil,
 		})
 	}
