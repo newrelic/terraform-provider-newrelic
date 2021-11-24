@@ -71,7 +71,7 @@ The following arguments are supported:
 - `description` - (Optional) The description of the NRQL alert condition.
 - `policy_id` - (Required) The ID of the policy where this condition should be used.
 - `name` - (Required) The title of the condition.
-- `type` - (Optional) The type of the condition. Valid values are `static`, `baseline`, or `outlier`. Defaults to `static`.
+- `type` - (Optional) The type of the condition. Valid values are `static`, `baseline`, or `outlier` (deprecated). Defaults to `static`.
 - `runbook_url` - (Optional) Runbook URL to display in notifications.
 - `enabled` - (Optional) Whether to enable the alert condition. Valid values are `true` and `false`. Defaults to `true`.
 - `nrql` - (Required) A NRQL query. See [NRQL](#nrql) below for details.
