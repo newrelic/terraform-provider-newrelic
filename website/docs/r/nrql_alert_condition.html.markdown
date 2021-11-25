@@ -248,7 +248,6 @@ $ terraform import newrelic_nrql_alert_condition.foo 538291:6789035:outlier
 
 The actual values for `policy_id` and `condition_id` can be retrieved from the following New Relic URL when viewing the NRQL alert condition you want to import:
 
-<small>alerts.newrelic.com/accounts/**\<account_id\>**/policies/**\<policy_id\>**/conditions/**\<condition_id\>**/edit</small>
 
 ## Upgrade from 1.x to 2.x
 
