@@ -46,10 +46,10 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 							Description: "The monitor script location name",
 						},
 						"vse_password": {
-							Type:          schema.TypeString,
-							Optional:      true,
-							Sensitive:     true,
-							Description:   "The password for the monitor script location.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Sensitive:   true,
+							Description: "The password for the monitor script location.",
 						},
 					},
 				},
@@ -163,9 +163,9 @@ func expandMonitorScriptLocations(cfg []interface{}, d *schema.ResourceData) []s
 				location.HMAC = encoded
 			}
 
-				locations = append(locations, location)
-			}
+			locations = append(locations, location)
 		}
-	
+	}
+
 	return locations
 }
