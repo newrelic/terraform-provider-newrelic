@@ -46,10 +46,17 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 							Description: "The monitor script location name",
 						},
 						"vse_password": {
+<<<<<<< HEAD
 							Type:        schema.TypeString,
 							Optional:    true,
 							Sensitive:   true,
 							Description: "The password for the monitor script location.",
+=======
+							Type:          schema.TypeString,
+							Optional:      true,
+							Sensitive:     true,
+							Description:   "The password for the monitor script location.",
+>>>>>>> cc0480cd (feat(monitor_scipt): adds vse_password)
 						},
 					},
 				},
