@@ -2,6 +2,9 @@ package newrelic
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -42,10 +45,11 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 							Required:    true,
 							Description: "The monitor script location name",
 						},
-						"hmac": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The monitor script authentication code for the location",
+						"vse_password": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							Sensitive:     true,
+							Description:   "The password for the monitor script location.",
 						},
 					},
 				},
@@ -62,7 +66,7 @@ func importSyntheticsMonitorScript(ctx context.Context, d *schema.ResourceData, 
 func buildSyntheticsMonitorScriptStruct(d *schema.ResourceData) *synthetics.MonitorScript {
 	script := synthetics.MonitorScript{
 		Text:      d.Get("text").(string),
-		Locations: expandMonitorScriptLocations(d.Get("location").([]interface{})),
+		Locations: expandMonitorScriptLocations(d.Get("location").([]interface{}), d),
 	}
 
 	return &script
@@ -134,7 +138,7 @@ func resourceNewRelicSyntheticsMonitorScriptDelete(ctx context.Context, d *schem
 	return nil
 }
 
-func expandMonitorScriptLocations(cfg []interface{}) []synthetics.MonitorScriptLocation {
+func expandMonitorScriptLocations(cfg []interface{}, d *schema.ResourceData) []synthetics.MonitorScriptLocation {
 	var locations []synthetics.MonitorScriptLocation
 
 	if len(cfg) == 0 {
@@ -150,12 +154,18 @@ func expandMonitorScriptLocations(cfg []interface{}) []synthetics.MonitorScriptL
 
 		if n, ok := cfgLocation["name"]; ok {
 			location.Name = n.(string)
-			if h, ok := cfgLocation["hmac"]; ok {
-				location.HMAC = h.(string)
+
+			if v, ok := cfgLocation["vse_password"]; ok {
+				key := []byte(v.(string))
+				h := hmac.New(sha256.New, key)
+				h.Write([]byte(d.Get("text").(string)))
+				encoded := base64.StdEncoding.EncodeToString(h.Sum(nil))
+				location.HMAC = encoded
+			}
 
 				locations = append(locations, location)
 			}
 		}
-	}
+	
 	return locations
 }
