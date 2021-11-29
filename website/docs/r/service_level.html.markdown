@@ -41,8 +41,6 @@ resource "newrelic_service_level" "foo" {
     }
 
     objective {
-        name = "Realistic"
-        description = "A realistic objective."
         target = 99.00
         time_window {
             rolling {

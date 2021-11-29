@@ -64,9 +64,10 @@ All nested `condition` blocks support the following arguments:
 
 
 ### Nested `conditions` blocks
-* `attribute` - (Required) The attribute on a violation.
+* `attribute` - (Required) The attribute on a violation. Valid values are   `accountId`, `conditionId`, `conditionName`, `conditionRunbookUrl`, `conditionType`, `entity.guid`, `nrqlEventType`, `nrqlQuery`, `policyId`, `policyName`, `product`, `tags.<NAME>`, `targetId`, `targetName`
 * `operator` - (Required) The operator used to compare the attribute's value with the supplied value(s). Valid values are `ANY`, `CONTAINS`, `ENDS_WITH`, `EQUALS`, `IN`, `IS_BLANK`, `IS_NOT_BLANK`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUALS`, `NOT_IN`, `NOT_STARTS_WITH`, `STARTS_WITH`
 * `values` - (Required) The value(s) to compare against the attribute's value.
+
 
 ### Schedule
 * `start_time` (Optional) The datetime stamp that represents when the muting rule starts. This is in local ISO 8601 format without an offset. Example: '2020-07-08T14:30:00'
