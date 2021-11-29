@@ -6,8 +6,7 @@ description: |-
   Create and manage a New Relic Service Level.
 ---
 
--> **New Relic Service Level Management is in preview**
-Please contact your account team or fill in this [form](https://forms.gle/v1y3PDJ2P6sSfviC7) if you'd like to enroll your account.
+-> **New Relic Service Level Management is in preview. [Read more](https://docs.newrelic.com/docs/service-level-management/intro-slm)**
 
 # Resource: newrelic\_service\_level
 
