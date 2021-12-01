@@ -67,6 +67,33 @@ func TestAccNewRelicNRQLDropRule_Attributes(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNRQLDropRule_AttributesFromMetricAggregates(t *testing.T) {
+	rand := acctest.RandString(5)
+	description := fmt.Sprintf("nrql_drop_rule_%s", rand)
+	resourceName := "newrelic_nrql_drop_rule.foo"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNRQLDropRuleDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicNRQLDropRuleConfig(description, "drop_attributes_from_metric_aggregates", "SELECT containerId FROM Metric WHERE metricName = 'some.metric'"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNRQLDropRuleExists(resourceName),
+				),
+			},
+			// Test: Import
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      resourceName,
+			},
+		},
+	})
+}
+
 func TestAccNewRelicNRQLDropRule_AccountIDInheritance(t *testing.T) {
 	rand := acctest.RandString(5)
 	description := fmt.Sprintf("nrql_drop_rule_%s", rand)
