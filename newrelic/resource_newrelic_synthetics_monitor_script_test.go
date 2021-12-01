@@ -48,6 +48,42 @@ func TestAccNewRelicSyntheticsMonitorScript_Password(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicSyntheticsMonitorScript_Password(t *testing.T) {
+	resourceName := "newrelic_synthetics_monitor_script.foo_script"
+	rName := acctest.RandString(5)
+	scriptText := acctest.RandString(5)
+	scriptTextUpdated := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorScriptDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicSyntheticsMonitorScriptConfigVSEPassword(rName, scriptText),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsMonitorScriptExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicSyntheticsMonitorScriptConfigVSEPassword(rName, scriptTextUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsMonitorScriptExists(resourceName),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"location"},
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicSyntheticsMonitorScriptExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -86,6 +122,28 @@ func testAccCheckNewRelicSyntheticsMonitorScriptDestroy(s *terraform.State) erro
 		}
 	}
 	return nil
+}
+
+func testAccNewRelicSyntheticsMonitorScriptConfigVSEPassword(name string, scriptText string) string {
+	return fmt.Sprintf(`
+resource "newrelic_synthetics_monitor" "foo" {
+  name = "%[1]s"
+  type = "SCRIPT_BROWSER"
+  frequency = 1
+  status = "DISABLED"
+  locations = ["AWS_US_EAST_1"]
+  uri = "https://google.com"
+}
+
+resource "newrelic_synthetics_monitor_script" "foo_script" {
+  monitor_id = newrelic_synthetics_monitor.foo.id
+  text = "%[2]s"
+	location {
+		name = "AWS_US_EAST_1"
+		vse_password = "secret"
+	}
+}
+`, name, scriptText)
 }
 
 func testAccNewRelicSyntheticsMonitorScriptConfigVSEPassword(name string, scriptText string) string {

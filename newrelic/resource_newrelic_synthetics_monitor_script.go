@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -45,18 +46,16 @@ func resourceNewRelicSyntheticsMonitorScript() *schema.Resource {
 							Required:    true,
 							Description: "The monitor script location name",
 						},
+						"hmac": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The HMAC for the monitor script location. Use only one of `hmac` or `vse_password.`",
+						},
 						"vse_password": {
-<<<<<<< HEAD
 							Type:        schema.TypeString,
 							Optional:    true,
 							Sensitive:   true,
-							Description: "The password for the monitor script location.",
-=======
-							Type:          schema.TypeString,
-							Optional:      true,
-							Sensitive:     true,
-							Description:   "The password for the monitor script location.",
->>>>>>> cc0480cd (feat(monitor_scipt): adds vse_password)
+							Description: "The password for the monitor script location used to calculate HMAC. Use only one of `vse_password` or `hmac.`",
 						},
 					},
 				},
@@ -70,13 +69,18 @@ func importSyntheticsMonitorScript(ctx context.Context, d *schema.ResourceData, 
 	return []*schema.ResourceData{d}, nil
 }
 
-func buildSyntheticsMonitorScriptStruct(d *schema.ResourceData) *synthetics.MonitorScript {
-	script := synthetics.MonitorScript{
-		Text:      d.Get("text").(string),
-		Locations: expandMonitorScriptLocations(d.Get("location").([]interface{}), d),
+func buildSyntheticsMonitorScriptStruct(d *schema.ResourceData) (*synthetics.MonitorScript, error) {
+	locations, err := expandMonitorScriptLocations(d.Get("location").([]interface{}), d)
+	if err != nil {
+		return nil, err
 	}
 
-	return &script
+	script := synthetics.MonitorScript{
+		Text:      d.Get("text").(string),
+		Locations: locations,
+	}
+
+	return &script, err
 }
 
 func resourceNewRelicSyntheticsMonitorScriptCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -85,7 +89,12 @@ func resourceNewRelicSyntheticsMonitorScriptCreate(ctx context.Context, d *schem
 	id := d.Get("monitor_id").(string)
 	log.Printf("[INFO] Creating New Relic Synthetics monitor script %s", id)
 
-	_, err := client.Synthetics.UpdateMonitorScriptWithContext(ctx, id, *buildSyntheticsMonitorScriptStruct(d))
+	script, scriptErr := buildSyntheticsMonitorScriptStruct(d)
+	if scriptErr != nil {
+		return diag.FromErr(scriptErr)
+	}
+
+	_, err := client.Synthetics.UpdateMonitorScriptWithContext(ctx, id, *script)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -119,7 +128,12 @@ func resourceNewRelicSyntheticsMonitorScriptUpdate(ctx context.Context, d *schem
 
 	log.Printf("[INFO] Creating New Relic Synthetics monitor script %s", d.Id())
 
-	_, err := client.Synthetics.UpdateMonitorScriptWithContext(ctx, d.Id(), *buildSyntheticsMonitorScriptStruct(d))
+	script, scriptErr := buildSyntheticsMonitorScriptStruct(d)
+	if scriptErr != nil {
+		return diag.FromErr(scriptErr)
+	}
+
+	_, err := client.Synthetics.UpdateMonitorScriptWithContext(ctx, d.Id(), *script)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -145,11 +159,11 @@ func resourceNewRelicSyntheticsMonitorScriptDelete(ctx context.Context, d *schem
 	return nil
 }
 
-func expandMonitorScriptLocations(cfg []interface{}, d *schema.ResourceData) []synthetics.MonitorScriptLocation {
+func expandMonitorScriptLocations(cfg []interface{}, d *schema.ResourceData) ([]synthetics.MonitorScriptLocation, error) {
 	var locations []synthetics.MonitorScriptLocation
 
 	if len(cfg) == 0 {
-		return locations
+		return locations, nil
 	}
 
 	locations = make([]synthetics.MonitorScriptLocation, 0, len(cfg))
@@ -162,17 +176,26 @@ func expandMonitorScriptLocations(cfg []interface{}, d *schema.ResourceData) []s
 		if n, ok := cfgLocation["name"]; ok {
 			location.Name = n.(string)
 
-			if v, ok := cfgLocation["vse_password"]; ok {
+			if v, ok := cfgLocation["vse_password"]; ok && v != "" {
+				if h, ok := cfgLocation["hmac"]; ok && h != "" {
+					return nil, fmt.Errorf("only set one of either `hmac` or `vse_password`")
+				}
+
 				key := []byte(v.(string))
 				h := hmac.New(sha256.New, key)
 				h.Write([]byte(d.Get("text").(string)))
 				encoded := base64.StdEncoding.EncodeToString(h.Sum(nil))
 				location.HMAC = encoded
+
+				if h, ok := cfgLocation["hmac"]; ok && h != "" {
+					if v, ok := cfgLocation["vse_password"]; ok && v != "" {
+						return nil, fmt.Errorf("only set one of either `hmac` or `vse_password`")
+					}
+					location.HMAC = h.(string)
+				}
 			}
-
-			locations = append(locations, location)
 		}
+		locations = append(locations, location)
 	}
-
-	return locations
+	return locations, nil
 }
