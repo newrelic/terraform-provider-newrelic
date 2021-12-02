@@ -179,7 +179,7 @@ func expandMonitorScriptLocations(cfg []interface{}, d *schema.ResourceData) ([]
 
 		if v, ok := cfgLocation["vse_password"]; ok && v != "" {
 			if h, ok := cfgLocation["hmac"]; ok && h != "" {
-				return nil, fmt.Errorf("only set one of either `hmac` or `vse_password`")
+				return nil, fmt.Errorf("only set one of either 'hmac' or 'vse_password'")
 			}
 			h := hmac.New(sha256.New, []byte(v.(string)))
 			h.Write([]byte(d.Get("text").(string)))
@@ -188,7 +188,7 @@ func expandMonitorScriptLocations(cfg []interface{}, d *schema.ResourceData) ([]
 
 		} else if h, ok := cfgLocation["hmac"]; ok && h != "" {
 			if v, ok := cfgLocation["vse_password"]; ok && v != "" {
-				return nil, fmt.Errorf("only set one of either `hmac` or `vse_password`")
+				return nil, fmt.Errorf("only set one of either 'hmac' or 'vse_password'")
 			}
 			location.HMAC = h.(string)
 		}
