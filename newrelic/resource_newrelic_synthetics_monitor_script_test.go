@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccNewRelicSyntheticsMonitorScript_Password(t *testing.T) {
+func TestAccNewRelicSyntheticsMonitorScript_Basic(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor_script.foo_script"
 	rName := acctest.RandString(5)
 	scriptText := acctest.RandString(5)
@@ -25,14 +25,14 @@ func TestAccNewRelicSyntheticsMonitorScript_Password(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicSyntheticsMonitorScriptConfigVSEPassword(rName, scriptText),
+				Config: testAccNewRelicSyntheticsMonitorScriptConfig(rName, scriptText),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorScriptExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicSyntheticsMonitorScriptConfigVSEPassword(rName, scriptTextUpdated),
+				Config: testAccNewRelicSyntheticsMonitorScriptConfig(rName, scriptTextUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorScriptExists(resourceName),
 				),
@@ -124,7 +124,7 @@ func testAccCheckNewRelicSyntheticsMonitorScriptDestroy(s *terraform.State) erro
 	return nil
 }
 
-func testAccNewRelicSyntheticsMonitorScriptConfigVSEPassword(name string, scriptText string) string {
+func testAccNewRelicSyntheticsMonitorScriptConfig(name string, scriptText string) string {
 	return fmt.Sprintf(`
 resource "newrelic_synthetics_monitor" "foo" {
   name = "%[1]s"
@@ -140,7 +140,7 @@ resource "newrelic_synthetics_monitor_script" "foo_script" {
   text = "%[2]s"
 	location {
 		name = "AWS_US_EAST_1"
-		vse_password = "secret"
+		hmac = "MjhiNGE4MjVlMDE1N2M4NDQ4MjNjNDFkZDEyYTRjMmUzZDE3NGJlNjU0MWFmOTJlMzNiODExOGU2ZjhkZTY4ZQ"
 	}
 }
 `, name, scriptText)
