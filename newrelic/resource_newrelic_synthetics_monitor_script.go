@@ -175,26 +175,24 @@ func expandMonitorScriptLocations(cfg []interface{}, d *schema.ResourceData) ([]
 
 		if n, ok := cfgLocation["name"]; ok {
 			location.Name = n.(string)
-
-			if v, ok := cfgLocation["vse_password"]; ok && v != "" {
-				if h, ok := cfgLocation["hmac"]; ok && h != "" {
-					return nil, fmt.Errorf("only set one of either `hmac` or `vse_password`")
-				}
-
-				key := []byte(v.(string))
-				h := hmac.New(sha256.New, key)
-				h.Write([]byte(d.Get("text").(string)))
-				encoded := base64.StdEncoding.EncodeToString(h.Sum(nil))
-				location.HMAC = encoded
-
-				if h, ok := cfgLocation["hmac"]; ok && h != "" {
-					if v, ok := cfgLocation["vse_password"]; ok && v != "" {
-						return nil, fmt.Errorf("only set one of either `hmac` or `vse_password`")
-					}
-					location.HMAC = h.(string)
-				}
-			}
 		}
+
+		if v, ok := cfgLocation["vse_password"]; ok && v != "" {
+			if h, ok := cfgLocation["hmac"]; ok && h != "" {
+				return nil, fmt.Errorf("only set one of either `hmac` or `vse_password`")
+			}
+			h := hmac.New(sha256.New, []byte(v.(string)))
+			h.Write([]byte(d.Get("text").(string)))
+			encoded := base64.StdEncoding.EncodeToString(h.Sum(nil))
+			location.HMAC = encoded
+
+		} else if h, ok := cfgLocation["hmac"]; ok && h != "" {
+			if v, ok := cfgLocation["vse_password"]; ok && v != "" {
+				return nil, fmt.Errorf("only set one of either `hmac` or `vse_password`")
+			}
+			location.HMAC = h.(string)
+		}
+
 		locations = append(locations, location)
 	}
 	return locations, nil
