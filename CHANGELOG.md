@@ -1,3 +1,16 @@
+<a name="v2.33.0"></a>
+## [v2.33.0] - 2021-11-30
+### Documentation Updates
+- **servicelevel:** Update Service Level docs
+
+### Features
+- **nrql_drop_rule:** Add 'drop_attributes_from_metric_aggregates' to drop rule actions.
+
+<a name="v2.32.0"></a>
+## [v2.32.0] - 2021-11-16
+### Bug Fixes
+- **one_dashboard:** surface error messages on dashboard update
+
 <a name="v2.31.1"></a>
 ## [v2.31.1] - 2021-11-08
 ### Documentation Updates
@@ -948,7 +961,9 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.31.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.33.0...HEAD
+[v2.33.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.32.0...v2.33.0
+[v2.32.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.31.1...v2.32.0
 [v2.31.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.2...v2.31.1
 [v2.30.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.1...v2.30.2
 [v2.30.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.0...v2.30.1
