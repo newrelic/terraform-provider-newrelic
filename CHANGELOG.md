@@ -1,5 +1,10 @@
+<a name="v2.34.0"></a>
+## [v2.34.0] - 2021-12-03
+### Features
+- **monitor_script:** add vse_password for private monitor script locations
+
 <a name="v2.33.0"></a>
-## [v2.33.0] - 2021-11-30
+## [v2.33.0] - 2021-12-01
 ### Documentation Updates
 - **servicelevel:** Update Service Level docs
 
@@ -961,7 +966,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.33.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.34.0...HEAD
+[v2.34.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.33.0...v2.34.0
 [v2.33.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.32.0...v2.33.0
 [v2.32.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.31.1...v2.32.0
 [v2.31.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.2...v2.31.1

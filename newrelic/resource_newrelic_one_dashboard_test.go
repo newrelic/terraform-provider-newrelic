@@ -174,7 +174,6 @@ func TestAccNewRelicOneDashboard_FilterCurrentDashboard(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicOneDashboard_FilterCurrentDashboard("newrelic_one_dashboard.bar", 5),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -322,6 +321,16 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       }
       linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
 	}
+
+	widget_bar {
+		title = "bar widget - filter current"
+		row = 4
+		column = 9
+		nrql_query {
+		  query      = "FROM Transaction SELECT count(*) FACET name"
+		}
+		filter_current_dashboard = true
+	  }
 
     widget_billboard {
       title = "billboard widget"
