@@ -1,7 +1,6 @@
 <a name="v2.34.1"></a>
 ## [v2.34.1] - 2021-12-10
 ### Bug Fixes
-- manually handled the state change for filter_current_dashboard. Issue 1494
 - **newrelic_one_dashboard:** cannot remove billboard threshold
 
 ### Features
