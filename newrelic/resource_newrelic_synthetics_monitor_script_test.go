@@ -97,7 +97,7 @@ func TestAccNewRelicSyntheticsMonitorScript_PasswordAndHmac(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicSyntheticsMonitorScriptConfigVSEPasswordAndHmac(rName, scriptText),
+				Config:      testAccNewRelicSyntheticsMonitorScriptConfigVSEPasswordAndHmac(rName, scriptText),
 				ExpectError: expectedErrorMsg,
 			},
 		},
