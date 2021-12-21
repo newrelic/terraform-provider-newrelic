@@ -59,7 +59,7 @@ resource "newrelic_service_level" "foo" {
 
 The following arguments are supported:
 
-  * `guid` - (Required) The GUID of the entity (e.g, APM Service, Browser application, Workload, etc.) that you want to relate this SLI to.
+  * `guid` - (Required) The GUID of the entity (e.g, APM Service, Browser application, Workload, etc.) that you want to relate this SLI to. Note that changing the GUID will force a new resource.
   * `name` - (Required) A short name for the SLI that will help anyone understand what it is about.
   * `events` - (Required) The events that define the NRDB data for the SLI/SLO calculations.
   See [Events](#events) below for details.
