@@ -82,8 +82,8 @@ func resourceNewRelicSyntheticsMultiLocationAlertCondition() *schema.Resource {
 			"violation_time_limit_seconds": {
 				Type:         schema.TypeInt,
 				Required:     true,
-				ValidateFunc: validation.IntInSlice([]int{0, 3600, 7200, 14400, 28800, 43200, 86400}),
-				Description:  "The maximum number of seconds a violation can remain open before being closed by the system.  Must be one of: 0, 3600, 7200, 14400, 28800, 43200, 86400",
+				ValidateFunc: validation.IntBetween(300, 2592000),
+				Description:  "The maximum number of seconds a violation can remain open before being closed by the system.  Must be in range: [300, 2592000]",
 			},
 		},
 	}
