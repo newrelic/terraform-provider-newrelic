@@ -27,6 +27,7 @@ func resourceNewRelicServiceLevel() *schema.Resource {
 			"guid": {
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				Description:  "",
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
