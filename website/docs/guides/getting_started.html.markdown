@@ -12,7 +12,7 @@ description: |-
 ## Before You Begin
 
 * The examples below assume you already have a New Relic agent deployed. If you don't have New Relic integrated yet, check out [New Relic's introduction documentation](https://docs.newrelic.com/docs/using-new-relic/welcome-new-relic/get-started/introduction-new-relic) to get started there, then head back over here to get started with the New Relic Terraform Provider using the examples provided.
-* [Install Terraform](https://www.terraform.io/intro/getting-started/install.html) and read the Terraform getting started guide that follows. This guide will assume a basic understanding of Terraform.
+* [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) and read the Terraform getting started guide that follows. This guide will assume a basic understanding of Terraform.
 * Locate your User API key by following [New Relic's User API key docs][user_api_key] (previously referred to as "personal API key"). <br> <small>Note: To to locate or create your API key via our NerdGraph API, please follow these [instructions][user_api_key_via_nerdgraph].</small>
 
 ## Configuring the Provider
