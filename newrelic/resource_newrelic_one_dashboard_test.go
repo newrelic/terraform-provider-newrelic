@@ -118,6 +118,31 @@ func TestAccNewRelicOneDashboard_PageRename(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboard_UpdateInvalidNRQL Ensure we catch and display richer error messages on update
+func TestAccNewRelicOneDashboard_UpdateInvalidNRQL(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_PageValidNRQL(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			// Test: Update
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(rName),
+				ExpectError: regexp.MustCompile("Invalid widget input"),
+			},
+		},
+	})
+}
+
 // TestAccNewRelicOneDashboard_InvalidNRQL checks for proper response if a widget is not configured correctly
 func TestAccNewRelicOneDashboard_InvalidNRQL(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
@@ -406,6 +431,27 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
 	}
   }
 `
+}
+
+func testAccCheckNewRelicOneDashboardConfig_PageValidNRQL(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_line {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+        query      = "FROM Transaction SELECT 2 TIMESERIES"
+      }
+    }
+  }
+}`
 }
 
 // testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL generates a basic dashboard page

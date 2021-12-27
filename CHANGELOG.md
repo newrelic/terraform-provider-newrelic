@@ -1,3 +1,38 @@
+<a name="v2.34.1"></a>
+## [v2.34.1] - 2021-12-10
+### Bug Fixes
+- **newrelic_one_dashboard:** cannot remove billboard threshold
+
+### Features
+- **newrelic_one_dashboard:** return nil value if critical/warning is not set for billboard
+
+<a name="v2.34.0"></a>
+## [v2.34.0] - 2021-12-07
+### Features
+- **monitor_script:** add vse_password for private monitor script locations
+
+<a name="v2.33.0"></a>
+## [v2.33.0] - 2021-12-01
+### Documentation Updates
+- **servicelevel:** Update Service Level docs
+
+### Features
+- **nrql_drop_rule:** Add 'drop_attributes_from_metric_aggregates' to drop rule actions.
+
+<a name="v2.32.0"></a>
+## [v2.32.0] - 2021-11-16
+### Bug Fixes
+- **one_dashboard:** surface error messages on dashboard update
+
+<a name="v2.31.1"></a>
+## [v2.31.1] - 2021-11-08
+### Documentation Updates
+- Fix synthetics_multilocation_alert_condition.markdown
+- **servicelevel:** Fix example in the docs
+
+### Features
+- **alert_muting_rule:** Accept entity.guid and tags.NAME attrs
+
 <a name="v2.30.2"></a>
 ## [v2.30.2] - 2021-10-26
 ### Bug Fixes
@@ -269,10 +304,10 @@
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="2.11.1"></a>
-## [2.11.1] - 2020-10-07
 <a name="v2.11.1"></a>
 ## [v2.11.1] - 2020-10-07
+<a name="2.11.1"></a>
+## [2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -939,7 +974,12 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.34.1...HEAD
+[v2.34.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.34.0...v2.34.1
+[v2.34.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.33.0...v2.34.0
+[v2.33.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.32.0...v2.33.0
+[v2.32.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.31.1...v2.32.0
+[v2.31.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.2...v2.31.1
 [v2.30.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.1...v2.30.2
 [v2.30.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.0...v2.30.1
 [v2.30.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.29.0...v2.30.0
@@ -973,9 +1013,9 @@
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2

@@ -35,8 +35,8 @@ func resourceNewRelicNRQLDropRule() *schema.Resource {
 				Type:         schema.TypeString,
 				ForceNew:     true,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"drop_data", "drop_attributes"}, false),
-				Description:  "The drop rule action (drop_data or drop_attributes).",
+				ValidateFunc: validation.StringInSlice([]string{"drop_data", "drop_attributes", "drop_attributes_from_metric_aggregates"}, false),
+				Description:  "The drop rule action (drop_data, drop_attributes, or drop_attributes_from_metric_aggregates).",
 			},
 			"nrql": {
 				Type:        schema.TypeString,

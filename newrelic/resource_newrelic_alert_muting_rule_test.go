@@ -109,7 +109,7 @@ func TestAccNewRelicAlertMutingRule_BadInput(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicAlertMutingRuleBadInput(rName, "new muting rule", "product", "EQUALS", "APM", "BROWSER"),
+				Config:      testAccNewRelicAlertMutingRuleBadInput(rName, "new muting rule", "product", "EQUALS", "APM", "BROWSER"),
 				ExpectError: regexp.MustCompile("Validation Error: BAD_USER_INPUT"),
 			},
 		},
@@ -396,6 +396,20 @@ func TestValidateMutingRuleConditionAttribute_ValidTag(t *testing.T) {
 
 }
 
+func TestValidateMutingRuleConditionAttribute_ValidTags(t *testing.T) {
+	// It should accept tags.value as well
+	validTag := "tags.EC2Timezone"
+	resourceName := "condition.0.conditions.0.attribute"
+
+	warns, errs := validateMutingRuleConditionAttribute(validTag, resourceName)
+	expectedErrs := []error(nil)
+	expectedWarns := []string([]string(nil))
+
+	require.Equal(t, expectedWarns, warns)
+	require.Equal(t, expectedErrs, errs)
+
+}
+
 func TestValidateMutingRuleConditionAttribute_InvalidTag(t *testing.T) {
 	// It should reject "tag" without value
 	invalidTag := "tag"
@@ -407,4 +421,18 @@ func TestValidateMutingRuleConditionAttribute_InvalidTag(t *testing.T) {
 
 	require.Equal(t, expectedWarns, warns)
 	require.Equal(t, expectedErrs, errs)
+}
+
+func TestValidateMutingRuleConditionAttribute_entityGuid(t *testing.T) {
+	// It should accept entity.guid as an attribute
+	validAttr := "entity.guid"
+	resourceName := "condition.0.conditions.0.attribute"
+
+	warns, errs := validateMutingRuleConditionAttribute(validAttr, resourceName)
+	expectedErrs := []error(nil)
+	expectedWarns := []string([]string(nil))
+
+	require.Equal(t, expectedWarns, warns)
+	require.Equal(t, expectedErrs, errs)
+
 }
