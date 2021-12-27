@@ -619,8 +619,11 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 
 	if _, ok := d.GetOk("violation_time_limit_seconds"); ok {
 		_ = d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
-	} else {
+	} else if _, ok := d.GetOk("violation_time_limit"); ok {
 		_ = d.Set("violation_time_limit", condition.ViolationTimeLimit)
+	} else {
+		// If neither field is already set, use `violation_time_limit_seconds`
+		_ = d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
 	}
 
 	if err := flattenExpiration(d, condition.Expiration); err != nil {
