@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/bflad/tfproviderlint v0.27.1
 	github.com/client9/misspell v0.3.4
-	github.com/git-chglog/git-chglog v0.15.0
+	github.com/git-chglog/git-chglog v0.15.1
 	github.com/golangci/golangci-lint v1.43.0
 	github.com/goreleaser/goreleaser v1.1.0
 	github.com/llorllale/go-gitlint v0.0.0-20210608233938-d6303cc52cc5
