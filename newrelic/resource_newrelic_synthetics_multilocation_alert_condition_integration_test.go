@@ -102,7 +102,7 @@ resource "newrelic_synthetics_multilocation_alert_condition" "foo" {
   name                         = "tf-test-%[1]s"
   runbook_url                  = "https://foo.example.com"
   enabled                      = true
-  violation_time_limit_seconds = "3600"
+  violation_time_limit_seconds = "300"
 
 	entities = [
 		"b62bcdde-6c73-4b7c-afb8-e18bae3cf4db"
