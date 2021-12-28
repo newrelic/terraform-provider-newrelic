@@ -64,7 +64,7 @@ func resourceNewRelicCloudLinkAccountCreate(ctx context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	
+
 	return nil
 }
 
@@ -87,7 +87,7 @@ func expandCloundLinkAccountInput(d *schema.ResourceData) (*cloud.CloudLinkCloud
 	return input, nil
 }
 
-func expandAwsAccountsInput(cfg []interface{}) ([]cloud.CloudAwsLinkAccountInput) {
+func expandAwsAccountsInput(cfg []interface{}) []cloud.CloudAwsLinkAccountInput {
 	var awsAccounts []cloud.CloudAwsLinkAccountInput
 
 	if len(cfg) == 0 {
@@ -95,7 +95,7 @@ func expandAwsAccountsInput(cfg []interface{}) ([]cloud.CloudAwsLinkAccountInput
 	}
 
 	awsAccounts = make([]cloud.CloudAwsLinkAccountInput, 0, len(cfg))
-	
+
 	for _, a := range cfg {
 		cfgAwsAccounts = a.(map[string]interface{})
 
@@ -104,15 +104,15 @@ func expandAwsAccountsInput(cfg []interface{}) ([]cloud.CloudAwsLinkAccountInput
 		if arn, ok := cfgAwsAccounts["arn"]; ok {
 			awsAccount.Arn = arn.(string)
 
-			if m, ok := cfgAwsAccounts["metricCollectionMode"]: ok {
+			if m, ok := cfgAwsAccounts["metricCollectionMode"]; ok {
 				awsAccount.MetricCollectionMode = m.(string)
 
-				if n, ok := cfgAwsAccounts["name"]: ok {
+				if n, ok := cfgAwsAccounts["name"]; ok {
 					awsAccount.Name = n.(string)
 				}
 			}
 		}
 		awsAccounts = append(awsAccounts, awsAccount)
 	}
-	return nil
+	return awsAccounts
 }
