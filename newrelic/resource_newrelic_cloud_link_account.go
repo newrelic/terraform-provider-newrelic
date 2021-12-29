@@ -60,7 +60,7 @@ func resourceNewRelicCloudLinkAccountCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	_, reqErr := client.Cloud.CloudLinkAccountWithContext(ctx, accountId, linkAccountInput)
+	_, reqErr := client.Cloud.CloudLinkAccountWithContext(ctx, accountId, *linkAccountInput)
 	if reqErr != nil {
 		return diag.FromErr(reqErr)
 	}
