@@ -180,6 +180,31 @@ func TestAccNewRelicOneDashboard_FilterCurrentDashboard(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboard_RawWidgets checks if raw widgets are accepted and returned correcly
+func TestAccNewRelicOneDashboard_RawWidgets(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_OnePageRaw(rName, strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			// Import
+			{
+				ResourceName:      "newrelic_one_dashboard.bar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 // testAccCheckNewRelicOneDashboard_FilterCurrentDashboard fetches the dashboard resource after creation, with an optional sleep time
 // used when we know the async nature of the API will mess with consistent testing. The filter_current_dashboard requires a second call to update
 // the linked_entity_guid to add the page GUID. This also checks to make sure the page GUID matches what has been added.
@@ -220,6 +245,16 @@ func testAccCheckNewRelicOneDashboard_FilterCurrentDashboard(name string, sleepS
 
 		return nil
 	}
+}
+
+// testAccCheckNewRelicOneDashboardConfig contains raw widget configurations
+func testAccCheckNewRelicOneDashboardConfig_OnePageRaw(dashboardName string, accountID string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+` + testAccCheckNewRelicOneDashboardConfig_RawWidgets(dashboardName, accountID) + `
+}`
 }
 
 // testAccCheckNewRelicOneDashboardConfig_TwoPageBasic generates a TF config snippet for a simple
@@ -474,6 +509,61 @@ resource "newrelic_one_dashboard" "bar" {
     }
   }
 }`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_RawWidgets generates a TF config snippet that is
+// an entire dashboard page, with a combination of raw widget types
+// we should be able to accept any raw widget, as we don't do any checking on the input types
+func testAccCheckNewRelicOneDashboardConfig_RawWidgets(pageName string, accountID string) string {
+	return `
+  page {
+    name = "` + pageName + `"
+    widget {
+      title = "Custom widget"
+      row = 1
+      column = 1
+      width = 1
+      height = 1
+      visualization_id = "viz.custom"
+      configuration = <<EOT
+      {
+        "legend": {
+          "enabled": false
+        },
+        "nrqlQueries": [
+          {
+            "accountId": ` + accountID + `,
+            "query": "SELECT average(loadAverageOneMinute), average(loadAverageFiveMinute), average(loadAverageFifteenMinute) from SystemSample SINCE 60 minutes ago    TIMESERIES"
+          }
+        ],
+        "yAxisLeft": {
+          "max": 100,
+          "min": 50,
+          "zero": false
+        }
+      }
+      EOT
+    }
+    widget {
+      title = "Server CPU"
+      row = 1
+      column = 2
+      width = 1
+      height = 1
+      visualization_id = "viz.testing"
+      configuration = <<EOT
+      {
+        "nrqlQueries": [
+          {
+            "accountId": ` + accountID + `,
+            "query": "SELECT average(cpuPercent) FROM SystemSample since 3 hours ago facet hostname limit 400"
+          }
+        ]
+      }
+      EOT
+    }
+  }
+`
 }
 
 // testAccCheckNewRelicOneDashboardExists fetches the dashboard back, with an optional sleep time
