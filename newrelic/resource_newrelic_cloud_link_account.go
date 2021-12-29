@@ -60,9 +60,9 @@ func resourceNewRelicCloudLinkAccountCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	_, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountId, input)
-	if err != nil {
-		return diag.FromErr(err)
+	_, reqErr := client.Cloud.CloudLinkAccountWithContext(ctx, accountId, linkAccountInput)
+	if reqErr != nil {
+		return diag.FromErr(reqErr)
 	}
 
 	return nil
@@ -84,7 +84,7 @@ func expandCloundLinkAccountInput(d *schema.ResourceData) (*cloud.CloudLinkCloud
 	input := cloud.CloudLinkCloudAccountsInput{
 		Aws: expandAwsAccountsInput(d.Get("aws").([]interface{})),
 	}
-	return input, nil
+	return &input, nil
 }
 
 func expandAwsAccountsInput(cfg []interface{}) []cloud.CloudAwsLinkAccountInput {
@@ -97,7 +97,7 @@ func expandAwsAccountsInput(cfg []interface{}) []cloud.CloudAwsLinkAccountInput 
 	awsAccounts = make([]cloud.CloudAwsLinkAccountInput, 0, len(cfg))
 
 	for _, a := range cfg {
-		cfgAwsAccounts = a.(map[string]interface{})
+		cfgAwsAccounts := a.(map[string]interface{})
 
 		awsAccount := cloud.CloudAwsLinkAccountInput{}
 
@@ -105,7 +105,7 @@ func expandAwsAccountsInput(cfg []interface{}) []cloud.CloudAwsLinkAccountInput 
 			awsAccount.Arn = arn.(string)
 
 			if m, ok := cfgAwsAccounts["metricCollectionMode"]; ok {
-				awsAccount.MetricCollectionMode = m.(string)
+				awsAccount.MetricCollectionMode = m.(cloud.CloudMetricCollectionMode)
 
 				if n, ok := cfgAwsAccounts["name"]; ok {
 					awsAccount.Name = n.(string)
