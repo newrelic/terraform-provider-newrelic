@@ -665,19 +665,19 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 		}
 	}
 
-	if signal.AggregationMethod != nil {
+	if _, ok := d.GetOk("aggregation_method"); ok && signal.AggregationMethod != nil {
 		if err := d.Set("aggregation_method", aggregationMethodMapNewOld[*signal.AggregationMethod]); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_method`: %v", err)
 		}
 	}
 
-	if signal.AggregationDelay != nil {
+	if _, ok := d.GetOk("aggregation_delay"); ok && signal.AggregationDelay != nil {
 		if err := d.Set("aggregation_delay", signal.AggregationDelay); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_delay`: %v", err)
 		}
 	}
 
-	if signal.AggregationTimer != nil {
+	if _, ok := d.GetOk("aggregation_timer"); ok && signal.AggregationTimer != nil {
 		if err := d.Set("aggregation_timer", signal.AggregationTimer); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_timer`: %v", err)
 		}
