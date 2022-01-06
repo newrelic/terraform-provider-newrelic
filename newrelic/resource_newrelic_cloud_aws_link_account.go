@@ -46,15 +46,11 @@ func resourceNewRelicCloudLinkAccountCreate(ctx context.Context, d *schema.Resou
 
 	accountId := selectAccountID(providerConfig, d)
 
-	linkAccountInput, err := expandCloundLinkAccountInput(d)
+	linkAccountInput := expandCloundLinkAccountInput(d)
 
+	payload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountId, linkAccountInput)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	payload, reqErr := client.Cloud.CloudLinkAccountWithContext(ctx, accountId, linkAccountInput)
-	if reqErr != nil {
-		return diag.FromErr(reqErr)
 	}
 
 	d.SetId(strconv.Itoa(payload.LinkedAccounts[0].ID))
@@ -63,18 +59,82 @@ func resourceNewRelicCloudLinkAccountCreate(ctx context.Context, d *schema.Resou
 }
 
 func resourceNewRelicCloudLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	accountId := selectAccountID(providerConfig, d)
+
+	linkedAccountId, convErr := strconv.Atoi(d.Id())
+
+	if convErr != nil {
+		return diag.FromErr(convErr)
+	}
+
+	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountId, linkedAccountId)
+	
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 
 func resourceNewRelicCloudLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	accountId := selectAccountID(providerConfig, d)
+
+	linkedAccountId, convErr := strconv.Atoi(d.Id())
+
+	if convErr != nil {
+		return diag.FromErr(convErr)
+	}
+
+	renameAccountInput := []cloud.CloudRenameAccountsInput{
+		{
+			LinkedAccountId: linkedAccountId,
+			Name: d.Get("name").(string),
+		},
+	}
+
+	_, err := client.Cloud.CloudRenameAccountWithContext(ctx, accountId, renameAccountInput)
+	
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 
 func resourceNewRelicCloudLinkAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	accountId := selectAccountID(providerConfig, d)
+
+	linkedAccountId, convErr := strconv.Atoi(d.Id())
+
+	if convErr != nil {
+		return diag.FromErr(convErr)
+	}
+
+	unlinkAccountInput := []cloud.CloudUnlinkAccountsInput{
+		{LinkedAccountId: linkedAccountId},
+	}
+
+	_, err := client.Cloud.CloudUnlinkAccountWithContext(ctx, accountId, unlinkAccountInput)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId("")
+
 	return nil
 }
 
-func expandCloundLinkAccountInput(d *schema.ResourceData) (cloud.CloudLinkCloudAccountsInput, error) {
+func expandCloundLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
 	awsAccount := cloud.CloudAwsLinkAccountInput{
 		Arn:                  d.Get("arn").(string),
 		MetricCollectionMode: d.Get("metricCollectionMode").(cloud.CloudMetricCollectionMode),
@@ -84,5 +144,11 @@ func expandCloundLinkAccountInput(d *schema.ResourceData) (cloud.CloudLinkCloudA
 	input := cloud.CloudLinkCloudAccountsInput{
 		Aws: []cloud.CloudAwsLinkAccountInput{awsAccount},
 	}
-	return input, nil
+	return input
+}
+
+func flattenAwsLinkedAccount(d *schema.ResourceData, result cloud.CloudLinkedAccount) error {
+	_ = d.Set("arn", result.AuthLabel)
+	_ = d.Set("metricCollectionMode", result.MetricCollectionMode)
+	_ = d.Set("name", result.Name)
 }
