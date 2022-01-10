@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"log"
 
@@ -181,9 +182,10 @@ func expandMonitorScriptLocations(cfg []interface{}, d *schema.ResourceData) ([]
 			if h, ok := cfgLocation["hmac"]; ok && h != "" {
 				return nil, fmt.Errorf("only set one of either 'hmac' or 'vse_password'")
 			}
-			h := hmac.New(sha256.New, []byte(v.(string)))
-			h.Write([]byte(d.Get("text").(string)))
-			encoded := base64.StdEncoding.EncodeToString(h.Sum(nil))
+			mac := hmac.New(sha256.New, []byte(v.(string)))
+			mac.Write([]byte(d.Get("text").(string)))
+			h := hex.EncodeToString(mac.Sum(nil))
+			encoded := base64.StdEncoding.EncodeToString([]byte(h))
 			location.HMAC = encoded
 
 		} else if h, ok := cfgLocation["hmac"]; ok && h != "" {
