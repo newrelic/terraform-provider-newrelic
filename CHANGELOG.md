@@ -8,7 +8,6 @@
 - correct violation_time_limit if none is provided
 - use violation_time_limit_seconds on condition import
 - **servicelevel:** Force new resource if GUID changes
-- **synthetics_multilocation_alert:** fix values for violation_time_limit_seconds
 
 ### Documentation Updates
 - add vse_password documentation
