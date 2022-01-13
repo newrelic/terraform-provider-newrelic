@@ -64,6 +64,7 @@ func resourceNewRelicAwsGovCloudLinkAccountCreate(ctx context.Context, d *schema
 	d.SetId(string(rune(id)))
 	return nil
 }
+
 func expandAwsGovCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
 	awsGovCloud := cloud.CloudAwsGovcloudLinkAccountInput{
 		AccessKeyId:          d.Get("access_key_id").(string),
