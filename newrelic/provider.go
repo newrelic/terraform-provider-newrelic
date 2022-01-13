@@ -137,16 +137,10 @@ func Provider() *schema.Provider {
 			"newrelic_alert_policy_channel":                     resourceNewRelicAlertPolicyChannel(),
 			"newrelic_api_access_key":                           resourceNewRelicAPIAccessKey(),
 			"newrelic_application_settings":                     resourceNewRelicApplicationSettings(),
-<<<<<<< HEAD
 			"newrelic_awsGovcloud_link_account":                 resourceNewRelicAwsGovCloudLinkAccount(),
-=======
-			"newrelic_aws_link_account":                         resourceNewRelicAwsAccountLinkAccount(),
-			"newrelic_azure_link_account":                       resourceNewRelicAzureLinkAccount(),
->>>>>>> 834b6de534cbfce28dd58cf86a818fec517e2b23
 			"newrelic_dashboard":                                resourceNewRelicDashboard(),
 			"newrelic_entity_tags":                              resourceNewRelicEntityTags(),
 			"newrelic_events_to_metrics_rule":                   resourceNewRelicEventsToMetricsRule(),
-			"newrelic_gcp_link_account":                         resourceNewRelicGcpLinkAccount(),
 			"newrelic_infra_alert_condition":                    resourceNewRelicInfraAlertCondition(),
 			"newrelic_insights_event":                           resourceNewRelicInsightsEvent(),
 			"newrelic_nrql_alert_condition":                     resourceNewRelicNrqlAlertCondition(),
