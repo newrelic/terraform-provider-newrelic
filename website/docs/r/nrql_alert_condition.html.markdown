@@ -71,17 +71,14 @@ The following arguments are supported:
 - `description` - (Optional) The description of the NRQL alert condition.
 - `policy_id` - (Required) The ID of the policy where this condition should be used.
 - `name` - (Required) The title of the condition.
-- `type` - (Optional) The type of the condition. Valid values are `static`, `baseline`, or `outlier` (deprecated). Defaults to `static`.
+- `type` - (Optional) The type of the condition. Valid values are `static` or `baseline` Defaults to `static`.
 - `runbook_url` - (Optional) Runbook URL to display in notifications.
 - `enabled` - (Optional) Whether to enable the alert condition. Valid values are `true` and `false`. Defaults to `true`.
 - `nrql` - (Required) A NRQL query. See [NRQL](#nrql) below for details.
 - `term` - (Optional) **DEPRECATED** Use `critical`, and `warning` instead.  A list of terms for this condition. See [Terms](#terms) below for details.
 - `critical` - (Required) A list containing the `critical` threshold values. See [Terms](#terms) below for details.
 - `warning` - (Optional) A list containing the `warning` threshold values. See [Terms](#terms) below for details.
-- `value_function` - (Required if `type` is `static`, omit when `type` is `baseline` or `outlier` ) Possible values are `single_value`, `sum` (case insensitive).
-- `expected_groups` - (Optional) Number of expected groups when using `outlier` detection.
-- `open_violation_on_group_overlap` - (Optional) Whether or not to trigger a violation when groups overlap. Set to `true` if you want to trigger a violation when groups overlap. This argument is only applicable in `outlier` conditions.
-- `ignore_overlap` - (Optional) **DEPRECATED:** Use `open_violation_on_group_overlap` instead, but use the inverse value of your boolean - e.g. if `ignore_overlap = false`, use `open_violation_on_group_overlap = true`. This argument sets whether to trigger a violation when groups overlap. If set to `true` overlapping groups will not trigger a violation. This argument is only applicable in `outlier` conditions.
+- `value_function` - (Required if `type` is `static`, omit when `type` is `baseline`) Possible values are `single_value`, `sum` (case insensitive).
 - `violation_time_limit` - (Optional) **DEPRECATED:** Use `violation_time_limit_seconds` instead. Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are `ONE_HOUR`, `TWO_HOURS`, `FOUR_HOURS`, `EIGHT_HOURS`, `TWELVE_HOURS`, `TWENTY_FOUR_HOURS`, `THIRTY_DAYS` (case insensitive).<br>
 <small>\***Note**: One of `violation_time_limit` _or_ `violation_time_limit_seconds` must be set, but not both.</small>
 
@@ -114,12 +111,12 @@ NRQL alert conditions support up to two terms. At least one `term` must have `pr
 
 The `term` block supports the following arguments:
 
-- `operator` - (Optional) Valid values are `above`, `below`, or `equals` (case insensitive). Defaults to `equals`. Note that when using a `type` of `outlier` or `baseline`, the only valid option here is `above`.
+- `operator` - (Optional) Valid values are `above`, `below`, or `equals` (case insensitive). Defaults to `equals`. Note that when using a `type` of `baseline`, the only valid option here is `above`.
 - `priority` - (Optional) `critical` or `warning`. Defaults to `critical`.
 - `threshold` - (Required) The value which will trigger a violation. Must be `0` or greater.
 <br>For _baseline_ NRQL alert conditions, the value must be in the range [1, 1000]. The value is the number of standard deviations from the baseline that the metric must exceed in order to create a violation.
 - `threshold_duration` - (Optional) The duration, in seconds, that the threshold must violate in order to create a violation. Value must be a multiple of the `aggregation_window` (which has a default of 60 seconds).
-<br>For _baseline_ and _outlier_ NRQL alert conditions, the value must be within 120-3600 seconds (inclusive).
+<br>For _baseline_ NRQL alert conditions, the value must be within 120-3600 seconds (inclusive).
 <br>For _static_ NRQL alert conditions with the `sum` value function, the value must be within 120-7200 seconds (inclusive).
 <br>For _static_ NRQL alert conditions with the `single_value` value function, the value must be within 60-7200 seconds (inclusive).
 
@@ -182,53 +179,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 <br>
 
-##### Type: `outlier`
-
-In software development and operations, it is common to have a group consisting of members you expect to behave approximately the same. [Outlier detection](https://docs.newrelic.com/docs/alerts/new-relic-alerts/defining-conditions/outlier-detection-nrql-alert) facilitates alerting when the behavior of one or more common members falls outside a specified range expectation.
-
-```hcl
-resource "newrelic_alert_policy" "foo" {
-  name = "foo"
-}
-
-resource "newrelic_nrql_alert_condition" "foo" {
-  type                         = "outlier"
-  account_id                   = <Your Account ID>
-  name                         = "foo"
-  policy_id                    = newrelic_alert_policy.foo.id
-  description                  = "Alert when outlier conditions occur"
-  enabled                      = true
-  runbook_url                  = "https://www.example.com"
-  violation_time_limit_seconds = 3600
-  aggregation_method           = "event_flow"
-  aggregation_delay            = 120
-
-  # Outlier only
-  expected_groups = 2
-
-  # Outlier only
-	open_violation_on_group_overlap = true
-
-  nrql {
-    query = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName' FACET host"
-  }
-
-  critical {
-    operator              = "above"
-    threshold             = 0.002
-    threshold_duration    = 600
-    threshold_occurrences = "all"
-  }
-
-  warning {
-    operator              = "above"
-    threshold             = 0.0015
-    threshold_duration    = 600
-    threshold_occurrences = "all"
-  }
-}
-```
-
 ## Import
 
 Alert conditions can be imported using a composite ID of `<policy_id>:<condition_id>:<conditionType>`, e.g.
@@ -240,11 +190,7 @@ $ terraform import newrelic_nrql_alert_condition.foo 538291:6789035:baseline
 // For `static` conditions
 $ terraform import newrelic_nrql_alert_condition.foo 538291:6789035:static
 
-// For `outlier` conditions
-$ terraform import newrelic_nrql_alert_condition.foo 538291:6789035:outlier
-```
-
-~> **NOTE:** The value of `conditionType` in the import composite ID must be a valid condition type - `static`, `baseline`, or `outlier.` Also note that deprecated arguments will *not* be set when importing.
+~> **NOTE:** The value of `conditionType` in the import composite ID must be a valid condition type - `static`, `baseline`. Also note that deprecated arguments will *not* be set when importing.
 
 The actual values for `policy_id` and `condition_id` can be retrieved from the following New Relic URL when viewing the NRQL alert condition you want to import:
 

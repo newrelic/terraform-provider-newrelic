@@ -477,25 +477,9 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	nrqlConditionStatic.Type = alerts.NrqlConditionTypes.Static
 	nrqlConditionStatic.ValueFunction = &alerts.NrqlConditionValueFunctions.Sum
 
-	// Outlier
-	expectedGroups := 2
-	openViolationOnOverlap := true
-	nrqlConditionOutlier := nrqlCondition
-	nrqlConditionOutlier.Type = "OUTLIER"
-	nrqlConditionOutlier.ExpectedGroups = &expectedGroups
-	nrqlConditionOutlier.OpenViolationOnGroupOverlap = &openViolationOnOverlap
-	nrqlConditionOutlier.Signal = &alerts.AlertsNrqlConditionSignal{
-		FillOption:        &alerts.AlertsFillOptionTypes.NONE,
-		AggregationMethod: &alerts.NrqlConditionAggregationMethodTypes.Cadence,
-		AggregationDelay:  &[]int{60}[0],
-		AggregationTimer:  &[]int{60}[0],
-	}
-	nrqlConditionOutlier.Expiration = nil
-
 	conditions := []*alerts.NrqlAlertCondition{
 		&nrqlConditionBaseline,
 		&nrqlConditionStatic,
-		&nrqlConditionOutlier,
 	}
 
 	// Use the API object above to construct a "user-configured" critical term.
@@ -552,8 +536,6 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		case alerts.NrqlConditionTypes.Baseline:
 			require.Equal(t, string(alerts.NrqlBaselineDirections.LowerOnly), d.Get("baseline_direction").(string))
 			require.Zero(t, d.Get("value_function").(string))
-			require.Zero(t, d.Get("expected_groups").(int))
-			require.Zero(t, d.Get("open_violation_on_group_overlap").(bool))
 			require.Equal(t, 120, d.Get("expiration_duration").(int))
 			require.True(t, d.Get("open_violation_on_expiration").(bool))
 			require.True(t, d.Get("close_violations_on_expiration").(bool))
@@ -566,8 +548,6 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		case alerts.NrqlConditionTypes.Static:
 			require.Equal(t, string(alerts.NrqlConditionValueFunctions.Sum), d.Get("value_function").(string))
 			require.Zero(t, d.Get("baseline_direction").(string))
-			require.Zero(t, d.Get("expected_groups").(int))
-			require.Zero(t, d.Get("open_violation_on_group_overlap").(bool))
 			require.Equal(t, 120, d.Get("expiration_duration").(int))
 			require.True(t, d.Get("open_violation_on_expiration").(bool))
 			require.True(t, d.Get("close_violations_on_expiration").(bool))
@@ -577,20 +557,6 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, 60, d.Get("aggregation_delay").(int))
 			require.Equal(t, 60, d.Get("aggregation_timer").(int))
 
-		case alerts.NrqlConditionTypes.Outlier:
-			require.Equal(t, 2, d.Get("expected_groups").(int))
-			require.Zero(t, d.Get("ignore_overlap").(bool))
-			require.True(t, d.Get("open_violation_on_group_overlap").(bool))
-			require.Zero(t, d.Get("baseline_direction").(string))
-			require.Zero(t, d.Get("value_function").(string))
-			require.Zero(t, d.Get("expiration_duration").(int))
-			require.Zero(t, d.Get("open_violation_on_expiration").(bool))
-			require.Zero(t, d.Get("close_violations_on_expiration").(bool))
-			require.Equal(t, "none", d.Get("fill_option").(string))
-			require.Zero(t, d.Get("fill_value").(float64))
-			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
-			require.Equal(t, 60, d.Get("aggregation_delay").(int))
-			require.Equal(t, 60, d.Get("aggregation_timer").(int))
 		}
 	}
 }
@@ -704,20 +670,7 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 				"priority":              "critical",
 			},
 			ExpectErr:    true,
-			ExpectReason: "only ABOVE operator is allowed for `baseline` and `outlier` condition types",
-		},
-		"non-ABOVE operator when using outlier condition": {
-			Priority:      "warning",
-			ConditionType: "outlier",
-			Term: map[string]interface{}{
-				"threshold":             10.9,
-				"threshold_duration":    9,
-				"threshold_occurrences": "ALL",
-				"operator":              "equals",
-				"priority":              "critical",
-			},
-			ExpectErr:    true,
-			ExpectReason: "only ABOVE operator is allowed for `baseline` and `outlier` condition types",
+			ExpectReason: "only ABOVE operator is allowed for `baseline` condition types",
 		},
 	}
 

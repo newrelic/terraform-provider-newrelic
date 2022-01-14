@@ -57,10 +57,10 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 
 func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 	rName := acctest.RandString(5)
-	conditionType := "outlier"
-	conditionalAttr := `expected_groups = 2
-	open_violation_on_group_overlap = true`
-	facetClause := `FACET host`
+	conditionType := "static"
+	conditionalAttr := `value_function = "Single_valuE"` // value transformed to UPPERCASE in expand/flatten
+	fillOption := "none"
+	fillValue := "null"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -68,24 +68,26 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
+				Config: testAccNewRelicNrqlAlertConditionNerdGraphConfig(
 					fmt.Sprintf("tf-test-%s", rName),
 					conditionType,
 					3,
 					3600,
+					fillOption,
+					fillValue,
 					conditionalAttr,
-					facetClause,
 				),
 			},
 			{
 				PreConfig: testAccDeleteNewRelicAlertPolicy(fmt.Sprintf("tf-test-%s", rName)),
-				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
+				Config: testAccNewRelicNrqlAlertConditionNerdGraphConfig(
 					fmt.Sprintf("tf-test-%s", rName),
 					conditionType,
 					3,
 					3600,
+					fillOption,
+					fillValue,
 					conditionalAttr,
-					facetClause,
 				),
 				Check: testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
 			},
@@ -95,11 +97,7 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 
 func TestAccNewRelicNrqlAlertCondition_NerdGraphThresholdDurationValidationErrors(t *testing.T) {
 	rNameBaseline := acctest.RandString(5)
-	rNameOutlier := acctest.RandString(5)
 	conditionalAttrBaseline := `baseline_direction = "lower_only"`
-	conditionalAttrOutlier := `expected_groups = 2
-	open_violation_on_group_overlap = true`
-	facetClause := `FACET host`
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -129,30 +127,6 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphThresholdDurationValidationError
 					"static",
 					"0",
 					conditionalAttrBaseline,
-				),
-				ExpectError: regexp.MustCompile("Validation Error"),
-			},
-			// Test: Outlier condition invalid `threshold_duration`
-			{
-				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
-					rNameOutlier,
-					"outlier",
-					3,
-					7200, // outside of accepted range [120, 3600] to test error handling
-					conditionalAttrOutlier,
-					facetClause,
-				),
-				ExpectError: regexp.MustCompile("Validation Error"),
-			},
-			// Test: Outlier condition invalid `threshold_duration`
-			{
-				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
-					rNameOutlier,
-					"outlier",
-					3,
-					60, // outside of accepted range [120, 3600] to test error handling
-					conditionalAttrOutlier,
-					facetClause,
 				),
 				ExpectError: regexp.MustCompile("Validation Error"),
 			},
@@ -334,65 +308,6 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 					"violation_time_limit", // deprecated in favor of violation_time_limit_seconds
 				},
 				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "static"),
-			},
-		},
-	})
-}
-
-func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
-	resourceName := "newrelic_nrql_alert_condition.foo"
-	rName := acctest.RandString(5)
-	conditionType := "outlier"
-	conditionalAttr := `expected_groups = 2
-	open_violation_on_group_overlap = true`
-	facetClause := `FACET host`
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			// Test: Create (NerdGraph)
-			{
-				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
-					rName,
-					conditionType,
-					3,
-					3600,
-					conditionalAttr,
-					facetClause,
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
-				),
-			},
-			// Test: Update (NerdGraph)
-			{
-				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
-					rName,
-					conditionType,
-					3,
-					1800,
-					conditionalAttr,
-					facetClause,
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
-				),
-			},
-			// Test: Import
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// Ignore items with deprecated fields because
-				// we don't set deprecated fields on import
-				ImportStateVerifyIgnore: []string{
-					"term",                 // contains nested attributes that are deprecated
-					"nrql",                 // contains nested attributes that are deprecated
-					"violation_time_limit", // deprecated in favor of violation_time_limit_seconds
-				},
-				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "outlier"),
 			},
 		},
 	})
@@ -760,48 +675,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	%[7]s
 }
 `, name, conditionType, nrqlEvalOffset, termDuration, fillOption, fillValue, conditionalAttr)
-}
-
-func testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
-	name string,
-	conditionType string,
-	nrqlEvalOffset int,
-	termDuration int,
-	conditionalAttr string,
-	facetClause string,
-) string {
-	return fmt.Sprintf(`
-resource "newrelic_alert_policy" "foo" {
-	name = "tf-test-%[1]s"
-}
-
-resource "newrelic_nrql_alert_condition" "foo" {
-	policy_id   = newrelic_alert_policy.foo.id
-
-	name                 = "tf-test-%[1]s"
-	type                 = "%[2]s"
-	runbook_url          = "https://foo.example.com"
-	enabled              = false
-	description          = "test description"
-	violation_time_limit_seconds = 3600
-	aggregation_window   = 60
-
-	nrql {
-		query             = "SELECT uniqueCount(hostname) FROM ComputeSample %[6]s"
-		evaluation_offset = %[3]d
-	}
-
-	critical {
-    operator              = "above"
-    threshold             = 1.25
-		threshold_duration    = %[4]d
-		threshold_occurrences = "ALL"
-	}
-
-	# Will be one of baseline_direction, value_function, expected_groups, or open_violation_on_group_overlap depending on condition type
-	%[5]s
-}
-`, name, conditionType, nrqlEvalOffset, termDuration, conditionalAttr, facetClause)
 }
 
 func testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
