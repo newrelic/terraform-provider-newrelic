@@ -55,43 +55,6 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
-	rName := acctest.RandString(5)
-	conditionType := "outlier"
-	conditionalAttr := `expected_groups = 2
-	open_violation_on_group_overlap = true`
-	facetClause := `FACET host`
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
-					fmt.Sprintf("tf-test-%s", rName),
-					conditionType,
-					3,
-					3600,
-					conditionalAttr,
-					facetClause,
-				),
-			},
-			{
-				PreConfig: testAccDeleteNewRelicAlertPolicy(fmt.Sprintf("tf-test-%s", rName)),
-				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
-					fmt.Sprintf("tf-test-%s", rName),
-					conditionType,
-					3,
-					3600,
-					conditionalAttr,
-					facetClause,
-				),
-				Check: testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
-			},
-		},
-	})
-}
 
 func TestAccNewRelicNrqlAlertCondition_NerdGraphThresholdDurationValidationErrors(t *testing.T) {
 	rNameBaseline := acctest.RandString(5)
@@ -334,65 +297,6 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 					"violation_time_limit", // deprecated in favor of violation_time_limit_seconds
 				},
 				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "static"),
-			},
-		},
-	})
-}
-
-func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
-	resourceName := "newrelic_nrql_alert_condition.foo"
-	rName := acctest.RandString(5)
-	conditionType := "outlier"
-	conditionalAttr := `expected_groups = 2
-	open_violation_on_group_overlap = true`
-	facetClause := `FACET host`
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			// Test: Create (NerdGraph)
-			{
-				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
-					rName,
-					conditionType,
-					3,
-					3600,
-					conditionalAttr,
-					facetClause,
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
-				),
-			},
-			// Test: Update (NerdGraph)
-			{
-				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
-					rName,
-					conditionType,
-					3,
-					1800,
-					conditionalAttr,
-					facetClause,
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
-				),
-			},
-			// Test: Import
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// Ignore items with deprecated fields because
-				// we don't set deprecated fields on import
-				ImportStateVerifyIgnore: []string{
-					"term",                 // contains nested attributes that are deprecated
-					"nrql",                 // contains nested attributes that are deprecated
-					"violation_time_limit", // deprecated in favor of violation_time_limit_seconds
-				},
-				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "outlier"),
 			},
 		},
 	})
