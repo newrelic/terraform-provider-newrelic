@@ -1,6 +1,22 @@
+<a name="v2.35.0"></a>
+## [v2.35.0] - 2022-01-10
+### Bug Fixes
+- correct the HMAC calculation for synthetics
+- revert previous changes, add DiffSuppressFunc for default values
+- aggregation_method and aggregation_delay diff when not provided
+- muting rule with repeat = null crashes plugin
+- correct violation_time_limit if none is provided
+- use violation_time_limit_seconds on condition import
+- **servicelevel:** Force new resource if GUID changes
+
+### Documentation Updates
+- add vse_password documentation
+- Fix link to Install Terraform
+
 <a name="v2.34.1"></a>
 ## [v2.34.1] - 2021-12-10
 ### Bug Fixes
+- manually handled the state change for filter_current_dashboard. Issue 1494
 - **newrelic_one_dashboard:** cannot remove billboard threshold
 
 ### Features
@@ -974,7 +990,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.34.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.35.0...HEAD
+[v2.35.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.34.1...v2.35.0
 [v2.34.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.34.0...v2.34.1
 [v2.34.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.33.0...v2.34.0
 [v2.33.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.32.0...v2.33.0
