@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,7 +26,7 @@ func resourceNewRelicCloudAwsLinkAccount() *schema.Resource {
 				Required:    true,
 				Description: "The AWS role ARN",
 			},
-			"metricCollectionMode": {
+			"metric_collection_mode": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "How metrics will be collected.",
@@ -46,7 +47,7 @@ func resourceNewRelicCloudLinkAccountCreate(ctx context.Context, d *schema.Resou
 
 	accountId := selectAccountID(providerConfig, d)
 
-	linkAccountInput := expandCloundLinkAccountInput(d)
+	linkAccountInput := expandCloudLinkAccountInput(d)
 
 	payload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountId, linkAccountInput)
 	if err != nil {
@@ -71,10 +72,12 @@ func resourceNewRelicCloudLinkAccountRead(ctx context.Context, d *schema.Resourc
 	}
 
 	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountId, linkedAccountId)
-	
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	readAwsLinkedAccount(d, linkedAccount)
 
 	return nil
 }
@@ -94,12 +97,12 @@ func resourceNewRelicCloudLinkAccountUpdate(ctx context.Context, d *schema.Resou
 	renameAccountInput := []cloud.CloudRenameAccountsInput{
 		{
 			LinkedAccountId: linkedAccountId,
-			Name: d.Get("name").(string),
+			Name:            d.Get("name").(string),
 		},
 	}
 
 	_, err := client.Cloud.CloudRenameAccountWithContext(ctx, accountId, renameAccountInput)
-	
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,11 +137,19 @@ func resourceNewRelicCloudLinkAccountDelete(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func expandCloundLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
-	awsAccount := cloud.CloudAwsLinkAccountInput{
-		Arn:                  d.Get("arn").(string),
-		MetricCollectionMode: d.Get("metricCollectionMode").(cloud.CloudMetricCollectionMode),
-		Name:                 d.Get("name").(string),
+func expandCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
+	awsAccount := cloud.CloudAwsLinkAccountInput{}
+
+	if arn, ok := d.GetOk("arn"); ok {
+		awsAccount.Arn = arn.(string)
+	}
+
+	if m, ok := d.GetOk("metric_collection_mode"); ok {
+		awsAccount.MetricCollectionMode = cloud.CloudMetricCollectionMode(strings.ToUpper(m.(string)))
+	}
+
+	if name, ok := d.GetOk("name"); ok {
+		awsAccount.Name = name.(string)
 	}
 
 	input := cloud.CloudLinkCloudAccountsInput{
@@ -147,8 +158,8 @@ func expandCloundLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAc
 	return input
 }
 
-func flattenAwsLinkedAccount(d *schema.ResourceData, result cloud.CloudLinkedAccount) error {
+func readAwsLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
 	_ = d.Set("arn", result.AuthLabel)
-	_ = d.Set("metricCollectionMode", result.MetricCollectionMode)
+	_ = d.Set("metric_collection_mode", result.MetricCollectionMode)
 	_ = d.Set("name", result.Name)
 }
