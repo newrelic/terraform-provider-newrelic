@@ -44,7 +44,8 @@ The following arguments are supported:
 All nested `location` blocks support the following common arguments:
 
   * `name` - (Required) The monitor script location name.
-  * `hmac` - (Optional) The monitor script authentication code for the location.
+  * `hmac` - (Optional) The monitor script authentication code for the location. Use one of either `hmac` or `vse_password`.
+  * `vse_password` - (Optional) The password for the location used to calculate the HMAC. Use one of either `hmac` or `vse_password`.
 
 ## Attributes Reference
 
