@@ -211,4 +211,4 @@ New Relic has open-sourced this project. This project is provided AS-IS WITHOUT 
 
 _Please do not report issues with this software to New Relic Global Technical Support._
 
-[provider_version_configuration]: https://www.terraform.io/docs/configuration/providers.html#provider-versions
+[provider_version_configuration]: https://www.terraform.io/language/providers/configuration#version-deprecated

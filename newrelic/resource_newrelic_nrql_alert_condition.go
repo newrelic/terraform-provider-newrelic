@@ -159,7 +159,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					warns, errs = v(valueString, key)
 
 					if valueString == "outlier" {
-						warns = append(warns, "We're removing outlier conditions Feb 1, 2022. More Info: https://discuss.newrelic.com/t/nrql-outlier-alert-conditions-end-of-life/164167")
+						warns = append(warns, "We're removing outlier conditions Feb 1, 2022. More Info: https://docs.newrelic.com/docs/alerts-applied-intelligence/transition-guide/#outlier")
 					}
 					return
 				},
