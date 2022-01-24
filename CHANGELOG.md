@@ -1,3 +1,12 @@
+<a name="v2.35.1"></a>
+## [v2.35.1] - 2022-01-24
+### Bug Fixes
+- Remove condition name length validation
+- **renovate:** removed old feature branch check
+
+### Documentation Updates
+- add example of workload using tags
+
 <a name="v2.35.0"></a>
 ## [v2.35.0] - 2022-01-10
 ### Bug Fixes
@@ -8,6 +17,7 @@
 - correct violation_time_limit if none is provided
 - use violation_time_limit_seconds on condition import
 - **servicelevel:** Force new resource if GUID changes
+- **synthetics_multilocation_alert:** fix values for violation_time_limit_seconds
 
 ### Documentation Updates
 - add vse_password documentation
@@ -990,7 +1000,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.35.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.35.1...HEAD
+[v2.35.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.35.0...v2.35.1
 [v2.35.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.34.1...v2.35.0
 [v2.34.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.34.0...v2.34.1
 [v2.34.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.33.0...v2.34.0
