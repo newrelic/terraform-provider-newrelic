@@ -5,7 +5,10 @@ package newrelic
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -32,11 +35,23 @@ func TestAccNewRelicAwsLinkAccount_Basic(t *testing.T) {
 	})
 }
 
-// func testAccNewRelicAwsLinkAccountDestroy(s *terraform.State) error {
-// 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
-// 	for _, r := range s.RootModule().Resources {
-// 	}
-// }
+func testAccNewRelicAwsLinkAccountDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
+	for _, r := range s.RootModule().Resources {
+		if r.Type != "newrelic_aws_link_account" {
+			continue
+		}
+		resourceId, err := strconv.Atoi(r.Primary.ID)
+		if err != nil {
+			fmt.Errorf("unable to convert string to int")
+		}
+		_, err = client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func testAccNewRelicAwsLinkAccountConfig(name string) string {
 	return fmt.Sprintf(`
