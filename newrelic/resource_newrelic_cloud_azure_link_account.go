@@ -9,7 +9,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
 )
 
-func resourceNewRelicAzureLinkAccount() *schema.Resource {
+func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicAzureLinkAccountCreate,
 		ReadContext:   resourceNewRelicAzureLinkAccountRead,

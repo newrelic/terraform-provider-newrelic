@@ -11,7 +11,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
 )
 
-func resourceNewRelicAwsAccountLinkAccount() *schema.Resource {
+func resourceNewRelicCloudAwsAccountLinkAccount() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicAwsAccountLinkCreate,
 		ReadContext:   resourceNewRelicAwsAccountLinkRead,
@@ -27,7 +27,7 @@ func resourceNewRelicAwsAccountLinkAccount() *schema.Resource {
 				Type:         schema.TypeString,
 				Description:  "How metrics will be collected",
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"PULL", "PUSH"}, true),
+				ValidateFunc: validation.StringInSlice([]string{"PULL", "PUSH"}, false),
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -41,15 +41,18 @@ func resourceNewRelicAwsAccountLinkAccount() *schema.Resource {
 func resourceNewRelicAwsAccountLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
-	accountID := selectAccountID(providerConfig, d)
-	linkAccount := expandAwsCloudLinkAccountInput(d)
-	payload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccount)
+
+	accountId := selectAccountID(providerConfig, d)
+
+	linkAccountInput := expandAwsCloudLinkAccountInput(d)
+
+	payload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountId, linkAccountInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	payloadReturned := &payload.LinkedAccounts[0]
-	id := payloadReturned.ID
-	d.SetId(string(rune(id)))
+
+	d.SetId(strconv.Itoa(payload.LinkedAccounts[0].ID))
+
 	return nil
 }
 
