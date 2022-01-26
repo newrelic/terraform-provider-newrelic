@@ -2,7 +2,9 @@ package newrelic
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,21 +20,19 @@ func resourceNewRelicAwsAccountLinkAccount() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"arn": {
 				Type:        schema.TypeString,
-				Description: "aws iam role arn",
+				Description: "The AWS role arn",
 				Required:    true,
-				ForceNew:    true,
 			},
 			"metric_collection_mode": {
-				Type:        schema.TypeString,
-				Description: "push or pull metric collection mode",
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Description:  "How metrics will be collected",
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"PULL", "PUSH"}, true),
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "name of the cloud link account",
+				Description: "The name of the linked account",
 				Required:    true,
-				ForceNew:    false,
 			},
 		},
 	}
@@ -54,11 +54,20 @@ func resourceNewRelicAwsAccountLinkCreate(ctx context.Context, d *schema.Resourc
 }
 
 func expandAwsCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
-	awsAccount := cloud.CloudAwsLinkAccountInput{
-		Arn:                  d.Get("arn").(string),
-		MetricCollectionMode: d.Get("metric_collection_mode").(cloud.CloudMetricCollectionMode),
-		Name:                 d.Get("name").(string),
+	awsAccount := cloud.CloudAwsLinkAccountInput{}
+
+	if arn, ok := d.GetOk("arn"); ok {
+		awsAccount.Arn = arn.(string)
 	}
+
+	if m, ok := d.GetOk("metric_collection_mode"); ok {
+		awsAccount.MetricCollectionMode = cloud.CloudMetricCollectionMode(strings.ToUpper(m.(string)))
+	}
+
+	if name, ok := d.GetOk("name"); ok {
+		awsAccount.Name = name.(string)
+	}
+
 	input := cloud.CloudLinkCloudAccountsInput{
 		Aws: []cloud.CloudAwsLinkAccountInput{awsAccount},
 	}
@@ -66,7 +75,32 @@ func expandAwsCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloud
 }
 
 func resourceNewRelicAwsAccountLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	accountID := selectAccountID(providerConfig, d)
+
+	linkedAccountID, convErr := strconv.Atoi(d.Id())
+
+	if convErr != nil {
+		return diag.FromErr(convErr)
+	}
+
+	linkedAccount, err := client.Cloud.GetLinkedAccount(accountID, linkedAccountID)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	readAwsLinkedAccount(d, linkedAccount)
+
 	return nil
+}
+
+func readAwsLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
+	_ = d.Set("arn", result.AuthLabel)
+	_ = d.Set("metric_collection_mode", result.MetricCollectionMode)
+	_ = d.Set("name", result.Name)
 }
 
 func resourceNewRelicAwsAccountLinkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -74,12 +108,12 @@ func resourceNewRelicAwsAccountLinkUpdate(ctx context.Context, d *schema.Resourc
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 	id, _ := strconv.Atoi(d.Id())
-	var input []cloud.CloudRenameAccountsInput
-	renameInput := cloud.CloudRenameAccountsInput{
-		Name:            d.Get("name").(string),
-		LinkedAccountId: id,
+	input := []cloud.CloudRenameAccountsInput{
+		{
+			Name:            d.Get("name").(string),
+			LinkedAccountId: id,
+		},
 	}
-	input = append(input, renameInput)
 	_, err := client.Cloud.CloudRenameAccount(accountID, input)
 	if err != nil {
 		diag.FromErr(err)
@@ -91,12 +125,24 @@ func resourceNewRelicAwsAccountLinkDelete(ctx context.Context, d *schema.Resourc
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
-	var input []cloud.CloudUnlinkAccountsInput
-	id := d.Id()
-	input[0].LinkedAccountId, _ = strconv.Atoi(id)
-	_, err := client.Cloud.CloudUnlinkAccountWithContext(ctx, accountID, input)
+
+	linkedAccountId, convErr := strconv.Atoi(d.Id())
+
+	if convErr != nil {
+		return diag.FromErr(convErr)
+	}
+
+	unlinkAccountInput := []cloud.CloudUnlinkAccountsInput{
+		{
+			LinkedAccountId: linkedAccountId,
+		},
+	}
+	_, err := client.Cloud.CloudUnlinkAccountWithContext(ctx, accountID, unlinkAccountInput)
 	if err != nil {
 		diag.FromErr(err)
 	}
+
+	d.SetId("")
+
 	return nil
 }
