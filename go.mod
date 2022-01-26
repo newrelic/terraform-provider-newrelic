@@ -2,8 +2,6 @@ module github.com/newrelic/terraform-provider-newrelic/v2
 
 go 1.15
 
-replace github.com/newrelic/newrelic-client-go v0.69.0 => /Users/sbandari/Desktop/newrelic-client-go/newrelic-client-go
-
 require (
 	github.com/apparentlymart/go-cidr v1.1.0 // indirect
 	github.com/aws/aws-sdk-go v1.37.0 // indirect
@@ -12,7 +10,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.15.2
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go v0.70.0
+	github.com/newrelic/newrelic-client-go v0.71.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/tools v0.0.0-20201028111035-eafbe7b904eb // indirect
 	google.golang.org/api v0.34.0 // indirect
