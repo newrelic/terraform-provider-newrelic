@@ -154,7 +154,7 @@ func resourceNewRelicCloudAwsAccountLinkDelete(ctx context.Context, d *schema.Re
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	linkedAccountId, convErr := strconv.Atoi(d.Id())
+	linkedAccountID, convErr := strconv.Atoi(d.Id())
 
 	if convErr != nil {
 		return diag.FromErr(convErr)
@@ -162,7 +162,7 @@ func resourceNewRelicCloudAwsAccountLinkDelete(ctx context.Context, d *schema.Re
 
 	unlinkAccountInput := []cloud.CloudUnlinkAccountsInput{
 		{
-			LinkedAccountId: linkedAccountId,
+			LinkedAccountId: linkedAccountID,
 		},
 	}
 	cloudUnlinkAccountPayload, err := client.Cloud.CloudUnlinkAccountWithContext(ctx, accountID, unlinkAccountInput)
