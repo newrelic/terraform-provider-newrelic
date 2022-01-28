@@ -18,7 +18,7 @@ import (
 func TestAccNewRelicCloudAwsLinkAccount_Basic(t *testing.T) {
 	rName := acctest.RandString(5)
 	resourceName := "newrelic_cloud_aws_link_account.foo"
-	testAwsArn := os.Getenv("INTEGRATION_TESTING_AWS_ARN");
+	testAwsArn := os.Getenv("INTEGRATION_TESTING_AWS_ARN")
 
 	if testAwsArn == "" {
 		t.Skipf("INTEGRATION_TESTING_AWS_ARN must be set for this acceptance test")

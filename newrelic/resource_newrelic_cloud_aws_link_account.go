@@ -2,9 +2,10 @@ package newrelic
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -42,11 +43,11 @@ func resourceNewRelicAwsAccountLinkCreate(ctx context.Context, d *schema.Resourc
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	accountId := selectAccountID(providerConfig, d)
+	accountID := selectAccountID(providerConfig, d)
 
 	linkAccountInput := expandAwsCloudLinkAccountInput(d)
 
-	payload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountId, linkAccountInput)
+	payload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,7 +130,7 @@ func resourceNewRelicAwsAccountLinkDelete(ctx context.Context, d *schema.Resourc
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	linkedAccountId, convErr := strconv.Atoi(d.Id())
+	linkedAccountID, convErr := strconv.Atoi(d.Id())
 
 	if convErr != nil {
 		return diag.FromErr(convErr)
@@ -137,7 +138,7 @@ func resourceNewRelicAwsAccountLinkDelete(ctx context.Context, d *schema.Resourc
 
 	unlinkAccountInput := []cloud.CloudUnlinkAccountsInput{
 		{
-			LinkedAccountId: linkedAccountId,
+			LinkedAccountId: linkedAccountID,
 		},
 	}
 	_, err := client.Cloud.CloudUnlinkAccountWithContext(ctx, accountID, unlinkAccountInput)
