@@ -1,7 +1,6 @@
 {
   "baseBranches": [
-    "main",
-    "release/v2.x"
+    "main"
   ],
   "extends": [
     "config:base"

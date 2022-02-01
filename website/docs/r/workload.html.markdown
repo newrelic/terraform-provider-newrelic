@@ -16,6 +16,7 @@ variable with your User API key.
 
 ## Example Usage
 
+Include entities with a certain string on the name.
 ```hcl
 resource "newrelic_workload" "foo" {
 	name = "Example workload"
@@ -24,12 +25,29 @@ resource "newrelic_workload" "foo" {
 	entity_guids = ["MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1"]
 
 	entity_search_query {
-		query = "name like 'Example application'"
+		query = "name like '%Example application%'"
 	}
 
 	scope_account_ids =  [12345678]
 }
 ```
+
+Include entities with a set of tags.
+```hcl
+resource "newrelic_workload" "foo" {
+	name = "Example workload with tags"
+	account_id = 12345678
+
+	entity_guids = ["MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1"]
+
+	entity_search_query {
+		query = "tags.accountId = '12345678' AND tags.environment='production' AND tags.language='java'"
+	}
+
+	scope_account_ids =  [12345678]
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
