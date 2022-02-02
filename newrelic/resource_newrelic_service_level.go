@@ -173,7 +173,7 @@ func rollingTimeWindowSchema() *schema.Resource {
 				Type:         schema.TypeInt,
 				Required:     true,
 				Description:  "",
-				ValidateFunc: intInSlice([]int{1, 7, 14, 28}),
+				ValidateFunc: intInSlice([]int{1, 7, 28}),
 			},
 			"unit": {
 				Type:         schema.TypeString,
