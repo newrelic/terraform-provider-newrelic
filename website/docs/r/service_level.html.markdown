@@ -87,7 +87,7 @@ All nested `events` blocks support the following common arguments:
   * `target` - (Required) The target for your SLO, valid values between `0` and `100`. Up to 5 decimals accepted.
   * `time_window` - (Required) Time window is the period for the SLO.
     * `rolling` - (Required) Rolling window.
-      * `count` - (Required) Valid values are `1`, `7`, `14` and `28`.
+      * `count` - (Required) Valid values are `1`, `7` and `28`.
       * `unit` - (Required) The only supported value is `DAY`.
 
 ## Attributes Reference

@@ -315,7 +315,6 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"slide_by": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Computed:    true,
 				Description: "The duration of overlapping timewindows used to smooth the chart line, in seconds. Must be a factor of `aggregation_window` and less than the aggregation window. It should be greater or equal to 30 seconds if `aggregation_window` is less than or equal to 3600 seconds, or greater or eqaul to `aggregation_window / 120` if `aggregation_window` is greater than 3600 seconds.",
 			},
 			"expiration_duration": {
