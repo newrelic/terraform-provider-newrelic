@@ -25,14 +25,14 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "20", "120", "sTaTiC", "0", "", "60"),
+				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "20", "120", "sTaTiC", "0", "", "60", "30"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "5", "180", "last_value", "null", "", "60"),
+				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "5", "180", "last_value", "null", "", "60", "30"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
@@ -76,6 +76,8 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 					conditionalAttr,
 					facetClause,
 				),
+				// Outlier condition is deprecated. ExpectError until it is removed from API.
+				ExpectError: regexp.MustCompile("Error: Validation Error: BAD_USER_INPUT"),
 			},
 			{
 				PreConfig: testAccDeleteNewRelicAlertPolicy(fmt.Sprintf("tf-test-%s", rName)),
@@ -87,7 +89,8 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 					conditionalAttr,
 					facetClause,
 				),
-				Check: testAccCheckNewRelicNrqlAlertConditionExists("newrelic_nrql_alert_condition.foo"),
+				// Outlier condition is deprecated. ExpectError until it is removed from API.
+				ExpectError: regexp.MustCompile("Error: Validation Error: BAD_USER_INPUT"),
 			},
 		},
 	})
@@ -365,34 +368,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphOutlier(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
-			},
-			// Test: Update (NerdGraph)
-			{
-				Config: testAccNewRelicNrqlAlertConditionOutlierNerdGraphConfig(
-					rName,
-					conditionType,
-					3,
-					1800,
-					conditionalAttr,
-					facetClause,
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
-				),
-			},
-			// Test: Import
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// Ignore items with deprecated fields because
-				// we don't set deprecated fields on import
-				ImportStateVerifyIgnore: []string{
-					"term",                 // contains nested attributes that are deprecated
-					"nrql",                 // contains nested attributes that are deprecated
-					"violation_time_limit", // deprecated in favor of violation_time_limit_seconds
-				},
-				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "outlier"),
+				ExpectError: regexp.MustCompile("Validation Error: BAD_USER_INPUT"),
 			},
 		},
 	})
@@ -603,6 +579,7 @@ func testAccNewRelicNrqlAlertConditionConfigBasic(
 	fillValue string,
 	conditionalAttrs string,
 	aggregationWindow string,
+	slideBy string,
 ) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
@@ -618,6 +595,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   fill_option                    = "%[4]s"
   fill_value                     = %[5]s
   aggregation_window             = %[7]s
+  slide_by						 = %[8]s
   close_violations_on_expiration = true
   open_violation_on_expiration   = true
   expiration_duration            = 120
@@ -645,7 +623,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 	%[6]s
 }
-`, name, evaluationOffset, duration, fillOption, fillValue, conditionalAttrs, aggregationWindow)
+`, name, evaluationOffset, duration, fillOption, fillValue, conditionalAttrs, aggregationWindow, slideBy)
 }
 
 // Uses deprecated attributes for test case
