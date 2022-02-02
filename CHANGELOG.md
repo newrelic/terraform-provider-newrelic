@@ -1,3 +1,13 @@
+<a name="v2.36.0"></a>
+## [v2.36.0] - 2022-02-01
+### Documentation Updates
+- update versions url
+- fix URL to debugging terraform
+- **servicelevel:** SLO periods now include complete weeks
+
+### Features
+- **nrql_alert_condition:** Add slide by support for alert conditions
+
 <a name="v2.35.1"></a>
 ## [v2.35.1] - 2022-01-24
 ### Bug Fixes
@@ -5,6 +15,7 @@
 - **renovate:** removed old feature branch check
 
 ### Documentation Updates
+- update provider version documentation link
 - add example of workload using tags
 
 <a name="v2.35.0"></a>
@@ -1000,7 +1011,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.35.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.36.0...HEAD
+[v2.36.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.35.1...v2.36.0
 [v2.35.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.35.0...v2.35.1
 [v2.35.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.34.1...v2.35.0
 [v2.34.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.34.0...v2.34.1

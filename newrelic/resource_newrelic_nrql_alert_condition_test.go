@@ -25,14 +25,14 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "20", "120", "sTaTiC", "0", "", "60"),
+				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "20", "120", "sTaTiC", "0", "", "60", "30"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "5", "180", "last_value", "null", "", "60"),
+				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "5", "180", "last_value", "null", "", "60", "30"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
@@ -579,6 +579,7 @@ func testAccNewRelicNrqlAlertConditionConfigBasic(
 	fillValue string,
 	conditionalAttrs string,
 	aggregationWindow string,
+	slideBy string,
 ) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
@@ -594,6 +595,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   fill_option                    = "%[4]s"
   fill_value                     = %[5]s
   aggregation_window             = %[7]s
+  slide_by						 = %[8]s
   close_violations_on_expiration = true
   open_violation_on_expiration   = true
   expiration_duration            = 120
@@ -621,7 +623,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 	%[6]s
 }
-`, name, evaluationOffset, duration, fillOption, fillValue, conditionalAttrs, aggregationWindow)
+`, name, evaluationOffset, duration, fillOption, fillValue, conditionalAttrs, aggregationWindow, slideBy)
 }
 
 // Uses deprecated attributes for test case

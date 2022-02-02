@@ -468,6 +468,11 @@ func expandCreateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionCrea
 		signal.AggregationWindow = &v
 	}
 
+	if slideBy, ok := d.GetOk("slide_by"); ok {
+		v := slideBy.(int)
+		signal.SlideBy = &v
+	}
+
 	if _, ok := d.GetOk("aggregation_method"); ok {
 		v := aggregationMethodMap[strings.ToLower(d.Get("aggregation_method").(string))]
 
@@ -507,6 +512,11 @@ func expandUpdateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionUpda
 	if aggregationWindow, ok := d.GetOk("aggregation_window"); ok {
 		v := aggregationWindow.(int)
 		signal.AggregationWindow = &v
+	}
+
+	if slideBy, ok := d.GetOk("slide_by"); ok {
+		v := slideBy.(int)
+		signal.SlideBy = &v
 	}
 
 	if _, ok := d.GetOk("aggregation_method"); ok {
@@ -653,6 +663,11 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 
 	if err := d.Set("aggregation_window", signal.AggregationWindow); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_window`: %v", err)
+	}
+	if signal.SlideBy != nil {
+		if err := d.Set("slide_by", signal.SlideBy); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `slide_by`: %v", err)
+		}
 	}
 
 	if err := d.Set("fill_value", signal.FillValue); err != nil {
