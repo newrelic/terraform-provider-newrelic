@@ -40,6 +40,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   expiration_duration            = 120
   open_violation_on_expiration   = true
   close_violations_on_expiration = true
+  slide_by                       = 30
 
   nrql {
     query = "SELECT average(duration) FROM Transaction where appName = 'Your App'"
@@ -97,6 +98,7 @@ The following arguments are supported:
 - `aggregation_method` - (Optional) Determines when we consider an aggregation window to be complete so that we can evaluate the signal for violations. Possible values are `cadence`, `event_flow` or `event_timer`. Default is `event_flow`. `aggregation_method` cannot be set with `nrql.evaluation_offset`.
 - `aggregation_delay` - (Optional) How long we wait for data that belongs in each aggregation window. Depending on your data, a longer delay may increase accuracy but delay notifications. Use `aggregation_delay` with the `event_flow` and `cadence` methods. The maximum delay is 1200 seconds (20 minutes) when using `event_flow` and 3600 seconds (60 minutes) when using `cadence`. In both cases, the minimum delay is 0 seconds and the default is 120 seconds. `aggregation_delay` cannot be set with `nrql.evaluation_offset`.
 - `aggregation_timer` - (Optional) How long we wait after each data point arrives to make sure we've processed the whole batch. Use `aggregation_timer` with the `event_timer` method. The timer value can range from 0 seconds to 1200 seconds (20 minutes); the default is 60 seconds. `aggregation_timer` cannot be set with `nrql.evaluation_offset`.
+- `slide_by` - (Optional) Gathers data in overlapping time windows to smooth the chart line, making it easier to spot trends. The `slide_by` value is specified in seconds and must be smaller than and a factor of the `aggregation_window`. `slide_by` cannot be used with `outlier` NRQL conditions or `static` NRQL conditions using the `sum` `value_function`.
 
 ## NRQL
 
@@ -156,6 +158,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   violation_time_limit_seconds = 3600
   aggregation_method           = "event_flow"
   aggregation_delay            = 120
+  slide_by                     = 30
 
   # baseline type only
   baseline_direction = "upper_only"
