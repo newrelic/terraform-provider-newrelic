@@ -6,6 +6,7 @@ package newrelic
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -65,7 +66,7 @@ func testAccCheckNewRelicEntityTagsDestroy(s *terraform.State) error {
 
 func testAccCheckNewRelicEntityTagsExist(n string, keysToCheck []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-
+		time.Sleep(1 * time.Second)
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
@@ -95,6 +96,7 @@ func testAccCheckNewRelicEntityTagsExist(n string, keysToCheck []string) resourc
 
 func testAccCheckNewRelicEntityUnmutableExists(n string, keysToCheck []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		time.Sleep(1 * time.Second)
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)

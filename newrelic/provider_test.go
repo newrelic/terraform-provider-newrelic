@@ -92,7 +92,7 @@ func testAccPreCheck(t *testing.T) {
 	testAccCreateApplication(t)
 
 	// We need to give the entity search engine time to index the app
-	time.Sleep(5 * time.Second)
+	time.Sleep(15 * time.Second)
 }
 
 func testAccCreateApplication(t *testing.T) {
