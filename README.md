@@ -112,6 +112,12 @@ NEW_RELIC_LICENSE_KEY
 NEW_RELIC_REGION
 ```
 
+In order to run a single test, run the following command and replace `{testName}` with function name of your test.
+
+```sh
+TF_ACC=1 NR_ACC_TESTING=1 gotestsum -f testname -- -v --tags=integration -timeout 10m ./newrelic --run {testName}
+```
+
 #### Go Version Support
 
 We'll aim to support the latest supported release of Go, along with the

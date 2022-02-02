@@ -141,6 +141,10 @@ checkout go.mod` in the provider to go back to a released version of client.
 You'll want to make sure the version number in the provider lines up with the
 client version you want to be using as well.
 
+### Testing
+
+Check out [testing in README.md](README.md#testing)
+
 ### Commit messages
 
 To keep a style and allow us to automate the generating of a change log, we
