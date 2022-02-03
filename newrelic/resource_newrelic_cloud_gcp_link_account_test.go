@@ -6,11 +6,12 @@ package newrelic
 import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
@@ -20,14 +21,30 @@ func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
 	if testGcpProjectID == "" {
 		t.Skipf("INTEGRATION_TESTING_GCP_PROJECT_ID must be set for acceptance test")
 	}
-	testGcpAccountName := os.Getenv("INTEGRATION_TESTING_GCP_ACCOUNT_NAME")
-	if testGcpAccountName == "" {
-		t.Skipf("INTEGRATION_TESTING_GCP_ACCOUNT_NAME must be set for acceptance test")
-	}
+	//testGcpAccountName := os.Getenv("INTEGRATION_TESTING_GCP_ACCOUNT_NAME")
+	//if testGcpAccountName == "" {
+	//	t.Skipf("INTEGRATION_TESTING_GCP_ACCOUNT_NAME must be set for acceptance test")
+	//}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps:     []resource.TestStep{},
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicCloudGcpLinkAccountDestroy,
+		Steps: []resource.TestStep{
+			//Test: Create
+			{
+				Config: testAccNewRelicCloudGcpLinkAccountConfig(rName, testGcpProjectID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNewRelicCloudGcpLinkAccountExists(resourceName),
+				),
+			},
+			//Test: Update
+			{
+				Config: testAccNewRelicCloudGcpLinkAccountConfigUpdated(rName, testGcpProjectID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNewRelicCloudGcpLinkAccountExists(resourceName),
+				),
+			},
+		},
 	})
 }
 
@@ -60,7 +77,7 @@ func testAccNewRelicCloudGcpLinkAccountDestroy(s *terraform.State) error {
 		if err != nil {
 			fmt.Errorf("error converting string to int")
 		}
-		linkedAccount, err := client.Cloud.GetLinkedAccounts(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
 		if linkedAccount != nil && err == nil {
 			return fmt.Errorf("Linked gcp account still exists: #{err}")
 		}
