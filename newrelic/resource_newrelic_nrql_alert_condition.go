@@ -72,27 +72,6 @@ func termSchema() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The duration, in seconds, that the threshold must violate in order to create a violation. Value must be a multiple of the 'aggregation_window' (which has a default of 60 seconds). Value must be within 120-3600 seconds for baseline and outlier conditions, within 120-7200 seconds for static conditions with the sum value function, and within 60-7200 seconds for static conditions with the single_value value function.",
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					v := val.(int)
-					minVal := 60
-					maxVal := 7200
-
-					// Value must be a factor of 60.
-					if v%60 != 0 {
-						errs = append(errs, fmt.Errorf("%q must be a factor of %d, got: %d", key, minVal, v))
-					}
-
-					// This validation is a top-level validation check.
-					// Static conditions with a single_value value function must be within range [60, 7200].
-					// Static conditions with a sum value function must be within range [120, 7200].
-					// Baseline conditions must be within range [120, 3600].
-					// Outlier conditions must be within range [120, 3600].
-					if v < minVal || v > maxVal {
-						errs = append(errs, fmt.Errorf("%q must be between %d and %d inclusive, got: %d", key, minVal, maxVal, v))
-					}
-
-					return
-				},
 			},
 		},
 	}
@@ -320,7 +299,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"expiration_duration": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The amount of time (in seconds) to wait before considering the signal expired.",
+				Description: "The amount of time (in seconds) to wait before considering the signal expired.  Must be in the range of 30 to 172800 (inclusive)",
 			},
 			"fill_option": {
 				Type:         schema.TypeString,
