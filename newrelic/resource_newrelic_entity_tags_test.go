@@ -4,12 +4,13 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
-	"testing"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
+	"testing"
+	"time"
 )
 
 func TestAccNewRelicEntityTags_Basic(t *testing.T) {
@@ -65,7 +66,6 @@ func testAccCheckNewRelicEntityTagsDestroy(s *terraform.State) error {
 
 func testAccCheckNewRelicEntityTagsExist(n string, keysToCheck []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
@@ -76,17 +76,25 @@ func testAccCheckNewRelicEntityTagsExist(n string, keysToCheck []string) resourc
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		t, err := client.Entities.GetTagsForEntityMutable(common.EntityGUID(rs.Primary.ID))
-		if err != nil {
-			return err
-		}
-
-		tags := convertTagTypes(t)
-
-		for _, keyToCheck := range keysToCheck {
-			if tag := getTag(tags, keyToCheck); tag == nil {
-				return fmt.Errorf("entity tag %s not found for GUID %s", keyToCheck, rs.Primary.ID)
+		retryErr := resource.RetryContext(context.Background(), 5*time.Second, func() *resource.RetryError {
+			t, err := client.Entities.GetTagsForEntityMutable(common.EntityGUID(rs.Primary.ID))
+			if err != nil {
+				return resource.RetryableError(err)
 			}
+
+			tags := convertTagTypes(t)
+
+			for _, keyToCheck := range keysToCheck {
+				if tag := getTag(tags, keyToCheck); tag == nil {
+					return resource.RetryableError(fmt.Errorf("entity tag %s not found for GUID %s", keyToCheck, rs.Primary.ID))
+				}
+			}
+
+			return nil
+		})
+
+		if retryErr != nil {
+			return retryErr
 		}
 
 		return nil
@@ -104,17 +112,26 @@ func testAccCheckNewRelicEntityUnmutableExists(n string, keysToCheck []string) r
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
-		t, err := client.Entities.GetTagsForEntityMutable(common.EntityGUID(rs.Primary.ID))
-		if err != nil {
-			return err
-		}
 
-		tags := convertTagTypes(t)
-
-		for _, keyToCheck := range keysToCheck {
-			if tag := getTag(tags, keyToCheck); tag != nil {
-				return fmt.Errorf("unmutable entity tag %s found for GUID %s", keyToCheck, rs.Primary.ID)
+		retryErr := resource.RetryContext(context.Background(), 5*time.Second, func() *resource.RetryError {
+			t, err := client.Entities.GetTagsForEntityMutable(common.EntityGUID(rs.Primary.ID))
+			if err != nil {
+				return resource.RetryableError(err)
 			}
+
+			tags := convertTagTypes(t)
+
+			for _, keyToCheck := range keysToCheck {
+				if tag := getTag(tags, keyToCheck); tag != nil {
+					return resource.RetryableError(fmt.Errorf("unmutable entity tag %s found for GUID %s", keyToCheck, rs.Primary.ID))
+				}
+			}
+
+			return nil
+		})
+
+		if retryErr != nil {
+			return retryErr
 		}
 
 		return nil
