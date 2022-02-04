@@ -1,6 +1,6 @@
 module github.com/newrelic/terraform-provider-newrelic/v2
 
-go 1.15
+go 1.16
 
 require (
 	github.com/apparentlymart/go-cidr v1.1.0 // indirect
