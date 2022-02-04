@@ -83,9 +83,10 @@ func resourceNewRelicNRQLDropRuleCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	if created == nil {
-		return diag.Errorf("err: drop rule create result wasn't returned")
+	if created == nil || len(created.Successes) == 0 {
+		return diag.Errorf("err: drop rule create result wasn't returned. Validate the action value or NRQL query.")
 	}
+
 	rule := created.Successes[0]
 
 	id := fmt.Sprintf("%d:%s", rule.AccountID, rule.ID)
