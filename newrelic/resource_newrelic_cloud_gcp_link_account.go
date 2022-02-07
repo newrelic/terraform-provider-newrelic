@@ -55,7 +55,7 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 
 func expandGcpCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
 	gcpAccount := cloud.CloudGcpLinkAccountInput{}
-	if name, ok := d.GetOk("arn"); ok {
+	if name, ok := d.GetOk("name"); ok {
 		gcpAccount.Name = name.(string)
 	}
 	if projectID, ok := d.GetOk("project_id"); ok {
@@ -85,7 +85,7 @@ func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.Reso
 
 func readGcpLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
 	_ = d.Set("name", result.Name)
-	_ = d.Set("project_id", result.ID)
+	_ = d.Set("project_id", result.ExternalId)
 }
 
 func resourceNewRelicCloudGcpLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
