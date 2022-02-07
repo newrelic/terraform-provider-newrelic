@@ -13,16 +13,7 @@ Please delete options that are not relevant.
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] This change requires a documentation update
 
-# How to test this change?
-
-Please describe the steps to test your changes.
-
-- Step 1
-- Step 2
-- etc
-
-
-# Checklist:
+## Checklist:
 
 Please delete options that are not relevant.
 
@@ -31,4 +22,12 @@ Please delete options that are not relevant.
 - [ ] I have performed a self-review of my own code
 - [ ] I have made corresponding changes to the documentation
 - [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
+- [ ] New and existing unit tests pass locally with my changes. Go [here](https://github.com/newrelic/terraform-provider-newrelic#testing) for instructions on running tests locally.
+
+## How to test this change?
+
+Please describe how to test your changes. Include any relevant steps in the UI, HCL file(s), commands, etc
+
+- Step 1
+- Step 2
+- etc
