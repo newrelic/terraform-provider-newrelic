@@ -116,6 +116,7 @@ To test your locally compiled plugin you can add your hcl files in the `testing`
 directory. The `testing/dev.tfrc` file contains the local development configuration.
 Before running any Terraform commands don't forgot to change the authentication
 credentials in `testing/newrelic.tf` or use environment variables as mentioned above.
+Additionally run the following command, or add it to your shell profile: `export TF_CLI_CONFIG_FILE=dev.tfrc`
 
 You can now run `terraform plan` and
 `terraform apply` in the `testing` directory to test your local version of the provider.
