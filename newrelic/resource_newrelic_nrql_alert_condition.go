@@ -299,7 +299,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"expiration_duration": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The amount of time (in seconds) to wait before considering the signal expired.",
+				Description: "The amount of time (in seconds) to wait before considering the signal expired.  Must be in the range of 30 to 172800 (inclusive)",
 			},
 			"fill_option": {
 				Type:         schema.TypeString,
