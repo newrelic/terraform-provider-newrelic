@@ -37,7 +37,7 @@ The following arguments are supported:
   * `frequency` - (Required) The interval (in minutes) at which this monitor should run.
   * `status` - (Required) The monitor status (i.e. `ENABLED`, `MUTED`, `DISABLED`).
   * `locations` - (Required) The locations in which this monitor should be run.
-  * `sla_threshold` - (Optional) The base threshold for the SLA report.
+  * `sla_threshold` - (Optional) The base threshold (in seconds) to calculate the [Apdex score](https://docs.newrelic.com/docs/apm/new-relic-apm/apdex/apdex-measure-user-satisfaction/) for use in the [SLA report](https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/pages/synthetic-monitoring-aggregate-monitor-metrics/#viewing). Default is 7 seconds.
 
  The `SIMPLE` monitor type supports the following additional arguments:
 
