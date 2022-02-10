@@ -710,7 +710,7 @@ func flattenNrql(nrql alerts.NrqlConditionQuery, configNrql map[string]interface
 	svRaw := configNrql["since_value"]
 
 	// Handle deprecated
-	if svRaw != nil && svRaw.(string) != "" {
+	if svRaw != nil && svRaw.(string) != "" && nrql.EvaluationOffset != nil {
 		evalOffset := nrql.EvaluationOffset
 		out["since_value"] = strconv.Itoa(*evalOffset)
 	} else {

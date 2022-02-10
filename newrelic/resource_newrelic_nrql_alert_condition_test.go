@@ -492,6 +492,43 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphValidationErrorBadUserInputOnCre
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_RevertToDeprecatedSinceValue(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.since_value"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create a condition with since_value
+			{
+				Config:             testAccNewRelicNrqlAlertConditionSinceValue(rName),
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			//Test: Update (NerdGraph) condition with streaming method event_timer
+			{
+				Config:             testAccNewRelicNrqlAlertConditionSinceValueUpdateWithStreamingMethods(rName),
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Revert to initial condition with since_value
+			{
+				Config:             testAccNewRelicNrqlAlertConditionSinceValue(rName),
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -823,6 +860,92 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	aggregation_timer = %[4]s
 }
 `, name, method, delay, timer)
+}
+
+func testAccNewRelicNrqlAlertConditionSinceValue(
+	name string,
+) string {
+	return fmt.Sprintf(`
+	resource "newrelic_alert_policy" "foo" {
+      name = "tf-test-%[1]s"
+	}
+
+	
+	resource "newrelic_nrql_alert_condition" "since_value" {
+      policy_id                      = newrelic_alert_policy.foo.id
+	  type                           = "static"
+      name                           = "tf-test-%[1]s"
+	  description                    = "Test desc"
+	  runbook_url                    = "REDACTED"
+	  enabled                        = true
+	  violation_time_limit_seconds   = 86400
+	  value_function                 = "sum"
+	  expiration_duration            = 120
+	  close_violations_on_expiration = true
+	
+	  nrql {
+		query       = <<-EOT
+			SELECT count(*) FROM TestEvent
+		EOT
+		since_value = 1
+	  }
+	  critical {
+		operator           = "above"
+		threshold          = 50
+		threshold_duration = 300
+		time_function      = "any"
+	  }
+	  warning {
+		operator           = "above"
+		threshold          = 10
+		threshold_duration = 300
+		time_function      = "any"
+	  }
+	}
+`, name)
+}
+
+func testAccNewRelicNrqlAlertConditionSinceValueUpdateWithStreamingMethods(
+	name string,
+) string {
+	return fmt.Sprintf(`
+	resource "newrelic_alert_policy" "foo" {
+      name = "tf-test-%[1]s"
+	}
+
+	resource "newrelic_nrql_alert_condition" "since_value" {
+      policy_id                      = newrelic_alert_policy.foo.id
+	  type                           = "static"
+      name                           = "tf-test-%[1]s"
+	  description                    = "Test desc"
+	  runbook_url                    = "REDACTED"
+	  enabled                        = true
+	  violation_time_limit_seconds   = 86400
+	  value_function                 = "sum"
+	  expiration_duration            = 120
+	  close_violations_on_expiration = true
+      aggregation_method             = "event_timer"
+      aggregation_timer              = 1200
+
+	  nrql {
+		query       = <<-EOT
+			SELECT count(*) FROM TestEvent
+		EOT
+	  }
+	  critical {
+		operator           = "above"
+		threshold          = 50
+		threshold_duration = 300
+		time_function      = "any"
+	  }
+	  warning {
+		operator           = "above"
+		threshold          = 10
+		threshold_duration = 300
+		time_function      = "any"
+	  }
+	}
+`, name)
 }
 
 func testAccNewRelicNrqlAlertConditionNrqlEvaluationOffsetNerdGraphConfig(
