@@ -72,7 +72,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Type:        schema.TypeFloat,
 				Optional:    true,
 				Default:     7,
-				Description: "The base threshold for the SLA report.",
+				Description: "The base threshold (in seconds) to calculate the apdex score for use in the SLA report. (Default 7 seconds)",
 			},
 			// TODO: ValidationFunc (options only valid if SIMPLE or BROWSER)
 			"validation_string": {
