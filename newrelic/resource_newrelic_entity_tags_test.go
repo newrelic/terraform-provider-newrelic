@@ -6,11 +6,12 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
-	"testing"
-	"time"
 )
 
 func TestAccNewRelicEntityTags_Basic(t *testing.T) {
