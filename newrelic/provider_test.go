@@ -10,11 +10,12 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"os"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -107,7 +108,7 @@ func testAccPreCheck(t *testing.T) {
 		Domain: "APM",
 	}
 
-	retryErr := resource.RetryContext(context.Background(), 15*time.Second, func() *resource.RetryError {
+	retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
 		entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
 		if err != nil {
 			return resource.RetryableError(err)
