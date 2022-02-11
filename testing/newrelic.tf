@@ -7,7 +7,6 @@ terraform {
 }
 
 provider "newrelic" {
-  api_key = ""
-  account_id = 0
+
   region = "US" # US or EU
 }
