@@ -6,6 +6,7 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -62,6 +63,25 @@ func TestAccNewRelicNRQLDropRule_Attributes(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ResourceName:      resourceName,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicNRQLDropRule_AttributesInvalidNRQL(t *testing.T) {
+	rand := acctest.RandString(5)
+	description := fmt.Sprintf("nrql_drop_rule_%s", rand)
+	expectedErrorMsg, _ := regexp.Compile(`drop rule create result wasn't returned`)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNRQLDropRuleDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config:      testAccNewRelicNRQLDropRuleConfig(description, "drop_attributes", "FROM ContainerSample DONT WORK commandLine"),
+				ExpectError: expectedErrorMsg,
 			},
 		},
 	})
