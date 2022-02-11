@@ -8,15 +8,20 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/newrelic/newrelic-client-go/pkg/config"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
 
 var (
@@ -91,8 +96,34 @@ func testAccPreCheck(t *testing.T) {
 	//testAccApplicationsCleanup(t)
 	testAccCreateApplication(t)
 
-	// We need to give the entity search engine time to index the app
-	time.Sleep(5 * time.Second)
+	// We need to give the entity search engine time to index the app so
+	// we try to get the entity, and retry if it fails for a certain amount
+	// of time
+	client := entities.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
+	params := entities.EntitySearchQueryBuilder{
+		Name:   testAccExpectedApplicationName,
+		Type:   "APPLICATION",
+		Domain: "APM",
+	}
+
+	retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
+		entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
+		if err != nil {
+			return resource.RetryableError(err)
+		}
+
+		if entityResults.Count != 1 {
+			return resource.RetryableError(fmt.Errorf("Entity not found, or found more than one"))
+		}
+
+		return nil
+	})
+
+	if retryErr != nil {
+		t.Fatalf("Unable to find application entity: %s", retryErr)
+	}
 }
 
 func testAccCreateApplication(t *testing.T) {

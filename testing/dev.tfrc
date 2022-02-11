@@ -1,0 +1,18 @@
+provider_installation {
+
+    # Use /home/developer/tmp/terraform-nexus as an overridden package directory
+    # for the datadrivers/nexus provider. This disables the version and checksum
+    # verifications for this provider and forces Terraform to look for the
+    # nexus provider plugin in the given directory.
+    # relative path also works, but no variable or ~ evaluation
+    dev_overrides {
+        # The default setting is for MacOS, if you're on Windows you will need to
+        # replace 'darwin' below with either linux or windows
+        "newrelic/newrelic" = "../bin/darwin/"
+    }
+
+    # For all other providers, install them directly from their origin provider
+    # registries as normal. If you omit this, Terraform will _only_ use
+    # the dev_overrides block, and so no other providers will be available.
+    direct {}
+}
