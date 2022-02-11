@@ -13,12 +13,12 @@ import (
 
 func dataSourceNewRelicCloudAccount() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceNewRelicAwsLinkAccountRead,
+		ReadContext: dataSourceNewRelicCloudAccountRead,
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The ID of the account in New Relic.",
+				Description: "The ID of the New Relic account.",
 			},
 			"provider": {
 				Type:        schema.TypeString,
@@ -28,13 +28,13 @@ func dataSourceNewRelicCloudAccount() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name of the account",
+				Description: "The name of the cloud account.",
 			},
 		},
 	}
 }
 
-func dataSourceNewRelicAwsLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceNewRelicCloudAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cfg := meta.(*ProviderConfig)
 
 	client := cfg.NewClient
