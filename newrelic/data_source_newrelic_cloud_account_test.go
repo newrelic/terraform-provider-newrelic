@@ -12,8 +12,6 @@ import (
 )
 
 func TestAccNewRelicCloudAccountDataSource_Basic(t *testing.T) {
-	resourceName := "newrelic_cloud_account.account"
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -21,8 +19,7 @@ func TestAccNewRelicCloudAccountDataSource_Basic(t *testing.T) {
 			{
 				Config: testNewRelicCloudAccountDataSourceBasicConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicCloudAccountDataSource("data.newrelic_cloud_account.account"),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("NEW-DTK-NAME"))),
+					testAccCheckNewRelicCloudAccountDataSourceExists("data.newrelic_cloud_account.account")),
 			},
 		},
 	})
@@ -48,13 +45,18 @@ data "newrelic_cloud_account" "account" {
 `)
 }
 
-func testAccCheckNewRelicCloudAccountDataSource(n string) resource.TestCheckFunc {
+func testAccCheckNewRelicCloudAccountDataSourceExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
+		id := r.Primary.ID
 		a := r.Primary.Attributes
 
-		if a["id"] == "" {
-			return fmt.Errorf("expected to get a cloud account from New Relic")
+		if id == "" {
+			return fmt.Errorf("expected to get an account from New Relic")
+		}
+
+		if a["name"] == "" {
+			return fmt.Errorf("expected to get a name from New Relic")
 		}
 
 		return nil

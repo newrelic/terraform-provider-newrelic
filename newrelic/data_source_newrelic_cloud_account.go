@@ -54,7 +54,7 @@ func dataSourceNewRelicCloudAccountRead(ctx context.Context, d *schema.ResourceD
 	var account *cloud.CloudLinkedAccount
 
 	for _, a := range *accounts {
-		if strings.EqualFold(a.Name, name) && a.NrAccountId == accountID {
+		if a.NrAccountId == accountID && strings.EqualFold(a.Name, name) {
 			account = &a
 			break
 		}
