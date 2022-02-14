@@ -5,6 +5,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -23,7 +24,21 @@ func TestAccNewRelicCloudAccountDataSource_Basic(t *testing.T) {
 			},
 		},
 	})
+}
 
+func TestAccNewRelicCloudAccountDataSource_Error(t *testing.T) {
+	expectedErrorMsg := regexp.MustCompile("does not match any account for provider")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testNewRelicCloudAccountDataSourceErrorConfig(),
+				ExpectError: expectedErrorMsg,
+			},
+		},
+	})
 }
 
 func testNewRelicCloudAccountDataSourceBasicConfig() string {
