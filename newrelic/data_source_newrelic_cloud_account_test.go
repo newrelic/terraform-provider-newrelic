@@ -34,7 +34,7 @@ func testNewRelicCloudAccountDataSourceBasicConfig() string {
 data "newrelic_cloud_account" "account" {
 	account_id = 2508259
 	name = "NEW-DTK-NAME"
-	provider = "aws"
+	cloud_provider = "aws"
 }
 `)
 }
@@ -43,7 +43,7 @@ func testNewRelicCloudAccountDataSourceErrorConfig() string {
 	return fmt.Sprintf(`
 data "newrelic_cloud_account" "account" {
 	name = "NEW-DTK-NAME"
-	provider = "aws"
+	cloud_provider = "aws"
 }
 `)
 }

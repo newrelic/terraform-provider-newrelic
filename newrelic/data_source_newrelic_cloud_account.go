@@ -20,7 +20,7 @@ func dataSourceNewRelicCloudAccount() *schema.Resource {
 				Optional:    true,
 				Description: "The ID of the New Relic account.",
 			},
-			"provider": {
+			"cloud_provider": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The cloud provider of the account, e.g. aws, gcp, azure",
@@ -42,7 +42,7 @@ func dataSourceNewRelicCloudAccountRead(ctx context.Context, d *schema.ResourceD
 	log.Printf("[INFO] Reading New Relic Cloud Accounts")
 
 	name := d.Get("name").(string)
-	provider := d.Get("provider").(string)
+	provider := d.Get("cloud_provider").(string)
 	accountID := selectAccountID(cfg, d)
 
 	accounts, err := client.Cloud.GetLinkedAccountsWithContext(ctx, provider)
@@ -73,11 +73,6 @@ func flattenCloudAccount(account *cloud.CloudLinkedAccount, d *schema.ResourceDa
 	var err error
 
 	err = d.Set("name", account.Name)
-	if err != nil {
-		return err
-	}
-
-	err = d.Set("provider", account.Provider)
 	if err != nil {
 		return err
 	}
