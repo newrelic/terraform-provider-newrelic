@@ -16,25 +16,39 @@ import (
 
 func TestNewrelicAwsGovCloudLinkAccount_Basic(t *testing.T) {
 	randName := acctest.RandString(5)
-	// resourceName := "newrelic_cloud_awsGovCloud_link_account.foo"
-	
+
+	resourceName := "resourceNewRelicAwsGovCloudLinkAccount.foo"
+
+	testAwsGovCloudAccessKeyId := os.Getenv("INTEGRATION_TESTING_AWSGOVCLOUD_ACCESS_KEY_ID")
+	if testAwsGovCloudAccessKeyId == "" {
+		t.Skipf("INTEGRATION_TESTING_AWSGOVCLOUD_ACCESS_KEY_ID must be set for acceptance test")
 	}
 
-	resource.ParallelTest(t, resource.TestCase {
+	testAwsGovCloudAwsAccountId := os.Getenv("INTEGRATION_TESTING_AWSGOVCLOUD_AWS_ACCOUNT_ID")
+	if testAwsGovCloudAwsAccountId == "" {
+		t.Skipf("INTEGRATION_TESTING_AWSGOVCLOUD_AWS_ACCOUNT_ID must be set for acceptance test")
+	}
+
+	testAwsGovCloudSecretAccessKey := os.Getenv("INTEGRATION_TESTING_AWSGOVCLOUD_SECRET_ACCESS_KEY")
+	if testAwsGovCloudSecretAccessKey == "" {
+		t.Skipf("INTEGRATION_TESTING_AWSGOVCLOUD_SECRET_ACCESS_KEY must be set for acceptance test")
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicawsGovCloudLinkAccountDestroy,
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccCheckNewRelicAwsGovCloudLinkAccountConfig(randName),
+				Config: testAccCheckNewRelicAwsGovCloudLinkAccountConfig(testAwsGovCloudAccessKeyId, testAwsGovCloudAwsAccountId, testAwsGovCloudSecretAccessKey, randName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAwsGovCloudLinkAccountExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccCheckNewRelicAwsGovCloudLinkAccountConfigUpdated(randName),
+				Config: testAccCheckNewRelicAwsGovCloudLinkAccountConfigUpdated(testAwsGovCloudAccessKeyId, testAwsGovCloudAwsAccountId, testAwsGovCloudSecretAccessKey, randName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAwsGovCloudLinkAccountExists(resourceName),
 				),
@@ -94,26 +108,26 @@ func testAccCheckNewRelicawsGovCloudLinkAccountDestroy(s *terraform.State) error
 	return nil
 }
 
-func testAccCheckNewRelicawsGovCloudLinkAccountConfig(name string) string {
+func testAccCheckNewRelicAwsGovCloudLinkAccountConfig(access_key_id string, aws_account_id string, secret_access_key string, name string) string {
 	return fmt.Sprintf(`
     resource "newrelic_cloud_awsGovcloud_link_account" "account" {
-    access_key_id =""
-	aws_account_id=""
+    access_key_id ="%[1]s"
+	aws_account_id="%[2]s"
 	metric_collection_mode = "PULL"
-    name = "%s"
-	secret_access_key = ""
+    name = "%[4]s"
+	secret_access_key = "%[3]s"
 }
 `, name)
 }
 
-func testAccCheckNewRelicawsGovCloudLinkAccountConfigUpdated(name string) string {
+func testAccCheckNewRelicAwsGovCloudLinkAccountConfigUpdated(access_key_id string, aws_account_id string, secret_access_key string, name string) string {
 	return fmt.Sprintf(`
     resource ""newrelic_cloud_awsGovcloud_link_account" "account" {
-    access_key_id =""
-	aws_account_id=""
+    access_key_id ="%[1]s"
+	aws_account_id="%[2]s"
 	metric_collection_mode = "PULL"
-    name = "%s"
-	secret_access_key = ""
+    name = "%[4]s-Updated"
+	secret_access_key = "%[3]s"
 }
 `, name)
 }
