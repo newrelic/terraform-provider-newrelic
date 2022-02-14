@@ -9,23 +9,20 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
-	rName := acctest.RandString(5)
 	resourceName := "newrelic_cloud_gcp_link_account.foo"
 	testGcpProjectID := os.Getenv("INTEGRATION_TESTING_GCP_PROJECT_ID")
 	if testGcpProjectID == "" {
 		t.Skipf("INTEGRATION_TESTING_GCP_PROJECT_ID must be set for acceptance test")
 	}
-	//testGcpAccountName := os.Getenv("INTEGRATION_TESTING_GCP_ACCOUNT_NAME")
-	//if testGcpAccountName == "" {
-	//	t.Skipf("INTEGRATION_TESTING_GCP_ACCOUNT_NAME must be set for acceptance test")
-	//}
+	testGcpAccountName := os.Getenv("INTEGRATION_TESTING_GCP_ACCOUNT_NAME")
+	if testGcpAccountName == "" {
+		t.Skipf("INTEGRATION_TESTING_GCP_ACCOUNT_NAME must be set for acceptance test")
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -33,14 +30,14 @@ func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicCloudGcpLinkAccountConfig(rName, testGcpProjectID),
+				Config: testAccNewRelicCloudGcpLinkAccountConfig(testGcpAccountName, testGcpProjectID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicCloudGcpLinkAccountExists(resourceName),
 				),
 			},
 			//Test: Update
 			{
-				Config: testAccNewRelicCloudGcpLinkAccountConfigUpdated(rName, testGcpProjectID),
+				Config: testAccNewRelicCloudGcpLinkAccountConfigUpdated(testGcpAccountName, testGcpProjectID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicCloudGcpLinkAccountExists(resourceName),
 				),
