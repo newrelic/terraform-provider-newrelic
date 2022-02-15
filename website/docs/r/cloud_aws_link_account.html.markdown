@@ -31,6 +31,7 @@ resource "newrelic_cloud_aws_link_account" "foo" {
 
 The following arguments are supported:
 
+* `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `arn` - (Required) The Amazon Resource Name (ARN) of the IAM role.
 * `metric_collection_mode` - (Optional) How metrics will be collected. Use `PUSH` for a metric stream or `PULL` to integrate with individual services. 
 * `name` - (Required) - The linked account name
