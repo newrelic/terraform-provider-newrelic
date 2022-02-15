@@ -119,6 +119,7 @@ func resourceNewRelicCloudAwsAccountLinkRead(ctx context.Context, d *schema.Reso
 }
 
 func readAwsLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
+	_ = d.Set("account_id", result.NrAccountId)
 	_ = d.Set("arn", result.AuthLabel)
 	_ = d.Set("metric_collection_mode", result.MetricCollectionMode)
 	_ = d.Set("name", result.Name)
