@@ -107,7 +107,7 @@ func resourceNewRelicCloudAwsAccountLinkRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(convErr)
 	}
 
-	linkedAccount, err := client.Cloud.GetLinkedAccount(accountID, linkedAccountID)
+	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -136,7 +136,7 @@ func resourceNewRelicCloudAwsAccountLinkUpdate(ctx context.Context, d *schema.Re
 			LinkedAccountId: id,
 		},
 	}
-	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccount(accountID, input)
+	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccountWithContext(ctx, accountID, input)
 	if err != nil {
 		diag.FromErr(err)
 	}
