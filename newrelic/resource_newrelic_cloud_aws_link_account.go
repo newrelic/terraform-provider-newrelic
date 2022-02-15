@@ -18,6 +18,12 @@ func resourceNewRelicCloudAwsAccountLinkAccount() *schema.Resource {
 		UpdateContext: resourceNewRelicCloudAwsAccountLinkUpdate,
 		DeleteContext: resourceNewRelicCloudAwsAccountLinkDelete,
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The New Relic account ID where you want to link the AWS account.",
+			},
 			"arn": {
 				Type:        schema.TypeString,
 				Description: "The AWS role arn",
