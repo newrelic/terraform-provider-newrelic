@@ -194,8 +194,7 @@ func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.R
 		}
 		return diags
 	}
-
-	return nil
+	return resourceNewRelicCloudAwsIntegrationsRead(ctx, d, meta)
 }
 
 func expandCloudAwsIntegrationsInput(d *schema.ResourceData) cloud.CloudIntegrationsInput {
@@ -338,7 +337,105 @@ func expandCloudAwsIntegrationXRayInput(x map[string]interface{}, linkedAccountI
 }
 
 func resourceNewRelicCloudAwsIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	accountID := selectAccountID(providerConfig, d)
+
+	linkedAccountID := d.Get("linked_account_id").(int)
+
+	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	flattenCloudAwsLinkedAccount(d, linkedAccount)
+
 	return nil
+}
+
+func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.CloudLinkedAccount) {
+	_ = d.Set("account_id", linkedAccount.NrAccountId)
+	_ = d.Set("linked_account_id", linkedAccount.ID)
+
+	for _, i := range linkedAccount.Integrations {
+		switch _ := i.(type) {
+		case *cloud.CloudBillingIntegration:
+			_ = d.Set("billing", flattenCloudAwsBillingIntegration(i.(*cloud.CloudBillingIntegration)))
+		case *cloud.CloudCloudtrailIntegration:
+			_ = d.Set("cloudtrail", flattenCloudAwsCloudTrailIntegration(i.(*cloud.CloudCloudtrailIntegration)))
+		case *cloud.CloudHealthIntegration:
+			_ = d.Set("health", flattenCloudAwsHealthIntegration(i.(*cloud.CloudHealthIntegration)))
+		case *cloud.CloudTrustedadvisorIntegration:
+			_ = d.Set("trusted_advisor", flattenCloudAwsTrustedAdvisorIntegration(i.(*cloud.CloudTrustedadvisorIntegration)))
+		case *cloud.CloudVpcIntegration:
+			_ = d.Set("vpc", flattenCloudAwsVpcIntegration(i.(*cloud.CloudVpcIntegration)))
+		case *cloud.CloudAwsXrayIntegration:
+			_ = d.Set("x_ray", flattenCloudAwsXRayIntegration(i.(*cloud.CloudAwsXrayIntegration)))
+		}
+
+	}
+}
+
+func flattenCloudAwsBillingIntegration(in *cloud.CloudBillingIntegration) map[string]interface{} {
+	out := make(map[string]interface{})
+
+	out["integration_id"] = in.ID
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	return out
+}
+
+func flattenCloudAwsCloudTrailIntegration(in *cloud.CloudCloudtrailIntegration) map[string]interface{} {
+	out := make(map[string]interface{})
+
+	out["integration_id"] = in.ID
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	return out
+}
+
+func flattenCloudAwsHealthIntegration(in *cloud.CloudHealthIntegration) map[string]interface{} {
+	out := make(map[string]interface{})
+
+	out["integration_id"] = in.ID
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	return out
+}
+
+func flattenCloudAwsTrustedAdvisorIntegration(in *cloud.CloudTrustedadvisorIntegration) map[string]interface{} {
+	out := make(map[string]interface{})
+
+	out["integration_id"] = in.ID
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	return out
+}
+
+func flattenCloudAwsVpcIntegration(in *cloud.CloudVpcIntegration) map[string]interface{} {
+	out := make(map[string]interface{})
+
+	out["integration_id"] = in.ID
+	out["aws_regions"] = in.AwsRegions
+	out["fetch_nat_gateway"] = in.FetchNatGateway
+	out["fetch_vpn"] = in.FetchVpn
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	return out
+}
+
+func flattenCloudAwsXRayIntegration(in *cloud.CloudAwsXrayIntegration) map[string]interface{} {
+	out := make(map[string]interface{})
+
+	out["integration_id"] = in.ID
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	return out
 }
 
 func resourceNewRelicCloudAwsIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
