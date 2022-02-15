@@ -36,11 +36,10 @@ Once you've successfully initialized your Terraform working directory, you'll wa
 ```hcl
 # Configure terraform
 terraform {
-  required_version = "~> 0.13.0"
+  required_version = "~> 1.0"
   required_providers {
     newrelic = {
       source  = "newrelic/newrelic"
-      version = "~> 2.21.0"
     }
   }
 }
