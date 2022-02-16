@@ -2,6 +2,8 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"strconv"
 	"strings"
@@ -52,24 +54,26 @@ func resourceNewRelicCloudAwsAccountLinkCreate(ctx context.Context, d *schema.Re
 
 	linkAccountInput := expandAwsCloudLinkAccountInput(d)
 
-	cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	var diags diag.Diagnostics
-
-	if len(cloudLinkAccountPayload.Errors) > 0 {
-		for _, err := range cloudLinkAccountPayload.Errors {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  err.Type + " " + err.Message,
-			})
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
+		if err != nil {
+			return resource.NonRetryableError(err)
 		}
-		return diags
-	}
 
-	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+		if len(cloudLinkAccountPayload.Errors) > 0 {
+			for _, err := range cloudLinkAccountPayload.Errors {
+				return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
+			}
+
+		}
+		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
 
 	return nil
 }
