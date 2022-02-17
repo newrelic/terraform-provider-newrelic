@@ -20,6 +20,7 @@ coverage/
 example.tf
 modules-dev/
 terraform.tfplan
+.terraform.lock.hcl
 terraform.tfstate
 website/.bundle
 website/.vagrant
