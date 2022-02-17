@@ -36,11 +36,10 @@ Once you've successfully initialized your Terraform working directory, you'll wa
 ```hcl
 # Configure terraform
 terraform {
-  required_version = "~> 0.13.0"
+  required_version = "~> 1.0"
   required_providers {
     newrelic = {
       source  = "newrelic/newrelic"
-      version = "~> 2.21.0"
     }
   }
 }
@@ -230,4 +229,4 @@ You can also run `terraform destroy` to tear down your resources if that's ever 
 
 [user_api_key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key
 [user_api_key_via_nerdgraph]: https://docs.newrelic.com/docs/apis/nerdgraph/examples/use-nerdgraph-manage-license-keys-user-keys
-[terraform_data_sources]: https://www.terraform.io/language/data-sources
+[terraform_data_sources]: https://www.terraform.io/language/data-sources#data-sources
