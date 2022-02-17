@@ -79,14 +79,6 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				BaselineDirection: &alerts.NrqlBaselineDirections.LowerOnly,
 			},
 		},
-		"static condition, requires value_function attr": {
-			Data: map[string]interface{}{
-				"nrql": []interface{}{nrql},
-				"type": "static",
-			},
-			ExpectErr:    true,
-			ExpectReason: "attribute `value_function` is required for nrql alert conditions of type `static`",
-		},
 		"static condition, has value_function attr": {
 			Data: map[string]interface{}{
 				"nrql":           []interface{}{nrql},
