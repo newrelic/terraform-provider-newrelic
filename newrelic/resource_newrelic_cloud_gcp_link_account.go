@@ -16,6 +16,11 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 		UpdateContext: resourceNewRelicCloudGcpLinkAccountUpdate,
 		DeleteContext: resourceNewRelicCloudGcpLinkAccountDelete,
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeString,
+				Description: "account id of the newrelic account",
+				Required:    true,
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Description: "name of the linked account",
