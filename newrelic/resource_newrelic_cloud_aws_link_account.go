@@ -58,6 +58,8 @@ func resourceNewRelicCloudAwsAccountLinkCreate(ctx context.Context, d *schema.Re
 
 	linkAccountInput := expandAwsCloudLinkAccountInput(d)
 
+	var diags diag.Diagnostics
+
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
 		if err != nil {
@@ -69,9 +71,13 @@ func resourceNewRelicCloudAwsAccountLinkCreate(ctx context.Context, d *schema.Re
 				if strings.Contains(err.Message, "The ARN you entered does not permit the correct access to your AWS account") {
 					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
 				}
-				return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  err.Type + " " + err.Message,
+				})
 			}
 		}
+
 		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
 
 		return nil
@@ -79,6 +85,10 @@ func resourceNewRelicCloudAwsAccountLinkCreate(ctx context.Context, d *schema.Re
 
 	if retryErr != nil {
 		return diag.FromErr(retryErr)
+	}
+
+	if len(diags) > 0 {
+		return diags
 	}
 
 	return nil
