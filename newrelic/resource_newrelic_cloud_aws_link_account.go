@@ -68,9 +68,8 @@ func resourceNewRelicCloudAwsAccountLinkCreate(ctx context.Context, d *schema.Re
 			for _, err := range cloudLinkAccountPayload.Errors {
 				if strings.Contains(err.Message, "The ARN you entered does not permit the correct access to your AWS account") {
 					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
-				} else {
-					return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
 				}
+				return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
 			}
 		}
 		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
