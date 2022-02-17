@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -28,20 +29,23 @@ func resourceNewRelicCloudAwsAccountLinkAccount() *schema.Resource {
 			},
 			"arn": {
 				Type:        schema.TypeString,
-				Description: "The AWS role arn",
+				Description: "The AWS role ARN.",
 				Required:    true,
 			},
 			"metric_collection_mode": {
 				Type:         schema.TypeString,
-				Description:  "How metrics will be collected",
+				Description:  "How metrics will be collected. Defaults to `PULL` if empty.",
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"PULL", "PUSH"}, false),
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "The name of the linked account",
+				Description: "The name of the linked account.",
 				Required:    true,
 			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Second),
 		},
 	}
 }
@@ -62,9 +66,12 @@ func resourceNewRelicCloudAwsAccountLinkCreate(ctx context.Context, d *schema.Re
 
 		if len(cloudLinkAccountPayload.Errors) > 0 {
 			for _, err := range cloudLinkAccountPayload.Errors {
-				return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
+				if strings.Contains(err.Message, "The ARN you entered does not permit the correct access to your AWS account") {
+					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
+				} else {
+					return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
+				}
 			}
-
 		}
 		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
 
