@@ -21,6 +21,7 @@ example.tf
 modules-dev/
 terraform.tfplan
 terraform.tfstate
+.terraform.lock.hcl
 website/.bundle
 website/.vagrant
 website/build
