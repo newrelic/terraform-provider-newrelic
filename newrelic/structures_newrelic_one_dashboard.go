@@ -661,7 +661,7 @@ func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
 		}
 
 		for _, widget := range p.Widgets {
-			widgetType, w := flattenDashboardWidget(&widget)
+			widgetType, w := flattenDashboardWidget(&widget, string(p.GUID))
 
 			if widgetType != "" {
 				if _, ok := m[widgetType]; !ok {
@@ -688,8 +688,18 @@ func flattenLinkedEntityGUIDs(linkedEntities []entities.EntityOutlineInterface) 
 	return out
 }
 
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
+}
+
 // nolint:gocyclo
-func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]interface{}) {
+func flattenDashboardWidget(in *entities.DashboardWidget, pageGuid string) (string, map[string]interface{}) {
 	var widgetType string
 	out := make(map[string]interface{})
 
@@ -708,6 +718,12 @@ func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]in
 		out["linked_entity_guids"] = flattenLinkedEntityGUIDs(in.LinkedEntities)
 	}
 
+	var filterCurrentDashboard bool
+
+	if out["linked_entity_guids"] != nil && len(out["linked_entity_guids"].([]string)) == 1 && contains(out["linked_entity_guids"].([]string), pageGuid) {
+		filterCurrentDashboard = true
+	}
+
 	switch in.Visualization.ID {
 	case "viz.area":
 		widgetType = "widget_area"
@@ -719,6 +735,7 @@ func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]in
 		if len(in.Configuration.Bar.NRQLQueries) > 0 {
 			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Bar.NRQLQueries)
 		}
+		out["filter_current_dashboard"] = filterCurrentDashboard
 	case "viz.billboard":
 		widgetType = "widget_billboard"
 		if len(in.Configuration.Billboard.NRQLQueries) > 0 {
@@ -811,11 +828,13 @@ func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]in
 		if len(in.Configuration.Pie.NRQLQueries) > 0 {
 			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Pie.NRQLQueries)
 		}
+		out["filter_current_dashboard"] = filterCurrentDashboard
 	case "viz.table":
 		widgetType = "widget_table"
 		if len(in.Configuration.Table.NRQLQueries) > 0 {
 			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Table.NRQLQueries)
 		}
+		out["filter_current_dashboard"] = filterCurrentDashboard
 	}
 
 	return widgetType, out
