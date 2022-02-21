@@ -138,6 +138,7 @@ func Provider() *schema.Provider {
 			"newrelic_alert_policy_channel":                     resourceNewRelicAlertPolicyChannel(),
 			"newrelic_api_access_key":                           resourceNewRelicAPIAccessKey(),
 			"newrelic_application_settings":                     resourceNewRelicApplicationSettings(),
+			"newrelic_cloud_azure_link_account":                 resourceNewRelicCloudAzureLinkAccount(),
 			"newrelic_dashboard":                                resourceNewRelicDashboard(),
 			"newrelic_entity_tags":                              resourceNewRelicEntityTags(),
 			"newrelic_events_to_metrics_rule":                   resourceNewRelicEventsToMetricsRule(),
