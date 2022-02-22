@@ -2,9 +2,12 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
 )
@@ -58,38 +61,64 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 }
 
 func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
 	providerConfig := meta.(*ProviderConfig)
+
 	client := providerConfig.NewClient
 
 	accountID := selectAccountID(providerConfig, d)
 
 	linkAccountInput := expandAzureCloudLinkAccountInput(d)
 
-	cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 	var diags diag.Diagnostics
-	if len(cloudLinkAccountPayload.Errors) > 0 {
-		for _, err := range cloudLinkAccountPayload.Errors {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  err.Type + " " + err.Message,
-			})
+
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
+		if err != nil {
+			return resource.NonRetryableError(err)
+
 		}
+
+		if len(cloudLinkAccountPayload.Errors) > 0 {
+			for _, err := range cloudLinkAccountPayload.Errors {
+				if strings.Contains(err.Message, "We encountered an error") {
+					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
+
+				}
+
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  err.Type + " " + err.Message,
+				})
+			}
+
+		}
+
+		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+
+		return nil
+	})
+
+	if retryErr != nil {
+
+		return diag.FromErr(retryErr)
+	}
+
+	if len(diags) > 0 {
 		return diags
 	}
 
-	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
 	return nil
 }
 
 func expandAzureCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
+
 	azureAccount := cloud.CloudAzureLinkAccountInput{}
 
 	if applicationID, ok := d.GetOk("application_id"); ok {
 		azureAccount.ApplicationID = applicationID.(string)
 	}
+
 	if clientSecretID, ok := d.GetOk("client_secret_id"); ok {
 		azureAccount.ClientSecret = cloud.SecureValue(clientSecretID.(string))
 	}
@@ -97,18 +126,23 @@ func expandAzureCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkClo
 	if name, ok := d.GetOk("name"); ok {
 		azureAccount.Name = name.(string)
 	}
+
 	if subscriptionID, ok := d.GetOk("subscription_id"); ok {
 		azureAccount.SubscriptionId = subscriptionID.(string)
 	}
+
 	if tenantID, ok := d.GetOk("tenant_id"); ok {
 		azureAccount.TenantId = tenantID.(string)
 	}
+
 	input := cloud.CloudLinkCloudAccountsInput{
 		Azure: []cloud.CloudAzureLinkAccountInput{azureAccount},
 	}
+
 	return input
 }
 func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -123,7 +157,9 @@ func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.Re
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	readAzureLinkedAccount(d, linkedAccount)
+
 	return nil
 }
 
@@ -139,6 +175,7 @@ func readAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAcc
 }
 
 func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -150,9 +187,12 @@ func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.
 		},
 	}
 	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccount(accountID, input)
+
 	if err != nil {
+
 		diag.FromErr(err)
 	}
+
 	var diags diag.Diagnostics
 
 	if len(cloudRenameAccountPayload.Errors) > 0 {
@@ -163,6 +203,7 @@ func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.
 			})
 
 		}
+
 		return diags
 	}
 
@@ -170,6 +211,7 @@ func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.
 }
 
 func resourceNewRelicCloudAzureLinkAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -180,26 +222,32 @@ func resourceNewRelicCloudAzureLinkAccountDelete(ctx context.Context, d *schema.
 		return diag.FromErr(convErr)
 
 	}
+
 	unlinkAccountInput := []cloud.CloudUnlinkAccountsInput{
 		{
 			LinkedAccountId: linkedAccountID,
 		},
 	}
+
 	cloudUnlinkAccountPayload, err := client.Cloud.CloudUnlinkAccountWithContext(ctx, accountID, unlinkAccountInput)
 	if err != nil {
 		diag.FromErr(err)
 	}
 
 	var diags diag.Diagnostics
+
 	if len(cloudUnlinkAccountPayload.Errors) > 0 {
+
 		for _, err := range cloudUnlinkAccountPayload.Errors {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  err.Type + " " + err.Message,
 			})
 		}
+
 		return diags
 	}
+
 	d.SetId("")
 
 	return nil
