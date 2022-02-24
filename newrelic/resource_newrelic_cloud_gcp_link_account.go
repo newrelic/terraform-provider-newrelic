@@ -2,7 +2,11 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -32,6 +36,9 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 				Required:    true,
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Second),
+		},
 	}
 }
 
@@ -40,21 +47,38 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 	linkAccountInput := expandGcpCloudLinkAccountInput(d)
-	cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 	var diags diag.Diagnostics
-	if len(cloudLinkAccountPayload.Errors) > 0 {
-		for _, err := range cloudLinkAccountPayload.Errors {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  err.Type + " " + err.Message,
-			})
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
+		if err != nil {
+			return resource.NonRetryableError(err)
 		}
+
+		if len(cloudLinkAccountPayload.Errors) > 0 {
+			for _, err := range cloudLinkAccountPayload.Errors {
+				if strings.Contains(err.Message, "The ARN you entered does not permit the correct access to your AWS account") {
+					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
+				}
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  err.Type + " " + err.Message,
+				})
+			}
+		}
+
+		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
+
+	if len(diags) > 0 {
 		return diags
 	}
-	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+
 	return nil
 }
 
