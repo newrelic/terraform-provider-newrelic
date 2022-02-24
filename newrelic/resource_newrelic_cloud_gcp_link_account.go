@@ -47,21 +47,17 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 	linkAccountInput := expandGcpCloudLinkAccountInput(d)
-
 	var diags diag.Diagnostics
-
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-
 		cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
-
 		if err != nil {
-			return resource.RetryableError(err)
+			return resource.NonRetryableError(err)
 		}
 
 		if len(cloudLinkAccountPayload.Errors) > 0 {
 			for _, err := range cloudLinkAccountPayload.Errors {
-				if strings.Contains(err.Message, "Validation failed: The account name you entered is not unique - please enter a new account name.") {
-					return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
+				if strings.Contains(err.Message, "The ARN you entered does not permit the correct access to your AWS account") {
+					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
 				}
 				diags = append(diags, diag.Diagnostic{
 					Severity: diag.Error,
