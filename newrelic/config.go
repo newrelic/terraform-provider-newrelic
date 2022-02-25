@@ -36,6 +36,7 @@ type Config struct {
 	InsightsQueryURL     string
 	NerdGraphAPIURL      string
 	SyntheticsAPIURL     string
+	AccountId			 string
 	userAgent            string
 }
 
@@ -92,6 +93,10 @@ func (c *Config) Client() (*nr.NewRelic, error) {
 
 	if c.NerdGraphAPIURL != "" {
 		options = append(options, nr.ConfigNerdGraphBaseURL(c.NerdGraphAPIURL))
+	}
+
+	if c.AccountId != "" {
+		options = append(options, nr.ConfigAccountId(c.AccountId))
 	}
 
 	client, err := nr.New(options...)

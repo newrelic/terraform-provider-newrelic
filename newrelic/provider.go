@@ -190,6 +190,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		userAgent:            userAgent,
 		InsecureSkipVerify:   data.Get("insecure_skip_verify").(bool),
 		CACertFile:           data.Get("cacert_file").(string),
+		AccountId: 			  strconv.Itoa(accountID),
 	}
 	log.Println("[INFO] Initializing newrelic-client-go")
 
