@@ -81,7 +81,15 @@ func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.
 
 		if len(cloudLinkAccountPayload.Errors) > 0 {
 			for _, err := range cloudLinkAccountPayload.Errors {
-				if strings.Contains(err.Message, "We encountered an error") {
+				if strings.Contains(err.Message, "Server Error") {
+					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
+
+				}
+				if strings.Contains(err.Message, "Validation failed: The credentials you have entered do not permit the correct access to your Azure account. Please check your credentials and try again.") {
+					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
+
+				}
+				if strings.Contains(err.Message, "Validation failed: \"\" Azure account name already exists. Please enter a new Azure account name.") {
 					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
 
 				}
