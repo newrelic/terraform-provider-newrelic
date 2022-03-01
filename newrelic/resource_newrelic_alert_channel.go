@@ -271,14 +271,17 @@ func resourceNewRelicAlertChannelCreate(ctx context.Context, d *schema.ResourceD
 
 	log.Printf("[INFO] Creating New Relic alert channel %s", channel.Name)
 
-	channel, err = client.Alerts.CreateChannelWithContext(ctx, *channel)
+	accountID := meta.(*ProviderConfig).AccountID
+	updatedContext := updateContextWithAccountID(ctx, accountID)
+
+	channel, err = client.Alerts.CreateChannelWithContext(updatedContext, *channel)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(strconv.Itoa(channel.ID))
 
-	return resourceNewRelicAlertChannelRead(ctx, d, meta)
+	return resourceNewRelicAlertChannelRead(updatedContext, d, meta)
 }
 
 func resourceNewRelicAlertChannelRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -2,13 +2,12 @@ package newrelic
 
 import (
 	"context"
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/newrelic"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"log"
 )
 
 func resourceNewRelicAlertPolicyChannel() *schema.Resource {
@@ -96,8 +95,11 @@ func resourceNewRelicAlertPolicyChannelCreate(ctx context.Context, d *schema.Res
 
 	log.Printf("[INFO] Creating New Relic alert policy channel %s", serializedID)
 
+	accountID := meta.(*ProviderConfig).AccountID
+	updatedContext := updateContextWithAccountID(ctx, accountID)
+
 	_, err = client.Alerts.UpdatePolicyChannelsWithContext(
-		ctx,
+		updatedContext,
 		policyChannels.ID,
 		policyChannels.ChannelIDs,
 	)
@@ -108,7 +110,7 @@ func resourceNewRelicAlertPolicyChannelCreate(ctx context.Context, d *schema.Res
 
 	d.SetId(serializedID)
 
-	return resourceNewRelicAlertPolicyChannelRead(ctx, d, meta)
+	return resourceNewRelicAlertPolicyChannelRead(updatedContext, d, meta)
 }
 
 func resourceNewRelicAlertPolicyChannelRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
