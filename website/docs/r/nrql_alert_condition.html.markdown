@@ -31,7 +31,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
   runbook_url                    = "https://www.example.com"
   enabled                        = true
   violation_time_limit_seconds   = 3600
-  value_function                 = "single_value"
   fill_option                    = "static"
   fill_value                     = 1.0
   aggregation_window             = 60
@@ -79,7 +78,7 @@ The following arguments are supported:
 - `term` - (Optional) **DEPRECATED** Use `critical`, and `warning` instead.  A list of terms for this condition. See [Terms](#terms) below for details.
 - `critical` - (Required) A list containing the `critical` threshold values. See [Terms](#terms) below for details.
 - `warning` - (Optional) A list containing the `warning` threshold values. See [Terms](#terms) below for details.
-- `value_function` - (Required if `type` is `static`, omit when `type` is `baseline` or `outlier` ) Possible values are `single_value`, `sum` (case insensitive).
+- `value_function` - (Optional if `type` is `static`, omit when `type` is `baseline` or `outlier` ) **DEPRECATED** Use `signal.slide_by` instead.
 - `expected_groups` - (Optional) Number of expected groups when using `outlier` detection.
 - `open_violation_on_group_overlap` - (Optional) Whether or not to trigger a violation when groups overlap. Set to `true` if you want to trigger a violation when groups overlap. This argument is only applicable in `outlier` conditions.
 - `ignore_overlap` - (Optional) **DEPRECATED:** Use `open_violation_on_group_overlap` instead, but use the inverse value of your boolean - e.g. if `ignore_overlap = false`, use `open_violation_on_group_overlap = true`. This argument sets whether to trigger a violation when groups overlap. If set to `true` overlapping groups will not trigger a violation. This argument is only applicable in `outlier` conditions.
