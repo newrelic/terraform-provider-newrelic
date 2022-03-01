@@ -244,12 +244,14 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			// between new:old and old:new is handled via maps in structures file.
 			// Conflicts with `baseline_direction` when using NerdGraph.
 			"value_function": {
+				Deprecated:   "'value_function' is deprecated.  Remove this field and condition will evaluate as 'single_value' by default.  To replicate 'sum' behavior, use 'slide_by'.",
 				Type:         schema.TypeString,
 				Optional:     true,
-				Description:  "Valid values are: 'single_value' or 'sum'",
+				Description:  "Values are: 'single_value' (deprecated) or 'sum' (deprecated)",
 				ValidateFunc: validation.StringInSlice([]string{"single_value", "sum"}, true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					return strings.EqualFold(old, new) // Case fold this attribute when diffing
+					// If a value is not provided and the condition uses the default value (single_value), don't show a diff
+					return (strings.EqualFold(old, "SINGLE_VALUE") && new == "") || strings.EqualFold(old, new)
 				},
 			},
 			"account_id": {
