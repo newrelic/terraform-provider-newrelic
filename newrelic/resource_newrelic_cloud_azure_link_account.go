@@ -40,7 +40,7 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 
 			"name": {
 				Type:        schema.TypeString,
-				Description: "name of the linked account",
+				Description: "name of the user ",
 				Required:    true,
 				ForceNew:    false,
 			},
@@ -61,16 +61,13 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 }
 
 func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	providerConfig := meta.(*ProviderConfig)
-
 	client := providerConfig.NewClient
-
 	accountID := selectAccountID(providerConfig, d)
-
 	linkAccountInput := expandAzureCloudLinkAccountInput(d)
-
 	var diags diag.Diagnostics
+
+	//  retryErr function to check whether the error is retryable or not
 
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
@@ -78,20 +75,16 @@ func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.
 			return resource.NonRetryableError(err)
 
 		}
-
 		if len(cloudLinkAccountPayload.Errors) > 0 {
 			for _, err := range cloudLinkAccountPayload.Errors {
 				if strings.Contains(err.Message, "Server Error") {
-					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
-
+					return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
 				}
 				if strings.Contains(err.Message, "Validation failed: The credentials you have entered do not permit the correct access to your Azure account. Please check your credentials and try again.") {
-					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
-
+					return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
 				}
 				if strings.Contains(err.Message, "Validation failed: \"\" Azure account name already exists. Please enter a new Azure account name.") {
-					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
-
+					return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
 				}
 
 				diags = append(diags, diag.Diagnostic{
@@ -108,16 +101,16 @@ func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.
 	})
 
 	if retryErr != nil {
-
 		return diag.FromErr(retryErr)
 	}
-
 	if len(diags) > 0 {
 		return diags
 	}
 
 	return nil
 }
+
+// Extracting the Azure credentials from Schema using expandAzureCloudLinkAccountInput
 
 func expandAzureCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
 
@@ -149,8 +142,8 @@ func expandAzureCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkClo
 
 	return input
 }
-func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
+func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -171,8 +164,6 @@ func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.Re
 	return nil
 }
 
-////////
-
 func readAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
 	_ = d.Set("account_id", result.NrAccountId)
 	_ = d.Set("application_id", result.ID)
@@ -183,7 +174,6 @@ func readAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAcc
 }
 
 func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -219,7 +209,6 @@ func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.
 }
 
 func resourceNewRelicCloudAzureLinkAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
