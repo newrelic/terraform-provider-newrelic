@@ -22,7 +22,8 @@ To pull data from GCP instead, complete the [steps outlined here](https://docs.n
 
 ```hcl
  
- resource "newrelic_cloud_azure_link_account" "foo"{
+ resource "newrelic_cloud_gcp_link_account" "foo"{
+   account_id = "account id of newrelic account"
    project_Id = "id of the Project"
    name  = "account name"
 }
@@ -39,7 +40,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The project Id of the GCP linked account.
+- `id` - The Id of the GCP linked account.
 
 ## Import
 
