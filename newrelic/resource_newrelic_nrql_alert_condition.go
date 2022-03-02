@@ -350,7 +350,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					// If a value is not provided and the condition uses the default value, don't show a diff
 					oldInt, _ := strconv.ParseInt(old, 0, 8)
 					newInt, _ := strconv.ParseInt(new, 0, 8)
-					return oldInt == 120 && (newInt == 0)
+					return oldInt == 120 && (newInt == 0) && (d.Get("aggregation_method") == "EVENT_FLOW" || d.Get("aggregation_method") == "CADENCE")
 				},
 			},
 			"aggregation_timer": {
@@ -366,7 +366,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					// If a value is not provided and the condition uses the default value, don't show a diff
 					oldInt, _ := strconv.ParseInt(old, 0, 8)
 					newInt, _ := strconv.ParseInt(new, 0, 8)
-					return oldInt == 120 && (newInt == 0)
+					return oldInt == 120 && (newInt == 0) && d.Get("aggregation_method") == "EVENT_TIMER"
 				},
 			},
 			// Baseline ONLY
