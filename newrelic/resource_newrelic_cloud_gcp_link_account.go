@@ -51,15 +51,17 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 	var diags diag.Diagnostics
 
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+
 		cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
+
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return resource.RetryableError(err)
 		}
 
 		if len(cloudLinkAccountPayload.Errors) > 0 {
 			for _, err := range cloudLinkAccountPayload.Errors {
 				if strings.Contains(err.Message, "Validation failed: The account name you entered is not unique - please enter a new account name.") {
-					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
+					return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
 				}
 				diags = append(diags, diag.Diagnostic{
 					Severity: diag.Error,
