@@ -574,7 +574,7 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionConvertSumToSlideBy(t *tes
 			{
 				Config: testAccNewRelicNrqlAlertConditionStaticWithValueFunctionNerdGraphConfig(
 					rName,
-					"sum",
+					"single_value",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
@@ -965,7 +965,6 @@ func testAccNewRelicNrqlAlertConditionSinceValue(
 	  runbook_url                    = "REDACTED"
 	  enabled                        = true
 	  violation_time_limit_seconds   = 86400
-	  value_function                 = "sum"
 	  expiration_duration            = 120
 	  close_violations_on_expiration = true
 	
@@ -1007,7 +1006,6 @@ func testAccNewRelicNrqlAlertConditionSinceValueUpdateWithStreamingMethods(
 	  runbook_url                    = "REDACTED"
 	  enabled                        = true
 	  violation_time_limit_seconds   = 86400
-	  value_function                 = "sum"
 	  expiration_duration            = 120
 	  close_violations_on_expiration = true
       aggregation_method             = "event_timer"
