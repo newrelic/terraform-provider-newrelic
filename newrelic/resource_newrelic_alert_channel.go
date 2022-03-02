@@ -63,6 +63,12 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The New Relic account ID where you want to create alert channels.",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -271,7 +277,8 @@ func resourceNewRelicAlertChannelCreate(ctx context.Context, d *schema.ResourceD
 
 	log.Printf("[INFO] Creating New Relic alert channel %s", channel.Name)
 
-	accountID := meta.(*ProviderConfig).AccountID
+	providerConfig := meta.(*ProviderConfig)
+	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
 	channel, err = client.Alerts.CreateChannelWithContext(updatedContext, *channel)
@@ -294,7 +301,12 @@ func resourceNewRelicAlertChannelRead(ctx context.Context, d *schema.ResourceDat
 
 	log.Printf("[INFO] Reading New Relic alert channel %v", id)
 
-	channel, err := client.Alerts.GetChannelWithContext(ctx, int(id))
+
+	providerConfig := meta.(*ProviderConfig)
+	accountID := selectAccountID(providerConfig, d)
+	updatedContext := updateContextWithAccountID(ctx, accountID)
+
+	channel, err := client.Alerts.GetChannelWithContext(updatedContext, int(id))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -317,7 +329,11 @@ func resourceNewRelicAlertChannelDelete(ctx context.Context, d *schema.ResourceD
 
 	log.Printf("[INFO] Deleting New Relic alert channel %v", id)
 
-	if _, err := client.Alerts.DeleteChannelWithContext(ctx, int(id)); err != nil {
+	providerConfig := meta.(*ProviderConfig)
+	accountID := selectAccountID(providerConfig, d)
+	updatedContext := updateContextWithAccountID(ctx, accountID)
+
+	if _, err := client.Alerts.DeleteChannelWithContext(updatedContext, int(id)); err != nil {
 		return diag.FromErr(err)
 	}
 

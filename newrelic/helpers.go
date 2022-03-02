@@ -113,7 +113,7 @@ func updateContextWithAccountID(ctx context.Context, accountID int) context.Cont
 		log.Printf("[INFO] Adding Account ID to X-Account-ID context %v", accountID)
 		value := strconv.Itoa(accountID)
 
-		updatedCtx := contextkeys.SetXAccountID(ctx, value)
+		updatedCtx := contextkeys.SetAccountID(ctx, value)
 		return updatedCtx
 	}
 
