@@ -2,12 +2,13 @@ package newrelic
 
 import (
 	"context"
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/newrelic"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
-	"log"
 )
 
 func resourceNewRelicAlertPolicyChannel() *schema.Resource {
