@@ -574,7 +574,7 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionConvertSumToSlideBy(t *tes
 			{
 				Config: testAccNewRelicNrqlAlertConditionStaticWithValueFunctionNerdGraphConfig(
 					rName,
-					"sum",
+					"single_value",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
