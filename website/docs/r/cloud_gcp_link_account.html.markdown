@@ -24,7 +24,7 @@ To pull data from GCP instead, complete the [steps outlined here](https://docs.n
  
  resource "newrelic_cloud_gcp_link_account" "foo"{
    account_id = "account id of newrelic account"
-   project_Id = "id of the Project"
+   project_id = "id of the Project"
    name  = "account name"
 }
 ```
