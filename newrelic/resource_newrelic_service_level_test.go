@@ -70,6 +70,16 @@ resource "newrelic_service_level" "sli" {
 			from = "Transaction"
 		}
 	}
+
+    objective {
+        target = 99.00
+        time_window {
+            rolling {
+                count = 7
+                unit = "DAY"
+            }
+        }
+    }
 }
 `, testAccountID, name)
 }
@@ -96,6 +106,16 @@ resource "newrelic_service_level" "sli" {
 			from = "Transaction"
 		}
 	}
+
+    objective {
+        target = 99.00
+        time_window {
+            rolling {
+                count = 7
+                unit = "DAY"
+            }
+        }
+    }
 }
 `, testAccountID, name)
 }

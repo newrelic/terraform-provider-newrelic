@@ -76,8 +76,6 @@ func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		if attr, ok := d.GetOk("value_function"); ok {
 			valFn := alerts.NrqlConditionValueFunction(strings.ToUpper(attr.(string)))
 			input.ValueFunction = &valFn
-		} else {
-			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", "value_function", conditionType)
 		}
 	}
 
@@ -169,7 +167,7 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 			valFn := alerts.NrqlConditionValueFunction(strings.ToUpper(attr.(string)))
 			input.ValueFunction = &valFn
 		} else {
-			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", "value_function", conditionType)
+			input.ValueFunction = &alerts.NrqlConditionValueFunctions.SingleValue
 		}
 	}
 
