@@ -301,7 +301,6 @@ func resourceNewRelicAlertChannelRead(ctx context.Context, d *schema.ResourceDat
 
 	log.Printf("[INFO] Reading New Relic alert channel %v", id)
 
-
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
