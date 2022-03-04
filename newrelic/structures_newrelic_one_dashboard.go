@@ -689,7 +689,7 @@ func flattenLinkedEntityGUIDs(linkedEntities []entities.EntityOutlineInterface) 
 }
 
 // nolint:gocyclo
-func flattenDashboardWidget(in *entities.DashboardWidget, pageGuid string) (string, map[string]interface{}) {
+func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (string, map[string]interface{}) {
 	var widgetType string
 	out := make(map[string]interface{})
 
@@ -710,7 +710,7 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGuid string) (stri
 
 	var filterCurrentDashboard = false
 
-	if out["linked_entity_guids"] != nil && len(out["linked_entity_guids"].([]string)) == 1 && stringInSlice(out["linked_entity_guids"].([]string), pageGuid) {
+	if out["linked_entity_guids"] != nil && len(out["linked_entity_guids"].([]string)) == 1 && stringInSlice(out["linked_entity_guids"].([]string), pageGUID) {
 		filterCurrentDashboard = true
 	}
 
