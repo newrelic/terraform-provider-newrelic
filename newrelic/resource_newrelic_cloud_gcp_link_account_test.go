@@ -14,15 +14,19 @@ import (
 )
 
 func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
+
 	resourceName := "newrelic_cloud_gcp_link_account.foo"
+
 	testGcpProjectID := os.Getenv("INTEGRATION_TESTING_GCP_PROJECT_ID")
 	if testGcpProjectID == "" {
 		t.Skipf("INTEGRATION_TESTING_GCP_PROJECT_ID must be set for acceptance test")
 	}
+
 	testGcpAccountName := os.Getenv("INTEGRATION_TESTING_GCP_ACCOUNT_NAME")
 	if testGcpAccountName == "" {
 		t.Skipf("INTEGRATION_TESTING_GCP_ACCOUNT_NAME must be set for acceptance test")
 	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -48,19 +52,25 @@ func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
 
 func testAccNewRelicCloudGcpLinkAccountExists(n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
+
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
+
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 		resourceId, err := strconv.Atoi(rs.Primary.ID)
+
 		if err != nil {
 			fmt.Errorf("error converting string to int")
 		}
+
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+
 		if err != nil && linkedAccount == nil {
 			return err
 		}
+
 		return nil
 	}
 }
@@ -71,14 +81,18 @@ func testAccNewRelicCloudGcpLinkAccountDestroy(s *terraform.State) error {
 		if r.Type != "newrelic_cloud_gcp_link_account" {
 			continue
 		}
+
 		resourceId, err := strconv.Atoi(r.Primary.ID)
 		if err != nil {
 			fmt.Errorf("error converting string to int")
 		}
+
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+
 		if linkedAccount != nil && err == nil {
 			return fmt.Errorf("Linked gcp account still exists: #{err}")
 		}
+
 	}
 	return nil
 }
