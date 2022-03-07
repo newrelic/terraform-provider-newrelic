@@ -891,11 +891,6 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 
 // Function to set the page guid as the linked entity now that the page is created
 func setDashboardWidgetFilterCurrentDashboardLinkedEntity(d *schema.ResourceData, filterWidgets []interface{}) error {
-	//if len(filterWidgets) < 1 {
-	//	log.Printf("[INFO] Empty list of widgets to filter")
-	//	return nil
-	//}
-
 	selfLinkingWidgets := []string{"widget_bar", "widget_pie", "widget_table"}
 
 	pages := d.Get("page").([]interface{})

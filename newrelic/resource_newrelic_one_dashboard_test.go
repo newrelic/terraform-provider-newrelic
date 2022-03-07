@@ -245,9 +245,8 @@ func testAccCheckNewRelicOneDashboard_FilterCurrentDashboard(name string, sleepS
 	}
 }
 
-// testAccCheckNewRelicOneDashboard_FilterCurrentDashboard fetches the dashboard resource after creation, with an optional sleep time
-// used when we know the async nature of the API will mess with consistent testing. The filter_current_dashboard requires a second call to update
-// the linked_entity_guid to add the page GUID. This also checks to make sure the page GUID matches what has been added.
+// testAccCheckNewRelicOneDashboard_UnlinkFilterCurrentDashboard fetches the dashboard resource after update
+// and checks that entities were unlinked
 func testAccCheckNewRelicOneDashboard_UnlinkFilterCurrentDashboard(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
