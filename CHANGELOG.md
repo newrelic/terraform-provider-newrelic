@@ -1,5 +1,24 @@
+<a name="v2.39.0"></a>
+## [v2.39.0] - 2022-03-04
+### Bug Fixes
+- **dashboard:** handle filter_current_dashboard on read
+
+### Features
+- **Alerts:** deprecate nrql condition value_function, sum, single_value
+- **servicelevel:** SLI should contain one and only one objective
+
+<a name="v2.38.0"></a>
+## [v2.38.0] - 2022-02-18
+### Documentation Updates
+- Fix broken V2 migration links
+- add cloud_account data source docs
+- fix broken link to data sources docs
+
+### Features
+- add cloud account data source
+
 <a name="v2.37.0"></a>
-## [v2.37.0] - 2022-02-11
+## [v2.37.0] - 2022-02-13
 ### Bug Fixes
 - **newrelic_drop_rule:** fix for [#1611](https://github.com/newrelic/terraform-provider-newrelic/issues/1611) added extra check on API return
 - **nrql_alert_condition:** Move condition validation to API
@@ -1035,7 +1054,9 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.37.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.0...HEAD
+[v2.39.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.38.0...v2.39.0
+[v2.38.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.37.0...v2.38.0
 [v2.37.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.36.2...v2.37.0
 [v2.36.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.36.1...v2.36.2
 [v2.36.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.36.0...v2.36.1

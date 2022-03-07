@@ -52,7 +52,9 @@ func resourceNewRelicServiceLevel() *schema.Resource {
 			},
 			"objective": {
 				Type:        schema.TypeSet,
-				Optional:    true,
+				Required:    true,
+				MinItems:    1,
+				MaxItems:    1,
 				Description: "",
 				Elem:        objectiveSchema(),
 			},
