@@ -529,6 +529,92 @@ func TestAccNewRelicNrqlAlertCondition_RevertToDeprecatedSinceValue(t *testing.T
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_StaticConditionOptionalValueFunction(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create (NerdGraph) static condition without value function
+			{
+				Config: testAccNewRelicNrqlAlertConditionStaticNoValueFunctionNerdGraphConfig(
+					rName,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Update (NerdGraph) static condition to explicitly set value function
+			{
+				Config: testAccNewRelicNrqlAlertConditionStaticWithValueFunctionNerdGraphConfig(
+					rName,
+					"single_value",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicNrqlAlertCondition_StaticConditionConvertSumToSlideBy(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create (NerdGraph) static condition with sum value function
+			{
+				Config: testAccNewRelicNrqlAlertConditionStaticWithValueFunctionNerdGraphConfig(
+					rName,
+					"single_value",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Update (NerdGraph) static condition to remove value function and use slide by instead
+			{
+				Config: testAccNewRelicNrqlAlertConditionStaticWithSlideByNerdGraphConfig(
+					rName,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicNrqlAlertCondition_StaticConditionSlideByNoValueFunction(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create (NerdGraph) static condition with slide by and no value function
+			{
+				Config: testAccNewRelicNrqlAlertConditionStaticWithSlideByNerdGraphConfig(
+					rName,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -879,7 +965,6 @@ func testAccNewRelicNrqlAlertConditionSinceValue(
 	  runbook_url                    = "REDACTED"
 	  enabled                        = true
 	  violation_time_limit_seconds   = 86400
-	  value_function                 = "sum"
 	  expiration_duration            = 120
 	  close_violations_on_expiration = true
 	
@@ -921,7 +1006,6 @@ func testAccNewRelicNrqlAlertConditionSinceValueUpdateWithStreamingMethods(
 	  runbook_url                    = "REDACTED"
 	  enabled                        = true
 	  violation_time_limit_seconds   = 86400
-	  value_function                 = "sum"
 	  expiration_duration            = 120
 	  close_violations_on_expiration = true
       aggregation_method             = "event_timer"
@@ -1035,4 +1119,118 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	%[4]s
 }
 `, name, evaluationOffset, duration, conditionalAttrs, aggregationWindow)
+}
+
+func testAccNewRelicNrqlAlertConditionStaticNoValueFunctionNerdGraphConfig(
+	name string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                           = "tf-test-%[1]s"
+	type                           = "static"
+	runbook_url                    = "https://foo.example.com"
+	enabled                        = false
+	description                    = "test description"
+	violation_time_limit_seconds   = 3600
+	close_violations_on_expiration = true
+	open_violation_on_expiration   = true
+	expiration_duration            = 120
+ 	aggregation_delay              = 120
+	aggregation_method             = "event_flow"
+
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+    operator              = "above"
+    threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
+}
+`, name)
+}
+
+func testAccNewRelicNrqlAlertConditionStaticWithValueFunctionNerdGraphConfig(
+	name string,
+	valueFunction string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                           = "tf-test-%[1]s"
+	type                           = "static"
+	runbook_url                    = "https://foo.example.com"
+	enabled                        = false
+	description                    = "test description"
+	violation_time_limit_seconds   = 3600
+	close_violations_on_expiration = true
+	open_violation_on_expiration   = true
+	expiration_duration            = 120
+ 	aggregation_delay              = 120
+	aggregation_method             = "event_flow"
+	value_function 				   = "%[2]s"
+
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+    operator              = "above"
+    threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "AT_LEAST_ONCE"
+	}
+}
+`, name, valueFunction)
+}
+
+func testAccNewRelicNrqlAlertConditionStaticWithSlideByNerdGraphConfig(
+	name string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                           = "tf-test-%[1]s"
+	type                           = "static"
+	runbook_url                    = "https://foo.example.com"
+	enabled                        = false
+	description                    = "test description"
+	violation_time_limit_seconds   = 3600
+	close_violations_on_expiration = true
+	open_violation_on_expiration   = true
+	expiration_duration            = 120
+ 	aggregation_delay              = 120
+	aggregation_method             = "event_flow"
+	slide_by					   = 30
+
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+    operator              = "above"
+    threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
+}
+`, name)
 }
