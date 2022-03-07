@@ -60,9 +60,9 @@ The following arguments are supported:
   * `name` - (Required) A short name for the SLI that will help anyone understand what it is about.
   * `events` - (Required) The events that define the NRDB data for the SLI/SLO calculations.
   See [Events](#events) below for details.
+  * `objective` - (Required) The objective of the SLI, only one can be defined.
+  See [Objective](#objective) below for details.
   * `description` - (Optional) The description of the SLI.
-  * `objective` - (Optional) An objective for the SLI. Multiple objective blocks can be defined for an SLI.
-  See [Nested objective blocks](#nested-objective-blocks) below for details.
 
 ### Events
 
@@ -82,10 +82,10 @@ All nested `events` blocks support the following common arguments:
     * `where` - (Optional) A filter that narrows down the NRDB events just to those that are considered bad responses (e.g, those that refer to
     a particular entity and returned an error).
 
-### Nested `objective` blocks
+### Objective
 
-  * `target` - (Required) The target for your SLO, valid values between `0` and `100`. Up to 5 decimals accepted.
-  * `time_window` - (Required) Time window is the period for the SLO.
+  * `target` - (Required) The target of the objective, valid values between `0` and `100`. Up to 5 decimals accepted.
+  * `time_window` - (Required) Time window is the period of the objective.
     * `rolling` - (Required) Rolling window.
       * `count` - (Required) Valid values are `1`, `7` and `28`.
       * `unit` - (Required) The only supported value is `DAY`.
