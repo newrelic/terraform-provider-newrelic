@@ -28,7 +28,7 @@ jobs:
           make changelog
           make spell-check-fix
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: CHANGELOG.md
           path: CHANGELOG.md
