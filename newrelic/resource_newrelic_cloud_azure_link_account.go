@@ -2,12 +2,9 @@ package newrelic
 
 import (
 	"context"
-	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
 )
@@ -40,7 +37,7 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 
 			"name": {
 				Type:        schema.TypeString,
-				Description: "name of the user ",
+				Description: "name of the linked account",
 				Required:    true,
 				ForceNew:    false,
 			},
@@ -67,46 +64,26 @@ func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.
 	linkAccountInput := expandAzureCloudLinkAccountInput(d)
 	var diags diag.Diagnostics
 
-	//  retryErr function to check whether the error is retryable or not
+	cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
 
-	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
-		if err != nil {
-			return resource.NonRetryableError(err)
-
-		}
-		if len(cloudLinkAccountPayload.Errors) > 0 {
-			for _, err := range cloudLinkAccountPayload.Errors {
-				if strings.Contains(err.Message, "Server Error") {
-					return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
-				}
-				if strings.Contains(err.Message, "Validation failed: The credentials you have entered do not permit the correct access to your Azure account. Please check your credentials and try again.") {
-					return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
-				}
-				if strings.Contains(err.Message, "Validation failed: \"\" Azure account name already exists. Please enter a new Azure account name.") {
-					return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
-				}
-
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  err.Type + " " + err.Message,
-				})
-			}
-
-		}
-
-		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
-
-		return nil
-	})
-
-	if retryErr != nil {
-		return diag.FromErr(retryErr)
+	if err != nil {
+		diag.FromErr(err)
 	}
+
+	if len(cloudLinkAccountPayload.Errors) > 0 {
+		for _, err := range cloudLinkAccountPayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+	}
+
+	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+
 	if len(diags) > 0 {
 		return diags
 	}
-
 	return nil
 }
 
@@ -204,7 +181,6 @@ func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.
 
 		return diags
 	}
-
 	return nil
 }
 
