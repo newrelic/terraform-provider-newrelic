@@ -2,10 +2,7 @@ package newrelic
 
 import (
 	"context"
-	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -50,34 +47,22 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 
 	var diags diag.Diagnostics
 
-	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
 
-		cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
-
-		if err != nil {
-			return resource.RetryableError(err)
-		}
-
-		if len(cloudLinkAccountPayload.Errors) > 0 {
-			for _, err := range cloudLinkAccountPayload.Errors {
-				if strings.Contains(err.Message, "Validation failed: The account name you entered is not unique - please enter a new account name.") {
-					return resource.NonRetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
-				}
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  err.Type + " " + err.Message,
-				})
-			}
-		}
-
-		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
-
-		return nil
-	})
-
-	if retryErr != nil {
-		return diag.FromErr(retryErr)
+	if err != nil {
+		diag.FromErr(err)
 	}
+
+	if len(cloudLinkAccountPayload.Errors) > 0 {
+		for _, err := range cloudLinkAccountPayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+	}
+
+	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
 
 	if len(diags) > 0 {
 		return diags

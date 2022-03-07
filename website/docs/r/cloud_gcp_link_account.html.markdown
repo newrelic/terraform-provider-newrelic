@@ -12,11 +12,16 @@ Use this resource to link a GCP account to New Relic.
 
 ## Prerequisite
 
-Setup is required in GCP for this resource to work properly. The New Relic GCP integration can be set up to pull metrics from GCP services.
+To start receiving Google Cloud Platform (GCP) data with New Relic GCP integrations, connect your Google project to New Relic infrastructure monitoring. If you don't have one already, create a New Relic account. It's free, forever.
 
-Using a metric stream to New Relic is the preferred way to integrate with GCP. Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/gcp-integration-metrics) to set up a metric stream.
+Setup is required in GCP for this resource to work properly. The New Relic GCP integration can be done by creating a user account or a service account.
 
-To pull data from GCP instead, complete the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic).
+A user with Project IAM Admin role is needed to add the service account ID as a member in your GCP project.
+
+In the GCP project IAM & admin, the service account must have the Project Viewer role and the Service Usage Consumer role or, alternatively, a custom role.
+
+Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic) to set up a metric stream.
+
 
 ## Example Usage
 
@@ -33,6 +38,7 @@ To pull data from GCP instead, complete the [steps outlined here](https://docs.n
 
 The following arguments are supported:
 
+- `account_id` - (Required) - account Id of the newrelic account.
 - `project_id` - (Required) - project Id of the gcp account.
 - `name` - (Required) - The name of the application in New Relic APM.
 
