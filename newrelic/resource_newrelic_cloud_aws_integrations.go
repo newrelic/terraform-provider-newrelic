@@ -236,10 +236,10 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) cloud.CloudIntegrat
 	return input
 }
 
-func expandCloudAwsIntegrationBillingInput(b map[string]interface{}, linkedAccountId int) []cloud.CloudBillingIntegrationInput {
+func expandCloudAwsIntegrationBillingInput(b map[string]interface{}, linkedAccountID int) []cloud.CloudBillingIntegrationInput {
 	var billingInput cloud.CloudBillingIntegrationInput
 
-	billingInput.LinkedAccountId = linkedAccountId
+	billingInput.LinkedAccountId = linkedAccountID
 
 	if m, ok := b["metrics_polling_interval"]; ok {
 		billingInput.MetricsPollingInterval = m.(int)
@@ -359,19 +359,19 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 	_ = d.Set("linked_account_id", linkedAccount.ID)
 
 	for _, i := range linkedAccount.Integrations {
-		switch i.(type) {
+		switch t := i.(type) {
 		case *cloud.CloudBillingIntegration:
-			_ = d.Set("billing", flattenCloudAwsBillingIntegration(i.(*cloud.CloudBillingIntegration)))
+			_ = d.Set("billing", flattenCloudAwsBillingIntegration(t))
 		case *cloud.CloudCloudtrailIntegration:
-			_ = d.Set("cloudtrail", flattenCloudAwsCloudTrailIntegration(i.(*cloud.CloudCloudtrailIntegration)))
+			_ = d.Set("cloudtrail", flattenCloudAwsCloudTrailIntegration(t))
 		case *cloud.CloudHealthIntegration:
-			_ = d.Set("health", flattenCloudAwsHealthIntegration(i.(*cloud.CloudHealthIntegration)))
+			_ = d.Set("health", flattenCloudAwsHealthIntegration(t))
 		case *cloud.CloudTrustedadvisorIntegration:
-			_ = d.Set("trusted_advisor", flattenCloudAwsTrustedAdvisorIntegration(i.(*cloud.CloudTrustedadvisorIntegration)))
+			_ = d.Set("trusted_advisor", flattenCloudAwsTrustedAdvisorIntegration(t))
 		case *cloud.CloudVpcIntegration:
-			_ = d.Set("vpc", flattenCloudAwsVpcIntegration(i.(*cloud.CloudVpcIntegration)))
+			_ = d.Set("vpc", flattenCloudAwsVpcIntegration(t))
 		case *cloud.CloudAwsXrayIntegration:
-			_ = d.Set("x_ray", flattenCloudAwsXRayIntegration(i.(*cloud.CloudAwsXrayIntegration)))
+			_ = d.Set("x_ray", flattenCloudAwsXRayIntegration(t))
 		}
 
 	}
@@ -439,7 +439,30 @@ func flattenCloudAwsXRayIntegration(in *cloud.CloudAwsXrayIntegration) map[strin
 }
 
 func resourceNewRelicCloudAwsIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+	providerConfig := meta.(*ProviderConfig)
+
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+
+	cloudAwsIntegrationsInput := expandCloudAwsIntegrationsInput(d)
+
+	cloudAwsIntegrationsPayload, err := client.Cloud.CloudConfigureIntegration(accountID, cloudAwsIntegrationsInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var diags diag.Diagnostics
+
+	if len(cloudAwsIntegrationsPayload.Errors) > 0 {
+		for _, err := range cloudAwsIntegrationsPayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+	return resourceNewRelicCloudAwsIntegrationsRead(ctx, d, meta)
 }
 
 func resourceNewRelicCloudAwsIntegrationsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
