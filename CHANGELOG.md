@@ -1,5 +1,35 @@
+<a name="v2.39.2"></a>
+## [v2.39.2] - 2022-03-08
+### Features
+- **docs:** added accountID to alert_channel and alert_policy_channel
+
+<a name="v2.39.1"></a>
+## [v2.39.1] - 2022-03-07
+### Bug Fixes
+- **newrelic_alert_policy_channel:** add account_id to terraform schema
+- **newrelic_alert_policy_channel:** add XAccountID to context when creating or updating alert channels
+
+<a name="v2.39.0"></a>
+## [v2.39.0] - 2022-03-04
+### Bug Fixes
+- **dashboard:** handle filter_current_dashboard on read
+
+### Features
+- **Alerts:** deprecate nrql condition value_function, sum, single_value
+- **servicelevel:** SLI should contain one and only one objective
+
+<a name="v2.38.0"></a>
+## [v2.38.0] - 2022-02-18
+### Documentation Updates
+- Fix broken V2 migration links
+- add cloud_account data source docs
+- fix broken link to data sources docs
+
+### Features
+- add cloud account data source
+
 <a name="v2.37.0"></a>
-## [v2.37.0] - 2022-02-11
+## [v2.37.0] - 2022-02-13
 ### Bug Fixes
 - **newrelic_drop_rule:** fix for [#1611](https://github.com/newrelic/terraform-provider-newrelic/issues/1611) added extra check on API return
 - **nrql_alert_condition:** Move condition validation to API
@@ -365,10 +395,10 @@
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="2.11.1"></a>
-## [2.11.1] - 2020-10-07
 <a name="v2.11.1"></a>
 ## [v2.11.1] - 2020-10-07
+<a name="2.11.1"></a>
+## [2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -1035,7 +1065,11 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.37.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.2...HEAD
+[v2.39.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.1...v2.39.2
+[v2.39.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.0...v2.39.1
+[v2.39.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.38.0...v2.39.0
+[v2.38.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.37.0...v2.38.0
 [v2.37.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.36.2...v2.37.0
 [v2.36.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.36.1...v2.36.2
 [v2.36.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.36.0...v2.36.1
@@ -1080,9 +1114,9 @@
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2

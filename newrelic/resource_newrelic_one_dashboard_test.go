@@ -176,7 +176,6 @@ func TestAccNewRelicOneDashboard_FilterCurrentDashboard(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicOneDashboard_FilterCurrentDashboard("newrelic_one_dashboard.bar"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

@@ -38,7 +38,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
   description                  = "Alert when transactions are taking too long"
   runbook_url                  = "https://www.example.com"
   enabled                      = true
-  value_function               = "single_value"
   violation_time_limit_seconds = 3600
 
   nrql {
