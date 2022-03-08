@@ -58,6 +58,7 @@ resource "newrelic_alert_policy_channel" "foo" {
 
 The following arguments are supported:
 
+- `account_id` - (Optional) Determines the New Relic account where the alert policy channel will be created. Defaults to the account associated with the API key used.
 - `policy_id` - (Required) The ID of the policy.
 - `channel_ids` - (Required) Array of channel IDs to apply to the specified policy. We recommended sorting channel IDs in ascending order to avoid drift your Terraform state.
 
