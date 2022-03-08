@@ -359,7 +359,7 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 	_ = d.Set("linked_account_id", linkedAccount.ID)
 
 	for _, i := range linkedAccount.Integrations {
-		switch _ := i.(type) {
+		switch i.(type) {
 		case *cloud.CloudBillingIntegration:
 			_ = d.Set("billing", flattenCloudAwsBillingIntegration(i.(*cloud.CloudBillingIntegration)))
 		case *cloud.CloudCloudtrailIntegration:
