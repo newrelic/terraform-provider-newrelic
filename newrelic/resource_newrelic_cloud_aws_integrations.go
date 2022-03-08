@@ -248,10 +248,10 @@ func expandCloudAwsIntegrationBillingInput(b map[string]interface{}, linkedAccou
 	return []cloud.CloudBillingIntegrationInput{billingInput}
 }
 
-func expandCloudAwsIntegrationCloudtrailInput(c map[string]interface{}, linkedAccountId int) []cloud.CloudCloudtrailIntegrationInput {
+func expandCloudAwsIntegrationCloudtrailInput(c map[string]interface{}, linkedAccountID int) []cloud.CloudCloudtrailIntegrationInput {
 	var cloudtrailInput cloud.CloudCloudtrailIntegrationInput
 
-	cloudtrailInput.LinkedAccountId = linkedAccountId
+	cloudtrailInput.LinkedAccountId = linkedAccountID
 
 	if a, ok := c["aws_regions"]; ok {
 		cloudtrailInput.AwsRegions = a.([]string)
@@ -373,7 +373,6 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 		case *cloud.CloudAwsXrayIntegration:
 			_ = d.Set("x_ray", flattenCloudAwsXRayIntegration(t))
 		}
-
 	}
 }
 
@@ -466,5 +465,47 @@ func resourceNewRelicCloudAwsIntegrationsUpdate(ctx context.Context, d *schema.R
 }
 
 func resourceNewRelicCloudAwsIntegrationsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+
+	var linkedAccountID int
+
+	if l, ok := d.GetOk("linked_account_id"); ok {
+		linkedAccountID = l.(int)
+	}
+
+	disableIntegrationsInput := cloud.CloudDisableIntegrationsInput{
+		Aws: cloud.CloudAwsDisableIntegrationsInput{
+			Billing:        []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}},
+			Cloudtrail:     []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}},
+			Health:         []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}},
+			Trustedadvisor: []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}},
+			Vpc:            []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}},
+			AwsXray:        []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}},
+		},
+	}
+
+	cloudDisableIntegrationsPayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, disableIntegrationsInput)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var diags diag.Diagnostics
+
+	if len(cloudDisableIntegrationsPayload.Errors) > 0 {
+		for _, err := range cloudDisableIntegrationsPayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+
+	d.SetId("")
+
 	return nil
 }
