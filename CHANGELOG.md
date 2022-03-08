@@ -1,3 +1,8 @@
+<a name="v2.39.2"></a>
+## [v2.39.2] - 2022-03-08
+### Features
+- **docs:** added accountID to alert_channel and alert_policy_channel
+
 <a name="v2.39.1"></a>
 ## [v2.39.1] - 2022-03-07
 ### Bug Fixes
@@ -1060,7 +1065,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.2...HEAD
+[v2.39.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.1...v2.39.2
 [v2.39.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.0...v2.39.1
 [v2.39.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.38.0...v2.39.0
 [v2.38.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.37.0...v2.38.0
