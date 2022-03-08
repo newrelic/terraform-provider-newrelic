@@ -3,7 +3,7 @@ layout: "newrelic"
 page_title: "New Relic: newrelic_cloud_azure_link_account"
 sidebar_current: "docs-newrelic-resource-cloud-azure-link-account"
 description: |-
-  Link an AWS account to New Relic.
+  Link an Azure account to New Relic.
 ---
 
 # Resource: newrelic_cloud_azure_link_account
@@ -12,13 +12,11 @@ Use this resource to link an Azure account to New Relic.
 
 ## Prerequisite
 
-Setup is required in Azure for this resource to work properly. New Relic Azure integration can be done by creating Azure account
+Some configuration is required in Azure for the New Relic Azure cloud integrations to be able to pull data. 
 
-Create a New Relic application and key in Azure
+To start receiving Azure data with New Relic Azure integrations, connect your Azure account to New Relic infrastructure monitoring. If you don't have one already, create a New Relic account. It's free, forever.
 
-Grant this application access to the Azure services you want to monitor
-
-To pull data from Azure instead, complete the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/get-started/activate-azure-integrations).
+Setup is required in Azure for this resource to work properly. You can find instructions on how to set up Azure on [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/get-started/activate-azure-integrations/).
 
 ## Example Usage
 
