@@ -1,12 +1,16 @@
 package newrelic
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/newrelic/newrelic-client-go/pkg/contextkeys"
 )
 
 func parseIDs(serializedID string, count int) ([]int, error) {
@@ -102,4 +106,16 @@ func stringInSlice(slice []string, str string) bool {
 	}
 
 	return false
+}
+
+func updateContextWithAccountID(ctx context.Context, accountID int) context.Context {
+	if accountID > 0 {
+		log.Printf("[INFO] Adding Account ID to X-Account-ID context %v", accountID)
+		value := strconv.Itoa(accountID)
+
+		updatedCtx := contextkeys.SetAccountID(ctx, value)
+		return updatedCtx
+	}
+
+	return ctx
 }
