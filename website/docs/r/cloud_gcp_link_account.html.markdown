@@ -29,7 +29,7 @@ Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/g
  
  resource "newrelic_cloud_gcp_link_account" "foo"{
    account_id = "account id of newrelic account"
-   project_Id = "id of the Project"
+   project_id = "id of the Project"
    name  = "account name"
 }
 ```
@@ -38,19 +38,19 @@ Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/g
 
 The following arguments are supported:
 
-- `account_id` - (Required) - account Id of the newrelic account.
-- `project_id` - (Required) - project Id of the gcp account.
+- `account_id` - (Required) - account id of the newrelic account.
+- `project_id` - (Required) - project id of the gcp account.
 - `name` - (Required) - The name of the application in New Relic APM.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The Id of the GCP linked account.
+- `id` - The id of the GCP linked account.
 
 ## Import
 
-Linked GCP accounts can be imported using `id`, you can find the `id` of existing GCP linked accounts in GCP dashboard under Infrastructure in Newrelic Console.
+Linked GCP accounts can be imported using `id`, you can find the `id` of an existing GCP linked accounts in GCP dashboard under Infrastructure in Newrelic Console.
 
 ```bash
 
