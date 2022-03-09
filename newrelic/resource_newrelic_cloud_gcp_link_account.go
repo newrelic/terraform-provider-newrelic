@@ -2,12 +2,10 @@ package newrelic
 
 import (
 	"context"
-	"strconv"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
+	"strconv"
 )
 
 func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
@@ -32,10 +30,6 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 				Description: "project id of the Gcp account",
 				Required:    true,
 			},
-		},
-
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Second),
 		},
 	}
 }
@@ -134,7 +128,11 @@ func resourceNewRelicCloudGcpLinkAccountUpdate(ctx context.Context, d *schema.Re
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	id, _ := strconv.Atoi(d.Id())
+	id, convErr := strconv.Atoi(d.Id())
+
+	if convErr != nil {
+		return diag.FromErr(convErr)
+	}
 
 	input := []cloud.CloudRenameAccountsInput{
 		{
