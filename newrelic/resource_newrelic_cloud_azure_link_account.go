@@ -141,13 +141,11 @@ func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.Re
 	return nil
 }
 
+//readAzureLinkedAccount function to read the outputs.
+
 func readAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
-	_ = d.Set("account_id", result.NrAccountId)
-	_ = d.Set("application_id", result.ID)
-	_ = d.Set("client_secret_id", result.ID)
+	_ = d.Set("account_id", result.ExternalId)
 	_ = d.Set("name", result.Name)
-	_ = d.Set("subscription_id", result.ID)
-	_ = d.Set("tenant_id", result.ID)
 }
 
 func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -201,6 +199,8 @@ func resourceNewRelicCloudAzureLinkAccountDelete(ctx context.Context, d *schema.
 			LinkedAccountId: linkedAccountID,
 		},
 	}
+
+	//CloudUnlinkAccountWithContext func to unlink the Azure account with Newrelic
 
 	cloudUnlinkAccountPayload, err := client.Cloud.CloudUnlinkAccountWithContext(ctx, accountID, unlinkAccountInput)
 	if err != nil {
