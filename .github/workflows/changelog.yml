@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: 1.16.x
 
@@ -19,7 +19,7 @@ jobs:
         shell: bash
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -28,17 +28,17 @@ jobs:
           make changelog
           make spell-check-fix
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: CHANGELOG.md
           path: CHANGELOG.md
 
       - name: Checkout the pull request base
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: master
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: CHANGELOG.md
           path: .
