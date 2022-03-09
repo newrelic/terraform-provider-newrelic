@@ -38,9 +38,9 @@ Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/g
 
 The following arguments are supported:
 
-- `account_id` - (Required) - account id of the newrelic account.
-- `project_id` - (Required) - project id of the gcp account.
-- `name` - (Required) - The name of the application in New Relic APM.
+- `account_id` - (Optional) - Account ID of the New Relic account.
+- `project_id` - (Required) - Project ID of the GCP account.
+- `name` - (Required) - The name of the GCP account in New Relic.
 
 ## Attributes Reference
 
