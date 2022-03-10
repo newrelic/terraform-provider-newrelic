@@ -144,7 +144,7 @@ func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.Re
 //readAzureLinkedAccount function to read the outputs.
 
 func readAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
-	_ = d.Set("account_id", result.ExternalId)
+	_ = d.Set("account_id", result.NrAccountId)
 	_ = d.Set("name", result.Name)
 }
 
