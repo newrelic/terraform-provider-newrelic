@@ -20,7 +20,7 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The ID of the account in New Relic.",
+				Description: "The New Relic account ID.",
 			},
 			"access_key_id": {
 				Type:        schema.TypeString,
@@ -127,10 +127,7 @@ func resourceNewRelicAwsGovCloudLinkAccountRead(ctx context.Context, d *schema.R
 func readAwsGovCloudLinkAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
 	_ = d.Set("metric_collection_mode", result.MetricCollectionMode)
 	_ = d.Set("name", result.Name)
-	//
 	_ = d.Set("aws_account_id", result.NrAccountId)
-	_ = d.Set("access_key_id", result.ID)
-	_ = d.Set("secret_access_key", result.ID)
 }
 
 func resourceNewRelicAwsGovCloudLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
