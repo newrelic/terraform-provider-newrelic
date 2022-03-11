@@ -67,6 +67,7 @@ func testAccCheckNewRelicEntityTagsDestroy(s *terraform.State) error {
 
 func testAccCheckNewRelicEntityTagsExist(n string, keysToCheck []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)

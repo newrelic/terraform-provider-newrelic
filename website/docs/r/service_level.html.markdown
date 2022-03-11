@@ -25,18 +25,18 @@ Important:
 ```hcl
 resource "newrelic_service_level" "foo" {
     guid = "MXxBUE18QVBQTElDQVRJT058MQ"
-    name = "Availability"
-    description = "SLI that measures the availability of the service."
+    name = "Latency"
+    description = "Proportion of requests that are served faster than a threshold."
 
     events {
         account_id = 12345678
         valid_events {
             from = "Transaction"
-            where = "appName = 'Example application'"
+            where = "appName = 'Example application' AND (transactionType='Web')"
         }
-        bad_events {
-            from = "TransactionError"
-            where = "appName = 'Example application' AND error.expected is false"
+        good_events {
+            from = "Transaction"
+            where = "appName = 'Example application' AND (transactionType= 'Web') AND duration < 0.1"
         }
     }
 
@@ -87,7 +87,7 @@ All nested `events` blocks support the following common arguments:
   * `target` - (Required) The target of the objective, valid values between `0` and `100`. Up to 5 decimals accepted.
   * `time_window` - (Required) Time window is the period of the objective.
     * `rolling` - (Required) Rolling window.
-      * `count` - (Required) Valid values are `1`, `7` and `28`.
+      * `count` - (Required) Valid values are `1`, `7`, `14` and `28`.
       * `unit` - (Required) The only supported value is `DAY`.
 
 ## Attributes Reference
@@ -95,6 +95,7 @@ All nested `events` blocks support the following common arguments:
 The following attributes are exported:
 
   * `sli_id` - The unique entity identifier of the Service Level Indicator.
+  * `sli_guid` - The unique entity identifier of the Service Level Indicator in New Relic.
 
 ## Import
 
