@@ -25,18 +25,18 @@ Important:
 ```hcl
 resource "newrelic_service_level" "foo" {
     guid = "MXxBUE18QVBQTElDQVRJT058MQ"
-    name = "Availability"
-    description = "SLI that measures the availability of the service."
+    name = "Latency"
+    description = "Proportion of requests that are served faster than a threshold."
 
     events {
         account_id = 12345678
         valid_events {
             from = "Transaction"
-            where = "appName = 'Example application'"
+            where = "appName = 'Example application' AND (transactionType='Web')"
         }
-        bad_events {
-            from = "TransactionError"
-            where = "appName = 'Example application' AND error.expected is false"
+        good_events {
+            from = "Transaction"
+            where = "appName = 'Example application' AND (transactionType= 'Web') AND duration < 0.1"
         }
     }
 
@@ -95,6 +95,7 @@ All nested `events` blocks support the following common arguments:
 The following attributes are exported:
 
   * `sli_id` - The unique entity identifier of the Service Level Indicator.
+  * `sli_guid` - The unique entity identifier of the Service Level Indicator in New Relic.
 
 ## Import
 
