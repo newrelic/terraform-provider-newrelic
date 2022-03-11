@@ -24,13 +24,21 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 			},
 			"access_key_id": {
 				Type:        schema.TypeString,
+<<<<<<< HEAD
 				Description: "access-key-id of awsGovcloud account",
+=======
+				Description: "access-key-id of aws account",
+>>>>>>> 8ae5526a060f5ae989e18181dcf781b3b36e3669
 				Required:    true,
 				ForceNew:    true,
 			},
 			"aws_account_id": {
 				Type:        schema.TypeString,
+<<<<<<< HEAD
 				Description: "awsGovcloud account id",
+=======
+				Description: "aws account id",
+>>>>>>> 8ae5526a060f5ae989e18181dcf781b3b36e3669
 				Required:    true,
 				ForceNew:    true,
 			},
@@ -48,7 +56,11 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 			},
 			"secret_access_key": {
 				Type:        schema.TypeString,
+<<<<<<< HEAD
 				Description: "secret access key of the awsGovcloud account",
+=======
+				Description: "secret access key of the aws account",
+>>>>>>> 8ae5526a060f5ae989e18181dcf781b3b36e3669
 				Required:    true,
 				ForceNew:    true,
 			},

@@ -110,7 +110,11 @@ func testAccCheckNewRelicawsGovCloudLinkAccountDestroy(s *terraform.State) error
 
 func testAccCheckNewRelicAwsGovCloudLinkAccountConfig(access_key_id string, aws_account_id string, secret_access_key string, name string) string {
 	return fmt.Sprintf(`
+<<<<<<< HEAD
     resource "newrelic_cloud_awsGovcloud_link_account" "account" {	
+=======
+    resource "newrelic_cloud_awsGovcloud_link_account" "account" {
+>>>>>>> 8ae5526a060f5ae989e18181dcf781b3b36e3669
     access_key_id ="%[1]s"
 	aws_account_id="%[2]s"
 	metric_collection_mode = "PULL"
