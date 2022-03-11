@@ -12,7 +12,7 @@ Use this resource to link an Azure account to New Relic.
 
 ## Prerequisite
 
-Some configuration is required in Azure for the New Relic Azure cloud integrations to be able to pull data. 
+Some configuration is required in Azure for the New Relic Azure cloud integrations to be able to pull data.
 
 To start receiving Azure data with New Relic Azure integrations, connect your Azure account to New Relic infrastructure monitoring. If you don't have one already, create a New Relic account. It's free, forever.
 
@@ -35,6 +35,7 @@ Setup is required in Azure for this resource to work properly. You can find inst
 ## Argument Reference
 
 The following arguments are supported:
+
 - `account_id` - (Required) - Account Id of the New Relic.
 - `application_id` - (Required) - Application Id of the App.
 - `client_secret_id` - (Required) - Secret Value of the client.
