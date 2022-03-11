@@ -26,40 +26,46 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Description: "The ID of the linked AWS account in New Relic",
 			},
 			"billing": {
-				Type:        schema.TypeMap,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Billing integration",
 				Elem:        cloudAwsIntegrationBillingSchemaElem(),
+				MaxItems:    1,
 			},
 			"cloudtrail": {
-				Type:        schema.TypeMap,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "CloudTrail integration",
 				Elem:        cloudAwsIntegrationCloudTrailSchemaElem(),
+				MaxItems:    1,
 			},
 			"health": {
-				Type:        schema.TypeMap,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Health integration",
 				Elem:        cloudAwsIntegrationHealthSchemaElem(),
+				MaxItems:    1,
 			},
 			"trusted_advisor": {
-				Type:        schema.TypeMap,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Trusted Advisor integration",
 				Elem:        cloudAwsIntegrationTrustedAdvisorSchemaElem(),
+				MaxItems:    1,
 			},
 			"vpc": {
-				Type:        schema.TypeMap,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "VPC integration",
 				Elem:        cloudAwsIntegrationVpcSchemaElem(),
+				MaxItems:    1,
 			},
 			"x_ray": {
-				Type:        schema.TypeMap,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "X-Ray integration",
 				Elem:        cloudAwsIntegrationXRaySchemaElem(),
+				MaxItems:    1,
 			},
 		},
 	}
@@ -95,6 +101,9 @@ func cloudAwsIntegrationCloudTrailSchemaElem() *schema.Resource {
 		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each AWS region that includes the resources that you want to monitor.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
 	}
 
 	return &schema.Resource{
@@ -125,6 +134,9 @@ func cloudAwsIntegrationVpcSchemaElem() *schema.Resource {
 		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each AWS region that includes the resources that you want to monitor.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
 	}
 
 	s["fetch_nat_gateway"] = &schema.Schema{
@@ -163,6 +175,9 @@ func cloudAwsIntegrationXRaySchemaElem() *schema.Resource {
 		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each AWS region that includes the resources that you want to monitor.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
 	}
 
 	return &schema.Resource{
@@ -206,27 +221,27 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) cloud.CloudIntegrat
 	}
 
 	if b, ok := d.GetOk("billing"); ok {
-		cloudAwsIntegration.Billing = expandCloudAwsIntegrationBillingInput(b.(map[string]interface{}), linkedAccountID)
+		cloudAwsIntegration.Billing = expandCloudAwsIntegrationBillingInput(b.([]interface{}), linkedAccountID)
 	}
 
 	if c, ok := d.GetOk("cloudtrail"); ok {
-		cloudAwsIntegration.Cloudtrail = expandCloudAwsIntegrationCloudtrailInput(c.(map[string]interface{}), linkedAccountID)
+		cloudAwsIntegration.Cloudtrail = expandCloudAwsIntegrationCloudtrailInput(c.([]interface{}), linkedAccountID)
 	}
 
 	if h, ok := d.GetOk("health"); ok {
-		cloudAwsIntegration.Health = expandCloudAwsIntegrationHealthInput(h.(map[string]interface{}), linkedAccountID)
+		cloudAwsIntegration.Health = expandCloudAwsIntegrationHealthInput(h.([]interface{}), linkedAccountID)
 	}
 
 	if t, ok := d.GetOk("trusted_advisor"); ok {
-		cloudAwsIntegration.Trustedadvisor = expandCloudAwsIntegrationTrustedAdvisorInput(t.(map[string]interface{}), linkedAccountID)
+		cloudAwsIntegration.Trustedadvisor = expandCloudAwsIntegrationTrustedAdvisorInput(t.([]interface{}), linkedAccountID)
 	}
 
 	if v, ok := d.GetOk("vpc"); ok {
-		cloudAwsIntegration.Vpc = expandCloudAwsIntegrationVpcInput(v.(map[string]interface{}), linkedAccountID)
+		cloudAwsIntegration.Vpc = expandCloudAwsIntegrationVpcInput(v.([]interface{}), linkedAccountID)
 	}
 
 	if x, ok := d.GetOk("x_ray"); ok {
-		cloudAwsIntegration.AwsXray = expandCloudAwsIntegrationXRayInput(x.(map[string]interface{}), linkedAccountID)
+		cloudAwsIntegration.AwsXray = expandCloudAwsIntegrationXRayInput(x.([]interface{}), linkedAccountID)
 	}
 
 	input := cloud.CloudIntegrationsInput{
@@ -236,104 +251,165 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) cloud.CloudIntegrat
 	return input
 }
 
-func expandCloudAwsIntegrationBillingInput(b map[string]interface{}, linkedAccountID int) []cloud.CloudBillingIntegrationInput {
-	var billingInput cloud.CloudBillingIntegrationInput
+func expandCloudAwsIntegrationBillingInput(b []interface{}, linkedAccountID int) []cloud.CloudBillingIntegrationInput {
+	expanded := make([]cloud.CloudBillingIntegrationInput, len(b))
 
-	billingInput.LinkedAccountId = linkedAccountID
+	for i, billing := range b {
+		var billingInput cloud.CloudBillingIntegrationInput
 
-	if m, ok := b["metrics_polling_interval"]; ok {
-		billingInput.MetricsPollingInterval = m.(int)
+		in := billing.(map[string]interface{})
+
+		billingInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			billingInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = billingInput
 	}
 
-	return []cloud.CloudBillingIntegrationInput{billingInput}
+	return expanded
 }
 
-func expandCloudAwsIntegrationCloudtrailInput(c map[string]interface{}, linkedAccountID int) []cloud.CloudCloudtrailIntegrationInput {
-	var cloudtrailInput cloud.CloudCloudtrailIntegrationInput
+func expandCloudAwsIntegrationCloudtrailInput(c []interface{}, linkedAccountID int) []cloud.CloudCloudtrailIntegrationInput {
+	expanded := make([]cloud.CloudCloudtrailIntegrationInput, len(c))
 
-	cloudtrailInput.LinkedAccountId = linkedAccountID
+	for i, cloudtrail := range c {
+		var cloudtrailInput cloud.CloudCloudtrailIntegrationInput
 
-	if a, ok := c["aws_regions"]; ok {
-		cloudtrailInput.AwsRegions = a.([]string)
+		in := cloudtrail.(map[string]interface{})
+
+		cloudtrailInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			regions := make([]string, len(awsRegions))
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			cloudtrailInput.AwsRegions = regions
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			cloudtrailInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = cloudtrailInput
 	}
 
-	if m, ok := c["metrics_polling_interval"]; ok {
-		cloudtrailInput.MetricsPollingInterval = m.(int)
-	}
-
-	return []cloud.CloudCloudtrailIntegrationInput{cloudtrailInput}
+	return expanded
 }
 
-func expandCloudAwsIntegrationHealthInput(h map[string]interface{}, linkedAccountID int) []cloud.CloudHealthIntegrationInput {
-	var healthInput cloud.CloudHealthIntegrationInput
+func expandCloudAwsIntegrationHealthInput(h []interface{}, linkedAccountID int) []cloud.CloudHealthIntegrationInput {
+	expanded := make([]cloud.CloudHealthIntegrationInput, len(h))
 
-	healthInput.LinkedAccountId = linkedAccountID
+	for i, health := range h {
+		var healthInput cloud.CloudHealthIntegrationInput
 
-	if m, ok := h["metrics_polling_interval"]; ok {
-		healthInput.MetricsPollingInterval = m.(int)
+		in := health.(map[string]interface{})
+
+		healthInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			healthInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = healthInput
 	}
 
-	return []cloud.CloudHealthIntegrationInput{healthInput}
+	return expanded
 }
 
-func expandCloudAwsIntegrationTrustedAdvisorInput(t map[string]interface{}, linkedAccountID int) []cloud.CloudTrustedadvisorIntegrationInput {
-	var trustedAdvisorInput cloud.CloudTrustedadvisorIntegrationInput
+func expandCloudAwsIntegrationTrustedAdvisorInput(t []interface{}, linkedAccountID int) []cloud.CloudTrustedadvisorIntegrationInput {
+	expanded := make([]cloud.CloudTrustedadvisorIntegrationInput, len(t))
 
-	trustedAdvisorInput.LinkedAccountId = linkedAccountID
+	for i, trustedAdvisor := range t {
+		var trustedAdvisorInput cloud.CloudTrustedadvisorIntegrationInput
 
-	if m, ok := t["metrics_polling_interval"]; ok {
-		trustedAdvisorInput.MetricsPollingInterval = m.(int)
+		in := trustedAdvisor.(map[string]interface{})
+
+		trustedAdvisorInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			trustedAdvisorInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = trustedAdvisorInput
 	}
 
-	return []cloud.CloudTrustedadvisorIntegrationInput{trustedAdvisorInput}
+	return expanded
 }
 
-func expandCloudAwsIntegrationVpcInput(v map[string]interface{}, linkedAccountID int) []cloud.CloudVpcIntegrationInput {
-	var vpcInput cloud.CloudVpcIntegrationInput
+func expandCloudAwsIntegrationVpcInput(v []interface{}, linkedAccountID int) []cloud.CloudVpcIntegrationInput {
+	expanded := make([]cloud.CloudVpcIntegrationInput, len(v))
 
-	vpcInput.LinkedAccountId = linkedAccountID
+	for i, vpc := range v {
+		var vpcInput cloud.CloudVpcIntegrationInput
 
-	if a, ok := v["aws_regions"]; ok {
-		vpcInput.AwsRegions = a.([]string)
+		in := vpc.(map[string]interface{})
+
+		vpcInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			regions := make([]string, len(awsRegions))
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			vpcInput.AwsRegions = regions
+		}
+
+		if nat, ok := in["fetch_nat_gateway"]; ok {
+			vpcInput.FetchNatGateway = nat.(bool)
+		}
+
+		if vpn, ok := in["fetch_vpn"]; ok {
+			vpcInput.FetchVpn = vpn.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			vpcInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			vpcInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			vpcInput.TagKey = tv.(string)
+		}
+		expanded[i] = vpcInput
 	}
 
-	if nat, ok := v["fetch_nat_gateway"]; ok {
-		vpcInput.FetchNatGateway = nat.(bool)
-	}
-
-	if vpn, ok := v["fetch_vpn"]; ok {
-		vpcInput.FetchVpn = vpn.(bool)
-	}
-
-	if m, ok := v["metrics_polling_interval"]; ok {
-		vpcInput.MetricsPollingInterval = m.(int)
-	}
-
-	if tk, ok := v["tag_key"]; ok {
-		vpcInput.TagKey = tk.(string)
-	}
-
-	if tv, ok := v["tag_value"]; ok {
-		vpcInput.TagKey = tv.(string)
-	}
-
-	return []cloud.CloudVpcIntegrationInput{vpcInput}
+	return expanded
 }
 
-func expandCloudAwsIntegrationXRayInput(x map[string]interface{}, linkedAccountID int) []cloud.CloudAwsXrayIntegrationInput {
-	var xrayInput cloud.CloudAwsXrayIntegrationInput
+func expandCloudAwsIntegrationXRayInput(x []interface{}, linkedAccountID int) []cloud.CloudAwsXrayIntegrationInput {
+	expanded := make([]cloud.CloudAwsXrayIntegrationInput, len(x))
 
-	xrayInput.LinkedAccountId = linkedAccountID
+	for i, xray := range x {
+		var xrayInput cloud.CloudAwsXrayIntegrationInput
 
-	if a, ok := x["aws_regions"]; ok {
-		xrayInput.AwsRegions = a.([]string)
+		in := xray.(map[string]interface{})
+
+		xrayInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			regions := make([]string, len(awsRegions))
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			xrayInput.AwsRegions = regions
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			xrayInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = xrayInput
 	}
 
-	if m, ok := x["metrics_polling_interval"]; ok {
-		xrayInput.MetricsPollingInterval = m.(int)
-	}
-
-	return []cloud.CloudAwsXrayIntegrationInput{xrayInput}
+	return expanded
 }
 
 func resourceNewRelicCloudAwsIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -376,44 +452,62 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 	}
 }
 
-func flattenCloudAwsBillingIntegration(in *cloud.CloudBillingIntegration) map[string]interface{} {
+func flattenCloudAwsBillingIntegration(in *cloud.CloudBillingIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
 	out := make(map[string]interface{})
 
 	out["integration_id"] = in.ID
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
-	return out
+	flattened[0] = out
+
+	return flattened
 }
 
-func flattenCloudAwsCloudTrailIntegration(in *cloud.CloudCloudtrailIntegration) map[string]interface{} {
+func flattenCloudAwsCloudTrailIntegration(in *cloud.CloudCloudtrailIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
 	out := make(map[string]interface{})
 
 	out["integration_id"] = in.ID
 	out["aws_regions"] = in.AwsRegions
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
-	return out
+	flattened[0] = out
+
+	return flattened
 }
 
-func flattenCloudAwsHealthIntegration(in *cloud.CloudHealthIntegration) map[string]interface{} {
+func flattenCloudAwsHealthIntegration(in *cloud.CloudHealthIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
 	out := make(map[string]interface{})
 
 	out["integration_id"] = in.ID
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
-	return out
+	flattened[0] = out
+
+	return flattened
 }
 
-func flattenCloudAwsTrustedAdvisorIntegration(in *cloud.CloudTrustedadvisorIntegration) map[string]interface{} {
+func flattenCloudAwsTrustedAdvisorIntegration(in *cloud.CloudTrustedadvisorIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
 	out := make(map[string]interface{})
 
 	out["integration_id"] = in.ID
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
-	return out
+	flattened[0] = out
+
+	return flattened
 }
 
-func flattenCloudAwsVpcIntegration(in *cloud.CloudVpcIntegration) map[string]interface{} {
+func flattenCloudAwsVpcIntegration(in *cloud.CloudVpcIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
 	out := make(map[string]interface{})
 
 	out["integration_id"] = in.ID
@@ -424,17 +518,23 @@ func flattenCloudAwsVpcIntegration(in *cloud.CloudVpcIntegration) map[string]int
 	out["tag_key"] = in.TagKey
 	out["tag_value"] = in.TagValue
 
-	return out
+	flattened[0] = out
+
+	return flattened
 }
 
-func flattenCloudAwsXRayIntegration(in *cloud.CloudAwsXrayIntegration) map[string]interface{} {
+func flattenCloudAwsXRayIntegration(in *cloud.CloudAwsXrayIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
 	out := make(map[string]interface{})
 
 	out["integration_id"] = in.ID
 	out["aws_regions"] = in.AwsRegions
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
-	return out
+	flattened[0] = out
+
+	return flattened
 }
 
 func resourceNewRelicCloudAwsIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -444,6 +544,8 @@ func resourceNewRelicCloudAwsIntegrationsUpdate(ctx context.Context, d *schema.R
 	accountID := selectAccountID(providerConfig, d)
 
 	cloudAwsIntegrationsInput := expandCloudAwsIntegrationsInput(d)
+
+	d.State()
 
 	cloudAwsIntegrationsPayload, err := client.Cloud.CloudConfigureIntegration(accountID, cloudAwsIntegrationsInput)
 	if err != nil {
