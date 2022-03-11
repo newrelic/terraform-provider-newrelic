@@ -79,11 +79,12 @@ func resourceNewRelicAwsGovCloudLinkAccountCreate(ctx context.Context, d *schema
 		}
 		return diags
 	}
-
+	//Storing the linked account id using setId func after creating the resource.
 	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
 	return nil
 }
 
+//Extracting the AWSGovCloud account  credentials from Schema using expandAzureCloudLinkAccountInput
 func expandAwsGovCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
 	awsGovCloud := cloud.CloudAwsGovcloudLinkAccountInput{}
 	if accessKeyID, ok := d.GetOk("access_key_id"); ok {
@@ -192,6 +193,7 @@ func resourceNewRelicAwsGovCloudLinkAccountDelete(ctx context.Context, d *schema
 		}
 		return diags
 	}
+	//Setting up the linked account id to null after destroying the resource.
 	d.SetId("")
 
 	return nil
