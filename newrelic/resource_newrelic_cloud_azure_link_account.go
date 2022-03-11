@@ -2,49 +2,68 @@ package newrelic
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
-	"strconv"
 )
 
-func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
+func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNewRelicCloudGcpLinkAccountCreate,
-		ReadContext:   resourceNewRelicCloudGcpLinkAccountRead,
-		UpdateContext: resourceNewRelicCloudGcpLinkAccountUpdate,
-		DeleteContext: resourceNewRelicCloudGcpLinkAccountDelete,
+		CreateContext: resourceNewRelicCloudAzureLinkAccountCreate,
+		ReadContext:   resourceNewRelicCloudAzureLinkAccountRead,
+		UpdateContext: resourceNewRelicCloudAzureLinkAccountUpdate,
+		DeleteContext: resourceNewRelicCloudAzureLinkAccountDelete,
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
-				Description: "accountID of newrelic account",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
+				Description: "The New Relic account ID where you want to link the Azure account.",
 			},
+			"application_id": {
+				Type:        schema.TypeString,
+				Description: "application id for Azure account",
+				Required:    true,
+				ForceNew:    true,
+			},
+			"client_secret_id": {
+				Type:        schema.TypeString,
+				Description: "Value of the client secret from Azure",
+				Required:    true,
+				ForceNew:    true,
+			},
+
 			"name": {
 				Type:        schema.TypeString,
 				Description: "name of the linked account",
 				Required:    true,
+				ForceNew:    false,
 			},
-			"project_id": {
+			"subscription_id": {
 				Type:        schema.TypeString,
-				Description: "project id of the Gcp account",
+				Description: "subscription id for the Azure account",
 				Required:    true,
+				ForceNew:    true,
+			},
+			"tenant_id": {
+				Type:        schema.TypeString,
+				Description: "tenant id for the Azure account",
+				Required:    true,
+				ForceNew:    true,
 			},
 		},
 	}
 }
 
-func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
-
-	linkAccountInput := expandGcpCloudLinkAccountInput(d)
-
+	linkAccountInput := expandAzureCloudLinkAccountInput(d)
 	var diags diag.Diagnostics
 
-	//cloudLinkAccountWithContext func which links Gcp account with Newrelic
-	//which returns payload and error
 	cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
 
 	if err != nil {
@@ -60,43 +79,51 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 		}
 	}
 
-	//Storing the linked account id using setId func after creating the resource.
 	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
 
 	if len(diags) > 0 {
 		return diags
 	}
-
 	return nil
 }
 
-//expand function to extract inputs from the schema.
-//Here it takes ResourceData as input and returns cloudLinkCloudAccountsInput.
-func expandGcpCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
+// Extracting the Azure credentials from Schema using expandAzureCloudLinkAccountInput
 
-	gcpAccount := cloud.CloudGcpLinkAccountInput{}
+func expandAzureCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
 
-	if name, ok := d.GetOk("name"); ok {
-		gcpAccount.Name = name.(string)
+	azureAccount := cloud.CloudAzureLinkAccountInput{}
+
+	if applicationID, ok := d.GetOk("application_id"); ok {
+		azureAccount.ApplicationID = applicationID.(string)
 	}
 
-	if projectID, ok := d.GetOk("project_id"); ok {
-		gcpAccount.ProjectId = projectID.(string)
+	if clientSecretID, ok := d.GetOk("client_secret_id"); ok {
+		azureAccount.ClientSecret = cloud.SecureValue(clientSecretID.(string))
+	}
+
+	if name, ok := d.GetOk("name"); ok {
+		azureAccount.Name = name.(string)
+	}
+
+	if subscriptionID, ok := d.GetOk("subscription_id"); ok {
+		azureAccount.SubscriptionId = subscriptionID.(string)
+	}
+
+	if tenantID, ok := d.GetOk("tenant_id"); ok {
+		azureAccount.TenantId = tenantID.(string)
 	}
 
 	input := cloud.CloudLinkCloudAccountsInput{
-		Gcp: []cloud.CloudGcpLinkAccountInput{gcpAccount},
+		Azure: []cloud.CloudAzureLinkAccountInput{azureAccount},
 	}
 
 	return input
-
 }
 
-func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
-
 	linkedAccountID, convErr := strconv.Atoi(d.Id())
 
 	if convErr != nil {
@@ -109,42 +136,33 @@ func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	readGcpLinkedAccount(d, linkedAccount)
+	readAzureLinkedAccount(d, linkedAccount)
 
 	return nil
-
 }
 
-//readGcpLinkedAccount function to store name and ExternalId.
-//Using set func to store the output values.
-func readGcpLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
+//readAzureLinkedAccount function to read the outputs.
 
+func readAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
+	_ = d.Set("account_id", result.NrAccountId)
 	_ = d.Set("name", result.Name)
-	_ = d.Set("project_id", result.ExternalId)
 }
 
-func resourceNewRelicCloudGcpLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
-
-	id, convErr := strconv.Atoi(d.Id())
-
-	if convErr != nil {
-		return diag.FromErr(convErr)
-	}
-
+	id, _ := strconv.Atoi(d.Id())
 	input := []cloud.CloudRenameAccountsInput{
 		{
 			Name:            d.Get("name").(string),
 			LinkedAccountId: id,
 		},
 	}
-
-	//CloudRenameAccount to rename the name of linkedAccount
 	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccount(accountID, input)
 
 	if err != nil {
+
 		diag.FromErr(err)
 	}
 
@@ -152,7 +170,6 @@ func resourceNewRelicCloudGcpLinkAccountUpdate(ctx context.Context, d *schema.Re
 
 	if len(cloudRenameAccountPayload.Errors) > 0 {
 		for _, err := range cloudRenameAccountPayload.Errors {
-
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  err.Type + " " + err.Message,
@@ -161,13 +178,11 @@ func resourceNewRelicCloudGcpLinkAccountUpdate(ctx context.Context, d *schema.Re
 		}
 
 		return diags
-
 	}
-
 	return nil
 }
 
-func resourceNewRelicCloudGcpLinkAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicCloudAzureLinkAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -175,7 +190,8 @@ func resourceNewRelicCloudGcpLinkAccountDelete(ctx context.Context, d *schema.Re
 	linkedAccountID, convErr := strconv.Atoi(d.Id())
 
 	if convErr != nil {
-		diag.FromErr(convErr)
+		return diag.FromErr(convErr)
+
 	}
 
 	unlinkAccountInput := []cloud.CloudUnlinkAccountsInput{
@@ -184,9 +200,9 @@ func resourceNewRelicCloudGcpLinkAccountDelete(ctx context.Context, d *schema.Re
 		},
 	}
 
-	//CloudUnlinkAccountWithContext func to unlink the GCP account with Newrelic
-	cloudUnlinkAccountPayload, err := client.Cloud.CloudUnlinkAccountWithContext(ctx, accountID, unlinkAccountInput)
+	//CloudUnlinkAccountWithContext func to unlink the Azure account with Newrelic
 
+	cloudUnlinkAccountPayload, err := client.Cloud.CloudUnlinkAccountWithContext(ctx, accountID, unlinkAccountInput)
 	if err != nil {
 		diag.FromErr(err)
 	}
@@ -194,6 +210,7 @@ func resourceNewRelicCloudGcpLinkAccountDelete(ctx context.Context, d *schema.Re
 	var diags diag.Diagnostics
 
 	if len(cloudUnlinkAccountPayload.Errors) > 0 {
+
 		for _, err := range cloudUnlinkAccountPayload.Errors {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
@@ -202,11 +219,9 @@ func resourceNewRelicCloudGcpLinkAccountDelete(ctx context.Context, d *schema.Re
 		}
 
 		return diags
-
 	}
-	//Setting up the linked account id to null after destroying the resource.
+
 	d.SetId("")
 
 	return nil
-
 }
