@@ -163,7 +163,7 @@ Using the `provider` block:
 
 ```hcl
 provider "newrelic" {
-  version = "~> 2.0.0"
+  version = "~> 2.37.0"
 }
 ```
 
@@ -171,7 +171,7 @@ Using the `required_providers` block:
 
 ```hcl
 required_providers {
-  newrelic = "~> 2.0.0"
+  newrelic = "~> 2.37.0"
 }
 ```
 
