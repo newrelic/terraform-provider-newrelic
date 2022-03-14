@@ -7,6 +7,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -222,7 +223,9 @@ func resourceNewRelicServiceLevelCreate(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("sli_id", created.ID)
 	_ = d.Set("sli_guid", getSliGUID(&identifier))
 
-	return diag.FromErr(nil)
+	time.Sleep(2 * time.Second)
+
+	return resourceNewRelicServiceLevelRead(ctx, d, meta)
 }
 
 func resourceNewRelicServiceLevelRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
