@@ -163,12 +163,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							ConflictsWith: []string{"nrql.0.evaluation_offset"},
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								valueString := val.(string)
-								v, err := strconv.Atoi(valueString)
+								_, err := strconv.Atoi(valueString)
 								if err != nil {
 									errs = append(errs, fmt.Errorf("error converting string to int: %#v", err))
-								}
-								if v < 1 || v > 20 {
-									errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
 								}
 								return
 							},
@@ -180,13 +177,6 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Optional:      true,
 							Description:   "NRQL queries are evaluated in one-minute time windows. The start time depends on the value you provide in the NRQL condition's `evaluation_offset`.",
 							ConflictsWith: []string{"nrql.0.since_value"},
-							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-								v := val.(int)
-								if v < 1 || v > 20 {
-									errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
-								}
-								return
-							},
 						},
 					},
 				},
