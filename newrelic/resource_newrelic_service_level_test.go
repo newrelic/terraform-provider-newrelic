@@ -30,19 +30,11 @@ func TestAccNewRelicServiceLevel_Basic(t *testing.T) {
 				),
 			},
 			// Test: Update
-			// TODO
 			{
 				Config: testAccNewRelicServiceLevelConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicServiceLevelExists(resourceName),
 				),
-			},
-			// Test: Import
-			// TODO
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
