@@ -5,8 +5,10 @@ sidebar_current: "docs-newrelic-resource-awsGovCloud-link-account"
 description: |-
   Link an AwsGovCloud account to New Relic.
 ---
+-> **IMPORTANT!** We do not have access to AWS GovCloud account and can't properly test this resource.
 
-# Resource: newrelic_cloud_awsGovCloud_link_account
+
+# Resource: newrelic_cloud_aws_govcloud_link_account
 
 Use this resource to link an AWSGovCloud account to New Relic.
 
@@ -37,7 +39,7 @@ The following arguments are supported:
 
 - `account_id` - (Optional) The New Relic account ID to operate on. This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 - `access_key_id` - (Required) The access key of the AwsGovCloud.
-- `aws_account_id` - (Required) The AwsGovCloud account id.
+- `aws_account_id` - (Required) The AwsGovCloud account ID.
 - `secret_access_key` - (Required) The secret key of the AwsGovCloud.
 - `metric_collection_mode` - (Optional) How metrics will be collected. Use `PUSH` for a metric stream or `PULL` to integrate with individual services.
 - `name` - (Required) - The linked account name
@@ -53,5 +55,5 @@ In addition to all arguments above, the following attributes are exported:
 Linked AWSGovCloud accounts can be imported using the `id`, e.g.
 
 ```bash
-$ terraform import newrelic_cloud_awsGovcloud_link_account.foo <id>
+$ terraform import newrelic_cloud_aws_govcloud_link_account.foo <id>
 ```

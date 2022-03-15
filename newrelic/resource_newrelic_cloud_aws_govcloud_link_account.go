@@ -26,32 +26,26 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "access-key-id of awsGovcloud account",
 				Required:    true,
-				ForceNew:    true,
 			},
 			"aws_account_id": {
 				Type:        schema.TypeString,
 				Description: "awsGovcloud account id",
 				Required:    true,
-				ForceNew:    true,
 			},
 			"metric_collection_mode": {
 				Type:        schema.TypeString,
 				Description: "push or pull",
-				Required:    true,
-				ForceNew:    true,
+				Optional:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Description: "name of the account",
 				Required:    true,
-				ForceNew:    false,
 			},
 			"secret_access_key": {
 				Type:        schema.TypeString,
 				Description: "secret access key of the awsGovcloud account",
-
-				Required: true,
-				ForceNew: true,
+				Required:    true,
 			},
 		},
 	}
@@ -129,7 +123,8 @@ func resourceNewRelicAwsGovCloudLinkAccountRead(ctx context.Context, d *schema.R
 func readAwsGovCloudLinkAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
 	_ = d.Set("metric_collection_mode", result.MetricCollectionMode)
 	_ = d.Set("name", result.Name)
-	_ = d.Set("aws_account_id", result.NrAccountId)
+	_ = d.Set("aws_account_id", result.ID)
+	_ = d.Set("account_id", result.NrAccountId)
 }
 
 func resourceNewRelicAwsGovCloudLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
