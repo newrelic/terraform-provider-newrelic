@@ -105,7 +105,7 @@ resource "newrelic_synthetics_multilocation_alert_condition" "foo" {
   violation_time_limit_seconds = "3600"
 
 	entities = [
-		"b62bcdde-6c73-4b7c-afb8-e18bae3cf4db"
+		"758116a0-58c3-437c-9ab0-a8a62db02b07"
 	]
 
 	critical {

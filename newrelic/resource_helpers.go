@@ -109,7 +109,7 @@ func resourceImportStateWithMetadata(defaultIDCount int, attribute string) schem
 // within a `resource` block will override a `provider` block account ID. This ensures
 // resources can be scoped to specific accounts. Bear in mind those accounts must be
 // accessible with the provided Personal API Key (APIKS).
-func selectAccountID(providerCondig *ProviderConfig, d *schema.ResourceData) int {
+func selectAccountID(providerConfig *ProviderConfig, d *schema.ResourceData) int {
 	resourceAccountIDAttr := d.Get("account_id")
 
 	if resourceAccountIDAttr != nil {
@@ -120,5 +120,5 @@ func selectAccountID(providerCondig *ProviderConfig, d *schema.ResourceData) int
 		}
 	}
 
-	return providerCondig.AccountID
+	return providerConfig.AccountID
 }

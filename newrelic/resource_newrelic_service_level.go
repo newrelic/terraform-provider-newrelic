@@ -2,10 +2,12 @@ package newrelic
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -52,11 +54,18 @@ func resourceNewRelicServiceLevel() *schema.Resource {
 			},
 			"objective": {
 				Type:        schema.TypeSet,
-				Optional:    true,
+				Required:    true,
+				MinItems:    1,
+				MaxItems:    1,
 				Description: "",
 				Elem:        objectiveSchema(),
 			},
 			"sli_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "",
+			},
+			"sli_guid": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "",
@@ -173,7 +182,7 @@ func rollingTimeWindowSchema() *schema.Resource {
 				Type:         schema.TypeInt,
 				Required:     true,
 				Description:  "",
-				ValidateFunc: intInSlice([]int{1, 7, 28}),
+				ValidateFunc: intInSlice([]int{1, 7, 14, 28}),
 			},
 			"unit": {
 				Type:         schema.TypeString,
@@ -187,7 +196,7 @@ func rollingTimeWindowSchema() *schema.Resource {
 
 func resourceNewRelicServiceLevelCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
-	guid := d.Get("guid").(string)
+	entityGUID := d.Get("guid").(string)
 	createInput := expandServiceLevelCreateInput(d)
 
 	if createInput.Events.GoodEvents == nil && createInput.Events.BadEvents == nil {
@@ -199,21 +208,24 @@ func resourceNewRelicServiceLevelCreate(ctx context.Context, d *schema.ResourceD
 
 	log.Printf("[INFO] Creating New Relic One Service Level %s", createInput.Name)
 
-	created, err := client.ServiceLevel.ServiceLevelCreateWithContext(ctx, common.EntityGUID(guid), createInput)
+	created, err := client.ServiceLevel.ServiceLevelCreateWithContext(ctx, common.EntityGUID(entityGUID), createInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	identifier := serviceLevelIdentifier{
-		AccountID: createInput.Events.AccountID,
-		ID:        created.ID,
-		GUID:      guid,
+		AccountID:  createInput.Events.AccountID,
+		ID:         created.ID,
+		EntityGUID: entityGUID,
 	}
 
 	d.SetId(identifier.String())
 	_ = d.Set("sli_id", created.ID)
+	_ = d.Set("sli_guid", getSliGUID(&identifier))
 
-	return diag.FromErr(nil)
+	time.Sleep(2 * time.Second)
+
+	return resourceNewRelicServiceLevelRead(ctx, d, meta)
 }
 
 func resourceNewRelicServiceLevelRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -224,7 +236,8 @@ func resourceNewRelicServiceLevelRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	indicators, err := client.ServiceLevel.GetIndicatorsWithContext(ctx, common.EntityGUID(identifier.GUID))
+	sliGUID := getSliGUID(identifier)
+	indicators, err := client.ServiceLevel.GetIndicatorsWithContext(ctx, common.EntityGUID(sliGUID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			return diag.Errorf("err: SLI with id=%s not found.", d.Id())
@@ -234,7 +247,7 @@ func resourceNewRelicServiceLevelRead(ctx context.Context, d *schema.ResourceDat
 
 	for _, indicator := range *indicators {
 		if indicator.ID == identifier.ID {
-			return diag.FromErr(flattenServiceLevelIndicator(indicator, identifier, d))
+			return diag.FromErr(flattenServiceLevelIndicator(indicator, identifier, d, sliGUID))
 		}
 	}
 
@@ -278,13 +291,13 @@ func resourceNewRelicServiceLevelDelete(ctx context.Context, d *schema.ResourceD
 }
 
 type serviceLevelIdentifier struct {
-	AccountID int
-	ID        string
-	GUID      string
+	AccountID  int
+	ID         string
+	EntityGUID string
 }
 
 func (identifier *serviceLevelIdentifier) String() string {
-	return fmt.Sprintf("%d:%s:%s", identifier.AccountID, identifier.ID, identifier.GUID)
+	return fmt.Sprintf("%d:%s:%s", identifier.AccountID, identifier.ID, identifier.EntityGUID)
 }
 
 func parseIdentifier(ids string) (*serviceLevelIdentifier, error) {
@@ -296,8 +309,13 @@ func parseIdentifier(ids string) (*serviceLevelIdentifier, error) {
 	}
 
 	return &serviceLevelIdentifier{
-		AccountID: int(accountID),
-		ID:        split[1],
-		GUID:      split[2],
+		AccountID:  int(accountID),
+		ID:         split[1],
+		EntityGUID: split[2],
 	}, nil
+}
+
+func getSliGUID(identifier *serviceLevelIdentifier) string {
+	rawGUID := fmt.Sprintf("%d|EXT|SERVICE_LEVEL|%s", identifier.AccountID, identifier.ID)
+	return base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte(rawGUID))
 }
