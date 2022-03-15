@@ -5,11 +5,12 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/servicelevel"
 )
 
-func flattenServiceLevelIndicator(indicator servicelevel.ServiceLevelIndicator, identifier *serviceLevelIdentifier, d *schema.ResourceData) error {
-	_ = d.Set("guid", identifier.GUID)
+func flattenServiceLevelIndicator(indicator servicelevel.ServiceLevelIndicator, identifier *serviceLevelIdentifier, d *schema.ResourceData, sliGUID string) error {
+	_ = d.Set("guid", indicator.EntityGUID)
 	_ = d.Set("sli_id", indicator.ID)
 	_ = d.Set("name", indicator.Name)
 	_ = d.Set("description", indicator.Description)
+	_ = d.Set("sli_guid", sliGUID)
 
 	eventsMap := make(map[string]interface{})
 	events := make([]interface{}, 1)
