@@ -1,12 +1,11 @@
 ---
 layout: "newrelic"
-page_title: "New Relic: newrelic_awsGovcloud_ink_account"
-sidebar_current: "docs-newrelic-resource-awsGovCloud-link-account"
+page_title: "New Relic: newrelic_cloud_aws_govcloud_link_account"
+sidebar_current: "docs-newrelic-cloud-resource-aws-govcloud-link-account"
 description: |-
   Link an AwsGovCloud account to New Relic.
 ---
--> **IMPORTANT!** We do not have access to AWS GovCloud account and can't properly test this resource.
-
+-> **IMPORTANT!** This resource is in alpha state, and could still contain issues and missing functionality. If you encounter any issue please create a ticket on [Github](https://github.com/newrelic/terraform-provider-newrelic/issues/new/choose) with all the required information.
 
 # Resource: newrelic_cloud_aws_govcloud_link_account
 
@@ -23,13 +22,13 @@ To pull data from AWSGovCloud, complete the [steps outlined here](https://docs.n
 ## Example Usage
 
 ```hcl
-resource "newrelic_awsGovcloud_link_account" "foo" {
-  account_id = "The New Relic account ID where you want to link the AWSGovCloud account"
-  access_key_id = "access-key-id of awsGovcloud account"
-  aws_account_id = "wsGovcloud account id"
+resource "newrelic_cloud_aws_govcloud_link_account" "foo" {
+  account_id = "The New Relic account ID where you want to link the AWS GovCloud account"
+  access_key_id = "access-key-id of aws govcloud account"
+  aws_account_id = "aws govcloud account id"
   metric_collection_mode = "PULL"
   name = "account name"
-  secret_access_key = "secret access key of the awsGovcloud account"
+  secret_access_key = "secret access key of the aws govcloud account"
 }
 ```
 
