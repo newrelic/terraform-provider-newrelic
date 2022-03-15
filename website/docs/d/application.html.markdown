@@ -54,3 +54,7 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - The ID of the application.
 * `instance_ids` - A list of instance IDs associated with the application.
 * `host_ids` - A list of host IDs associated with the application.
+
+```
+Warning: This data source will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```

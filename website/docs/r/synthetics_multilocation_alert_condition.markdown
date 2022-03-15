@@ -48,6 +48,10 @@ The following arguments are supported:
   * `critical` - (Required) A condition term with the priority set to critical.
   * `warning` - (Optional) A condition term with the priority set to warning.
 
+```
+Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```
+
 ## Import
 
 New Relic Synthetics MultiLocation Conditions can be imported using a concatenated string of the format
