@@ -10,7 +10,7 @@ require (
 	github.com/goreleaser/goreleaser v1.6.3
 	github.com/llorllale/go-gitlint v0.0.0-20210608233938-d6303cc52cc5
 	github.com/psampaz/go-mod-outdated v0.8.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	golang.org/x/tools v0.1.10
 	gotest.tools/gotestsum v1.7.0
 )
