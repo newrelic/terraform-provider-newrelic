@@ -170,9 +170,33 @@ func TestAccNewRelicOneDashboard_FilterCurrentDashboard(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(rName, strconv.Itoa(testAccountID)),
+				Config: testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(rName, strconv.Itoa(testAccountID), "true"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicOneDashboard_FilterCurrentDashboard("newrelic_one_dashboard.bar", 5),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicOneDashboard_UnlinkFilterCurrentDashboard(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(rName, strconv.Itoa(testAccountID), "true"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboard_FilterCurrentDashboard("newrelic_one_dashboard.bar", 5),
+				),
+			},
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(rName, strconv.Itoa(testAccountID), "false"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboard_UnlinkFilterCurrentDashboard("newrelic_one_dashboard.bar"),
 				),
 			},
 		},
@@ -215,6 +239,37 @@ func testAccCheckNewRelicOneDashboard_FilterCurrentDashboard(name string, sleepS
 
 		if found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID() != found.Pages[0].GUID {
 			return fmt.Errorf("Page GUID did not match LinkedEntity: %s", found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID())
+		}
+
+		return nil
+	}
+}
+
+// testAccCheckNewRelicOneDashboard_UnlinkFilterCurrentDashboard fetches the dashboard resource after update
+// and checks that entities were unlinked
+func testAccCheckNewRelicOneDashboard_UnlinkFilterCurrentDashboard(name string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("not found: %s", name)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no dashboard ID is set")
+		}
+
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+		found, err := client.Dashboards.GetDashboardEntity(common.EntityGUID(rs.Primary.ID))
+		if err != nil {
+			return err
+		}
+
+		if string(found.GUID) != rs.Primary.ID {
+			return fmt.Errorf("dashboard not found: %v - %v", rs.Primary.ID, found)
+		}
+
+		if found.Pages[0].Widgets[0].LinkedEntities != nil {
+			return fmt.Errorf("Entities still linked")
 		}
 
 		return nil
@@ -264,7 +319,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageSimple(pageName string) string {
 `
 }
 
-func testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(dashboardName string, accountID string) string {
+func testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(dashboardName string, accountID string, filterDashboard string) string {
 	return `
 	resource "newrelic_one_dashboard" "bar" {
 
@@ -284,7 +339,7 @@ func testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(dashboardName
 			}
 	  
 			# Linking to self
-			filter_current_dashboard = true
+			filter_current_dashboard = ` + filterDashboard + `
 		  }
 		}
 	  }
