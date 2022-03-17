@@ -3,7 +3,6 @@ package newrelic
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
