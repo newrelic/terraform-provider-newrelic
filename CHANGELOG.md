@@ -1,3 +1,26 @@
+<a name="v2.41.0-beta.2"></a>
+## [v2.41.0-beta.2] - 2022-03-17
+### Bug Fixes
+- handle setting linked_entity_guids
+- **newrelic_drop_rule:** fix for [#1611](https://github.com/newrelic/terraform-provider-newrelic/issues/1611) added extra check on API return
+- **newrelic_one_dashboard:** fixed 0 not getting pushed to API
+- **nrql_alert_condition:** Crash with deprecated since_value and evaluation_offset fields
+- **nrql_alert_condition:** Move condition validation to API
+- **nrql_alert_condition:** remove computed flag for slide_by field
+- **rql_alert_condition:** Add nil check when flattening slide_by
+- **service_levels:** Removing an option of 14 days for trailing windows
+
+### Documentation Updates
+- minor changes
+- added note to specify the resource and data source that uses rest api's
+- remove beta info ahead of general release
+- fix broken link to terraform docs
+- document allowed values for expiration_duration
+- **nrql_alert_condition:** removed legacy urls from doc
+- **nrql_alert_condition:** removed legacy urls from doc
+- **nrql_alert_condition:** removed legacy urls from doc
+- **servicelevel:** SLO periods now include complete weeks
+
 <a name="v2.41.0-beta.1"></a>
 ## [v2.41.0-beta.1] - 2022-03-15
 ### Bug Fixes
@@ -7,15 +30,36 @@
 - minor changes in docs
 
 ### Features
-- AWS Govcloud integration
+- awsGov cloud integration
+- awsGov cloud integration
 
 <a name="v2.40.0"></a>
 ## [v2.40.0] - 2022-03-14
 ### Bug Fixes
 - allow manipulation of SLIs with non existing related entity, return sli_guid, change service level example
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
 
 ### Documentation Updates
 - minor changes
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
+- minor changes
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
 - added gcp integration documentation
 - update version in docs
 - add cloud_aws_link_account resource to docs
@@ -23,6 +67,12 @@
 
 ### Features
 - azure integration
+- added gcp cloud link account
+- added gcp cloud link account
+- azure integration
+- added gcp cloud link account
+- added gcp cloud link account
+- added gcp cloud link account
 - added gcp cloud link account
 - **aws_link_account:** add AWS Link Account resource
 - **provider:** added gcp resource to resource map
@@ -1094,7 +1144,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.0-beta.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.0-beta.2...HEAD
+[v2.41.0-beta.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.0-beta.1...v2.41.0-beta.2
 [v2.41.0-beta.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.40.0...v2.41.0-beta.1
 [v2.40.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.2...v2.40.0
 [v2.39.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.1...v2.39.2
