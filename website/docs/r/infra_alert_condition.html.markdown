@@ -112,6 +112,10 @@ The following arguments are supported:
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
   * `violation_close_timer` - (Optional) Determines how much time will pass (in hours) before a violation is automatically closed. Valid values are `1 2 4 8 12 24 48 72`. Defaults to 24. If `0` is provided, default of `24` is used and will have configuration drift during the apply phase until a valid value is provided. 
 
+```
+Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

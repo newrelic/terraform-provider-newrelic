@@ -38,6 +38,10 @@ The following arguments are supported:
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
   * `enabled` - (Optional) Set whether to enable the alert condition. Defaults to `true`.
 
+```
+Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

@@ -33,3 +33,7 @@ In addition to all arguments above, the following attributes are exported:
   * `description` - The secure credential's description.
   * `created_at` - The time the secure credential was created.
   * `last_updated` - The time the secure credential was last updated.
+
+```
+Warning: This data source will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```
