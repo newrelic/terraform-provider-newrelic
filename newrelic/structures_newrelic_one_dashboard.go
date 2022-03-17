@@ -863,8 +863,16 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 					w := widget.(map[string]interface{})
 					if v, ok := w["filter_current_dashboard"]; ok && v.(bool) {
 
-						if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) > 0 {
-							return nil, fmt.Errorf("err: filter_current_dashboard can't be set if linked_entity_guids is configured")
+						if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) > 1 {
+							return nil, fmt.Errorf("filter_current_dashboard can't be set if linked_entity_guids is configured")
+						}
+
+						if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) == 1 {
+							for _, le := range l.([]interface{}) {
+								if le.(string) != p["guid"] {
+									return nil, fmt.Errorf("filter_current_dashboard can't be set if linked_entity_guids is configured")
+								}
+							}
 						}
 
 						unqWidget := make(map[string]interface{})
