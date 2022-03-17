@@ -500,6 +500,17 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 	defaultInfo := map[string]interface{}{
 		"account_id": accountID,
 	}
+
+	filterWidgets, err := findDashboardWidgetFilterCurrentDashboard(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = setDashboardWidgetFilterCurrentDashboardLinkedEntity(d, filterWidgets)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	dashboard, err := expandDashboardInput(d, defaultInfo)
 	if err != nil {
 		return diag.FromErr(err)

@@ -895,12 +895,6 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 
 // Function to set the page guid as the linked entity now that the page is created
 func setDashboardWidgetFilterCurrentDashboardLinkedEntity(d *schema.ResourceData, filterWidgets []interface{}) error {
-
-	if len(filterWidgets) < 1 {
-		log.Printf("[INFO] Empty list of widgets to filter")
-		return nil
-	}
-
 	selfLinkingWidgets := []string{"widget_bar", "widget_pie", "widget_table"}
 
 	pages := d.Get("page").([]interface{})
@@ -910,6 +904,13 @@ func setDashboardWidgetFilterCurrentDashboardLinkedEntity(d *schema.ResourceData
 			if widgets, ok := p[widgetType]; ok {
 				for _, k := range widgets.([]interface{}) {
 					w := k.(map[string]interface{})
+					if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) == 1 {
+						for _, le := range l.([]interface{}) {
+							if f, ok := w["filter_current_dashboard"]; ok && f == false && le.(string) == p["guid"] {
+								w["linked_entity_guids"] = nil
+							}
+						}
+					}
 					for _, f := range filterWidgets {
 						e := f.(map[string]interface{})
 						if e["page"] == i {
