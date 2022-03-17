@@ -224,7 +224,7 @@ func TestAccNewRelicOneDashboard_UnlinkFilterCurrentDashboard(t *testing.T) {
 			{
 				Config: testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(rName, strconv.Itoa(testAccountID), "true"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicOneDashboard_FilterCurrentDashboard("newrelic_one_dashboard.bar", 5),
+					testAccCheckNewRelicOneDashboard_FilterCurrentDashboard("newrelic_one_dashboard.bar"),
 				),
 			},
 			{
