@@ -79,11 +79,12 @@ func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.
 		}
 	}
 
-	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
-
 	if len(diags) > 0 {
 		return diags
 	}
+
+	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+
 	return nil
 }
 
