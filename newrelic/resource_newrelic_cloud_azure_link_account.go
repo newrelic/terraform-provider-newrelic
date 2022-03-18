@@ -74,13 +74,13 @@ func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.
 		}
 	}
 
-	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
-
+	if len(cloudLinkAccountPayload.LinkedAccounts) > 0 {
+		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+	}
 	return diags
 }
 
 func expandAzureCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
-
 	azureAccount := cloud.CloudAzureLinkAccountInput{}
 
 	if applicationID, ok := d.GetOk("application_id"); ok {
