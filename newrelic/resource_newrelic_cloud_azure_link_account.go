@@ -26,32 +26,27 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "application id for Azure account",
 				Required:    true,
-				ForceNew:    true,
 			},
 			"client_secret_id": {
 				Type:        schema.TypeString,
 				Description: "Value of the client secret from Azure",
 				Required:    true,
-				ForceNew:    true,
+				Sensitive:   true,
 			},
-
 			"name": {
 				Type:        schema.TypeString,
 				Description: "name of the linked account",
 				Required:    true,
-				ForceNew:    false,
 			},
 			"subscription_id": {
 				Type:        schema.TypeString,
 				Description: "subscription id for the Azure account",
 				Required:    true,
-				ForceNew:    true,
 			},
 			"tenant_id": {
 				Type:        schema.TypeString,
 				Description: "tenant id for the Azure account",
 				Required:    true,
-				ForceNew:    true,
 			},
 		},
 	}
@@ -81,13 +76,8 @@ func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.
 
 	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
 
-	if len(diags) > 0 {
-		return diags
-	}
-	return nil
+	return diags
 }
-
-// Extracting the Azure credentials from Schema using expandAzureCloudLinkAccountInput
 
 func expandAzureCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
 
@@ -130,7 +120,7 @@ func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.Re
 		return diag.FromErr(convErr)
 	}
 
-	linkedAccount, err := client.Cloud.GetLinkedAccount(accountID, linkedAccountID)
+	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -140,8 +130,6 @@ func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.Re
 
 	return nil
 }
-
-//readAzureLinkedAccount function to read the outputs.
 
 func readAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
 	_ = d.Set("account_id", result.NrAccountId)
@@ -159,7 +147,7 @@ func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.
 			LinkedAccountId: id,
 		},
 	}
-	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccount(accountID, input)
+	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccountWithContext(ctx, accountID, input)
 
 	if err != nil {
 
@@ -199,8 +187,6 @@ func resourceNewRelicCloudAzureLinkAccountDelete(ctx context.Context, d *schema.
 			LinkedAccountId: linkedAccountID,
 		},
 	}
-
-	//CloudUnlinkAccountWithContext func to unlink the Azure account with Newrelic
 
 	cloudUnlinkAccountPayload, err := client.Cloud.CloudUnlinkAccountWithContext(ctx, accountID, unlinkAccountInput)
 	if err != nil {
