@@ -8,7 +8,7 @@ description: |-
 
 # Data Source: newrelic\_entity
 
-Use this data source to get information about a specific entity in New Relic One that already exists. More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
+Use this data source to get information about a specific entity in New Relic One that already exists. More information on Terraform's data sources can be found [here](https://www.terraform.io/language/data-sources).
 
 -> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](/providers/newrelic/newrelic/latest/docs/guides/migration_guide_v2) for configuring the provider.
 <br><br>
