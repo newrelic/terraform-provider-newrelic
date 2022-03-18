@@ -76,8 +76,10 @@ func resourceNewRelicAwsGovCloudLinkAccountCreate(ctx context.Context, d *schema
 		}
 		return diags
 	}
-	//Storing the linked account id using setId func after creating the resource.
-	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+
+	if len(cloudLinkAccountPayload.LinkedAccounts) > 0 {
+		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+	}
 	return nil
 }
 
