@@ -38,41 +38,16 @@
 ### Bug Fixes
 - allow manipulation of SLIs with non existing related entity, return sli_guid, change service level example
 - fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
 
 ### Documentation Updates
-- minor changes
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
-- minor changes
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
 - added gcp integration documentation
 - update version in docs
 - add cloud_aws_link_account resource to docs
 - **servicelevel:** SLO periods now include complete weeks
+- minor changes
 
 ### Features
 - azure integration
-- added gcp cloud link account
-- added gcp cloud link account
-- azure integration
-- added gcp cloud link account
-- added gcp cloud link account
-- added gcp cloud link account
 - added gcp cloud link account
 - **aws_link_account:** add AWS Link Account resource
 - **provider:** added gcp resource to resource map
