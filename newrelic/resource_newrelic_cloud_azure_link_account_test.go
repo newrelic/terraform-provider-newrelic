@@ -126,7 +126,7 @@ func testAccNewRelicAzureLinkAccountConfig(applicationID string, clientSecretID 
 	return fmt.Sprintf(`
 resource "newrelic_cloud_azure_link_account" "foo"{
 	application_id = "%[1]s"
-	client_secret_id = "%[2]s"
+	client_secret = "%[2]s"
 	subscription_id = "%[3]s"
 	tenant_id = "%[4]s"
 	name  = "%[5]s"
@@ -138,7 +138,7 @@ func testAccNewRelicAzureLinkAccountConfigUpdated(applicationID string, clientSe
 	return fmt.Sprintf(`
    resource "newrelic_cloud_azure_link_account" "foo"{
       application_id = "%[1]s"
-       client_secret_id = "%[2]s"
+       client_secret = "%[2]s"
        subscription_id = "%[3]s"
        tenant_id = "%[4]s"
        name = "%[5]s-updated"
