@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,6 +19,7 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "The ID of the account in New Relic.",
 			},
 			"linked_account_id": {
@@ -193,7 +195,7 @@ func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.R
 
 	cloudAwsIntegrationsInput := expandCloudAwsIntegrationsInput(d)
 
-	cloudAwsIntegrationsPayload, err := client.Cloud.CloudConfigureIntegration(accountID, cloudAwsIntegrationsInput)
+	cloudAwsIntegrationsPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, cloudAwsIntegrationsInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -209,6 +211,11 @@ func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.R
 		}
 		return diags
 	}
+
+	if len(cloudAwsIntegrationsPayload.Integrations) > 0 {
+		d.SetId(strconv.Itoa(d.Get("linked_account_id").(int)))
+	}
+
 	return resourceNewRelicCloudAwsIntegrationsRead(ctx, d, meta)
 }
 
