@@ -87,7 +87,7 @@ func expandAzureCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkClo
 		azureAccount.ApplicationID = applicationID.(string)
 	}
 
-	if clientSecretID, ok := d.GetOk("client_secret_id"); ok {
+	if clientSecretID, ok := d.GetOk("client_secret"); ok {
 		azureAccount.ClientSecret = cloud.SecureValue(clientSecretID.(string))
 	}
 
