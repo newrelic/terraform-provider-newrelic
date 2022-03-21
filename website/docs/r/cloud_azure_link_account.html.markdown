@@ -24,11 +24,11 @@ Setup is required in Azure for this resource to work properly. You can find inst
 
   resource "newrelic_cloud_azure_link_account" "foo"{
     account_id = "The New Relic account ID where you want to link the Azure account"
-	application_id = "id of the application"
-	client_secret_id = "secret value of clients Azure account"
-	subscription_id = "%Subscription Id of Azure"
-	tenant_id = "tenant id of the Azure"
-	name  = "name of the linked account"
+	application_id = "ID of the application"
+	client_secret = "Secret value of client's Azure account"
+	subscription_id = "Subscription ID of Azure"
+	tenant_id = "Tenant ID of the Azure"
+	name  = "Name of the linked account"
 }
 ```
 
@@ -36,18 +36,18 @@ Setup is required in Azure for this resource to work properly. You can find inst
 
 The following arguments are supported:
 
-- `account_id` - (Required) - Account Id of the New Relic.
-- `application_id` - (Required) - Application Id of the App.
-- `client_secret_id` - (Required) - Secret Value of the client.
-- `subscription_id` - (Required) - Subscription Id of the Azure cloud account.
-- `tenant_id` - (Required) - Tenant Id of the Azure cloud account.
+- `account_id` - (Required) - Account ID of the New Relic.
+- `application_id` - (Required) - Application ID of the App.
+- `client_secret` - (Required) - Secret Value of the client.
+- `subscription_id` - (Required) - Subscription ID of the Azure cloud account.
+- `tenant_id` - (Required) - Tenant ID of the Azure cloud account.
 - `name` - (Required) - The name of the application in New Relic APM.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The application Id, subscription Id, clientsecret Id & tenant Id of the Azure linked account.
+- `id` - The ID of the linked Azure account in New Relic.
 
 ## Import
 
