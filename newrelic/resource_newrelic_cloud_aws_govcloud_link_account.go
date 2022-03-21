@@ -3,68 +3,70 @@ package newrelic
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
 )
 
-func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
+func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNewRelicCloudAzureLinkAccountCreate,
-		ReadContext:   resourceNewRelicCloudAzureLinkAccountRead,
-		UpdateContext: resourceNewRelicCloudAzureLinkAccountUpdate,
-		DeleteContext: resourceNewRelicCloudAzureLinkAccountDelete,
+		CreateContext: resourceNewRelicAwsGovCloudLinkAccountCreate,
+		ReadContext:   resourceNewRelicAwsGovCloudLinkAccountRead,
+		UpdateContext: resourceNewRelicAwsGovCloudLinkAccountUpdate,
+		DeleteContext: resourceNewRelicAwsGovCloudLinkAccountDelete,
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "The New Relic account ID where you want to link the Azure account.",
+				Description: "The ID of the account in New Relic.",
 			},
-			"application_id": {
+			"access_key_id": {
 				Type:        schema.TypeString,
-				Description: "application id for Azure account",
-				Required:    true,
-			},
-			"client_secret_id": {
-				Type:        schema.TypeString,
-				Description: "Value of the client secret from Azure",
+				Description: "access-key-id of awsGovcloud account",
 				Required:    true,
 				Sensitive:   true,
 			},
+			"aws_account_id": {
+				Type:        schema.TypeString,
+				Description: "awsGovcloud account id",
+				Required:    true,
+			},
+			"metric_collection_mode": {
+				Type:        schema.TypeString,
+				Description: "push or pull",
+				Optional:    true,
+			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "name of the linked account",
+				Description: "name of the account",
 				Required:    true,
 			},
-			"subscription_id": {
+			"secret_access_key": {
 				Type:        schema.TypeString,
-				Description: "subscription id for the Azure account",
+				Description: "secret access key of the awsGovcloud account",
 				Required:    true,
-			},
-			"tenant_id": {
-				Type:        schema.TypeString,
-				Description: "tenant id for the Azure account",
-				Required:    true,
+				Sensitive:   true,
 			},
 		},
 	}
 }
 
-func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicAwsGovCloudLinkAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
+
 	accountID := selectAccountID(providerConfig, d)
-	linkAccountInput := expandAzureCloudLinkAccountInput(d)
-	var diags diag.Diagnostics
+
+	linkAccountInput := expandAwsGovCloudLinkAccountInput(d)
 
 	cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
-
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
-
+	var diags diag.Diagnostics
 	if len(cloudLinkAccountPayload.Errors) > 0 {
 		for _, err := range cloudLinkAccountPayload.Errors {
 			diags = append(diags, diag.Diagnostic{
@@ -72,45 +74,39 @@ func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.
 				Summary:  err.Type + " " + err.Message,
 			})
 		}
+		return diags
 	}
 
 	if len(cloudLinkAccountPayload.LinkedAccounts) > 0 {
 		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
 	}
-	return diags
+	return nil
 }
 
-func expandAzureCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
-	azureAccount := cloud.CloudAzureLinkAccountInput{}
-
-	if applicationID, ok := d.GetOk("application_id"); ok {
-		azureAccount.ApplicationID = applicationID.(string)
+//Extracting the AWSGovCloud account  credentials from Schema using expandAzureCloudLinkAccountInput
+func expandAwsGovCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
+	awsGovCloud := cloud.CloudAwsGovcloudLinkAccountInput{}
+	if accessKeyID, ok := d.GetOk("access_key_id"); ok {
+		awsGovCloud.AccessKeyId = accessKeyID.(string)
 	}
-
-	if clientSecretID, ok := d.GetOk("client_secret_id"); ok {
-		azureAccount.ClientSecret = cloud.SecureValue(clientSecretID.(string))
+	if awsAccountID, ok := d.GetOk("aws_account_id"); ok {
+		awsGovCloud.AwsAccountId = awsAccountID.(string)
 	}
-
+	if m, ok := d.GetOk("metric_collection_mode"); ok {
+		awsGovCloud.MetricCollectionMode = cloud.CloudMetricCollectionMode(strings.ToUpper(m.(string)))
+	}
 	if name, ok := d.GetOk("name"); ok {
-		azureAccount.Name = name.(string)
+		awsGovCloud.Name = name.(string)
 	}
-
-	if subscriptionID, ok := d.GetOk("subscription_id"); ok {
-		azureAccount.SubscriptionId = subscriptionID.(string)
+	if secretKeyID, ok := d.GetOk("secret_access_key"); ok {
+		awsGovCloud.SecretAccessKey = secretKeyID.(cloud.SecureValue)
 	}
-
-	if tenantID, ok := d.GetOk("tenant_id"); ok {
-		azureAccount.TenantId = tenantID.(string)
-	}
-
 	input := cloud.CloudLinkCloudAccountsInput{
-		Azure: []cloud.CloudAzureLinkAccountInput{azureAccount},
+		AwsGovcloud: []cloud.CloudAwsGovcloudLinkAccountInput{awsGovCloud},
 	}
-
 	return input
 }
-
-func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicAwsGovCloudLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -120,23 +116,23 @@ func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.Re
 		return diag.FromErr(convErr)
 	}
 
-	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
+	linkedAccountPayload, err := client.Cloud.GetLinkedAccount(accountID, linkedAccountID)
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	readAzureLinkedAccount(d, linkedAccount)
-
+	readAwsGovCloudLinkAccount(d, linkedAccountPayload)
 	return nil
 }
 
-func readAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
-	_ = d.Set("account_id", result.NrAccountId)
+func readAwsGovCloudLinkAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
+	_ = d.Set("metric_collection_mode", result.MetricCollectionMode)
 	_ = d.Set("name", result.Name)
+	_ = d.Set("aws_account_id", result.ID)
+	_ = d.Set("account_id", result.NrAccountId)
 }
 
-func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicAwsGovCloudLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -147,13 +143,10 @@ func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.
 			LinkedAccountId: id,
 		},
 	}
-	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccountWithContext(ctx, accountID, input)
-
+	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccount(accountID, input)
 	if err != nil {
-
 		diag.FromErr(err)
 	}
-
 	var diags diag.Diagnostics
 
 	if len(cloudRenameAccountPayload.Errors) > 0 {
@@ -164,13 +157,12 @@ func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.
 			})
 
 		}
-
-		return diags
 	}
+
 	return nil
 }
 
-func resourceNewRelicCloudAzureLinkAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicAwsGovCloudLinkAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -181,32 +173,27 @@ func resourceNewRelicCloudAzureLinkAccountDelete(ctx context.Context, d *schema.
 		return diag.FromErr(convErr)
 
 	}
-
 	unlinkAccountInput := []cloud.CloudUnlinkAccountsInput{
 		{
 			LinkedAccountId: linkedAccountID,
 		},
 	}
-
 	cloudUnlinkAccountPayload, err := client.Cloud.CloudUnlinkAccountWithContext(ctx, accountID, unlinkAccountInput)
 	if err != nil {
 		diag.FromErr(err)
 	}
 
 	var diags diag.Diagnostics
-
 	if len(cloudUnlinkAccountPayload.Errors) > 0 {
-
 		for _, err := range cloudUnlinkAccountPayload.Errors {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  err.Type + " " + err.Message,
 			})
 		}
-
 		return diags
 	}
-
+	//Setting up the linked account id to null after destroying the resource.
 	d.SetId("")
 
 	return nil

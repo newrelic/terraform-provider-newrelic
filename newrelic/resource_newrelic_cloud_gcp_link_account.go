@@ -2,10 +2,11 @@ package newrelic
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
-	"strconv"
 )
 
 func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
@@ -18,7 +19,8 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 			"account_id": {
 				Type:        schema.TypeInt,
 				Description: "accountID of newrelic account",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -60,14 +62,11 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 		}
 	}
 
-	//Storing the linked account id using setId func after creating the resource.
-	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
-
-	if len(diags) > 0 {
-		return diags
+	if len(cloudLinkAccountPayload.LinkedAccounts) > 0 {
+		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
 	}
 
-	return nil
+	return diags
 }
 
 //expand function to extract inputs from the schema.
@@ -103,7 +102,7 @@ func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(convErr)
 	}
 
-	linkedAccount, err := client.Cloud.GetLinkedAccount(accountID, linkedAccountID)
+	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -118,7 +117,6 @@ func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.Reso
 //readGcpLinkedAccount function to store name and ExternalId.
 //Using set func to store the output values.
 func readGcpLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
-
 	_ = d.Set("name", result.Name)
 	_ = d.Set("project_id", result.ExternalId)
 }
@@ -142,7 +140,7 @@ func resourceNewRelicCloudGcpLinkAccountUpdate(ctx context.Context, d *schema.Re
 	}
 
 	//CloudRenameAccount to rename the name of linkedAccount
-	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccount(accountID, input)
+	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccountWithContext(ctx, accountID, input)
 
 	if err != nil {
 		diag.FromErr(err)

@@ -53,6 +53,10 @@ The `BROWSER` monitor type supports the following additional arguments:
   * `validation_string` - (Optional) The string to validate against in the response.
   * `verify_ssl` - (Optional) Verify SSL.
 
+```
+Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```
+
 ## Attributes Reference
 
 The following attributes are exported:

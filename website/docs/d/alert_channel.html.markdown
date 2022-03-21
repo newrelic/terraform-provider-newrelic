@@ -44,3 +44,8 @@ In addition to all arguments above, the following attributes are exported:
 * `type` - Alert channel type, either: `email`, `opsgenie`, `pagerduty`, `slack`, `victorops`, or `webhook`.
 * `config` - Alert channel configuration.
 * `policy_ids` - A list of policy IDs associated with the alert channel.
+
+
+```
+Warning: This data source will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```

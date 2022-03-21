@@ -105,6 +105,10 @@ The following arguments are supported:
   * `user_defined_metric` - (Optional) A custom metric to be evaluated.
   * `user_defined_value_function` - (Optional) One of: `average`, `min`, `max`, `total`, or `sample_size`.
 
+```
+Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```
+
 ## Terms
 
 The `term` mapping supports the following arguments:
