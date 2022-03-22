@@ -16,6 +16,9 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 		ReadContext:   resourceNewRelicAwsGovCloudLinkAccountRead,
 		UpdateContext: resourceNewRelicAwsGovCloudLinkAccountUpdate,
 		DeleteContext: resourceNewRelicAwsGovCloudLinkAccountDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,

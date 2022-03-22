@@ -43,6 +43,12 @@ func TestAccNewRelicCloudAwsLinkAccount_Basic(t *testing.T) {
 					testAccCheckNewRelicCloudAwsLinkAccountExists(resourceName),
 				),
 			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
