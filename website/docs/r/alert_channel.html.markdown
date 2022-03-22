@@ -35,10 +35,6 @@ The following arguments are supported:
   * `type` - (Required) The type of channel.  One of: `email`, `slack`, `opsgenie`, `pagerduty`, `victorops`, or `webhook`.
   * `config` - (Optional) A nested block that describes an alert channel configuration.  Only one config block is permitted per alert channel definition.  See [Nested config blocks](#nested-config-blocks) below for details.
 
-```
-Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
-```
-
 ### Nested `config` blocks
 
 Each alert channel type supports a specific set of arguments for the `config` block:

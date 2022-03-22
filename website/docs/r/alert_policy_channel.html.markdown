@@ -62,10 +62,6 @@ The following arguments are supported:
 - `policy_id` - (Required) The ID of the policy.
 - `channel_ids` - (Required) Array of channel IDs to apply to the specified policy. We recommended sorting channel IDs in ascending order to avoid drift your Terraform state.
 
-```
-Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
-```
-
 ## Import
 
 Alert policy channels can be imported using the following notation: `<policyID>:<channelID>:<channelID>`, e.g.
