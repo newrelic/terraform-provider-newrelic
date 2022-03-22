@@ -413,6 +413,44 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStreamingMethods(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_AggregationDelayZero(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+	timer := "null"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create (NerdGraph) condition with streaming method cadence
+			{
+				Config: testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
+					rName,
+					"cadence",
+					"0",
+					timer,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Update (NerdGraph) condition with streaming method event_timer
+			{
+				Config: testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
+					rName,
+					"event_flow",
+					"0",
+					timer,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicNrqlAlertCondition_NerdGraphNrqlEvaluationOffset(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
