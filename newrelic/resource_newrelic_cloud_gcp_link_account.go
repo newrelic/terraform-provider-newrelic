@@ -15,6 +15,9 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 		ReadContext:   resourceNewRelicCloudGcpLinkAccountRead,
 		UpdateContext: resourceNewRelicCloudGcpLinkAccountUpdate,
 		DeleteContext: resourceNewRelicCloudGcpLinkAccountDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
