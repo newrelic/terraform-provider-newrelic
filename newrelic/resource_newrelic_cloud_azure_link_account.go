@@ -24,10 +24,10 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 			},
 			"application_id": {
 				Type:        schema.TypeString,
-				Description: "application id for Azure account",
+				Description: "Application ID for Azure account",
 				Required:    true,
 			},
-			"client_secret_id": {
+			"client_secret": {
 				Type:        schema.TypeString,
 				Description: "Value of the client secret from Azure",
 				Required:    true,
@@ -35,17 +35,17 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "name of the linked account",
+				Description: "Name of the linked account",
 				Required:    true,
 			},
 			"subscription_id": {
 				Type:        schema.TypeString,
-				Description: "subscription id for the Azure account",
+				Description: "Subscription ID for the Azure account",
 				Required:    true,
 			},
 			"tenant_id": {
 				Type:        schema.TypeString,
-				Description: "tenant id for the Azure account",
+				Description: "Tenant ID for the Azure account",
 				Required:    true,
 			},
 		},
@@ -87,7 +87,7 @@ func expandAzureCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkClo
 		azureAccount.ApplicationID = applicationID.(string)
 	}
 
-	if clientSecretID, ok := d.GetOk("client_secret_id"); ok {
+	if clientSecretID, ok := d.GetOk("client_secret"); ok {
 		azureAccount.ClientSecret = cloud.SecureValue(clientSecretID.(string))
 	}
 
