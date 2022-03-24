@@ -9,7 +9,7 @@ description: |-
 # Data Source: newrelic\_alert\_policy
 
 Use this data source to get information about a specific alert policy in New Relic that already exists.
-More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
+More information on Terraform's data sources can be found [here](https://www.terraform.io/language/data-sources).
 
 ## Example Usage
 

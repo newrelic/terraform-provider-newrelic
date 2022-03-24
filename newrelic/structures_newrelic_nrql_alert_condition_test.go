@@ -290,12 +290,25 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 		"aggregation delay not nil": {
 			Data: map[string]interface{}{
 				"nrql":              []interface{}{nrql},
-				"aggregation_delay": 60,
+				"aggregation_delay": "60",
 			},
 			Expanded: &alerts.NrqlConditionCreateInput{
 				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
 					Signal: &alerts.AlertsNrqlConditionCreateSignal{
 						AggregationDelay: &[]int{60}[0],
+					},
+				},
+			},
+		},
+		"aggregation delay 0": {
+			Data: map[string]interface{}{
+				"nrql":              []interface{}{nrql},
+				"aggregation_delay": "0",
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
+						AggregationDelay: &[]int{0}[0],
 					},
 				},
 			},
@@ -314,7 +327,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 		"aggregation timer not nil": {
 			Data: map[string]interface{}{
 				"nrql":              []interface{}{nrql},
-				"aggregation_timer": 60,
+				"aggregation_timer": "60",
 			},
 			Expanded: &alerts.NrqlConditionCreateInput{
 				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
@@ -552,8 +565,8 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, "static", d.Get("fill_option").(string))
 			require.Equal(t, 0.0, d.Get("fill_value").(float64))
 			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
-			require.Equal(t, 60, d.Get("aggregation_delay").(int))
-			require.Equal(t, 60, d.Get("aggregation_timer").(int))
+			require.Equal(t, "60", d.Get("aggregation_delay").(string))
+			require.Equal(t, "60", d.Get("aggregation_timer").(string))
 
 		case alerts.NrqlConditionTypes.Static:
 			require.Equal(t, string(alerts.NrqlConditionValueFunctions.Sum), d.Get("value_function").(string))
@@ -566,8 +579,8 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, "last_value", d.Get("fill_option").(string))
 			require.Zero(t, d.Get("fill_value").(float64))
 			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
-			require.Equal(t, 60, d.Get("aggregation_delay").(int))
-			require.Equal(t, 60, d.Get("aggregation_timer").(int))
+			require.Equal(t, "60", d.Get("aggregation_delay").(string))
+			require.Equal(t, "60", d.Get("aggregation_timer").(string))
 
 		case alerts.NrqlConditionTypes.Outlier:
 			require.Equal(t, 2, d.Get("expected_groups").(int))
@@ -581,8 +594,8 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, "none", d.Get("fill_option").(string))
 			require.Zero(t, d.Get("fill_value").(float64))
 			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
-			require.Equal(t, 60, d.Get("aggregation_delay").(int))
-			require.Equal(t, 60, d.Get("aggregation_timer").(int))
+			require.Equal(t, "60", d.Get("aggregation_delay").(string))
+			require.Equal(t, "60", d.Get("aggregation_timer").(string))
 		}
 	}
 }

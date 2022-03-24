@@ -8,7 +8,7 @@ description: |-
 
 # Data Source: newrelic\_key\_transaction
 
-Use this data source to get information about a specific key transaction in New Relic that already exists.  More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
+Use this data source to get information about a specific key transaction in New Relic that already exists.  More information on Terraform's data sources can be found [here](https://www.terraform.io/language/data-sources).
 
 ## Example Usage
 
