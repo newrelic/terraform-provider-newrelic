@@ -45,6 +45,12 @@ func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
 					testAccNewRelicCloudGcpLinkAccountExists(resourceName),
 				),
 			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

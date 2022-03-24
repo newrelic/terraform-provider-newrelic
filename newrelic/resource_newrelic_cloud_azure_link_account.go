@@ -15,6 +15,9 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 		ReadContext:   resourceNewRelicCloudAzureLinkAccountRead,
 		UpdateContext: resourceNewRelicCloudAzureLinkAccountUpdate,
 		DeleteContext: resourceNewRelicCloudAzureLinkAccountDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,

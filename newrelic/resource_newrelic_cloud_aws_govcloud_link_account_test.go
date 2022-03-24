@@ -53,6 +53,12 @@ func TestNewrelicAwsGovCloudLinkAccount_Basic(t *testing.T) {
 					testAccCheckNewRelicAwsGovCloudLinkAccountExists(resourceName),
 				),
 			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
