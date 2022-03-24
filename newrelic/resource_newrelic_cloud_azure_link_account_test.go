@@ -59,6 +59,13 @@ func TestAccNewRelicCloudAzureLinkAccount_Basic(t *testing.T) {
 					testAccCheckNewRelicAzureLinkAccountExists(resourceName),
 				),
 			},
+			// Test: Import
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"application_id", "client_secret_id", "subscription_id", "tenant_id"},
+			},
 		},
 	})
 }

@@ -15,6 +15,9 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 		ReadContext:   resourceNewRelicCloudGcpLinkAccountRead,
 		UpdateContext: resourceNewRelicCloudGcpLinkAccountUpdate,
 		DeleteContext: resourceNewRelicCloudGcpLinkAccountDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -117,6 +120,7 @@ func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.Reso
 //readGcpLinkedAccount function to store name and ExternalId.
 //Using set func to store the output values.
 func readGcpLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
+	_ = d.Set("account_id", result.NrAccountId)
 	_ = d.Set("name", result.Name)
 	_ = d.Set("project_id", result.ExternalId)
 }
