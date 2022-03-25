@@ -22,7 +22,14 @@ func TestAccNewRelicCloudAwsIntegrations_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicAwsIntegrationsConfig(48552),
+				Config: testAccNewRelicAwsIntegrationsConfig(109698),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
+				),
+			},
+			//Test: Update
+			{
+				Config: testAccNewRelicAwsIntegrationsConfig(109698),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
@@ -89,7 +96,6 @@ func testAccCheckNewRelicCloudAwsIntegrationsDestroy(s *terraform.State) error {
 func testAccNewRelicAwsIntegrationsConfig(linkedAccountID int) string {
 	return fmt.Sprintf(`
 resource "newrelic_cloud_aws_integrations" "foo" {
-		account_id = 2508259
 		linked_account_id = %[1]d
 
 		billing {
@@ -122,7 +128,6 @@ resource "newrelic_cloud_aws_integrations" "foo" {
 func testAccNewRelicAwsIntegrationsConfigUpdated(linkedAccountID int) string {
 	return fmt.Sprintf(`
 resource "newrelic_cloud_aws_integrations" "foo" {
-		account_id = 2508259
 		linked_account_id = %[1]d
 		billing {
 			metrics_polling_interval = 6000
