@@ -3,10 +3,8 @@
 ### Bug Fixes
 - Allow 0 values for aggregation_delay
 - add len check when creating cloud link accounts
-- Allow 0 values for aggregation_delay
 - **cloud:** add import
 - **cloud_azure_link_account:** rename client_secret_id to client_secret
-- **docs:** removed two accountID warnings that were incorrect
 - **docs:** removed two accountID warnings that were incorrect
 
 ### Documentation Updates
@@ -36,8 +34,6 @@
 - fix broken link to terraform docs
 - document allowed values for expiration_duration
 - **nrql_alert_condition:** removed legacy urls from doc
-- **nrql_alert_condition:** removed legacy urls from doc
-- **nrql_alert_condition:** removed legacy urls from doc
 - **servicelevel:** SLO periods now include complete weeks
 
 <a name="v2.41.0-beta.1"></a>
@@ -50,35 +46,14 @@
 
 ### Features
 - awsGov cloud integration
-- awsGov cloud integration
 
 <a name="v2.40.0"></a>
 ## [v2.40.0] - 2022-03-14
 ### Bug Fixes
 - allow manipulation of SLIs with non existing related entity, return sli_guid, change service level example
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
-- fixed mistakes in the Doc
 
 ### Documentation Updates
 - minor changes
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
-- minor changes
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
 - added gcp integration documentation
 - update version in docs
 - add cloud_aws_link_account resource to docs
@@ -86,12 +61,6 @@
 
 ### Features
 - azure integration
-- added gcp cloud link account
-- added gcp cloud link account
-- azure integration
-- added gcp cloud link account
-- added gcp cloud link account
-- added gcp cloud link account
 - added gcp cloud link account
 - **aws_link_account:** add AWS Link Account resource
 - **provider:** added gcp resource to resource map
