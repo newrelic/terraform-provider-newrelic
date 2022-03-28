@@ -542,7 +542,7 @@ func flattenCloudAwsXRayIntegration(in *cloud.CloudAwsXrayIntegration) []interfa
 	flattened := make([]interface{}, 1)
 
 	out := make(map[string]interface{})
-	
+
 	out["aws_regions"] = in.AwsRegions
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
