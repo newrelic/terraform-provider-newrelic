@@ -29,7 +29,7 @@ func TestAccNewRelicCloudAwsIntegrations_Basic(t *testing.T) {
 			},
 			//Test: Update
 			{
-				Config: testAccNewRelicAwsIntegrationsConfig(109698),
+				Config: testAccNewRelicAwsIntegrationsConfigUpdated(109698),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
@@ -114,10 +114,6 @@ resource "newrelic_cloud_aws_integrations" "foo" {
 			metrics_polling_interval = 6000
 		}
 
-		vpc {
-			metrics_polling_interval = 6000
-		}
-
 		x_ray {
 			metrics_polling_interval = 6000
 		}
@@ -139,9 +135,6 @@ resource "newrelic_cloud_aws_integrations" "foo" {
 			metrics_polling_interval = 6000
 		}
 		trusted_advisor {
-			metrics_polling_interval = 6000
-		}
-		vpc {
 			metrics_polling_interval = 6000
 		}
 	}
