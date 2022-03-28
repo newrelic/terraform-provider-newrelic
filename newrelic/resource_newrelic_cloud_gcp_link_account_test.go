@@ -14,7 +14,6 @@ import (
 )
 
 func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
-
 	resourceName := "newrelic_cloud_gcp_link_account.foo"
 
 	testGcpProjectID := os.Getenv("INTEGRATION_TESTING_GCP_PROJECT_ID")
@@ -45,6 +44,12 @@ func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicCloudGcpLinkAccountExists(resourceName),
 				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

@@ -28,6 +28,10 @@ The following arguments are supported:
   * `value` - (Required) The secure credential's value. 
   * `description` - (Optional) The secure credential's description.
 
+```
+Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

@@ -8,7 +8,7 @@ description: |-
 
 # Data Source: newrelic\_alert\_channel
 
-Use this data source to get information about a specific alert channel in New Relic that already exists.  More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
+Use this data source to get information about a specific alert channel in New Relic that already exists.  More information on Terraform's data sources can be found [here](https://www.terraform.io/language/data-sources).
 
 ## Example Usage
 
@@ -44,3 +44,8 @@ In addition to all arguments above, the following attributes are exported:
 * `type` - Alert channel type, either: `email`, `opsgenie`, `pagerduty`, `slack`, `victorops`, or `webhook`.
 * `config` - Alert channel configuration.
 * `policy_ids` - A list of policy IDs associated with the alert channel.
+
+
+```
+Warning: This data source will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```

@@ -8,7 +8,7 @@ description: |-
 
 # Data Source: newrelic\_key\_transaction
 
-Use this data source to get information about a specific key transaction in New Relic that already exists.  More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
+Use this data source to get information about a specific key transaction in New Relic that already exists.  More information on Terraform's data sources can be found [here](https://www.terraform.io/language/data-sources).
 
 ## Example Usage
 
@@ -51,3 +51,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the application.
+
+```
+Warning: This data source will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```

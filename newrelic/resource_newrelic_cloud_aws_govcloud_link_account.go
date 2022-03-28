@@ -16,16 +16,21 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 		ReadContext:   resourceNewRelicAwsGovCloudLinkAccountRead,
 		UpdateContext: resourceNewRelicAwsGovCloudLinkAccountUpdate,
 		DeleteContext: resourceNewRelicAwsGovCloudLinkAccountDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "The ID of the account in New Relic.",
 			},
 			"access_key_id": {
 				Type:        schema.TypeString,
 				Description: "access-key-id of awsGovcloud account",
 				Required:    true,
+				Sensitive:   true,
 			},
 			"aws_account_id": {
 				Type:        schema.TypeString,
@@ -46,6 +51,7 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "secret access key of the awsGovcloud account",
 				Required:    true,
+				Sensitive:   true,
 			},
 		},
 	}
@@ -73,8 +79,10 @@ func resourceNewRelicAwsGovCloudLinkAccountCreate(ctx context.Context, d *schema
 		}
 		return diags
 	}
-	//Storing the linked account id using setId func after creating the resource.
-	d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+
+	if len(cloudLinkAccountPayload.LinkedAccounts) > 0 {
+		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+	}
 	return nil
 }
 

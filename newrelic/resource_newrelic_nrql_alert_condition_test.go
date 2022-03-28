@@ -413,10 +413,9 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStreamingMethods(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicNrqlAlertCondition_ChangeStreamingMethod(t *testing.T) {
+func TestAccNewRelicNrqlAlertCondition_AggregationDelayZero(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
-	delay := "null"
 	timer := "null"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -424,12 +423,13 @@ func TestAccNewRelicNrqlAlertCondition_ChangeStreamingMethod(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
-			// Test: Create (NerdGraph) condition with streaming method event_flow and default delay value (200)
+			// Test: Create (NerdGraph) condition with streaming method cadence
+
 			{
 				Config: testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
 					rName,
-					"event_flow",
-					"120",
+					"cadence",
+					"0",
 					timer,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -440,32 +440,8 @@ func TestAccNewRelicNrqlAlertCondition_ChangeStreamingMethod(t *testing.T) {
 			{
 				Config: testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
 					rName,
-					"event_timer",
-					delay,
-					"120",
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
-				),
-			},
-			// Test: Update (NerdGraph) condition with streaming method cadence
-			{
-				Config: testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
-					rName,
-					"cadence",
-					"120",
-					timer,
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
-				),
-			},
-			// Test: Update (NerdGraph) condition with streaming method back to event_flow
-			{
-				Config: testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
-					rName,
 					"event_flow",
-					"120",
+					"0",
 					timer,
 				),
 				Check: resource.ComposeTestCheckFunc(

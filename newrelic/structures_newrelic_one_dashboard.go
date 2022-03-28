@@ -3,6 +3,7 @@ package newrelic
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -325,34 +326,36 @@ func expandDashboardBillboardWidgetConfigurationInput(d *schema.ResourceData, i 
 
 	// optional, order is important (API returns them sorted alpha)
 	cfg.Thresholds = []dashboards.DashboardBillboardWidgetThresholdInput{}
-	if _, ok := d.GetOk(fmt.Sprintf("page.%d.widget_billboard.%d.critical", pageIndex, widgetIndex)); ok {
-		if t, ok := i["critical"]; ok {
-			value := t.(float64)
+	if data, ok := d.GetOk(fmt.Sprintf("page.%d.widget_billboard.%d.critical", pageIndex, widgetIndex)); ok {
+		value := data.(string)
+		if value != "" {
+			floatValue, _ := strconv.ParseFloat(value, 64)
 			cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
 				AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
-				Value:         &value,
+				Value:         &floatValue,
+			})
+		} else {
+			cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+				AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
+				Value:         nil,
 			})
 		}
-	} else {
-		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
-			AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
-			Value:         nil,
-		})
 	}
 
-	if _, ok := d.GetOk(fmt.Sprintf("page.%d.widget_billboard.%d.warning", pageIndex, widgetIndex)); ok {
-		if t, ok := i["warning"]; ok {
-			value := t.(float64)
+	if data, ok := d.GetOk(fmt.Sprintf("page.%d.widget_billboard.%d.warning", pageIndex, widgetIndex)); ok {
+		value := data.(string)
+		if value != "" {
+			floatValue, _ := strconv.ParseFloat(value, 64)
 			cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
 				AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
-				Value:         &value,
+				Value:         &floatValue,
+			})
+		} else {
+			cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+				AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
+				Value:         nil,
 			})
 		}
-	} else {
-		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
-			AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
-			Value:         nil,
-		})
 	}
 
 	return &cfg, nil
@@ -734,9 +737,9 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 			for _, v := range in.Configuration.Billboard.Thresholds {
 				switch v.AlertSeverity {
 				case entities.DashboardAlertSeverityTypes.CRITICAL:
-					out["critical"] = v.Value
+					out["critical"] = strconv.FormatFloat(v.Value, 'f', -1, 64)
 				case entities.DashboardAlertSeverityTypes.WARNING:
-					out["warning"] = v.Value
+					out["warning"] = strconv.FormatFloat(v.Value, 'f', -1, 64)
 				}
 			}
 		}
@@ -860,8 +863,16 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 					w := widget.(map[string]interface{})
 					if v, ok := w["filter_current_dashboard"]; ok && v.(bool) {
 
-						if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) > 0 {
-							return nil, fmt.Errorf("err: filter_current_dashboard can't be set if linked_entity_guids is configured")
+						if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) > 1 {
+							return nil, fmt.Errorf("filter_current_dashboard can't be set if linked_entity_guids is configured")
+						}
+
+						if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) == 1 {
+							for _, le := range l.([]interface{}) {
+								if le.(string) != p["guid"] {
+									return nil, fmt.Errorf("filter_current_dashboard can't be set if linked_entity_guids is configured")
+								}
+							}
 						}
 
 						unqWidget := make(map[string]interface{})

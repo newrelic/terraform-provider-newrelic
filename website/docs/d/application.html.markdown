@@ -9,7 +9,7 @@ description: |-
 # Data Source: newrelic\_application
 ~> **DEPRECATED** Use at your own risk. Use the [`newrelic_entity`](/docs/providers/newrelic/d/entity.html) data source instead. This feature may be removed in the next major release.
 
-Use this data source to get information about a specific application in New Relic that already exists. More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
+Use this data source to get information about a specific application in New Relic that already exists. More information on Terraform's data sources can be found [here](https://www.terraform.io/language/data-sources).
 
 ## Example Usage
 
@@ -54,3 +54,7 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - The ID of the application.
 * `instance_ids` - A list of instance IDs associated with the application.
 * `host_ids` - A list of host IDs associated with the application.
+
+```
+Warning: This data source will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```

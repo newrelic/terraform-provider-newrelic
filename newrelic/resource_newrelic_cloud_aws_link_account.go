@@ -3,11 +3,12 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,6 +21,9 @@ func resourceNewRelicCloudAwsAccountLinkAccount() *schema.Resource {
 		ReadContext:   resourceNewRelicCloudAwsAccountLinkRead,
 		UpdateContext: resourceNewRelicCloudAwsAccountLinkUpdate,
 		DeleteContext: resourceNewRelicCloudAwsAccountLinkDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -78,7 +82,9 @@ func resourceNewRelicCloudAwsAccountLinkCreate(ctx context.Context, d *schema.Re
 			}
 		}
 
-		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+		if len(cloudLinkAccountPayload.LinkedAccounts) > 0 {
+			d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+		}
 
 		return nil
 	})

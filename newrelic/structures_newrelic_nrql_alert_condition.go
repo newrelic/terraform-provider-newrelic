@@ -478,15 +478,19 @@ func expandCreateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionCrea
 	}
 
 	if aggregationDelay, ok := d.GetOk("aggregation_delay"); ok {
-		v := aggregationDelay.(int)
-
-		signal.AggregationDelay = &v
+		value := aggregationDelay.(string)
+		if value != "" {
+			v, _ := strconv.Atoi(value)
+			signal.AggregationDelay = &v
+		}
 	}
 
 	if aggregationTimer, ok := d.GetOk("aggregation_timer"); ok {
-		v := aggregationTimer.(int)
-
-		signal.AggregationTimer = &v
+		value := aggregationTimer.(string)
+		if value != "" {
+			v, _ := strconv.Atoi(value)
+			signal.AggregationTimer = &v
+		}
 	}
 
 	return &signal, nil
@@ -524,15 +528,19 @@ func expandUpdateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionUpda
 	}
 
 	if aggregationDelay, ok := d.GetOk("aggregation_delay"); ok {
-		v := aggregationDelay.(int)
-
-		signal.AggregationDelay = &v
+		value := aggregationDelay.(string)
+		if value != "" {
+			v, _ := strconv.Atoi(value)
+			signal.AggregationDelay = &v
+		}
 	}
 
 	if aggregationTimer, ok := d.GetOk("aggregation_timer"); ok {
-		v := aggregationTimer.(int)
-
-		signal.AggregationTimer = &v
+		value := aggregationTimer.(string)
+		if value != "" {
+			v, _ := strconv.Atoi(value)
+			signal.AggregationTimer = &v
+		}
 	}
 
 	return &signal, nil
@@ -685,13 +693,15 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 	}
 
 	if signal.AggregationDelay != nil {
-		if err := d.Set("aggregation_delay", signal.AggregationDelay); err != nil {
+		delay := strconv.Itoa(*signal.AggregationDelay)
+		if err := d.Set("aggregation_delay", delay); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_delay`: %v", err)
 		}
 	}
 
 	if signal.AggregationTimer != nil {
-		if err := d.Set("aggregation_timer", signal.AggregationTimer); err != nil {
+		timer := strconv.Itoa(*signal.AggregationTimer)
+		if err := d.Set("aggregation_timer", timer); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_timer`: %v", err)
 		}
 	}

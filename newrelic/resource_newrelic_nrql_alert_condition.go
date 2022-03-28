@@ -328,7 +328,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				},
 			},
 			"aggregation_delay": {
-				Type:         schema.TypeInt,
+				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "How long we wait for data that belongs in each aggregation window. Depending on your data, a longer delay may increase accuracy but delay notifications. Use aggregationDelay with the EVENT_FLOW and CADENCE aggregation methods.",
 				RequiredWith: []string{"aggregation_method"},
@@ -344,7 +344,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				},
 			},
 			"aggregation_timer": {
-				Type:         schema.TypeInt,
+				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "How long we wait after each data point arrives to make sure we've processed the whole batch. Use aggregationTimer with the EVENT_TIMER aggregation method.",
 				RequiredWith: []string{"aggregation_method"},

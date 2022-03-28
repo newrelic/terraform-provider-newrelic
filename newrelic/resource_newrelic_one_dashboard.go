@@ -254,13 +254,13 @@ func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
 
 	s["critical"] = &schema.Schema{
-		Type:        schema.TypeFloat,
+		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "The critical threshold value.",
 	}
 
 	s["warning"] = &schema.Schema{
-		Type:        schema.TypeFloat,
+		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "The warning threshold value.",
 	}
