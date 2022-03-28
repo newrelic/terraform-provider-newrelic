@@ -10,12 +10,9 @@ description: |-
 
 Use this resource to create, and delete New Relic NRQL Drop Rules.
 
--> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](/docs/providers/newrelic/index.html) for configuring the provider.
+-> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](/providers/newrelic/newrelic/latest/docs/guides/migration_guide_v2) for configuring the provider.
 <br><br>
 Before upgrading to version 2.0.0 or later, it is recommended to upgrade to the most recent 1.x version of the provider and ensure that your environment successfully runs `terraform plan` without unexpected changes.
-
--> **Drop attributes on dimensional metric rollups is in preview**
-Please contact your account team or fill in this [form](https://forms.gle/FGPZpy2y1zdSN9dn9) if you'd like to enroll your account. The feature is subject to change, and more information can be found in [the docs](https://docs.newrelic.com/docs/data-apis/manage-data/drop-data-using-nerdgraph/#drop-attributes-on-dimensional-metric-rollups).
 
 ## Example Usage
 

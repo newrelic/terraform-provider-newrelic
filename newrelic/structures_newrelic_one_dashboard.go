@@ -3,7 +3,7 @@ package newrelic
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,7 +23,7 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}) (*dashboards
 		Name: d.Get("name").(string),
 	}
 
-	dash.Pages, err = expandDashboardPageInput(d.Get("page").([]interface{}), meta)
+	dash.Pages, err = expandDashboardPageInput(d, d.Get("page").([]interface{}), meta)
 	if err != nil {
 		return nil, err
 	}
@@ -42,14 +42,14 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}) (*dashboards
 
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
-func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboards.DashboardPageInput, error) {
+func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta interface{}) ([]dashboards.DashboardPageInput, error) {
 	if len(pages) < 1 {
 		return []dashboards.DashboardPageInput{}, nil
 	}
 
 	expanded := make([]dashboards.DashboardPageInput, len(pages))
 
-	for i, v := range pages {
+	for pageIndex, v := range pages {
 		var page dashboards.DashboardPageInput
 		p := v.(map[string]interface{})
 
@@ -102,14 +102,14 @@ func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboar
 			}
 		}
 		if widgets, ok := p["widget_billboard"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for widgetIndex, v := range widgets.([]interface{}) {
 				// Get generic properties set
 				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
 				if err != nil {
 					return nil, err
 				}
 
-				widget.Configuration.Billboard, err = expandDashboardBillboardWidgetConfigurationInput(v.(map[string]interface{}), meta)
+				widget.Configuration.Billboard, err = expandDashboardBillboardWidgetConfigurationInput(d, v.(map[string]interface{}), meta, pageIndex, widgetIndex)
 				if err != nil {
 					return nil, err
 				}
@@ -278,7 +278,7 @@ func expandDashboardPageInput(pages []interface{}, meta interface{}) ([]dashboar
 			}
 		}
 
-		expanded[i] = page
+		expanded[pageIndex] = page
 	}
 
 	return expanded, nil
@@ -313,7 +313,7 @@ func expandDashboardBarWidgetConfigurationInput(i map[string]interface{}, meta i
 	return nil, nil
 }
 
-func expandDashboardBillboardWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardBillboardWidgetConfigurationInput, error) {
+func expandDashboardBillboardWidgetConfigurationInput(d *schema.ResourceData, i map[string]interface{}, meta interface{}, pageIndex int, widgetIndex int) (*dashboards.DashboardBillboardWidgetConfigurationInput, error) {
 	var cfg dashboards.DashboardBillboardWidgetConfigurationInput
 	var err error
 
@@ -326,18 +326,36 @@ func expandDashboardBillboardWidgetConfigurationInput(i map[string]interface{}, 
 
 	// optional, order is important (API returns them sorted alpha)
 	cfg.Thresholds = []dashboards.DashboardBillboardWidgetThresholdInput{}
-	if t, ok := i["critical"]; ok {
-		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
-			AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
-			Value:         t.(float64),
-		})
+	if data, ok := d.GetOk(fmt.Sprintf("page.%d.widget_billboard.%d.critical", pageIndex, widgetIndex)); ok {
+		value := data.(string)
+		if value != "" {
+			floatValue, _ := strconv.ParseFloat(value, 64)
+			cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+				AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
+				Value:         &floatValue,
+			})
+		} else {
+			cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+				AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
+				Value:         nil,
+			})
+		}
 	}
 
-	if t, ok := i["warning"]; ok {
-		cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
-			AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
-			Value:         t.(float64),
-		})
+	if data, ok := d.GetOk(fmt.Sprintf("page.%d.widget_billboard.%d.warning", pageIndex, widgetIndex)); ok {
+		value := data.(string)
+		if value != "" {
+			floatValue, _ := strconv.ParseFloat(value, 64)
+			cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+				AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
+				Value:         &floatValue,
+			})
+		} else {
+			cfg.Thresholds = append(cfg.Thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+				AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
+				Value:         nil,
+			})
+		}
 	}
 
 	return &cfg, nil
@@ -645,7 +663,7 @@ func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
 		}
 
 		for _, widget := range p.Widgets {
-			widgetType, w := flattenDashboardWidget(&widget)
+			widgetType, w := flattenDashboardWidget(&widget, string(p.GUID))
 
 			if widgetType != "" {
 				if _, ok := m[widgetType]; !ok {
@@ -673,7 +691,7 @@ func flattenLinkedEntityGUIDs(linkedEntities []entities.EntityOutlineInterface) 
 }
 
 // nolint:gocyclo
-func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]interface{}) {
+func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (string, map[string]interface{}) {
 	var widgetType string
 	out := make(map[string]interface{})
 
@@ -692,6 +710,12 @@ func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]in
 		out["linked_entity_guids"] = flattenLinkedEntityGUIDs(in.LinkedEntities)
 	}
 
+	var filterCurrentDashboard = false
+
+	if out["linked_entity_guids"] != nil && len(out["linked_entity_guids"].([]string)) == 1 && stringInSlice(out["linked_entity_guids"].([]string), pageGUID) {
+		filterCurrentDashboard = true
+	}
+
 	switch in.Visualization.ID {
 	case "viz.area":
 		widgetType = "widget_area"
@@ -703,6 +727,7 @@ func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]in
 		if len(in.Configuration.Bar.NRQLQueries) > 0 {
 			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Bar.NRQLQueries)
 		}
+		out["filter_current_dashboard"] = filterCurrentDashboard
 	case "viz.billboard":
 		widgetType = "widget_billboard"
 		if len(in.Configuration.Billboard.NRQLQueries) > 0 {
@@ -712,9 +737,9 @@ func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]in
 			for _, v := range in.Configuration.Billboard.Thresholds {
 				switch v.AlertSeverity {
 				case entities.DashboardAlertSeverityTypes.CRITICAL:
-					out["critical"] = v.Value
+					out["critical"] = strconv.FormatFloat(v.Value, 'f', -1, 64)
 				case entities.DashboardAlertSeverityTypes.WARNING:
-					out["warning"] = v.Value
+					out["warning"] = strconv.FormatFloat(v.Value, 'f', -1, 64)
 				}
 			}
 		}
@@ -795,11 +820,13 @@ func flattenDashboardWidget(in *entities.DashboardWidget) (string, map[string]in
 		if len(in.Configuration.Pie.NRQLQueries) > 0 {
 			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Pie.NRQLQueries)
 		}
+		out["filter_current_dashboard"] = filterCurrentDashboard
 	case "viz.table":
 		widgetType = "widget_table"
 		if len(in.Configuration.Table.NRQLQueries) > 0 {
 			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Table.NRQLQueries)
 		}
+		out["filter_current_dashboard"] = filterCurrentDashboard
 	}
 
 	return widgetType, out
@@ -836,8 +863,16 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 					w := widget.(map[string]interface{})
 					if v, ok := w["filter_current_dashboard"]; ok && v.(bool) {
 
-						if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) > 0 {
-							return nil, fmt.Errorf("err: filter_current_dashboard can't be set if linked_entity_guids is configured")
+						if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) > 1 {
+							return nil, fmt.Errorf("filter_current_dashboard can't be set if linked_entity_guids is configured")
+						}
+
+						if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) == 1 {
+							for _, le := range l.([]interface{}) {
+								if le.(string) != p["guid"] {
+									return nil, fmt.Errorf("filter_current_dashboard can't be set if linked_entity_guids is configured")
+								}
+							}
 						}
 
 						unqWidget := make(map[string]interface{})
@@ -867,12 +902,6 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 
 // Function to set the page guid as the linked entity now that the page is created
 func setDashboardWidgetFilterCurrentDashboardLinkedEntity(d *schema.ResourceData, filterWidgets []interface{}) error {
-
-	if len(filterWidgets) < 1 {
-		log.Printf("[INFO] Empty list of widgets to filter")
-		return nil
-	}
-
 	selfLinkingWidgets := []string{"widget_bar", "widget_pie", "widget_table"}
 
 	pages := d.Get("page").([]interface{})
@@ -882,6 +911,13 @@ func setDashboardWidgetFilterCurrentDashboardLinkedEntity(d *schema.ResourceData
 			if widgets, ok := p[widgetType]; ok {
 				for _, k := range widgets.([]interface{}) {
 					w := k.(map[string]interface{})
+					if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) == 1 {
+						for _, le := range l.([]interface{}) {
+							if f, ok := w["filter_current_dashboard"]; ok && f == false && le.(string) == p["guid"] {
+								w["linked_entity_guids"] = nil
+							}
+						}
+					}
 					for _, f := range filterWidgets {
 						e := f.(map[string]interface{})
 						if e["page"] == i {

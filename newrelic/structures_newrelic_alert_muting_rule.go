@@ -368,7 +368,7 @@ func flattenSchedule(schedule *alerts.MutingRuleSchedule) []interface{} {
 
 	if schedule.WeeklyRepeatDays != nil {
 		out["weekly_repeat_days"] = flattenWeeklyRepeatDays(*schedule.WeeklyRepeatDays)
-	} else if *schedule.Repeat == "WEEKLY" {
+	} else if schedule.Repeat != nil && *schedule.Repeat == "WEEKLY" {
 		out["weekly_repeat_days"] = []string{}
 	} else {
 		out["weekly_repeat_days"] = nil

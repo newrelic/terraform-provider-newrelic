@@ -109,7 +109,7 @@ func TestAccNewRelicAlertMutingRule_BadInput(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicAlertMutingRuleBadInput(rName, "new muting rule", "product", "EQUALS", "APM", "BROWSER"),
+				Config:      testAccNewRelicAlertMutingRuleBadInput(rName, "new muting rule", "product", "EQUALS", "APM", "BROWSER"),
 				ExpectError: regexp.MustCompile("Validation Error: BAD_USER_INPUT"),
 			},
 		},
@@ -424,15 +424,15 @@ func TestValidateMutingRuleConditionAttribute_InvalidTag(t *testing.T) {
 }
 
 func TestValidateMutingRuleConditionAttribute_entityGuid(t *testing.T) {
-// It should accept entity.guid as an attribute
-validAttr := "entity.guid"
-resourceName := "condition.0.conditions.0.attribute"
+	// It should accept entity.guid as an attribute
+	validAttr := "entity.guid"
+	resourceName := "condition.0.conditions.0.attribute"
 
-warns, errs := validateMutingRuleConditionAttribute(validAttr, resourceName)
-expectedErrs := []error(nil)
-expectedWarns := []string([]string(nil))
+	warns, errs := validateMutingRuleConditionAttribute(validAttr, resourceName)
+	expectedErrs := []error(nil)
+	expectedWarns := []string([]string(nil))
 
-require.Equal(t, expectedWarns, warns)
-require.Equal(t, expectedErrs, errs)
+	require.Equal(t, expectedWarns, warns)
+	require.Equal(t, expectedErrs, errs)
 
 }

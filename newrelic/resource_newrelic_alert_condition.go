@@ -93,10 +93,9 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				Description: "The ID of the policy where this condition should be used.",
 			},
 			"name": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringLenBetween(1, 128),
-				Description:  "The title of the condition. Must be between 1 and 128 characters, inclusive.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The title of the condition. Must be between 1 and 128 characters, inclusive.",
 			},
 			"enabled": {
 				Type:        schema.TypeBool,

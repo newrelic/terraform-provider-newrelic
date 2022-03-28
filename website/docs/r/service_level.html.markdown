@@ -25,18 +25,18 @@ Important:
 ```hcl
 resource "newrelic_service_level" "foo" {
     guid = "MXxBUE18QVBQTElDQVRJT058MQ"
-    name = "Availability"
-    description = "SLI that measures the availability of the service."
+    name = "Latency"
+    description = "Proportion of requests that are served faster than a threshold."
 
     events {
         account_id = 12345678
         valid_events {
             from = "Transaction"
-            where = "appName = 'Example application'"
+            where = "appName = 'Example application' AND (transactionType='Web')"
         }
-        bad_events {
-            from = "TransactionError"
-            where = "appName = 'Example application' AND error.expected is false"
+        good_events {
+            from = "Transaction"
+            where = "appName = 'Example application' AND (transactionType= 'Web') AND duration < 0.1"
         }
     }
 
@@ -56,13 +56,13 @@ resource "newrelic_service_level" "foo" {
 
 The following arguments are supported:
 
-  * `guid` - (Required) The GUID of the entity (e.g, APM Service, Browser application, Workload, etc.) that you want to relate this SLI to.
+  * `guid` - (Required) The GUID of the entity (e.g, APM Service, Browser application, Workload, etc.) that you want to relate this SLI to. Note that changing the GUID will force a new resource.
   * `name` - (Required) A short name for the SLI that will help anyone understand what it is about.
   * `events` - (Required) The events that define the NRDB data for the SLI/SLO calculations.
   See [Events](#events) below for details.
+  * `objective` - (Required) The objective of the SLI, only one can be defined.
+  See [Objective](#objective) below for details.
   * `description` - (Optional) The description of the SLI.
-  * `objective` - (Optional) An objective for the SLI. Multiple objective blocks can be defined for an SLI.
-  See [Nested objective blocks](#nested-objective-blocks) below for details.
 
 ### Events
 
@@ -82,12 +82,12 @@ All nested `events` blocks support the following common arguments:
     * `where` - (Optional) A filter that narrows down the NRDB events just to those that are considered bad responses (e.g, those that refer to
     a particular entity and returned an error).
 
-### Nested `objective` blocks
+### Objective
 
-  * `target` - (Required) The target for your SLO, valid values between `0` and `100`. Up to 5 decimals accepted.
-  * `time_window` - (Required) Time window is the period for the SLO.
+  * `target` - (Required) The target of the objective, valid values between `0` and `100`. Up to 5 decimals accepted.
+  * `time_window` - (Required) Time window is the period of the objective.
     * `rolling` - (Required) Rolling window.
-      * `count` - (Required) Valid values are `1`, `7`, `14`, `28` and `30`.
+      * `count` - (Required) Valid values are `1`, `7`, `14` and `28`.
       * `unit` - (Required) The only supported value is `DAY`.
 
 ## Attributes Reference
@@ -95,6 +95,7 @@ All nested `events` blocks support the following common arguments:
 The following attributes are exported:
 
   * `sli_id` - The unique entity identifier of the Service Level Indicator.
+  * `sli_guid` - The unique entity identifier of the Service Level Indicator in New Relic.
 
 ## Import
 

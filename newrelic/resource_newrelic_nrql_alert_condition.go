@@ -72,27 +72,6 @@ func termSchema() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The duration, in seconds, that the threshold must violate in order to create a violation. Value must be a multiple of the 'aggregation_window' (which has a default of 60 seconds). Value must be within 120-3600 seconds for baseline and outlier conditions, within 120-7200 seconds for static conditions with the sum value function, and within 60-7200 seconds for static conditions with the single_value value function.",
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					v := val.(int)
-					minVal := 60
-					maxVal := 7200
-
-					// Value must be a factor of 60.
-					if v%60 != 0 {
-						errs = append(errs, fmt.Errorf("%q must be a factor of %d, got: %d", key, minVal, v))
-					}
-
-					// This validation is a top-level validation check.
-					// Static conditions with a single_value value function must be within range [60, 7200].
-					// Static conditions with a sum value function must be within range [120, 7200].
-					// Baseline conditions must be within range [120, 3600].
-					// Outlier conditions must be within range [120, 3600].
-					if v < minVal || v > maxVal {
-						errs = append(errs, fmt.Errorf("%q must be between %d and %d inclusive, got: %d", key, minVal, maxVal, v))
-					}
-
-					return
-				},
 			},
 		},
 	}
@@ -159,7 +138,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					warns, errs = v(valueString, key)
 
 					if valueString == "outlier" {
-						warns = append(warns, "We're removing outlier conditions Feb 1, 2022. More Info: https://discuss.newrelic.com/t/nrql-outlier-alert-conditions-end-of-life/164167")
+						warns = append(warns, "We're removing outlier conditions Mar 31, 2022. More Info: https://docs.newrelic.com/docs/alerts-applied-intelligence/transition-guide/#outlier")
 					}
 					return
 				},
@@ -265,12 +244,14 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			// between new:old and old:new is handled via maps in structures file.
 			// Conflicts with `baseline_direction` when using NerdGraph.
 			"value_function": {
+				Deprecated:   "'value_function' is deprecated.  Remove this field and condition will evaluate as 'single_value' by default.  To replicate 'sum' behavior, use 'slide_by'.",
 				Type:         schema.TypeString,
 				Optional:     true,
-				Description:  "Valid values are: 'single_value' or 'sum'",
+				Description:  "Values are: 'single_value' (deprecated) or 'sum' (deprecated)",
 				ValidateFunc: validation.StringInSlice([]string{"single_value", "sum"}, true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					return strings.EqualFold(old, new) // Case fold this attribute when diffing
+					// If a value is not provided and the condition uses the default value (single_value), don't show a diff
+					return (strings.EqualFold(old, "SINGLE_VALUE") && new == "") || strings.EqualFold(old, new)
 				},
 			},
 			"account_id": {
@@ -312,10 +293,15 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Computed:    true,
 				Description: "The duration of the time window used to evaluate the NRQL query, in seconds.",
 			},
+			"slide_by": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The duration of overlapping timewindows used to smooth the chart line, in seconds. Must be a factor of `aggregation_window` and less than the aggregation window. It should be greater or equal to 30 seconds if `aggregation_window` is less than or equal to 3600 seconds, or greater or eqaul to `aggregation_window / 120` if `aggregation_window` is greater than 3600 seconds.",
+			},
 			"expiration_duration": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The amount of time (in seconds) to wait before considering the signal expired.",
+				Description: "The amount of time (in seconds) to wait before considering the signal expired.  Must be in the range of 30 to 172800 (inclusive)",
 			},
 			"fill_option": {
 				Type:         schema.TypeString,
@@ -342,18 +328,46 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"CADENCE", "EVENT_FLOW", "EVENT_TIMER"}, true),
 				Description:  "The method that determines when we consider an aggregation window to be complete so that we can evaluate the signal for violations. Default is CADENCE.",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					sinceValueExists := d.Get("nrql.0.since_value") != nil
+					if sinceValueExists {
+						return false
+					}
+					// If a value is not provided and the condition uses the default value, don't show a diff
+					return (old == "event_flow" && new == "") || strings.EqualFold(old, new)
+				},
 			},
 			"aggregation_delay": {
-				Type:         schema.TypeInt,
+				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "How long we wait for data that belongs in each aggregation window. Depending on your data, a longer delay may increase accuracy but delay notifications. Use aggregationDelay with the EVENT_FLOW and CADENCE aggregation methods.",
 				RequiredWith: []string{"aggregation_method"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					sinceValueExists := d.Get("nrql.0.since_value") != nil
+					if sinceValueExists {
+						return false
+					}
+					// If a value is not provided and the condition uses the default value, don't show a diff
+					oldInt, _ := strconv.ParseInt(old, 0, 8)
+					newInt, _ := strconv.ParseInt(new, 0, 8)
+					return oldInt == 120 && (newInt == 0)
+				},
 			},
 			"aggregation_timer": {
-				Type:         schema.TypeInt,
+				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "How long we wait after each data point arrives to make sure we've processed the whole batch. Use aggregationTimer with the EVENT_TIMER aggregation method.",
 				RequiredWith: []string{"aggregation_method"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					sinceValueExists := d.Get("nrql.0.since_value") != nil
+					if sinceValueExists {
+						return false
+					}
+					// If a value is not provided and the condition uses the default value, don't show a diff
+					oldInt, _ := strconv.ParseInt(old, 0, 8)
+					newInt, _ := strconv.ParseInt(new, 0, 8)
+					return oldInt == 120 && (newInt == 0)
+				},
 			},
 			// Baseline ONLY
 			"baseline_direction": {

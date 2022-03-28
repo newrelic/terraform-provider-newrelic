@@ -12,7 +12,7 @@ description: |-
 ## Before You Begin
 
 * The examples below assume you already have a New Relic agent deployed. If you don't have New Relic integrated yet, check out [New Relic's introduction documentation](https://docs.newrelic.com/docs/using-new-relic/welcome-new-relic/get-started/introduction-new-relic) to get started there, then head back over here to get started with the New Relic Terraform Provider using the examples provided.
-* [Install Terraform](https://www.terraform.io/intro/getting-started/install.html) and read the Terraform getting started guide that follows. This guide will assume a basic understanding of Terraform.
+* [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) and read the Terraform getting started guide that follows. This guide will assume a basic understanding of Terraform.
 * Locate your User API key by following [New Relic's User API key docs][user_api_key] (previously referred to as "personal API key"). <br> <small>Note: To to locate or create your API key via our NerdGraph API, please follow these [instructions][user_api_key_via_nerdgraph].</small>
 
 ## Configuring the Provider
@@ -36,11 +36,10 @@ Once you've successfully initialized your Terraform working directory, you'll wa
 ```hcl
 # Configure terraform
 terraform {
-  required_version = "~> 0.13.0"
+  required_version = "~> 1.0"
   required_providers {
     newrelic = {
       source  = "newrelic/newrelic"
-      version = "~> 2.21.0"
     }
   }
 }
@@ -112,7 +111,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
   description                  = "Alert when transactions are taking too long"
   runbook_url                  = "https://www.example.com"
   enabled                      = true
-  value_function               = "single_value"
   violation_time_limit_seconds = 3600
 
   nrql {
@@ -230,4 +228,4 @@ You can also run `terraform destroy` to tear down your resources if that's ever 
 
 [user_api_key]: https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key
 [user_api_key_via_nerdgraph]: https://docs.newrelic.com/docs/apis/nerdgraph/examples/use-nerdgraph-manage-license-keys-user-keys
-[terraform_data_sources]: https://www.terraform.io/docs/configuration/data-sources.html
+[terraform_data_sources]: https://www.terraform.io/language/data-sources#data-sources

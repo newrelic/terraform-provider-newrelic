@@ -37,7 +37,7 @@ The following arguments are supported:
   * `frequency` - (Required) The interval (in minutes) at which this monitor should run.
   * `status` - (Required) The monitor status (i.e. `ENABLED`, `MUTED`, `DISABLED`).
   * `locations` - (Required) The locations in which this monitor should be run.
-  * `sla_threshold` - (Optional) The base threshold for the SLA report.
+  * `sla_threshold` - (Optional) The base threshold (in seconds) to calculate the [Apdex score](https://docs.newrelic.com/docs/apm/new-relic-apm/apdex/apdex-measure-user-satisfaction/) for use in the [SLA report](https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/pages/synthetic-monitoring-aggregate-monitor-metrics/#viewing). Default is 7 seconds.
 
  The `SIMPLE` monitor type supports the following additional arguments:
 
@@ -52,6 +52,10 @@ The `BROWSER` monitor type supports the following additional arguments:
   * `uri` - (Required) The URI for the monitor to hit.
   * `validation_string` - (Optional) The string to validate against in the response.
   * `verify_ssl` - (Optional) Verify SSL.
+
+```
+Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```
 
 ## Attributes Reference
 

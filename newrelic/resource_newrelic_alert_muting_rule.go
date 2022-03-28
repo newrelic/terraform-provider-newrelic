@@ -20,11 +20,17 @@ func validateMutingRuleConditionAttribute(val interface{}, key string) (warns []
 	valueString := val.(string)
 	attemptedTagRegex := regexp.MustCompile(`^tags?`)
 	correctTagRegex := regexp.MustCompile(`^tags?\..+$`)
+	guidTagRegex := regexp.MustCompile(`^tags?\.guid$`)
 
 	// tag.SomeValue attempted but does not match allowed format
 	if attemptedTagRegex.Match([]byte(valueString)) {
 		if !correctTagRegex.Match([]byte(valueString)) {
 			errs = append(errs, fmt.Errorf("%#v of %#v must be in the format tag.tag_name", key, valueString))
+			return
+		}
+		// tag.guid is going away in the future. entity.guid should be used instead
+		if guidTagRegex.Match([]byte(valueString)) {
+			warns = append(warns, fmt.Sprintf("%#v has been deprecated for Muting Rules. Please use \"entity.guid\" instead for Muting Rules configurations ", valueString))
 			return
 		}
 		return

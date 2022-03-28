@@ -254,13 +254,13 @@ func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
 
 	s["critical"] = &schema.Schema{
-		Type:        schema.TypeFloat,
+		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "The critical threshold value.",
 	}
 
 	s["warning"] = &schema.Schema{
-		Type:        schema.TypeFloat,
+		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "The warning threshold value.",
 	}
@@ -501,6 +501,17 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 	defaultInfo := map[string]interface{}{
 		"account_id": accountID,
 	}
+
+	filterWidgets, err := findDashboardWidgetFilterCurrentDashboard(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = setDashboardWidgetFilterCurrentDashboardLinkedEntity(d, filterWidgets)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	dashboard, err := expandDashboardInput(d, defaultInfo)
 	if err != nil {
 		return diag.FromErr(err)

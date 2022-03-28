@@ -30,19 +30,11 @@ func TestAccNewRelicServiceLevel_Basic(t *testing.T) {
 				),
 			},
 			// Test: Update
-			// TODO
 			{
 				Config: testAccNewRelicServiceLevelConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicServiceLevelExists(resourceName),
 				),
-			},
-			// Test: Import
-			// TODO
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
@@ -70,6 +62,16 @@ resource "newrelic_service_level" "sli" {
 			from = "Transaction"
 		}
 	}
+
+    objective {
+        target = 99.00
+        time_window {
+            rolling {
+                count = 7
+                unit = "DAY"
+            }
+        }
+    }
 }
 `, testAccountID, name)
 }
@@ -96,6 +98,16 @@ resource "newrelic_service_level" "sli" {
 			from = "Transaction"
 		}
 	}
+
+    objective {
+        target = 99.00
+        time_window {
+            rolling {
+                count = 7
+                unit = "DAY"
+            }
+        }
+    }
 }
 `, testAccountID, name)
 }
@@ -118,15 +130,13 @@ func testAccCheckNewRelicServiceLevelExists(n string) resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		indicators, err := client.ServiceLevel.GetIndicators(common.EntityGUID(identifier.GUID))
+		indicators, err := client.ServiceLevel.GetIndicators(common.EntityGUID(getSliGUID(identifier)))
 		if err != nil {
 			return err
 		}
 
-		for _, indicator := range *indicators {
-			if identifier.ID == indicator.ID {
-				return nil
-			}
+		if len(*indicators) == 1 && (*indicators)[0].ID == identifier.ID {
+			return nil
 		}
 
 		return fmt.Errorf("SLI not found: %v", rs.Primary.ID)
@@ -146,7 +156,7 @@ func testAccCheckNewRelicServiceLevelDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = client.ServiceLevel.GetIndicators(common.EntityGUID(identifier.GUID))
+		_, err = client.ServiceLevel.GetIndicators(common.EntityGUID(getSliGUID(identifier)))
 		if err == nil {
 			return fmt.Errorf("SLI still exists")
 		}

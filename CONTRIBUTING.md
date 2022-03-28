@@ -102,33 +102,24 @@ results of how Terraform will behave.
 The simplest case is when the API calls you want to make are already in the [Go
 Client][client_go] and the only changes you need to make are in the provider
 code.  In that case, simply building the provider binary with the correct name
-and running the plan will get you there.
+and running the plan will get you there. The following assumes working on MacOS.
+
+To compile a new version of the compiler, run the following command in the root
+directory of the repository. You will need to run this command every time you
+make a code change.
 
 ```shell
-export TARGET=.terraform/plugins/registry.terraform.io/newrelic/newrelic/99.0.0/darwin_amd64/
-mkdir -p $TARGET
-go build -o $TARGET/terraform-provider-newrelic && terraform init && TF_LOG=INFO terraform plan
+make compile
 ```
 
-The following assumes working on MacOS.  Essentially, we're making a "99.0.0"
-fake version out of whatever we just built.  Then we can configure Terraform to
-make use of the version we just built.
+To test your locally compiled plugin you can add your hcl files in the `testing`
+directory. The `testing/dev.tfrc` file contains the local development configuration.
+Before running any Terraform commands don't forgot to change the authentication
+credentials in `testing/newrelic.tf` or use environment variables as mentioned above.
+Additionally run the following command, or add it to your shell profile: `export TF_CLI_CONFIG_FILE=dev.tfrc`
 
-```hcl
-terraform {
-  required_providers {
-    newrelic = {
-      version = "~> 99.0.0"
-      source = "newrelic/newrelic"
-    }
-  }
-  required_version = ">= 0.13"
-}
-```
-
-Now Terraform will expect the binary to exist in the `$TARGET` directory above.
-See the [provider installation][provider_installation] and [provider
-requirements][provider_requirements] docs for more information.
+You can now run `terraform plan` and
+`terraform apply` in the `testing` directory to test your local version of the provider.
 
 ### Developing with our [Go Client][client_go]
 
@@ -150,6 +141,10 @@ Once complete, you can PR the change in the client repository, and then `git
 checkout go.mod` in the provider to go back to a released version of client.
 You'll want to make sure the version number in the provider lines up with the
 client version you want to be using as well.
+
+### Testing
+
+Check out [testing in README.md](README.md#testing)
 
 ### Commit messages
 

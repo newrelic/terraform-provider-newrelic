@@ -34,6 +34,10 @@ The following arguments are supported:
 * `end_user_apdex_threshold` - (Required) The user's apdex threshold for the New Relic application.
 * `enable_real_user_monitoring` - (Required) Enable or disable real user monitoring for the New Relic application.
 
+```
+Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+```
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

@@ -1,5 +1,176 @@
+<a name="v2.41.2"></a>
+## [v2.41.2] - 2022-03-24
+### Bug Fixes
+- Allow 0 values for aggregation_delay
+- add len check when creating cloud link accounts
+- **cloud:** add import
+- **cloud_azure_link_account:** rename client_secret_id to client_secret
+- **docs:** removed two accountID warnings that were incorrect
+
+### Documentation Updates
+- **cloud_azure_link_account:** change client_secret_id to client_secret
+
+<a name="v2.41.1"></a>
+## [v2.41.1] - 2022-03-21
+### Bug Fixes
+- add len check when creating cloud link accounts
+
+<a name="v2.41.0-beta.2"></a>
+## [v2.41.0-beta.2] - 2022-03-17
+### Bug Fixes
+- handle setting linked_entity_guids
+- **newrelic_drop_rule:** fix for [#1611](https://github.com/newrelic/terraform-provider-newrelic/issues/1611) added extra check on API return
+- **newrelic_one_dashboard:** fixed 0 not getting pushed to API
+- **nrql_alert_condition:** Crash with deprecated since_value and evaluation_offset fields
+- **nrql_alert_condition:** Move condition validation to API
+- **nrql_alert_condition:** remove computed flag for slide_by field
+- **rql_alert_condition:** Add nil check when flattening slide_by
+- **service_levels:** Removing an option of 14 days for trailing windows
+
+### Documentation Updates
+- minor changes
+- added note to specify the resource and data source that uses rest api's
+- remove beta info ahead of general release
+- fix broken link to terraform docs
+- document allowed values for expiration_duration
+- **nrql_alert_condition:** removed legacy urls from doc
+- **servicelevel:** SLO periods now include complete weeks
+
+<a name="v2.41.0-beta.1"></a>
+## [v2.41.0-beta.1] - 2022-03-15
+### Bug Fixes
+- handle filter_current_dashboard on update
+
+### Documentation Updates
+- minor changes in docs
+
+### Features
+- awsGov cloud integration
+
+<a name="v2.40.0"></a>
+## [v2.40.0] - 2022-03-14
+### Bug Fixes
+- allow manipulation of SLIs with non existing related entity, return sli_guid, change service level example
+
+### Documentation Updates
+- minor changes
+- added gcp integration documentation
+- update version in docs
+- add cloud_aws_link_account resource to docs
+- **servicelevel:** SLO periods now include complete weeks
+
+### Features
+- azure integration
+- added gcp cloud link account
+- **aws_link_account:** add AWS Link Account resource
+- **provider:** added gcp resource to resource map
+
+<a name="v2.39.2"></a>
+## [v2.39.2] - 2022-03-08
+### Features
+- **docs:** added accountID to alert_channel and alert_policy_channel
+
+<a name="v2.39.1"></a>
+## [v2.39.1] - 2022-03-07
+### Bug Fixes
+- **newrelic_alert_policy_channel:** add account_id to terraform schema
+- **newrelic_alert_policy_channel:** add XAccountID to context when creating or updating alert channels
+
+<a name="v2.39.0"></a>
+## [v2.39.0] - 2022-03-04
+### Bug Fixes
+- **dashboard:** handle filter_current_dashboard on read
+
+### Features
+- **Alerts:** deprecate nrql condition value_function, sum, single_value
+- **servicelevel:** SLI should contain one and only one objective
+
+<a name="v2.38.0"></a>
+## [v2.38.0] - 2022-02-18
+### Documentation Updates
+- Fix broken V2 migration links
+- add cloud_account data source docs
+- fix broken link to data sources docs
+
+### Features
+- add cloud account data source
+
+<a name="v2.37.0"></a>
+## [v2.37.0] - 2022-02-13
+### Bug Fixes
+- **newrelic_drop_rule:** fix for [#1611](https://github.com/newrelic/terraform-provider-newrelic/issues/1611) added extra check on API return
+- **nrql_alert_condition:** Move condition validation to API
+- **nrql_alert_condition:** Crash with deprecated since_value and evaluation_offset fields
+
+### Documentation Updates
+- remove beta info ahead of general release
+- fix broken link to terraform docs
+- document allowed values for expiration_duration
+- **servicelevel:** SLO periods now include complete weeks
+
+<a name="v2.36.2"></a>
+## [v2.36.2] - 2022-02-03
+### Bug Fixes
+- **nrql_alert_condition:** remove computed flag for slide_by field
+
+<a name="v2.36.1"></a>
+## [v2.36.1] - 2022-02-02
+### Bug Fixes
+- **rql_alert_condition:** Add nil check when flattening slide_by
+- **service_levels:** Removing an option of 14 days for trailing windows
+
+<a name="v2.36.0"></a>
+## [v2.36.0] - 2022-02-01
+### Documentation Updates
+- update versions url
+- fix URL to debugging terraform
+- **servicelevel:** SLO periods now include complete weeks
+
+### Features
+- **nrql_alert_condition:** Add slide by support for alert conditions
+
+<a name="v2.35.1"></a>
+## [v2.35.1] - 2022-01-24
+### Bug Fixes
+- Remove condition name length validation
+- **renovate:** removed old feature branch check
+
+### Documentation Updates
+- update provider version documentation link
+- add example of workload using tags
+
+<a name="v2.35.0"></a>
+## [v2.35.0] - 2022-01-10
+### Bug Fixes
+- correct the HMAC calculation for synthetics
+- revert previous changes, add DiffSuppressFunc for default values
+- aggregation_method and aggregation_delay diff when not provided
+- muting rule with repeat = null crashes plugin
+- correct violation_time_limit if none is provided
+- use violation_time_limit_seconds on condition import
+- **servicelevel:** Force new resource if GUID changes
+- **synthetics_multilocation_alert:** fix values for violation_time_limit_seconds
+
+### Documentation Updates
+- add vse_password documentation
+- Fix link to Install Terraform
+
+<a name="v2.34.1"></a>
+## [v2.34.1] - 2021-12-10
+### Bug Fixes
+- manually handled the state change for filter_current_dashboard. Issue 1494
+- **newrelic_one_dashboard:** cannot remove billboard threshold
+
+### Features
+- **newrelic_one_dashboard:** return nil value if critical/warning is not set for billboard
+
+<a name="v2.34.0"></a>
+## [v2.34.0] - 2021-12-07
+### Features
+- **monitor_script:** add vse_password for private monitor script locations
+
 <a name="v2.33.0"></a>
-## [v2.33.0] - 2021-11-30
+## [v2.33.0] - 2021-12-01
 ### Documentation Updates
 - **servicelevel:** Update Service Level docs
 
@@ -961,7 +1132,24 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.33.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.2...HEAD
+[v2.41.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.1...v2.41.2
+[v2.41.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.0-beta.2...v2.41.1
+[v2.41.0-beta.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.0-beta.1...v2.41.0-beta.2
+[v2.41.0-beta.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.40.0...v2.41.0-beta.1
+[v2.40.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.2...v2.40.0
+[v2.39.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.1...v2.39.2
+[v2.39.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.39.0...v2.39.1
+[v2.39.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.38.0...v2.39.0
+[v2.38.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.37.0...v2.38.0
+[v2.37.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.36.2...v2.37.0
+[v2.36.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.36.1...v2.36.2
+[v2.36.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.36.0...v2.36.1
+[v2.36.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.35.1...v2.36.0
+[v2.35.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.35.0...v2.35.1
+[v2.35.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.34.1...v2.35.0
+[v2.34.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.34.0...v2.34.1
+[v2.34.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.33.0...v2.34.0
 [v2.33.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.32.0...v2.33.0
 [v2.32.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.31.1...v2.32.0
 [v2.31.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.30.2...v2.31.1

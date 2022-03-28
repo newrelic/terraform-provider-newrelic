@@ -4,6 +4,7 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
 
 // TestAccNewRelicOneDashboard_CreateOnePage Ensure that we can create a NR1 Dashboard
@@ -130,13 +132,13 @@ func TestAccNewRelicOneDashboard_UpdateInvalidNRQL(t *testing.T) {
 			// Test: Create
 			{
 				Config: testAccCheckNewRelicOneDashboardConfig_PageValidNRQL(rName),
-				Check:  resource.ComposeTestCheckFunc(
+				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
 				),
 			},
 			// Test: Update
 			{
-				Config: 		 testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(rName),
+				Config:      testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(rName),
 				ExpectError: regexp.MustCompile("Invalid widget input"),
 			},
 		},
@@ -170,11 +172,66 @@ func TestAccNewRelicOneDashboard_FilterCurrentDashboard(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(rName, strconv.Itoa(testAccountID)),
+				Config: testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(rName, strconv.Itoa(testAccountID), "true"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicOneDashboard_FilterCurrentDashboard("newrelic_one_dashboard.bar", 5),
+					testAccCheckNewRelicOneDashboard_FilterCurrentDashboard("newrelic_one_dashboard.bar"),
 				),
-				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_BillboardThresholds Checks if critical and warning are set correctly for billboard widget
+func TestAccNewRelicOneDashboard_BillboardThresholds(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rWidgetName := fmt.Sprintf("tf-test-widget-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_BillboardWithThresholds(rName, rWidgetName, 100, 200),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboard_BillboardCriticalWarning("newrelic_one_dashboard.bar", rWidgetName, false, 100, 200),
+				),
+			},
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_BillboardWithThresholds(rName, rWidgetName, 0, 0),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboard_BillboardCriticalWarning("newrelic_one_dashboard.bar", rWidgetName, false, 0, 0),
+				),
+			},
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_BillboardWithoutThresholds(rName, rWidgetName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboard_BillboardCriticalWarning("newrelic_one_dashboard.bar", rWidgetName, true, 0, 0),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicOneDashboard_UnlinkFilterCurrentDashboard(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(rName, strconv.Itoa(testAccountID), "true"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboard_FilterCurrentDashboard("newrelic_one_dashboard.bar"),
+				),
+			},
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(rName, strconv.Itoa(testAccountID), "false"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboard_UnlinkFilterCurrentDashboard("newrelic_one_dashboard.bar"),
+				),
 			},
 		},
 	})
@@ -183,7 +240,115 @@ func TestAccNewRelicOneDashboard_FilterCurrentDashboard(t *testing.T) {
 // testAccCheckNewRelicOneDashboard_FilterCurrentDashboard fetches the dashboard resource after creation, with an optional sleep time
 // used when we know the async nature of the API will mess with consistent testing. The filter_current_dashboard requires a second call to update
 // the linked_entity_guid to add the page GUID. This also checks to make sure the page GUID matches what has been added.
-func testAccCheckNewRelicOneDashboard_FilterCurrentDashboard(name string, sleepSeconds int) resource.TestCheckFunc {
+func testAccCheckNewRelicOneDashboard_FilterCurrentDashboard(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceName)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no dashboard ID is set")
+		}
+
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+		retryErr := resource.RetryContext(context.Background(), 5*time.Second, func() *resource.RetryError {
+			found, err := client.Dashboards.GetDashboardEntity(common.EntityGUID(rs.Primary.ID))
+			if err != nil {
+				return resource.RetryableError(err)
+			}
+
+			if string(found.GUID) != rs.Primary.ID {
+				return resource.RetryableError(fmt.Errorf("dashboard not found: %v - %v", rs.Primary.ID, found))
+			}
+
+			if found.Pages[0].Widgets[0].LinkedEntities == nil {
+				return resource.NonRetryableError(fmt.Errorf("No linked entities found"))
+			}
+
+			if len(found.Pages[0].Widgets[0].LinkedEntities) > 1 {
+				return resource.NonRetryableError(fmt.Errorf("Greater than 1 linked entity found: %d", len(found.Pages[0].Widgets[0].LinkedEntities)))
+			}
+
+			if found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID() != found.Pages[0].GUID {
+				return resource.NonRetryableError(fmt.Errorf("Page GUID did not match LinkedEntity: %s", found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID()))
+			}
+
+			return nil
+		})
+
+		if retryErr != nil {
+			return retryErr
+		}
+
+		return nil
+	}
+}
+
+// helper function to check if the values of critical and warning are set correctly for the Billboard widget type
+func testAccCheckNewRelicOneDashboard_BillboardCriticalWarning(resourceName string, widgetTitle string, empty bool, critical float64, warning float64) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceName)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no dashboard ID is set")
+		}
+
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+		retryErr := resource.RetryContext(context.Background(), 5*time.Second, func() *resource.RetryError {
+			found, err := client.Dashboards.GetDashboardEntity(common.EntityGUID(rs.Primary.ID))
+			if err != nil {
+				return resource.RetryableError(err)
+			}
+
+			if string(found.GUID) != rs.Primary.ID {
+				return resource.RetryableError(fmt.Errorf("dashboard not found: %v - %v", rs.Primary.ID, found))
+			}
+
+			foundWidget := false
+			for _, page := range found.Pages {
+				for _, widget := range page.Widgets {
+					if widget.Title == widgetTitle {
+						foundWidget = true
+						if empty {
+							if len(widget.Configuration.Billboard.Thresholds) > 0 {
+								return resource.NonRetryableError(fmt.Errorf("Found thresholds on billboard, but none should be set: %s", widgetTitle))
+							}
+						} else {
+							for _, threshold := range widget.Configuration.Billboard.Thresholds {
+								if threshold.AlertSeverity == entities.DashboardAlertSeverityTypes.CRITICAL && threshold.Value != critical {
+									return resource.NonRetryableError(fmt.Errorf("The value of critical is incorrect for widget: %s", widgetTitle))
+								}
+								if threshold.AlertSeverity == entities.DashboardAlertSeverityTypes.WARNING && threshold.Value != warning {
+									return resource.NonRetryableError(fmt.Errorf("The value of warning is incorrect for widget: %s", widgetTitle))
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if !foundWidget {
+				return resource.NonRetryableError(fmt.Errorf("Unable to find widget: %s", widgetTitle))
+			}
+
+			return nil
+		})
+
+		if retryErr != nil {
+			return retryErr
+		}
+
+		return nil
+	}
+}
+
+// testAccCheckNewRelicOneDashboard_UnlinkFilterCurrentDashboard fetches the dashboard resource after update
+// and checks that entities were unlinked
+func testAccCheckNewRelicOneDashboard_UnlinkFilterCurrentDashboard(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -192,8 +357,6 @@ func testAccCheckNewRelicOneDashboard_FilterCurrentDashboard(name string, sleepS
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no dashboard ID is set")
 		}
-
-		time.Sleep(time.Duration(sleepSeconds) * time.Second)
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
@@ -206,16 +369,8 @@ func testAccCheckNewRelicOneDashboard_FilterCurrentDashboard(name string, sleepS
 			return fmt.Errorf("dashboard not found: %v - %v", rs.Primary.ID, found)
 		}
 
-		if found.Pages[0].Widgets[0].LinkedEntities == nil {
-			return fmt.Errorf("No linked entities found")
-		}
-
-		if len(found.Pages[0].Widgets[0].LinkedEntities) > 1 {
-			return fmt.Errorf("Greater than 1 linked entity found: %d", len(found.Pages[0].Widgets[0].LinkedEntities))
-		}
-
-		if found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID() != found.Pages[0].GUID {
-			return fmt.Errorf("Page GUID did not match LinkedEntity: %s", found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID())
+		if found.Pages[0].Widgets[0].LinkedEntities != nil {
+			return fmt.Errorf("Entities still linked")
 		}
 
 		return nil
@@ -265,7 +420,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageSimple(pageName string) string {
 `
 }
 
-func testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(dashboardName string, accountID string) string {
+func testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(dashboardName string, accountID string, filterDashboard string) string {
 	return `
 	resource "newrelic_one_dashboard" "bar" {
 
@@ -285,7 +440,7 @@ func testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(dashboardName
 			}
 	  
 			# Linking to self
-			filter_current_dashboard = true
+			filter_current_dashboard = ` + filterDashboard + `
 		  }
 		}
 	  }
@@ -470,6 +625,50 @@ resource "newrelic_one_dashboard" "bar" {
       column = 1
       nrql_query {
         query      = "THIS IS INVALID NRQL"
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL generates billboard with critical and warning set
+func testAccCheckNewRelicOneDashboardConfig_BillboardWithThresholds(dashboardName string, widgetName string, critical float64, warning float64) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "` + widgetName + `"
+      row = 1
+      column = 1
+      nrql_query {
+        query      = "SELECT count(*) FROM ProcessSample SINCE 30 MINUTES AGO TIMESERIES"
+      }
+      critical = ` + strconv.FormatFloat(critical, 'f', -1, 64) + `
+      warning = ` + strconv.FormatFloat(warning, 'f', -1, 64) + `
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL generates billboard without critical and warning set
+func testAccCheckNewRelicOneDashboardConfig_BillboardWithoutThresholds(dashboardName string, widgetName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "` + widgetName + `"
+      row = 1
+      column = 1
+      nrql_query {
+        query      = "SELECT count(*) FROM ProcessSample SINCE 30 MINUTES AGO TIMESERIES"
       }
     }
   }

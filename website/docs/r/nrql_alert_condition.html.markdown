@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create and manage NRQL alert conditions in New Relic.
 
--> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](/docs/providers/newrelic/index.html) for configuring the provider.
+-> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](/providers/newrelic/newrelic/latest/docs/guides/migration_guide_v2) for configuring the provider.
 <br><br>
 Before upgrading to version 2.0.0 or later, it is recommended to upgrade to the most recent 1.x version of the provider and ensure that your environment successfully runs `terraform plan` without unexpected changes.
 
@@ -31,7 +31,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
   runbook_url                    = "https://www.example.com"
   enabled                        = true
   violation_time_limit_seconds   = 3600
-  value_function                 = "single_value"
   fill_option                    = "static"
   fill_value                     = 1.0
   aggregation_window             = 60
@@ -40,6 +39,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   expiration_duration            = 120
   open_violation_on_expiration   = true
   close_violations_on_expiration = true
+  slide_by                       = 30
 
   nrql {
     query = "SELECT average(duration) FROM Transaction where appName = 'Your App'"
@@ -78,7 +78,7 @@ The following arguments are supported:
 - `term` - (Optional) **DEPRECATED** Use `critical`, and `warning` instead.  A list of terms for this condition. See [Terms](#terms) below for details.
 - `critical` - (Required) A list containing the `critical` threshold values. See [Terms](#terms) below for details.
 - `warning` - (Optional) A list containing the `warning` threshold values. See [Terms](#terms) below for details.
-- `value_function` - (Required if `type` is `static`, omit when `type` is `baseline` or `outlier` ) Possible values are `single_value`, `sum` (case insensitive).
+- `value_function` - (Optional if `type` is `static`, omit when `type` is `baseline` or `outlier` ) **DEPRECATED** Use `signal.slide_by` instead.
 - `expected_groups` - (Optional) Number of expected groups when using `outlier` detection.
 - `open_violation_on_group_overlap` - (Optional) Whether or not to trigger a violation when groups overlap. Set to `true` if you want to trigger a violation when groups overlap. This argument is only applicable in `outlier` conditions.
 - `ignore_overlap` - (Optional) **DEPRECATED:** Use `open_violation_on_group_overlap` instead, but use the inverse value of your boolean - e.g. if `ignore_overlap = false`, use `open_violation_on_group_overlap = true`. This argument sets whether to trigger a violation when groups overlap. If set to `true` overlapping groups will not trigger a violation. This argument is only applicable in `outlier` conditions.
@@ -97,6 +97,7 @@ The following arguments are supported:
 - `aggregation_method` - (Optional) Determines when we consider an aggregation window to be complete so that we can evaluate the signal for violations. Possible values are `cadence`, `event_flow` or `event_timer`. Default is `event_flow`. `aggregation_method` cannot be set with `nrql.evaluation_offset`.
 - `aggregation_delay` - (Optional) How long we wait for data that belongs in each aggregation window. Depending on your data, a longer delay may increase accuracy but delay notifications. Use `aggregation_delay` with the `event_flow` and `cadence` methods. The maximum delay is 1200 seconds (20 minutes) when using `event_flow` and 3600 seconds (60 minutes) when using `cadence`. In both cases, the minimum delay is 0 seconds and the default is 120 seconds. `aggregation_delay` cannot be set with `nrql.evaluation_offset`.
 - `aggregation_timer` - (Optional) How long we wait after each data point arrives to make sure we've processed the whole batch. Use `aggregation_timer` with the `event_timer` method. The timer value can range from 0 seconds to 1200 seconds (20 minutes); the default is 60 seconds. `aggregation_timer` cannot be set with `nrql.evaluation_offset`.
+- `slide_by` - (Optional) Gathers data in overlapping time windows to smooth the chart line, making it easier to spot trends. The `slide_by` value is specified in seconds and must be smaller than and a factor of the `aggregation_window`. `slide_by` cannot be used with `outlier` NRQL conditions or `static` NRQL conditions using the `sum` `value_function`.
 
 ## NRQL
 
@@ -156,6 +157,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   violation_time_limit_seconds = 3600
   aggregation_method           = "event_flow"
   aggregation_delay            = 120
+  slide_by                     = 30
 
   # baseline type only
   baseline_direction = "upper_only"
@@ -246,9 +248,9 @@ $ terraform import newrelic_nrql_alert_condition.foo 538291:6789035:outlier
 
 ~> **NOTE:** The value of `conditionType` in the import composite ID must be a valid condition type - `static`, `baseline`, or `outlier.` Also note that deprecated arguments will *not* be set when importing.
 
-The actual values for `policy_id` and `condition_id` can be retrieved from the following New Relic URL when viewing the NRQL alert condition you want to import:
+Users can find the actual values for `policy_id` and `condition_id` from the New Relic One UI under respective policy and condition.
+ 
 
-<small>alerts.newrelic.com/accounts/**\<account_id\>**/policies/**\<policy_id\>**/conditions/**\<condition_id\>**/edit</small>
 
 ## Upgrade from 1.x to 2.x
 

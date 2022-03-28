@@ -76,8 +76,6 @@ func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		if attr, ok := d.GetOk("value_function"); ok {
 			valFn := alerts.NrqlConditionValueFunction(strings.ToUpper(attr.(string)))
 			input.ValueFunction = &valFn
-		} else {
-			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", "value_function", conditionType)
 		}
 	}
 
@@ -169,7 +167,7 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 			valFn := alerts.NrqlConditionValueFunction(strings.ToUpper(attr.(string)))
 			input.ValueFunction = &valFn
 		} else {
-			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", "value_function", conditionType)
+			input.ValueFunction = &alerts.NrqlConditionValueFunctions.SingleValue
 		}
 	}
 
@@ -468,6 +466,11 @@ func expandCreateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionCrea
 		signal.AggregationWindow = &v
 	}
 
+	if slideBy, ok := d.GetOk("slide_by"); ok {
+		v := slideBy.(int)
+		signal.SlideBy = &v
+	}
+
 	if _, ok := d.GetOk("aggregation_method"); ok {
 		v := aggregationMethodMap[strings.ToLower(d.Get("aggregation_method").(string))]
 
@@ -475,15 +478,19 @@ func expandCreateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionCrea
 	}
 
 	if aggregationDelay, ok := d.GetOk("aggregation_delay"); ok {
-		v := aggregationDelay.(int)
-
-		signal.AggregationDelay = &v
+		value := aggregationDelay.(string)
+		if value != "" {
+			v, _ := strconv.Atoi(value)
+			signal.AggregationDelay = &v
+		}
 	}
 
 	if aggregationTimer, ok := d.GetOk("aggregation_timer"); ok {
-		v := aggregationTimer.(int)
-
-		signal.AggregationTimer = &v
+		value := aggregationTimer.(string)
+		if value != "" {
+			v, _ := strconv.Atoi(value)
+			signal.AggregationTimer = &v
+		}
 	}
 
 	return &signal, nil
@@ -509,6 +516,11 @@ func expandUpdateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionUpda
 		signal.AggregationWindow = &v
 	}
 
+	if slideBy, ok := d.GetOk("slide_by"); ok {
+		v := slideBy.(int)
+		signal.SlideBy = &v
+	}
+
 	if _, ok := d.GetOk("aggregation_method"); ok {
 		v := aggregationMethodMap[strings.ToLower(d.Get("aggregation_method").(string))]
 
@@ -516,15 +528,19 @@ func expandUpdateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionUpda
 	}
 
 	if aggregationDelay, ok := d.GetOk("aggregation_delay"); ok {
-		v := aggregationDelay.(int)
-
-		signal.AggregationDelay = &v
+		value := aggregationDelay.(string)
+		if value != "" {
+			v, _ := strconv.Atoi(value)
+			signal.AggregationDelay = &v
+		}
 	}
 
 	if aggregationTimer, ok := d.GetOk("aggregation_timer"); ok {
-		v := aggregationTimer.(int)
-
-		signal.AggregationTimer = &v
+		value := aggregationTimer.(string)
+		if value != "" {
+			v, _ := strconv.Atoi(value)
+			signal.AggregationTimer = &v
+		}
 	}
 
 	return &signal, nil
@@ -609,7 +625,7 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 
 	if _, ok := d.GetOk("violation_time_limit_seconds"); ok {
 		_ = d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
-	} else {
+	} else if _, ok := d.GetOk("violation_time_limit"); ok {
 		_ = d.Set("violation_time_limit", condition.ViolationTimeLimit)
 	}
 
@@ -654,6 +670,11 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 	if err := d.Set("aggregation_window", signal.AggregationWindow); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_window`: %v", err)
 	}
+	if signal.SlideBy != nil {
+		if err := d.Set("slide_by", signal.SlideBy); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `slide_by`: %v", err)
+		}
+	}
 
 	if err := d.Set("fill_value", signal.FillValue); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `fill_value`: %v", err)
@@ -672,13 +693,15 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 	}
 
 	if signal.AggregationDelay != nil {
-		if err := d.Set("aggregation_delay", signal.AggregationDelay); err != nil {
+		delay := strconv.Itoa(*signal.AggregationDelay)
+		if err := d.Set("aggregation_delay", delay); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_delay`: %v", err)
 		}
 	}
 
 	if signal.AggregationTimer != nil {
-		if err := d.Set("aggregation_timer", signal.AggregationTimer); err != nil {
+		timer := strconv.Itoa(*signal.AggregationTimer)
+		if err := d.Set("aggregation_timer", timer); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_timer`: %v", err)
 		}
 	}
@@ -695,7 +718,7 @@ func flattenNrql(nrql alerts.NrqlConditionQuery, configNrql map[string]interface
 	svRaw := configNrql["since_value"]
 
 	// Handle deprecated
-	if svRaw != nil && svRaw.(string) != "" {
+	if svRaw != nil && svRaw.(string) != "" && nrql.EvaluationOffset != nil {
 		evalOffset := nrql.EvaluationOffset
 		out["since_value"] = strconv.Itoa(*evalOffset)
 	} else {

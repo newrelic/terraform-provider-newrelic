@@ -8,9 +8,9 @@ description: |-
 
 # Data Source: newrelic\_entity
 
-Use this data source to get information about a specific entity in New Relic One that already exists. More information on Terraform's data sources can be found [here](https://www.terraform.io/docs/configuration/data-sources.html).
+Use this data source to get information about a specific entity in New Relic One that already exists. More information on Terraform's data sources can be found [here](https://www.terraform.io/language/data-sources).
 
--> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](/docs/providers/newrelic/index.html) for configuring the provider.
+-> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](/providers/newrelic/newrelic/latest/docs/guides/migration_guide_v2) for configuring the provider.
 <br><br>
 Before upgrading to version 2.0.0 or later, it is recommended to upgrade to the most recent 1.x version of the provider and ensure that your environment successfully runs `terraform plan` without unexpected changes.
 
@@ -38,7 +38,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
   description                  = "Alert when transactions are taking too long"
   runbook_url                  = "https://www.example.com"
   enabled                      = true
-  value_function               = "single_value"
   violation_time_limit_seconds = 3600
 
   nrql {

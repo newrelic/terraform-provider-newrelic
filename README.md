@@ -9,7 +9,9 @@
 
 ## Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) 0.11+
+- [Terraform](https://www.terraform.io/downloads.html) 1.0+
+
+New Relic and the Terraform team will support Terraform versions up to 2 years after the latest release. We advice to always upgrade to the latest version of Terraform and the New Relic Terraform provider.
 
 ## Using the provider
 
@@ -17,37 +19,16 @@ To use the latest version of the provider in your Terraform environment, run `te
 
 If you wish to pin your environment to a specific release of the provider, you can do so with a `required_providers` statement in your Terraform manifest. The `terraform` [configuration block](https://www.terraform.io/docs/configuration/provider-requirements.html) varies slightly depending on which Terraform version you're using. See below for more examples of configuring the provider version for the different versions of Terraform.
 
-For Terraform version 0.13.x
+For Terraform version 1.x and above
 
 ```hcl
 terraform {
-  required_version = "~> 0.13.0"
+  required_version = "~> 1.0"
   required_providers {
     newrelic = {
       source  = "newrelic/newrelic"
-      version = "~> 2.7.5"
     }
   }
-}
-```
-
-For Terraform version 0.12.x
-
-```hcl
-terraform {
-  required_providers {
-    newrelic = {
-      version = "~> 2.7.5"
-    }
-  }
-}
-```
-
-For Terraform version 0.11.x
-
-```hcl
-provider "newrelic" {
-  version = "~> 2.7.5"
 }
 ```
 
@@ -110,6 +91,12 @@ NEW_RELIC_ACCOUNT_ID
 NEW_RELIC_INSIGHTS_INSERT_KEY
 NEW_RELIC_LICENSE_KEY
 NEW_RELIC_REGION
+```
+
+In order to run a single test, run the following command and replace `{testName}` with function name of your test.
+
+```sh
+TF_ACC=1 NR_ACC_TESTING=1 gotestsum -f testname -- -v --tags=integration -timeout 10m ./newrelic --run {testName}
 ```
 
 #### Go Version Support
