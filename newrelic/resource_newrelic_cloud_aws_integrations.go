@@ -193,7 +193,7 @@ func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.R
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	cloudAwsIntegrationsInput := expandCloudAwsIntegrationsInput(d)
+	cloudAwsIntegrationsInput, _ := expandCloudAwsIntegrationsInput(d)
 
 	cloudAwsIntegrationsPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, cloudAwsIntegrationsInput)
 	if err != nil {
@@ -219,8 +219,10 @@ func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.R
 	return resourceNewRelicCloudAwsIntegrationsRead(ctx, d, meta)
 }
 
-func expandCloudAwsIntegrationsInput(d *schema.ResourceData) cloud.CloudIntegrationsInput {
+func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
 	cloudAwsIntegration := cloud.CloudAwsIntegrationsInput{}
+	cloudDisableAwsIntegration := cloud.CloudAwsDisableIntegrationsInput{}
+
 	var linkedAccountID int
 
 	if l, ok := d.GetOk("linked_account_id"); ok {
@@ -231,31 +233,58 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) cloud.CloudIntegrat
 		cloudAwsIntegration.Billing = expandCloudAwsIntegrationBillingInput(b.([]interface{}), linkedAccountID)
 	}
 
+	if o, n := d.GetChange("billing"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
 	if c, ok := d.GetOk("cloudtrail"); ok {
 		cloudAwsIntegration.Cloudtrail = expandCloudAwsIntegrationCloudtrailInput(c.([]interface{}), linkedAccountID)
+	}
+
+	if o, n := d.GetChange("cloudtrail"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if h, ok := d.GetOk("health"); ok {
 		cloudAwsIntegration.Health = expandCloudAwsIntegrationHealthInput(h.([]interface{}), linkedAccountID)
 	}
 
+	if o, n := d.GetChange("health"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
 	if t, ok := d.GetOk("trusted_advisor"); ok {
 		cloudAwsIntegration.Trustedadvisor = expandCloudAwsIntegrationTrustedAdvisorInput(t.([]interface{}), linkedAccountID)
+	}
+
+	if o, n := d.GetChange("trusted_advisor"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("vpc"); ok {
 		cloudAwsIntegration.Vpc = expandCloudAwsIntegrationVpcInput(v.([]interface{}), linkedAccountID)
 	}
 
+	if o, n := d.GetChange("vpc"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
 	if x, ok := d.GetOk("x_ray"); ok {
 		cloudAwsIntegration.AwsXray = expandCloudAwsIntegrationXRayInput(x.([]interface{}), linkedAccountID)
 	}
+	if o, n := d.GetChange("x_ray"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsIntegration.AwsXray = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
 
-	input := cloud.CloudIntegrationsInput{
+	configureInput := cloud.CloudIntegrationsInput{
 		Aws: cloudAwsIntegration,
 	}
 
-	return input
+	disableInput := cloud.CloudDisableIntegrationsInput{
+		Aws: cloudDisableAwsIntegration,
+	}
+
+	return configureInput, disableInput
 }
 
 func expandCloudAwsIntegrationBillingInput(b []interface{}, linkedAccountID int) []cloud.CloudBillingIntegrationInput {
@@ -550,16 +579,31 @@ func resourceNewRelicCloudAwsIntegrationsUpdate(ctx context.Context, d *schema.R
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	cloudAwsIntegrationsInput := expandCloudAwsIntegrationsInput(d)
+	configureInput, disableInput := expandCloudAwsIntegrationsInput(d)
 
-	d.State()
+	cloudDisableIntegrationsPayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, disableInput)
 
-	cloudAwsIntegrationsPayload, err := client.Cloud.CloudConfigureIntegration(accountID, cloudAwsIntegrationsInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var diags diag.Diagnostics
+
+	if len(cloudDisableIntegrationsPayload.Errors) > 0 {
+		for _, err := range cloudDisableIntegrationsPayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+
+	cloudAwsIntegrationsPayload, err := client.Cloud.CloudConfigureIntegration(accountID, configureInput)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if len(cloudAwsIntegrationsPayload.Errors) > 0 {
 		for _, err := range cloudAwsIntegrationsPayload.Errors {
@@ -579,24 +623,9 @@ func resourceNewRelicCloudAwsIntegrationsDelete(ctx context.Context, d *schema.R
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	var linkedAccountID int
+	deleteInput := buildDeleteInput(d)
 
-	if l, ok := d.GetOk("linked_account_id"); ok {
-		linkedAccountID = l.(int)
-	}
-
-	disableIntegrationsInput := cloud.CloudDisableIntegrationsInput{
-		Aws: cloud.CloudAwsDisableIntegrationsInput{
-			Billing:        []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}},
-			Cloudtrail:     []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}},
-			Health:         []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}},
-			Trustedadvisor: []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}},
-			Vpc:            []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}},
-			AwsXray:        []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}},
-		},
-	}
-
-	cloudDisableIntegrationsPayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, disableIntegrationsInput)
+	cloudDisableIntegrationsPayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, deleteInput)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -617,4 +646,44 @@ func resourceNewRelicCloudAwsIntegrationsDelete(ctx context.Context, d *schema.R
 	d.SetId("")
 
 	return nil
+}
+
+func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
+	cloudDisableAwsIntegration := cloud.CloudAwsDisableIntegrationsInput{}
+
+	var linkedAccountID int
+
+	if l, ok := d.GetOk("linked_account_id"); ok {
+		linkedAccountID = l.(int)
+	}
+
+	if _, ok := d.GetOk("billing"); ok {
+		cloudDisableAwsIntegration.Billing = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("cloudtrail"); ok {
+		cloudDisableAwsIntegration.Cloudtrail = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("health"); ok {
+		cloudDisableAwsIntegration.Health = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("trusted_advisor"); ok {
+		cloudDisableAwsIntegration.Trustedadvisor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("vpc"); ok {
+		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("x_ray"); ok {
+		cloudDisableAwsIntegration.AwsXray = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	deleteInput := cloud.CloudDisableIntegrationsInput{
+		Aws: cloudDisableAwsIntegration,
+	}
+
+	return deleteInput
 }
