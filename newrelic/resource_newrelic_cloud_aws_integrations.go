@@ -231,48 +231,37 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 
 	if b, ok := d.GetOk("billing"); ok {
 		cloudAwsIntegration.Billing = expandCloudAwsIntegrationBillingInput(b.([]interface{}), linkedAccountID)
-	}
-
-	if o, n := d.GetChange("billing"); len(n.([]interface{})) < len(o.([]interface{})) {
+	} else if o, n := d.GetChange("billing"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if c, ok := d.GetOk("cloudtrail"); ok {
 		cloudAwsIntegration.Cloudtrail = expandCloudAwsIntegrationCloudtrailInput(c.([]interface{}), linkedAccountID)
-	}
-
-	if o, n := d.GetChange("cloudtrail"); len(n.([]interface{})) < len(o.([]interface{})) {
+	} else if o, n := d.GetChange("cloudtrail"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if h, ok := d.GetOk("health"); ok {
 		cloudAwsIntegration.Health = expandCloudAwsIntegrationHealthInput(h.([]interface{}), linkedAccountID)
-	}
-
-	if o, n := d.GetChange("health"); len(n.([]interface{})) < len(o.([]interface{})) {
+	} else if o, n := d.GetChange("health"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if t, ok := d.GetOk("trusted_advisor"); ok {
 		cloudAwsIntegration.Trustedadvisor = expandCloudAwsIntegrationTrustedAdvisorInput(t.([]interface{}), linkedAccountID)
-	}
-
-	if o, n := d.GetChange("trusted_advisor"); len(n.([]interface{})) < len(o.([]interface{})) {
+	} else if o, n := d.GetChange("trusted_advisor"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("vpc"); ok {
 		cloudAwsIntegration.Vpc = expandCloudAwsIntegrationVpcInput(v.([]interface{}), linkedAccountID)
-	}
-
-	if o, n := d.GetChange("vpc"); len(n.([]interface{})) < len(o.([]interface{})) {
+	} else if o, n := d.GetChange("vpc"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if x, ok := d.GetOk("x_ray"); ok {
 		cloudAwsIntegration.AwsXray = expandCloudAwsIntegrationXRayInput(x.([]interface{}), linkedAccountID)
-	}
-	if o, n := d.GetChange("x_ray"); len(n.([]interface{})) < len(o.([]interface{})) {
+	} else if o, n := d.GetChange("x_ray"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAwsIntegration.AwsXray = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
