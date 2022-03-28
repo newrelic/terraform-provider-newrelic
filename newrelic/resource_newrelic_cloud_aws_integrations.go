@@ -75,11 +75,6 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 
 func cloudAwsIntegrationSchemaBase() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"integration_id": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "The ID of the AWS integration",
-		},
 		"metrics_polling_interval": {
 			Type:        schema.TypeInt,
 			Optional:    true,
@@ -482,7 +477,6 @@ func flattenCloudAwsBillingIntegration(in *cloud.CloudBillingIntegration) []inte
 
 	out := make(map[string]interface{})
 
-	out["integration_id"] = in.ID
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
 	flattened[0] = out
@@ -495,7 +489,6 @@ func flattenCloudAwsCloudTrailIntegration(in *cloud.CloudCloudtrailIntegration) 
 
 	out := make(map[string]interface{})
 
-	out["integration_id"] = in.ID
 	out["aws_regions"] = in.AwsRegions
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
@@ -509,7 +502,6 @@ func flattenCloudAwsHealthIntegration(in *cloud.CloudHealthIntegration) []interf
 
 	out := make(map[string]interface{})
 
-	out["integration_id"] = in.ID
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
 	flattened[0] = out
@@ -522,7 +514,6 @@ func flattenCloudAwsTrustedAdvisorIntegration(in *cloud.CloudTrustedadvisorInteg
 
 	out := make(map[string]interface{})
 
-	out["integration_id"] = in.ID
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
 	flattened[0] = out
@@ -535,7 +526,6 @@ func flattenCloudAwsVpcIntegration(in *cloud.CloudVpcIntegration) []interface{} 
 
 	out := make(map[string]interface{})
 
-	out["integration_id"] = in.ID
 	out["aws_regions"] = in.AwsRegions
 	out["fetch_nat_gateway"] = in.FetchNatGateway
 	out["fetch_vpn"] = in.FetchVpn
@@ -552,8 +542,7 @@ func flattenCloudAwsXRayIntegration(in *cloud.CloudAwsXrayIntegration) []interfa
 	flattened := make([]interface{}, 1)
 
 	out := make(map[string]interface{})
-
-	out["integration_id"] = in.ID
+	
 	out["aws_regions"] = in.AwsRegions
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
