@@ -13,7 +13,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.16.x
+          go-version: 1.17.x
 
       - name: Add GOBIN to PATH
         run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
@@ -52,7 +52,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.16.x
+          go-version: 1.17.x
 
       - name: Add GOBIN to PATH
         run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
@@ -86,7 +86,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.16.x
+          go-version: 1.17.x
 
       - name: Add GOBIN to PATH
         run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
@@ -119,7 +119,7 @@ jobs:
           INTEGRATION_TESTING_GCP_PROJECT_ID: ${{ secrets.INTEGRATION_TESTING_GCP_PROJECT_ID }}
           INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID: ${{secrets.INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID}}
           INTEGRATION_TESTING_AZURE_APPLICATION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_APPLICATION_ID }}
-          INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID }}
+          INTEGRATION_TESTING_AZURE_CLIENT_SECRET: ${{ secrets.INTEGRATION_TESTING_AZURE_CLIENT_SECRET }}
           INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID }}
           INTEGRATION_TESTING_AZURE_TENANT_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_TENANT_ID }}
 
