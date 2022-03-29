@@ -29,6 +29,7 @@ resource "newrelic_cloud_aws_integrations" "foo" {
 	}
 	cloudtrail {
 		metrics_polling_interval = 6000
+		aws_regions = ["region-1", "region-2"]
 	}
 	health {
 		metrics_polling_interval = 6000
@@ -38,8 +39,15 @@ resource "newrelic_cloud_aws_integrations" "foo" {
 	}
 	vpc {
     	metrics_polling_interval = 6000
+    	aws_regions = ["region-1", "region-2"]
+    	fetch_nat_gateway = true
+    	fetch_vpn = false
+    	tag_key = "tag key"
+    	tag_value = "tag value"
     }
 	x_ray {
+	    metrics_polling_interval = 6000
+        aws_regions = ["region-1", "region-2"]
 	}
 }
 ```
