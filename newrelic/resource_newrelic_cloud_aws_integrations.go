@@ -280,6 +280,12 @@ func expandCloudAwsIntegrationBillingInput(b []interface{}, linkedAccountID int)
 	for i, billing := range b {
 		var billingInput cloud.CloudBillingIntegrationInput
 
+		if billing == nil {
+			billingInput.LinkedAccountId = linkedAccountID
+			expanded[i] = billingInput
+			return expanded
+		}
+
 		in := billing.(map[string]interface{})
 
 		billingInput.LinkedAccountId = linkedAccountID
@@ -298,6 +304,12 @@ func expandCloudAwsIntegrationCloudtrailInput(c []interface{}, linkedAccountID i
 
 	for i, cloudtrail := range c {
 		var cloudtrailInput cloud.CloudCloudtrailIntegrationInput
+
+		if cloudtrail == nil {
+			cloudtrailInput.LinkedAccountId = linkedAccountID
+			expanded[i] = cloudtrailInput
+			return expanded
+		}
 
 		in := cloudtrail.(map[string]interface{})
 
@@ -328,6 +340,12 @@ func expandCloudAwsIntegrationHealthInput(h []interface{}, linkedAccountID int) 
 	for i, health := range h {
 		var healthInput cloud.CloudHealthIntegrationInput
 
+		if health == nil {
+			healthInput.LinkedAccountId = linkedAccountID
+			expanded[i] = healthInput
+			return expanded
+		}
+
 		in := health.(map[string]interface{})
 
 		healthInput.LinkedAccountId = linkedAccountID
@@ -346,6 +364,12 @@ func expandCloudAwsIntegrationTrustedAdvisorInput(t []interface{}, linkedAccount
 
 	for i, trustedAdvisor := range t {
 		var trustedAdvisorInput cloud.CloudTrustedadvisorIntegrationInput
+
+		if trustedAdvisor == nil {
+			trustedAdvisorInput.LinkedAccountId = linkedAccountID
+			expanded[i] = trustedAdvisorInput
+			return expanded
+		}
 
 		in := trustedAdvisor.(map[string]interface{})
 
@@ -366,6 +390,12 @@ func expandCloudAwsIntegrationVpcInput(v []interface{}, linkedAccountID int) []c
 
 	for i, vpc := range v {
 		var vpcInput cloud.CloudVpcIntegrationInput
+
+		if vpc == nil {
+			vpcInput.LinkedAccountId = linkedAccountID
+			expanded[i] = vpcInput
+			return expanded
+		}
 
 		in := vpc.(map[string]interface{})
 
@@ -411,6 +441,12 @@ func expandCloudAwsIntegrationXRayInput(x []interface{}, linkedAccountID int) []
 
 	for i, xray := range x {
 		var xrayInput cloud.CloudAwsXrayIntegrationInput
+
+		if xray == nil {
+			xrayInput.LinkedAccountId = linkedAccountID
+			expanded[i] = xrayInput
+			return expanded
+		}
 
 		in := xray.(map[string]interface{})
 

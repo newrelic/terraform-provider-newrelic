@@ -105,7 +105,6 @@ resource "newrelic_cloud_aws_integrations" "foo" {
 		linked_account_id = %[1]d
 
 		billing {
-			metrics_polling_interval = 6000
 		}
 
 		cloudtrail {
