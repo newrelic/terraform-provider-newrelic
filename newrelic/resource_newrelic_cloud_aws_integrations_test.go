@@ -34,6 +34,12 @@ func TestAccNewRelicCloudAwsIntegrations_Basic(t *testing.T) {
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
 			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
