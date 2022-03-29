@@ -24,31 +24,31 @@ Leave an integration block empty to use its default configuration.
 
 ```hcl
 resource "newrelic_cloud_aws_integrations" "foo" {
-    linked_account_id = 12345
-	billing {
-	}
-	cloudtrail {
-		metrics_polling_interval = 6000
-		aws_regions = ["region-1", "region-2"]
-	}
-	health {
-		metrics_polling_interval = 6000
-	}
-	trusted_advisor {
-		metrics_polling_interval = 6000
-	}
-	vpc {
-	    metrics_polling_interval = 6000
-    	aws_regions = ["region-1", "region-2"]
-    	fetch_nat_gateway = true
-        fetch_vpn = false
-    	tag_key = "tag key"
-    	tag_value = "tag value"
-    }
-	x_ray {
-	    metrics_polling_interval = 6000
-	    aws_regions = ["region-1", "region-2"]
-	}
+  linked_account_id = 12345
+  billing {
+  }
+  cloudtrail {
+    metrics_polling_interval = 6000
+    aws_regions = ["region-1", "region-2"]
+  }
+  health {
+    metrics_polling_interval = 6000
+  }
+  trusted_advisor {
+    metrics_polling_interval = 6000
+  }
+  vpc {
+    metrics_polling_interval = 6000
+    aws_regions = ["region-1", "region-2"]
+    fetch_nat_gateway = true
+    fetch_vpn = false
+    tag_key = "tag key"
+    tag_value = "tag value"
+  }
+  x_ray {
+    metrics_polling_interval = 6000
+    aws_regions = ["region-1", "region-2"]
+  }
 }
 ```
 ## Argument Reference
