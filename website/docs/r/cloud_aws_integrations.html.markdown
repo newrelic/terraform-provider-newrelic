@@ -38,16 +38,16 @@ resource "newrelic_cloud_aws_integrations" "foo" {
 		metrics_polling_interval = 6000
 	}
 	vpc {
-    	metrics_polling_interval = 6000
+	    metrics_polling_interval = 6000
     	aws_regions = ["region-1", "region-2"]
     	fetch_nat_gateway = true
-    	fetch_vpn = false
+        fetch_vpn = false
     	tag_key = "tag key"
     	tag_value = "tag value"
     }
 	x_ray {
 	    metrics_polling_interval = 6000
-        aws_regions = ["region-1", "region-2"]
+	    aws_regions = ["region-1", "region-2"]
 	}
 }
 ```
