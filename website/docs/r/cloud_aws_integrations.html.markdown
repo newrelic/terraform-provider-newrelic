@@ -56,7 +56,7 @@ resource "newrelic_cloud_aws_integrations" "foo" {
 The following arguments are supported:
 
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
-* `linked_account_id` - (Required) The Amazon Resource Name (ARN) of the IAM role.
+* `linked_account_id` - (Required) The ID of the linked AWS account in New Relic.
 * `billing` - (Optional) Billing integration. See [Integration blocks](#integration-blocks) below for details.
 * `cloudtrail` - (Optional) Cloudtrail integration. See [Integration blocks](#integration-blocks) below for details.
 * `health` - (Optional) Health integration. See [Integration blocks](#integration-blocks) below for details.
