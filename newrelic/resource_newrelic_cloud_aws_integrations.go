@@ -15,6 +15,9 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 		ReadContext:   resourceNewRelicCloudAwsIntegrationsRead,
 		UpdateContext: resourceNewRelicCloudAwsIntegrationsUpdate,
 		DeleteContext: resourceNewRelicCloudAwsIntegrationsDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -438,7 +441,11 @@ func resourceNewRelicCloudAwsIntegrationsRead(ctx context.Context, d *schema.Res
 
 	accountID := selectAccountID(providerConfig, d)
 
-	linkedAccountID := d.Get("linked_account_id").(int)
+	linkedAccountID, convErr := strconv.Atoi(d.Id())
+
+	if convErr != nil {
+		return diag.FromErr(convErr)
+	}
 
 	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
 	if err != nil {
