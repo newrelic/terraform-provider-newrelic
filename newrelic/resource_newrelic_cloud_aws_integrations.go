@@ -214,7 +214,7 @@ func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.R
 		d.SetId(strconv.Itoa(d.Get("linked_account_id").(int)))
 	}
 
-	return resourceNewRelicCloudAwsIntegrationsRead(ctx, d, meta)
+	return nil
 }
 
 func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
@@ -317,7 +317,7 @@ func expandCloudAwsIntegrationCloudtrailInput(c []interface{}, linkedAccountID i
 
 		if a, ok := in["aws_regions"]; ok {
 			awsRegions := a.([]interface{})
-			regions := make([]string, len(awsRegions))
+			var regions []string
 
 			for _, region := range awsRegions {
 				regions = append(regions, region.(string))
@@ -403,7 +403,7 @@ func expandCloudAwsIntegrationVpcInput(v []interface{}, linkedAccountID int) []c
 
 		if a, ok := in["aws_regions"]; ok {
 			awsRegions := a.([]interface{})
-			regions := make([]string, len(awsRegions))
+			var regions []string
 
 			for _, region := range awsRegions {
 				regions = append(regions, region.(string))
@@ -428,7 +428,7 @@ func expandCloudAwsIntegrationVpcInput(v []interface{}, linkedAccountID int) []c
 		}
 
 		if tv, ok := in["tag_value"]; ok {
-			vpcInput.TagKey = tv.(string)
+			vpcInput.TagValue = tv.(string)
 		}
 		expanded[i] = vpcInput
 	}
@@ -454,7 +454,7 @@ func expandCloudAwsIntegrationXRayInput(x []interface{}, linkedAccountID int) []
 
 		if a, ok := in["aws_regions"]; ok {
 			awsRegions := a.([]interface{})
-			regions := make([]string, len(awsRegions))
+			var regions []string
 
 			for _, region := range awsRegions {
 				regions = append(regions, region.(string))
@@ -635,7 +635,7 @@ func resourceNewRelicCloudAwsIntegrationsUpdate(ctx context.Context, d *schema.R
 		}
 		return diags
 	}
-	return resourceNewRelicCloudAwsIntegrationsRead(ctx, d, meta)
+	return nil
 }
 
 func resourceNewRelicCloudAwsIntegrationsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

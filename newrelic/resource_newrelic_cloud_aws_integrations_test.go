@@ -105,21 +105,28 @@ resource "newrelic_cloud_aws_integrations" "foo" {
 		linked_account_id = %[1]d
 
 		billing {
-		}
-
-		cloudtrail {
 			metrics_polling_interval = 6000
 		}
-
+		cloudtrail {
+			metrics_polling_interval = 6000
+			aws_regions = ["us-east-1"]
+		}
 		health {
 			metrics_polling_interval = 6000
 		}
-
 		trusted_advisor {
 			metrics_polling_interval = 6000
 		}
-
+		vpc {
+			aws_regions = ["us-east-1"]
+			fetch_nat_gateway = true
+			fetch_vpn = true
+			metrics_polling_interval = 6000
+			tag_key = "test"
+			tag_value = "test"
+		}
 		x_ray {
+			aws_regions = ["us-east-1"]
 			metrics_polling_interval = 6000
 		}
 	}
@@ -131,15 +138,28 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(linkedAccountID int) string {
 resource "newrelic_cloud_aws_integrations" "foo" {
 		linked_account_id = %[1]d
 		billing {
-			metrics_polling_interval = 6000
+			metrics_polling_interval = 10000
 		}
 		cloudtrail {
 			metrics_polling_interval = 6000
+			aws_regions = ["us-east-1"]
 		}
 		health {
 			metrics_polling_interval = 6000
 		}
 		trusted_advisor {
+			metrics_polling_interval = 6000
+		}
+		vpc {
+			aws_regions = ["us-east-1"]
+			fetch_nat_gateway = true
+			fetch_vpn = true
+			metrics_polling_interval = 6000
+			tag_key = "test"
+			tag_value = "test"
+		}
+		x_ray {
+			aws_regions = ["us-east-1"]
 			metrics_polling_interval = 6000
 		}
 	}
