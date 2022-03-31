@@ -322,24 +322,27 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 
 //123
 
-func expandCloudAzureIntegrationAzureApimanagementInput(a []interface{}, linkedAccountID int) []cloud.C {
-	expanded := make([]cloud.CloudAzureAPImanagementIntegration, len(a))
+func expandCloudAzureIntegrationAzureApimanagementInput(a []interface{}, linkedAccountID int) []cloud.CloudAzureAPImanagementIntegrationInput {
+	expanded := make([]cloud.CloudAzureAPImanagementIntegrationInput, len(a))
 
 	for i, azureApiManagement := range a {
-		var azureApiManagementInput cloud.CloudAzureAPImanagementIntegration
+		var azureApiManagementInput cloud.CloudAzureAPImanagementIntegrationInput
 
 		if azureApiManagement == nil {
-			azureApiManagementInput.LinkedAccount = linkedAccountID
+			azureApiManagementInput.LinkedAccountId = linkedAccountID
 			expanded[i] = azureApiManagementInput
 			return expanded
 		}
 
 		in := azureApiManagement.(map[string]interface{})
 
-		azureApiManagementInput.LinkedAccount = linkedAccountID
+		azureApiManagementInput.LinkedAccountId = linkedAccountID
 
 		if m, ok := in["metrics_polling_interval"]; ok {
 			azureApiManagementInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureApiManagementInput.ResourceGroups[0] = r.(string)
 		}
 		expanded[i] = azureApiManagementInput
 	}
@@ -401,10 +404,88 @@ func flattenCloudAzureApiManagementIntegration(in *cloud.CloudAzureAPImanagement
 
 /// update
 func resourceNewRelicCloudAzureIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
 
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+
+	integrateInput, disableInput := expandCloudAzureIntegrationsInput(d)
+
+	azureDisablePayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, disableInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var diags diag.Diagnostics
+
+	if len(azureDisablePayload.Errors) > 0 {
+		for _, err := range azureDisablePayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+	azureIntegrationPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, integrateInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if len(azureIntegrationPayload.Errors) > 0 {
+		for _, err := range azureIntegrationPayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+	return nil
 }
 
 /// Delete
 func resourceNewRelicCloudAzureIntegrationsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
 
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+
+	deleteInput := disableInput(d)
+	cloudDisableIntegrationsPayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, deleteInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var diags diag.Diagnostics
+
+	if len(cloudDisableIntegrationsPayload.Errors) > 0 {
+		for _, err := range cloudDisableIntegrationsPayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+
+	d.SetId("")
+
+	return nil
+}
+
+func disableInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
+	cloudDisableAzureIntegration := cloud.CloudAzureDisableIntegrationsInput{}
+	var linkedAccountID int
+
+	if l, ok := d.GetOk("linked_account_id"); ok {
+		linkedAccountID = l.(int)
+	}
+	if _, ok := d.GetOk("azure_api_management"); ok {
+		cloudDisableAzureIntegration.AzureAPImanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	deleteInput := cloud.CloudDisableIntegrationsInput{
+		Azure: cloudDisableAzureIntegration,
+	}
+	return deleteInput
 }
