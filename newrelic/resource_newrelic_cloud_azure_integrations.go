@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/newrelic/newrelic-client-go/pkg/cloud"
 	"strconv"
 )
 
@@ -241,7 +242,12 @@ func cloudAzureIntegrationSchemaBase() map[string]*schema.Schema {
 		"metrics_polling_interval": {
 			Type:        schema.TypeInt,
 			Optional:    true,
-			Description: "The data polling interval in seconds.",
+			Description: "The data polling interval in seconds",
+		},
+		"resource_groups": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		},
 	}
 }
@@ -261,7 +267,7 @@ func resourceNewRelicCloudAzureIntegrationsCreate(ctx context.Context, d *schema
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	cloudAzureIntegrationsInput, _ := cloudAzureIntegrationsInput(d)
+	cloudAzureIntegrationsInput, _ := expandCloudAzureIntegrationsInput(d)
 
 	cloudAzureIntegrationsPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, cloudAzureIntegrationsInput)
 	if err != nil {
@@ -284,10 +290,64 @@ func resourceNewRelicCloudAzureIntegrationsCreate(ctx context.Context, d *schema
 		d.SetId(strconv.Itoa(d.Get("linked_account_id").(int)))
 	}
 
-	return resourceNewRelicCloudAzureIntegrationsRead(ctx, d, meta)
+	return nil
 }
 
-///
+///// Inputs
+func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
+	cloudAzureIntegration := cloud.CloudAzureIntegrationsInput{}
+	cloudDisableAzureIntegration := cloud.CloudAzureDisableIntegrationsInput{}
+
+	var linkedAccountID int
+
+	if l, ok := d.GetOk("linked_account_id"); ok {
+		linkedAccountID = l.(int)
+	}
+	if a, ok := d.GetOk("azure_api_management"); ok {
+		cloudAzureIntegration.AzureAPImanagement = expandCloudAzureIntegrationAzureApimanagementInput(a.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_api_management"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureAPImanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	configureInput := cloud.CloudIntegrationsInput{
+		Azure: cloudAzureIntegration,
+	}
+
+	disableInput := cloud.CloudDisableIntegrationsInput{
+		Azure: cloudDisableAzureIntegration,
+	}
+
+	return configureInput, disableInput
+}
+
+//123
+
+func expandCloudAzureIntegrationAzureApimanagementInput(a []interface{}, linkedAccountID int) []cloud.C {
+	expanded := make([]cloud.CloudAzureAPImanagementIntegration, len(a))
+
+	for i, azureApiManagement := range a {
+		var azureApiManagementInput cloud.CloudAzureAPImanagementIntegration
+
+		if azureApiManagement == nil {
+			azureApiManagementInput.LinkedAccount = linkedAccountID
+			expanded[i] = azureApiManagementInput
+			return expanded
+		}
+
+		in := azureApiManagement.(map[string]interface{})
+
+		azureApiManagementInput.LinkedAccount = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureApiManagementInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = azureApiManagementInput
+	}
+
+	return expanded
+}
+
+/// Read
 
 func resourceNewRelicCloudAzureIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
@@ -306,14 +366,45 @@ func resourceNewRelicCloudAzureIntegrationsRead(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	flattenCloudAwsLinkedAccount(d, linkedAccount)
+	flattenCloudAzureLinkedAccount(d, linkedAccount)
 
 	return nil
 }
+
+// flatten
+
+func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
+	_ = d.Set("account_id", result.NrAccountId)
+	_ = d.Set("linked_account_id", result.ID)
+
+	for _, i := range result.Integrations {
+		switch t := i.(type) {
+		case *cloud.CloudAzureAPImanagementIntegration:
+			_ = d.Set("azure_api_management", flattenCloudAzureApiManagementIntegration(t))
+
+		}
+
+	}
 }
+
+func flattenCloudAzureApiManagementIntegration(in *cloud.CloudAzureAPImanagementIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+/// update
 func resourceNewRelicCloudAzureIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 }
+
+/// Delete
 func resourceNewRelicCloudAzureIntegrationsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 }
