@@ -2,6 +2,8 @@ package newrelic
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
@@ -56,38 +58,176 @@ func resourceNewrelicCloudGcpIntegrationsCreate(ctx context.Context, d *schema.R
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
-	cloudGcpIntegrationInputs := expandCloudGcpInputs(d)
-	_, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, cloudGcpIntegrationInputs)
+	cloudGcpIntegrationInputs, _ := expandCloudGcpIntegrationsInputs(d)
+	gcpIntegrationspayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, cloudGcpIntegrationInputs)
 	if err != nil {
 		diag.FromErr(err)
 	}
+	var diags diag.Diagnostics
+	if len(gcpIntegrationspayload.Errors) > 0 {
+		for _, err := range gcpIntegrationspayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+	if len(gcpIntegrationspayload.Integrations) > 0 {
+		d.SetId(strconv.Itoa(d.Get("linked_account_id").(int)))
+	}
 	return nil
 }
 
-func expandCloudGcpInputs(d *schema.ResourceData) cloud.CloudIntegrationsInput {
+func expandCloudGcpIntegrationsInputs(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
 	gcpCloudIntegrations := cloud.CloudGcpIntegrationsInput{}
-	var _ int
-	if AccountID, ok := d.GetOk("linked_account_id"); ok {
-		_ = AccountID.(int)
+	gcpDisableIntegrations := cloud.CloudGcpDisableIntegrationsInput{}
+	var linkedAccountID int
+	if lid, ok := d.GetOk("linked_account_id"); ok {
+		linkedAccountID = lid.(int)
 	}
-	input := cloud.CloudIntegrationsInput{
+	if a, ok := d.GetOk("app_engine"); ok {
+		gcpCloudIntegrations.GcpAppengine = expandCloudGcpAppEngineIntegrationsInputs(a.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("app_engine"); len(n.([]interface{})) < len(o.([]interface{})) {
+		gcpDisableIntegrations.GcpAppengine = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	configureInput := cloud.CloudIntegrationsInput{
 		Gcp: gcpCloudIntegrations,
 	}
-	return input
+	disableInput := cloud.CloudDisableIntegrationsInput{
+		Gcp: gcpDisableIntegrations,
+	}
+	return configureInput, disableInput
 }
 
-func expandCloudGcpAppEngineInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpAppengineIntegration {
-	return nil
+func expandCloudGcpAppEngineIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpAppengineIntegrationInput {
+	expanded := make([]cloud.CloudGcpAppengineIntegrationInput, len(b))
+	for i, appEngine := range b {
+		var appEngineInput cloud.CloudGcpAppengineIntegrationInput
+		in := appEngine.(map[string]interface{})
+		appEngineInput.LinkedAccountId = linkedAccountID
+		if a, ok := in["metrics_polling_interval"]; ok {
+			appEngineInput.MetricsPollingInterval = a.(int)
+		}
+		expanded[i] = appEngineInput
+	}
+	return expanded
 }
 
 func resourceNewrelicCloudGcpIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+	linkedAccountID, convErr := strconv.Atoi(d.Id())
+
+	if convErr != nil {
+		return diag.FromErr(convErr)
+	}
+
+	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
+	if err != nil {
+		diag.FromErr(err)
+	}
+	flattenCloudGcpLinkedAccount(d, linkedAccount)
 	return nil
 }
 
+func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.CloudLinkedAccount) {
+	_ = d.Set("account_id", linkedAccount.NrAccountId)
+	_ = d.Set("linked_account_id", linkedAccount.ID)
+	for _, i := range linkedAccount.Integrations {
+		switch t := i.(type) {
+		case *cloud.CloudGcpAppengineIntegration:
+			_ = d.Set("app_engine", flattenCloudGcpAppEngineIntegration(t))
+		}
+	}
+}
+
+func flattenCloudGcpAppEngineIntegration(in *cloud.CloudGcpAppengineIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+	out := make(map[string]interface{})
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	flattened[0] = out
+	return flattened
+}
+
 func resourceNewrelicCloudGcpIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+	configureInput, disableInput := expandCloudGcpIntegrationsInputs(d)
+	cloudDisableIntegrationsPayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, disableInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var diags diag.Diagnostics
+
+	if len(cloudDisableIntegrationsPayload.Errors) > 0 {
+		for _, err := range cloudDisableIntegrationsPayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+	cloudGcpIntegrationsPayload, err := client.Cloud.CloudConfigureIntegration(accountID, configureInput)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if len(cloudGcpIntegrationsPayload.Errors) > 0 {
+		for _, err := range cloudGcpIntegrationsPayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
 	return nil
 }
 
 func resourceNewrelicCloudGcpIntegrationsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+	deleteInput := expandCloudGcpDisableInputs(d)
+	gcpDisablePayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, deleteInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var diags diag.Diagnostics
+
+	if len(gcpDisablePayload.Errors) > 0 {
+		for _, err := range gcpDisablePayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+
+	d.SetId("")
+
 	return nil
+}
+
+func expandCloudGcpDisableInputs(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
+	cloudGcpDisableInput := cloud.CloudGcpDisableIntegrationsInput{}
+	var linkedAccountID int
+	if l, ok := d.GetOk("linked_account_id"); ok {
+		linkedAccountID = l.(int)
+	}
+	if _, ok := d.GetOk("app_engine"); ok {
+		cloudGcpDisableInput.GcpAppengine = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	deleteInput := cloud.CloudDisableIntegrationsInput{
+		Gcp: cloudGcpDisableInput,
+	}
+	return deleteInput
 }
