@@ -2,10 +2,11 @@ package newrelic
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
-	"strconv"
 )
 
 func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
@@ -33,7 +34,7 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure api management integration",
-				Elem:        cloudAzureIntegrationAzureApiManagement,
+				Elem:        cloudAzureIntegrationAzureAPIManagement(),
 				MaxItems:    1,
 			},
 			"azure_app_gateway": {
@@ -252,7 +253,7 @@ func cloudAzureIntegrationSchemaBase() map[string]*schema.Schema {
 	}
 }
 
-func cloudAzureIntegrationAzureApiManagement() *schema.Resource {
+func cloudAzureIntegrationAzureAPIManagement() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 
 	return &schema.Resource{
@@ -304,7 +305,7 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 		linkedAccountID = l.(int)
 	}
 	if a, ok := d.GetOk("azure_api_management"); ok {
-		cloudAzureIntegration.AzureAPImanagement = expandCloudAzureIntegrationAzureApimanagementInput(a.([]interface{}), linkedAccountID)
+		cloudAzureIntegration.AzureAPImanagement = expandCloudAzureIntegrationAzureAPIManagementInput(a.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("azure_api_management"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureAPImanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
@@ -322,29 +323,29 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 
 //123
 
-func expandCloudAzureIntegrationAzureApimanagementInput(a []interface{}, linkedAccountID int) []cloud.CloudAzureAPImanagementIntegrationInput {
+func expandCloudAzureIntegrationAzureAPIManagementInput(a []interface{}, linkedAccountID int) []cloud.CloudAzureAPImanagementIntegrationInput {
 	expanded := make([]cloud.CloudAzureAPImanagementIntegrationInput, len(a))
 
-	for i, azureApiManagement := range a {
-		var azureApiManagementInput cloud.CloudAzureAPImanagementIntegrationInput
+	for i, azureAPIManagement := range a {
+		var azureAPIManagementInput cloud.CloudAzureAPImanagementIntegrationInput
 
-		if azureApiManagement == nil {
-			azureApiManagementInput.LinkedAccountId = linkedAccountID
-			expanded[i] = azureApiManagementInput
+		if azureAPIManagement == nil {
+			azureAPIManagementInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureAPIManagementInput
 			return expanded
 		}
 
-		in := azureApiManagement.(map[string]interface{})
+		in := azureAPIManagement.(map[string]interface{})
 
-		azureApiManagementInput.LinkedAccountId = linkedAccountID
+		azureAPIManagementInput.LinkedAccountId = linkedAccountID
 
 		if m, ok := in["metrics_polling_interval"]; ok {
-			azureApiManagementInput.MetricsPollingInterval = m.(int)
+			azureAPIManagementInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureApiManagementInput.ResourceGroups[0] = r.(string)
+			azureAPIManagementInput.ResourceGroups[0] = r.(string)
 		}
-		expanded[i] = azureApiManagementInput
+		expanded[i] = azureAPIManagementInput
 	}
 
 	return expanded
@@ -383,14 +384,14 @@ func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudL
 	for _, i := range result.Integrations {
 		switch t := i.(type) {
 		case *cloud.CloudAzureAPImanagementIntegration:
-			_ = d.Set("azure_api_management", flattenCloudAzureApiManagementIntegration(t))
+			_ = d.Set("azure_api_management", flattenCloudAzureAPIManagementIntegration(t))
 
 		}
 
 	}
 }
 
-func flattenCloudAzureApiManagementIntegration(in *cloud.CloudAzureAPImanagementIntegration) []interface{} {
+func flattenCloudAzureAPIManagementIntegration(in *cloud.CloudAzureAPImanagementIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
 	out := make(map[string]interface{})
