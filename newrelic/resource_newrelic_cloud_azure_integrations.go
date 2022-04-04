@@ -41,7 +41,7 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure app gateway integration",
-				Elem:        " ",
+				Elem:        cloudAzureIntegrationAzureAppGateway(),
 				MaxItems:    1,
 			},
 			"azure_app_service": {
@@ -261,6 +261,14 @@ func cloudAzureIntegrationAzureAPIManagement() *schema.Resource {
 	}
 }
 
+func cloudAzureIntegrationAzureAppGateway() *schema.Resource {
+	s := cloudAzureIntegrationSchemaBase()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
 /////
 func resourceNewRelicCloudAzureIntegrationsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
@@ -310,6 +318,14 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 		cloudDisableAzureIntegration.AzureAPImanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
+	if b, ok := d.GetOk("azure_app_gateway"); ok {
+		cloudAzureIntegration.AzureAppgateway = expandCloudAzureIntegrationAzureAppGatewayInput(b.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_api_management"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureAppgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	//// Unique for all resources
+
 	configureInput := cloud.CloudIntegrationsInput{
 		Azure: cloudAzureIntegration,
 	}
@@ -321,7 +337,7 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 	return configureInput, disableInput
 }
 
-//123
+// Expanding the Azure API management
 
 func expandCloudAzureIntegrationAzureAPIManagementInput(a []interface{}, linkedAccountID int) []cloud.CloudAzureAPImanagementIntegrationInput {
 	expanded := make([]cloud.CloudAzureAPImanagementIntegrationInput, len(a))
@@ -346,6 +362,36 @@ func expandCloudAzureIntegrationAzureAPIManagementInput(a []interface{}, linkedA
 			azureAPIManagementInput.ResourceGroups[0] = r.(string)
 		}
 		expanded[i] = azureAPIManagementInput
+	}
+
+	return expanded
+}
+
+// Expanding the Azure App Gateway
+
+func expandCloudAzureIntegrationAzureAppGatewayInput(a []interface{}, linkedAccountID int) []cloud.CloudAzureAppgatewayIntegrationInput {
+	expanded := make([]cloud.CloudAzureAppgatewayIntegrationInput, len(a))
+
+	for i, azureAPIManagement := range a {
+		var azureAppGatewayInput cloud.CloudAzureAppgatewayIntegrationInput
+
+		if azureAppGatewayInput == nil {
+			azureAppGatewayInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureAppGatewayInput
+			return expanded
+		}
+
+		in := azureAPIManagement.(map[string]interface{})
+
+		azureAppGatewayInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureAppGatewayInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureAppGatewayInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureAppGatewayInput
 	}
 
 	return expanded
@@ -385,13 +431,30 @@ func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudL
 		switch t := i.(type) {
 		case *cloud.CloudAzureAPImanagementIntegration:
 			_ = d.Set("azure_api_management", flattenCloudAzureAPIManagementIntegration(t))
+		case *cloud.CloudAzureAppgatewayIntegration:
+			_ = d.Set("azure_app_gateway", flattenCloudAzureAppgatewayIntegration(t))
 
 		}
 
 	}
 }
 
+// flatten for API Management
 func flattenCloudAzureAPIManagementIntegration(in *cloud.CloudAzureAPImanagementIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for App Gateway
+
+func flattenCloudAzureAppgatewayIntegration(in *cloud.CloudAzureAppgatewayIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
 	out := make(map[string]interface{})
