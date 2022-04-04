@@ -20,13 +20,6 @@ good resources on the [Extending Terraform][extending_terraform] page that are
 worth looking at, but those might be a topic by topic basis, depending on the
 need.  Also worth reading are the [Best Practices][best_practices].
 
-## DTK Who?
-
-The Developer Toolkit Team is a small team dedicated to open source, and
-integrating New Relic APIs into the [Go Client][client_go], which we then
-leverage in other projects, including this one.  You can read more about the
-team [here][dtk].
-
 ## Future facing APIs
 
 New Relic has several APIs, and it's worth understanding at a high level what
