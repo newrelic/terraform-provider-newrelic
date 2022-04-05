@@ -156,7 +156,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Required: true,
 						},
 						"since_value": {
-							Deprecated:    "use `signal.aggregation_method` attribute instead",
+							Deprecated:    "use `aggregation_method` attribute instead",
 							Type:          schema.TypeString,
 							Optional:      true,
 							Description:   "NRQL queries are evaluated in one-minute time windows. The start time depends on the value you provide in the NRQL condition's `since_value`.",
@@ -175,7 +175,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 						},
 						// Equivalent to `since_value`.
 						"evaluation_offset": {
-							Deprecated:    "use `signal.aggregation_method` attribute instead",
+							Deprecated:    "use `aggregation_method` attribute instead",
 							Type:          schema.TypeInt,
 							Optional:      true,
 							Description:   "NRQL queries are evaluated in one-minute time windows. The start time depends on the value you provide in the NRQL condition's `evaluation_offset`.",
@@ -296,7 +296,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"slide_by": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The duration of overlapping timewindows used to smooth the chart line, in seconds. Must be a factor of `aggregation_window` and less than the aggregation window. It should be greater or equal to 30 seconds if `aggregation_window` is less than or equal to 3600 seconds, or greater or eqaul to `aggregation_window / 120` if `aggregation_window` is greater than 3600 seconds.",
+				Description: "The duration of overlapping timewindows used to smooth the chart line, in seconds. Must be a factor of `aggregation_window` and less than the aggregation window. It should be greater or equal to 30 seconds if `aggregation_window` is less than or equal to 3600 seconds, or greater or equal to `aggregation_window / 120` if `aggregation_window` is greater than 3600 seconds.",
 			},
 			"expiration_duration": {
 				Type:        schema.TypeInt,
