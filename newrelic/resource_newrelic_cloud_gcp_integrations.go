@@ -597,14 +597,19 @@ func expandCloudGcpIntegrationsInputs(d *schema.ResourceData) (cloud.CloudIntegr
 
 func expandCloudGcpAppEngineIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpAppengineIntegrationInput {
 	expanded := make([]cloud.CloudGcpAppengineIntegrationInput, len(b))
-	for i, appEngine := range b {
-		var appEngineInput cloud.CloudGcpAppengineIntegrationInput
-		in := appEngine.(map[string]interface{})
-		appEngineInput.LinkedAccountId = linkedAccountID
-		if a, ok := in["metrics_polling_interval"]; ok {
-			appEngineInput.MetricsPollingInterval = a.(int)
+	for i, expand := range b {
+		var Input cloud.CloudGcpAppengineIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
 		}
-		expanded[i] = appEngineInput
+		in := expand.(map[string]interface{})
+		Input.LinkedAccountId = linkedAccountID
+		if a, ok := in["metrics_polling_interval"]; ok {
+			Input.MetricsPollingInterval = a.(int)
+		}
+		expanded[i] = Input
 	}
 	return expanded
 }
@@ -613,6 +618,11 @@ func expandCloudGcpBigQueryIntegrationsInputs(b []interface{}, linkedAccountID i
 	expanded := make([]cloud.CloudGcpBigqueryIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpBigqueryIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -630,6 +640,11 @@ func expandCloudGcpBigTableIntegrationsInputs(b []interface{}, linkedAccountID i
 	expanded := make([]cloud.CloudGcpBigtableIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpBigtableIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -644,6 +659,11 @@ func expandCloudGcpComposerIntegrationsInputs(b []interface{}, linkedAccountID i
 	expanded := make([]cloud.CloudGcpComposerIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpComposerIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -658,6 +678,11 @@ func expandCloudGcpDataFlowIntegrationsInputs(b []interface{}, linkedAccountID i
 	expanded := make([]cloud.CloudGcpDataflowIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpDataflowIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -672,6 +697,11 @@ func expandCloudGcpDataProcIntegrationsInputs(b []interface{}, linkedAccountID i
 	expanded := make([]cloud.CloudGcpDataprocIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpDataprocIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -686,6 +716,11 @@ func expandCloudGcpDataStoreIntegrationsInputs(b []interface{}, linkedAccountID 
 	expanded := make([]cloud.CloudGcpDatastoreIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpDatastoreIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -700,6 +735,11 @@ func expandCloudGcpFireBaseDatabaseIntegrationsInputs(b []interface{}, linkedAcc
 	expanded := make([]cloud.CloudGcpFirebasedatabaseIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpFirebasedatabaseIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -714,6 +754,11 @@ func expandCloudGcpFireBaseHostingIntegrationsInputs(b []interface{}, linkedAcco
 	expanded := make([]cloud.CloudGcpFirebasehostingIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpFirebasehostingIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -728,6 +773,11 @@ func expandCloudGcpFireBaseStorageIntegrationsInputs(b []interface{}, linkedAcco
 	expanded := make([]cloud.CloudGcpFirebasestorageIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpFirebasestorageIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -742,6 +792,11 @@ func expandCloudGcpFireStoreIntegrationsInputs(b []interface{}, linkedAccountID 
 	expanded := make([]cloud.CloudGcpFirestoreIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpFirestoreIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -756,6 +811,11 @@ func expandCloudGcpFunctionsIntegrationsInputs(b []interface{}, linkedAccountID 
 	expanded := make([]cloud.CloudGcpFunctionsIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpFunctionsIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -770,6 +830,11 @@ func expandCloudGcpInterconnectIntegrationsInputs(b []interface{}, linkedAccount
 	expanded := make([]cloud.CloudGcpInterconnectIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpInterconnectIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -784,6 +849,11 @@ func expandCloudGcpKubernetesIntegrationsInputs(b []interface{}, linkedAccountID
 	expanded := make([]cloud.CloudGcpKubernetesIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpKubernetesIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -798,6 +868,11 @@ func expandCloudGcpLoadBalancingIntegrationsInputs(b []interface{}, linkedAccoun
 	expanded := make([]cloud.CloudGcpLoadbalancingIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpLoadbalancingIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -812,6 +887,11 @@ func expandCloudGcpMemCacheIntegrationsInputs(b []interface{}, linkedAccountID i
 	expanded := make([]cloud.CloudGcpMemcacheIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpMemcacheIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -826,6 +906,11 @@ func expandCloudGcpPubSubIntegrationsInputs(b []interface{}, linkedAccountID int
 	expanded := make([]cloud.CloudGcpPubsubIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpPubsubIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -843,6 +928,11 @@ func expandCloudGcpRedisIntegrationsInputs(b []interface{}, linkedAccountID int)
 	expanded := make([]cloud.CloudGcpRedisIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpRedisIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -857,6 +947,11 @@ func expandCloudGcpRouterIntegrationsInputs(b []interface{}, linkedAccountID int
 	expanded := make([]cloud.CloudGcpRouterIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpRouterIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -871,6 +966,11 @@ func expandCloudGcpRunIntegrationsInputs(b []interface{}, linkedAccountID int) [
 	expanded := make([]cloud.CloudGcpRunIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpRunIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -885,6 +985,11 @@ func expandCloudGcpSpannerIntegrationsInputs(b []interface{}, linkedAccountID in
 	expanded := make([]cloud.CloudGcpSpannerIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpSpannerIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -902,6 +1007,11 @@ func expandCloudGcpSqlIntegrationsInputs(b []interface{}, linkedAccountID int) [
 	expanded := make([]cloud.CloudGcpSqlIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpSqlIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -916,6 +1026,11 @@ func expandCloudGcpStorageIntegrationsInputs(b []interface{}, linkedAccountID in
 	expanded := make([]cloud.CloudGcpStorageIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpStorageIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -933,6 +1048,11 @@ func expandCloudGcpVirtualMachinesIntegrationsInputs(b []interface{}, linkedAcco
 	expanded := make([]cloud.CloudGcpVmsIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpVmsIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
@@ -947,6 +1067,11 @@ func expandCloudGcpVpcAccessIntegrationsInputs(b []interface{}, linkedAccountID 
 	expanded := make([]cloud.CloudGcpVpcaccessIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpVpcaccessIntegrationInput
+		if expand == nil {
+			Input.LinkedAccountId = linkedAccountID
+			expanded[i] = Input
+			return expanded
+		}
 		in := expand.(map[string]interface{})
 		Input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
