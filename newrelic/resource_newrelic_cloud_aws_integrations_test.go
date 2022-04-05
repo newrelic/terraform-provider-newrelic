@@ -22,14 +22,14 @@ func TestAccNewRelicCloudAwsIntegrations_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicAwsIntegrationsConfig(109698),
+				Config: testAccNewRelicAwsIntegrationsConfig(111358),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
 			},
 			//Test: Update
 			{
-				Config: testAccNewRelicAwsIntegrationsConfigUpdated(109698),
+				Config: testAccNewRelicAwsIntegrationsConfigUpdated(111358),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
