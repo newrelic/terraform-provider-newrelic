@@ -23,8 +23,14 @@ Using a metric stream to New Relic is the preferred way to integrate with AWS. F
 Leave an integration block empty to use its default configuration.
 
 ```hcl
-resource "newrelic_cloud_aws_integrations" "foo" {
-  linked_account_id = 12345
+resource "newrelic_cloud_aws_link_account" "foo" {
+  arn = aws_iam_role.newrelic_aws_role.arn
+  metric_collection_mode = "PULL"
+  name = "foo"
+}
+
+resource "newrelic_cloud_aws_integrations" "bar" {
+  linked_account_id = newrelic_cloud_aws_link_account.foo.id
   billing {
   }
   cloudtrail {
