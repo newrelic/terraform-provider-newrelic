@@ -34,210 +34,210 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure api management integration",
-				Elem:        cloudAzureIntegrationAzureAPIManagement(),
+				Elem:        cloudAzureIntegrationAzureAPIManagementElem(),
 				MaxItems:    1,
 			},
 			"azure_app_gateway": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure app gateway integration",
-				Elem:        cloudAzureIntegrationAzureAppGateway(),
+				Elem:        cloudAzureIntegrationAzureAppGatewayElem(),
 				MaxItems:    1,
 			},
 			"azure_app_service": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure app services",
-				Elem:        cloudAzureIntegrationAzureAppService(),
+				Elem:        cloudAzureIntegrationAzureAppServiceElem(),
 				MaxItems:    1,
 			},
 			"azure_containers": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure containers",
-				Elem:        cloudAzureIntegrationAzureContainers,
+				Elem:        cloudAzureIntegrationAzureContainersElem(),
 				MaxItems:    1,
 			},
 			"azure_cosmos_db": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure cosmoDB",
-				Elem:        cloudAzureIntegrationAzureCosmosDB,
+				Elem:        cloudAzureIntegrationAzureCosmosDBElem(),
 				MaxItems:    1,
 			},
 			"azure_cost_management": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure cost management",
-				Elem:        cloudAzureIntegrationCostManagement(),
+				Elem:        cloudAzureIntegrationCostManagementElem(),
 				MaxItems:    1,
 			},
 			"azure_data_factory": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure data factory",
-				Elem:        cloudAzureIntegrationAzureDataFactory,
+				Elem:        cloudAzureIntegrationAzureDataFactoryElem(),
 				MaxItems:    1,
 			},
 			"azure_event_hub": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure event hub",
-				Elem:        cloudAzureIntegrationAzureEventHub,
+				Elem:        cloudAzureIntegrationAzureEventHubElem(),
 				MaxItems:    1,
 			},
 			"azure_express_route": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure express route",
-				Elem:        cloudAzureIntegrationAzureExpressRoute,
+				Elem:        cloudAzureIntegrationAzureExpressRouteElem(),
 				MaxItems:    1,
 			},
 			"azure_firewalls": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure firewalls",
-				Elem:        cloudAzureIntegrationAzureFirewalls,
+				Elem:        cloudAzureIntegrationAzureFirewallsElem(),
 				MaxItems:    1,
 			},
 			"azure_front_door": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure front door",
-				Elem:        cloudAzureIntegrationAzureFrontDoor,
+				Elem:        cloudAzureIntegrationAzureFrontDoorElem(),
 				MaxItems:    1,
 			},
 			"azure_functions": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure functions",
-				Elem:        cloudAzureIntegrationAzureFunctions,
+				Elem:        cloudAzureIntegrationAzureFunctionsElem(),
 				MaxItems:    1,
 			},
 			"azure_key_vault": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure key vault",
-				Elem:        cloudAzureIntegrationAzureKeyVault,
+				Elem:        cloudAzureIntegrationAzureKeyVaultElem(),
 				MaxItems:    1,
 			},
 			"azure_load_balancer": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure load balancer",
-				Elem:        cloudAzureIntegrationAzureLoadBalancer,
+				Elem:        cloudAzureIntegrationAzureLoadBalancerElem(),
 				MaxItems:    1,
 			},
 			"azure_logic_apps": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure logic apps",
-				Elem:        cloudAzureIntegrationAzureLogicApps,
+				Elem:        cloudAzureIntegrationAzureLogicAppsElem(),
 				MaxItems:    1,
 			},
 			"azure_machine_learning": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure machine learning",
-				Elem:        cloudAzureIntegrationAzureMachineLearning,
+				Elem:        cloudAzureIntegrationAzureMachineLearningElem(),
 				MaxItems:    1,
 			},
 			"azure_maria_db": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure Maria DB",
-				Elem:        cloudAzureIntegrationAzureMariadb,
+				Elem:        cloudAzureIntegrationAzureMariadbElem(),
 				MaxItems:    1,
 			},
 			"azure_mysql": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure mysql",
-				Elem:        cloudAzureIntegrationAzureMysql,
+				Elem:        cloudAzureIntegrationAzureMysqlElem(),
 				MaxItems:    1,
 			},
 			"azure_postgresql": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure postgresql",
-				Elem:        cloudAzureIntegrationAzurePostgresql,
+				Elem:        cloudAzureIntegrationAzurePostgresqlElem(),
 				MaxItems:    1,
 			},
 			"azure_power_bi_dedicated": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure powerBI dedicated",
-				Elem:        cloudAzureIntegrationAzurePowerBiDedicated,
+				Elem:        cloudAzureIntegrationAzurePowerBiDedicatedElem(),
 				MaxItems:    1,
 			},
 			"azure_redis_cache": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure redis cache",
-				Elem:        cloudAzureIntegrationAzureRedisCache,
+				Elem:        cloudAzureIntegrationAzureRedisCacheElem(),
 				MaxItems:    1,
 			},
 			"azure_service_bus": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure service bus",
-				Elem:        cloudAzureIntegrationAzureServiceBus,
+				Elem:        cloudAzureIntegrationAzureServiceBusElem(),
 				MaxItems:    1,
 			},
 			"azure_service_fabric": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The azure services fabric",
-				Elem:        cloudAzureIntegrationAzureServiceFabric,
+				Elem:        cloudAzureIntegrationAzureServiceFabricElem(),
 				MaxItems:    1,
 			},
 			"azure_sql": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure sql",
-				Elem:        cloudAzureIntegrationAzureSql,
+				Elem:        cloudAzureIntegrationAzureSqlElem(),
 				MaxItems:    1,
 			},
 			"azure_sql_managed": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure sql managed",
-				Elem:        cloudAzureIntegrationAzureSqlManaged,
+				Elem:        cloudAzureIntegrationAzureSqlManagedElem(),
 				MaxItems:    1,
 			},
 			"azure_storage": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure storage",
-				Elem:        cloudAzureIntegrationAzureStorage,
+				Elem:        cloudAzureIntegrationAzureStorageElem(),
 				MaxItems:    1,
 			},
 			"azure_virtual_machine": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure virtual machine",
-				Elem:        cloudAzureIntegrationAzureVirtualMachine,
+				Elem:        cloudAzureIntegrationAzureVirtualMachineElem(),
 				MaxItems:    1,
 			},
 			"azure_virtual_networks": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure virtual networks",
-				Elem:        cloudAzureIntegrationAzureVirtualNetworks,
+				Elem:        cloudAzureIntegrationAzureVirtualNetworksElem(),
 				MaxItems:    1,
 			},
 			"azure_vms": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure Vms",
-				Elem:        cloudAzureIntegrationAzureVms,
+				Elem:        cloudAzureIntegrationAzureVmsElem(),
 				MaxItems:    1,
 			},
 			"azure_vpn_gateway": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure vpn gateway",
-				Elem:        cloudAzureIntegrationAzureVPNGateway,
+				Elem:        cloudAzureIntegrationAzureVPNGatewayElem(),
 				MaxItems:    1,
 			},
 		},
@@ -259,49 +259,44 @@ func cloudAzureIntegrationSchemaBase() map[string]*schema.Schema {
 	}
 }
 
-func cloudAzureIntegrationAzureAPIManagement() *schema.Resource {
+func cloudAzureIntegrationAzureAPIManagementElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 }
 
-func cloudAzureIntegrationAzureAppGateway() *schema.Resource {
+func cloudAzureIntegrationAzureAppGatewayElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 }
 
-func cloudAzureIntegrationAzureAppService() *schema.Resource {
+func cloudAzureIntegrationAzureAppServiceElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
-
-func cloudAzureIntegrationAzureContainers() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
 
-func cloudAzureIntegrationAzureCosmosDB() *schema.Resource {
+func cloudAzureIntegrationAzureContainersElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationCostManagement() *schema.Resource {
+
+func cloudAzureIntegrationAzureCosmosDBElem() *schema.Resource {
+	s := cloudAzureIntegrationSchemaBase()
+	return &schema.Resource{
+		Schema: s,
+	}
+
+}
+func cloudAzureIntegrationCostManagementElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["tag_keys"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -316,193 +311,169 @@ func cloudAzureIntegrationCostManagement() *schema.Resource {
 	}
 }
 
-func cloudAzureIntegrationAzureDataFactory() *schema.Resource {
+func cloudAzureIntegrationAzureDataFactoryElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureEventHub() *schema.Resource {
+func cloudAzureIntegrationAzureEventHubElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureExpressRoute() *schema.Resource {
+func cloudAzureIntegrationAzureExpressRouteElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureFirewalls() *schema.Resource {
+func cloudAzureIntegrationAzureFirewallsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureFrontDoor() *schema.Resource {
+func cloudAzureIntegrationAzureFrontDoorElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureFunctions() *schema.Resource {
+func cloudAzureIntegrationAzureFunctionsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureKeyVault() *schema.Resource {
+func cloudAzureIntegrationAzureKeyVaultElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureLoadBalancer() *schema.Resource {
+func cloudAzureIntegrationAzureLoadBalancerElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureLogicApps() *schema.Resource {
+func cloudAzureIntegrationAzureLogicAppsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 }
-func cloudAzureIntegrationAzureMachineLearning() *schema.Resource {
+func cloudAzureIntegrationAzureMachineLearningElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
-func cloudAzureIntegrationAzureMariadb() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureMysql() *schema.Resource {
+func cloudAzureIntegrationAzureMariadbElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzurePostgresql() *schema.Resource {
+func cloudAzureIntegrationAzureMysqlElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzurePowerBiDedicated() *schema.Resource {
+func cloudAzureIntegrationAzurePostgresqlElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureRedisCache() *schema.Resource {
+func cloudAzureIntegrationAzurePowerBiDedicatedElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	return &schema.Resource{
+		Schema: s,
+	}
 
+}
+func cloudAzureIntegrationAzureRedisCacheElem() *schema.Resource {
+	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
 
-func cloudAzureIntegrationAzureServiceBus() *schema.Resource {
+func cloudAzureIntegrationAzureServiceBusElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureServiceFabric() *schema.Resource {
+func cloudAzureIntegrationAzureServiceFabricElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureSql() *schema.Resource {
+func cloudAzureIntegrationAzureSqlElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureSqlManaged() *schema.Resource {
+func cloudAzureIntegrationAzureSqlManagedElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureStorage() *schema.Resource {
+func cloudAzureIntegrationAzureStorageElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureVirtualMachine() *schema.Resource {
+func cloudAzureIntegrationAzureVirtualMachineElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureVirtualNetworks() *schema.Resource {
+func cloudAzureIntegrationAzureVirtualNetworksElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureVms() *schema.Resource {
+func cloudAzureIntegrationAzureVmsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
 
 }
-func cloudAzureIntegrationAzureVPNGateway() *schema.Resource {
+func cloudAzureIntegrationAzureVPNGatewayElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
