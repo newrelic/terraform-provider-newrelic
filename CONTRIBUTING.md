@@ -139,6 +139,21 @@ client version you want to be using as well.
 
 Check out [testing in README.md](README.md#testing)
 
+### Debugging
+
+Step 1: make compile-debug
+
+Step 2: In the `./newrelic/` directory `run dlv exec --accept-multiclient --continue --headless ./bin/darwin/terraform-provider-newrelic -- -debuggable`
+
+Capture the line that contains `TF_REATTACH_PROVIDERS`
+
+Step 3: Attach process in Goland `dlv exec ...`
+
+Step 4: Run terraform with `TF_REATTACH_PROVIDERS` in front of it.
+
+
+
+
 ### Commit messages
 
 To keep a style and allow us to automate the generating of a change log, we

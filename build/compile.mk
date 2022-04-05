@@ -31,6 +31,12 @@ compile-only: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]:     $(BUILD_DIR)$(GOOS)/$(BINARY)"
 	@GOOS=$(GOOS) $(GO) build -ldflags=$(LDFLAGS) -o $(BUILD_DIR)/$(GOOS)/$(BINARY);
 
+compile-debug: deps-only
+	@echo "=== $(PROJECT_NAME) === [ compile debug    ]: building commands:"
+	@mkdir -p $(BUILD_DIR)/$(GOOS)
+	@echo "=== $(PROJECT_NAME) === [ compile debug    ]:     $(BUILD_DIR)$(GOOS)/$(BINARY)"
+	@GOOS=$(GOOS) $(GO) build	 -gcflags="all=-N -l" -o $(BUILD_DIR)/$(GOOS)/$(BINARY);
+
 # Override GOOS for these specific targets
 compile-darwin: GOOS=darwin
 compile-darwin: deps-only compile-only
@@ -41,4 +47,4 @@ compile-linux: deps-only compile-only
 compile-windows: GOOS=windows
 compile-windows: deps-only compile-only
 
-.PHONY: clean-compile compile compile-darwin compile-linux compile-only compile-windows
+.PHONY: clean-compile compile compile-darwin compile-linux compile-only compile-windows compile-debug
