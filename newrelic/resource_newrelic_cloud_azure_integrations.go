@@ -65,7 +65,13 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Elem:        cloudAzureIntegrationAzureCosmosDB,
 				MaxItems:    1,
 			},
-
+			"azure_cost_management": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The Azure cost management",
+				Elem:        cloudAzureIntegrationCostManagement(),
+				MaxItems:    1,
+			},
 			"azure_data_factory": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -294,6 +300,20 @@ func cloudAzureIntegrationAzureCosmosDB() *schema.Resource {
 		Schema: s,
 	}
 
+}
+func cloudAzureIntegrationCostManagement() *schema.Resource {
+	s := cloudAzureIntegrationSchemaBase()
+	s["tag_keys"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "",
+		Optional:    true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	return &schema.Resource{
+		Schema: s,
+	}
 }
 
 func cloudAzureIntegrationAzureDataFactory() *schema.Resource {
@@ -561,6 +581,11 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 		cloudDisableAzureIntegration.AzureCosmosdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
+	if v, ok := d.GetOk("azure_cost_management"); ok {
+		cloudAzureIntegration.AzureCostmanagement = expandCloudAzureIntegrationAzureCostManagementInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_cost_management"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureCosmosdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
 	if v, ok := d.GetOk("azure_data_factory"); ok {
 		cloudAzureIntegration.AzureDatafactory = expandCloudAzureIntegrationAzureDataFactoryInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("azure_data_factory"); len(n.([]interface{})) < len(o.([]interface{})) {
@@ -863,6 +888,36 @@ func expandCloudAzureIntegrationAzureCosmosdbInput(b []interface{}, linkedAccoun
 			azureCosmosdbInput.ResourceGroups[0] = r.(string)
 		}
 		expanded[i] = azureCosmosdbInput
+	}
+
+	return expanded
+}
+
+// Expanding the Azure Cost_management
+
+func expandCloudAzureIntegrationAzureCostManagementInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureCostmanagementIntegrationInput {
+	expanded := make([]cloud.CloudAzureCostmanagementIntegrationInput, len(b))
+
+	for i, azureCostManagement := range b {
+		var azureCostManagementInput cloud.CloudAzureCostmanagementIntegrationInput
+
+		if azureCostManagement == nil {
+			azureCostManagementInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureCostManagementInput
+			return expanded
+		}
+
+		in := azureCostManagement.(map[string]interface{})
+
+		azureCostManagementInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureCostManagementInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["tag_keys"]; ok {
+			azureCostManagementInput.TagKeys[0] = r.(string)
+		}
+		expanded[i] = azureCostManagementInput
 	}
 
 	return expanded
@@ -1630,6 +1685,8 @@ func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudL
 			_ = d.Set("azure_containers", flattenCloudAzureContainersIntegration(t))
 		case *cloud.CloudAzureCosmosdbIntegration:
 			_ = d.Set("azure_cosmosdb", flattenCloudAzureCosmosdbIntegration(t))
+		case *cloud.CloudAzureCostmanagementIntegration:
+			_ = d.Set("azure_data_factory", flattenCloudAzureCostManagementIntegration(t))
 		case *cloud.CloudAzureDatafactoryIntegration:
 			_ = d.Set("azure_data_factory", flattenCloudAzureDataFactoryIntegration(t))
 		case *cloud.CloudAzureEventhubIntegration:
@@ -1638,29 +1695,22 @@ func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudL
 			_ = d.Set("azure_express_route", flattenCloudAzureExpressRouteIntegration(t))
 		case *cloud.CloudAzureFirewallsIntegration:
 			_ = d.Set("azure_firewalls", flattenCloudAzureFirewallsIntegration(t))
-
 		case *cloud.CloudAzureFrontdoorIntegration:
 			_ = d.Set("azure_front_door", flattenCloudAzureFrontDoorIntegration(t))
-
 		case *cloud.CloudAzureFunctionsIntegration:
 			_ = d.Set("azure_functions", flattenCloudAzureFunctionsIntegration(t))
-
 		case *cloud.CloudAzureKeyvaultIntegration:
 			_ = d.Set("azure_key_vault", flattenCloudAzureKeyVaultIntegration(t))
-
 		case *cloud.CloudAzureLoadbalancerIntegration:
 			_ = d.Set("azure_load_balancer", flattenCloudAzureLoadBalancerIntegration(t))
-
 		case *cloud.CloudAzureLogicappsIntegration:
 			_ = d.Set("azure_logic_apps", flattenCloudAzureLogicAppsIntegration(t))
-
 		case *cloud.CloudAzureMachinelearningIntegration:
 			_ = d.Set("azure_machine_learning", flattenCloudAzureMachineLearningIntegration(t))
 		case *cloud.CloudAzureMariadbIntegration:
 			_ = d.Set("azure_maria_db", flattenCloudAzureMariadbIntegration(t))
 		case *cloud.CloudAzureMysqlIntegration:
 			_ = d.Set("azure_mysql", flattenCloudAzureMysqlIntegration(t))
-
 		case *cloud.CloudAzurePostgresqlIntegration:
 			_ = d.Set("azure_postgresql", flattenCloudAzurePostgresqlIntegration(t))
 		case *cloud.CloudAzurePowerbidedicatedIntegration:
@@ -1698,6 +1748,7 @@ func flattenCloudAzureAPIManagementIntegration(in *cloud.CloudAzureAPImanagement
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1712,6 +1763,7 @@ func flattenCloudAzureAppGatewayIntegration(in *cloud.CloudAzureAppgatewayIntegr
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1726,6 +1778,7 @@ func flattenCloudAzureAppServiceIntegration(in *cloud.CloudAzureAppserviceIntegr
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1740,6 +1793,7 @@ func flattenCloudAzureContainersIntegration(in *cloud.CloudAzureContainersIntegr
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1754,6 +1808,22 @@ func flattenCloudAzureCosmosdbIntegration(in *cloud.CloudAzureCosmosdbIntegratio
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for cost management
+
+func flattenCloudAzureCostManagementIntegration(in *cloud.CloudAzureCostmanagementIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["tags_keys"] = in.TagKeys
 
 	flattened[0] = out
 
@@ -1768,6 +1838,7 @@ func flattenCloudAzureDataFactoryIntegration(in *cloud.CloudAzureDatafactoryInte
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1782,6 +1853,7 @@ func flattenCloudAzureEventhubIntegration(in *cloud.CloudAzureEventhubIntegratio
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1796,6 +1868,7 @@ func flattenCloudAzureExpressRouteIntegration(in *cloud.CloudAzureExpressrouteIn
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1810,6 +1883,7 @@ func flattenCloudAzureFirewallsIntegration(in *cloud.CloudAzureFirewallsIntegrat
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1824,6 +1898,7 @@ func flattenCloudAzureFrontDoorIntegration(in *cloud.CloudAzureFrontdoorIntegrat
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1838,6 +1913,7 @@ func flattenCloudAzureFunctionsIntegration(in *cloud.CloudAzureFunctionsIntegrat
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1852,6 +1928,7 @@ func flattenCloudAzureKeyVaultIntegration(in *cloud.CloudAzureKeyvaultIntegratio
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1866,6 +1943,7 @@ func flattenCloudAzureLoadBalancerIntegration(in *cloud.CloudAzureLoadbalancerIn
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1880,6 +1958,7 @@ func flattenCloudAzureLogicAppsIntegration(in *cloud.CloudAzureLogicappsIntegrat
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1894,6 +1973,7 @@ func flattenCloudAzureMachineLearningIntegration(in *cloud.CloudAzureMachinelear
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1908,6 +1988,7 @@ func flattenCloudAzureMariadbIntegration(in *cloud.CloudAzureMariadbIntegration)
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1922,6 +2003,7 @@ func flattenCloudAzureMysqlIntegration(in *cloud.CloudAzureMysqlIntegration) []i
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1936,6 +2018,7 @@ func flattenCloudAzurePostgresqlIntegration(in *cloud.CloudAzurePostgresqlIntegr
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1950,6 +2033,7 @@ func flattenCloudAzurePowerBIDedicatedIntegration(in *cloud.CloudAzurePowerbided
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1964,6 +2048,7 @@ func flattenCloudAzureRedisCacheIntegration(in *cloud.CloudAzureRediscacheIntegr
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1978,6 +2063,7 @@ func flattenCloudAzureServiceBusIntegration(in *cloud.CloudAzureServicebusIntegr
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -1992,6 +2078,7 @@ func flattenCloudAzureServiceFabricIntegration(in *cloud.CloudAzureServicefabric
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -2005,6 +2092,7 @@ func flattenCloudAzureSqlIntegration(in *cloud.CloudAzureSqlIntegration) []inter
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -2019,6 +2107,7 @@ func flattenCloudAzureSqlManagedIntegration(in *cloud.CloudAzureSqlmanagedIntegr
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -2033,6 +2122,7 @@ func flattenCloudAzureStorageIntegration(in *cloud.CloudAzureStorageIntegration)
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -2047,6 +2137,7 @@ func flattenCloudAzureVirtualMachineIntegration(in *cloud.CloudAzureVirtualmachi
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -2061,6 +2152,7 @@ func flattenCloudAzureVirtualNetworksIntegration(in *cloud.CloudAzureVirtualnetw
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -2075,6 +2167,7 @@ func flattenCloudAzureVmsIntegration(in *cloud.CloudAzureVmsIntegration) []inter
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -2089,6 +2182,7 @@ func flattenCloudAzureVpnGatewaysIntegration(in *cloud.CloudAzureVpngatewaysInte
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
 
 	flattened[0] = out
 
@@ -2140,20 +2234,18 @@ func resourceNewRelicCloudAzureIntegrationsUpdate(ctx context.Context, d *schema
 /// Delete
 func resourceNewRelicCloudAzureIntegrationsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
-
-	deleteInput := disableInput(d)
-	cloudDisableIntegrationsPayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, deleteInput)
+	deleteInput := expandCloudAzureDisableInputs(d)
+	azureDisablePayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, deleteInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var diags diag.Diagnostics
 
-	if len(cloudDisableIntegrationsPayload.Errors) > 0 {
-		for _, err := range cloudDisableIntegrationsPayload.Errors {
+	if len(azureDisablePayload.Errors) > 0 {
+		for _, err := range azureDisablePayload.Errors {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  err.Type + " " + err.Message,
@@ -2167,18 +2259,106 @@ func resourceNewRelicCloudAzureIntegrationsDelete(ctx context.Context, d *schema
 	return nil
 }
 
-func disableInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
-	cloudDisableAzureIntegration := cloud.CloudAzureDisableIntegrationsInput{}
+func expandCloudAzureDisableInputs(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
+	cloudAzureDisableInput := cloud.CloudAzureDisableIntegrationsInput{}
 	var linkedAccountID int
 
 	if l, ok := d.GetOk("linked_account_id"); ok {
 		linkedAccountID = l.(int)
 	}
 	if _, ok := d.GetOk("azure_api_management"); ok {
-		cloudDisableAzureIntegration.AzureAPImanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+		cloudAzureDisableInput.AzureAPImanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
+	if _, ok := d.GetOk("azure_app_gateway"); ok {
+		cloudAzureDisableInput.AzureAppgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_app_service"); ok {
+		cloudAzureDisableInput.AzureAppservice = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_containers"); ok {
+		cloudAzureDisableInput.AzureContainers = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_cosmos_db"); ok {
+		cloudAzureDisableInput.AzureCosmosdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_cost_management"); ok {
+		cloudAzureDisableInput.AzureCostmanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_data_factory"); ok {
+		cloudAzureDisableInput.AzureDatafactory = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_event_hub"); ok {
+		cloudAzureDisableInput.AzureEventhub = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_express_route"); ok {
+		cloudAzureDisableInput.AzureExpressroute = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_firewalls"); ok {
+		cloudAzureDisableInput.AzureFirewalls = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_front_door"); ok {
+		cloudAzureDisableInput.AzureFrontdoor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_functions"); ok {
+		cloudAzureDisableInput.AzureFunctions = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_key_vault"); ok {
+		cloudAzureDisableInput.AzureKeyvault = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_load_balancer"); ok {
+		cloudAzureDisableInput.AzureLoadbalancer = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_logic_apps"); ok {
+		cloudAzureDisableInput.AzureLogicapps = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_machine_learning"); ok {
+		cloudAzureDisableInput.AzureMachinelearning = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_maria_db"); ok {
+		cloudAzureDisableInput.AzureMariadb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_mysql"); ok {
+		cloudAzureDisableInput.AzureMysql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_postgresql"); ok {
+		cloudAzureDisableInput.AzurePostgresql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_power_bi_dedicated"); ok {
+		cloudAzureDisableInput.AzurePowerbidedicated = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_redis_cache"); ok {
+		cloudAzureDisableInput.AzureRediscache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_service_bus"); ok {
+		cloudAzureDisableInput.AzureServicebus = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_service_fabric"); ok {
+		cloudAzureDisableInput.AzureServicefabric = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_sql"); ok {
+		cloudAzureDisableInput.AzureSql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_sql_managed"); ok {
+		cloudAzureDisableInput.AzureSqlmanaged = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_storage"); ok {
+		cloudAzureDisableInput.AzureStorage = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_virtual_machine"); ok {
+		cloudAzureDisableInput.AzureVirtualmachine = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_virtual_networks"); ok {
+		cloudAzureDisableInput.AzureVirtualnetworks = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_vms"); ok {
+		cloudAzureDisableInput.AzureVms = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("azure_vpn_gateway"); ok {
+		cloudAzureDisableInput.AzureVpngateways = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
 	deleteInput := cloud.CloudDisableIntegrationsInput{
-		Azure: cloudDisableAzureIntegration,
+		Azure: cloudAzureDisableInput,
 	}
 	return deleteInput
 }
