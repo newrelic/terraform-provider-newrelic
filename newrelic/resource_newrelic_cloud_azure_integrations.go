@@ -382,7 +382,8 @@ func cloudAzureIntegrationAzureMariadb() *schema.Resource {
 		Schema: s,
 	}
 
-}func cloudAzureIntegrationAzureMysql() *schema.Resource {
+}
+func cloudAzureIntegrationAzureMysql() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 
 	return &schema.Resource{
@@ -430,28 +431,32 @@ func cloudAzureIntegrationAzureServiceFabric() *schema.Resource {
 		Schema: s,
 	}
 
-}func cloudAzureIntegrationAzureSql() *schema.Resource {
+}
+func cloudAzureIntegrationAzureSql() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 
 	return &schema.Resource{
 		Schema: s,
 	}
 
-}func cloudAzureIntegrationAzureSqlManaged() *schema.Resource {
+}
+func cloudAzureIntegrationAzureSqlManaged() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 
 	return &schema.Resource{
 		Schema: s,
 	}
 
-}func cloudAzureIntegrationAzureStorage() *schema.Resource {
+}
+func cloudAzureIntegrationAzureStorage() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 
 	return &schema.Resource{
 		Schema: s,
 	}
 
-}func cloudAzureIntegrationAzureVirtualMachine() *schema.Resource {
+}
+func cloudAzureIntegrationAzureVirtualMachine() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 
 	return &schema.Resource{
@@ -466,14 +471,8 @@ func cloudAzureIntegrationAzureVirtualNetworks() *schema.Resource {
 		Schema: s,
 	}
 
-}func cloudAzureIntegrationAzureVms() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}func cloudAzureIntegrationAzureVPNGateway() *schema.Resource {
+}
+func cloudAzureIntegrationAzureVms() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 
 	return &schema.Resource{
@@ -481,6 +480,15 @@ func cloudAzureIntegrationAzureVirtualNetworks() *schema.Resource {
 	}
 
 }
+func cloudAzureIntegrationAzureVPNGateway() *schema.Resource {
+	s := cloudAzureIntegrationSchemaBase()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+
+}
+
 /////
 func resourceNewRelicCloudAzureIntegrationsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
@@ -553,6 +561,150 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 		cloudDisableAzureIntegration.AzureCosmosdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
+	if v, ok := d.GetOk("azure_data_factory"); ok {
+		cloudAzureIntegration.AzureDatafactory = expandCloudAzureIntegrationAzureDataFactoryInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_data_factory"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureDatafactory = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_event_hub"); ok {
+		cloudAzureIntegration.AzureEventhub = expandCloudAzureIntegrationCloudAzureEventHubInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_event_hub"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureEventhub = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_express_route"); ok {
+		cloudAzureIntegration.AzureExpressroute = expandCloudAzureIntegrationAzureExpressRouteInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_express_route"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureExpressroute = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_firewalls"); ok {
+		cloudAzureIntegration.AzureFirewalls = expandCloudAzureIntegrationAzureFirewallsInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_firewalls"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureCosmosdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_front_door"); ok {
+		cloudAzureIntegration.AzureFrontdoor = expandCloudAzureIntegrationAzureFrontDoorInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_front_door"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureFrontdoor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_functions"); ok {
+		cloudAzureIntegration.AzureFunctions = expandCloudAzureIntegrationAzureFunctionsInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_functions"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureFunctions = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_key_vault"); ok {
+		cloudAzureIntegration.AzureKeyvault = expandCloudAzureIntegrationAzureKeyVaultInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_key_vault"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureKeyvault = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_load_balancer"); ok {
+		cloudAzureIntegration.AzureLoadbalancer = expandCloudAzureIntegrationAzureLoadBalancerInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_load_balancer"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureLoadbalancer = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_logic_apps"); ok {
+		cloudAzureIntegration.AzureLogicapps = expandCloudAzureIntegrationAzureLogicAppsInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_logic_apps"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureLogicapps = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	//
+	if v, ok := d.GetOk("azure_machine_learning"); ok {
+		cloudAzureIntegration.AzureMachinelearning = expandCloudAzureIntegrationAzureMachineLearningInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_machine_learning"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureMachinelearning = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_maria_db"); ok {
+		cloudAzureIntegration.AzureMariadb = expandCloudAzureIntegrationAzureMariadbInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_maria_db"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureMariadb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_mysql"); ok {
+		cloudAzureIntegration.AzureMysql = expandCloudAzureIntegrationAzureMysqlInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_mysql"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureMysql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_postgresql"); ok {
+		cloudAzureIntegration.AzurePostgresql = expandCloudAzureIntegrationAzurePostgresqlInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_postgresql"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzurePostgresql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_power_bi_dedicated"); ok {
+		cloudAzureIntegration.AzurePowerbidedicated = expandCloudAzureIntegrationAzurePowerBiDedicatedInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_power_bi_dedicated"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzurePowerbidedicated = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_redis_cache"); ok {
+		cloudAzureIntegration.AzureRediscache = expandCloudAzureIntegrationAzureRedisCacheInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_redis_cache"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureRediscache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_service_bus"); ok {
+		cloudAzureIntegration.AzureServicebus = expandCloudAzureIntegrationAzureServiceBusInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_service_bus"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureServicebus = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_service_fabric"); ok {
+		cloudAzureIntegration.AzureServicefabric = expandCloudAzureIntegrationAzureServiceFabricInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_service_fabric"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureServicefabric = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_sql"); ok {
+		cloudAzureIntegration.AzureSql = expandCloudAzureIntegrationAzureSqlInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_sql"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureSql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_sql_managed"); ok {
+		cloudAzureIntegration.AzureSqlmanaged = expandCloudAzureIntegrationAzureSqlManagedInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_sql_managed"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureSqlmanaged = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_storage"); ok {
+		cloudAzureIntegration.AzureStorage = expandCloudAzureIntegrationAzureStorageInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_storage"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureStorage = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_virtual_machine"); ok {
+		cloudAzureIntegration.AzureVirtualmachine = expandCloudAzureIntegrationAzureVirtualMachineInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_virtual_machine"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureVirtualmachine = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_virtual_networks"); ok {
+		cloudAzureIntegration.AzureVirtualnetworks = expandCloudAzureIntegrationAzureVirtualNetworksInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_virtual_networks"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureVirtualnetworks = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_vms"); ok {
+		cloudAzureIntegration.AzureVms = expandCloudAzureIntegrationAzureVmsInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_vms"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureVms = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("azure_vpn_gateway"); ok {
+		cloudAzureIntegration.AzureVpngateways = expandCloudAzureIntegrationAzureVpnGatewayInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("azure_vpn_gateway"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureVpngateways = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
 	//// Unique for all resources
 
 	configureInput := cloud.CloudIntegrationsInput{
@@ -604,7 +756,7 @@ func expandCloudAzureIntegrationAzureAppGatewayInput(b []interface{}, linkedAcco
 	for i, azureAppGateway := range b {
 		var azureAppGatewayInput cloud.CloudAzureAppgatewayIntegrationInput
 
-		if azureAppGatewayInput == nil {
+		if azureAppGateway == nil {
 			azureAppGatewayInput.LinkedAccountId = linkedAccountID
 			expanded[i] = azureAppGatewayInput
 			return expanded
@@ -634,7 +786,7 @@ func expandCloudAzureIntegrationAzureAppServiceInput(b []interface{}, linkedAcco
 	for i, azureAppService := range b {
 		var azureAppServiceInput cloud.CloudAzureAppserviceIntegrationInput
 
-		if azureAppServiceInput == nil {
+		if azureAppService == nil {
 			azureAppServiceInput.LinkedAccountId = linkedAccountID
 			expanded[i] = azureAppServiceInput
 			return expanded
@@ -716,6 +868,726 @@ func expandCloudAzureIntegrationAzureCosmosdbInput(b []interface{}, linkedAccoun
 	return expanded
 }
 
+// Expanding the Azure Data Factory
+
+func expandCloudAzureIntegrationAzureDataFactoryInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureDatafactoryIntegrationInput {
+	expanded := make([]cloud.CloudAzureDatafactoryIntegrationInput, len(b))
+
+	for i, azureDataFactory := range b {
+		var azureDataFactoryInput cloud.CloudAzureDatafactoryIntegrationInput
+
+		if azureDataFactory == nil {
+			azureDataFactoryInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureDataFactoryInput
+			return expanded
+		}
+
+		in := azureDataFactory.(map[string]interface{})
+
+		azureDataFactoryInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureDataFactoryInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureDataFactoryInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureDataFactoryInput
+	}
+
+	return expanded
+}
+
+// Expanding the Azure Event Hub
+
+func expandCloudAzureIntegrationCloudAzureEventHubInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureEventhubIntegrationInput {
+	expanded := make([]cloud.CloudAzureEventhubIntegrationInput, len(b))
+
+	for i, azureEventHub := range b {
+		var azureEventHubInput cloud.CloudAzureEventhubIntegrationInput
+
+		if azureEventHub == nil {
+			azureEventHubInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureEventHubInput
+			return expanded
+		}
+
+		in := azureEventHub.(map[string]interface{})
+
+		azureEventHubInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureEventHubInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureEventHubInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureEventHubInput
+	}
+
+	return expanded
+}
+
+// Expanding the Azure Express Route
+
+func expandCloudAzureIntegrationAzureExpressRouteInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureExpressrouteIntegrationInput {
+	expanded := make([]cloud.CloudAzureExpressrouteIntegrationInput, len(b))
+
+	for i, azureExpressRoute := range b {
+		var azureExpressRouteInput cloud.CloudAzureExpressrouteIntegrationInput
+
+		if azureExpressRoute == nil {
+			azureExpressRouteInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureExpressRouteInput
+			return expanded
+		}
+
+		in := azureExpressRoute.(map[string]interface{})
+
+		azureExpressRouteInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureExpressRouteInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureExpressRouteInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureExpressRouteInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_firewalls
+
+func expandCloudAzureIntegrationAzureFirewallsInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureFirewallsIntegrationInput {
+	expanded := make([]cloud.CloudAzureFirewallsIntegrationInput, len(b))
+
+	for i, azureFirewalls := range b {
+		var azureFirewallsInput cloud.CloudAzureFirewallsIntegrationInput
+
+		if azureFirewalls == nil {
+			azureFirewallsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureFirewallsInput
+			return expanded
+		}
+
+		in := azureFirewalls.(map[string]interface{})
+
+		azureFirewallsInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureFirewallsInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureFirewallsInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureFirewallsInput
+	}
+
+	return expanded
+}
+
+// Expanding the Azure front_door
+
+func expandCloudAzureIntegrationAzureFrontDoorInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureFrontdoorIntegrationInput {
+	expanded := make([]cloud.CloudAzureFrontdoorIntegrationInput, len(b))
+
+	for i, azureFrontDoor := range b {
+		var azureFrontDoorInput cloud.CloudAzureFrontdoorIntegrationInput
+
+		if azureFrontDoor == nil {
+			azureFrontDoorInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureFrontDoorInput
+			return expanded
+		}
+
+		in := azureFrontDoor.(map[string]interface{})
+
+		azureFrontDoorInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureFrontDoorInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureFrontDoorInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureFrontDoorInput
+	}
+
+	return expanded
+}
+
+// Expanding the Azure Functions
+
+func expandCloudAzureIntegrationAzureFunctionsInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureFunctionsIntegrationInput {
+	expanded := make([]cloud.CloudAzureFunctionsIntegrationInput, len(b))
+
+	for i, azureFunctions := range b {
+		var azureFunctionsInput cloud.CloudAzureFunctionsIntegrationInput
+
+		if azureFunctions == nil {
+			azureFunctionsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureFunctionsInput
+			return expanded
+		}
+
+		in := azureFunctions.(map[string]interface{})
+
+		azureFunctionsInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureFunctionsInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureFunctionsInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureFunctionsInput
+	}
+
+	return expanded
+}
+
+// Expanding the Azure Key Vault
+
+func expandCloudAzureIntegrationAzureKeyVaultInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureKeyvaultIntegrationInput {
+	expanded := make([]cloud.CloudAzureKeyvaultIntegrationInput, len(b))
+
+	for i, azureKeyVault := range b {
+		var azureKeyVaultInput cloud.CloudAzureKeyvaultIntegrationInput
+
+		if azureKeyVault == nil {
+			azureKeyVaultInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureKeyVaultInput
+			return expanded
+		}
+
+		in := azureKeyVault.(map[string]interface{})
+
+		azureKeyVaultInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureKeyVaultInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureKeyVaultInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureKeyVaultInput
+	}
+
+	return expanded
+}
+
+// Expanding the Azure Load Balancer
+
+func expandCloudAzureIntegrationAzureLoadBalancerInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureLoadbalancerIntegrationInput {
+	expanded := make([]cloud.CloudAzureLoadbalancerIntegrationInput, len(b))
+
+	for i, azureLoadBalancer := range b {
+		var azureLoadBalancerInput cloud.CloudAzureLoadbalancerIntegrationInput
+
+		if azureLoadBalancer == nil {
+			azureLoadBalancerInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureLoadBalancerInput
+			return expanded
+		}
+
+		in := azureLoadBalancer.(map[string]interface{})
+
+		azureLoadBalancerInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureLoadBalancerInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureLoadBalancerInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureLoadBalancerInput
+	}
+
+	return expanded
+}
+
+// Expanding the Azure Cosmosdb
+
+func expandCloudAzureIntegrationAzureLogicAppsInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureLogicappsIntegrationInput {
+	expanded := make([]cloud.CloudAzureLogicappsIntegrationInput, len(b))
+
+	for i, azureLogicApps := range b {
+		var azureLogicAppsInput cloud.CloudAzureLogicappsIntegrationInput
+
+		if azureLogicApps == nil {
+			azureLogicAppsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureLogicAppsInput
+			return expanded
+		}
+
+		in := azureLogicApps.(map[string]interface{})
+
+		azureLogicAppsInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureLogicAppsInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureLogicAppsInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureLogicAppsInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_machine_learning
+
+func expandCloudAzureIntegrationAzureMachineLearningInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureMachinelearningIntegrationInput {
+	expanded := make([]cloud.CloudAzureMachinelearningIntegrationInput, len(b))
+
+	for i, azureMachineLearning := range b {
+		var azureMachineLearningInput cloud.CloudAzureMachinelearningIntegrationInput
+
+		if azureMachineLearning == nil {
+			azureMachineLearningInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureMachineLearningInput
+			return expanded
+		}
+
+		in := azureMachineLearning.(map[string]interface{})
+
+		azureMachineLearningInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureMachineLearningInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureMachineLearningInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureMachineLearningInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_maria_db
+
+func expandCloudAzureIntegrationAzureMariadbInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureMariadbIntegrationInput {
+	expanded := make([]cloud.CloudAzureMariadbIntegrationInput, len(b))
+
+	for i, azureMariadb := range b {
+		var azureMariadbInput cloud.CloudAzureMariadbIntegrationInput
+
+		if azureMariadb == nil {
+			azureMariadbInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureMariadbInput
+			return expanded
+		}
+
+		in := azureMariadb.(map[string]interface{})
+
+		azureMariadbInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureMariadbInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureMariadbInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureMariadbInput
+	}
+
+	return expanded
+}
+
+// Expanding the Azure_mysql
+
+func expandCloudAzureIntegrationAzureMysqlInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureMysqlIntegrationInput {
+	expanded := make([]cloud.CloudAzureMysqlIntegrationInput, len(b))
+
+	for i, azureMysql := range b {
+		var azureMysqlInput cloud.CloudAzureMysqlIntegrationInput
+
+		if azureMysql == nil {
+			azureMysqlInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureMysqlInput
+			return expanded
+		}
+
+		in := azureMysql.(map[string]interface{})
+
+		azureMysqlInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureMysqlInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureMysqlInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureMysqlInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_postgresql
+
+func expandCloudAzureIntegrationAzurePostgresqlInput(b []interface{}, linkedAccountID int) []cloud.CloudAzurePostgresqlIntegrationInput {
+	expanded := make([]cloud.CloudAzurePostgresqlIntegrationInput, len(b))
+
+	for i, azurePostgresql := range b {
+		var azurePostgresqlInput cloud.CloudAzurePostgresqlIntegrationInput
+
+		if azurePostgresql == nil {
+			azurePostgresqlInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azurePostgresqlInput
+			return expanded
+		}
+
+		in := azurePostgresql.(map[string]interface{})
+
+		azurePostgresqlInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azurePostgresqlInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azurePostgresqlInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azurePostgresqlInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_power_bi_dedicated
+
+func expandCloudAzureIntegrationAzurePowerBiDedicatedInput(b []interface{}, linkedAccountID int) []cloud.CloudAzurePowerbidedicatedIntegrationInput {
+	expanded := make([]cloud.CloudAzurePowerbidedicatedIntegrationInput, len(b))
+
+	for i, azurePowerBiDedicated := range b {
+		var azurePowerBiDedicatedInput cloud.CloudAzurePowerbidedicatedIntegrationInput
+
+		if azurePowerBiDedicated == nil {
+			azurePowerBiDedicatedInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azurePowerBiDedicatedInput
+			return expanded
+		}
+
+		in := azurePowerBiDedicated.(map[string]interface{})
+
+		azurePowerBiDedicatedInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azurePowerBiDedicatedInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azurePowerBiDedicatedInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azurePowerBiDedicatedInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_redis_cache
+
+func expandCloudAzureIntegrationAzureRedisCacheInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureRediscacheIntegrationInput {
+	expanded := make([]cloud.CloudAzureRediscacheIntegrationInput, len(b))
+
+	for i, azureRedisCache := range b {
+		var azureRedisCacheInput cloud.CloudAzureRediscacheIntegrationInput
+
+		if azureRedisCache == nil {
+			azureRedisCacheInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureRedisCacheInput
+			return expanded
+		}
+
+		in := azureRedisCache.(map[string]interface{})
+
+		azureRedisCacheInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureRedisCacheInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureRedisCacheInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureRedisCacheInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_service_bus
+
+func expandCloudAzureIntegrationAzureServiceBusInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureServicebusIntegrationInput {
+	expanded := make([]cloud.CloudAzureServicebusIntegrationInput, len(b))
+
+	for i, azureServiceBus := range b {
+		var azureServiceBusInput cloud.CloudAzureServicebusIntegrationInput
+
+		if azureServiceBus == nil {
+			azureServiceBusInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureServiceBusInput
+			return expanded
+		}
+
+		in := azureServiceBus.(map[string]interface{})
+
+		azureServiceBusInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureServiceBusInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureServiceBusInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureServiceBusInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_service_fabric
+
+func expandCloudAzureIntegrationAzureServiceFabricInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureServicefabricIntegrationInput {
+	expanded := make([]cloud.CloudAzureServicefabricIntegrationInput, len(b))
+
+	for i, azureServiceFabric := range b {
+		var azureServiceFabricInput cloud.CloudAzureServicefabricIntegrationInput
+
+		if azureServiceFabric == nil {
+			azureServiceFabricInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureServiceFabricInput
+			return expanded
+		}
+
+		in := azureServiceFabric.(map[string]interface{})
+
+		azureServiceFabricInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureServiceFabricInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureServiceFabricInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureServiceFabricInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_sql
+
+func expandCloudAzureIntegrationAzureSqlInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureSqlIntegrationInput {
+	expanded := make([]cloud.CloudAzureSqlIntegrationInput, len(b))
+
+	for i, azureSql := range b {
+		var azureSqlInput cloud.CloudAzureSqlIntegrationInput
+
+		if azureSql == nil {
+			azureSqlInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureSqlInput
+			return expanded
+		}
+
+		in := azureSql.(map[string]interface{})
+
+		azureSqlInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureSqlInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureSqlInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureSqlInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_sql_managed
+
+func expandCloudAzureIntegrationAzureSqlManagedInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureSqlmanagedIntegrationInput {
+	expanded := make([]cloud.CloudAzureSqlmanagedIntegrationInput, len(b))
+
+	for i, azureSqlManaged := range b {
+		var azureSqlManagedInput cloud.CloudAzureSqlmanagedIntegrationInput
+
+		if azureSqlManaged == nil {
+			azureSqlManagedInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureSqlManagedInput
+			return expanded
+		}
+
+		in := azureSqlManaged.(map[string]interface{})
+
+		azureSqlManagedInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureSqlManagedInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureSqlManagedInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureSqlManagedInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_storage
+
+func expandCloudAzureIntegrationAzureStorageInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureStorageIntegrationInput {
+	expanded := make([]cloud.CloudAzureStorageIntegrationInput, len(b))
+
+	for i, azureStorage := range b {
+		var azureStorageInput cloud.CloudAzureStorageIntegrationInput
+
+		if azureStorage == nil {
+			azureStorageInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureStorageInput
+			return expanded
+		}
+
+		in := azureStorage.(map[string]interface{})
+
+		azureStorageInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureStorageInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureStorageInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureStorageInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_virtual_machine
+
+func expandCloudAzureIntegrationAzureVirtualMachineInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureVirtualmachineIntegrationInput {
+	expanded := make([]cloud.CloudAzureVirtualmachineIntegrationInput, len(b))
+
+	for i, azureVirtualMachine := range b {
+		var azureVirtualMachineInput cloud.CloudAzureVirtualmachineIntegrationInput
+
+		if azureVirtualMachine == nil {
+			azureVirtualMachineInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureVirtualMachineInput
+			return expanded
+		}
+
+		in := azureVirtualMachine.(map[string]interface{})
+
+		azureVirtualMachineInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureVirtualMachineInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureVirtualMachineInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureVirtualMachineInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_virtual_networks
+
+func expandCloudAzureIntegrationAzureVirtualNetworksInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureVirtualnetworksIntegrationInput {
+	expanded := make([]cloud.CloudAzureVirtualnetworksIntegrationInput, len(b))
+
+	for i, azureVirtualNetworks := range b {
+		var azureVirtualNetworksInput cloud.CloudAzureVirtualnetworksIntegrationInput
+
+		if azureVirtualNetworks == nil {
+			azureVirtualNetworksInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureVirtualNetworksInput
+			return expanded
+		}
+
+		in := azureVirtualNetworks.(map[string]interface{})
+
+		azureVirtualNetworksInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureVirtualNetworksInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureVirtualNetworksInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureVirtualNetworksInput
+	}
+
+	return expanded
+}
+
+// Expanding the Azure vms
+
+func expandCloudAzureIntegrationAzureVmsInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureVmsIntegrationInput {
+	expanded := make([]cloud.CloudAzureVmsIntegrationInput, len(b))
+
+	for i, azureVms := range b {
+		var azureVmsInput cloud.CloudAzureVmsIntegrationInput
+
+		if azureVms == nil {
+			azureVmsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureVmsInput
+			return expanded
+		}
+
+		in := azureVms.(map[string]interface{})
+
+		azureVmsInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureVmsInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureVmsInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureVmsInput
+	}
+
+	return expanded
+}
+
+// Expanding the azure_vpn_gateway
+
+func expandCloudAzureIntegrationAzureVpnGatewayInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureVpngatewaysIntegrationInput {
+	expanded := make([]cloud.CloudAzureVpngatewaysIntegrationInput, len(b))
+
+	for i, azureVpnGateway := range b {
+		var azureVpnGatewayInput cloud.CloudAzureVpngatewaysIntegrationInput
+
+		if azureVpnGateway == nil {
+			azureVpnGatewayInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureVpnGatewayInput
+			return expanded
+		}
+
+		in := azureVpnGateway.(map[string]interface{})
+
+		azureVpnGatewayInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureVpnGatewayInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			azureVpnGatewayInput.ResourceGroups[0] = r.(string)
+		}
+		expanded[i] = azureVpnGatewayInput
+	}
+
+	return expanded
+}
+
 /// Read
 
 func resourceNewRelicCloudAzureIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -773,7 +1645,7 @@ func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudL
 		case *cloud.CloudAzureFunctionsIntegration:
 			_ = d.Set("azure_functions", flattenCloudAzureFunctionsIntegration(t))
 
-		case *cloud.CloudAzureKeyvaultIntegration
+		case *cloud.CloudAzureKeyvaultIntegration:
 			_ = d.Set("azure_key_vault", flattenCloudAzureKeyVaultIntegration(t))
 
 		case *cloud.CloudAzureLoadbalancerIntegration:
@@ -782,16 +1654,16 @@ func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudL
 		case *cloud.CloudAzureLogicappsIntegration:
 			_ = d.Set("azure_logic_apps", flattenCloudAzureLogicAppsIntegration(t))
 
-			case *cloud.CloudAzureMachinelearningIntegration:
+		case *cloud.CloudAzureMachinelearningIntegration:
 			_ = d.Set("azure_machine_learning", flattenCloudAzureMachineLearningIntegration(t))
 		case *cloud.CloudAzureMariadbIntegration:
-			_ = d.Set("azure_maria_db", flattenCloudAzureMariadbIntegration))
+			_ = d.Set("azure_maria_db", flattenCloudAzureMariadbIntegration(t))
 		case *cloud.CloudAzureMysqlIntegration:
 			_ = d.Set("azure_mysql", flattenCloudAzureMysqlIntegration(t))
 
 		case *cloud.CloudAzurePostgresqlIntegration:
 			_ = d.Set("azure_postgresql", flattenCloudAzurePostgresqlIntegration(t))
-		case *cloud.:
+		case *cloud.CloudAzurePowerbidedicatedIntegration:
 			_ = d.Set("azure_power_bi_dedicated", flattenCloudAzurePowerBIDedicatedIntegration(t))
 		case *cloud.CloudAzureRediscacheIntegration:
 			_ = d.Set("azure_redis_cache", flattenCloudAzureRedisCacheIntegration(t))
@@ -1155,7 +2027,7 @@ func flattenCloudAzureSqlManagedIntegration(in *cloud.CloudAzureSqlmanagedIntegr
 
 // flatten for azure_storage
 
-func flattenCloudAzureStorageIntegration(in *cloud.CloudAzureStorageIntegration) []interface{}{
+func flattenCloudAzureStorageIntegration(in *cloud.CloudAzureStorageIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
 	out := make(map[string]interface{})
@@ -1222,8 +2094,6 @@ func flattenCloudAzureVpnGatewaysIntegration(in *cloud.CloudAzureVpngatewaysInte
 
 	return flattened
 }
-
-
 
 /// update
 func resourceNewRelicCloudAzureIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
