@@ -1,9 +1,8 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -30,4 +29,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DEV_TOOLKIT_TOKEN }}
           GPG_FINGERPRINT: ${{ secrets.GPG_FINGERPRINT }}
-        run: make release-publish
+        run: |
+          git config --global user.name ${{ secrets.NEW_RELIC_GITHUB_SERVICE_ACCOUNT_USERNAME }}
+          git config --global user.email ${{ secrets.NEW_RELIC_GITHUB_SERVICE_ACCOUNT_EMAIL }}
+
+          ./scripts/release.sh
+
+          make release-publish
+        
