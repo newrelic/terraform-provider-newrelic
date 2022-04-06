@@ -157,7 +157,7 @@ func resourceNewrelicCloudGcpIntegrations() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
-				Elem:        cloudGcpIntegrationsSqlSchemaElem(),
+				Elem:        cloudGcpIntegrationsSQLSchemaElem(),
 			},
 			"storage": {
 				Type:        schema.TypeList,
@@ -362,7 +362,7 @@ func cloudGcpIntegrationsSpannerSchemaElem() *schema.Resource {
 	}
 }
 
-func cloudGcpIntegrationsSqlSchemaElem() *schema.Resource {
+func cloudGcpIntegrationsSQLSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
 		Schema: s,
@@ -423,6 +423,8 @@ func resourceNewrelicCloudGcpIntegrationsCreate(ctx context.Context, d *schema.R
 	return nil
 }
 
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint:gocyclo
 func expandCloudGcpIntegrationsInputs(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
 	gcpCloudIntegrations := cloud.CloudGcpIntegrationsInput{}
 	gcpDisableIntegrations := cloud.CloudGcpDisableIntegrationsInput{}
@@ -563,7 +565,7 @@ func expandCloudGcpIntegrationsInputs(d *schema.ResourceData) (cloud.CloudIntegr
 	}
 
 	if v, ok := d.GetOk("sql"); ok {
-		gcpCloudIntegrations.GcpSql = expandCloudGcpSqlIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpSql = expandCloudGcpSQLIntegrationsInputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("sql"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpSql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
@@ -1003,7 +1005,7 @@ func expandCloudGcpSpannerIntegrationsInputs(b []interface{}, linkedAccountID in
 	return expanded
 }
 
-func expandCloudGcpSqlIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpSqlIntegrationInput {
+func expandCloudGcpSQLIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpSqlIntegrationInput {
 	expanded := make([]cloud.CloudGcpSqlIntegrationInput, len(b))
 	for i, expand := range b {
 		var Input cloud.CloudGcpSqlIntegrationInput
@@ -1100,6 +1102,8 @@ func resourceNewrelicCloudGcpIntegrationsRead(ctx context.Context, d *schema.Res
 	return nil
 }
 
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint:gocyclo
 func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.CloudLinkedAccount) {
 	_ = d.Set("account_id", linkedAccount.NrAccountId)
 	_ = d.Set("linked_account_id", linkedAccount.ID)
@@ -1148,7 +1152,7 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 		case *cloud.CloudGcpSpannerIntegration:
 			_ = d.Set("spanner", flattenCloudGcpSpannerIntegration(t))
 		case *cloud.CloudGcpSqlIntegration:
-			_ = d.Set("sql", flattenCloudGcpSqlIntegration(t))
+			_ = d.Set("sql", flattenCloudGcpSQLIntegration(t))
 		case *cloud.CloudGcpStorageIntegration:
 			_ = d.Set("storage", flattenCloudGcpStorageIntegration(t))
 		case *cloud.CloudGcpVmsIntegration:
@@ -1330,7 +1334,7 @@ func flattenCloudGcpSpannerIntegration(in *cloud.CloudGcpSpannerIntegration) []i
 	return flattened
 }
 
-func flattenCloudGcpSqlIntegration(in *cloud.CloudGcpSqlIntegration) []interface{} {
+func flattenCloudGcpSQLIntegration(in *cloud.CloudGcpSqlIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
@@ -1429,6 +1433,8 @@ func resourceNewrelicCloudGcpIntegrationsDelete(ctx context.Context, d *schema.R
 	return nil
 }
 
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint:gocyclo
 func expandCloudGcpDisableInputs(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
 	cloudGcpDisableInput := cloud.CloudGcpDisableIntegrationsInput{}
 	var linkedAccountID int
