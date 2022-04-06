@@ -5,25 +5,25 @@ package newrelic
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccNewRelicCloudGcpIntegrations(t *testing.T) {
-	t.Skipf("skipping test until integrations work is finished")
-	resourceName := "newrelic_cloud_gcp_link_account.foo"
-
-	testGcpProjectID := os.Getenv("INTEGRATION_TESTING_GCP_PROJECT_ID")
-	if testGcpProjectID == "" {
-		t.Skipf("INTEGRATION_TESTING_GCP_PROJECT_ID must be set for acceptance test")
+func TestAccNewRelicCloudGcpIntegrations_Basic(t *testing.T) {
+	t.Skipf("Skipping test until enviroment variables are added")
+	resourceName := "newrelic_cloud_gcp_integrations.foo"
+	testGcpLinkedAccountID := os.Getenv("INTEGRATION_TESTING_GCP_LINKED_ACCOUNT_ID")
+	if testGcpLinkedAccountID == "" {
+		t.Skipf("INTEGRATION_TESTING_GCP_LINKED_ACCOUNT_IDINTEGRATION_TESTING_GCP_LINKED_ACCOUNT_ID must be set for acceptance test")
 	}
+	linkedAccountID, convErr := strconv.Atoi(testGcpLinkedAccountID)
 
-	testGcpAccountName := os.Getenv("INTEGRATION_TESTING_GCP_ACCOUNT_NAME")
-	if testGcpAccountName == "" {
-		t.Skipf("INTEGRATION_TESTING_GCP_ACCOUNT_NAME must be set for acceptance test")
+	if convErr != nil {
+		fmt.Errorf("error converting string to int")
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -33,14 +33,14 @@ func TestAccNewRelicCloudGcpIntegrations(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicCloudGcpIntegrationsConfig(testGcpAccountName, testGcpProjectID),
+				Config: testAccNewRelicCloudGcpIntegrationsConfig(linkedAccountID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicCloudGcpIntegrationsExists(resourceName),
 				),
 			},
 			//Test: Update
 			{
-				Config: testAccNewRelicCloudGcpIntegrationsConfigUpdated(testGcpAccountName, testGcpProjectID),
+				Config: testAccNewRelicCloudGcpIntegrationsConfigUpdated(linkedAccountID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicCloudGcpIntegrationsExists(resourceName),
 				),
@@ -50,20 +50,29 @@ func TestAccNewRelicCloudGcpIntegrations(t *testing.T) {
 }
 
 func testAccNewRelicCloudGcpIntegrationsExists(n string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		rs, ok := state.RootModule().Resources[n]
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			fmt.Errorf("not found %s", n)
 		}
+
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
 		resourceId, err := strconv.Atoi(rs.Primary.ID)
+
 		if err != nil {
 			fmt.Errorf("error converting string to int")
 		}
+
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
-		if err != nil && linkedAccount == nil {
+		if err != nil {
 			return err
 		}
+
+		if len(linkedAccount.Integrations) == 0 {
+			fmt.Errorf("An error occurred creating GCP integrations")
+		}
+
 		return nil
 	}
 }
@@ -83,24 +92,18 @@ func testAccNewRelicCloudGcpIntegrationsDestroy(s *terraform.State) error {
 
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
 
-		if linkedAccount != nil && err == nil {
-			return fmt.Errorf("Linked gcp account still exists: #{err}")
+		if (linkedAccount.Integrations) != nil && err == nil {
+			return fmt.Errorf("GCP integrations were not unlinked: #{err}")
 		}
 	}
 	return nil
 }
 
-func testAccNewRelicCloudGcpIntegrationsConfig(name string, projectId string) string {
+func testAccNewRelicCloudGcpIntegrationsConfig(linkedAccountId int) string {
 	return fmt.Sprintf(`
-	resource "newrelic_cloud_gcp_link_account" "name" {
-		  account_id=2520528
-		  name= "%[1]s"
-		  project_id = "%[2]s"
-	}
-	
-	resource "newrelic_cloud_gcp_integrations" "foo1" {
+	resource "newrelic_cloud_gcp_integrations" "foo" {
 		  account_id = 2520528
-		  linked_account_id = newrelic_cloud_gcp_link_account.name.id
+		  linked_account_id = %[1]d
 		  app_engine {
 			metrics_polling_interval = 400
 		  }
@@ -181,20 +184,14 @@ func testAccNewRelicCloudGcpIntegrationsConfig(name string, projectId string) st
 			metrics_polling_interval = 400
 		  }
 	}
-	`, name, projectId)
+	`, linkedAccountId)
 }
 
-func testAccNewRelicCloudGcpIntegrationsConfigUpdated(name string, projectId string) string {
+func testAccNewRelicCloudGcpIntegrationsConfigUpdated(linkedAccountId int) string {
 	return fmt.Sprintf(`
-	resource "newrelic_cloud_gcp_link_account" "name" {
-		  account_id=2520528
-		  name= "%[1]s-updated"
-		  project_id = "%[2]s"
-	}
-	
-	resource "newrelic_cloud_gcp_integrations" "foo1" {
+	resource "newrelic_cloud_gcp_integrations" "foo" {
 		  account_id = 2520528
-		  linked_account_id = newrelic_cloud_gcp_link_account.name.id
+		  linked_account_id = %[1]d
 		  app_engine {
 			metrics_polling_interval = 1400
 		  }
@@ -275,5 +272,5 @@ func testAccNewRelicCloudGcpIntegrationsConfigUpdated(name string, projectId str
 			metrics_polling_interval = 1400
 		  }
 	}
-	`, name, projectId)
+	`, linkedAccountId)
 }
