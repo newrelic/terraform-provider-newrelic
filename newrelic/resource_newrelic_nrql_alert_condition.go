@@ -129,6 +129,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Default:     "static",
 				Description: "The type of NRQL alert condition to create. Valid values are: 'static', 'baseline', 'outlier' (deprecated).",
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
