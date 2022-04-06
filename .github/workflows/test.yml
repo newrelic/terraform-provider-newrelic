@@ -121,7 +121,6 @@ jobs:
           INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID }}
           INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID }}
           INTEGRATION_TESTING_AZURE_TENANT_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_TENANT_ID }}
-          INTEGRATION_TESTING_AWS_ACCOUNT: ${{ secrets.INTEGRATION_TESTING_AWS_ACCOUNT }}
 
       # - name: New Relic JUnit Reporter
       #   if: github.event.pull_request.head.repo.full_name == github.repository
