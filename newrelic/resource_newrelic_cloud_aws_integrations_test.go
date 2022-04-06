@@ -14,11 +14,11 @@ import (
 )
 
 func TestAccNewRelicCloudAwsIntegrations_Basic(t *testing.T) {
-	resourceName := "newrelic_cloud_aws_integrations.foo"
+	resourceName := "newrelic_cloud_aws_integrations.bar"
 
-	testAwsAccount := os.Getenv("INTEGRATION_TESTING_AWS_ACCOUNT")
-	if testAwsAccount == "" {
-		t.Skipf("INTEGRATION_TESTING_AWS_ACCOUNT must be set for this acceptance test")
+	testAwsArn := os.Getenv("INTEGRATION_TESTING_AWS_ARN")
+	if testAwsArn == "" {
+		t.Skipf("INTEGRATION_TESTING_AWS_ARN must be set for this acceptance test")
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -28,14 +28,14 @@ func TestAccNewRelicCloudAwsIntegrations_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicAwsIntegrationsConfig(testAwsAccount),
+				Config: testAccNewRelicAwsIntegrationsConfig(testAwsArn),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
 			},
 			//Test: Update
 			{
-				Config: testAccNewRelicAwsIntegrationsConfigUpdated(testAwsAccount),
+				Config: testAccNewRelicAwsIntegrationsConfigUpdated(testAwsArn),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
@@ -97,18 +97,24 @@ func testAccCheckNewRelicCloudAwsIntegrationsDestroy(s *terraform.State) error {
 
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
 
-		if len(linkedAccount.Integrations) != 0 && err == nil {
-			return fmt.Errorf("AWS integrations were not unlinked: #{err}")
+		if linkedAccount != nil && err == nil {
+			return fmt.Errorf("linked aws account still exists: #{err}")
 		}
 	}
 
 	return nil
 }
 
-func testAccNewRelicAwsIntegrationsConfig(linkedAccountID int) string {
+func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 	return fmt.Sprintf(`
-resource "newrelic_cloud_aws_integrations" "foo" {
-		linked_account_id = %[1]d
+	resource "newrelic_cloud_aws_link_account" "foo" {
+		arn = "%[1]s"
+		metric_collection_mode = "PULL"
+		name = "integration test account"
+	}
+
+	resource "newrelic_cloud_aws_integrations" "bar" {
+		linked_account_id = newrelic_cloud_aws_link_account.foo.id
 
 		billing {
 			metrics_polling_interval = 6000
@@ -136,13 +142,18 @@ resource "newrelic_cloud_aws_integrations" "foo" {
 			metrics_polling_interval = 6000
 		}
 	}
-`, linkedAccountID)
+`, arn)
 }
 
-func testAccNewRelicAwsIntegrationsConfigUpdated(linkedAccountID int) string {
+func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 	return fmt.Sprintf(`
-resource "newrelic_cloud_aws_integrations" "foo" {
-		linked_account_id = %[1]d
+	resource "newrelic_cloud_aws_link_account" "foo" {
+		arn = "%[1]s"
+		metric_collection_mode = "PULL"
+		name = "integration test account - updated"
+	}
+	resource "newrelic_cloud_aws_integrations" "bar" {
+		linked_account_id = newrelic_cloud_aws_link_account.foo.id
 		billing {
 			metrics_polling_interval = 10000
 		}
@@ -169,5 +180,5 @@ resource "newrelic_cloud_aws_integrations" "foo" {
 			metrics_polling_interval = 6000
 		}
 	}
-`, linkedAccountID)
+`, arn)
 }
