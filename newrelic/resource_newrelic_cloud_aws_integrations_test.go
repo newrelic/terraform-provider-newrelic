@@ -5,6 +5,7 @@ package newrelic
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"testing"
 
@@ -15,6 +16,11 @@ import (
 func TestAccNewRelicCloudAwsIntegrations_Basic(t *testing.T) {
 	resourceName := "newrelic_cloud_aws_integrations.foo"
 
+	testAwsAccount := os.Getenv("INTEGRATION_TESTING_AWS_ACCOUNT")
+	if testAwsAccount == "" {
+		t.Skipf("INTEGRATION_TESTING_AWS_ACCOUNT must be set for this acceptance test")
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -22,14 +28,14 @@ func TestAccNewRelicCloudAwsIntegrations_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicAwsIntegrationsConfig(111358),
+				Config: testAccNewRelicAwsIntegrationsConfig(testAwsAccount),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
 			},
 			//Test: Update
 			{
-				Config: testAccNewRelicAwsIntegrationsConfigUpdated(111358),
+				Config: testAccNewRelicAwsIntegrationsConfigUpdated(testAwsAccount),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
