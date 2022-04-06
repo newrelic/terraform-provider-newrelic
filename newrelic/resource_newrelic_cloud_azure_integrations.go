@@ -546,9 +546,9 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 		cloudDisableAzureIntegration.AzureContainers = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("azure_cosmosdb"); ok {
+	if v, ok := d.GetOk("azure_cosmos_db"); ok {
 		cloudAzureIntegration.AzureCosmosdb = expandCloudAzureIntegrationAzureCosmosdbInput(v.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("azure_cosmosdb"); len(n.([]interface{})) < len(o.([]interface{})) {
+	} else if o, n := d.GetChange("azure_cosmos_db"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureCosmosdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
@@ -735,9 +735,7 @@ func expandCloudAzureIntegrationAzureAPIManagementInput(b []interface{}, linkedA
 		if m, ok := in["metrics_polling_interval"]; ok {
 			azureAPIManagementInput.MetricsPollingInterval = m.(int)
 		}
-		if r, ok := in["resource_groups"]; ok {
-			azureAPIManagementInput.ResourceGroups[0] = r.(string)
-		}
+
 		expanded[i] = azureAPIManagementInput
 	}
 

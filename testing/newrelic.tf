@@ -11,10 +11,13 @@ provider "newrelic" {
   region = "US" # US or EU
 }
 
-resource "newrelic_cloud_azure_integrations" "foo" {
-  account_id =2520528
-  linked_account_id = 111297
+resource "newrelic_cloud_azure_integrations" "san" {
+
+  account_id = 2520528
+  linked_account_id = 110763
+
   azure_api_management {
-    metrics_polling_interval = 1000
+    metrics_polling_interval = 1200
+
   }
 }
