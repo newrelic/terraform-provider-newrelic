@@ -1,3 +1,12 @@
+<a name="v2.42.0"></a>
+## [v2.42.0] - 2022-04-07
+### Documentation Updates
+- add aws integrations documentation
+- **cloud-integrations:** added guide and example for AWS
+
+### Features
+- add aws integrations resource
+
 <a name="v2.41.4"></a>
 ## [v2.41.4] - 2022-04-06
 ### Bug Fixes
@@ -1176,7 +1185,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.4...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.42.0...HEAD
+[v2.42.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.4...v2.42.0
 [v2.41.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.3...v2.41.4
 [v2.41.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.2...v2.41.3
 [v2.41.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.1...v2.41.2
