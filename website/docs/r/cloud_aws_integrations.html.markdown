@@ -12,11 +12,11 @@ Use this resource to integrate AWS services with New Relic.
 
 ## Prerequisite
 
-Setup is required for this resource to work properly. This resource assumes you have linked an AWS account to New Relic and configured it to push metrics using CloudWatch Metric Streams.
+Setup is required for this resource to work properly. This resource assumes you have [linked an AWS account](cloud_aws_link_account.html) to New Relic and configured it to push metrics using CloudWatch Metric Streams.
 
 New Relic doesn't automatically receive metrics from AWS for some services so this resource can be used to configure integrations to those services.
 
-Using a metric stream to New Relic is the preferred way to integrate with AWS. Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/aws-integrations-list/aws-metric-stream/#set-up-metric-stream) to set up a metric stream.
+Using a metric stream to New Relic is the preferred way to integrate with AWS. Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/aws-integrations-list/aws-metric-stream/#set-up-metric-stream) to set up a metric stream. This resource supports any integration that's not available through AWS metric stream.
 
 ## Example Usage
 
