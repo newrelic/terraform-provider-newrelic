@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccNewRelicCloudGcpIntegrations_Basic(t *testing.T) {
-	//t.Skipf("Skipping test until enviroment variables are added")
+	t.Skipf("Skipping test until enviroment variables are added")
 	resourceName := "newrelic_cloud_gcp_integrations.foo"
 	testGcpLinkedAccountID := os.Getenv("INTEGRATION_TESTING_GCP_LINKED_ACCOUNT_ID")
 	if testGcpLinkedAccountID == "" {
