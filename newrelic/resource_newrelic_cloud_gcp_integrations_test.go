@@ -18,9 +18,9 @@ import (
 func TestAccNewRelicCloudGcpIntegrations_Basic(t *testing.T) {
 	//t.Skipf("Skipping test until environment variables are added")
 	resourceName := "newrelic_cloud_gcp_integrations.foo1"
-	testGcpIntegrationProjectID := os.Getenv("INTEGRATION_TESTING_GCP_Integration_PROJECT_ID")
+	testGcpIntegrationProjectID := os.Getenv("INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID")
 	if testGcpIntegrationProjectID == "" {
-		t.Skipf("INTEGRATION_TESTING_GCP_Integration_PROJECT_ID must be set for acceptance test")
+		t.Skipf("INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID must be set for acceptance test")
 	}
 
 	testGcpAccountName := acctest.RandString(5)
