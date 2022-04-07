@@ -105,9 +105,9 @@ func testAccNewRelicCloudGcpLinkAccountDestroy(s *terraform.State) error {
 func testAccNewRelicCloudGcpLinkAccountConfig(name string, projectId string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_cloud_gcp_link_account" "foo"{
-			name = "%[1]s"
+			name = "My Project 25262"
 			account_id = 2520528
-			project_id="%[2]s"
+			project_id="careful-airfoil-341013"
 	}
 	`, name, projectId)
 }
@@ -115,9 +115,9 @@ func testAccNewRelicCloudGcpLinkAccountConfig(name string, projectId string) str
 func testAccNewRelicCloudGcpLinkAccountConfigUpdated(name string, projectId string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_cloud_gcp_link_account" "foo"{
-			name = "%[1]s-updated"
+			name = "My Project 25262-updated"
 			account_id = 2520528
-			project_id="%[2]s"
+			project_id="careful-airfoil-341013"
 	}
 	`, name, projectId)
 }

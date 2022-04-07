@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccNewRelicCloudGcpIntegrations_Basic(t *testing.T) {
-	t.Skipf("Skipping test until enviroment variables are added")
+	//t.Skipf("Skipping test until enviroment variables are added")
 	resourceName := "newrelic_cloud_gcp_integrations.foo"
 	testGcpLinkedAccountID := os.Getenv("INTEGRATION_TESTING_GCP_LINKED_ACCOUNT_ID")
 	if testGcpLinkedAccountID == "" {
@@ -103,7 +103,7 @@ func testAccNewRelicCloudGcpIntegrationsConfig(linkedAccountId int) string {
 	return fmt.Sprintf(`
 	resource "newrelic_cloud_gcp_integrations" "foo" {
 		  account_id = 2520528
-		  linked_account_id = %[1]d
+		  linked_account_id = 111492
 		  app_engine {
 			metrics_polling_interval = 400
 		  }
@@ -191,7 +191,7 @@ func testAccNewRelicCloudGcpIntegrationsConfigUpdated(linkedAccountId int) strin
 	return fmt.Sprintf(`
 	resource "newrelic_cloud_gcp_integrations" "foo" {
 		  account_id = 2520528
-		  linked_account_id = %[1]d
+		  linked_account_id = 111492
 		  app_engine {
 			metrics_polling_interval = 1400
 		  }
