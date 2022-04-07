@@ -164,12 +164,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							ConflictsWith: []string{"nrql.0.evaluation_offset"},
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								valueString := val.(string)
-								v, err := strconv.Atoi(valueString)
+								_, err := strconv.Atoi(valueString)
 								if err != nil {
 									errs = append(errs, fmt.Errorf("error converting string to int: %#v", err))
-								}
-								if v < 1 || v > 20 {
-									errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
 								}
 								return
 							},
@@ -181,13 +178,6 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Optional:      true,
 							Description:   "NRQL queries are evaluated in one-minute time windows. The start time depends on the value you provide in the NRQL condition's `evaluation_offset`.",
 							ConflictsWith: []string{"nrql.0.since_value"},
-							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-								v := val.(int)
-								if v < 1 || v > 20 {
-									errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
-								}
-								return
-							},
 						},
 					},
 				},
@@ -351,7 +341,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					// If a value is not provided and the condition uses the default value, don't show a diff
 					oldInt, _ := strconv.ParseInt(old, 0, 8)
 					newInt, _ := strconv.ParseInt(new, 0, 8)
-					return oldInt == 120 && (newInt == 0)
+					return oldInt == 120 && (newInt == 0) && (d.Get("aggregation_method") == "EVENT_FLOW" || d.Get("aggregation_method") == "CADENCE")
 				},
 			},
 			"aggregation_timer": {
@@ -367,7 +357,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					// If a value is not provided and the condition uses the default value, don't show a diff
 					oldInt, _ := strconv.ParseInt(old, 0, 8)
 					newInt, _ := strconv.ParseInt(new, 0, 8)
-					return oldInt == 120 && (newInt == 0)
+					return oldInt == 120 && (newInt == 0) && d.Get("aggregation_method") == "EVENT_TIMER"
 				},
 			},
 			// Baseline ONLY
