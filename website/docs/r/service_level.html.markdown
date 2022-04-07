@@ -6,8 +6,6 @@ description: |-
   Create and manage a New Relic Service Level.
 ---
 
--> **New Relic Service Level Management is in preview. [Read more](https://docs.newrelic.com/docs/service-level-management/intro-slm)**
-
 # Resource: newrelic\_service\_level
 
 Use this resource to create, update, and delete New Relic Service Level Indicators and Objectives.
@@ -96,6 +94,56 @@ The following attributes are exported:
 
   * `sli_id` - The unique entity identifier of the Service Level Indicator.
   * `sli_guid` - The unique entity identifier of the Service Level Indicator in New Relic.
+
+## Additional Example
+
+Service level with tags:
+
+```hcl
+resource "newrelic_service_level" "my_synthetic_monitor_service_level" {
+    guid = "MXxBUE18QVBQTElDQVRJT058MQ"
+    name = "My synthethic monitor - Success"
+    description = "Proportion of successful synthetic checks."
+
+    events {
+        account_id = 12345678
+        valid_events {
+            from = "SyntheticCheck"
+            where = "entityGuid = 'MXxBUE18QVBQTElDQVRJT058MQ'"
+        }
+        good_events {
+            from = "SyntheticCheck"
+            where = "entityGuid = 'MXxBUE18QVBQTElDQVRJT058MQ' AND result='SUCCESS'"
+        }
+    }
+
+    objective {
+        target = 99.00
+        time_window {
+            rolling {
+                count = 7
+                unit = "DAY"
+            }
+        }
+    }
+}
+
+resource "newrelic_entity_tags" "my_synthetic_monitor_service_level_tags" {
+  guid = newrelic_service_level.my_synthetic_monitor_service_level.sli_guid
+
+   tag {
+        key = "user_journey"
+        values = ["authentication", "sso"]
+    }
+
+    tag {
+        key = "owner"
+        values = ["identityTeam"]
+    }
+}
+```
+
+For up-to-date documentation about the tagging resource, please check [newrelic_entity_tags](entity_tags.html#example-usage)
 
 ## Import
 

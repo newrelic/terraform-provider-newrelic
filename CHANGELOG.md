@@ -1,10 +1,34 @@
+<a name="v2.42.0"></a>
+## [v2.42.0] - 2022-04-07
+### Documentation Updates
+- add aws integrations documentation
+- **cloud-integrations:** added guide and example for AWS
+
+### Features
+- add aws integrations resource
+
+<a name="v2.41.4"></a>
+## [v2.41.4] - 2022-04-06
+### Bug Fixes
+- force to create new alert condition if type changes
+
+### Documentation Updates
+- Remove signal block from deprecation message
+
+<a name="v2.41.3"></a>
+## [v2.41.3] - 2022-04-05
+### Documentation Updates
+- remove beta level and add an example with tags for service levels
+
 <a name="v2.41.2"></a>
-## [v2.41.2] - 2022-03-24
+## [v2.41.2] - 2022-03-25
 ### Bug Fixes
 - Allow 0 values for aggregation_delay
 - add len check when creating cloud link accounts
+- Allow 0 values for aggregation_delay
 - **cloud:** add import
 - **cloud_azure_link_account:** rename client_secret_id to client_secret
+- **docs:** removed two accountID warnings that were incorrect
 - **docs:** removed two accountID warnings that were incorrect
 
 ### Documentation Updates
@@ -34,6 +58,8 @@
 - fix broken link to terraform docs
 - document allowed values for expiration_duration
 - **nrql_alert_condition:** removed legacy urls from doc
+- **nrql_alert_condition:** removed legacy urls from doc
+- **nrql_alert_condition:** removed legacy urls from doc
 - **servicelevel:** SLO periods now include complete weeks
 
 <a name="v2.41.0-beta.1"></a>
@@ -46,14 +72,35 @@
 
 ### Features
 - awsGov cloud integration
+- awsGov cloud integration
 
 <a name="v2.40.0"></a>
 ## [v2.40.0] - 2022-03-14
 ### Bug Fixes
 - allow manipulation of SLIs with non existing related entity, return sli_guid, change service level example
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
+- fixed mistakes in the Doc
 
 ### Documentation Updates
 - minor changes
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
+- minor changes
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
 - added gcp integration documentation
 - update version in docs
 - add cloud_aws_link_account resource to docs
@@ -61,6 +108,12 @@
 
 ### Features
 - azure integration
+- added gcp cloud link account
+- added gcp cloud link account
+- azure integration
+- added gcp cloud link account
+- added gcp cloud link account
+- added gcp cloud link account
 - added gcp cloud link account
 - **aws_link_account:** add AWS Link Account resource
 - **provider:** added gcp resource to resource map
@@ -462,10 +515,10 @@
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="2.11.1"></a>
-## [2.11.1] - 2020-10-07
 <a name="v2.11.1"></a>
 ## [v2.11.1] - 2020-10-07
+<a name="2.11.1"></a>
+## [2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -1132,7 +1185,10 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.42.0...HEAD
+[v2.42.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.4...v2.42.0
+[v2.41.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.3...v2.41.4
+[v2.41.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.2...v2.41.3
 [v2.41.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.1...v2.41.2
 [v2.41.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.0-beta.2...v2.41.1
 [v2.41.0-beta.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.0-beta.1...v2.41.0-beta.2
@@ -1186,9 +1242,9 @@
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2

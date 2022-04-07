@@ -15,6 +15,7 @@ import (
 )
 
 func TestAccNewRelicCloudAzureLinkAccount_Basic(t *testing.T) {
+	t.Skipf("Skipping test until integrations work is finished")
 	randName := acctest.RandString(5)
 	resourceName := "newrelic_cloud_azure_link_account.foo"
 
