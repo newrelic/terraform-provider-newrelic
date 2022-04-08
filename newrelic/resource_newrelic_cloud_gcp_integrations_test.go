@@ -92,7 +92,7 @@ func testAccNewRelicCloudGcpIntegrationsDestroy(s *terraform.State) error {
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
 
 		if linkedAccount != nil && err == nil {
-			return fmt.Errorf("GCP integrations were not unlinked: #{err}")
+			return fmt.Errorf("GCP Linked account is not unlinked: #{err}")
 		}
 	}
 	return nil
