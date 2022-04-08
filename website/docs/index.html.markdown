@@ -19,7 +19,6 @@ Use the navigation to the left to read about the available resources.
 
 - [**Configure the Provider**](guides/provider_configuration.html)
 - [**Getting Started Guide**](guides/getting_started.html)
-- [**Migration Guide: Upgrading to v2.x**](guides/migration_guide_v2.html)
 
 ## Argument Reference
 
@@ -148,16 +147,10 @@ resource "newrelic_alert_policy_channel" "alert_email" {
 
 ## Support for v2.x
 
-While the sun rises on the `3.x` release, the sunset of the `2.x` approaches.
-We intend to support minor bug fixes through the end of 2021, but we don't plan
-to merge any new features into `release/2.x` branch. Please see the section
-below about upgrading the provider. All new feature work and focus will be
-directed at the newer provider version.
+The v2.x version of the New Relic Terraform provider will get continued support from the New Relic Observability as Code team. We advise to always upgrade to the latest versions of the v2.x branch as support is only given for the most recent versions. Older versions of the v2.x branch could get deprecated when new product releases are made. In those cases a notice will be put on the repository and communication will be sent out to you by New Relic.
 
--> <small>**Deprecation notice:** 2021-06-16<br>
--> **End of support:** 2022-01-07</small>
-
-If you wish to pin your environment to a specific release, you can do so with a `required_providers` statement in your Terraform manifest. You can also pin the version within your `provider` block.
+Please see the section below about upgrading to the latest versions of the provider. All new feature work and focus will be
+directed at the newer provider version. If you wish to pin your environment to a specific release, you can do so with a `required_providers` statement in your Terraform manifest. You can also pin the version within your `provider` block.
 
 Using the `provider` block:
 
