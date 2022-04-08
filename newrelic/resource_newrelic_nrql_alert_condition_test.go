@@ -424,6 +424,7 @@ func TestAccNewRelicNrqlAlertCondition_AggregationDelayZero(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			// Test: Create (NerdGraph) condition with streaming method cadence
+
 			{
 				Config: testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
 					rName,
