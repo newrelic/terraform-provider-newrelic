@@ -15,6 +15,9 @@ func resourceNewrelicCloudGcpIntegrations() *schema.Resource {
 		ReadContext:   resourceNewrelicCloudGcpIntegrationsRead,
 		UpdateContext: resourceNewrelicCloudGcpIntegrationsUpdate,
 		DeleteContext: resourceNewrelicCloudGcpIntegrationsDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
