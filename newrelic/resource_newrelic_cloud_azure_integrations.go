@@ -15,6 +15,9 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 		ReadContext:   resourceNewRelicCloudAzureIntegrationsRead,
 		UpdateContext: resourceNewRelicCloudAzureIntegrationsUpdate,
 		DeleteContext: resourceNewRelicCloudAzureIntegrationsDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -572,10 +575,10 @@ func resourceNewRelicCloudAzureIntegrationsCreate(ctx context.Context, d *schema
 	return nil
 }
 
-//nolint: gocyclo
 //expand function to extract inputs from the schema.
 //It takes ResourceData as input and returns CloudDisableIntegrationsInput.
-
+// TODO: Reduce the cyclomatic complexity of this func
+//nolint: gocyclo
 func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
 	cloudAzureIntegration := cloud.CloudAzureIntegrationsInput{}
 	cloudDisableAzureIntegration := cloud.CloudAzureDisableIntegrationsInput{}
