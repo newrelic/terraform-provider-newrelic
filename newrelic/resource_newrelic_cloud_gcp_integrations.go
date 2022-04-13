@@ -184,6 +184,7 @@ func resourceNewrelicCloudGcpIntegrations() *schema.Resource {
 	}
 }
 
+//function to add common schema for gcp all resources
 func cloudGcpIntegrationSchemaBase() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"metrics_polling_interval": {
@@ -194,6 +195,7 @@ func cloudGcpIntegrationSchemaBase() map[string]*schema.Schema {
 	}
 }
 
+//function to add schema for gcp AppEngine
 func cloudGcpIntegrationsAppEngineSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -201,6 +203,7 @@ func cloudGcpIntegrationsAppEngineSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp bigquery
 func cloudGcpIntegrationsBigQuerySchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	s["fetch_tags"] = &schema.Schema{
@@ -216,6 +219,7 @@ func cloudGcpIntegrationsBigQuerySchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp bigtable
 func cloudGcpIntegrationsBigTableSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -223,6 +227,7 @@ func cloudGcpIntegrationsBigTableSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp composer
 func cloudGcpIntegrationsComposerSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -230,6 +235,7 @@ func cloudGcpIntegrationsComposerSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp dataflow
 func cloudGcpIntegrationsDataFlowSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -237,6 +243,7 @@ func cloudGcpIntegrationsDataFlowSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp dataproc
 func cloudGcpIntegrationsDataProcSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -244,6 +251,7 @@ func cloudGcpIntegrationsDataProcSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp datastore
 func cloudGcpIntegrationsDataStoreSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -251,6 +259,7 @@ func cloudGcpIntegrationsDataStoreSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp firebasedatabase
 func cloudGcpIntegrationsFireBaseDatabaseSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -258,6 +267,7 @@ func cloudGcpIntegrationsFireBaseDatabaseSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp firebasehosting
 func cloudGcpIntegrationsFireBaseHostingSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -265,6 +275,7 @@ func cloudGcpIntegrationsFireBaseHostingSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp firebasestorage
 func cloudGcpIntegrationsFireBaseStorageSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -272,6 +283,7 @@ func cloudGcpIntegrationsFireBaseStorageSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp firestore
 func cloudGcpIntegrationsFireStoreSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -279,6 +291,7 @@ func cloudGcpIntegrationsFireStoreSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp functions
 func cloudGcpIntegrationsFunctionsSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -286,6 +299,7 @@ func cloudGcpIntegrationsFunctionsSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp interconnect
 func cloudGcpIntegrationsInterconnectSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -293,6 +307,7 @@ func cloudGcpIntegrationsInterconnectSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp k8's
 func cloudGcpIntegrationsKubernetesSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -300,6 +315,7 @@ func cloudGcpIntegrationsKubernetesSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp load balancing
 func cloudGcpIntegrationsLoadBalancingSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -307,6 +323,7 @@ func cloudGcpIntegrationsLoadBalancingSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp mem-cache
 func cloudGcpIntegrationsMemCacheSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -314,6 +331,7 @@ func cloudGcpIntegrationsMemCacheSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp pubsub
 func cloudGcpIntegrationsPubSubSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	s["fetch_tags"] = &schema.Schema{
@@ -329,6 +347,7 @@ func cloudGcpIntegrationsPubSubSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp redis
 func cloudGcpIntegrationsRedisSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -336,6 +355,7 @@ func cloudGcpIntegrationsRedisSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp router
 func cloudGcpIntegrationsRouterSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -343,6 +363,7 @@ func cloudGcpIntegrationsRouterSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp run schema
 func cloudGcpIntegrationsRunSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -350,6 +371,7 @@ func cloudGcpIntegrationsRunSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp spanner
 func cloudGcpIntegrationsSpannerSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	s["fetch_tags"] = &schema.Schema{
@@ -365,6 +387,7 @@ func cloudGcpIntegrationsSpannerSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp SQL
 func cloudGcpIntegrationsSQLSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -372,6 +395,7 @@ func cloudGcpIntegrationsSQLSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp storage
 func cloudGcpIntegrationsStorageSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	s["fetch_tags"] = &schema.Schema{
@@ -387,6 +411,7 @@ func cloudGcpIntegrationsStorageSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp vm's
 func cloudGcpIntegrationsVirtualMachinesSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -394,6 +419,7 @@ func cloudGcpIntegrationsVirtualMachinesSchemaElem() *schema.Resource {
 	}
 }
 
+//function to add schema for gcp vpc access
 func cloudGcpIntegrationsVpcAccessSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
@@ -426,6 +452,7 @@ func resourceNewrelicCloudGcpIntegrationsCreate(ctx context.Context, d *schema.R
 	return nil
 }
 
+//expand function to extract inputs for cloud integrations from the schema
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
 func expandCloudGcpIntegrationsInputs(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
@@ -600,6 +627,7 @@ func expandCloudGcpIntegrationsInputs(d *schema.ResourceData) (cloud.CloudIntegr
 	return configureInput, disableInput
 }
 
+//expand function to extract inputs from gcp app engine schema
 func expandCloudGcpAppEngineIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpAppengineIntegrationInput {
 	expanded := make([]cloud.CloudGcpAppengineIntegrationInput, len(b))
 	for i, expand := range b {
@@ -619,6 +647,7 @@ func expandCloudGcpAppEngineIntegrationsInputs(b []interface{}, linkedAccountID 
 	return expanded
 }
 
+//expand function to extract inputs from gcp bigquery schema
 func expandCloudGcpBigQueryIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpBigqueryIntegrationInput {
 	expanded := make([]cloud.CloudGcpBigqueryIntegrationInput, len(b))
 	for i, expand := range b {
@@ -641,6 +670,7 @@ func expandCloudGcpBigQueryIntegrationsInputs(b []interface{}, linkedAccountID i
 	return expanded
 }
 
+//expand function to extract inputs from gcp bigtable schema
 func expandCloudGcpBigTableIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpBigtableIntegrationInput {
 	expanded := make([]cloud.CloudGcpBigtableIntegrationInput, len(b))
 	for i, expand := range b {
@@ -660,6 +690,7 @@ func expandCloudGcpBigTableIntegrationsInputs(b []interface{}, linkedAccountID i
 	return expanded
 }
 
+//expand function to extract inputs from gcp composer schema
 func expandCloudGcpComposerIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpComposerIntegrationInput {
 	expanded := make([]cloud.CloudGcpComposerIntegrationInput, len(b))
 	for i, expand := range b {
@@ -679,6 +710,7 @@ func expandCloudGcpComposerIntegrationsInputs(b []interface{}, linkedAccountID i
 	return expanded
 }
 
+//expand function to extract inputs from gcp dataflow schema
 func expandCloudGcpDataFlowIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpDataflowIntegrationInput {
 	expanded := make([]cloud.CloudGcpDataflowIntegrationInput, len(b))
 	for i, expand := range b {
@@ -698,6 +730,7 @@ func expandCloudGcpDataFlowIntegrationsInputs(b []interface{}, linkedAccountID i
 	return expanded
 }
 
+//expand function to extract inputs from gcp dataproc schema
 func expandCloudGcpDataProcIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpDataprocIntegrationInput {
 	expanded := make([]cloud.CloudGcpDataprocIntegrationInput, len(b))
 	for i, expand := range b {
@@ -717,6 +750,7 @@ func expandCloudGcpDataProcIntegrationsInputs(b []interface{}, linkedAccountID i
 	return expanded
 }
 
+//expand function to extract inputs from gcp datastore schema
 func expandCloudGcpDataStoreIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpDatastoreIntegrationInput {
 	expanded := make([]cloud.CloudGcpDatastoreIntegrationInput, len(b))
 	for i, expand := range b {
@@ -736,6 +770,7 @@ func expandCloudGcpDataStoreIntegrationsInputs(b []interface{}, linkedAccountID 
 	return expanded
 }
 
+//expand function to extract inputs from gcp firebasedatabase schema
 func expandCloudGcpFireBaseDatabaseIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFirebasedatabaseIntegrationInput {
 	expanded := make([]cloud.CloudGcpFirebasedatabaseIntegrationInput, len(b))
 	for i, expand := range b {
@@ -755,6 +790,7 @@ func expandCloudGcpFireBaseDatabaseIntegrationsInputs(b []interface{}, linkedAcc
 	return expanded
 }
 
+//expand function to extract inputs from gcp firebasehosting schema
 func expandCloudGcpFireBaseHostingIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFirebasehostingIntegrationInput {
 	expanded := make([]cloud.CloudGcpFirebasehostingIntegrationInput, len(b))
 	for i, expand := range b {
@@ -774,6 +810,7 @@ func expandCloudGcpFireBaseHostingIntegrationsInputs(b []interface{}, linkedAcco
 	return expanded
 }
 
+//expand function to extract inputs from gcp firebasestorage schema
 func expandCloudGcpFireBaseStorageIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFirebasestorageIntegrationInput {
 	expanded := make([]cloud.CloudGcpFirebasestorageIntegrationInput, len(b))
 	for i, expand := range b {
@@ -793,6 +830,7 @@ func expandCloudGcpFireBaseStorageIntegrationsInputs(b []interface{}, linkedAcco
 	return expanded
 }
 
+//expand function to extract inputs from gcp firestore schema
 func expandCloudGcpFireStoreIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFirestoreIntegrationInput {
 	expanded := make([]cloud.CloudGcpFirestoreIntegrationInput, len(b))
 	for i, expand := range b {
@@ -812,6 +850,7 @@ func expandCloudGcpFireStoreIntegrationsInputs(b []interface{}, linkedAccountID 
 	return expanded
 }
 
+//expand function to extract inputs from gcp functions schema
 func expandCloudGcpFunctionsIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFunctionsIntegrationInput {
 	expanded := make([]cloud.CloudGcpFunctionsIntegrationInput, len(b))
 	for i, expand := range b {
@@ -831,6 +870,7 @@ func expandCloudGcpFunctionsIntegrationsInputs(b []interface{}, linkedAccountID 
 	return expanded
 }
 
+//expand function to extract inputs from gcp interconnect schema
 func expandCloudGcpInterconnectIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpInterconnectIntegrationInput {
 	expanded := make([]cloud.CloudGcpInterconnectIntegrationInput, len(b))
 	for i, expand := range b {
@@ -850,6 +890,7 @@ func expandCloudGcpInterconnectIntegrationsInputs(b []interface{}, linkedAccount
 	return expanded
 }
 
+//expand function to extract inputs from gcp k8's schema
 func expandCloudGcpKubernetesIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpKubernetesIntegrationInput {
 	expanded := make([]cloud.CloudGcpKubernetesIntegrationInput, len(b))
 	for i, expand := range b {
@@ -869,6 +910,7 @@ func expandCloudGcpKubernetesIntegrationsInputs(b []interface{}, linkedAccountID
 	return expanded
 }
 
+//expand function to extract inputs from gcp load balancing schema
 func expandCloudGcpLoadBalancingIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpLoadbalancingIntegrationInput {
 	expanded := make([]cloud.CloudGcpLoadbalancingIntegrationInput, len(b))
 	for i, expand := range b {
@@ -888,6 +930,7 @@ func expandCloudGcpLoadBalancingIntegrationsInputs(b []interface{}, linkedAccoun
 	return expanded
 }
 
+//expand function to extract inputs from gcp mem-cache schema
 func expandCloudGcpMemCacheIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpMemcacheIntegrationInput {
 	expanded := make([]cloud.CloudGcpMemcacheIntegrationInput, len(b))
 	for i, expand := range b {
@@ -907,6 +950,7 @@ func expandCloudGcpMemCacheIntegrationsInputs(b []interface{}, linkedAccountID i
 	return expanded
 }
 
+//expand function to extract inputs from gcp pubsub schema
 func expandCloudGcpPubSubIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpPubsubIntegrationInput {
 	expanded := make([]cloud.CloudGcpPubsubIntegrationInput, len(b))
 	for i, expand := range b {
@@ -929,6 +973,7 @@ func expandCloudGcpPubSubIntegrationsInputs(b []interface{}, linkedAccountID int
 	return expanded
 }
 
+//expand function to extract inputs from gcp redis schema
 func expandCloudGcpRedisIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpRedisIntegrationInput {
 	expanded := make([]cloud.CloudGcpRedisIntegrationInput, len(b))
 	for i, expand := range b {
@@ -948,6 +993,7 @@ func expandCloudGcpRedisIntegrationsInputs(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
+//expand function to extract inputs from gcp router schema
 func expandCloudGcpRouterIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpRouterIntegrationInput {
 	expanded := make([]cloud.CloudGcpRouterIntegrationInput, len(b))
 	for i, expand := range b {
@@ -967,6 +1013,7 @@ func expandCloudGcpRouterIntegrationsInputs(b []interface{}, linkedAccountID int
 	return expanded
 }
 
+//expand function to extract inputs from gcp run schema
 func expandCloudGcpRunIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpRunIntegrationInput {
 	expanded := make([]cloud.CloudGcpRunIntegrationInput, len(b))
 	for i, expand := range b {
@@ -986,6 +1033,7 @@ func expandCloudGcpRunIntegrationsInputs(b []interface{}, linkedAccountID int) [
 	return expanded
 }
 
+//expand function to extract inputs from gcp spanner schema
 func expandCloudGcpSpannerIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpSpannerIntegrationInput {
 	expanded := make([]cloud.CloudGcpSpannerIntegrationInput, len(b))
 	for i, expand := range b {
@@ -1008,6 +1056,7 @@ func expandCloudGcpSpannerIntegrationsInputs(b []interface{}, linkedAccountID in
 	return expanded
 }
 
+//expand function to extract inputs from gcp SQL schema
 func expandCloudGcpSQLIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpSqlIntegrationInput {
 	expanded := make([]cloud.CloudGcpSqlIntegrationInput, len(b))
 	for i, expand := range b {
@@ -1027,6 +1076,7 @@ func expandCloudGcpSQLIntegrationsInputs(b []interface{}, linkedAccountID int) [
 	return expanded
 }
 
+//expand function to extract inputs from gcp storage schema
 func expandCloudGcpStorageIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpStorageIntegrationInput {
 	expanded := make([]cloud.CloudGcpStorageIntegrationInput, len(b))
 	for i, expand := range b {
@@ -1049,6 +1099,7 @@ func expandCloudGcpStorageIntegrationsInputs(b []interface{}, linkedAccountID in
 	return expanded
 }
 
+//expand function to extract inputs from gcp vm's schema
 func expandCloudGcpVirtualMachinesIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpVmsIntegrationInput {
 	expanded := make([]cloud.CloudGcpVmsIntegrationInput, len(b))
 	for i, expand := range b {
@@ -1068,6 +1119,7 @@ func expandCloudGcpVirtualMachinesIntegrationsInputs(b []interface{}, linkedAcco
 	return expanded
 }
 
+//expand function to extract inputs from gcp vpc access schema
 func expandCloudGcpVpcAccessIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpVpcaccessIntegrationInput {
 	expanded := make([]cloud.CloudGcpVpcaccessIntegrationInput, len(b))
 	for i, expand := range b {
@@ -1105,6 +1157,7 @@ func resourceNewrelicCloudGcpIntegrationsRead(ctx context.Context, d *schema.Res
 	return nil
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
 func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.CloudLinkedAccount) {
@@ -1166,6 +1219,7 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 	}
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpAppEngineIntegration(in *cloud.CloudGcpAppengineIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1174,6 +1228,7 @@ func flattenCloudGcpAppEngineIntegration(in *cloud.CloudGcpAppengineIntegration)
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpBigQueryIntegration(in *cloud.CloudGcpBigqueryIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1183,6 +1238,7 @@ func flattenCloudGcpBigQueryIntegration(in *cloud.CloudGcpBigqueryIntegration) [
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpBigTableIntegration(in *cloud.CloudGcpBigtableIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1191,6 +1247,7 @@ func flattenCloudGcpBigTableIntegration(in *cloud.CloudGcpBigtableIntegration) [
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpComposerIntegration(in *cloud.CloudGcpComposerIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1199,6 +1256,7 @@ func flattenCloudGcpComposerIntegration(in *cloud.CloudGcpComposerIntegration) [
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpDataFlowIntegration(in *cloud.CloudGcpDataflowIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1207,6 +1265,7 @@ func flattenCloudGcpDataFlowIntegration(in *cloud.CloudGcpDataflowIntegration) [
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpDataProcIntegration(in *cloud.CloudGcpDataprocIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1215,6 +1274,7 @@ func flattenCloudGcpDataProcIntegration(in *cloud.CloudGcpDataprocIntegration) [
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpDataStoreIntegration(in *cloud.CloudGcpDatastoreIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1223,6 +1283,7 @@ func flattenCloudGcpDataStoreIntegration(in *cloud.CloudGcpDatastoreIntegration)
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpFireBaseDatabaseIntegration(in *cloud.CloudGcpFirebasedatabaseIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1231,6 +1292,7 @@ func flattenCloudGcpFireBaseDatabaseIntegration(in *cloud.CloudGcpFirebasedataba
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpFireBaseHostingIntegration(in *cloud.CloudGcpFirebasehostingIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1239,6 +1301,7 @@ func flattenCloudGcpFireBaseHostingIntegration(in *cloud.CloudGcpFirebasehosting
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpFireBaseStorageIntegration(in *cloud.CloudGcpFirebasestorageIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1247,6 +1310,7 @@ func flattenCloudGcpFireBaseStorageIntegration(in *cloud.CloudGcpFirebasestorage
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpFireStoreIntegration(in *cloud.CloudGcpFirestoreIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1255,6 +1319,7 @@ func flattenCloudGcpFireStoreIntegration(in *cloud.CloudGcpFirestoreIntegration)
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpFunctionsIntegration(in *cloud.CloudGcpFunctionsIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1263,6 +1328,7 @@ func flattenCloudGcpFunctionsIntegration(in *cloud.CloudGcpFunctionsIntegration)
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpInterconnectIntegration(in *cloud.CloudGcpInterconnectIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1271,6 +1337,7 @@ func flattenCloudGcpInterconnectIntegration(in *cloud.CloudGcpInterconnectIntegr
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpKubernetesIntegration(in *cloud.CloudGcpKubernetesIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1279,6 +1346,7 @@ func flattenCloudGcpKubernetesIntegration(in *cloud.CloudGcpKubernetesIntegratio
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpLoadBalancingIntegration(in *cloud.CloudGcpLoadbalancingIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1287,6 +1355,7 @@ func flattenCloudGcpLoadBalancingIntegration(in *cloud.CloudGcpLoadbalancingInte
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpMemCacheIntegration(in *cloud.CloudGcpMemcacheIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1295,6 +1364,7 @@ func flattenCloudGcpMemCacheIntegration(in *cloud.CloudGcpMemcacheIntegration) [
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpPubSubIntegration(in *cloud.CloudGcpPubsubIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1304,6 +1374,7 @@ func flattenCloudGcpPubSubIntegration(in *cloud.CloudGcpPubsubIntegration) []int
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpRedisIntegration(in *cloud.CloudGcpRedisIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1312,6 +1383,7 @@ func flattenCloudGcpRedisIntegration(in *cloud.CloudGcpRedisIntegration) []inter
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpRouterIntegration(in *cloud.CloudGcpRouterIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1320,6 +1392,7 @@ func flattenCloudGcpRouterIntegration(in *cloud.CloudGcpRouterIntegration) []int
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpRunIntegration(in *cloud.CloudGcpRunIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1328,6 +1401,7 @@ func flattenCloudGcpRunIntegration(in *cloud.CloudGcpRunIntegration) []interface
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpSpannerIntegration(in *cloud.CloudGcpSpannerIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1337,6 +1411,7 @@ func flattenCloudGcpSpannerIntegration(in *cloud.CloudGcpSpannerIntegration) []i
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpSQLIntegration(in *cloud.CloudGcpSqlIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1345,6 +1420,7 @@ func flattenCloudGcpSQLIntegration(in *cloud.CloudGcpSqlIntegration) []interface
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpStorageIntegration(in *cloud.CloudGcpStorageIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1354,6 +1430,7 @@ func flattenCloudGcpStorageIntegration(in *cloud.CloudGcpStorageIntegration) []i
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpVirtualMachineIntegration(in *cloud.CloudGcpVmsIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1362,6 +1439,7 @@ func flattenCloudGcpVirtualMachineIntegration(in *cloud.CloudGcpVmsIntegration) 
 	return flattened
 }
 
+//flatten function to set(store) to outputs from the terraform apply
 func flattenCloudGcpVpcAccessIntegration(in *cloud.CloudGcpVpcaccessIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1436,6 +1514,7 @@ func resourceNewrelicCloudGcpIntegrationsDelete(ctx context.Context, d *schema.R
 	return nil
 }
 
+//expand function to extract the inputs values from the schema for disabling the integration for particular services
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
 func expandCloudGcpDisableInputs(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
