@@ -244,12 +244,7 @@ resource "newrelic_cloud_azure_integrations" "foo" {
                  resource_groups = "beyond"
     
      }
-     azure_power_bi_dedicated{
-                 metrics_polling_interval = 1200
-                 resource_groups = "beyond"
-    
-     }
-    
+
      azure_redis_cache{
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
@@ -420,12 +415,7 @@ func testAccNewRelicAzureIntegrationsConfigUpdated(applicationID string, clientS
      resource_groups = "beyond"
 
   }
-  azure_power_bi_dedicated{
-     metrics_polling_interval = 1000
-     resource_groups = "beyond"
-
-  }
-
+  
   azure_redis_cache{
      metrics_polling_interval = 1000
      resource_groups = "beyond"

@@ -259,12 +259,15 @@ func cloudAzureIntegrationSchemaBase() map[string]*schema.Schema {
 	}
 }
 
+//function to add schema for azure API management
 func cloudAzureIntegrationAzureAPIManagementElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
 		Schema: s,
 	}
 }
+
+//function to add schema for azure Gateway
 
 func cloudAzureIntegrationAzureAppGatewayElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
@@ -273,6 +276,7 @@ func cloudAzureIntegrationAzureAppGatewayElem() *schema.Resource {
 	}
 }
 
+// function to add schema for azure app service
 func cloudAzureIntegrationAzureAppServiceElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -281,6 +285,7 @@ func cloudAzureIntegrationAzureAppServiceElem() *schema.Resource {
 
 }
 
+// function to add schema for azure containers
 func cloudAzureIntegrationAzureContainersElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -289,6 +294,7 @@ func cloudAzureIntegrationAzureContainersElem() *schema.Resource {
 
 }
 
+// function to add schema for azure cosmo database
 func cloudAzureIntegrationAzureCosmosDBElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -296,6 +302,9 @@ func cloudAzureIntegrationAzureCosmosDBElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure cost management
+
 func cloudAzureIntegrationCostManagementElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["tag_keys"] = &schema.Schema{
@@ -311,6 +320,8 @@ func cloudAzureIntegrationCostManagementElem() *schema.Resource {
 	}
 }
 
+// function to add schema for azure data factory
+
 func cloudAzureIntegrationAzureDataFactoryElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -318,6 +329,9 @@ func cloudAzureIntegrationAzureDataFactoryElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure event hub
+
 func cloudAzureIntegrationAzureEventHubElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -325,6 +339,8 @@ func cloudAzureIntegrationAzureEventHubElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure express route
 func cloudAzureIntegrationAzureExpressRouteElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -332,6 +348,8 @@ func cloudAzureIntegrationAzureExpressRouteElem() *schema.Resource {
 	}
 
 }
+
+//function to add schema for azure firewalls
 func cloudAzureIntegrationAzureFirewallsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -339,6 +357,8 @@ func cloudAzureIntegrationAzureFirewallsElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure front door
 func cloudAzureIntegrationAzureFrontDoorElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -346,6 +366,8 @@ func cloudAzureIntegrationAzureFrontDoorElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure functions
 func cloudAzureIntegrationAzureFunctionsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -353,6 +375,8 @@ func cloudAzureIntegrationAzureFunctionsElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure key vault
 func cloudAzureIntegrationAzureKeyVaultElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -360,6 +384,8 @@ func cloudAzureIntegrationAzureKeyVaultElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure load balancer
 func cloudAzureIntegrationAzureLoadBalancerElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -367,12 +393,16 @@ func cloudAzureIntegrationAzureLoadBalancerElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure logic apps
 func cloudAzureIntegrationAzureLogicAppsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
 		Schema: s,
 	}
 }
+
+// function to add schema for azure machine learning
 func cloudAzureIntegrationAzureMachineLearningElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -380,6 +410,8 @@ func cloudAzureIntegrationAzureMachineLearningElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure maria database
 func cloudAzureIntegrationAzureMariadbElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -387,6 +419,8 @@ func cloudAzureIntegrationAzureMariadbElem() *schema.Resource {
 	}
 
 }
+
+//  function to add schema for azure mysql
 func cloudAzureIntegrationAzureMysqlElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -394,6 +428,8 @@ func cloudAzureIntegrationAzureMysqlElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure postgresql
 func cloudAzureIntegrationAzurePostgresqlElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -401,6 +437,8 @@ func cloudAzureIntegrationAzurePostgresqlElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure power bi dedicated
 func cloudAzureIntegrationAzurePowerBiDedicatedElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -408,6 +446,8 @@ func cloudAzureIntegrationAzurePowerBiDedicatedElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure redis cache
 func cloudAzureIntegrationAzureRedisCacheElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -416,6 +456,7 @@ func cloudAzureIntegrationAzureRedisCacheElem() *schema.Resource {
 
 }
 
+// function to add schema for azure service bus
 func cloudAzureIntegrationAzureServiceBusElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -423,6 +464,8 @@ func cloudAzureIntegrationAzureServiceBusElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure service fabric
 func cloudAzureIntegrationAzureServiceFabricElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -430,6 +473,8 @@ func cloudAzureIntegrationAzureServiceFabricElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure sql
 func cloudAzureIntegrationAzureSQLElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -437,6 +482,8 @@ func cloudAzureIntegrationAzureSQLElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure sql managed
 func cloudAzureIntegrationAzureSQLManagedElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -444,6 +491,8 @@ func cloudAzureIntegrationAzureSQLManagedElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure storage
 func cloudAzureIntegrationAzureStorageElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -451,6 +500,8 @@ func cloudAzureIntegrationAzureStorageElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure virtual machine
 func cloudAzureIntegrationAzureVirtualMachineElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -458,6 +509,8 @@ func cloudAzureIntegrationAzureVirtualMachineElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure virtual networks
 func cloudAzureIntegrationAzureVirtualNetworksElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -465,6 +518,8 @@ func cloudAzureIntegrationAzureVirtualNetworksElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure vms
 func cloudAzureIntegrationAzureVmsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -472,6 +527,8 @@ func cloudAzureIntegrationAzureVmsElem() *schema.Resource {
 	}
 
 }
+
+// function to add schema for azure VPN gateway
 func cloudAzureIntegrationAzureVPNGatewayElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	return &schema.Resource{
@@ -480,7 +537,6 @@ func cloudAzureIntegrationAzureVPNGatewayElem() *schema.Resource {
 
 }
 
-/////
 func resourceNewRelicCloudAzureIntegrationsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
@@ -488,6 +544,9 @@ func resourceNewRelicCloudAzureIntegrationsCreate(ctx context.Context, d *schema
 	accountID := selectAccountID(providerConfig, d)
 
 	cloudAzureIntegrationsInput, _ := expandCloudAzureIntegrationsInput(d)
+
+	//cloudLinkAccountWithContext func which integrates azure account with Newrelic
+	//which returns payload and error
 
 	cloudAzureIntegrationsPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, cloudAzureIntegrationsInput)
 	if err != nil {
@@ -513,8 +572,10 @@ func resourceNewRelicCloudAzureIntegrationsCreate(ctx context.Context, d *schema
 	return nil
 }
 
-///// Inputs
 //nolint: gocyclo
+//expand function to extract inputs from the schema.
+//It takes ResourceData as input and returns CloudDisableIntegrationsInput.
+
 func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
 	cloudAzureIntegration := cloud.CloudAzureIntegrationsInput{}
 	cloudDisableAzureIntegration := cloud.CloudAzureDisableIntegrationsInput{}
@@ -715,7 +776,7 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 	return configureInput, disableInput
 }
 
-// Expanding the Azure API management
+// Expanding the AzureAPIManagement
 
 func expandCloudAzureIntegrationAzureAPIManagementInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureAPImanagementIntegrationInput {
 	expanded := make([]cloud.CloudAzureAPImanagementIntegrationInput, len(b))
@@ -2161,6 +2222,7 @@ func flattenCloudAzureVpnGatewaysIntegration(in *cloud.CloudAzureVpngatewaysInte
 }
 
 /// update
+
 func resourceNewRelicCloudAzureIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
