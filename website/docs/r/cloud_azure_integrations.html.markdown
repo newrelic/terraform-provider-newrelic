@@ -196,38 +196,37 @@ The following arguments are supported:
 
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked Azure account in New Relic.
-* `azure_api_management` - (Optional) for Azure API Management refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-api-management-monitoring-integration).
-* `azure_app_gateway` - (Optional) for Azure App Gateway refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-application-gateway-monitoring-integration).
-* `azure_app_service` - (Optional) for Azure App Service refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-app-service-monitoring-integration).
-* `azure_containers` - (Optional) for Azure Containers refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-containers-monitoring-integration).
-* `azure_cosmos_db` - (Optional) for Azure CosmosDB refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-cosmos-db-document-db-monitoring-integration).
-* `azure_cost_management` - (Optional) for Azure Cost Management refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-cost-management-monitoring-integration).
-* `azure_data_factory` - (Optional) for Azure Data Factory refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-data-factory-integration).
-* `azure_event_hub` - (Optional) for Azure Event Hub refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-event-hub-monitoring-integration).
-* `azure_express_route` - (Optional) for Azure Express Route refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-express-route-monitoring-integration).
-* `azure_firewalls` - (Optional) for Azure Firewalls refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-firewalls-monitoring-integration).
-* `azure_front_door` - (Optional) for Azure Front Door refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-front-door-monitoring-integration).
-* `azure_functions` - (Optional) for Azure Functions refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-functions-monitoring-integration).
-* `azure_key_vault` - (Optional) for Azure Key Vault refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-key-vault-monitoring-integration).
-* `azure_load_balancer` - (Optional) for Azure Load Balancer refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-load-balancer-monitoring-integration).
-* `azure_logic_apps` - (Optional) for Azure Logic Apps refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-logic-apps-monitoring-integration).
-* `azure_machine_learning` - (Optional) for Azure Machine Learning refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-machine-learning-integration).
-* `azure_maria_db` - (Optional) for Azure MariaDB refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-database-mariadb-monitoring-integration).
-* `azure_mysql` - (Optional) for Azure MySQL refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-database-mysql-monitoring-integration).
-* `azure_postgresql` - (Optional) for Azure PostgreSQL refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-database-postgresql-monitoring-integration).
-* `azure_power_bi_dedicated` - (Optional) for Azure Power BI Dedicated refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-power-bi-dedicated-capacities-monitoring-integration).
-* `azure_redis_cache` - (Optional) for Azure Redis Cache refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-redis-cache-monitoring-integration).
-* `azure_service_bus` - (Optional) for Azure Service Bus refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-service-bus-monitoring-integration).
-* `azure_service_fabric` - (Optional) for Azure Service Fabric refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-service-fabric-monitoring-integration).
-* `azure_sql` - (Optional) for Azure SQL refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-sql-database-monitoring-integration).
-* `azure_sql_managed` - (Optional) for SQL Managed refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-sql-managed-instances-monitoring-integration).
-* `azure_storage` - (Optional) for Azure Storage refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-storage-monitoring-integration).
-* `azure_virtual_machine` - (Optional) for Azure Virtual machine refer  [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-virtual-machine-scale-sets-monitoring-integration).
-* `azure_virtual_networks` - (Optional) for Azure Virtual Network refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-virtual-network-monitoring-integration).
-* `azure_vms` - (Optional) for Azure VMs refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-vms-monitoring-integration).
-* `azure_vpn_gateway` - (Optional) for Azure VPN Gateway refer [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-vpn-gateway-integration).
-
-### Integration blocks
+* `azure_api_management` - (Optional) Azure API Management. See [Integration blocks](#integration-blocks) below for details.
+* `azure_app_gateway` - (Optional) Azure App Gateway. See [Integration blocks](#integration-blocks) below for details.
+* `azure_app_service` - (Optional) Azure App Service. See [Integration blocks](#integration-blocks) below for details.
+* `azure_containers` - (Optional) Azure Containers. See [Integration blocks](#integration-blocks) below for details.
+* `azure_cosmos_db` - (Optional) Azure CosmosDB. See [Integration blocks](#integration-blocks) below for details.
+* `azure_cost_management` - (Optional) Azure Cost Management. See [Integration blocks](#integration-blocks) below for details.
+* `azure_data_factory` - (Optional) for Azure Data Factory. See [Integration blocks](#integration-blocks) below for details.
+* `azure_event_hub` - (Optional) for Azure Event Hub. See [Integration blocks](#integration-blocks) below for details.
+* `azure_express_route` - (Optional) for Azure Express Route. See [Integration blocks](#integration-blocks) below for details.
+* `azure_firewalls` - (Optional) for Azure Firewalls. See [Integration blocks](#integration-blocks) below for details.
+* `azure_front_door` - (Optional) for Azure Front Door. See [Integration blocks](#integration-blocks) below for details.
+* `azure_functions` - (Optional) for Azure Functions. See [Integration blocks](#integration-blocks) below for details.
+* `azure_key_vault` - (Optional) for Azure Key Vault. See [Integration blocks](#integration-blocks) below for details.
+* `azure_load_balancer` - (Optional) for Azure Load Balancer. See [Integration blocks](#integration-blocks) below for details.
+* `azure_logic_apps` - (Optional) for Azure Logic Apps. See [Integration blocks](#integration-blocks) below for details.
+* `azure_machine_learning` - (Optional) for Azure Machine Learning. See [Integration blocks](#integration-blocks) below for details.
+* `azure_maria_db` - (Optional) for Azure MariaDB. See [Integration blocks](#integration-blocks) below for details.
+* `azure_mysql` - (Optional) for Azure MySQL. See [Integration blocks](#integration-blocks) below for details.
+* `azure_postgresql` - (Optional) for Azure PostgreSQL. See [Integration blocks](#integration-blocks) below for details.
+* `azure_power_bi_dedicated` - (Optional) for Azure Power BI Dedicated. See [Integration blocks](#integration-blocks) below for details.
+* `azure_redis_cache` - (Optional) for Azure Redis Cache. See [Integration blocks](#integration-blocks) below for details.
+* `azure_service_bus` - (Optional) for Azure Service Bus. See [Integration blocks](#integration-blocks) below for details.
+* `azure_service_fabric` - (Optional) for Azure Service Fabric. See [Integration blocks](#integration-blocks) below for details.
+* `azure_sql` - (Optional) for Azure SQL. See [Integration blocks](#integration-blocks) below for details.
+* `azure_sql_managed` - (Optional) for SQL Managed. See [Integration blocks](#integration-blocks) below for details.
+* `azure_storage` - (Optional) for Azure Storage. See [Integration blocks](#integration-blocks) below for details.
+* `azure_virtual_machine` - (Optional) for Azure Virtual machine. See [Integration blocks](#integration-blocks) below for details.
+* `azure_vms` - (Optional) for Azure VMs. See [Integration blocks](#integration-blocks) below for details.
+* `azure_vpn_gateway` - (Optional) for Azure VPN Gateway. See [Integration blocks](#integration-blocks) below for details.
+* 
+### `Integration` blocks
 
 All `integration` blocks support the following common arguments:
 
@@ -237,7 +236,7 @@ All `integration` blocks support the following common arguments:
 Other integration type support an additional argument:
 
 * `azure_cost_management`
-  * `tag_keys` - (Optional) Specify if additional cost data per tag should be collected.
+  * `tag_keys` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
 
 
 
