@@ -208,7 +208,7 @@ func cloudGcpIntegrationsBigQuerySchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	s["fetch_tags"] = &schema.Schema{
 		Type:        schema.TypeBool,
-		Description: "",
+		Description: "to fetch tags of the resource",
 		Optional:    true,
 		Elem: &schema.Schema{
 			Type: schema.TypeBool,
@@ -336,7 +336,7 @@ func cloudGcpIntegrationsPubSubSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	s["fetch_tags"] = &schema.Schema{
 		Type:        schema.TypeBool,
-		Description: "",
+		Description: "to fetch tags of the resource",
 		Optional:    true,
 		Elem: &schema.Schema{
 			Type: schema.TypeBool,
@@ -376,7 +376,7 @@ func cloudGcpIntegrationsSpannerSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	s["fetch_tags"] = &schema.Schema{
 		Type:        schema.TypeBool,
-		Description: "",
+		Description: "to fetch tags of the resource",
 		Optional:    true,
 		Elem: &schema.Schema{
 			Type: schema.TypeBool,
@@ -400,7 +400,7 @@ func cloudGcpIntegrationsStorageSchemaElem() *schema.Resource {
 	s := cloudGcpIntegrationSchemaBase()
 	s["fetch_tags"] = &schema.Schema{
 		Type:        schema.TypeBool,
-		Description: "",
+		Description: "to fetch tags of the resource",
 		Optional:    true,
 		Elem: &schema.Schema{
 			Type: schema.TypeBool,
