@@ -38,6 +38,7 @@ func resourceNewRelicEntityTags() *schema.Resource {
 			"guid": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The guid of the entity to tag.",
 			},
 			"tag": {
