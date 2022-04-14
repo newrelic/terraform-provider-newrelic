@@ -272,6 +272,14 @@ func flattenAlertChannelConfiguration(c *alerts.ChannelConfiguration, d *schema.
 		}
 
 		configResult["payload_string"] = string(h)
+	} else if len(c.Payload) != 0 {
+		h, err := json.Marshal(c.Payload)
+
+		if err != nil {
+			return nil, err
+		}
+
+		configResult["payload_string"] = string(h)
 	}
 
 	return []interface{}{configResult}, nil
