@@ -44,6 +44,12 @@ func TestAccNewRelicCloudGcpIntegrations_Basic(t *testing.T) {
 					testAccNewRelicCloudGcpIntegrationsExists(resourceName),
 				),
 			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
