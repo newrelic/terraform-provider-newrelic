@@ -588,9 +588,9 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 	if l, ok := d.GetOk("linked_account_id"); ok {
 		linkedAccountID = l.(int)
 	}
-	if v, ok := d.GetOk(";api_management"); ok {
+	if v, ok := d.GetOk("api_management"); ok {
 		cloudAzureIntegration.AzureAPImanagement = expandCloudAzureIntegrationAPIManagementInput(v.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("azure_api_management"); len(n.([]interface{})) < len(o.([]interface{})) {
+	} else if o, n := d.GetChange("api_management"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureAPImanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
@@ -619,7 +619,7 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 
 	if v, ok := d.GetOk("cost_management"); ok {
 		cloudAzureIntegration.AzureCostmanagement = expandCloudAzureIntegrationCostManagementInput(v.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("azure_cost_management"); len(n.([]interface{})) < len(o.([]interface{})) {
+	} else if o, n := d.GetChange("cost_management"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureCostmanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 	if v, ok := d.GetOk("data_factory"); ok {
@@ -648,13 +648,13 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 
 	if v, ok := d.GetOk("front_door"); ok {
 		cloudAzureIntegration.AzureFrontdoor = expandCloudAzureIntegrationFrontDoorInput(v.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("azure_front_door"); len(n.([]interface{})) < len(o.([]interface{})) {
+	} else if o, n := d.GetChange("front_door"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureFrontdoor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("functions"); ok {
 		cloudAzureIntegration.AzureFunctions = expandCloudAzureIntegrationFunctionsInput(v.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("azure_functions"); len(n.([]interface{})) < len(o.([]interface{})) {
+	} else if o, n := d.GetChange("functions"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureFunctions = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
@@ -1711,63 +1711,63 @@ func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudL
 		case *cloud.CloudAzureAPImanagementIntegration:
 			_ = d.Set("api_management", flattenCloudAPIManagementIntegration(t))
 		case *cloud.CloudAzureAppgatewayIntegration:
-			_ = d.Set("azure_app_gateway", flattenCloudAzureAppGatewayIntegration(t))
+			_ = d.Set("app_gateway", flattenCloudAzureAppGatewayIntegration(t))
 		case *cloud.CloudAzureAppserviceIntegration:
-			_ = d.Set("azure_app_service", flattenCloudAzureAppServiceIntegration(t))
+			_ = d.Set("app_service", flattenCloudAzureAppServiceIntegration(t))
 		case *cloud.CloudAzureContainersIntegration:
-			_ = d.Set("azure_containers", flattenCloudAzureContainersIntegration(t))
+			_ = d.Set("containers", flattenCloudAzureContainersIntegration(t))
 		case *cloud.CloudAzureCosmosdbIntegration:
-			_ = d.Set("azure_cosmosdb", flattenCloudAzureCosmosdbIntegration(t))
+			_ = d.Set("cosmosdb", flattenCloudAzureCosmosdbIntegration(t))
 		case *cloud.CloudAzureCostmanagementIntegration:
-			_ = d.Set("azure_data_factory", flattenCloudAzureCostManagementIntegration(t))
+			_ = d.Set("data_factory", flattenCloudAzureCostManagementIntegration(t))
 		case *cloud.CloudAzureDatafactoryIntegration:
-			_ = d.Set("azure_data_factory", flattenCloudAzureDataFactoryIntegration(t))
+			_ = d.Set("data_factory", flattenCloudAzureDataFactoryIntegration(t))
 		case *cloud.CloudAzureEventhubIntegration:
-			_ = d.Set("azure_event_hub", flattenCloudAzureEventhubIntegration(t))
+			_ = d.Set("event_hub", flattenCloudAzureEventhubIntegration(t))
 		case *cloud.CloudAzureExpressrouteIntegration:
-			_ = d.Set("azure_express_route", flattenCloudAzureExpressRouteIntegration(t))
+			_ = d.Set("express_route", flattenCloudAzureExpressRouteIntegration(t))
 		case *cloud.CloudAzureFirewallsIntegration:
-			_ = d.Set("azure_firewalls", flattenCloudAzureFirewallsIntegration(t))
+			_ = d.Set("firewalls", flattenCloudAzureFirewallsIntegration(t))
 		case *cloud.CloudAzureFrontdoorIntegration:
-			_ = d.Set("azure_front_door", flattenCloudAzureFrontDoorIntegration(t))
+			_ = d.Set("front_door", flattenCloudAzureFrontDoorIntegration(t))
 		case *cloud.CloudAzureFunctionsIntegration:
-			_ = d.Set("azure_functions", flattenCloudAzureFunctionsIntegration(t))
+			_ = d.Set("functions", flattenCloudAzureFunctionsIntegration(t))
 		case *cloud.CloudAzureKeyvaultIntegration:
-			_ = d.Set("azure_key_vault", flattenCloudAzureKeyVaultIntegration(t))
+			_ = d.Set("key_vault", flattenCloudAzureKeyVaultIntegration(t))
 		case *cloud.CloudAzureLoadbalancerIntegration:
-			_ = d.Set("azure_load_balancer", flattenCloudAzureLoadBalancerIntegration(t))
+			_ = d.Set("load_balancer", flattenCloudAzureLoadBalancerIntegration(t))
 		case *cloud.CloudAzureLogicappsIntegration:
-			_ = d.Set("azure_logic_apps", flattenCloudAzureLogicAppsIntegration(t))
+			_ = d.Set("logic_apps", flattenCloudAzureLogicAppsIntegration(t))
 		case *cloud.CloudAzureMachinelearningIntegration:
-			_ = d.Set("azure_machine_learning", flattenCloudAzureMachineLearningIntegration(t))
+			_ = d.Set("machine_learning", flattenCloudAzureMachineLearningIntegration(t))
 		case *cloud.CloudAzureMariadbIntegration:
-			_ = d.Set("azure_maria_db", flattenCloudAzureMariadbIntegration(t))
+			_ = d.Set("maria_db", flattenCloudAzureMariadbIntegration(t))
 		case *cloud.CloudAzureMysqlIntegration:
-			_ = d.Set("azure_mysql", flattenCloudAzureMysqlIntegration(t))
+			_ = d.Set("mysql", flattenCloudAzureMysqlIntegration(t))
 		case *cloud.CloudAzurePostgresqlIntegration:
-			_ = d.Set("azure_postgresql", flattenCloudAzurePostgresqlIntegration(t))
+			_ = d.Set("postgresql", flattenCloudAzurePostgresqlIntegration(t))
 		case *cloud.CloudAzurePowerbidedicatedIntegration:
-			_ = d.Set("azure_power_bi_dedicated", flattenCloudAzurePowerBIDedicatedIntegration(t))
+			_ = d.Set("power_bi_dedicated", flattenCloudAzurePowerBIDedicatedIntegration(t))
 		case *cloud.CloudAzureRediscacheIntegration:
-			_ = d.Set("azure_redis_cache", flattenCloudAzureRedisCacheIntegration(t))
+			_ = d.Set("redis_cache", flattenCloudAzureRedisCacheIntegration(t))
 		case *cloud.CloudAzureServicebusIntegration:
-			_ = d.Set("azure_service_bus", flattenCloudAzureServiceBusIntegration(t))
+			_ = d.Set("service_bus", flattenCloudAzureServiceBusIntegration(t))
 		case *cloud.CloudAzureServicefabricIntegration:
-			_ = d.Set("azure_service_fabric", flattenCloudAzureServiceFabricIntegration(t))
+			_ = d.Set("service_fabric", flattenCloudAzureServiceFabricIntegration(t))
 		case *cloud.CloudAzureSqlIntegration:
-			_ = d.Set("azure_sql", flattenCloudAzureSQLIntegration(t))
+			_ = d.Set("sql", flattenCloudAzureSQLIntegration(t))
 		case *cloud.CloudAzureSqlmanagedIntegration:
-			_ = d.Set("azure_sql_managed", flattenCloudAzureSQLManagedIntegration(t))
+			_ = d.Set("sql_managed", flattenCloudAzureSQLManagedIntegration(t))
 		case *cloud.CloudAzureStorageIntegration:
-			_ = d.Set("azure_storage", flattenCloudAzureStorageIntegration(t))
+			_ = d.Set("storage", flattenCloudAzureStorageIntegration(t))
 		case *cloud.CloudAzureVirtualmachineIntegration:
-			_ = d.Set("azure_virtual_machine", flattenCloudAzureVirtualMachineIntegration(t))
+			_ = d.Set("virtual_machine", flattenCloudAzureVirtualMachineIntegration(t))
 		case *cloud.CloudAzureVirtualnetworksIntegration:
-			_ = d.Set("azure_virtual_networks", flattenCloudAzureVirtualNetworksIntegration(t))
+			_ = d.Set("virtual_networks", flattenCloudAzureVirtualNetworksIntegration(t))
 		case *cloud.CloudAzureVmsIntegration:
-			_ = d.Set("azure_vms", flattenCloudAzureVmsIntegration(t))
+			_ = d.Set("vms", flattenCloudAzureVmsIntegration(t))
 		case *cloud.CloudAzureVpngatewaysIntegration:
-			_ = d.Set("azure_vpn_gateway", flattenCloudAzureVpnGatewaysIntegration(t))
+			_ = d.Set("vpn_gateway", flattenCloudAzureVpnGatewaysIntegration(t))
 
 		}
 
@@ -2301,94 +2301,94 @@ func expandCloudAzureDisableInputs(d *schema.ResourceData) cloud.CloudDisableInt
 	if l, ok := d.GetOk("linked_account_id"); ok {
 		linkedAccountID = l.(int)
 	}
-	if _, ok := d.GetOk("azure_api_management"); ok {
+	if _, ok := d.GetOk("api_management"); ok {
 		cloudAzureDisableInput.AzureAPImanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_app_gateway"); ok {
+	if _, ok := d.GetOk("app_gateway"); ok {
 		cloudAzureDisableInput.AzureAppgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_app_service"); ok {
+	if _, ok := d.GetOk("app_service"); ok {
 		cloudAzureDisableInput.AzureAppservice = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_containers"); ok {
+	if _, ok := d.GetOk("containers"); ok {
 		cloudAzureDisableInput.AzureContainers = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_cosmos_db"); ok {
+	if _, ok := d.GetOk("cosmos_db"); ok {
 		cloudAzureDisableInput.AzureCosmosdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_cost_management"); ok {
+	if _, ok := d.GetOk("cost_management"); ok {
 		cloudAzureDisableInput.AzureCostmanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_data_factory"); ok {
+	if _, ok := d.GetOk("data_factory"); ok {
 		cloudAzureDisableInput.AzureDatafactory = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_event_hub"); ok {
+	if _, ok := d.GetOk("event_hub"); ok {
 		cloudAzureDisableInput.AzureEventhub = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_express_route"); ok {
+	if _, ok := d.GetOk("express_route"); ok {
 		cloudAzureDisableInput.AzureExpressroute = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_firewalls"); ok {
+	if _, ok := d.GetOk("firewalls"); ok {
 		cloudAzureDisableInput.AzureFirewalls = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_front_door"); ok {
+	if _, ok := d.GetOk("front_door"); ok {
 		cloudAzureDisableInput.AzureFrontdoor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_functions"); ok {
+	if _, ok := d.GetOk("functions"); ok {
 		cloudAzureDisableInput.AzureFunctions = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_key_vault"); ok {
+	if _, ok := d.GetOk("key_vault"); ok {
 		cloudAzureDisableInput.AzureKeyvault = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_load_balancer"); ok {
+	if _, ok := d.GetOk("load_balancer"); ok {
 		cloudAzureDisableInput.AzureLoadbalancer = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_logic_apps"); ok {
+	if _, ok := d.GetOk("logic_apps"); ok {
 		cloudAzureDisableInput.AzureLogicapps = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_machine_learning"); ok {
+	if _, ok := d.GetOk("machine_learning"); ok {
 		cloudAzureDisableInput.AzureMachinelearning = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_maria_db"); ok {
+	if _, ok := d.GetOk("maria_db"); ok {
 		cloudAzureDisableInput.AzureMariadb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_mysql"); ok {
+	if _, ok := d.GetOk("mysql"); ok {
 		cloudAzureDisableInput.AzureMysql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_postgresql"); ok {
+	if _, ok := d.GetOk("postgresql"); ok {
 		cloudAzureDisableInput.AzurePostgresql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_power_bi_dedicated"); ok {
+	if _, ok := d.GetOk("power_bi_dedicated"); ok {
 		cloudAzureDisableInput.AzurePowerbidedicated = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_redis_cache"); ok {
+	if _, ok := d.GetOk("redis_cache"); ok {
 		cloudAzureDisableInput.AzureRediscache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_service_bus"); ok {
+	if _, ok := d.GetOk("service_bus"); ok {
 		cloudAzureDisableInput.AzureServicebus = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_service_fabric"); ok {
+	if _, ok := d.GetOk("service_fabric"); ok {
 		cloudAzureDisableInput.AzureServicefabric = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_sql"); ok {
+	if _, ok := d.GetOk("sql"); ok {
 		cloudAzureDisableInput.AzureSql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_sql_managed"); ok {
+	if _, ok := d.GetOk("sql_managed"); ok {
 		cloudAzureDisableInput.AzureSqlmanaged = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_storage"); ok {
+	if _, ok := d.GetOk("storage"); ok {
 		cloudAzureDisableInput.AzureStorage = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_virtual_machine"); ok {
+	if _, ok := d.GetOk("virtual_machine"); ok {
 		cloudAzureDisableInput.AzureVirtualmachine = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_virtual_networks"); ok {
+	if _, ok := d.GetOk("virtual_networks"); ok {
 		cloudAzureDisableInput.AzureVirtualnetworks = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_vms"); ok {
+	if _, ok := d.GetOk("vms"); ok {
 		cloudAzureDisableInput.AzureVms = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("azure_vpn_gateway"); ok {
+	if _, ok := d.GetOk("vpn_gateway"); ok {
 		cloudAzureDisableInput.AzureVpngateways = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 

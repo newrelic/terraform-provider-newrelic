@@ -214,23 +214,23 @@ resource "newrelic_cloud_azure_integrations" "foo" {
                  resource_groups = "beyond"
     
      }
-     azure_logic_apps {
+     logic_apps {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
-     azure_machine_learning {
+     machine_learning {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
-     azure_maria_db {
+     maria_db {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
     
-     azure_mysql {
+     mysql {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
