@@ -254,17 +254,20 @@ func cloudAzureIntegrationSchemaBase() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The data polling interval in seconds",
 		},
-		"resource_groups": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		},
 	}
 }
 
 //function to add schema for azure API management
 func cloudAzureIntegrationAPIManagementElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -274,6 +277,14 @@ func cloudAzureIntegrationAPIManagementElem() *schema.Resource {
 
 func cloudAzureIntegrationAppGatewayElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -282,6 +293,14 @@ func cloudAzureIntegrationAppGatewayElem() *schema.Resource {
 // function to add schema for azure app service
 func cloudAzureIntegrationAppServiceElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -291,6 +310,14 @@ func cloudAzureIntegrationAppServiceElem() *schema.Resource {
 // function to add schema for azure containers
 func cloudAzureIntegrationContainersElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -300,6 +327,14 @@ func cloudAzureIntegrationContainersElem() *schema.Resource {
 // function to add schema for azure cosmo database
 func cloudAzureIntegrationCosmosDBElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -327,6 +362,14 @@ func cloudAzureIntegrationCostManagementElem() *schema.Resource {
 
 func cloudAzureIntegrationDataFactoryElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -337,6 +380,14 @@ func cloudAzureIntegrationDataFactoryElem() *schema.Resource {
 
 func cloudAzureIntegrationEventHubElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -346,6 +397,14 @@ func cloudAzureIntegrationEventHubElem() *schema.Resource {
 // function to add schema for azure express route
 func cloudAzureIntegrationExpressRouteElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -355,6 +414,14 @@ func cloudAzureIntegrationExpressRouteElem() *schema.Resource {
 //function to add schema for azure firewalls
 func cloudAzureIntegrationFirewallsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -364,6 +431,14 @@ func cloudAzureIntegrationFirewallsElem() *schema.Resource {
 // function to add schema for azure front door
 func cloudAzureIntegrationFrontDoorElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -373,6 +448,14 @@ func cloudAzureIntegrationFrontDoorElem() *schema.Resource {
 // function to add schema for azure functions
 func cloudAzureIntegrationFunctionsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -382,6 +465,14 @@ func cloudAzureIntegrationFunctionsElem() *schema.Resource {
 // function to add schema for azure key vault
 func cloudAzureIntegrationKeyVaultElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -391,6 +482,14 @@ func cloudAzureIntegrationKeyVaultElem() *schema.Resource {
 // function to add schema for azure load balancer
 func cloudAzureIntegrationLoadBalancerElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -400,6 +499,14 @@ func cloudAzureIntegrationLoadBalancerElem() *schema.Resource {
 // function to add schema for azure logic apps
 func cloudAzureIntegrationLogicAppsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -408,6 +515,14 @@ func cloudAzureIntegrationLogicAppsElem() *schema.Resource {
 // function to add schema for azure machine learning
 func cloudAzureIntegrationMachineLearningElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -417,6 +532,14 @@ func cloudAzureIntegrationMachineLearningElem() *schema.Resource {
 // function to add schema for azure maria database
 func cloudAzureIntegrationMariadbElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -426,6 +549,14 @@ func cloudAzureIntegrationMariadbElem() *schema.Resource {
 //  function to add schema for azure mysql
 func cloudAzureIntegrationMysqlElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -435,6 +566,14 @@ func cloudAzureIntegrationMysqlElem() *schema.Resource {
 // function to add schema for azure postgresql
 func cloudAzureIntegrationPostgresqlElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -444,6 +583,14 @@ func cloudAzureIntegrationPostgresqlElem() *schema.Resource {
 // function to add schema for azure power bi dedicated
 func cloudAzureIntegrationPowerBiDedicatedElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -453,6 +600,14 @@ func cloudAzureIntegrationPowerBiDedicatedElem() *schema.Resource {
 // function to add schema for azure redis cache
 func cloudAzureIntegrationRedisCacheElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -462,6 +617,14 @@ func cloudAzureIntegrationRedisCacheElem() *schema.Resource {
 // function to add schema for azure service bus
 func cloudAzureIntegrationServiceBusElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -471,6 +634,14 @@ func cloudAzureIntegrationServiceBusElem() *schema.Resource {
 // function to add schema for azure service fabric
 func cloudAzureIntegrationServiceFabricElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -480,6 +651,14 @@ func cloudAzureIntegrationServiceFabricElem() *schema.Resource {
 // function to add schema for azure sql
 func cloudAzureIntegrationSQLElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -489,6 +668,14 @@ func cloudAzureIntegrationSQLElem() *schema.Resource {
 // function to add schema for azure sql managed
 func cloudAzureIntegrationSQLManagedElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -498,6 +685,14 @@ func cloudAzureIntegrationSQLManagedElem() *schema.Resource {
 // function to add schema for azure storage
 func cloudAzureIntegrationStorageElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -507,6 +702,14 @@ func cloudAzureIntegrationStorageElem() *schema.Resource {
 // function to add schema for azure virtual machine
 func cloudAzureIntegrationVirtualMachineElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -516,6 +719,14 @@ func cloudAzureIntegrationVirtualMachineElem() *schema.Resource {
 // function to add schema for azure virtual networks
 func cloudAzureIntegrationVirtualNetworksElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -525,6 +736,14 @@ func cloudAzureIntegrationVirtualNetworksElem() *schema.Resource {
 // function to add schema for azure vms
 func cloudAzureIntegrationVmsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -534,6 +753,14 @@ func cloudAzureIntegrationVmsElem() *schema.Resource {
 // function to add schema for azure VPN gateway
 func cloudAzureIntegrationVPNGatewayElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -798,7 +1025,9 @@ func expandCloudAzureIntegrationAPIManagementInput(b []interface{}, linkedAccoun
 		if m, ok := in["metrics_polling_interval"]; ok {
 			azureAPIManagementInput.MetricsPollingInterval = m.(int)
 		}
-
+		if r, ok := in["resource_groups"]; ok {
+			azureAPIManagementInput.ResourceGroups[0] = r.(string)
+		}
 		expanded[i] = azureAPIManagementInput
 	}
 
