@@ -128,7 +128,7 @@ The following arguments are supported:
 * `fire_store` - (Optional) Fire Store integration. See [Integration blocks](#integration-blocks) below for details.
 * `functions` - (Optional) Functions integration. See [Integration blocks](#integration-blocks) below for details.
 * `interconnect` - (Optional) Interconnect integration. See [Integration blocks](#integration-blocks) below for details.
-* `kubernetes` - (Optional) Kuberne tes integration. See [Integration blocks](#integration-blocks) below for details.
+* `kubernetes` - (Optional) Kubernetes integration. See [Integration blocks](#integration-blocks) below for details.
 * `mem_cache` - (Optional) Mem cache integration. See [Integration blocks](#integration-blocks) below for details.
 * `pub_sub` - (Optional) Pub/Sub integration. See [Integration blocks](#integration-blocks) below for details.
 * `redis` - (Optional) Redis integration. See [Integration blocks](#integration-blocks) below for details.
@@ -149,6 +149,9 @@ All `integration` blocks support the following common arguments:
 Other integration supports an additional argument:
 
 * `big_query`
+* `pub_sub`
+* `spanner`
+* `storage`
     * `fetch_tags` - (Optional) Specify if labels and the extended inventory should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
     
 ## Attributes Reference

@@ -1157,7 +1157,7 @@ func resourceNewrelicCloudGcpIntegrationsRead(ctx context.Context, d *schema.Res
 	return nil
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
 func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.CloudLinkedAccount) {
@@ -1219,7 +1219,7 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 	}
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpAppEngineIntegration(in *cloud.CloudGcpAppengineIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1228,7 +1228,7 @@ func flattenCloudGcpAppEngineIntegration(in *cloud.CloudGcpAppengineIntegration)
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpBigQueryIntegration(in *cloud.CloudGcpBigqueryIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1238,7 +1238,7 @@ func flattenCloudGcpBigQueryIntegration(in *cloud.CloudGcpBigqueryIntegration) [
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpBigTableIntegration(in *cloud.CloudGcpBigtableIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1247,7 +1247,7 @@ func flattenCloudGcpBigTableIntegration(in *cloud.CloudGcpBigtableIntegration) [
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpComposerIntegration(in *cloud.CloudGcpComposerIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1256,7 +1256,7 @@ func flattenCloudGcpComposerIntegration(in *cloud.CloudGcpComposerIntegration) [
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpDataFlowIntegration(in *cloud.CloudGcpDataflowIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1265,7 +1265,7 @@ func flattenCloudGcpDataFlowIntegration(in *cloud.CloudGcpDataflowIntegration) [
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpDataProcIntegration(in *cloud.CloudGcpDataprocIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1274,7 +1274,7 @@ func flattenCloudGcpDataProcIntegration(in *cloud.CloudGcpDataprocIntegration) [
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpDataStoreIntegration(in *cloud.CloudGcpDatastoreIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1283,7 +1283,7 @@ func flattenCloudGcpDataStoreIntegration(in *cloud.CloudGcpDatastoreIntegration)
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpFireBaseDatabaseIntegration(in *cloud.CloudGcpFirebasedatabaseIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1292,7 +1292,7 @@ func flattenCloudGcpFireBaseDatabaseIntegration(in *cloud.CloudGcpFirebasedataba
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpFireBaseHostingIntegration(in *cloud.CloudGcpFirebasehostingIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1301,7 +1301,7 @@ func flattenCloudGcpFireBaseHostingIntegration(in *cloud.CloudGcpFirebasehosting
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpFireBaseStorageIntegration(in *cloud.CloudGcpFirebasestorageIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1310,7 +1310,7 @@ func flattenCloudGcpFireBaseStorageIntegration(in *cloud.CloudGcpFirebasestorage
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpFireStoreIntegration(in *cloud.CloudGcpFirestoreIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1319,7 +1319,7 @@ func flattenCloudGcpFireStoreIntegration(in *cloud.CloudGcpFirestoreIntegration)
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpFunctionsIntegration(in *cloud.CloudGcpFunctionsIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1328,7 +1328,7 @@ func flattenCloudGcpFunctionsIntegration(in *cloud.CloudGcpFunctionsIntegration)
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpInterconnectIntegration(in *cloud.CloudGcpInterconnectIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1337,7 +1337,7 @@ func flattenCloudGcpInterconnectIntegration(in *cloud.CloudGcpInterconnectIntegr
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpKubernetesIntegration(in *cloud.CloudGcpKubernetesIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1346,7 +1346,7 @@ func flattenCloudGcpKubernetesIntegration(in *cloud.CloudGcpKubernetesIntegratio
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpLoadBalancingIntegration(in *cloud.CloudGcpLoadbalancingIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1355,7 +1355,7 @@ func flattenCloudGcpLoadBalancingIntegration(in *cloud.CloudGcpLoadbalancingInte
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpMemCacheIntegration(in *cloud.CloudGcpMemcacheIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1364,7 +1364,7 @@ func flattenCloudGcpMemCacheIntegration(in *cloud.CloudGcpMemcacheIntegration) [
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpPubSubIntegration(in *cloud.CloudGcpPubsubIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1374,7 +1374,7 @@ func flattenCloudGcpPubSubIntegration(in *cloud.CloudGcpPubsubIntegration) []int
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpRedisIntegration(in *cloud.CloudGcpRedisIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1383,7 +1383,7 @@ func flattenCloudGcpRedisIntegration(in *cloud.CloudGcpRedisIntegration) []inter
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpRouterIntegration(in *cloud.CloudGcpRouterIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1392,7 +1392,7 @@ func flattenCloudGcpRouterIntegration(in *cloud.CloudGcpRouterIntegration) []int
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpRunIntegration(in *cloud.CloudGcpRunIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1401,7 +1401,7 @@ func flattenCloudGcpRunIntegration(in *cloud.CloudGcpRunIntegration) []interface
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpSpannerIntegration(in *cloud.CloudGcpSpannerIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1411,7 +1411,7 @@ func flattenCloudGcpSpannerIntegration(in *cloud.CloudGcpSpannerIntegration) []i
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpSQLIntegration(in *cloud.CloudGcpSqlIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1420,7 +1420,7 @@ func flattenCloudGcpSQLIntegration(in *cloud.CloudGcpSqlIntegration) []interface
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpStorageIntegration(in *cloud.CloudGcpStorageIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1430,7 +1430,7 @@ func flattenCloudGcpStorageIntegration(in *cloud.CloudGcpStorageIntegration) []i
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpVirtualMachineIntegration(in *cloud.CloudGcpVmsIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
@@ -1439,7 +1439,7 @@ func flattenCloudGcpVirtualMachineIntegration(in *cloud.CloudGcpVmsIntegration) 
 	return flattened
 }
 
-//flatten function to set(store) to outputs from the terraform apply
+//flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpVpcAccessIntegration(in *cloud.CloudGcpVpcaccessIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
