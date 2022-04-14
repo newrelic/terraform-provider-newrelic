@@ -34,155 +34,157 @@ You can find instructions on how to set up Azure on [our documentation](https://
   resource "newrelic_cloud_azure_integrations" "foo" {
     linked_account_id = newrelic_cloud_azure_link_account.foo.id
     account_id = "The New Relic account ID"
-    azure_api_management {
+    
+    api_management {
       metrics_polling_interval = 1200
       resource_groups = "beyond"
     }
 
-    azure_app_gateway {
+    app_gateway {
       metrics_polling_interval = 1200
       resource_groups = "beyond"
     }
-    azure_app_service {
+    app_service {
       metrics_polling_interval = 1200
       resource_groups = "beyond"
     }
-    azure_containers {
+    containers {
       metrics_polling_interval = 1200
       resource_groups = "beyond"
     }
 
-    azure_cosmos_db {
+    cosmos_db {
       metrics_polling_interval = 1200
       resource_groups = "beyond"
     }
-    azure_cost_management {
+    
+    cost_management {
       metrics_polling_interval = 1200
-      tag_keys = ""
+      tag_keys = "beyond"
     }
 
-    azure_data_factory {
-      metrics_polling_interval = 1200
-      resource_groups = "beyond"
-
-    }
-
-    azure_event_hub {
+    data_factory {
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
     }
 
-    azure_express_route {
-      metrics_polling_interval = 1200
-      resource_groups = "beyond"
-
-    }
-    azure_event_hub {
-      metrics_polling_interval = 1200
-      resource_groups = "beyond"
-
-    }
-    azure_firewalls {
-      metrics_polling_interval = 1200
-      resource_groups = "beyond"
-
-    }
-    azure_front_door {
-      metrics_polling_interval = 1200
-      resource_groups = "beyond"
-
-    }
-    azure_functions {
-      metrics_polling_interval = 1200
-      resource_groups = "beyond"
-
-    }
-    azure_key_vault {
-      metrics_polling_interval = 1200
-      resource_groups = "beyond"
-
-    }
-    azure_load_balancer {
-      metrics_polling_interval = 1200
-      resource_groups = "beyond"
-
-    }
-    azure_logic_apps {
-      metrics_polling_interval = 1200
-      resource_groups = "beyond"
-
-    }
-    azure_machine_learning {
-      metrics_polling_interval = 1200
-      resource_groups = "beyond"
-
-    }
-    azure_maria_db {
+    event_hub {
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
     }
 
-    azure_mysql {
+    express_route {
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
     }
-    azure_postgresql{
+    event_hub {
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
     }
-    azure_power_bi_dedicated{
+    firewalls {
+      metrics_polling_interval = 1200
+      resource_groups = "beyond"
+
+    }
+    front_door {
+      metrics_polling_interval = 1200
+      resource_groups = "beyond"
+
+    }
+    functions {
+      metrics_polling_interval = 1200
+      resource_groups = "beyond"
+
+    }
+    key_vault {
+      metrics_polling_interval = 1200
+      resource_groups = "beyond"
+
+    }
+    load_balancer {
+      metrics_polling_interval = 1200
+      resource_groups = "beyond"
+
+    }
+    logic_apps {
+      metrics_polling_interval = 1200
+      resource_groups = "beyond"
+
+    }
+    machine_learning {
+      metrics_polling_interval = 1200
+      resource_groups = "beyond"
+
+    }
+    maria_db {
+      metrics_polling_interval = 1200
+      resource_groups = "beyond"
+
+    }
+
+    mysql {
+      metrics_polling_interval = 1200
+      resource_groups = "beyond"
+
+    }
+    postgresql{
+      metrics_polling_interval = 1200
+      resource_groups = "beyond"
+
+    }
+    power_bi_dedicated{
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
     }
     
-    azure_redis_cache{
+    redis_cache{
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
     }
 
-    azure_service_bus{
+    service_bus{
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
     }
 
-    azure_sql{
+    sql{
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
     }
 
-    azure_storage{
+    storage{
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
     }
 
-    azure_virtual_machine{
+    virtual_machine{
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
     }
 
-    azure_virtual_networks{
+    virtual_networks{
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
     }
 
-    azure_vms{
+    vms{
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
     }
 
-    azure_vpn_gateway{
+    vpn_gateway{
       metrics_polling_interval = 1200
       resource_groups = "beyond"
 
@@ -196,35 +198,35 @@ The following arguments are supported:
 
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked Azure account in New Relic.
-* `azure_api_management` - (Optional) Azure API Management. See [Integration blocks](#integration-blocks) below for details.
-* `azure_app_gateway` - (Optional) Azure App Gateway. See [Integration blocks](#integration-blocks) below for details.
-* `azure_app_service` - (Optional) Azure App Service. See [Integration blocks](#integration-blocks) below for details.
-* `azure_containers` - (Optional) Azure Containers. See [Integration blocks](#integration-blocks) below for details.
-* `azure_cosmos_db` - (Optional) Azure CosmosDB. See [Integration blocks](#integration-blocks) below for details.
-* `azure_cost_management` - (Optional) Azure Cost Management. See [Integration blocks](#integration-blocks) below for details.
-* `azure_data_factory` - (Optional) for Azure Data Factory. See [Integration blocks](#integration-blocks) below for details.
-* `azure_event_hub` - (Optional) for Azure Event Hub. See [Integration blocks](#integration-blocks) below for details.
-* `azure_express_route` - (Optional) for Azure Express Route. See [Integration blocks](#integration-blocks) below for details.
-* `azure_firewalls` - (Optional) for Azure Firewalls. See [Integration blocks](#integration-blocks) below for details.
-* `azure_front_door` - (Optional) for Azure Front Door. See [Integration blocks](#integration-blocks) below for details.
-* `azure_functions` - (Optional) for Azure Functions. See [Integration blocks](#integration-blocks) below for details.
-* `azure_key_vault` - (Optional) for Azure Key Vault. See [Integration blocks](#integration-blocks) below for details.
-* `azure_load_balancer` - (Optional) for Azure Load Balancer. See [Integration blocks](#integration-blocks) below for details.
-* `azure_logic_apps` - (Optional) for Azure Logic Apps. See [Integration blocks](#integration-blocks) below for details.
-* `azure_machine_learning` - (Optional) for Azure Machine Learning. See [Integration blocks](#integration-blocks) below for details.
-* `azure_maria_db` - (Optional) for Azure MariaDB. See [Integration blocks](#integration-blocks) below for details.
-* `azure_mysql` - (Optional) for Azure MySQL. See [Integration blocks](#integration-blocks) below for details.
-* `azure_postgresql` - (Optional) for Azure PostgreSQL. See [Integration blocks](#integration-blocks) below for details.
-* `azure_power_bi_dedicated` - (Optional) for Azure Power BI Dedicated. See [Integration blocks](#integration-blocks) below for details.
-* `azure_redis_cache` - (Optional) for Azure Redis Cache. See [Integration blocks](#integration-blocks) below for details.
-* `azure_service_bus` - (Optional) for Azure Service Bus. See [Integration blocks](#integration-blocks) below for details.
-* `azure_service_fabric` - (Optional) for Azure Service Fabric. See [Integration blocks](#integration-blocks) below for details.
-* `azure_sql` - (Optional) for Azure SQL. See [Integration blocks](#integration-blocks) below for details.
-* `azure_sql_managed` - (Optional) for SQL Managed. See [Integration blocks](#integration-blocks) below for details.
-* `azure_storage` - (Optional) for Azure Storage. See [Integration blocks](#integration-blocks) below for details.
-* `azure_virtual_machine` - (Optional) for Azure Virtual machine. See [Integration blocks](#integration-blocks) below for details.
-* `azure_vms` - (Optional) for Azure VMs. See [Integration blocks](#integration-blocks) below for details.
-* `azure_vpn_gateway` - (Optional) for Azure VPN Gateway. See [Integration blocks](#integration-blocks) below for details.
+* `api_management` - (Optional) Azure API Management. See [Integration blocks](#integration-blocks) below for details.
+* `app_gateway` - (Optional) Azure App Gateway. See [Integration blocks](#integration-blocks) below for details.
+* `app_service` - (Optional) Azure App Service. See [Integration blocks](#integration-blocks) below for details.
+* `containers` - (Optional) Azure Containers. See [Integration blocks](#integration-blocks) below for details.
+* `cosmos_db` - (Optional) Azure CosmosDB. See [Integration blocks](#integration-blocks) below for details.
+* `cost_management` - (Optional) Azure Cost Management. See [Integration blocks](#integration-blocks) below for details.
+* `data_factory` - (Optional) for Azure Data Factory. See [Integration blocks](#integration-blocks) below for details.
+* `event_hub` - (Optional) for Azure Event Hub. See [Integration blocks](#integration-blocks) below for details.
+* `express_route` - (Optional) for Azure Express Route. See [Integration blocks](#integration-blocks) below for details.
+* `firewalls` - (Optional) for Azure Firewalls. See [Integration blocks](#integration-blocks) below for details.
+* `front_door` - (Optional) for Azure Front Door. See [Integration blocks](#integration-blocks) below for details.
+* `functions` - (Optional) for Azure Functions. See [Integration blocks](#integration-blocks) below for details.
+* `key_vault` - (Optional) for Azure Key Vault. See [Integration blocks](#integration-blocks) below for details.
+* `load_balancer` - (Optional) for Azure Load Balancer. See [Integration blocks](#integration-blocks) below for details.
+* `logic_apps` - (Optional) for Azure Logic Apps. See [Integration blocks](#integration-blocks) below for details.
+* `machine_learning` - (Optional) for Azure Machine Learning. See [Integration blocks](#integration-blocks) below for details.
+* `maria_db` - (Optional) for Azure MariaDB. See [Integration blocks](#integration-blocks) below for details.
+* `mysql` - (Optional) for Azure MySQL. See [Integration blocks](#integration-blocks) below for details.
+* `postgresql` - (Optional) for Azure PostgreSQL. See [Integration blocks](#integration-blocks) below for details.
+* `power_bi_dedicated` - (Optional) for Azure Power BI Dedicated. See [Integration blocks](#integration-blocks) below for details.
+* `redis_cache` - (Optional) for Azure Redis Cache. See [Integration blocks](#integration-blocks) below for details.
+* `service_bus` - (Optional) for Azure Service Bus. See [Integration blocks](#integration-blocks) below for details.
+* `service_fabric` - (Optional) for Azure Service Fabric. See [Integration blocks](#integration-blocks) below for details.
+* `sql` - (Optional) for Azure SQL. See [Integration blocks](#integration-blocks) below for details.
+* `sql_managed` - (Optional) for SQL Managed. See [Integration blocks](#integration-blocks) below for details.
+* `storage` - (Optional) for Azure Storage. See [Integration blocks](#integration-blocks) below for details.
+* `virtual_machine` - (Optional) for Azure Virtual machine. See [Integration blocks](#integration-blocks) below for details.
+* `vms` - (Optional) for Azure VMs. See [Integration blocks](#integration-blocks) below for details.
+* `vpn_gateway` - (Optional) for Azure VPN Gateway. See [Integration blocks](#integration-blocks) below for details.
 * 
 ### `Integration` blocks
 
@@ -235,7 +237,7 @@ All `integration` blocks support the following common arguments:
 
 Other integration type support an additional argument:
 
-* `azure_cost_management`
+* `cost_management`
   * `tag_keys` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
 
 

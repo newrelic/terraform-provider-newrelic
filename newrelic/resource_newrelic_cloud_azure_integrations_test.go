@@ -139,76 +139,77 @@ func testAccNewRelicAzureIntegartionsConfig(applicationID string, clientSecretID
 resource "newrelic_cloud_azure_integrations" "foo" {
      linked_account_id = newrelic_cloud_azure_link_account.foo.id
      account_id = 2520528
-     azure_api_management {
+
+     api_management {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
            }
     
-     azure_app_gateway {
+     app_gateway {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
            }
-     azure_app_service"{
+     app_service"{
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
            }
-     azure_containers {
+     containers {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
            }
              
-     azure_cosmos_db {
+     cosmos_db {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
            }
-     azure_cost_management {
+     cost_management {
                  metrics_polling_interval = 1200
                  tag_keys = ""
            }
     
-     azure_data_factory {
+    data_factory {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
     
-     azure_event_hub {
+     event_hub {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
     
-     azure_express_route {
+     express_route {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
-     azure_event_hub {
+     event_hub {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
-     azure_firewalls {
+     firewalls {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
-     azure_front_door {
+     front_door {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
-     azure_functions {
+     functions {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
-     azure_key_vault {
+    key_vault {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
-     azure_load_balancer {
+    load_balancer {
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
@@ -234,60 +235,60 @@ resource "newrelic_cloud_azure_integrations" "foo" {
                  resource_groups = "beyond"
     
      }
-     azure_postgresql{
+     postgresql{
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
-     azure_power_bi_dedicated{
+    power_bi_dedicated{
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
 
-     azure_redis_cache{
+     redis_cache{
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
     
-     azure_service_bus{
+     service_bus{
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
     
-     azure_sql{
+    sql{
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
     
-     azure_storage{
+     storage{
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
     
-     azure_virtual_machine{
+     virtual_machine{
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
     
-     azure_virtual_networks{
+     virtual_networks{
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
     
-     azure_vms{
+     vms{
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
      }
     
-     azure_vpn_gateway{
+	vpn_gateway{
                  metrics_polling_interval = 1200
                  resource_groups = "beyond"
     
@@ -310,155 +311,157 @@ func testAccNewRelicAzureIntegrationsConfigUpdated(applicationID string, clientS
   resource "newrelic_cloud_azure_integrations" "foo" {
      linked_account_id = newrelic_cloud_azure_link_account.foo.id
      account_id = 2520528
-     azure_api_management {
+     
+	api_management {
         metrics_polling_interval = 1000
         resource_groups = "beyond"
      }
 
-     azure_app_gateway {
+    app_gateway {
         metrics_polling_interval = 1000
         resource_groups = "beyond"
      }
-     azure_app_service"{
+     app_service"{
      metrics_polling_interval = 1000
      resource_groups = "beyond"
   }
-  azure_containers {
+  containers {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
   }
 
-  azure_cosmos_db {
+  cosmos_db {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
   }
-  azure_cost_management {
+  cost_management {
      metrics_polling_interval = 1000
      tag_keys = ""
   }
 
-  azure_data_factory {
+  data_factory {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
 
-  azure_event_hub {
+  event_hub {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
 
-  azure_express_route {
+  express_route {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
-  azure_event_hub {
+  event_hub {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
-  azure_firewalls {
+  firewalls {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
-  azure_front_door {
+  front_door {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
-  azure_functions {
+  functions {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
-  azure_key_vault {
+  key_vault {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
-  azure_load_balancer {
+  load_balancer {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
-  azure_logic_apps {
-     metrics_polling_interval = 1000
-     resource_groups = "beyond"
-
-  }
-  azure_machine_learning {
-     metrics_polling_interval = 1000
-     resource_groups = "beyond"
-
-  }
-  azure_maria_db {
-     metrics_polling_interval = 1000
-     resource_groups = "beyond"
-
-  }
-
-  azure_mysql {
-     metrics_polling_interval = 1000
-     resource_groups = "beyond"
-
-  }
-  azure_postgresql{
-     metrics_polling_interval = 1000
-     resource_groups = "beyond"
-
-  }
-  azure_power_bi_dedicated{
+  logic_apps {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
   
-  azure_redis_cache{
+	machine_learning {
+     metrics_polling_interval = 1000
+     resource_groups = "beyond"
+
+  }
+  maria_db {
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
 
-  azure_service_bus{
+  mysql {
+     metrics_polling_interval = 1000
+     resource_groups = "beyond"
+
+  }
+  postgresql{
+     metrics_polling_interval = 1000
+     resource_groups = "beyond"
+
+  }
+  power_bi_dedicated{
+     metrics_polling_interval = 1000
+     resource_groups = "beyond"
+
+  }
+  
+  redis_cache{
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
 
-  azure_sql{
+  service_bus{
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
 
-  azure_storage{
+  sql{
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
 
-  azure_virtual_machine{
+  storage{
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
 
-  azure_virtual_networks{
+  virtual_machine{
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
 
-  azure_vms{
+  virtual_networks{
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
   }
 
-  azure_vpn_gateway{
+  vms{
+     metrics_polling_interval = 1000
+     resource_groups = "beyond"
+
+  }
+
+  vpn_gateway{
      metrics_polling_interval = 1000
      resource_groups = "beyond"
 
