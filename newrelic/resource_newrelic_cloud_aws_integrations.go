@@ -621,7 +621,7 @@ func resourceNewRelicCloudAwsIntegrationsUpdate(ctx context.Context, d *schema.R
 		return diags
 	}
 
-	cloudAwsIntegrationsPayload, err := client.Cloud.CloudConfigureIntegration(accountID, configureInput)
+	cloudAwsIntegrationsPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, configureInput)
 
 	if err != nil {
 		return diag.FromErr(err)
