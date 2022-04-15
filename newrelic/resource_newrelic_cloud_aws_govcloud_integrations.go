@@ -1,7 +1,10 @@
 package newrelic
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/newrelic/newrelic-client-go/pkg/cloud"
+	"strconv"
 )
 
 func resourceNewRelicAwsGovCloudIntegrations() *schema.Resource {
@@ -172,6 +175,9 @@ func resourceNewRelicAwsGovCloudIntegrations() *schema.Resource {
 		},
 	}
 }
+
+//function to add common schema for AwsGov cloud all resources
+
 func AwsGovCloudIntegrationSchemaBase() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"metrics_polling_interval": {
@@ -181,6 +187,8 @@ func AwsGovCloudIntegrationSchemaBase() map[string]*schema.Schema {
 		},
 	}
 }
+
+//function to add schema for application load balancer
 
 func AwsGovCloudIntegrationAlbElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
@@ -238,6 +246,8 @@ func AwsGovCloudIntegrationAlbElem() *schema.Resource {
 	}
 }
 
+//function to add schema for api gateway
+
 func AwsGovCloudIntegrationApiGatewayElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -277,6 +287,8 @@ func AwsGovCloudIntegrationApiGatewayElem() *schema.Resource {
 	}
 }
 
+//function to add schema for autoscaling
+
 func AwsGovCloudIntegrationAutoScalingElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -292,6 +304,8 @@ func AwsGovCloudIntegrationAutoScalingElem() *schema.Resource {
 	}
 }
 
+//function to add schema for aws direct connect
+
 func AwsGovCloudIntegrationAwsDirectConnectElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -306,6 +320,9 @@ func AwsGovCloudIntegrationAwsDirectConnectElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for aws states
+
 func AwsGovCloudIntegrationAwsStatesElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -320,6 +337,9 @@ func AwsGovCloudIntegrationAwsStatesElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for cloud trail
+
 func AwsGovCloudIntegrationCloudTrailElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -334,6 +354,9 @@ func AwsGovCloudIntegrationCloudTrailElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for dynamo DB
+
 func AwsGovCloudIntegrationDynamodbElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -381,6 +404,9 @@ func AwsGovCloudIntegrationDynamodbElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for elastic beanstalk
+
 func AwsGovCloudIntegrationEbsElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -420,6 +446,9 @@ func AwsGovCloudIntegrationEbsElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for elastic compute cloud
+
 func AwsGovCloudIntegrationEc2Elem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -458,6 +487,9 @@ func AwsGovCloudIntegrationEc2Elem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for elastic search
+
 func AwsGovCloudIntegrationElasticSearchElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -496,6 +528,9 @@ func AwsGovCloudIntegrationElasticSearchElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for elastic load balancing
+
 func AwsGovCloudIntegrationElbElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -526,6 +561,9 @@ func AwsGovCloudIntegrationElbElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for elastic map reduce
+
 func AwsGovCloudIntegrationEmrElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -564,6 +602,9 @@ func AwsGovCloudIntegrationEmrElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for identity access management
+
 func AwsGovCloudIntegrationIamElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["tag_key"] = &schema.Schema{
@@ -586,6 +627,9 @@ func AwsGovCloudIntegrationIamElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for lambda
+
 func AwsGovCloudIntegrationLambdaElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 
@@ -625,6 +669,9 @@ func AwsGovCloudIntegrationLambdaElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for relational database
+
 func AwsGovCloudIntegrationRdsElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -663,6 +710,9 @@ func AwsGovCloudIntegrationRdsElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for redshift
+
 func AwsGovCloudIntegrationRedshiftElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -693,6 +743,9 @@ func AwsGovCloudIntegrationRedshiftElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for route53
+
 func AwsGovCloudIntegrationRoute53Elem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["fetch_extended_inventory"] = &schema.Schema{
@@ -707,6 +760,9 @@ func AwsGovCloudIntegrationRoute53Elem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for s3 bucket
+
 func AwsGovCloudIntegrationS3Elem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["fetch_extended_inventory"] = &schema.Schema{
@@ -745,6 +801,9 @@ func AwsGovCloudIntegrationS3Elem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for simple notification service
+
 func AwsGovCloudIntegrationSnsElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
@@ -767,6 +826,9 @@ func AwsGovCloudIntegrationSnsElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+//function to add schema for simple queue service
+
 func AwsGovCloudIntegrationSqsElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 
@@ -821,4 +883,229 @@ func AwsGovCloudIntegrationSqsElem() *schema.Resource {
 	return &schema.Resource{
 		Schema: s,
 	}
+}
+
+func resourceNewRelicAwsGovCloudIntegrationsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+
+	awsGovCloudIntegrationsInput, _ := expandAwsGovCloudIntegrationsInput(d)
+
+	//cloudLinkAccountWithContext func which integrates azure account with Newrelic
+	//which returns payload and error
+
+	awsGovCloudIntegrationsPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, awsGovCloudIntegrationsInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var diags diag.Diagnostics
+
+	if len(awsGovCloudIntegrationsPayload.Errors) > 0 {
+		for _, err := range awsGovCloudIntegrationsPayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+
+	if len(awsGovCloudIntegrationsPayload.Integrations) > 0 {
+		d.SetId(strconv.Itoa(d.Get("linked_account_id").(int)))
+	}
+
+	return nil
+}
+
+func expandAwsGovCloudIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
+	awsGovCloudIntegration := cloud.CloudAwsGovcloudIntegrationsInput{}
+	cloudDisableAwsGovCloudIntegration := cloud.CloudAwsGovcloudDisableIntegrationsInput{}
+
+	var linkedAccountID int
+
+	if l, ok := d.GetOk("linked_account_id"); ok {
+		linkedAccountID = l.(int)
+	}
+	if v, ok := d.GetOk("alb"); ok {
+		awsGovCloudIntegration.Alb = expandAwsGovCloudIntegrationsAlbInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("alb"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Alb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	configureInput := cloud.CloudIntegrationsInput{
+		AwsGovcloud: awsGovCloudIntegration,
+	}
+
+	disableInput := cloud.CloudDisableIntegrationsInput{
+		AwsGovcloud: cloudDisableAwsGovCloudIntegration,
+	}
+
+	return configureInput, disableInput
+}
+
+// Expanding the alb
+
+func expandAwsGovCloudIntegrationsAlbInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsGovCloudAlbIntegrationInput {
+	expanded := make([]cloud.CloudAwsGovCloudAlbIntegrationInput, len(b))
+
+	for i, awsGovCloudAlb := range b {
+		var awsGovCloudAlbInput cloud.CloudAwsGovCloudAlbIntegrationInput
+
+		if awsGovCloudAlb == nil {
+			awsGovCloudAlbInput.LinkedAccountId = linkedAccountID
+			expanded[i] = awsGovCloudAlbInput
+			return expanded
+		}
+
+		in := awsGovCloudAlbInput.(map[string]interface{})
+
+		awsGovCloudAlbInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			awsGovCloudAlbInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = awsGovCloudAlbInput
+	}
+
+	return expanded
+}
+
+func resourceNewRelicAwsGovCloudIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	accountID := selectAccountID(providerConfig, d)
+
+	linkedAccountID, convErr := strconv.Atoi(d.Id())
+
+	if convErr != nil {
+		return diag.FromErr(convErr)
+	}
+
+	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	flattenAwsGovCloudLinkedAccount(d, linkedAccount)
+
+	return nil
+}
+
+/// flatten
+
+//nolint: gocyclo
+func flattenAwsGovCloudLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
+	_ = d.Set("account_id", result.NrAccountId)
+	_ = d.Set("linked_account_id", result.ID)
+
+	for _, i := range result.Integrations {
+		switch t := i.(type) {
+		case *cloud.CloudAwsGovCloudAlbIntegration:
+			_ = d.Set("alb", flattenAwsGovCloudAlbIntegration(t))
+		}
+	}
+}
+func flattenAwsGovCloudAlbIntegration(in *cloud.CloudawsGovCloudAlbIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+/// update
+
+func resourceNewRelicAwsGovCloudIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+
+	integrateInput, disableInput := expandAwsGovCloudIntegrationsInput(d)
+
+	awsGovCloudDisablePayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, disableInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var diags diag.Diagnostics
+
+	if len(awsGovCloudDisablePayload.Errors) > 0 {
+		for _, err := range awsGovCloudDisablePayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+	awsGovCloudIntegrationPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, integrateInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if len(awsGovCloudIntegrationPayload.Errors) > 0 {
+		for _, err := range awsGovCloudIntegrationPayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+	return nil
+}
+
+/// Delete
+func resourceNewRelicAwsGovCloudIntegrationsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+	deleteInput := expandAwsGovCloudDisableInputs(d)
+	awsGovCloudDisablePayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, deleteInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var diags diag.Diagnostics
+
+	if len(awsGovCloudDisablePayload.Errors) > 0 {
+		for _, err := range awsGovCloudDisablePayload.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Type + " " + err.Message,
+			})
+		}
+		return diags
+	}
+
+	d.SetId("")
+
+	return nil
+}
+
+//nolint: gocyclo
+func expandAwsGovCloudDisableInputs(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
+	AwsGovCloudDisableInputs := cloud.CloudAzureDisableIntegrationsInput{}
+	var linkedAccountID int
+
+	if l, ok := d.GetOk("linked_account_id"); ok {
+		linkedAccountID = l.(int)
+	}
+	if _, ok := d.GetOk("alb"); ok {
+		AwsGovCloudDisableInputs.Alb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	deleteInput := cloud.CloudDisableIntegrationsInput{
+		AwsGovcloud: AwsGovCloudDisableInputs,
+	}
+	return deleteInput
 }
