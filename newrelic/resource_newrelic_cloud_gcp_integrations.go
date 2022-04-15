@@ -35,150 +35,175 @@ func resourceNewrelicCloudGcpIntegrations() *schema.Resource {
 				Description: "GCP app engine service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsAppEngineSchemaElem(),
+				MaxItems:    1,
 			},
 			"big_query": {
 				Type:        schema.TypeList,
 				Description: "GCP biq query service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsBigQuerySchemaElem(),
+				MaxItems:    1,
 			},
 			"big_table": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsBigTableSchemaElem(),
+				MaxItems:    1,
 			},
 			"composer": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsComposerSchemaElem(),
+				MaxItems:    1,
 			},
 			"data_flow": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsDataFlowSchemaElem(),
+				MaxItems:    1,
 			},
 			"data_proc": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsDataProcSchemaElem(),
+				MaxItems:    1,
 			},
 			"data_store": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsDataStoreSchemaElem(),
+				MaxItems:    1,
 			},
 			"fire_base_database": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsFireBaseDatabaseSchemaElem(),
+				MaxItems:    1,
 			},
 			"fire_base_hosting": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsFireBaseHostingSchemaElem(),
+				MaxItems:    1,
 			},
 			"fire_base_storage": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsFireBaseStorageSchemaElem(),
+				MaxItems:    1,
 			},
 			"fire_store": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsFireStoreSchemaElem(),
+				MaxItems:    1,
 			},
 			"functions": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsFunctionsSchemaElem(),
+				MaxItems:    1,
 			},
 			"interconnect": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsInterconnectSchemaElem(),
+				MaxItems:    1,
 			},
 			"kubernetes": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsKubernetesSchemaElem(),
+				MaxItems:    1,
 			},
 			"load_balancing": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsLoadBalancingSchemaElem(),
+				MaxItems:    1,
 			},
 			"mem_cache": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsMemCacheSchemaElem(),
+				MaxItems:    1,
 			},
 			"pub_sub": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsPubSubSchemaElem(),
+				MaxItems:    1,
 			},
 			"redis": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsRedisSchemaElem(),
+				MaxItems:    1,
 			},
 			"router": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsRouterSchemaElem(),
+				MaxItems:    1,
 			},
 			"run": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsRunSchemaElem(),
+				MaxItems:    1,
 			},
 			"spanner": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsSpannerSchemaElem(),
+				MaxItems:    1,
 			},
 			"sql": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsSQLSchemaElem(),
+				MaxItems:    1,
 			},
 			"storage": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsStorageSchemaElem(),
+				MaxItems:    1,
 			},
 			"virtual_machines": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsVirtualMachinesSchemaElem(),
+				MaxItems:    1,
 			},
 			"vpc_access": {
 				Type:        schema.TypeList,
 				Description: "GCP big table service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsVpcAccessSchemaElem(),
+				MaxItems:    1,
 			},
 		},
 	}
@@ -338,9 +363,6 @@ func cloudGcpIntegrationsPubSubSchemaElem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "to fetch tags of the resource",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -1469,7 +1491,7 @@ func resourceNewrelicCloudGcpIntegrationsUpdate(ctx context.Context, d *schema.R
 		}
 		return diags
 	}
-	cloudGcpIntegrationsPayload, err := client.Cloud.CloudConfigureIntegration(accountID, configureInput)
+	cloudGcpIntegrationsPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, configureInput)
 
 	if err != nil {
 		return diag.FromErr(err)
