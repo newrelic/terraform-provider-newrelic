@@ -832,9 +832,9 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 		cloudDisableAzureIntegration.AzureAppservice = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("azure_containers"); ok {
+	if v, ok := d.GetOk("containers"); ok {
 		cloudAzureIntegration.AzureContainers = expandCloudAzureIntegrationContainersInput(v.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("azure_containers"); len(n.([]interface{})) < len(o.([]interface{})) {
+	} else if o, n := d.GetChange("containers"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureContainers = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
