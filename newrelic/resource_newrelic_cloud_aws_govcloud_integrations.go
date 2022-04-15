@@ -1643,17 +1643,28 @@ func flattenAwsGovCloudLinkedAccount(d *schema.ResourceData, result *cloud.Cloud
 		}
 	}
 }
+
+//flatten for alb
+
 func flattenAwsGovCloudAlbIntegration(in *cloud.CloudAlbIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+	out["fetch_tags"] = in.FetchTags
+	out["load_balancer_prefixes"] = in.LoadBalancerPrefixes
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for api gateway
 
 func flattenAwsGovCloudAPIGatewayIntegration(in *cloud.CloudAPIgatewayIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1661,11 +1672,17 @@ func flattenAwsGovCloudAPIGatewayIntegration(in *cloud.CloudAPIgatewayIntegratio
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["stage_prefixes"] = in.StagePrefixes
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for autoscaling
 
 func flattenAwsGovCloudAutoScalingIntegration(in *cloud.CloudAutoscalingIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1673,11 +1690,14 @@ func flattenAwsGovCloudAutoScalingIntegration(in *cloud.CloudAutoscalingIntegrat
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for direct connect
 
 func flattenAwsGovCloudDirectconnectIntegration(in *cloud.CloudAwsDirectconnectIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1685,11 +1705,14 @@ func flattenAwsGovCloudDirectconnectIntegration(in *cloud.CloudAwsDirectconnectI
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for aws states
 
 func flattenAwsGovCloudAwsStatesIntegration(in *cloud.CloudAwsStatesIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1697,11 +1720,14 @@ func flattenAwsGovCloudAwsStatesIntegration(in *cloud.CloudAwsStatesIntegration)
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for cloudtrail
 
 func flattenAwsGovCloudCloudtrailIntegration(in *cloud.CloudCloudtrailIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1709,11 +1735,14 @@ func flattenAwsGovCloudCloudtrailIntegration(in *cloud.CloudCloudtrailIntegratio
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for dynamo db
 
 func flattenAwsGovCloudDynamodbIntegration(in *cloud.CloudDynamodbIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1721,11 +1750,18 @@ func flattenAwsGovCloudDynamodbIntegration(in *cloud.CloudDynamodbIntegration) [
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for ebs
 
 func flattenAwsGovCloudEbsIntegration(in *cloud.CloudEbsIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1733,11 +1769,17 @@ func flattenAwsGovCloudEbsIntegration(in *cloud.CloudEbsIntegration) []interface
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for ec2
 
 func flattenAwsGovCloudEc2Integration(in *cloud.CloudEc2Integration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1745,11 +1787,17 @@ func flattenAwsGovCloudEc2Integration(in *cloud.CloudEc2Integration) []interface
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["fetch_ip_addresses"] = in.FetchIpAddresses
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for elastic search
 
 func flattenAwsGovCloudElasticsearchIntegration(in *cloud.CloudElasticsearchIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1757,11 +1805,17 @@ func flattenAwsGovCloudElasticsearchIntegration(in *cloud.CloudElasticsearchInte
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["fetch_nodes"] = in.FetchNodes
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for elb
 
 func flattenAwsGovCloudElbIntegration(in *cloud.CloudElbIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1769,11 +1823,16 @@ func flattenAwsGovCloudElbIntegration(in *cloud.CloudElbIntegration) []interface
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+	out["fetch_tags"] = in.FetchTags
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for emr
 
 func flattenAwsGovCloudEmrIntegration(in *cloud.CloudEmrIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1781,11 +1840,17 @@ func flattenAwsGovCloudEmrIntegration(in *cloud.CloudEmrIntegration) []interface
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for iam
 
 func flattenAwsGovCloudIamIntegration(in *cloud.CloudIamIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1793,11 +1858,14 @@ func flattenAwsGovCloudIamIntegration(in *cloud.CloudIamIntegration) []interface
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
-
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for lambda
 
 func flattenAwsGovCloudLambdaIntegration(in *cloud.CloudLambdaIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1805,11 +1873,16 @@ func flattenAwsGovCloudLambdaIntegration(in *cloud.CloudLambdaIntegration) []int
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
-
+	out["aws_regions"] = in.AwsRegions
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for rds
 
 func flattenAwsGovCloudRdsIntegration(in *cloud.CloudRdsIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1817,11 +1890,17 @@ func flattenAwsGovCloudRdsIntegration(in *cloud.CloudRdsIntegration) []interface
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for redshift
 
 func flattenAwsGovCloudRedshiftIntegration(in *cloud.CloudRedshiftIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1829,11 +1908,16 @@ func flattenAwsGovCloudRedshiftIntegration(in *cloud.CloudRedshiftIntegration) [
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 
 	return flattened
 }
+
+//flatten for route53
 
 func flattenAwsGovCloudRoute53Integration(in *cloud.CloudRoute53Integration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1841,40 +1925,58 @@ func flattenAwsGovCloudRoute53Integration(in *cloud.CloudRoute53Integration) []i
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
 
 	flattened[0] = out
 
 	return flattened
 }
 
+// flatten for s3
 func flattenAwsGovCloudS3Integration(in *cloud.CloudS3Integration) []interface{} {
 	flattened := make([]interface{}, 1)
 
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
-
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 	flattened[0] = out
 
 	return flattened
 }
+
+// flatten for sns
 func flattenAwsGovCloudSnsIntegration(in *cloud.CloudSnsIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
 
 	flattened[0] = out
 
 	return flattened
 }
+
+// flatten for sqs
+
 func flattenAwsGovCloudSqsIntegration(in *cloud.CloudSqsIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+	out["fetch_tags"] = in.FetchTags
+	out["queue_prefixes"] = in.QueuePrefixes
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 
