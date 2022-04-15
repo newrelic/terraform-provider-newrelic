@@ -444,8 +444,8 @@ func resourceNewrelicCloudGcpIntegrationsCreate(ctx context.Context, d *schema.R
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
-	cloudGcpIntegrationInputs, _ := expandCloudGcpIntegrationsInputs(d)
-	gcpIntegrationspayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, cloudGcpIntegrationInputs)
+	cloudGcpIntegrationinputs, _ := expandCloudGcpIntegrationsinputs(d)
+	gcpIntegrationspayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, cloudGcpIntegrationinputs)
 	if err != nil {
 		diag.FromErr(err)
 	}
@@ -468,7 +468,7 @@ func resourceNewrelicCloudGcpIntegrationsCreate(ctx context.Context, d *schema.R
 //expand function to extract inputs for cloud integrations from the schema
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
-func expandCloudGcpIntegrationsInputs(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
+func expandCloudGcpIntegrationsinputs(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
 	gcpCloudIntegrations := cloud.CloudGcpIntegrationsInput{}
 	gcpDisableIntegrations := cloud.CloudGcpDisableIntegrationsInput{}
 	var linkedAccountID int
@@ -476,157 +476,157 @@ func expandCloudGcpIntegrationsInputs(d *schema.ResourceData) (cloud.CloudIntegr
 		linkedAccountID = lid.(int)
 	}
 	if v, ok := d.GetOk("app_engine"); ok {
-		gcpCloudIntegrations.GcpAppengine = expandCloudGcpAppEngineIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpAppengine = expandCloudGcpAppEngineIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("app_engine"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpAppengine = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("big_query"); ok {
-		gcpCloudIntegrations.GcpBigquery = expandCloudGcpBigQueryIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpBigquery = expandCloudGcpBigQueryIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("big_query"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpBigquery = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("big_table"); ok {
-		gcpCloudIntegrations.GcpBigtable = expandCloudGcpBigTableIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpBigtable = expandCloudGcpBigTableIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("big_table"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpBigtable = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("composer"); ok {
-		gcpCloudIntegrations.GcpComposer = expandCloudGcpComposerIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpComposer = expandCloudGcpComposerIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("composer"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpComposer = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("data_flow"); ok {
-		gcpCloudIntegrations.GcpDataflow = expandCloudGcpDataFlowIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpDataflow = expandCloudGcpDataFlowIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("data_flow"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpDataflow = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("data_proc"); ok {
-		gcpCloudIntegrations.GcpDataproc = expandCloudGcpDataProcIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpDataproc = expandCloudGcpDataProcIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("data_proc"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpDataproc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("data_proc"); ok {
-		gcpCloudIntegrations.GcpDataproc = expandCloudGcpDataProcIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpDataproc = expandCloudGcpDataProcIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("data_proc"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpDataproc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("data_store"); ok {
-		gcpCloudIntegrations.GcpDatastore = expandCloudGcpDataStoreIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpDatastore = expandCloudGcpDataStoreIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("data_store"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpDatastore = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("fire_base_database"); ok {
-		gcpCloudIntegrations.GcpFirebasedatabase = expandCloudGcpFireBaseDatabaseIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpFirebasedatabase = expandCloudGcpFireBaseDatabaseIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("fire_base_database"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpFirebasedatabase = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("fire_base_hosting"); ok {
-		gcpCloudIntegrations.GcpFirebasehosting = expandCloudGcpFireBaseHostingIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpFirebasehosting = expandCloudGcpFireBaseHostingIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("fire_base_hosting"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpFirebasehosting = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("fire_base_storage"); ok {
-		gcpCloudIntegrations.GcpFirebasestorage = expandCloudGcpFireBaseStorageIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpFirebasestorage = expandCloudGcpFireBaseStorageIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("fire_base_storage"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpFirebasestorage = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("fire_store"); ok {
-		gcpCloudIntegrations.GcpFirestore = expandCloudGcpFireStoreIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpFirestore = expandCloudGcpFireStoreIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("fire_store"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpFirestore = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("functions"); ok {
-		gcpCloudIntegrations.GcpFunctions = expandCloudGcpFunctionsIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpFunctions = expandCloudGcpFunctionsIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("functions"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpFunctions = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("interconnect"); ok {
-		gcpCloudIntegrations.GcpInterconnect = expandCloudGcpInterconnectIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpInterconnect = expandCloudGcpInterconnectIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("interconnect"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpInterconnect = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("kubernetes"); ok {
-		gcpCloudIntegrations.GcpKubernetes = expandCloudGcpKubernetesIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpKubernetes = expandCloudGcpKubernetesIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("kubernetes"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpKubernetes = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("load_balancing"); ok {
-		gcpCloudIntegrations.GcpLoadbalancing = expandCloudGcpLoadBalancingIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpLoadbalancing = expandCloudGcpLoadBalancingIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("load_balancing"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpLoadbalancing = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("mem_cache"); ok {
-		gcpCloudIntegrations.GcpMemcache = expandCloudGcpMemCacheIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpMemcache = expandCloudGcpMemCacheIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("mem_cache"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpMemcache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("pub_sub"); ok {
-		gcpCloudIntegrations.GcpPubsub = expandCloudGcpPubSubIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpPubsub = expandCloudGcpPubSubIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("pub_sub"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpPubsub = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("redis"); ok {
-		gcpCloudIntegrations.GcpRedis = expandCloudGcpRedisIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpRedis = expandCloudGcpRedisIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("redis"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpRedis = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("router"); ok {
-		gcpCloudIntegrations.GcpRouter = expandCloudGcpRouterIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpRouter = expandCloudGcpRouterIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("router"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpRouter = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("run"); ok {
-		gcpCloudIntegrations.GcpRun = expandCloudGcpRunIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpRun = expandCloudGcpRunIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("run"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpRun = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("spanner"); ok {
-		gcpCloudIntegrations.GcpSpanner = expandCloudGcpSpannerIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpSpanner = expandCloudGcpSpannerIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("spanner"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpSpanner = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("sql"); ok {
-		gcpCloudIntegrations.GcpSql = expandCloudGcpSQLIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpSql = expandCloudGcpSQLIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("sql"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpSql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("storage"); ok {
-		gcpCloudIntegrations.GcpStorage = expandCloudGcpStorageIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpStorage = expandCloudGcpStorageIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("storage"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpStorage = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("virtual_machines"); ok {
-		gcpCloudIntegrations.GcpVms = expandCloudGcpVirtualMachinesIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpVms = expandCloudGcpVirtualMachinesIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("virtual_machines"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpVms = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("vpc_access"); ok {
-		gcpCloudIntegrations.GcpVpcaccess = expandCloudGcpVpcAccessIntegrationsInputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpVpcaccess = expandCloudGcpVpcAccessIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("vpc_access"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpVpcaccess = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
@@ -641,513 +641,513 @@ func expandCloudGcpIntegrationsInputs(d *schema.ResourceData) (cloud.CloudIntegr
 }
 
 //expand function to extract inputs from gcp app engine schema
-func expandCloudGcpAppEngineIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpAppengineIntegrationInput {
+func expandCloudGcpAppEngineIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpAppengineIntegrationInput {
 	expanded := make([]cloud.CloudGcpAppengineIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpAppengineIntegrationInput
+		var input cloud.CloudGcpAppengineIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if a, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = a.(int)
+			input.MetricsPollingInterval = a.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp bigquery schema
-func expandCloudGcpBigQueryIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpBigqueryIntegrationInput {
+func expandCloudGcpBigQueryIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpBigqueryIntegrationInput {
 	expanded := make([]cloud.CloudGcpBigqueryIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpBigqueryIntegrationInput
+		var input cloud.CloudGcpBigqueryIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
 		if f, ok := in["fetch_tags"]; ok {
-			Input.FetchTags = f.(bool)
+			input.FetchTags = f.(bool)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp bigtable schema
-func expandCloudGcpBigTableIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpBigtableIntegrationInput {
+func expandCloudGcpBigTableIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpBigtableIntegrationInput {
 	expanded := make([]cloud.CloudGcpBigtableIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpBigtableIntegrationInput
+		var input cloud.CloudGcpBigtableIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp composer schema
-func expandCloudGcpComposerIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpComposerIntegrationInput {
+func expandCloudGcpComposerIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpComposerIntegrationInput {
 	expanded := make([]cloud.CloudGcpComposerIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpComposerIntegrationInput
+		var input cloud.CloudGcpComposerIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp dataflow schema
-func expandCloudGcpDataFlowIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpDataflowIntegrationInput {
+func expandCloudGcpDataFlowIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpDataflowIntegrationInput {
 	expanded := make([]cloud.CloudGcpDataflowIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpDataflowIntegrationInput
+		var input cloud.CloudGcpDataflowIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp dataproc schema
-func expandCloudGcpDataProcIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpDataprocIntegrationInput {
+func expandCloudGcpDataProcIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpDataprocIntegrationInput {
 	expanded := make([]cloud.CloudGcpDataprocIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpDataprocIntegrationInput
+		var input cloud.CloudGcpDataprocIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp datastore schema
-func expandCloudGcpDataStoreIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpDatastoreIntegrationInput {
+func expandCloudGcpDataStoreIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpDatastoreIntegrationInput {
 	expanded := make([]cloud.CloudGcpDatastoreIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpDatastoreIntegrationInput
+		var input cloud.CloudGcpDatastoreIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp firebasedatabase schema
-func expandCloudGcpFireBaseDatabaseIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFirebasedatabaseIntegrationInput {
+func expandCloudGcpFireBaseDatabaseIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFirebasedatabaseIntegrationInput {
 	expanded := make([]cloud.CloudGcpFirebasedatabaseIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpFirebasedatabaseIntegrationInput
+		var input cloud.CloudGcpFirebasedatabaseIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp firebasehosting schema
-func expandCloudGcpFireBaseHostingIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFirebasehostingIntegrationInput {
+func expandCloudGcpFireBaseHostingIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFirebasehostingIntegrationInput {
 	expanded := make([]cloud.CloudGcpFirebasehostingIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpFirebasehostingIntegrationInput
+		var input cloud.CloudGcpFirebasehostingIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp firebasestorage schema
-func expandCloudGcpFireBaseStorageIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFirebasestorageIntegrationInput {
+func expandCloudGcpFireBaseStorageIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFirebasestorageIntegrationInput {
 	expanded := make([]cloud.CloudGcpFirebasestorageIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpFirebasestorageIntegrationInput
+		var input cloud.CloudGcpFirebasestorageIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp firestore schema
-func expandCloudGcpFireStoreIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFirestoreIntegrationInput {
+func expandCloudGcpFireStoreIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFirestoreIntegrationInput {
 	expanded := make([]cloud.CloudGcpFirestoreIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpFirestoreIntegrationInput
+		var input cloud.CloudGcpFirestoreIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp functions schema
-func expandCloudGcpFunctionsIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFunctionsIntegrationInput {
+func expandCloudGcpFunctionsIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpFunctionsIntegrationInput {
 	expanded := make([]cloud.CloudGcpFunctionsIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpFunctionsIntegrationInput
+		var input cloud.CloudGcpFunctionsIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp interconnect schema
-func expandCloudGcpInterconnectIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpInterconnectIntegrationInput {
+func expandCloudGcpInterconnectIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpInterconnectIntegrationInput {
 	expanded := make([]cloud.CloudGcpInterconnectIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpInterconnectIntegrationInput
+		var input cloud.CloudGcpInterconnectIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp k8's schema
-func expandCloudGcpKubernetesIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpKubernetesIntegrationInput {
+func expandCloudGcpKubernetesIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpKubernetesIntegrationInput {
 	expanded := make([]cloud.CloudGcpKubernetesIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpKubernetesIntegrationInput
+		var input cloud.CloudGcpKubernetesIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp load balancing schema
-func expandCloudGcpLoadBalancingIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpLoadbalancingIntegrationInput {
+func expandCloudGcpLoadBalancingIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpLoadbalancingIntegrationInput {
 	expanded := make([]cloud.CloudGcpLoadbalancingIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpLoadbalancingIntegrationInput
+		var input cloud.CloudGcpLoadbalancingIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp mem-cache schema
-func expandCloudGcpMemCacheIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpMemcacheIntegrationInput {
+func expandCloudGcpMemCacheIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpMemcacheIntegrationInput {
 	expanded := make([]cloud.CloudGcpMemcacheIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpMemcacheIntegrationInput
+		var input cloud.CloudGcpMemcacheIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp pubsub schema
-func expandCloudGcpPubSubIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpPubsubIntegrationInput {
+func expandCloudGcpPubSubIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpPubsubIntegrationInput {
 	expanded := make([]cloud.CloudGcpPubsubIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpPubsubIntegrationInput
+		var input cloud.CloudGcpPubsubIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
 		if f, ok := in["fetch_tags"]; ok {
-			Input.FetchTags = f.(bool)
+			input.FetchTags = f.(bool)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp redis schema
-func expandCloudGcpRedisIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpRedisIntegrationInput {
+func expandCloudGcpRedisIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpRedisIntegrationInput {
 	expanded := make([]cloud.CloudGcpRedisIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpRedisIntegrationInput
+		var input cloud.CloudGcpRedisIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp router schema
-func expandCloudGcpRouterIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpRouterIntegrationInput {
+func expandCloudGcpRouterIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpRouterIntegrationInput {
 	expanded := make([]cloud.CloudGcpRouterIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpRouterIntegrationInput
+		var input cloud.CloudGcpRouterIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp run schema
-func expandCloudGcpRunIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpRunIntegrationInput {
+func expandCloudGcpRunIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpRunIntegrationInput {
 	expanded := make([]cloud.CloudGcpRunIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpRunIntegrationInput
+		var input cloud.CloudGcpRunIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp spanner schema
-func expandCloudGcpSpannerIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpSpannerIntegrationInput {
+func expandCloudGcpSpannerIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpSpannerIntegrationInput {
 	expanded := make([]cloud.CloudGcpSpannerIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpSpannerIntegrationInput
+		var input cloud.CloudGcpSpannerIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
 		if f, ok := in["fetch_tags"]; ok {
-			Input.FetchTags = f.(bool)
+			input.FetchTags = f.(bool)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp SQL schema
-func expandCloudGcpSQLIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpSqlIntegrationInput {
+func expandCloudGcpSQLIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpSqlIntegrationInput {
 	expanded := make([]cloud.CloudGcpSqlIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpSqlIntegrationInput
+		var input cloud.CloudGcpSqlIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp storage schema
-func expandCloudGcpStorageIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpStorageIntegrationInput {
+func expandCloudGcpStorageIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpStorageIntegrationInput {
 	expanded := make([]cloud.CloudGcpStorageIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpStorageIntegrationInput
+		var input cloud.CloudGcpStorageIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
 		if f, ok := in["fetch_tags"]; ok {
-			Input.FetchTags = f.(bool)
+			input.FetchTags = f.(bool)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp vm's schema
-func expandCloudGcpVirtualMachinesIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpVmsIntegrationInput {
+func expandCloudGcpVirtualMachinesIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpVmsIntegrationInput {
 	expanded := make([]cloud.CloudGcpVmsIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpVmsIntegrationInput
+		var input cloud.CloudGcpVmsIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
 
 //expand function to extract inputs from gcp vpc access schema
-func expandCloudGcpVpcAccessIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpVpcaccessIntegrationInput {
+func expandCloudGcpVpcAccessIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpVpcaccessIntegrationInput {
 	expanded := make([]cloud.CloudGcpVpcaccessIntegrationInput, len(b))
 	for i, expand := range b {
-		var Input cloud.CloudGcpVpcaccessIntegrationInput
+		var input cloud.CloudGcpVpcaccessIntegrationInput
 		if expand == nil {
-			Input.LinkedAccountId = linkedAccountID
-			expanded[i] = Input
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
 			return expanded
 		}
 		in := expand.(map[string]interface{})
-		Input.LinkedAccountId = linkedAccountID
+		input.LinkedAccountId = linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
-			Input.MetricsPollingInterval = m.(int)
+			input.MetricsPollingInterval = m.(int)
 		}
-		expanded[i] = Input
+		expanded[i] = input
 	}
 	return expanded
 }
@@ -1465,7 +1465,7 @@ func resourceNewrelicCloudGcpIntegrationsUpdate(ctx context.Context, d *schema.R
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
-	configureInput, disableInput := expandCloudGcpIntegrationsInputs(d)
+	configureInput, disableInput := expandCloudGcpIntegrationsinputs(d)
 	cloudDisableIntegrationsPayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, disableInput)
 	if err != nil {
 		return diag.FromErr(err)
@@ -1504,7 +1504,7 @@ func resourceNewrelicCloudGcpIntegrationsDelete(ctx context.Context, d *schema.R
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
-	deleteInput := expandCloudGcpDisableInputs(d)
+	deleteInput := expandCloudGcpDisableinputs(d)
 	gcpDisablePayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, deleteInput)
 	if err != nil {
 		return diag.FromErr(err)
@@ -1530,7 +1530,7 @@ func resourceNewrelicCloudGcpIntegrationsDelete(ctx context.Context, d *schema.R
 //expand function to extract the inputs values from the schema for disabling the integration for particular services
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
-func expandCloudGcpDisableInputs(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
+func expandCloudGcpDisableinputs(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
 	cloudGcpDisableInput := cloud.CloudGcpDisableIntegrationsInput{}
 	var linkedAccountID int
 	if l, ok := d.GetOk("linked_account_id"); ok {
