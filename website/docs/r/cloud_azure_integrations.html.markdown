@@ -14,7 +14,7 @@ Use this resource to integrate Azure services with New Relic.
 
 To start receiving Azure data with New Relic Azure integrations, connect your Azure account to New Relic infrastructure monitoring. If you don't have one already, create a New Relic account. It's free, forever.
 
-Setup is required for this resource to work properly. This resource assumes you have [linked an Azure account](cloud_azure_link_account.html) to New Relic.
+Setup is required for this resource to work properly. This resource assumes you have [linked an Azure account](cloud_azure_link_account.html.markdown) to New Relic.
 
 You can find instructions on how to set up Azure on [our documentation](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/get-started/activate-azure-integrations/).
 
