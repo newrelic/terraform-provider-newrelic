@@ -1046,6 +1046,7 @@ func expandAwsGovCloudIntegrationsInput(d *schema.ResourceData) (cloud.CloudInte
 	return configureInput, disableInput
 }
 
+///pending
 // Expanding the alb
 
 func expandAwsGovCloudIntegrationsAlbInput(b []interface{}, linkedAccountID int) []cloud.CloudAlbIntegrationInput {
@@ -1567,6 +1568,8 @@ func expandAwsGovCloudIntegrationsSqsInput(b []interface{}, linkedAccountID int)
 
 	return expanded
 }
+
+// till here
 
 func resourceNewRelicAwsGovCloudIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
