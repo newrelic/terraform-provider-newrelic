@@ -235,9 +235,6 @@ func cloudGcpIntegrationsBigQuerySchemaElem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "to fetch tags of the resource",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -400,9 +397,6 @@ func cloudGcpIntegrationsSpannerSchemaElem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "to fetch tags of the resource",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -424,9 +418,6 @@ func cloudGcpIntegrationsStorageSchemaElem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "to fetch tags of the resource",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
