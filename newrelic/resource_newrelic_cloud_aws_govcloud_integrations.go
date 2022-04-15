@@ -1,10 +1,12 @@
 package newrelic
 
 import (
+	"context"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
-	"strconv"
 )
 
 func resourceNewRelicAwsGovCloudIntegrations() *schema.Resource {
@@ -43,7 +45,7 @@ func resourceNewRelicAwsGovCloudIntegrations() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The api gateway integration",
-				Elem:        AwsGovCloudIntegrationApiGatewayElem(),
+				Elem:        AwsGovCloudIntegrationAPIGatewayElem(),
 				MaxItems:    1,
 			},
 			"auto_scaling": {
@@ -248,7 +250,7 @@ func AwsGovCloudIntegrationAlbElem() *schema.Resource {
 
 //function to add schema for api gateway
 
-func AwsGovCloudIntegrationApiGatewayElem() *schema.Resource {
+func AwsGovCloudIntegrationAPIGatewayElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -893,7 +895,7 @@ func resourceNewRelicAwsGovCloudIntegrationsCreate(ctx context.Context, d *schem
 
 	awsGovCloudIntegrationsInput, _ := expandAwsGovCloudIntegrationsInput(d)
 
-	//cloudLinkAccountWithContext func which integrates azure account with Newrelic
+	//cloudLinkAccountWithContext func which integrates aws gov cloud account with Newrelic
 	//which returns payload and error
 
 	awsGovCloudIntegrationsPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, awsGovCloudIntegrationsInput)
@@ -920,6 +922,8 @@ func resourceNewRelicAwsGovCloudIntegrationsCreate(ctx context.Context, d *schem
 	return nil
 }
 
+// TODO: Reduce the cyclomatic complexity of this func
+//nolint: gocyclo
 func expandAwsGovCloudIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
 	awsGovCloudIntegration := cloud.CloudAwsGovcloudIntegrationsInput{}
 	cloudDisableAwsGovCloudIntegration := cloud.CloudAwsGovcloudDisableIntegrationsInput{}
@@ -934,7 +938,103 @@ func expandAwsGovCloudIntegrationsInput(d *schema.ResourceData) (cloud.CloudInte
 	} else if o, n := d.GetChange("alb"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAwsGovCloudIntegration.Alb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
+	if v, ok := d.GetOk("api_gateway"); ok {
+		awsGovCloudIntegration.APIgateway = expandAwsGovCloudIntegrationsAPIGatewayInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("api_gateway"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.APIgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("auto_scaling"); ok {
+		awsGovCloudIntegration.Autoscaling = expandAwsGovCloudIntegrationsAutoScalingInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("auto_scaling"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Autoscaling = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("aws_direct_connect"); ok {
+		awsGovCloudIntegration.AwsDirectconnect = expandAwsGovCloudIntegrationsAwsDirectConnectInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("aws_direct_connect"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.AwsDirectconnect = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("aws_states"); ok {
+		awsGovCloudIntegration.AwsStates = expandAwsGovCloudIntegrationsAwsStatesInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("aws_states"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.AwsStates = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("cloudtrail"); ok {
+		awsGovCloudIntegration.Cloudtrail = expandAwsGovCloudIntegrationsCloudtrailInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("cloudtrail"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Cloudtrail = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("dynamo_db"); ok {
+		awsGovCloudIntegration.Dynamodb = expandAwsGovCloudIntegrationsDynamodbInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("dynamo_db"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Dynamodb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("ebs"); ok {
+		awsGovCloudIntegration.Ebs = expandAwsGovCloudIntegrationsEbsInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("ebs"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Ebs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("ec2"); ok {
+		awsGovCloudIntegration.Ec2 = expandAwsGovCloudIntegrationsEc2Input(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("ec2"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Ec2 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("elastic_search"); ok {
+		awsGovCloudIntegration.Elasticsearch = expandAwsGovCloudIntegrationsElasticsearchInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("elastic_search"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Elasticsearch = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("elb"); ok {
+		awsGovCloudIntegration.Elb = expandAwsGovCloudIntegrationsElbInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("elb"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Elb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("emr"); ok {
+		awsGovCloudIntegration.Emr = expandAwsGovCloudIntegrationsEmrInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("emr"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Emr = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("iam"); ok {
+		awsGovCloudIntegration.Iam = expandAwsGovCloudIntegrationsIamInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("iam"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Iam = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("lambda"); ok {
+		awsGovCloudIntegration.Lambda = expandAwsGovCloudIntegrationsLambdaInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("lambda"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Lambda = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("rds"); ok {
+		awsGovCloudIntegration.Rds = expandAwsGovCloudIntegrationsRdsInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("rds"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Rds = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("red_shift"); ok {
+		awsGovCloudIntegration.Redshift = expandAwsGovCloudIntegrationsRedshiftInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("red_shift"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Redshift = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("route53"); ok {
+		awsGovCloudIntegration.Route53 = expandAwsGovCloudIntegrationsRoute53Input(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("route53"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Route53 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("s3"); ok {
+		awsGovCloudIntegration.S3 = expandAwsGovCloudIntegrationsS3Input(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("s3"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.S3 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("sns"); ok {
+		awsGovCloudIntegration.Sns = expandAwsGovCloudIntegrationsSnsInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("sns"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Sns = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if v, ok := d.GetOk("sqs"); ok {
+		awsGovCloudIntegration.Sqs = expandAwsGovCloudIntegrationsSqsInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("sqs"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsGovCloudIntegration.Sqs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
 
+	//
 	configureInput := cloud.CloudIntegrationsInput{
 		AwsGovcloud: awsGovCloudIntegration,
 	}
@@ -948,27 +1048,521 @@ func expandAwsGovCloudIntegrationsInput(d *schema.ResourceData) (cloud.CloudInte
 
 // Expanding the alb
 
-func expandAwsGovCloudIntegrationsAlbInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsGovCloudAlbIntegrationInput {
-	expanded := make([]cloud.CloudAwsGovCloudAlbIntegrationInput, len(b))
+func expandAwsGovCloudIntegrationsAlbInput(b []interface{}, linkedAccountID int) []cloud.CloudAlbIntegrationInput {
+	expanded := make([]cloud.CloudAlbIntegrationInput, len(b))
 
-	for i, awsGovCloudAlb := range b {
-		var awsGovCloudAlbInput cloud.CloudAwsGovCloudAlbIntegrationInput
+	for i, alb := range b {
+		var albInput cloud.CloudAlbIntegrationInput
 
-		if awsGovCloudAlb == nil {
-			awsGovCloudAlbInput.LinkedAccountId = linkedAccountID
-			expanded[i] = awsGovCloudAlbInput
+		if alb == nil {
+			albInput.LinkedAccountId = linkedAccountID
+			expanded[i] = albInput
 			return expanded
 		}
 
-		in := awsGovCloudAlbInput.(map[string]interface{})
+		in := alb.(map[string]interface{})
 
-		awsGovCloudAlbInput.LinkedAccountId = linkedAccountID
+		albInput.LinkedAccountId = linkedAccountID
 
 		if m, ok := in["metrics_polling_interval"]; ok {
-			awsGovCloudAlbInput.MetricsPollingInterval = m.(int)
+			albInput.MetricsPollingInterval = m.(int)
 		}
 
-		expanded[i] = awsGovCloudAlbInput
+		expanded[i] = albInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsAPIGatewayInput(b []interface{}, linkedAccountID int) []cloud.CloudAPIgatewayIntegrationInput {
+	expanded := make([]cloud.CloudAPIgatewayIntegrationInput, len(b))
+
+	for i, apiGateway := range b {
+		var apiGatewayInput cloud.CloudAPIgatewayIntegrationInput
+
+		if apiGateway == nil {
+			apiGatewayInput.LinkedAccountId = linkedAccountID
+			expanded[i] = apiGatewayInput
+			return expanded
+		}
+
+		in := apiGateway.(map[string]interface{})
+
+		apiGatewayInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			apiGatewayInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = apiGatewayInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsAutoScalingInput(b []interface{}, linkedAccountID int) []cloud.CloudAutoscalingIntegrationInput {
+	expanded := make([]cloud.CloudAutoscalingIntegrationInput, len(b))
+
+	for i, autoScaling := range b {
+		var autoScalingInput cloud.CloudAutoscalingIntegrationInput
+
+		if autoScaling == nil {
+			autoScalingInput.LinkedAccountId = linkedAccountID
+			expanded[i] = autoScalingInput
+			return expanded
+		}
+
+		in := autoScaling.(map[string]interface{})
+
+		autoScalingInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			autoScalingInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = autoScalingInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsAwsDirectConnectInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsDirectconnectIntegrationInput {
+	expanded := make([]cloud.CloudAwsDirectconnectIntegrationInput, len(b))
+
+	for i, awsDirectConnect := range b {
+		var awsDirectConnectInput cloud.CloudAwsDirectconnectIntegrationInput
+
+		if awsDirectConnect == nil {
+			awsDirectConnectInput.LinkedAccountId = linkedAccountID
+			expanded[i] = awsDirectConnectInput
+			return expanded
+		}
+
+		in := awsDirectConnect.(map[string]interface{})
+
+		awsDirectConnectInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			awsDirectConnectInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = awsDirectConnectInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsAwsStatesInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsStatesIntegrationInput {
+	expanded := make([]cloud.CloudAwsStatesIntegrationInput, len(b))
+
+	for i, awsStates := range b {
+		var awsStatesInput cloud.CloudAwsStatesIntegrationInput
+
+		if awsStates == nil {
+			awsStatesInput.LinkedAccountId = linkedAccountID
+			expanded[i] = awsStatesInput
+			return expanded
+		}
+
+		in := awsStates.(map[string]interface{})
+
+		awsStatesInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			awsStatesInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = awsStatesInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsCloudtrailInput(b []interface{}, linkedAccountID int) []cloud.CloudCloudtrailIntegrationInput {
+	expanded := make([]cloud.CloudCloudtrailIntegrationInput, len(b))
+
+	for i, cloudtrail := range b {
+		var cloudtrailInput cloud.CloudCloudtrailIntegrationInput
+
+		if cloudtrail == nil {
+			cloudtrailInput.LinkedAccountId = linkedAccountID
+			expanded[i] = cloudtrailInput
+			return expanded
+		}
+
+		in := cloudtrail.(map[string]interface{})
+
+		cloudtrailInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			cloudtrailInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = cloudtrailInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsDynamodbInput(b []interface{}, linkedAccountID int) []cloud.CloudDynamodbIntegrationInput {
+	expanded := make([]cloud.CloudDynamodbIntegrationInput, len(b))
+
+	for i, dynamodb := range b {
+		var dynamodbInput cloud.CloudDynamodbIntegrationInput
+
+		if dynamodb == nil {
+			dynamodbInput.LinkedAccountId = linkedAccountID
+			expanded[i] = dynamodbInput
+			return expanded
+		}
+
+		in := dynamodb.(map[string]interface{})
+
+		dynamodbInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			dynamodbInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = dynamodbInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsEbsInput(b []interface{}, linkedAccountID int) []cloud.CloudEbsIntegrationInput {
+	expanded := make([]cloud.CloudEbsIntegrationInput, len(b))
+
+	for i, ebs := range b {
+		var ebsInput cloud.CloudEbsIntegrationInput
+
+		if ebs == nil {
+			ebsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = ebsInput
+			return expanded
+		}
+
+		in := ebs.(map[string]interface{})
+
+		ebsInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			ebsInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = ebsInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsEc2Input(b []interface{}, linkedAccountID int) []cloud.CloudEc2IntegrationInput {
+	expanded := make([]cloud.CloudEc2IntegrationInput, len(b))
+
+	for i, ec2 := range b {
+		var ec2Input cloud.CloudEc2IntegrationInput
+
+		if ec2 == nil {
+			ec2Input.LinkedAccountId = linkedAccountID
+			expanded[i] = ec2Input
+			return expanded
+		}
+
+		in := ec2.(map[string]interface{})
+
+		ec2Input.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			ec2Input.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = ec2Input
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsElasticsearchInput(b []interface{}, linkedAccountID int) []cloud.CloudElasticsearchIntegrationInput {
+	expanded := make([]cloud.CloudElasticsearchIntegrationInput, len(b))
+
+	for i, elasticsearch := range b {
+		var elasticsearchInput cloud.CloudElasticsearchIntegrationInput
+
+		if elasticsearch == nil {
+			elasticsearchInput.LinkedAccountId = linkedAccountID
+			expanded[i] = elasticsearchInput
+			return expanded
+		}
+
+		in := elasticsearch.(map[string]interface{})
+
+		elasticsearchInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			elasticsearchInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = elasticsearchInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsElbInput(b []interface{}, linkedAccountID int) []cloud.CloudElbIntegrationInput {
+	expanded := make([]cloud.CloudElbIntegrationInput, len(b))
+
+	for i, elb := range b {
+		var elbInput cloud.CloudElbIntegrationInput
+
+		if elb == nil {
+			elbInput.LinkedAccountId = linkedAccountID
+			expanded[i] = elbInput
+			return expanded
+		}
+
+		in := elb.(map[string]interface{})
+
+		elbInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			elbInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = elbInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsEmrInput(b []interface{}, linkedAccountID int) []cloud.CloudEmrIntegrationInput {
+	expanded := make([]cloud.CloudEmrIntegrationInput, len(b))
+
+	for i, emr := range b {
+		var emrInput cloud.CloudEmrIntegrationInput
+
+		if emr == nil {
+			emrInput.LinkedAccountId = linkedAccountID
+			expanded[i] = emrInput
+			return expanded
+		}
+
+		in := emr.(map[string]interface{})
+
+		emrInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			emrInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = emrInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsIamInput(b []interface{}, linkedAccountID int) []cloud.CloudIamIntegrationInput {
+	expanded := make([]cloud.CloudIamIntegrationInput, len(b))
+
+	for i, iam := range b {
+		var iamInput cloud.CloudIamIntegrationInput
+
+		if iam == nil {
+			iamInput.LinkedAccountId = linkedAccountID
+			expanded[i] = iamInput
+			return expanded
+		}
+
+		in := iam.(map[string]interface{})
+
+		iamInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			iamInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = iamInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsLambdaInput(b []interface{}, linkedAccountID int) []cloud.CloudLambdaIntegrationInput {
+	expanded := make([]cloud.CloudLambdaIntegrationInput, len(b))
+
+	for i, lambda := range b {
+		var lambdaInput cloud.CloudLambdaIntegrationInput
+
+		if lambda == nil {
+			lambdaInput.LinkedAccountId = linkedAccountID
+			expanded[i] = lambdaInput
+			return expanded
+		}
+
+		in := lambda.(map[string]interface{})
+
+		lambdaInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			lambdaInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = lambdaInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsRdsInput(b []interface{}, linkedAccountID int) []cloud.CloudRdsIntegrationInput {
+	expanded := make([]cloud.CloudRdsIntegrationInput, len(b))
+
+	for i, rds := range b {
+		var rdsInput cloud.CloudRdsIntegrationInput
+
+		if rds == nil {
+			rdsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = rdsInput
+			return expanded
+		}
+
+		in := rds.(map[string]interface{})
+
+		rdsInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			rdsInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = rdsInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsRedshiftInput(b []interface{}, linkedAccountID int) []cloud.CloudRedshiftIntegrationInput {
+	expanded := make([]cloud.CloudRedshiftIntegrationInput, len(b))
+
+	for i, redshift := range b {
+		var redshiftInput cloud.CloudRedshiftIntegrationInput
+
+		if redshift == nil {
+			redshiftInput.LinkedAccountId = linkedAccountID
+			expanded[i] = redshiftInput
+			return expanded
+		}
+
+		in := redshift.(map[string]interface{})
+
+		redshiftInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			redshiftInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = redshiftInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsRoute53Input(b []interface{}, linkedAccountID int) []cloud.CloudRoute53IntegrationInput {
+	expanded := make([]cloud.CloudRoute53IntegrationInput, len(b))
+
+	for i, route53 := range b {
+		var route53Input cloud.CloudRoute53IntegrationInput
+
+		if route53 == nil {
+			route53Input.LinkedAccountId = linkedAccountID
+			expanded[i] = route53Input
+			return expanded
+		}
+
+		in := route53.(map[string]interface{})
+
+		route53Input.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			route53Input.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = route53Input
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsS3Input(b []interface{}, linkedAccountID int) []cloud.CloudS3IntegrationInput {
+	expanded := make([]cloud.CloudS3IntegrationInput, len(b))
+
+	for i, s3 := range b {
+		var s3Input cloud.CloudS3IntegrationInput
+
+		if s3 == nil {
+			s3Input.LinkedAccountId = linkedAccountID
+			expanded[i] = s3Input
+			return expanded
+		}
+
+		in := s3.(map[string]interface{})
+
+		s3Input.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			s3Input.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = s3Input
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsSnsInput(b []interface{}, linkedAccountID int) []cloud.CloudSnsIntegrationInput {
+	expanded := make([]cloud.CloudSnsIntegrationInput, len(b))
+
+	for i, sns := range b {
+		var snsInput cloud.CloudSnsIntegrationInput
+
+		if sns == nil {
+			snsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = snsInput
+			return expanded
+		}
+
+		in := sns.(map[string]interface{})
+
+		snsInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			snsInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = snsInput
+	}
+
+	return expanded
+}
+
+func expandAwsGovCloudIntegrationsSqsInput(b []interface{}, linkedAccountID int) []cloud.CloudSqsIntegrationInput {
+	expanded := make([]cloud.CloudSqsIntegrationInput, len(b))
+
+	for i, sqs := range b {
+		var sqsInput cloud.CloudSqsIntegrationInput
+
+		if sqs == nil {
+			sqsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = sqsInput
+			return expanded
+		}
+
+		in := sqs.(map[string]interface{})
+
+		sqsInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			sqsInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = sqsInput
 	}
 
 	return expanded
@@ -1005,12 +1599,277 @@ func flattenAwsGovCloudLinkedAccount(d *schema.ResourceData, result *cloud.Cloud
 
 	for _, i := range result.Integrations {
 		switch t := i.(type) {
-		case *cloud.CloudAwsGovCloudAlbIntegration:
+		case *cloud.CloudAlbIntegration:
 			_ = d.Set("alb", flattenAwsGovCloudAlbIntegration(t))
+		case *cloud.CloudAPIgatewayIntegration:
+			_ = d.Set("api_gateway", flattenAwsGovCloudAPIGatewayIntegration(t))
+		case *cloud.CloudAutoscalingIntegration:
+			_ = d.Set("auto_scaling", flattenAwsGovCloudAutoScalingIntegration(t))
+		case *cloud.CloudAwsDirectconnectIntegration:
+			_ = d.Set("aws_direct_connect", flattenAwsGovCloudDirectconnectIntegration(t))
+		case *cloud.CloudAwsStatesIntegration:
+			_ = d.Set("aws_states", flattenAwsGovCloudAwsStatesIntegration(t))
+		case *cloud.CloudCloudtrailIntegration:
+			_ = d.Set("cloudtrail", flattenAwsGovCloudCloudtrailIntegration(t))
+		case *cloud.CloudDynamodbIntegration:
+			_ = d.Set("dynamo_db", flattenAwsGovCloudDynamodbIntegration(t))
+		case *cloud.CloudEbsIntegration:
+			_ = d.Set("ebs", flattenAwsGovCloudEbsIntegration(t))
+		case *cloud.CloudEc2Integration:
+			_ = d.Set("ec2", flattenAwsGovCloudEc2Integration(t))
+		case *cloud.CloudElasticsearchIntegration:
+			_ = d.Set("elastic_search", flattenAwsGovCloudElasticsearchIntegration(t))
+		case *cloud.CloudElbIntegration:
+			_ = d.Set("elb", flattenAwsGovCloudElbIntegration(t))
+		case *cloud.CloudEmrIntegration:
+			_ = d.Set("emr", flattenAwsGovCloudEmrIntegration(t))
+		case *cloud.CloudIamIntegration:
+			_ = d.Set("iam", flattenAwsGovCloudIamIntegration(t))
+		case *cloud.CloudLambdaIntegration:
+			_ = d.Set("lambda", flattenAwsGovCloudLambdaIntegration(t))
+		case *cloud.CloudRdsIntegration:
+			_ = d.Set("rds", flattenAwsGovCloudRdsIntegration(t))
+		case *cloud.CloudRedshiftIntegration:
+			_ = d.Set("red_shift", flattenAwsGovCloudRedshiftIntegration(t))
+		case *cloud.CloudRoute53Integration:
+			_ = d.Set("route53", flattenAwsGovCloudRoute53Integration(t))
+		case *cloud.CloudS3Integration:
+			_ = d.Set("s3", flattenAwsGovCloudS3Integration(t))
+		case *cloud.CloudSnsIntegration:
+			_ = d.Set("sns", flattenAwsGovCloudSnsIntegration(t))
+		case *cloud.CloudSqsIntegration:
+			_ = d.Set("sqs", flattenAwsGovCloudSqsIntegration(t))
+
 		}
 	}
 }
-func flattenAwsGovCloudAlbIntegration(in *cloud.CloudawsGovCloudAlbIntegration) []interface{} {
+func flattenAwsGovCloudAlbIntegration(in *cloud.CloudAlbIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudAPIGatewayIntegration(in *cloud.CloudAPIgatewayIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudAutoScalingIntegration(in *cloud.CloudAutoscalingIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudDirectconnectIntegration(in *cloud.CloudAwsDirectconnectIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudAwsStatesIntegration(in *cloud.CloudAwsStatesIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudCloudtrailIntegration(in *cloud.CloudCloudtrailIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudDynamodbIntegration(in *cloud.CloudDynamodbIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudEbsIntegration(in *cloud.CloudEbsIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudEc2Integration(in *cloud.CloudEc2Integration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudElasticsearchIntegration(in *cloud.CloudElasticsearchIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudElbIntegration(in *cloud.CloudElbIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudEmrIntegration(in *cloud.CloudEmrIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudIamIntegration(in *cloud.CloudIamIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudLambdaIntegration(in *cloud.CloudLambdaIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudRdsIntegration(in *cloud.CloudRdsIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudRedshiftIntegration(in *cloud.CloudRedshiftIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudRoute53Integration(in *cloud.CloudRoute53Integration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenAwsGovCloudS3Integration(in *cloud.CloudS3Integration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+func flattenAwsGovCloudSnsIntegration(in *cloud.CloudSnsIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+func flattenAwsGovCloudSqsIntegration(in *cloud.CloudSqsIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
 	out := make(map[string]interface{})
@@ -1095,17 +1954,71 @@ func resourceNewRelicAwsGovCloudIntegrationsDelete(ctx context.Context, d *schem
 
 //nolint: gocyclo
 func expandAwsGovCloudDisableInputs(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
-	AwsGovCloudDisableInputs := cloud.CloudAzureDisableIntegrationsInput{}
+	awsGovCloudDisableInputs := cloud.CloudAwsGovcloudDisableIntegrationsInput{}
 	var linkedAccountID int
 
 	if l, ok := d.GetOk("linked_account_id"); ok {
 		linkedAccountID = l.(int)
 	}
 	if _, ok := d.GetOk("alb"); ok {
-		AwsGovCloudDisableInputs.Alb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+		awsGovCloudDisableInputs.Alb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("api_gateway"); ok {
+		awsGovCloudDisableInputs.APIgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("auto_scaling"); ok {
+		awsGovCloudDisableInputs.Autoscaling = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("aws_direct_connect"); ok {
+		awsGovCloudDisableInputs.AwsDirectconnect = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("aws_states"); ok {
+		awsGovCloudDisableInputs.AwsStates = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("cloudtrail"); ok {
+		awsGovCloudDisableInputs.Cloudtrail = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("dynamo_db"); ok {
+		awsGovCloudDisableInputs.Dynamodb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("ebs"); ok {
+		awsGovCloudDisableInputs.Ebs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("ec2"); ok {
+		awsGovCloudDisableInputs.Ec2 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("elastic_search"); ok {
+		awsGovCloudDisableInputs.Elasticsearch = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("elb"); ok {
+		awsGovCloudDisableInputs.Elb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("emr"); ok {
+		awsGovCloudDisableInputs.Emr = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("iam"); ok {
+		awsGovCloudDisableInputs.Iam = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("lambda"); ok {
+		awsGovCloudDisableInputs.Lambda = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("rds"); ok {
+		awsGovCloudDisableInputs.Rds = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("red_shift"); ok {
+		awsGovCloudDisableInputs.Redshift = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("route53"); ok {
+		awsGovCloudDisableInputs.Route53 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("sns"); ok {
+		awsGovCloudDisableInputs.Sns = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("sqs"); ok {
+		awsGovCloudDisableInputs.Sqs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 	deleteInput := cloud.CloudDisableIntegrationsInput{
-		AwsGovcloud: AwsGovCloudDisableInputs,
+		AwsGovcloud: awsGovCloudDisableInputs,
 	}
 	return deleteInput
 }
