@@ -2,11 +2,10 @@ package newrelic
 
 import (
 	"context"
-	"strconv"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
+	"strconv"
 )
 
 func resourceNewRelicAwsGovCloudIntegrations() *schema.Resource {
@@ -1065,8 +1064,36 @@ func expandAwsGovCloudIntegrationsAlbInput(b []interface{}, linkedAccountID int)
 
 		albInput.LinkedAccountId = linkedAccountID
 
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			albInput.AwsRegions = regions
+		}
+
 		if m, ok := in["metrics_polling_interval"]; ok {
 			albInput.MetricsPollingInterval = m.(int)
+		}
+
+		if f, ok := in["fetch_extended_inventory"]; ok {
+			albInput.FetchExtendedInventory = f.(bool)
+		}
+		if ft, ok := in["fetch_tags"]; ok {
+			albInput.FetchTags = ft.(bool)
+		}
+		if lb, ok := in["load_balancer_prefixes"]; ok {
+			albInput.LoadBalancerPrefixes = lb.(string)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			albInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			albInput.TagValue = tv.(string)
 		}
 
 		expanded[i] = albInput
@@ -1091,8 +1118,30 @@ func expandAwsGovCloudIntegrationsAPIGatewayInput(b []interface{}, linkedAccount
 
 		apiGatewayInput.LinkedAccountId = linkedAccountID
 
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			apiGatewayInput.AwsRegions = regions
+		}
+
 		if m, ok := in["metrics_polling_interval"]; ok {
 			apiGatewayInput.MetricsPollingInterval = m.(int)
+		}
+
+		if ft, ok := in["stage_prefixes"]; ok {
+			apiGatewayInput.StagePrefixes = ft.(int)
+
+		}
+		if tk, ok := in["tag_key"]; ok {
+			apiGatewayInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			apiGatewayInput.TagValue = tv.(string)
 		}
 
 		expanded[i] = apiGatewayInput
@@ -1120,6 +1169,15 @@ func expandAwsGovCloudIntegrationsAutoScalingInput(b []interface{}, linkedAccoun
 		if m, ok := in["metrics_polling_interval"]; ok {
 			autoScalingInput.MetricsPollingInterval = m.(int)
 		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			autoScalingInput.AwsRegions = regions
+		}
 
 		expanded[i] = autoScalingInput
 	}
@@ -1145,6 +1203,15 @@ func expandAwsGovCloudIntegrationsAwsDirectConnectInput(b []interface{}, linkedA
 
 		if m, ok := in["metrics_polling_interval"]; ok {
 			awsDirectConnectInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			awsDirectConnectInput.AwsRegions = regions
 		}
 
 		expanded[i] = awsDirectConnectInput
@@ -1172,6 +1239,15 @@ func expandAwsGovCloudIntegrationsAwsStatesInput(b []interface{}, linkedAccountI
 		if m, ok := in["metrics_polling_interval"]; ok {
 			awsStatesInput.MetricsPollingInterval = m.(int)
 		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			awsStatesInput.AwsRegions = regions
+		}
 
 		expanded[i] = awsStatesInput
 	}
@@ -1197,6 +1273,15 @@ func expandAwsGovCloudIntegrationsCloudtrailInput(b []interface{}, linkedAccount
 
 		if m, ok := in["metrics_polling_interval"]; ok {
 			cloudtrailInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			cloudtrailInput.AwsRegions = regions
 		}
 
 		expanded[i] = cloudtrailInput
@@ -1224,6 +1309,29 @@ func expandAwsGovCloudIntegrationsDynamodbInput(b []interface{}, linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
 			dynamodbInput.MetricsPollingInterval = m.(int)
 		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			dynamodbInput.AwsRegions = regions
+		}
+		if f, ok := in["fetch_extended_inventory"]; ok {
+			dynamodbInput.FetchExtendedInventory = f.(bool)
+		}
+		if ft, ok := in["fetch_tags"]; ok {
+			dynamodbInput.FetchTags = ft.(bool)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			dynamodbInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			dynamodbInput.TagValue = tv.(string)
+		}
 
 		expanded[i] = dynamodbInput
 	}
@@ -1249,6 +1357,26 @@ func expandAwsGovCloudIntegrationsEbsInput(b []interface{}, linkedAccountID int)
 
 		if m, ok := in["metrics_polling_interval"]; ok {
 			ebsInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			ebsInput.AwsRegions = regions
+		}
+		if f, ok := in["fetch_extended_inventory"]; ok {
+			ebsInput.FetchExtendedInventory = f.(bool)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			ebsInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			ebsInput.TagValue = tv.(string)
 		}
 
 		expanded[i] = ebsInput
@@ -1276,6 +1404,26 @@ func expandAwsGovCloudIntegrationsEc2Input(b []interface{}, linkedAccountID int)
 		if m, ok := in["metrics_polling_interval"]; ok {
 			ec2Input.MetricsPollingInterval = m.(int)
 		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			ec2Input.AwsRegions = regions
+		}
+		if f, ok := in["fetch_ip_addresses"]; ok {
+			ec2Input.FetchIpAddresses = f.(bool)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			ec2Input.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			ec2Input.TagValue = tv.(string)
+		}
 
 		expanded[i] = ec2Input
 	}
@@ -1302,7 +1450,26 @@ func expandAwsGovCloudIntegrationsElasticsearchInput(b []interface{}, linkedAcco
 		if m, ok := in["metrics_polling_interval"]; ok {
 			elasticsearchInput.MetricsPollingInterval = m.(int)
 		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
 
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			elasticsearchInput.AwsRegions = regions
+		}
+		if f, ok := in["fetch_nodes"]; ok {
+			elasticsearchInput.FetchNodes = f.(bool)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			elasticsearchInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			elasticsearchInput.TagValue = tv.(string)
+		}
 		expanded[i] = elasticsearchInput
 	}
 
@@ -1328,7 +1495,21 @@ func expandAwsGovCloudIntegrationsElbInput(b []interface{}, linkedAccountID int)
 		if m, ok := in["metrics_polling_interval"]; ok {
 			elbInput.MetricsPollingInterval = m.(int)
 		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
 
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			elbInput.AwsRegions = regions
+		}
+		if f, ok := in["fetch_extended_inventory"]; ok {
+			elbInput.FetchExtendedInventory = f.(bool)
+		}
+		if f, ok := in["fetch_tags"]; ok {
+			elbInput.FetchTags = f.(bool)
+		}
 		expanded[i] = elbInput
 	}
 
@@ -1354,7 +1535,26 @@ func expandAwsGovCloudIntegrationsEmrInput(b []interface{}, linkedAccountID int)
 		if m, ok := in["metrics_polling_interval"]; ok {
 			emrInput.MetricsPollingInterval = m.(int)
 		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
 
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			emrInput.AwsRegions = regions
+		}
+
+		if f, ok := in["fetch_tags"]; ok {
+			emrInput.FetchTags = f.(bool)
+		}
+		if tk, ok := in["tag_key"]; ok {
+			emrInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			emrInput.TagValue = tv.(string)
+		}
 		expanded[i] = emrInput
 	}
 
@@ -1380,7 +1580,14 @@ func expandAwsGovCloudIntegrationsIamInput(b []interface{}, linkedAccountID int)
 		if m, ok := in["metrics_polling_interval"]; ok {
 			iamInput.MetricsPollingInterval = m.(int)
 		}
+		if tk, ok := in["tag_key"]; ok {
+			iamInput.LinkedAccountId = linkedAccountID
+			iamInput.TagKey = tk.(string)
+		}
 
+		if tv, ok := in["tag_value"]; ok {
+			iamInput.TagValue = tv.(string)
+		}
 		expanded[i] = iamInput
 	}
 
@@ -1405,6 +1612,25 @@ func expandAwsGovCloudIntegrationsLambdaInput(b []interface{}, linkedAccountID i
 
 		if m, ok := in["metrics_polling_interval"]; ok {
 			lambdaInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			lambdaInput.AwsRegions = regions
+		}
+		if f, ok := in["fetch_tags"]; ok {
+			lambdaInput.FetchTags = f.(bool)
+		}
+		if tk, ok := in["tag_key"]; ok {
+			lambdaInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			lambdaInput.TagValue = tv.(string)
 		}
 
 		expanded[i] = lambdaInput
@@ -1432,7 +1658,25 @@ func expandAwsGovCloudIntegrationsRdsInput(b []interface{}, linkedAccountID int)
 		if m, ok := in["metrics_polling_interval"]; ok {
 			rdsInput.MetricsPollingInterval = m.(int)
 		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
 
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			rdsInput.AwsRegions = regions
+		}
+		if f, ok := in["fetch_tags"]; ok {
+			rdsInput.FetchTags = f.(bool)
+		}
+		if tk, ok := in["tag_key"]; ok {
+			rdsInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			rdsInput.TagValue = tv.(string)
+		}
 		expanded[i] = rdsInput
 	}
 
@@ -1458,7 +1702,22 @@ func expandAwsGovCloudIntegrationsRedshiftInput(b []interface{}, linkedAccountID
 		if m, ok := in["metrics_polling_interval"]; ok {
 			redshiftInput.MetricsPollingInterval = m.(int)
 		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
 
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			redshiftInput.AwsRegions = regions
+		}
+		if tk, ok := in["tag_key"]; ok {
+			redshiftInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			redshiftInput.TagValue = tv.(string)
+		}
 		expanded[i] = redshiftInput
 	}
 
@@ -1484,7 +1743,9 @@ func expandAwsGovCloudIntegrationsRoute53Input(b []interface{}, linkedAccountID 
 		if m, ok := in["metrics_polling_interval"]; ok {
 			route53Input.MetricsPollingInterval = m.(int)
 		}
-
+		if f, ok := in["fetch_extended_inventory"]; ok {
+			route53Input.FetchExtendedInventory = f.(bool)
+		}
 		expanded[i] = route53Input
 	}
 
@@ -1509,6 +1770,19 @@ func expandAwsGovCloudIntegrationsS3Input(b []interface{}, linkedAccountID int) 
 
 		if m, ok := in["metrics_polling_interval"]; ok {
 			s3Input.MetricsPollingInterval = m.(int)
+		}
+		if f, ok := in["fetch_extended_inventory"]; ok {
+			s3Input.FetchExtendedInventory = f.(bool)
+		}
+		if f, ok := in["fetch_tags"]; ok {
+			s3Input.FetchTags = f.(bool)
+		}
+		if tk, ok := in["tag_key"]; ok {
+			s3Input.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			s3Input.TagValue = tv.(string)
 		}
 
 		expanded[i] = s3Input
@@ -1536,7 +1810,18 @@ func expandAwsGovCloudIntegrationsSnsInput(b []interface{}, linkedAccountID int)
 		if m, ok := in["metrics_polling_interval"]; ok {
 			snsInput.MetricsPollingInterval = m.(int)
 		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
 
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			snsInput.AwsRegions = regions
+		}
+		if f, ok := in["fetch_extended_inventory"]; ok {
+			snsInput.FetchExtendedInventory = f.(bool)
+		}
 		expanded[i] = snsInput
 	}
 
@@ -1562,14 +1847,39 @@ func expandAwsGovCloudIntegrationsSqsInput(b []interface{}, linkedAccountID int)
 		if m, ok := in["metrics_polling_interval"]; ok {
 			sqsInput.MetricsPollingInterval = m.(int)
 		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
 
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			sqsInput.AwsRegions = regions
+		}
+		if f, ok := in["fetch_extended_inventory"]; ok {
+			sqsInput.FetchExtendedInventory = f.(bool)
+		}
+
+		if f, ok := in["fetch_tags"]; ok {
+			sqsInput.FetchTags = f.(bool)
+		}
+		if f, ok := in["queue_prefixes"]; ok {
+			sqsInput.QueuePrefixes = f.(string)
+		}
+		if tk, ok := in["tag_key"]; ok {
+			sqsInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			sqsInput.TagValue = tv.(string)
+		}
 		expanded[i] = sqsInput
 	}
 
 	return expanded
 }
 
-// till here
+// Read
 
 func resourceNewRelicAwsGovCloudIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
