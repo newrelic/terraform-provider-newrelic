@@ -265,7 +265,7 @@ func cloudAzureIntegrationAPIManagementElem() *schema.Resource {
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
-			Type: schema.TypeString,
+			Type: schema.TypeList,
 		},
 	}
 	return &schema.Resource{
@@ -282,7 +282,7 @@ func cloudAzureIntegrationAppGatewayElem() *schema.Resource {
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
-			Type: schema.TypeString,
+			Type: schema.TypeList,
 		},
 	}
 	return &schema.Resource{
@@ -298,7 +298,7 @@ func cloudAzureIntegrationAppServiceElem() *schema.Resource {
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
-			Type: schema.TypeString,
+			Type: schema.TypeList,
 		},
 	}
 	return &schema.Resource{
@@ -315,7 +315,7 @@ func cloudAzureIntegrationContainersElem() *schema.Resource {
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
-			Type: schema.TypeString,
+			Type: schema.TypeList,
 		},
 	}
 	return &schema.Resource{
@@ -332,7 +332,7 @@ func cloudAzureIntegrationCosmosDBElem() *schema.Resource {
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
-			Type: schema.TypeString,
+			Type: schema.TypeList,
 		},
 	}
 	return &schema.Resource{
@@ -350,7 +350,7 @@ func cloudAzureIntegrationCostManagementElem() *schema.Resource {
 		Description: "Specify if additional cost data per tag should be collected. This field is case sensitive.\n\n",
 		Optional:    true,
 		Elem: &schema.Schema{
-			Type: schema.TypeString,
+			Type: schema.TypeList,
 		},
 	}
 	return &schema.Resource{
