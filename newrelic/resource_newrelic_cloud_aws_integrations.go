@@ -2,8 +2,9 @@ package newrelic
 
 import (
 	"context"
-	"github.com/newrelic/newrelic-client-go/pkg/cloud"
 	"strconv"
+
+	"github.com/newrelic/newrelic-client-go/pkg/cloud"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
