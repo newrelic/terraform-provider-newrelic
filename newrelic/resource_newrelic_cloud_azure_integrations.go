@@ -261,11 +261,11 @@ func cloudAzureIntegrationSchemaBase() map[string]*schema.Schema {
 func cloudAzureIntegrationAPIManagementElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
-			Type: schema.TypeList,
+			Type: schema.TypeString,
 		},
 	}
 	return &schema.Resource{
@@ -278,11 +278,11 @@ func cloudAzureIntegrationAPIManagementElem() *schema.Resource {
 func cloudAzureIntegrationAppGatewayElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
-			Type: schema.TypeList,
+			Type: schema.TypeString,
 		},
 	}
 	return &schema.Resource{
@@ -294,11 +294,11 @@ func cloudAzureIntegrationAppGatewayElem() *schema.Resource {
 func cloudAzureIntegrationAppServiceElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
-			Type: schema.TypeList,
+			Type: schema.TypeString,
 		},
 	}
 	return &schema.Resource{
@@ -311,11 +311,11 @@ func cloudAzureIntegrationAppServiceElem() *schema.Resource {
 func cloudAzureIntegrationContainersElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
-			Type: schema.TypeList,
+			Type: schema.TypeString,
 		},
 	}
 	return &schema.Resource{
@@ -328,11 +328,11 @@ func cloudAzureIntegrationContainersElem() *schema.Resource {
 func cloudAzureIntegrationCosmosDBElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
-			Type: schema.TypeList,
+			Type: schema.TypeString,
 		},
 	}
 	return &schema.Resource{
@@ -346,11 +346,11 @@ func cloudAzureIntegrationCosmosDBElem() *schema.Resource {
 func cloudAzureIntegrationCostManagementElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["tag_keys"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify if additional cost data per tag should be collected. This field is case sensitive.\n\n",
 		Optional:    true,
 		Elem: &schema.Schema{
-			Type: schema.TypeList,
+			Type: schema.TypeString,
 		},
 	}
 	return &schema.Resource{
@@ -363,7 +363,7 @@ func cloudAzureIntegrationCostManagementElem() *schema.Resource {
 func cloudAzureIntegrationDataFactoryElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -381,7 +381,7 @@ func cloudAzureIntegrationDataFactoryElem() *schema.Resource {
 func cloudAzureIntegrationEventHubElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -398,7 +398,7 @@ func cloudAzureIntegrationEventHubElem() *schema.Resource {
 func cloudAzureIntegrationExpressRouteElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -415,7 +415,7 @@ func cloudAzureIntegrationExpressRouteElem() *schema.Resource {
 func cloudAzureIntegrationFirewallsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -432,7 +432,7 @@ func cloudAzureIntegrationFirewallsElem() *schema.Resource {
 func cloudAzureIntegrationFrontDoorElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -449,7 +449,7 @@ func cloudAzureIntegrationFrontDoorElem() *schema.Resource {
 func cloudAzureIntegrationFunctionsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -466,7 +466,7 @@ func cloudAzureIntegrationFunctionsElem() *schema.Resource {
 func cloudAzureIntegrationKeyVaultElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -483,7 +483,7 @@ func cloudAzureIntegrationKeyVaultElem() *schema.Resource {
 func cloudAzureIntegrationLoadBalancerElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -500,7 +500,7 @@ func cloudAzureIntegrationLoadBalancerElem() *schema.Resource {
 func cloudAzureIntegrationLogicAppsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -516,7 +516,7 @@ func cloudAzureIntegrationLogicAppsElem() *schema.Resource {
 func cloudAzureIntegrationMachineLearningElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -533,7 +533,7 @@ func cloudAzureIntegrationMachineLearningElem() *schema.Resource {
 func cloudAzureIntegrationMariadbElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -550,7 +550,7 @@ func cloudAzureIntegrationMariadbElem() *schema.Resource {
 func cloudAzureIntegrationMysqlElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -567,7 +567,7 @@ func cloudAzureIntegrationMysqlElem() *schema.Resource {
 func cloudAzureIntegrationPostgresqlElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -584,7 +584,7 @@ func cloudAzureIntegrationPostgresqlElem() *schema.Resource {
 func cloudAzureIntegrationPowerBiDedicatedElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -601,7 +601,7 @@ func cloudAzureIntegrationPowerBiDedicatedElem() *schema.Resource {
 func cloudAzureIntegrationRedisCacheElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -618,7 +618,7 @@ func cloudAzureIntegrationRedisCacheElem() *schema.Resource {
 func cloudAzureIntegrationServiceBusElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -635,7 +635,7 @@ func cloudAzureIntegrationServiceBusElem() *schema.Resource {
 func cloudAzureIntegrationServiceFabricElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -652,7 +652,7 @@ func cloudAzureIntegrationServiceFabricElem() *schema.Resource {
 func cloudAzureIntegrationSQLElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -669,7 +669,7 @@ func cloudAzureIntegrationSQLElem() *schema.Resource {
 func cloudAzureIntegrationSQLManagedElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -686,7 +686,7 @@ func cloudAzureIntegrationSQLManagedElem() *schema.Resource {
 func cloudAzureIntegrationStorageElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -703,7 +703,7 @@ func cloudAzureIntegrationStorageElem() *schema.Resource {
 func cloudAzureIntegrationVirtualMachineElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -720,7 +720,7 @@ func cloudAzureIntegrationVirtualMachineElem() *schema.Resource {
 func cloudAzureIntegrationVirtualNetworksElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -737,7 +737,7 @@ func cloudAzureIntegrationVirtualNetworksElem() *schema.Resource {
 func cloudAzureIntegrationVmsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -754,7 +754,7 @@ func cloudAzureIntegrationVmsElem() *schema.Resource {
 func cloudAzureIntegrationVPNGatewayElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
 		Elem: &schema.Schema{
@@ -1025,8 +1025,15 @@ func expandCloudAzureIntegrationAPIManagementInput(b []interface{}, linkedAccoun
 		if m, ok := in["metrics_polling_interval"]; ok {
 			azureAPIManagementInput.MetricsPollingInterval = m.(int)
 		}
+
 		if r, ok := in["resource_groups"]; ok {
-			azureAPIManagementInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureAPIManagementInput.ResourceGroups = groups
 		}
 		expanded[i] = azureAPIManagementInput
 	}
@@ -1056,7 +1063,13 @@ func expandCloudAzureIntegrationAppGatewayInput(b []interface{}, linkedAccountID
 			azureAppGatewayInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureAppGatewayInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureAppGatewayInput.ResourceGroups = groups
 		}
 		expanded[i] = azureAppGatewayInput
 	}
@@ -1086,7 +1099,13 @@ func expandCloudAzureIntegrationAppServiceInput(b []interface{}, linkedAccountID
 			azureAppServiceInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureAppServiceInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureAppServiceInput.ResourceGroups = groups
 		}
 		expanded[i] = azureAppServiceInput
 	}
@@ -1116,8 +1135,15 @@ func expandCloudAzureIntegrationContainersInput(b []interface{}, linkedAccountID
 			azureContainersInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureContainersInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureContainersInput.ResourceGroups = groups
 		}
+
 		expanded[i] = azureContainersInput
 	}
 
@@ -1146,7 +1172,13 @@ func expandCloudAzureIntegrationCosmosdbInput(b []interface{}, linkedAccountID i
 			azureCosmosdbInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureCosmosdbInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureCosmosdbInput.ResourceGroups = groups
 		}
 		expanded[i] = azureCosmosdbInput
 	}
@@ -1176,7 +1208,13 @@ func expandCloudAzureIntegrationCostManagementInput(b []interface{}, linkedAccou
 			azureCostManagementInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["tag_keys"]; ok {
-			azureCostManagementInput.TagKeys[0] = r.(string)
+			tagKeys := r.([]interface{})
+			var keys []string
+
+			for _, key := range tagKeys {
+				keys = append(keys, key.(string))
+			}
+			azureCostManagementInput.TagKeys = keys
 		}
 		expanded[i] = azureCostManagementInput
 	}
@@ -1206,7 +1244,13 @@ func expandCloudAzureIntegrationDataFactoryInput(b []interface{}, linkedAccountI
 			azureDataFactoryInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureDataFactoryInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureDataFactoryInput.ResourceGroups = groups
 		}
 		expanded[i] = azureDataFactoryInput
 	}
@@ -1236,7 +1280,13 @@ func expandCloudAzureIntegrationCloudEventHubInput(b []interface{}, linkedAccoun
 			azureEventHubInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureEventHubInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureEventHubInput.ResourceGroups = groups
 		}
 		expanded[i] = azureEventHubInput
 	}
@@ -1266,7 +1316,13 @@ func expandCloudAzureIntegrationExpressRouteInput(b []interface{}, linkedAccount
 			azureExpressRouteInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureExpressRouteInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureExpressRouteInput.ResourceGroups = groups
 		}
 		expanded[i] = azureExpressRouteInput
 	}
@@ -1296,7 +1352,13 @@ func expandCloudAzureIntegrationFirewallsInput(b []interface{}, linkedAccountID 
 			azureFirewallsInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureFirewallsInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureFirewallsInput.ResourceGroups = groups
 		}
 		expanded[i] = azureFirewallsInput
 	}
@@ -1326,7 +1388,13 @@ func expandCloudAzureIntegrationFrontDoorInput(b []interface{}, linkedAccountID 
 			azureFrontDoorInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureFrontDoorInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureFrontDoorInput.ResourceGroups = groups
 		}
 		expanded[i] = azureFrontDoorInput
 	}
@@ -1356,7 +1424,13 @@ func expandCloudAzureIntegrationFunctionsInput(b []interface{}, linkedAccountID 
 			azureFunctionsInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureFunctionsInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureFunctionsInput.ResourceGroups = groups
 		}
 		expanded[i] = azureFunctionsInput
 	}
@@ -1386,7 +1460,13 @@ func expandCloudAzureIntegrationKeyVaultInput(b []interface{}, linkedAccountID i
 			azureKeyVaultInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureKeyVaultInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureKeyVaultInput.ResourceGroups = groups
 		}
 		expanded[i] = azureKeyVaultInput
 	}
@@ -1416,7 +1496,13 @@ func expandCloudAzureIntegrationLoadBalancerInput(b []interface{}, linkedAccount
 			azureLoadBalancerInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureLoadBalancerInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureLoadBalancerInput.ResourceGroups = groups
 		}
 		expanded[i] = azureLoadBalancerInput
 	}
@@ -1446,7 +1532,13 @@ func expandCloudAzureIntegrationLogicAppsInput(b []interface{}, linkedAccountID 
 			azureLogicAppsInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureLogicAppsInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureLogicAppsInput.ResourceGroups = groups
 		}
 		expanded[i] = azureLogicAppsInput
 	}
@@ -1476,7 +1568,13 @@ func expandCloudAzureIntegrationMachineLearningInput(b []interface{}, linkedAcco
 			azureMachineLearningInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureMachineLearningInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureMachineLearningInput.ResourceGroups = groups
 		}
 		expanded[i] = azureMachineLearningInput
 	}
@@ -1506,7 +1604,13 @@ func expandCloudAzureIntegrationMariadbInput(b []interface{}, linkedAccountID in
 			azureMariadbInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureMariadbInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureMariadbInput.ResourceGroups = groups
 		}
 		expanded[i] = azureMariadbInput
 	}
@@ -1536,7 +1640,13 @@ func expandCloudAzureIntegrationMysqlInput(b []interface{}, linkedAccountID int)
 			azureMysqlInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureMysqlInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureMysqlInput.ResourceGroups = groups
 		}
 		expanded[i] = azureMysqlInput
 	}
@@ -1566,7 +1676,13 @@ func expandCloudAzureIntegrationPostgresqlInput(b []interface{}, linkedAccountID
 			azurePostgresqlInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azurePostgresqlInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azurePostgresqlInput.ResourceGroups = groups
 		}
 		expanded[i] = azurePostgresqlInput
 	}
@@ -1596,7 +1712,13 @@ func expandCloudAzureIntegrationPowerBiDedicatedInput(b []interface{}, linkedAcc
 			azurePowerBiDedicatedInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azurePowerBiDedicatedInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azurePowerBiDedicatedInput.ResourceGroups = groups
 		}
 		expanded[i] = azurePowerBiDedicatedInput
 	}
@@ -1626,7 +1748,13 @@ func expandCloudAzureIntegrationRedisCacheInput(b []interface{}, linkedAccountID
 			azureRedisCacheInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureRedisCacheInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureRedisCacheInput.ResourceGroups = groups
 		}
 		expanded[i] = azureRedisCacheInput
 	}
@@ -1656,7 +1784,13 @@ func expandCloudAzureIntegrationServiceBusInput(b []interface{}, linkedAccountID
 			azureServiceBusInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureServiceBusInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureServiceBusInput.ResourceGroups = groups
 		}
 		expanded[i] = azureServiceBusInput
 	}
@@ -1686,7 +1820,13 @@ func expandCloudAzureIntegrationServiceFabricInput(b []interface{}, linkedAccoun
 			azureServiceFabricInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureServiceFabricInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureServiceFabricInput.ResourceGroups = groups
 		}
 		expanded[i] = azureServiceFabricInput
 	}
@@ -1716,7 +1856,13 @@ func expandCloudAzureIntegrationSQLInput(b []interface{}, linkedAccountID int) [
 			azureSQLInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureSQLInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureSQLInput.ResourceGroups = groups
 		}
 		expanded[i] = azureSQLInput
 	}
@@ -1746,7 +1892,13 @@ func expandCloudAzureIntegrationSQLManagedInput(b []interface{}, linkedAccountID
 			azureSQLManagedInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureSQLManagedInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureSQLManagedInput.ResourceGroups = groups
 		}
 		expanded[i] = azureSQLManagedInput
 	}
@@ -1776,7 +1928,13 @@ func expandCloudAzureIntegrationStorageInput(b []interface{}, linkedAccountID in
 			azureStorageInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureStorageInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureStorageInput.ResourceGroups = groups
 		}
 		expanded[i] = azureStorageInput
 	}
@@ -1806,7 +1964,13 @@ func expandCloudAzureIntegrationVirtualMachineInput(b []interface{}, linkedAccou
 			azureVirtualMachineInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureVirtualMachineInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureVirtualMachineInput.ResourceGroups = groups
 		}
 		expanded[i] = azureVirtualMachineInput
 	}
@@ -1836,7 +2000,13 @@ func expandCloudAzureIntegrationVirtualNetworksInput(b []interface{}, linkedAcco
 			azureVirtualNetworksInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureVirtualNetworksInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureVirtualNetworksInput.ResourceGroups = groups
 		}
 		expanded[i] = azureVirtualNetworksInput
 	}
@@ -1866,7 +2036,13 @@ func expandCloudAzureIntegrationVmsInput(b []interface{}, linkedAccountID int) [
 			azureVmsInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureVmsInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureVmsInput.ResourceGroups = groups
 		}
 		expanded[i] = azureVmsInput
 	}
@@ -1896,7 +2072,13 @@ func expandCloudAzureIntegrationVpnGatewayInput(b []interface{}, linkedAccountID
 			azureVpnGatewayInput.MetricsPollingInterval = m.(int)
 		}
 		if r, ok := in["resource_groups"]; ok {
-			azureVpnGatewayInput.ResourceGroups[0] = r.(string)
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureVpnGatewayInput.ResourceGroups = groups
 		}
 		expanded[i] = azureVpnGatewayInput
 	}
