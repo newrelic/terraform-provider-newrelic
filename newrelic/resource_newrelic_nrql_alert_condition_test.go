@@ -25,14 +25,14 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "20", "120", "sTaTiC", "0", "", "60", "30"),
+				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "20", "120", "sTaTiC", "0", "", "60", "30", "259200"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "5", "180", "last_value", "null", "", "60", "30"),
+				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "5", "180", "last_value", "null", "", "60", "30", "259200"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
@@ -742,6 +742,7 @@ func testAccNewRelicNrqlAlertConditionConfigBasic(
 	conditionalAttrs string,
 	aggregationWindow string,
 	slideBy string,
+	violation_time_limit_seconds string,
 ) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
@@ -761,6 +762,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   close_violations_on_expiration = true
   open_violation_on_expiration   = true
   expiration_duration            = 120
+  violation_time_limit_seconds   = %[9]s
 
 	nrql {
     query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
@@ -785,7 +787,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 	%[6]s
 }
-`, name, evaluationOffset, duration, fillOption, fillValue, conditionalAttrs, aggregationWindow, slideBy)
+`, name, evaluationOffset, duration, fillOption, fillValue, conditionalAttrs, aggregationWindow, slideBy, violation_time_limit_seconds)
 }
 
 // Uses deprecated attributes for test case
