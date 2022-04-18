@@ -2,10 +2,11 @@ package newrelic
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/cloud"
-	"strconv"
 )
 
 func resourceNewRelicAwsGovCloudIntegrations() *schema.Resource {
@@ -1085,7 +1086,7 @@ func expandAwsGovCloudIntegrationsAlbInput(b []interface{}, linkedAccountID int)
 			albInput.FetchTags = ft.(bool)
 		}
 		if lb, ok := in["load_balancer_prefixes"]; ok {
-			albInput.LoadBalancerPrefixes = lb.(string)
+			albInput.LoadBalancerPrefixes = lb.([]string)
 		}
 
 		if tk, ok := in["tag_key"]; ok {
@@ -1133,7 +1134,7 @@ func expandAwsGovCloudIntegrationsAPIGatewayInput(b []interface{}, linkedAccount
 		}
 
 		if ft, ok := in["stage_prefixes"]; ok {
-			apiGatewayInput.StagePrefixes = ft.(int)
+			apiGatewayInput.StagePrefixes = ft.([]string)
 
 		}
 		if tk, ok := in["tag_key"]; ok {
@@ -1864,7 +1865,7 @@ func expandAwsGovCloudIntegrationsSqsInput(b []interface{}, linkedAccountID int)
 			sqsInput.FetchTags = f.(bool)
 		}
 		if f, ok := in["queue_prefixes"]; ok {
-			sqsInput.QueuePrefixes = f.(string)
+			sqsInput.QueuePrefixes = f.([]string)
 		}
 		if tk, ok := in["tag_key"]; ok {
 			sqsInput.TagKey = tk.(string)
