@@ -194,7 +194,7 @@ func AwsGovCloudIntegrationSchemaBase() map[string]*schema.Schema {
 func AwsGovCloudIntegrationAlbElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -205,21 +205,15 @@ func AwsGovCloudIntegrationAlbElem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	s["fetch_tags"] = &schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 
 	s["load_balancer_prefixes"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each name or prefix for the LBs that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -230,17 +224,11 @@ func AwsGovCloudIntegrationAlbElem() *schema.Resource {
 		Type:        schema.TypeString,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -252,7 +240,7 @@ func AwsGovCloudIntegrationAlbElem() *schema.Resource {
 func AwsGovCloudIntegrationAPIGatewayElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -260,28 +248,22 @@ func AwsGovCloudIntegrationAPIGatewayElem() *schema.Resource {
 		},
 	}
 	s["stage_prefixes"] = &schema.Schema{
-		Type:        schema.TypeBool,
+		Type:        schema.TypeList,
 		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
 		Elem: &schema.Schema{
-			Type: schema.TypeBool,
+			Type: schema.TypeString,
 		},
 	}
 	s["tag_key"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -293,7 +275,7 @@ func AwsGovCloudIntegrationAPIGatewayElem() *schema.Resource {
 func AwsGovCloudIntegrationAutoScalingElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -310,7 +292,7 @@ func AwsGovCloudIntegrationAutoScalingElem() *schema.Resource {
 func AwsGovCloudIntegrationAwsDirectConnectElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -327,7 +309,7 @@ func AwsGovCloudIntegrationAwsDirectConnectElem() *schema.Resource {
 func AwsGovCloudIntegrationAwsStatesElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -344,7 +326,7 @@ func AwsGovCloudIntegrationAwsStatesElem() *schema.Resource {
 func AwsGovCloudIntegrationCloudTrailElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -361,7 +343,7 @@ func AwsGovCloudIntegrationCloudTrailElem() *schema.Resource {
 func AwsGovCloudIntegrationDynamodbElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -373,33 +355,21 @@ func AwsGovCloudIntegrationDynamodbElem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	s["fetch_tags"] = &schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	s["tag_key"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -411,7 +381,7 @@ func AwsGovCloudIntegrationDynamodbElem() *schema.Resource {
 func AwsGovCloudIntegrationEbsElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -422,26 +392,16 @@ func AwsGovCloudIntegrationEbsElem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
-
 	s["tag_key"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -453,7 +413,7 @@ func AwsGovCloudIntegrationEbsElem() *schema.Resource {
 func AwsGovCloudIntegrationEc2Elem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -494,7 +454,7 @@ func AwsGovCloudIntegrationEc2Elem() *schema.Resource {
 func AwsGovCloudIntegrationElasticSearchElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -505,25 +465,16 @@ func AwsGovCloudIntegrationElasticSearchElem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "Specify if IP addresses of ec2 instance should be collected",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	s["tag_key"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -535,7 +486,7 @@ func AwsGovCloudIntegrationElasticSearchElem() *schema.Resource {
 func AwsGovCloudIntegrationElbElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -546,17 +497,11 @@ func AwsGovCloudIntegrationElbElem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	s["fetch_tags"] = &schema.Schema{
 		Type:        schema.TypeBool,
-		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.\n\n",
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -612,17 +557,11 @@ func AwsGovCloudIntegrationIamElem() *schema.Resource {
 		Type:        schema.TypeString,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -635,7 +574,7 @@ func AwsGovCloudIntegrationLambdaElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -654,17 +593,11 @@ func AwsGovCloudIntegrationLambdaElem() *schema.Resource {
 		Type:        schema.TypeString,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -676,7 +609,7 @@ func AwsGovCloudIntegrationLambdaElem() *schema.Resource {
 func AwsGovCloudIntegrationRdsElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -685,27 +618,18 @@ func AwsGovCloudIntegrationRdsElem() *schema.Resource {
 	}
 	s["fetch_tags"] = &schema.Schema{
 		Type:        schema.TypeBool,
-		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.\n\n",
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	s["tag_key"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -717,7 +641,7 @@ func AwsGovCloudIntegrationRdsElem() *schema.Resource {
 func AwsGovCloudIntegrationRedshiftElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -728,17 +652,11 @@ func AwsGovCloudIntegrationRedshiftElem() *schema.Resource {
 		Type:        schema.TypeString,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -753,9 +671,6 @@ func AwsGovCloudIntegrationRoute53Elem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -770,33 +685,21 @@ func AwsGovCloudIntegrationS3Elem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	s["fetch_tags"] = &schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	s["tag_key"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -808,7 +711,7 @@ func AwsGovCloudIntegrationS3Elem() *schema.Resource {
 func AwsGovCloudIntegrationSnsElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -819,9 +722,6 @@ func AwsGovCloudIntegrationSnsElem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
@@ -834,7 +734,7 @@ func AwsGovCloudIntegrationSqsElem() *schema.Resource {
 	s := AwsGovCloudIntegrationSchemaBase()
 
 	s["aws_regions"] = &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Description: "Specify each AWS region that includes the resources that you want to monitor",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -845,41 +745,29 @@ func AwsGovCloudIntegrationSqsElem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	s["fetch_tags"] = &schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeBool,
-		},
 	}
 	s["queue_prefixes"] = &schema.Schema{
-		Type:        schema.TypeBool,
+		Type:        schema.TypeList,
 		Description: "Specify each name or prefix for the Queues that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
 		Elem: &schema.Schema{
-			Type: schema.TypeBool,
+			Type: schema.TypeString,
 		},
 	}
 	s["tag_key"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
-		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
 		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	}
 	return &schema.Resource{
 		Schema: s,
