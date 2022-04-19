@@ -973,7 +973,7 @@ func expandAwsGovCloudIntegrationsAlbInput(b []interface{}, linkedAccountID int)
 			albInput.FetchTags = ft.(bool)
 		}
 		if lb, ok := in["load_balancer_prefixes"]; ok {
-			albInput.LoadBalancerPrefixes = lb.(string)
+			albInput.LoadBalancerPrefixes = lb.([]string)
 		}
 
 		if tk, ok := in["tag_key"]; ok {
@@ -1021,7 +1021,7 @@ func expandAwsGovCloudIntegrationsAPIGatewayInput(b []interface{}, linkedAccount
 		}
 
 		if ft, ok := in["stage_prefixes"]; ok {
-			apiGatewayInput.StagePrefixes = ft.(int)
+			apiGatewayInput.StagePrefixes = ft.([]int)
 
 		}
 		if tk, ok := in["tag_key"]; ok {
