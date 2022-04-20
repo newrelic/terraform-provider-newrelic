@@ -22,17 +22,141 @@ To pull data from AWSGovCloud, complete the [steps outlined here](https://docs.n
 ## Example Usage
 
 ```hcl
-resource "newrelic_cloud_aws_govcloud_link_account" "foo" {
-  account_id = "The New Relic account ID where you want to link the AWS GovCloud account"
-  access_key_id = "access-key-id of aws govcloud account"
-  aws_account_id = "aws govcloud account id"
+resource "newrelic_cloud_awsGovcloud_link_account" "account" {
+  access_key_id ="%[1]s"
+  aws_account_id="%[2]s"
   metric_collection_mode = "PULL"
-  name = "account name"
-  secret_access_key = "secret access key of the aws govcloud account"
+  name = "%[4]s"
+  secret_access_key = "%[3]s"
 }
-
-
-
+resource "newrelic_cloud_aws_govcloud_integrations" "foo" {
+  account_id=2520528
+  linked_account_id=newrelic_cloud_awsGovcloud_link_account.account.id
+  alb{
+    metrics_polling_interval=1000
+    aws_regions=["us-east-1"]
+    fetch_extended_inventory=true
+    fetch_tags=true
+    load_balancer_prefixes=[""]
+    tag_key=""
+    tag_value=""
+  }
+  api_gateway{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+    stage_prefixes=[""]
+    tag_key=""
+    tag_value=""
+  }
+  auto_scaling{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+  }
+  aws_direct_connect{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+  }
+  aws_states{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+  }
+  cloudtrail{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+  }
+  dynamo_db{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+    fetch_extended_inventory=true
+    fetch_tags=true
+    tag_key=""
+    tag_value=""
+  }
+  ebs{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+    fetch_extended_inventory=true
+    tag_key=""
+    tag_value=""
+  }
+  ec2{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+    fetch_ip_addresses=true
+    tag_key=""
+    tag_value=""
+  }
+  elastic_search{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+    fetch_nodes=true
+    tag_key=""
+    tag_value=""
+  }
+  elb{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+    fetch_extended_inventory=true
+    fetch_tags=true
+  }
+  emr{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+    fetch_tags=true
+    tag_key=""
+    tag_value=""
+  }
+  iam{
+    metrics_polling_interval=1000
+    tag_key=""
+    tag_value=""
+  }
+  lambda{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+    fetch_tags=true
+    tag_key=""
+    tag_value=""
+  }
+  rds{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+    fetch_tags=true
+    tag_key=""
+    tag_value=""
+  }
+  red_shift{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+    tag_key=""
+    tag_value=""
+  }
+  route53{
+    metrics_polling_interval=1000
+    fetch_extended_inventory=true
+  }
+  s3{
+    metrics_polling_interval=1000
+    fetch_extended_inventory=true
+    fetch_tags=true
+    tag_key=""
+    tag_value=""
+  }
+  sns{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+    fetch_extended_inventory=true
+  }
+  sqs{
+    metrics_polling_interval=1000
+    aws_regions=[""]
+    fetch_extended_inventory=true
+    fetch_tags=true
+    queue_prefixes=[""]
+    tag_key=""
+    tag_value=""
+  }
+}
 
 ```
 ## Argument Reference
