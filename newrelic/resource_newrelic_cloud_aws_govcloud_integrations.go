@@ -922,7 +922,6 @@ func expandAwsGovCloudIntegrationsInput(d *schema.ResourceData) (cloud.CloudInte
 		cloudDisableAwsGovCloudIntegration.Sqs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	//
 	configureInput := cloud.CloudIntegrationsInput{
 		AwsGovcloud: awsGovCloudIntegration,
 	}
@@ -934,7 +933,6 @@ func expandAwsGovCloudIntegrationsInput(d *schema.ResourceData) (cloud.CloudInte
 	return configureInput, disableInput
 }
 
-///pending
 // Expanding the alb
 
 func expandAwsGovCloudIntegrationsAlbInput(b []interface{}, linkedAccountID int) []cloud.CloudAlbIntegrationInput {
@@ -991,6 +989,7 @@ func expandAwsGovCloudIntegrationsAlbInput(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
+// Expanding the api gateway
 func expandAwsGovCloudIntegrationsAPIGatewayInput(b []interface{}, linkedAccountID int) []cloud.CloudAPIgatewayIntegrationInput {
 	expanded := make([]cloud.CloudAPIgatewayIntegrationInput, len(b))
 
@@ -1039,6 +1038,7 @@ func expandAwsGovCloudIntegrationsAPIGatewayInput(b []interface{}, linkedAccount
 	return expanded
 }
 
+// Expanding the auto scaling
 func expandAwsGovCloudIntegrationsAutoScalingInput(b []interface{}, linkedAccountID int) []cloud.CloudAutoscalingIntegrationInput {
 	expanded := make([]cloud.CloudAutoscalingIntegrationInput, len(b))
 
@@ -1074,6 +1074,7 @@ func expandAwsGovCloudIntegrationsAutoScalingInput(b []interface{}, linkedAccoun
 	return expanded
 }
 
+// Expanding the aws direct
 func expandAwsGovCloudIntegrationsAwsDirectConnectInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsDirectconnectIntegrationInput {
 	expanded := make([]cloud.CloudAwsDirectconnectIntegrationInput, len(b))
 
@@ -1109,6 +1110,7 @@ func expandAwsGovCloudIntegrationsAwsDirectConnectInput(b []interface{}, linkedA
 	return expanded
 }
 
+// Expanding the aws states
 func expandAwsGovCloudIntegrationsAwsStatesInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsStatesIntegrationInput {
 	expanded := make([]cloud.CloudAwsStatesIntegrationInput, len(b))
 
@@ -1144,6 +1146,7 @@ func expandAwsGovCloudIntegrationsAwsStatesInput(b []interface{}, linkedAccountI
 	return expanded
 }
 
+// Expanding the cloudtrail
 func expandAwsGovCloudIntegrationsCloudtrailInput(b []interface{}, linkedAccountID int) []cloud.CloudCloudtrailIntegrationInput {
 	expanded := make([]cloud.CloudCloudtrailIntegrationInput, len(b))
 
@@ -1179,6 +1182,7 @@ func expandAwsGovCloudIntegrationsCloudtrailInput(b []interface{}, linkedAccount
 	return expanded
 }
 
+// Expanding the dynamo DB
 func expandAwsGovCloudIntegrationsDynamodbInput(b []interface{}, linkedAccountID int) []cloud.CloudDynamodbIntegrationInput {
 	expanded := make([]cloud.CloudDynamodbIntegrationInput, len(b))
 
@@ -1228,6 +1232,7 @@ func expandAwsGovCloudIntegrationsDynamodbInput(b []interface{}, linkedAccountID
 	return expanded
 }
 
+// Expanding the ebs
 func expandAwsGovCloudIntegrationsEbsInput(b []interface{}, linkedAccountID int) []cloud.CloudEbsIntegrationInput {
 	expanded := make([]cloud.CloudEbsIntegrationInput, len(b))
 
@@ -1274,6 +1279,7 @@ func expandAwsGovCloudIntegrationsEbsInput(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
+// Expanding the ec2
 func expandAwsGovCloudIntegrationsEc2Input(b []interface{}, linkedAccountID int) []cloud.CloudEc2IntegrationInput {
 	expanded := make([]cloud.CloudEc2IntegrationInput, len(b))
 
@@ -1320,6 +1326,7 @@ func expandAwsGovCloudIntegrationsEc2Input(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
+// Expanding the elastic search
 func expandAwsGovCloudIntegrationsElasticsearchInput(b []interface{}, linkedAccountID int) []cloud.CloudElasticsearchIntegrationInput {
 	expanded := make([]cloud.CloudElasticsearchIntegrationInput, len(b))
 
@@ -1365,6 +1372,8 @@ func expandAwsGovCloudIntegrationsElasticsearchInput(b []interface{}, linkedAcco
 	return expanded
 }
 
+// Expanding the elb
+
 func expandAwsGovCloudIntegrationsElbInput(b []interface{}, linkedAccountID int) []cloud.CloudElbIntegrationInput {
 	expanded := make([]cloud.CloudElbIntegrationInput, len(b))
 
@@ -1405,6 +1414,7 @@ func expandAwsGovCloudIntegrationsElbInput(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
+// Expanding the emr
 func expandAwsGovCloudIntegrationsEmrInput(b []interface{}, linkedAccountID int) []cloud.CloudEmrIntegrationInput {
 	expanded := make([]cloud.CloudEmrIntegrationInput, len(b))
 
@@ -1450,6 +1460,7 @@ func expandAwsGovCloudIntegrationsEmrInput(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
+// Expanding the iam
 func expandAwsGovCloudIntegrationsIamInput(b []interface{}, linkedAccountID int) []cloud.CloudIamIntegrationInput {
 	expanded := make([]cloud.CloudIamIntegrationInput, len(b))
 
@@ -1483,6 +1494,7 @@ func expandAwsGovCloudIntegrationsIamInput(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
+// Expanding the lambda
 func expandAwsGovCloudIntegrationsLambdaInput(b []interface{}, linkedAccountID int) []cloud.CloudLambdaIntegrationInput {
 	expanded := make([]cloud.CloudLambdaIntegrationInput, len(b))
 
@@ -1528,6 +1540,7 @@ func expandAwsGovCloudIntegrationsLambdaInput(b []interface{}, linkedAccountID i
 	return expanded
 }
 
+// Expanding the rds
 func expandAwsGovCloudIntegrationsRdsInput(b []interface{}, linkedAccountID int) []cloud.CloudRdsIntegrationInput {
 	expanded := make([]cloud.CloudRdsIntegrationInput, len(b))
 
@@ -1572,6 +1585,7 @@ func expandAwsGovCloudIntegrationsRdsInput(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
+// Expanding the redshift
 func expandAwsGovCloudIntegrationsRedshiftInput(b []interface{}, linkedAccountID int) []cloud.CloudRedshiftIntegrationInput {
 	expanded := make([]cloud.CloudRedshiftIntegrationInput, len(b))
 
@@ -1613,6 +1627,7 @@ func expandAwsGovCloudIntegrationsRedshiftInput(b []interface{}, linkedAccountID
 	return expanded
 }
 
+// Expanding the route53
 func expandAwsGovCloudIntegrationsRoute53Input(b []interface{}, linkedAccountID int) []cloud.CloudRoute53IntegrationInput {
 	expanded := make([]cloud.CloudRoute53IntegrationInput, len(b))
 
@@ -1641,6 +1656,7 @@ func expandAwsGovCloudIntegrationsRoute53Input(b []interface{}, linkedAccountID 
 	return expanded
 }
 
+// Expanding the s3
 func expandAwsGovCloudIntegrationsS3Input(b []interface{}, linkedAccountID int) []cloud.CloudS3IntegrationInput {
 	expanded := make([]cloud.CloudS3IntegrationInput, len(b))
 
@@ -1680,6 +1696,7 @@ func expandAwsGovCloudIntegrationsS3Input(b []interface{}, linkedAccountID int) 
 	return expanded
 }
 
+// Expanding the sns
 func expandAwsGovCloudIntegrationsSnsInput(b []interface{}, linkedAccountID int) []cloud.CloudSnsIntegrationInput {
 	expanded := make([]cloud.CloudSnsIntegrationInput, len(b))
 
@@ -1717,6 +1734,7 @@ func expandAwsGovCloudIntegrationsSnsInput(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
+// Expanding the sqs
 func expandAwsGovCloudIntegrationsSqsInput(b []interface{}, linkedAccountID int) []cloud.CloudSqsIntegrationInput {
 	expanded := make([]cloud.CloudSqsIntegrationInput, len(b))
 
