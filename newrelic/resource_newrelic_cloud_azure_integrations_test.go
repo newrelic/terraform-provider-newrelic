@@ -148,7 +148,7 @@ resource "newrelic_cloud_azure_integrations" "foo" {
                  metrics_polling_interval = 1200
                  resource_groups = ["beyond"]
            }
-     app_service"{
+     app_service{
                  metrics_polling_interval = 1200
                  resource_groups = ["beyond"]
            }
