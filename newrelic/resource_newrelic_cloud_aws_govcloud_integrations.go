@@ -2246,7 +2246,7 @@ func resourceNewRelicAwsGovCloudIntegrationsUpdate(ctx context.Context, d *schem
 	return nil
 }
 
-/// Delete
+// Delete
 func resourceNewRelicAwsGovCloudIntegrationsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
