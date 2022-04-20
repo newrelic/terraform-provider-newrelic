@@ -16,7 +16,7 @@ import (
 
 func TestAccNewRelicCloudAzureIntegration_Basic(t *testing.T) {
 	randName := acctest.RandString(5)
-	resourceName := "newrelic_cloud_azure_link_account.foo"
+	resourceName := "newrelic_cloud_azure_integrations.bar"
 
 	testAzureApplicationID := os.Getenv("INTEGRATION_TESTING_AZURE_APPLICATION_ID")
 	if testAzureApplicationID == "" {
@@ -46,7 +46,7 @@ func TestAccNewRelicCloudAzureIntegration_Basic(t *testing.T) {
 
 			//Test: Create
 			{
-				Config: testAccNewRelicAzureIntegartionsConfig(testAzureApplicationID, testAzureClientSecretID, testAzureSubscriptionID, testAzureTenantID, randName),
+				Config: testAccNewRelicAzureIntegrationsConfig(testAzureApplicationID, testAzureClientSecretID, testAzureSubscriptionID, testAzureTenantID, randName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAzureIntegrationsExist(resourceName),
 				),
@@ -124,10 +124,9 @@ func testAccCheckNewRelicCloudAzureIntegrationsDestroy(s *terraform.State) error
 	return nil
 }
 
-func testAccNewRelicAzureIntegartionsConfig(applicationID string, clientSecretID string, subscriptionID string, tenantID string, name string) string {
+func testAccNewRelicAzureIntegrationsConfig(applicationID string, clientSecretID string, subscriptionID string, tenantID string, name string) string {
 	return fmt.Sprintf(`
-  resource "newrelic_cloud_azure_link_account" "foo"{
-  account_id = 2520528
+resource "newrelic_cloud_azure_link_account" "foo" {
   application_id = "%[1]s"
   client_secret = "%[2]s"
   subscription_id = "%[3]s"
@@ -135,331 +134,307 @@ func testAccNewRelicAzureIntegartionsConfig(applicationID string, clientSecretID
   name  = "%[5]s"
 }
  
-resource "newrelic_cloud_azure_integrations" "foo" {
-     linked_account_id = newrelic_cloud_azure_link_account.foo.id
-     account_id = 2520528
+resource "newrelic_cloud_azure_integrations" "bar" {
+  linked_account_id = newrelic_cloud_azure_link_account.foo.id
+  
+  api_management {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
 
-     api_management {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-           }
-    
-     app_gateway {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-           }
-     app_service"{
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-           }
-     containers {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-           }
-             
-     cosmos_db {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-           }
-     cost_management {
-                 metrics_polling_interval = 1200
-                 tag_keys = ["beyond"]
-           }
-    
-    data_factory {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    
-     event_hub {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    
-     express_route {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-     }
+  app_gateway {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
 
-     firewalls {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-     front_door {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-     functions {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    key_vault {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    load_balancer {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-     logic_apps {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-     machine_learning {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-     maria_db {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    
-     mysql {
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-     postgresql{
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    power_bi_dedicated{
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
+  app_service {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
 
-     redis_cache{
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    
-     service_bus{
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    
-    sql{
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    
-     storage{
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    
-     virtual_machine{
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    
-     virtual_networks{
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    
-     vms{
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
-    
-	vpn_gateway{
-                 metrics_polling_interval = 1200
-                 resource_groups = ["beyond"]
-    
-     }
+  containers {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  cosmos_db {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+  cost_management {
+    metrics_polling_interval = 3600
+  }
+
+  data_factory {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  event_hub {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  express_route {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  firewalls {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+
+  }
+  front_door {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+
+  }
+  functions {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+
+  }
+  key_vault {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+
+  }
+  load_balancer {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  logic_apps {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  machine_learning {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  maria_db {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  mysql {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+
+  }
+  postgresql {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+
+  }
+  power_bi_dedicated {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+
+  }
+
+  redis_cache {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+
+  }
+
+  service_bus {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  sql {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  storage {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  virtual_machine {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+
+  }
+
+  virtual_networks {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+
+  }
+
+  vms {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  vpn_gateway {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+}
   `, applicationID, clientSecretID, subscriptionID, tenantID, name)
-
 }
 
 func testAccNewRelicAzureIntegrationsConfigUpdated(applicationID string, clientSecretID string, subscriptionID string, tenantID string, name string) string {
 	return fmt.Sprintf(`
-  resource "newrelic_cloud_azure_link_account" "foo"{
-     account_id = 2520528
-     application_id = "%[1]s"
-     client_secret = "%[2]s"
-     subscription_id = "%[3]s"
-     tenant_id = "%[4]s"
-     name  = "%[5]s"
-  }
+resource "newrelic_cloud_azure_link_account" "foo" {
+  application_id  = "%[1]s"
+  client_secret   = "%[2]s"
+  subscription_id = "%[3]s"
+  tenant_id       = "%[4]s"
+  name            = "%[5]s"
+}
 
-  resource "newrelic_cloud_azure_integrations" "foo" {
-     linked_account_id = newrelic_cloud_azure_link_account.foo.id
-     account_id = 2520528
-     
+resource "newrelic_cloud_azure_integrations" "bar" {
+  linked_account_id = newrelic_cloud_azure_link_account.foo.id
+
   api_management {
-				 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-     }
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
 
   app_gateway {
-        		 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-     }
-  app_service{
-     			 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
+
+  app_service {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
   containers {
-    			 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
 
   cosmos_db {
-				 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
+
   cost_management {
-				 metrics_polling_interval = 1000
-				 tag_keys = ""
+    metrics_polling_interval = 3600
   }
 
   data_factory {
-     			 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
-  }
-
-  event_hub {
-     			 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
 
   express_route {
-			     metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
+
   event_hub {
-				 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
+
   firewalls {
-     			 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
+
   front_door {
-    			 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
-  }
-  functions {
-     			 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
-  }
-  key_vault {
-    			 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
-  }
-  load_balancer {
-   				 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
-  }
-  logic_apps {
-     			 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
   
- machine_learning {
-                 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
+  functions {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
-  maria_db {
-                 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
 
+  key_vault {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  load_balancer {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  logic_apps {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  machine_learning {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  maria_db {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
 
   mysql {
-                 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
-  }
-  postgresql{
-                 metrics_polling_interval = 1000
-                 resource_groups = ["beyond"]
-
-  }
-  power_bi_dedicated{
-				 metrics_polling_interval = 1000
-				 resource_groups = ["beyond"]
-
-  }
-  
-  redis_cache{
-				 metrics_polling_interval = 1000
-				 resource_groups = ["beyond"]
-
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
 
-  service_bus{
-				 metrics_polling_interval = 1000
-				 resource_groups = ["beyond"]
+  postgresql {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  power_bi_dedicated {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  redis_cache {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  service_bus {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
 
   }
 
-  sql{
-				 metrics_polling_interval = 1000
-				 resource_groups = ["beyond"]
-
+  sql {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
 
-  storage{
-				 metrics_polling_interval = 1000
-				 resource_groups = ["beyond"]
-
+  storage {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
 
-  virtual_machine{
-				 metrics_polling_interval = 1000
-				 resource_groups = ["beyond"]
-
+  virtual_machine {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
 
-  virtual_networks{
-				 metrics_polling_interval = 1000
-				 resource_groups = ["beyond"]
-
+  virtual_networks {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
 
-  vms{
-				 metrics_polling_interval = 1000
-				 resource_groups = ["beyond"]
-
+  vms {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
 
-  vpn_gateway{
-				 metrics_polling_interval = 1000
-				  resource_groups = ["beyond"]
-
+  vpn_gateway {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
   }
+}
   `, applicationID, clientSecretID, subscriptionID, tenantID, name)
 
 }
