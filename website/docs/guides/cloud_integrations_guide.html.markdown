@@ -25,10 +25,17 @@ AWS:
 * [New Relic Terraform newrelic_cloud_aws_integrations resource](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_aws_integrations)
 
 Azure:
-**We are finishing up the development of Azure integrations, and the documentation will be updated once those are available**
+* [Introduction to Azure integrations](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/get-started/introduction-azure-monitoring-integrations)
+* [New Relic Terraform newrelic_cloud_azure_link_account resource](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_azure_link_account)
+* [New Relic Terraform newrelic_cloud_azure_integrations resource](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_azure_integrations)
 
 GCP:
+
 **We are finishing up the development of GCP integrations, and the documentation will be updated once those are available**
+
+* [Introduction to GCP integrations](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/introduction-google-cloud-platform-integrations)
+* [New Relic Terraform newrelic_cloud_gcp_link_account resource](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_gcp_link_account)
+* [New Relic Terraform newrelic_cloud_gcp_integrations resource](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_gcp_integrations)
 
 ### Examples
 
@@ -47,7 +54,15 @@ Variables:
 
 #### Azure
 
-**We are finishing up the development of Azure integrations, and an example will be greated once those are available**
+The Microsoft Azure integrations report data from various Azure platform services to your New Relic account.
+
+We can integrate the following resources `API Management`, `App Gateway`, `App Service`, `Containers`, `Cosmos DB`, `Cost Management`, `Data Factory`, `Eventhub`, `Express Route`, `Firewalls`, `FrontDoor`, `Functions`, `KeyVault`, `Load Balancer`, `Logic apps`, `Machine learning`, `MariaDB`, `Mysql`, `Postgresql`, `PowerBI Dedicated`, `Redis cache`, `Service Bus`, `Service fabric`, `Sql`, `Sql Managed`, `Storage`, `Virtual Machine`, `Virtual Networks`, `Vms`, `VPN gateway`. Feel free to adapt the example to your needs.
+
+Link: https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/cloud-integrations-aws.tf
+
+Variables:
+
+NEW_RELIC_ACCOUNT_ID: The New Relic account you want to link to Azure.
 
 #### GCP
 
