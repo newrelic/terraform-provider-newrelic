@@ -2128,9 +2128,9 @@ func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudL
 		case *cloud.CloudAzureContainersIntegration:
 			_ = d.Set("containers", flattenCloudAzureContainersIntegration(t))
 		case *cloud.CloudAzureCosmosdbIntegration:
-			_ = d.Set("cosmosdb", flattenCloudAzureCosmosdbIntegration(t))
+			_ = d.Set("cosmos_db", flattenCloudAzureCosmosdbIntegration(t))
 		case *cloud.CloudAzureCostmanagementIntegration:
-			_ = d.Set("data_factory", flattenCloudAzureCostManagementIntegration(t))
+			_ = d.Set("cost_management", flattenCloudAzureCostManagementIntegration(t))
 		case *cloud.CloudAzureDatafactoryIntegration:
 			_ = d.Set("data_factory", flattenCloudAzureDataFactoryIntegration(t))
 		case *cloud.CloudAzureEventhubIntegration:
@@ -2267,7 +2267,7 @@ func flattenCloudAzureCostManagementIntegration(in *cloud.CloudAzureCostmanageme
 	out := make(map[string]interface{})
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	out["tags_keys"] = in.TagKeys
+	out["tag_keys"] = in.TagKeys
 
 	flattened[0] = out
 
