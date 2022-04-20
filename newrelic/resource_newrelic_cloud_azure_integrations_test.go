@@ -124,7 +124,7 @@ func testAccCheckNewRelicCloudAzureIntegrationsDestroy(s *terraform.State) error
 	return nil
 }
 
-func testAccNewRelicAzureIntegrationsConfig(applicationID string, clientSecretID string, subscriptionID string, tenantID string, name string) string {
+func testAccNewRelicAzureIntegartionsConfig(applicationID string, clientSecretID string, subscriptionID string, tenantID string, name string) string {
 	return fmt.Sprintf(`
   resource "newrelic_cloud_azure_link_account" "foo"{
   account_id = 2520528
