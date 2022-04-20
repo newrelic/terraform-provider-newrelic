@@ -124,7 +124,7 @@ func testAccCheckNewRelicCloudAzureIntegrationsDestroy(s *terraform.State) error
 	return nil
 }
 
-func testAccNewRelicAzureIntegartionsConfig(applicationID string, clientSecretID string, subscriptionID string, tenantID string, name string) string {
+func testAccNewRelicAzureIntegrationsConfig(applicationID string, clientSecretID string, subscriptionID string, tenantID string, name string) string {
 	return fmt.Sprintf(`
   resource "newrelic_cloud_azure_link_account" "foo"{
   account_id = 2520528
@@ -137,7 +137,6 @@ func testAccNewRelicAzureIntegartionsConfig(applicationID string, clientSecretID
  
 resource "newrelic_cloud_azure_integrations" "foo" {
      linked_account_id = newrelic_cloud_azure_link_account.foo.id
-     account_id = 2520528
 
      api_management {
                  metrics_polling_interval = 1200
@@ -304,8 +303,7 @@ func testAccNewRelicAzureIntegrationsConfigUpdated(applicationID string, clientS
 
   resource "newrelic_cloud_azure_integrations" "foo" {
      linked_account_id = newrelic_cloud_azure_link_account.foo.id
-     account_id = 2520528
-     
+
   api_management {
 				 metrics_polling_interval = 1000
                  resource_groups = ["beyond"]
