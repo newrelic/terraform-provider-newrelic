@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccNewRelicCloudAwsGovCloudIntegrations_Basic(t *testing.T) {
+	t.Skipf("skipping testing untill environmental variable to test awsgovcloud is added")
 	resourceName := "newrelic_cloud_aws_govcloud_integrations.foo"
 
 	randName := acctest.RandString(5)
