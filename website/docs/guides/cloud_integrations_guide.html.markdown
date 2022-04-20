@@ -28,7 +28,9 @@ Azure:
 **We are finishing up the development of Azure integrations, and the documentation will be updated once those are available**
 
 GCP:
-**We are finishing up the development of GCP integrations, and the documentation will be updated once those are available**
+* [Introduction to gcp integrations](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/introduction-google-cloud-platform-integrations)
+* [New Relic Terraform newrelic_cloud_gcp_link_account resource](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_gcp_link_account)
+* [New Relic Terraform newrelic_cloud_gcp_integrations resource](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_gcp_integrations)
 
 ### Examples
 
@@ -51,5 +53,13 @@ Variables:
 
 #### GCP
 
-**We are finishing up the development of GCP integrations, and an example will be greated once those are available**
+The AWS integration relies on two mechanisms to get data in New Relic: [AWS Metric stream](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/aws-metric-stream/) and [AWS Polling integrations](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-new-relic-infrastructure-monitoring). For the majority of AWS services the AWS Metric stream is used as it [has many advantages compared to polling](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/aws-metric-stream#why-it-matters). The AWS Polling integrations are also enabled because AWS does not yet [support all metrics through AWS Metric Stream](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/aws-metric-stream#integrations-not-replaced-streams). 
+
+We can enable `App Engine`, `Big Query`, `BigTable`, `Composer`, `Dataflow`, `Dataproc`, `Datastore`, `Firebase Database`, `Firebase Hosting`, `Firebase Storage`, `Firestore`, `Functions`, `Interconnect`, `Kubernetes`, `Load balancing`, `Memcache`, `Pubsub`, `Redis`, `Router`, `Run`, `Spanner`, `Sql`, `Storage`, `Vms`, `Vpc access` Feel free to adapt the example to your needs.
+
+Link: https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/cloud-integrations-aws.tf
+
+Variables:
+
+* NEW_RELIC_ACCOUNT_ID: The New Relic account you want to link to GCP
 
