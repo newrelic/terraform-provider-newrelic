@@ -159,7 +159,11 @@ You can find instructions on how to set up Azure on [our documentation](https://
       resource_groups = ["resource_groups"]
 
     }
+    sql_managed{
+      metrics_polling_interval = 1200
+      resource_groups = ["resource_groups"]
 
+    }
     storage{
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
@@ -220,14 +224,13 @@ The following arguments are supported:
 * `power_bi_dedicated` - (Optional) for Azure Power BI Dedicated. See [Integration blocks](#integration-blocks) below for details.
 * `redis_cache` - (Optional) for Azure Redis Cache. See [Integration blocks](#integration-blocks) below for details.
 * `service_bus` - (Optional) for Azure Service Bus. See [Integration blocks](#integration-blocks) below for details.
-* `service_fabric` - (Optional) for Azure Service Fabric. See [Integration blocks](#integration-blocks) below for details.
 * `sql` - (Optional) for Azure SQL. See [Integration blocks](#integration-blocks) below for details.
 * `sql_managed` - (Optional) for SQL Managed. See [Integration blocks](#integration-blocks) below for details.
 * `storage` - (Optional) for Azure Storage. See [Integration blocks](#integration-blocks) below for details.
 * `virtual_machine` - (Optional) for Azure Virtual machine. See [Integration blocks](#integration-blocks) below for details.
 * `vms` - (Optional) for Azure VMs. See [Integration blocks](#integration-blocks) below for details.
 * `vpn_gateway` - (Optional) for Azure VPN Gateway. See [Integration blocks](#integration-blocks) below for details.
-* 
+
 ### `Integration` blocks
 
 All `integration` blocks support the following common arguments:
@@ -239,9 +242,7 @@ Other integration type support an additional argument:
 
 * `cost_management`
   * `tag_keys` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
-
-
-
+  
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
