@@ -251,7 +251,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Linked Azure accounts can be imported using `id`, you can find the `id` of existing Azure linked accounts in Azure dashboard under Infrastructure in NewRelic
+Linked Azure accounts can be imported using `id`, you can find the `id` of existing Azure linked accounts in Azure dashboard under Infrastructure in NewRelic.
 
 ```bash
 $ terraform import newrelic_cloud_azure_integrations.foo <id>
