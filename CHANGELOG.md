@@ -1,3 +1,21 @@
+<a name="v2.43.1"></a>
+## [v2.43.1] - 2022-04-20
+### Documentation Updates
+- **resource/one_dashboard:** Add filter_current_dashboard doc for widget_bar and widget_pie
+
+<a name="v2.43.0"></a>
+## [v2.43.0] - 2022-04-19
+### Bug Fixes
+- Change logic for reading violation time limits to fix imports
+
+### Documentation Updates
+- added gcp integrations documentation
+
+### Features
+- added test.go for gcp integrations
+- added gcp cloud integrations to resource group map
+- **cloud:** add azure integrations resource
+
 <a name="v2.42.1"></a>
 ## [v2.42.1] - 2022-04-14
 ### Bug Fixes
@@ -1193,7 +1211,9 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.42.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.1...HEAD
+[v2.43.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.0...v2.43.1
+[v2.43.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.42.1...v2.43.0
 [v2.42.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.42.0...v2.42.1
 [v2.42.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.4...v2.42.0
 [v2.41.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.3...v2.41.4
