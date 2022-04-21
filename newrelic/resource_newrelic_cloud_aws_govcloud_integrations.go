@@ -1027,8 +1027,14 @@ func expandAwsGovCloudIntegrationsAPIGatewayInput(b []interface{}, linkedAccount
 			apiGatewayInput.MetricsPollingInterval = m.(int)
 		}
 
-		if ft, ok := in["stage_prefixes"]; ok {
-			apiGatewayInput.StagePrefixes = ft.([]string)
+		if sp, ok := in["stage_prefixes"]; ok {
+			stagePrefixes := sp.([]interface{})
+			var prefixes []string
+
+			for _, prefix := range stagePrefixes {
+				prefixes = append(prefixes, prefix.(string))
+			}
+			apiGatewayInput.StagePrefixes = prefixes
 
 		}
 
