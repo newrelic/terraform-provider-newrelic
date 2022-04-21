@@ -971,8 +971,15 @@ func expandAwsGovCloudIntegrationsAlbInput(b []interface{}, linkedAccountID int)
 		if ft, ok := in["fetch_tags"]; ok {
 			albInput.FetchTags = ft.(bool)
 		}
+
 		if lb, ok := in["load_balancer_prefixes"]; ok {
-			albInput.LoadBalancerPrefixes = lb.([]string)
+			loadBalancerPrefixes := lb.([]interface{})
+			var prefixes []string
+
+			for _, prefix := range loadBalancerPrefixes {
+				prefixes = append(prefixes, prefix.(string))
+			}
+			albInput.LoadBalancerPrefixes = prefixes
 		}
 
 		if tk, ok := in["tag_key"]; ok {
@@ -1024,6 +1031,7 @@ func expandAwsGovCloudIntegrationsAPIGatewayInput(b []interface{}, linkedAccount
 			apiGatewayInput.StagePrefixes = ft.([]string)
 
 		}
+
 		if tk, ok := in["tag_key"]; ok {
 			apiGatewayInput.TagKey = tk.(string)
 		}
@@ -1770,9 +1778,17 @@ func expandAwsGovCloudIntegrationsSqsInput(b []interface{}, linkedAccountID int)
 		if f, ok := in["fetch_tags"]; ok {
 			sqsInput.FetchTags = f.(bool)
 		}
+
 		if f, ok := in["queue_prefixes"]; ok {
-			sqsInput.QueuePrefixes = f.([]string)
+			queuePrefixes := f.([]interface{})
+			var prefixes []string
+
+			for _, prefix := range queuePrefixes {
+				prefixes = append(prefixes, prefix.(string))
+			}
+			sqsInput.QueuePrefixes = prefixes
 		}
+
 		if tk, ok := in["tag_key"]; ok {
 			sqsInput.TagKey = tk.(string)
 		}
