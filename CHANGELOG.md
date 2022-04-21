@@ -1,3 +1,8 @@
+<a name="v2.43.2"></a>
+## [v2.43.2] - 2022-04-21
+### Bug Fixes
+- Add payload_string to channel data source
+
 <a name="v2.43.1"></a>
 ## [v2.43.1] - 2022-04-20
 ### Documentation Updates
@@ -1211,7 +1216,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.2...HEAD
+[v2.43.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.1...v2.43.2
 [v2.43.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.0...v2.43.1
 [v2.43.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.42.1...v2.43.0
 [v2.42.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.42.0...v2.42.1
