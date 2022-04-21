@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -21,10 +23,7 @@ func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
 		t.Skipf("INTEGRATION_TESTING_GCP_PROJECT_ID must be set for acceptance test")
 	}
 
-	testGcpAccountName := os.Getenv("INTEGRATION_TESTING_GCP_ACCOUNT_NAME")
-	if testGcpAccountName == "" {
-		t.Skipf("INTEGRATION_TESTING_GCP_ACCOUNT_NAME must be set for acceptance test")
-	}
+	testGcpAccountName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

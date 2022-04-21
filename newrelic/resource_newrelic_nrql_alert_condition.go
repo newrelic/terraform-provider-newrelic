@@ -129,6 +129,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Default:     "static",
 				Description: "The type of NRQL alert condition to create. Valid values are: 'static', 'baseline', 'outlier' (deprecated).",
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
@@ -156,37 +157,27 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Required: true,
 						},
 						"since_value": {
-							Deprecated:    "use `signal.aggregation_method` attribute instead",
+							Deprecated:    "use `aggregation_method` attribute instead",
 							Type:          schema.TypeString,
 							Optional:      true,
 							Description:   "NRQL queries are evaluated in one-minute time windows. The start time depends on the value you provide in the NRQL condition's `since_value`.",
 							ConflictsWith: []string{"nrql.0.evaluation_offset"},
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								valueString := val.(string)
-								v, err := strconv.Atoi(valueString)
+								_, err := strconv.Atoi(valueString)
 								if err != nil {
 									errs = append(errs, fmt.Errorf("error converting string to int: %#v", err))
-								}
-								if v < 1 || v > 20 {
-									errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
 								}
 								return
 							},
 						},
 						// Equivalent to `since_value`.
 						"evaluation_offset": {
-							Deprecated:    "use `signal.aggregation_method` attribute instead",
+							Deprecated:    "use `aggregation_method` attribute instead",
 							Type:          schema.TypeInt,
 							Optional:      true,
 							Description:   "NRQL queries are evaluated in one-minute time windows. The start time depends on the value you provide in the NRQL condition's `evaluation_offset`.",
 							ConflictsWith: []string{"nrql.0.since_value"},
-							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-								v := val.(int)
-								if v < 1 || v > 20 {
-									errs = append(errs, fmt.Errorf("%q must be between 0 and 20 inclusive, got: %d", key, v))
-								}
-								return
-							},
 						},
 					},
 				},
@@ -296,7 +287,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"slide_by": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The duration of overlapping timewindows used to smooth the chart line, in seconds. Must be a factor of `aggregation_window` and less than the aggregation window. It should be greater or equal to 30 seconds if `aggregation_window` is less than or equal to 3600 seconds, or greater or eqaul to `aggregation_window / 120` if `aggregation_window` is greater than 3600 seconds.",
+				Description: "The duration of overlapping timewindows used to smooth the chart line, in seconds. Must be a factor of `aggregation_window` and less than the aggregation window. It should be greater or equal to 30 seconds if `aggregation_window` is less than or equal to 3600 seconds, or greater or equal to `aggregation_window / 120` if `aggregation_window` is greater than 3600 seconds.",
 			},
 			"expiration_duration": {
 				Type:        schema.TypeInt,
@@ -350,7 +341,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					// If a value is not provided and the condition uses the default value, don't show a diff
 					oldInt, _ := strconv.ParseInt(old, 0, 8)
 					newInt, _ := strconv.ParseInt(new, 0, 8)
-					return oldInt == 120 && (newInt == 0)
+					return oldInt == 120 && (newInt == 0) && (d.Get("aggregation_method") == "EVENT_FLOW" || d.Get("aggregation_method") == "CADENCE")
 				},
 			},
 			"aggregation_timer": {
@@ -366,7 +357,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					// If a value is not provided and the condition uses the default value, don't show a diff
 					oldInt, _ := strconv.ParseInt(old, 0, 8)
 					newInt, _ := strconv.ParseInt(new, 0, 8)
-					return oldInt == 120 && (newInt == 0)
+					return oldInt == 120 && (newInt == 0) && d.Get("aggregation_method") == "EVENT_TIMER"
 				},
 			},
 			// Baseline ONLY
