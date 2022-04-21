@@ -93,6 +93,11 @@ func dataSourceNewRelicAlertChannel() *schema.Resource {
 							Sensitive: true,
 							Optional:  true,
 						},
+						"payload_string": {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+						},
 						"payload_type": {
 							Type:     schema.TypeString,
 							Optional: true,

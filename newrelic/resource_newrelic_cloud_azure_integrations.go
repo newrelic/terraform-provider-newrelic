@@ -187,13 +187,6 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Elem:        cloudAzureIntegrationServiceBusElem(),
 				MaxItems:    1,
 			},
-			"service_fabric": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The azure services fabric",
-				Elem:        cloudAzureIntegrationServiceFabricElem(),
-				MaxItems:    1,
-			},
 			"sql": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -631,23 +624,6 @@ func cloudAzureIntegrationServiceBusElem() *schema.Resource {
 
 }
 
-// function to add schema for azure service fabric
-func cloudAzureIntegrationServiceFabricElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
-
 // function to add schema for azure sql
 func cloudAzureIntegrationSQLElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
@@ -943,12 +919,6 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 		cloudAzureIntegration.AzureServicebus = expandCloudAzureIntegrationServiceBusInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("service_bus"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureServicebus = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if v, ok := d.GetOk("service_fabric"); ok {
-		cloudAzureIntegration.AzureServicefabric = expandCloudAzureIntegrationServiceFabricInput(v.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("service_fabric"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAzureIntegration.AzureServicefabric = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("sql"); ok {
@@ -1798,42 +1768,6 @@ func expandCloudAzureIntegrationServiceBusInput(b []interface{}, linkedAccountID
 	return expanded
 }
 
-// Expanding the azure_service_fabric
-
-func expandCloudAzureIntegrationServiceFabricInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureServicefabricIntegrationInput {
-	expanded := make([]cloud.CloudAzureServicefabricIntegrationInput, len(b))
-
-	for i, azureServiceFabric := range b {
-		var azureServiceFabricInput cloud.CloudAzureServicefabricIntegrationInput
-
-		if azureServiceFabric == nil {
-			azureServiceFabricInput.LinkedAccountId = linkedAccountID
-			expanded[i] = azureServiceFabricInput
-			return expanded
-		}
-
-		in := azureServiceFabric.(map[string]interface{})
-
-		azureServiceFabricInput.LinkedAccountId = linkedAccountID
-
-		if m, ok := in["metrics_polling_interval"]; ok {
-			azureServiceFabricInput.MetricsPollingInterval = m.(int)
-		}
-		if r, ok := in["resource_groups"]; ok {
-			resourceGroups := r.([]interface{})
-			var groups []string
-
-			for _, group := range resourceGroups {
-				groups = append(groups, group.(string))
-			}
-			azureServiceFabricInput.ResourceGroups = groups
-		}
-		expanded[i] = azureServiceFabricInput
-	}
-
-	return expanded
-}
-
 // Expanding the azure_sql
 
 func expandCloudAzureIntegrationSQLInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureSqlIntegrationInput {
@@ -2163,8 +2097,6 @@ func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudL
 			_ = d.Set("redis_cache", flattenCloudAzureRedisCacheIntegration(t))
 		case *cloud.CloudAzureServicebusIntegration:
 			_ = d.Set("service_bus", flattenCloudAzureServiceBusIntegration(t))
-		case *cloud.CloudAzureServicefabricIntegration:
-			_ = d.Set("service_fabric", flattenCloudAzureServiceFabricIntegration(t))
 		case *cloud.CloudAzureSqlIntegration:
 			_ = d.Set("sql", flattenCloudAzureSQLIntegration(t))
 		case *cloud.CloudAzureSqlmanagedIntegration:
@@ -2514,21 +2446,6 @@ func flattenCloudAzureServiceBusIntegration(in *cloud.CloudAzureServicebusIntegr
 	return flattened
 }
 
-// flatten for azure_service_fabric
-
-func flattenCloudAzureServiceFabricIntegration(in *cloud.CloudAzureServicefabricIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-
-	out := make(map[string]interface{})
-
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	out["resource_groups"] = in.ResourceGroups
-
-	flattened[0] = out
-
-	return flattened
-}
-
 // flatten for azure_sql
 func flattenCloudAzureSQLIntegration(in *cloud.CloudAzureSqlIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -2777,9 +2694,6 @@ func expandCloudAzureDisableInputs(d *schema.ResourceData) cloud.CloudDisableInt
 	}
 	if _, ok := d.GetOk("service_bus"); ok {
 		cloudAzureDisableInput.AzureServicebus = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-	if _, ok := d.GetOk("service_fabric"); ok {
-		cloudAzureDisableInput.AzureServicefabric = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 	if _, ok := d.GetOk("sql"); ok {
 		cloudAzureDisableInput.AzureSql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
