@@ -1,3 +1,8 @@
+<a name="v2.43.3"></a>
+## [v2.43.3] - 2022-04-22
+### Bug Fixes
+- **one_dashboard:** make limit for bullet widget required
+
 <a name="v2.43.2"></a>
 ## [v2.43.2] - 2022-04-21
 ### Bug Fixes
@@ -1216,7 +1221,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.3...HEAD
+[v2.43.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.2...v2.43.3
 [v2.43.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.1...v2.43.2
 [v2.43.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.0...v2.43.1
 [v2.43.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.42.1...v2.43.0
