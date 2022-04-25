@@ -846,7 +846,7 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 	if v, ok := d.GetOk("firewalls"); ok {
 		cloudAzureIntegration.AzureFirewalls = expandCloudAzureIntegrationFirewallsInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("firewalls"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAzureIntegration.AzureCosmosdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+		cloudDisableAzureIntegration.AzureFirewalls = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("front_door"); ok {
