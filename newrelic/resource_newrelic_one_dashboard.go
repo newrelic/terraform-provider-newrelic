@@ -275,7 +275,7 @@ func dashboardWidgetBulletSchemaElem() *schema.Resource {
 
 	s["limit"] = &schema.Schema{
 		Type:        schema.TypeFloat,
-		Optional:    true,
+		Required:    true,
 		Description: "The maximum value for the visualization",
 	}
 
