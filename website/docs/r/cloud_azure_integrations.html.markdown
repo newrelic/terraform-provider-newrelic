@@ -44,10 +44,12 @@ You can find instructions on how to set up Azure on [our documentation](https://
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
     }
+
     app_service {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
     }
+
     containers {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
@@ -66,132 +68,116 @@ You can find instructions on how to set up Azure on [our documentation](https://
     data_factory {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
 
     event_hub {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
 
     express_route {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
-    event_hub {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
 
-    }
     firewalls {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
+
     front_door {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
+
     functions {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
+
     key_vault {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
+
     load_balancer {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
+
     logic_apps {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
+
     machine_learning {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
+
     maria_db {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
 
     mysql {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
-    postgresql{
+
+    postgresql {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
-    power_bi_dedicated{
+
+    power_bi_dedicated {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
     
-    redis_cache{
+    redis_cache {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
 
-    service_bus{
+    service_bus {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
 
-    sql{
+    sql {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
-    }
-    sql_managed{
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-
-    }
-    storage{
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-
     }
 
-    virtual_machine{
+    sql_managed {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
 
-    virtual_networks{
+    storage {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
 
-    vms{
+    virtual_machine {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
-
     }
 
-    vpn_gateway{
+    virtual_networks {
       metrics_polling_interval = 1200
       resource_groups = ["resource_groups"]
+    }
 
+    vms {
+      metrics_polling_interval = 1200
+      resource_groups = ["resource_groups"]
+    }
+
+    vpn_gateway {
+      metrics_polling_interval = 1200
+      resource_groups = ["resource_groups"]
     }
 }
 ```
