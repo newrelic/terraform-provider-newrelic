@@ -1,3 +1,13 @@
+<a name="v2.43.4"></a>
+## [v2.43.4] - 2022-04-25
+### Bug Fixes
+- **cloud_azure:** correct firewalls integration on update
+
+### Documentation Updates
+- updated the compiler
+- update terraform versions
+- **cloud_azure:** remove duplicate event_hub in example
+
 <a name="v2.43.3"></a>
 ## [v2.43.3] - 2022-04-22
 ### Bug Fixes
@@ -1221,7 +1231,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.3...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.4...HEAD
+[v2.43.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.3...v2.43.4
 [v2.43.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.2...v2.43.3
 [v2.43.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.1...v2.43.2
 [v2.43.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.0...v2.43.1
