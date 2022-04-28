@@ -1,6 +1,6 @@
 /*
 
-    Complete example to enable AWS integration with New Relic
+    Complete example to enable GCP integration with New Relic
 
 */
 
@@ -13,7 +13,7 @@ variable "GCP_PROJECT_ID" {
   type = string
 }
 
-variable "NR_ACCOUNT_ID" {
+variable "NEW_RELIC_ACCOUNT_ID" {
   type = string
 }
 
@@ -25,7 +25,7 @@ resource "google_project_iam_member" "project" {
 
 resource "google_project_iam_binding" "project" {
   project = var.GCP_PROJECT_ID
-  role    = "roles/editor"
+  role    = "roles/serviceusage.serviceUsageConsumer"
 
   members = [
     "serviceAccount:${var.NEW_RELIC_SERVICE_ACCOUNT_ID}",
@@ -33,13 +33,13 @@ resource "google_project_iam_binding" "project" {
 }
 
 resource "newrelic_cloud_gcp_link_account" "gcp_account" {
-  account_id=var.NR_ACCOUNT_ID
-  project_id =var.GCP_PROJECT_ID
+  account_id = var.NEW_RELIC_ACCOUNT_ID
+  project_id = var.GCP_PROJECT_ID
   name       = "GCP linked account name"
 }
 
 resource "newrelic_cloud_gcp_integrations" "gcp_integrations" {
-  account_id=var.NR_ACCOUNT_ID
+  account_id = var.NEW_RELIC_ACCOUNT_ID
   linked_account_id = newrelic_cloud_gcp_link_account.gcp_account.id
   app_engine {}
   big_query {}
