@@ -57,6 +57,11 @@ resource "azurerm_role_assignment" "example" {
   principal_id         = data.azuread_client_config.current.object_id
 }
 
+
+
+
+
+
 resource "newrelic_cloud_azure_link_account" "newrelic_cloud_azure_integration_bar" {
   account_id = var.NEW_RELIC_ACCOUNT_ID
     application_id = "%[1]s"
@@ -65,6 +70,8 @@ resource "newrelic_cloud_azure_link_account" "newrelic_cloud_azure_integration_b
     tenant_id = "%[4]s"
     name  = "production-pull"
   }
+
+
 
 
 resource "newrelic_cloud_azure_integrations" "foo" {
