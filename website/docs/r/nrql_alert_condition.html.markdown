@@ -133,6 +133,8 @@ The `term` block supports the following arguments:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the NRQL alert condition. This is a composite ID with the format `<policy_id>:<condition_id>` - e.g. `538291:6789035`.
+- `entity_guid` - The unique entity identifier of the NRQL Condition in New Relic.
+
 
 ## Additional Examples
 
