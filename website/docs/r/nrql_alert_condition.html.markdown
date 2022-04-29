@@ -235,7 +235,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 ## Import
 
-Alert conditions can be imported using a composite ID of `<policy_id>:<condition_id>:<conditionType>`, e.g.
+NRQL alert conditions can be imported using a composite ID of `<policy_id>:<condition_id>:<conditionType>`, e.g.
 
 ```
 // For `baseline` conditions
@@ -251,7 +251,69 @@ $ terraform import newrelic_nrql_alert_condition.foo 538291:6789035:outlier
 ~> **NOTE:** The value of `conditionType` in the import composite ID must be a valid condition type - `static`, `baseline`, or `outlier.` Also note that deprecated arguments will *not* be set when importing.
 
 Users can find the actual values for `policy_id` and `condition_id` from the New Relic One UI under respective policy and condition.
- 
+
+
+## Tags
+
+Manage NRQL alert condition tags with `newrelic_entity_tags`. For up-to-date documentation about the tagging resource, please check [newrelic_entity_tags](entity_tags.html#example-usage)
+
+```hcl
+resource "newrelic_alert_policy" "foo" {
+  name = "foo"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+  account_id                     = <Your Account ID>
+  policy_id                      = newrelic_alert_policy.foo.id
+  type                           = "static"
+  name                           = "foo"
+  description                    = "Alert when transactions are taking too long"
+  runbook_url                    = "https://www.example.com"
+  enabled                        = true
+  violation_time_limit_seconds   = 3600
+  fill_option                    = "static"
+  fill_value                     = 1.0
+  aggregation_window             = 60
+  aggregation_method             = "event_flow"
+  aggregation_delay              = 120
+  expiration_duration            = 120
+  open_violation_on_expiration   = true
+  close_violations_on_expiration = true
+  slide_by                       = 30
+
+  nrql {
+    query = "SELECT average(duration) FROM Transaction where appName = 'Your App'"
+  }
+
+  critical {
+    operator              = "above"
+    threshold             = 5.5
+    threshold_duration    = 300
+    threshold_occurrences = "ALL"
+  }
+
+  warning {
+    operator              = "above"
+    threshold             = 3.5
+    threshold_duration    = 600
+    threshold_occurrences = "ALL"
+  }
+}
+
+resource "newrelic_entity_tags" "my_condition_entity_tags" {
+  guid = newrelic_nrql_alert_condition.foo.entity_guid
+
+  tag {
+    key = "my-key"
+    values = ["my-value", "my-other-value"]
+  }
+
+  tag {
+    key = "my-key-2"
+    values = ["my-value-2"]
+  }
+}
+```
 
 
 ## Upgrade from 1.x to 2.x
