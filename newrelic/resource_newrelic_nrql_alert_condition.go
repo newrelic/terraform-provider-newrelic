@@ -363,7 +363,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"entity_guid": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The unique entity identifier of the dashboard in New Relic.",
+				Description: "The unique entity identifier of the NRQL Condition in New Relic.",
 			},
 			// Baseline ONLY
 			"baseline_direction": {
