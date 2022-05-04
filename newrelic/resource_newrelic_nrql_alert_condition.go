@@ -360,6 +360,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					return oldInt == 120 && (newInt == 0) && d.Get("aggregation_method") == "EVENT_TIMER"
 				},
 			},
+			"entity_guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique entity identifier of the NRQL Condition in New Relic.",
+			},
 			// Baseline ONLY
 			"baseline_direction": {
 				Type:          schema.TypeString,

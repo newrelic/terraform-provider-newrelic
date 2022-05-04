@@ -562,6 +562,7 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	_ = d.Set("name", condition.Name)
 	_ = d.Set("runbook_url", condition.RunbookURL)
 	_ = d.Set("enabled", condition.Enabled)
+	_ = d.Set("entity_guid", condition.EntityGUID)
 
 	if conditionType == "baseline" {
 		_ = d.Set("baseline_direction", string(*condition.BaselineDirection))
