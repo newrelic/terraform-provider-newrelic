@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/newrelic/newrelic-client-go/pkg/common"
+
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -476,11 +478,13 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	}
 	nrqlConditionBaseline.Type = alerts.NrqlConditionTypes.Baseline
 	nrqlConditionBaseline.BaselineDirection = &alerts.NrqlBaselineDirections.LowerOnly
+	nrqlConditionBaseline.EntityGUID = common.EntityGUID("NDAwMzA0fEFPTkRJVElPTnwxNDMzNjc3")
 
 	// Static
 	nrqlConditionStatic := nrqlCondition
 	nrqlConditionStatic.Type = alerts.NrqlConditionTypes.Static
 	nrqlConditionStatic.ValueFunction = &alerts.NrqlConditionValueFunctions.Sum
+	nrqlConditionStatic.EntityGUID = common.EntityGUID("TkRJVElPTnwxNDMzNjc3NDAwMzA0fEFP")
 
 	// Outlier
 	expectedGroups := 2
@@ -496,6 +500,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		AggregationTimer:  &[]int{60}[0],
 	}
 	nrqlConditionOutlier.Expiration = nil
+	nrqlConditionOutlier.EntityGUID = common.EntityGUID("PzA0fEFTnwxNDMzNjc3NDAwMTkRJV0fEFP")
 
 	conditions := []*alerts.NrqlAlertCondition{
 		&nrqlConditionBaseline,
@@ -551,8 +556,6 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		assert.Equal(t, 660, warningTerms[0].(map[string]interface{})["threshold_duration"])
 		assert.Equal(t, "below", warningTerms[0].(map[string]interface{})["operator"])
 
-		// require.Equal(t, 1, d.Get("critical.threshold").(map[string]interface{}))
-
 		switch condition.Type {
 		case alerts.NrqlConditionTypes.Baseline:
 			require.Equal(t, string(alerts.NrqlBaselineDirections.LowerOnly), d.Get("baseline_direction").(string))
@@ -567,6 +570,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
 			require.Equal(t, "60", d.Get("aggregation_delay").(string))
 			require.Equal(t, "60", d.Get("aggregation_timer").(string))
+			require.Equal(t, nrqlConditionBaseline.EntityGUID, common.EntityGUID(d.Get("entity_guid").(string)))
 
 		case alerts.NrqlConditionTypes.Static:
 			require.Equal(t, string(alerts.NrqlConditionValueFunctions.Sum), d.Get("value_function").(string))
@@ -581,6 +585,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
 			require.Equal(t, "60", d.Get("aggregation_delay").(string))
 			require.Equal(t, "60", d.Get("aggregation_timer").(string))
+			require.Equal(t, nrqlConditionStatic.EntityGUID, common.EntityGUID(d.Get("entity_guid").(string)))
 
 		case alerts.NrqlConditionTypes.Outlier:
 			require.Equal(t, 2, d.Get("expected_groups").(int))
@@ -596,6 +601,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
 			require.Equal(t, "60", d.Get("aggregation_delay").(string))
 			require.Equal(t, "60", d.Get("aggregation_timer").(string))
+			require.Equal(t, nrqlConditionOutlier.EntityGUID, common.EntityGUID(d.Get("entity_guid").(string)))
 		}
 	}
 }

@@ -40,10 +40,9 @@ func termSchema() *schema.Resource {
 				},
 			},
 			"threshold": {
-				Type:         schema.TypeFloat,
-				Required:     true,
-				Description:  "Must be 0 or greater. For baseline conditions must be in range [1, 1000].",
-				ValidateFunc: float64Gte(0.0),
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "For baseline conditions must be in range [1, 1000].",
 			},
 			// Does not exist in NerdGraph. Equivalent to `threshold_occurrences`,
 			// but with different wording.
@@ -359,6 +358,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					newInt, _ := strconv.ParseInt(new, 0, 8)
 					return oldInt == 120 && (newInt == 0) && d.Get("aggregation_method") == "EVENT_TIMER"
 				},
+			},
+			"entity_guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique entity identifier of the NRQL Condition in New Relic.",
 			},
 			// Baseline ONLY
 			"baseline_direction": {
