@@ -13,5 +13,5 @@ require (
 	github.com/psampaz/go-mod-outdated v0.8.0
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/tools v0.1.11-0.20220316014157-77aa08bb151a
-	gotest.tools/gotestsum v1.8.0
+	gotest.tools/gotestsum v1.8.1
 )
