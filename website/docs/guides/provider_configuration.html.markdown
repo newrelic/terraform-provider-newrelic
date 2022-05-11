@@ -10,12 +10,50 @@ description: |-
 
 The New Relic Terraform Provider supports two methods of configuring the provider.
 
-1. [Using environment variables](#configuration-via-environment-variables) (recommended)
 1. [Using the `provider` block](#configuration-via-the-provider-block)
+2. [Using environment variables](#configuration-via-environment-variables) (recommended)
 
 -> <small>**Note:** If you need to configure more than one instance of the New Relic provider, such as for different regions, we've provided an [example](#configuring-multiple-instances-of-the-provider) showing how this can be accomplished.</small>
 
-### Configuration via environment variables
+## Configuration via the `provider` block
+
+Configuring the provider from within your HCL is a quick way to get started, however, we recommend [using environment variables](#configuration-via-environment-variables). The minimal recommended configuration is as follows.
+
+
+```hcl
+# Configure terraform
+terraform {
+  required_version = "~> 1.0"
+  required_providers {
+    newrelic = {
+      source  = "newrelic/newrelic"
+      version = "~> 2.44"
+    }
+  }
+}
+
+# Configure the New Relic provider
+provider "newrelic" {
+  account_id = <Your Account ID>
+  api_key = <Your User API Key>    # usually prefixed with 'NRAK'
+  region = "US"                    # Valid regions are US and EU
+}
+```
+
+## Setting the New Relic Provider version
+
+Terraform's syntax for [version constraints](https://www.terraform.io/language/expressions/version-constraints#version-constraint-syntax) is very similar to the syntax used by other dependency management systems like Bundler and NPM.
+
+In the [`provider` block configuration example](#configuration-via-the-provider-block), you will notice a version specification for the New Relic provider - i.e. `version = "~> 2.44"`. This will ensure the New Relic provider always downloads and uses the latest minor version of the provider when you run `terraform init`. If you prefer to only allow for patch updates, use `version = "~> 2.44.0"` (note the inclusion of the patch version digit).
+
+Upgrading the New Relic provider version
+1. Update your version specification in the `required_providers` configuration block - e.g. `version = "~> 2.44"` (recommended format) or `version = "~> 2.44.0"` (patch updates only).
+2. Run `terraform init`
+
+-> <small>If you change the version constraint string, you will need to run `terraform init` to download and initialize the latest provider version based on your specified version constraints.</small>
+
+
+## Configuration via environment variables
 
 Certain [environment variables](#environment-variables-reference) will be automatically detected by the New Relic Terraform Provider when running `terraform` commands. Using environment variables facilitates setting a default provider configuration, resulting in a smaller `provider` block in your HCL, and it also keeps your credentials out of your source code.
 
@@ -29,16 +67,18 @@ export NEW_RELIC_API_KEY="<your New Relic User API key>"
 export NEW_RELIC_REGION="US"
 ```
 
-Provided you have the required environment variables set, your `provider` block can look as simple as the following.
+Provided you have the required environment variables set, your `provider` block can be left empty like the example below.
 
 ```hcl
 provider "newrelic" {}
 ```
 
+<br>
+
 -> <small>**Note:** When using Terraform in your CI/CD pipeline, we recommend setting your environment variables within your platform's secrets management. Each platform, such as GitHub or CircleCI, has their own way of managing secrets and environment variables, so you will need to refer to your vendor's documentation for implemenation details.</small>
 
 
-#### Environment variables reference
+## Environment variables reference
 
 The table below shows the available environment variables and how they map to the provider's schema attributes. When using environment variables, you do *not* need to set the schema attributes within your `provider` block. All schema attributes default to their equivalent environment variables.
 
@@ -56,20 +96,7 @@ The table below shows the available environment variables and how they map to th
 -> <small>**Note:** The `provider` block schema attributes take precedence over environment variables, providing the ability to override environment variables if needed. This can useful when using [multiple instances of the provider](#configuring-multiple-instances-of-the-provider).</small>
 
 
-### Configuration via the `provider` block
-
-Configuring the provider from within your HCL is a quick way to get started, however, we recommend [using environment variables](#configuration-via-environment-variables). The minimal recommended configuration is as follows.
-
-```hcl
-provider "newrelic" {
-  api_key = <Your User API key>
-  account_id = <your New Relic account ID>
-  region = "US"
-}
-```
-
-
-### Configuring multiple instances of the provider
+## Configuring multiple instances of the provider
 
 The example below shows how you could use environment variables for the default configuration, then override the environment variables for another instance of the provider.
 
