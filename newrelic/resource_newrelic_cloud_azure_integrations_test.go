@@ -247,11 +247,6 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     resource_groups          = ["beyond"]
   }
 
-  service_fabric {
-    metrics_polling_interval = 3600
-    resource_groups          = ["beyond"]
-  }
-
   sql {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
@@ -413,10 +408,6 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
 
-  }
-  service_fabric {
-    metrics_polling_interval = 3600
-    resource_groups          = ["beyond"]
   }
 
   sql {

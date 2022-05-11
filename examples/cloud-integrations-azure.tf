@@ -1,8 +1,5 @@
-
 /*
-
     Complete example to enable Azure integration with New Relic
-
 */
 
 terraform {
@@ -57,21 +54,14 @@ resource "azurerm_role_assignment" "example" {
   principal_id         = data.azuread_client_config.current.object_id
 }
 
-
-
-
-
-
 resource "newrelic_cloud_azure_link_account" "newrelic_cloud_azure_integration_bar" {
   account_id = var.NEW_RELIC_ACCOUNT_ID
-    application_id = "%[1]s"
-    client_secret = "%[2]s"
-    subscription_id = "%[3]s"
-    tenant_id = "%[4]s"
-    name  = "production-pull"
-  }
-
-
+  application_id = "%[1]s"
+  client_secret = "%[2]s"
+  subscription_id = "%[3]s"
+  tenant_id = "%[4]s"
+  name  = "production-pull"
+}
 
 
 resource "newrelic_cloud_azure_integrations" "foo" {
@@ -100,7 +90,6 @@ resource "newrelic_cloud_azure_integrations" "foo" {
   power_bi_dedicated {}
   redis_cache {}
   service_bus {}
-  service_fabric{}
   sql {}
   sql_managed{}
   storage {}
@@ -108,5 +97,4 @@ resource "newrelic_cloud_azure_integrations" "foo" {
   virtual_networks {}
   vms {}
   vpn_gateway {}
-
 }
