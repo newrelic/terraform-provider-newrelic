@@ -33,8 +33,8 @@ func termSchema() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "equals",
-				Description:  "One of (above, below, equals). Defaults to 'equals'.",
-				ValidateFunc: validation.StringInSlice([]string{"above", "below", "equals"}, true),
+				Description:  "One of (above, above_or_equals, below, below_or_equals, equals, not_equals). Defaults to 'equals'.",
+				ValidateFunc: validation.StringInSlice([]string{"above", "above_or_equals", "below", "below_or_equals", "equals", "not_equals"}, true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new)
 				},
