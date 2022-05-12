@@ -2,12 +2,14 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
@@ -58,60 +60,113 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 }
 
 func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+
 	sc := expandSyntheticsSecureCredential(d)
 
 	log.Printf("[INFO] Creating New Relic Synthetics secure credential %s", sc.Key)
 
-	sc, err := client.Synthetics.AddSecureCredentialWithContext(ctx, sc.Key, sc.Value, sc.Description)
+	res, err := client.Synthetics.SyntheticsCreateSecureCredentialWithContext(ctx, accountID, sc.Description, sc.Key, synthetics.SecureValue(sc.Value))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(sc.Key)
-	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
+
+	flattenSyntheticsSecureCredential(res, d)
+
+	return nil
 }
 
 func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
 
-	log.Printf("[INFO] Reading New Relic Synthetics secure credential %s", d.Id())
+	client := providerConfig.NewClient
 
-	sc, err := client.Synthetics.GetSecureCredentialWithContext(ctx, d.Id())
+	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED'AND name = %s", d.Id())
+
+	entityResults, err := client.Entities.GetEntitySearchWithContext(ctx, entities.EntitySearchOptions{}, queryString, entities.EntitySearchQueryBuilder{}, []entities.EntitySearchSortCriteria{})
 	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
-
 		return diag.FromErr(err)
 	}
 
-	return diag.FromErr(flattenSyntheticsSecureCredential(sc, d))
+	var entity *entities.EntityOutlineInterface
+	for _, e := range entityResults.Results.Entities {
+		// Conditional on case sensitive match
+		if e.GetName() == d.Id() {
+			entity = &e
+			break
+		}
+	}
+	
+	return nil
 }
 
 func resourceNewRelicSyntheticsSecureCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+
 	log.Printf("[INFO] Updating New Relic Synthetics secure credential %s", d.Id())
 
 	sc := expandSyntheticsSecureCredential(d)
 
-	_, err := client.Synthetics.UpdateSecureCredentialWithContext(ctx, sc.Key, sc.Value, sc.Description)
+	res, err := client.Synthetics.SyntheticsUpdateSecureCredentialWithContext(ctx, accountID, sc.Description, sc.Key, synthetics.SecureValue(sc.Value))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
+	flattenSyntheticsSecureCredential(res, d)
+
+	return nil
 }
 
 func resourceNewRelicSyntheticsSecureCredentialDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Deleting New Relic Synthetics secure credential %s", d.Id())
 
-	if err := client.Synthetics.DeleteSecureCredentialWithContext(ctx, d.Id()); err != nil {
+	res, err := client.Synthetics.SyntheticsDeleteSecureCredentialWithContext(ctx, accountID, d.Id())
+	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	if res == nil {
+		d.SetId("")
+	}
+
+	return nil
+}
+
+func expandSyntheticsSecureCredential(d *schema.ResourceData) *synthetics.SecureCredential {
+	key := d.Get("key").(string)
+	key = strings.ToUpper(key)
+
+	sc := synthetics.SecureCredential{
+		Key:         key,
+		Value:       d.Get("value").(string),
+		Description: d.Get("description").(string),
+	}
+
+	return &sc
+}
+
+func flattenSyntheticsSecureCredential(sc *synthetics.SyntheticsSecureCredentialMutationResult, d *schema.ResourceData) error {
+	_ = d.Set("key", sc.Key)
+	_ = d.Set("description", sc.Description)
+
+	createdAt := &sc.CreatedAt
+	_ = d.Set("created_at", createdAt)
+
+	lastUpdated := &sc.LastUpdate
+	_ = d.Set("last_updated", lastUpdated)
 
 	return nil
 }
