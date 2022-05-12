@@ -19,14 +19,12 @@ The New Relic Terraform Provider supports two methods of configuring the provide
 
 Configuring the provider from within your HCL is a quick way to get started, however, we recommend [using environment variables](#configuration-via-environment-variables). The minimal recommended configuration is as follows.
 
-
 ```hcl
 # Configure terraform
 terraform {
   required_providers {
     newrelic = {
       source  = "newrelic/newrelic"
-      version = "~> 2.44"
     }
   }
 }
