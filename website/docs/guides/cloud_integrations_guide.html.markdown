@@ -28,7 +28,9 @@ Azure:
 **We are finishing up the development of Azure integrations, and the documentation will be updated once those are available**
 
 GCP:
-**We are finishing up the development of GCP integrations, and the documentation will be updated once those are available**
+* [Introduction to GCP integrations](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/introduction-google-cloud-platform-integrations)
+* [New Relic Terraform newrelic_cloud_gcp_link_account resource](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_gcp_link_account)
+* [New Relic Terraform newrelic_cloud_gcp_integrations resource](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_gcp_integrations)
 
 ### Examples
 
@@ -51,5 +53,11 @@ Variables:
 
 #### GCP
 
-**We are finishing up the development of GCP integrations, and an example will be greated once those are available**
+To start receiving Google Cloud Platform (GCP) data with [New Relic GCP integrations](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/introduction-google-cloud-platform-integrations/), connect your Google project to New Relic's [infrastructure monitoring](https://docs.newrelic.com/docs/infrastructure/infrastructure-monitoring/get-started/get-started-infrastructure-monitoring).
 
+Link: https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/cloud-integrations-gcp.tf
+
+Variables:
+
+* NEW_RELIC_ACCOUNT_ID: The New Relic account you want to link to GCP.
+* NEW_RELIC_SERVICE_ACCOUNT_ID: The New Relic Service Account ID, Which should be added as a service Account(with [viewer and serviceUsageConsumer role](https://cloud.google.com/iam/docs/understanding-roles)) of your GCP account to get the metrics.
