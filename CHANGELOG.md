@@ -1,3 +1,16 @@
+<a name="v2.45.0"></a>
+## [v2.45.0] - 2022-05-12
+### Bug Fixes
+- **alerts:** Allow negative threshold values for non-baseline NRQL conditions
+
+### Documentation Updates
+- **alerts:** Document new NRQL term threshold operators
+- **alerts:** Remove minimum threshold requirement for non-baseline NRQL conditions
+
+### Features
+- added gcp integrations test tf script
+- **alerts:** Adds 3 term threshold operators for NRQL conditions
+
 <a name="v2.44.0"></a>
 ## [v2.44.0] - 2022-05-03
 ### Bug Fixes
@@ -1241,7 +1254,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.44.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.45.0...HEAD
+[v2.45.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.44.0...v2.45.0
 [v2.44.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.4...v2.44.0
 [v2.43.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.3...v2.43.4
 [v2.43.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.2...v2.43.3
