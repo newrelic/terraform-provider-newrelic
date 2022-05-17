@@ -19,7 +19,7 @@ variable "NEW_RELIC_ACCOUNT_ID" {
 
 resource "google_project_iam_member" "project" {
   project = var.GCP_PROJECT_ID
-  role    = "roles/editor"
+  role    = "roles/viewer"
   member  = "serviceAccount:${var.NEW_RELIC_SERVICE_ACCOUNT_ID}"
 }
 
