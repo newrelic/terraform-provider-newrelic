@@ -22,6 +22,12 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The New Relic account ID where you want to create the secure credential.",
+			},
 			"key": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -69,16 +75,29 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 
 	log.Printf("[INFO] Creating New Relic Synthetics secure credential %s", sc.Key)
 
+	var diags diag.Diagnostics
+
 	res, err := client.Synthetics.SyntheticsCreateSecureCredentialWithContext(ctx, accountID, sc.Description, sc.Key, synthetics.SecureValue(sc.Value))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	if len(res.Errors) > 0 {
+		for _, err := range res.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Description,
+			})
+		}
+	}
+
+	if len(diags) > 0 {
+		return diags
+	}
+
 	d.SetId(sc.Key)
 
-	flattenSyntheticsSecureCredential(res, d)
-
-	return nil
+	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
 }
 
 func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -86,7 +105,7 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 
 	client := providerConfig.NewClient
 
-	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED'AND name = %s", d.Id())
+	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = %s", d.Id())
 
 	entityResults, err := client.Entities.GetEntitySearchWithContext(ctx, entities.EntitySearchOptions{}, queryString, entities.EntitySearchQueryBuilder{}, []entities.EntitySearchSortCriteria{})
 	if err != nil {
@@ -101,7 +120,7 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 			break
 		}
 	}
-	
+
 	return nil
 }
 
@@ -115,14 +134,27 @@ func resourceNewRelicSyntheticsSecureCredentialUpdate(ctx context.Context, d *sc
 
 	sc := expandSyntheticsSecureCredential(d)
 
+	var diags diag.Diagnostics
+
 	res, err := client.Synthetics.SyntheticsUpdateSecureCredentialWithContext(ctx, accountID, sc.Description, sc.Key, synthetics.SecureValue(sc.Value))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	flattenSyntheticsSecureCredential(res, d)
+	if len(res.Errors) > 0 {
+		for _, err := range res.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Description,
+			})
+		}
+	}
 
-	return nil
+	if len(diags) > 0 {
+		return diags
+	}
+
+	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
 }
 
 func resourceNewRelicSyntheticsSecureCredentialDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -133,9 +165,24 @@ func resourceNewRelicSyntheticsSecureCredentialDelete(ctx context.Context, d *sc
 
 	log.Printf("[INFO] Deleting New Relic Synthetics secure credential %s", d.Id())
 
+	var diags diag.Diagnostics
+
 	res, err := client.Synthetics.SyntheticsDeleteSecureCredentialWithContext(ctx, accountID, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if len(res.Errors) > 0 {
+		for _, err := range res.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Description,
+			})
+		}
+	}
+
+	if len(diags) > 0 {
+		return diags
 	}
 
 	if res == nil {
