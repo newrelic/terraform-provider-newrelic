@@ -95,6 +95,8 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 		return diags
 	}
 
+	_ = d.Set("created_at", sc.CreatedAt)
+
 	d.SetId(sc.Key)
 
 	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
@@ -121,7 +123,7 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 		}
 	}
 
-	return nil
+	return flattenSyntheticsSecureCredential(entity, d)
 }
 
 func resourceNewRelicSyntheticsSecureCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -205,15 +207,14 @@ func expandSyntheticsSecureCredential(d *schema.ResourceData) *synthetics.Secure
 	return &sc
 }
 
-func flattenSyntheticsSecureCredential(sc *synthetics.SyntheticsSecureCredentialMutationResult, d *schema.ResourceData) error {
-	_ = d.Set("key", sc.Key)
-	_ = d.Set("description", sc.Description)
+func flattenSyntheticsSecureCredential(sc *entities.EntityOutlineInterface, d *schema.ResourceData) diag.Diagnostics {
+	_ = d.Set("key", (*sc).GetName())
 
-	createdAt := &sc.CreatedAt
-	_ = d.Set("created_at", createdAt)
-
-	lastUpdated := &sc.LastUpdate
-	_ = d.Set("last_updated", lastUpdated)
+	switch e := (*sc).(type) {
+	case *entities.SecureCredentialEntityOutline:
+		_ = d.Set("description", e.Description)
+		_ = d.Set("last_updated", e.UpdatedAt)
+	}
 
 	return nil
 }

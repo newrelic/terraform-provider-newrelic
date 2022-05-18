@@ -2,6 +2,8 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"log"
 	"strings"
 
@@ -48,12 +50,23 @@ func dataSourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sc
 	key := d.Get("key").(string)
 	key = strings.ToUpper(key)
 
-	sc, err := client.Synthetics.GetSecureCredentialWithContext(ctx, key)
+	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = %s", key)
+
+	entityResults, err := client.Entities.GetEntitySearchWithContext(ctx, entities.EntitySearchOptions{}, queryString, entities.EntitySearchQueryBuilder{}, []entities.EntitySearchSortCriteria{})
 	if err != nil {
-		return diag.Errorf("the key '%s' does not match any New Relic Synthetics secure credential", key)
+		return diag.FromErr(err)
+	}
+
+	var entity *entities.EntityOutlineInterface
+	for _, e := range entityResults.Results.Entities {
+		// Conditional on case sensitive match
+		if e.GetName() == d.Id() {
+			entity = &e
+			break
+		}
 	}
 
 	d.SetId(key)
 
-	return diag.FromErr(flattenSyntheticsSecureCredential(sc, d))
+	return flattenSyntheticsSecureCredential(entity, d)
 }
