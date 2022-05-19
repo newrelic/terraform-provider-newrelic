@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
 
 func TestAccNewRelicSyntheticsSecureCredential_Basic(t *testing.T) {
@@ -62,13 +63,17 @@ func testAccCheckNewRelicSyntheticsSecureCredentialExists(n string) resource.Tes
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		found, err := client.Synthetics.GetSecureCredential(rs.Primary.ID)
+		queryString := fmt.Sprintf("type = 'SECURE_CRED' AND name = %s", rs.Primary.ID)
+
+		found, err := client.Entities.GetEntitySearch(entities.EntitySearchOptions{}, queryString, entities.EntitySearchQueryBuilder{Domain: "SYNTH"}, []entities.EntitySearchSortCriteria{})
 		if err != nil {
 			return err
 		}
 
-		if !strings.EqualFold(found.Key, rs.Primary.ID) {
-			return fmt.Errorf("synthetics secure credential not found: %v - %v", rs.Primary.ID, found)
+		for _, e := range found.Results.Entities {
+			if !strings.EqualFold(e.GetName(), rs.Primary.ID) {
+				return fmt.Errorf("synthetics secure credential not found: %v - %v", rs.Primary.ID, found)
+			}
 		}
 
 		return nil
@@ -82,8 +87,14 @@ func testAccCheckNewRelicSyntheticsSecureCredentialDestroy(s *terraform.State) e
 			continue
 		}
 
-		_, err := client.Synthetics.GetSecureCredential(r.Primary.ID)
-		if err == nil {
+		queryString := fmt.Sprintf("type = 'SECURE_CRED' AND name = %s", r.Primary.ID)
+
+		found, err := client.Entities.GetEntitySearch(entities.EntitySearchOptions{}, queryString, entities.EntitySearchQueryBuilder{Domain: "SYNTH"}, []entities.EntitySearchSortCriteria{})
+		if err != nil {
+			return err
+		}
+
+		if len(found.Results.Entities) > 0 {
 			return fmt.Errorf("synthetics secure credential still exists")
 		}
 
