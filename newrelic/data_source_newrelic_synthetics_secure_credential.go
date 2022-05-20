@@ -50,9 +50,9 @@ func dataSourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sc
 	key := d.Get("key").(string)
 	key = strings.ToUpper(key)
 
-	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = %s", key)
+	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", key)
 
-	entityResults, err := client.Entities.GetEntitySearchWithContext(ctx, entities.EntitySearchOptions{}, queryString, entities.EntitySearchQueryBuilder{}, []entities.EntitySearchSortCriteria{})
+	entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
 	if err != nil {
 		return diag.FromErr(err)
 	}

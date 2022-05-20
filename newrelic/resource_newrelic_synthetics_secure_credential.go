@@ -3,10 +3,12 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -62,6 +64,9 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 				Description: "The time the secure credential was last updated.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(15 * time.Second),
+		},
 	}
 }
 
@@ -95,9 +100,9 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 		return diags
 	}
 
-	_ = d.Set("created_at", sc.CreatedAt)
+	d.SetId(res.Key)
 
-	d.SetId(sc.Key)
+	_ = d.Set("created_at", time.Time(res.CreatedAt).Format(time.RFC3339))
 
 	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
 }
@@ -107,20 +112,31 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 
 	client := providerConfig.NewClient
 
-	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = %s", d.Id())
-
-	entityResults, err := client.Entities.GetEntitySearchWithContext(ctx, entities.EntitySearchOptions{}, queryString, entities.EntitySearchQueryBuilder{}, []entities.EntitySearchSortCriteria{})
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", d.Id())
 
 	var entity *entities.EntityOutlineInterface
-	for _, e := range entityResults.Results.Entities {
-		// Conditional on case sensitive match
-		if e.GetName() == d.Id() {
-			entity = &e
-			break
+
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
+		if err != nil {
+			return resource.NonRetryableError(err)
 		}
+
+		if entityResults.Count != 1 {
+			return resource.RetryableError(fmt.Errorf("entity not found, or found more than one"))
+		}
+		for _, e := range entityResults.Results.Entities {
+			// Conditional on case sensitive match
+			if e.GetName() == d.Id() {
+				entity = &e
+				break
+			}
+		}
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
 	}
 
 	return flattenSyntheticsSecureCredential(entity, d)
@@ -169,12 +185,9 @@ func resourceNewRelicSyntheticsSecureCredentialDelete(ctx context.Context, d *sc
 
 	var diags diag.Diagnostics
 
-	res, err := client.Synthetics.SyntheticsDeleteSecureCredentialWithContext(ctx, accountID, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	res, _ := client.Synthetics.SyntheticsDeleteSecureCredentialWithContext(ctx, accountID, d.Id())
 
-	if len(res.Errors) > 0 {
+	if res != nil {
 		for _, err := range res.Errors {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
@@ -187,9 +200,7 @@ func resourceNewRelicSyntheticsSecureCredentialDelete(ctx context.Context, d *sc
 		return diags
 	}
 
-	if res == nil {
-		d.SetId("")
-	}
+	d.SetId("")
 
 	return nil
 }
@@ -213,7 +224,7 @@ func flattenSyntheticsSecureCredential(sc *entities.EntityOutlineInterface, d *s
 	switch e := (*sc).(type) {
 	case *entities.SecureCredentialEntityOutline:
 		_ = d.Set("description", e.Description)
-		_ = d.Set("last_updated", e.UpdatedAt)
+		_ = d.Set("last_updated", time.Time(*e.UpdatedAt).Format(time.RFC3339))
 	}
 
 	return nil
