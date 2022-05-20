@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -45,6 +46,8 @@ func TestAccNewRelicSyntheticsSecureCredential_Basic(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
 					"value",
+					"created_at",
+					"last_updated",
 				},
 			},
 		},
@@ -63,9 +66,9 @@ func testAccCheckNewRelicSyntheticsSecureCredentialExists(n string) resource.Tes
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		queryString := fmt.Sprintf("type = 'SECURE_CRED' AND name = %s", rs.Primary.ID)
+		queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", rs.Primary.ID)
 
-		found, err := client.Entities.GetEntitySearch(entities.EntitySearchOptions{}, queryString, entities.EntitySearchQueryBuilder{Domain: "SYNTH"}, []entities.EntitySearchSortCriteria{})
+		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
 		if err != nil {
 			return err
 		}
@@ -87,14 +90,16 @@ func testAccCheckNewRelicSyntheticsSecureCredentialDestroy(s *terraform.State) e
 			continue
 		}
 
-		queryString := fmt.Sprintf("type = 'SECURE_CRED' AND name = %s", r.Primary.ID)
+		queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", r.Primary.ID)
 
-		found, err := client.Entities.GetEntitySearch(entities.EntitySearchOptions{}, queryString, entities.EntitySearchQueryBuilder{Domain: "SYNTH"}, []entities.EntitySearchSortCriteria{})
+		time.Sleep(10 * time.Second)
+
+		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
 		if err != nil {
 			return err
 		}
 
-		if len(found.Results.Entities) > 0 {
+		if found.Count != 0 {
 			return fmt.Errorf("synthetics secure credential still exists")
 		}
 
