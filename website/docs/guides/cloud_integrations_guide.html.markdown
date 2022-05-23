@@ -73,6 +73,7 @@ Link: https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples
 Variables:
 
 * NEW_RELIC_ACCOUNT_ID: The New Relic account you want to link to GCP.
+* NEW_RELIC_ACCOUNT_NAME: The name of the integration in New Relic. This is usefull if you need to link more than one Azure account.
 * NEW_RELIC_SERVICE_ACCOUNT_ID: The ID of the New Relic GCP [Service Account](https://cloud.google.com/iam/docs/service-accounts) with [Viewer and Service Usage Consumer roles](https://cloud.google.com/iam/docs/understanding-roles). You can find this ID in the New Relic UI by going to `Infrastructure > GCP > Add a GCP project`. For more information [check out the New Relic docs](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic/).
 * GCP_PROJECT_ID: The ID of the project you want to receive data from in GCP.
 
