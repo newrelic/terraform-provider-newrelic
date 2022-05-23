@@ -3,9 +3,11 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -39,6 +41,9 @@ func dataSourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 				Description: "The time the secure credential was last updated.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(15 * time.Second),
+		},
 	}
 }
 
@@ -50,20 +55,31 @@ func dataSourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sc
 	key := d.Get("key").(string)
 	key = strings.ToUpper(key)
 
-	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", key)
-
-	entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", d.Id())
 
 	var entity *entities.EntityOutlineInterface
-	for _, e := range entityResults.Results.Entities {
-		// Conditional on case sensitive match
-		if e.GetName() == d.Id() {
-			entity = &e
-			break
+
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
+		if err != nil {
+			return resource.NonRetryableError(err)
 		}
+
+		if entityResults.Count != 1 {
+			return resource.RetryableError(fmt.Errorf("entity not found, or found more than one"))
+		}
+		for _, e := range entityResults.Results.Entities {
+			// Conditional on case sensitive match
+			if e.GetName() == d.Id() {
+				entity = &e
+				break
+			}
+		}
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
 	}
 
 	d.SetId(key)
