@@ -70,7 +70,7 @@ func termSchema() *schema.Resource {
 			"threshold_duration": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The duration, in seconds, that the threshold must violate in order to create a violation. Value must be a multiple of the 'aggregation_window' (which has a default of 60 seconds). Value must be within 120-3600 seconds for baseline and outlier conditions, within 120-7200 seconds for static conditions with the sum value function, and within 60-7200 seconds for static conditions with the single_value value function.",
+				Description: "The duration, in seconds, that the threshold must violate in order to create a violation. Value must be a multiple of the 'aggregation_window' (which has a default of 60 seconds). Value must be within 120-3600 seconds for baseline conditions, within 120-7200 seconds for static conditions with the sum value function, and within 60-7200 seconds for static conditions with the single_value value function.",
 			},
 		},
 	}
@@ -124,24 +124,13 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Default:     true,
 				Description: "Whether or not to enable the alert condition.",
 			},
-			// Note: The "outlier" type does NOT exist in NerdGraph yet
 			"type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     "static",
-				Description: "The type of NRQL alert condition to create. Valid values are: 'static', 'baseline', 'outlier' (deprecated).",
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					valueString := val.(string)
-
-					v := validation.StringInSlice([]string{"static", "outlier", "baseline"}, false)
-					warns, errs = v(valueString, key)
-
-					if valueString == "outlier" {
-						warns = append(warns, "We're removing outlier conditions Mar 31, 2022. More Info: https://docs.newrelic.com/docs/alerts-applied-intelligence/transition-guide/#outlier")
-					}
-					return
-				},
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Default:      "static",
+				Description:  "The type of NRQL alert condition to create. Valid values are: 'static', 'baseline'.",
+				ValidateFunc: validation.StringInSlice([]string{"static", "baseline"}, false),
 			},
 			"nrql": {
 				Type:        schema.TypeList,
@@ -208,20 +197,6 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Elem:          termSchema(),
 				Description:   "A condition term with priority set to warning.",
 				ConflictsWith: []string{"term"},
-			},
-			// Outlier ONLY
-			"expected_groups": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Number of expected groups when using outlier detection.",
-			},
-			// Outlier ONLY
-			"ignore_overlap": {
-				Deprecated:    "use `open_violation_on_group_overlap` attribute instead, but use the inverse of your boolean - e.g. if ignore_overlap = false, use open_violation_on_group_overlap = true",
-				Type:          schema.TypeBool,
-				Optional:      true,
-				Description:   "Whether to look for a convergence of groups when using outlier detection.",
-				ConflictsWith: []string{"open_violation_on_group_overlap"},
 			},
 			"violation_time_limit_seconds": {
 				Type:          schema.TypeInt,
@@ -375,13 +350,6 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
 			},
-			// Outlier ONLY
-			"open_violation_on_group_overlap": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				Description:   "Whether overlapping groups should produce a violation.",
-				ConflictsWith: []string{"ignore_overlap"},
-			},
 		},
 	}
 }
@@ -407,8 +375,6 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 		condition, err = client.Alerts.CreateNrqlConditionBaselineMutationWithContext(ctx, accountID, policyID, *conditionInput)
 	case "static":
 		condition, err = client.Alerts.CreateNrqlConditionStaticMutationWithContext(ctx, accountID, policyID, *conditionInput)
-	case "outlier":
-		condition, err = client.Alerts.CreateNrqlConditionOutlierMutationWithContext(ctx, accountID, policyID, *conditionInput)
 	}
 
 	var diags diag.Diagnostics
@@ -506,8 +472,6 @@ func resourceNewRelicNrqlAlertConditionUpdate(ctx context.Context, d *schema.Res
 		_, err = client.Alerts.UpdateNrqlConditionBaselineMutationWithContext(ctx, accountID, conditionID, *conditionInput)
 	case "static":
 		_, err = client.Alerts.UpdateNrqlConditionStaticMutationWithContext(ctx, accountID, conditionID, *conditionInput)
-	case "outlier":
-		_, err = client.Alerts.UpdateNrqlConditionOutlierMutationWithContext(ctx, accountID, conditionID, *conditionInput)
 	}
 
 	var diags diag.Diagnostics
