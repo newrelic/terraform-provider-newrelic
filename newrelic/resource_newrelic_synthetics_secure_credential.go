@@ -65,7 +65,7 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(15 * time.Second),
+			Read: schema.DefaultTimeout(20 * time.Second),
 		},
 	}
 }
