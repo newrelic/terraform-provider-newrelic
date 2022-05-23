@@ -53,13 +53,14 @@ Variables:
 
 The Microsoft Azure integrations report data from various Azure platform services to your New Relic account.
 
-We can integrate the following resources `API Management`, `App Gateway`, `App Service`, `Containers`, `Cosmos DB`, `Cost Management`, `Data Factory`, `Eventhub`, `Express Route`, `Firewalls`, `FrontDoor`, `Functions`, `KeyVault`, `Load Balancer`, `Logic apps`, `Machine learning`, `MariaDB`, `Mysql`, `Postgresql`, `PowerBI Dedicated`, `Redis cache`, `Service Bus`, `Sql`, `Sql Managed`, `Storage`, `Virtual Machine`, `Virtual Networks`, `Vms`, `VPN gateway`. Feel free to adapt the example to your needs.
+This example will integrate the following resources `API Management`, `App Gateway`, `App Service`, `Containers`, `Cosmos DB`, `Cost Management`, `Data Factory`, `Eventhub`, `Express Route`, `Firewalls`, `FrontDoor`, `Functions`, `KeyVault`, `Load Balancer`, `Logic apps`, `Machine learning`, `MariaDB`, `Mysql`, `Postgresql`, `PowerBI Dedicated`, `Redis cache`, `Service Bus`, `Sql`, `Sql Managed`, `Storage`, `Virtual Machine`, `Virtual Networks`, `Vms`, `VPN gateway`. Feel free to adapt the example to your needs.
 
 Link: https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/cloud-integrations-aws.tf
 
 Variables:
 
-NEW_RELIC_ACCOUNT_ID: The New Relic account you want to link to Azure.
+* NEW_RELIC_ACCOUNT_ID: The New Relic account you want to link to Azure.
+* NEW_RELIC_ACCOUNT_NAME: The name of the integration in New Relic. This is usefull if you need to link more than one Azure account.
 
 #### GCP
 
