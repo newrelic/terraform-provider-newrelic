@@ -133,10 +133,10 @@ resource "newrelic_cloud_azure_link_account" "foo" {
   tenant_id = "%[4]s"
   name  = "%[5]s"
 }
- 
+
 resource "newrelic_cloud_azure_integrations" "bar" {
   linked_account_id = newrelic_cloud_azure_link_account.foo.id
-  
+
   api_management {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
@@ -353,7 +353,7 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
   }
-  
+
   functions {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
@@ -413,17 +413,13 @@ resource "newrelic_cloud_azure_integrations" "bar" {
   sql {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
-  } 
-  sql_managed {
-    metrics_polling_interval = 3600
-    resource_groups          = ["beyond"]
   }
 
   sql_managed {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
   }
-  
+
   storage {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
