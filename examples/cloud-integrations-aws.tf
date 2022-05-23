@@ -15,6 +15,11 @@ variable "NEW_RELIC_CLOUDWATCH_ENDPOINT" {
   # default = "https://aws-api.eu01.nr-data.net/cloudwatch-metrics/v1" # EU Datacenter
 }
 
+variable "NEW_RELIC_ACCOUNT_NAME" {
+    type = string
+    default = "Production"
+}
+
 data "aws_iam_policy_document" "newrelic_assume_policy" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -87,7 +92,7 @@ resource "aws_iam_role_policy_attachment" "newrelic_aws_policy_attach" {
 resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_push" {
   arn = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PUSH"
-  name = "production-push"
+  name = "${var.NEW_RELIC_ACCOUNT_NAME} Push"
   depends_on = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
 }
 
@@ -213,7 +218,7 @@ resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_pull" {
   account_id = var.NEW_RELIC_ACCOUNT_ID
   arn = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PULL"
-  name = "production-pull"
+  name = "${var.NEW_RELIC_ACCOUNT_NAME} Pull"
   depends_on = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
 }
 

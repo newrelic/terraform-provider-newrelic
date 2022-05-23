@@ -51,9 +51,9 @@ Variables:
 
 #### Azure
 
-The Microsoft Azure integrations report data from various Azure platform services to your New Relic account.
+The Microsoft Azure integrations reports data from various Azure platform services to your New Relic account.
 
-This example will integrate the following resources `API Management`, `App Gateway`, `App Service`, `Containers`, `Cosmos DB`, `Cost Management`, `Data Factory`, `Eventhub`, `Express Route`, `Firewalls`, `FrontDoor`, `Functions`, `KeyVault`, `Load Balancer`, `Logic apps`, `Machine learning`, `MariaDB`, `Mysql`, `Postgresql`, `PowerBI Dedicated`, `Redis cache`, `Service Bus`, `Sql`, `Sql Managed`, `Storage`, `Virtual Machine`, `Virtual Networks`, `Vms`, `VPN gateway`. Feel free to adapt the example to your needs.
+This example will integrate the following resources: `API Management`, `App Gateway`, `App Service`, `Containers`, `Cosmos DB`, `Cost Management`, `Data Factory`, `Eventhub`, `Express Route`, `Firewalls`, `FrontDoor`, `Functions`, `KeyVault`, `Load Balancer`, `Logic apps`, `Machine learning`, `MariaDB`, `Mysql`, `Postgresql`, `PowerBI Dedicated`, `Redis cache`, `Service Bus`, `Sql`, `Sql Managed`, `Storage`, `Virtual Machine`, `Virtual Networks`, `Vms`, and `VPN gateway`. Feel free to adapt the example to your needs.
 
 Link: https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/cloud-integrations-aws.tf
 
@@ -64,11 +64,15 @@ Variables:
 
 #### GCP
 
-To start receiving Google Cloud Platform (GCP) data with [New Relic GCP integrations](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/introduction-google-cloud-platform-integrations/), connect your Google project to New Relic's [infrastructure monitoring](https://docs.newrelic.com/docs/infrastructure/infrastructure-monitoring/get-started/get-started-infrastructure-monitoring).
+The Google Cloud Platform integrations reports data from various GCP services to your New Relic account.
+
+This example will integrate the following resources: `App Engine`, `BigQuery`, `Cloud Functions`, `Cloud Load Balancing`, `Cloud Pub/Sub`, `Cloud Spanner`, `Cloud SQL`, `Cloud Storage`, `Compute Engine`, and `Kubernetes Engine`. Feel free to adapt the example to your needs.
 
 Link: https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/cloud-integrations-gcp.tf
 
 Variables:
 
 * NEW_RELIC_ACCOUNT_ID: The New Relic account you want to link to GCP.
-* NEW_RELIC_SERVICE_ACCOUNT_ID: The New Relic Service Account ID, Which should be added as a service Account(with [viewer and serviceUsageConsumer role](https://cloud.google.com/iam/docs/understanding-roles)) of your GCP account to get the metrics.
+* NEW_RELIC_SERVICE_ACCOUNT_ID: The ID of the New Relic GCP [Service Account](https://cloud.google.com/iam/docs/service-accounts) with [Viewer and Service Usage Consumer roles](https://cloud.google.com/iam/docs/understanding-roles). You can find this ID in the New Relic UI by going to `Infrastructure > GCP > Add a GCP project`. For more information [check out the New Relic docs](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic/).
+* GCP_PROJECT_ID: The ID of the project you want to receive data from in GCP.
+
