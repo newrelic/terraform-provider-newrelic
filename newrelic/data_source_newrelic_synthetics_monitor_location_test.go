@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	testMonitorLocationLabel = "Cape Town, ZA"
+	testMonitorLocationLabel = "oac-integration-test-location"
 )
 
 func TestAccNewRelicSyntheticsMonitorLocationDataSource_Basic(t *testing.T) {
