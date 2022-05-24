@@ -8,13 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccNewRelicSyntheticsSecureCredentialDataSource_Basic(t *testing.T) {
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf_test_%s", rand)
+	rName := "TF_ACC_TEST"
 	resourceName := "data.newrelic_synthetics_secure_credential.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -25,8 +23,7 @@ func TestAccNewRelicSyntheticsSecureCredentialDataSource_Basic(t *testing.T) {
 				Config: testAccNewRelicSyntheticsSecureCredentialDataSourceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "key", strings.ToUpper(rName)),
-					resource.TestCheckResourceAttr(resourceName, "description", "Test description"),
-					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttr(resourceName, "description", "TF Provider Acceptance Test Secure Cred"), /**/
 					resource.TestCheckResourceAttrSet(resourceName, "last_updated"),
 				),
 			},
@@ -36,14 +33,8 @@ func TestAccNewRelicSyntheticsSecureCredentialDataSource_Basic(t *testing.T) {
 
 func testAccNewRelicSyntheticsSecureCredentialDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_synthetics_secure_credential" "sc" {
-	key = "%[1]s"
-	value = "%[1]s"
-	description = "Test description"
-}
-
 data "newrelic_synthetics_secure_credential" "foo" {
-	key = newrelic_synthetics_secure_credential.sc.key
+	key = "%[1]s"
 }
 `, name)
 }
