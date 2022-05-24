@@ -95,7 +95,7 @@ func resourceNewRelicSyntheticsPrivateLocationCreate(ctx context.Context, d *sch
 		return diags
 	}
 
-	d.SetId(pl.Key)
+	d.SetId(res.Key)
 
 	return resourceNewRelicSyntheticsPrivateLocationRead(ctx, d, meta)
 }
@@ -105,17 +105,17 @@ func resourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *schem
 	client := providerConfig.NewClient
 	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = %s", d.Id())
 
-	entityResults, err := client.Entities.GetEntitySearchWithContext(ctx, entities.EntitySearchOptions{}, queryString, entities.EntitySearchQueryBuilder{}, []entities.EntitySearchSortCriteria{})
-	if err != nil {
-
-	}
-	var entity *entities.EntityOutlineInterface
-	for _, e := range entityResults.Results.Entities {
-		if e.GetName() == d.Id() {
-			entity = &e
-			break
-		}
-	}
+	//entityResults, err := client.Entities.GetEntitySearchWithContext(ctx, entities.EntitySearchOptions{}, queryString, entities.EntitySearchQueryBuilder{}, []entities.EntitySearchSortCriteria{})
+	//if err != nil {
+	//
+	//}
+	//var entity *entities.EntityOutlineInterface
+	//for _, e := range entityResults.Results.Entities {
+	//	if e.GetName() == d.Id() {
+	//		entity = &e
+	//		break
+	//	}
+	//}
 
 	return nil
 }
