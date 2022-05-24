@@ -65,7 +65,7 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(15 * time.Second),
+			Read: schema.DefaultTimeout(20 * time.Second),
 		},
 	}
 }
@@ -219,10 +219,9 @@ func expandSyntheticsSecureCredential(d *schema.ResourceData) *synthetics.Secure
 }
 
 func flattenSyntheticsSecureCredential(sc *entities.EntityOutlineInterface, d *schema.ResourceData) diag.Diagnostics {
-	_ = d.Set("key", (*sc).GetName())
-
 	switch e := (*sc).(type) {
 	case *entities.SecureCredentialEntityOutline:
+		_ = d.Set("key", e.GetName())
 		_ = d.Set("description", e.Description)
 		_ = d.Set("last_updated", time.Time(*e.UpdatedAt).Format(time.RFC3339))
 	}
