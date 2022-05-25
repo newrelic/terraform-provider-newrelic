@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -16,13 +17,15 @@ func dataSourceNewRelicSyntheticsMonitorLocation() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"label": {
 				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the Synthetics monitor location.",
+				Optional:    true,
+				Description: "The name of the Synthetics monitor private location.",
+				Deprecated:  "Use `name` attribute instead.",
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name of the Synthetics monitor location.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The name of the Synthetics monitor private location.",
+				ConflictsWith: []string{"label"},
 			},
 
 			// The legacy attributes below have been deprecated and removed in NerdGraph.
@@ -54,9 +57,18 @@ func dataSourceNewRelicSyntheticsMonitorLocationRead(ctx context.Context, d *sch
 	log.Printf("[INFO] Reading Synthetics monitor locations")
 
 	// Note: The legacy `label` field is the equivalent of `name` in NerdGraph
-	label := d.Get("label").(string)
+	label, labelOk := d.GetOk("label")
+	name, nameOk := d.GetOk("name")
+	if !labelOk && !nameOk {
+		return diag.FromErr(errors.New("one of `label` or `name` must be configured"))
+	}
 
-	query := fmt.Sprintf("domain = 'SYNTH' AND type = 'PRIVATE_LOCATION' AND name = '%s'", label)
+	// If `label` was set in the data source config, set `name` to its value.
+	if labelOk {
+		name = label
+	}
+
+	query := fmt.Sprintf("domain = 'SYNTH' AND type = 'PRIVATE_LOCATION' AND name = '%s'", name)
 	entitySearch, err := client.Entities.GetEntitySearchByQuery(
 		entities.EntitySearchOptions{},
 		query,
@@ -70,28 +82,31 @@ func dataSourceNewRelicSyntheticsMonitorLocationRead(ctx context.Context, d *sch
 	privateLocations := entitySearch.Results.Entities
 	var location *entities.GenericEntityOutline
 	for _, l := range privateLocations {
-		ll := l.(*entities.GenericEntityOutline)
+		loc := l.(*entities.GenericEntityOutline)
 
 		// It's possible to have multiple private locations with the same name.
 		// Return the first matching private location.
-		if ll.Name == label {
-			location = ll
+		if loc.Name == label {
+			location = loc
 			break
 		}
 	}
 
 	if location == nil {
-		return diag.FromErr(fmt.Errorf("the provided label '%s' does not match any Synthetics monitor location tags", label))
+		return diag.FromErr(fmt.Errorf("the provided `name` or `label` '%s' does not match any Synthetics monitor private location", name))
 	}
 
 	d.SetId(location.Name)
-	_ = d.Set("name", location.Name)
-	_ = d.Set("label", location.Name)
 
-	// THESE FIELDS NO LONGER EXIST IN THE NEW NERDGRAPH RESPONSE
-	// _ = d.Set("high_security_mode", location.HighSecurityMode)
-	// _ = d.Set("private", location.Private)
-	// _ = d.Set("description", location.Description)
+	if labelOk {
+		err = d.Set("label", location.Name)
+	} else {
+		err = d.Set("name", location.Name)
+	}
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
