@@ -11,13 +11,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-var (
-	testMonitorLocationLabel = "oac-integration-test-location"
-)
-
 func TestAccNewRelicSyntheticsMonitorLocationDataSource_Basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+	t.Parallel()
+
+	// Temporary until we can provision a private location for our tests
+	testMonitorLocationLabel := "oac-integration-test-location"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+
+			// TODO: Create a test private location to fetch with the data source
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -26,8 +31,17 @@ func TestAccNewRelicSyntheticsMonitorLocationDataSource_Basic(t *testing.T) {
 					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_monitor_location.bar"),
 				),
 			},
+			{
+				Config: testConfigDataSourceSyntheticsLocation(testMonitorLocationLabel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_monitor_location.loc"),
+				),
+			},
 		},
 	})
+
+	// TODO: Cleanup test private location after test has executed
+	// defer func() { // cleanup code }
 }
 
 func testAccNewRelicSyntheticsLocationDataSource(n string) resource.TestCheckFunc {
@@ -44,9 +58,16 @@ func testAccNewRelicSyntheticsLocationDataSource(n string) resource.TestCheckFun
 
 func testAccCheckNewRelicSyntheticsLocationDataSourceConfig(label string) string {
 	return fmt.Sprintf(`
-
 data "newrelic_synthetics_monitor_location" "bar" {
 	label = "%s"
+}
+`, label)
+}
+
+func testConfigDataSourceSyntheticsLocation(label string) string {
+	return fmt.Sprintf(`
+data "newrelic_synthetics_monitor_location" "loc" {
+	name = "%s"
 }
 `, label)
 }
