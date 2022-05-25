@@ -46,7 +46,6 @@ func TestAccNewRelicSyntheticsSecureCredential_Basic(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
 					"value",
-					"created_at",
 					"last_updated",
 				},
 			},
