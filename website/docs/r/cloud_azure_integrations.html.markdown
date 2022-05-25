@@ -20,165 +20,167 @@ You can find instructions on how to set up Azure on [our documentation](https://
 
 ## Example Usage
 
+Leave an integration block empty to use its default configuration. You can also use the [full example, including the Azure set up, found in our guides](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/cloud_integrations_guide#azure).
+
 ```hcl
 
-  resource "newrelic_cloud_azure_link_account" "foo"{
-    account_id = "The New Relic account ID where you want to link the Azure account"
-	application_id = "ID of the application"
-	client_secret = "Secret value of client's Azure account"
-	subscription_id = "Subscription ID of Azure"
-	tenant_id = "Tenant ID of the Azure"
-	name  = "Name of the linked account"
+resource "newrelic_cloud_azure_link_account" "foo" {
+  account_id = "The New Relic account ID where you want to link the Azure account"
+  application_id = "ID of the application"
+  client_secret = "Secret value of client's Azure account"
+  subscription_id = "Subscription ID of Azure"
+  tenant_id = "Tenant ID of the Azure"
+  name  = "Name of the linked account"
 }
 
-  resource "newrelic_cloud_azure_integrations" "foo" {
-    linked_account_id = newrelic_cloud_azure_link_account.foo.id
-    account_id = "The New Relic account ID"
-    
-    api_management {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+resource "newrelic_cloud_azure_integrations" "foo" {
+  linked_account_id = newrelic_cloud_azure_link_account.foo.id
+  account_id = "The New Relic account ID"
 
-    app_gateway {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  api_management {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    app_service {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  app_gateway {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    containers {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  app_service {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    cosmos_db {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
-    
-    cost_management {
-      metrics_polling_interval = 3600
-      tag_keys = ["tag_keys"]
-    }
+  containers {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    data_factory {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  cosmos_db {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    event_hub {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  cost_management {
+    metrics_polling_interval = 3600
+    tag_keys = ["tag_keys"]
+  }
 
-    express_route {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  data_factory {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    firewalls {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  event_hub {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    front_door {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  express_route {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    functions {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  firewalls {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    key_vault {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  front_door {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    load_balancer {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  functions {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    logic_apps {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  key_vault {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    machine_learning {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  load_balancer {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    maria_db {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  logic_apps {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    mysql {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  machine_learning {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    postgresql {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  maria_db {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    power_bi_dedicated {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
-    
-    redis_cache {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  mysql {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    service_bus {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  postgresql {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    sql {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  power_bi_dedicated {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    sql_managed {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  redis_cache {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    storage {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  service_bus {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    virtual_machine {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  sql {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    virtual_networks {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  sql_managed {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    vms {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  storage {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 
-    vpn_gateway {
-      metrics_polling_interval = 1200
-      resource_groups = ["resource_groups"]
-    }
+  virtual_machine {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
+
+  virtual_networks {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
+
+  vms {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
+
+  vpn_gateway {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
 }
 ```
 ## Argument Reference
@@ -228,7 +230,7 @@ Other integration type support an additional argument:
 
 * `cost_management`
   * `tag_keys` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
-  
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

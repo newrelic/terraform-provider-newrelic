@@ -22,15 +22,15 @@ In the GCP project IAM & admin, the service account must have the Project Viewer
 
 Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic) to set up the integration.
 
-
 ## Example Usage
 
+You can also use the [full example, including the GCP set up, found in our guides](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/cloud_integrations_guide#gcp).
+
 ```hcl
- 
- resource "newrelic_cloud_gcp_link_account" "foo"{
-   account_id = "account id of newrelic account"
-   project_id = "id of the Project"
-   name  = "account name"
+resource "newrelic_cloud_gcp_link_account" "foo" {
+  account_id = "account id of newrelic account"
+  project_id = "id of the Project"
+  name  = "account name"
 }
 ```
 
