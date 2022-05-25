@@ -51,12 +51,6 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 				Optional:    true,
 				Description: "The secure credential's description.",
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The time the secure credential was created.",
-			},
 			"last_updated": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -101,8 +95,6 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 	}
 
 	d.SetId(res.Key)
-
-	_ = d.Set("created_at", time.Time(res.CreatedAt).Format(time.RFC3339))
 
 	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
 }
