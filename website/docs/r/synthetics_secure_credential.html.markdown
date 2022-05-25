@@ -27,17 +27,13 @@ The following arguments are supported:
   * `key` - (Required) The secure credential's key name.  Regardless of the case used in the configuration, the provider will provide an upcased key to the underlying API.
   * `value` - (Required) The secure credential's value. 
   * `description` - (Optional) The secure credential's description.
-
-```
-Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
-```
+  * `account_id` - (Optional) Determines the New Relic account where the secure credential will be created. Defaults to the account associated with the API key used.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-  * `created_at` - The time the secure credential was created.
-  * `updated_at` - The time the secure credential was last updated.
+  * `last_updated` - The time the secure credential was last updated.
 
 ## Import
 
