@@ -664,7 +664,7 @@ func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	d.Set("guid", "")
+	d.SetId("")
 
 	return nil
 }
