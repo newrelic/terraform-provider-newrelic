@@ -607,7 +607,7 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 	client := meta.(*ProviderConfig).NewClient
 	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
 
-	providerConfig := meta.(*ProviderConfig)
+	//providerConfig := meta.(*ProviderConfig)
 
 	//accountID := selectAccountID(providerConfig, d)
 	//
