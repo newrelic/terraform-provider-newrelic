@@ -9,9 +9,9 @@ replace (
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.9.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/newrelic/go-agent/v3 v3.15.2
+	github.com/newrelic/go-agent/v3 v3.16.0
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go v0.80.0
+	github.com/newrelic/newrelic-client-go v0.85.0
 	github.com/stretchr/testify v1.7.1
 )
 
