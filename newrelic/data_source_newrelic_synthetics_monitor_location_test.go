@@ -17,7 +17,7 @@ func TestAccNewRelicSyntheticsMonitorLocationDataSource_Basic(t *testing.T) {
 	// Temporary until we can provision a private location for our tests
 	testMonitorLocationLabel := "oac-integration-test-location"
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 
