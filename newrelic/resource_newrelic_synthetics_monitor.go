@@ -211,18 +211,18 @@ func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
 	return monitorInputs
 }
 
-func buildSyntheticsScriptApiMonitorStruct(d *schema.ResourceData) synthetics.SyntheticsCreateScriptAPIMonitorInput {
-	scriptApiMonitorInput := synthetics.SyntheticsCreateScriptAPIMonitorInput{}
+func buildSyntheticsScriptAPIMonitorStruct(d *schema.ResourceData) synthetics.SyntheticsCreateScriptAPIMonitorInput {
+	scriptAPIMonitorInput := synthetics.SyntheticsCreateScriptAPIMonitorInput{}
 	input := buildSyntheticsMonitorBase(d)
-	scriptApiMonitorInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])
-	scriptApiMonitorInput.Name = input["name"].(string)
-	scriptApiMonitorInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
-	scriptApiMonitorInput.Runtime.RuntimeType = input["runtime_type"].(string)
-	scriptApiMonitorInput.Runtime.ScriptLanguage = input["script_language"].(string)
-	scriptApiMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
-	scriptApiMonitorInput.Script = input["script"].(string)
-	scriptApiMonitorInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
-	return scriptApiMonitorInput
+	scriptAPIMonitorInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])
+	scriptAPIMonitorInput.Name = input["name"].(string)
+	scriptAPIMonitorInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
+	scriptAPIMonitorInput.Runtime.RuntimeType = input["runtime_type"].(string)
+	scriptAPIMonitorInput.Runtime.ScriptLanguage = input["script_language"].(string)
+	scriptAPIMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
+	scriptAPIMonitorInput.Script = input["script"].(string)
+	scriptAPIMonitorInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	return scriptAPIMonitorInput
 }
 
 func expandSyntheticsScriptMonitorLocations(v interface{}) synthetics.SyntheticsScriptedMonitorLocationsInput {
@@ -458,7 +458,10 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 			}
 		}
 		gUID := resp.Monitor.GUID
-		d.Set("guid", gUID)
+		err = d.Set("guid", gUID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
 	case "BROWSER":
 		simpleBrowserMonitorInput := buildSyntheticsSimpleBrowserMonitor(d)
@@ -475,10 +478,13 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 			}
 		}
 		gUID := resp.Monitor.GUID
-		d.Set("guid", gUID)
+		err = d.Set("guid", gUID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
 	case "SCRIPT_API":
-		scriptedApiMonitorInput := buildSyntheticsScriptApiMonitorStruct(d)
+		scriptedApiMonitorInput := buildSyntheticsScriptAPIMonitorStruct(d)
 		resp, err := client.Synthetics.SyntheticsCreateScriptAPIMonitorWithContext(ctx, accountID, scriptedApiMonitorInput)
 		if err != nil {
 			return diag.FromErr(err)
@@ -492,7 +498,10 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 			}
 		}
 		gUID := resp.Monitor.GUID
-		d.Set("guid", gUID)
+		err = d.Set("guid", gUID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
 	case "SCRIPT_BROWSER":
 		scriptedBrowserMonitorInput := buildSyntheticsScriptBrowserMonitorStruct(d)
@@ -510,7 +519,10 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 		}
 		gUID := resp.Monitor.GUID
 
-		d.Set("guid", gUID)
+		err = d.Set("guid", gUID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	///////////////////////////
 
