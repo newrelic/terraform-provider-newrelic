@@ -163,6 +163,9 @@ func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
 
 	var monitorInputs = make(map[string]interface{})
 
+	if screenShot, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
+		monitorInputs["enable_screenshot_on_failure_and_script"] = screenShot
+	}
 	if customHeaders, ok := d.GetOk("custom_headers"); ok {
 		monitorInputs["custom_headers"] = customHeaders
 	}
@@ -208,6 +211,9 @@ func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
 	if script, ok := d.GetOk("script"); ok {
 		monitorInputs["script"] = script
 	}
+	if status, ok := d.GetOk("status"); ok {
+		monitorInputs["status"] = status
+	}
 	return monitorInputs
 }
 
@@ -221,7 +227,9 @@ func buildSyntheticsScriptAPIMonitorStruct(d *schema.ResourceData) synthetics.Sy
 	scriptAPIMonitorInput.Runtime.ScriptLanguage = input["script_language"].(string)
 	scriptAPIMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
 	scriptAPIMonitorInput.Script = input["script"].(string)
+	scriptAPIMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
 	scriptAPIMonitorInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+
 	return scriptAPIMonitorInput
 }
 
@@ -260,53 +268,42 @@ func expandSyntheticsTagValues(v []interface{}) []string {
 
 func buildSyntheticsScriptBrowserMonitorStruct(d *schema.ResourceData) synthetics.SyntheticsCreateScriptBrowserMonitorInput {
 	scriptBrowserMonitorInput := synthetics.SyntheticsCreateScriptBrowserMonitorInput{}
+
 	input := buildSyntheticsMonitorBase(d)
-	scriptBrowserMonitorInput.Script = input["script"].(string)
+
+	scriptBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = input["enable_screenshot_on_failure_and_script"].(bool)
+	scriptBrowserMonitorInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])
+	scriptBrowserMonitorInput.Name = input["name"].(string)
+	scriptBrowserMonitorInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
+	scriptBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
 	scriptBrowserMonitorInput.Runtime.ScriptLanguage = input["script_language"].(string)
+	scriptBrowserMonitorInput.Runtime.RuntimeType = input["runtime_type"].(string)
+	scriptBrowserMonitorInput.Script = input["script"].(string)
+	scriptBrowserMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
+	scriptBrowserMonitorInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+
 	return scriptBrowserMonitorInput
 }
 
 func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleBrowserMonitorInput {
 	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{}
-	if customHeaders, ok := d.GetOk("custom_headers"); ok {
-		simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(customHeaders.(*schema.Set).List())
-	}
-	if screenshot, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
-		simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = screenshot.(bool)
-	}
-	if respValidateText, ok := d.GetOk("validation_string"); ok {
-		simpleBrowserMonitorInput.AdvancedOptions.ResponseValidationText = respValidateText.(string)
-	}
-	if tlsValidations, ok := d.GetOk("verify_ssl"); ok {
-		simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = tlsValidations.(bool)
-	}
-	if locations, ok := d.GetOk("locations"); ok {
-		simpleBrowserMonitorInput.Locations = expandSyntheticsLocations(locations)
-	}
-	if name, ok := d.GetOk("name"); ok {
-		simpleBrowserMonitorInput.Name = name.(string)
-	}
-	if period, ok := d.GetOk("frequency"); ok {
-		simpleBrowserMonitorInput.Period = synthetics.SyntheticsMonitorPeriod(period.(string))
-	}
-	if runtimeType, ok := d.GetOk("runtime_type"); ok {
-		simpleBrowserMonitorInput.Runtime.RuntimeType = runtimeType.(string)
-	}
-	if runtimeTypeVersion, ok := d.GetOk("runtime_type_version"); ok {
-		simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
-	}
-	if scriptLanguage, ok := d.GetOk("scriptLanguage"); ok {
-		simpleBrowserMonitorInput.Runtime.ScriptLanguage = scriptLanguage.(string)
-	}
-	if status, ok := d.GetOk("SyntheticsMonitorStatus"); ok {
-		simpleBrowserMonitorInput.Status = synthetics.SyntheticsMonitorStatus(status.(string))
-	}
-	if tags, ok := d.GetOk("tags"); ok {
-		simpleBrowserMonitorInput.Tags = expandSyntheticsTags(tags.(*schema.Set).List())
-	}
-	if uri, ok := d.GetOk("uri"); ok {
-		simpleBrowserMonitorInput.Uri = uri.(string)
-	}
+
+	input := buildSyntheticsMonitorBase(d)
+
+	simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
+	simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = input["enable_screenshot_on_failure_and_script"].(bool)
+	simpleBrowserMonitorInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
+	simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = input["verify_ssl"].(bool)
+	simpleBrowserMonitorInput.Locations = expandSyntheticsLocations(input["locations"])
+	simpleBrowserMonitorInput.Name = input["name"].(string)
+	simpleBrowserMonitorInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
+	simpleBrowserMonitorInput.Runtime.RuntimeType = input["runtime_type"].(string)
+	simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
+	simpleBrowserMonitorInput.Runtime.ScriptLanguage = input["scriptLanguage"].(string)
+	simpleBrowserMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
+	simpleBrowserMonitorInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	simpleBrowserMonitorInput.Uri = input["uri"].(string)
+
 	return simpleBrowserMonitorInput
 }
 
@@ -337,80 +334,22 @@ func expandCustomHeaders(headers []interface{}) []synthetics.SyntheticsCustomHea
 
 func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleMonitorInput {
 	simpleMonitorInput := synthetics.SyntheticsCreateSimpleMonitorInput{}
-	if customHeaders, ok := d.GetOk("custom_headers"); ok {
-		simpleMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(customHeaders.(*schema.Set).List())
-	}
-	if redirectFailure, ok := d.GetOk("treat_redirect_as_failure"); ok {
-		simpleMonitorInput.AdvancedOptions.RedirectIsFailure = redirectFailure.(bool)
-	}
-	if respValidateText, ok := d.GetOk("validation_string"); ok {
-		simpleMonitorInput.AdvancedOptions.ResponseValidationText = respValidateText.(string)
-	}
-	if pass, ok := d.GetOk("bypass_head_request"); ok {
-		simpleMonitorInput.AdvancedOptions.ShouldBypassHeadRequest = pass.(bool)
-	}
-	if tlsValidations, ok := d.GetOk("verify_ssl"); ok {
-		simpleMonitorInput.AdvancedOptions.UseTlsValidation = tlsValidations.(bool)
-	}
-	if locations, ok := d.GetOk("locations"); ok {
-		simpleMonitorInput.Locations = expandSyntheticsLocations(locations)
-	}
-	if name, ok := d.GetOk("name"); ok {
-		simpleMonitorInput.Name = name.(string)
-	}
-	if period, ok := d.GetOk("frequency"); ok {
-		simpleMonitorInput.Period = synthetics.SyntheticsMonitorPeriod(period.(string))
-	}
-	if status, ok := d.GetOk("SyntheticsMonitorStatus"); ok {
-		simpleMonitorInput.Status = synthetics.SyntheticsMonitorStatus(status.(string))
-	}
-	if tags, ok := d.GetOk("tags"); ok {
-		simpleMonitorInput.Tags = expandSyntheticsTags(tags.(*schema.Set).List())
-	}
-	if uri, ok := d.GetOk("uri"); ok {
-		simpleMonitorInput.Uri = uri.(string)
-	}
+
+	input := buildSyntheticsMonitorBase(d)
+
+	simpleMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
+	simpleMonitorInput.AdvancedOptions.RedirectIsFailure = input["treat_redirect_as_failure"].(bool)
+	simpleMonitorInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
+	simpleMonitorInput.AdvancedOptions.ShouldBypassHeadRequest = input["bypass_head_request"].(bool)
+	simpleMonitorInput.AdvancedOptions.UseTlsValidation = input["verify_ssl"].(bool)
+	simpleMonitorInput.Locations = expandSyntheticsLocations(input["locations"])
+	simpleMonitorInput.Name = input["name"].(string)
+	simpleMonitorInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
+	simpleMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["SyntheticsMonitorStatus"].(string))
+	simpleMonitorInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	simpleMonitorInput.Uri = input["uri"].(string)
+
 	return simpleMonitorInput
-}
-
-func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Monitor {
-	monitor := synthetics.Monitor{
-		ID:           d.Id(),
-		Name:         d.Get("name").(string),
-		Type:         synthetics.MonitorType(d.Get("type").(string)),
-		Frequency:    uint(d.Get("frequency").(int)),
-		Status:       synthetics.MonitorStatusType(d.Get("status").(string)),
-		SLAThreshold: d.Get("sla_threshold").(float64),
-	}
-
-	if uri, ok := d.GetOk("uri"); ok {
-		monitor.URI = uri.(string)
-	}
-
-	locationsRaw := d.Get("locations").(*schema.Set)
-	locations := make([]string, locationsRaw.Len())
-	for i, v := range locationsRaw.List() {
-		locations[i] = fmt.Sprint(v)
-	}
-
-	if validationString, ok := d.GetOk("validation_string"); ok {
-		monitor.Options.ValidationString = validationString.(string)
-	}
-
-	if verifySSL, ok := d.GetOkExists("verify_ssl"); ok {
-		monitor.Options.VerifySSL = verifySSL.(bool)
-	}
-
-	if bypassHeadRequest, ok := d.GetOkExists("bypass_head_request"); ok {
-		monitor.Options.BypassHEADRequest = bypassHeadRequest.(bool)
-	}
-
-	if treatRedirectAsFailure, ok := d.GetOkExists("treat_redirect_as_failure"); ok {
-		monitor.Options.TreatRedirectAsFailure = treatRedirectAsFailure.(bool)
-	}
-
-	monitor.Locations = locations
-	return &monitor
 }
 
 // TODO: Reduce the cyclomatic complexity of this func
@@ -418,7 +357,6 @@ func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Monito
 func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
-	/////////////////////////////
 	providerConfig := meta.(*ProviderConfig)
 
 	accountID := selectAccountID(providerConfig, d)
@@ -512,18 +450,7 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 			return diag.FromErr(err)
 		}
 	}
-	///////////////////////////
 
-	//monitorStruct := buildSyntheticsMonitorStruct(d)
-	//
-	//log.Printf("[INFO] Creating New Relic Synthetics monitor %s", monitorStruct.Name)
-	//
-	//monitor, err := client.Synthetics.CreateMonitorWithContext(ctx, monitorStruct)
-	//if err != nil {
-	//	return diag.FromErr(err)
-	//}
-	//
-	//d.SetId(monitor.ID)
 	return resourceNewRelicSyntheticsMonitorRead(ctx, d, meta)
 }
 
@@ -532,7 +459,6 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
 
-	//common.EntityGUID(d.Id())
 	guid := common.EntityGUID(d.Id())
 	resp, err := client.Entities.GetEntity(guid)
 	if err != nil {
@@ -560,6 +486,85 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 	}
 }
 
+func buildSyntheticsScriptAPIMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateScriptAPIMonitorInput {
+	scriptAPIMonitorUpdateInput := synthetics.SyntheticsUpdateScriptAPIMonitorInput{}
+
+	input := buildSyntheticsMonitorBase(d)
+
+	scriptAPIMonitorUpdateInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])
+	scriptAPIMonitorUpdateInput.Name = input["name"].(string)
+	scriptAPIMonitorUpdateInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
+	scriptAPIMonitorUpdateInput.Runtime.RuntimeType = input["runtime_type"].(string)
+	scriptAPIMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
+	scriptAPIMonitorUpdateInput.Runtime.ScriptLanguage = input["script_language"].(string)
+	scriptAPIMonitorUpdateInput.Script = input["script"].(string)
+	scriptAPIMonitorUpdateInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
+	scriptAPIMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+
+	return scriptAPIMonitorUpdateInput
+}
+
+func buildSyntheticsScriptBrowserMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateScriptBrowserMonitorInput {
+	scriptBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateScriptBrowserMonitorInput{}
+
+	input := buildSyntheticsMonitorBase(d)
+
+	scriptBrowserMonitorUpdateInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = input["enable_screenshot_on_failure_and_script"].(bool)
+	scriptBrowserMonitorUpdateInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])
+	scriptBrowserMonitorUpdateInput.Name = input["name"].(string)
+	scriptBrowserMonitorUpdateInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
+	scriptBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
+	scriptBrowserMonitorUpdateInput.Runtime.ScriptLanguage = input["script_language"].(string)
+	scriptBrowserMonitorUpdateInput.Runtime.RuntimeType = input["runtime_type"].(string)
+	scriptBrowserMonitorUpdateInput.Script = input["script"].(string)
+	scriptBrowserMonitorUpdateInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
+	scriptBrowserMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+
+	return scriptBrowserMonitorUpdateInput
+}
+
+func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleBrowserMonitorInput {
+	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{}
+
+	input := buildSyntheticsMonitorBase(d)
+
+	simpleBrowserMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
+	simpleBrowserMonitorUpdateInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = input["enable_screenshot_on_failure_and_script"].(bool)
+	simpleBrowserMonitorUpdateInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
+	simpleBrowserMonitorUpdateInput.AdvancedOptions.UseTlsValidation = input["verify_ssl"].(bool)
+	simpleBrowserMonitorUpdateInput.Locations = expandSyntheticsLocations(input["locations"])
+	simpleBrowserMonitorUpdateInput.Name = input["name"].(string)
+	simpleBrowserMonitorUpdateInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
+	simpleBrowserMonitorUpdateInput.Runtime.RuntimeType = input["runtime_type"].(string)
+	simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
+	simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = input["scriptLanguage"].(string)
+	simpleBrowserMonitorUpdateInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
+	simpleBrowserMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	simpleBrowserMonitorUpdateInput.Uri = input["uri"].(string)
+
+	return simpleBrowserMonitorUpdateInput
+}
+
+func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleMonitorInput {
+	simpleMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleMonitorInput{}
+
+	input := buildSyntheticsMonitorBase(d)
+
+	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
+	simpleMonitorUpdateInput.AdvancedOptions.RedirectIsFailure = input["treat_redirect_as_failure"].(bool)
+	simpleMonitorUpdateInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
+	simpleMonitorUpdateInput.AdvancedOptions.ShouldBypassHeadRequest = input["bypass_head_request"].(bool)
+	simpleMonitorUpdateInput.AdvancedOptions.UseTlsValidation = input["verify_ssl"].(bool)
+	simpleMonitorUpdateInput.Locations = expandSyntheticsLocations(input["locations"])
+	simpleMonitorUpdateInput.Name = input["name"].(string)
+	simpleMonitorUpdateInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
+	simpleMonitorUpdateInput.Status = synthetics.SyntheticsMonitorStatus(input["SyntheticsMonitorStatus"].(string))
+	simpleMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	simpleMonitorUpdateInput.Uri = input["uri"].(string)
+
+	return simpleMonitorUpdateInput
+}
+
 func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
@@ -567,11 +572,80 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 	//providerConfig := meta.(*ProviderConfig)
 
 	//accountID := selectAccountID(providerConfig, d)
-	//
-	//resp, err := client.Synthetics.SyntheticsUpdateSimpleMonitorWithContext()
-	_, err := client.Synthetics.UpdateMonitorWithContext(ctx, *buildSyntheticsUpdateMonitorArgs(d))
-	if err != nil {
-		return diag.FromErr(err)
+
+	var diags diag.Diagnostics
+
+	monitorType, ok := d.GetOk("type")
+	if !ok {
+		log.Printf("Not Monitor type specified")
+	}
+
+	guid := synthetics.EntityGUID(d.Id())
+
+	switch monitorType {
+
+	case "SIMPLE":
+		simpleMonitorUpdateInput := buildSyntheticsSimpleMonitorUpdateStruct(d)
+		resp, err := client.Synthetics.SyntheticsUpdateSimpleMonitorWithContext(ctx, guid, simpleMonitorUpdateInput)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(resp.Errors) > 0 {
+			for _, err := range resp.Errors {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  string(err.Type) + " " + err.Description,
+				})
+			}
+		}
+
+	case "BROWSER":
+		simpleBrowserMonitorUpdateInput := buildSyntheticsSimpleBrowserMonitorUpdateStruct(d)
+		resp, err := client.Synthetics.SyntheticsUpdateSimpleBrowserMonitorWithContext(ctx, guid, simpleBrowserMonitorUpdateInput)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(resp.Errors) > 0 {
+			for _, err := range resp.Errors {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  string(err.Type) + " " + err.Description,
+				})
+			}
+		}
+
+	case "SCRIPT_API":
+		scriptedAPIMonitorUpdateInput := buildSyntheticsScriptAPIMonitorUpdateStruct(d)
+		resp, err := client.Synthetics.SyntheticsUpdateScriptAPIMonitorWithContext(ctx, guid, scriptedAPIMonitorUpdateInput)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(resp.Errors) > 0 {
+			for _, err := range resp.Errors {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  string(err.Type) + " " + err.Description,
+				})
+			}
+		}
+
+	case "SCRIPT_BROWSER":
+		scriptedBrowserMonitorUpdateInput := buildSyntheticsScriptBrowserMonitorUpdateStruct(d)
+
+		resp, err := client.Synthetics.SyntheticsUpdateScriptBrowserMonitorWithContext(ctx, guid, scriptedBrowserMonitorUpdateInput)
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(resp.Errors) > 0 {
+			for _, err := range resp.Errors {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  string(err.Type) + " " + err.Description,
+				})
+			}
+		}
+
 	}
 
 	return resourceNewRelicSyntheticsMonitorRead(ctx, d, meta)
@@ -580,11 +654,17 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
+	guid := synthetics.EntityGUID(d.Id())
+
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor %s", d.Id())
 
-	if err := client.Synthetics.DeleteMonitorWithContext(ctx, d.Id()); err != nil {
+	_, err := client.Synthetics.SyntheticsDeleteMonitorWithContext(ctx, guid)
+
+	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	d.Set("guid", "")
 
 	return nil
 }
