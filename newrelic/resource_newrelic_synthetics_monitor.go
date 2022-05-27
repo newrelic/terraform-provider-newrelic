@@ -159,10 +159,10 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 	}
 }
 
-////****
-
 func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
-	var monitorInputs map[string]interface{}
+
+	var monitorInputs = make(map[string]interface{})
+
 	if customHeaders, ok := d.GetOk("custom_headers"); ok {
 		monitorInputs["custom_headers"] = customHeaders
 	}
@@ -209,7 +209,6 @@ func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
 		monitorInputs["script"] = script
 	}
 	return monitorInputs
-
 }
 
 func buildSyntheticsScriptApiMonitorStruct(d *schema.ResourceData) synthetics.SyntheticsCreateScriptAPIMonitorInput {
@@ -373,47 +372,6 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 	}
 	return simpleMonitorInput
 }
-
-////****
-
-//func buildSyntheticsMonitorStruct(d *schema.ResourceData) synthetics.Monitor {
-//	monitor := synthetics.Monitor{
-//		Name:         d.Get("name").(string),
-//		Type:         synthetics.MonitorType(d.Get("type").(string)),
-//		Frequency:    uint(d.Get("frequency").(int)),
-//		Status:       synthetics.MonitorStatusType(d.Get("status").(string)),
-//		SLAThreshold: d.Get("sla_threshold").(float64),
-//	}
-//
-//	if uri, ok := d.GetOk("uri"); ok {
-//		monitor.URI = uri.(string)
-//	}
-//
-//	locationsRaw := d.Get("locations").(*schema.Set)
-//	locations := make([]string, locationsRaw.Len())
-//	for i, v := range locationsRaw.List() {
-//		locations[i] = fmt.Sprint(v)
-//	}
-//
-//	if validationString, ok := d.GetOk("validation_string"); ok {
-//		monitor.Options.ValidationString = validationString.(string)
-//	}
-//
-//	if verifySSL, ok := d.GetOkExists("verify_ssl"); ok {
-//		monitor.Options.VerifySSL = verifySSL.(bool)
-//	}
-//
-//	if bypassHeadRequest, ok := d.GetOkExists("bypass_head_request"); ok {
-//		monitor.Options.BypassHEADRequest = bypassHeadRequest.(bool)
-//	}
-//
-//	if treatRedirectAsFailure, ok := d.GetOkExists("treat_redirect_as_failure"); ok {
-//		monitor.Options.TreatRedirectAsFailure = treatRedirectAsFailure.(bool)
-//	}
-//
-//	monitor.Locations = locations
-//	return monitor
-//}
 
 func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Monitor {
 	monitor := synthetics.Monitor{
