@@ -413,20 +413,8 @@ func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Monito
 	return &monitor
 }
 
-func readSyntheticsMonitorStruct(monitor *synthetics.Monitor, d *schema.ResourceData) {
-	_ = d.Set("name", monitor.Name)
-	_ = d.Set("type", monitor.Type)
-	_ = d.Set("frequency", monitor.Frequency)
-	_ = d.Set("uri", monitor.URI)
-	_ = d.Set("locations", monitor.Locations)
-	_ = d.Set("status", monitor.Status)
-	_ = d.Set("sla_threshold", monitor.SLAThreshold)
-	_ = d.Set("verify_ssl", monitor.Options.VerifySSL)
-	_ = d.Set("validation_string", monitor.Options.ValidationString)
-	_ = d.Set("bypass_head_request", monitor.Options.BypassHEADRequest)
-	_ = d.Set("treat_redirect_as_failure", monitor.Options.TreatRedirectAsFailure)
-}
-
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint:gocyclo
 func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
@@ -484,8 +472,8 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 		}
 
 	case "SCRIPT_API":
-		scriptedApiMonitorInput := buildSyntheticsScriptAPIMonitorStruct(d)
-		resp, err := client.Synthetics.SyntheticsCreateScriptAPIMonitorWithContext(ctx, accountID, scriptedApiMonitorInput)
+		scriptedAPIMonitorInput := buildSyntheticsScriptAPIMonitorStruct(d)
+		resp, err := client.Synthetics.SyntheticsCreateScriptAPIMonitorWithContext(ctx, accountID, scriptedAPIMonitorInput)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -544,9 +532,9 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
 
-	resp, err := client.Entities.GetEntity(common.EntityGUID(d.Id()))
-	setCommonSyntheticsMonitorAttributes(resp, d)
-	monitor, err := client.Synthetics.GetMonitorWithContext(ctx, d.Id())
+	//common.EntityGUID(d.Id())
+	guid := common.EntityGUID(d.Id())
+	resp, err := client.Entities.GetEntity(guid)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -556,8 +544,7 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	readSyntheticsMonitorStruct(monitor, d)
-
+	setCommonSyntheticsMonitorAttributes(resp, d)
 	return nil
 }
 
