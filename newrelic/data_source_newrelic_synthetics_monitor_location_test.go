@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccNewRelicSyntheticsMonitorLocationDataSource_Basic(t *testing.T) {
+func TestAccNewRelicSyntheticsMonitorLocationDataSource(t *testing.T) {
 	t.Parallel()
 
 	// Temporary until we can provision a private location for our tests
@@ -26,15 +26,15 @@ func TestAccNewRelicSyntheticsMonitorLocationDataSource_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicSyntheticsLocationDataSourceConfig(testMonitorLocationLabel),
+				Config: testConfigDataSourceSyntheticsLocation("label", testMonitorLocationLabel),
 				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_monitor_location.bar"),
+					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_monitor_location.bar", "label"),
 				),
 			},
 			{
-				Config: testConfigDataSourceSyntheticsLocation(testMonitorLocationLabel),
+				Config: testConfigDataSourceSyntheticsLocation("name", testMonitorLocationLabel),
 				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_monitor_location.loc"),
+					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_monitor_location.bar", "name"),
 				),
 			},
 		},
@@ -44,30 +44,22 @@ func TestAccNewRelicSyntheticsMonitorLocationDataSource_Basic(t *testing.T) {
 	// defer func() { // cleanup code }
 }
 
-func testAccNewRelicSyntheticsLocationDataSource(n string) resource.TestCheckFunc {
+func testAccNewRelicSyntheticsLocationDataSource(n string, attr string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
 		a := r.Primary.Attributes
 
-		if a["label"] == "" {
-			return fmt.Errorf("expected to read synthetics monitor location data from New Relic")
+		if _, ok := a[attr]; !ok {
+			return fmt.Errorf("expected to read synthetics monitor location data from New Relic using attribute `%s`", attr)
 		}
 		return nil
 	}
 }
 
-func testAccCheckNewRelicSyntheticsLocationDataSourceConfig(label string) string {
+func testConfigDataSourceSyntheticsLocation(attr string, value string) string {
 	return fmt.Sprintf(`
 data "newrelic_synthetics_monitor_location" "bar" {
-	label = "%s"
+	%s = "%s"
 }
-`, label)
-}
-
-func testConfigDataSourceSyntheticsLocation(label string) string {
-	return fmt.Sprintf(`
-data "newrelic_synthetics_monitor_location" "loc" {
-	name = "%s"
-}
-`, label)
+`, attr, value)
 }
