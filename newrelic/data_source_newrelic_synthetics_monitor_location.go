@@ -27,26 +27,6 @@ func dataSourceNewRelicSyntheticsMonitorLocation() *schema.Resource {
 				Description:   "The name of the Synthetics monitor private location.",
 				ConflictsWith: []string{"label"},
 			},
-
-			// The legacy attributes below have been deprecated and removed in NerdGraph.
-			"high_security_mode": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Represents if high security mode is enabled for the location. A value of true means that high security mode is enabled, and a value of false means it is disabled.",
-				Deprecated:  "The `high_security_mode` field has been deprecated and no longer exists in the API response.",
-			},
-			"private": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Represents if this location is a private location. A value of true means that the location is private, and a value of false means it is public.",
-				Deprecated:  "The `private` field has been deprecated and no longer exists in the API response.",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "A description of the Synthetics monitor location.",
-				Deprecated:  "The `description` field has been deprecated and no longer exists in the API response.",
-			},
 		},
 	}
 }
@@ -86,17 +66,17 @@ func dataSourceNewRelicSyntheticsMonitorLocationRead(ctx context.Context, d *sch
 
 		// It's possible to have multiple private locations with the same name.
 		// Return the first matching private location.
-		if loc.Name == label {
+		if loc.Name == name {
 			location = loc
 			break
 		}
 	}
 
 	if location == nil {
-		return diag.FromErr(fmt.Errorf("the provided `name` or `label` '%s' does not match any Synthetics monitor private location", name))
+		return diag.FromErr(fmt.Errorf("no matches found for private location with name '%s'", name))
 	}
 
-	d.SetId(location.Name)
+	d.SetId(string(location.GUID))
 
 	if labelOk {
 		err = d.Set("label", location.Name)
