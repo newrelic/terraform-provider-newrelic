@@ -3,9 +3,11 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"github.com/newrelic/newrelic-client-go/pkg/common"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"log"
+
+	"github.com/newrelic/newrelic-client-go/pkg/common"
+
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -116,7 +118,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "",
-				Elem: schema.Resource{
+				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
 							Type:        schema.TypeString,
@@ -125,6 +127,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 						},
 						"values": {
 							Type:        schema.TypeSet,
+							Elem:        &schema.Schema{Type: schema.TypeString},
 							Required:    true,
 							Description: "",
 						},
@@ -140,7 +143,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Type:        schema.TypeSet,
 				Description: "",
 				Optional:    true,
-				Elem: schema.Resource{
+				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
 							Type:        schema.TypeString,
@@ -199,8 +202,8 @@ func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
 	if scriptLanguage, ok := d.GetOk("script_language"); ok {
 		monitorInputs["script_language"] = scriptLanguage
 	}
-	if status, ok := d.GetOk("SyntheticsMonitorStatus"); ok {
-		monitorInputs["SyntheticsMonitorStatus"] = status
+	if status, ok := d.GetOk("synthetics_monitor_status"); ok {
+		monitorInputs["synthetics_monitor_status"] = status
 	}
 	if tags, ok := d.GetOk("tags"); ok {
 		monitorInputs["tags"] = tags
@@ -217,12 +220,39 @@ func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
 	return monitorInputs
 }
 
+//1, 5, 10, 15, 30, 60, 360, 720, 1440
+
+func periodConvIntToString(v interface{}) synthetics.SyntheticsMonitorPeriod {
+	var output synthetics.SyntheticsMonitorPeriod
+	switch v.(int) {
+	case 1:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE
+	case 5:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_5_MINUTES
+	case 10:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_10_MINUTES
+	case 15:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_15_MINUTES
+	case 30:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_30_MINUTES
+	case 60:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_HOUR
+	case 360:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_6_HOURS
+	case 720:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_12_HOURS
+	case 1440:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_DAY
+	}
+	return output
+}
+
 func buildSyntheticsScriptAPIMonitorStruct(d *schema.ResourceData) synthetics.SyntheticsCreateScriptAPIMonitorInput {
 	scriptAPIMonitorInput := synthetics.SyntheticsCreateScriptAPIMonitorInput{}
 	input := buildSyntheticsMonitorBase(d)
 	scriptAPIMonitorInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])
 	scriptAPIMonitorInput.Name = input["name"].(string)
-	scriptAPIMonitorInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
+	scriptAPIMonitorInput.Period = periodConvIntToString(input["frequency"])
 	scriptAPIMonitorInput.Runtime.RuntimeType = input["runtime_type"].(string)
 	scriptAPIMonitorInput.Runtime.ScriptLanguage = input["script_language"].(string)
 	scriptAPIMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
@@ -274,7 +304,7 @@ func buildSyntheticsScriptBrowserMonitorStruct(d *schema.ResourceData) synthetic
 	scriptBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = input["enable_screenshot_on_failure_and_script"].(bool)
 	scriptBrowserMonitorInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])
 	scriptBrowserMonitorInput.Name = input["name"].(string)
-	scriptBrowserMonitorInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
+	scriptBrowserMonitorInput.Period = periodConvIntToString(input["frequency"])
 	scriptBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
 	scriptBrowserMonitorInput.Runtime.ScriptLanguage = input["script_language"].(string)
 	scriptBrowserMonitorInput.Runtime.RuntimeType = input["runtime_type"].(string)
@@ -296,7 +326,7 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = input["verify_ssl"].(bool)
 	simpleBrowserMonitorInput.Locations = expandSyntheticsLocations(input["locations"])
 	simpleBrowserMonitorInput.Name = input["name"].(string)
-	simpleBrowserMonitorInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
+	simpleBrowserMonitorInput.Period = periodConvIntToString(input["frequency"])
 	simpleBrowserMonitorInput.Runtime.RuntimeType = input["runtime_type"].(string)
 	simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
 	simpleBrowserMonitorInput.Runtime.ScriptLanguage = input["scriptLanguage"].(string)
@@ -344,8 +374,8 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 	simpleMonitorInput.AdvancedOptions.UseTlsValidation = input["verify_ssl"].(bool)
 	simpleMonitorInput.Locations = expandSyntheticsLocations(input["locations"])
 	simpleMonitorInput.Name = input["name"].(string)
-	simpleMonitorInput.Period = synthetics.SyntheticsMonitorPeriod(input["frequency"].(string))
-	simpleMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["SyntheticsMonitorStatus"].(string))
+	simpleMonitorInput.Period = periodConvIntToString(input["frequency"])
+	simpleMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
 	simpleMonitorInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
 	simpleMonitorInput.Uri = input["uri"].(string)
 
@@ -355,9 +385,10 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
 func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
 
 	providerConfig := meta.(*ProviderConfig)
+
+	client := providerConfig.NewClient
 
 	accountID := selectAccountID(providerConfig, d)
 
@@ -383,11 +414,7 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 				})
 			}
 		}
-		gUID := resp.Monitor.GUID
-		err = d.Set("guid", gUID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		d.SetId(string(resp.Monitor.GUID))
 
 	case "BROWSER":
 		simpleBrowserMonitorInput := buildSyntheticsSimpleBrowserMonitor(d)
@@ -403,11 +430,7 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 				})
 			}
 		}
-		gUID := resp.Monitor.GUID
-		err = d.Set("guid", gUID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		d.SetId(string(resp.Monitor.GUID))
 
 	case "SCRIPT_API":
 		scriptedAPIMonitorInput := buildSyntheticsScriptAPIMonitorStruct(d)
@@ -423,11 +446,7 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 				})
 			}
 		}
-		gUID := resp.Monitor.GUID
-		err = d.Set("guid", gUID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		d.SetId(string(resp.Monitor.GUID))
 
 	case "SCRIPT_BROWSER":
 		scriptedBrowserMonitorInput := buildSyntheticsScriptBrowserMonitorStruct(d)
@@ -443,15 +462,10 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 				})
 			}
 		}
-		gUID := resp.Monitor.GUID
-
-		err = d.Set("guid", gUID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		d.SetId(string(resp.Monitor.GUID))
 	}
 
-	return resourceNewRelicSyntheticsMonitorRead(ctx, d, meta)
+	return nil
 }
 
 func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -568,10 +582,6 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
-
-	//providerConfig := meta.(*ProviderConfig)
-
-	//accountID := selectAccountID(providerConfig, d)
 
 	var diags diag.Diagnostics
 
