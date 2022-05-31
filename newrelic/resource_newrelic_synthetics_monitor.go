@@ -101,17 +101,17 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 			},
 			"runtime_type": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "",
 			},
 			"runtime_type_version": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "",
 			},
 			"script_language": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "",
 			},
 			"tags": {
@@ -166,23 +166,11 @@ func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
 
 	var monitorInputs = make(map[string]interface{})
 
-	if screenShot, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
-		monitorInputs["enable_screenshot_on_failure_and_script"] = screenShot
-	}
 	if customHeaders, ok := d.GetOk("custom_headers"); ok {
 		monitorInputs["custom_headers"] = customHeaders
 	}
-	if redirectFailure, ok := d.GetOk("treat_redirect_as_failure"); ok {
-		monitorInputs["treat_redirect_as_failure"] = redirectFailure
-	}
 	if respValidateText, ok := d.GetOk("validation_string"); ok {
 		monitorInputs["validation_string"] = respValidateText
-	}
-	if pass, ok := d.GetOk("bypass_head_request"); ok {
-		monitorInputs["bypass_head_request"] = pass
-	}
-	if tlsValidations, ok := d.GetOk("verify_ssl"); ok {
-		monitorInputs["verify_ssl"] = tlsValidations
 	}
 	if locations, ok := d.GetOk("locations"); ok {
 		monitorInputs["locations"] = locations
@@ -217,6 +205,17 @@ func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
 	if status, ok := d.GetOk("status"); ok {
 		monitorInputs["status"] = status
 	}
+	redirectFailure := d.Get("treat_redirect_as_failure")
+	monitorInputs["treat_redirect_as_failure"] = redirectFailure
+
+	tlsValidations := d.Get("verify_ssl")
+	monitorInputs["verify_ssl"] = tlsValidations
+
+	screenShot := d.Get("enable_screenshot_on_failure_and_script")
+	monitorInputs["enable_screenshot_on_failure_and_script"] = screenShot
+
+	pass := d.Get("bypass_head_request")
+	monitorInputs["bypass_head_request"] = pass
 	return monitorInputs
 }
 
@@ -329,7 +328,7 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	simpleBrowserMonitorInput.Period = periodConvIntToString(input["frequency"])
 	simpleBrowserMonitorInput.Runtime.RuntimeType = input["runtime_type"].(string)
 	simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
-	simpleBrowserMonitorInput.Runtime.ScriptLanguage = input["scriptLanguage"].(string)
+	simpleBrowserMonitorInput.Runtime.ScriptLanguage = input["script_language"].(string)
 	simpleBrowserMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
 	simpleBrowserMonitorInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
 	simpleBrowserMonitorInput.Uri = input["uri"].(string)
@@ -551,7 +550,7 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	simpleBrowserMonitorUpdateInput.Period = periodConvIntToString(input["frequency"])
 	simpleBrowserMonitorUpdateInput.Runtime.RuntimeType = input["runtime_type"].(string)
 	simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
-	simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = input["scriptLanguage"].(string)
+	simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = input["script_language"].(string)
 	simpleBrowserMonitorUpdateInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
 	simpleBrowserMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
 	simpleBrowserMonitorUpdateInput.Uri = input["uri"].(string)
