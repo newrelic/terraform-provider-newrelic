@@ -565,7 +565,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor(t *testing.T) {
 }
 
 func testAccNewRelicSyntheticsScriptedAPIMonitorConfig(name string) string {
-	fmt.Sprintf(`
+	return fmt.Sprintf(`
 		resource "newrelic_synthetics_monitor" "bar" {
 		  locations = ["AP_SOUTH_1"]
 		  name      = "%[1]s"
