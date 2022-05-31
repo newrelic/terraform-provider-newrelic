@@ -145,7 +145,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Optional:    true,
 			},
 			"custom_headers": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Description: "",
 				Optional:    true,
 				Elem: &schema.Resource{
@@ -325,7 +325,7 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 
 	input := buildSyntheticsMonitorBase(d)
 
-	simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
+	simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].([]interface{}))
 	simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = input["enable_screenshot_on_failure_and_script"].(bool)
 	simpleBrowserMonitorInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
 	simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = input["verify_ssl"].(bool)
@@ -372,7 +372,7 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 
 	input := buildSyntheticsMonitorBase(d)
 
-	simpleMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
+	simpleMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].([]interface{}))
 	simpleMonitorInput.AdvancedOptions.RedirectIsFailure = input["treat_redirect_as_failure"].(bool)
 	simpleMonitorInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
 	simpleMonitorInput.AdvancedOptions.ShouldBypassHeadRequest = input["bypass_head_request"].(bool)
@@ -569,7 +569,7 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 
 	input := buildSyntheticsMonitorBase(d)
 
-	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
+	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].([]interface{}))
 	simpleMonitorUpdateInput.AdvancedOptions.RedirectIsFailure = input["treat_redirect_as_failure"].(bool)
 	simpleMonitorUpdateInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
 	simpleMonitorUpdateInput.AdvancedOptions.ShouldBypassHeadRequest = input["bypass_head_request"].(bool)
