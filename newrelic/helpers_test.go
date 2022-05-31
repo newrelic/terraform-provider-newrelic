@@ -15,12 +15,17 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/newrelic/newrelic-client-go/newrelic"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 )
 
 var (
 	nrInternalAccount = os.Getenv("NR_ACC_TESTING") != ""
 )
+
+func newIntegrationTestClient() (*newrelic.NewRelic, error) {
+	return newrelic.New(newrelic.ConfigPersonalAPIKey(testAccAPIKey))
+}
 
 func testAccDeleteNewRelicAlertPolicy(name string) func() {
 	return func() {
