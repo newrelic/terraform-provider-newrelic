@@ -139,6 +139,11 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description: "",
 				Optional:    true,
 			},
+			"script": {
+				Type:        schema.TypeString,
+				Description: "",
+				Optional:    true,
+			},
 			"custom_headers": {
 				Type:        schema.TypeSet,
 				Description: "",
@@ -216,6 +221,7 @@ func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
 
 	pass := d.Get("bypass_head_request")
 	monitorInputs["bypass_head_request"] = pass
+
 	return monitorInputs
 }
 
