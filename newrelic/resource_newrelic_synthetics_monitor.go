@@ -3,8 +3,9 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"log"
+
+	"github.com/newrelic/newrelic-client-go/pkg/common"
 
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 
@@ -48,12 +49,20 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				ValidateFunc: intInSlice([]int{1, 5, 10, 15, 30, 60, 360, 720, 1440}),
 				Description:  "The interval (in minutes) at which this monitor should run. Valid values are 1, 5, 10, 15, 30, 60, 360, 720, or 1440.",
 			},
+			"period": {
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "The URI for the monitor to hit.",
+				ValidateFunc: validation.StringInSlice(getSyntheticsMonitorPeriodTypesAsStrings(), false),
+			},
 			"uri": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The URI for the monitor to hit.",
 				// TODO: ValidateFunc (required if SIMPLE or BROWSER)
 			},
+
+			// TODO: Locations needs to include both private and public
 			"locations": {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -114,7 +123,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description: "",
 			},
 			"tags": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "",
 				Elem: &schema.Resource{
@@ -144,7 +153,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Optional:    true,
 			},
 			"custom_headers": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Description: "",
 				Optional:    true,
 				Elem: &schema.Resource{
@@ -166,67 +175,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 	}
 }
 
-func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
-
-	var monitorInputs = make(map[string]interface{})
-	if customHeader, ok := d.GetOk("custom_headers"); ok {
-		fmt.Print("\n\n **************************** \n")
-		fmt.Printf("\n THING:  %+v \n", customHeader)
-		fmt.Print("\n **************************** \n\n")
-		monitorInputs["custom_headers"] = customHeader
-	}
-	if respValidateText, ok := d.GetOk("validation_string"); ok {
-		monitorInputs["validation_string"] = respValidateText
-	}
-	if locations, ok := d.GetOk("locations"); ok {
-		monitorInputs["locations"] = locations
-	}
-	if name, ok := d.GetOk("name"); ok {
-		monitorInputs["name"] = name
-	}
-	if period, ok := d.GetOk("frequency"); ok {
-		monitorInputs["frequency"] = period
-	}
-	if runtimeType, ok := d.GetOk("runtime_type"); ok {
-		monitorInputs["runtime_type"] = runtimeType
-	}
-	if runtimeTypeVersion, ok := d.GetOk("runtime_type_version"); ok {
-		monitorInputs["runtime_type_version"] = runtimeTypeVersion
-	}
-	if scriptLanguage, ok := d.GetOk("script_language"); ok {
-		monitorInputs["script_language"] = scriptLanguage
-	}
-	if status, ok := d.GetOk("synthetics_monitor_status"); ok {
-		monitorInputs["synthetics_monitor_status"] = status
-	}
-	tags := d.Get("tags")
-	monitorInputs["tags"] = tags
-	if uri, ok := d.GetOk("uri"); ok {
-		monitorInputs["uri"] = uri
-	}
-	if script, ok := d.GetOk("script"); ok {
-		monitorInputs["script"] = script
-	}
-	if status, ok := d.GetOk("status"); ok {
-		monitorInputs["status"] = status
-	}
-	redirectFailure := d.Get("treat_redirect_as_failure")
-	monitorInputs["treat_redirect_as_failure"] = redirectFailure
-
-	tlsValidations := d.Get("verify_ssl")
-	monitorInputs["verify_ssl"] = tlsValidations
-
-	screenShot := d.Get("enable_screenshot_on_failure_and_script")
-	monitorInputs["enable_screenshot_on_failure_and_script"] = screenShot
-
-	pass := d.Get("bypass_head_request")
-	monitorInputs["bypass_head_request"] = pass
-
-	return monitorInputs
-}
-
 //1, 5, 10, 15, 30, 60, 360, 720, 1440
-
 func periodConvIntToString(v interface{}) synthetics.SyntheticsMonitorPeriod {
 	var output synthetics.SyntheticsMonitorPeriod
 	switch v.(int) {
@@ -253,17 +202,29 @@ func periodConvIntToString(v interface{}) synthetics.SyntheticsMonitorPeriod {
 }
 
 func buildSyntheticsScriptAPIMonitorStruct(d *schema.ResourceData) synthetics.SyntheticsCreateScriptAPIMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+
 	scriptAPIMonitorInput := synthetics.SyntheticsCreateScriptAPIMonitorInput{}
-	input := buildSyntheticsMonitorBase(d)
-	scriptAPIMonitorInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])
-	scriptAPIMonitorInput.Name = input["name"].(string)
-	scriptAPIMonitorInput.Period = periodConvIntToString(input["frequency"])
-	scriptAPIMonitorInput.Runtime.RuntimeType = input["runtime_type"].(string)
-	scriptAPIMonitorInput.Runtime.ScriptLanguage = input["script_language"].(string)
-	scriptAPIMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
-	scriptAPIMonitorInput.Script = input["script"].(string)
-	scriptAPIMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	scriptAPIMonitorInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
+	scriptAPIMonitorInput.Name = inputBase.Name
+	scriptAPIMonitorInput.Period = inputBase.Period
+	scriptAPIMonitorInput.Status = inputBase.Status
+	scriptAPIMonitorInput.Tags = inputBase.Tags
+
+	if v, ok := d.GetOk("script"); ok {
+		scriptAPIMonitorInput.Script = v.(string)
+	}
+
+	if v, ok := d.GetOk("script_language"); ok {
+		scriptAPIMonitorInput.Runtime.ScriptLanguage = v.(string)
+	}
+
+	if v, ok := d.GetOk("runtime_type_version"); ok {
+		scriptAPIMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	}
+
+	// Continue to work through....
+
+	// scriptAPIMonitorInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])
 
 	return scriptAPIMonitorInput
 }
@@ -280,78 +241,70 @@ func expandSyntheticsScriptMonitorLocations(v interface{}) synthetics.Synthetics
 	return inputLocations
 }
 
-func expandSyntheticsTags(tags []interface{}) []synthetics.SyntheticsTag {
-	out := make([]synthetics.SyntheticsTag, len(tags))
-	for i, v := range tags {
-		tag := v.(map[string]interface{})
-		expanded := synthetics.SyntheticsTag{
-			Key:    tag["key"].(string),
-			Values: expandSyntheticsTagValues(tag["values"].([]interface{})),
-		}
-		out[i] = expanded
-	}
-	return out
-}
-
-func expandSyntheticsTagValues(v []interface{}) []string {
-	values := make([]string, len(v))
-	for i, value := range v {
-		values[i] = value.(string)
-	}
-	return values
-}
-
 func buildSyntheticsScriptBrowserMonitorStruct(d *schema.ResourceData) synthetics.SyntheticsCreateScriptBrowserMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+
 	scriptBrowserMonitorInput := synthetics.SyntheticsCreateScriptBrowserMonitorInput{}
+	scriptBrowserMonitorInput.Name = inputBase.Name
+	scriptBrowserMonitorInput.Period = inputBase.Period
+	scriptBrowserMonitorInput.Status = inputBase.Status
+	scriptBrowserMonitorInput.Tags = inputBase.Tags
 
-	input := buildSyntheticsMonitorBase(d)
+	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
+		scriptBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
+	}
 
-	scriptBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = input["enable_screenshot_on_failure_and_script"].(bool)
-	scriptBrowserMonitorInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])
-	scriptBrowserMonitorInput.Name = input["name"].(string)
-	scriptBrowserMonitorInput.Period = periodConvIntToString(input["frequency"])
-	scriptBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
-	scriptBrowserMonitorInput.Runtime.ScriptLanguage = input["script_language"].(string)
-	scriptBrowserMonitorInput.Runtime.RuntimeType = input["runtime_type"].(string)
-	scriptBrowserMonitorInput.Script = input["script"].(string)
-	scriptBrowserMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	scriptBrowserMonitorInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
+	if v, ok := d.GetOk("script"); ok {
+		scriptBrowserMonitorInput.Script = v.(string)
+	}
+
+	if v, ok := d.GetOk("script_language"); ok {
+		scriptBrowserMonitorInput.Runtime.ScriptLanguage = v.(string)
+	}
+
+	if v, ok := d.GetOk("runtime_type"); ok {
+		scriptBrowserMonitorInput.Runtime.RuntimeType = v.(string)
+	}
+
+	if v, ok := d.GetOk("runtime_type_version"); ok {
+		scriptBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	}
+
+	// Continue to work through...
+
+	// scriptBrowserMonitorInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])
 
 	return scriptBrowserMonitorInput
 }
 
 func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleBrowserMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+
 	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{}
+	simpleBrowserMonitorInput.Locations = inputBase.Locations
+	simpleBrowserMonitorInput.Name = inputBase.Name
+	simpleBrowserMonitorInput.Period = inputBase.Period
+	simpleBrowserMonitorInput.Status = inputBase.Status
+	simpleBrowserMonitorInput.Tags = inputBase.Tags
+	simpleBrowserMonitorInput.Uri = inputBase.Uri
 
-	input := buildSyntheticsMonitorBase(d)
+	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
+		simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
+	}
 
-	//simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"])
-	simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = input["enable_screenshot_on_failure_and_script"].(bool)
-	simpleBrowserMonitorInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
-	simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = input["verify_ssl"].(bool)
-	simpleBrowserMonitorInput.Locations = expandSyntheticsLocations(input["locations"])
-	simpleBrowserMonitorInput.Name = input["name"].(string)
-	simpleBrowserMonitorInput.Period = periodConvIntToString(input["frequency"])
-	simpleBrowserMonitorInput.Runtime.RuntimeType = input["runtime_type"].(string)
-	simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
-	simpleBrowserMonitorInput.Runtime.ScriptLanguage = input["script_language"].(string)
-	simpleBrowserMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	simpleBrowserMonitorInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
-	simpleBrowserMonitorInput.Uri = input["uri"].(string)
+	if v, ok := d.GetOk("script_language"); ok {
+		simpleBrowserMonitorInput.Runtime.ScriptLanguage = v.(string)
+	}
+
+	if v, ok := d.GetOk("runtime_type"); ok {
+		simpleBrowserMonitorInput.Runtime.RuntimeType = v.(string)
+	}
+
+	if v, ok := d.GetOk("runtime_type_version"); ok {
+		simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	}
 
 	return simpleBrowserMonitorInput
-}
-
-func expandSyntheticsLocations(v interface{}) synthetics.SyntheticsLocationsInput {
-	locationsRaw := v.(*schema.Set)
-	locations := make([]string, locationsRaw.Len())
-	for i, v := range locationsRaw.List() {
-		locations[i] = fmt.Sprint(v)
-	}
-	inputLocations := synthetics.SyntheticsLocationsInput{
-		Public: locations,
-	}
-	return inputLocations
 }
 
 func expandCustomHeaders(headers interface{}) []synthetics.SyntheticsCustomHeaderInput {
@@ -368,21 +321,35 @@ func expandCustomHeaders(headers interface{}) []synthetics.SyntheticsCustomHeade
 }
 
 func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+
 	simpleMonitorInput := synthetics.SyntheticsCreateSimpleMonitorInput{}
+	simpleMonitorInput.Locations = inputBase.Locations
+	simpleMonitorInput.Name = inputBase.Name
+	simpleMonitorInput.Period = inputBase.Period
+	simpleMonitorInput.Status = inputBase.Status
+	simpleMonitorInput.Tags = inputBase.Tags
+	simpleMonitorInput.Uri = inputBase.Uri
 
-	input := buildSyntheticsMonitorBase(d)
+	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
+		simpleMonitorInput.AdvancedOptions.RedirectIsFailure = v.(bool)
+	}
 
-	simpleMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"])
-	simpleMonitorInput.AdvancedOptions.RedirectIsFailure = input["treat_redirect_as_failure"].(bool)
-	simpleMonitorInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
-	simpleMonitorInput.AdvancedOptions.ShouldBypassHeadRequest = input["bypass_head_request"].(bool)
-	simpleMonitorInput.AdvancedOptions.UseTlsValidation = input["verify_ssl"].(bool)
-	simpleMonitorInput.Locations = expandSyntheticsLocations(input["locations"])
-	simpleMonitorInput.Name = input["name"].(string)
-	simpleMonitorInput.Period = periodConvIntToString(input["frequency"])
-	simpleMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	simpleMonitorInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
-	simpleMonitorInput.Uri = input["uri"].(string)
+	if v, ok := d.GetOk("validation_string"); ok {
+		simpleMonitorInput.AdvancedOptions.ResponseValidationText = v.(string)
+	}
+
+	if v, ok := d.GetOk("bypass_head_request"); ok {
+		simpleMonitorInput.AdvancedOptions.ShouldBypassHeadRequest = v.(bool)
+	}
+
+	if v, ok := d.GetOk("verify_ssl"); ok {
+		simpleMonitorInput.AdvancedOptions.UseTlsValidation = v.(bool)
+	}
+
+	// Continue to work through...
+
+	// simpleMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"])
 
 	return simpleMonitorInput
 }
@@ -390,21 +357,15 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
 func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	providerConfig := meta.(*ProviderConfig)
-
 	client := providerConfig.NewClient
-
 	accountID := selectAccountID(providerConfig, d)
 
 	var diags diag.Diagnostics
 
-	monitorType, ok := d.GetOk("type")
-	if !ok {
-		log.Printf("Not Monitor type specified")
-	}
-	switch monitorType.(string) {
+	monitorType := d.Get("type")
 
+	switch monitorType.(string) {
 	case "SIMPLE":
 		simpleMonitorInput := buildSyntheticsSimpleMonitor(d)
 		resp, err := client.Synthetics.SyntheticsCreateSimpleMonitorWithContext(ctx, accountID, simpleMonitorInput)
@@ -505,19 +466,33 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 }
 
 func buildSyntheticsScriptAPIMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateScriptAPIMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+
 	scriptAPIMonitorUpdateInput := synthetics.SyntheticsUpdateScriptAPIMonitorInput{}
+	scriptAPIMonitorUpdateInput.Name = inputBase.Name
+	scriptAPIMonitorUpdateInput.Period = inputBase.Period
+	scriptAPIMonitorUpdateInput.Status = inputBase.Status
+	scriptAPIMonitorUpdateInput.Tags = inputBase.Tags
 
-	input := buildSyntheticsMonitorBase(d)
+	if v, ok := d.GetOk("script"); ok {
+		scriptAPIMonitorUpdateInput.Script = v.(string)
+	}
 
-	scriptAPIMonitorUpdateInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])
-	scriptAPIMonitorUpdateInput.Name = input["name"].(string)
-	scriptAPIMonitorUpdateInput.Period = periodConvIntToString(input["frequency"])
-	scriptAPIMonitorUpdateInput.Runtime.RuntimeType = input["runtime_type"].(string)
-	scriptAPIMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
-	scriptAPIMonitorUpdateInput.Runtime.ScriptLanguage = input["script_language"].(string)
-	scriptAPIMonitorUpdateInput.Script = input["script"].(string)
-	scriptAPIMonitorUpdateInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	scriptAPIMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
+	if v, ok := d.GetOk("script_language"); ok {
+		scriptAPIMonitorUpdateInput.Runtime.ScriptLanguage = v.(string)
+	}
+
+	if v, ok := d.GetOk("runtime_type"); ok {
+		scriptAPIMonitorUpdateInput.Runtime.RuntimeType = v.(string)
+	}
+
+	if v, ok := d.GetOk("runtime_type_version"); ok {
+		scriptAPIMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	}
+
+	// Continue to work through ...
+
+	// scriptAPIMonitorUpdateInput.Locations = expandSyntheticsScriptMonitorLocations(input["locations"])\
 
 	return scriptAPIMonitorUpdateInput
 }
