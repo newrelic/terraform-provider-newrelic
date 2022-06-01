@@ -47,7 +47,7 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_monitor" "foo" {
 	  custom_headers{
-		key="Name"
+		name="Name"
 		value="simpleMonitor"
 		}
 	  treat_redirect_as_failure=true
