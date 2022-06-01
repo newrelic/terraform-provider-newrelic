@@ -3,9 +3,8 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"log"
-
 	"github.com/newrelic/newrelic-client-go/pkg/common"
+	"log"
 
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 
@@ -115,7 +114,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description: "",
 			},
 			"tags": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "",
 				Elem: &schema.Resource{
@@ -145,7 +144,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Optional:    true,
 			},
 			"custom_headers": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Description: "",
 				Optional:    true,
 				Elem: &schema.Resource{
@@ -171,6 +170,9 @@ func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
 
 	var monitorInputs = make(map[string]interface{})
 	if customHeader, ok := d.GetOk("custom_headers"); ok {
+		fmt.Print("\n\n **************************** \n")
+		fmt.Printf("\n THING:  %+v \n", customHeader)
+		fmt.Print("\n **************************** \n\n")
 		monitorInputs["custom_headers"] = customHeader
 	}
 	if respValidateText, ok := d.GetOk("validation_string"); ok {
@@ -261,7 +263,7 @@ func buildSyntheticsScriptAPIMonitorStruct(d *schema.ResourceData) synthetics.Sy
 	scriptAPIMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
 	scriptAPIMonitorInput.Script = input["script"].(string)
 	scriptAPIMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	scriptAPIMonitorInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	scriptAPIMonitorInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
 
 	return scriptAPIMonitorInput
 }
@@ -323,7 +325,7 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 
 	input := buildSyntheticsMonitorBase(d)
 
-	simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
+	//simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"])
 	simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = input["enable_screenshot_on_failure_and_script"].(bool)
 	simpleBrowserMonitorInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
 	simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = input["verify_ssl"].(bool)
@@ -334,7 +336,7 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
 	simpleBrowserMonitorInput.Runtime.ScriptLanguage = input["script_language"].(string)
 	simpleBrowserMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	simpleBrowserMonitorInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	simpleBrowserMonitorInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
 	simpleBrowserMonitorInput.Uri = input["uri"].(string)
 
 	return simpleBrowserMonitorInput
@@ -352,9 +354,9 @@ func expandSyntheticsLocations(v interface{}) synthetics.SyntheticsLocationsInpu
 	return inputLocations
 }
 
-func expandCustomHeaders(headers []interface{}) []synthetics.SyntheticsCustomHeaderInput {
-	output := make([]synthetics.SyntheticsCustomHeaderInput, len(headers))
-	for i, v := range headers {
+func expandCustomHeaders(headers interface{}) []synthetics.SyntheticsCustomHeaderInput {
+	output := make([]synthetics.SyntheticsCustomHeaderInput, len(headers.([]interface{})))
+	for i, v := range headers.([]interface{}) {
 		header := v.(map[string]interface{})
 		expanded := synthetics.SyntheticsCustomHeaderInput{
 			Name:  header["name"].(string),
@@ -370,7 +372,7 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 
 	input := buildSyntheticsMonitorBase(d)
 
-	simpleMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
+	simpleMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"])
 	simpleMonitorInput.AdvancedOptions.RedirectIsFailure = input["treat_redirect_as_failure"].(bool)
 	simpleMonitorInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
 	simpleMonitorInput.AdvancedOptions.ShouldBypassHeadRequest = input["bypass_head_request"].(bool)
@@ -379,7 +381,7 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 	simpleMonitorInput.Name = input["name"].(string)
 	simpleMonitorInput.Period = periodConvIntToString(input["frequency"])
 	simpleMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	simpleMonitorInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	simpleMonitorInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
 	simpleMonitorInput.Uri = input["uri"].(string)
 
 	return simpleMonitorInput
@@ -515,7 +517,7 @@ func buildSyntheticsScriptAPIMonitorUpdateStruct(d *schema.ResourceData) synthet
 	scriptAPIMonitorUpdateInput.Runtime.ScriptLanguage = input["script_language"].(string)
 	scriptAPIMonitorUpdateInput.Script = input["script"].(string)
 	scriptAPIMonitorUpdateInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	scriptAPIMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	scriptAPIMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
 
 	return scriptAPIMonitorUpdateInput
 }
@@ -534,7 +536,7 @@ func buildSyntheticsScriptBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	scriptBrowserMonitorUpdateInput.Runtime.RuntimeType = input["runtime_type"].(string)
 	scriptBrowserMonitorUpdateInput.Script = input["script"].(string)
 	scriptBrowserMonitorUpdateInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	scriptBrowserMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	scriptBrowserMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
 
 	return scriptBrowserMonitorUpdateInput
 }
@@ -544,7 +546,7 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 
 	input := buildSyntheticsMonitorBase(d)
 
-	simpleBrowserMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
+	simpleBrowserMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"])
 	simpleBrowserMonitorUpdateInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = input["enable_screenshot_on_failure_and_script"].(bool)
 	simpleBrowserMonitorUpdateInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
 	simpleBrowserMonitorUpdateInput.AdvancedOptions.UseTlsValidation = input["verify_ssl"].(bool)
@@ -555,7 +557,7 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(input["runtime_type_version"].(string))
 	simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = input["script_language"].(string)
 	simpleBrowserMonitorUpdateInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	simpleBrowserMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	simpleBrowserMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
 	simpleBrowserMonitorUpdateInput.Uri = input["uri"].(string)
 
 	return simpleBrowserMonitorUpdateInput
@@ -566,7 +568,7 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 
 	input := buildSyntheticsMonitorBase(d)
 
-	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
+	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"])
 	simpleMonitorUpdateInput.AdvancedOptions.RedirectIsFailure = input["treat_redirect_as_failure"].(bool)
 	simpleMonitorUpdateInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
 	simpleMonitorUpdateInput.AdvancedOptions.ShouldBypassHeadRequest = input["bypass_head_request"].(bool)
@@ -575,7 +577,7 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 	simpleMonitorUpdateInput.Name = input["name"].(string)
 	simpleMonitorUpdateInput.Period = periodConvIntToString(input["frequency"])
 	simpleMonitorUpdateInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	simpleMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	simpleMonitorUpdateInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
 	simpleMonitorUpdateInput.Uri = input["uri"].(string)
 
 	return simpleMonitorUpdateInput
