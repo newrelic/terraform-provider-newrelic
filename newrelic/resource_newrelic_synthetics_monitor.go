@@ -126,7 +126,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 							Description: "",
 						},
 						"values": {
-							Type:        schema.TypeSet,
+							Type:        schema.TypeList,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Required:    true,
 							Description: "",
@@ -145,7 +145,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Optional:    true,
 			},
 			"custom_headers": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Description: "",
 				Optional:    true,
 				Elem: &schema.Resource{
@@ -170,9 +170,8 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
 
 	var monitorInputs = make(map[string]interface{})
-
-	if customHeaders, ok := d.GetOk("custom_headers"); ok {
-		monitorInputs["custom_headers"] = customHeaders
+	if customHeader, ok := d.GetOk("custom_headers"); ok {
+		monitorInputs["custom_headers"] = customHeader
 	}
 	if respValidateText, ok := d.GetOk("validation_string"); ok {
 		monitorInputs["validation_string"] = respValidateText
@@ -198,9 +197,8 @@ func buildSyntheticsMonitorBase(d *schema.ResourceData) map[string]interface{} {
 	if status, ok := d.GetOk("synthetics_monitor_status"); ok {
 		monitorInputs["synthetics_monitor_status"] = status
 	}
-	if tags, ok := d.GetOk("tags"); ok {
-		monitorInputs["tags"] = tags
-	}
+	tags := d.Get("tags")
+	monitorInputs["tags"] = tags
 	if uri, ok := d.GetOk("uri"); ok {
 		monitorInputs["uri"] = uri
 	}
@@ -286,7 +284,7 @@ func expandSyntheticsTags(tags []interface{}) []synthetics.SyntheticsTag {
 		tag := v.(map[string]interface{})
 		expanded := synthetics.SyntheticsTag{
 			Key:    tag["key"].(string),
-			Values: expandSyntheticsTagValues(tag["values"].(*schema.Set).List()),
+			Values: expandSyntheticsTagValues(tag["values"].([]interface{})),
 		}
 		out[i] = expanded
 	}
@@ -315,7 +313,7 @@ func buildSyntheticsScriptBrowserMonitorStruct(d *schema.ResourceData) synthetic
 	scriptBrowserMonitorInput.Runtime.RuntimeType = input["runtime_type"].(string)
 	scriptBrowserMonitorInput.Script = input["script"].(string)
 	scriptBrowserMonitorInput.Status = synthetics.SyntheticsMonitorStatus(input["status"].(string))
-	scriptBrowserMonitorInput.Tags = expandSyntheticsTags(input["tags"].(*schema.Set).List())
+	scriptBrowserMonitorInput.Tags = expandSyntheticsTags(input["tags"].([]interface{}))
 
 	return scriptBrowserMonitorInput
 }
@@ -325,7 +323,7 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 
 	input := buildSyntheticsMonitorBase(d)
 
-	simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].([]interface{}))
+	simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
 	simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = input["enable_screenshot_on_failure_and_script"].(bool)
 	simpleBrowserMonitorInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
 	simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = input["verify_ssl"].(bool)
@@ -372,7 +370,7 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 
 	input := buildSyntheticsMonitorBase(d)
 
-	simpleMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].([]interface{}))
+	simpleMonitorInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
 	simpleMonitorInput.AdvancedOptions.RedirectIsFailure = input["treat_redirect_as_failure"].(bool)
 	simpleMonitorInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
 	simpleMonitorInput.AdvancedOptions.ShouldBypassHeadRequest = input["bypass_head_request"].(bool)
@@ -478,8 +476,7 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
 
-	guid := common.EntityGUID(d.Id())
-	resp, err := client.Entities.GetEntity(guid)
+	resp, err := client.Entities.GetEntity(common.EntityGUID(d.Id()))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -495,7 +492,7 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 
 func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
 	switch e := (*v).(type) {
-	case *entities.SyntheticMonitorEntity:
+	case *entities.SyntheticMonitorEntityOutline:
 		_ = d.Set("guid", e.GUID)
 		_ = d.Set("name", e.Name)
 		_ = d.Set("type", e.MonitorType)
@@ -569,7 +566,7 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 
 	input := buildSyntheticsMonitorBase(d)
 
-	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].([]interface{}))
+	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandCustomHeaders(input["custom_headers"].(*schema.Set).List())
 	simpleMonitorUpdateInput.AdvancedOptions.RedirectIsFailure = input["treat_redirect_as_failure"].(bool)
 	simpleMonitorUpdateInput.AdvancedOptions.ResponseValidationText = input["validation_string"].(string)
 	simpleMonitorUpdateInput.AdvancedOptions.ShouldBypassHeadRequest = input["bypass_head_request"].(bool)
