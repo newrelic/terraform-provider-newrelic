@@ -148,6 +148,12 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Description: "A pie widget.",
 				Elem:        dashboardWidgetPieSchemaElem(),
 			},
+			"widget_log_table": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A log table widget.",
+				Elem:        dashboardWidgetLogTableSchemaElem(),
+			},
 			"widget_table": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -353,6 +359,17 @@ func dashboardWidgetStackedBarSchemaElem() *schema.Resource {
 }
 
 func dashboardWidgetPieSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
+
+	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
+	s["filter_current_dashboard"] = dashboardWidgetFilterCurrentDashboardSchema()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetLogTableSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
 
 	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()

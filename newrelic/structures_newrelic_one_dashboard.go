@@ -246,6 +246,22 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				page.Widgets = append(page.Widgets, widget)
 			}
 		}
+		if widgets, ok := p["widget_log_table"]; ok {
+			for _, v := range widgets.([]interface{}) {
+				// Get generic properties set
+				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
+				if err != nil {
+					return nil, err
+				}
+
+				widget.Configuration.LogTable, err = expandDashboardLogTableWidgetConfigurationInput(v.(map[string]interface{}), meta)
+				if err != nil {
+					return nil, err
+				}
+
+				page.Widgets = append(page.Widgets, widget)
+			}
+		}
 		if widgets, ok := p["widget_json"]; ok {
 			for _, v := range widgets.([]interface{}) {
 				// Get generic properties set
@@ -432,6 +448,22 @@ func expandDashboardPieWidgetConfigurationInput(i map[string]interface{}, meta i
 	}
 	return nil, nil
 }
+
+func expandDashboardLogTableWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardLogTableWidgetConfigurationInput, error) {
+	var cfg dashboards.DashboardLogTableWidgetConfigurationInput
+	var err error
+
+	// just has queries
+	if q, ok := i["nrql_query"]; ok {
+		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
+		if err != nil {
+			return nil, err
+		}
+		return &cfg, nil
+	}
+	return nil, nil
+}
+
 func expandDashboardTableWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardTableWidgetConfigurationInput, error) {
 	var cfg dashboards.DashboardTableWidgetConfigurationInput
 	var err error
@@ -723,6 +755,12 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Table.NRQLQueries)
 		}
 		out["filter_current_dashboard"] = filterCurrentDashboard
+	case "logger.log-table-widget":
+		widgetType = "widget_log_table"
+		if len(in.Configuration.Table.NRQLQueries) > 0 {
+			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Table.NRQLQueries)
+		}
+		out["filter_current_dashboard"] = filterCurrentDashboard
 	}
 
 	return widgetType, out
@@ -748,7 +786,7 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 	var widgetList []interface{}
 
 	pages := d.Get("page").([]interface{})
-	selfLinkingWidgets := []string{"widget_bar", "widget_pie", "widget_table"}
+	selfLinkingWidgets := []string{"widget_bar", "widget_pie", "widget_table", "widget_log_table"}
 
 	for i, v := range pages {
 		p := v.(map[string]interface{})

@@ -596,7 +596,17 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
-    widget_table {
+    widget_log_table {
+		title = "log table widget"
+		row = 13
+		column = 1
+		nrql_query {
+		  query      = "FROM Log SELECT * "
+		}
+		linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+	  }
+
+	widget_table {
       title = "table widget"
       row = 13
       column = 1
