@@ -159,7 +159,8 @@ func Provider() *schema.Provider {
 			"newrelic_service_level":                            resourceNewRelicServiceLevel(),
 			"newrelic_synthetics_alert_condition":               resourceNewRelicSyntheticsAlertCondition(),
 			"newrelic_synthetics_monitor":                       resourceNewRelicSyntheticsMonitor(),
-			"newrelic_synthetics_monitor_script":                resourceNewRelicSyntheticsMonitorScript(),
+			"newrelic_synthetics_script_monitor":                resourceNewRelicSyntheticsScriptMonitor(),
+			"newrelic_synthetics_monitor_script":                resourceNewRelicSyntheticsMonitorScript(), // LEGACY TO BE REMOVED
 			"newrelic_synthetics_multilocation_alert_condition": resourceNewRelicSyntheticsMultiLocationAlertCondition(),
 			"newrelic_synthetics_secure_credential":             resourceNewRelicSyntheticsSecureCredential(),
 			"newrelic_workload":                                 resourceNewRelicWorkload(),

@@ -15,6 +15,35 @@ type SyntheticsMonitorBase struct {
 	CustomHeaders []synthetics.SyntheticsCustomHeaderInput
 }
 
+func listValidSyntheticsMonitorPeriods() []string {
+	return []string{
+		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE),
+		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_5_MINUTES),
+		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_10_MINUTES),
+		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_15_MINUTES),
+		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_30_MINUTES),
+		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_HOUR),
+		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_6_HOURS),
+		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_12_HOURS),
+		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_DAY),
+	}
+}
+
+func listValidSyntheticsMonitorStatuses() []string {
+	return []string{
+		string(synthetics.SyntheticsMonitorStatusTypes.DISABLED),
+		string(synthetics.SyntheticsMonitorStatusTypes.ENABLED),
+		string(synthetics.SyntheticsMonitorStatusTypes.MUTED),
+	}
+}
+
+func listValidSyntheticsScriptMonitorTypes() []string {
+	return []string{
+		string(SyntheticsMonitorTypes.SCRIPT_API),
+		string(SyntheticsMonitorTypes.SCRIPT_BROWSER),
+	}
+}
+
 //1, 5, 10, 15, 30, 60, 360, 720, 1440
 func periodConvIntToString(v interface{}) synthetics.SyntheticsMonitorPeriod {
 	var output synthetics.SyntheticsMonitorPeriod
