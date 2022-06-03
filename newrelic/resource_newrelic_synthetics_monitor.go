@@ -179,7 +179,7 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	simpleBrowserMonitorInput.Period = inputBase.Period
 	simpleBrowserMonitorInput.Status = inputBase.Status
 	simpleBrowserMonitorInput.Tags = inputBase.Tags
-	simpleBrowserMonitorInput.Uri = inputBase.Uri
+	simpleBrowserMonitorInput.Uri = inputBase.URI
 
 	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
 		simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
@@ -218,7 +218,7 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 	simpleMonitorInput.Period = inputBase.Period
 	simpleMonitorInput.Status = inputBase.Status
 	simpleMonitorInput.Tags = inputBase.Tags
-	simpleMonitorInput.Uri = inputBase.Uri
+	simpleMonitorInput.Uri = inputBase.URI
 
 	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
 		simpleMonitorInput.AdvancedOptions.RedirectIsFailure = v.(bool)
@@ -329,7 +329,7 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	simpleBrowserMonitorUpdateInput.Period = inputBase.Period
 	simpleBrowserMonitorUpdateInput.Status = inputBase.Status
 	simpleBrowserMonitorUpdateInput.Tags = inputBase.Tags
-	simpleBrowserMonitorUpdateInput.Uri = inputBase.Uri
+	simpleBrowserMonitorUpdateInput.Uri = inputBase.URI
 
 	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
@@ -369,7 +369,7 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 	simpleMonitorUpdateInput.Period = inputBase.Period
 	simpleMonitorUpdateInput.Status = inputBase.Status
 	simpleMonitorUpdateInput.Tags = inputBase.Tags
-	simpleMonitorUpdateInput.Uri = inputBase.Uri
+	simpleMonitorUpdateInput.Uri = inputBase.URI
 
 	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
 		simpleMonitorUpdateInput.AdvancedOptions.RedirectIsFailure = v.(bool)
