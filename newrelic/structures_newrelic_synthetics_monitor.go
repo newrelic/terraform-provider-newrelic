@@ -11,7 +11,7 @@ type SyntheticsMonitorBase struct {
 	Period        synthetics.SyntheticsMonitorPeriod
 	Status        synthetics.SyntheticsMonitorStatus
 	Tags          []synthetics.SyntheticsTag
-	Uri           string
+	URI           string
 	CustomHeaders []synthetics.SyntheticsCustomHeaderInput
 }
 
@@ -54,7 +54,7 @@ func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 	inputBase.Period = periodConvIntToString(period)
 
 	if uri, ok := d.GetOk("uri"); ok {
-		inputBase.Uri = uri.(string)
+		inputBase.URI = uri.(string)
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
