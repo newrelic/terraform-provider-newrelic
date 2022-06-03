@@ -22,9 +22,8 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.foo"
 	rName := acctest.RandString(5)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
@@ -41,6 +40,7 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 				),
 			},
 		},
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
 	})
 }
 
@@ -102,15 +102,14 @@ func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string) string {
 //////////////////////////////
 
 func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
-	resourceName := "newrelic_synthetics_monitor.foo"
+	resourceName := "newrelic_synthetics_monitor.bar"
 	rName := acctest.RandString(5)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			fmt.Printf("hellllllllllllllllllllo")
 			testAccPreCheck(t)
 		},
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
@@ -127,6 +126,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 				),
 			},
 		},
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
 	})
 }
 
@@ -190,7 +190,6 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string) str
 
 func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		time.Sleep(2 * time.Minute)
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
@@ -201,8 +200,10 @@ func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFun
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
+		time.Sleep(10 * time.Second)
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
+			fmt.Printf(rs.Primary.ID)
 			return err
 		}
 		if string((*found).GetGUID()) != rs.Primary.ID {
@@ -215,13 +216,13 @@ func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFun
 
 func testAccCheckNewRelicSyntheticsMonitorDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
-	time.Sleep(2 * time.Minute)
+
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_synthetics_monitor" {
 			continue
 		}
 
-		time.Sleep(2 * time.Minute)
+		time.Sleep(10 * time.Second)
 		_, err := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
 		if err == nil {
 			return fmt.Errorf("synthetics monitor still exists")
