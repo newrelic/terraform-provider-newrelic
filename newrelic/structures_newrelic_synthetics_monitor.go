@@ -6,12 +6,39 @@ import (
 )
 
 type SyntheticsMonitorBase struct {
-	Locations synthetics.SyntheticsLocationsInput
-	Name      string
-	Period    synthetics.SyntheticsMonitorPeriod
-	Status    synthetics.SyntheticsMonitorStatus
-	Tags      []synthetics.SyntheticsTag
-	Uri       string
+	Locations     synthetics.SyntheticsLocationsInput
+	Name          string
+	Period        synthetics.SyntheticsMonitorPeriod
+	Status        synthetics.SyntheticsMonitorStatus
+	Tags          []synthetics.SyntheticsTag
+	Uri           string
+	CustomHeaders []synthetics.SyntheticsCustomHeaderInput
+}
+
+//1, 5, 10, 15, 30, 60, 360, 720, 1440
+func periodConvIntToString(v interface{}) synthetics.SyntheticsMonitorPeriod {
+	var output synthetics.SyntheticsMonitorPeriod
+	switch v.(int) {
+	case 1:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE
+	case 5:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_5_MINUTES
+	case 10:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_10_MINUTES
+	case 15:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_15_MINUTES
+	case 30:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_30_MINUTES
+	case 60:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_HOUR
+	case 360:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_6_HOURS
+	case 720:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_12_HOURS
+	case 1440:
+		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_DAY
+	}
+	return output
 }
 
 func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
@@ -23,8 +50,8 @@ func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 	status := d.Get("status")
 	inputBase.Status = synthetics.SyntheticsMonitorStatus(status.(string))
 
-	period := d.Get("period")
-	inputBase.Period = synthetics.SyntheticsMonitorPeriod(period.(string))
+	period := d.Get("frequency")
+	inputBase.Period = periodConvIntToString(period)
 
 	if uri, ok := d.GetOk("uri"); ok {
 		inputBase.Uri = uri.(string)
@@ -34,10 +61,26 @@ func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 		inputBase.Tags = expandSyntheticsTags(tags.(*schema.Set).List())
 	}
 
+	headers := d.Get("custom_headers")
+	inputBase.CustomHeaders = expandSyntheticsCustomHeaders(headers.(*schema.Set).List())
+
 	locations := d.Get("locations").(*schema.Set).List()
 	inputBase.Locations = expandSyntheticsLocations(locations)
 
 	return inputBase
+}
+
+func expandSyntheticsCustomHeaders(headers []interface{}) []synthetics.SyntheticsCustomHeaderInput {
+	output := make([]synthetics.SyntheticsCustomHeaderInput, len(headers))
+	for i, v := range headers {
+		header := v.(map[string]interface{})
+		expanded := synthetics.SyntheticsCustomHeaderInput{
+			Name:  header["name"].(string),
+			Value: header["value"].(string),
+		}
+		output[i] = expanded
+	}
+	return output
 }
 
 func expandSyntheticsLocations(locations []interface{}) synthetics.SyntheticsLocationsInput {
@@ -72,18 +115,4 @@ func expandSyntheticsTagValues(v []interface{}) []string {
 		values[i] = value.(string)
 	}
 	return values
-}
-
-func getSyntheticsMonitorPeriodTypesAsStrings() []string {
-	return []string{
-		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_10_MINUTES),
-		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_12_HOURS),
-		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_15_MINUTES),
-		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_30_MINUTES),
-		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_5_MINUTES),
-		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_6_HOURS),
-		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_DAY),
-		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_HOUR),
-		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE),
-	}
 }
