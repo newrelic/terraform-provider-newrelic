@@ -14,10 +14,10 @@ Use this resource to create and manage New Relic Synthetic private location.
 
 ```hcl
 resource "newrelic_synthetics_private_location" "bar" {
- accountId = "NewRelic account ID"
+ account_Id = "NewRelic account ID"
  description = "The private location description"
  name = "The name of the private location"
- verifiedScriptExecution = "true or false"
+ verified_script_execution = "false"
 }
 ```
 
@@ -26,17 +26,17 @@ resource "newrelic_synthetics_private_location" "bar" {
 The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the secure credential will be created. Defaults to the account associated with the API key used.
-* `description` - The private location description.
+* `description` - (Required)The private location description.
 * `name` - (Required) The name of the private location.
-* `verifiedScriptExecution` - (Required) The private location requires a password to edit if value is true.
+* `verified_script_execution` - (Required) The private location requires a password to edit if value is true.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `domainId` - The private location globally unique identifier.
+* `domain_Id` - The private location globally unique identifier.
 * `guid` - The unique client identifier for the Synthetics private location in New Relic.
-* `locationId` - An alternate identifier based on name.
+* `location_Id` - An alternate identifier based on name.
 * `key` - The private locations key.
 
 ## Import
