@@ -2,15 +2,13 @@ package newrelic
 
 import (
 	"context"
-	"log"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
+	"log"
 )
 
 func resourceNewRelicSyntheticsPrivateLocation() *schema.Resource {
@@ -48,21 +46,25 @@ func resourceNewRelicSyntheticsPrivateLocation() *schema.Resource {
 			"domain_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The private location globally unique identifier.",
 			},
 			"guid": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The guid of the entity to tag.",
 			},
 			"key": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The private locations key.",
 			},
 			"location_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "An alternate identifier based on name.",
 			},
 		},
@@ -95,13 +97,15 @@ func resourceNewRelicSyntheticsPrivateLocationCreate(ctx context.Context, d *sch
 	if len(diags) > 0 {
 		return diags
 	}
+
 	d.SetId(string(res.GUID))
+
 	_ = d.Set("domain_id", res.DomainId)
 	_ = d.Set("key", res.Key)
 	_ = d.Set("location_id", res.LocationId)
-	_ = d.Set("guid", res.GUID)
+	_ = d.Set("guid", string(res.GUID))
 
-	return nil
+	return resourceNewRelicSyntheticsPrivateLocationRead(ctx, d, meta)
 }
 
 func resourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -109,7 +113,8 @@ func resourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *schem
 	log.Printf("[INFO] Reading New Relic Synthetics Private Location %s", d.Id())
 
 	guid := common.EntityGUID(d.Id())
-	resp, err := client.Entities.GetEntity(guid)
+
+	resp, err := client.Entities.GetEntityWithContext(ctx, guid)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -120,28 +125,29 @@ func resourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *schem
 	}
 
 	setCommonSyntheticsPrivateLocationAttributes(resp, d)
+
 	return nil
 }
 
 func setCommonSyntheticsPrivateLocationAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
 	switch e := (*v).(type) {
-	case *entities.GenericEntityOutline:
-		_ = d.Set("guid", e.GUID)
+	case *entities.GenericEntity:
+		_ = d.Set("account_id", e.AccountID)
+		_ = d.Set("guid", string(e.GUID))
 		_ = d.Set("name", e.Name)
-
 	}
-
 }
 
 func resourceNewRelicSyntheticsPrivateLocationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	var diags diag.Diagnostics
+
 	description := d.Get("description").(string)
 	guid := synthetics.EntityGUID(d.Id())
 	verifiedScriptExecution := d.Get("verified_script_execution").(bool)
-	res, err := client.Synthetics.SyntheticsUpdatePrivateLocation(description, guid, verifiedScriptExecution)
 
+	res, err := client.Synthetics.SyntheticsUpdatePrivateLocationWithContext(ctx, description, guid, verifiedScriptExecution)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -158,20 +164,22 @@ func resourceNewRelicSyntheticsPrivateLocationUpdate(ctx context.Context, d *sch
 	if len(diags) > 0 {
 		return diags
 	}
+
 	_ = d.Set("domain_id", res.DomainId)
 	_ = d.Set("key", res.Key)
 	_ = d.Set("location_id", res.LocationId)
-	_ = d.Set("guid", res.GUID)
+	_ = d.Set("guid", string(res.GUID))
 
-	return nil
+	return resourceNewRelicSyntheticsPrivateLocationRead(ctx, d, meta)
 }
 
 func resourceNewRelicSyntheticsPrivateLocationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
 	client := providerConfig.NewClient
 	var diags diag.Diagnostics
+
 	guid := synthetics.EntityGUID(d.Id())
+
 	res, err := client.Synthetics.SyntheticsDeletePrivateLocationWithContext(ctx, guid)
 
 	if err != nil {

@@ -5,14 +5,11 @@ package newrelic
 
 import (
 	"fmt"
-	"strings"
-	"testing"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/pkg/common"
+	"testing"
 )
 
 func TestAccNewRelicSyntheticsPrivateLocation_Basic(t *testing.T) {
@@ -43,7 +40,7 @@ func TestAccNewRelicSyntheticsPrivateLocation_Basic(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"account_id", "description", "domain_id", "guid", "key", "location_id", "name", "verified_script_execution"},
+				ImportStateVerifyIgnore: []string{"description", "domain_id", "key", "location_id", "verified_script_execution"},
 			},
 		},
 	})
@@ -61,20 +58,14 @@ func testAccCheckNewRelicSyntheticsPrivateLocationExists(n string) resource.Test
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'PRIVATE_LOCATION' AND name = '%s'", rs.Primary.Attributes["name"])
-		time.Sleep(10 * time.Second)
-
-		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
+		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
 
-		for _, e := range found.Results.Entities {
-			if !strings.EqualFold(string(e.GetGUID()), rs.Primary.ID) {
-				return fmt.Errorf("synthetics private location not found: %v - %v", rs.Primary.ID, found)
-			}
+		if string((*found).GetGUID()) != rs.Primary.ID {
+			fmt.Errorf("the private location was not found %v - %v", (*found).GetGUID(), rs.Primary.ID)
 		}
-
 		return nil
 	}
 }
@@ -86,19 +77,14 @@ func testAccCheckNewRelicSyntheticsPrivateLocationDestroy(s *terraform.State) er
 			continue
 		}
 
-		queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'PRIVATE_LOCATION' AND name = '%s'", r.Primary.Attributes["name"])
-
-		time.Sleep(10 * time.Second)
-
-		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
+		found, err := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
 		if err != nil {
 			return err
 		}
 
-		if found.Count != 0 {
-			return fmt.Errorf("synthetics private location still exists")
+		if (*found) != nil {
+			fmt.Errorf("private location still exists")
 		}
-
 	}
 	return nil
 }
@@ -106,10 +92,9 @@ func testAccCheckNewRelicSyntheticsPrivateLocationDestroy(s *terraform.State) er
 func testAccNewRelicSyntheticsPrivateLocationConfig(name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_private_location" "bar" {
-	account_id	 = 2520528
-	description  = "Test Description"
-	name		 =	"%[1]s"
-	verified_script_execution = true
+		description  			  = "Test Description"
+		name		 			  =	"%[1]s"
+		verified_script_execution = false
 }
 `, name)
 }
@@ -117,10 +102,9 @@ func testAccNewRelicSyntheticsPrivateLocationConfig(name string) string {
 func testAccNewRelicSyntheticsPrivateLocationConfigUpdated(name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_private_location" "bar" {
-	account_id	 = 2520528
-	description  = "Test Description-Updated"
-	name		 =	"%[1]s-updated"
-	verified_script_execution = false
+		description               = "Test Description-Updated"
+		name                      = "%[1]s"
+		verified_script_execution = false
 }
 `, name)
 }
