@@ -2,14 +2,18 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
 type SyntheticsMonitorType string
 
+// nolint:revive
 var SyntheticsMonitorTypes = struct {
 	SIMPLE         SyntheticsMonitorType
 	BROWSER        SyntheticsMonitorType
@@ -28,14 +32,14 @@ func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 		ReadContext:   resourceNewRelicSyntheticsScriptMonitorRead,
 		UpdateContext: resourceNewRelicSyntheticsScriptMonitorUpdate,
 		DeleteContext: resourceNewRelicSyntheticsScriptMonitorDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: importSyntheticsMonitorScript,
-		},
+		// Importer: &schema.ResourceImporter{
+		// 	StateContext: importSyntheticsMonitorScript,
+		// },
 		Schema: mergeSchemas(
 			syntheticsMonitorCommonSchema(),
 			syntheticsScriptMonitorCommonSchema(),
 			syntheticsScriptMonitorLocationsSchema(),
-			syntheticsScriptBrowserMonitorAdvancedOptionsSchema(),
+			// syntheticsScriptBrowserMonitorAdvancedOptionsSchema(),
 		),
 	}
 }
@@ -103,6 +107,7 @@ func syntheticsScriptMonitorLocationsSchema() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Description: "The location's Verified Script Execution password (Only necessary if Verified Script Execution is enabled for the location).",
 						Optional:    true,
+						Sensitive:   true,
 					},
 				},
 			},
@@ -131,6 +136,11 @@ func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Sc
 // Returns common schema attributes shared by both scripted browser and scripted API monitors.
 func syntheticsScriptMonitorCommonSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"guid": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The unique entity identifier of the monitor in New Relic.",
+		},
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
@@ -161,29 +171,81 @@ func syntheticsScriptMonitorCommonSchema() map[string]*schema.Schema {
 	}
 }
 
-// WIP
-func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// providerConfig := meta.(*ProviderConfig)
-	// client := providerConfig.NewClient
-	// accountID := selectAccountID(providerConfig, d)
-
-	// var diags diag.Diagnostics
-
-	monitorType := d.Get("type")
-
-	switch monitorType.(string) {
-	case string(SyntheticsMonitorTypes.SCRIPT_API):
-		// WIP
-	case string(SyntheticsMonitorTypes.SCRIPT_BROWSER):
-		// WIP
+func getErrorFromResponse(errors []synthetics.SyntheticsMonitorCreateError) error {
+	if len(errors) == 0 {
+		return nil
 	}
+
+	err := errors[0]
+	return fmt.Errorf("%s %s", string(err.Type), err.Description)
+}
+
+func flattenSyntheticsScriptAPIMonitor(monitor synthetics.SyntheticsScriptAPIMonitor, d *schema.ResourceData) diag.Diagnostics {
+	_ = d.Set("guid", string(monitor.GUID))
+	_ = d.Set("locations_public", monitor.Locations.Public)
+	_ = d.Set("name", monitor.Name)
+	_ = d.Set("period", string(monitor.Period))
+	_ = d.Set("status", monitor.Status)
+	_ = d.Set("script_language", monitor.Runtime.ScriptLanguage)
+	_ = d.Set("runtime_type", monitor.Runtime.RuntimeType)
+	_ = d.Set("runtime_type_version", string(monitor.Runtime.RuntimeTypeVersion))
 
 	return nil
 }
 
 // WIP
+func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+	monitorType := d.Get("type").(string)
+
+	var resp *synthetics.SyntheticsScriptAPIMonitorCreateMutationResult
+	var err error
+	switch monitorType {
+	case string(SyntheticsMonitorTypes.SCRIPT_API):
+		monitorInput := buildSyntheticsScriptAPIMonitorInput(d)
+		resp, err = client.Synthetics.SyntheticsCreateScriptAPIMonitorWithContext(ctx, accountID, monitorInput)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(resp.Errors) > 0 {
+			return diag.FromErr(getErrorFromResponse(resp.Errors))
+		}
+
+		fmt.Print("\n\n **************************** \n")
+		fmt.Printf("\n CREATED:  %+v \n", resp.Monitor)
+		fmt.Printf("\n ERRORS:  %+v \n", resp.Errors)
+		fmt.Print("\n **************************** \n\n")
+
+		d.SetId(string(resp.Monitor.GUID))
+
+		flattenSyntheticsScriptAPIMonitor(resp.Monitor, d)
+
+	case string(SyntheticsMonitorTypes.SCRIPT_BROWSER):
+		// WIP
+	}
+
+	return diag.FromErr(err)
+}
+
+// WIP - This won't work. The entity endpoints don't return all the data we need to set all the attributes.
 func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+	// client := meta.(*ProviderConfig).NewClient
+
+	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
+
+	// resp, err := client.Entities.GetEntity(common.EntityGUID(d.Id()))
+	// if err != nil {
+	// 	if _, ok := err.(*errors.NotFound); ok {
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
+
+	// 	return diag.FromErr(err)
+	// }
+
+	return nil // flattenSyntheticsScriptMonitor(resp, d)
 }
 
 // WIP

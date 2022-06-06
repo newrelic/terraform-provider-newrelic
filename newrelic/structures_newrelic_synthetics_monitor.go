@@ -11,8 +11,8 @@ type SyntheticsMonitorBase struct {
 	Period        synthetics.SyntheticsMonitorPeriod
 	Status        synthetics.SyntheticsMonitorStatus
 	Tags          []synthetics.SyntheticsTag
-	URI           string
-	CustomHeaders []synthetics.SyntheticsCustomHeaderInput
+	URI           string                                   // Move URI outside of base (does not apply to all monitors)
+	CustomHeaders []synthetics.SyntheticsCustomHeaderInput // Move CustomHeaders outside of base (does not apply to all monitors)
 }
 
 func listValidSyntheticsMonitorPeriods() []string {
@@ -70,6 +70,65 @@ func periodConvIntToString(v interface{}) synthetics.SyntheticsMonitorPeriod {
 	return output
 }
 
+func buildSyntheticsScriptAPIMonitorInput(d *schema.ResourceData) synthetics.SyntheticsCreateScriptAPIMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	input := synthetics.SyntheticsCreateScriptAPIMonitorInput{
+		Name:   inputBase.Name,
+		Period: inputBase.Period,
+		Status: inputBase.Status,
+		Tags:   inputBase.Tags,
+		Script: d.Get("script").(string),
+	}
+
+	if attr, ok := d.GetOk("locations_private"); ok {
+		input.Locations.Private = expandSyntheticsPrivateLocations(attr.(*schema.Set).List())
+	}
+
+	if attr, ok := d.GetOk("locations_public"); ok {
+		input.Locations.Public = expandSyntheticsPublicLocations(attr.(*schema.Set).List())
+	}
+
+	if v, ok := d.GetOk("script_language"); ok {
+		input.Runtime.ScriptLanguage = v.(string)
+	}
+
+	if v, ok := d.GetOk("runtime_type"); ok {
+		input.Runtime.RuntimeType = v.(string)
+	}
+
+	if v, ok := d.GetOk("runtime_type_version"); ok {
+		input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	}
+
+	return input
+}
+
+func expandSyntheticsPrivateLocations(locations []interface{}) []synthetics.SyntheticsPrivateLocationInput {
+	locationsOut := make([]synthetics.SyntheticsPrivateLocationInput, len(locations))
+
+	for i, v := range locations {
+		pl := v.(map[string]interface{})
+		locationsOut[i].GUID = pl["guid"].(int) // This should be a string I think since it's a scalar `ID`
+
+		// if v, ok := pl["vse_password"]; ok {
+		// 	locationsOut[i].VsePassword = synthetics.SecureValue(v.(string))
+		// }
+	}
+
+	return locationsOut
+}
+
+func expandSyntheticsPublicLocations(locations []interface{}) []string {
+	locationsOut := make([]string, len(locations))
+
+	for i, v := range locations {
+		locationsOut[i] = v.(string)
+	}
+
+	return locationsOut
+}
+
 func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 	inputBase := SyntheticsMonitorBase{}
 
@@ -79,8 +138,11 @@ func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 	status := d.Get("status")
 	inputBase.Status = synthetics.SyntheticsMonitorStatus(status.(string))
 
-	period := d.Get("frequency")
-	inputBase.Period = periodConvIntToString(period)
+	// period := d.Get("frequency")
+	// inputBase.Period = periodConvIntToString(period)
+
+	period := d.Get("period").(string)
+	inputBase.Period = synthetics.SyntheticsMonitorPeriod(period)
 
 	if uri, ok := d.GetOk("uri"); ok {
 		inputBase.URI = uri.(string)
@@ -90,11 +152,13 @@ func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 		inputBase.Tags = expandSyntheticsTags(tags.(*schema.Set).List())
 	}
 
-	headers := d.Get("custom_headers")
-	inputBase.CustomHeaders = expandSyntheticsCustomHeaders(headers.(*schema.Set).List())
+	if headers, ok := d.GetOk("custom_headers"); ok {
+		inputBase.CustomHeaders = expandSyntheticsCustomHeaders(headers.(*schema.Set).List())
+	}
 
-	locations := d.Get("locations").(*schema.Set).List()
-	inputBase.Locations = expandSyntheticsLocations(locations)
+	// Locations can't be in the "base" due to different data structures in different monitor types
+	// locations := d.Get("locations").(*schema.Set).List()
+	// inputBase.Locations = expandSyntheticsLocations(locations)
 
 	return inputBase
 }
@@ -112,18 +176,18 @@ func expandSyntheticsCustomHeaders(headers []interface{}) []synthetics.Synthetic
 	return output
 }
 
-func expandSyntheticsLocations(locations []interface{}) synthetics.SyntheticsLocationsInput {
-	locationsOut := make([]string, len(locations))
+// func expandSyntheticsLocations(locations []interface{}) synthetics.SyntheticsLocationsInput {
+// 	locationsOut := make([]string, len(locations))
 
-	for i, v := range locations {
-		locationsOut[i] = v.(string)
-	}
+// 	for i, v := range locations {
+// 		locationsOut[i] = v.(string)
+// 	}
 
-	return synthetics.SyntheticsLocationsInput{
-		Public: locationsOut,
-		// What about private?
-	}
-}
+// 	return synthetics.SyntheticsLocationsInput{
+// 		Public: locationsOut,
+// 		// What about private?
+// 	}
+// }
 
 func expandSyntheticsTags(tags []interface{}) []synthetics.SyntheticsTag {
 	out := make([]synthetics.SyntheticsTag, len(tags))
@@ -145,3 +209,16 @@ func expandSyntheticsTagValues(v []interface{}) []string {
 	}
 	return values
 }
+
+// func flattenSyntheticsScriptMonitor(v *entities.EntityInterface, d *schema.ResourceData) diag.Diagnostics {
+// 	switch e := (*v).(type) {
+// 	case *entities.SyntheticMonitorEntityOutline:
+// 		_ = d.Set("guid", string(e.GUID))
+// 		_ = d.Set("name", e.Name)
+// 		_ = d.Set("type", string(e.MonitorType))
+// 		// _ = d.Set("period", e.Period) // entity.Period is NOT the same as synthetics.Period ugh
+// 		// _ = d.Set("period", e.Period)
+// 	}
+
+// 	return nil
+// }
