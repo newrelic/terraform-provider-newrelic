@@ -45,7 +45,6 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 }
 
 func testAccNewRelicSyntheticsSimpleMonitorConfig(name string) string {
-	fmt.Printf(name)
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_monitor" "foo" {
 	  custom_headers{
@@ -154,7 +153,7 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string) string {
 func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_monitor" "bar" {
-		  custom_headers{
+		  custom_headers{ 
 			name="name"
 			value="simple_browser"
 		  }
