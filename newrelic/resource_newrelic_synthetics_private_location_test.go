@@ -61,7 +61,7 @@ func testAccCheckNewRelicSyntheticsPrivateLocationExists(n string) resource.Test
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'PRIVATE_LOCATION' AND name = '%s'", rs.Primary.ID)
+		queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'PRIVATE_LOCATION' AND name = '%s'", rs.Primary.Attributes["name"])
 		time.Sleep(10 * time.Second)
 
 		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
@@ -86,7 +86,7 @@ func testAccCheckNewRelicSyntheticsPrivateLocationDestroy(s *terraform.State) er
 			continue
 		}
 
-		queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'PRIVATE_LOCATION' AND name = '%s'", r.Primary.ID)
+		queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'PRIVATE_LOCATION' AND name = '%s'", r.Primary.Attributes["name"])
 
 		time.Sleep(10 * time.Second)
 

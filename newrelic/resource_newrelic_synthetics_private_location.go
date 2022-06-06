@@ -130,6 +130,7 @@ func setCommonSyntheticsPrivateLocationAttributes(v *entities.EntityInterface, d
 		_ = d.Set("name", e.Name)
 
 	}
+
 }
 
 func resourceNewRelicSyntheticsPrivateLocationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -157,6 +158,10 @@ func resourceNewRelicSyntheticsPrivateLocationUpdate(ctx context.Context, d *sch
 	if len(diags) > 0 {
 		return diags
 	}
+	_ = d.Set("domain_id", res.DomainId)
+	_ = d.Set("key", res.Key)
+	_ = d.Set("location_id", res.LocationId)
+	_ = d.Set("guid", res.GUID)
 
 	return nil
 }
