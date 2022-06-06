@@ -45,8 +45,7 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 }
 
 func testAccNewRelicSyntheticsSimpleMonitorConfig(name string) string {
-	fmt.Printf("################SimpleMonito##################")
-	fmt.Printf("##################################")
+	fmt.Printf(name)
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_monitor" "foo" {
 	  custom_headers{
@@ -71,8 +70,6 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string) string {
 }
 
 func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string) string {
-	fmt.Printf("###############SimpleMonitorConfigUpdated###################")
-	fmt.Printf("##################################")
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_monitor" "foo" {
 	  custom_headers{
@@ -105,10 +102,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.bar"
 	rName := acctest.RandString(5)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			fmt.Printf("hellllllllllllllllllllo")
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			//Test: Create
@@ -131,8 +125,6 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 }
 
 func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string) string {
-	fmt.Printf("#################SimpleBrowser#################")
-	fmt.Printf("##################################")
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_monitor" "bar" {
 		  custom_headers{
@@ -160,8 +152,6 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string) string {
 }
 
 func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string) string {
-	fmt.Printf("################simple_Browser_updated##################")
-	fmt.Printf("##################################")
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_monitor" "bar" {
 		  custom_headers{
@@ -200,7 +190,7 @@ func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFun
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(20 * time.Second)
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			fmt.Printf(rs.Primary.ID)
@@ -222,7 +212,8 @@ func testAccCheckNewRelicSyntheticsMonitorDestroy(s *terraform.State) error {
 			continue
 		}
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(20 * time.Second)
+		fmt.Printf(r.Type)
 		_, err := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
 		if err == nil {
 			return fmt.Errorf("synthetics monitor still exists")
