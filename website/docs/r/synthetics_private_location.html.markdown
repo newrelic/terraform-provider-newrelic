@@ -17,7 +17,6 @@ resource "newrelic_synthetics_private_location" "bar" {
  account_Id = "NewRelic account ID"
  description = "The private location description"
  name = "The name of the private location"
- verified_script_execution = "false"
 }
 ```
 
@@ -28,7 +27,7 @@ The following arguments are supported:
 * `account_id` - (Optional) Determines the New Relic account where the secure credential will be created. Defaults to the account associated with the API key used.
 * `description` - (Required)The private location description.
 * `name` - (Required) The name of the private location.
-* `verified_script_execution` - (Required) The private location requires a password to edit if value is true.
+* `verified_script_execution` - (Optional) The private location requires a password to edit if value is true. Defaults to `false`
 
 ## Attributes Reference
 
