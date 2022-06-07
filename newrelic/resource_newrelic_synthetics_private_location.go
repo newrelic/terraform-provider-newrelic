@@ -40,30 +40,27 @@ func resourceNewRelicSyntheticsPrivateLocation() *schema.Resource {
 			},
 			"verified_script_execution": {
 				Type:        schema.TypeBool,
-				Required:    true,
+				Optional:    true,
+				Default:     false,
 				Description: "The private location requires a password to edit if value is true.",
 			},
 			"domain_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "The private location globally unique identifier.",
 			},
 			"guid": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "The guid of the entity to tag.",
 			},
 			"key": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "The private locations key.",
 			},
 			"location_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "An alternate identifier based on name.",
 			},
