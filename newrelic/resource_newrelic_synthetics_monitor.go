@@ -2,8 +2,11 @@ package newrelic
 
 import (
 	"context"
-	"fmt"
 	"log"
+
+	"github.com/newrelic/newrelic-client-go/pkg/common"
+
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -51,6 +54,8 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description: "The URI for the monitor to hit.",
 				// TODO: ValidateFunc (required if SIMPLE or BROWSER)
 			},
+
+			// TODO: Locations needs to include both private and public
 			"locations": {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -95,115 +100,190 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Optional:    true,
 				Description: "Fail the monitor check if redirected.",
 			},
+			"runtime_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "",
+			},
+			"runtime_type_version": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "",
+			},
+			"script_language": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "",
+			},
+			"tags": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "",
+						},
+						"values": {
+							Type:        schema.TypeList,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Required:    true,
+							Description: "",
+						},
+					},
+				},
+			},
+			"enable_screenshot_on_failure_and_script": {
+				Type:        schema.TypeBool,
+				Description: "",
+				Optional:    true,
+			},
+			"script": {
+				Type:        schema.TypeString,
+				Description: "",
+				Optional:    true,
+			},
+			"custom_headers": {
+				Type:        schema.TypeSet,
+				Description: "",
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Description: "",
+							Optional:    true,
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Description: "",
+							Optional:    true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
-func buildSyntheticsMonitorStruct(d *schema.ResourceData) synthetics.Monitor {
-	monitor := synthetics.Monitor{
-		Name:         d.Get("name").(string),
-		Type:         synthetics.MonitorType(d.Get("type").(string)),
-		Frequency:    uint(d.Get("frequency").(int)),
-		Status:       synthetics.MonitorStatusType(d.Get("status").(string)),
-		SLAThreshold: d.Get("sla_threshold").(float64),
+func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleBrowserMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{}
+
+	simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
+	simpleBrowserMonitorInput.Locations = inputBase.Locations
+	simpleBrowserMonitorInput.Name = inputBase.Name
+	simpleBrowserMonitorInput.Period = inputBase.Period
+	simpleBrowserMonitorInput.Status = inputBase.Status
+	simpleBrowserMonitorInput.Tags = inputBase.Tags
+	simpleBrowserMonitorInput.Uri = inputBase.URI
+
+	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
+		simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
 	}
 
-	if uri, ok := d.GetOk("uri"); ok {
-		monitor.URI = uri.(string)
+	if v, ok := d.GetOk("validation_string"); ok {
+		simpleBrowserMonitorInput.AdvancedOptions.ResponseValidationText = v.(string)
 	}
 
-	locationsRaw := d.Get("locations").(*schema.Set)
-	locations := make([]string, locationsRaw.Len())
-	for i, v := range locationsRaw.List() {
-		locations[i] = fmt.Sprint(v)
+	if v, ok := d.GetOk("verify_ssl"); ok {
+		simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = v.(bool)
+	}
+	if v, ok := d.GetOk("script_language"); ok {
+		simpleBrowserMonitorInput.Runtime.ScriptLanguage = v.(string)
 	}
 
-	if validationString, ok := d.GetOk("validation_string"); ok {
-		monitor.Options.ValidationString = validationString.(string)
+	if v, ok := d.GetOk("runtime_type"); ok {
+		simpleBrowserMonitorInput.Runtime.RuntimeType = v.(string)
 	}
 
-	if verifySSL, ok := d.GetOkExists("verify_ssl"); ok {
-		monitor.Options.VerifySSL = verifySSL.(bool)
+	if v, ok := d.GetOk("runtime_type_version"); ok {
+		simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
 	}
 
-	if bypassHeadRequest, ok := d.GetOkExists("bypass_head_request"); ok {
-		monitor.Options.BypassHEADRequest = bypassHeadRequest.(bool)
-	}
-
-	if treatRedirectAsFailure, ok := d.GetOkExists("treat_redirect_as_failure"); ok {
-		monitor.Options.TreatRedirectAsFailure = treatRedirectAsFailure.(bool)
-	}
-
-	monitor.Locations = locations
-	return monitor
+	return simpleBrowserMonitorInput
 }
 
-func buildSyntheticsUpdateMonitorArgs(d *schema.ResourceData) *synthetics.Monitor {
-	monitor := synthetics.Monitor{
-		ID:           d.Id(),
-		Name:         d.Get("name").(string),
-		Type:         synthetics.MonitorType(d.Get("type").(string)),
-		Frequency:    uint(d.Get("frequency").(int)),
-		Status:       synthetics.MonitorStatusType(d.Get("status").(string)),
-		SLAThreshold: d.Get("sla_threshold").(float64),
+func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	simpleMonitorInput := synthetics.SyntheticsCreateSimpleMonitorInput{}
+
+	simpleMonitorInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
+	simpleMonitorInput.Locations = inputBase.Locations
+	simpleMonitorInput.Name = inputBase.Name
+	simpleMonitorInput.Period = inputBase.Period
+	simpleMonitorInput.Status = inputBase.Status
+	simpleMonitorInput.Tags = inputBase.Tags
+	simpleMonitorInput.Uri = inputBase.URI
+
+	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
+		simpleMonitorInput.AdvancedOptions.RedirectIsFailure = v.(bool)
 	}
 
-	if uri, ok := d.GetOk("uri"); ok {
-		monitor.URI = uri.(string)
+	if v, ok := d.GetOk("validation_string"); ok {
+		simpleMonitorInput.AdvancedOptions.ResponseValidationText = v.(string)
 	}
 
-	locationsRaw := d.Get("locations").(*schema.Set)
-	locations := make([]string, locationsRaw.Len())
-	for i, v := range locationsRaw.List() {
-		locations[i] = fmt.Sprint(v)
+	if v, ok := d.GetOk("bypass_head_request"); ok {
+		simpleMonitorInput.AdvancedOptions.ShouldBypassHeadRequest = v.(bool)
 	}
 
-	if validationString, ok := d.GetOk("validation_string"); ok {
-		monitor.Options.ValidationString = validationString.(string)
+	if v, ok := d.GetOk("verify_ssl"); ok {
+		simpleMonitorInput.AdvancedOptions.UseTlsValidation = v.(bool)
 	}
 
-	if verifySSL, ok := d.GetOkExists("verify_ssl"); ok {
-		monitor.Options.VerifySSL = verifySSL.(bool)
-	}
-
-	if bypassHeadRequest, ok := d.GetOkExists("bypass_head_request"); ok {
-		monitor.Options.BypassHEADRequest = bypassHeadRequest.(bool)
-	}
-
-	if treatRedirectAsFailure, ok := d.GetOkExists("treat_redirect_as_failure"); ok {
-		monitor.Options.TreatRedirectAsFailure = treatRedirectAsFailure.(bool)
-	}
-
-	monitor.Locations = locations
-	return &monitor
+	return simpleMonitorInput
 }
 
-func readSyntheticsMonitorStruct(monitor *synthetics.Monitor, d *schema.ResourceData) {
-	_ = d.Set("name", monitor.Name)
-	_ = d.Set("type", monitor.Type)
-	_ = d.Set("frequency", monitor.Frequency)
-	_ = d.Set("uri", monitor.URI)
-	_ = d.Set("locations", monitor.Locations)
-	_ = d.Set("status", monitor.Status)
-	_ = d.Set("sla_threshold", monitor.SLAThreshold)
-	_ = d.Set("verify_ssl", monitor.Options.VerifySSL)
-	_ = d.Set("validation_string", monitor.Options.ValidationString)
-	_ = d.Set("bypass_head_request", monitor.Options.BypassHEADRequest)
-	_ = d.Set("treat_redirect_as_failure", monitor.Options.TreatRedirectAsFailure)
-}
-
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint:gocyclo
 func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
-	monitorStruct := buildSyntheticsMonitorStruct(d)
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
-	log.Printf("[INFO] Creating New Relic Synthetics monitor %s", monitorStruct.Name)
+	var diags diag.Diagnostics
 
-	monitor, err := client.Synthetics.CreateMonitorWithContext(ctx, monitorStruct)
-	if err != nil {
-		return diag.FromErr(err)
+	monitorType := d.Get("type")
+
+	switch monitorType.(string) {
+	case "SIMPLE":
+		simpleMonitorInput := buildSyntheticsSimpleMonitor(d)
+		resp, err := client.Synthetics.SyntheticsCreateSimpleMonitorWithContext(ctx, accountID, simpleMonitorInput)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(resp.Errors) > 0 {
+			for _, err := range resp.Errors {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  string(err.Type) + " " + err.Description,
+				})
+			}
+		}
+		d.SetId(string(resp.Monitor.GUID))
+
+	case "BROWSER":
+		simpleBrowserMonitorInput := buildSyntheticsSimpleBrowserMonitor(d)
+		resp, err := client.Synthetics.SyntheticsCreateSimpleBrowserMonitorWithContext(ctx, accountID, simpleBrowserMonitorInput)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(resp.Errors) > 0 {
+			for _, err := range resp.Errors {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  string(err.Type) + " " + err.Description,
+				})
+			}
+		}
+		d.SetId(string(resp.Monitor.GUID))
 	}
 
-	d.SetId(monitor.ID)
 	return resourceNewRelicSyntheticsMonitorRead(ctx, d, meta)
 }
 
@@ -212,7 +292,7 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
 
-	monitor, err := client.Synthetics.GetMonitorWithContext(ctx, d.Id())
+	resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -222,18 +302,136 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	readSyntheticsMonitorStruct(monitor, d)
-
+	setCommonSyntheticsMonitorAttributes(resp, d)
 	return nil
+}
+
+func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
+	switch e := (*v).(type) {
+	case *entities.SyntheticMonitorEntity:
+		_ = d.Set("name", e.Name)
+		_ = d.Set("type", e.MonitorType)
+		_ = d.Set("frequency", e.Period)
+		_ = d.Set("uri", e.MonitoredURL)
+	}
+}
+
+func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleBrowserMonitorInput {
+	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{}
+
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	simpleBrowserMonitorUpdateInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
+	simpleBrowserMonitorUpdateInput.Locations = inputBase.Locations
+	simpleBrowserMonitorUpdateInput.Name = inputBase.Name
+	simpleBrowserMonitorUpdateInput.Period = inputBase.Period
+	simpleBrowserMonitorUpdateInput.Status = inputBase.Status
+	simpleBrowserMonitorUpdateInput.Tags = inputBase.Tags
+	simpleBrowserMonitorUpdateInput.Uri = inputBase.URI
+
+	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
+	}
+
+	if v, ok := d.GetOk("validation_string"); ok {
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.ResponseValidationText = v.(string)
+	}
+
+	if v, ok := d.GetOk("verify_ssl"); ok {
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.UseTlsValidation = v.(bool)
+	}
+
+	if v, ok := d.GetOk("script_language"); ok {
+		simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = v.(string)
+	}
+
+	if v, ok := d.GetOk("runtime_type"); ok {
+		simpleBrowserMonitorUpdateInput.Runtime.RuntimeType = v.(string)
+	}
+
+	if v, ok := d.GetOk("runtime_type_version"); ok {
+		simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	}
+
+	return simpleBrowserMonitorUpdateInput
+}
+
+func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleMonitorInput {
+	simpleMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleMonitorInput{}
+
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
+	simpleMonitorUpdateInput.Locations = inputBase.Locations
+	simpleMonitorUpdateInput.Name = inputBase.Name
+	simpleMonitorUpdateInput.Period = inputBase.Period
+	simpleMonitorUpdateInput.Status = inputBase.Status
+	simpleMonitorUpdateInput.Tags = inputBase.Tags
+	simpleMonitorUpdateInput.Uri = inputBase.URI
+
+	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
+		simpleMonitorUpdateInput.AdvancedOptions.RedirectIsFailure = v.(bool)
+	}
+
+	if v, ok := d.GetOk("validation_string"); ok {
+		simpleMonitorUpdateInput.AdvancedOptions.ResponseValidationText = v.(string)
+	}
+
+	if v, ok := d.GetOk("bypass_head_request"); ok {
+		simpleMonitorUpdateInput.AdvancedOptions.ShouldBypassHeadRequest = v.(bool)
+	}
+
+	if v, ok := d.GetOk("verify_ssl"); ok {
+		simpleMonitorUpdateInput.AdvancedOptions.UseTlsValidation = v.(bool)
+	}
+
+	return simpleMonitorUpdateInput
 }
 
 func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
 
-	_, err := client.Synthetics.UpdateMonitorWithContext(ctx, *buildSyntheticsUpdateMonitorArgs(d))
-	if err != nil {
-		return diag.FromErr(err)
+	var diags diag.Diagnostics
+
+	monitorType, ok := d.GetOk("type")
+	if !ok {
+		log.Printf("Not Monitor type specified")
+	}
+
+	guid := synthetics.EntityGUID(d.Id())
+
+	switch monitorType {
+
+	case "SIMPLE":
+		simpleMonitorUpdateInput := buildSyntheticsSimpleMonitorUpdateStruct(d)
+		resp, err := client.Synthetics.SyntheticsUpdateSimpleMonitorWithContext(ctx, guid, simpleMonitorUpdateInput)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(resp.Errors) > 0 {
+			for _, err := range resp.Errors {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  string(err.Type) + " " + err.Description,
+				})
+			}
+		}
+
+	case "BROWSER":
+		simpleBrowserMonitorUpdateInput := buildSyntheticsSimpleBrowserMonitorUpdateStruct(d)
+		resp, err := client.Synthetics.SyntheticsUpdateSimpleBrowserMonitorWithContext(ctx, guid, simpleBrowserMonitorUpdateInput)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(resp.Errors) > 0 {
+			for _, err := range resp.Errors {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  string(err.Type) + " " + err.Description,
+				})
+			}
+		}
 	}
 
 	return resourceNewRelicSyntheticsMonitorRead(ctx, d, meta)
@@ -242,11 +440,17 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
+	guid := synthetics.EntityGUID(d.Id())
+
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor %s", d.Id())
 
-	if err := client.Synthetics.DeleteMonitorWithContext(ctx, d.Id()); err != nil {
+	_, err := client.Synthetics.SyntheticsDeleteMonitorWithContext(ctx, guid)
+
+	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	d.SetId("")
 
 	return nil
 }
