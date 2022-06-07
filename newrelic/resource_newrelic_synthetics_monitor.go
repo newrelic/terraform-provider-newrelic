@@ -284,7 +284,7 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 		d.SetId(string(resp.Monitor.GUID))
 	}
 
-	return nil
+	return resourceNewRelicSyntheticsMonitorRead(ctx, d, meta)
 }
 
 func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -292,7 +292,7 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
 
-	resp, err := client.Entities.GetEntity(common.EntityGUID(d.Id()))
+	resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -308,12 +308,10 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 
 func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
 	switch e := (*v).(type) {
-	case *entities.SyntheticMonitorEntityOutline:
-		_ = d.Set("guid", e.GUID)
+	case *entities.SyntheticMonitorEntity:
 		_ = d.Set("name", e.Name)
 		_ = d.Set("type", e.MonitorType)
-		_ = d.Set("period", e.Period)
-		_ = d.Set("tags", e.Tags)
+		_ = d.Set("frequency", e.Period)
 		_ = d.Set("uri", e.MonitoredURL)
 	}
 }
