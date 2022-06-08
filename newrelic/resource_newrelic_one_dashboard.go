@@ -207,6 +207,10 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 			Required: true,
 			Elem:     dashboardWidgetNRQLQuerySchemaElem(),
 		},
+		"ignore_time_range": {
+			Type:     schema.TypeBool,
+			Optional: true,
+		},
 	}
 }
 
