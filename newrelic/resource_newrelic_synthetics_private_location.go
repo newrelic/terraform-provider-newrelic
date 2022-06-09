@@ -174,7 +174,6 @@ func resourceNewRelicSyntheticsPrivateLocationDelete(ctx context.Context, d *sch
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	var diags diag.Diagnostics
-
 	guid := synthetics.EntityGUID(d.Id())
 
 	res, err := client.Synthetics.SyntheticsDeletePrivateLocationWithContext(ctx, guid)
