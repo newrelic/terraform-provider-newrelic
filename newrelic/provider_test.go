@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/newrelic/newrelic-client-go/pkg/apm"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
@@ -34,7 +35,7 @@ var (
 	testAccountID                   int
 	testSubaccountID                int
 	testAccountName                 string
-	//testAccCleanupComplete          = false
+	testAccCleanupComplete          = false
 )
 
 func init() {
@@ -93,7 +94,9 @@ func testAccPreCheck(t *testing.T) {
 		t.Skipf("NEW_RELIC_ACCOUNT_ID must be set for acceptance tests")
 	}
 
-	//testAccApplicationsCleanup(t)
+	if v := os.Getenv("NEW_RELIC_CLEAN_UP_APPS"); v == "true" {
+		testAccApplicationsCleanup(t)
+	}
 	testAccCreateApplication(t)
 
 	// We need to give the entity search engine time to index the app so
@@ -146,39 +149,40 @@ func testAccCreateApplication(t *testing.T) {
 	app.Shutdown(30 * time.Second)
 }
 
-// func testAccApplicationsCleanup(t *testing.T) {
-// 	// Only run cleanup once per test run
-// 	if testAccCleanupComplete {
-// 		return
-// 	}
+func testAccApplicationsCleanup(t *testing.T) {
+	// Only run cleanup once per test run
+	if testAccCleanupComplete {
+		return
+	}
 
-// 	client := apm.New(config.Config{
-// 		APIKey: os.Getenv("NEW_RELIC_API_KEY"),
-// 	})
+	client := apm.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
 
-// 	params := apm.ListApplicationsParams{
-// 		Name: "tf_test",
-// 	}
+	params := apm.ListApplicationsParams{
+		Name: "tf_test",
+	}
 
-// 	applications, err := client.ListApplications(&params)
+	applications, err := client.ListApplications(&params)
 
-// 	if err != nil {
-// 		t.Logf("error fetching applications: %s", err)
-// 	}
+	if err != nil {
+		t.Logf("error fetching applications: %s", err)
+	}
 
-// 	deletedAppCount := 0
+	deletedAppCount := 0
 
-// 	for _, app := range applications {
-// 		if !app.Reporting {
-// 			_, err = client.DeleteApplication(app.ID)
+	for _, app := range applications {
+		if !app.Reporting {
+			_, err = client.DeleteApplication(app.ID)
 
-// 			if err == nil {
-// 				deletedAppCount++
-// 			}
-// 		}
-// 	}
+			if err == nil {
+				deletedAppCount++
+				t.Logf("deleted application %d (%d/%d)", app.ID, deletedAppCount, len(applications))
+			}
+		}
+	}
 
-// 	t.Logf("testacc cleanup of %d applications complete", deletedAppCount)
+	t.Logf("testacc cleanup of %d applications complete", deletedAppCount)
 
-// 	testAccCleanupComplete = true
-// }
+	testAccCleanupComplete = true
+}
