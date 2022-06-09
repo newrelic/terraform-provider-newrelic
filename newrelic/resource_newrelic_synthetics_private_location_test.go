@@ -92,8 +92,8 @@ func testAccCheckNewRelicSyntheticsPrivateLocationDestroy(s *terraform.State) er
 func testAccNewRelicSyntheticsPrivateLocationConfig(name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_private_location" "bar" {
-		description  			  = "Test Description"
-		name		 			  =	"%[1]s"
+		description               = "Test Description-Updated"
+		name                      = "%[1]s"
 		verified_script_execution = false
 }
 `, name)
