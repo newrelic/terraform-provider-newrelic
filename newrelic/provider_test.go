@@ -35,6 +35,7 @@ var (
 	testAccountID                   int
 	testSubaccountID                int
 	testAccountName                 string
+	testAccAPMEntityCreated         = false
 	testAccCleanupComplete          = false
 )
 
@@ -97,35 +98,41 @@ func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("NEW_RELIC_CLEAN_UP_APPS"); v == "true" {
 		testAccApplicationsCleanup(t)
 	}
-	testAccCreateApplication(t)
 
-	// We need to give the entity search engine time to index the app so
-	// we try to get the entity, and retry if it fails for a certain amount
-	// of time
-	client := entities.New(config.Config{
-		PersonalAPIKey: testAccAPIKey,
-	})
-	params := entities.EntitySearchQueryBuilder{
-		Name:   testAccExpectedApplicationName,
-		Type:   "APPLICATION",
-		Domain: "APM",
-	}
+	// // Create a test application for use in newrelic_alert_condition and other tests
+	if !testAccAPMEntityCreated {
+		testAccCreateApplication(t)
 
-	retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
-		entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
-		if err != nil {
-			return resource.RetryableError(err)
+		// We need to give the entity search engine time to index the app so
+		// we try to get the entity, and retry if it fails for a certain amount
+		// of time
+		client := entities.New(config.Config{
+			PersonalAPIKey: testAccAPIKey,
+		})
+		params := entities.EntitySearchQueryBuilder{
+			Name:   testAccExpectedApplicationName,
+			Type:   "APPLICATION",
+			Domain: "APM",
 		}
 
-		if entityResults.Count != 1 {
-			return resource.RetryableError(fmt.Errorf("Entity not found, or found more than one"))
+		retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
+			entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
+			if err != nil {
+				return resource.RetryableError(err)
+			}
+
+			if entityResults.Count != 1 {
+				return resource.RetryableError(fmt.Errorf("Entity not found, or found more than one"))
+			}
+
+			return nil
+		})
+
+		if retryErr != nil {
+			t.Fatalf("Unable to find application entity: %s", retryErr)
 		}
 
-		return nil
-	})
-
-	if retryErr != nil {
-		t.Fatalf("Unable to find application entity: %s", retryErr)
+		testAccAPMEntityCreated = true
 	}
 }
 
