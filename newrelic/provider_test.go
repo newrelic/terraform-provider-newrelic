@@ -95,12 +95,12 @@ func testAccPreCheck(t *testing.T) {
 		t.Skipf("NEW_RELIC_ACCOUNT_ID must be set for acceptance tests")
 	}
 
-	if v := os.Getenv("NEW_RELIC_CLEAN_UP_APPS"); v == "true" {
-		testAccApplicationsCleanup(t)
-	}
-
-	// // Create a test application for use in newrelic_alert_condition and other tests
+	// Create a test application for use in newrelic_alert_condition and other tests
 	if !testAccAPMEntityCreated {
+		// Clean up old instances of the applications
+		testAccApplicationsCleanup(t)
+
+		// Create the application
 		testAccCreateApplication(t)
 
 		// We need to give the entity search engine time to index the app so
@@ -180,6 +180,8 @@ func testAccApplicationsCleanup(t *testing.T) {
 
 	for _, app := range applications {
 		if !app.Reporting {
+			// Applications that have reported in the past 12 hours will not be deleted
+			// because of limitation on the API
 			_, err = client.DeleteApplication(app.ID)
 
 			if err == nil {
