@@ -24,6 +24,7 @@ func resourceNewRelicSyntheticsPrivateLocation() *schema.Resource {
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "The ID of the account in New Relic.",
 			},
 			"description": {
