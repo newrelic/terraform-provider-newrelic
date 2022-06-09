@@ -419,7 +419,7 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
   }
-  
+
   storage {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
