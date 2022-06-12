@@ -44,32 +44,6 @@ func listValidSyntheticsScriptMonitorTypes() []string {
 	}
 }
 
-//1, 5, 10, 15, 30, 60, 360, 720, 1440
-func periodConvIntToString(v interface{}) synthetics.SyntheticsMonitorPeriod {
-	var output synthetics.SyntheticsMonitorPeriod
-	switch v.(int) {
-	case 1:
-		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE
-	case 5:
-		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_5_MINUTES
-	case 10:
-		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_10_MINUTES
-	case 15:
-		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_15_MINUTES
-	case 30:
-		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_30_MINUTES
-	case 60:
-		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_HOUR
-	case 360:
-		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_6_HOURS
-	case 720:
-		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_12_HOURS
-	case 1440:
-		output = synthetics.SyntheticsMonitorPeriodTypes.EVERY_DAY
-	}
-	return output
-}
-
 func buildSyntheticsScriptAPIMonitorInput(d *schema.ResourceData) synthetics.SyntheticsCreateScriptAPIMonitorInput {
 	inputBase := expandSyntheticsMonitorBase(d)
 
@@ -138,11 +112,8 @@ func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 	status := d.Get("status")
 	inputBase.Status = synthetics.SyntheticsMonitorStatus(status.(string))
 
-	// period := d.Get("frequency")
-	// inputBase.Period = periodConvIntToString(period)
-
-	period := d.Get("period").(string)
-	inputBase.Period = synthetics.SyntheticsMonitorPeriod(period)
+	period := d.Get("period")
+	inputBase.Period = synthetics.SyntheticsMonitorPeriod(period.(string))
 
 	if uri, ok := d.GetOk("uri"); ok {
 		inputBase.URI = uri.(string)
@@ -157,8 +128,10 @@ func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 	}
 
 	// Locations can't be in the "base" due to different data structures in different monitor types
-	// locations := d.Get("locations").(*schema.Set).List()
-	// inputBase.Locations = expandSyntheticsLocations(locations)
+	publicLocations := d.Get("locations_public").(*schema.Set).List()
+	inputBase.Locations = expandSyntheticsLocations(publicLocations)
+
+	//privateLocations:=d.Get("locations_private").(*schema.Set).List()
 
 	return inputBase
 }
@@ -176,18 +149,18 @@ func expandSyntheticsCustomHeaders(headers []interface{}) []synthetics.Synthetic
 	return output
 }
 
-// func expandSyntheticsLocations(locations []interface{}) synthetics.SyntheticsLocationsInput {
-// 	locationsOut := make([]string, len(locations))
+func expandSyntheticsLocations(locations []interface{}) synthetics.SyntheticsLocationsInput {
+	locationsOut := make([]string, len(locations))
 
-// 	for i, v := range locations {
-// 		locationsOut[i] = v.(string)
-// 	}
+	for i, v := range locations {
+		locationsOut[i] = v.(string)
+	}
 
-// 	return synthetics.SyntheticsLocationsInput{
-// 		Public: locationsOut,
-// 		// What about private?
-// 	}
-// }
+	return synthetics.SyntheticsLocationsInput{
+		Public: locationsOut,
+		// What about private?
+	}
+}
 
 func expandSyntheticsTags(tags []interface{}) []synthetics.SyntheticsTag {
 	out := make([]synthetics.SyntheticsTag, len(tags))

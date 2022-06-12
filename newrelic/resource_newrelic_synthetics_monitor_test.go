@@ -5,13 +5,11 @@ package newrelic
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"testing"
-	"time"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 ///////////////////////
@@ -22,8 +20,9 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.foo"
 	rName := acctest.RandString(5)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
@@ -40,7 +39,6 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 				),
 			},
 		},
-		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
 	})
 }
 
@@ -55,9 +53,9 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string) string {
 	  validation_string="success"
 	  bypass_head_request=true
 	  verify_ssl=true
-	  locations = ["AP_SOUTH_1"]
+	  locations_public = ["AP_SOUTH_1"]
 	  name      = "%[1]s"
-	  frequency = 5
+	  period = "EVERY_MINUTE"
 	  status    = "ENABLED"
 	  type      = "SIMPLE"
 	  tags{
@@ -79,9 +77,9 @@ func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string) string {
 	  validation_string="succeeded"
 	  bypass_head_request=false
 	  verify_ssl=false
-	  locations = ["AP_SOUTH_1","AP_EAST_1"]
+	  locations_public = ["AP_SOUTH_1","AP_EAST_1"]
 	  name      = "%[1]s-updated"
-	  frequency = 10
+	  period = "EVERY_5_MINUTES"
 	  status    = "DISABLED"
 	  type      = "SIMPLE"
 	  tags{
@@ -101,8 +99,9 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.bar"
 	rName := acctest.RandString(5)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
@@ -119,7 +118,6 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 				),
 			},
 		},
-		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
 	})
 }
 
@@ -133,9 +131,9 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string) string {
 		  enable_screenshot_on_failure_and_script=true
 		  validation_string="success"
 		  verify_ssl=true
-		  locations = ["AP_SOUTH_1"]
+		  locations_public = ["AP_SOUTH_1"]
 		  name      = "%[1]s"
-		  frequency = 5
+		  period = "EVERY_MINUTE"
 		  runtime_type_version="100"
 		  runtime_type="CHROME_BROWSER"
 		  script_language="JAVASCRIPT"
@@ -160,9 +158,9 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string) str
 		  enable_screenshot_on_failure_and_script=false
 		  validation_string="success"
 		  verify_ssl=false
-		  locations = ["AP_SOUTH_1","AP_EAST_1"]
+		  locations_public = ["AP_SOUTH_1","AP_EAST_1"]
 		  name      = "%[1]s-Updated"
-		  frequency = 10
+		  period = "EVERY_5_MINUTES"
 		  runtime_type_version="100"
 		  runtime_type="CHROME_BROWSER"
 		  script_language="JAVASCRIPT"
@@ -179,22 +177,25 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string) str
 
 func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+
 		rs, ok := s.RootModule().Resources[n]
+
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
+
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no synthetics monitor ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		time.Sleep(20 * time.Second)
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
+
 		if err != nil {
-			fmt.Printf(rs.Primary.ID)
 			return err
 		}
+
 		if string((*found).GetGUID()) != rs.Primary.ID {
 			fmt.Errorf("the monitor is not found %v - %v", (*found).GetGUID(), rs.Primary.ID)
 		}
@@ -211,13 +212,10 @@ func testAccCheckNewRelicSyntheticsMonitorDestroy(s *terraform.State) error {
 			continue
 		}
 
-		time.Sleep(20 * time.Second)
-		fmt.Printf(r.Type)
-		_, err := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
-		if err == nil {
+		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
+		if (*found) != nil {
 			return fmt.Errorf("synthetics monitor still exists")
 		}
-
 	}
 	return nil
 }

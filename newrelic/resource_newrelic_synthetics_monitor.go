@@ -2,16 +2,14 @@ package newrelic
 
 import (
 	"context"
-	"log"
-
 	"github.com/newrelic/newrelic-client-go/pkg/common"
-
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
@@ -29,12 +27,10 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The monitor type. Valid values are SIMPLE, BROWSER, SCRIPT_BROWSER, and SCRIPT_API.",
+				Description: "The monitor type. Valid values are SIMPLE AND BROWSER.",
 				ValidateFunc: validation.StringInSlice([]string{
 					"SIMPLE",
 					"BROWSER",
-					"SCRIPT_API",
-					"SCRIPT_BROWSER",
 				}, false),
 			},
 			"name": {
@@ -42,11 +38,12 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Required:    true,
 				Description: "The title of this monitor.",
 			},
-			"frequency": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: intInSlice([]int{1, 5, 10, 15, 30, 60, 360, 720, 1440}),
-				Description:  "The interval (in minutes) at which this monitor should run. Valid values are 1, 5, 10, 15, 30, 60, 360, 720, or 1440.",
+			"period": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.",
+				ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPeriods(), false),
 			},
 			"uri": {
 				Type:        schema.TypeString,
@@ -56,28 +53,25 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 			},
 
 			// TODO: Locations needs to include both private and public
-			"locations": {
+			"locations_public": {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				MinItems:    1,
 				Required:    true,
 				Description: "The locations in which this monitor should be run.",
 			},
-			"status": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The monitor status (i.e. ENABLED, MUTED, DISABLED).",
-				ValidateFunc: validation.StringInSlice([]string{
-					"ENABLED",
-					"MUTED",
-					"DISABLED",
-				}, false),
-			},
-			"sla_threshold": {
-				Type:        schema.TypeFloat,
+			"locations_private": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				MinItems:    1,
 				Optional:    true,
-				Default:     7,
-				Description: "The base threshold (in seconds) to calculate the apdex score for use in the SLA report. (Default 7 seconds)",
+				Description: "The locations in which this monitor should be run.",
+			},
+			"status": {
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED).",
+				ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorStatuses(), false),
 			},
 			// TODO: ValidationFunc (options only valid if SIMPLE or BROWSER)
 			"validation_string": {
@@ -140,11 +134,6 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description: "",
 				Optional:    true,
 			},
-			"script": {
-				Type:        schema.TypeString,
-				Description: "",
-				Optional:    true,
-			},
 			"custom_headers": {
 				Type:        schema.TypeSet,
 				Description: "",
@@ -168,6 +157,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 	}
 }
 
+//func to build the input to create simple browser monitor
 func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleBrowserMonitorInput {
 	inputBase := expandSyntheticsMonitorBase(d)
 
@@ -207,6 +197,7 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	return simpleBrowserMonitorInput
 }
 
+//func to build input to create simple monitor
 func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleMonitorInput {
 	inputBase := expandSyntheticsMonitorBase(d)
 
@@ -235,7 +226,6 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 	if v, ok := d.GetOk("verify_ssl"); ok {
 		simpleMonitorInput.AdvancedOptions.UseTlsValidation = v.(bool)
 	}
-
 	return simpleMonitorInput
 }
 
@@ -253,10 +243,13 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 	switch monitorType.(string) {
 	case "SIMPLE":
 		simpleMonitorInput := buildSyntheticsSimpleMonitor(d)
+
 		resp, err := client.Synthetics.SyntheticsCreateSimpleMonitorWithContext(ctx, accountID, simpleMonitorInput)
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if len(resp.Errors) > 0 {
 			for _, err := range resp.Errors {
 				diags = append(diags, diag.Diagnostic{
@@ -265,14 +258,21 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 				})
 			}
 		}
+
+		flattenSyntheticsSimpleMonitor(resp.Monitor, d)
+
 		d.SetId(string(resp.Monitor.GUID))
 
 	case "BROWSER":
+
 		simpleBrowserMonitorInput := buildSyntheticsSimpleBrowserMonitor(d)
+
 		resp, err := client.Synthetics.SyntheticsCreateSimpleBrowserMonitorWithContext(ctx, accountID, simpleBrowserMonitorInput)
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if len(resp.Errors) > 0 {
 			for _, err := range resp.Errors {
 				diags = append(diags, diag.Diagnostic{
@@ -281,10 +281,27 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 				})
 			}
 		}
+
+		flattenSyntheticsSimpleMonitor(resp.Monitor, d)
+
 		d.SetId(string(resp.Monitor.GUID))
 	}
 
 	return nil
+}
+
+//func to store the output values in the state file.
+func flattenSyntheticsSimpleMonitor(monitor synthetics.SyntheticsSimpleBrowserMonitor, d *schema.ResourceData) {
+
+	_ = d.Set("validation_string", monitor.AdvancedOptions.ResponseValidationText)
+	_ = d.Set("verify_ssl", monitor.AdvancedOptions.UseTlsValidation)
+	_ = d.Set("locations_public", monitor.Locations.Public)
+	_ = d.Set("name", monitor.Name)
+	_ = d.Set("period", monitor.Period)
+	_ = d.Set("status", string(monitor.Status))
+	_ = d.Set("custom_headers", monitor.AdvancedOptions.CustomHeaders)
+	_ = d.Set("uri", monitor.Uri)
+
 }
 
 func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -292,33 +309,38 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
 
-	resp, err := client.Entities.GetEntity(common.EntityGUID(d.Id()))
+	resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
+
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
-
 		return diag.FromErr(err)
 	}
 
 	setCommonSyntheticsMonitorAttributes(resp, d)
+
 	return nil
 }
 
+//func to set output values in the read func.
 func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
+
 	switch e := (*v).(type) {
-	case *entities.SyntheticMonitorEntityOutline:
-		_ = d.Set("guid", e.GUID)
+
+	case *entities.SyntheticMonitorEntity:
 		_ = d.Set("name", e.Name)
 		_ = d.Set("type", e.MonitorType)
-		_ = d.Set("period", e.Period)
-		_ = d.Set("tags", e.Tags)
 		_ = d.Set("uri", e.MonitoredURL)
+
 	}
+
 }
 
+//func to build input to update simple browser monitor
 func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleBrowserMonitorInput {
+
 	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{}
 
 	inputBase := expandSyntheticsMonitorBase(d)
@@ -358,6 +380,7 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	return simpleBrowserMonitorUpdateInput
 }
 
+//func to build input to update simple monitor
 func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleMonitorInput {
 	simpleMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleMonitorInput{}
 
@@ -388,10 +411,13 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 	}
 
 	return simpleMonitorUpdateInput
+
 }
 
 func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
 	client := meta.(*ProviderConfig).NewClient
+
 	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
 
 	var diags diag.Diagnostics
@@ -407,10 +433,13 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 
 	case "SIMPLE":
 		simpleMonitorUpdateInput := buildSyntheticsSimpleMonitorUpdateStruct(d)
+
 		resp, err := client.Synthetics.SyntheticsUpdateSimpleMonitorWithContext(ctx, guid, simpleMonitorUpdateInput)
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if len(resp.Errors) > 0 {
 			for _, err := range resp.Errors {
 				diags = append(diags, diag.Diagnostic{
@@ -420,8 +449,13 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 			}
 		}
 
+		flattenSyntheticsSimpleMonitorUpdate(resp.Monitor, d)
+
+		d.SetId(string(resp.Monitor.GUID))
+
 	case "BROWSER":
 		simpleBrowserMonitorUpdateInput := buildSyntheticsSimpleBrowserMonitorUpdateStruct(d)
+
 		resp, err := client.Synthetics.SyntheticsUpdateSimpleBrowserMonitorWithContext(ctx, guid, simpleBrowserMonitorUpdateInput)
 		if err != nil {
 			return diag.FromErr(err)
@@ -434,12 +468,52 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 				})
 			}
 		}
+
+		flattenSyntheticsSimpleBrowserMonitorUpdate(resp.Monitor, d)
+
+		d.SetId(string(resp.Monitor.GUID))
+
 	}
 
-	return resourceNewRelicSyntheticsMonitorRead(ctx, d, meta)
+	return nil
+}
+
+//func to store outputs from the simple monitor update
+func flattenSyntheticsSimpleMonitorUpdate(monitor synthetics.SyntheticsSimpleMonitor, d *schema.ResourceData) {
+
+	_ = d.Set("custom_headers", monitor.AdvancedOptions.CustomHeaders)
+	_ = d.Set("treat_redirect_as_failure", monitor.AdvancedOptions.RedirectIsFailure)
+	_ = d.Set("validation_string", monitor.AdvancedOptions.ResponseValidationText)
+	_ = d.Set("bypass_head_request", monitor.AdvancedOptions.ShouldBypassHeadRequest)
+	_ = d.Set("verify_ssl", monitor.AdvancedOptions.UseTlsValidation)
+	_ = d.Set("locations_public", monitor.Locations.Public)
+	_ = d.Set("name", monitor.Name)
+	_ = d.Set("period", monitor.Period)
+	_ = d.Set("status", monitor.Status)
+	_ = d.Set("uri", monitor.Uri)
+
+}
+
+//func to store outputs from the simple browser monitor update
+func flattenSyntheticsSimpleBrowserMonitorUpdate(monitor synthetics.SyntheticsSimpleBrowserMonitor, d *schema.ResourceData) {
+
+	_ = d.Set("validation_string", monitor.AdvancedOptions.ResponseValidationText)
+	_ = d.Set("verify_ssl", monitor.AdvancedOptions.UseTlsValidation)
+	_ = d.Set("custom_headers", monitor.AdvancedOptions.CustomHeaders)
+	_ = d.Set("enable_screenshot_on_failure_and_script", monitor.AdvancedOptions.EnableScreenshotOnFailureAndScript)
+	_ = d.Set("locations_public", monitor.Locations.Public)
+	_ = d.Set("name", monitor.Name)
+	_ = d.Set("script_language", monitor.Runtime.ScriptLanguage)
+	_ = d.Set("runtime_type", monitor.Runtime.RuntimeType)
+	_ = d.Set("runtime_type_version", monitor.Runtime.RuntimeTypeVersion)
+	_ = d.Set("period", monitor.Period)
+	_ = d.Set("status", monitor.Status)
+	_ = d.Set("uri", monitor.Uri)
+
 }
 
 func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
 	client := meta.(*ProviderConfig).NewClient
 
 	guid := synthetics.EntityGUID(d.Id())
