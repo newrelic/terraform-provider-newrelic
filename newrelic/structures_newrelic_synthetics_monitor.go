@@ -6,7 +6,7 @@ import (
 )
 
 type SyntheticsMonitorBase struct {
-	Locations     synthetics.SyntheticsLocationsInput
+	//Locations     synthetics.SyntheticsLocationsInput
 	Name          string
 	Period        synthetics.SyntheticsMonitorPeriod
 	Status        synthetics.SyntheticsMonitorStatus
@@ -15,6 +15,7 @@ type SyntheticsMonitorBase struct {
 	CustomHeaders []synthetics.SyntheticsCustomHeaderInput // Move CustomHeaders outside of base (does not apply to all monitors)
 }
 
+//validation function to validate monitor period
 func listValidSyntheticsMonitorPeriods() []string {
 	return []string{
 		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE),
@@ -29,6 +30,7 @@ func listValidSyntheticsMonitorPeriods() []string {
 	}
 }
 
+//validate func to validate monitor status
 func listValidSyntheticsMonitorStatuses() []string {
 	return []string{
 		string(synthetics.SyntheticsMonitorStatusTypes.DISABLED),
@@ -37,6 +39,7 @@ func listValidSyntheticsMonitorStatuses() []string {
 	}
 }
 
+//validate func to validate monitor type.
 func listValidSyntheticsScriptMonitorTypes() []string {
 	return []string{
 		string(SyntheticsMonitorTypes.SCRIPT_API),
@@ -44,6 +47,7 @@ func listValidSyntheticsScriptMonitorTypes() []string {
 	}
 }
 
+//func to build input for script API monitor creation.
 func buildSyntheticsScriptAPIMonitorInput(d *schema.ResourceData) synthetics.SyntheticsCreateScriptAPIMonitorInput {
 	inputBase := expandSyntheticsMonitorBase(d)
 
@@ -78,6 +82,7 @@ func buildSyntheticsScriptAPIMonitorInput(d *schema.ResourceData) synthetics.Syn
 	return input
 }
 
+//function to build input for script Browser monitor creation.
 func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics.SyntheticsCreateScriptBrowserMonitorInput {
 	inputBase := expandSyntheticsMonitorBase(d)
 	input := synthetics.SyntheticsCreateScriptBrowserMonitorInput{
@@ -108,6 +113,7 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 	return input
 }
 
+//function to build input for script API monitor update function
 func buildSyntheticsScriptAPIMonitorUpdateInput(d *schema.ResourceData) synthetics.SyntheticsUpdateScriptAPIMonitorInput {
 	inputBase := expandSyntheticsMonitorBase(d)
 	input := synthetics.SyntheticsUpdateScriptAPIMonitorInput{
@@ -135,6 +141,7 @@ func buildSyntheticsScriptAPIMonitorUpdateInput(d *schema.ResourceData) syntheti
 	return input
 }
 
+//function to build input for script browser monitor update function
 func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.SyntheticsUpdateScriptBrowserMonitorInput {
 	inputBase := expandSyntheticsMonitorBase(d)
 	input := synthetics.SyntheticsUpdateScriptBrowserMonitorInput{
@@ -165,21 +172,21 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 	return input
 }
 
+//func to expand synthetics private locations.
 func expandSyntheticsPrivateLocations(locations []interface{}) []synthetics.SyntheticsPrivateLocationInput {
 	locationsOut := make([]synthetics.SyntheticsPrivateLocationInput, len(locations))
 
 	for i, v := range locations {
 		pl := v.(map[string]interface{})
 		locationsOut[i].GUID = pl["guid"].(int) // This should be a string I think since it's a scalar `ID`
-
-		// if v, ok := pl["vse_password"]; ok {
-		// 	locationsOut[i].VsePassword = synthetics.SecureValue(v.(string))
-		// }
+		if v, ok := pl["vse_password"]; ok {
+			locationsOut[i].VsePassword = synthetics.SecureValue(v.(string))
+		}
 	}
-
 	return locationsOut
 }
 
+//function to expand synthetics public locations.
 func expandSyntheticsPublicLocations(locations []interface{}) []string {
 	locationsOut := make([]string, len(locations))
 
@@ -190,6 +197,7 @@ func expandSyntheticsPublicLocations(locations []interface{}) []string {
 	return locationsOut
 }
 
+//function to expand monitor base for monitors input.
 func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 	inputBase := SyntheticsMonitorBase{}
 
@@ -214,12 +222,6 @@ func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 		inputBase.CustomHeaders = expandSyntheticsCustomHeaders(headers.(*schema.Set).List())
 	}
 
-	// Locations can't be in the "base" due to different data structures in different monitor types
-	publicLocations := d.Get("locations_public").(*schema.Set).List()
-	inputBase.Locations = expandSyntheticsLocations(publicLocations)
-
-	//privateLocations:=d.Get("locations_private").(*schema.Set).List()
-
 	return inputBase
 }
 
@@ -236,19 +238,21 @@ func expandSyntheticsCustomHeaders(headers []interface{}) []synthetics.Synthetic
 	return output
 }
 
-func expandSyntheticsLocations(locations []interface{}) synthetics.SyntheticsLocationsInput {
+func expandSyntheticsSimplePublicLocations(locations []interface{}) []string {
 	locationsOut := make([]string, len(locations))
-
 	for i, v := range locations {
 		locationsOut[i] = v.(string)
 	}
-
-	return synthetics.SyntheticsLocationsInput{
-		Public: locationsOut,
-		// What about private?
-	}
+	return locationsOut
 }
 
+func expandSyntheticsSimplePrivateLocations(locations []interface{}) []string {
+	locationsOut := make([]string, len(locations))
+	for i, v := range locations {
+		locationsOut[i] = v.(string)
+	}
+	return locationsOut
+}
 func expandSyntheticsTags(tags []interface{}) []synthetics.SyntheticsTag {
 	out := make([]synthetics.SyntheticsTag, len(tags))
 	for i, v := range tags {
@@ -269,16 +273,3 @@ func expandSyntheticsTagValues(v []interface{}) []string {
 	}
 	return values
 }
-
-// func flattenSyntheticsScriptMonitor(v *entities.EntityInterface, d *schema.ResourceData) diag.Diagnostics {
-// 	switch e := (*v).(type) {
-// 	case *entities.SyntheticMonitorEntityOutline:
-// 		_ = d.Set("guid", string(e.GUID))
-// 		_ = d.Set("name", e.Name)
-// 		_ = d.Set("type", string(e.MonitorType))
-// 		// _ = d.Set("period", e.Period) // entity.Period is NOT the same as synthetics.Period ugh
-// 		// _ = d.Set("period", e.Period)
-// 	}
-
-// 	return nil
-// }

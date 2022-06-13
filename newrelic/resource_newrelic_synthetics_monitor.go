@@ -164,7 +164,6 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{}
 
 	simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
-	simpleBrowserMonitorInput.Locations = inputBase.Locations
 	simpleBrowserMonitorInput.Name = inputBase.Name
 	simpleBrowserMonitorInput.Period = inputBase.Period
 	simpleBrowserMonitorInput.Status = inputBase.Status
@@ -173,6 +172,14 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 
 	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
 		simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
+	}
+
+	if v, ok := d.GetOk("locations_public"); ok {
+		simpleBrowserMonitorInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
+	}
+
+	if v, ok := d.GetOk("locations_private"); ok {
+		simpleBrowserMonitorInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
 	}
 
 	if v, ok := d.GetOk("validation_string"); ok {
@@ -204,12 +211,19 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 	simpleMonitorInput := synthetics.SyntheticsCreateSimpleMonitorInput{}
 
 	simpleMonitorInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
-	simpleMonitorInput.Locations = inputBase.Locations
 	simpleMonitorInput.Name = inputBase.Name
 	simpleMonitorInput.Period = inputBase.Period
 	simpleMonitorInput.Status = inputBase.Status
 	simpleMonitorInput.Tags = inputBase.Tags
 	simpleMonitorInput.Uri = inputBase.URI
+
+	if v, ok := d.GetOk("locations_public"); ok {
+		simpleMonitorInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
+	}
+
+	if v, ok := d.GetOk("locations_private"); ok {
+		simpleMonitorInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
+	}
 
 	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
 		simpleMonitorInput.AdvancedOptions.RedirectIsFailure = v.(bool)
@@ -328,12 +342,19 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	simpleBrowserMonitorUpdateInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
-	simpleBrowserMonitorUpdateInput.Locations = inputBase.Locations
 	simpleBrowserMonitorUpdateInput.Name = inputBase.Name
 	simpleBrowserMonitorUpdateInput.Period = inputBase.Period
 	simpleBrowserMonitorUpdateInput.Status = inputBase.Status
 	simpleBrowserMonitorUpdateInput.Tags = inputBase.Tags
 	simpleBrowserMonitorUpdateInput.Uri = inputBase.URI
+
+	if v, ok := d.GetOk("locations_public"); ok {
+		simpleBrowserMonitorUpdateInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
+	}
+
+	if v, ok := d.GetOk("locations_private"); ok {
+		simpleBrowserMonitorUpdateInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
+	}
 
 	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
@@ -369,12 +390,19 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
-	simpleMonitorUpdateInput.Locations = inputBase.Locations
 	simpleMonitorUpdateInput.Name = inputBase.Name
 	simpleMonitorUpdateInput.Period = inputBase.Period
 	simpleMonitorUpdateInput.Status = inputBase.Status
 	simpleMonitorUpdateInput.Tags = inputBase.Tags
 	simpleMonitorUpdateInput.Uri = inputBase.URI
+
+	if v, ok := d.GetOk("locations_public"); ok {
+		simpleMonitorUpdateInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
+	}
+
+	if v, ok := d.GetOk("locations_private"); ok {
+		simpleMonitorUpdateInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
+	}
 
 	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
 		simpleMonitorUpdateInput.AdvancedOptions.RedirectIsFailure = v.(bool)
