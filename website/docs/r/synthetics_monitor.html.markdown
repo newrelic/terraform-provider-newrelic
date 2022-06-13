@@ -8,22 +8,31 @@ description: |-
 
 # Resource: newrelic\_synthetics\_monitor
 
-Use this resource to create, update, and delete a synthetics monitor in New Relic.
+Use this resource to create and manage New Relic Synthetics monitor.
 
 ## Example Usage
 
 ##### Type: `SIMPLE`
 ```hcl
 resource "newrelic_synthetics_monitor" "foo" {
-  name = "foo"
-  type = "SIMPLE"
+  custom_headers{
+    name  =  "Name"
+    value = "simpleMonitor"
+  }
+  treat_redirect_as_failure=true
+  validation_string="success"
+  bypass_head_request=true
+  verify_ssl=true
+  locations = ["AP_SOUTH_1"]
+  name      = "%[1]s"
   frequency = 5
-  status = "ENABLED"
-  locations = ["AWS_US_EAST_1", "AWS_US_EAST_2"]
-
-  uri                       = "https://example.com"               # Required for type "SIMPLE" and "BROWSER"
-  validation_string         = "add example validation check here" # Optional for type "SIMPLE" and "BROWSER"
-  verify_ssl                = true                                # Optional for type "SIMPLE" and "BROWSER"
+  status    = "ENABLED"
+  type      = "SIMPLE"
+  tags{
+    key = "monitor"
+    values  = ["myMonitor"]
+  }
+  uri = "https://www.one.newrelic.com"
 }
 ```
 See additional [examples](#additional-examples).
@@ -33,7 +42,7 @@ See additional [examples](#additional-examples).
 The following arguments are supported:
 
   * `name` - (Required) The title of this monitor.
-  * `type` - (Required) The monitor type. Valid values are `SIMPLE`, `BROWSER`, `SCRIPT_BROWSER`, and `SCRIPT_API`.
+  * `type` - (Required) The monitor type. Valid values are `SIMPLE`, `BROWSER`.
   * `frequency` - (Required) The interval (in minutes) at which this monitor should run.
   * `status` - (Required) The monitor status (i.e. `ENABLED`, `MUTED`, `DISABLED`).
   * `locations` - (Required) The locations in which this monitor should be run.
@@ -68,48 +77,33 @@ The following attributes are exported:
 Type: `BROWSER`
 
 ```hcl
-resource "newrelic_synthetics_monitor" "foo" {
-  name = "foo"
-  type = "BROWSER"
-  frequency = 5
-  status = "ENABLED"
-  locations = ["AWS_US_EAST_1"]
-
-  uri                       = "https://example.com"               # required for type "SIMPLE" and "BROWSER"
-  validation_string         = "add example validation check here" # optional for type "SIMPLE" and "BROWSER"
-  verify_ssl                = true                                # optional for type "SIMPLE" and "BROWSER"
-  bypass_head_request       = true                                # Note: optional for type "BROWSER" only
-  treat_redirect_as_failure = true                                # Note: optional for type "BROWSER" only
-}
-```
-
-Type: `SCRIPT_BROWSER`
-
-```hcl
-resource "newrelic_synthetics_monitor" "foo" {
-  name = "foo"
-  type = "SCRIPT_BROWSER"
-  frequency = 5
-  status = "ENABLED"
-  locations = ["AWS_US_EAST_1"]
-}
-```
-
-Type: `SCRIPT_API`
-
-```hcl
-resource "newrelic_synthetics_monitor" "foo" {
-  name = "foo"
-  type = "SCRIPT_API"
-  frequency = 5
-  status = "ENABLED"
-  locations = ["AWS_US_EAST_1"]
+resource "newrelic_synthetics_monitor" "bar" {
+  custom_headers{
+    name  ="name"
+    value ="simple_browser"
+  }
+  enable_screenshot_on_failure_and_script=false
+  validation_string ="success"
+  verify_ssl  =false
+  locations   = ["AP_SOUTH_1","AP_EAST_1"]
+  name        = "%[1]s-Updated"
+  frequency   = 10
+  runtime_type_version  ="100"
+  runtime_type  ="CHROME_BROWSER"
+  script_language ="JAVASCRIPT"
+  status      = "DISABLED"
+  type        = "BROWSER"
+  tags{
+    key = "name"
+    values  = ["SimpleBrowserMonitor","my_monitor"]
+  }
+  uri = "https://www.one.newrelic.com"
 }
 ```
 
 ## Import
 
-Synthetics monitors can be imported using the `id`, e.g.
+Synthetics monitor can be imported using the `id`, e.g.
 
 ```bash
 $ terraform import newrelic_synthetics_monitor.main <id>
