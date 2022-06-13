@@ -39,6 +39,29 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
 			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true, //name,type,uri
+				ImportStateVerifyIgnore: []string{
+					// not returned from the API
+					"period",
+					"locations_public",
+					"locations_private",
+					"status",
+					"validation_string",
+					"verify_ssl",
+					"bypass_head_request",
+					"treat_redirect_as_failure",
+					"runtime_type",
+					"runtime_type_version",
+					"script_language",
+					"tags",
+					"enable_screenshot_on_failure_and_script",
+					"custom_headers",
+				},
+			},
 		},
 	})
 }
@@ -118,6 +141,29 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true, //name,type,uri
+				ImportStateVerifyIgnore: []string{
+					// not returned from the API
+					"period",
+					"locations_public",
+					"locations_private",
+					"status",
+					"validation_string",
+					"verify_ssl",
+					"bypass_head_request",
+					"treat_redirect_as_failure",
+					"runtime_type",
+					"runtime_type_version",
+					"script_language",
+					"tags",
+					"enable_screenshot_on_failure_and_script",
+					"custom_headers",
+				},
 			},
 		},
 	})

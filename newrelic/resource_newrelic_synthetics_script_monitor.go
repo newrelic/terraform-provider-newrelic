@@ -34,9 +34,9 @@ func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 		ReadContext:   resourceNewRelicSyntheticsScriptMonitorRead,
 		UpdateContext: resourceNewRelicSyntheticsScriptMonitorUpdate,
 		DeleteContext: resourceNewRelicSyntheticsScriptMonitorDelete,
-		// Importer: &schema.ResourceImporter{
-		// 	StateContext: importSyntheticsMonitorScript,
-		// },
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: mergeSchemas(
 			syntheticsMonitorCommonSchema(),
 			syntheticsScriptMonitorCommonSchema(),
@@ -173,19 +173,6 @@ func syntheticsScriptMonitorCommonSchema() map[string]*schema.Schema {
 	}
 }
 
-func flattenSyntheticsScriptAPIMonitor(monitor synthetics.SyntheticsScriptAPIMonitor, d *schema.ResourceData) diag.Diagnostics {
-	_ = d.Set("guid", string(monitor.GUID))
-	_ = d.Set("locations_public", monitor.Locations.Public)
-	_ = d.Set("name", monitor.Name)
-	_ = d.Set("period", string(monitor.Period))
-	_ = d.Set("status", monitor.Status)
-	_ = d.Set("script_language", monitor.Runtime.ScriptLanguage)
-	_ = d.Set("runtime_type", monitor.Runtime.RuntimeType)
-	_ = d.Set("runtime_type_version", string(monitor.Runtime.RuntimeTypeVersion))
-
-	return nil
-}
-
 func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -210,10 +197,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 				})
 			}
 		}
-
 		d.SetId(string(resp.Monitor.GUID))
-
-		flattenSyntheticsScriptAPIMonitor(resp.Monitor, d)
 
 	case string(SyntheticsMonitorTypes.SCRIPT_BROWSER):
 		monitorInput := buildSyntheticsScriptBrowserMonitorInput(d)
@@ -235,7 +219,6 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 	return nil
 }
 
-// WIP - This won't work. The entity endpoints don't return all the data we need to set all the attributes.
 func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
@@ -261,8 +244,7 @@ func setCommonSyntheticsScriptMonitorAttributes(v *entities.EntityInterface, d *
 	case *entities.SyntheticMonitorEntity:
 		_ = d.Set("name", e.Name)
 		_ = d.Set("type", e.MonitorType)
-		_ = d.Set("uri", e.MonitoredURL)
-
+		_ = d.Set("guid", string(e.GUID))
 	}
 }
 
