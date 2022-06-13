@@ -78,6 +78,93 @@ func buildSyntheticsScriptAPIMonitorInput(d *schema.ResourceData) synthetics.Syn
 	return input
 }
 
+func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics.SyntheticsCreateScriptBrowserMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+	input := synthetics.SyntheticsCreateScriptBrowserMonitorInput{
+		Name:   inputBase.Name,
+		Period: inputBase.Period,
+		Status: inputBase.Status,
+		Tags:   inputBase.Tags,
+		Script: d.Get("script").(string),
+	}
+	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
+		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
+	}
+	if attr, ok := d.GetOk("locations_private"); ok {
+		input.Locations.Private = expandSyntheticsPrivateLocations(attr.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("locations_public"); ok {
+		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("script_language"); ok {
+		input.Runtime.ScriptLanguage = v.(string)
+	}
+	if v, ok := d.GetOk("runtime_type"); ok {
+		input.Runtime.RuntimeType = v.(string)
+	}
+	if v, ok := d.GetOk("runtime_type_version"); ok {
+		input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	}
+	return input
+}
+
+func buildSyntheticsScriptAPIMonitorUpdateInput(d *schema.ResourceData) synthetics.SyntheticsUpdateScriptAPIMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+	input := synthetics.SyntheticsUpdateScriptAPIMonitorInput{
+		Name:   inputBase.Name,
+		Period: inputBase.Period,
+		Status: inputBase.Status,
+		Tags:   inputBase.Tags,
+		Script: d.Get("script").(string),
+	}
+	if v, ok := d.GetOk("locations_private"); ok {
+		input.Locations.Private = expandSyntheticsPrivateLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("locations_public"); ok {
+		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("script_language"); ok {
+		input.Runtime.ScriptLanguage = v.(string)
+	}
+	if v, ok := d.GetOk("runtime_type"); ok {
+		input.Runtime.RuntimeType = v.(string)
+	}
+	if v, ok := d.GetOk("runtime_type_version"); ok {
+		input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	}
+	return input
+}
+
+func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.SyntheticsUpdateScriptBrowserMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+	input := synthetics.SyntheticsUpdateScriptBrowserMonitorInput{
+		Name:   inputBase.Name,
+		Period: inputBase.Period,
+		Status: inputBase.Status,
+		Tags:   inputBase.Tags,
+		Script: d.Get("script").(string),
+	}
+	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
+		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
+	}
+	if v, ok := d.GetOk("locations_public"); ok {
+		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("locations_private"); ok {
+		input.Locations.Private = expandSyntheticsPrivateLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("script_language"); ok {
+		input.Runtime.ScriptLanguage = v.(string)
+	}
+	if v, ok := d.GetOk("runtime_type"); ok {
+		input.Runtime.RuntimeType = v.(string)
+	}
+	if v, ok := d.GetOk("runtime_type_version"); ok {
+		input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	}
+	return input
+}
+
 func expandSyntheticsPrivateLocations(locations []interface{}) []synthetics.SyntheticsPrivateLocationInput {
 	locationsOut := make([]synthetics.SyntheticsPrivateLocationInput, len(locations))
 

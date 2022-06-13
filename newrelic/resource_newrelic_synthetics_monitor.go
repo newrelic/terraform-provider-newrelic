@@ -259,8 +259,6 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 			}
 		}
 
-		flattenSyntheticsSimpleMonitor(resp.Monitor, d)
-
 		d.SetId(string(resp.Monitor.GUID))
 
 	case "BROWSER":
@@ -282,26 +280,10 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 			}
 		}
 
-		flattenSyntheticsSimpleMonitor(resp.Monitor, d)
-
 		d.SetId(string(resp.Monitor.GUID))
 	}
 
 	return nil
-}
-
-//func to store the output values in the state file.
-func flattenSyntheticsSimpleMonitor(monitor synthetics.SyntheticsSimpleBrowserMonitor, d *schema.ResourceData) {
-
-	_ = d.Set("validation_string", monitor.AdvancedOptions.ResponseValidationText)
-	_ = d.Set("verify_ssl", monitor.AdvancedOptions.UseTlsValidation)
-	_ = d.Set("locations_public", monitor.Locations.Public)
-	_ = d.Set("name", monitor.Name)
-	_ = d.Set("period", monitor.Period)
-	_ = d.Set("status", string(monitor.Status))
-	_ = d.Set("custom_headers", monitor.AdvancedOptions.CustomHeaders)
-	_ = d.Set("uri", monitor.Uri)
-
 }
 
 func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -429,7 +411,7 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 
 	guid := synthetics.EntityGUID(d.Id())
 
-	switch monitorType {
+	switch monitorType.(string) {
 
 	case "SIMPLE":
 		simpleMonitorUpdateInput := buildSyntheticsSimpleMonitorUpdateStruct(d)
@@ -449,8 +431,6 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 			}
 		}
 
-		flattenSyntheticsSimpleMonitorUpdate(resp.Monitor, d)
-
 		d.SetId(string(resp.Monitor.GUID))
 
 	case "BROWSER":
@@ -469,47 +449,11 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 			}
 		}
 
-		flattenSyntheticsSimpleBrowserMonitorUpdate(resp.Monitor, d)
-
 		d.SetId(string(resp.Monitor.GUID))
 
 	}
 
 	return nil
-}
-
-//func to store outputs from the simple monitor update
-func flattenSyntheticsSimpleMonitorUpdate(monitor synthetics.SyntheticsSimpleMonitor, d *schema.ResourceData) {
-
-	_ = d.Set("custom_headers", monitor.AdvancedOptions.CustomHeaders)
-	_ = d.Set("treat_redirect_as_failure", monitor.AdvancedOptions.RedirectIsFailure)
-	_ = d.Set("validation_string", monitor.AdvancedOptions.ResponseValidationText)
-	_ = d.Set("bypass_head_request", monitor.AdvancedOptions.ShouldBypassHeadRequest)
-	_ = d.Set("verify_ssl", monitor.AdvancedOptions.UseTlsValidation)
-	_ = d.Set("locations_public", monitor.Locations.Public)
-	_ = d.Set("name", monitor.Name)
-	_ = d.Set("period", monitor.Period)
-	_ = d.Set("status", monitor.Status)
-	_ = d.Set("uri", monitor.Uri)
-
-}
-
-//func to store outputs from the simple browser monitor update
-func flattenSyntheticsSimpleBrowserMonitorUpdate(monitor synthetics.SyntheticsSimpleBrowserMonitor, d *schema.ResourceData) {
-
-	_ = d.Set("validation_string", monitor.AdvancedOptions.ResponseValidationText)
-	_ = d.Set("verify_ssl", monitor.AdvancedOptions.UseTlsValidation)
-	_ = d.Set("custom_headers", monitor.AdvancedOptions.CustomHeaders)
-	_ = d.Set("enable_screenshot_on_failure_and_script", monitor.AdvancedOptions.EnableScreenshotOnFailureAndScript)
-	_ = d.Set("locations_public", monitor.Locations.Public)
-	_ = d.Set("name", monitor.Name)
-	_ = d.Set("script_language", monitor.Runtime.ScriptLanguage)
-	_ = d.Set("runtime_type", monitor.Runtime.RuntimeType)
-	_ = d.Set("runtime_type_version", monitor.Runtime.RuntimeTypeVersion)
-	_ = d.Set("period", monitor.Period)
-	_ = d.Set("status", monitor.Status)
-	_ = d.Set("uri", monitor.Uri)
-
 }
 
 func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
