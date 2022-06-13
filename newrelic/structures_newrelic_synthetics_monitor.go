@@ -225,6 +225,7 @@ func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 	return inputBase
 }
 
+//function to expand custom headers
 func expandSyntheticsCustomHeaders(headers []interface{}) []synthetics.SyntheticsCustomHeaderInput {
 	output := make([]synthetics.SyntheticsCustomHeaderInput, len(headers))
 	for i, v := range headers {
@@ -238,6 +239,7 @@ func expandSyntheticsCustomHeaders(headers []interface{}) []synthetics.Synthetic
 	return output
 }
 
+//function to expand simple public locations
 func expandSyntheticsSimplePublicLocations(locations []interface{}) []string {
 	locationsOut := make([]string, len(locations))
 	for i, v := range locations {
@@ -246,6 +248,7 @@ func expandSyntheticsSimplePublicLocations(locations []interface{}) []string {
 	return locationsOut
 }
 
+//function to expand simple private locations
 func expandSyntheticsSimplePrivateLocations(locations []interface{}) []string {
 	locationsOut := make([]string, len(locations))
 	for i, v := range locations {
@@ -253,6 +256,8 @@ func expandSyntheticsSimplePrivateLocations(locations []interface{}) []string {
 	}
 	return locationsOut
 }
+
+//function to expand synthetics tags
 func expandSyntheticsTags(tags []interface{}) []synthetics.SyntheticsTag {
 	out := make([]synthetics.SyntheticsTag, len(tags))
 	for i, v := range tags {
@@ -266,6 +271,7 @@ func expandSyntheticsTags(tags []interface{}) []synthetics.SyntheticsTag {
 	return out
 }
 
+//function to expand synthetics tag values
 func expandSyntheticsTagValues(v []interface{}) []string {
 	values := make([]string, len(v))
 	for i, value := range v {
