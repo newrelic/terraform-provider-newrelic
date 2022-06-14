@@ -786,7 +786,7 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 	var widgetList []interface{}
 
 	pages := d.Get("page").([]interface{})
-	selfLinkingWidgets := []string{"widget_bar", "widget_pie", "widget_table", "widget_log_table"}
+	selfLinkingWidgets := []string{"widget_bar", "widget_pie", "widget_table"}
 
 	for i, v := range pages {
 		p := v.(map[string]interface{})
