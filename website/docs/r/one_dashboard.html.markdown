@@ -121,7 +121,7 @@ All nested `widget` blocks support the following common arguments:
   * `column` - (Required) Column position of widget from top left, starting at `1`.
   * `width` - (Optional) Width of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `4`.
   * `height` - (Optional) Height of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `3`.
-  * `ignore_time_range` - (Optional) With this turned on, the time range in this query will override the time picker on dashboards and other pages.
+  * `ignore_time_range` - (Optional) With this turned on, the time range in this query will override the time picker on dashboards and other pages. Defaults to `false`.
 
 Each widget type supports an additional set of arguments:
 
