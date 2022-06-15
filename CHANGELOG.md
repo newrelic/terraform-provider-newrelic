@@ -1,3 +1,8 @@
+<a name="v2.47.1"></a>
+## [v2.47.1] - 2022-06-15
+### Bug Fixes
+- remove unnecessary read of service level entity after creation
+
 <a name="v2.47.0"></a>
 ## [v2.47.0] - 2022-06-10
 ### Features
@@ -1275,7 +1280,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.47.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.47.1...HEAD
+[v2.47.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.47.0...v2.47.1
 [v2.47.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.46.2...v2.47.0
 [v2.46.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.46.1...v2.46.2
 [v2.46.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.46.0...v2.46.1
