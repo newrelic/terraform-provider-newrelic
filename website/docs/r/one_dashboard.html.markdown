@@ -13,6 +13,7 @@ description: |-
 ```hcl
 resource "newrelic_one_dashboard" "exampledash" {
   name = "New Relic Terraform Example"
+  permissions = "public_read"
 
   page {
     name = "New Relic Terraform Example"
@@ -21,6 +22,8 @@ resource "newrelic_one_dashboard" "exampledash" {
       title = "Requests per minute"
       row = 1
       column = 1
+      width = 6
+      height = 3
 
       nrql_query {
         query       = "FROM Transaction SELECT rate(count(*), 1 minute)"
@@ -30,10 +33,12 @@ resource "newrelic_one_dashboard" "exampledash" {
     widget_bar {
       title = "Average transaction duration, by application"
       row = 1
-      column = 5
+      column = 7
+      width = 6
+      height = 3
 
       nrql_query {
-        account_id = <Another Account ID>
+        account_id  = <Another Account ID>
         query       = "FROM Transaction SELECT average(duration) FACET appName"
       }
 
@@ -43,11 +48,13 @@ resource "newrelic_one_dashboard" "exampledash" {
 
     widget_bar {
       title = "Average transaction duration, by application"
-      row = 1
-      column = 5
+      row = 4
+      column = 1
+      width = 6
+      height = 3
 
       nrql_query {
-        account_id = <Another Account ID>
+        account_id  = <Another Account ID>
         query       = "FROM Transaction SELECT average(duration) FACET appName"
       }
 
@@ -55,10 +62,29 @@ resource "newrelic_one_dashboard" "exampledash" {
       filter_current_dashboard = true
     }
 
+    widget_line {
+      title = "Average transaction duration and the request per minute, by application"
+      row = 4
+      column = 7
+      width = 6
+      height = 3
+
+      nrql_query {
+        account_id  = <Another Account ID>
+        query       = "FROM Transaction SELECT average(duration) FACET appName"
+      }
+
+      nrql_query {
+        query       = "FROM Transaction SELECT rate(count(*), 1 minute)"
+      }
+    }
+
     widget_markdown {
       title = "Dashboard Note"
-      row    = 1
-      column = 9
+      row    = 7
+      column = 1
+      width = 12
+      height = 3
 
       text = "### Helpful Links\n\n* [New Relic One](https://one.newrelic.com)\n* [Developer Portal](https://developer.newrelic.com)"
     }
@@ -121,7 +147,7 @@ All nested `widget` blocks support the following common arguments:
   * `column` - (Required) Column position of widget from top left, starting at `1`.
   * `width` - (Optional) Width of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `4`.
   * `height` - (Optional) Height of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `3`.
-  * `ignore_time_range` - (Optional) With this turned on, the time range in this query will override the time picker on dashboards and other pages.
+  * `ignore_time_range` - (Optional) With this turned on, the time range in this query will override the time picker on dashboards and other pages. Defaults to `false`.
 
 Each widget type supports an additional set of arguments:
 
@@ -169,6 +195,25 @@ The following arguments are supported:
 
   * `account_id` - (Optional) The New Relic account ID to issue the query against. Defaults to the Account ID where the dashboard was created.
   * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
+
+```hcl
+widget_line {
+  title = "Average transaction duration and the request per minute, by application"
+  row = 4
+  column = 7
+  width = 6
+  height = 3
+
+  nrql_query {
+    account_id  = <Another Account ID>
+    query       = "FROM Transaction SELECT average(duration) FACET appName"
+  }
+
+  nrql_query {
+    query       = "FROM Transaction SELECT rate(count(*), 1 minute)"
+  }  
+}
+```
 
 ## Additional Examples
 
