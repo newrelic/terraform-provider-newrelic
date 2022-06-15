@@ -38,7 +38,7 @@ resource "newrelic_one_dashboard" "exampledash" {
       height = 3
 
       nrql_query {
-        account_id  = "<Another Account ID>"
+        account_id  = <Another Account ID>
         query       = "FROM Transaction SELECT average(duration) FACET appName"
       }
 
@@ -54,7 +54,7 @@ resource "newrelic_one_dashboard" "exampledash" {
       height = 3
 
       nrql_query {
-        account_id  = "<Another Account ID>"
+        account_id  = <Another Account ID>
         query       = "FROM Transaction SELECT average(duration) FACET appName"
       }
 
@@ -70,7 +70,7 @@ resource "newrelic_one_dashboard" "exampledash" {
       height = 3
 
       nrql_query {
-        account_id  = "<Another Account ID>"
+        account_id  = <Another Account ID>
         query       = "FROM Transaction SELECT average(duration) FACET appName"
       }
 
@@ -205,7 +205,7 @@ widget_line {
   height = 3
 
   nrql_query {
-    account_id  = "<Another Account ID>"
+    account_id  = <Another Account ID>
     query       = "FROM Transaction SELECT average(duration) FACET appName"
   }
 
