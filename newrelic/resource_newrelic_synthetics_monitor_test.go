@@ -87,7 +87,7 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string, monitorType strin
 				values	=	["myMonitor"]
 			}
 			uri	=	"https://www.one.newrelic.com"
-		}`, name)
+		}`, name, monitorType)
 }
 
 func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorType string) string {
@@ -111,7 +111,7 @@ func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorTyp
 				values	=	[ "myMonitor","simple_monitor"]
 			}
 			uri							=	"https://www.one.newrelic.com"
-		}`, name)
+		}`, name, monitorType)
 }
 
 ///////////////////////////////
@@ -191,7 +191,7 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 			key		=	"name"
 			values	=	["SimpleBrowserMonitor"]
 		}
-	}`, name)
+	}`, name, monitorType)
 }
 
 func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, monitorType string) string {
@@ -217,7 +217,7 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, mon
 				key		=	"name"
 				values	=	["SimpleBrowserMonitor","my_monitor"]
 		  	}
-		}`, name)
+		}`, name, monitorType)
 }
 
 func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFunc {
