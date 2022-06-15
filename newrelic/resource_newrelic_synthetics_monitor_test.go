@@ -72,21 +72,21 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string) string {
 			custom_headers {
 				name	=	"Name"
 				value	=	"simpleMonitor"
-			}
+				}
 			treat_redirect_as_failure	=	true
-			validation_string			=	"success"
-			bypass_head_request			=	true
-			verify_ssl					=	true
-			locations_public			=	["AP_SOUTH_1"]
-			name						=	"%[1]s"
-			period 						=	"EVERY_MINUTE"
-			status						=	"ENABLED"
-			type						=	"SIMPLE"
+			validation_string	=	"success"
+			bypass_head_request	=	true
+			verify_ssl	=	true
+			locations_public	=	["AP_SOUTH_1"]
+			name	=	"%[1]s"
+			period	=	"EVERY_MINUTE"
+			status	=	"ENABLED"
+			type	=	"SIMPLE"
 			tags {
-				key		=	"monitor"
+				key	=	"monitor"
 				values	=	["myMonitor"]
 			}
-			uri							=	"https://www.one.newrelic.com"
+			uri	=	"https://www.one.newrelic.com"
 		}`, name)
 }
 

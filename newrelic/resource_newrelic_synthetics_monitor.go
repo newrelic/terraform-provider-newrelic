@@ -49,23 +49,22 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The URI for the monitor to hit.",
-				// TODO: ValidateFunc (required if SIMPLE or BROWSER)
 			},
-
-			// TODO: Locations needs to include both private and public
 			"locations_public": {
-				Type:        schema.TypeSet,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				MinItems:    1,
-				Required:    true,
-				Description: "The locations in which this monitor should be run.",
+				Type:         schema.TypeSet,
+				Elem:         &schema.Schema{Type: schema.TypeString},
+				MinItems:     1,
+				Optional:     true,
+				AtLeastOneOf: []string{"locations_public", "locations_private"},
+				Description:  "The locations in which this monitor should be run.",
 			},
 			"locations_private": {
-				Type:        schema.TypeSet,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				MinItems:    1,
-				Optional:    true,
-				Description: "The locations in which this monitor should be run.",
+				Type:         schema.TypeSet,
+				Elem:         &schema.Schema{Type: schema.TypeString},
+				MinItems:     1,
+				Optional:     true,
+				AtLeastOneOf: []string{"locations_public", "locations_private"},
+				Description:  "The locations in which this monitor should be run.",
 			},
 			"status": {
 				Type:         schema.TypeString,
@@ -73,7 +72,6 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED).",
 				ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorStatuses(), false),
 			},
-			// TODO: ValidationFunc (options only valid if SIMPLE or BROWSER)
 			"validation_string": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -97,57 +95,58 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 			"runtime_type": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "",
+				Description: "The runtime type that the monitor will run",
 			},
 			"runtime_type_version": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "",
+				Description: "The specific version of the runtime type selected",
 			},
 			"script_language": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "",
+				Description: "The programing language that should execute the script",
 			},
-			"tags": {
+			"tag": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "",
+				MinItems:    1,
+				Description: "The tags that will be associated with the monitor",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "",
+							Description: "Name of the tag key",
 						},
 						"values": {
 							Type:        schema.TypeList,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Required:    true,
-							Description: "",
+							Description: "Values associated with the tag key",
 						},
 					},
 				},
 			},
 			"enable_screenshot_on_failure_and_script": {
 				Type:        schema.TypeBool,
-				Description: "",
+				Description: "Capture a screenshot during job execution",
 				Optional:    true,
 			},
 			"custom_headers": {
 				Type:        schema.TypeSet,
-				Description: "",
+				Description: "Custom headers to use in monitor job",
 				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
 							Type:        schema.TypeString,
-							Description: "",
+							Description: "Header name",
 							Optional:    true,
 						},
 						"value": {
 							Type:        schema.TypeString,
-							Description: "",
+							Description: "Header value",
 							Optional:    true,
 						},
 					},
@@ -252,50 +251,40 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 
 	var diags diag.Diagnostics
 
+	var resp *synthetics.SyntheticsSimpleBrowserMonitorCreateMutationResult
+
+	var err error
+
 	monitorType := d.Get("type")
 
 	switch monitorType.(string) {
-	case "SIMPLE":
+	case string(SyntheticsMonitorTypes.SIMPLE):
+
 		simpleMonitorInput := buildSyntheticsSimpleMonitor(d)
 
-		resp, err := client.Synthetics.SyntheticsCreateSimpleMonitorWithContext(ctx, accountID, simpleMonitorInput)
+		resp, err = client.Synthetics.SyntheticsCreateSimpleMonitorWithContext(ctx, accountID, simpleMonitorInput)
 
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		if len(resp.Errors) > 0 {
-			for _, err := range resp.Errors {
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  string(err.Type) + " " + err.Description,
-				})
-			}
-		}
-
-		d.SetId(string(resp.Monitor.GUID))
-
-	case "BROWSER":
+	case string(SyntheticsMonitorTypes.BROWSER):
 
 		simpleBrowserMonitorInput := buildSyntheticsSimpleBrowserMonitor(d)
 
-		resp, err := client.Synthetics.SyntheticsCreateSimpleBrowserMonitorWithContext(ctx, accountID, simpleBrowserMonitorInput)
-
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		if len(resp.Errors) > 0 {
-			for _, err := range resp.Errors {
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  string(err.Type) + " " + err.Description,
-				})
-			}
-		}
-
-		d.SetId(string(resp.Monitor.GUID))
+		resp, err = client.Synthetics.SyntheticsCreateSimpleBrowserMonitorWithContext(ctx, accountID, simpleBrowserMonitorInput)
 	}
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if len(resp.Errors) > 0 {
+		for _, err := range resp.Errors {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  string(err.Type) + " " + err.Description,
+			})
+		}
+	}
+
+	d.SetId(string(resp.Monitor.GUID))
 
 	return nil
 }

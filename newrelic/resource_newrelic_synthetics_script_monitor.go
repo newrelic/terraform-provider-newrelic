@@ -15,19 +15,6 @@ import (
 
 type SyntheticsMonitorType string
 
-// nolint:revive
-var SyntheticsMonitorTypes = struct {
-	SIMPLE         SyntheticsMonitorType
-	BROWSER        SyntheticsMonitorType
-	SCRIPT_API     SyntheticsMonitorType
-	SCRIPT_BROWSER SyntheticsMonitorType
-}{
-	SIMPLE:         "SIMPLE",
-	BROWSER:        "BROWSER",
-	SCRIPT_API:     "SCRIPT_API",
-	SCRIPT_BROWSER: "SCRIPT_BROWSER",
-}
-
 func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicSyntheticsScriptMonitorCreate,
@@ -46,8 +33,6 @@ func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 	}
 }
 
-// TODO: Find a good home for this since it can be shared by all monitor schemas.
-//
 // Returns the common schema attributes shared by all Synthetics monitor types.
 func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -62,22 +47,23 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 			Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED).",
 			ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorStatuses(), false),
 		},
-		"tags": {
+		"tag": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "",
+			MinItems:    1,
+			Description: "The tags that will be associated with the monitor",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"key": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "",
+						Description: "Name of the tag key",
 					},
 					"values": {
 						Type:        schema.TypeList,
 						Elem:        &schema.Schema{Type: schema.TypeString},
 						Required:    true,
-						Description: "",
+						Description: "Values associated with the tag key",
 					},
 				},
 			},
@@ -91,7 +77,6 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 	}
 }
 
-// Scripted API and scripted browser monitors can have public and/or private locations set.
 func syntheticsScriptMonitorLocationsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"locations_private": {
@@ -308,7 +293,6 @@ func resourceNewRelicSyntheticsScriptMonitorDelete(ctx context.Context, d *schem
 	return nil
 }
 
-// TODO: Move to proper helper file
 func mergeSchemas(schemas ...map[string]*schema.Schema) map[string]*schema.Schema {
 	schema := map[string]*schema.Schema{}
 	for _, s := range schemas {

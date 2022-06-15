@@ -15,6 +15,19 @@ type SyntheticsMonitorBase struct {
 	CustomHeaders []synthetics.SyntheticsCustomHeaderInput // Move CustomHeaders outside of base (does not apply to all monitors)
 }
 
+// nolint:revive
+var SyntheticsMonitorTypes = struct {
+	SIMPLE         SyntheticsMonitorType
+	BROWSER        SyntheticsMonitorType
+	SCRIPT_API     SyntheticsMonitorType
+	SCRIPT_BROWSER SyntheticsMonitorType
+}{
+	SIMPLE:         "SIMPLE",
+	BROWSER:        "BROWSER",
+	SCRIPT_API:     "SCRIPT_API",
+	SCRIPT_BROWSER: "SCRIPT_BROWSER",
+}
+
 //validation function to validate monitor period
 func listValidSyntheticsMonitorPeriods() []string {
 	return []string{
@@ -214,7 +227,7 @@ func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 		inputBase.URI = uri.(string)
 	}
 
-	if tags, ok := d.GetOk("tags"); ok {
+	if tags, ok := d.GetOk("tag"); ok {
 		inputBase.Tags = expandSyntheticsTags(tags.(*schema.Set).List())
 	}
 
