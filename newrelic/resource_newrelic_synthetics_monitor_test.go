@@ -27,14 +27,14 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicSyntheticsSimpleMonitorConfig(rName),
+				Config: testAccNewRelicSyntheticsSimpleMonitorConfig(rName, string(SyntheticsMonitorTypes.SIMPLE)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(rName),
+				Config: testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(rName, string(SyntheticsMonitorTypes.SIMPLE)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
@@ -57,7 +57,7 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 					"runtime_type",
 					"runtime_type_version",
 					"script_language",
-					"tags",
+					"tag",
 					"enable_screenshot_on_failure_and_script",
 					"custom_headers",
 				},
@@ -66,7 +66,7 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 	})
 }
 
-func testAccNewRelicSyntheticsSimpleMonitorConfig(name string) string {
+func testAccNewRelicSyntheticsSimpleMonitorConfig(name string, monitorType string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_monitor" "foo" {
 			custom_headers {
@@ -78,11 +78,11 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string) string {
 			bypass_head_request	=	true
 			verify_ssl	=	true
 			locations_public	=	["AP_SOUTH_1"]
-			name	=	"%[1]s"
+			name	=	"%s"
 			period	=	"EVERY_MINUTE"
 			status	=	"ENABLED"
-			type	=	"SIMPLE"
-			tags {
+			type	=	"%s"
+			tag {
 				key	=	"monitor"
 				values	=	["myMonitor"]
 			}
@@ -90,7 +90,7 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string) string {
 		}`, name)
 }
 
-func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string) string {
+func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorType string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_monitor" "foo" {
 			custom_headers{
@@ -102,11 +102,11 @@ func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string) string {
 			bypass_head_request			=	false
 			verify_ssl					=	false
 			locations_public 			=	["AP_SOUTH_1","AP_EAST_1"]
-			name						=	"%[1]s-updated"
+			name						=	"%s-updated"
 			period						=	"EVERY_5_MINUTES"
 			status						=	"DISABLED"
-			type						=	"SIMPLE"
-			tags {
+			type						=	"%s"
+			tag {
 				key		=	"monitor"
 				values	=	[ "myMonitor","simple_monitor"]
 			}
@@ -129,14 +129,14 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(rName),
+				Config: testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(rName, string(SyntheticsMonitorTypes.BROWSER)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(rName),
+				Config: testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(rName, string(SyntheticsMonitorTypes.BROWSER)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
@@ -159,7 +159,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 					"runtime_type",
 					"runtime_type_version",
 					"script_language",
-					"tags",
+					"tag",
 					"enable_screenshot_on_failure_and_script",
 					"custom_headers",
 				},
@@ -168,7 +168,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 	})
 }
 
-func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string) string {
+func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorType string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_monitor" "bar" {
 		custom_headers{
@@ -179,22 +179,22 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string) string {
 		validation_string						=	"success"
 		verify_ssl								=	true
 		locations_public						=	["AP_SOUTH_1"]
-		name									=	"%[1]s"
+		name									=	"%s"
 		period									=	"EVERY_MINUTE"
 		runtime_type_version					=	"100"
 		runtime_type							=	"CHROME_BROWSER"
 		script_language							=	"JAVASCRIPT"
 		status									=	"ENABLED"
-		type									=	"BROWSER"
+		type									=	"%s"
 		uri										=	"https://www.one.newrelic.com"
-		tags {
+		tag {
 			key		=	"name"
 			values	=	["SimpleBrowserMonitor"]
 		}
 	}`, name)
 }
 
-func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string) string {
+func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, monitorType string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_monitor" "bar" {
 			custom_headers{
@@ -205,15 +205,15 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string) str
 			validation_string						=	"success"
 			verify_ssl								=	false
 			locations_public						=	["AP_SOUTH_1","AP_EAST_1"]
-			name									=	"%[1]s-Updated"
+			name									=	"%s-Updated"
 			period									=	"EVERY_5_MINUTES"
 			runtime_type_version					=	"100"
 			runtime_type							=	"CHROME_BROWSER"
 			script_language							=	"JAVASCRIPT"
 			status									=	"DISABLED"
-			type									=	"BROWSER"
+			type									=	"%s"
 			uri										=	"https://www.one.newrelic.com"
-			tags {
+			tag {
 				key		=	"name"
 				values	=	["SimpleBrowserMonitor","my_monitor"]
 		  	}

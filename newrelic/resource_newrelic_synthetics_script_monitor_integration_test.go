@@ -49,7 +49,7 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 					"runtime_type",
 					"runtime_type_version",
 					"script_language",
-					"tags",
+					"tag",
 					"script",
 					"enable_screenshot_on_failure_and_script",
 				},
@@ -70,7 +70,7 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfig(name string, scriptMonitorT
 			script_language			=	"JAVASCRIPT"
 			runtime_type			=	"NODE_API"
 			runtime_type_version	=	"16.10"
-			tags {
+			tag {
 				key		=	"some_key"
 				values	=	["some_value"]
 			}
@@ -89,7 +89,7 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfigUpdated(name string, scriptM
 			script_language			=	"JAVASCRIPT"
 			runtime_type			=	"NODE_API"
 			runtime_type_version	=	"16.10"
-			tags {
+			tag {
 				key		=	"some_key"
 				values	=	["some_value","some_other_value"]
 			}
@@ -132,7 +132,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor(t *testing.T) {
 					"runtime_type",
 					"runtime_type_version",
 					"script_language",
-					"tags",
+					"tag",
 					"script",
 					"enable_screenshot_on_failure_and_script",
 				},
@@ -154,7 +154,7 @@ func testAccNewRelicSyntheticsScriptedBrowserMonitorConfig(name string) string {
 			status									=	"ENABLED"
 			type									=	"SCRIPT_BROWSER"
 			script									=	"$browser.get('https://one.newrelic.com')"
-			tags {
+			tag {
 				key		= "Name"
 				values	= ["scriptedMonitor"]
 			}
@@ -174,7 +174,7 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfigUpdated(name string) str
 			status									=	"DISABLED"
 			type									=	"SCRIPT_BROWSER"
 			script									=	"$browser.get('https://one.newrelic.com')"
-			tags {
+			tag {
 				key		=	"Name"
 				values	=	["scriptedMonitor","hello"]
 			}
