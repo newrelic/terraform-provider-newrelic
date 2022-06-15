@@ -430,7 +430,7 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 
 	switch monitorType.(string) {
 
-	case "SIMPLE":
+	case string(SyntheticsMonitorTypes.SIMPLE):
 		simpleMonitorUpdateInput := buildSyntheticsSimpleMonitorUpdateStruct(d)
 
 		resp, err := client.Synthetics.SyntheticsUpdateSimpleMonitorWithContext(ctx, guid, simpleMonitorUpdateInput)
@@ -450,7 +450,7 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 
 		d.SetId(string(resp.Monitor.GUID))
 
-	case "BROWSER":
+	case string(SyntheticsMonitorTypes.BROWSER):
 		simpleBrowserMonitorUpdateInput := buildSyntheticsSimpleBrowserMonitorUpdateStruct(d)
 
 		resp, err := client.Synthetics.SyntheticsUpdateSimpleBrowserMonitorWithContext(ctx, guid, simpleBrowserMonitorUpdateInput)
