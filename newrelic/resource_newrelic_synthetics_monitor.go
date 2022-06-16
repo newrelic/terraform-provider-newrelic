@@ -164,7 +164,10 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 	var resp *synthetics.SyntheticsSimpleBrowserMonitorCreateMutationResult
 	var err error
 
-	monitorType := d.Get("type")
+	monitorType, ok := d.GetOk("type")
+	if !ok {
+		log.Printf("Not Monitor type specified")
+	}
 
 	switch monitorType.(string) {
 	case string(SyntheticsMonitorTypes.SIMPLE):

@@ -163,7 +163,10 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	monitorType := d.Get("type").(string)
+	monitorType, ok := d.GetOk("type")
+	if !ok {
+		log.Printf("Not Monitor type specified")
+	}
 
 	var diags diag.Diagnostics
 	var resp *synthetics.SyntheticsScriptAPIMonitorCreateMutationResult
@@ -243,7 +246,11 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 
 	guid := synthetics.EntityGUID(d.Id())
 
-	monitorType := d.Get("type").(string)
+	monitorType, ok := d.GetOk("type")
+	if !ok {
+		log.Printf("Not Monitor type specified")
+	}
+
 	switch monitorType {
 	case string(SyntheticsMonitorTypes.SCRIPT_API):
 		monitorInput := buildSyntheticsScriptAPIMonitorUpdateInput(d)
