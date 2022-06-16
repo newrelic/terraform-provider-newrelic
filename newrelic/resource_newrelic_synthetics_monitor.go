@@ -198,6 +198,10 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 
 	d.SetId(string(resp.Monitor.GUID))
 
+	if len(diags) > 0 {
+		return diags
+	}
+
 	return nil
 }
 
@@ -263,7 +267,6 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 					Summary:  string(err.Type) + " " + err.Description,
 				})
 			}
-			return diags
 		}
 		d.SetId(string(resp.Monitor.GUID))
 
@@ -281,9 +284,11 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 					Summary:  string(err.Type) + " " + err.Description,
 				})
 			}
-			return diags
 		}
 		d.SetId(string(resp.Monitor.GUID))
+	}
+	if len(diags) > 0 {
+		return diags
 	}
 	return nil
 }
