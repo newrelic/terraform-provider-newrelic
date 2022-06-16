@@ -23,6 +23,12 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Description: "ID of the newrelic account",
+				Computed:    true,
+				Optional:    true,
+			},
 			"type": {
 				Type:         schema.TypeString,
 				Required:     true,

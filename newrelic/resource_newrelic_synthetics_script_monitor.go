@@ -36,6 +36,12 @@ func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 // Returns the common schema attributes shared by all Synthetics monitor types.
 func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"account_id": {
+			Type:        schema.TypeInt,
+			Description: "ID of the newrelic account",
+			Computed:    true,
+			Optional:    true,
+		},
 		"name": {
 			Type:        schema.TypeString,
 			Required:    true,
