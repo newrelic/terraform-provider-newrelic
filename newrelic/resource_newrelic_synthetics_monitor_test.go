@@ -47,8 +47,8 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
 					"period",
-					"locations_public",
-					"locations_private",
+					"location_public",
+					"location_private",
 					"status",
 					"validation_string",
 					"verify_ssl",
@@ -77,7 +77,7 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string, monitorType strin
 			validation_string	=	"success"
 			bypass_head_request	=	true
 			verify_ssl	=	true
-			locations_public	=	["AP_SOUTH_1"]
+			location_public	=	["AP_SOUTH_1"]
 			name	=	"%s"
 			period	=	"EVERY_MINUTE"
 			status	=	"ENABLED"
@@ -101,7 +101,7 @@ func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorTyp
 			validation_string	=	"succeeded"
 			bypass_head_request	=	false
 			verify_ssl	=	false
-			locations_public	=	["AP_SOUTH_1","AP_EAST_1"]
+			location_public	=	["AP_SOUTH_1","AP_EAST_1"]
 			name	=	"%s-updated"
 			period	=	"EVERY_5_MINUTES"
 			status	=	"DISABLED"
@@ -149,8 +149,8 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
 					"period",
-					"locations_public",
-					"locations_private",
+					"location_public",
+					"location_private",
 					"status",
 					"validation_string",
 					"verify_ssl",
@@ -178,7 +178,7 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 		enable_screenshot_on_failure_and_script	=	true
 		validation_string	=	"success"
 		verify_ssl	=	true
-		locations_public	=	["AP_SOUTH_1"]
+		location_public	=	["AP_SOUTH_1"]
 		name	=	"%s"
 		period	=	"EVERY_MINUTE"
 		runtime_type_version	=	"100"
@@ -204,7 +204,7 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, mon
 			enable_screenshot_on_failure_and_script	=	false
 			validation_string	=	"success"
 			verify_ssl	=	false
-			locations_public	=	["AP_SOUTH_1","AP_EAST_1"]
+			location_public	=	["AP_SOUTH_1","AP_EAST_1"]
 			name	=	"%s-Updated"
 			period	=	"EVERY_5_MINUTES"
 			runtime_type_version	=	"100"

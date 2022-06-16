@@ -79,10 +79,10 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
 		simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
 	}
-	if v, ok := d.GetOk("locations_public"); ok {
+	if v, ok := d.GetOk("location_public"); ok {
 		simpleBrowserMonitorInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("locations_private"); ok {
+	if v, ok := d.GetOk("location_private"); ok {
 		simpleBrowserMonitorInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("validation_string"); ok {
@@ -117,10 +117,10 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 	simpleMonitorInput.Tags = inputBase.Tags
 	simpleMonitorInput.Uri = inputBase.URI
 
-	if v, ok := d.GetOk("locations_public"); ok {
+	if v, ok := d.GetOk("location_public"); ok {
 		simpleMonitorInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("locations_private"); ok {
+	if v, ok := d.GetOk("location_private"); ok {
 		simpleMonitorInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
@@ -152,10 +152,10 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	simpleBrowserMonitorUpdateInput.Tags = inputBase.Tags
 	simpleBrowserMonitorUpdateInput.Uri = inputBase.URI
 
-	if v, ok := d.GetOk("locations_public"); ok {
+	if v, ok := d.GetOk("location_public"); ok {
 		simpleBrowserMonitorUpdateInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("locations_private"); ok {
+	if v, ok := d.GetOk("location_private"); ok {
 		simpleBrowserMonitorUpdateInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
@@ -193,10 +193,10 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 	simpleMonitorUpdateInput.Tags = inputBase.Tags
 	simpleMonitorUpdateInput.Uri = inputBase.URI
 
-	if v, ok := d.GetOk("locations_public"); ok {
+	if v, ok := d.GetOk("location_public"); ok {
 		simpleMonitorUpdateInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("locations_private"); ok {
+	if v, ok := d.GetOk("location_private"); ok {
 		simpleMonitorUpdateInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
@@ -227,10 +227,10 @@ func buildSyntheticsScriptAPIMonitorInput(d *schema.ResourceData) synthetics.Syn
 		Script: d.Get("script").(string),
 	}
 
-	if attr, ok := d.GetOk("locations_private"); ok {
+	if attr, ok := d.GetOk("location_private"); ok {
 		input.Locations.Private = expandSyntheticsPrivateLocations(attr.(*schema.Set).List())
 	}
-	if attr, ok := d.GetOk("locations_public"); ok {
+	if attr, ok := d.GetOk("location_public"); ok {
 		input.Locations.Public = expandSyntheticsPublicLocations(attr.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("script_language"); ok {
@@ -261,10 +261,10 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
 		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
 	}
-	if attr, ok := d.GetOk("locations_private"); ok {
+	if attr, ok := d.GetOk("location_private"); ok {
 		input.Locations.Private = expandSyntheticsPrivateLocations(attr.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("locations_public"); ok {
+	if v, ok := d.GetOk("location_public"); ok {
 		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("script_language"); ok {
@@ -292,10 +292,10 @@ func buildSyntheticsScriptAPIMonitorUpdateInput(d *schema.ResourceData) syntheti
 		Script: d.Get("script").(string),
 	}
 
-	if v, ok := d.GetOk("locations_private"); ok {
+	if v, ok := d.GetOk("location_private"); ok {
 		input.Locations.Private = expandSyntheticsPrivateLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("locations_public"); ok {
+	if v, ok := d.GetOk("location_public"); ok {
 		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("script_language"); ok {
@@ -325,10 +325,10 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
 		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
 	}
-	if v, ok := d.GetOk("locations_public"); ok {
+	if v, ok := d.GetOk("location_public"); ok {
 		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("locations_private"); ok {
+	if v, ok := d.GetOk("location_private"); ok {
 		input.Locations.Private = expandSyntheticsPrivateLocations(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("script_language"); ok {

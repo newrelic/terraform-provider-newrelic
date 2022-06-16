@@ -79,7 +79,7 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 
 func syntheticsScriptMonitorLocationsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"locations_private": {
+		"location_private": {
 			Type:        schema.TypeSet,
 			Description: "",
 			Optional:    true, // Note: Optional
@@ -99,7 +99,7 @@ func syntheticsScriptMonitorLocationsSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"locations_public": {
+		"location_public": {
 			Type:        schema.TypeSet,
 			Elem:        &schema.Schema{Type: schema.TypeString},
 			MinItems:    1,

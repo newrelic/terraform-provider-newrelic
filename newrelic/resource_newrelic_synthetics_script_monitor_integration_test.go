@@ -43,8 +43,8 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
 					"period",
-					"locations_public",
-					"locations_private",
+					"location_public",
+					"location_private",
 					"status",
 					"runtime_type",
 					"runtime_type_version",
@@ -63,7 +63,7 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfig(name string, scriptMonitorT
 		resource "newrelic_synthetics_script_monitor" "foo" {
 			name	=	"%s"
 			type	=	"%s"
-			locations_public	=	["AP_SOUTH_1"]
+			location_public	=	["AP_SOUTH_1"]
 			period	=	"EVERY_HOUR"
 			status	=	"ENABLED"
 			script	=	"console.log('terraform integration test')"
@@ -82,7 +82,7 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfigUpdated(name string, scriptM
 		resource "newrelic_synthetics_script_monitor" "foo" {
 			name	=	"%s-updated"
 			type	=	"%s"
-			locations_public	=	["AP_SOUTH_1","AP_EAST_1"]
+			location_public	=	["AP_SOUTH_1","AP_EAST_1"]
 			period	=	"EVERY_6_HOURS"
 			status	=	"DISABLED"
 			script	=	"console.log('terraform integration test updated')"
@@ -126,8 +126,8 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
 					"period",
-					"locations_public",
-					"locations_private",
+					"location_public",
+					"location_private",
 					"status",
 					"runtime_type",
 					"runtime_type_version",
@@ -145,7 +145,7 @@ func testAccNewRelicSyntheticsScriptedBrowserMonitorConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "bar" {
 			enable_screenshot_on_failure_and_script	=	true
-			locations_public	=	["AP_SOUTH_1"]
+			location_public	=	["AP_SOUTH_1"]
 			name	=	"%[1]s"
 			period	=	"EVERY_HOUR"
 			runtime_type_version	=	"100"
@@ -165,7 +165,7 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfigUpdated(name string) str
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "bar" {
 			enable_screenshot_on_failure_and_script	=	false
-			locations_public	=	["AP_SOUTH_1","AP_EAST_1"]
+			location_public	=	["AP_SOUTH_1","AP_EAST_1"]
 			name	=	"%[1]s_updated"
 			period	=	"EVERY_HOUR"
 			runtime_type_version	=	"100"

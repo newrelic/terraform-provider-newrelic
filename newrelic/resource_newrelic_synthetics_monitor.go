@@ -47,20 +47,20 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Optional:    true,
 				Description: "The URI for the monitor to hit.",
 			},
-			"locations_public": {
+			"location_public": {
 				Type:         schema.TypeSet,
 				Elem:         &schema.Schema{Type: schema.TypeString},
 				MinItems:     1,
 				Optional:     true,
-				AtLeastOneOf: []string{"locations_public", "locations_private"},
+				AtLeastOneOf: []string{"location_public", "location_private"},
 				Description:  "The locations in which this monitor should be run.",
 			},
-			"locations_private": {
+			"location_private": {
 				Type:         schema.TypeSet,
 				Elem:         &schema.Schema{Type: schema.TypeString},
 				MinItems:     1,
 				Optional:     true,
-				AtLeastOneOf: []string{"locations_public", "locations_private"},
+				AtLeastOneOf: []string{"location_public", "location_private"},
 				Description:  "The locations in which this monitor should be run.",
 			},
 			"status": {
