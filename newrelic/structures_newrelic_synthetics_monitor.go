@@ -55,13 +55,168 @@ func listValidSyntheticsMonitorStatuses() []string {
 //validate func to validate monitor type.
 func listValidSyntheticsScriptMonitorTypes() []string {
 	return []string{
+		string(SyntheticsMonitorTypes.BROWSER),
+		string(SyntheticsMonitorTypes.SIMPLE),
 		string(SyntheticsMonitorTypes.SCRIPT_API),
 		string(SyntheticsMonitorTypes.SCRIPT_BROWSER),
 	}
 }
 
+//func to build the input to create simple browser monitor
+func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleBrowserMonitorInput {
+
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{}
+
+	simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
+	simpleBrowserMonitorInput.Name = inputBase.Name
+	simpleBrowserMonitorInput.Period = inputBase.Period
+	simpleBrowserMonitorInput.Status = inputBase.Status
+	simpleBrowserMonitorInput.Tags = inputBase.Tags
+	simpleBrowserMonitorInput.Uri = inputBase.URI
+
+	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
+		simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
+	}
+	if v, ok := d.GetOk("locations_public"); ok {
+		simpleBrowserMonitorInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("locations_private"); ok {
+		simpleBrowserMonitorInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("validation_string"); ok {
+		simpleBrowserMonitorInput.AdvancedOptions.ResponseValidationText = v.(string)
+	}
+	if v, ok := d.GetOk("verify_ssl"); ok {
+		simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = v.(bool)
+	}
+	if v, ok := d.GetOk("script_language"); ok {
+		simpleBrowserMonitorInput.Runtime.ScriptLanguage = v.(string)
+	}
+	if v, ok := d.GetOk("runtime_type"); ok {
+		simpleBrowserMonitorInput.Runtime.RuntimeType = v.(string)
+	}
+	if v, ok := d.GetOk("runtime_type_version"); ok {
+		simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	}
+	return simpleBrowserMonitorInput
+}
+
+//func to build input to create simple monitor
+func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleMonitorInput {
+
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	simpleMonitorInput := synthetics.SyntheticsCreateSimpleMonitorInput{}
+
+	simpleMonitorInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
+	simpleMonitorInput.Name = inputBase.Name
+	simpleMonitorInput.Period = inputBase.Period
+	simpleMonitorInput.Status = inputBase.Status
+	simpleMonitorInput.Tags = inputBase.Tags
+	simpleMonitorInput.Uri = inputBase.URI
+
+	if v, ok := d.GetOk("locations_public"); ok {
+		simpleMonitorInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("locations_private"); ok {
+		simpleMonitorInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
+		simpleMonitorInput.AdvancedOptions.RedirectIsFailure = v.(bool)
+	}
+	if v, ok := d.GetOk("validation_string"); ok {
+		simpleMonitorInput.AdvancedOptions.ResponseValidationText = v.(string)
+	}
+	if v, ok := d.GetOk("bypass_head_request"); ok {
+		simpleMonitorInput.AdvancedOptions.ShouldBypassHeadRequest = v.(bool)
+	}
+	if v, ok := d.GetOk("verify_ssl"); ok {
+		simpleMonitorInput.AdvancedOptions.UseTlsValidation = v.(bool)
+	}
+	return simpleMonitorInput
+}
+
+//func to build input to update simple browser monitor
+func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleBrowserMonitorInput {
+
+	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{}
+
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	simpleBrowserMonitorUpdateInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
+	simpleBrowserMonitorUpdateInput.Name = inputBase.Name
+	simpleBrowserMonitorUpdateInput.Period = inputBase.Period
+	simpleBrowserMonitorUpdateInput.Status = inputBase.Status
+	simpleBrowserMonitorUpdateInput.Tags = inputBase.Tags
+	simpleBrowserMonitorUpdateInput.Uri = inputBase.URI
+
+	if v, ok := d.GetOk("locations_public"); ok {
+		simpleBrowserMonitorUpdateInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("locations_private"); ok {
+		simpleBrowserMonitorUpdateInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
+	}
+	if v, ok := d.GetOk("validation_string"); ok {
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.ResponseValidationText = v.(string)
+	}
+	if v, ok := d.GetOk("verify_ssl"); ok {
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.UseTlsValidation = v.(bool)
+	}
+	if v, ok := d.GetOk("script_language"); ok {
+		simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = v.(string)
+	}
+	if v, ok := d.GetOk("runtime_type"); ok {
+		simpleBrowserMonitorUpdateInput.Runtime.RuntimeType = v.(string)
+	}
+	if v, ok := d.GetOk("runtime_type_version"); ok {
+		simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	}
+	return simpleBrowserMonitorUpdateInput
+}
+
+//func to build input to update simple monitor
+func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleMonitorInput {
+
+	simpleMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleMonitorInput{}
+
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
+	simpleMonitorUpdateInput.Name = inputBase.Name
+	simpleMonitorUpdateInput.Period = inputBase.Period
+	simpleMonitorUpdateInput.Status = inputBase.Status
+	simpleMonitorUpdateInput.Tags = inputBase.Tags
+	simpleMonitorUpdateInput.Uri = inputBase.URI
+
+	if v, ok := d.GetOk("locations_public"); ok {
+		simpleMonitorUpdateInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("locations_private"); ok {
+		simpleMonitorUpdateInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
+		simpleMonitorUpdateInput.AdvancedOptions.RedirectIsFailure = v.(bool)
+	}
+	if v, ok := d.GetOk("validation_string"); ok {
+		simpleMonitorUpdateInput.AdvancedOptions.ResponseValidationText = v.(string)
+	}
+	if v, ok := d.GetOk("bypass_head_request"); ok {
+		simpleMonitorUpdateInput.AdvancedOptions.ShouldBypassHeadRequest = v.(bool)
+	}
+	if v, ok := d.GetOk("verify_ssl"); ok {
+		simpleMonitorUpdateInput.AdvancedOptions.UseTlsValidation = v.(bool)
+	}
+	return simpleMonitorUpdateInput
+}
+
 //func to build input for script API monitor creation.
 func buildSyntheticsScriptAPIMonitorInput(d *schema.ResourceData) synthetics.SyntheticsCreateScriptAPIMonitorInput {
+
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	input := synthetics.SyntheticsCreateScriptAPIMonitorInput{
@@ -75,29 +230,26 @@ func buildSyntheticsScriptAPIMonitorInput(d *schema.ResourceData) synthetics.Syn
 	if attr, ok := d.GetOk("locations_private"); ok {
 		input.Locations.Private = expandSyntheticsPrivateLocations(attr.(*schema.Set).List())
 	}
-
 	if attr, ok := d.GetOk("locations_public"); ok {
 		input.Locations.Public = expandSyntheticsPublicLocations(attr.(*schema.Set).List())
 	}
-
 	if v, ok := d.GetOk("script_language"); ok {
 		input.Runtime.ScriptLanguage = v.(string)
 	}
-
 	if v, ok := d.GetOk("runtime_type"); ok {
 		input.Runtime.RuntimeType = v.(string)
 	}
-
 	if v, ok := d.GetOk("runtime_type_version"); ok {
 		input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
 	}
-
 	return input
 }
 
 //function to build input for script Browser monitor creation.
 func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics.SyntheticsCreateScriptBrowserMonitorInput {
+
 	inputBase := expandSyntheticsMonitorBase(d)
+
 	input := synthetics.SyntheticsCreateScriptBrowserMonitorInput{
 		Name:   inputBase.Name,
 		Period: inputBase.Period,
@@ -105,6 +257,7 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 		Tags:   inputBase.Tags,
 		Script: d.Get("script").(string),
 	}
+
 	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
 		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
 	}
@@ -128,7 +281,9 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 
 //function to build input for script API monitor update function
 func buildSyntheticsScriptAPIMonitorUpdateInput(d *schema.ResourceData) synthetics.SyntheticsUpdateScriptAPIMonitorInput {
+
 	inputBase := expandSyntheticsMonitorBase(d)
+
 	input := synthetics.SyntheticsUpdateScriptAPIMonitorInput{
 		Name:   inputBase.Name,
 		Period: inputBase.Period,
@@ -136,6 +291,7 @@ func buildSyntheticsScriptAPIMonitorUpdateInput(d *schema.ResourceData) syntheti
 		Tags:   inputBase.Tags,
 		Script: d.Get("script").(string),
 	}
+
 	if v, ok := d.GetOk("locations_private"); ok {
 		input.Locations.Private = expandSyntheticsPrivateLocations(v.(*schema.Set).List())
 	}
@@ -156,7 +312,9 @@ func buildSyntheticsScriptAPIMonitorUpdateInput(d *schema.ResourceData) syntheti
 
 //function to build input for script browser monitor update function
 func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.SyntheticsUpdateScriptBrowserMonitorInput {
+
 	inputBase := expandSyntheticsMonitorBase(d)
+
 	input := synthetics.SyntheticsUpdateScriptBrowserMonitorInput{
 		Name:   inputBase.Name,
 		Period: inputBase.Period,
@@ -206,7 +364,6 @@ func expandSyntheticsPublicLocations(locations []interface{}) []string {
 	for i, v := range locations {
 		locationsOut[i] = v.(string)
 	}
-
 	return locationsOut
 }
 
@@ -216,31 +373,27 @@ func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 
 	name := d.Get("name")
 	inputBase.Name = name.(string)
-
 	status := d.Get("status")
 	inputBase.Status = synthetics.SyntheticsMonitorStatus(status.(string))
-
 	period := d.Get("period")
 	inputBase.Period = synthetics.SyntheticsMonitorPeriod(period.(string))
 
 	if uri, ok := d.GetOk("uri"); ok {
 		inputBase.URI = uri.(string)
 	}
-
 	if tags, ok := d.GetOk("tag"); ok {
 		inputBase.Tags = expandSyntheticsTags(tags.(*schema.Set).List())
 	}
-
-	if headers, ok := d.GetOk("custom_headers"); ok {
+	if headers, ok := d.GetOk("custom_header"); ok {
 		inputBase.CustomHeaders = expandSyntheticsCustomHeaders(headers.(*schema.Set).List())
 	}
-
 	return inputBase
 }
 
 //function to expand custom headers
 func expandSyntheticsCustomHeaders(headers []interface{}) []synthetics.SyntheticsCustomHeaderInput {
 	output := make([]synthetics.SyntheticsCustomHeaderInput, len(headers))
+
 	for i, v := range headers {
 		header := v.(map[string]interface{})
 		expanded := synthetics.SyntheticsCustomHeaderInput{

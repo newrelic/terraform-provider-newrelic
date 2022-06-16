@@ -59,7 +59,7 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 					"script_language",
 					"tag",
 					"enable_screenshot_on_failure_and_script",
-					"custom_headers",
+					"custom_header",
 				},
 			},
 		},
@@ -69,7 +69,7 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 func testAccNewRelicSyntheticsSimpleMonitorConfig(name string, monitorType string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_monitor" "foo" {
-			custom_headers {
+			custom_header {
 				name	=	"Name"
 				value	=	"simpleMonitor"
 				}
@@ -93,24 +93,24 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string, monitorType strin
 func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorType string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_monitor" "foo" {
-			custom_headers{
+			custom_header{
 				name	=	"name"
 				value	=	"simpleMonitorUpdated"
 			}
 			treat_redirect_as_failure	=	false
-			validation_string			=	"succeeded"
-			bypass_head_request			=	false
-			verify_ssl					=	false
-			locations_public 			=	["AP_SOUTH_1","AP_EAST_1"]
-			name						=	"%s-updated"
-			period						=	"EVERY_5_MINUTES"
-			status						=	"DISABLED"
-			type						=	"%s"
+			validation_string	=	"succeeded"
+			bypass_head_request	=	false
+			verify_ssl	=	false
+			locations_public	=	["AP_SOUTH_1","AP_EAST_1"]
+			name	=	"%s-updated"
+			period	=	"EVERY_5_MINUTES"
+			status	=	"DISABLED"
+			type	=	"%s"
 			tag {
-				key		=	"monitor"
+				key	=	"monitor"
 				values	=	[ "myMonitor","simple_monitor"]
 			}
-			uri							=	"https://www.one.newrelic.com"
+			uri	=	"https://www.one.newrelic.com"
 		}`, name, monitorType)
 }
 
@@ -161,7 +161,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 					"script_language",
 					"tag",
 					"enable_screenshot_on_failure_and_script",
-					"custom_headers",
+					"custom_header",
 				},
 			},
 		},
@@ -171,24 +171,24 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorType string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_monitor" "bar" {
-		custom_headers{
+		custom_header{
 			name	= "name"
 			value	= "simple_browser"
 		}
 		enable_screenshot_on_failure_and_script	=	true
-		validation_string						=	"success"
-		verify_ssl								=	true
-		locations_public						=	["AP_SOUTH_1"]
-		name									=	"%s"
-		period									=	"EVERY_MINUTE"
-		runtime_type_version					=	"100"
-		runtime_type							=	"CHROME_BROWSER"
-		script_language							=	"JAVASCRIPT"
-		status									=	"ENABLED"
-		type									=	"%s"
-		uri										=	"https://www.one.newrelic.com"
+		validation_string	=	"success"
+		verify_ssl	=	true
+		locations_public	=	["AP_SOUTH_1"]
+		name	=	"%s"
+		period	=	"EVERY_MINUTE"
+		runtime_type_version	=	"100"
+		runtime_type	=	"CHROME_BROWSER"
+		script_language	=	"JAVASCRIPT"
+		status	=	"ENABLED"
+		type	=	"%s"
+		uri	=	"https://www.one.newrelic.com"
 		tag {
-			key		=	"name"
+			key	=	"name"
 			values	=	["SimpleBrowserMonitor"]
 		}
 	}`, name, monitorType)
@@ -197,24 +197,24 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, monitorType string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_monitor" "bar" {
-			custom_headers{
+			custom_header{
 				name  = "name"
 				value = "simple_browser"
 			}
 			enable_screenshot_on_failure_and_script	=	false
-			validation_string						=	"success"
-			verify_ssl								=	false
-			locations_public						=	["AP_SOUTH_1","AP_EAST_1"]
-			name									=	"%s-Updated"
-			period									=	"EVERY_5_MINUTES"
-			runtime_type_version					=	"100"
-			runtime_type							=	"CHROME_BROWSER"
-			script_language							=	"JAVASCRIPT"
-			status									=	"DISABLED"
-			type									=	"%s"
-			uri										=	"https://www.one.newrelic.com"
+			validation_string	=	"success"
+			verify_ssl	=	false
+			locations_public	=	["AP_SOUTH_1","AP_EAST_1"]
+			name	=	"%s-Updated"
+			period	=	"EVERY_5_MINUTES"
+			runtime_type_version	=	"100"
+			runtime_type	=	"CHROME_BROWSER"
+			script_language	=	"JAVASCRIPT"
+			status	=	"DISABLED"
+			type	=	"%s"
+			uri	=	"https://www.one.newrelic.com"
 			tag {
-				key		=	"name"
+				key	=	"name"
 				values	=	["SimpleBrowserMonitor","my_monitor"]
 		  	}
 		}`, name, monitorType)
@@ -224,7 +224,6 @@ func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFun
 	return func(s *terraform.State) error {
 
 		rs, ok := s.RootModule().Resources[n]
-
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
@@ -236,7 +235,6 @@ func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFun
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
-
 		if err != nil {
 			return err
 		}
@@ -258,7 +256,6 @@ func testAccCheckNewRelicSyntheticsMonitorDestroy(s *terraform.State) error {
 		}
 
 		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
-
 		if (*found) != nil {
 			return fmt.Errorf("synthetics monitor still exists")
 		}

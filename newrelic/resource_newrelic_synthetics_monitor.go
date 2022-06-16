@@ -24,14 +24,11 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The monitor type. Valid values are SIMPLE AND BROWSER.",
-				ValidateFunc: validation.StringInSlice([]string{
-					"SIMPLE",
-					"BROWSER",
-				}, false),
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "The monitor type. Valid values are SIMPLE AND BROWSER.",
+				ValidateFunc: validation.StringInSlice(listValidSyntheticsScriptMonitorTypes(), false),
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -133,7 +130,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description: "Capture a screenshot during job execution",
 				Optional:    true,
 			},
-			"custom_headers": {
+			"custom_header": {
 				Type:        schema.TypeSet,
 				Description: "Custom headers to use in monitor job",
 				Optional:    true,
@@ -156,92 +153,6 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 	}
 }
 
-//func to build the input to create simple browser monitor
-func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleBrowserMonitorInput {
-	inputBase := expandSyntheticsMonitorBase(d)
-
-	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{}
-
-	simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
-	simpleBrowserMonitorInput.Name = inputBase.Name
-	simpleBrowserMonitorInput.Period = inputBase.Period
-	simpleBrowserMonitorInput.Status = inputBase.Status
-	simpleBrowserMonitorInput.Tags = inputBase.Tags
-	simpleBrowserMonitorInput.Uri = inputBase.URI
-
-	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
-		simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
-	}
-
-	if v, ok := d.GetOk("locations_public"); ok {
-		simpleBrowserMonitorInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
-	}
-
-	if v, ok := d.GetOk("locations_private"); ok {
-		simpleBrowserMonitorInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
-	}
-
-	if v, ok := d.GetOk("validation_string"); ok {
-		simpleBrowserMonitorInput.AdvancedOptions.ResponseValidationText = v.(string)
-	}
-
-	if v, ok := d.GetOk("verify_ssl"); ok {
-		simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = v.(bool)
-	}
-	if v, ok := d.GetOk("script_language"); ok {
-		simpleBrowserMonitorInput.Runtime.ScriptLanguage = v.(string)
-	}
-
-	if v, ok := d.GetOk("runtime_type"); ok {
-		simpleBrowserMonitorInput.Runtime.RuntimeType = v.(string)
-	}
-
-	if v, ok := d.GetOk("runtime_type_version"); ok {
-		simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
-	}
-
-	return simpleBrowserMonitorInput
-}
-
-//func to build input to create simple monitor
-func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleMonitorInput {
-	inputBase := expandSyntheticsMonitorBase(d)
-
-	simpleMonitorInput := synthetics.SyntheticsCreateSimpleMonitorInput{}
-
-	simpleMonitorInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
-	simpleMonitorInput.Name = inputBase.Name
-	simpleMonitorInput.Period = inputBase.Period
-	simpleMonitorInput.Status = inputBase.Status
-	simpleMonitorInput.Tags = inputBase.Tags
-	simpleMonitorInput.Uri = inputBase.URI
-
-	if v, ok := d.GetOk("locations_public"); ok {
-		simpleMonitorInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
-	}
-
-	if v, ok := d.GetOk("locations_private"); ok {
-		simpleMonitorInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
-	}
-
-	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
-		simpleMonitorInput.AdvancedOptions.RedirectIsFailure = v.(bool)
-	}
-
-	if v, ok := d.GetOk("validation_string"); ok {
-		simpleMonitorInput.AdvancedOptions.ResponseValidationText = v.(string)
-	}
-
-	if v, ok := d.GetOk("bypass_head_request"); ok {
-		simpleMonitorInput.AdvancedOptions.ShouldBypassHeadRequest = v.(bool)
-	}
-
-	if v, ok := d.GetOk("verify_ssl"); ok {
-		simpleMonitorInput.AdvancedOptions.UseTlsValidation = v.(bool)
-	}
-	return simpleMonitorInput
-}
-
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
 func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -250,9 +161,7 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 	accountID := selectAccountID(providerConfig, d)
 
 	var diags diag.Diagnostics
-
 	var resp *synthetics.SyntheticsSimpleBrowserMonitorCreateMutationResult
-
 	var err error
 
 	monitorType := d.Get("type")
@@ -318,99 +227,7 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 		_ = d.Set("name", e.Name)
 		_ = d.Set("type", e.MonitorType)
 		_ = d.Set("uri", e.MonitoredURL)
-
 	}
-
-}
-
-//func to build input to update simple browser monitor
-func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleBrowserMonitorInput {
-
-	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{}
-
-	inputBase := expandSyntheticsMonitorBase(d)
-
-	simpleBrowserMonitorUpdateInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
-	simpleBrowserMonitorUpdateInput.Name = inputBase.Name
-	simpleBrowserMonitorUpdateInput.Period = inputBase.Period
-	simpleBrowserMonitorUpdateInput.Status = inputBase.Status
-	simpleBrowserMonitorUpdateInput.Tags = inputBase.Tags
-	simpleBrowserMonitorUpdateInput.Uri = inputBase.URI
-
-	if v, ok := d.GetOk("locations_public"); ok {
-		simpleBrowserMonitorUpdateInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
-	}
-
-	if v, ok := d.GetOk("locations_private"); ok {
-		simpleBrowserMonitorUpdateInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
-	}
-
-	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
-		simpleBrowserMonitorUpdateInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
-	}
-
-	if v, ok := d.GetOk("validation_string"); ok {
-		simpleBrowserMonitorUpdateInput.AdvancedOptions.ResponseValidationText = v.(string)
-	}
-
-	if v, ok := d.GetOk("verify_ssl"); ok {
-		simpleBrowserMonitorUpdateInput.AdvancedOptions.UseTlsValidation = v.(bool)
-	}
-
-	if v, ok := d.GetOk("script_language"); ok {
-		simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = v.(string)
-	}
-
-	if v, ok := d.GetOk("runtime_type"); ok {
-		simpleBrowserMonitorUpdateInput.Runtime.RuntimeType = v.(string)
-	}
-
-	if v, ok := d.GetOk("runtime_type_version"); ok {
-		simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
-	}
-
-	return simpleBrowserMonitorUpdateInput
-}
-
-//func to build input to update simple monitor
-func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleMonitorInput {
-	simpleMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleMonitorInput{}
-
-	inputBase := expandSyntheticsMonitorBase(d)
-
-	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = inputBase.CustomHeaders
-	simpleMonitorUpdateInput.Name = inputBase.Name
-	simpleMonitorUpdateInput.Period = inputBase.Period
-	simpleMonitorUpdateInput.Status = inputBase.Status
-	simpleMonitorUpdateInput.Tags = inputBase.Tags
-	simpleMonitorUpdateInput.Uri = inputBase.URI
-
-	if v, ok := d.GetOk("locations_public"); ok {
-		simpleMonitorUpdateInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
-	}
-
-	if v, ok := d.GetOk("locations_private"); ok {
-		simpleMonitorUpdateInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
-	}
-
-	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
-		simpleMonitorUpdateInput.AdvancedOptions.RedirectIsFailure = v.(bool)
-	}
-
-	if v, ok := d.GetOk("validation_string"); ok {
-		simpleMonitorUpdateInput.AdvancedOptions.ResponseValidationText = v.(string)
-	}
-
-	if v, ok := d.GetOk("bypass_head_request"); ok {
-		simpleMonitorUpdateInput.AdvancedOptions.ShouldBypassHeadRequest = v.(bool)
-	}
-
-	if v, ok := d.GetOk("verify_ssl"); ok {
-		simpleMonitorUpdateInput.AdvancedOptions.UseTlsValidation = v.(bool)
-	}
-
-	return simpleMonitorUpdateInput
-
 }
 
 func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -429,16 +246,13 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 	guid := synthetics.EntityGUID(d.Id())
 
 	switch monitorType.(string) {
-
 	case string(SyntheticsMonitorTypes.SIMPLE):
 		simpleMonitorUpdateInput := buildSyntheticsSimpleMonitorUpdateStruct(d)
 
 		resp, err := client.Synthetics.SyntheticsUpdateSimpleMonitorWithContext(ctx, guid, simpleMonitorUpdateInput)
-
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
 		if len(resp.Errors) > 0 {
 			for _, err := range resp.Errors {
 				diags = append(diags, diag.Diagnostic{
@@ -447,7 +261,6 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 				})
 			}
 		}
-
 		d.SetId(string(resp.Monitor.GUID))
 
 	case string(SyntheticsMonitorTypes.BROWSER):
@@ -465,11 +278,8 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 				})
 			}
 		}
-
 		d.SetId(string(resp.Monitor.GUID))
-
 	}
-
 	return nil
 }
 
@@ -482,7 +292,6 @@ func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.Reso
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor %s", d.Id())
 
 	_, err := client.Synthetics.SyntheticsDeleteMonitorWithContext(ctx, guid)
-
 	if err != nil {
 		return diag.FromErr(err)
 	}

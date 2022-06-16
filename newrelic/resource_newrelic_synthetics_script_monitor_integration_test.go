@@ -61,17 +61,17 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 func testAccNewRelicSyntheticsScriptAPIMonitorConfig(name string, scriptMonitorType string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "foo" {
-			name					=	"%s"
-			type					=	"%s"
-			locations_public		=	["AP_SOUTH_1"]
-			period					=	"EVERY_HOUR"
-			status					=	"ENABLED"
-			script					=	"console.log('terraform integration test')"
-			script_language			=	"JAVASCRIPT"
-			runtime_type			=	"NODE_API"
+			name	=	"%s"
+			type	=	"%s"
+			locations_public	=	["AP_SOUTH_1"]
+			period	=	"EVERY_HOUR"
+			status	=	"ENABLED"
+			script	=	"console.log('terraform integration test')"
+			script_language	=	"JAVASCRIPT"
+			runtime_type	=	"NODE_API"
 			runtime_type_version	=	"16.10"
 			tag {
-				key		=	"some_key"
+				key	=	"some_key"
 				values	=	["some_value"]
 			}
 		}`, name, scriptMonitorType)
@@ -80,17 +80,17 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfig(name string, scriptMonitorT
 func testAccNewRelicSyntheticsScriptAPIMonitorConfigUpdated(name string, scriptMonitorType string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "foo" {
-			name					=	"%s-updated"
-			type					=	"%s"
-			locations_public		=	["AP_SOUTH_1","AP_EAST_1"]
-			period					=	"EVERY_6_HOURS"
-			status					=	"DISABLED"
-			script					=	"console.log('terraform integration test updated')"
-			script_language			=	"JAVASCRIPT"
-			runtime_type			=	"NODE_API"
+			name	=	"%s-updated"
+			type	=	"%s"
+			locations_public	=	["AP_SOUTH_1","AP_EAST_1"]
+			period	=	"EVERY_6_HOURS"
+			status	=	"DISABLED"
+			script	=	"console.log('terraform integration test updated')"
+			script_language	=	"JAVASCRIPT"
+			runtime_type	=	"NODE_API"
 			runtime_type_version	=	"16.10"
 			tag {
-				key		=	"some_key"
+				key	=	"some_key"
 				values	=	["some_value","some_other_value"]
 			}
 		}`, name, scriptMonitorType)
@@ -145,17 +145,17 @@ func testAccNewRelicSyntheticsScriptedBrowserMonitorConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "bar" {
 			enable_screenshot_on_failure_and_script	=	true
-			locations_public						=	["AP_SOUTH_1"]
-			name									=	"%[1]s"
-			period									=	"EVERY_HOUR"
-			runtime_type_version					=	"100"
-			runtime_type							=	"CHROME_BROWSER"
-			script_language							=	"JAVASCRIPT"
-			status									=	"ENABLED"
-			type									=	"SCRIPT_BROWSER"
-			script									=	"$browser.get('https://one.newrelic.com')"
+			locations_public	=	["AP_SOUTH_1"]
+			name	=	"%[1]s"
+			period	=	"EVERY_HOUR"
+			runtime_type_version	=	"100"
+			runtime_type	=	"CHROME_BROWSER"
+			script_language	=	"JAVASCRIPT"
+			status	=	"ENABLED"
+			type	=	"SCRIPT_BROWSER"
+			script	=	"$browser.get('https://one.newrelic.com')"
 			tag {
-				key		= "Name"
+				key	= "Name"
 				values	= ["scriptedMonitor"]
 			}
 		}`, name)
@@ -165,17 +165,17 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfigUpdated(name string) str
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "bar" {
 			enable_screenshot_on_failure_and_script	=	false
-			locations_public						=	["AP_SOUTH_1","AP_EAST_1"]
-			name									=	"%[1]s_updated"
-			period									=	"EVERY_HOUR"
-			runtime_type_version					=	"100"
-			runtime_type							=	"CHROME_BROWSER"
-			script_language							=	"JAVASCRIPT"
-			status									=	"DISABLED"
-			type									=	"SCRIPT_BROWSER"
-			script									=	"$browser.get('https://one.newrelic.com')"
+			locations_public	=	["AP_SOUTH_1","AP_EAST_1"]
+			name	=	"%[1]s_updated"
+			period	=	"EVERY_HOUR"
+			runtime_type_version	=	"100"
+			runtime_type	=	"CHROME_BROWSER"
+			script_language	=	"JAVASCRIPT"
+			status	=	"DISABLED"
+			type	=	"SCRIPT_BROWSER"
+			script	=	"$browser.get('https://one.newrelic.com')"
 			tag {
-				key		=	"Name"
+				key	=	"Name"
 				values	=	["scriptedMonitor","hello"]
 			}
 		}`, name)
@@ -184,11 +184,9 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfigUpdated(name string) str
 func testAccCheckNewRelicSyntheticsScriptMonitorExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
-
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
-
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no synthetics monitor ID is set")
 		}
@@ -196,15 +194,12 @@ func testAccCheckNewRelicSyntheticsScriptMonitorExists(n string) resource.TestCh
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		result, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
-
 		if err != nil {
 			return err
 		}
-
 		if string((*result).GetGUID()) != rs.Primary.ID {
 			fmt.Errorf("the monitor is not found %v - %v", (*result).GetGUID(), rs.Primary.ID)
 		}
-
 		return nil
 	}
 }
@@ -218,7 +213,6 @@ func testAccCheckNewRelicSyntheticsScriptMonitorDestroy(s *terraform.State) erro
 		}
 
 		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
-
 		if (*found) != nil {
 			return fmt.Errorf("synthetics monitor still exists")
 		}

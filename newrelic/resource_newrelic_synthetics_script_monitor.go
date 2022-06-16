@@ -162,11 +162,13 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
-	var diags diag.Diagnostics
+
 	monitorType := d.Get("type").(string)
 
+	var diags diag.Diagnostics
 	var resp *synthetics.SyntheticsScriptAPIMonitorCreateMutationResult
 	var err error
+
 	switch monitorType {
 	case string(SyntheticsMonitorTypes.SCRIPT_API):
 		monitorInput := buildSyntheticsScriptAPIMonitorInput(d)
@@ -200,7 +202,6 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		}
 		d.SetId(string(resp.Monitor.GUID))
 	}
-
 	return nil
 }
 
@@ -215,17 +216,18 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 			d.SetId("")
 			return nil
 		}
-
 		return diag.FromErr(err)
 	}
+
 	setCommonSyntheticsScriptMonitorAttributes(resp, d)
+
 	return nil
 }
 
 //func to set output values in the read func.
 func setCommonSyntheticsScriptMonitorAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
-	switch e := (*v).(type) {
 
+	switch e := (*v).(type) {
 	case *entities.SyntheticMonitorEntity:
 		_ = d.Set("name", e.Name)
 		_ = d.Set("type", e.MonitorType)
@@ -236,14 +238,16 @@ func setCommonSyntheticsScriptMonitorAttributes(v *entities.EntityInterface, d *
 func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
+
 	var diags diag.Diagnostics
-	monitorType := d.Get("type").(string)
 
 	guid := synthetics.EntityGUID(d.Id())
 
+	monitorType := d.Get("type").(string)
 	switch monitorType {
 	case string(SyntheticsMonitorTypes.SCRIPT_API):
 		monitorInput := buildSyntheticsScriptAPIMonitorUpdateInput(d)
+
 		resp, err := client.Synthetics.SyntheticsUpdateScriptAPIMonitorWithContext(ctx, guid, monitorInput)
 		if err != nil {
 			return diag.FromErr(err)
@@ -259,6 +263,7 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 		}
 	case string(SyntheticsMonitorTypes.SCRIPT_BROWSER):
 		monitorInput := buildSyntheticsScriptBrowserUpdateInput(d)
+
 		resp, err := client.Synthetics.SyntheticsUpdateScriptBrowserMonitorWithContext(ctx, guid, monitorInput)
 		if err != nil {
 			return diag.FromErr(err)
