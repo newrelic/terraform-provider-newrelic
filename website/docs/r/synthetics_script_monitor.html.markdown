@@ -63,12 +63,18 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 * `script_language` - (Optional) The programing language that should execute the script.
 * `status` - (Required) The run state of the monitor.
 * `script` - (Required) The script that the monitor runs.
-* `key` - (Required) Name of the tag key.
-* `values` - (Required) Values associated with the tag key.
 
-The `SCRIPTED_BROWSER` monitor type supports the following additional arguments:
+
+The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
 
 * `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution
+
+### Nested blocks
+
+All nested `tag` blocks support the following common arguments:
+
+* `key` - (Required) Name of the tag key.
+* `values` - (Required) Values associated with the tag key.
 
 ```
 Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.

@@ -74,12 +74,12 @@ The following are the common arguments supported for `SIMPLE` and `BROWSER` moni
 * `uri` - (Required) The uri the monitor runs against.
 * `type` - (Required) THE monitor type. Valid values are `SIMPLE` and `BROWSER`.
 
-Other arguments supports for `SIMPLE` monitor:
+The `SIMPLE` monitor type supports the following additional arguments:
 
 * `treat_redirect_as_failure` - (Optional) Categorize redirects during a monitor job as a failure.
 * `bypass_head_request` - (Optional) Monitor should skip default HEAD request and instead use GET verb in check.
 
-Other arguments supports for `BROWSER` monitor:
+The `BROWSER` monitor type supports the following additional arguments:
 
 * `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution.
 * `runtime_type_version` - (Required) The runtime type that the monitor will run.
@@ -106,7 +106,7 @@ Warning: This resource will use the account ID linked to your API key. At the mo
 
 The following attributes are exported:
 
-* `id` - The ID of the Synthetics monitor.
+* `id` - The ID of the Synthetics monitor that the script is attached to.
 
 ## Import
 
