@@ -186,6 +186,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 					Summary:  string(err.Type) + " " + err.Description,
 				})
 			}
+			return diags
 		}
 		d.SetId(string(resp.Monitor.GUID))
 
@@ -202,6 +203,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 					Summary:  string(err.Type) + " " + err.Description,
 				})
 			}
+			return diags
 		}
 		d.SetId(string(resp.Monitor.GUID))
 	}
@@ -267,6 +269,7 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 					Summary:  string(err.Type) + " " + err.Description,
 				})
 			}
+			return diags
 		}
 	case string(SyntheticsMonitorTypes.SCRIPT_BROWSER):
 		monitorInput := buildSyntheticsScriptBrowserUpdateInput(d)
@@ -282,6 +285,7 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 					Summary:  string(err.Type) + " " + err.Description,
 				})
 			}
+			return diags
 		}
 	}
 	return nil
