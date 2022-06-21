@@ -90,7 +90,7 @@ func resourceNewRelicSyntheticsAlertConditionCreate(ctx context.Context, d *sche
 
 	policyID := d.Get("policy_id").(int)
 	monitorGUID := d.Get("monitor_id").(string)
-	
+
 	entity, entityErr := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(monitorGUID))
 	if entityErr != nil {
 		return diag.FromErr(entityErr)
@@ -155,7 +155,9 @@ func resourceNewRelicSyntheticsAlertConditionRead(ctx context.Context, d *schema
 
 func resourceNewRelicSyntheticsAlertConditionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
+	
 	monitorGUID := d.Get("monitor_id").(string)
+
 	entity, entityErr := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(monitorGUID))
 	if entityErr != nil {
 		return diag.FromErr(entityErr)
