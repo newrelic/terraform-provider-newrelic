@@ -77,55 +77,12 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				},
 			},
 			"auth": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeMap,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "A set of key-value pairs to represent a Notification destination auth.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"type": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"BASIC", "TOKEN"}, false),
-						},
-						"basic": {
-							Type:      schema.TypeSet,
-							Sensitive: true,
-							Optional:  true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"user": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-									"password": {
-										Type:      schema.TypeString,
-										Sensitive: true,
-										Required:  true,
-									},
-								},
-							},
-						},
-						"token": {
-							Type:      schema.TypeSet,
-							Sensitive: true,
-							Optional:  true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"prefix": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-									"token": {
-										Type:      schema.TypeString,
-										Sensitive: true,
-										Required:  true,
-									},
-								},
-							},
-						},
-					},
-				},
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Sensitive:   true,
 			},
 		},
 	}

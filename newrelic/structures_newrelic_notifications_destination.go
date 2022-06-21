@@ -61,83 +61,33 @@ func expandNotificationDestinationInput(d *schema.ResourceData) (*notifications.
 func expandNotificationDestinationAuth(authList interface{}) (*notifications.AiNotificationsCredentialsInput, error) {
 	auth := notifications.AiNotificationsCredentialsInput{}
 	var authConfig map[string]interface{}
-	list := authList.(*schema.Set).List()
-	authArr := make([]int, len(list))
+	authConfig = authList.(map[string]interface{})
 
-	if len(authArr) > 0 {
-		authConfig = list[0].(map[string]interface{})
+	if typeAuth, ok := authConfig["type"]; ok {
+		auth.Type = notifications.AuthType(typeAuth.(string))
+	}
 
-		if typeAuth, ok := authConfig["type"]; ok {
-			auth.Type = notifications.AuthType(typeAuth.(string))
+	if auth.Type == notifications.AuthTypes.Token {
+		if prefix, ok := authConfig["prefix"]; ok {
+			auth.Token.Prefix = prefix.(string)
 		}
 
-		if auth.Type == notifications.AuthTypes.Token {
-			if token, ok := authConfig["token"]; ok {
-				a, err := expandNotificationDestinationTokenAuth(token)
-				if err != nil {
-					return nil, err
-				}
+		if token, ok := authConfig["token"]; ok {
+			auth.Token.Token = notifications.SecureValue(token.(string))
+		}
+	}
 
-				auth.Token = *a
-			}
+	if auth.Type == notifications.AuthTypes.Basic {
+		if user, ok := authConfig["user"]; ok {
+			auth.Basic.User = user.(string)
 		}
 
-		if auth.Type == notifications.AuthTypes.Basic {
-			if basic, ok := authConfig["basic"]; ok {
-				a, err := expandNotificationDestinationBasicAuth(basic)
-				if err != nil {
-					return nil, err
-				}
-
-				auth.Basic = *a
-			}
+		if password, ok := authConfig["password"]; ok {
+			auth.Basic.Password = notifications.SecureValue(password.(string))
 		}
-
 	}
 
 	return &auth, nil
-}
-
-func expandNotificationDestinationBasicAuth(basicAuthList interface{}) (*notifications.BasicAuth, error) {
-	basicAuth := notifications.BasicAuth{}
-	var basicAuthConfig map[string]interface{}
-	list := basicAuthList.(*schema.Set).List()
-	basicAuthArr := make([]int, len(list))
-
-	if len(basicAuthArr) > 0 {
-		basicAuthConfig = list[0].(map[string]interface{})
-
-		if user, ok := basicAuthConfig["user"]; ok {
-			basicAuth.User = user.(string)
-		}
-
-		if password, ok := basicAuthConfig["password"]; ok {
-			basicAuth.Password = notifications.SecureValue(password.(string))
-		}
-	}
-
-	return &basicAuth, nil
-}
-
-func expandNotificationDestinationTokenAuth(tokenAuthList interface{}) (*notifications.TokenAuth, error) {
-	tokenAuth := notifications.TokenAuth{}
-	var tokenAuthConfig map[string]interface{}
-	list := tokenAuthList.(*schema.Set).List()
-	tokenAuthArr := make([]int, len(list))
-
-	if len(tokenAuthArr) > 0 {
-		tokenAuthConfig = list[0].(map[string]interface{})
-
-		if prefix, ok := tokenAuthConfig["prefix"]; ok {
-			tokenAuth.Prefix = prefix.(string)
-		}
-
-		if token, ok := tokenAuthConfig["token"]; ok {
-			tokenAuth.Token = notifications.SecureValue(token.(string))
-		}
-	}
-
-	return &tokenAuth, nil
 }
 
 func expandNotificationDestinationProperty(cfg map[string]interface{}) (*notifications.PropertyInput, error) {
@@ -247,6 +197,14 @@ func flattenNotificationDestinationAuth(a *notifications.Auth) interface{} {
 }
 
 func validateDestinationAuth(auth notifications.AiNotificationsCredentialsInput) error {
+	if auth.Type == "" {
+		return errors.New("auth type is required")
+	}
+
+	if auth.Type != notifications.AuthTypes.Token && auth.Type != notifications.AuthTypes.Basic {
+		return errors.New("auth type must be token or basic")
+	}
+
 	if auth.Type == notifications.AuthTypes.Token && (auth.Token.Token == "" || auth.Token.Prefix == "") {
 		return errors.New("token and prefix is required when using token auth type")
 	}
