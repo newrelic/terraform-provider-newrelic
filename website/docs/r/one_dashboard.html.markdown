@@ -131,6 +131,7 @@ The following arguments are supported:
   * `widget_markdown` - (Optional) A nested block that describes a Markdown widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_stacked_bar` - (Optional) A nested block that describes a Stacked Bar widget. See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_pie` - (Optional) A nested block that describes a Pie widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+  * `widget_log_table` - (Optional) A nested block that describes a Log Table widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
   * `widget_table` - (Optional) A nested block that describes a Table widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
 
 
@@ -182,6 +183,8 @@ Each widget type supports an additional set of arguments:
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
+  * `widget_log_table`
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
   * `widget_table`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
