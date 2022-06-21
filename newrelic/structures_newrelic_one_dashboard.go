@@ -253,11 +253,11 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				if err != nil {
 					return nil, err
 				}
-
-				widget.Configuration.LogTable, err = expandDashboardLogTableWidgetConfigurationInput(v.(map[string]interface{}), meta)
+				widget.RawConfiguration, err = expandDashboardWidgetRawConfigurationInput(v.(map[string]interface{}), meta)
 				if err != nil {
 					return nil, err
 				}
+				widget.Visualization.ID = "logger.log-table-widget"
 
 				page.Widgets = append(page.Widgets, widget)
 			}
@@ -436,21 +436,6 @@ func expandDashboardMarkdownWidgetConfigurationInput(i map[string]interface{}, m
 
 func expandDashboardPieWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardPieWidgetConfigurationInput, error) {
 	var cfg dashboards.DashboardPieWidgetConfigurationInput
-	var err error
-
-	// just has queries
-	if q, ok := i["nrql_query"]; ok {
-		cfg.NRQLQueries, err = expandDashboardWidgetNRQLQueryInput(q.([]interface{}), meta)
-		if err != nil {
-			return nil, err
-		}
-		return &cfg, nil
-	}
-	return nil, nil
-}
-
-func expandDashboardLogTableWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardLogTableWidgetConfigurationInput, error) {
-	var cfg dashboards.DashboardLogTableWidgetConfigurationInput
 	var err error
 
 	// just has queries
@@ -757,10 +742,7 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 		out["filter_current_dashboard"] = filterCurrentDashboard
 	case "logger.log-table-widget":
 		widgetType = "widget_log_table"
-		if len(in.Configuration.Table.NRQLQueries) > 0 {
-			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Table.NRQLQueries)
-		}
-		out["filter_current_dashboard"] = filterCurrentDashboard
+		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
 	}
 
 	return widgetType, out

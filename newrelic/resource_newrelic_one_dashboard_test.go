@@ -597,14 +597,13 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
     }
 
     widget_log_table {
-		title = "log table widget"
-		row = 13
-		column = 1
-		nrql_query {
-		  query      = "FROM Log SELECT * "
-		}
-		linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
-	  }
+      title = "Log table widget"
+      row = 13
+      column = 1
+      nrql_query {
+        query      = "FROM Log SELECT *"
+      }
+    }
 
 	widget_table {
       title = "table widget"
@@ -755,6 +754,15 @@ func testAccCheckNewRelicOneDashboardConfig_PageFullChanged(pageName string, acc
         query      = "FROM Transaction SELECT average(duration) FACET appName LIMIT 10"
       }
       linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+    }
+
+    widget_log_table {
+      title = "Log table widget with a new name"
+      row = 12
+      column = 7
+      nrql_query {
+        query      = "SELECT * FROM Log"
+      }
     }
 
     widget_json {

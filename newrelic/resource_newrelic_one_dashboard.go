@@ -372,9 +372,6 @@ func dashboardWidgetPieSchemaElem() *schema.Resource {
 func dashboardWidgetLogTableSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
 
-	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
-	s["filter_current_dashboard"] = dashboardWidgetFilterCurrentDashboardSchema()
-
 	return &schema.Resource{
 		Schema: s,
 	}
