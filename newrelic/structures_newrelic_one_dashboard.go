@@ -246,6 +246,22 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				page.Widgets = append(page.Widgets, widget)
 			}
 		}
+		if widgets, ok := p["widget_log_table"]; ok {
+			for _, v := range widgets.([]interface{}) {
+				// Get generic properties set
+				widget, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta)
+				if err != nil {
+					return nil, err
+				}
+				widget.RawConfiguration, err = expandDashboardWidgetRawConfigurationInput(v.(map[string]interface{}), meta)
+				if err != nil {
+					return nil, err
+				}
+				widget.Visualization.ID = "logger.log-table-widget"
+
+				page.Widgets = append(page.Widgets, widget)
+			}
+		}
 		if widgets, ok := p["widget_json"]; ok {
 			for _, v := range widgets.([]interface{}) {
 				// Get generic properties set
@@ -432,6 +448,7 @@ func expandDashboardPieWidgetConfigurationInput(i map[string]interface{}, meta i
 	}
 	return nil, nil
 }
+
 func expandDashboardTableWidgetConfigurationInput(i map[string]interface{}, meta interface{}) (*dashboards.DashboardTableWidgetConfigurationInput, error) {
 	var cfg dashboards.DashboardTableWidgetConfigurationInput
 	var err error
@@ -723,6 +740,9 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 			out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&in.Configuration.Table.NRQLQueries)
 		}
 		out["filter_current_dashboard"] = filterCurrentDashboard
+	case "logger.log-table-widget":
+		widgetType = "widget_log_table"
+		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
 	}
 
 	return widgetType, out
