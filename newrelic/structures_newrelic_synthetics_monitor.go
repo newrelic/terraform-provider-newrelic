@@ -76,8 +76,9 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	simpleBrowserMonitorInput.Tags = inputBase.Tags
 	simpleBrowserMonitorInput.Uri = inputBase.URI
 
-	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
-		simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
+	if v, _ := d.GetOk("enable_screenshot_on_failure_and_script"); v != nil {
+		e := v.(bool)
+		simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = &e
 	}
 	if v, ok := d.GetOk("location_public"); ok {
 		simpleBrowserMonitorInput.Locations.Public = expandSyntheticsSimplePublicLocations(v.(*schema.Set).List())
@@ -88,8 +89,9 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	if v, ok := d.GetOk("validation_string"); ok {
 		simpleBrowserMonitorInput.AdvancedOptions.ResponseValidationText = v.(string)
 	}
-	if v, ok := d.GetOk("verify_ssl"); ok {
-		simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = v.(bool)
+	if v, _ := d.GetOk("verify_ssl"); v != nil {
+		vs := v.(bool)
+		simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = &vs
 	}
 	if v, ok := d.GetOk("script_language"); ok {
 		simpleBrowserMonitorInput.Runtime.ScriptLanguage = v.(string)
@@ -123,17 +125,20 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 	if v, ok := d.GetOk("location_private"); ok {
 		simpleMonitorInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
-		simpleMonitorInput.AdvancedOptions.RedirectIsFailure = v.(bool)
+	if v, _ := d.GetOk("treat_redirect_as_failure"); v != nil {
+		t := v.(bool)
+		simpleMonitorInput.AdvancedOptions.RedirectIsFailure = &t
 	}
 	if v, ok := d.GetOk("validation_string"); ok {
 		simpleMonitorInput.AdvancedOptions.ResponseValidationText = v.(string)
 	}
-	if v, ok := d.GetOk("bypass_head_request"); ok {
-		simpleMonitorInput.AdvancedOptions.ShouldBypassHeadRequest = v.(bool)
+	if v, _ := d.GetOk("bypass_head_request"); v != nil {
+		b := v.(bool)
+		simpleMonitorInput.AdvancedOptions.ShouldBypassHeadRequest = &b
 	}
-	if v, ok := d.GetOk("verify_ssl"); ok {
-		simpleMonitorInput.AdvancedOptions.UseTlsValidation = v.(bool)
+	if v, _ := d.GetOk("verify_ssl"); v != nil {
+		vs := v.(bool)
+		simpleMonitorInput.AdvancedOptions.UseTlsValidation = &vs
 	}
 	return simpleMonitorInput
 }
@@ -158,14 +163,16 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	if v, ok := d.GetOk("location_private"); ok {
 		simpleBrowserMonitorUpdateInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
-		simpleBrowserMonitorUpdateInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
+	if v, _ := d.GetOk("enable_screenshot_on_failure_and_script"); v != nil {
+		e := v.(bool)
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = &e
 	}
 	if v, ok := d.GetOk("validation_string"); ok {
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.ResponseValidationText = v.(string)
 	}
-	if v, ok := d.GetOk("verify_ssl"); ok {
-		simpleBrowserMonitorUpdateInput.AdvancedOptions.UseTlsValidation = v.(bool)
+	if v, _ := d.GetOk("verify_ssl"); v != nil {
+		vs := v.(bool)
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.UseTlsValidation = &vs
 	}
 	if v, ok := d.GetOk("script_language"); ok {
 		simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = v.(string)
@@ -199,17 +206,20 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 	if v, ok := d.GetOk("location_private"); ok {
 		simpleMonitorUpdateInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("treat_redirect_as_failure"); ok {
-		simpleMonitorUpdateInput.AdvancedOptions.RedirectIsFailure = v.(bool)
+	if v, _ := d.GetOk("treat_redirect_as_failure"); v != nil {
+		i := v.(bool)
+		simpleMonitorUpdateInput.AdvancedOptions.RedirectIsFailure = &i
 	}
 	if v, ok := d.GetOk("validation_string"); ok {
 		simpleMonitorUpdateInput.AdvancedOptions.ResponseValidationText = v.(string)
 	}
-	if v, ok := d.GetOk("bypass_head_request"); ok {
-		simpleMonitorUpdateInput.AdvancedOptions.ShouldBypassHeadRequest = v.(bool)
+	if v, _ := d.GetOk("bypass_head_request"); v != nil {
+		b := v.(bool)
+		simpleMonitorUpdateInput.AdvancedOptions.ShouldBypassHeadRequest = &b
 	}
-	if v, ok := d.GetOk("verify_ssl"); ok {
-		simpleMonitorUpdateInput.AdvancedOptions.UseTlsValidation = v.(bool)
+	if v, _ := d.GetOk("verify_ssl"); v != nil {
+		vs := v.(bool)
+		simpleMonitorUpdateInput.AdvancedOptions.UseTlsValidation = &vs
 	}
 	return simpleMonitorUpdateInput
 }
@@ -258,8 +268,9 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 		Script: d.Get("script").(string),
 	}
 
-	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
-		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
+	if v, _ := d.GetOk("enable_screenshot_on_failure_and_script"); v.(bool) {
+		e := v.(bool)
+		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &e
 	}
 	if attr, ok := d.GetOk("location_private"); ok {
 		input.Locations.Private = expandSyntheticsPrivateLocations(attr.(*schema.Set).List())
@@ -322,8 +333,9 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 		Tags:   inputBase.Tags,
 		Script: d.Get("script").(string),
 	}
-	if v, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
-		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = v.(bool)
+	if v, _ := d.GetOk("enable_screenshot_on_failure_and_script"); v.(bool) {
+		e := v.(bool)
+		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &e
 	}
 	if v, ok := d.GetOk("location_public"); ok {
 		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())

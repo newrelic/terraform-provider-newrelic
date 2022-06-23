@@ -82,10 +82,6 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string, monitorType strin
 			period	=	"EVERY_MINUTE"
 			status	=	"ENABLED"
 			type	=	"%s"
-			tag {
-				key	=	"Name"
-				values	=	["apple"]
-			}
 			uri	=	"https://www.one.newrelic.com"
 		}`, name, monitorType)
 }
@@ -106,10 +102,6 @@ func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorTyp
 			period	=	"EVERY_5_MINUTES"
 			status	=	"DISABLED"
 			type	=	"%s"
-			tag {
-				key	=	"Name"
-				values	=	[ "pineApple","fruit"]
-			}
 			uri	=	"https://www.one.newrelic.com"
 		}`, name, monitorType)
 }
