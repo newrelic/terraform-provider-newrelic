@@ -14,9 +14,11 @@ import (
 )
 
 var notificationsDestinationTypes = map[notifications.DestinationType][]string{
-	"EMAIL":      {},
-	"PAGER_DUTY": {},
-	"WEBHOOK":    {},
+	"EMAIL":                         {},
+	"SERVICE_NOW":                   {},
+	"PAGERDUTY_ACCOUNT_INTEGRATION": {},
+	"PAGERDUTY_SERVICE_INTEGRATION": {},
+	"WEBHOOK":                       {},
 }
 
 func resourceNewRelicNotificationDestination() *schema.Resource {
@@ -90,7 +92,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 
 func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
-	destinationInput, err := expandNotificationDestinationInput(d)
+	destinationInput, err := expandNotificationDestination(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

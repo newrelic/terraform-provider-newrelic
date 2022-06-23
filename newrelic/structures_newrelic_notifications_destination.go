@@ -7,7 +7,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 )
 
-func expandNotificationDestinationInput(d *schema.ResourceData) (*notifications.DestinationInput, error) {
+func expandNotificationDestination(d *schema.ResourceData) (*notifications.DestinationInput, error) {
 	destination := notifications.DestinationInput{
 		Name: d.Get("name").(string),
 		Type: notifications.DestinationType(d.Get("type").(string)),
@@ -42,16 +42,13 @@ func expandNotificationDestinationInput(d *schema.ResourceData) (*notifications.
 	if propertiesOk {
 		var destinationProperty map[string]interface{}
 
-		// Need to FIX!!!
 		x := properties.([]interface{})
-		if len(x) > 0 {
-			if x[0] != nil {
-				destinationProperty = x[0].(map[string]interface{})
-			}
-		}
 
-		if val, err := expandNotificationDestinationProperty(destinationProperty); err == nil {
-			destination.Properties = append(destination.Properties, *val)
+		for _, property := range x {
+			destinationProperty = property.(map[string]interface{})
+			if val, err := expandNotificationDestinationProperty(destinationProperty); err == nil {
+				destination.Properties = append(destination.Properties, *val)
+			}
 		}
 	}
 
@@ -206,11 +203,11 @@ func validateDestinationAuth(auth notifications.AiNotificationsCredentialsInput)
 	}
 
 	if auth.Type == notifications.AuthTypes.Token && (auth.Token.Token == "" || auth.Token.Prefix == "") {
-		return errors.New("token and prefix is required when using token auth type")
+		return errors.New("token and prefix are required when using token auth type")
 	}
 
 	if auth.Type == notifications.AuthTypes.Basic && (auth.Basic.User == "" || auth.Basic.Password == "") {
-		return errors.New("user and password is required when using basic auth type")
+		return errors.New("user and password are required when using basic auth type")
 	}
 
 	return nil
