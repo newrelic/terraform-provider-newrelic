@@ -148,6 +148,12 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Description: "A pie widget.",
 				Elem:        dashboardWidgetPieSchemaElem(),
 			},
+			"widget_log_table": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A log table widget.",
+				Elem:        dashboardWidgetLogTableSchemaElem(),
+			},
 			"widget_table": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -206,6 +212,10 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 			Type:     schema.TypeList,
 			Required: true,
 			Elem:     dashboardWidgetNRQLQuerySchemaElem(),
+		},
+		"ignore_time_range": {
+			Type:     schema.TypeBool,
+			Optional: true,
 		},
 	}
 }
@@ -353,6 +363,14 @@ func dashboardWidgetPieSchemaElem() *schema.Resource {
 
 	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
 	s["filter_current_dashboard"] = dashboardWidgetFilterCurrentDashboardSchema()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func dashboardWidgetLogTableSchemaElem() *schema.Resource {
+	s := dashboardWidgetSchemaBase()
 
 	return &schema.Resource{
 		Schema: s,

@@ -1,3 +1,21 @@
+<a name="v2.48.0"></a>
+## [v2.48.0] - 2022-06-21
+### Bug Fixes
+- add sleep to wait the SL to be indexed and avoid flaky test
+
+### Features
+- **docs:** add azure integrations guide and examples
+
+<a name="v2.47.1"></a>
+## [v2.47.1] - 2022-06-15
+### Bug Fixes
+- remove unnecessary read of service level entity after creation
+
+<a name="v2.47.0"></a>
+## [v2.47.0] - 2022-06-10
+### Features
+- **newrelic_one_dashboard:** added support for ignore_time_range
+
 <a name="v2.46.2"></a>
 ## [v2.46.2] - 2022-06-06
 <a name="v2.46.1"></a>
@@ -1270,7 +1288,10 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.46.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.0...HEAD
+[v2.48.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.47.1...v2.48.0
+[v2.47.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.47.0...v2.47.1
+[v2.47.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.46.2...v2.47.0
 [v2.46.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.46.1...v2.46.2
 [v2.46.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.46.0...v2.46.1
 [v2.46.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.45.1...v2.46.0
