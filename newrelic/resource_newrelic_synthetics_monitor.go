@@ -2,10 +2,12 @@ package newrelic
 
 import (
 	"context"
+	"log"
+	"strings"
+
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -83,6 +85,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 			"verify_ssl": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     false,
 				Description: "Verify SSL.",
 			},
 			"bypass_head_request": {
@@ -203,7 +206,22 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 		return diags
 	}
 
+	setAttributesFromCreate(resp, d)
+
 	return nil
+}
+
+func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreateMutationResult, d *schema.ResourceData) {
+	_ = d.Set("validation_string", res.Monitor.AdvancedOptions.ResponseValidationText)
+	_ = d.Set("verify_ssl", res.Monitor.AdvancedOptions.UseTlsValidation)
+	_ = d.Set("enable_screenshot_on_failure_and_script", res.Monitor.AdvancedOptions.EnableScreenshotOnFailureAndScript)
+	_ = d.Set("name", res.Monitor.Name)
+	_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
+	_ = d.Set("runtime_type_version", string(res.Monitor.Runtime.RuntimeTypeVersion))
+	_ = d.Set("script_language", res.Monitor.Runtime.ScriptLanguage)
+	_ = d.Set("status", string(res.Monitor.Status))
+	_ = d.Set("period", string(res.Monitor.Period))
+	_ = d.Set("uri", res.Monitor.Uri)
 }
 
 func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -233,7 +251,48 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 		_ = d.Set("name", e.Name)
 		_ = d.Set("type", e.MonitorType)
 		_ = d.Set("uri", e.MonitoredURL)
+		expandAttributes(e.Tags, d)
 	}
+}
+
+func expandAttributes(tags []entities.EntityTag, d *schema.ResourceData) {
+	for _, tag := range tags {
+		if tag.Key == "monitorStatus" {
+			_ = d.Set("status", strings.ToUpper(tag.Values[0]))
+		}
+		if tag.Key == "responseValidationText" {
+			_ = d.Set("validation_string", tag.Values[0])
+		}
+		if tag.Key == "useTlsValidation" {
+			_ = d.Set("verify_ssl", stringToBoolConv[tag.Values[0]])
+		}
+		if tag.Key == "period" {
+			_ = d.Set("period", periodConv[tag.Values[0]])
+		}
+		if tag.Key == "redirectIsFailure" {
+			_ = d.Set("treat_redirect_as_failure", stringToBoolConv[tag.Values[0]])
+		}
+		if tag.Key == "shouldBypassHeadRequest" {
+			_ = d.Set("bypass_head_request", stringToBoolConv[tag.Values[0]])
+		}
+	}
+}
+
+var stringToBoolConv = map[string]bool{
+	"true":  true,
+	"false": false,
+}
+
+var periodConv = map[string]string{
+	"1":    "EVERY_MINUTE",
+	"5":    "EVERY_5_MINUTES",
+	"10":   "EVERY_10_MINUTES",
+	"15":   "EVERY_15_MINUTES",
+	"30":   "EVERY_30_MINUTES",
+	"60":   "EVERY_HOUR",
+	"360":  "EVERY_6_HOURS",
+	"720":  "EVERY_12_HOURS",
+	"1440": "EVERY_DAY",
 }
 
 func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -266,6 +325,7 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 			}
 		}
 		d.SetId(string(resp.Monitor.GUID))
+		setSimpleMonitorAttributesFromUpdate(resp, d)
 
 	case string(SyntheticsMonitorTypes.BROWSER):
 		simpleBrowserMonitorUpdateInput := buildSyntheticsSimpleBrowserMonitorUpdateStruct(d)
@@ -282,11 +342,36 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 			}
 		}
 		d.SetId(string(resp.Monitor.GUID))
+		setSimpleBrowserAttributesFromUpdate(resp, d)
 	}
 	if len(diags) > 0 {
 		return diags
 	}
 	return nil
+}
+
+func setSimpleMonitorAttributesFromUpdate(res *synthetics.SyntheticsSimpleMonitorUpdateMutationResult, d *schema.ResourceData) {
+	_ = d.Set("name", res.Monitor.Name)
+	_ = d.Set("period", string(res.Monitor.Period))
+	_ = d.Set("uri", res.Monitor.Uri)
+	_ = d.Set("status", res.Monitor.Status)
+	_ = d.Set("validation_string", res.Monitor.AdvancedOptions.ResponseValidationText)
+	_ = d.Set("verify_ssl", res.Monitor.AdvancedOptions.UseTlsValidation)
+	_ = d.Set("treat_redirect_as_failure", res.Monitor.AdvancedOptions.RedirectIsFailure)
+	_ = d.Set("bypass_head_request", res.Monitor.AdvancedOptions.ShouldBypassHeadRequest)
+}
+
+func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowserMonitorUpdateMutationResult, d *schema.ResourceData) {
+	_ = d.Set("name", res.Monitor.Name)
+	_ = d.Set("period", string(res.Monitor.Period))
+	_ = d.Set("uri", res.Monitor.Uri)
+	_ = d.Set("status", res.Monitor.Status)
+	_ = d.Set("validation_string", res.Monitor.AdvancedOptions.ResponseValidationText)
+	_ = d.Set("verify_ssl", res.Monitor.AdvancedOptions.UseTlsValidation)
+	_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
+	_ = d.Set("runtime_type_version", string(res.Monitor.Runtime.RuntimeTypeVersion))
+	_ = d.Set("script_language", res.Monitor.Runtime.ScriptLanguage)
+	_ = d.Set("enable_screenshot_on_failure_and_script", res.Monitor.AdvancedOptions.EnableScreenshotOnFailureAndScript)
 }
 
 func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

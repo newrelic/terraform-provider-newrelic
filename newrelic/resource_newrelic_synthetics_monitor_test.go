@@ -5,11 +5,12 @@ package newrelic
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
-	"testing"
 )
 
 ///////////////////////
@@ -73,18 +74,18 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string, monitorType strin
 				name	=	"Name"
 				value	=	"simpleMonitor"
 				}
-			treat_redirect_as_failure	=	true
+			treat_redirect_as_failure	=	false
 			validation_string	=	"success"
-			bypass_head_request	=	true
-			verify_ssl	=	true
+			bypass_head_request	=	false
+			verify_ssl	=	false
 			location_public	=	["AP_SOUTH_1"]
 			name	=	"%s"
 			period	=	"EVERY_MINUTE"
 			status	=	"ENABLED"
 			type	=	"%s"
 			tag {
-				key	=	"monitor"
-				values	=	["myMonitor"]
+				key	=	"Name"
+				values	=	["apple"]
 			}
 			uri	=	"https://www.one.newrelic.com"
 		}`, name, monitorType)
@@ -97,18 +98,18 @@ func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorTyp
 				name	=	"name"
 				value	=	"simpleMonitorUpdated"
 			}
-			treat_redirect_as_failure	=	false
+			treat_redirect_as_failure	=	true
 			validation_string	=	"succeeded"
-			bypass_head_request	=	false
-			verify_ssl	=	false
+			bypass_head_request	=	true
+			verify_ssl	=	true
 			location_public	=	["AP_SOUTH_1","AP_EAST_1"]
 			name	=	"%s-updated"
 			period	=	"EVERY_5_MINUTES"
 			status	=	"DISABLED"
 			type	=	"%s"
 			tag {
-				key	=	"monitor"
-				values	=	[ "myMonitor","simple_monitor"]
+				key	=	"Name"
+				values	=	[ "pineApple","fruit"]
 			}
 			uri	=	"https://www.one.newrelic.com"
 		}`, name, monitorType)

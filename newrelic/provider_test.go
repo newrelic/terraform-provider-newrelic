@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/newrelic/newrelic-client-go/pkg/apm"
 	"github.com/newrelic/newrelic-client-go/pkg/config"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
@@ -34,7 +35,8 @@ var (
 	testAccountID                   int
 	testSubaccountID                int
 	testAccountName                 string
-	//testAccCleanupComplete          = false
+	testAccAPMEntityCreated         = false
+	testAccCleanupComplete          = false
 )
 
 func init() {
@@ -93,36 +95,44 @@ func testAccPreCheck(t *testing.T) {
 		t.Skipf("NEW_RELIC_ACCOUNT_ID must be set for acceptance tests")
 	}
 
-	//testAccApplicationsCleanup(t)
-	testAccCreateApplication(t)
+	// Create a test application for use in newrelic_alert_condition and other tests
+	if !testAccAPMEntityCreated {
+		// Clean up old instances of the applications
+		testAccApplicationsCleanup(t)
 
-	// We need to give the entity search engine time to index the app so
-	// we try to get the entity, and retry if it fails for a certain amount
-	// of time
-	client := entities.New(config.Config{
-		PersonalAPIKey: testAccAPIKey,
-	})
-	params := entities.EntitySearchQueryBuilder{
-		Name:   testAccExpectedApplicationName,
-		Type:   "APPLICATION",
-		Domain: "APM",
-	}
+		// Create the application
+		testAccCreateApplication(t)
 
-	retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
-		entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
-		if err != nil {
-			return resource.RetryableError(err)
+		// We need to give the entity search engine time to index the app so
+		// we try to get the entity, and retry if it fails for a certain amount
+		// of time
+		client := entities.New(config.Config{
+			PersonalAPIKey: testAccAPIKey,
+		})
+		params := entities.EntitySearchQueryBuilder{
+			Name:   testAccExpectedApplicationName,
+			Type:   "APPLICATION",
+			Domain: "APM",
 		}
 
-		if entityResults.Count != 1 {
-			return resource.RetryableError(fmt.Errorf("Entity not found, or found more than one"))
+		retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
+			entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
+			if err != nil {
+				return resource.RetryableError(err)
+			}
+
+			if entityResults.Count != 1 {
+				return resource.RetryableError(fmt.Errorf("Entity not found, or found more than one"))
+			}
+
+			return nil
+		})
+
+		if retryErr != nil {
+			t.Fatalf("Unable to find application entity: %s", retryErr)
 		}
 
-		return nil
-	})
-
-	if retryErr != nil {
-		t.Fatalf("Unable to find application entity: %s", retryErr)
+		testAccAPMEntityCreated = true
 	}
 }
 
@@ -146,39 +156,42 @@ func testAccCreateApplication(t *testing.T) {
 	app.Shutdown(30 * time.Second)
 }
 
-// func testAccApplicationsCleanup(t *testing.T) {
-// 	// Only run cleanup once per test run
-// 	if testAccCleanupComplete {
-// 		return
-// 	}
+func testAccApplicationsCleanup(t *testing.T) {
+	// Only run cleanup once per test run
+	if testAccCleanupComplete {
+		return
+	}
 
-// 	client := apm.New(config.Config{
-// 		APIKey: os.Getenv("NEW_RELIC_API_KEY"),
-// 	})
+	client := apm.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
 
-// 	params := apm.ListApplicationsParams{
-// 		Name: "tf_test",
-// 	}
+	params := apm.ListApplicationsParams{
+		Name: "tf_test",
+	}
 
-// 	applications, err := client.ListApplications(&params)
+	applications, err := client.ListApplications(&params)
 
-// 	if err != nil {
-// 		t.Logf("error fetching applications: %s", err)
-// 	}
+	if err != nil {
+		t.Logf("error fetching applications: %s", err)
+	}
 
-// 	deletedAppCount := 0
+	deletedAppCount := 0
 
-// 	for _, app := range applications {
-// 		if !app.Reporting {
-// 			_, err = client.DeleteApplication(app.ID)
+	for _, app := range applications {
+		if !app.Reporting {
+			// Applications that have reported in the past 12 hours will not be deleted
+			// because of limitation on the API
+			_, err = client.DeleteApplication(app.ID)
 
-// 			if err == nil {
-// 				deletedAppCount++
-// 			}
-// 		}
-// 	}
+			if err == nil {
+				deletedAppCount++
+				t.Logf("deleted application %d (%d/%d)", app.ID, deletedAppCount, len(applications))
+			}
+		}
+	}
 
-// 	t.Logf("testacc cleanup of %d applications complete", deletedAppCount)
+	t.Logf("testacc cleanup of %d applications complete", deletedAppCount)
 
-// 	testAccCleanupComplete = true
-// }
+	testAccCleanupComplete = true
+}
