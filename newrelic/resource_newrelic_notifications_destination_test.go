@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestNewRelicNotificationDestination_Webhook(t *testing.T) {
+func TestNewRelicNotificationDestination_Basic(t *testing.T) {
 	resourceName := "newrelic_alert_channel.test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
@@ -25,7 +25,7 @@ func TestNewRelicNotificationDestination_Webhook(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testNewRelicNotificationDestinationByType(rName, "webhook", `{
+				Config: testNewRelicNotificationDestinationConfigByType(rName, "webhook", `{
 					type = "BASIC"
 					user = "test-user"
 					password = "pass123"
@@ -35,7 +35,6 @@ func TestNewRelicNotificationDestination_Webhook(t *testing.T) {
 				}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", rName),
 				),
 			},
 		},
@@ -43,15 +42,24 @@ func TestNewRelicNotificationDestination_Webhook(t *testing.T) {
 }
 
 func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderConfig).NewClient
-	accountID := 10867072
+	providerConfig := testAccProvider.Meta().(*ProviderConfig)
+	client := providerConfig.NewClient
 
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_notification_destination" {
 			continue
 		}
 
+		var accountID int
 		id := r.Primary.ID
+		accountID = providerConfig.AccountID
+
+		//if r.Primary.Attributes["account_id"] != "" {
+		//	accountID, err := strconv.Atoi(r.Primary.Attributes["account_id"])
+		//	if err != nil {
+		//		return err
+		//	}
+		//}
 
 		_, err := client.Notifications.GetDestination(accountID, notifications.UUID(id))
 		if err == nil {
@@ -62,7 +70,7 @@ func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testNewRelicNotificationDestinationByType(name string, channelType string, auth string, properties string) string {
+func testNewRelicNotificationDestinationConfigByType(name string, channelType string, auth string, properties string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_notification_destination" "test_foo" {
 			name = "%s"
@@ -74,9 +82,10 @@ func testNewRelicNotificationDestinationByType(name string, channelType string, 
 }
 
 func testAccCheckNewRelicNotificationDestinationExists(n string) resource.TestCheckFunc {
-	accountID := 10867072
-
 	return func(s *terraform.State) error {
+		providerConfig := testAccProvider.Meta().(*ProviderConfig)
+		client := providerConfig.NewClient
+
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
@@ -85,9 +94,16 @@ func testAccCheckNewRelicNotificationDestinationExists(n string) resource.TestCh
 			return fmt.Errorf("no destination ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).NewClient
-
+		var accountID int
 		id := rs.Primary.ID
+		accountID = providerConfig.AccountID
+
+		//if rs.Primary.Attributes["account_id"] != "" {
+		//	accountID, err := strconv.Atoi(rs.Primary.Attributes["account_id"])
+		//	if err != nil {
+		//		return err
+		//	}
+		//}
 
 		found, err := client.Notifications.GetDestination(accountID, notifications.UUID(id))
 		if err != nil {
