@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/newrelic/newrelic-client-go/pkg/common"
@@ -197,6 +196,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 
 		// Set attributes
 		d.SetId(string(resp.Monitor.GUID))
+		_ = d.Set("account_id", accountID)
 		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
 		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
@@ -215,6 +215,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 
 		// Set attributes
 		d.SetId(string(resp.Monitor.GUID))
+		_ = d.Set("account_id", accountID)
 		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
 		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
@@ -226,7 +227,9 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 
 // READ
 func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
 
@@ -238,6 +241,8 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 		}
 		return diag.FromErr(err)
 	}
+
+	_ = d.Set("account_id", accountID)
 
 	switch e := (*resp).(type) {
 	case *entities.SyntheticMonitorEntity:
@@ -312,20 +317,11 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 // DELETE
 func resourceNewRelicSyntheticsScriptMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
-
 	guid := synthetics.EntityGUID(d.Id())
 
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor %s", d.Id())
 
-	fmt.Print("\n\n **************************** \n")
-	fmt.Printf("\n DELETE GUID:  %+v \n", d.Id())
-
-	a, err := client.Synthetics.SyntheticsDeleteMonitorWithContext(ctx, guid)
-
-	fmt.Printf("\n DELETE RESP:    %+v \n", a)
-	fmt.Printf("\n DELETE ERROR:   %+v \n", err)
-	fmt.Print("\n **************************** \n\n")
-
+	_, err := client.Synthetics.SyntheticsDeleteMonitorWithContext(ctx, guid)
 	if err != nil {
 		return diag.FromErr(err)
 	}

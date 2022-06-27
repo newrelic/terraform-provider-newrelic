@@ -214,11 +214,6 @@ func testAccCheckNewRelicSyntheticsScriptMonitorDestroy(s *terraform.State) erro
 
 		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
 		if (*found) != nil {
-			// fmt.Print("\n\n **************************** \n")
-			// fmt.Printf("\n FOUND?  %+v \n", *found)
-			// fmt.Printf("\n GUID?  %+v \n", r.Primary.ID)
-			// fmt.Print("\n **************************** \n\n")
-
 			return fmt.Errorf("synthetics monitor still exists")
 		}
 	}
