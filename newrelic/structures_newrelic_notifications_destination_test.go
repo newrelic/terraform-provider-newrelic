@@ -16,8 +16,9 @@ func TestExpandNotificationDestination(t *testing.T) {
 		AuthType: &notifications.AuthTypes.Basic,
 		User:     &user,
 	}
-	property := map[string]string{
-		"url": "https://webhook.com",
+	property := map[string]interface{}{
+		"key":   "url",
+		"value": "https://webhook.com",
 	}
 
 	cases := map[string]struct {
