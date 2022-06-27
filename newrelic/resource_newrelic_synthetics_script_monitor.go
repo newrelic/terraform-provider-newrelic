@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
@@ -183,8 +182,6 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		log.Printf("Not Monitor type specified")
 	}
 
-	var diags diag.Diagnostics
-
 	switch monitorType {
 	case string(SyntheticsMonitorTypes.SCRIPT_API):
 		monitorInput := buildSyntheticsScriptAPIMonitorInput(d)
@@ -192,20 +189,16 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(resp.Errors) > 0 {
-			for _, err := range resp.Errors {
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  string(err.Type) + " " + err.Description,
-				})
-			}
-		}
-		d.SetId(string(resp.Monitor.GUID))
 
-		err = setSyntheticsMonitorAttributes(d, map[string]string{
-			"guid": string(resp.Monitor.GUID),
-		})
-		if err != nil {
+		errors := buildCreateSyntheticsScriptMonitorDiagnosticErrors(resp.Errors)
+		if len(errors) > 0 {
+			return errors
+		}
+
+		// Set attributes
+		d.SetId(string(resp.Monitor.GUID))
+		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
+		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
 		}
 	case string(SyntheticsMonitorTypes.SCRIPT_BROWSER):
@@ -214,26 +207,18 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		if err != nil {
 			diag.FromErr(err)
 		}
-		if len(resp.Errors) > 0 {
-			for _, err := range resp.Errors {
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  string(err.Type) + " " + err.Description,
-				})
-			}
-		}
-		d.SetId(string(resp.Monitor.GUID))
 
-		err = setSyntheticsMonitorAttributes(d, map[string]string{
-			"guid": string(resp.Monitor.GUID),
-		})
-		if err != nil {
+		errors := buildCreateSyntheticsScriptMonitorDiagnosticErrors(resp.Errors)
+		if len(errors) > 0 {
+			return errors
+		}
+
+		// Set attributes
+		d.SetId(string(resp.Monitor.GUID))
+		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
+		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
 		}
-	}
-
-	if len(diags) > 0 {
-		return diags
 	}
 
 	return nil
@@ -270,9 +255,6 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
-
-	var diags diag.Diagnostics
-
 	guid := synthetics.EntityGUID(d.Id())
 
 	monitorType, ok := d.GetOk("type")
@@ -283,26 +265,20 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 	switch monitorType {
 	case string(SyntheticsMonitorTypes.SCRIPT_API):
 		monitorInput := buildSyntheticsScriptAPIMonitorUpdateInput(d)
-
 		resp, err := client.Synthetics.SyntheticsUpdateScriptAPIMonitorWithContext(ctx, guid, monitorInput)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		if len(resp.Errors) > 0 {
-			for _, err := range resp.Errors {
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  string(err.Type) + " " + err.Description,
-				})
-			}
-
-			return diags
+		errors := buildUpdateSyntheticsScriptMonitorDiagnosticErrors(resp.Errors)
+		if len(errors) > 0 {
+			return errors
 		}
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"name": resp.Monitor.Name,
 			"guid": string(resp.Monitor.GUID),
+			// "type": string(SyntheticsMonitorTypes.SCRIPT_API),
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -310,33 +286,26 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 
 	case string(SyntheticsMonitorTypes.SCRIPT_BROWSER):
 		monitorInput := buildSyntheticsScriptBrowserUpdateInput(d)
-
 		resp, err := client.Synthetics.SyntheticsUpdateScriptBrowserMonitorWithContext(ctx, guid, monitorInput)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(resp.Errors) > 0 {
-			for _, err := range resp.Errors {
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  string(err.Type) + " " + err.Description,
-				})
-			}
 
-			return diags
+		errors := buildUpdateSyntheticsScriptMonitorDiagnosticErrors(resp.Errors)
+		if len(errors) > 0 {
+			return errors
 		}
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"name": resp.Monitor.Name,
 			"guid": string(resp.Monitor.GUID),
+			// "type": string(SyntheticsMonitorTypes.SCRIPT_BROWSER),
 		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	if len(diags) > 0 {
-		return diags
-	}
+
 	return nil
 }
 
@@ -348,7 +317,14 @@ func resourceNewRelicSyntheticsScriptMonitorDelete(ctx context.Context, d *schem
 
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor %s", d.Id())
 
-	_, err := client.Synthetics.SyntheticsDeleteMonitorWithContext(ctx, guid)
+	fmt.Print("\n\n **************************** \n")
+	fmt.Printf("\n DELETE GUID:  %+v \n", d.Id())
+
+	a, err := client.Synthetics.SyntheticsDeleteMonitorWithContext(ctx, guid)
+
+	fmt.Printf("\n DELETE RESP:    %+v \n", a)
+	fmt.Printf("\n DELETE ERROR:   %+v \n", err)
+	fmt.Print("\n **************************** \n\n")
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -357,21 +333,6 @@ func resourceNewRelicSyntheticsScriptMonitorDelete(ctx context.Context, d *schem
 	d.SetId("")
 
 	return nil
-}
-
-//func to set output values in the read func.
-func setCommonSyntheticsScriptMonitorAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
-	fmt.Print("\n\n **************************** \n")
-	fmt.Printf("\n setCommonSyntheticsScriptMonitorAttributes:  %T \n", *v)
-	fmt.Print("\n **************************** \n\n")
-	time.Sleep(1 * time.Second)
-
-	switch e := (*v).(type) {
-	case *entities.SyntheticMonitorEntity:
-		_ = d.Set("name", e.Name)
-		_ = d.Set("type", e.MonitorType)
-		_ = d.Set("guid", string(e.GUID))
-	}
 }
 
 func mergeSchemas(schemas ...map[string]*schema.Schema) map[string]*schema.Schema {
