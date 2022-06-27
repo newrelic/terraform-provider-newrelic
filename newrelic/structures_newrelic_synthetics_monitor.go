@@ -161,14 +161,14 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	if v, ok := d.GetOk("location_private"); ok {
 		simpleBrowserMonitorUpdateInput.Locations.Private = expandSyntheticsSimplePrivateLocations(v.(*schema.Set).List())
 	}
-	if v, _ := d.GetOk("enable_screenshot_on_failure_and_script"); v != nil {
+	if v := d.Get("enable_screenshot_on_failure_and_script"); v != nil {
 		e := v.(bool)
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = &e
 	}
 	if v, ok := d.GetOk("validation_string"); ok {
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.ResponseValidationText = v.(string)
 	}
-	if v, _ := d.GetOk("verify_ssl"); v != nil {
+	if v := d.Get("verify_ssl"); v != nil {
 		vs := v.(bool)
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.UseTlsValidation = &vs
 	}
