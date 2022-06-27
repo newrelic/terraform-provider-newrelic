@@ -28,6 +28,19 @@ var SyntheticsMonitorTypes = struct {
 	SCRIPT_BROWSER: "SCRIPT_BROWSER",
 }
 
+// setSyntheticsMonitorAttributes handles setting simple string attributes in the schema.
+// If an invalid attribute/key is provided, the subsequent error is returned.
+func setSyntheticsMonitorAttributes(d *schema.ResourceData, attributes map[string]string) error {
+	for attr, value := range attributes {
+		err := d.Set(attr, value)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 //validation function to validate monitor period
 func listValidSyntheticsMonitorPeriods() []string {
 	return []string{

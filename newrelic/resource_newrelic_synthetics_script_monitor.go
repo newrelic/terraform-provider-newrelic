@@ -2,7 +2,9 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
@@ -42,6 +44,11 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 			Description: "ID of the newrelic account",
 			Computed:    true,
 			Optional:    true,
+		},
+		"guid": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The unique entity identifier of the monitor in New Relic.",
 		},
 		"name": {
 			Type:        schema.TypeString,
@@ -130,11 +137,11 @@ func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Sc
 // Returns common schema attributes shared by both scripted browser and scripted API monitors.
 func syntheticsScriptMonitorCommonSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"guid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The unique entity identifier of the monitor in New Relic.",
-		},
+		// "guid": {
+		// 	Type:        schema.TypeString,
+		// 	Computed:    true,
+		// 	Description: "The unique entity identifier of the monitor in New Relic.",
+		// },
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
@@ -165,6 +172,7 @@ func syntheticsScriptMonitorCommonSchema() map[string]*schema.Schema {
 	}
 }
 
+// CREATE
 func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -176,13 +184,11 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 	}
 
 	var diags diag.Diagnostics
-	var resp *synthetics.SyntheticsScriptAPIMonitorCreateMutationResult
-	var err error
 
 	switch monitorType {
 	case string(SyntheticsMonitorTypes.SCRIPT_API):
 		monitorInput := buildSyntheticsScriptAPIMonitorInput(d)
-		resp, err = client.Synthetics.SyntheticsCreateScriptAPIMonitorWithContext(ctx, accountID, monitorInput)
+		resp, err := client.Synthetics.SyntheticsCreateScriptAPIMonitorWithContext(ctx, accountID, monitorInput)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -196,6 +202,12 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		}
 		d.SetId(string(resp.Monitor.GUID))
 
+		err = setSyntheticsMonitorAttributes(d, map[string]string{
+			"guid": string(resp.Monitor.GUID),
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	case string(SyntheticsMonitorTypes.SCRIPT_BROWSER):
 		monitorInput := buildSyntheticsScriptBrowserMonitorInput(d)
 		resp, err := client.Synthetics.SyntheticsCreateScriptBrowserMonitorWithContext(ctx, accountID, monitorInput)
@@ -211,13 +223,23 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 			}
 		}
 		d.SetId(string(resp.Monitor.GUID))
+
+		err = setSyntheticsMonitorAttributes(d, map[string]string{
+			"guid": string(resp.Monitor.GUID),
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
+
 	if len(diags) > 0 {
 		return diags
 	}
+
 	return nil
 }
 
+// READ
 func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
@@ -232,22 +254,19 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	setCommonSyntheticsScriptMonitorAttributes(resp, d)
-
-	return nil
-}
-
-//func to set output values in the read func.
-func setCommonSyntheticsScriptMonitorAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
-
-	switch e := (*v).(type) {
+	switch e := (*resp).(type) {
 	case *entities.SyntheticMonitorEntity:
-		_ = d.Set("name", e.Name)
-		_ = d.Set("type", e.MonitorType)
-		_ = d.Set("guid", string(e.GUID))
+		err = setSyntheticsMonitorAttributes(d, map[string]string{
+			"name": e.Name,
+			"type": string(e.MonitorType),
+			"guid": string(e.GUID),
+		})
 	}
+
+	return diag.FromErr(err)
 }
 
+// UPDATE
 func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -277,7 +296,18 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 					Summary:  string(err.Type) + " " + err.Description,
 				})
 			}
+
+			return diags
 		}
+
+		err = setSyntheticsMonitorAttributes(d, map[string]string{
+			"name": resp.Monitor.Name,
+			"guid": string(resp.Monitor.GUID),
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 	case string(SyntheticsMonitorTypes.SCRIPT_BROWSER):
 		monitorInput := buildSyntheticsScriptBrowserUpdateInput(d)
 
@@ -292,6 +322,16 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 					Summary:  string(err.Type) + " " + err.Description,
 				})
 			}
+
+			return diags
+		}
+
+		err = setSyntheticsMonitorAttributes(d, map[string]string{
+			"name": resp.Monitor.Name,
+			"guid": string(resp.Monitor.GUID),
+		})
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 	if len(diags) > 0 {
@@ -300,6 +340,7 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 	return nil
 }
 
+// DELETE
 func resourceNewRelicSyntheticsScriptMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
@@ -316,6 +357,21 @@ func resourceNewRelicSyntheticsScriptMonitorDelete(ctx context.Context, d *schem
 	d.SetId("")
 
 	return nil
+}
+
+//func to set output values in the read func.
+func setCommonSyntheticsScriptMonitorAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
+	fmt.Print("\n\n **************************** \n")
+	fmt.Printf("\n setCommonSyntheticsScriptMonitorAttributes:  %T \n", *v)
+	fmt.Print("\n **************************** \n\n")
+	time.Sleep(1 * time.Second)
+
+	switch e := (*v).(type) {
+	case *entities.SyntheticMonitorEntity:
+		_ = d.Set("name", e.Name)
+		_ = d.Set("type", e.MonitorType)
+		_ = d.Set("guid", string(e.GUID))
+	}
 }
 
 func mergeSchemas(schemas ...map[string]*schema.Schema) map[string]*schema.Schema {

@@ -17,7 +17,7 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_script_monitor.foo"
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
 		Steps: []resource.TestStep{
@@ -31,6 +31,51 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 			//Test: Update
 			{
 				Config: testAccNewRelicSyntheticsScriptAPIMonitorConfigUpdated(rName, string(SyntheticsMonitorTypes.SCRIPT_API)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true, //name,type
+				ImportStateVerifyIgnore: []string{
+					// not returned from the API
+					"period",
+					"location_public",
+					"location_private",
+					"status",
+					"runtime_type",
+					"runtime_type_version",
+					"script_language",
+					"tag",
+					"script",
+					"enable_screenshot_on_failure_and_script",
+				},
+			},
+		},
+	})
+}
+
+func TestAccNewRelicSyntheticsScriptedBrowserMonitor(t *testing.T) {
+	resourceName := "newrelic_synthetics_script_monitor.bar"
+	rName := acctest.RandString(5)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
+		Steps: []resource.TestStep{
+			//Test: Create
+			{
+				Config: testAccNewRelicSyntheticsScriptedBrowserMonitorConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicSyntheticsScriptBrowserMonitorConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
 				),
@@ -94,51 +139,6 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfigUpdated(name string, scriptM
 				values	=	["some_value","some_other_value"]
 			}
 		}`, name, scriptMonitorType)
-}
-
-func TestAccNewRelicSyntheticsScriptedBrowserMonitor(t *testing.T) {
-	resourceName := "newrelic_synthetics_script_monitor.bar"
-	rName := acctest.RandString(5)
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
-		Steps: []resource.TestStep{
-			//Test: Create
-			{
-				Config: testAccNewRelicSyntheticsScriptedBrowserMonitorConfig(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
-				),
-			},
-			// Test: Update
-			{
-				Config: testAccNewRelicSyntheticsScriptBrowserMonitorConfigUpdated(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
-				),
-			},
-			// Test: Import
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true, //name,type
-				ImportStateVerifyIgnore: []string{
-					// not returned from the API
-					"period",
-					"location_public",
-					"location_private",
-					"status",
-					"runtime_type",
-					"runtime_type_version",
-					"script_language",
-					"tag",
-					"script",
-					"enable_screenshot_on_failure_and_script",
-				},
-			},
-		},
-	})
 }
 
 func testAccNewRelicSyntheticsScriptedBrowserMonitorConfig(name string) string {
