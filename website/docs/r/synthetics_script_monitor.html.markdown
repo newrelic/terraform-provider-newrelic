@@ -8,7 +8,7 @@ Create and manage a Synthetics script monitor in New Relic.
 
 # Resource: newrelic\_synthetics\_script\_monitor
 
-Use this resource to create and manage New Relic synthetics script monitor.
+Use this resource to create update, and delete a Script API or Script Browser Synthetics Monitor in New Relic.
 
 ## Example Usage
 
@@ -17,7 +17,7 @@ Use this resource to create and manage New Relic synthetics script monitor.
     resource "newrelic_synthetics_script_monitor" "foo" {
      name = "SCRIPT_MONITOR"
      type = "SCRIPT_API"
-     locations_public = ["AP_SOUTH_1","AP_EAST_1"]
+     location_public = ["AP_SOUTH_1","AP_EAST_1"]
      period = "EVERY_6_HOURS"
      status = "ENABLED"
      script = "console.log('terraform integration test updated')"
@@ -34,7 +34,7 @@ Use this resource to create and manage New Relic synthetics script monitor.
 ```hcl
     resource "newrelic_synthetics_script_monitor" "bar" {
      enable_screenshot_on_failure_and_script = false
-     locations_public  = ["AP_SOUTH_1","AP_EAST_1"]
+     location_public  = ["AP_SOUTH_1","AP_EAST_1"]
 	 name  = "SCRIPT_BROWSER"
      period  = "EVERY_HOUR"
      runtime_type_version  = "100"
@@ -54,10 +54,11 @@ Use this resource to create and manage New Relic synthetics script monitor.
 
 The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BROWSER` monitors:
 
+* `account_id`- (Required) The account in which the Synthetics monitor will be created.
 * `name` - (Required) The name for the monitor.
-* `type` - (Required) The plaintext representing the monitor script.
-* `locations_public` - (Required) The locations the monitor will run from.
-* `period` - (Required) The interval at which the monitor runs in minutes.
+* `type` - (Required) The plaintext representing the monitor script. Valid values are SCRIPT_BROWSER or SCRIPT_API
+* `location_public` - (Required) The location the monitor will run from.
+* `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `runtime_type` - (Required) The runtime that the monitor will use to run jobs.
 * `runtime_type_version` - (Required) The specific version of the runtime type selected.
 * `script_language` - (Optional) The programing language that should execute the script.
@@ -75,10 +76,6 @@ All nested `tag` blocks support the following common arguments:
 
 * `key` - (Required) Name of the tag key.
 * `values` - (Required) Values associated with the tag key.
-
-```
-Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
-```
 
 ## Attributes Reference
 
