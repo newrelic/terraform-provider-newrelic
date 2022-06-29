@@ -8,7 +8,7 @@ require (
 	github.com/newrelic/go-agent/v3 v3.16.1
 	github.com/newrelic/go-insights v1.0.3
 	github.com/newrelic/newrelic-client-go v0.86.3
-	github.com/stretchr/testify v1.7.4
+	github.com/stretchr/testify v1.8.0
 )
 
 require (
