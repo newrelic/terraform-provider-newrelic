@@ -1,6 +1,9 @@
 package newrelic
 
 import (
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
@@ -26,6 +29,43 @@ var SyntheticsMonitorTypes = struct {
 	BROWSER:        "BROWSER",
 	SCRIPT_API:     "SCRIPT_API",
 	SCRIPT_BROWSER: "SCRIPT_BROWSER",
+}
+
+// Handles setting simple string attributes in the schema. If the attribute/key is
+// invalid or the value is not a correct type, an error will be returned.
+func setSyntheticsMonitorAttributes(d *schema.ResourceData, attributes map[string]string) error {
+	for key := range attributes {
+		err := d.Set(key, attributes[key])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Builds an array of typed diagnostic errors based on the GraphQL `response.errors` array.
+func buildCreateSyntheticsScriptMonitorDiagnosticErrors(errors []synthetics.SyntheticsMonitorCreateError) diag.Diagnostics {
+	var diagErrors diag.Diagnostics
+	for _, err := range errors {
+		diagErrors = append(diagErrors, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("%s: %s", string(err.Type), err.Description),
+		})
+	}
+	return diagErrors
+}
+
+// Builds an array of typed diagnostic errors based on the GraphQL `response.errors` array.
+func buildUpdateSyntheticsScriptMonitorDiagnosticErrors(errors []synthetics.SyntheticsMonitorUpdateError) diag.Diagnostics {
+	var diagErrors diag.Diagnostics
+	for _, err := range errors {
+		diagErrors = append(diagErrors, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("%s: %s", string(err.Type), err.Description),
+		})
+	}
+	return diagErrors
 }
 
 //validation function to validate monitor period

@@ -2,6 +2,8 @@ package newrelic
 
 import (
 	"context"
+	"github.com/newrelic/newrelic-client-go/pkg/common"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"log"
 	"strconv"
 
@@ -53,11 +55,11 @@ func resourceNewRelicSyntheticsAlertCondition() *schema.Resource {
 	}
 }
 
-func expandSyntheticsCondition(d *schema.ResourceData) *alerts.SyntheticsCondition {
+func expandSyntheticsCondition(d *schema.ResourceData, monitorID string) *alerts.SyntheticsCondition {
 	condition := alerts.SyntheticsCondition{
 		Name:      d.Get("name").(string),
 		Enabled:   d.Get("enabled").(bool),
-		MonitorID: d.Get("monitor_id").(string),
+		MonitorID: monitorID,
 	}
 
 	if attr, ok := d.GetOk("runbook_url"); ok {
@@ -76,7 +78,6 @@ func flattenSyntheticsCondition(condition *alerts.SyntheticsCondition, d *schema
 	policyID := ids[0]
 
 	_ = d.Set("policy_id", policyID)
-	_ = d.Set("monitor_id", condition.MonitorID)
 	_ = d.Set("name", condition.Name)
 	_ = d.Set("runbook_url", condition.RunbookURL)
 	_ = d.Set("enabled", condition.Enabled)
@@ -88,7 +89,20 @@ func resourceNewRelicSyntheticsAlertConditionCreate(ctx context.Context, d *sche
 	client := meta.(*ProviderConfig).NewClient
 
 	policyID := d.Get("policy_id").(int)
-	condition := expandSyntheticsCondition(d)
+	monitorGUID := d.Get("monitor_id").(string)
+
+	entity, entityErr := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(monitorGUID))
+	if entityErr != nil {
+		return diag.FromErr(entityErr)
+	}
+
+	var monitorID string
+	switch e := (*entity).(type) {
+	case *entities.SyntheticMonitorEntity:
+		monitorID = e.MonitorId
+	}
+
+	condition := expandSyntheticsCondition(d, monitorID)
 
 	log.Printf("[INFO] Creating New Relic Synthetics alert condition %s", condition.Name)
 
@@ -141,7 +155,21 @@ func resourceNewRelicSyntheticsAlertConditionRead(ctx context.Context, d *schema
 
 func resourceNewRelicSyntheticsAlertConditionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
-	condition := expandSyntheticsCondition(d)
+
+	monitorGUID := d.Get("monitor_id").(string)
+
+	entity, entityErr := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(monitorGUID))
+	if entityErr != nil {
+		return diag.FromErr(entityErr)
+	}
+
+	var monitorID string
+	switch e := (*entity).(type) {
+	case *entities.SyntheticMonitorEntity:
+		monitorID = e.MonitorId
+	}
+
+	condition := expandSyntheticsCondition(d, monitorID)
 
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {

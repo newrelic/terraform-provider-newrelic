@@ -180,15 +180,10 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 
 	switch monitorType.(string) {
 	case string(SyntheticsMonitorTypes.SIMPLE):
-
 		simpleMonitorInput := buildSyntheticsSimpleMonitor(d)
-
 		resp, err = client.Synthetics.SyntheticsCreateSimpleMonitorWithContext(ctx, accountID, simpleMonitorInput)
-
 	case string(SyntheticsMonitorTypes.BROWSER):
-
 		simpleBrowserMonitorInput := buildSyntheticsSimpleBrowserMonitor(d)
-
 		resp, err = client.Synthetics.SyntheticsCreateSimpleBrowserMonitorWithContext(ctx, accountID, simpleBrowserMonitorInput)
 	}
 
@@ -251,9 +246,7 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 
 //func to set output values in the read func.
 func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
-
 	switch e := (*v).(type) {
-
 	case *entities.SyntheticMonitorEntity:
 		_ = d.Set("name", e.Name)
 		_ = d.Set("type", e.MonitorType)
@@ -303,7 +296,6 @@ var periodConv = map[string]string{
 }
 
 func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Updating New Relic Synthetics monitor %s", d.Id())
@@ -320,7 +312,6 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 	switch monitorType.(string) {
 	case string(SyntheticsMonitorTypes.SIMPLE):
 		simpleMonitorUpdateInput := buildSyntheticsSimpleMonitorUpdateStruct(d)
-
 		resp, err := client.Synthetics.SyntheticsUpdateSimpleMonitorWithContext(ctx, guid, simpleMonitorUpdateInput)
 		if err != nil {
 			return diag.FromErr(err)
@@ -338,7 +329,6 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 
 	case string(SyntheticsMonitorTypes.BROWSER):
 		simpleBrowserMonitorUpdateInput := buildSyntheticsSimpleBrowserMonitorUpdateStruct(d)
-
 		resp, err := client.Synthetics.SyntheticsUpdateSimpleBrowserMonitorWithContext(ctx, guid, simpleBrowserMonitorUpdateInput)
 		if err != nil {
 			return diag.FromErr(err)
@@ -385,7 +375,6 @@ func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowse
 }
 
 func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	client := meta.(*ProviderConfig).NewClient
 
 	guid := synthetics.EntityGUID(d.Id())
