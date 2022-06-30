@@ -85,7 +85,7 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string, monitorType strin
 			type	=	"%s"
 			tag {
 				key = "pineapple"
-				value = ["pizza"]
+				values = ["pizza"]
             }
 			uri	=	"https://www.one.newrelic.com"
 		}`, name, monitorType)
@@ -109,7 +109,7 @@ func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorTyp
 			type	=	"%s"
             tag {
 				key = "pineapple"
-				value = ["pizza", "cake"]
+				values = ["pizza", "cake"]
             }
 			uri	=	"https://www.one.newrelic.com"
 		}`, name, monitorType)
