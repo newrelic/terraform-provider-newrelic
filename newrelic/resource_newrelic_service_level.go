@@ -78,6 +78,7 @@ func eventsSchema() *schema.Resource {
 			"account_id": {
 				Type:         schema.TypeInt,
 				Required:     true,
+				ForceNew:     true,
 				Description:  "",
 				ValidateFunc: validation.IntAtLeast(1),
 			},
