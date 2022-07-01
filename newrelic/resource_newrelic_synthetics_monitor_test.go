@@ -74,7 +74,7 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string, monitorType strin
 				name	=	"Name"
 				value	=	"simpleMonitor"
 				}
-			treat_redirect_as_failure	=	false
+            treat_redirect_as_failure	=	false
 			validation_string	=	"success"
 			bypass_head_request	=	false
 			verify_ssl	=	false
@@ -84,9 +84,9 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string, monitorType strin
 			status	=	"ENABLED"
 			type	=	"%s"
 			tag {
-				key	=	"Name"
-				values	=	["apple"]
-			}
+				key = "pineapple"
+				values = ["pizza"]
+            }
 			uri	=	"https://www.one.newrelic.com"
 		}`, name, monitorType)
 }
@@ -107,10 +107,10 @@ func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorTyp
 			period	=	"EVERY_5_MINUTES"
 			status	=	"DISABLED"
 			type	=	"%s"
-			tag {
-				key	=	"Name"
-				values	=	[ "pineApple","fruit"]
-			}
+            tag {
+				key = "pineapple"
+				values = ["pizza", "cake"]
+            }
 			uri	=	"https://www.one.newrelic.com"
 		}`, name, monitorType)
 }
