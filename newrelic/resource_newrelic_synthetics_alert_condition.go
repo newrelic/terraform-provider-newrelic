@@ -2,10 +2,10 @@ package newrelic
 
 import (
 	"context"
-	"github.com/newrelic/newrelic-client-go/pkg/common"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"encoding/base64"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -89,18 +89,10 @@ func resourceNewRelicSyntheticsAlertConditionCreate(ctx context.Context, d *sche
 	client := meta.(*ProviderConfig).NewClient
 
 	policyID := d.Get("policy_id").(int)
+
 	monitorGUID := d.Get("monitor_id").(string)
 
-	entity, entityErr := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(monitorGUID))
-	if entityErr != nil {
-		return diag.FromErr(entityErr)
-	}
-
-	var monitorID string
-	switch e := (*entity).(type) {
-	case *entities.SyntheticMonitorEntity:
-		monitorID = e.MonitorId
-	}
+	monitorID := getMonitorID(monitorGUID)
 
 	condition := expandSyntheticsCondition(d, monitorID)
 
@@ -158,16 +150,7 @@ func resourceNewRelicSyntheticsAlertConditionUpdate(ctx context.Context, d *sche
 
 	monitorGUID := d.Get("monitor_id").(string)
 
-	entity, entityErr := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(monitorGUID))
-	if entityErr != nil {
-		return diag.FromErr(entityErr)
-	}
-
-	var monitorID string
-	switch e := (*entity).(type) {
-	case *entities.SyntheticMonitorEntity:
-		monitorID = e.MonitorId
-	}
+	monitorID := getMonitorID(monitorGUID)
 
 	condition := expandSyntheticsCondition(d, monitorID)
 
@@ -209,4 +192,11 @@ func resourceNewRelicSyntheticsAlertConditionDelete(ctx context.Context, d *sche
 	}
 
 	return nil
+}
+
+func getMonitorID(monitorGUID string) string {
+	decodedGUID, _ := base64.RawStdEncoding.DecodeString(monitorGUID)
+	splitGUID := strings.Split(string(decodedGUID), "|")
+	monitorID := splitGUID[3]
+	return monitorID
 }
