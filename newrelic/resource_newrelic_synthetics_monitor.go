@@ -214,7 +214,6 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreateMutationResult, d *schema.ResourceData) {
 	_ = d.Set("validation_string", res.Monitor.AdvancedOptions.ResponseValidationText)
 	_ = d.Set("verify_ssl", res.Monitor.AdvancedOptions.UseTlsValidation)
-	_ = d.Set("enable_screenshot_on_failure_and_script", res.Monitor.AdvancedOptions.EnableScreenshotOnFailureAndScript)
 	_ = d.Set("name", res.Monitor.Name)
 	_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
 	_ = d.Set("runtime_type_version", string(res.Monitor.Runtime.RuntimeTypeVersion))
@@ -248,9 +247,14 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
 	switch e := (*v).(type) {
 	case *entities.SyntheticMonitorEntity:
-		_ = d.Set("name", e.Name)
-		_ = d.Set("type", e.MonitorType)
-		_ = d.Set("uri", e.MonitoredURL)
+		err := setSyntheticsMonitorAttributes(d, map[string]string{
+			"name": e.Name,
+			"type": string(e.MonitorType),
+			"uri":  e.MonitoredURL,
+		})
+		if err != nil {
+			diag.FromErr(err)
+		}
 		expandAttributes(e.Tags, d)
 	}
 }
@@ -354,7 +358,7 @@ func setSimpleMonitorAttributesFromUpdate(res *synthetics.SyntheticsSimpleMonito
 	_ = d.Set("name", res.Monitor.Name)
 	_ = d.Set("period", string(res.Monitor.Period))
 	_ = d.Set("uri", res.Monitor.Uri)
-	_ = d.Set("status", res.Monitor.Status)
+	_ = d.Set("status", string(res.Monitor.Status))
 	_ = d.Set("validation_string", res.Monitor.AdvancedOptions.ResponseValidationText)
 	_ = d.Set("verify_ssl", res.Monitor.AdvancedOptions.UseTlsValidation)
 	_ = d.Set("treat_redirect_as_failure", res.Monitor.AdvancedOptions.RedirectIsFailure)
@@ -365,13 +369,15 @@ func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowse
 	_ = d.Set("name", res.Monitor.Name)
 	_ = d.Set("period", string(res.Monitor.Period))
 	_ = d.Set("uri", res.Monitor.Uri)
-	_ = d.Set("status", res.Monitor.Status)
+	_ = d.Set("status", string(res.Monitor.Status))
 	_ = d.Set("validation_string", res.Monitor.AdvancedOptions.ResponseValidationText)
 	_ = d.Set("verify_ssl", res.Monitor.AdvancedOptions.UseTlsValidation)
 	_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
 	_ = d.Set("runtime_type_version", string(res.Monitor.Runtime.RuntimeTypeVersion))
 	_ = d.Set("script_language", res.Monitor.Runtime.ScriptLanguage)
-	_ = d.Set("enable_screenshot_on_failure_and_script", res.Monitor.AdvancedOptions.EnableScreenshotOnFailureAndScript)
+	//payload doesn't return this field
+	//This is bug.need to be resolved
+	//_ = d.Set("enable_screenshot_on_failure_and_script", res.Monitor.AdvancedOptions.EnableScreenshotOnFailureAndScript)
 }
 
 func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -22,7 +22,7 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
 		Steps: []resource.TestStep{
@@ -100,7 +100,7 @@ func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorTyp
 			}
 			treat_redirect_as_failure	=	true
 			validation_string	=	"succeeded"
-			bypass_head_request	=	true
+			bypass_head_request	=	false
 			verify_ssl	=	true
 			location_public	=	["AP_SOUTH_1","AP_EAST_1"]
 			name	=	"%s-updated"
@@ -124,7 +124,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
 		Steps: []resource.TestStep{
@@ -188,10 +188,10 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 		status	=	"ENABLED"
 		type	=	"%s"
 		uri	=	"https://www.one.newrelic.com"
-		tag {
-			key	=	"name"
-			values	=	["SimpleBrowserMonitor"]
-		}
+		//tag {
+		//	key	=	"name"
+		//	values	=	["SimpleBrowserMonitor"]
+		//}
 	}`, name, monitorType)
 }
 
@@ -214,10 +214,10 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, mon
 			status	=	"DISABLED"
 			type	=	"%s"
 			uri	=	"https://www.one.newrelic.com"
-			tag {
-				key	=	"name"
-				values	=	["SimpleBrowserMonitor","my_monitor"]
-		  	}
+			//tag {
+			//	key	=	"name"
+			//	values	=	["SimpleBrowserMonitor","my_monitor"]
+		  	//}
 		}`, name, monitorType)
 }
 
