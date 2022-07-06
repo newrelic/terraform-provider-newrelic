@@ -16,6 +16,8 @@ import (
 func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_script_monitor.foo"
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	monitorTypeStr := string(SyntheticsMonitorTypes.SCRIPT_API)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
@@ -23,14 +25,14 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicSyntheticsScriptAPIMonitorConfig(rName, string(SyntheticsMonitorTypes.SCRIPT_API)),
+				Config: testAccNewRelicSyntheticsScriptAPIMonitorConfig(rName, monitorTypeStr),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
 				),
 			},
 			//Test: Update
 			{
-				Config: testAccNewRelicSyntheticsScriptAPIMonitorConfigUpdated(rName, string(SyntheticsMonitorTypes.SCRIPT_API)),
+				Config: testAccNewRelicSyntheticsScriptAPIMonitorConfig(fmt.Sprintf("%s-updated", rName), monitorTypeStr),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
 				),
@@ -58,7 +60,7 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicSyntheticsScriptedBrowserMonitor(t *testing.T) {
+func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_script_monitor.bar"
 	rName := acctest.RandString(5)
 	resource.Test(t, resource.TestCase{
@@ -68,14 +70,14 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicSyntheticsScriptedBrowserMonitorConfig(rName),
+				Config: testAccNewRelicSyntheticsScriptBrowserMonitorConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicSyntheticsScriptBrowserMonitorConfigUpdated(rName),
+				Config: testAccNewRelicSyntheticsScriptBrowserMonitorConfig(fmt.Sprintf("%s-updated", rName)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
 				),
@@ -122,26 +124,7 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfig(name string, scriptMonitorT
 		}`, name, scriptMonitorType)
 }
 
-func testAccNewRelicSyntheticsScriptAPIMonitorConfigUpdated(name string, scriptMonitorType string) string {
-	return fmt.Sprintf(`
-		resource "newrelic_synthetics_script_monitor" "foo" {
-			name	=	"%s-updated"
-			type	=	"%s"
-			location_public	=	["AP_SOUTH_1","AP_EAST_1"]
-			period	=	"EVERY_6_HOURS"
-			status	=	"DISABLED"
-			script	=	"console.log('terraform integration test updated')"
-			script_language	=	"JAVASCRIPT"
-			runtime_type	=	"NODE_API"
-			runtime_type_version	=	"16.10"
-			tag {
-				key	=	"some_key"
-				values	=	["some_value","some_other_value"]
-			}
-		}`, name, scriptMonitorType)
-}
-
-func testAccNewRelicSyntheticsScriptedBrowserMonitorConfig(name string) string {
+func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "bar" {
 			enable_screenshot_on_failure_and_script	=	true
@@ -157,26 +140,6 @@ func testAccNewRelicSyntheticsScriptedBrowserMonitorConfig(name string) string {
 			tag {
 				key	= "Name"
 				values	= ["scriptedMonitor"]
-			}
-		}`, name)
-}
-
-func testAccNewRelicSyntheticsScriptBrowserMonitorConfigUpdated(name string) string {
-	return fmt.Sprintf(`
-		resource "newrelic_synthetics_script_monitor" "bar" {
-			enable_screenshot_on_failure_and_script	=	false
-			location_public	=	["AP_SOUTH_1","AP_EAST_1"]
-			name	=	"%[1]s_updated"
-			period	=	"EVERY_HOUR"
-			runtime_type_version	=	"100"
-			runtime_type	=	"CHROME_BROWSER"
-			script_language	=	"JAVASCRIPT"
-			status	=	"DISABLED"
-			type	=	"SCRIPT_BROWSER"
-			script	=	"$browser.get('https://one.newrelic.com')"
-			tag {
-				key	=	"Name"
-				values	=	["scriptedMonitor","hello"]
 			}
 		}`, name)
 }
