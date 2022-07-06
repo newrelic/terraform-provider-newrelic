@@ -135,11 +135,6 @@ func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Sc
 // Returns common schema attributes shared by both scripted browser and scripted API monitors.
 func syntheticsScriptMonitorCommonSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		// "guid": {
-		// 	Type:        schema.TypeString,
-		// 	Computed:    true,
-		// 	Description: "The unique entity identifier of the monitor in New Relic.",
-		// },
 		"type": {
 			Type:         schema.TypeString,
 			Required:     true,
@@ -178,7 +173,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 
 	monitorType, ok := d.GetOk("type")
 	if !ok {
-		log.Printf("Not Monitor type specified")
+		log.Printf("attribute `type` is required and must be one of 'SCRIPT_API' or 'SCRIPT_BROWSER'")
 	}
 
 	switch monitorType {
