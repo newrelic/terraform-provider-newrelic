@@ -83,7 +83,6 @@ All nested `location_private` blocks support the following common arguments:
 * `guid` - (Required) The unique identifier for the Synthetics private location in New Relic.
 * `vse_password` - (Optional) The location's Verified Script Execution password, Only necessary if Verified Script Execution is enabled for the location.
 
-
 ## Attributes Reference
 
 The following attributes are exported:
