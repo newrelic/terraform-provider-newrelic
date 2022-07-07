@@ -70,7 +70,8 @@ The following are the common arguments supported for `SIMPLE` and `BROWSER` moni
 * `verify_ssl` - (Optional) Monitor should validate SSL certificate chain.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor.
-* `location_public` - (Required) The location the monitor will run from.
+* `location_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/
+* `location_private` - (Required) The location the monitor will run from.
 * `name` - (Required) The human-readable identifier for the monitor.
 * `uri` - (Required) The uri the monitor runs against.
 * `type` - (Required) THE monitor type. Valid values are `SIMPLE` and `BROWSER`.
@@ -98,6 +99,11 @@ All nested `tag` blocks support the following common arguments:
 
 * `key` - (Required) Name of the tag key.
 * `values` - (Required) Values associated with the tag key.
+
+All nested `location_private` blocks support the following common arguments:
+
+* `guid` - (Required) The unique identifier for the Synthetics private location in New Relic.
+* `vse_password` - (Optional) The location's Verified Script Execution password, Only necessary if Verified Script Execution is enabled for the location.
 
 ## Attributes Reference
 
