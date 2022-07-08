@@ -325,13 +325,3 @@ func resourceNewRelicSyntheticsScriptMonitorDelete(ctx context.Context, d *schem
 
 	return nil
 }
-
-func mergeSchemas(schemas ...map[string]*schema.Schema) map[string]*schema.Schema {
-	schema := map[string]*schema.Schema{}
-	for _, s := range schemas {
-		for k, v := range s {
-			schema[k] = v
-		}
-	}
-	return schema
-}
