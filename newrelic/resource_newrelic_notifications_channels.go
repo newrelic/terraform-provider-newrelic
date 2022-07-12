@@ -38,8 +38,8 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 		validNotificationChannelTypes = append(validNotificationChannelTypes, string(k))
 	}
 
-	validNotificationChannelProductTypes := make([]string, 0, len(notificationsChannelTypes))
-	for k := range notificationsChannelTypes {
+	validNotificationChannelProductTypes := make([]string, 0, len(notificationsChannelProductTypes))
+	for k := range notificationsChannelProductTypes {
 		validNotificationChannelProductTypes = append(validNotificationChannelProductTypes, string(k))
 	}
 
@@ -57,7 +57,7 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 				ForceNew:    true,
 				Description: "(Required) The name of the channel.",
 			},
-			"destinationId": {
+			"destination_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -129,7 +129,7 @@ func resourceNewRelicNotificationChannelCreate(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	d.SetId(string(channelResponse.Channel.ID))
+	d.SetId(channelResponse.Channel.ID)
 
 	return resourceNewRelicNotificationChannelRead(updatedContext, d, meta)
 }

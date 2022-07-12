@@ -9,7 +9,7 @@ import (
 func expandNotificationChannel(d *schema.ResourceData) (*notifications.AiNotificationsChannelInput, error) {
 	channel := notifications.AiNotificationsChannelInput{
 		Name:          d.Get("name").(string),
-		DestinationId: d.Get("destinationId").(string),
+		DestinationId: d.Get("destination_id").(string),
 		Type:          notifications.AiNotificationsChannelType(d.Get("type").(string)),
 		Product:       notifications.AiNotificationsProduct(d.Get("product").(string)),
 	}
@@ -77,7 +77,7 @@ func flattenNotificationChannel(channel *notifications.AiNotificationsChannel, d
 		return err
 	}
 
-	if err = d.Set("destinationId", channel.DestinationId); err != nil {
+	if err = d.Set("destination_id", channel.DestinationId); err != nil {
 		return err
 	}
 
