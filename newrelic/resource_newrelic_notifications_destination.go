@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 	"log"
 	"strings"
@@ -13,7 +14,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
-var notificationsDestinationTypes = map[notifications.DestinationType][]string{
+var notificationsDestinationTypes = map[notifications.AiNotificationsDestinationType][]string{
 	"EMAIL":                         {},
 	"SERVICE_NOW":                   {},
 	"PAGERDUTY_ACCOUNT_INTEGRATION": {},
@@ -97,18 +98,18 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[INFO] Creating New Relic notification destination %s", destinationInput.Name)
+	log.Printf("[INFO] Creating New Relic notification destinationResponse %s", destinationInput.Name)
 
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	destination, err := client.Notifications.CreateDestinationMutationWithContext(updatedContext, accountID, *destinationInput)
+	destinationResponse, err := client.Notifications.AiNotificationsCreateDestinationWithContext(updatedContext, accountID, *destinationInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(string(destination.ID))
+	d.SetId(string(destinationResponse.Destination.ID))
 
 	return resourceNewRelicNotificationDestinationRead(updatedContext, d, meta)
 }
@@ -116,13 +117,15 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
-	log.Printf("[INFO] Reading New Relic notification destination %v", d.Id())
+	log.Printf("[INFO] Reading New Relic notification destinationResponse %v", d.Id())
 
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
+	filters := ai.AiNotificationsDestinationFilter{ID: d.Id()}
+	sorter := notifications.AiNotificationsDestinationSorter{}
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	destination, err := client.Notifications.GetDestinationWithContext(updatedContext, accountID, notifications.UUID(d.Id()))
+	destinationResponse, err := client.Notifications.GetDestinationsWithContext(updatedContext, accountID, "", filters, sorter)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -132,7 +135,7 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	return diag.FromErr(flattenNotificationDestination(destination, d))
+	return diag.FromErr(flattenNotificationDestination(&destinationResponse.Entities[0], d))
 }
 
 func resourceNewRelicNotificationDestinationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -144,7 +147,7 @@ func resourceNewRelicNotificationDestinationDelete(ctx context.Context, d *schem
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	if _, err := client.Notifications.DeleteDestinationMutationWithContext(updatedContext, accountID, notifications.UUID(d.Id())); err != nil {
+	if _, err := client.Notifications.AiNotificationsDeleteDestinationWithContext(updatedContext, accountID, d.Id()); err != nil {
 		return diag.FromErr(err)
 	}
 

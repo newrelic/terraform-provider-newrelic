@@ -7,10 +7,10 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 )
 
-func expandNotificationDestination(d *schema.ResourceData) (*notifications.DestinationInput, error) {
-	destination := notifications.DestinationInput{
+func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNotificationsDestinationInput, error) {
+	destination := notifications.AiNotificationsDestinationInput{
 		Name: d.Get("name").(string),
-		Type: notifications.DestinationType(d.Get("type").(string)),
+		Type: notifications.AiNotificationsDestinationType(d.Get("type").(string)),
 	}
 
 	var auth, authOk = d.GetOk("auth")
@@ -61,10 +61,10 @@ func expandNotificationDestinationAuth(authList interface{}) (*notifications.AiN
 	authConfig = authList.(map[string]interface{})
 
 	if typeAuth, ok := authConfig["type"]; ok {
-		auth.Type = notifications.AuthType(typeAuth.(string))
+		auth.Type = notifications.AiNotificationsAuthType(typeAuth.(string))
 	}
 
-	if auth.Type == notifications.AuthTypes.Token {
+	if auth.Type == notifications.AiNotificationsAuthTypeTypes.TOKEN {
 		if prefix, ok := authConfig["prefix"]; ok {
 			auth.Token.Prefix = prefix.(string)
 		}
@@ -74,7 +74,7 @@ func expandNotificationDestinationAuth(authList interface{}) (*notifications.AiN
 		}
 	}
 
-	if auth.Type == notifications.AuthTypes.Basic {
+	if auth.Type == notifications.AiNotificationsAuthTypeTypes.BASIC {
 		if user, ok := authConfig["user"]; ok {
 			auth.Basic.User = user.(string)
 		}
@@ -87,8 +87,8 @@ func expandNotificationDestinationAuth(authList interface{}) (*notifications.AiN
 	return &auth, nil
 }
 
-func expandNotificationDestinationProperty(cfg map[string]interface{}) (*notifications.PropertyInput, error) {
-	property := notifications.PropertyInput{}
+func expandNotificationDestinationProperty(cfg map[string]interface{}) (*notifications.AiNotificationsPropertyInput, error) {
+	property := notifications.AiNotificationsPropertyInput{}
 
 	if propertyKey, ok := cfg["key"]; ok {
 		property.Key = propertyKey.(string)
@@ -109,7 +109,7 @@ func expandNotificationDestinationProperty(cfg map[string]interface{}) (*notific
 	return &property, nil
 }
 
-func flattenNotificationDestination(destination *notifications.Destination, d *schema.ResourceData) error {
+func flattenNotificationDestination(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
 	if destination == nil {
 		return nil
 	}
@@ -140,7 +140,7 @@ func flattenNotificationDestination(destination *notifications.Destination, d *s
 	return nil
 }
 
-func flattenNotificationDestinationProperties(p *[]notifications.Property) ([]map[string]interface{}, error) {
+func flattenNotificationDestinationProperties(p *[]notifications.AiNotificationsProperty) ([]map[string]interface{}, error) {
 	if p == nil {
 		return nil, nil
 	}
@@ -156,7 +156,7 @@ func flattenNotificationDestinationProperties(p *[]notifications.Property) ([]ma
 	return properties, nil
 }
 
-func flattenNotificationDestinationProperty(p *notifications.Property) (map[string]interface{}, error) {
+func flattenNotificationDestinationProperty(p *notifications.AiNotificationsProperty) (map[string]interface{}, error) {
 	if p == nil {
 		return nil, nil
 	}
@@ -177,16 +177,16 @@ func flattenNotificationDestinationProperty(p *notifications.Property) (map[stri
 	return propertyResult, nil
 }
 
-func flattenNotificationDestinationAuth(a *notifications.Auth) interface{} {
+func flattenNotificationDestinationAuth(a *notifications.AiNotificationsAuth) interface{} {
 	authConfig := map[string]interface{}{
 		"authType": *a.AuthType,
 	}
 
-	if *a.AuthType == notifications.AuthTypes.Basic {
+	if *a.AuthType == notifications.AiNotificationsAuthTypeTypes.BASIC {
 		authConfig["user"] = *a.User
 	}
 
-	if *a.AuthType == notifications.AuthTypes.Token {
+	if *a.AuthType == notifications.AiNotificationsAuthTypeTypes.TOKEN {
 		authConfig["prefix"] = *a.Prefix
 	}
 
@@ -198,15 +198,15 @@ func validateDestinationAuth(auth notifications.AiNotificationsCredentialsInput)
 		return errors.New("auth type is required")
 	}
 
-	if auth.Type != notifications.AuthTypes.Token && auth.Type != notifications.AuthTypes.Basic {
+	if auth.Type != notifications.AiNotificationsAuthTypeTypes.TOKEN && auth.Type != notifications.AiNotificationsAuthTypeTypes.BASIC {
 		return errors.New("auth type must be token or basic")
 	}
 
-	if auth.Type == notifications.AuthTypes.Token && (auth.Token.Token == "" || auth.Token.Prefix == "") {
+	if auth.Type == notifications.AiNotificationsAuthTypeTypes.TOKEN && (auth.Token.Token == "" || auth.Token.Prefix == "") {
 		return errors.New("token and prefix are required when using token auth type")
 	}
 
-	if auth.Type == notifications.AuthTypes.Basic && (auth.Basic.User == "" || auth.Basic.Password == "") {
+	if auth.Type == notifications.AiNotificationsAuthTypeTypes.BASIC && (auth.Basic.User == "" || auth.Basic.Password == "") {
 		return errors.New("user and password are required when using basic auth type")
 	}
 
