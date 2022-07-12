@@ -5,6 +5,7 @@ package newrelic
 
 import (
 	"fmt"
+	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 	"testing"
 
@@ -14,7 +15,7 @@ import (
 )
 
 func TestNewRelicNotificationDestination_Basic(t *testing.T) {
-	resourceName := "newrelic_alert_channel.test_foo"
+	resourceName := "newrelic_notification_destination.test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
 
@@ -53,15 +54,12 @@ func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {
 		var accountID int
 		id := r.Primary.ID
 		accountID = providerConfig.AccountID
+		filters := ai.AiNotificationsDestinationFilter{
+			ID: id,
+		}
+		sorter := notifications.AiNotificationsDestinationSorter{}
 
-		//if r.Primary.Attributes["account_id"] != "" {
-		//	accountID, err := strconv.Atoi(r.Primary.Attributes["account_id"])
-		//	if err != nil {
-		//		return err
-		//	}
-		//}
-
-		_, err := client.Notifications.GetDestination(accountID, notifications.UUID(id))
+		_, err := client.Notifications.GetDestinations(accountID, "", filters, sorter)
 		if err == nil {
 			return fmt.Errorf("notification destination still exists")
 		}
@@ -97,20 +95,17 @@ func testAccCheckNewRelicNotificationDestinationExists(n string) resource.TestCh
 		var accountID int
 		id := rs.Primary.ID
 		accountID = providerConfig.AccountID
+		filters := ai.AiNotificationsDestinationFilter{
+			ID: id,
+		}
+		sorter := notifications.AiNotificationsDestinationSorter{}
 
-		//if rs.Primary.Attributes["account_id"] != "" {
-		//	accountID, err := strconv.Atoi(rs.Primary.Attributes["account_id"])
-		//	if err != nil {
-		//		return err
-		//	}
-		//}
-
-		found, err := client.Notifications.GetDestination(accountID, notifications.UUID(id))
+		found, err := client.Notifications.GetDestinations(accountID, "", filters, sorter)
 		if err != nil {
 			return err
 		}
 
-		if string(found.ID) != rs.Primary.ID {
+		if string(found.Entities[0].ID) != rs.Primary.ID {
 			return fmt.Errorf("destination not found: %v - %v", rs.Primary.ID, found)
 		}
 

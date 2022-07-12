@@ -4,6 +4,7 @@
 package newrelic
 
 import (
+	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 	"testing"
 
@@ -12,9 +13,9 @@ import (
 
 func TestExpandNotificationDestination(t *testing.T) {
 	user := "test-user"
-	auth := notifications.Auth{
-		AuthType: &notifications.AuthTypes.Basic,
-		User:     &user,
+	auth := ai.AiNotificationsAuth{
+		AuthType: "BASIC",
+		User:     user,
 	}
 	property := map[string]interface{}{
 		"key":   "url",
@@ -25,7 +26,7 @@ func TestExpandNotificationDestination(t *testing.T) {
 		Data         map[string]interface{}
 		ExpectErr    bool
 		ExpectReason string
-		Expanded     *notifications.Destination
+		Expanded     *notifications.AiNotificationsDestination
 	}{
 		"missing auth": {
 			Data: map[string]interface{}{
@@ -70,11 +71,11 @@ func TestExpandNotificationDestination(t *testing.T) {
 					"password": "1234",
 				},
 			},
-			Expanded: &notifications.Destination{
+			Expanded: &notifications.AiNotificationsDestination{
 				Name: "testing123",
-				Type: notifications.DestinationTypes.Webhook,
+				Type: notifications.AiNotificationsDestinationTypeTypes.WEBHOOK,
 				Auth: auth,
-				Properties: []notifications.Property{
+				Properties: []notifications.AiNotificationsProperty{
 					{
 						Key:   "url",
 						Value: "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b",
@@ -112,9 +113,9 @@ func TestExpandNotificationDestination(t *testing.T) {
 
 func TestFlattenNotificationDestination(t *testing.T) {
 	user := "user"
-	auth := notifications.Auth{
-		AuthType: &notifications.AuthTypes.Basic,
-		User:     &user,
+	auth := ai.AiNotificationsAuth{
+		AuthType: "BASIC",
+		User:     user,
 	}
 	r := resourceNewRelicNotificationDestination()
 
@@ -122,7 +123,7 @@ func TestFlattenNotificationDestination(t *testing.T) {
 		Data         map[string]interface{}
 		ExpectErr    bool
 		ExpectReason string
-		Flattened    *notifications.Destination
+		Flattened    *notifications.AiNotificationsDestination
 	}{
 		"minimal": {
 			Data: map[string]interface{}{
@@ -134,7 +135,7 @@ func TestFlattenNotificationDestination(t *testing.T) {
 					"password": "1234",
 				},
 			},
-			Flattened: &notifications.Destination{
+			Flattened: &notifications.AiNotificationsDestination{
 				Name: "testing123",
 				Type: "WEBHOOK",
 				Auth: auth,
@@ -165,13 +166,13 @@ func TestFlattenNotificationDestination(t *testing.T) {
 	}
 }
 
-func testFlattenNotificationDestinationAuth(t *testing.T, v interface{}, auth notifications.Auth) {
+func testFlattenNotificationDestinationAuth(t *testing.T, v interface{}, auth ai.AiNotificationsAuth) {
 	for ck, cv := range v.(map[string]interface{}) {
 		switch ck {
 		case "type":
-			assert.Equal(t, cv, string(*auth.AuthType))
+			assert.Equal(t, cv, string(auth.AuthType))
 		case "user":
-			assert.Equal(t, cv, *auth.User)
+			assert.Equal(t, cv, auth.User)
 		}
 	}
 }

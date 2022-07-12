@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 )
 
@@ -177,17 +178,22 @@ func flattenNotificationDestinationProperty(p *notifications.AiNotificationsProp
 	return propertyResult, nil
 }
 
-func flattenNotificationDestinationAuth(a *notifications.AiNotificationsAuth) interface{} {
+func flattenNotificationDestinationAuth(a *ai.AiNotificationsAuth) interface{} {
+
 	authConfig := map[string]interface{}{
-		"authType": *a.AuthType,
+		"authType": a.AuthType,
 	}
 
-	if *a.AuthType == notifications.AiNotificationsAuthTypeTypes.BASIC {
-		authConfig["user"] = *a.User
+	if authConfig["authType"] == notifications.AiNotificationsAuthTypeTypes.BASIC {
+		authConfig["user"] = a.User
 	}
 
-	if *a.AuthType == notifications.AiNotificationsAuthTypeTypes.TOKEN {
-		authConfig["prefix"] = *a.Prefix
+	if authConfig["authType"] == notifications.AiNotificationsAuthTypeTypes.TOKEN {
+		authConfig["prefix"] = a.Prefix
+	}
+
+	if authConfig["authType"] == notifications.AiNotificationsAuthTypeTypes.OAUTH2 {
+		authConfig["access_token_url"] = a.AccessTokenURL
 	}
 
 	return authConfig

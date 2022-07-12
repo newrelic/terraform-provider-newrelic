@@ -109,7 +109,7 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	d.SetId(string(destinationResponse.Destination.ID))
+	d.SetId(destinationResponse.Destination.ID)
 
 	return resourceNewRelicNotificationDestinationRead(updatedContext, d, meta)
 }
