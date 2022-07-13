@@ -397,7 +397,7 @@ func expandSyntheticsPrivateLocations(locations []interface{}) []synthetics.Synt
 
 	for i, v := range locations {
 		pl := v.(map[string]interface{})
-		locationsOut[i].GUID = pl["guid"].(int) // This should be a string I think since it's a scalar `ID`
+		locationsOut[i].GUID = pl["guid"].(string) // This should be a string I think since it's a scalar `ID`
 		if v, ok := pl["vse_password"]; ok {
 			locationsOut[i].VsePassword = synthetics.SecureValue(v.(string))
 		}
