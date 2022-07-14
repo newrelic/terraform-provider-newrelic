@@ -5,6 +5,8 @@ package newrelic
 
 import (
 	"fmt"
+	"github.com/newrelic/newrelic-client-go/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -49,8 +51,12 @@ func testAccNewRelicNotificationChannelDestroy(s *terraform.State) error {
 		var accountID int
 		id := r.Primary.ID
 		accountID = providerConfig.AccountID
+		filters := ai.AiNotificationsChannelFilter{
+			ID: id,
+		}
+		sorter := notifications.AiNotificationsChannelSorter{}
 
-		_, err := client.Notifications.GetChannels(accountID, id)
+		_, err := client.Notifications.GetChannels(accountID, "", filters, sorter)
 		if err == nil {
 			return fmt.Errorf("notification channel still exists")
 		}
@@ -87,14 +93,18 @@ func testAccCheckNewRelicNotificationChannelExists(n string) resource.TestCheckF
 		var accountID int
 		id := rs.Primary.ID
 		accountID = providerConfig.AccountID
+		filters := ai.AiNotificationsChannelFilter{
+			ID: id,
+		}
+		sorter := notifications.AiNotificationsChannelSorter{}
 
-		found, err := client.Notifications.GetChannels(accountID, id)
+		found, err := client.Notifications.GetChannels(accountID, "", filters, sorter)
 		if err != nil {
 			return err
 		}
 
-		if string(found.ID) != rs.Primary.ID {
-			return fmt.Errorf("channel not found: %v - %v", rs.Primary.Channel.ID, found)
+		if string(found.Entities[0].ID) != rs.Primary.ID {
+			return fmt.Errorf("channel not found: %v - %v", rs.Primary.ID, found)
 		}
 
 		return nil
