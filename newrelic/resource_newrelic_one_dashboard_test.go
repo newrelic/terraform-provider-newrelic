@@ -237,6 +237,32 @@ func TestAccNewRelicOneDashboard_UnlinkFilterCurrentDashboard(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboard_ChangeCheck Ensures that all changes are coming through well
+func TestAccNewRelicOneDashboard_ChangeCheck(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFull(rName, strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			// Make lots of changes
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFullChanged(rName, strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+		},
+	})
+}
+
 // testAccCheckNewRelicOneDashboard_FilterCurrentDashboard fetches the dashboard resource after creation, with an optional sleep time
 // used when we know the async nature of the API will mess with consistent testing. The filter_current_dashboard requires a second call to update
 // the linked_entity_guid to add the page GUID. This also checks to make sure the page GUID matches what has been added.
@@ -402,6 +428,18 @@ resource "newrelic_one_dashboard" "bar" {
 }`
 }
 
+// testAccCheckNewRelicOneDashboardConfig_OnePageFullChanged contains all the config options for a single page dashboard with lots of
+// changes compared to testAccCheckNewRelicOneDashboardConfig_OnePageFull
+func testAccCheckNewRelicOneDashboardConfig_OnePageFullChanged(dashboardName string, accountID string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+` + testAccCheckNewRelicOneDashboardConfig_PageFullChanged(dashboardName, accountID) + `
+}`
+}
+
 // testAccCheckNewRelicOneDashboardConfig_PageSimple generates a basic dashboard page
 func testAccCheckNewRelicOneDashboardConfig_PageSimple(pageName string) string {
 	return `
@@ -425,26 +463,26 @@ func testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(dashboardName
 	resource "newrelic_one_dashboard" "bar" {
 
 		name = "` + dashboardName + `"
-	  
+
 		page {
 		  name = "` + dashboardName + `"
-	  
+
 		  widget_bar {
 			title = "Average transaction duration, by application"
 			row = 1
 			column = 1
-	  
+
 			nrql_query {
 			  account_id = ` + accountID + `
 			  query      = "FROM Transaction SELECT average(duration) FACET appName"
 			}
-	  
+
 			# Linking to self
 			filter_current_dashboard = ` + filterDashboard + `
 		  }
 		}
 	  }
-	  
+
 `
 }
 
@@ -498,6 +536,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       nrql_query {
         query  = "FROM Transaction SELECT count(*)"
       }
+	  ignore_time_range = true
     }
 
     widget_funnel {
@@ -557,7 +596,16 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
-    widget_table {
+    widget_log_table {
+      title = "Log table widget"
+      row = 13
+      column = 1
+      nrql_query {
+        query      = "FROM Log SELECT *"
+      }
+    }
+
+	widget_table {
       title = "table widget"
       row = 13
       column = 1
@@ -582,6 +630,156 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
 		column = 1
 		nrql_query {
 		  query      = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES"
+		}
+	}
+  }
+`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_PageFullChanged generates a TF config snippet that is
+// an entire dashboard page, with all widget types and lots of changes compared to testAccCheckNewRelicOneDashboardConfig_PageFull
+func testAccCheckNewRelicOneDashboardConfig_PageFullChanged(pageName string, accountID string) string {
+	return `
+  page {
+    name = "` + pageName + `"
+
+    widget_area {
+      title = "area widget with new name"
+      row = 1
+      column = 1
+      height = 4
+      width = 12
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT 51 TIMESERIES LIMIT 10"
+      }
+    }
+
+    widget_bar {
+      title = "bar widget with new name"
+      row = 2
+      column = 1
+      nrql_query {
+        query      = "FROM Transaction SELECT count(*) FACET name LIMIT 10"
+      }
+      linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+	}
+
+    widget_billboard {
+      title = "billboard widget with new name"
+      row = 4
+      column = 5
+      nrql_query {
+        query      = "FROM Transaction SELECT count(*) LIMIT 10"
+      }
+
+      warning = -1
+      critical = 0
+    }
+
+    widget_bullet {
+      title = "bullet widget with new name"
+      row = 4
+      column = 9
+      limit = 1
+      nrql_query {
+        query  = "FROM Transaction SELECT count(*) LIMIT 10"
+      }
+    }
+
+    widget_funnel {
+      title = "funnel widget with new name"
+      row = 7
+      column = 1
+      nrql_query {
+        query = "FROM Transaction SELECT funnel(response.status, WHERE name = 'WebTransaction/Expressjs/GET//', WHERE name = 'WebTransaction/Expressjs/GET//api/inventory') LIMIT 10"
+      }
+	  ignore_time_range = true
+    }
+
+    widget_heatmap {
+      title = "heatmap widget with new name"
+      row = 7
+      column = 5
+      nrql_query {
+        query = "FROM Transaction SELECT histogram(duration, buckets: 100, width: 0.1) FACET appName"
+      }
+    }
+
+    widget_histogram {
+      title = "histogram widgetw with new name"
+      row = 7
+      column = 9
+      nrql_query {
+        query = "FROM Transaction SELECT histogram(duration * 100, buckets: 500, width: 1)"
+      }
+    }
+
+    widget_line {
+      title = "line widget with new name"
+      row = 10
+      column = 1
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT 1 TIMESERIES LIMIT 10"
+      }
+	  nrql_query {
+        query      = "FROM Transaction SELECT count(*) FACET name LIMIT 10"
+      }
+    }
+
+    widget_markdown {
+      title = "markdown widget with new name"
+      row = 10
+      column = 5
+      text = "# Header text"
+    }
+
+    widget_pie {
+      title = "pizza 3.14159 widget with new name"
+      row = 10
+      column = 9
+      nrql_query {
+        query      = "FROM Transaction SELECT count(*) FACET name LIMIT 10"
+      }
+      linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+    }
+
+    widget_table {
+      title = "table widget with new name"
+      row = 13
+      column = 1
+      nrql_query {
+        query      = "FROM Transaction SELECT average(duration) FACET appName LIMIT 10"
+      }
+      linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+    }
+
+    widget_log_table {
+      title = "Log table widget with a new name"
+      row = 12
+      column = 7
+      nrql_query {
+        query      = "SELECT * FROM Log"
+      }
+    }
+
+    widget_json {
+      title = "JSON widget parsed from yaml, generated from ini"
+      row = 13
+      column = 2
+      nrql_query {
+        query      = "FROM Transaction SELECT average(duration) FACET appName LIMIT 10"
+      }
+    }
+
+	widget_stacked_bar {
+		title = "stacked bar widget with new name"
+		row = 14
+		column = 1
+		nrql_query {
+		  query      = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES LIMIT 10"
 		}
 	}
   }
