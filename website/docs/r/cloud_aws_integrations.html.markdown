@@ -20,7 +20,7 @@ Using a metric stream to New Relic is the preferred way to integrate with AWS. F
 
 ## Example Usage
 
-Leave an integration block empty to use its default configuration.
+Leave an integration block empty to use its default configuration. You can also use the [full example, including the AWS set up, found in our guides](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/cloud_integrations_guide#aws).
 
 ```hcl
 resource "newrelic_cloud_aws_link_account" "foo" {
@@ -31,8 +31,7 @@ resource "newrelic_cloud_aws_link_account" "foo" {
 
 resource "newrelic_cloud_aws_integrations" "bar" {
   linked_account_id = newrelic_cloud_aws_link_account.foo.id
-  billing {
-  }
+  billing { }
   cloudtrail {
     metrics_polling_interval = 6000
     aws_regions = ["region-1", "region-2"]
