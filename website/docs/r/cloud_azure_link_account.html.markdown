@@ -20,15 +20,16 @@ Setup is required in Azure for this resource to work properly. You can find inst
 
 ## Example Usage
 
-```hcl
+You can also use the [full example, including the Azure set up, found in our guides](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/cloud_integrations_guide#azure).
 
-  resource "newrelic_cloud_azure_link_account" "foo"{
-    account_id = "The New Relic account ID where you want to link the Azure account"
-	application_id = "ID of the application"
-	client_secret = "Secret value of client's Azure account"
-	subscription_id = "Subscription ID of Azure"
-	tenant_id = "Tenant ID of the Azure"
-	name  = "Name of the linked account"
+```hcl
+resource "newrelic_cloud_azure_link_account" "foo"{
+  account_id = "The New Relic account ID where you want to link the Azure account"
+  application_id = "ID of the application"
+  client_secret = "Secret value of client's Azure account"
+  subscription_id = "Subscription ID of Azure"
+  tenant_id = "Tenant ID of the Azure"
+  name  = "Name of the linked account"
 }
 ```
 

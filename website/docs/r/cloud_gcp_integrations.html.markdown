@@ -18,10 +18,10 @@ New Relic doesn't automatically receive metrics from GCP services, so this resou
 
 ## Example Usage
 
-Leave an integration block empty to use its default configuration.
+Leave an integration block empty to use its default configuration. You can also use the [full example, including the GCP set up, found in our guides](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/cloud_integrations_guide#gcp).
 
 ```hcl
-resource "newrelic_cloud_gcp_link_account" "foo"{
+resource "newrelic_cloud_gcp_link_account" "foo" {
   name = "example"
   project_id="<Your GCP project ID>"
 }
@@ -38,73 +38,73 @@ resource "newrelic_cloud_gcp_integrations" "foo1" {
   big_table {
     metrics_polling_interval = 400
   }
-  composer{
+  composer {
     metrics_polling_interval = 400
   }
   data_flow {
     metrics_polling_interval = 400
   }
-  data_proc{
+  data_proc {
     metrics_polling_interval = 400
   }
-  data_store{
+  data_store {
     metrics_polling_interval = 400
   }
-  fire_base_database{
+  fire_base_database {
     metrics_polling_interval = 400
   }
-  fire_base_hosting{
+  fire_base_hosting {
     metrics_polling_interval = 400
   }
-  fire_base_storage{
+  fire_base_storage {
     metrics_polling_interval = 400
   }
-  fire_store{
+  fire_store {
     metrics_polling_interval = 400
   }
-  functions{
+  functions {
     metrics_polling_interval = 400
   }
-  interconnect{
+  interconnect {
     metrics_polling_interval = 400
   }
-  kubernetes{
+  kubernetes {
     metrics_polling_interval = 400
   }
-  load_balancing{
+  load_balancing {
     metrics_polling_interval = 400
   }
-  mem_cache{
+  mem_cache {
     metrics_polling_interval = 400
   }
-  pub_sub{
-    metrics_polling_interval = 400
-    fetch_tags=true
-  }
-  redis{
-    metrics_polling_interval = 400
-  }
-  router{
-    metrics_polling_interval = 400
-  }
-  run{
-    metrics_polling_interval = 400
-  }
-  spanner{
+  pub_sub {
     metrics_polling_interval = 400
     fetch_tags=true
   }
-  sql{
+  redis {
     metrics_polling_interval = 400
   }
-  storage{
+  router {
+    metrics_polling_interval = 400
+  }
+  run {
+    metrics_polling_interval = 400
+  }
+  spanner {
     metrics_polling_interval = 400
     fetch_tags=true
   }
-  virtual_machines{
+  sql {
     metrics_polling_interval = 400
   }
-  vpc_access{
+  storage {
+    metrics_polling_interval = 400
+    fetch_tags=true
+  }
+  virtual_machines {
+    metrics_polling_interval = 400
+  }
+  vpc_access {
     metrics_polling_interval = 400
   }
 }
@@ -153,7 +153,7 @@ Other integration supports an additional argument:
 * `spanner`
 * `storage`
     * `fetch_tags` - (Optional) Specify if labels and the extended inventory should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
-    
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

@@ -17,6 +17,11 @@ variable "NEW_RELIC_ACCOUNT_ID" {
   type = string
 }
 
+variable "NEW_RELIC_ACCOUNT_NAME" {
+    type = string
+    default = "Production"
+}
+
 resource "google_project_iam_member" "project" {
   project = var.GCP_PROJECT_ID
   role    = "roles/viewer"
@@ -35,7 +40,7 @@ resource "google_project_iam_binding" "project" {
 resource "newrelic_cloud_gcp_link_account" "gcp_account" {
   account_id = var.NEW_RELIC_ACCOUNT_ID
   project_id = var.GCP_PROJECT_ID
-  name       = "GCP linked account name"
+  name       = var.NEW_RELIC_ACCOUNT_NAME
 }
 
 resource "newrelic_cloud_gcp_integrations" "gcp_integrations" {

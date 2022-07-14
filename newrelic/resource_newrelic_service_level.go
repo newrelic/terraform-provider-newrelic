@@ -4,16 +4,14 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"log"
-	"strconv"
-	"strings"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"log"
+	"strconv"
+	"strings"
 )
 
 func resourceNewRelicServiceLevel() *schema.Resource {
@@ -80,6 +78,7 @@ func eventsSchema() *schema.Resource {
 			"account_id": {
 				Type:         schema.TypeInt,
 				Required:     true,
+				ForceNew:     true,
 				Description:  "",
 				ValidateFunc: validation.IntAtLeast(1),
 			},
@@ -219,13 +218,13 @@ func resourceNewRelicServiceLevelCreate(ctx context.Context, d *schema.ResourceD
 		EntityGUID: entityGUID,
 	}
 
+	sliGUID := getSliGUID(&identifier)
+
 	d.SetId(identifier.String())
 	_ = d.Set("sli_id", created.ID)
-	_ = d.Set("sli_guid", getSliGUID(&identifier))
+	_ = d.Set("sli_guid", sliGUID)
 
-	time.Sleep(2 * time.Second)
-
-	return resourceNewRelicServiceLevelRead(ctx, d, meta)
+	return diag.FromErr(flattenServiceLevelIndicator(*created, &identifier, d, sliGUID))
 }
 
 func resourceNewRelicServiceLevelRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
