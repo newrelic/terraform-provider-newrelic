@@ -7,7 +7,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.15.2
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go v0.80.0
+	github.com/newrelic/newrelic-client-go v0.87.0
 	github.com/stretchr/testify v1.7.1
 )
 
@@ -61,6 +61,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
 	github.com/ulikunitz/xz v0.5.8 // indirect
+	github.com/valyala/fastjson v1.6.3 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/zclconf/go-cty v1.9.1 // indirect
 	go.opencensus.io v0.22.4 // indirect
