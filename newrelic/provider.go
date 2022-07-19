@@ -152,6 +152,7 @@ func Provider() *schema.Provider {
 			"newrelic_infra_alert_condition":                    resourceNewRelicInfraAlertCondition(),
 			"newrelic_insights_event":                           resourceNewRelicInsightsEvent(),
 			"newrelic_notification_channel":                     resourceNewRelicNotificationChannel(),
+			"newrelic_notification_destination":                 resourceNewRelicNotificationDestination(),
 			"newrelic_nrql_alert_condition":                     resourceNewRelicNrqlAlertCondition(),
 			"newrelic_nrql_drop_rule":                           resourceNewRelicNRQLDropRule(),
 			"newrelic_one_dashboard":                            resourceNewRelicOneDashboard(),
