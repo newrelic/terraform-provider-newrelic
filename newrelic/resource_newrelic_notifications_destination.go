@@ -14,20 +14,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
-var notificationsDestinationTypes = map[notifications.AiNotificationsDestinationType][]string{
-	"EMAIL":                         {},
-	"SERVICE_NOW":                   {},
-	"PAGERDUTY_ACCOUNT_INTEGRATION": {},
-	"PAGERDUTY_SERVICE_INTEGRATION": {},
-	"WEBHOOK":                       {},
-}
-
 func resourceNewRelicNotificationDestination() *schema.Resource {
-	validNotificationDestinationTypes := make([]string, 0, len(notificationsDestinationTypes))
-	for k := range notificationsDestinationTypes {
-		validNotificationDestinationTypes = append(validNotificationDestinationTypes, string(k))
-	}
-
 	return &schema.Resource{
 		CreateContext: resourceNewRelicNotificationDestinationCreate,
 		ReadContext:   resourceNewRelicNotificationDestinationRead,
@@ -46,8 +33,8 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice(validNotificationDestinationTypes, false),
-				Description:  fmt.Sprintf("(Required) The type of the destination. One of: (%s).", strings.Join(validNotificationDestinationTypes, ", ")),
+				ValidateFunc: validation.StringInSlice(listValidNotificationsDestinationTypes(), false),
+				Description:  fmt.Sprintf("(Required) The type of the destination. One of: (%s).", strings.Join(listValidNotificationsDestinationTypes(), ", ")),
 			},
 			"properties": {
 				Type:        schema.TypeList,
@@ -152,4 +139,15 @@ func resourceNewRelicNotificationDestinationDelete(ctx context.Context, d *schem
 	}
 
 	return nil
+}
+
+// Validation function to validate allowed destination types
+func listValidNotificationsDestinationTypes() []string {
+	return []string{
+		string(notifications.AiNotificationsDestinationTypeTypes.WEBHOOK),
+		string(notifications.AiNotificationsDestinationTypeTypes.EMAIL),
+		string(notifications.AiNotificationsDestinationTypeTypes.SERVICE_NOW),
+		string(notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
+		string(notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
+	}
 }
