@@ -14,35 +14,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
-var notificationsChannelTypes = map[notifications.AiNotificationsChannelType][]string{
-	"EMAIL":                         {},
-	"SERVICE_NOW":                   {},
-	"PAGERDUTY_ACCOUNT_INTEGRATION": {},
-	"PAGERDUTY_SERVICE_INTEGRATION": {},
-	"WEBHOOK":                       {},
-}
-
-var notificationsChannelProductTypes = map[notifications.AiNotificationsProduct][]string{
-	"ALERTS":         {},
-	"DISCUSSIONS":    {},
-	"ERROR_TRACKING": {},
-	"IINT":           {},
-	"NTFC":           {},
-	"PD":             {},
-	"SHARING":        {},
-}
-
 func resourceNewRelicNotificationChannel() *schema.Resource {
-	validNotificationChannelTypes := make([]string, 0, len(notificationsChannelTypes))
-	for k := range notificationsChannelTypes {
-		validNotificationChannelTypes = append(validNotificationChannelTypes, string(k))
-	}
-
-	validNotificationChannelProductTypes := make([]string, 0, len(notificationsChannelProductTypes))
-	for k := range notificationsChannelProductTypes {
-		validNotificationChannelProductTypes = append(validNotificationChannelProductTypes, string(k))
-	}
-
 	return &schema.Resource{
 		CreateContext: resourceNewRelicNotificationChannelCreate,
 		ReadContext:   resourceNewRelicNotificationChannelRead,
@@ -67,19 +39,19 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice(validNotificationChannelTypes, false),
-				Description:  fmt.Sprintf("(Required) The type of the channel. One of: (%s).", strings.Join(validNotificationChannelTypes, ", ")),
+				ValidateFunc: validation.StringInSlice(listValidNotificationsChannelTypes(), false),
+				Description:  fmt.Sprintf("(Required) The type of the channel. One of: (%s).", strings.Join(listValidNotificationsChannelTypes(), ", ")),
 			},
 			"product": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice(validNotificationChannelProductTypes, false),
-				Description:  fmt.Sprintf("(Required) The type of the channel product. One of: (%s).", strings.Join(validNotificationChannelProductTypes, ", ")),
+				ValidateFunc: validation.StringInSlice(listValidNotificationsProductTypes(), false),
+				Description:  fmt.Sprintf("(Required) The type of the channel product. One of: (%s).", strings.Join(listValidNotificationsProductTypes(), ", ")),
 			},
 			"properties": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 				Description: "List of notification channel property types.",
 				Elem: &schema.Resource{
@@ -172,4 +144,28 @@ func resourceNewRelicNotificationChannelDelete(ctx context.Context, d *schema.Re
 	}
 
 	return nil
+}
+
+// Validation function to validate allowed channel types
+func listValidNotificationsChannelTypes() []string {
+	return []string{
+		string(notifications.AiNotificationsChannelTypeTypes.WEBHOOK),
+		string(notifications.AiNotificationsChannelTypeTypes.EMAIL),
+		string(notifications.AiNotificationsChannelTypeTypes.SERVICENOW_INCIDENTS),
+		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
+		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
+	}
+}
+
+// Validation function to validate allowed product types
+func listValidNotificationsProductTypes() []string {
+	return []string{
+		string(notifications.AiNotificationsProductTypes.ALERTS),
+		string(notifications.AiNotificationsProductTypes.DISCUSSIONS),
+		string(notifications.AiNotificationsProductTypes.ERROR_TRACKING),
+		string(notifications.AiNotificationsProductTypes.NTFC),
+		string(notifications.AiNotificationsProductTypes.SHARING),
+		string(notifications.AiNotificationsProductTypes.PD),
+		string(notifications.AiNotificationsProductTypes.IINT),
+	}
 }
