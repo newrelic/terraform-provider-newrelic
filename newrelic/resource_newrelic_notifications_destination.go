@@ -51,7 +51,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			},
 			"properties": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 				Description: "List of notification destination property types.",
 				Elem: &schema.Resource{

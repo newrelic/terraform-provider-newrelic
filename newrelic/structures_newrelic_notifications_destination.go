@@ -35,8 +35,9 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 	}
 
 	properties, propertiesOk := d.GetOk("properties")
+	isPagerDutyType := validatePagerDutyDestinationType(destination.Type)
 
-	if !propertiesOk {
+	if !propertiesOk && !isPagerDutyType {
 		return nil, errors.New("notification destination requires a properties attribute")
 	}
 
@@ -50,6 +51,13 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 			if val, err := expandNotificationDestinationProperty(destinationProperty); err == nil {
 				destination.Properties = append(destination.Properties, *val)
 			}
+		}
+	} else if isPagerDutyType {
+		destination.Properties = []notifications.AiNotificationsPropertyInput{
+			{
+				Key:   "two_way_integration",
+				Value: "false",
+			},
 		}
 	}
 
@@ -217,4 +225,12 @@ func validateDestinationAuth(auth notifications.AiNotificationsCredentialsInput)
 	}
 
 	return nil
+}
+
+func validatePagerDutyDestinationType(destinationType notifications.AiNotificationsDestinationType) bool {
+	if destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION || destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION {
+		return true
+	}
+
+	return false
 }
