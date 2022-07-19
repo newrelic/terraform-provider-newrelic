@@ -21,34 +21,35 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
 		Steps: []resource.TestStep{
-			// Test: Create
+			// Create
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitorConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
 				),
 			},
-			//Test: Update
-			// {
-			// 	Config: testAccNewRelicSyntheticsBrokenLinksMonitorConfig(fmt.Sprintf("%s-updated", rName)),
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
-			// 	),
-			// },
-			// //Test: Import
-			// {
-			// 	ResourceName:      resourceName,
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true, //name,type
-			// 	ImportStateVerifyIgnore: []string{
-			// 		// not returned from the API
-			// 		"period",
-			// 		"location_public",
-			// 		"location_private",
-			// 		"status",
-			// 		"tag",
-			// 	},
-			// },
+			// Update
+			{
+				Config: testAccNewRelicSyntheticsBrokenLinksMonitorConfig(fmt.Sprintf("%s-updated", rName)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
+				),
+			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true, //name,type
+				ImportStateVerifyIgnore: []string{
+					// not returned from the API
+					"period",
+					"locations_public",
+					"locations_private",
+					"status",
+					"tag",
+					"uri",
+				},
+			},
 		},
 	})
 }
@@ -59,7 +60,7 @@ resource "newrelic_synthetics_broken_links_monitor" "foo" {
   name	=	"%[1]s"
   period	=	"EVERY_HOUR"
   status	=	"ENABLED"
-  locations_public	=	["AP_SOUTH_1"]
+  locations_public	=	["Mumbai, IN"]
   uri = "https://www.google.com"
 
   tag {

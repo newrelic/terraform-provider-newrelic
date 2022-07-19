@@ -103,7 +103,6 @@ func syntheticsMonitorLocationsAsStringsSchema() map[string]*schema.Schema {
 			Description:  "Publicly available location names in which the monitor will run.",
 			Optional:     true,
 			AtLeastOneOf: []string{"locations_public", "locations_private"},
-			ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPublicLocations(), false),
 		},
 	}
 }
@@ -173,9 +172,19 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorRead(ctx context.Context, d *sc
 
 	switch e := (*resp).(type) {
 	case *entities.SyntheticMonitorEntity:
+
+		t := e.GetTags()
+		tag := getEntityTag(t, "period")
+
+		period := ""
+		if tag != nil && len(tag.Values) > 0 {
+			period = tag.Values[0]
+		}
+
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
-			"name": e.Name,
-			"guid": string(e.GUID),
+			"name":   e.Name,
+			"guid":   string(e.GUID),
+			"period": period,
 		})
 	}
 
