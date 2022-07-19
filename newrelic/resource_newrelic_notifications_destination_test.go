@@ -38,6 +38,12 @@ func TestNewRelicNotificationDestination_Basic(t *testing.T) {
 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
 				),
 			},
+			// Test: Import
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      resourceName,
+			},
 		},
 	})
 }

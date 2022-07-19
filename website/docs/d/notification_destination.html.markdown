@@ -55,6 +55,8 @@ Each authentication type supports a specific set of arguments:
   * `prefix` - (Required) The prefix of the token auth.
   * `token` - (Required) Specifies the token for integrating.
 
+~> **NOTE:** OAuth2 authentication type is not available via terraform for notifications destinations.
+
 ### Nested `properties` blocks
 
 Each notification destination type supports a specific set of arguments for the `properties` block:
@@ -80,7 +82,6 @@ In addition to all arguments above, the following attributes are exported:
 ## Additional Examples
 
 ##### ServiceNow
-# oauth2 not possible
 
 ```hcl
 resource "newrelic_notification_destination" "foo" {
