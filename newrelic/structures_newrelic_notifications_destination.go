@@ -66,8 +66,7 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 
 func expandNotificationDestinationAuth(authList interface{}) (*notifications.AiNotificationsCredentialsInput, error) {
 	auth := notifications.AiNotificationsCredentialsInput{}
-	var authConfig map[string]interface{}
-	authConfig = authList.(map[string]interface{})
+	authConfig := authList.(map[string]interface{})
 
 	if typeAuth, ok := authConfig["type"]; ok {
 		auth.Type = notifications.AiNotificationsAuthType(typeAuth.(string))
