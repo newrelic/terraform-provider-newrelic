@@ -35,6 +35,12 @@ func TestNewRelicNotificationChannel_Basic(t *testing.T) {
 					testAccCheckNewRelicNotificationChannelExists(resourceName),
 				),
 			},
+			// Test: Import
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      resourceName,
+			},
 		},
 	})
 }
