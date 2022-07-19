@@ -1,5 +1,31 @@
+<a name="v2.49.0"></a>
+## [v2.49.0] - 2022-07-19
+### Bug Fixes
+- **channels:** lint fix
+- **channels:** add import test
+- **channels:** add docs and fix small bug
+- **destinations:** lint fix
+- **destinations:** add note on doc and import test
+- **destinations:** fix pr review suggetion
+- **destinations:** add docs and fix small bug
+- **destinations:** fix types according to the new go client api - still WIP
+- **destinations:** fix tests
+- **destinations:** fix tests
+
+### Features
+- **channels:** upgrade go-client version
+- **channels:** add tests - wip
+- **channels:** add tests - wip
+- **channels:** add notifications channels provider
+- **destinations:** upgrade go-client version
+- **destinations:** upgrade go-client version
+- **destinations:** fix tests
+- **notifications:** add tests
+- **notifications:** working notification destination
+- **notifications:** add notifications destinations
+
 <a name="v2.48.2"></a>
-## [v2.48.2] - 2022-07-14
+## [v2.48.2] - 2022-07-15
 <a name="v2.48.1"></a>
 ## [v2.48.1] - 2022-06-30
 ### Bug Fixes
@@ -1295,7 +1321,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.0...HEAD
+[v2.49.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.2...v2.49.0
 [v2.48.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.1...v2.48.2
 [v2.48.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.0...v2.48.1
 [v2.48.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.47.1...v2.48.0
