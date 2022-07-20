@@ -168,23 +168,19 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorRead(ctx context.Context, d *sc
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("account_id", accountID)
-
 	switch e := (*resp).(type) {
 	case *entities.SyntheticMonitorEntity:
+		entity := (*resp).(*entities.SyntheticMonitorEntity)
 
-		t := e.GetTags()
-		tag := getEntityTag(t, "period")
-
-		period := ""
-		if tag != nil && len(tag.Values) > 0 {
-			period = tag.Values[0]
-		}
+		d.SetId(string(e.GUID))
+		_ = d.Set("account_id", accountID)
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
-			"name":   e.Name,
 			"guid":   string(e.GUID),
-			"period": period,
+			"name":   entity.Name,
+			"period": string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
+			"status": string(entity.MonitorSummary.Status),
+			"uri":    entity.MonitoredURL,
 		})
 	}
 

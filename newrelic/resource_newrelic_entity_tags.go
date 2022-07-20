@@ -321,13 +321,3 @@ func getTag(tags []*entities.TaggingTagInput, key string) *entities.TaggingTagIn
 
 	return nil
 }
-
-func getEntityTag(tags []entities.EntityTag, key string) *entities.EntityTag {
-	for _, t := range tags {
-		if t.Key == key {
-			return &t
-		}
-	}
-
-	return nil
-}

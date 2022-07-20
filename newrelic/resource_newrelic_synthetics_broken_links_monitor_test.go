@@ -5,6 +5,7 @@ package newrelic
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -30,6 +31,10 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 			},
 			// Update
 			{
+				PreConfig: func() {
+					// Unfortunately we still have to wait due to async delay with entity indexing :(
+					time.Sleep(10 * time.Second)
+				},
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitorConfig(fmt.Sprintf("%s-updated", rName)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
@@ -39,15 +44,11 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateVerify: true, //name,type
+				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					// not returned from the API
-					"period",
 					"locations_public",
 					"locations_private",
-					"status",
 					"tag",
-					"uri",
 				},
 			},
 		},
@@ -60,7 +61,7 @@ resource "newrelic_synthetics_broken_links_monitor" "foo" {
   name	=	"%[1]s"
   period	=	"EVERY_HOUR"
   status	=	"ENABLED"
-  locations_public	=	["Mumbai, IN"]
+  locations_public	=	["AP_SOUTH_1"]
   uri = "https://www.google.com"
 
   tag {
@@ -82,12 +83,15 @@ func testAccCheckNewRelicSyntheticsMonitorEntityExists(n string) resource.TestCh
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
+		// We also have to wait for the monitor's deletion to be indexed as well :(
+		time.Sleep(5 * time.Second)
+
 		result, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
 		if string((*result).GetGUID()) != rs.Primary.ID {
-			fmt.Errorf("the monitor is not found %v - %v", (*result).GetGUID(), rs.Primary.ID)
+			return fmt.Errorf("the monitor is not found %v - %v", (*result).GetGUID(), rs.Primary.ID)
 		}
 		return nil
 	}

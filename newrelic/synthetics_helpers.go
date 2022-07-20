@@ -8,6 +8,18 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
+var syntheticsMonitorPeriodValueMap = map[int]synthetics.SyntheticsMonitorPeriod{
+	1:    synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE,
+	5:    synthetics.SyntheticsMonitorPeriodTypes.EVERY_5_MINUTES,
+	10:   synthetics.SyntheticsMonitorPeriodTypes.EVERY_10_MINUTES,
+	15:   synthetics.SyntheticsMonitorPeriodTypes.EVERY_15_MINUTES,
+	30:   synthetics.SyntheticsMonitorPeriodTypes.EVERY_30_MINUTES,
+	60:   synthetics.SyntheticsMonitorPeriodTypes.EVERY_HOUR,
+	360:  synthetics.SyntheticsMonitorPeriodTypes.EVERY_6_HOURS,
+	720:  synthetics.SyntheticsMonitorPeriodTypes.EVERY_12_HOURS,
+	1440: synthetics.SyntheticsMonitorPeriodTypes.EVERY_DAY,
+}
+
 type SyntheticsMonitorBase struct {
 	Name   string
 	Period synthetics.SyntheticsMonitorPeriod
