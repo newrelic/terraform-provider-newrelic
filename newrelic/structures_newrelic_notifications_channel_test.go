@@ -4,8 +4,9 @@
 package newrelic
 
 import (
-	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 	"testing"
+
+	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -27,7 +28,7 @@ func TestExpandNotificationChannel(t *testing.T) {
 			Data: map[string]interface{}{
 				"name":           "testing123",
 				"type":           "WEBHOOK",
-				"properties":     []interface{}{property},
+				"property":       []interface{}{property},
 				"product":        "IINT",
 				"destination_id": "b1e90a32-23b7-4028-b2c7-ffbdfe103852",
 			},

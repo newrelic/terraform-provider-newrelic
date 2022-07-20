@@ -3,6 +3,7 @@ package newrelic
 import (
 	"errors"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
@@ -34,8 +35,65 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 		return nil, err
 	}
 
-	properties, propertiesOk := d.GetOk("properties")
+	properties, propertiesOk := d.GetOk("property")
 	isPagerDutyType := validatePagerDutyDestinationType(destination.Type)
+
+	if !propertiesOk && !isPagerDutyType {
+		return nil, errors.New("notification destination requires a properties attribute")
+	}
+
+	if propertiesOk {
+		var destinationProperty map[string]interface{}
+
+		x := properties.([]interface{})
+
+		for _, property := range x {
+			destinationProperty = property.(map[string]interface{})
+			if val, err := expandNotificationDestinationProperty(destinationProperty); err == nil {
+				destination.Properties = append(destination.Properties, *val)
+			}
+		}
+	} else if isPagerDutyType {
+		destination.Properties = []notifications.AiNotificationsPropertyInput{
+			{
+				Key:   "two_way_integration",
+				Value: "false",
+			},
+		}
+	}
+
+	return &destination, nil
+}
+
+func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications.AiNotificationsDestinationUpdate, error) {
+	destination := notifications.AiNotificationsDestinationUpdate{
+		Name:   d.Get("name").(string),
+		Active: d.Get("active").(bool),
+	}
+	destinationType := notifications.AiNotificationsDestinationType(d.Get("type").(string))
+
+	var auth, authOk = d.GetOk("auth")
+
+	if !authOk {
+		return nil, errors.New("notification destination requires an auth attribute")
+	}
+
+	if authOk {
+		a, err := expandNotificationDestinationAuth(auth)
+		if err != nil {
+			return nil, err
+		}
+
+		destination.Auth = *a
+	}
+
+	err := validateDestinationAuth(destination.Auth)
+	if err != nil {
+		return nil, err
+	}
+
+	properties, propertiesOk := d.GetOk("property")
+	isPagerDutyType := validatePagerDutyDestinationType(destinationType)
 
 	if !propertiesOk && !isPagerDutyType {
 		return nil, errors.New("notification destination requires a properties attribute")
@@ -141,7 +199,7 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return propertiesErr
 	}
 
-	if err := d.Set("properties", properties); err != nil {
+	if err := d.Set("property", properties); err != nil {
 		return err
 	}
 

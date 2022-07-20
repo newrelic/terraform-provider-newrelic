@@ -18,7 +18,7 @@ resource "newrelic_notification_destination" "foo" {
   name = "foo"
   type = "WEBHOOK"
 
-  properties {
+  property {
     key = "url"
     value = "https://webhook.site/"
   }
@@ -40,7 +40,7 @@ The following arguments are supported:
 * `name` - (Required) The name of the destination.
 * `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `WEBHOOK`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
 * `auth` - (Required) A nested block that describes a notification destination authentication. Only one auth block is permitted per notification destination definition.  See [Nested auth blocks](#nested-auth-blocks) below for details.
-* `properties` - (Required) A nested block that describes a notification destination properties.  Only one properties block is permitted per notification destination definition.  See [Nested properties blocks](#nested-properties-blocks) below for details.
+* `property` - (Required) A nested block that describes a notification destination properties. See [Nested property blocks](#nested-property-blocks) below for details.
 
 ### Nested `auth` blocks
 
@@ -57,9 +57,9 @@ Each authentication type supports a specific set of arguments:
 
 ~> **NOTE:** OAuth2 authentication type is not available via terraform for notifications destinations.
 
-### Nested `properties` blocks
+### Nested `property` blocks
 
-Each notification destination type supports a specific set of arguments for the `properties` block:
+Each notification destination type supports a specific set of arguments for the `property` block:
 
 * `EMAIL`
   * `email` - (Required) A map of key/value pairs that represents the email addresses.
@@ -88,12 +88,12 @@ resource "newrelic_notification_destination" "foo" {
   name = "servicenow-example"
   type = "SERVICE_NOW"
 
-  properties {
+  property {
     key = "url"
     value = "https://service-now.com/"
   }
 
-  properties {
+  property {
     key = "two_way_integration"
     value = "true"
   }
@@ -111,8 +111,8 @@ resource "newrelic_notification_destination" "foo" {
 resource "newrelic_notification_destination" "foo" {
   name = "email-example"
   type = "EMAIL"
-  
-  properties {
+
+  property {
     key = "email"
     value = "email@email.com,email2@email.com"
   }
@@ -131,7 +131,7 @@ resource "newrelic_notification_destination" "foo" {
   name = "pagerduty-service-example"
   type = "PAGERDUTY_SERVICE_INTEGRATION"
 
-  properties {
+  property {
     key = "two_way_integration"
     value = "true"
   }

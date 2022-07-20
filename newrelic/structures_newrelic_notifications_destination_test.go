@@ -4,9 +4,10 @@
 package newrelic
 
 import (
+	"testing"
+
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -62,9 +63,9 @@ func TestExpandNotificationDestination(t *testing.T) {
 		},
 		"valid destination": {
 			Data: map[string]interface{}{
-				"name":       "testing123",
-				"type":       "WEBHOOK",
-				"properties": []interface{}{property},
+				"name":     "testing123",
+				"type":     "WEBHOOK",
+				"property": []interface{}{property},
 				"auth": map[string]string{
 					"type":     "BASIC",
 					"user":     "test-user",

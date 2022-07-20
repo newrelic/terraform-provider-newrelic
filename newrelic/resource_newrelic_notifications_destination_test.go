@@ -5,9 +5,10 @@ package newrelic
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -36,6 +37,20 @@ func TestNewRelicNotificationDestination_Basic(t *testing.T) {
 				}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testNewRelicNotificationDestinationConfigByType(rName, "webhook", `{
+					type = "BASIC"
+					user = "test-user-update"
+					password = "pass12345678-update"
+				}`, `{
+					key = "url"
+					value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testNewRelicNotificationDestinationConfigByType(resourceName),
 				),
 			},
 			// Test: Import
@@ -80,7 +95,7 @@ func testNewRelicNotificationDestinationConfigByType(name string, channelType st
 			name = "%s"
 			type = "%s"
 			auth = "%s"
-			properties %s
+			property %s
 		}
 	`, name, channelType, auth, properties)
 }

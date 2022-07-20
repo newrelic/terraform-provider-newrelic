@@ -3,10 +3,11 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
-	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 	"log"
 	"strings"
+
+	"github.com/newrelic/newrelic-client-go/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,15 +19,17 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicNotificationDestinationCreate,
 		ReadContext:   resourceNewRelicNotificationDestinationRead,
+		UpdateContext: resourceNewRelicNotificationDestinationUpdate,
 		DeleteContext: resourceNewRelicNotificationDestinationDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
+			// Required
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Description: "(Required) The name of the destination.",
 			},
 			"type": {
@@ -36,11 +39,13 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(listValidNotificationsDestinationTypes(), false),
 				Description:  fmt.Sprintf("(Required) The type of the destination. One of: (%s).", strings.Join(listValidNotificationsDestinationTypes(), ", ")),
 			},
-			"properties": {
+
+			// Optional
+			"property": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				ForceNew:    true,
-				Description: "List of notification destination property types.",
+				ForceNew:    false,
+				Description: "Notification destination property type.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
@@ -69,10 +74,44 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			"auth": {
 				Type:        schema.TypeMap,
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Description: "A set of key-value pairs to represent a Notification destination auth.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Sensitive:   true,
+			},
+			"active": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    false,
+				Description: "Indicates whether the destination is active.",
+			},
+
+			// Computed
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the destination.",
+			},
+			"is_user_authenticated": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether the user is authenticated with the destination.",
+			},
+			"last_sent": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The last time a notification was sent.",
+			},
+			"account_id": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The account id of the destination.",
+			},
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The id of the destination.",
 			},
 		},
 	}
@@ -123,6 +162,26 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 	}
 
 	return diag.FromErr(flattenNotificationDestination(&destinationResponse.Entities[0], d))
+}
+
+func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*ProviderConfig).NewClient
+	destinationInput, err := expandNotificationDestinationUpdate(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	destinationID := d.Get("id").(string)
+	providerConfig := meta.(*ProviderConfig)
+	accountID := selectAccountID(providerConfig, d)
+	updatedContext := updateContextWithAccountID(ctx, accountID)
+
+	_, err = client.Notifications.AiNotificationsUpdateDestinationWithContext(updatedContext, accountID, *destinationInput, destinationID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourceNewRelicNotificationDestinationRead(updatedContext, d, meta)
 }
 
 func resourceNewRelicNotificationDestinationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

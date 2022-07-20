@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"errors"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 )
@@ -14,11 +15,43 @@ func expandNotificationChannel(d *schema.ResourceData) (*notifications.AiNotific
 		Product:       notifications.AiNotificationsProduct(d.Get("product").(string)),
 	}
 
-	properties, propertiesOk := d.GetOk("properties")
+	properties, propertiesOk := d.GetOk("property")
 	isNonPropertyType := validateNonPropertyChannelType(channel.Type)
 
 	if !propertiesOk && !isNonPropertyType {
-		return nil, errors.New("notification channel requires a properties attribute")
+		return nil, errors.New("notification channel requires a property attribute")
+	}
+
+	if propertiesOk {
+		var destinationProperty map[string]interface{}
+
+		x := properties.([]interface{})
+
+		for _, property := range x {
+			destinationProperty = property.(map[string]interface{})
+			if val, err := expandNotificationChannelProperty(destinationProperty); err == nil {
+				channel.Properties = append(channel.Properties, *val)
+			}
+		}
+	} else if isNonPropertyType {
+		channel.Properties = []notifications.AiNotificationsPropertyInput{{Key: "", Value: ""}} // Empty
+	}
+
+	return &channel, nil
+}
+
+func expandNotificationChannelUpdate(d *schema.ResourceData) (*notifications.AiNotificationsChannelUpdate, error) {
+	channel := notifications.AiNotificationsChannelUpdate{
+		Name:   d.Get("name").(string),
+		Active: d.Get("active").(bool),
+	}
+	channelType := notifications.AiNotificationsChannelType(d.Get("type").(string))
+
+	properties, propertiesOk := d.GetOk("property")
+	isNonPropertyType := validateNonPropertyChannelType(channelType)
+
+	if !propertiesOk && !isNonPropertyType {
+		return nil, errors.New("notification channel requires a property attribute")
 	}
 
 	if propertiesOk {
@@ -89,7 +122,7 @@ func flattenNotificationChannel(channel *notifications.AiNotificationsChannel, d
 		return propertiesErr
 	}
 
-	if err := d.Set("properties", properties); err != nil {
+	if err := d.Set("property", properties); err != nil {
 		return err
 	}
 

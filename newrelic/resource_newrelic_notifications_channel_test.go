@@ -5,9 +5,10 @@ package newrelic
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -30,6 +31,17 @@ func TestNewRelicNotificationChannel_Basic(t *testing.T) {
 					key = "payload"
 					value = "{\n\t\"id\": \"test\"\n}"
 					label = "Payload Template"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationChannelExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testNewRelicNotificationChannelConfigByType(rName, "WEBHOOK", "IINT", "b1e90a32-23b7-4028-b2c7-ffbdfe103852", `{
+					key = "payload"
+					value = "{\n\t\"id\": \"test-update\"\n}"
+					label = "Payload Template Update"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationChannelExists(resourceName),
@@ -78,7 +90,7 @@ func testNewRelicNotificationChannelConfigByType(name string, channelType string
 			type = "%s"
 			product = "%s"
 			destination_id = "%s"
-			properties %s
+			property %s
 		}
 	`, name, channelType, product, destinationId, properties)
 }

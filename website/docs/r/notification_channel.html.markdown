@@ -20,7 +20,7 @@ resource "newrelic_notification_channel" "foo" {
   destination_id = "1234"
   product = "IINT"
 
-  properties {
+  property {
     key = "payload"
     value = "{\n\t\"name\": \"foo\"\n}"
     label = "Payload Template"
@@ -38,11 +38,11 @@ The following arguments are supported:
 * `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `WEBHOOK`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
 * `destination_id` - (Required) The id of the destination.
 * `product` - (Required) The type of product.  One of: `ALERTS`, `DISCUSSIONS`, `ERROR_TRACKING`, `IINT`, `NTFC`, `PD` or `SHARING`.
-* `properties` - (Required) A nested block that describes a notification channel properties.  Only one properties block is permitted per notification channel definition.  See [Nested properties blocks](#nested-properties-blocks) below for details.
+* `property` - (Required) A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
 
-### Nested `properties` blocks
+### Nested `property` blocks
 
-Each notification channel type supports a specific set of arguments for the `properties` block:
+Each notification channel type supports a specific set of arguments for the `property` block:
 
 * `WEBHOOK`
   * `headers` - (Optional) A map of key/value pairs that represents the webhook headers.
@@ -73,12 +73,12 @@ resource "newrelic_notification_channel" "foo" {
   destination_id = "1234"
   product = "PD"
 
-  properties {
+  property {
     key = "description"
     value = "General description"
   }
 
-  properties {
+  property {
     key = "short_description"
     value = "Short description"
   }
@@ -103,17 +103,17 @@ resource "newrelic_notification_channel" "foo" {
   destination_id = "1234"
   product = "IINT"
 
-  properties {
+  property {
     key = "summary"
     value = "General summary"
   }
 
-  properties {
+  property {
     key = "service"
     value = "1234"
   }
 
-  properties {
+  property {
     key = "email"
     value = "test@test.com"
   }
@@ -128,7 +128,7 @@ resource "newrelic_notification_channel" "foo" {
   destination_id = "1234"
   product = "IINT"
 
-  properties {
+  property {
     key = "summary"
     value = "General summary"
   }

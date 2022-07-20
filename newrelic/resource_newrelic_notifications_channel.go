@@ -3,10 +3,11 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
-	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 	"log"
 	"strings"
+
+	"github.com/newrelic/newrelic-client-go/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,15 +19,17 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicNotificationChannelCreate,
 		ReadContext:   resourceNewRelicNotificationChannelRead,
+		UpdateContext: resourceNewRelicNotificationChannelUpdate,
 		DeleteContext: resourceNewRelicNotificationChannelDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
+			// Required
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Description: "(Required) The name of the channel.",
 			},
 			"destination_id": {
@@ -49,11 +52,13 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(listValidNotificationsProductTypes(), false),
 				Description:  fmt.Sprintf("(Required) The type of the channel product. One of: (%s).", strings.Join(listValidNotificationsProductTypes(), ", ")),
 			},
-			"properties": {
+
+			// Optional
+			"property": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				ForceNew:    true,
-				Description: "List of notification channel property types.",
+				ForceNew:    false,
+				Description: "Notification channel property type.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
@@ -78,6 +83,30 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 						},
 					},
 				},
+			},
+			"active": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    false,
+				Description: "Indicates whether the channel is active.",
+			},
+
+			// Computed
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the channel.",
+			},
+			"account_id": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The account id of the channel.",
+			},
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The id of the channel.",
 			},
 		},
 	}
@@ -128,6 +157,26 @@ func resourceNewRelicNotificationChannelRead(ctx context.Context, d *schema.Reso
 	}
 
 	return diag.FromErr(flattenNotificationChannel(&channelResponse.Entities[0], d))
+}
+
+func resourceNewRelicNotificationChannelUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*ProviderConfig).NewClient
+	updateInput, err := expandNotificationChannelUpdate(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	channelID := d.Get("id").(string)
+	providerConfig := meta.(*ProviderConfig)
+	accountID := selectAccountID(providerConfig, d)
+	updatedContext := updateContextWithAccountID(ctx, accountID)
+
+	_, err = client.Notifications.AiNotificationsUpdateChannelWithContext(updatedContext, accountID, *updateInput, channelID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourceNewRelicNotificationChannelRead(updatedContext, d, meta)
 }
 
 func resourceNewRelicNotificationChannelDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
