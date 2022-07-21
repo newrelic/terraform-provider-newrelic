@@ -54,12 +54,7 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 			}
 		}
 	} else if isPagerDutyType {
-		destination.Properties = []notifications.AiNotificationsPropertyInput{
-			{
-				Key:   "two_way_integration",
-				Value: "false",
-			},
-		}
+		destination.Properties = []notifications.AiNotificationsPropertyInput{{Key: "", Value: ""}} // Empty
 	}
 
 	return &destination, nil
@@ -111,12 +106,7 @@ func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications
 			}
 		}
 	} else if isPagerDutyType {
-		destination.Properties = []notifications.AiNotificationsPropertyInput{
-			{
-				Key:   "two_way_integration",
-				Value: "false",
-			},
-		}
+		destination.Properties = []notifications.AiNotificationsPropertyInput{{Key: "", Value: ""}} // Empty
 	}
 
 	return &destination, nil

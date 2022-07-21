@@ -38,7 +38,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the notification destination will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the destination.
-* `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `WEBHOOK`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
+* `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `WEBHOOK`, `JIRA`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
 * `auth` - (Required) A nested block that describes a notification destination authentication. Only one auth block is permitted per notification destination definition.  See [Nested auth blocks](#nested-auth-blocks) below for details.
 * `property` - (Required) A nested block that describes a notification destination properties. See [Nested property blocks](#nested-property-blocks) below for details.
 
@@ -68,7 +68,8 @@ Each notification destination type supports a specific set of arguments for the 
 * `SERVICE_NOW`
   * `url` - (Required) A map of key/value pairs that represents the service now url.
   * `two_way_integration` - (Optional) A map of key/value pairs that represents the two-way integration on/off flag.
-* `PAGERDUTY_SERVICE_INTEGRATION`
+* `JIRA`
+  * `url` - (Required) A map of key/value pairs that represents the jira url.
   * `two_way_integration` - (Optional) A map of key/value pairs that represents the two-way integration on/off flag.
 * `PAGERDUTY_ACCOUNT_INTEGRATION`
   * `two_way_integration` - (Optional) A map of key/value pairs that represents the two-way integration on/off flag.
@@ -115,6 +116,25 @@ resource "newrelic_notification_destination" "foo" {
   property {
     key = "email"
     value = "email@email.com,email2@email.com"
+  }
+  
+  auth = {
+    type = "TOKEN"
+    prefix = "prefix"
+    token = "bearer"
+  }
+}
+```
+
+##### Jira
+```hcl
+resource "newrelic_notification_destination" "foo" {
+  name = "jira-example"
+  type = "JIRA"
+
+  property {
+    key = "url"
+    value = "https://test.atlassian.net"
   }
   
   auth = {

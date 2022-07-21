@@ -204,5 +204,6 @@ func listValidNotificationsDestinationTypes() []string {
 		string(notifications.AiNotificationsDestinationTypeTypes.SERVICE_NOW),
 		string(notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
 		string(notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
+		string(notifications.AiNotificationsDestinationTypeTypes.JIRA),
 	}
 }

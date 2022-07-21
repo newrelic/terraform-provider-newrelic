@@ -50,7 +50,7 @@ func TestNewRelicNotificationDestination_Basic(t *testing.T) {
 					value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
-					testNewRelicNotificationDestinationConfigByType(resourceName),
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
 				),
 			},
 			// Test: Import

@@ -71,7 +71,7 @@ resource "newrelic_notification_channel" "foo" {
   name = "servicenow-incident-example"
   type = "SERVICENOW_INCIDENTS"
   destination_id = "1234"
-  product = "PD"
+  product = "IINT"
 
   property {
     key = "description"
