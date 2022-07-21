@@ -194,7 +194,6 @@ func resourceNewRelicSyntheticsCertCheckMonitorRead(ctx context.Context, d *sche
 	case *entities.SyntheticMonitorEntity:
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"name": e.Name,
-			"guid": string(e.GUID),
 		})
 	}
 
