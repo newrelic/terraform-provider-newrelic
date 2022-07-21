@@ -37,7 +37,7 @@ The following arguments are supported:
 * `name` - (Required) The name of the channel.
 * `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `WEBHOOK`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
 * `destination_id` - (Required) The id of the destination.
-* `product` - (Required) The type of product.  One of: `ALERTS`, `DISCUSSIONS`, `ERROR_TRACKING`, `IINT`, `NTFC`, `PD` or `SHARING`.
+* `product` - (Required) The type of product.  One of: `DISCUSSIONS`, `ERROR_TRACKING` or `IINT` (workflows).
 * `property` - (Required) A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
 
 ### Nested `property` blocks
@@ -136,3 +136,6 @@ resource "newrelic_notification_channel" "foo" {
 ```
 
 ~> **NOTE:** Sensitive data such as channel API keys, service keys, etc are not returned from the underlying API for security reasons and may not be set in state when importing.
+
+## Additional Information
+More information can be found in NewRelic [documentation](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/).
