@@ -29,7 +29,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    false,
 				Description: "(Required) The name of the destination.",
 			},
 			"type": {
@@ -44,7 +43,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			"property": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				ForceNew:    false,
 				Description: "Notification destination property type.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -74,7 +72,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			"auth": {
 				Type:        schema.TypeMap,
 				Optional:    true,
-				ForceNew:    false,
 				Description: "A set of key-value pairs to represent a Notification destination auth.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Sensitive:   true,
@@ -82,9 +79,13 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			"active": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Computed:    true,
-				ForceNew:    false,
 				Description: "Indicates whether the destination is active.",
+			},
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The account id of the destination.",
 			},
 
 			// Computed
@@ -102,11 +103,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The last time a notification was sent.",
-			},
-			"account_id": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The account id of the destination.",
 			},
 			"id": {
 				Type:        schema.TypeString,

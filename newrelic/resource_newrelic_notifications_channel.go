@@ -29,7 +29,6 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    false,
 				Description: "(Required) The name of the channel.",
 			},
 			"destination_id": {
@@ -57,7 +56,6 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 			"property": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				ForceNew:    false,
 				Description: "Notification channel property type.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -87,9 +85,13 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 			"active": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Computed:    true,
-				ForceNew:    false,
 				Description: "Indicates whether the channel is active.",
+			},
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The account id of the channel.",
 			},
 
 			// Computed
@@ -97,11 +99,6 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of the channel.",
-			},
-			"account_id": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The account id of the channel.",
 			},
 			"id": {
 				Type:        schema.TypeString,
