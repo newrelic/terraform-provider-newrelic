@@ -46,7 +46,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"locations_public",
+					// "locations_public",
 					"locations_private",
 					"tag",
 				},
@@ -61,7 +61,7 @@ resource "newrelic_synthetics_broken_links_monitor" "foo" {
   name	=	"%[1]s"
   period	=	"EVERY_HOUR"
   status	=	"ENABLED"
-  locations_public	=	["AP_SOUTH_1"]
+  locations_public	=	["US_WEST_2"]
   uri = "https://www.google.com"
 
   tag {

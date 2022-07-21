@@ -174,6 +174,7 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorRead(ctx context.Context, d *sc
 
 		d.SetId(string(e.GUID))
 		_ = d.Set("account_id", accountID)
+		_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"guid":   string(e.GUID),

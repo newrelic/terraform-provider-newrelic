@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
@@ -187,87 +188,99 @@ func listValidSyntheticsMonitorStatuses() []string {
 	}
 }
 
-func listValidSyntheticsMonitorPublicLocations() []string {
-	return []string{
-		string(syntheticsPublicLocations.AWS_US_EAST_1),
-		string(syntheticsPublicLocations.AWS_US_EAST_2),
-		string(syntheticsPublicLocations.AWS_US_WEST_1),
-		string(syntheticsPublicLocations.AWS_US_WEST_2),
-		string(syntheticsPublicLocations.AWS_CA_CENTRAL_1),
-		string(syntheticsPublicLocations.AWS_EU_WEST_1),
-		string(syntheticsPublicLocations.AWS_EU_WEST_2),
-		string(syntheticsPublicLocations.AWS_EU_WEST_3),
-		string(syntheticsPublicLocations.AWS_EU_CENTRAL_1),
-		string(syntheticsPublicLocations.AWS_EU_SOUTH_1),
-		string(syntheticsPublicLocations.AWS_EU_NORTH_1),
-		string(syntheticsPublicLocations.AWS_SA_EAST_1),
-		string(syntheticsPublicLocations.AWS_AF_SOUTH_1),
-		string(syntheticsPublicLocations.AWS_AP_EAST_1),
-		string(syntheticsPublicLocations.AWS_ME_SOUTH_1),
-		string(syntheticsPublicLocations.AWS_AP_SOUTH_1),
-		string(syntheticsPublicLocations.AWS_AP_NORTHEAST_2),
-		string(syntheticsPublicLocations.AWS_AP_SOUTHEAST_1),
-		string(syntheticsPublicLocations.AWS_AP_NORTHEAST_1),
-		string(syntheticsPublicLocations.AWS_AP_SOUTHEAST_2),
-	}
-}
-
 // TODO: Move to newrelic-client-go
-type SyntheticsPrivateLocation string
+type SyntheticsPublicLocation string
 
 // TODO: Move to newrelic-client-go
 //nolint:revive
 var syntheticsPublicLocations = struct {
-	AWS_US_EAST_1      SyntheticsPrivateLocation
-	AWS_US_EAST_2      SyntheticsPrivateLocation
-	AWS_CA_CENTRAL_1   SyntheticsPrivateLocation
-	AWS_US_WEST_1      SyntheticsPrivateLocation
-	AWS_US_WEST_2      SyntheticsPrivateLocation
-	AWS_EU_WEST_1      SyntheticsPrivateLocation
-	AWS_EU_WEST_2      SyntheticsPrivateLocation
-	AWS_EU_WEST_3      SyntheticsPrivateLocation
-	AWS_EU_CENTRAL_1   SyntheticsPrivateLocation
-	AWS_EU_SOUTH_1     SyntheticsPrivateLocation
-	AWS_EU_NORTH_1     SyntheticsPrivateLocation
-	AWS_SA_EAST_1      SyntheticsPrivateLocation
-	AWS_AF_SOUTH_1     SyntheticsPrivateLocation
-	AWS_AP_EAST_1      SyntheticsPrivateLocation
-	AWS_ME_SOUTH_1     SyntheticsPrivateLocation
-	AWS_AP_SOUTH_1     SyntheticsPrivateLocation
-	AWS_AP_NORTHEAST_2 SyntheticsPrivateLocation
-	AWS_AP_SOUTHEAST_1 SyntheticsPrivateLocation
-	AWS_AP_NORTHEAST_1 SyntheticsPrivateLocation
-	AWS_AP_SOUTHEAST_2 SyntheticsPrivateLocation
+	US_EAST_1      SyntheticsPublicLocation
+	US_EAST_2      SyntheticsPublicLocation
+	CA_CENTRAL_1   SyntheticsPublicLocation
+	US_WEST_1      SyntheticsPublicLocation
+	US_WEST_2      SyntheticsPublicLocation
+	EU_WEST_1      SyntheticsPublicLocation
+	EU_WEST_2      SyntheticsPublicLocation
+	EU_WEST_3      SyntheticsPublicLocation
+	EU_CENTRAL_1   SyntheticsPublicLocation
+	EU_SOUTH_1     SyntheticsPublicLocation
+	EU_NORTH_1     SyntheticsPublicLocation
+	SA_EAST_1      SyntheticsPublicLocation
+	AF_SOUTH_1     SyntheticsPublicLocation
+	AP_EAST_1      SyntheticsPublicLocation
+	ME_SOUTH_1     SyntheticsPublicLocation
+	AP_SOUTH_1     SyntheticsPublicLocation
+	AP_NORTHEAST_2 SyntheticsPublicLocation
+	AP_SOUTHEAST_1 SyntheticsPublicLocation
+	AP_NORTHEAST_1 SyntheticsPublicLocation
+	AP_SOUTHEAST_2 SyntheticsPublicLocation
 }{
 	// US
-	AWS_US_EAST_1:    "AWS_US_EAST_1",
-	AWS_US_EAST_2:    "AWS_US_EAST_2",
-	AWS_US_WEST_1:    "AWS_US_WEST_1",
-	AWS_US_WEST_2:    "AWS_US_WEST_2",
-	AWS_CA_CENTRAL_1: "AWS_CA_CENTRAL_1",
+	US_EAST_1:    "US_EAST_1",
+	US_EAST_2:    "US_EAST_2",
+	US_WEST_1:    "US_WEST_1",
+	US_WEST_2:    "US_WEST_2",
+	CA_CENTRAL_1: "CA_CENTRAL_1",
 
 	// Europe
-	AWS_EU_WEST_1:    "AWS_EU_WEST_1",
-	AWS_EU_WEST_2:    "AWS_EU_WEST_2",
-	AWS_EU_WEST_3:    "AWS_EU_WEST_3",
-	AWS_EU_CENTRAL_1: "AWS_EU_CENTRAL_1",
-	AWS_EU_SOUTH_1:   "AWS_EU_SOUTH_1",
-	AWS_EU_NORTH_1:   "AWS_EU_NORTH_1",
+	EU_WEST_1:    "EU_WEST_1",
+	EU_WEST_2:    "EU_WEST_2",
+	EU_WEST_3:    "EU_WEST_3",
+	EU_CENTRAL_1: "EU_CENTRAL_1",
+	EU_SOUTH_1:   "EU_SOUTH_1",
+	EU_NORTH_1:   "EU_NORTH_1",
 
 	// South America
-	AWS_SA_EAST_1: "AWS_SA_EAST_1",
+	SA_EAST_1: "SA_EAST_1",
 
 	// Africa
-	AWS_AF_SOUTH_1: "AWS_AF_SOUTH_1",
+	AF_SOUTH_1: "AF_SOUTH_1",
 
 	// Asia
-	AWS_AP_EAST_1:      "AWS_AP_EAST_1",
-	AWS_ME_SOUTH_1:     "AWS_ME_SOUTH_1",
-	AWS_AP_SOUTH_1:     "AWS_AP_SOUTH_1",
-	AWS_AP_NORTHEAST_2: "AWS_AP_NORTHEAST_2",
-	AWS_AP_SOUTHEAST_1: "AWS_AP_SOUTHEAST_1",
-	AWS_AP_NORTHEAST_1: "AWS_AP_NORTHEAST_1",
+	AP_EAST_1:      "AP_EAST_1",
+	ME_SOUTH_1:     "ME_SOUTH_1",
+	AP_SOUTH_1:     "AP_SOUTH_1",
+	AP_NORTHEAST_2: "AP_NORTHEAST_2",
+	AP_SOUTHEAST_1: "AP_SOUTHEAST_1",
+	AP_NORTHEAST_1: "AP_NORTHEAST_1",
 
 	// Australia
-	AWS_AP_SOUTHEAST_2: "AWS_AP_SOUTHEAST_2",
+	AP_SOUTHEAST_2: "AP_SOUTHEAST_2",
+}
+
+var syntheticsPublicLocationsMap = map[string]SyntheticsPublicLocation{
+	"Columbus, OH, USA":      syntheticsPublicLocations.US_EAST_2,
+	"Montreal, Québec, CA":   syntheticsPublicLocations.CA_CENTRAL_1,
+	"Portland, OR, USA":      syntheticsPublicLocations.US_WEST_2,
+	"San Francisco, CA, USA": syntheticsPublicLocations.US_WEST_1,
+	"Washington, DC, USA":    syntheticsPublicLocations.US_EAST_1,
+	"São Paulo, BR":          syntheticsPublicLocations.SA_EAST_1,
+	"Hong Kong, HK":          syntheticsPublicLocations.AP_EAST_1,
+	"Manama, BH":             syntheticsPublicLocations.ME_SOUTH_1,
+	"Mumbai, IN":             syntheticsPublicLocations.AP_SOUTH_1,
+	"Seoul, KR":              syntheticsPublicLocations.AP_NORTHEAST_2,
+	"Singapore, SG":          syntheticsPublicLocations.AP_SOUTHEAST_1,
+	"Tokyo, JP":              syntheticsPublicLocations.AP_NORTHEAST_1,
+	"Dublin, IE":             syntheticsPublicLocations.EU_WEST_1,
+	"Frankfurt, DE":          syntheticsPublicLocations.EU_CENTRAL_1,
+	"London, England, UK":    syntheticsPublicLocations.EU_WEST_2,
+	"Milan, IT":              syntheticsPublicLocations.EU_SOUTH_1,
+	"Paris, FR":              syntheticsPublicLocations.EU_WEST_3,
+	"Stockholm, SE":          syntheticsPublicLocations.EU_NORTH_1,
+	"Sydney, AU":             syntheticsPublicLocations.AP_SOUTHEAST_2,
+	"Cape Town, ZA":          syntheticsPublicLocations.AF_SOUTH_1,
+}
+
+func getPublicLocationsFromEntityTags(tags []entities.EntityTag) []string {
+	out := []string{}
+
+	for _, t := range tags {
+		if t.Key == "publicLocation" {
+			for _, v := range t.Values {
+				out = append(out, string(syntheticsPublicLocationsMap[v]))
+			}
+		}
+	}
+
+	return out
 }
