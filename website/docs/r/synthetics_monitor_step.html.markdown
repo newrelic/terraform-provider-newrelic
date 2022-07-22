@@ -63,7 +63,6 @@ All nested `tag` blocks support the following common arguments:
 * `key` - (Required) Name of the tag key.
 * `values` - (Required) Values associated with the tag key.
 
-
 ## Attributes Reference
 
 The following attributes are exported:
