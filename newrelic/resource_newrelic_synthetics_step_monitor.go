@@ -91,10 +91,10 @@ func resourceNewRelicSyntheticsStepMonitor() *schema.Resource {
 							Description: "The position of the step within the script ranging from 1-100",
 						},
 						"type": {
-							Type:         schema.TypeString,
-							Required:     true,
-							Description:  "The metadata values related to the step. valid values are ASSERT_ELEMENT, ASSERT_MODAL, ASSERT_TEXT, ASSERT_TITLE, CLICK_ELEMENT, DISMISS_MODAL, DOUBLE_CLICK_ELEMENT, HOVER_ELEMENT, NAVIGATE, SECURE_TEXT_ENTRY, SELECT_ELEMENT, TEXT_ENTRY",
-							ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorTypes(), false),
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The metadata values related to the step. valid values are ASSERT_ELEMENT, ASSERT_MODAL, ASSERT_TEXT, ASSERT_TITLE, CLICK_ELEMENT, DISMISS_MODAL, DOUBLE_CLICK_ELEMENT, HOVER_ELEMENT, NAVIGATE, SECURE_TEXT_ENTRY, SELECT_ELEMENT, TEXT_ENTRY",
+							//ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorTypes(), false),
 						},
 						"values": {
 							Type:        schema.TypeString,
