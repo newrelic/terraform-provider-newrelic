@@ -35,7 +35,7 @@ See additional [examples](#additional-examples).
 
 ## Argument Reference
 
-The following are the common arguments supported for `CERTIFICATE CHECK` monitor:
+The following are the common arguments supported for `STEP` monitor:
 
 * `account_id`- (Required) The account in which the Synthetics monitor will be created.
 * `name` - (Required) The name for the monitor.
