@@ -28,11 +28,13 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 			return nil, err
 		}
 
-		destination.Auth = *a
+		destination.Auth = a
+	} else if isEmailType {
+		destination.Auth = nil
 	}
 
 	if !isEmailType {
-		err := validateDestinationAuth(destination.Auth)
+		err := validateDestinationAuth(*destination.Auth)
 		if err != nil {
 			return nil, err
 		}
@@ -71,8 +73,9 @@ func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications
 	destinationType := notifications.AiNotificationsDestinationType(d.Get("type").(string))
 
 	var auth, authOk = d.GetOk("auth")
+	isEmailType := validateEmailDestinationType(destinationType)
 
-	if !authOk {
+	if !authOk && !isEmailType {
 		return nil, errors.New("notification destination requires an auth attribute")
 	}
 
@@ -82,12 +85,16 @@ func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications
 			return nil, err
 		}
 
-		destination.Auth = *a
+		destination.Auth = a
+	} else if isEmailType {
+		destination.Auth = nil
 	}
 
-	err := validateDestinationAuth(destination.Auth)
-	if err != nil {
-		return nil, err
+	if !isEmailType {
+		err := validateDestinationAuth(*destination.Auth)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	properties, propertiesOk := d.GetOk("property")
