@@ -16,9 +16,9 @@ func expandNotificationChannel(d *schema.ResourceData) (*notifications.AiNotific
 	}
 
 	properties, propertiesOk := d.GetOk("property")
-	isNonPropertyType := validateNonPropertyChannelType(channel.Type)
+	isEmailType := validateEmailChannelType(channel.Type)
 
-	if !propertiesOk && !isNonPropertyType {
+	if !propertiesOk && !isEmailType {
 		return nil, errors.New("notification channel requires a property attribute")
 	}
 
@@ -33,8 +33,8 @@ func expandNotificationChannel(d *schema.ResourceData) (*notifications.AiNotific
 				channel.Properties = append(channel.Properties, *val)
 			}
 		}
-	} else if isNonPropertyType {
-		channel.Properties = []notifications.AiNotificationsPropertyInput{{Key: "", Value: ""}} // Empty
+	} else if isEmailType {
+		channel.Properties = []notifications.AiNotificationsPropertyInput{{Key: "subject", Value: "{{ issueTitle }}"}} // Default subject
 	}
 
 	return &channel, nil
@@ -48,9 +48,9 @@ func expandNotificationChannelUpdate(d *schema.ResourceData) (*notifications.AiN
 	channelType := notifications.AiNotificationsChannelType(d.Get("type").(string))
 
 	properties, propertiesOk := d.GetOk("property")
-	isNonPropertyType := validateNonPropertyChannelType(channelType)
+	isEmailType := validateEmailChannelType(channelType)
 
-	if !propertiesOk && !isNonPropertyType {
+	if !propertiesOk && !isEmailType {
 		return nil, errors.New("notification channel requires a property attribute")
 	}
 
@@ -65,7 +65,7 @@ func expandNotificationChannelUpdate(d *schema.ResourceData) (*notifications.AiN
 				channel.Properties = append(channel.Properties, *val)
 			}
 		}
-	} else if isNonPropertyType {
+	} else if isEmailType {
 		channel.Properties = []notifications.AiNotificationsPropertyInput{{Key: "subject", Value: "{{ issueTitle }}"}} // Default subject
 	}
 
@@ -166,6 +166,6 @@ func flattenNotificationChannelProperty(p *notifications.AiNotificationsProperty
 	return propertyResult, nil
 }
 
-func validateNonPropertyChannelType(channelType notifications.AiNotificationsChannelType) bool {
+func validateEmailChannelType(channelType notifications.AiNotificationsChannelType) bool {
 	return channelType == notifications.AiNotificationsChannelTypeTypes.EMAIL
 }
