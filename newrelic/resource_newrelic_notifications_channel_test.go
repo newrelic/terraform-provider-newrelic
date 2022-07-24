@@ -121,7 +121,7 @@ func testAccNewRelicNotificationChannelDestroy(s *terraform.State) error {
 }
 
 func testNewRelicNotificationChannelConfigByType(name string, channelType string, product string, destinationId string, properties string) string {
-	if properties = "" {
+	if properties == "" {
 		return fmt.Sprintf(`
 		resource "newrelic_notification_channel" "test_foo" {
 			name = "%s"
