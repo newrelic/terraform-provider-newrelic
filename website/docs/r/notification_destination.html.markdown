@@ -48,10 +48,10 @@ The following arguments are supported:
 
 Each authentication type supports a specific set of arguments:
 
-* `basic`
+* `BASIC`
   * `user` - (Required) The username of the basic auth.
   * `password` - (Required) Specifies an authentication password for use with a destination.
-* `token`
+* `TOKEN`
   * `prefix` - (Required) The prefix of the token auth.
   * `token` - (Required) Specifies the token for integrating.
 

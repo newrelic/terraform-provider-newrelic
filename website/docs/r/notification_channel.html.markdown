@@ -54,7 +54,7 @@ Each notification channel type supports a specific set of arguments for the `pro
   * `project` - (Required) A map of key/value pairs that represents the jira project id.
   * `issuetype` - (Required) A map of key/value pairs that represents the issue type id.
 * `EMAIL`
-  * `subject` - (Required) A map of key/value pairs that represents the email subject title.
+  * `subject` - (Optional) A map of key/value pairs that represents the email subject title.
   * `customDetailsEmail` - (Optional) A map of key/value pairs that represents the email custom details.
 * `PAGERDUTY_SERVICE_INTEGRATION`
   * `summary` - (Required) A map of key/value pairs that represents the summery.

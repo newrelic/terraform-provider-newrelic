@@ -66,7 +66,7 @@ func expandNotificationChannelUpdate(d *schema.ResourceData) (*notifications.AiN
 			}
 		}
 	} else if isNonPropertyType {
-		channel.Properties = []notifications.AiNotificationsPropertyInput{{Key: "", Value: ""}} // Empty
+		channel.Properties = []notifications.AiNotificationsPropertyInput{{Key: "subject", Value: "{{ issueTitle }}"}} // Default subject
 	}
 
 	return &channel, nil

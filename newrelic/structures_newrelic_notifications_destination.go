@@ -278,17 +278,9 @@ func validateDestinationAuth(auth notifications.AiNotificationsCredentialsInput)
 }
 
 func validatePagerDutyDestinationType(destinationType notifications.AiNotificationsDestinationType) bool {
-	if destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION || destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION {
-		return true
-	}
-
-	return false
+	return destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION || destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION
 }
 
 func validateEmailDestinationType(destinationType notifications.AiNotificationsDestinationType) bool {
-	if destinationType == notifications.AiNotificationsDestinationTypeTypes.EMAIL {
-		return true
-	}
-
-	return false
+	return destinationType == notifications.AiNotificationsDestinationTypeTypes.EMAIL
 }
