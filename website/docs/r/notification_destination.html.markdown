@@ -12,7 +12,7 @@ Use this resource to create and manage New Relic notification destinations.
 
 ## Example Usage
 
-##### Webhook
+##### [Webhook](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#webhook)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
   name = "foo"
@@ -25,8 +25,8 @@ resource "newrelic_notification_destination" "foo" {
 
   auth = {
     type = "BASIC"
-    user = "user"
-    password = "1234"
+    user = "username"
+    password = "password"
   }
 }
 ```
@@ -39,8 +39,8 @@ The following arguments are supported:
 * `account_id` - (Optional) Determines the New Relic account where the notification destination will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the destination.
 * `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `WEBHOOK`, `JIRA`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
-* `auth` - (Required) A nested block that describes a notification destination authentication. Only one auth block is permitted per notification destination definition.  See [Nested auth blocks](#nested-auth-blocks) below for details.
-* `property` - (Required) A nested block that describes a notification destination properties. See [Nested property blocks](#nested-property-blocks) below for details.
+* `auth` - A nested block that describes a notification destination authentication. Only one auth block is permitted per notification destination definition.  See [Nested auth blocks](#nested-auth-blocks) below for details.
+* `property` - A nested block that describes a notification destination properties. See [Nested property blocks](#nested-property-blocks) below for details.
 
 ### Nested `auth` blocks
 
@@ -50,7 +50,7 @@ Each authentication type supports a specific set of arguments:
 
 * `basic`
   * `user` - (Required) The username of the basic auth.
-  * `password` - (Optional) Specifies an authentication password for use with a destination.
+  * `password` - (Required) Specifies an authentication password for use with a destination.
 * `token`
   * `prefix` - (Required) The prefix of the token auth.
   * `token` - (Required) Specifies the token for integrating.
@@ -66,7 +66,7 @@ Each notification destination type supports a specific set of arguments for the 
 * `WEBHOOK`
   * `url` - (Required) A map of key/value pairs that represents the webhook url.
 * `SERVICE_NOW`
-  * `url` - (Required) A map of key/value pairs that represents the service now url.
+  * `url` - (Required) A map of key/value pairs that represents the service now destination url.
   * `two_way_integration` - (Optional) A map of key/value pairs that represents the two-way integration on/off flag.
 * `JIRA`
   * `url` - (Required) A map of key/value pairs that represents the jira url.
@@ -82,7 +82,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Additional Examples
 
-##### ServiceNow
+##### [ServiceNow](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#servicenow)
 
 ```hcl
 resource "newrelic_notification_destination" "foo" {
@@ -101,13 +101,13 @@ resource "newrelic_notification_destination" "foo" {
 
   auth = {
     type = "BASIC"
-    user = "user"
-    password = "pass"
+    user = "username"
+    password = "password"
   }
 }
 ```
 
-##### Email
+##### [Email](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#email)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
   name = "email-example"
@@ -117,16 +117,10 @@ resource "newrelic_notification_destination" "foo" {
     key = "email"
     value = "email@email.com,email2@email.com"
   }
-  
-  auth = {
-    type = "TOKEN"
-    prefix = "prefix"
-    token = "bearer"
-  }
 }
 ```
 
-##### Jira
+##### [Jira](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#jira)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
   name = "jira-example"
@@ -134,22 +128,36 @@ resource "newrelic_notification_destination" "foo" {
 
   property {
     key = "url"
-    value = "https://test.atlassian.net"
+    value = "https://example.atlassian.net"
   }
   
   auth = {
-    type = "TOKEN"
-    prefix = "prefix"
-    token = "bearer"
+    type = "BASIC"
+    user = "example@email.com"
+    password = "password"
   }
 }
 ```
 
-##### PagerDuty with service integration
+##### [PagerDuty with service integration](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#pagerduty-sli)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
   name = "pagerduty-service-example"
   type = "PAGERDUTY_SERVICE_INTEGRATION"
+
+  auth = {
+    type   = "TOKEN"
+    prefix = "Bearer"
+    token  = "10567a689d984d03c021034b22a789e2"
+  }
+}
+```
+
+##### [PagerDuty with account integration](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#pagerduty-ali)
+```hcl
+resource "newrelic_notification_destination" "foo" {
+  name = "pagerduty-account-example"
+  type = "PAGERDUTY_ACCOUNT_INTEGRATION"
 
   property {
     key = "two_way_integration"
@@ -158,24 +166,14 @@ resource "newrelic_notification_destination" "foo" {
 
   auth = {
     type   = "TOKEN"
-    prefix = "prefix"
-    token  = "bearer"
-  }
-}
-```
-
-##### PagerDuty with account integration
-```hcl
-resource "newrelic_notification_destination" "foo" {
-  name = "pagerduty-account-example"
-  type = "PAGERDUTY_ACCOUNT_INTEGRATION"
-
-  auth = {
-    type   = "TOKEN"
-    prefix = "prefix"
-    token  = "bearer"
+    prefix = "Bearer"
+    token  = "10567a689d984d03c021034b22a789e2"
   }
 }
 ``` 
 
-~> **NOTE:** Sensitive data such as destination API keys, service keys, etc are not returned from the underlying API for security reasons and may not be set in state when importing.
+
+~> **NOTE:** Sensitive data such as destination API keys, service keys, auth object, etc are not returned from the underlying API for security reasons and may not be set in state when importing.
+
+## Additional Information
+More information can be found in NewRelic [documentation](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/).

@@ -16,8 +16,9 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 	}
 
 	var auth, authOk = d.GetOk("auth")
+	isEmailType := validateEmailDestinationType(destination.Type)
 
-	if !authOk {
+	if !authOk && !isEmailType {
 		return nil, errors.New("notification destination requires an auth attribute")
 	}
 
@@ -30,9 +31,11 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 		destination.Auth = *a
 	}
 
-	err := validateDestinationAuth(destination.Auth)
-	if err != nil {
-		return nil, err
+	if !isEmailType {
+		err := validateDestinationAuth(destination.Auth)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	properties, propertiesOk := d.GetOk("property")
@@ -276,6 +279,14 @@ func validateDestinationAuth(auth notifications.AiNotificationsCredentialsInput)
 
 func validatePagerDutyDestinationType(destinationType notifications.AiNotificationsDestinationType) bool {
 	if destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION || destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION {
+		return true
+	}
+
+	return false
+}
+
+func validateEmailDestinationType(destinationType notifications.AiNotificationsDestinationType) bool {
+	if destinationType == notifications.AiNotificationsDestinationTypeTypes.EMAIL {
 		return true
 	}
 

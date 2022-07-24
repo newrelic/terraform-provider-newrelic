@@ -22,6 +22,10 @@ func TestExpandNotificationDestination(t *testing.T) {
 		"key":   "url",
 		"value": "https://webhook.com",
 	}
+	emailProperty := map[string]interface{}{
+		"key":   "email",
+		"value": "example@email.com",
+	}
 
 	cases := map[string]struct {
 		Data         map[string]interface{}
@@ -31,7 +35,7 @@ func TestExpandNotificationDestination(t *testing.T) {
 	}{
 		"missing auth": {
 			Data: map[string]interface{}{
-				"name": "testing123",
+				"name": "webhook-test",
 				"type": "WEBHOOK",
 			},
 			ExpectErr:    true,
@@ -39,7 +43,7 @@ func TestExpandNotificationDestination(t *testing.T) {
 		},
 		"invalid auth type": {
 			Data: map[string]interface{}{
-				"name": "testing123",
+				"name": "webhook-test",
 				"type": "WEBHOOK",
 				"auth": map[string]string{
 					"type": "INVALID",
@@ -49,9 +53,9 @@ func TestExpandNotificationDestination(t *testing.T) {
 			ExpectErr:    true,
 			ExpectReason: "auth type must be token or basic",
 		},
-		"missing value in token type": {
+		"missing value in token auth type": {
 			Data: map[string]interface{}{
-				"name": "testing123",
+				"name": "webhook-test",
 				"type": "WEBHOOK",
 				"auth": map[string]string{
 					"type":   "TOKEN",
@@ -61,25 +65,58 @@ func TestExpandNotificationDestination(t *testing.T) {
 			ExpectErr:    true,
 			ExpectReason: "token and prefix are required when using token auth type",
 		},
-		"valid destination": {
+		"valid webhook destination": {
 			Data: map[string]interface{}{
-				"name":     "testing123",
+				"name":     "webhook-test",
 				"type":     "WEBHOOK",
 				"property": []interface{}{property},
 				"auth": map[string]string{
 					"type":     "BASIC",
 					"user":     "test-user",
-					"password": "1234",
+					"password": "pass",
 				},
 			},
 			Expanded: &notifications.AiNotificationsDestination{
-				Name: "testing123",
+				Name: "webhook-test",
 				Type: notifications.AiNotificationsDestinationTypeTypes.WEBHOOK,
 				Auth: auth,
 				Properties: []notifications.AiNotificationsProperty{
 					{
 						Key:   "url",
 						Value: "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b",
+					},
+				},
+			},
+		},
+		"valid pager duty destination (no properties)": {
+			Data: map[string]interface{}{
+				"name": "pd-service-test",
+				"type": "PAGERDUTY_SERVICE_INTEGRATION",
+				"auth": map[string]string{
+					"type":     "BASIC",
+					"user":     "test-user",
+					"password": "pass",
+				},
+			},
+			Expanded: &notifications.AiNotificationsDestination{
+				Name: "pd-service-test",
+				Type: notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION,
+				Auth: auth,
+			},
+		},
+		"valid email destination (no auth)": {
+			Data: map[string]interface{}{
+				"name":     "email-test",
+				"type":     "EMAIL",
+				"property": []interface{}{emailProperty},
+			},
+			Expanded: &notifications.AiNotificationsDestination{
+				Name: "email-test",
+				Type: notifications.AiNotificationsDestinationTypeTypes.EMAIL,
+				Properties: []notifications.AiNotificationsProperty{
+					{
+						Key:   "email",
+						Value: "example@email.com",
 					},
 				},
 			},

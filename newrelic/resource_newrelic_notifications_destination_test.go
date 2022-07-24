@@ -15,8 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestNewRelicNotificationDestination_Basic(t *testing.T) {
-	resourceName := "newrelic_notification_destination.test_foo"
+func TestNewRelicNotificationDestinationWebhook_Basic(t *testing.T) {
+	resourceName := "newrelic_notification_destination.webhook_test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
 
@@ -27,7 +27,7 @@ func TestNewRelicNotificationDestination_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testNewRelicNotificationDestinationConfigByType(rName, "webhook", `{
+				Config: testNewRelicNotificationDestinationConfigByType(rName, "WEBHOOK", `{
 					type = "BASIC"
 					user = "test-user"
 					password = "pass123"
@@ -41,7 +41,7 @@ func TestNewRelicNotificationDestination_Basic(t *testing.T) {
 			},
 			// Test: Update
 			{
-				Config: testNewRelicNotificationDestinationConfigByType(rName, "webhook", `{
+				Config: testNewRelicNotificationDestinationConfigByType(rName, "WEBHOOK", `{
 					type = "BASIC"
 					user = "test-user-update"
 					password = "pass12345678-update"
@@ -49,6 +49,88 @@ func TestNewRelicNotificationDestination_Basic(t *testing.T) {
 					key = "url"
 					value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
 				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+				),
+			},
+			// Test: Import
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      resourceName,
+			},
+		},
+	})
+}
+
+func TestNewRelicNotificationDestinationEmail_Basic(t *testing.T) {
+	resourceName := "newrelic_notification_destination.email_test_foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationDestinationDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testNewRelicNotificationDestinationConfigByType(rName, "EMAIL", "", `{
+					key = "email"
+					value = "email_test@gmail.com"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testNewRelicNotificationDestinationConfigByType(rName, "EMAIL", "", `{
+					key = "email"
+					value = "update_email_test@gmail.com"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+				),
+			},
+			// Test: Import
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      resourceName,
+			},
+		},
+	})
+}
+
+func TestNewRelicNotificationDestinationPagerDuty_Basic(t *testing.T) {
+	resourceName := "newrelic_notification_destination.pagerduty_test_foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationDestinationDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testNewRelicNotificationDestinationConfigByType(rName, "PAGERDUTY_SERVICE_INTEGRATION", `{
+					type = "TOKEN"
+					prefix = "Bearer"
+					token  = "10567a689d984d03c021034b22a789e2"
+				}`, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testNewRelicNotificationDestinationConfigByType(rName, "PAGERDUTY_SERVICE_INTEGRATION", `{
+					type = "TOKEN"
+					prefix = "Bearer"
+					token  = "another-689d984d03c021034b22a789e2"
+				}`, ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
 				),
@@ -90,6 +172,26 @@ func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {
 }
 
 func testNewRelicNotificationDestinationConfigByType(name string, channelType string, auth string, properties string) string {
+	if auth == "" {
+		return fmt.Sprintf(`
+		resource "newrelic_notification_destination" "test_foo" {
+			name = "%s"
+			type = "%s"
+			property %s
+		}
+	`, name, channelType, properties)
+	}
+
+	if properties == "" {
+		return fmt.Sprintf(`
+		resource "newrelic_notification_destination" "test_foo" {
+			name = "%s"
+			type = "%s"
+			auth = "%s"
+		}
+	`, name, channelType, auth)
+	}
+
 	return fmt.Sprintf(`
 		resource "newrelic_notification_destination" "test_foo" {
 			name = "%s"
