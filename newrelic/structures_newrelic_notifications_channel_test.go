@@ -28,7 +28,7 @@ func TestExpandNotificationChannel(t *testing.T) {
 			Data: map[string]interface{}{
 				"name":           "webhook-test",
 				"type":           "WEBHOOK",
-				"property":       []interface{}{property},
+				"properties":     []interface{}{property},
 				"product":        "IINT",
 				"destination_id": "b1e90a32-23b7-4028-b2c7-ffbdfe103852",
 			},

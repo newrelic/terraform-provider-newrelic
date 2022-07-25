@@ -177,7 +177,7 @@ func testNewRelicNotificationDestinationConfigByType(name string, channelType st
 		resource "newrelic_notification_destination" "test_foo" {
 			name = "%s"
 			type = "%s"
-			property %s
+			properties %s
 		}
 	`, name, channelType, properties)
 	}
@@ -197,7 +197,7 @@ func testNewRelicNotificationDestinationConfigByType(name string, channelType st
 			name = "%s"
 			type = "%s"
 			auth = "%s"
-			property %s
+			properties %s
 		}
 	`, name, channelType, auth, properties)
 }

@@ -67,9 +67,9 @@ func TestExpandNotificationDestination(t *testing.T) {
 		},
 		"valid webhook destination": {
 			Data: map[string]interface{}{
-				"name":     "webhook-test",
-				"type":     "WEBHOOK",
-				"property": []interface{}{property},
+				"name":       "webhook-test",
+				"type":       "WEBHOOK",
+				"properties": []interface{}{property},
 				"auth": map[string]string{
 					"type":     "BASIC",
 					"user":     "test-user",
@@ -106,9 +106,9 @@ func TestExpandNotificationDestination(t *testing.T) {
 		},
 		"valid email destination (no auth)": {
 			Data: map[string]interface{}{
-				"name":     "email-test",
-				"type":     "EMAIL",
-				"property": []interface{}{emailProperty},
+				"name":       "email-test",
+				"type":       "EMAIL",
+				"properties": []interface{}{emailProperty},
 			},
 			Expanded: &notifications.AiNotificationsDestination{
 				Name: "email-test",

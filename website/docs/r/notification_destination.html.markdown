@@ -18,7 +18,7 @@ resource "newrelic_notification_destination" "foo" {
   name = "foo"
   type = "WEBHOOK"
 
-  property {
+  properties {
     key = "url"
     value = "https://webhook.site/"
   }
@@ -40,7 +40,7 @@ The following arguments are supported:
 * `name` - (Required) The name of the destination.
 * `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `WEBHOOK`, `JIRA`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
 * `auth` - A nested block that describes a notification destination authentication. Only one auth block is permitted per notification destination definition.  See [Nested auth blocks](#nested-auth-blocks) below for details.
-* `property` - A nested block that describes a notification destination properties. See [Nested property blocks](#nested-property-blocks) below for details.
+* `properties` - A nested block that describes a notification destination properties. See [Nested properties blocks](#nested-properties-blocks) below for details.
 
 ### Nested `auth` blocks
 
@@ -57,9 +57,9 @@ Each authentication type supports a specific set of arguments:
 
 ~> **NOTE:** OAuth2 authentication type is not available via terraform for notifications destinations.
 
-### Nested `property` blocks
+### Nested `properties` blocks
 
-Each notification destination type supports a specific set of arguments for the `property` block:
+Each notification destination type supports a specific set of arguments for the `properties` block:
 
 * `EMAIL`
   * `email` - (Required) A map of key/value pairs that represents the email addresses.
@@ -89,12 +89,12 @@ resource "newrelic_notification_destination" "foo" {
   name = "servicenow-example"
   type = "SERVICE_NOW"
 
-  property {
+  properties {
     key = "url"
     value = "https://service-now.com/"
   }
 
-  property {
+  properties {
     key = "two_way_integration"
     value = "true"
   }
@@ -113,7 +113,7 @@ resource "newrelic_notification_destination" "foo" {
   name = "email-example"
   type = "EMAIL"
 
-  property {
+  properties {
     key = "email"
     value = "email@email.com,email2@email.com"
   }
@@ -126,7 +126,7 @@ resource "newrelic_notification_destination" "foo" {
   name = "jira-example"
   type = "JIRA"
 
-  property {
+  properties {
     key = "url"
     value = "https://example.atlassian.net"
   }
@@ -159,7 +159,7 @@ resource "newrelic_notification_destination" "foo" {
   name = "pagerduty-account-example"
   type = "PAGERDUTY_ACCOUNT_INTEGRATION"
 
-  property {
+  properties {
     key = "two_way_integration"
     value = "true"
   }

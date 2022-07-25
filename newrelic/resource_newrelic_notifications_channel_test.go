@@ -138,7 +138,7 @@ func testNewRelicNotificationChannelConfigByType(name string, channelType string
 			type = "%s"
 			product = "%s"
 			destination_id = "%s"
-			property %s
+			properties %s
 		}
 	`, name, channelType, product, destinationId, properties)
 }

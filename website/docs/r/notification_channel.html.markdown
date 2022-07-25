@@ -20,7 +20,7 @@ resource "newrelic_notification_channel" "foo" {
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "IINT"
 
-  property {
+  properties {
     key = "payload"
     value = "{\n\t\"name\": \"foo\"\n}"
     label = "Payload Template"
@@ -38,11 +38,11 @@ The following arguments are supported:
 * `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `WEBHOOK`, `JIRA_CLASSIC`, `JIRA_NEXTGEN`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
 * `destination_id` - (Required) The id of the destination.
 * `product` - (Required) The type of product.  One of: `DISCUSSIONS`, `ERROR_TRACKING` or `IINT` (workflows).
-* `property` - A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
+* `properties` - A nested block that describes a notification channel properties. See [Nested properties blocks](#nested-properties-blocks) below for details.
 
-### Nested `property` blocks
+### Nested `properties` blocks
 
-Each notification channel type supports a specific set of arguments for the `property` block:
+Each notification channel type supports a specific set of arguments for the `properties` block:
 
 * `WEBHOOK`
   * `headers` - (Optional) A map of key/value pairs that represents the webhook headers.
@@ -79,12 +79,12 @@ resource "newrelic_notification_channel" "foo" {
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "IINT"
 
-  property {
+  properties {
     key = "description"
     value = "General description"
   }
 
-  property {
+  properties {
     key = "short_description"
     value = "Short description"
   }
@@ -99,7 +99,7 @@ resource "newrelic_notification_channel" "foo" {
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "ERROR_TRACKING"
 
-  property {
+  properties {
     key = "subject"
     value = "New Subject Title"
   }
@@ -114,22 +114,22 @@ resource "newrelic_notification_channel" "foo" {
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "ERROR_TRACKING"
   
-  property {
+  properties {
     key = "project"
     value = "10000"
   }
 
-  property {
+  properties {
     key = "issuetype"
     value = "10004"
   }
 
-  property {
+  properties {
     key = "description"
     value = "Issue ID: {{ issueId }}"
   }
 
-  property {
+  properties {
     key = "summary"
     value = "{{ annotations.title.[0] }}"
   }
@@ -144,17 +144,17 @@ resource "newrelic_notification_channel" "foo" {
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "IINT"
 
-  property {
+  properties {
     key = "summary"
     value = "General summary"
   }
 
-  property {
+  properties {
     key = "service"
     value = "PTQK3FM"
   }
 
-  property {
+  properties {
     key = "email"
     value = "example@email.com"
   }
@@ -169,7 +169,7 @@ resource "newrelic_notification_channel" "foo" {
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "IINT"
 
-  property {
+  properties {
     key = "summary"
     value = "General summary"
   }

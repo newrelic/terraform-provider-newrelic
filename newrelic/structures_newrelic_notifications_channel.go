@@ -15,11 +15,11 @@ func expandNotificationChannel(d *schema.ResourceData) (*notifications.AiNotific
 		Product:       notifications.AiNotificationsProduct(d.Get("product").(string)),
 	}
 
-	properties, propertiesOk := d.GetOk("property")
+	properties, propertiesOk := d.GetOk("properties")
 	isEmailType := validateEmailChannelType(channel.Type)
 
 	if !propertiesOk && !isEmailType {
-		return nil, errors.New("notification channel requires a property attribute")
+		return nil, errors.New("notification channel requires a properties attribute")
 	}
 
 	if propertiesOk {
@@ -47,11 +47,11 @@ func expandNotificationChannelUpdate(d *schema.ResourceData) (*notifications.AiN
 	}
 	channelType := notifications.AiNotificationsChannelType(d.Get("type").(string))
 
-	properties, propertiesOk := d.GetOk("property")
+	properties, propertiesOk := d.GetOk("properties")
 	isEmailType := validateEmailChannelType(channelType)
 
 	if !propertiesOk && !isEmailType {
-		return nil, errors.New("notification channel requires a property attribute")
+		return nil, errors.New("notification channel requires a properties attribute")
 	}
 
 	if propertiesOk {
@@ -122,7 +122,7 @@ func flattenNotificationChannel(channel *notifications.AiNotificationsChannel, d
 		return propertiesErr
 	}
 
-	if err := d.Set("property", properties); err != nil {
+	if err := d.Set("properties", properties); err != nil {
 		return err
 	}
 

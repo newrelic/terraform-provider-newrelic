@@ -40,7 +40,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			},
 
 			// Optional
-			"property": {
+			"properties": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Notification destination property type.",
@@ -104,7 +104,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Computed:    true,
 				Description: "The last time a notification was sent.",
 			},
-			"id": {
+			"destination_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The id of the destination.",

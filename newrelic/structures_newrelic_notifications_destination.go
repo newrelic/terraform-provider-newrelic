@@ -40,7 +40,7 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 		}
 	}
 
-	properties, propertiesOk := d.GetOk("property")
+	properties, propertiesOk := d.GetOk("properties")
 	isPagerDutyType := validatePagerDutyDestinationType(destination.Type)
 
 	if !propertiesOk && !isPagerDutyType {
@@ -97,7 +97,7 @@ func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications
 		}
 	}
 
-	properties, propertiesOk := d.GetOk("property")
+	properties, propertiesOk := d.GetOk("properties")
 	isPagerDutyType := validatePagerDutyDestinationType(destinationType)
 
 	if !propertiesOk && !isPagerDutyType {
@@ -199,7 +199,7 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return propertiesErr
 	}
 
-	if err := d.Set("property", properties); err != nil {
+	if err := d.Set("properties", properties); err != nil {
 		return err
 	}
 

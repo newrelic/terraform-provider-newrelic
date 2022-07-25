@@ -53,7 +53,7 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 			},
 
 			// Optional
-			"property": {
+			"properties": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Notification channel property type.",
@@ -100,7 +100,7 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the channel.",
 			},
-			"id": {
+			"channel_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The id of the channel.",
