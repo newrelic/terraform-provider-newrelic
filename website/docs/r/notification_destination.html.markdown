@@ -8,7 +8,7 @@ Create and manage a notification destination for notifications in New Relic.
 
 # Resource: newrelic\_notification\_destination
 
-Use this resource to create and manage New Relic notification destinations.
+Use this resource to create and manage New Relic notification destinations. Details regarding supported products and permissions can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/destinations).
 
 ## Example Usage
 
@@ -147,7 +147,7 @@ resource "newrelic_notification_destination" "foo" {
 
   auth = {
     type   = "TOKEN"
-    prefix = "Bearer"
+    prefix = "Token token="
     token  = "10567a689d984d03c021034b22a789e2"
   }
 }
@@ -166,8 +166,8 @@ resource "newrelic_notification_destination" "foo" {
 
   auth = {
     type   = "TOKEN"
-    prefix = "Bearer"
-    token  = "10567a689d984d03c021034b22a789e2"
+    prefix = "Token token="
+    token  = "u+E8EU3MhsZwLfZ1ic1A"
   }
 }
 ``` 
@@ -176,4 +176,5 @@ resource "newrelic_notification_destination" "foo" {
 ~> **NOTE:** Sensitive data such as destination API keys, service keys, auth object, etc are not returned from the underlying API for security reasons and may not be set in state when importing.
 
 ## Additional Information
-More information can be found in NewRelic [documentation](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/).
+More information about destinations integrations can be found in NewRelic [documentation](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/).
+More details about the destinations API can be found [here](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-destinations).

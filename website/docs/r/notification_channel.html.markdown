@@ -8,7 +8,7 @@ Create and manage a notification channel for notifications in New Relic.
 
 # Resource: newrelic\_notification\_channel
 
-Use this resource to create and manage New Relic notification channels.
+Use this resource to create and manage New Relic notification channels. Details regarding supported products and permissions can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/destinations).
 
 ## Example Usage
 
@@ -35,7 +35,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the notification channel will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the channel.
-* `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `WEBHOOK`, `JIRA_CLASSIC`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
+* `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `WEBHOOK`, `JIRA_CLASSIC`, `JIRA_NEXTGEN`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
 * `destination_id` - (Required) The id of the destination.
 * `product` - (Required) The type of product.  One of: `DISCUSSIONS`, `ERROR_TRACKING` or `IINT` (workflows).
 * `property` - A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
@@ -48,9 +48,9 @@ Each notification channel type supports a specific set of arguments for the `pro
   * `headers` - (Optional) A map of key/value pairs that represents the webhook headers.
   * `payload` - (Required) A map of key/value pairs that represents the webhook payload.
 * `SERVICENOW_INCIDENTS`
-  * `description` - (Required) A map of key/value pairs that represents a description.
-  * `short_description` - (Required) A map of key/value pairs that represents a short description.
-* `JIRA_CLASSIC`
+  * `description` - (Optional) A map of key/value pairs that represents a description.
+  * `short_description` - (Optional) A map of key/value pairs that represents a short description.
+* `JIRA_CLASSIC`, `JIRA_NEXTGEN`
   * `project` - (Required) A map of key/value pairs that represents the jira project id.
   * `issuetype` - (Required) A map of key/value pairs that represents the issue type id.
 * `EMAIL`
@@ -123,6 +123,16 @@ resource "newrelic_notification_channel" "foo" {
     key = "issuetype"
     value = "10004"
   }
+
+  property {
+    key = "description"
+    value = "Issue ID: {{ issueId }}"
+  }
+
+  property {
+    key = "summary"
+    value = "{{ annotations.title.[0] }}"
+  }
 }
 ```
 
@@ -169,4 +179,4 @@ resource "newrelic_notification_channel" "foo" {
 ~> **NOTE:** Sensitive data such as channel API keys, service keys, etc are not returned from the underlying API for security reasons and may not be set in state when importing.
 
 ## Additional Information
-More information can be found in NewRelic [documentation](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/).
+More details about the channels API can be found [here](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels).
