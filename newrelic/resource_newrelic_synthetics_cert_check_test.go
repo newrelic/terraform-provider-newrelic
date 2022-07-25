@@ -39,6 +39,19 @@ func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
 					testAccNewRelicSyntheticsCertCheckMonitorExists(resourceName),
 				),
 			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"locations_public",
+					"locations_private",
+					"certificate_expiration",
+					"domain",
+					"tag",
+				},
+			},
 		},
 	})
 }

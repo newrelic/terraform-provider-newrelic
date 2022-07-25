@@ -19,6 +19,9 @@ func resourceNewRelicSyntheticsCertCheckMonitor() *schema.Resource {
 		ReadContext:   resourceNewRelicSyntheticsCertCheckMonitorRead,
 		UpdateContext: resourceNewRelicSyntheticsCertCheckMonitorUpdate,
 		DeleteContext: resourceNewRelicSyntheticsCertCheckMonitorDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -192,8 +195,16 @@ func resourceNewRelicSyntheticsCertCheckMonitorRead(ctx context.Context, d *sche
 
 	switch e := (*resp).(type) {
 	case *entities.SyntheticMonitorEntity:
+		entity := (*resp).(*entities.SyntheticMonitorEntity)
+
+		d.SetId(string(e.GUID))
+		_ = d.Set("account_id", accountID)
+		//_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
+
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
-			"name": e.Name,
+			"name":   e.Name,
+			"period": string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
+			"status": string(entity.MonitorSummary.Status),
 		})
 	}
 
