@@ -3,6 +3,7 @@ package newrelic
 import (
 	"errors"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
