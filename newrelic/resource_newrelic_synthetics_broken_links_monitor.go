@@ -144,12 +144,11 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorCreate(ctx context.Context, d *
 	// Set attributes
 	d.SetId(string(resp.Monitor.GUID))
 	_ = d.Set("account_id", accountID)
-	attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
-	if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
-		return diag.FromErr(err)
-	}
+	err = setSyntheticsMonitorAttributes(d, map[string]string{
+		"guid": string(resp.Monitor.GUID),
+	})
 
-	return nil
+	return diag.FromErr(err)
 }
 
 func resourceNewRelicSyntheticsBrokenLinksMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -211,11 +210,8 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorUpdate(ctx context.Context, d *
 		"status": string(resp.Monitor.Status),
 		"uri":    resp.Monitor.Uri,
 	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
-	return nil
+	return diag.FromErr(err)
 }
 
 // NOTE: We can make rename this to reusable function for all new monitor types,
@@ -233,5 +229,5 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorDelete(ctx context.Context, d *
 
 	d.SetId("")
 
-	return nil
+	return diag.FromErr(err)
 }

@@ -122,58 +122,25 @@ func resourceNewRelicSyntheticsCertCheckMonitorCreate(ctx context.Context, d *sc
 
 	d.SetId(string(resp.Monitor.GUID))
 	_ = d.Set("account_id", accountID)
-
-	setSyntheticsCertCheckMonitorCreateAttributes(d, resp)
-
-	return nil
-}
-
-func setSyntheticsCertCheckMonitorCreateAttributes(d *schema.ResourceData, resp *synthetics.SyntheticsCertCheckMonitorCreateMutationResult) {
-	_ = d.Set("name", resp.Monitor.Name)
-	_ = d.Set("status", resp.Monitor.Status)
-	_ = d.Set("domain", resp.Monitor.Domain)
-	_ = d.Set("period", resp.Monitor.Period)
 	_ = d.Set("certificate_expiration", resp.Monitor.NumberDaysToFailBeforeCertExpires)
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
 	_ = d.Set("locations_private", resp.Monitor.Locations.Private)
-}
 
-func buildSyntheticsCertCheckMonitorCreateInput(d *schema.ResourceData) (result synthetics.SyntheticsCreateCertCheckMonitorInput) {
-	inputBase := expandSyntheticsMonitorBase(d)
+	err = setSyntheticsMonitorAttributes(d, map[string]string{
+		"domain": resp.Monitor.Domain,
+		"name":   resp.Monitor.Name,
+		"period": string(resp.Monitor.Period),
+		"status": string(resp.Monitor.Status),
+	})
 
-	input := synthetics.SyntheticsCreateCertCheckMonitorInput{
-		Name:   inputBase.Name,
-		Period: inputBase.Period,
-		Status: inputBase.Status,
-		Tags:   inputBase.Tags,
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  err.Error(),
+		})
 	}
 
-	if v, ok := d.GetOk("locations_public"); ok {
-		input.Locations.Public = expandSyntheticsCertMonitorLocations(v.(*schema.Set).List())
-	}
-	if v, ok := d.GetOk("locations_private"); ok {
-		input.Locations.Private = expandSyntheticsCertMonitorLocations(v.(*schema.Set).List())
-	}
-
-	if v, ok := d.GetOk("domain"); ok {
-		input.Domain = v.(string)
-	}
-
-	if v, ok := d.GetOk("certificate_expiration"); ok {
-		input.NumberDaysToFailBeforeCertExpires = v.(int)
-	}
-
-	return input
-}
-
-//function to expand synthetics locations.
-func expandSyntheticsCertMonitorLocations(locations []interface{}) []string {
-	locationsOut := make([]string, len(locations))
-
-	for i, v := range locations {
-		locationsOut[i] = v.(string)
-	}
-	return locationsOut
+	return diags
 }
 
 func resourceNewRelicSyntheticsCertCheckMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -231,46 +198,25 @@ func resourceNewRelicSyntheticsCertCheckMonitorUpdate(ctx context.Context, d *sc
 		}
 	}
 
-	setSyntheticsCertCheckMonitorUpdateAttributes(d, resp)
-
-	return nil
-}
-
-func setSyntheticsCertCheckMonitorUpdateAttributes(d *schema.ResourceData, resp *synthetics.SyntheticsCertCheckMonitorUpdateMutationResult) {
-	_ = d.Set("name", resp.Monitor.Name)
-	_ = d.Set("status", resp.Monitor.Status)
-	_ = d.Set("domain", resp.Monitor.Domain)
-	_ = d.Set("period", resp.Monitor.Period)
 	_ = d.Set("certificate_expiration", resp.Monitor.NumberDaysToFailBeforeCertExpires)
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
 	_ = d.Set("locations_private", resp.Monitor.Locations.Private)
-}
 
-func buildSyntheticsCertCheckMonitorUpdateInput(d *schema.ResourceData) (result synthetics.SyntheticsUpdateCertCheckMonitorInput) {
-	inputBase := expandSyntheticsMonitorBase(d)
+	err = setSyntheticsMonitorAttributes(d, map[string]string{
+		"domain": resp.Monitor.Domain,
+		"name":   resp.Monitor.Name,
+		"period": string(resp.Monitor.Period),
+		"status": string(resp.Monitor.Status),
+	})
 
-	input := synthetics.SyntheticsUpdateCertCheckMonitorInput{
-		Name:   inputBase.Name,
-		Period: inputBase.Period,
-		Status: inputBase.Status,
-		Tags:   inputBase.Tags,
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  err.Error(),
+		})
 	}
 
-	if v, ok := d.GetOk("locations_public"); ok {
-		input.Locations.Public = expandSyntheticsCertMonitorLocations(v.(*schema.Set).List())
-	}
-	if v, ok := d.GetOk("locations_private"); ok {
-		input.Locations.Private = expandSyntheticsCertMonitorLocations(v.(*schema.Set).List())
-	}
-
-	if v, ok := d.GetOk("domain"); ok {
-		input.Domain = v.(string)
-	}
-
-	if v, ok := d.GetOk("certificate_expiration"); ok {
-		input.NumberDaysToFailBeforeCertExpires = v.(int)
-	}
-	return input
+	return diags
 }
 
 func resourceNewRelicSyntheticsCertCheckMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -287,4 +233,59 @@ func resourceNewRelicSyntheticsCertCheckMonitorDelete(ctx context.Context, d *sc
 	d.SetId("")
 
 	return nil
+}
+
+func buildSyntheticsCertCheckMonitorCreateInput(d *schema.ResourceData) (result synthetics.SyntheticsCreateCertCheckMonitorInput) {
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	input := synthetics.SyntheticsCreateCertCheckMonitorInput{
+		Name:   inputBase.Name,
+		Period: inputBase.Period,
+		Status: inputBase.Status,
+		Tags:   inputBase.Tags,
+	}
+
+	if v, ok := d.GetOk("locations_public"); ok {
+		input.Locations.Public = expandStringSlice(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("locations_private"); ok {
+		input.Locations.Private = expandStringSlice(v.(*schema.Set).List())
+	}
+
+	if v, ok := d.GetOk("domain"); ok {
+		input.Domain = v.(string)
+	}
+
+	if v, ok := d.GetOk("certificate_expiration"); ok {
+		input.NumberDaysToFailBeforeCertExpires = v.(int)
+	}
+
+	return input
+}
+
+func buildSyntheticsCertCheckMonitorUpdateInput(d *schema.ResourceData) (result synthetics.SyntheticsUpdateCertCheckMonitorInput) {
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	input := synthetics.SyntheticsUpdateCertCheckMonitorInput{
+		Name:   inputBase.Name,
+		Period: inputBase.Period,
+		Status: inputBase.Status,
+		Tags:   inputBase.Tags,
+	}
+
+	if v, ok := d.GetOk("locations_public"); ok {
+		input.Locations.Public = expandStringSlice(v.(*schema.Set).List())
+	}
+	if v, ok := d.GetOk("locations_private"); ok {
+		input.Locations.Private = expandStringSlice(v.(*schema.Set).List())
+	}
+
+	if v, ok := d.GetOk("domain"); ok {
+		input.Domain = v.(string)
+	}
+
+	if v, ok := d.GetOk("certificate_expiration"); ok {
+		input.NumberDaysToFailBeforeCertExpires = v.(int)
+	}
+	return input
 }
