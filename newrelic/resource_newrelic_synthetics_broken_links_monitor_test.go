@@ -46,7 +46,6 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					// "locations_public",
 					"locations_private",
 					"tag",
 				},
