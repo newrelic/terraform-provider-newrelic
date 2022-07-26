@@ -3,6 +3,8 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -10,7 +12,6 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
-	"log"
 )
 
 func resourceNewRelicSyntheticsCertCheckMonitor() *schema.Resource {
@@ -44,20 +45,20 @@ func resourceNewRelicSyntheticsCertCheckMonitor() *schema.Resource {
 				Description: "",
 				Required:    true,
 			},
-			"location_public": {
+			"locations_public": {
 				Type:         schema.TypeSet,
 				Elem:         &schema.Schema{Type: schema.TypeString},
 				MinItems:     1,
 				Optional:     true,
-				AtLeastOneOf: []string{"location_public", "location_private"},
+				AtLeastOneOf: []string{"locations_public", "locations_private"},
 				Description:  "The locations in which this monitor should be run.",
 			},
-			"location_private": {
+			"locations_private": {
 				Type:         schema.TypeSet,
 				Elem:         &schema.Schema{Type: schema.TypeString},
 				MinItems:     1,
 				Optional:     true,
-				AtLeastOneOf: []string{"location_public", "location_private"},
+				AtLeastOneOf: []string{"locations_public", "locations_private"},
 				Description:  "The locations in which this monitor should be run.",
 			},
 			"status": {
@@ -133,8 +134,8 @@ func setSyntheticsCertCheckMonitorCreateAttributes(d *schema.ResourceData, resp 
 	_ = d.Set("domain", resp.Monitor.Domain)
 	_ = d.Set("period", resp.Monitor.Period)
 	_ = d.Set("certificate_expiration", resp.Monitor.NumberDaysToFailBeforeCertExpires)
-	_ = d.Set("location_public", resp.Monitor.Locations.Public)
-	_ = d.Set("location_private", resp.Monitor.Locations.Private)
+	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
+	_ = d.Set("locations_private", resp.Monitor.Locations.Private)
 }
 
 func buildSyntheticsCertCheckMonitorCreateInput(d *schema.ResourceData) (result synthetics.SyntheticsCreateCertCheckMonitorInput) {
@@ -147,10 +148,10 @@ func buildSyntheticsCertCheckMonitorCreateInput(d *schema.ResourceData) (result 
 		Tags:   inputBase.Tags,
 	}
 
-	if v, ok := d.GetOk("location_public"); ok {
+	if v, ok := d.GetOk("locations_public"); ok {
 		input.Locations.Public = expandSyntheticsCertMonitorLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("location_private"); ok {
+	if v, ok := d.GetOk("locations_private"); ok {
 		input.Locations.Private = expandSyntheticsCertMonitorLocations(v.(*schema.Set).List())
 	}
 
@@ -243,8 +244,8 @@ func setSyntheticsCertCheckMonitorUpdateAttributes(d *schema.ResourceData, resp 
 	_ = d.Set("domain", resp.Monitor.Domain)
 	_ = d.Set("period", resp.Monitor.Period)
 	_ = d.Set("certificate_expiration", resp.Monitor.NumberDaysToFailBeforeCertExpires)
-	_ = d.Set("location_public", resp.Monitor.Locations.Public)
-	_ = d.Set("location_private", resp.Monitor.Locations.Private)
+	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
+	_ = d.Set("locations_private", resp.Monitor.Locations.Private)
 }
 
 func buildSyntheticsCertCheckMonitorUpdateInput(d *schema.ResourceData) (result synthetics.SyntheticsUpdateCertCheckMonitorInput) {
@@ -257,10 +258,10 @@ func buildSyntheticsCertCheckMonitorUpdateInput(d *schema.ResourceData) (result 
 		Tags:   inputBase.Tags,
 	}
 
-	if v, ok := d.GetOk("location_public"); ok {
+	if v, ok := d.GetOk("locations_public"); ok {
 		input.Locations.Public = expandSyntheticsCertMonitorLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("location_private"); ok {
+	if v, ok := d.GetOk("locations_private"); ok {
 		input.Locations.Private = expandSyntheticsCertMonitorLocations(v.(*schema.Set).List())
 	}
 

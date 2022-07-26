@@ -4,12 +4,13 @@ package newrelic
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
-	"testing"
-	"time"
 )
 
 func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
@@ -45,8 +46,8 @@ func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"location_public",
-					"location_private",
+					"locations_public",
+					"locations_private",
 					"certificate_expiration",
 					"domain",
 					"tag",
@@ -64,7 +65,7 @@ resource "newrelic_synthetics_cert_check_monitor" "foo" {
   period="EVERY_5_MINUTES"
   status="ENABLED"
   certificate_expiration=30
-  location_public=["AP_SOUTH_1"]
+  locations_public=["AP_SOUTH_1"]
   tag{
     key="cars"
     values=["audi"]
@@ -81,7 +82,7 @@ resource "newrelic_synthetics_cert_check_monitor" "foo" {
   period="EVERY_MINUTE"
   status="DISABLED"
   certificate_expiration=20
-  location_public=["AP_SOUTH_1","AP_EAST_1"]
+  locations_public=["AP_SOUTH_1","AP_EAST_1"]
   tag{
     key="cars"
     values=["audi","BMW"]
