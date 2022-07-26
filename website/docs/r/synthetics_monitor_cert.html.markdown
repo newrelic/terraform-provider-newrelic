@@ -41,6 +41,8 @@ The following are the common arguments supported for `CERTIFICATE CHECK` monitor
 * `certificate_expiration` - (Required) The desired number of remaining days until the certificate expires to trigger a monitor failure.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
+* `guid` - (Required) The unique identifier for the Synthetic Monitor in New Relic.
+
 
 ### Nested blocks
 
@@ -54,6 +56,11 @@ All nested `tag` blocks support the following common arguments:
 The following attributes are exported:
 
 * `id` - The ID of the certificate check synthetics monitor.
+
+## Additional Examples
+
+##### With location_private
+
 
 ## Import
 

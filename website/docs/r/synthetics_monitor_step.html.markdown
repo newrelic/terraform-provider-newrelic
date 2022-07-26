@@ -44,6 +44,8 @@ The following are the common arguments supported for `STEP` monitor:
 * `location_private` - (Required) The location the monitor will run from.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
+* `guid` - (Required) The unique identifier for the Synthetic Monitor in New Relic.
+
 
 ### Nested blocks
 
