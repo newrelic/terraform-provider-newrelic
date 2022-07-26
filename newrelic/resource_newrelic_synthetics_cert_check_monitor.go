@@ -192,15 +192,13 @@ func resourceNewRelicSyntheticsCertCheckMonitorRead(ctx context.Context, d *sche
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("account_id", accountID)
-
 	switch e := (*resp).(type) {
 	case *entities.SyntheticMonitorEntity:
 		entity := (*resp).(*entities.SyntheticMonitorEntity)
 
 		d.SetId(string(e.GUID))
 		_ = d.Set("account_id", accountID)
-		//_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
+		_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"name":   e.Name,

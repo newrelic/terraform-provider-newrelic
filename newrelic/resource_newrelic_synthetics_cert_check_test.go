@@ -46,7 +46,6 @@ func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"locations_public",
 					"locations_private",
 					"certificate_expiration",
 					"domain",
