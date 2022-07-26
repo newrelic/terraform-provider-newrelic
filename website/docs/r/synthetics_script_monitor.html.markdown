@@ -65,6 +65,7 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 * `script_language` - (Optional) The programing language that should execute the script.
 * `status` - (Required) The run state of the monitor.
 * `script` - (Required) The script that the monitor runs.
+* `guid` - (Required) The unique identifier for the Synthetic Monitor in New Relic.
 
 
 The `SCRIPTED_BROWSER` monitor type supports the following additional argument:

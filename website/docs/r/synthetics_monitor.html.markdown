@@ -75,6 +75,7 @@ The following are the common arguments supported for `SIMPLE` and `BROWSER` moni
 * `name` - (Required) The human-readable identifier for the monitor.
 * `uri` - (Required) The uri the monitor runs against.
 * `type` - (Required) THE monitor type. Valid values are `SIMPLE` and `BROWSER`.
+* `guid` - (Required) The unique identifier for the Synthetic Monitor in New Relic.
 
 The `SIMPLE` monitor type supports the following additional arguments:
 
