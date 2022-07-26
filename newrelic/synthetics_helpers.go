@@ -124,13 +124,6 @@ func expandSyntheticsMonitorBase(d *schema.ResourceData) SyntheticsMonitorBase {
 		inputBase.Tags = expandSyntheticsTags(tags.(*schema.Set).List())
 	}
 
-	if tags, ok := d.GetOk("tag"); ok {
-		inputBase.Tags = expandSyntheticsTags(tags.(*schema.Set).List())
-	}
-
-	if tags, ok := d.GetOk("tag"); ok {
-		inputBase.Tags = expandSyntheticsTags(tags.(*schema.Set).List())
-	}
 	return inputBase
 }
 

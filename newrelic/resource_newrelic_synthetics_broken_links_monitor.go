@@ -25,7 +25,7 @@ func resourceNewRelicSyntheticsBrokenLinksMonitor() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: mergeSchemas(
-			syntheticsMonitorBrokenLinksMonitorSchema(),
+			syntheticsBrokenLinksMonitorSchema(),
 			syntheticsMonitorCommonSchema(),
 			syntheticsMonitorLocationsAsStringsSchema(),
 		),
@@ -37,7 +37,7 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"account_id": {
 			Type:        schema.TypeInt,
-			Description: "ID of the newrelic account",
+			Description: "ID of the newrelic account.",
 			Computed:    true,
 			Optional:    true,
 		},
@@ -61,7 +61,7 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			MinItems:    1,
-			Description: "The tags that will be associated with the monitor",
+			Description: "The tags that will be associated with the monitor.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"key": {
@@ -107,7 +107,7 @@ func syntheticsMonitorLocationsAsStringsSchema() map[string]*schema.Schema {
 	}
 }
 
-func syntheticsMonitorBrokenLinksMonitorSchema() map[string]*schema.Schema {
+func syntheticsBrokenLinksMonitorSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// "createdAt": {
 		// 	Type:     schema.TypeInt,
@@ -205,8 +205,11 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorUpdate(ctx context.Context, d *
 	}
 
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
-		"name": resp.Monitor.Name,
-		"guid": string(resp.Monitor.GUID),
+		"guid":   string(resp.Monitor.GUID),
+		"name":   resp.Monitor.Name,
+		"period": string(resp.Monitor.Period),
+		"status": string(resp.Monitor.Status),
+		"uri":    resp.Monitor.Uri,
 	})
 	if err != nil {
 		return diag.FromErr(err)
