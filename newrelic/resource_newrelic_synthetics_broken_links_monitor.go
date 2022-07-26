@@ -87,18 +87,18 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 	}
 }
 
-// NOTE: This can likely be a shared schema partial for other synthetics monitor resources
+// NOTE: This can be a shared schema partial for other synthetics monitor resources
 func syntheticsMonitorLocationsAsStringsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"locations_private": {
-			Type:         schema.TypeList,
+			Type:         schema.TypeSet,
 			Elem:         &schema.Schema{Type: schema.TypeString},
 			Description:  "List private location GUIDs for which the monitor will run.",
 			Optional:     true,
 			AtLeastOneOf: []string{"locations_public", "locations_private"},
 		},
 		"locations_public": {
-			Type:         schema.TypeList,
+			Type:         schema.TypeSet,
 			Elem:         &schema.Schema{Type: schema.TypeString},
 			Description:  "Publicly available location names in which the monitor will run.",
 			Optional:     true,

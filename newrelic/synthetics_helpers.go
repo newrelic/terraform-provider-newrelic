@@ -52,10 +52,10 @@ func buildSyntheticsBrokenLinksMonitorCreateInput(d *schema.ResourceData) *synth
 	}
 
 	if attr, ok := d.GetOk("locations_private"); ok {
-		input.Locations.Private = expandStringSlice(attr.([]interface{}))
+		input.Locations.Private = expandStringSlice(attr.(*schema.Set).List())
 	}
 	if attr, ok := d.GetOk("locations_public"); ok {
-		input.Locations.Public = expandStringSlice(attr.([]interface{}))
+		input.Locations.Public = expandStringSlice(attr.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("uri"); ok {
 		input.Uri = v.(string)
@@ -74,10 +74,10 @@ func buildSyntheticsBrokenLinksMonitorUpdateInput(d *schema.ResourceData) *synth
 	}
 
 	if attr, ok := d.GetOk("locations_private"); ok {
-		input.Locations.Private = expandStringSlice(attr.([]interface{}))
+		input.Locations.Private = expandStringSlice(attr.(*schema.Set).List())
 	}
 	if attr, ok := d.GetOk("locations_public"); ok {
-		input.Locations.Public = expandStringSlice(attr.([]interface{}))
+		input.Locations.Public = expandStringSlice(attr.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("uri"); ok {
 		input.Uri = v.(string)
