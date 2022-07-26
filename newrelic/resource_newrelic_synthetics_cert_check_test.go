@@ -60,16 +60,16 @@ func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
 func testAccNewRelicSyntheticsCertCheckMonitorConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_synthetics_cert_check_monitor" "foo" {
-  name="%[1]s"
-  domain="newrelic.com"
-  period="EVERY_5_MINUTES"
-  status="ENABLED"
-  certificate_expiration=30
-  locations_public=["AP_SOUTH_1"]
-  tag{
-    key="cars"
-    values=["audi"]
-  }
+	name                   = "%[1]s"
+	domain                 = "newrelic.com"
+	period                 = "EVERY_5_MINUTES"
+	status                 = "ENABLED"
+	certificate_expiration = 30
+	locations_public       = ["AP_SOUTH_1"]
+	tag {
+		key    = "cars"
+		values = ["audi"]
+	}
 }
 `, name)
 }
@@ -77,16 +77,16 @@ resource "newrelic_synthetics_cert_check_monitor" "foo" {
 func testAccNewRelicSyntheticsCertCheckMonitorConfigUpdated(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_synthetics_cert_check_monitor" "foo" {
-  name="%[1]s-updated"
-  domain="newrelic.com"
-  period="EVERY_MINUTE"
-  status="DISABLED"
-  certificate_expiration=20
-  locations_public=["AP_SOUTH_1","AP_EAST_1"]
-  tag{
-    key="cars"
-    values=["audi","BMW"]
-  }
+	name                   = "%[1]s-updated"
+	domain                 = "newrelic.com"
+	period                 = "EVERY_MINUTE"
+	status                 = "DISABLED"
+	certificate_expiration = 20
+	locations_public       = ["AP_SOUTH_1", "AP_EAST_1"]
+	tag {
+		key    = "cars"
+		values = ["audi", "BMW"]
+	}
 }
 `, name)
 }
