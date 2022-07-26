@@ -35,7 +35,11 @@ resource "newrelic_synthetics_monitor" "foo" {
   uri = "https://www.one.newrelic.com"
 }
 ```
-##### Type: `BROWSER`
+
+##### Type: `SIMPLE BROWSER`
+
+-> **NOTE:** The preferred runtime is `CHROME_BROWSER_100` while configuring the `SIMPLE_BROWSER` monitor. Other runtime may be deprecated in the future and receive fewer product updates.
+
 ```hcl
 resource "newrelic_synthetics_monitor" "bar" {
   custom_headers{
@@ -82,7 +86,7 @@ The `SIMPLE` monitor type supports the following additional arguments:
 * `treat_redirect_as_failure` - (Optional) Categorize redirects during a monitor job as a failure.
 * `bypass_head_request` - (Optional) Monitor should skip default HEAD request and instead use GET verb in check.
 
-The `BROWSER` monitor type supports the following additional arguments:
+The `SIMPLE BROWSER` monitor type supports the following additional arguments:
 
 * `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution.
 * `runtime_type_version` - (Required) The runtime type that the monitor will run.

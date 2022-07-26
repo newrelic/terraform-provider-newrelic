@@ -13,6 +13,9 @@ Use this resource to create update, and delete a Script API or Script Browser Sy
 ## Example Usage
 
 ##### Type: `SCRIPT_API`
+
+-> **NOTE:** The preferred runtime is `NODE_16.10.0` while configuring the `SCRIPT_API` monitor. Other runtime may be deprecated in the future and receive fewer product updates. 
+
 ```hcl
     resource "newrelic_synthetics_script_monitor" "foo" {
      name = "SCRIPT_MONITOR"
@@ -31,6 +34,9 @@ Use this resource to create update, and delete a Script API or Script Browser Sy
 }
 ```
 ##### Type: `SCRIPT_BROWSER`
+
+-> **NOTE:** The preferred runtime is `CHROME_BROWSER_100` while configuring the `SCRIPT_BROWSER` monitor. Other runtime may be deprecated in the future and receive fewer product updates.
+
 ```hcl
     resource "newrelic_synthetics_script_monitor" "bar" {
      enable_screenshot_on_failure_and_script = false
@@ -66,7 +72,6 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 * `status` - (Required) The run state of the monitor.
 * `script` - (Required) The script that the monitor runs.
 * `guid` - (Required) The unique identifier for the Synthetic Monitor in New Relic.
-
 
 The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
 
