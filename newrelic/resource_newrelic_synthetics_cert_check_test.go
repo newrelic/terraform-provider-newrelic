@@ -24,7 +24,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Create
 			{
-				Config: testAccNewRelicSyntheticsCertCheckMonitorConfig(rName),
+				Config: testAccNewRelicSyntheticsCertCheckMonitorConfig(rName, "EVERY_5_MINUTES", "ENABLED", 30),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicSyntheticsCertCheckMonitorExists(resourceName),
 				),
@@ -35,7 +35,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
 					// Unfortunately we still have to wait due to async delay with entity indexing :(
 					time.Sleep(10 * time.Second)
 				},
-				Config: testAccNewRelicSyntheticsCertCheckMonitorConfigUpdated(fmt.Sprintf("%s-updated", rName)),
+				Config: testAccNewRelicSyntheticsCertCheckMonitorConfig(fmt.Sprintf("%s-updated", rName), "EVERY_10_MINUTES", "DISABLED", 20),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicSyntheticsCertCheckMonitorExists(resourceName),
 				),
@@ -57,38 +57,21 @@ func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
 	})
 }
 
-func testAccNewRelicSyntheticsCertCheckMonitorConfig(name string) string {
+func testAccNewRelicSyntheticsCertCheckMonitorConfig(name string, period string, status string, certExp int) string {
 	return fmt.Sprintf(`
 resource "newrelic_synthetics_cert_check_monitor" "foo" {
 	name                   = "%[1]s"
 	domain                 = "newrelic.com"
-	period                 = "EVERY_5_MINUTES"
-	status                 = "ENABLED"
-	certificate_expiration = 30
+	period                 = "%[2]s"
+	status                 = "%[3]s"
+	certificate_expiration = %[4]d
 	locations_public       = ["AP_SOUTH_1"]
 	tag {
 		key    = "cars"
 		values = ["audi"]
 	}
 }
-`, name)
-}
-
-func testAccNewRelicSyntheticsCertCheckMonitorConfigUpdated(name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_synthetics_cert_check_monitor" "foo" {
-	name                   = "%[1]s-updated"
-	domain                 = "newrelic.com"
-	period                 = "EVERY_MINUTE"
-	status                 = "DISABLED"
-	certificate_expiration = 20
-	locations_public       = ["AP_SOUTH_1", "AP_EAST_1"]
-	tag {
-		key    = "cars"
-		values = ["audi", "BMW"]
-	}
-}
-`, name)
+`, name, period, status, certExp)
 }
 
 func testAccNewRelicSyntheticsCertCheckMonitorExists(name string) resource.TestCheckFunc {
