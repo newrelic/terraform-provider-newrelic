@@ -4,9 +4,10 @@
 package newrelic
 
 import (
+	"testing"
+
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 )

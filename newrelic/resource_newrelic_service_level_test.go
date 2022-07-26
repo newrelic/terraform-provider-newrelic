@@ -128,8 +128,8 @@ func testAccCheckNewRelicServiceLevelExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		
-                time.Sleep(3 * time.Second)
+
+		time.Sleep(3 * time.Second)
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 		indicators, err := client.ServiceLevel.GetIndicators(common.EntityGUID(getSliGUID(identifier)))
