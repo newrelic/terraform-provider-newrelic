@@ -17,7 +17,7 @@ Use this resource to create, update, and delete the synthetics certificate check
 resource "newrelic_synthetics_cert_check_monitor" "foo" {
   name = "foo"
   domain = "example.com"
-  locations = ["AWS_US_EAST_1", "AWS_US_EAST_2"]
+  location_public = ["AWS_US_EAST_1", "AWS_US_EAST_2"]
   certificate_expiration = "10"
   period = "EVERY_6_HOURS"
   status = "ENABLED"
@@ -48,11 +48,6 @@ All nested `tag` blocks support the following common arguments:
 
 * `key` - (Required) Name of the tag key.
 * `values` - (Required) Values associated with the tag key.
-
-All nested `location_private` blocks support the following common arguments:
-
-* `guid` - (Required) The unique identifier for the Synthetics private location in New Relic.
-* `vse_password` - (Optional) The location's Verified Script Execution password, Only necessary if Verified Script Execution is enabled for the location.
 
 ## Attributes Reference
 

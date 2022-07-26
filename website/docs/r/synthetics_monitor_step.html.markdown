@@ -17,13 +17,13 @@ Use this resource to create, update, and delete the synthetics step monitor in N
 resource "newrelic_synthetics_step_monitor" "foo" {
   name = "foo"
   enable_screenshot_on_failure_and_script = true
-  locations = ["AWS_US_EAST_1", "AWS_US_EAST_2"]
+  location_public = ["AWS_US_EAST_1", "AWS_US_EAST_2"]
   period = "EVERY_6_HOURS"
   status = "ENABLED"
   steps {
     ordinal = " "
     types = " "
-    values = " "
+    values = "ASSERT_ELEMENT"
   }
   tag {
     key = "some_key"
@@ -50,7 +50,7 @@ The following are the common arguments supported for `STEP` monitor:
 All nested `location_private` blocks support the following common arguments:
 
 * `guid` - (Required) The unique identifier for the Synthetics private location in New Relic.
-* `vse_password` - (Optional) The location's Verified Script Execution password, Only necessary if Verified Script Execution is enabled for the location.
+* `vse_password` - (Optional) **DEPRECATED:** The location's Verified Script Execution password, Only necessary if Verified Script Execution is enabled for the location.
 
 All nested `steps` blocks support the following common arguments:
 
