@@ -79,34 +79,6 @@ func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		}
 	}
 
-	if conditionType == "outlier" {
-		defaultExpectedGroups := 1
-		if expectedGroups, ok := d.GetOk("expected_groups"); ok {
-			expectedGroupsValue := expectedGroups.(int)
-			input.ExpectedGroups = &expectedGroupsValue
-		} else {
-			input.ExpectedGroups = &defaultExpectedGroups
-		}
-
-		var openViolationOnOverlap bool
-		if violationOnOverlap, ok := d.GetOkExists("open_violation_on_group_overlap"); ok {
-			openViolationOnOverlap = violationOnOverlap.(bool)
-
-			if *input.ExpectedGroups < 2 && openViolationOnOverlap {
-				return nil, fmt.Errorf("attribute `%s` must be set to false when `expected_groups` is 1", "open_violation_on_group_overlap")
-			}
-		} else if ignoreOverlap, ok := d.GetOkExists("ignore_overlap"); ok {
-			// Note: ignore_overlap is the inverse of open_violation_on_group_overlap
-			openViolationOnOverlap = !ignoreOverlap.(bool)
-
-			if *input.ExpectedGroups < 2 && openViolationOnOverlap {
-				return nil, fmt.Errorf("attribute `%s` must be set to true when `expected_groups` is 1", "ignore_overlap")
-			}
-		}
-
-		input.OpenViolationOnGroupOverlap = &openViolationOnOverlap
-	}
-
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
 		input.RunbookURL = runbookURL.(string)
 	}
@@ -169,34 +141,6 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		} else {
 			input.ValueFunction = &alerts.NrqlConditionValueFunctions.SingleValue
 		}
-	}
-
-	if conditionType == "outlier" {
-		defaultExpectedGroups := 1
-		if expectedGroups, ok := d.GetOk("expected_groups"); ok {
-			expectedGroupsValue := expectedGroups.(int)
-			input.ExpectedGroups = &expectedGroupsValue
-		} else {
-			input.ExpectedGroups = &defaultExpectedGroups
-		}
-
-		var openViolationOnOverlap bool
-		if violationOnOverlap, ok := d.GetOkExists("open_violation_on_group_overlap"); ok {
-			openViolationOnOverlap = violationOnOverlap.(bool)
-
-			if *input.ExpectedGroups < 2 && openViolationOnOverlap {
-				return nil, fmt.Errorf("attribute `%s` must be set to false when `expected_groups` is 1", "open_violation_on_group_overlap")
-			}
-		} else if ignoreOverlap, ok := d.GetOkExists("ignore_overlap"); ok {
-			// Note: ignore_overlap is the inverse of open_violation_on_group_overlap
-			openViolationOnOverlap = !ignoreOverlap.(bool)
-
-			if *input.ExpectedGroups < 2 && openViolationOnOverlap {
-				return nil, fmt.Errorf("attribute `%s` must be set to true when `expected_groups` is 1", "ignore_overlap")
-			}
-		}
-
-		input.OpenViolationOnGroupOverlap = &openViolationOnOverlap
 	}
 
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
@@ -300,9 +244,9 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 	operator := alerts.AlertsNRQLConditionTermsOperator(strings.ToUpper(term["operator"].(string)))
 
 	switch conditionType {
-	case "baseline", "outlier":
+	case "baseline":
 		if operator != alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE {
-			return nil, fmt.Errorf("only ABOVE operator is allowed for `baseline` and `outlier` condition types")
+			return nil, fmt.Errorf("only ABOVE operator is allowed for `baseline` condition types")
 		}
 	}
 
@@ -562,6 +506,7 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	_ = d.Set("name", condition.Name)
 	_ = d.Set("runbook_url", condition.RunbookURL)
 	_ = d.Set("enabled", condition.Enabled)
+	_ = d.Set("entity_guid", condition.EntityGUID)
 
 	if conditionType == "baseline" {
 		_ = d.Set("baseline_direction", string(*condition.BaselineDirection))
@@ -569,19 +514,6 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 
 	if conditionType == "static" {
 		_ = d.Set("value_function", string(*condition.ValueFunction))
-	}
-
-	if conditionType == "outlier" {
-		_ = d.Set("expected_groups", *condition.ExpectedGroups)
-
-		openViolationOnGroupOverlap := *condition.OpenViolationOnGroupOverlap
-		if _, ok := d.GetOkExists("open_violation_on_group_overlap"); ok {
-			_ = d.Set("open_violation_on_group_overlap", openViolationOnGroupOverlap)
-		} else if _, ok := d.GetOkExists("ignore_overlap"); ok {
-			_ = d.Set("ignore_overlap", !openViolationOnGroupOverlap)
-		} else {
-			_ = d.Set("open_violation_on_group_overlap", openViolationOnGroupOverlap)
-		}
 	}
 
 	configuredNrql := d.Get("nrql.0").(map[string]interface{})
@@ -623,9 +555,10 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 		}
 	}
 
-	if _, ok := d.GetOk("violation_time_limit_seconds"); ok {
+	if condition.ViolationTimeLimitSeconds != 0 {
 		_ = d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
-	} else if _, ok := d.GetOk("violation_time_limit"); ok {
+	}
+	if condition.ViolationTimeLimit != "" {
 		_ = d.Set("violation_time_limit", condition.ViolationTimeLimit)
 	}
 

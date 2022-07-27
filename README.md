@@ -5,8 +5,6 @@
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
-<img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
-
 ## Requirements
 
 - [Terraform](https://www.terraform.io/downloads.html) 1.0+
@@ -39,7 +37,7 @@ For more information on using the provider and the associated resources, please 
 ## Developing the Provider
 
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your
-machine (version 1.13+ is _required_). You'll also need to correctly setup a
+machine (version 1.18 is _required_). You'll also need to correctly setup a
 [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 Please see our [CONTRIBUTING][contributing] guide for more detail on the APIs

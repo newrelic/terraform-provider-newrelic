@@ -2,8 +2,9 @@ package newrelic
 
 import (
 	"context"
-	"github.com/newrelic/newrelic-client-go/pkg/cloud"
 	"strconv"
+
+	"github.com/newrelic/newrelic-client-go/pkg/cloud"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -620,7 +621,7 @@ func resourceNewRelicCloudAwsIntegrationsUpdate(ctx context.Context, d *schema.R
 		return diags
 	}
 
-	cloudAwsIntegrationsPayload, err := client.Cloud.CloudConfigureIntegration(accountID, configureInput)
+	cloudAwsIntegrationsPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, configureInput)
 
 	if err != nil {
 		return diag.FromErr(err)

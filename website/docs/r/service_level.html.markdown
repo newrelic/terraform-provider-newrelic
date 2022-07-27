@@ -67,7 +67,7 @@ The following arguments are supported:
 All nested `events` blocks support the following common arguments:
 
   * `account_id` - (Required) The ID of the account where the entity (e.g, APM Service, Browser application, Workload, etc.) belongs to,
-  and that contains the NRDB data for the SLI/SLO calculations. 
+  and that contains the NRDB data for the SLI/SLO calculations. Note that changing the account ID will force a new resource.
   * `valid_events` - (Required) The definition of valid requests.
     * `from` - (Required) The event type where NRDB data will be fetched from.
     * `where` - (Optional) A filter that specifies all the NRDB events that are considered in this SLI (e.g, those that refer to a particular entity).
@@ -85,7 +85,7 @@ All nested `events` blocks support the following common arguments:
   * `target` - (Required) The target of the objective, valid values between `0` and `100`. Up to 5 decimals accepted.
   * `time_window` - (Required) Time window is the period of the objective.
     * `rolling` - (Required) Rolling window.
-      * `count` - (Required) Valid values are `1`, `7`, `14` and `28`.
+      * `count` - (Required) Valid values are `1`, `7` and `28`.
       * `unit` - (Required) The only supported value is `DAY`.
 
 ## Attributes Reference

@@ -1,3 +1,144 @@
+<a name="v2.49.1"></a>
+## [v2.49.1] - 2022-07-22
+### Bug Fixes
+- **Notifications:** relocate notifications docs to the corrects folder
+
+<a name="v2.49.0"></a>
+## [v2.49.0] - 2022-07-19
+### Bug Fixes
+- **channels:** lint fix
+- **channels:** add import test
+- **channels:** add docs and fix small bug
+- **destinations:** lint fix
+- **destinations:** add note on doc and import test
+- **destinations:** fix pr review suggetion
+- **destinations:** add docs and fix small bug
+- **destinations:** fix types according to the new go client api - still WIP
+- **destinations:** fix tests
+- **destinations:** fix tests
+
+### Features
+- **channels:** upgrade go-client version
+- **channels:** add tests - wip
+- **channels:** add tests - wip
+- **channels:** add notifications channels provider
+- **destinations:** upgrade go-client version
+- **destinations:** upgrade go-client version
+- **destinations:** fix tests
+- **notifications:** add tests
+- **notifications:** working notification destination
+- **notifications:** add notifications destinations
+
+<a name="v2.48.2"></a>
+## [v2.48.2] - 2022-07-15
+<a name="v2.48.1"></a>
+## [v2.48.1] - 2022-06-30
+### Bug Fixes
+- force service level when changing account id
+
+<a name="v2.48.0"></a>
+## [v2.48.0] - 2022-06-21
+### Bug Fixes
+- add sleep to wait the SL to be indexed and avoid flaky test
+
+### Features
+- **docs:** add azure integrations guide and examples
+
+<a name="v2.47.1"></a>
+## [v2.47.1] - 2022-06-15
+### Bug Fixes
+- remove unnecessary read of service level entity after creation
+
+<a name="v2.47.0"></a>
+## [v2.47.0] - 2022-06-10
+### Features
+- **newrelic_one_dashboard:** added support for ignore_time_range
+
+<a name="v2.46.2"></a>
+## [v2.46.2] - 2022-06-06
+<a name="v2.46.1"></a>
+## [v2.46.1] - 2022-05-25
+<a name="v2.46.0"></a>
+## [v2.46.0] - 2022-05-23
+### Features
+- **docs:** add azure integrations guide and examples
+
+<a name="v2.45.1"></a>
+## [v2.45.1] - 2022-05-14
+### Documentation Updates
+- **gcp-example:** added GCP example to docs
+- **provider:** additional information regarding version constraints
+- **provider:** add info regarding setting/upgrading the provider version
+
+<a name="v2.45.0"></a>
+## [v2.45.0] - 2022-05-12
+### Bug Fixes
+- **alerts:** Allow negative threshold values for non-baseline NRQL conditions
+
+### Documentation Updates
+- **alerts:** Document new NRQL term threshold operators
+- **alerts:** Remove minimum threshold requirement for non-baseline NRQL conditions
+
+### Features
+- added gcp integrations test tf script
+- **alerts:** Adds 3 term threshold operators for NRQL conditions
+
+<a name="v2.44.0"></a>
+## [v2.44.0] - 2022-05-03
+### Bug Fixes
+- Description of entity_guid for NRQL conditions.
+
+### Features
+- Update NRQL Condition docs with tag management example
+- Update docs with entity_guid attribute reference description
+- Expose NRQL Condition entityGUID on conditions
+
+<a name="v2.43.4"></a>
+## [v2.43.4] - 2022-04-25
+### Bug Fixes
+- **cloud_azure:** correct firewalls integration on update
+
+### Documentation Updates
+- updated the compiler
+- update terraform versions
+- **cloud_azure:** remove duplicate event_hub in example
+
+<a name="v2.43.3"></a>
+## [v2.43.3] - 2022-04-22
+### Bug Fixes
+- **one_dashboard:** make limit for bullet widget required
+
+<a name="v2.43.2"></a>
+## [v2.43.2] - 2022-04-21
+### Bug Fixes
+- Add payload_string to channel data source
+
+<a name="v2.43.1"></a>
+## [v2.43.1] - 2022-04-20
+### Documentation Updates
+- **resource/one_dashboard:** Add filter_current_dashboard doc for widget_bar and widget_pie
+
+<a name="v2.43.0"></a>
+## [v2.43.0] - 2022-04-19
+### Bug Fixes
+- Change logic for reading violation time limits to fix imports
+
+### Documentation Updates
+- added gcp integrations documentation
+
+### Features
+- added test.go for gcp integrations
+- added gcp cloud integrations to resource group map
+- **cloud:** add azure integrations resource
+
+<a name="v2.42.1"></a>
+## [v2.42.1] - 2022-04-14
+### Bug Fixes
+- Tags resource implicit dependency
+- Import payload_string when importing webhook channel
+- remove 14 days deprecated option from service levels
+- Update DiffSuppressFunc for aggregation delay/timer
+
 <a name="v2.42.0"></a>
 ## [v2.42.0] - 2022-04-07
 ### Documentation Updates
@@ -515,10 +656,10 @@
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="v2.11.1"></a>
-## [v2.11.1] - 2020-10-07
 <a name="2.11.1"></a>
 ## [2.11.1] - 2020-10-07
+<a name="v2.11.1"></a>
+## [v2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -1185,7 +1326,26 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.42.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.1...HEAD
+[v2.49.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.0...v2.49.1
+[v2.49.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.2...v2.49.0
+[v2.48.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.1...v2.48.2
+[v2.48.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.0...v2.48.1
+[v2.48.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.47.1...v2.48.0
+[v2.47.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.47.0...v2.47.1
+[v2.47.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.46.2...v2.47.0
+[v2.46.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.46.1...v2.46.2
+[v2.46.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.46.0...v2.46.1
+[v2.46.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.45.1...v2.46.0
+[v2.45.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.45.0...v2.45.1
+[v2.45.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.44.0...v2.45.0
+[v2.44.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.4...v2.44.0
+[v2.43.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.3...v2.43.4
+[v2.43.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.2...v2.43.3
+[v2.43.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.1...v2.43.2
+[v2.43.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.43.0...v2.43.1
+[v2.43.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.42.1...v2.43.0
+[v2.42.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.42.0...v2.42.1
 [v2.42.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.4...v2.42.0
 [v2.41.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.3...v2.41.4
 [v2.41.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.41.2...v2.41.3
@@ -1242,9 +1402,9 @@
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2

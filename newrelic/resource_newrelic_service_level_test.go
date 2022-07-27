@@ -6,6 +6,7 @@ package newrelic
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -128,8 +129,9 @@ func testAccCheckNewRelicServiceLevelExists(n string) resource.TestCheckFunc {
 			return err
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+		time.Sleep(3 * time.Second)
 
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 		indicators, err := client.ServiceLevel.GetIndicators(common.EntityGUID(getSliGUID(identifier)))
 		if err != nil {
 			return err
