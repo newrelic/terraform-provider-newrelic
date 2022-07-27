@@ -318,14 +318,14 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"CADENCE", "EVENT_FLOW", "EVENT_TIMER"}, true),
-				Description:  "The method that determines when we consider an aggregation window to be complete so that we can evaluate the signal for violations. Default is CADENCE.",
+				Description:  "The method that determines when we consider an aggregation window to be complete so that we can evaluate the signal for violations. Default is EVENT_FLOW.",
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					sinceValueExists := d.Get("nrql.0.since_value") != nil
+					_, sinceValueExists := d.GetOk("nrql.0.since_value")
 					if sinceValueExists {
 						return false
 					}
 					// If a value is not provided and the condition uses the default value, don't show a diff
-					return (old == "event_flow" && new == "") || strings.EqualFold(old, new)
+					return (strings.EqualFold(old, "event_flow") && new == "") || strings.EqualFold(old, new)
 				},
 			},
 			"aggregation_delay": {
@@ -334,14 +334,15 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Description:  "How long we wait for data that belongs in each aggregation window. Depending on your data, a longer delay may increase accuracy but delay notifications. Use aggregationDelay with the EVENT_FLOW and CADENCE aggregation methods.",
 				RequiredWith: []string{"aggregation_method"},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					sinceValueExists := d.Get("nrql.0.since_value") != nil
+					_, sinceValueExists := d.GetOk("nrql.0.since_value")
 					if sinceValueExists {
 						return false
 					}
 					// If a value is not provided and the condition uses the default value, don't show a diff
 					oldInt, _ := strconv.ParseInt(old, 0, 8)
 					newInt, _ := strconv.ParseInt(new, 0, 8)
-					return oldInt == 120 && (newInt == 0) && (d.Get("aggregation_method") == "EVENT_FLOW" || d.Get("aggregation_method") == "CADENCE")
+					aggregationMethod := strings.ToLower(d.Get("aggregation_method").(string))
+					return oldInt == 120 && newInt == 0 && (aggregationMethod == "event_flow" || aggregationMethod == "cadence")
 				},
 			},
 			"aggregation_timer": {
@@ -350,14 +351,15 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Description:  "How long we wait after each data point arrives to make sure we've processed the whole batch. Use aggregationTimer with the EVENT_TIMER aggregation method.",
 				RequiredWith: []string{"aggregation_method"},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					sinceValueExists := d.Get("nrql.0.since_value") != nil
+					_, sinceValueExists := d.GetOk("nrql.0.since_value")
 					if sinceValueExists {
 						return false
 					}
 					// If a value is not provided and the condition uses the default value, don't show a diff
 					oldInt, _ := strconv.ParseInt(old, 0, 8)
 					newInt, _ := strconv.ParseInt(new, 0, 8)
-					return oldInt == 120 && (newInt == 0) && d.Get("aggregation_method") == "EVENT_TIMER"
+					aggregationMethod := strings.ToLower(d.Get("aggregation_method").(string))
+					return oldInt == 60 && newInt == 0 && aggregationMethod == "event_timer"
 				},
 			},
 			// Baseline ONLY
