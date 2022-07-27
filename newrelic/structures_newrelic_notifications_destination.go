@@ -16,8 +16,9 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 	}
 
 	var auth, authOk = d.GetOk("auth")
+	isEmailType := validateEmailDestinationType(destination.Type)
 
-	if !authOk {
+	if !authOk && !isEmailType {
 		return nil, errors.New("notification destination requires an auth attribute")
 	}
 
@@ -27,12 +28,16 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 			return nil, err
 		}
 
-		destination.Auth = *a
+		destination.Auth = a
+	} else if isEmailType {
+		destination.Auth = nil
 	}
 
-	err := validateDestinationAuth(destination.Auth)
-	if err != nil {
-		return nil, err
+	if !isEmailType {
+		err := validateDestinationAuth(*destination.Auth)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	properties, propertiesOk := d.GetOk("properties")
@@ -54,12 +59,64 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 			}
 		}
 	} else if isPagerDutyType {
-		destination.Properties = []notifications.AiNotificationsPropertyInput{
-			{
-				Key:   "two_way_integration",
-				Value: "false",
-			},
+		destination.Properties = []notifications.AiNotificationsPropertyInput{{Key: "", Value: ""}} // Empty
+	}
+
+	return &destination, nil
+}
+
+func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications.AiNotificationsDestinationUpdate, error) {
+	destination := notifications.AiNotificationsDestinationUpdate{
+		Name:   d.Get("name").(string),
+		Active: d.Get("active").(bool),
+	}
+	destinationType := notifications.AiNotificationsDestinationType(d.Get("type").(string))
+
+	var auth, authOk = d.GetOk("auth")
+	isEmailType := validateEmailDestinationType(destinationType)
+
+	if !authOk && !isEmailType {
+		return nil, errors.New("notification destination requires an auth attribute")
+	}
+
+	if authOk {
+		a, err := expandNotificationDestinationAuth(auth)
+		if err != nil {
+			return nil, err
 		}
+
+		destination.Auth = a
+	} else if isEmailType {
+		destination.Auth = nil
+	}
+
+	if !isEmailType {
+		err := validateDestinationAuth(*destination.Auth)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	properties, propertiesOk := d.GetOk("properties")
+	isPagerDutyType := validatePagerDutyDestinationType(destinationType)
+
+	if !propertiesOk && !isPagerDutyType {
+		return nil, errors.New("notification destination requires a properties attribute")
+	}
+
+	if propertiesOk {
+		var destinationProperty map[string]interface{}
+
+		x := properties.([]interface{})
+
+		for _, property := range x {
+			destinationProperty = property.(map[string]interface{})
+			if val, err := expandNotificationDestinationProperty(destinationProperty); err == nil {
+				destination.Properties = append(destination.Properties, *val)
+			}
+		}
+	} else if isPagerDutyType {
+		destination.Properties = []notifications.AiNotificationsPropertyInput{{Key: "", Value: ""}} // Empty
 	}
 
 	return &destination, nil
@@ -228,9 +285,9 @@ func validateDestinationAuth(auth notifications.AiNotificationsCredentialsInput)
 }
 
 func validatePagerDutyDestinationType(destinationType notifications.AiNotificationsDestinationType) bool {
-	if destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION || destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION {
-		return true
-	}
+	return destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION || destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION
+}
 
-	return false
+func validateEmailDestinationType(destinationType notifications.AiNotificationsDestinationType) bool {
+	return destinationType == notifications.AiNotificationsDestinationTypeTypes.EMAIL
 }
