@@ -2,9 +2,14 @@ package newrelic
 
 import (
 	"context"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/newrelic/newrelic-client-go/pkg/common"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
 func resourceNewRelicSyntheticsStepMonitor() *schema.Resource {
@@ -30,7 +35,7 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 			Description: "Capture a screenshot during job execution.",
 			Optional:    true,
 		},
-		"location_private": {
+		"locations_private": {
 			Type:        schema.TypeSet,
 			Description: "",
 			Optional:    true,
@@ -50,7 +55,7 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"location_public": {
+		"locations_public": {
 			Type:        schema.TypeSet,
 			Elem:        &schema.Schema{Type: schema.TypeString},
 			MinItems:    1,
@@ -68,7 +73,6 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 						Type:        schema.TypeInt,
 						Required:    true,
 						Description: "The position of the step within the script ranging from 0-100",
-						Default:     0,
 						//SchemaValidateDiagFunc: // TODO: add validation to ensure value is between 0 and 100 (inclusive)
 					},
 					"type": {
@@ -89,12 +93,125 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 	}
 }
 
+func expandSyntheticsMonitorSteps(steps []interface{}) []synthetics.SyntheticsStepInput {
+	stepsOut := []synthetics.SyntheticsStepInput{}
+
+	for _, s := range steps {
+		st := s.(map[string]interface{})
+
+		stepsOut = append(stepsOut, synthetics.SyntheticsStepInput{
+			Ordinal: st["ordinal"].(int),
+			Type:    synthetics.SyntheticsStepType(st["type"].(string)),
+			Values:  expandStringSlice(st["values"].([]interface{})),
+		})
+	}
+
+	return stepsOut
+}
+
+func expandPrivateLocations(locations []interface{}) []synthetics.SyntheticsPrivateLocationInput {
+	pl := []synthetics.SyntheticsPrivateLocationInput{}
+
+	for _, v := range locations {
+		loc := v.(map[string]string)
+		pl = append(pl, synthetics.SyntheticsPrivateLocationInput{
+			GUID:        loc["guid"],
+			VsePassword: synthetics.SecureValue(loc["vse_password"]),
+		})
+	}
+
+	return pl
+}
+
+func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) *synthetics.SyntheticsCreateStepMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	input := synthetics.SyntheticsCreateStepMonitorInput{
+		Name:   inputBase.Name,
+		Period: inputBase.Period,
+		Status: inputBase.Status,
+		Tags:   inputBase.Tags,
+		Steps:  expandSyntheticsMonitorSteps(d.Get("steps").([]interface{})),
+	}
+
+	if attr, ok := d.GetOk("locations_private"); ok {
+		input.Locations.Private = expandPrivateLocations(attr.(*schema.Set).List())
+	}
+
+	if attr, ok := d.GetOk("locations_public"); ok {
+		input.Locations.Public = expandStringSlice(attr.(*schema.Set).List())
+	}
+
+	return &input
+}
+
 func resourceNewRelicSyntheticsStepMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+
+	monitorInput := buildSyntheticsStepMonitorCreateInput(d)
+	resp, err := client.Synthetics.SyntheticsCreateStepMonitorWithContext(ctx, accountID, *monitorInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	errors := buildCreateSyntheticsMonitorResponseErrors(resp.Errors)
+	if len(errors) > 0 {
+		return errors
+	}
+
+	// Set attributes
+	d.SetId(string(resp.Monitor.GUID))
+	_ = d.Set("account_id", accountID)
+	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
+
+	err = setSyntheticsMonitorAttributes(d, map[string]string{
+		"guid":   string(resp.Monitor.GUID),
+		"name":   resp.Monitor.Name,
+		"period": string(resp.Monitor.Period),
+		"status": string(resp.Monitor.Status),
+	})
+
+	return diag.FromErr(err)
 }
 
 func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+
+	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
+
+	resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
+	if err != nil {
+		if _, ok := err.(*errors.NotFound); ok {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	// TODO: Get steps from new NerdGraph query actor.account.synthetics.steps
+	// steps :=
+
+	switch e := (*resp).(type) {
+	case *entities.SyntheticMonitorEntity:
+		entity := (*resp).(*entities.SyntheticMonitorEntity)
+
+		d.SetId(string(e.GUID))
+		_ = d.Set("account_id", accountID)
+		_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
+
+		err = setSyntheticsMonitorAttributes(d, map[string]string{
+			"guid":   string(e.GUID),
+			"name":   entity.Name,
+			"period": string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
+			"status": string(entity.MonitorSummary.Status),
+		})
+	}
+
+	return diag.FromErr(err)
 }
 
 func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -102,5 +219,17 @@ func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.
 }
 
 func resourceNewRelicSyntheticsStepMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+	client := meta.(*ProviderConfig).NewClient
+	guid := synthetics.EntityGUID(d.Id())
+
+	log.Printf("[INFO] Deleting New Relic Synthetics monitor %s", d.Id())
+
+	_, err := client.Synthetics.SyntheticsDeleteMonitorWithContext(ctx, guid)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId("")
+
+	return diag.FromErr(err)
 }
