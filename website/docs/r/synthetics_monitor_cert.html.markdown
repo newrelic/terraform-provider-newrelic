@@ -15,9 +15,9 @@ Use this resource to create, update, and delete the synthetics certificate check
 ##### Type: `CERTIFICATE CHECK`
 ```hcl
 resource "newrelic_synthetics_cert_check_monitor" "foo" {
-  name = "foo"
+  name = "foo-cert"
   domain = "example.com"
-  location_public = ["AWS_US_EAST_1", "AWS_US_EAST_2"]
+  locations_public = ["AP_SOUTH_1"]
   certificate_expiration = "10"
   period = "EVERY_6_HOURS"
   status = "ENABLED"
