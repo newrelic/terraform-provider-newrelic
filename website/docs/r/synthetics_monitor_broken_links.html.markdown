@@ -15,9 +15,9 @@ Use this resource to create, update, and delete the synthetics broken links moni
 ##### Type: `BROKEN LINKS`
 ```hcl
 resource "newrelic_synthetics_broken_links_monitor" "foo" {
-  name = "foo"
+  name = "broken"
   uri = "https://www.one.example.com"
-  location_public = ["AWS_US_EAST_1", "AWS_US_EAST_2"]
+  locations_public = ["AP_SOUTH_1"]
   period = "EVERY_6_HOURS"
   status = "ENABLED"
   tag {
@@ -59,5 +59,5 @@ The following attributes are exported:
 Synthetics broken links monitor scripts can be imported using the `guid`, e.g.
 
 ```bash
-$ terraform import newrelic_synthetics_broken_links_monitor.bar <guid>
+$ terraform import newrelic_synthetics_broken_links_monitor.foo <guid>
 ```
