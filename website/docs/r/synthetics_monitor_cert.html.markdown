@@ -43,7 +43,6 @@ The following are the common arguments supported for `CERTIFICATE CHECK` monitor
 * `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
 * `guid` - (Required) The unique identifier for the Synthetic Monitor in New Relic.
 
-
 ### Nested blocks
 
 All nested `tag` blocks support the following common arguments:
@@ -56,11 +55,6 @@ All nested `tag` blocks support the following common arguments:
 The following attributes are exported:
 
 * `id` - The ID of the certificate check synthetics monitor.
-
-## Additional Examples
-
-##### With location_private
-
 
 ## Import
 
