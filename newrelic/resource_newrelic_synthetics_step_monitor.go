@@ -30,7 +30,7 @@ func resourceNewRelicSyntheticsStepMonitor() *schema.Resource {
 
 func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"enable_screenshot_on_failure": {
+		"enable_screenshot_on_failure_and_script": {
 			Type:        schema.TypeBool,
 			Description: "Capture a screenshot during job execution.",
 			Optional:    true,
@@ -142,6 +142,11 @@ func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) *synthetics.S
 		input.Locations.Public = expandStringSlice(attr.(*schema.Set).List())
 	}
 
+	if attr, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
+		v := attr.(bool)
+		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &v
+	}
+
 	return &input
 }
 
@@ -215,7 +220,31 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 }
 
 func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	guid := synthetics.EntityGUID(d.Id())
+
+	monitorInput := buildSyntheticsBrokenLinksMonitorUpdateInput(d)
+	resp, err := client.Synthetics.SyntheticsUpdateBrokenLinksMonitorWithContext(ctx, guid, *monitorInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	errors := buildUpdateSyntheticsMonitorResponseErrors(resp.Errors)
+	if len(errors) > 0 {
+		return errors
+	}
+
+	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
+
+	err = setSyntheticsMonitorAttributes(d, map[string]string{
+		"guid":   string(resp.Monitor.GUID),
+		"name":   resp.Monitor.Name,
+		"period": string(resp.Monitor.Period),
+		"status": string(resp.Monitor.Status),
+	})
+
+	return diag.FromErr(err)
 }
 
 func resourceNewRelicSyntheticsStepMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
