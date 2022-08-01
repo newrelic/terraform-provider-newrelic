@@ -19,15 +19,16 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicNotificationChannelCreate,
 		ReadContext:   resourceNewRelicNotificationChannelRead,
+		UpdateContext: resourceNewRelicNotificationChannelUpdate,
 		DeleteContext: resourceNewRelicNotificationChannelDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
+			// Required
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "(Required) The name of the channel.",
 			},
 			"destination_id": {
@@ -50,11 +51,12 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(listValidNotificationsProductTypes(), false),
 				Description:  fmt.Sprintf("(Required) The type of the channel product. One of: (%s).", strings.Join(listValidNotificationsProductTypes(), ", ")),
 			},
+
+			// Optional
 			"properties": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				ForceNew:    true,
-				Description: "List of notification channel property types.",
+				Description: "Notification channel property type.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
@@ -79,6 +81,29 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 						},
 					},
 				},
+			},
+			"active": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Indicates whether the channel is active.",
+			},
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The account id of the channel.",
+			},
+
+			// Computed
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the channel.",
+			},
+			"channel_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The id of the channel.",
 			},
 		},
 	}
@@ -131,6 +156,26 @@ func resourceNewRelicNotificationChannelRead(ctx context.Context, d *schema.Reso
 	return diag.FromErr(flattenNotificationChannel(&channelResponse.Entities[0], d))
 }
 
+func resourceNewRelicNotificationChannelUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*ProviderConfig).NewClient
+	updateInput, err := expandNotificationChannelUpdate(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	channelID := d.Get("id").(string)
+	providerConfig := meta.(*ProviderConfig)
+	accountID := selectAccountID(providerConfig, d)
+	updatedContext := updateContextWithAccountID(ctx, accountID)
+
+	_, err = client.Notifications.AiNotificationsUpdateChannelWithContext(updatedContext, accountID, *updateInput, channelID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourceNewRelicNotificationChannelRead(updatedContext, d, meta)
+}
+
 func resourceNewRelicNotificationChannelDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
@@ -155,18 +200,16 @@ func listValidNotificationsChannelTypes() []string {
 		string(notifications.AiNotificationsChannelTypeTypes.SERVICENOW_INCIDENTS),
 		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
 		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
+		string(notifications.AiNotificationsChannelTypeTypes.JIRA_NEXTGEN),
+		string(notifications.AiNotificationsChannelTypeTypes.JIRA_CLASSIC),
 	}
 }
 
 // Validation function to validate allowed product types
 func listValidNotificationsProductTypes() []string {
 	return []string{
-		string(notifications.AiNotificationsProductTypes.ALERTS),
 		string(notifications.AiNotificationsProductTypes.DISCUSSIONS),
 		string(notifications.AiNotificationsProductTypes.ERROR_TRACKING),
-		string(notifications.AiNotificationsProductTypes.NTFC),
-		string(notifications.AiNotificationsProductTypes.SHARING),
-		string(notifications.AiNotificationsProductTypes.PD),
 		string(notifications.AiNotificationsProductTypes.IINT),
 	}
 }

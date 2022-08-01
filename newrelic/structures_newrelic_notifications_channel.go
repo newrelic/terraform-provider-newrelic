@@ -16,9 +16,9 @@ func expandNotificationChannel(d *schema.ResourceData) (*notifications.AiNotific
 	}
 
 	properties, propertiesOk := d.GetOk("properties")
-	isNonPropertyType := validateNonPropertyChannelType(channel.Type)
+	isEmailType := validateEmailChannelType(channel.Type)
 
-	if !propertiesOk && !isNonPropertyType {
+	if !propertiesOk && !isEmailType {
 		return nil, errors.New("notification channel requires a properties attribute")
 	}
 
@@ -33,8 +33,40 @@ func expandNotificationChannel(d *schema.ResourceData) (*notifications.AiNotific
 				channel.Properties = append(channel.Properties, *val)
 			}
 		}
-	} else if isNonPropertyType {
-		channel.Properties = []notifications.AiNotificationsPropertyInput{{Key: "", Value: ""}} // Empty
+	} else if isEmailType {
+		channel.Properties = []notifications.AiNotificationsPropertyInput{{Key: "subject", Value: "{{ issueTitle }}"}} // Default subject
+	}
+
+	return &channel, nil
+}
+
+func expandNotificationChannelUpdate(d *schema.ResourceData) (*notifications.AiNotificationsChannelUpdate, error) {
+	channel := notifications.AiNotificationsChannelUpdate{
+		Name:   d.Get("name").(string),
+		Active: d.Get("active").(bool),
+	}
+	channelType := notifications.AiNotificationsChannelType(d.Get("type").(string))
+
+	properties, propertiesOk := d.GetOk("properties")
+	isEmailType := validateEmailChannelType(channelType)
+
+	if !propertiesOk && !isEmailType {
+		return nil, errors.New("notification channel requires a properties attribute")
+	}
+
+	if propertiesOk {
+		var destinationProperty map[string]interface{}
+
+		x := properties.([]interface{})
+
+		for _, property := range x {
+			destinationProperty = property.(map[string]interface{})
+			if val, err := expandNotificationChannelProperty(destinationProperty); err == nil {
+				channel.Properties = append(channel.Properties, *val)
+			}
+		}
+	} else if isEmailType {
+		channel.Properties = []notifications.AiNotificationsPropertyInput{{Key: "subject", Value: "{{ issueTitle }}"}} // Default subject
 	}
 
 	return &channel, nil
@@ -134,6 +166,6 @@ func flattenNotificationChannelProperty(p *notifications.AiNotificationsProperty
 	return propertyResult, nil
 }
 
-func validateNonPropertyChannelType(channelType notifications.AiNotificationsChannelType) bool {
+func validateEmailChannelType(channelType notifications.AiNotificationsChannelType) bool {
 	return channelType == notifications.AiNotificationsChannelTypeTypes.EMAIL
 }

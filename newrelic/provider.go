@@ -156,6 +156,8 @@ func Provider() *schema.Provider {
 			"newrelic_one_dashboard_raw":                        resourceNewRelicOneDashboardRaw(),
 			"newrelic_service_level":                            resourceNewRelicServiceLevel(),
 			"newrelic_synthetics_alert_condition":               resourceNewRelicSyntheticsAlertCondition(),
+			"newrelic_synthetics_broken_links_monitor":          resourceNewRelicSyntheticsBrokenLinksMonitor(),
+			"newrelic_synthetics_cert_check_monitor":            resourceNewRelicSyntheticsCertCheckMonitor(),
 			"newrelic_synthetics_monitor":                       resourceNewRelicSyntheticsMonitor(),
 			"newrelic_synthetics_monitor_script":                resourceNewRelicSyntheticsMonitorScript(),
 			"newrelic_synthetics_multilocation_alert_condition": resourceNewRelicSyntheticsMultiLocationAlertCondition(),
