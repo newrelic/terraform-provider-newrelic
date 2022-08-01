@@ -16,17 +16,17 @@ The previous `newrelic_synthetics_monitor_resourece` has been split into two new
 
 Previous  
 ```hcl
-resource "newrelic_synthetics_monitor" "foo" {
-  name = "monitor-name"
-  type = "SCRIPT_BROWSER"
+resource "newrelic_synthetics_monitor" "monitor" {
+  name      = "monitor-name"
+  type      = "SCRIPT_BROWSER"
   frequency = 1
-  status = "DISABLED"
+  status    = "DISABLED"
   locations = ["AWS_US_EAST_1"]
-  uri = "https://google.com"
+  uri       = "https://google.com"
 }
-resource "newrelic_synthetics_monitor_script" "foo_script" {
-  monitor_id = newrelic_synthetics_monitor.foo.id
-  text = "console.log("hello, world")"
+resource "newrelic_synthetics_monitor_script" "monitor_script" {
+  monitor_id = newrelic_synthetics_monitor.monitor.id
+  text       = "console.log("hello, world")"
 	location {
 		name = "AWS_US_EAST_1"
 	}
@@ -35,7 +35,7 @@ resource "newrelic_synthetics_monitor_script" "foo_script" {
 
 Current
 ```hcl
-resource "newrelic_synthetics_script_monitor" "foo" {
+resource "newrelic_synthetics_script_monitor" "monitor" {
   name	          =	"monitor-name"
   type	          =	"SCRIPT_API"
  	location_public	=	["US_EAST_1"]
@@ -53,3 +53,62 @@ resource "newrelic_synthetics_script_monitor" "foo" {
 
 1. Move the value in `text` from `newrelic_synthetics_monitor_script` to `script` in `newrelic_synthetics_script_monitor`
 2. Remove `AWS_` from the location name, e.g. `AWS_US_EAST_1` becomes `US_EAST_1`
+
+### Migrating script Synthetics monitor resources with VSE
+
+In v3.x of the provider, we have introduced a new resource `newrelic_synthetics_private_location` for creating a private location to attach to a monitor. Previously, an HMAC for a private location had to be calculated for a monitor script to run in a private location. See the below example for how to migrate to version 3:
+
+Previous  
+```hcl
+resource "newrelic_synthetics_monitor" "foo" {
+  name      = "monitor-name"
+  type      = "SCRIPT_BROWSER"
+  frequency = 1
+  status    = "DISABLED"
+  locations = ["AWS_US_EAST_1"]
+  uri       = "https://google.com"
+}
+
+resource "newrelic_synthetics_monitor_script" "foo_script" {
+  monitor_id = newrelic_synthetics_monitor.foo.id
+  text       = "console.log('hello, world')"
+  location {
+    name         = "private-location"
+    vse_password = "secret"
+  }
+}
+```
+
+Current
+```hcl
+resource "newrelic_synthetics_private_location" "private_location" {
+  description               = "Test Private Location"
+  name                      = "test-private-location"
+  verified_script_execution = true
+}
+
+resource "newrelic_synthetics_script_monitor" "monitor" {
+  location_private {
+    guid         = newrelic_synthetics_private_location.private_location.id
+    vse_password = secret
+  }
+  name                 = "test-monitor"
+  period               = "EVERY_HOUR"
+  runtime_type_version = ""
+  runtime_type         = ""
+  script_language      = ""
+  status               = "ENABLED"
+  type                 = "SCRIPT_BROWSER"
+  script               = "console.log('hello, world')"
+  tag {
+    key    = "some_key"
+    values = ["some_value"]
+  }
+}
+```
+
+#### Steps to migrate to new resource
+
+1. Follow the guide above to migrate to the new `newrelic_synthetics_script_monitor` resource
+2. Create or import a private location using the `newrelic_synthetics_private_location` resource
+3. Add a `location_private` block to the `newrelic_synthetics_script_monitor` resource with the `guid` of the private location and the `vse_password`
