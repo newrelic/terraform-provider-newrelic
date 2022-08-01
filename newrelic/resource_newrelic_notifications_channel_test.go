@@ -16,7 +16,7 @@ import (
 )
 
 func TestNewRelicNotificationChannelWebhook_Basic(t *testing.T) {
-	resourceName := "newrelic_notification_channel.webhook_test_foo"
+	resourceName := "newrelic_notification_channel.test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
 
@@ -27,7 +27,7 @@ func TestNewRelicNotificationChannelWebhook_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testNewRelicNotificationChannelConfigByType(rName, "WEBHOOK", "IINT", "b1e90a32-23b7-4028-b2c7-ffbdfe103852", `{
+				Config: testNewRelicNotificationChannelConfigByType(rName, "WEBHOOK", "IINT", "4756c466-c29f-4f89-9cb4-382cabfcef61", `{
 					key = "payload"
 					value = "{\n\t\"id\": \"test\"\n}"
 					label = "Payload Template"
@@ -38,7 +38,7 @@ func TestNewRelicNotificationChannelWebhook_Basic(t *testing.T) {
 			},
 			// Test: Update
 			{
-				Config: testNewRelicNotificationChannelConfigByType(rName, "WEBHOOK", "IINT", "b1e90a32-23b7-4028-b2c7-ffbdfe103852", `{
+				Config: testNewRelicNotificationChannelConfigByType(rName, "WEBHOOK", "IINT", "4756c466-c29f-4f89-9cb4-382cabfcef61", `{
 					key = "payload"
 					value = "{\n\t\"id\": \"test-update\"\n}"
 					label = "Payload Template Update"
@@ -58,7 +58,7 @@ func TestNewRelicNotificationChannelWebhook_Basic(t *testing.T) {
 }
 
 func TestNewRelicNotificationChannelEmail_Basic(t *testing.T) {
-	resourceName := "newrelic_notification_channel.email_test_foo"
+	resourceName := "newrelic_notification_channel.test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
 
@@ -69,14 +69,14 @@ func TestNewRelicNotificationChannelEmail_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testNewRelicNotificationChannelConfigByType(rName, "EMAIL", "IINT", "0115e01f-5636-496e-947f-6ce0322d7c5d", ""),
+				Config: testNewRelicNotificationChannelConfigByType(rName, "EMAIL", "IINT", "d112de81-46be-4b52-959d-945448a64cc1", ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationChannelExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testNewRelicNotificationChannelConfigByType(rName, "EMAIL", "IINT", "0115e01f-5636-496e-947f-6ce0322d7c5d", `{
+				Config: testNewRelicNotificationChannelConfigByType(rName, "EMAIL", "IINT", "d112de81-46be-4b52-959d-945448a64cc1", `{
 					key = "subject"
 					value = "Update: {{ issueTitle }}"
 				}`),
@@ -111,8 +111,8 @@ func testAccNewRelicNotificationChannelDestroy(s *terraform.State) error {
 		}
 		sorter := notifications.AiNotificationsChannelSorter{}
 
-		_, err := client.Notifications.GetChannels(accountID, "", filters, sorter)
-		if err == nil {
+		channelsResponse, _ := client.Notifications.GetChannels(accountID, "", filters, sorter)
+		if len(channelsResponse.Entities) != 0 {
 			return fmt.Errorf("notification channel still exists")
 		}
 
