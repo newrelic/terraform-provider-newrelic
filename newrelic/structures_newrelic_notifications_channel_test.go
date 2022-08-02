@@ -24,22 +24,40 @@ func TestExpandNotificationChannel(t *testing.T) {
 		ExpectReason string
 		Expanded     *notifications.AiNotificationsChannel
 	}{
-		"valid channel": {
+		"valid webhook channel": {
 			Data: map[string]interface{}{
-				"name":           "testing123",
+				"name":           "webhook-test",
 				"type":           "WEBHOOK",
 				"properties":     []interface{}{property},
 				"product":        "IINT",
 				"destination_id": "b1e90a32-23b7-4028-b2c7-ffbdfe103852",
 			},
 			Expanded: &notifications.AiNotificationsChannel{
-				Name: "testing123",
+				Name: "webhook-test",
 				Type: notifications.AiNotificationsChannelTypeTypes.WEBHOOK,
 				Properties: []notifications.AiNotificationsProperty{
 					{
 						Key:   "payload",
 						Value: "{\\n\\t\\\"id\\\": \\\"test\\\"\\n}",
 						Label: "Payload Template",
+					},
+				},
+			},
+		},
+		"valid email channel": {
+			Data: map[string]interface{}{
+				"name":           "email-test",
+				"type":           "EMAIL",
+				"product":        "IINT",
+				"destination_id": "b1e90a32-23b7-4028-b2c7-ffbdfe103852",
+			},
+			Expanded: &notifications.AiNotificationsChannel{
+				Name: "email-test",
+				Type: notifications.AiNotificationsChannelTypeTypes.EMAIL,
+				Properties: []notifications.AiNotificationsProperty{
+					{
+						Key:   "subject",
+						Value: "{{ issueTitle }}",
 					},
 				},
 			},

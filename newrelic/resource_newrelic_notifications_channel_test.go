@@ -15,8 +15,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestNewRelicNotificationChannel_Basic(t *testing.T) {
-	resourceName := "newrelic_notification_channel.test_foo"
+func TestNewRelicNotificationChannelWebhook_Basic(t *testing.T) {
+	t.Skip("Skipping TestNewRelicNotificationChannelWebhook_Basic.  AWAITING FINAL IMPLEMENTATION!")
+
+	resourceName := "newrelic_notification_channel.webhook_test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
 
@@ -31,6 +33,56 @@ func TestNewRelicNotificationChannel_Basic(t *testing.T) {
 					key = "payload"
 					value = "{\n\t\"id\": \"test\"\n}"
 					label = "Payload Template"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationChannelExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testNewRelicNotificationChannelConfigByType(rName, "WEBHOOK", "IINT", "b1e90a32-23b7-4028-b2c7-ffbdfe103852", `{
+					key = "payload"
+					value = "{\n\t\"id\": \"test-update\"\n}"
+					label = "Payload Template Update"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationChannelExists(resourceName),
+				),
+			},
+			// Test: Import
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      resourceName,
+			},
+		},
+	})
+}
+
+func TestNewRelicNotificationChannelEmail_Basic(t *testing.T) {
+	t.Skip("Skipping TestNewRelicNotificationChannelWebhook_Basic. AWAITING FINAL IMPLEMENTATION!")
+
+	resourceName := "newrelic_notification_channel.email_test_foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationChannelDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testNewRelicNotificationChannelConfigByType(rName, "EMAIL", "IINT", "0115e01f-5636-496e-947f-6ce0322d7c5d", ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationChannelExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testNewRelicNotificationChannelConfigByType(rName, "EMAIL", "IINT", "0115e01f-5636-496e-947f-6ce0322d7c5d", `{
+					key = "subject"
+					value = "Update: {{ issueTitle }}"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationChannelExists(resourceName),
@@ -73,6 +125,17 @@ func testAccNewRelicNotificationChannelDestroy(s *terraform.State) error {
 }
 
 func testNewRelicNotificationChannelConfigByType(name string, channelType string, product string, destinationId string, properties string) string {
+	if properties == "" {
+		return fmt.Sprintf(`
+		resource "newrelic_notification_channel" "test_foo" {
+			name = "%s"
+			type = "%s"
+			product = "%s"
+			destination_id = "%s"
+		}
+	`, name, channelType, product, destinationId)
+	}
+
 	return fmt.Sprintf(`
 		resource "newrelic_notification_channel" "test_foo" {
 			name = "%s"

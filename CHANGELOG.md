@@ -1,3 +1,8 @@
+<a name="v2.49.1"></a>
+## [v2.49.1] - 2022-07-22
+### Bug Fixes
+- **Notifications:** relocate notifications docs to the corrects folder
+
 <a name="v2.49.0"></a>
 ## [v2.49.0] - 2022-07-19
 ### Bug Fixes
@@ -1321,7 +1326,8 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.1...HEAD
+[v2.49.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.0...v2.49.1
 [v2.49.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.2...v2.49.0
 [v2.48.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.1...v2.48.2
 [v2.48.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.0...v2.48.1
