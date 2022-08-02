@@ -35,8 +35,8 @@ The following are the common arguments supported for `BROKEN LINKS` monitor:
 * `account_id`- (Required) The account in which the Synthetics monitor will be created.
 * `name` - (Required) The name for the monitor.
 * `uri` - (Required) The uri the monitor runs against.
-* `location_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/
-* `location_private` - (Required) The location the monitor will run from.
+* `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/
+* `locations_private` - (Required) The location the monitor will run from.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
 * `guid` - (Required) The unique identifier for the Synthetic Monitor in New Relic.
