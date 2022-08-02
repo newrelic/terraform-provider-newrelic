@@ -14,6 +14,11 @@ import (
 func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_step_monitor.foo"
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	updateStep := `steps {
+		ordinal = 1
+		type    = "ASSERT_TITLE"
+		values  = ["==", "Google"]
+	}`
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -22,7 +27,7 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccNewRelicSyntheticsStepMonitorConfig(rName),
+				Config: testAccNewRelicSyntheticsStepMonitorConfig(rName, ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
 				),
@@ -33,7 +38,7 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 					// Unfortunately we still have to wait due to async delay with entity indexing :(
 					time.Sleep(10 * time.Second)
 				},
-				Config: testAccNewRelicSyntheticsStepMonitorConfig(fmt.Sprintf("%s-updated", rName)),
+				Config: testAccNewRelicSyntheticsStepMonitorConfig(fmt.Sprintf("%s-updated", rName), updateStep),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
 				),
@@ -46,9 +51,6 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"locations_private",
 					"tag",
-					// NOTE: Need to ignore steps and enable_screenshot_on_failure_and_script
-					// on import until the new endpoints work.
-					"steps",
 					"enable_screenshot_on_failure_and_script",
 				},
 			},
@@ -56,7 +58,7 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 	})
 }
 
-func testAccNewRelicSyntheticsStepMonitorConfig(name string) string {
+func testAccNewRelicSyntheticsStepMonitorConfig(name string, step string) string {
 	return fmt.Sprintf(`
 resource "newrelic_synthetics_step_monitor" "foo" {
 	name                                    = "%[1]s"
@@ -70,6 +72,8 @@ resource "newrelic_synthetics_step_monitor" "foo" {
 		type    = "NAVIGATE"
 		values  = ["https://google.com"]
 	}
+
+	%[2]s
 }
-`, name)
+`, name, step)
 }

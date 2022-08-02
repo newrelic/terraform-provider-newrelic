@@ -150,6 +150,33 @@ func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) *synthetics.S
 	return &input
 }
 
+func buildSyntheticsStepMonitorUpdateInput(d *schema.ResourceData) *synthetics.SyntheticsUpdateStepMonitorInput {
+	inputBase := expandSyntheticsMonitorBase(d)
+
+	input := synthetics.SyntheticsUpdateStepMonitorInput{
+		Name:   inputBase.Name,
+		Period: inputBase.Period,
+		Status: inputBase.Status,
+		Tags:   inputBase.Tags,
+		Steps:  expandSyntheticsMonitorSteps(d.Get("steps").([]interface{})),
+	}
+
+	if attr, ok := d.GetOk("locations_private"); ok {
+		input.Locations.Private = expandPrivateLocations(attr.(*schema.Set).List())
+	}
+
+	if attr, ok := d.GetOk("locations_public"); ok {
+		input.Locations.Public = expandStringSlice(attr.(*schema.Set).List())
+	}
+
+	if attr, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
+		v := attr.(bool)
+		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &v
+	}
+
+	return &input
+}
+
 func resourceNewRelicSyntheticsStepMonitorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -181,6 +208,23 @@ func resourceNewRelicSyntheticsStepMonitorCreate(ctx context.Context, d *schema.
 	return diag.FromErr(err)
 }
 
+func flattenSyntheticsMonitorSteps(stepsIn []synthetics.SyntheticsStep) []map[string]interface{} {
+	steps := []map[string]interface{}{}
+
+	// Note: This might need further flattening for TF
+	for _, s := range stepsIn {
+		step := map[string]interface{}{
+			"ordinal": s.Ordinal,
+			"type":    string(s.Type),
+			"values":  s.Values,
+		}
+
+		steps = append(steps, step)
+	}
+
+	return steps
+}
+
 func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -197,16 +241,20 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	// TODO: Get steps from new NerdGraph query actor.account.synthetics.steps
-	// steps :=
-
 	switch e := (*resp).(type) {
 	case *entities.SyntheticMonitorEntity:
 		entity := (*resp).(*entities.SyntheticMonitorEntity)
+		stepsResp, errr := client.Synthetics.GetSteps(accountID, synthetics.EntityGUID(entity.GetGUID()))
+		if err != nil {
+			return diag.FromErr(errr)
+		}
+
+		steps := flattenSyntheticsMonitorSteps(*stepsResp)
 
 		d.SetId(string(e.GUID))
 		_ = d.Set("account_id", accountID)
 		_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
+		_ = d.Set("steps", steps)
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"guid":   string(e.GUID),
@@ -222,10 +270,9 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
-	guid := synthetics.EntityGUID(d.Id())
 
-	monitorInput := buildSyntheticsBrokenLinksMonitorUpdateInput(d)
-	resp, err := client.Synthetics.SyntheticsUpdateBrokenLinksMonitorWithContext(ctx, guid, *monitorInput)
+	monitorInput := buildSyntheticsStepMonitorUpdateInput(d)
+	resp, err := client.Synthetics.SyntheticsUpdateStepMonitorWithContext(ctx, synthetics.EntityGUID(d.Id()), *monitorInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -236,6 +283,7 @@ func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.
 	}
 
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
+	_ = d.Set("steps", flattenSyntheticsMonitorSteps(resp.Monitor.Steps))
 
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
 		"guid":   string(resp.Monitor.GUID),
