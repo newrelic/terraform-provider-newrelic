@@ -10,9 +10,12 @@ Create and manage a Synthetics monitor in New Relic.
 
 Use this resource to create, update, and delete the synthetics broken links monitor in New Relic.
 
+-> **NOTE:** The [newrelic_synthetics_private_location](newrelic_synthetics_private_location.html) resource private minion can take upto 10 minutes to be available through Terraform.
+
 ## Example Usage
 
 ##### Type: `BROKEN LINKS`
+
 ```hcl
 resource "newrelic_synthetics_broken_links_monitor" "foo" {
   name = "broken"
@@ -28,6 +31,24 @@ resource "newrelic_synthetics_broken_links_monitor" "foo" {
 ```
 See additional [examples](#additional-examples).
 
+```hcl
+resource "newrelic_synthetics_private_location" "bar1" {
+  description               = "Test Description"
+  name                      = "%[1]A"
+  verified_script_execution = true
+}
+  resource "newrelic_synthetics_broken_links_monitor" "bar" {
+    name = "broken"
+    uri = "https://www.one.example.com"
+    locations_public = ["AP_SOUTH_1"]
+    period = "EVERY_6_HOURS"
+    status = "ENABLED"
+    tag {
+      key = "some_key"
+      values = ["some_value"]
+    }
+}
+```
 ## Argument Reference
 
 The following are the common arguments supported for `BROKEN LINKS` monitor:
