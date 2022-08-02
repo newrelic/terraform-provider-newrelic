@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
@@ -70,22 +71,21 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"ordinal": {
-						Type:        schema.TypeInt,
-						Required:    true,
-						Description: "The position of the step within the script ranging from 0-100",
-						//SchemaValidateDiagFunc: // TODO: add validation to ensure value is between 0 and 100 (inclusive)
+						Type:         schema.TypeInt,
+						Required:     true,
+						Description:  "The position of the step within the script ranging from 0-100",
+						ValidateFunc: validation.IntBetween(0, 100),
 					},
 					"type": {
 						Type:        schema.TypeString,
 						Required:    true,
 						Description: "The type of step to be added to the script.",
-						//SchemaValidateDiagFunc: // TODO: add valid step types via enum values in client
 					},
 					"values": {
 						Type:        schema.TypeList,
 						Elem:        &schema.Schema{Type: schema.TypeString},
 						Optional:    true,
-						Description: "",
+						Description: "The metadata values related to the check the step performs.",
 					},
 				},
 			},

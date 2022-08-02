@@ -92,7 +92,6 @@ func expandPrivateLocations(locations []interface{}) []synthetics.SyntheticsPriv
 func flattenSyntheticsMonitorSteps(stepsIn []synthetics.SyntheticsStep) []map[string]interface{} {
 	steps := []map[string]interface{}{}
 
-	// Note: This might need further flattening for TF
 	for _, s := range stepsIn {
 		step := map[string]interface{}{
 			"ordinal": s.Ordinal,
