@@ -10,6 +10,8 @@ Create and manage a Synthetics script monitor in New Relic.
 
 Use this resource to create update, and delete a Script API or Script Browser Synthetics Monitor in New Relic.
 
+-> **NOTE:** The [newrelic_synthetics_private_location](newrelic_synthetics_private_location.html) resource private minion can take upto 10 minutes to be available through Terraform.
+
 ## Example Usage
 
 ##### Type: `SCRIPT_API`
@@ -31,6 +33,31 @@ Use this resource to create update, and delete a Script API or Script Browser Sy
          key = "some_key"
          values = ["some_value"]
      }
+}
+```
+See additional [examples](#additional-examples).
+
+```hcl
+resource "newrelic_synthetics_private_location" "bar1" {
+  description               = "Test Description-Updated"
+  name                      = "%[1]S"
+  verified_script_execution = true
+}
+resource "newrelic_synthetics_script_monitor" "foo" {
+  name                 = "SCRIPT_MONITOR"
+  type                 = "SCRIPT_API"
+  location_public      = ["AP_SOUTH_1", "AP_EAST_1"]
+  location_private     = ["newrelic_synthetics_private_location.bar1"]
+  period               = "EVERY_6_HOURS"
+  status               = "ENABLED"
+  script               = "console.log('terraform integration test updated')"
+  script_language      = "JAVASCRIPT"
+  runtime_type         = "NODE_API"
+  runtime_type_version = "16.10"
+  tag {
+    key    = "some_key"
+    values = ["some_value"]
+  }
 }
 ```
 ##### Type: `SCRIPT_BROWSER`
@@ -55,7 +82,31 @@ Use this resource to create update, and delete a Script API or Script Browser Sy
 		}
      }
 ```
+See additional [examples](#additional-examples).
 
+```hcl
+resource "newrelic_synthetics_private_location" "bar1" {
+  description               = "Test Description-Updated"
+  name                      = "%[1]S"
+  verified_script_execution = true
+}
+resource "newrelic_synthetics_script_monitor" "bar" {
+  enable_screenshot_on_failure_and_script = false
+  location_public  = ["AP_SOUTH_1","AP_EAST_1"]
+  name  = "SCRIPT_BROWSER"
+  period  = "EVERY_HOUR"
+  runtime_type_version  = "100"
+  runtime_type  = "CHROME_BROWSER"
+  script_language = "JAVASCRIPT"
+  status  = "DISABLED"
+  type  = "SCRIPT_BROWSER"
+  script  = "$browser.get('https://one.newrelic.com')"
+  tag {
+    key = "Name"
+    values  = ["scriptedMonitor","hello"]
+  }
+}
+```
 ## Argument Reference
 
 The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BROWSER` monitors:

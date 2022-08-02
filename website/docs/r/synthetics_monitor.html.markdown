@@ -10,9 +10,12 @@ Create and manage a Synthetics monitor in New Relic.
 
 Use this resource to create, update, and delete a Simple or Browser Synthetics Monitor in New Relic.
 
+-> **NOTE:** The [newrelic_synthetics_private_location](newrelic_synthetics_private_location.html) resource private minion can take upto 10 minutes to be available through Terraform.
+
 ## Example Usage
 
 ##### Type: `SIMPLE`
+
 ```hcl
 resource "newrelic_synthetics_monitor" "foo" {
   custom_header{
@@ -34,6 +37,37 @@ resource "newrelic_synthetics_monitor" "foo" {
   }
   uri = "https://www.one.newrelic.com"
 }
+```
+See additional [examples](#additional-examples).
+
+```hcl
+resource "newrelic_synthetics_private_location" "bar1" {
+  description               = "Test Description-Updated"
+  name                      = "%[1]S"
+  verified_script_execution = true
+}
+resource "newrelic_synthetics_monitor" "foo" {
+  custom_header{
+    name   = "name"
+    value  = "simple_browser_updTE"
+  }
+  location_private = ["newrelic_synthetics_private_location.bar1"]
+  treat_redirect_as_failure = true
+  validation_string = "success"
+  bypass_head_request = true
+  verify_ssl  = true
+  location_public = ["AP_SOUTH_1"]
+  name  = "%[1]s"
+  period =  "EVERY_MINUTE"
+  status  = "ENABLED"
+  type  = "SIMPLE"
+  tag{
+    key = "monitor"
+    values  = ["myMonitor"]
+  }
+  uri = "https://www.one.newrelic.com"
+}
+
 ```
 
 ##### Type: `SIMPLE BROWSER`
@@ -63,7 +97,38 @@ resource "newrelic_synthetics_monitor" "bar" {
     values  = ["SimpleBrowserMonitor"]
   }
 }
+```
+See additional [examples](#additional-examples).
 
+```hcl
+resource "newrelic_synthetics_private_location" "bar1" {
+  description               = "Test Description-Updated"
+  name                      = "%[1]S"
+  verified_script_execution = true
+}
+resource "newrelic_synthetics_monitor" "bar" {
+  custom_headers {
+    name  = "name"
+    value = "simple_browser"
+  }
+  location_private                        = ["newrelic_synthetics_private_location.bar1"]
+  enable_screenshot_on_failure_and_script = true
+  validation_string                       = "success"
+  verify_ssl                              = true
+  location_public                         = ["AP_SOUTH_1"]
+  name                                    = "%s"
+  period                                  = "EVERY_MINUTE"
+  runtime_type_version                    = "100"
+  runtime_type                            = "CHROME_BROWSER"
+  script_language                         = "JAVASCRIPT"
+  status                                  = "ENABLED"
+  type                                    = "BROWSER"
+  uri                                     = "https://www.one.newrelic.com"
+  tag {
+    key    = "name"
+    values = ["SimpleBrowserMonitor"]
+  }
+}
 ```
 ## Argument Reference
 
