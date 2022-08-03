@@ -17,8 +17,8 @@ Use this resource to create update, and delete a Script API or Script Browser Sy
 -> **NOTE:** The preferred runtime is `NODE_16.10.0` while configuring the `SCRIPT_API` monitor. Other runtime may be deprecated in the future and receive fewer product updates. 
 
 ```hcl
-resource "newrelic_synthetics_script_monitor" "foo" {
-  name                 = "SCRIPT_MONITOR"
+resource "newrelic_synthetics_script_monitor" "monitor" {
+  name                 = "monitor"
   type                 = "SCRIPT_API"
   location_public      = ["AP_SOUTH_1", "AP_EAST_1"]
   period               = "EVERY_6_HOURS"
@@ -38,10 +38,10 @@ resource "newrelic_synthetics_script_monitor" "foo" {
 -> **NOTE:** The preferred runtime is `CHROME_BROWSER_100` while configuring the `SCRIPT_BROWSER` monitor. Other runtime may be deprecated in the future and receive fewer product updates.
 
 ```hcl
-resource "newrelic_synthetics_script_monitor" "bar" {
+resource "newrelic_synthetics_script_monitor" "monitor" {
   enable_screenshot_on_failure_and_script = false
   location_public                         = ["AP_SOUTH_1", "AP_EAST_1"]
-  name                                    = "SCRIPT_BROWSER"
+  name                                    = "monitor"
   period                                  = "EVERY_HOUR"
   runtime_type_version                    = "100"
   runtime_type                            = "CHROME_BROWSER"
@@ -111,8 +111,8 @@ resource "newrelic_synthetics_private_location" "private_location" {
   verified_script_execution = true
 }
 
-resource "newrelic_synthetics_script_monitor" "foo" {
-  name = "SCRIPT_MONITOR"
+resource "newrelic_synthetics_script_monitor" "monitor" {
+  name = "monitor"
   type = "SCRIPT_API"
   location_private {
     guid         = "newrelic_synthetics_private_location.private_location.id"
@@ -147,7 +147,7 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
     guid         = "newrelic_synthetics_private_location.private_location.id"
     vse_password = "secret"
   }
-  name                 = "SCRIPT_BROWSER"
+  name                 = "monitor"
   period               = "EVERY_HOUR"
   runtime_type_version = ""
   runtime_type         = ""
