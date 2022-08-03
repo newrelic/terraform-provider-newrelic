@@ -12,17 +12,15 @@ Use this resource to create, update, and delete the synthetics broken links moni
 
 ## Example Usage
 
-##### Type: `BROKEN LINKS`
-
 ```hcl
-resource "newrelic_synthetics_broken_links_monitor" "foo" {
-  name = "broken"
-  uri = "https://www.one.example.com"
+resource "newrelic_synthetics_broken_links_monitor" "monitor" {
+  name             = "broken-links-monitor"
+  uri              = "https://www.one.example.com"
   locations_public = ["AP_SOUTH_1"]
-  period = "EVERY_6_HOURS"
-  status = "ENABLED"
+  period           = "EVERY_6_HOURS"
+  status           = "ENABLED"
   tag {
-    key = "some_key"
+    key    = "some_key"
     values = ["some_value"]
   }
 }
@@ -33,22 +31,21 @@ See additional [examples](#additional-examples).
 
 The following are the common arguments supported for `BROKEN LINKS` monitor:
 
-* `account_id`- (Required) The account in which the Synthetics monitor will be created.
+* `account_id`- (Optional) The account in which the Synthetics monitor will be created.
 * `name` - (Required) The name for the monitor.
 * `uri` - (Required) The uri the monitor runs against.
-* `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/
-* `locations_private` - (Required) The location the monitor will run from.
+* `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. Exactly one of either `locations_public` or `location_private` is required.
+* `locations_private` - (Required) The location the monitor will run from. Exactly one of either `locations_public` or `location_private` is required.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
-* `guid` - (Required) The unique identifier for the Synthetic Monitor in New Relic.
+* `tag` - (Optional) The tags that will be associated with the monitor. See See [Nested tag blocks](#nested-tag-blocks) below for details
 
-### Nested blocks
+### Nested `tag` blocks
 
 All nested `tag` blocks support the following common arguments:
 
 * `key` - (Required) Name of the tag key.
 * `values` - (Required) Values associated with the tag key.
-
 
 ## Additional Examples
 
@@ -62,19 +59,20 @@ The below example shows how you can define a private location and attach it to a
 resource "newrelic_synthetics_private_location" "bar1" {
   description               = "Test Description"
   name                      = "private_location"
-  verified_script_execution = true
+  verified_script_execution = false
 }
-  resource "newrelic_synthetics_broken_links_monitor" "bar" {
-    name = "broken"
-    uri = "https://www.one.example.com"
-    locations_private = ["newrelic_synthetics_private_location.private_location.id"]
-    period = "EVERY_6_HOURS"
-    status = "ENABLED"
-    tag {
-      key = "some_key"
-      values = ["some_value"]
-    }
+resource "newrelic_synthetics_broken_links_monitor" "bar" {
+  name              = "broken-links-monitor"
+  uri               = "https://www.one.example.com"
+  locations_private = ["newrelic_synthetics_private_location.private_location.id"]
+  period            = "EVERY_6_HOURS"
+  status            = "ENABLED"
+  tag {
+    key    = "some_key"
+    values = ["some_value"]
+  }
 }
+
 ```
 
 ## Attributes Reference
