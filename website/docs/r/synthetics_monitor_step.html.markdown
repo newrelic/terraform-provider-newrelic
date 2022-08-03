@@ -10,8 +10,6 @@ Create and manage a Synthetics monitor in New Relic.
 
 Use this resource to create, update, and delete the synthetics step monitor in New Relic.
 
--> **NOTE:** The [newrelic_synthetics_private_location](newrelic_synthetics_private_location.html) resource private minion can take upto 10 minutes to be available through Terraform.
-
 ## Example Usage
 
 ##### Type: `STEP MONITOR`
@@ -35,24 +33,6 @@ resource "newrelic_synthetics_step_monitor" "foo" {
 ```
 See additional [examples](#additional-examples).
 
-```hcl
-resource "newrelic_synthetics_private_location" "bar1" {
-  description               = "Test Description"
-  name                      = "%[1]A"
-  verified_script_execution = true
-}
-  resource "newrelic_synthetics_step_monitor" "bar" {
-    name             = "step_monitor"
-    uri              = "https://www.one.example.com"
-    locations_public = ["AP_SOUTH_1"]
-    period           = "EVERY_6_HOURS"
-    status           = "ENABLED"
-    tag {
-      key    = "some_key"
-      values = ["some_value"]
-    }
-  }
-```
 ## Argument Reference
 
 The following are the common arguments supported for `STEP` monitor:
@@ -84,6 +64,33 @@ All nested `tag` blocks support the following common arguments:
 
 * `key` - (Required) Name of the tag key.
 * `values` - (Required) Values associated with the tag key.
+
+## Additional Examples
+
+### Create a monitor with a private location
+
+The below example shows how you can define a private location and attach it to a monitor.
+
+-> **NOTE:** It can take up to 10 minutes for a private location to become available.
+
+```hcl
+resource "newrelic_synthetics_private_location" "bar1" {
+  description               = "Test Description"
+  name                      = "private-location"
+  verified_script_execution = true
+}
+  resource "newrelic_synthetics_step_monitor" "bar" {
+    name             = "step_monitor"
+    uri              = "https://www.one.example.com"
+    locations_public = ["AP_SOUTH_1"]
+    period           = "EVERY_6_HOURS"
+    status           = "ENABLED"
+    tag {
+      key    = "some_key"
+      values = ["some_value"]
+    }
+  }
+```
 
 ## Attributes Reference
 
