@@ -6,6 +6,7 @@ package newrelic
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
 )
 
@@ -62,4 +63,43 @@ func TestSortIntegerSlice(t *testing.T) {
 	sortIntegerSlice(integers)
 
 	require.Equal(t, expected, integers)
+}
+
+func TestMergeSchemas(t *testing.T) {
+	schema1 := map[string]*schema.Schema{
+		"string_attribute": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "test",
+			Description: "This attribute has a TypeString",
+		},
+		"boolean_attribute": {
+			Type:        schema.TypeBool,
+			Description: "This attribute is a TypeBool",
+		},
+	}
+
+	schema2 := map[string]*schema.Schema{
+		"typeset_attribute": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "This attribute is a TypeSet",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "This nested attribute is a TypeString",
+					},
+				},
+			},
+		},
+	}
+
+	result := mergeSchemas(schema1, schema2)
+	require.Equal(t, 3, len(result))
+
+	defaultStringAttrValue, err := result["string_attribute"].DefaultValue()
+	require.NoError(t, err)
+	require.Equal(t, "test", defaultStringAttrValue)
 }

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/contextkeys"
 )
 
@@ -118,4 +119,14 @@ func updateContextWithAccountID(ctx context.Context, accountID int) context.Cont
 	}
 
 	return ctx
+}
+
+func mergeSchemas(schemas ...map[string]*schema.Schema) map[string]*schema.Schema {
+	schema := map[string]*schema.Schema{}
+	for _, s := range schemas {
+		for k, v := range s {
+			schema[k] = v
+		}
+	}
+	return schema
 }
