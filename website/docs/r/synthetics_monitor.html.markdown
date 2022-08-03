@@ -10,126 +10,63 @@ Create and manage a Synthetics monitor in New Relic.
 
 Use this resource to create, update, and delete a Simple or Browser Synthetics Monitor in New Relic.
 
--> **NOTE:** The [newrelic_synthetics_private_location](newrelic_synthetics_private_location.html) resource private minion can take upto 10 minutes to be available through Terraform.
-
 ## Example Usage
 
 ##### Type: `SIMPLE`
 
 ```hcl
-resource "newrelic_synthetics_monitor" "foo" {
-  custom_header{
-    name  =  "Name"
-    value = "simpleMonitor"
-  }
-  treat_redirect_as_failure = true
-  validation_string = "success"
-  bypass_head_request = true
-  verify_ssl  = true
-  location_public = ["AP_SOUTH_1"]
-  name  = "%[1]s"
-  period =  "EVERY_MINUTE"
-  status  = "ENABLED"
-  type  = "SIMPLE"
-  tag{
-    key = "monitor"
-    values  = ["myMonitor"]
-  }
-  uri = "https://www.one.newrelic.com"
+    resource "newrelic_synthetics_monitor" "foo" {
+     custom_header{
+      name = "Name"
+      value = "simpleMonitor"
+     }
+     treat_redirect_as_failure = true
+     validation_string = "success"
+     bypass_head_request = true
+     verify_ssl = true
+     location_public = ["AP_SOUTH_1"]
+     name = "%[1]s"
+     period =  "EVERY_MINUTE"
+     status = "ENABLED"
+     type = "SIMPLE"
+     tag{
+      key = "monitor"
+      values = ["myMonitor"]
+     }
+     uri = "https://www.one.newrelic.com"
 }
 ```
 See additional [examples](#additional-examples).
-
-```hcl
-resource "newrelic_synthetics_private_location" "bar1" {
-  description               = "Test Description-Updated"
-  name                      = "%[1]S"
-  verified_script_execution = true
-}
-resource "newrelic_synthetics_monitor" "foo" {
-  custom_header{
-    name   = "name"
-    value  = "simple_browser_updTE"
-  }
-  location_private = ["newrelic_synthetics_private_location.bar1"]
-  treat_redirect_as_failure = true
-  validation_string = "success"
-  bypass_head_request = true
-  verify_ssl  = true
-  location_public = ["AP_SOUTH_1"]
-  name  = "%[1]s"
-  period =  "EVERY_MINUTE"
-  status  = "ENABLED"
-  type  = "SIMPLE"
-  tag{
-    key = "monitor"
-    values  = ["myMonitor"]
-  }
-  uri = "https://www.one.newrelic.com"
-}
-
-```
 
 ##### Type: `SIMPLE BROWSER`
 
 -> **NOTE:** The preferred runtime is `CHROME_BROWSER_100` while configuring the `SIMPLE_BROWSER` monitor. Other runtime may be deprecated in the future and receive fewer product updates.
 
 ```hcl
-resource "newrelic_synthetics_monitor" "bar" {
-  custom_headers{
-    name	= "name"
-    value	= "simple_browser"
-  }
-  enable_screenshot_on_failure_and_script = true
-  validation_string = "success"
-  verify_ssl  = true
-  location_public  = ["AP_SOUTH_1"]
-  name  = "%s"
-  period  = "EVERY_MINUTE"
-  runtime_type_version  = "100"
-  runtime_type  = "CHROME_BROWSER"
-  script_language = "JAVASCRIPT"
-  status  = "ENABLED"
-  type  = "BROWSER"
-  uri = "https://www.one.newrelic.com"
-  tag {
-    key = "name"
-    values  = ["SimpleBrowserMonitor"]
-  }
+    resource "newrelic_synthetics_monitor" "bar" {
+     custom_headers{
+      name = "name"
+      value	= "simple_browser"
+     }
+     enable_screenshot_on_failure_and_script = true
+     validation_string = "success"
+     verify_ssl = true
+     location_public = ["AP_SOUTH_1"]
+     name = "%s"
+     period = "EVERY_MINUTE"
+     runtime_type_version = "100"
+     runtime_type = "CHROME_BROWSER"
+     script_language = "JAVASCRIPT"
+     status = "ENABLED"
+     type = "BROWSER"
+     uri = "https://www.one.newrelic.com"
+     tag {
+      key = "name"
+      values = ["SimpleBrowserMonitor"]
+     }
 }
 ```
-See additional [examples](#additional-examples).
 
-```hcl
-resource "newrelic_synthetics_private_location" "bar1" {
-  description               = "Test Description-Updated"
-  name                      = "%[1]S"
-  verified_script_execution = true
-}
-resource "newrelic_synthetics_monitor" "bar" {
-  custom_headers {
-    name  = "name"
-    value = "simple_browser"
-  }
-  location_private                        = ["newrelic_synthetics_private_location.bar1"]
-  enable_screenshot_on_failure_and_script = true
-  validation_string                       = "success"
-  verify_ssl                              = true
-  location_public                         = ["AP_SOUTH_1"]
-  name                                    = "%s"
-  period                                  = "EVERY_MINUTE"
-  runtime_type_version                    = "100"
-  runtime_type                            = "CHROME_BROWSER"
-  script_language                         = "JAVASCRIPT"
-  status                                  = "ENABLED"
-  type                                    = "BROWSER"
-  uri                                     = "https://www.one.newrelic.com"
-  tag {
-    key    = "name"
-    values = ["SimpleBrowserMonitor"]
-  }
-}
-```
 ## Argument Reference
 
 The following are the common arguments supported for `SIMPLE` and `BROWSER` monitors:
@@ -174,6 +111,78 @@ All nested `location_private` blocks support the following common arguments:
 
 * `guid` - (Required) The unique identifier for the Synthetics private location in New Relic.
 * `vse_password` - (Optional) The location's Verified Script Execution password, Only necessary if Verified Script Execution is enabled for the location.
+
+## Additional Examples
+
+### Create a monitor with a private location
+
+The below example shows how you can define a private location and attach it to a monitor.
+
+-> **NOTE:** It can take up to 10 minutes for a private location to become available.
+
+##### Type: `SIMPLE`
+
+```hcl
+  resource "newrelic_synthetics_private_location" "bar1" {
+   description               = "Test Description-Updated"
+   name                      = "private_location"
+   verified_script_execution = true
+}
+  resource "newrelic_synthetics_monitor" "foo" {
+    custom_header {
+      name  = "name"
+      value = "simple_browser_updTE"
+    }
+    location_private          = ["newrelic_synthetics_private_location.bar1"]
+    treat_redirect_as_failure = true
+    validation_string         = "success"
+    bypass_head_request       = true
+    verify_ssl                = true
+    name                      = "%s"
+    period                    = "EVERY_MINUTE"
+    runtime_type_version      = "100"
+    runtime_type              = "CHROME_BROWSER"
+    script_language           = "JAVASCRIPT"
+    status                    = "ENABLED"
+    type                      = "BROWSER"
+    uri                       = "https://www.one.newrelic.com"
+    tag {
+      key    = "name"
+      values = ["SimpleBrowserMonitor"]
+    }
+  }
+```
+##### Type: `SIMPLE BROWSER
+
+```hcl
+    resource "newrelic_synthetics_private_location" "bar1" {
+     description = "Test Description-Updated"
+     name = "%[1]S"
+     verified_script_execution = true
+    }
+   resource "newrelic_synthetics_monitor" "bar" {
+    custom_headers {
+     name = "name"
+     value = "simple_browser"
+    }
+    location_private = ["newrelic_synthetics_private_location.bar1"]
+    enable_screenshot_on_failure_and_script = true
+    validation_string = "success"
+    verify_ssl = true
+    name = "%s"
+    period = "EVERY_MINUTE"
+    runtime_type_version = "100"
+    runtime_type = "CHROME_BROWSER"
+    script_language = "JAVASCRIPT"
+    status = "ENABLED"
+    type = "BROWSER"
+    uri = "https://www.one.newrelic.com"
+    tag {
+      key = "name"
+      values = ["SimpleBrowserMonitor"]
+    } 
+}
+```
 
 ## Attributes Reference
 
