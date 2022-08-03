@@ -50,7 +50,7 @@ The following are the common arguments supported for `STEP` monitor:
 All nested `locations_private` blocks support the following common arguments:
 
 * `guid` - (Required) The unique identifier for the Synthetics private location in New Relic.
-* `vse_password` - (Optional) **DEPRECATED:** The location's Verified Script Execution password, Only necessary if Verified Script Execution is enabled for the location.
+* `vse_password` - (Optional) The location's Verified Script Execution password, Only necessary if Verified Script Execution is enabled for the location.
 
 All nested `steps` blocks support the following common arguments:
 
