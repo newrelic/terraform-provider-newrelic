@@ -3,7 +3,7 @@ layout: "newrelic"
 page_title: "New Relic: newrelic_synthetics_step_monitor"
 sidebar_current: "docs-newrelic-resource-synthetics-step-monitor"
 description: |-
-Create and manage a Synthetics monitor in New Relic.
+Create and manage a Synthetics step monitor in New Relic.
 ---
 
 # Resource: newrelic\_synthetics\_step\_monitor
@@ -37,15 +37,13 @@ See additional [examples](#additional-examples).
 
 The following are the common arguments supported for `STEP` monitor:
 
-* `account_id`- (Required) The account in which the Synthetics monitor will be created.
+* `account_id`- (Optional) The account in which the Synthetics monitor will be created.
 * `name` - (Required) The name for the monitor.
 * `uri` - (Required) The uri the monitor runs against.
 * `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/
 * `locations_private` - (Required) The location the monitor will run from.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
-* `guid` - (Required) The unique identifier for the Synthetic Monitor in New Relic.
-
 
 ### Nested blocks
 
@@ -82,7 +80,7 @@ resource "newrelic_synthetics_private_location" "bar1" {
   resource "newrelic_synthetics_step_monitor" "bar" {
     name             = "step_monitor"
     uri              = "https://www.one.example.com"
-    locations_public = ["AP_SOUTH_1"]
+    locations_private = ["newrelic_synthetics_private_location.private_location.id"]
     period           = "EVERY_6_HOURS"
     status           = "ENABLED"
     tag {
