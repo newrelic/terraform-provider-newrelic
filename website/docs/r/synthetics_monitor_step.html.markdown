@@ -72,7 +72,7 @@ The below example shows how you can define a private location and attach it to a
 -> **NOTE:** It can take up to 10 minutes for a private location to become available.
 
 ```hcl
-resource "newrelic_synthetics_private_location" "bar1" {
+resource "newrelic_synthetics_private_location" "private_location" {
   description               = "Test Description"
   name                      = "private-location"
   verified_script_execution = true
