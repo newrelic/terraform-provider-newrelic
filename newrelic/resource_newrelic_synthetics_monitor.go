@@ -2,12 +2,10 @@ package newrelic
 
 import (
 	"context"
-	"log"
-	"strings"
-
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -226,7 +224,9 @@ func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreat
 }
 
 func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
 
@@ -240,6 +240,7 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
+	_ = d.Set("account_id", accountID)
 	setCommonSyntheticsMonitorAttributes(resp, d)
 
 	return nil
@@ -257,48 +258,7 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 		if err != nil {
 			diag.FromErr(err)
 		}
-		expandAttributes(e.Tags, d)
 	}
-}
-
-func expandAttributes(tags []entities.EntityTag, d *schema.ResourceData) {
-	for _, tag := range tags {
-		if tag.Key == "monitorStatus" {
-			_ = d.Set("status", strings.ToUpper(tag.Values[0]))
-		}
-		if tag.Key == "responseValidationText" {
-			_ = d.Set("validation_string", tag.Values[0])
-		}
-		if tag.Key == "useTlsValidation" {
-			_ = d.Set("verify_ssl", stringToBoolConv[tag.Values[0]])
-		}
-		if tag.Key == "period" {
-			_ = d.Set("period", periodConv[tag.Values[0]])
-		}
-		if tag.Key == "redirectIsFailure" {
-			_ = d.Set("treat_redirect_as_failure", stringToBoolConv[tag.Values[0]])
-		}
-		if tag.Key == "shouldBypassHeadRequest" {
-			_ = d.Set("bypass_head_request", stringToBoolConv[tag.Values[0]])
-		}
-	}
-}
-
-var stringToBoolConv = map[string]bool{
-	"true":  true,
-	"false": false,
-}
-
-var periodConv = map[string]string{
-	"1":    "EVERY_MINUTE",
-	"5":    "EVERY_5_MINUTES",
-	"10":   "EVERY_10_MINUTES",
-	"15":   "EVERY_15_MINUTES",
-	"30":   "EVERY_30_MINUTES",
-	"60":   "EVERY_HOUR",
-	"360":  "EVERY_6_HOURS",
-	"720":  "EVERY_12_HOURS",
-	"1440": "EVERY_DAY",
 }
 
 func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
