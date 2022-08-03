@@ -47,7 +47,7 @@ resource "newrelic_synthetics_monitor" "bar" {
   validation_string                       = "success"
   verify_ssl                              = true
   location_public                         = ["AP_SOUTH_1"]
-  name                                    = "%s"
+  name                                    = "monitor"
   period                                  = "EVERY_MINUTE"
   runtime_type_version                    = "100"
   runtime_type                            = "CHROME_BROWSER"
@@ -166,7 +166,7 @@ resource "newrelic_synthetics_monitor" "monitor" {
   enable_screenshot_on_failure_and_script = true
   validation_string                       = "success"
   verify_ssl                              = true
-  name                                    = "%s"
+  name                                    = "monitor"
   period                                  = "EVERY_MINUTE"
   runtime_type_version                    = ""
   runtime_type                            = ""
