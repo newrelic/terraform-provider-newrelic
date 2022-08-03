@@ -21,8 +21,8 @@ resource "newrelic_synthetics_step_monitor" "foo" {
   period = "EVERY_6_HOURS"
   status = "ENABLED"
   steps {
-    ordinal = " "
-    types = " "
+    ordinal = 0
+    types = "NAVIGATE "
     values = "ASSERT_ELEMENT"
   }
   tag {
@@ -72,19 +72,24 @@ The below example shows how you can define a private location and attach it to a
 -> **NOTE:** It can take up to 10 minutes for a private location to become available.
 
 ```hcl
-resource "newrelic_synthetics_private_location" "private_location" {
-  description               = "Test Description"
-  name                      = "private-location"
-  verified_script_execution = true
+    resource "newrelic_synthetics_private_location" "private_location" {
+     description = "Test Description"
+     name = "private-location"
+     verified_script_execution = true
 }
-  resource "newrelic_synthetics_step_monitor" "bar" {
-    name             = "step_monitor"
-    uri              = "https://www.one.example.com"
-    locations_private = ["newrelic_synthetics_private_location.private_location.id"]
-    period           = "EVERY_6_HOURS"
-    status           = "ENABLED"
-    tag {
-      key    = "some_key"
+    resource "newrelic_synthetics_step_monitor" "bar" {
+     name = "step_monitor"
+     uri = "https://www.one.example.com"
+     locations_private = ["newrelic_synthetics_private_location.private_location.id"]
+     period = "EVERY_6_HOURS"
+     status = "ENABLED"
+     steps {
+      ordinal = 0
+      type = "NAVIGATE"
+      values = ["https://google.com"]
+     }
+     tag {
+      key = "some_key"
       values = ["some_value"]
     }
   }
