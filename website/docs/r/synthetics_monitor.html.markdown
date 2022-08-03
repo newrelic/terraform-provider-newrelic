@@ -73,8 +73,8 @@ The following are the common arguments supported for `SIMPLE` and `BROWSER` moni
 * `verify_ssl` - (Optional) Monitor should validate SSL certificate chain.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor.
-* `location_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. Exactly one of either locations_public or location_private is required.
-* `location_private` - (Required) The location the monitor will run from. See [Nested location_private blocks](#nested-location-private-blocks) below for details. Exactly one of either locations_public or location_private is required.
+* `location_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. Exactly one of either `locations_public` or `location_private` is required.
+* `location_private` - (Required) The location the monitor will run from. Exactly one of either `locations_public` or `location_private` is required.
 * `name` - (Required) The human-readable identifier for the monitor.
 * `uri` - (Required) The uri the monitor runs against.
 * `type` - (Required) THE monitor type. Valid values are `SIMPLE` and `BROWSER`.
@@ -108,18 +108,11 @@ All nested `tag` blocks support the following common arguments:
 
 All nested `location_private` blocks support the following common arguments:
 
-### Nested `location private` blocks
-
-* `guid` - (Required) The unique identifier for the Synthetics private location in New Relic.
-* `vse_password` - (Optional) The location's Verified Script Execution password, Only necessary if Verified Script Execution is enabled for the location.
-
 ## Additional Examples
 
 ### Create a monitor with a private location
 
 The below example shows how you can define a private location and attach it to a monitor.
-
--> **NOTE:** It can take up to 10 minutes for a private location to become available.
 
 -> **NOTE:** It can take up to 10 minutes for a private location to become available.
 

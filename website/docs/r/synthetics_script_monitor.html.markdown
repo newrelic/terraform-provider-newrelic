@@ -17,45 +17,43 @@ Use this resource to create update, and delete a Script API or Script Browser Sy
 -> **NOTE:** The preferred runtime is `NODE_16.10.0` while configuring the `SCRIPT_API` monitor. Other runtime may be deprecated in the future and receive fewer product updates. 
 
 ```hcl
-    resource "newrelic_synthetics_script_monitor" "foo" {
-     name = "SCRIPT_MONITOR"
-     type = "SCRIPT_API"
-     location_public = ["AP_SOUTH_1","AP_EAST_1"]
-     period = "EVERY_6_HOURS"
-     status = "ENABLED"
-     script = "console.log('terraform integration test updated')"
-     script_language = "JAVASCRIPT"
-     runtime_type = "NODE_API"
-     runtime_type_version = "16.10"
-     tag {
-         key = "some_key"
-         values = ["some_value"]
-     }
+resource "newrelic_synthetics_script_monitor" "foo" {
+  name                 = "SCRIPT_MONITOR"
+  type                 = "SCRIPT_API"
+  location_public      = ["AP_SOUTH_1", "AP_EAST_1"]
+  period               = "EVERY_6_HOURS"
+  status               = "ENABLED"
+  script               = "console.log('terraform integration test updated')"
+  script_language      = "JAVASCRIPT"
+  runtime_type         = "NODE_API"
+  runtime_type_version = "16.10"
+  tag {
+    key    = "some_key"
+    values = ["some_value"]
+  }
 }
 ```
-See additional [examples](#additional-examples).
-
 ##### Type: `SCRIPT_BROWSER`
 
 -> **NOTE:** The preferred runtime is `CHROME_BROWSER_100` while configuring the `SCRIPT_BROWSER` monitor. Other runtime may be deprecated in the future and receive fewer product updates.
 
 ```hcl
-    resource "newrelic_synthetics_script_monitor" "bar" {
-     enable_screenshot_on_failure_and_script = false
-     location_public  = ["AP_SOUTH_1","AP_EAST_1"]
-	 name  = "SCRIPT_BROWSER"
-     period  = "EVERY_HOUR"
-     runtime_type_version  = "100"
-     runtime_type  = "CHROME_BROWSER"
-     script_language = "JAVASCRIPT"
-     status  = "DISABLED"
-     type  = "SCRIPT_BROWSER"
-     script  = "$browser.get('https://one.newrelic.com')"
-        tag {
-            key = "Name"
-            values  = ["scriptedMonitor","hello"]
-		}
-     }
+resource "newrelic_synthetics_script_monitor" "bar" {
+  enable_screenshot_on_failure_and_script = false
+  location_public                         = ["AP_SOUTH_1", "AP_EAST_1"]
+  name                                    = "SCRIPT_BROWSER"
+  period                                  = "EVERY_HOUR"
+  runtime_type_version                    = "100"
+  runtime_type                            = "CHROME_BROWSER"
+  script_language                         = "JAVASCRIPT"
+  status                                  = "DISABLED"
+  type                                    = "SCRIPT_BROWSER"
+  script                                  = "$browser.get('https://one.newrelic.com')"
+  tag {
+    key    = "Name"
+    values = ["scriptedMonitor", "hello"]
+  }
+}
 ```
 See additional [examples](#additional-examples).
 
@@ -63,29 +61,31 @@ See additional [examples](#additional-examples).
 
 The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BROWSER` monitors:
 
-* `account_id`- (Required) The account in which the Synthetics monitor will be created.
+* `account_id`- (Optional) The account in which the Synthetics monitor will be created.
 * `name` - (Required) The name for the monitor.
 * `type` - (Required) The plaintext representing the monitor script. Valid values are SCRIPT_BROWSER or SCRIPT_API
-* `location_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/
-* `location_private` - (Required) The location the monitor will run from.
+* `location_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. Exactly one of either `locations_public` or `location_private` is required.
+* `location_private` - (Required) The location the monitor will run from. See [Nested location_private blocks](#nested-location-private-blocks) below for details. Exactly one of either `locations_public` or `location_private` is required.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `runtime_type` - (Required) The runtime that the monitor will use to run jobs.
 * `runtime_type_version` - (Required) The specific version of the runtime type selected.
 * `script_language` - (Optional) The programing language that should execute the script.
 * `status` - (Required) The run state of the monitor.
 * `script` - (Required) The script that the monitor runs.
-* `guid` - (Required) The unique identifier for the Synthetic Monitor in New Relic.
+* `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
 
 The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
 
 * `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution
 
-### Nested blocks
+### Nested `tag` blocks
 
 All nested `tag` blocks support the following common arguments:
 
 * `key` - (Required) Name of the tag key.
 * `values` - (Required) Values associated with the tag key.
+
+### Nested `location private` blocks
 
 All nested `location_private` blocks support the following common arguments:
 
@@ -100,54 +100,66 @@ The below example shows how you can define a private location and attach it to a
 
 -> **NOTE:** It can take up to 10 minutes for a private location to become available.
 
+-> **NOTE:** Currently, it's only possible to use a private location with a monitor running on a legacy runtime. Leave `runtime_type_version`, `runtime_type` & `script_language` empty to use legacy runtime. See example below.
+
 ##### Type: `SCRIPT_API`
 
 ```hcl
-    resource "newrelic_synthetics_private_location" "bar1" {
-     description = "Test Description-Updated"
-     name = "private_location"
-     verified_script_execution = true
-    }
-    resource "newrelic_synthetics_script_monitor" "foo" { 
-      name = "SCRIPT_MONITOR"
-      type = "SCRIPT_API"
-      location_private = ["newrelic_synthetics_private_location.bar1"]
-      period = "EVERY_6_HOURS"
-      status = "ENABLED"
-      script = "console.log('terraform integration test updated')"
-      script_language = "JAVASCRIPT"
-      runtime_type = "NODE_API"
-      runtime_type_version = "16.10"
-      tag {
-        key = "some_key"
-        values = ["some_value"]
-       }
-    }   
+resource "newrelic_synthetics_private_location" "private_location" {
+  description               = "Test Description"
+  name                      = "private_location"
+  verified_script_execution = true
+}
+
+resource "newrelic_synthetics_script_monitor" "foo" {
+  name = "SCRIPT_MONITOR"
+  type = "SCRIPT_API"
+  location_private {
+    guid         = "newrelic_synthetics_private_location.private_location.id"
+    vse_password = "secret"
+  }
+  period               = "EVERY_6_HOURS"
+  status               = "ENABLED"
+  script               = "console.log('terraform integration test updated')"
+  script_language      = ""
+  runtime_type         = ""
+  runtime_type_version = ""
+  tag {
+    key    = "some_key"
+    values = ["some_value"]
+  }
+}   
 ```
 ##### Type: `SCRIPT_BROWSER`
 
+-> **NOTE:** Currently, it's only possible to use a private location with a monitor running on a legacy runtime. Leave `runtime_type_version`, `runtime_type` & `script_language` empty to use legacy runtime. See example below.
+
 ```hcl
-    resource "newrelic_synthetics_private_location" "bar1" {
-     description = "Test Description-Updated"
-     name = "private_location"
-     verified_script_execution = true
-    }
-    resource "newrelic_synthetics_script_monitor" "bar" { 
-      enable_screenshot_on_failure_and_script = false
-      location_private = ["newrelic_synthetics_private_location.bar1"]
-      name = "SCRIPT_BROWSER"
-      period = "EVERY_HOUR"
-      runtime_type_version = "100"
-      runtime_type = "CHROME_BROWSER"
-      script_language = "JAVASCRIPT"
-      status = "DISABLED"
-      type = "SCRIPT_BROWSER"
-      script = "$browser.get('https://one.newrelic.com')"
-      tag {
-        key = "Name"
-        values  = ["scriptedMonitor","hello"]
-      }
-    }
+resource "newrelic_synthetics_private_location" "private_location" {
+  description               = "Test Description"
+  name                      = "private_location"
+  verified_script_execution = true
+}
+
+resource "newrelic_synthetics_script_monitor" "monitor" {
+  enable_screenshot_on_failure_and_script = false
+  location_private {
+    guid         = "newrelic_synthetics_private_location.private_location.id"
+    vse_password = "secret"
+  }
+  name                 = "SCRIPT_BROWSER"
+  period               = "EVERY_HOUR"
+  runtime_type_version = ""
+  runtime_type         = ""
+  script_language      = ""
+  status               = "DISABLED"
+  type                 = "SCRIPT_BROWSER"
+  script               = "$browser.get('https://one.newrelic.com')"
+  tag {
+    key    = "some_key"
+    values = ["some_value"]
+  }
+}
 ```
 
 ## Attributes Reference
