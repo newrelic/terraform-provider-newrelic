@@ -16,7 +16,7 @@ import (
 )
 
 func TestNewRelicNotificationChannelWebhook_Basic(t *testing.T) {
-	t.Skip("Skipping TestNewRelicNotificationChannelWebhook_Basic.  AWAITING FINAL IMPLEMENTATION!")
+	t.Skip("Skipping TestNewRelicWorkflow_Basic.  AWAITING FINAL IMPLEMENTATION!")
 
 	resourceName := "newrelic_notification_channel.webhook_test_foo"
 	rand := acctest.RandString(5)
@@ -60,7 +60,7 @@ func TestNewRelicNotificationChannelWebhook_Basic(t *testing.T) {
 }
 
 func TestNewRelicNotificationChannelEmail_Basic(t *testing.T) {
-	t.Skip("Skipping TestNewRelicNotificationChannelWebhook_Basic. AWAITING FINAL IMPLEMENTATION!")
+	t.Skip("Skipping TestNewRelicWorkflow_Basic. AWAITING FINAL IMPLEMENTATION!")
 
 	resourceName := "newrelic_notification_channel.email_test_foo"
 	rand := acctest.RandString(5)
