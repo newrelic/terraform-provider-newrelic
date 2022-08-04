@@ -542,7 +542,7 @@ resource "newrelic_infra_alert_condition" "foo" {
 	comparison = "above"
 
 	critical {
-		duration      = "1440"
+		duration      = "120"
 		time_function = "all"
 		value         = "25"
 	}
@@ -565,7 +565,7 @@ resource "newrelic_infra_alert_condition" "foo" {
 	event                = "SystemSample"
 
 	critical {
-		duration      = "1440"
+		duration      = "120"
 		time_function = "all"
 		value         = "1.5"
 	}
@@ -588,7 +588,7 @@ resource "newrelic_infra_alert_condition" "foo" {
 	event                = "SystemSample"
 
 	critical {
-		duration      = "1440"
+		duration      = "120"
 		time_function = "all"
 		value         = "1.5"
 	}
