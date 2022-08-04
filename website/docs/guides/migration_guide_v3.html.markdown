@@ -12,7 +12,7 @@ Version 3.x of the provider uses a new underlying API for Synthetics. This resul
 
 ### Migrating script Synthetics monitor resources
 
-The previous `newrelic_synthetics_monitor_resourece` has been split into two new resources: `newrelic_synthetics_monitor_resource` and `newrelic_synthetics_script_monitor_resource`. Previously a monitor script had to be defined separately from a Synthetics Monitor using the `newrelic_synthetics_monitor_script_resource`. In this new version a script is attached directly to a scripted monitor. See the below example for how to migrate to version 3:
+The v2 `newrelic_synthetics_monitor_resource` has been split into two new resources: `newrelic_synthetics_monitor_resource` and `newrelic_synthetics_script_monitor_resource`. Previously a monitor script had to be defined separately from a Synthetics Monitor using the `newrelic_synthetics_monitor_script_resource`. In v3 a script is attached directly to a scripted monitor. See the below example for how to migrate to version 3:
 
 Previous  
 ```hcl
@@ -26,10 +26,10 @@ resource "newrelic_synthetics_monitor" "monitor" {
 }
 resource "newrelic_synthetics_monitor_script" "monitor_script" {
   monitor_id = newrelic_synthetics_monitor.monitor.id
-  text       = "console.log("hello, world")"
-	location {
-		name = "AWS_US_EAST_1"
-	}
+  text       = "console.log('hello, world')"
+  location {
+    name = "AWS_US_EAST_1"
+  }
 }
 ```
 
@@ -56,7 +56,7 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
 
 ### Migrating script Synthetics monitor resources with VSE
 
-In v3.x of the provider, we have introduced a new resource `newrelic_synthetics_private_location` for creating a private location to attach to a monitor. Previously, an HMAC for a private location had to be calculated for a monitor script to run in a private location. See the below example for how to migrate to version 3:
+In v3.x of the provider, we have introduced a new resource `newrelic_synthetics_private_location` for creating a private location to attach to a monitor. Previously, an HMAC for a private location had to be calculated for a monitor script to run in a private location. This has been replaced by the private location GUID. See the below example for how to migrate to version 3:
 
 Previous  
 ```hcl
