@@ -32,7 +32,7 @@ func resourceNewRelicWorkflow() *schema.Resource {
 			},
 			"destination_configurations": {
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				Description: "Workflow's destination configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -55,56 +55,9 @@ func resourceNewRelicWorkflow() *schema.Resource {
 					},
 				},
 			},
-			"enrichments": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Workflow's destination configuration.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "(Required) Enrichment's name.",
-						},
-						"type": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validation.StringInSlice(listValidWorkflowsEnrichmentTypes(), false),
-							Description:  fmt.Sprintf("The type of the enrichment. One of: (%s).", strings.Join(listValidWorkflowsEnrichmentTypes(), ", ")),
-						},
-						"account_id": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							ForceNew:    true,
-							Description: "The account id of the enrichment.",
-						},
-						"configurations": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "A set of key-value pairs to represent a destination configuration.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"query": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "NRQL query.",
-									},
-								},
-							},
-						},
-
-						// Computed
-						"enrichment_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Enrichment's id.",
-						},
-					},
-				},
-			},
 			"issues_filter": {
 				Type:        schema.TypeSet,
-				Optional:    true,
+				Required:    true,
 				Description: "Workflow's destination configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -155,6 +108,12 @@ func resourceNewRelicWorkflow() *schema.Resource {
 					},
 				},
 			},
+			"muting_rules_handling": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice(listValidMutingRulesTypes(), false),
+				Description:  fmt.Sprintf("The type of the muting rule handling. One of: (%s).", strings.Join(listValidMutingRulesTypes(), ", ")),
+			},
 
 			// Optional
 			"workflow_enabled": {
@@ -172,11 +131,52 @@ func resourceNewRelicWorkflow() *schema.Resource {
 				Optional:    true,
 				Description: "Indicates whether the destinations are enabled.",
 			},
-			"muting_rules_handling": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice(listValidMutingRulesTypes(), false),
-				Description:  fmt.Sprintf("The type of the muting rule handling. One of: (%s).", strings.Join(listValidMutingRulesTypes(), ", ")),
+			"enrichments": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Workflow's destination configuration.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "(Required) Enrichment's name.",
+						},
+						"type": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringInSlice(listValidWorkflowsEnrichmentTypes(), false),
+							Description:  fmt.Sprintf("The type of the enrichment. One of: (%s).", strings.Join(listValidWorkflowsEnrichmentTypes(), ", ")),
+						},
+						"account_id": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The account id of the enrichment.",
+						},
+						"configurations": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "A set of key-value pairs to represent a destination configuration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"query": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "NRQL query.",
+									},
+								},
+							},
+						},
+
+						// Computed
+						"enrichment_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Enrichment's id.",
+						},
+					},
+				},
 			},
 			"account_id": {
 				Type:        schema.TypeInt,

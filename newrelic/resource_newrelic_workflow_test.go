@@ -27,7 +27,7 @@ func TestNewRelicWorkflow_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testNewRelicWorkflowConfigByType(rName, "WEBHOOK", "IINT", "b1e90a32-23b7-4028-b2c7-ffbdfe103852", `{
+				Config: testNewRelicWorkflowConfigByType(rName, true, true, true, "NOTIFY_ALL_ISSUES", "", "", `{
 					key = "payload"
 					value = "{\n\t\"id\": \"test\"\n}"
 					label = "Payload Template"
@@ -38,7 +38,7 @@ func TestNewRelicWorkflow_Basic(t *testing.T) {
 			},
 			// Test: Update
 			{
-				Config: testNewRelicWorkflowConfigByType(rName, "WEBHOOK", "IINT", "b1e90a32-23b7-4028-b2c7-ffbdfe103852", `{
+				Config: testNewRelicWorkflowConfigByType(rName, false, true, false, "DONT_NOTIFY_FULLY_MUTED_ISSUES", "", "", `{
 					key = "payload"
 					value = "{\n\t\"id\": \"test-update\"\n}"
 					label = "Payload Template Update"
@@ -82,7 +82,7 @@ func testAccNewRelicWorkflowDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testNewRelicWorkflowConfigByType(name string, channelType string, product string, destinationId string, properties string) string {
+func testNewRelicWorkflowConfigByType(name string, enrichments_enabled string, destinations_enabled string, workflow_enabled string, muting_rules_handling string, enrichments string, issuesFilter string, destinationConfigurations string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_workflow" "test-workflow" {
 			name = "%s"
@@ -90,11 +90,17 @@ func testNewRelicWorkflowConfigByType(name string, channelType string, product s
 			destinations_enabled = "%s"
 			workflow_enabled = "%s"
 			muting_rules_handling %s
-			enrichments
-			issues_filter
-			destination_configurations
+			enrichments {
+				%s
+			}
+			issues_filter = {
+				%s
+			}
+			destination_configurations {
+				%s
+			}
 		}
-	`, name, channelType, product, destinationId, properties)
+	`, name, enrichments_enabled, destinations_enabled, workflow_enabled, muting_rules_handling, enrichments, issuesFilter, destinationConfigurations)
 }
 
 func testAccCheckNewRelicWorkflowExists(n string) resource.TestCheckFunc {
