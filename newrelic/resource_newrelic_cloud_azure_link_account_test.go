@@ -89,7 +89,7 @@ func testAccCheckNewRelicAzureLinkAccountExists(n string) resource.TestCheckFunc
 		resourceId, err := strconv.Atoi(rs.Primary.ID)
 
 		if err != nil {
-			fmt.Errorf("error converting string id to int")
+			return fmt.Errorf("error converting string id to int")
 		}
 
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
@@ -117,7 +117,7 @@ func testAccCheckNewRelicCloudAzureLinkAccountDestroy(s *terraform.State) error 
 		resourceId, err := strconv.Atoi(r.Primary.ID)
 
 		if err != nil {
-			fmt.Errorf("error converting string to int")
+			return fmt.Errorf("error converting string to int")
 		}
 
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
