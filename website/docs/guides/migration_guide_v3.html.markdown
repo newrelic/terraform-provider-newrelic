@@ -36,17 +36,18 @@ resource "newrelic_synthetics_monitor_script" "monitor_script" {
 v3
 ```hcl
 resource "newrelic_synthetics_script_monitor" "monitor" {
-  name	          =	"monitor-name"
-  type	          =	"SCRIPT_API"
- 	location_public	=	["US_EAST_1"]
- 	period	        =	"EVERY_HOUR"
- 	status	        =	"ENABLED"
- 	script	        =	"console.log('hello, world')"
- 	tag {
- 		key	          =	"some_key"
- 		values	      =	["some_value"]
- 	}
+  name            = "monitor-name"
+  type            = "SCRIPT_API"
+  location_public = ["US_EAST_1"]
+  period          = "EVERY_HOUR"
+  status          = "ENABLED"
+  script          = "console.log('hello, world')"
+  tag {
+    key    = "some_key"
+    values = ["some_value"]
+  }
 }
+
 ```
 
 #### Steps to migrate to new resource
