@@ -28,7 +28,7 @@ func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 				Config: testAccNewRelicInfraAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
-					resource.TestCheckNoResourceAttr("newrelic_infra_alert_condition.foo", "warning"),
+					resource.TestCheckNoResourceAttr("newrelic_infra_alert_condition.foo", "warning.0"),
 				),
 			},
 			// Test: Update
@@ -128,7 +128,7 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 					resource.TestCheckNoResourceAttr(
-						"newrelic_infra_alert_condition.foo", "warning"),
+						"newrelic_infra_alert_condition.foo", "warning.0"),
 				),
 			},
 			// Test: Import
