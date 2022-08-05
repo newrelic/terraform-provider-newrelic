@@ -56,6 +56,8 @@ resources compared to which endpoint is in use.
 | `newrelic_events_to_metrics_rule`                   | NerdGraph               | `api_key`             |
 | `newrelic_infra_alert_condition`                    | Infrastructure REST API | `api_key`             |
 | `newrelic_insights_event`                           | Insights API            | `insights_insert_key` |
+| `newrelic_notification_channel`                     | NerdGraph               | `api_key`             |
+| `newrelic_notification_destination`                 | NerdGraph               | `api_key`             |
 | `newrelic_nrql_alert_condition`                     | NerdGraph               | `api_key`             |
 | `newrelic_nrql_drop_rule`                           | NerdGraph               | `api_key`             |
 | `newrelic_one_dashboard`                            | NerdGraph               | `api_key`             |
@@ -192,7 +194,6 @@ Setting `TF_LOG` to a value of `DEBUG` will generate request log messages from t
 
 New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices.
 
-- [Roadmap](https://newrelic.github.io/developer-toolkit/roadmap/) - As part of the Developer Toolkit, the roadmap for this project follows the same RFC process
 - [Issues or Enhancement Requests](https://github.com/newrelic/terraform-provider-newrelic/issues) - Issues and enhancement requests can be submitted in the Issues tab of this repository. Please search for and review the existing open issues before submitting a new issue.
 - [Community discussion board](https://discuss.newrelic.com/c/build-on-new-relic/developer-toolkit) - Like all official New Relic open source projects, there's a related Community topic in the New Relic Explorers Hub.
 

@@ -185,17 +185,15 @@ resource "newrelic_cloud_azure_integrations" "foo" {
 ```
 ## Argument Reference
 
-
-The following arguments are supported:
+The following arguments are supported with minimum metric polling interval of 300 seconds
 
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked Azure account in New Relic.
 * `api_management` - (Optional) Azure API Management. See [Integration blocks](#integration-blocks) below for details.
-* `app_gateway` - (Optional) Azure App Gateway. See [Integration blocks](#integration-blocks) below for details.
+* `app_gateway` - (Optional) Azure App Gateway. See [Integration blocks](#integration-blocks) below for details. 
 * `app_service` - (Optional) Azure App Service. See [Integration blocks](#integration-blocks) below for details.
 * `containers` - (Optional) Azure Containers. See [Integration blocks](#integration-blocks) below for details.
 * `cosmos_db` - (Optional) Azure CosmosDB. See [Integration blocks](#integration-blocks) below for details.
-* `cost_management` - (Optional) Azure Cost Management. See [Integration blocks](#integration-blocks) below for details.
 * `data_factory` - (Optional) for Azure Data Factory. See [Integration blocks](#integration-blocks) below for details.
 * `event_hub` - (Optional) for Azure Event Hub. See [Integration blocks](#integration-blocks) below for details.
 * `express_route` - (Optional) for Azure Express Route. See [Integration blocks](#integration-blocks) below for details.
@@ -214,10 +212,18 @@ The following arguments are supported:
 * `service_bus` - (Optional) for Azure Service Bus. See [Integration blocks](#integration-blocks) below for details.
 * `sql` - (Optional) for Azure SQL. See [Integration blocks](#integration-blocks) below for details.
 * `sql_managed` - (Optional) for SQL Managed. See [Integration blocks](#integration-blocks) below for details.
-* `storage` - (Optional) for Azure Storage. See [Integration blocks](#integration-blocks) below for details.
 * `virtual_machine` - (Optional) for Azure Virtual machine. See [Integration blocks](#integration-blocks) below for details.
 * `vms` - (Optional) for Azure VMs. See [Integration blocks](#integration-blocks) below for details.
 * `vpn_gateway` - (Optional) for Azure VPN Gateway. See [Integration blocks](#integration-blocks) below for details.
+
+Below arguments supports the minimum metric polling interval of 900 seconds
+
+* `storage` - (Optional) for Azure Storage. See [Integration blocks](#integration-blocks) below for details.
+* `virtual_networks` - (Optional) for Azure Virtual networks. See [Integration blocks](#integration-blocks) below for details.
+
+Below argument supports the minimum metric polling interval of 3600 seconds
+
+* `cost_management` - (Optional) Azure Cost Management. See [Integration blocks](#integration-blocks) below for details.
 
 ### `Integration` blocks
 

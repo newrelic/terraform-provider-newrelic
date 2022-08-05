@@ -77,7 +77,7 @@ func testAccNewRelicCloudAwsGovCloudIntegrationsExist(n string) resource.TestChe
 		resourceId, err := strconv.Atoi(rs.Primary.ID)
 
 		if err != nil {
-			fmt.Errorf("error converting string id to int")
+			return fmt.Errorf("error converting string id to int")
 		}
 
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
@@ -87,7 +87,7 @@ func testAccNewRelicCloudAwsGovCloudIntegrationsExist(n string) resource.TestChe
 		}
 
 		if len(linkedAccount.Integrations) == 0 {
-			fmt.Errorf("An error occurred creating awsGovCloud integrations")
+			return fmt.Errorf("An error occurred creating awsGovCloud integrations")
 		}
 
 		return nil
@@ -105,7 +105,7 @@ func testAccNewRelicCloudAwsGovCloudIntegrationsDestroy(s *terraform.State) erro
 		resourceId, err := strconv.Atoi(r.Primary.ID)
 
 		if err != nil {
-			fmt.Errorf("error converting string id to int")
+			return fmt.Errorf("error converting string id to int")
 		}
 
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
