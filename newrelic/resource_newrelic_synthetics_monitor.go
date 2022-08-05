@@ -2,10 +2,11 @@ package newrelic
 
 import (
 	"context"
+	"log"
+
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -34,7 +35,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				Description:  "The monitor type. Valid values are SIMPLE AND BROWSER.",
-				ValidateFunc: validation.StringInSlice(listValidSyntheticsScriptMonitorTypes(), false),
+				ValidateFunc: validation.StringInSlice([]string{"SIMPLE", "BROWSER"}, false),
 			},
 			"name": {
 				Type:        schema.TypeString,

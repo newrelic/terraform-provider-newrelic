@@ -6,6 +6,7 @@ package newrelic
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -41,7 +42,7 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateVerify: true, //name,type
+				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
 					"period",
@@ -86,7 +87,7 @@ func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateVerify: true, //name,type
+				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
 					"period",
@@ -156,12 +157,15 @@ func testAccCheckNewRelicSyntheticsScriptMonitorExists(n string) resource.TestCh
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
+		time.Sleep(10 * time.Second)
+
 		result, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
 		if string((*result).GetGUID()) != rs.Primary.ID {
-			fmt.Errorf("the monitor is not found %v - %v", (*result).GetGUID(), rs.Primary.ID)
+			return fmt.Errorf("the monitor is not found %v - %v", (*result).GetGUID(), rs.Primary.ID)
 		}
 		return nil
 	}
@@ -174,6 +178,9 @@ func testAccCheckNewRelicSyntheticsScriptMonitorDestroy(s *terraform.State) erro
 		if r.Type != "newrelic_synthetics_script_monitor" {
 			continue
 		}
+
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
+		time.Sleep(10 * time.Second)
 
 		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
 		if (*found) != nil {

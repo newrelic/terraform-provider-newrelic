@@ -31,10 +31,6 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 			},
 			// Update
 			{
-				PreConfig: func() {
-					// Unfortunately we still have to wait due to async delay with entity indexing :(
-					time.Sleep(10 * time.Second)
-				},
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitorConfig(fmt.Sprintf("%s-updated", rName)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
@@ -82,7 +78,7 @@ func testAccCheckNewRelicSyntheticsMonitorEntityExists(n string) resource.TestCh
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		// We also have to wait for the monitor's deletion to be indexed as well :(
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
 		time.Sleep(5 * time.Second)
 
 		result, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
@@ -103,6 +99,9 @@ func testAccCheckNewRelicSyntheticsMonitorResourceDestroy(s *terraform.State) er
 		if r.Type != "newrelic_synthetics_broken_links_monitor" {
 			continue
 		}
+
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
+		time.Sleep(5 * time.Second)
 
 		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
 		if (*found) != nil {

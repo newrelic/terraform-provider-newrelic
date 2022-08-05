@@ -14,8 +14,6 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
-type SyntheticsMonitorType string
-
 func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicSyntheticsScriptMonitorCreate,
@@ -31,61 +29,6 @@ func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 			syntheticsScriptMonitorLocationsSchema(),
 			syntheticsScriptBrowserMonitorAdvancedOptionsSchema(),
 		),
-	}
-}
-
-// Returns the common schema attributes shared by all Synthetics monitor types.
-func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"account_id": {
-			Type:        schema.TypeInt,
-			Description: "ID of the newrelic account",
-			Computed:    true,
-			Optional:    true,
-		},
-		"guid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The unique entity identifier of the monitor in New Relic.",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "The title of this monitor.",
-		},
-		"status": {
-			Type:         schema.TypeString,
-			Required:     true,
-			Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED).",
-			ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorStatuses(), false),
-		},
-		"tag": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			MinItems:    1,
-			Description: "The tags that will be associated with the monitor",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"key": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Name of the tag key",
-					},
-					"values": {
-						Type:        schema.TypeList,
-						Elem:        &schema.Schema{Type: schema.TypeString},
-						Required:    true,
-						Description: "Values associated with the tag key",
-					},
-				},
-			},
-		},
-		"period": {
-			Type:         schema.TypeString,
-			Required:     true,
-			Description:  "The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.",
-			ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPeriods(), false),
-		},
 	}
 }
 
@@ -184,7 +127,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 			return diag.FromErr(err)
 		}
 
-		errors := buildCreateSyntheticsScriptMonitorDiagnosticErrors(resp.Errors)
+		errors := buildCreateSyntheticsMonitorResponseErrors(resp.Errors)
 		if len(errors) > 0 {
 			return errors
 		}
@@ -203,7 +146,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 			diag.FromErr(err)
 		}
 
-		errors := buildCreateSyntheticsScriptMonitorDiagnosticErrors(resp.Errors)
+		errors := buildCreateSyntheticsMonitorResponseErrors(resp.Errors)
 		if len(errors) > 0 {
 			return errors
 		}
@@ -270,7 +213,7 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 			return diag.FromErr(err)
 		}
 
-		errors := buildUpdateSyntheticsScriptMonitorDiagnosticErrors(resp.Errors)
+		errors := buildUpdateSyntheticsMonitorResponseErrors(resp.Errors)
 		if len(errors) > 0 {
 			return errors
 		}
@@ -291,7 +234,7 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 			return diag.FromErr(err)
 		}
 
-		errors := buildUpdateSyntheticsScriptMonitorDiagnosticErrors(resp.Errors)
+		errors := buildUpdateSyntheticsMonitorResponseErrors(resp.Errors)
 		if len(errors) > 0 {
 			return errors
 		}

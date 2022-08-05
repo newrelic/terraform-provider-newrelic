@@ -5,11 +5,12 @@ package newrelic
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
-	"testing"
 )
 
 func TestAccNewRelicSyntheticsPrivateLocation_Basic(t *testing.T) {
@@ -64,14 +65,16 @@ func testAccCheckNewRelicSyntheticsPrivateLocationExists(n string) resource.Test
 		}
 
 		if string((*found).GetGUID()) != rs.Primary.ID {
-			fmt.Errorf("the private location was not found %v - %v", (*found).GetGUID(), rs.Primary.ID)
+			return fmt.Errorf("the private location was not found %v - %v", (*found).GetGUID(), rs.Primary.ID)
 		}
+
 		return nil
 	}
 }
 
 func testAccCheckNewRelicSyntheticsPrivateLocationDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_synthetics_private_location" {
 			continue
@@ -83,9 +86,10 @@ func testAccCheckNewRelicSyntheticsPrivateLocationDestroy(s *terraform.State) er
 		}
 
 		if (*found) != nil {
-			fmt.Errorf("private location still exists")
+			return fmt.Errorf("private location still exists")
 		}
 	}
+
 	return nil
 }
 

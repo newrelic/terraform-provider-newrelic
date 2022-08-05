@@ -6,14 +6,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
-
-type SyntheticsMonitorType string
 
 func resourceNewRelicSyntheticsBrokenLinksMonitor() *schema.Resource {
 	return &schema.Resource{
@@ -32,91 +29,8 @@ func resourceNewRelicSyntheticsBrokenLinksMonitor() *schema.Resource {
 	}
 }
 
-// Returns the common schema attributes shared by all Synthetics monitor types.
-func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"account_id": {
-			Type:        schema.TypeInt,
-			Description: "ID of the newrelic account.",
-			Computed:    true,
-			Optional:    true,
-		},
-		"guid": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The unique entity identifier of the monitor in New Relic.",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "The title of this monitor.",
-		},
-		"status": {
-			Type:         schema.TypeString,
-			Required:     true,
-			Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED).",
-			ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorStatuses(), false),
-		},
-		"tag": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			MinItems:    1,
-			Description: "The tags that will be associated with the monitor.",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"key": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Name of the tag key",
-					},
-					"values": {
-						Type:        schema.TypeList,
-						Elem:        &schema.Schema{Type: schema.TypeString},
-						Required:    true,
-						Description: "Values associated with the tag key",
-					},
-				},
-			},
-		},
-		"period": {
-			Type:         schema.TypeString,
-			Required:     true,
-			Description:  "The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.",
-			ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPeriods(), false),
-		},
-	}
-}
-
-// NOTE: This can be a shared schema partial for other synthetics monitor resources
-func syntheticsMonitorLocationsAsStringsSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"locations_private": {
-			Type:         schema.TypeSet,
-			Elem:         &schema.Schema{Type: schema.TypeString},
-			Description:  "List private location GUIDs for which the monitor will run.",
-			Optional:     true,
-			AtLeastOneOf: []string{"locations_public", "locations_private"},
-		},
-		"locations_public": {
-			Type:         schema.TypeSet,
-			Elem:         &schema.Schema{Type: schema.TypeString},
-			Description:  "Publicly available location names in which the monitor will run.",
-			Optional:     true,
-			AtLeastOneOf: []string{"locations_public", "locations_private"},
-		},
-	}
-}
-
 func syntheticsBrokenLinksMonitorSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		// "createdAt": {
-		// 	Type:     schema.TypeInt,
-		// 	Computed: true,
-		// },
-		// "modifiedAt": {
-		// 	Type:     schema.TypeInt,
-		// 	Computed: true,
-		// },
 		"uri": {
 			Type:        schema.TypeString,
 			Description: "The URI the monitor runs against.",
@@ -145,7 +59,11 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorCreate(ctx context.Context, d *
 	d.SetId(string(resp.Monitor.GUID))
 	_ = d.Set("account_id", accountID)
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
-		"guid": string(resp.Monitor.GUID),
+		"guid":   string(resp.Monitor.GUID),
+		"name":   resp.Monitor.Name,
+		"period": string(resp.Monitor.Period),
+		"status": string(resp.Monitor.Status),
+		"uri":    resp.Monitor.Uri,
 	})
 
 	return diag.FromErr(err)

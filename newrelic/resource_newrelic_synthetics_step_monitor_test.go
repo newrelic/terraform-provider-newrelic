@@ -5,7 +5,6 @@ package newrelic
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -34,10 +33,6 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 			},
 			// Update
 			{
-				PreConfig: func() {
-					// Unfortunately we still have to wait due to async delay with entity indexing :(
-					time.Sleep(10 * time.Second)
-				},
 				Config: testAccNewRelicSyntheticsStepMonitorConfig(fmt.Sprintf("%s-updated", rName), updateStep),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),

@@ -6,16 +6,13 @@ package newrelic
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 )
-
-///////////////////////
-//simple monitor test//
-//////////////////////
 
 func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.foo"
@@ -115,10 +112,6 @@ func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorTyp
 		}`, name, monitorType)
 }
 
-///////////////////////////////
-//simple browser monitor test//
-//////////////////////////////
-
 func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.bar"
 	rName := acctest.RandString(5)
@@ -188,10 +181,6 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 		status	=	"ENABLED"
 		type	=	"%s"
 		uri	=	"https://www.one.newrelic.com"
-		//tag {
-		//	key	=	"name"
-		//	values	=	["SimpleBrowserMonitor"]
-		//}
 	}`, name, monitorType)
 }
 
@@ -214,10 +203,6 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, mon
 			status	=	"DISABLED"
 			type	=	"%s"
 			uri	=	"https://www.one.newrelic.com"
-			//tag {
-			//	key	=	"name"
-			//	values	=	["SimpleBrowserMonitor","my_monitor"]
-		  	//}
 		}`, name, monitorType)
 }
 
@@ -235,13 +220,16 @@ func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFun
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
+		time.Sleep(5 * time.Second)
+
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
 
 		if string((*found).GetGUID()) != rs.Primary.ID {
-			fmt.Errorf("the monitor is not found %v - %v", (*found).GetGUID(), rs.Primary.ID)
+			return fmt.Errorf("the monitor is not found %v - %v", (*found).GetGUID(), rs.Primary.ID)
 		}
 
 		return nil
@@ -256,10 +244,14 @@ func testAccCheckNewRelicSyntheticsMonitorDestroy(s *terraform.State) error {
 			continue
 		}
 
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
+		time.Sleep(5 * time.Second)
+
 		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
 		if (*found) != nil {
 			return fmt.Errorf("synthetics monitor still exists")
 		}
 	}
+
 	return nil
 }
