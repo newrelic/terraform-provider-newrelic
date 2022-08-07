@@ -21,6 +21,7 @@ func TestNewRelicNotificationDestinationWebhook_Basic(t *testing.T) {
 	resourceName := "newrelic_notification_destination.webhook_test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	var id string
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -38,7 +39,7 @@ func TestNewRelicNotificationDestinationWebhook_Basic(t *testing.T) {
 					value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					testAccCheckNewRelicNotificationDestinationExists(resourceName, id),
 				),
 			},
 			// Test: Update
@@ -52,7 +53,7 @@ func TestNewRelicNotificationDestinationWebhook_Basic(t *testing.T) {
 					value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					testAccCheckNewRelicNotificationDestinationExists(resourceName, id),
 				),
 			},
 			// Test: Import
@@ -71,6 +72,7 @@ func TestNewRelicNotificationDestinationEmail_Basic(t *testing.T) {
 	resourceName := "newrelic_notification_destination.email_test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	var id string
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -84,7 +86,7 @@ func TestNewRelicNotificationDestinationEmail_Basic(t *testing.T) {
 					value = "email_test@gmail.com"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					testAccCheckNewRelicNotificationDestinationExists(resourceName, id),
 				),
 			},
 			// Test: Update
@@ -94,7 +96,7 @@ func TestNewRelicNotificationDestinationEmail_Basic(t *testing.T) {
 					value = "update_email_test@gmail.com"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					testAccCheckNewRelicNotificationDestinationExists(resourceName, id),
 				),
 			},
 			// Test: Import
@@ -113,6 +115,7 @@ func TestNewRelicNotificationDestinationPagerDuty_Basic(t *testing.T) {
 	resourceName := "newrelic_notification_destination.pagerduty_test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	var id string
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -127,7 +130,7 @@ func TestNewRelicNotificationDestinationPagerDuty_Basic(t *testing.T) {
 					token  = "10567a689d984d03c021034b22a789e2"
 				}`, ""),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					testAccCheckNewRelicNotificationDestinationExists(resourceName, id),
 				),
 			},
 			// Test: Update
@@ -138,7 +141,7 @@ func TestNewRelicNotificationDestinationPagerDuty_Basic(t *testing.T) {
 					token  = "another-689d984d03c021034b22a789e2"
 				}`, ""),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					testAccCheckNewRelicNotificationDestinationExists(resourceName, id),
 				),
 			},
 			// Test: Import
@@ -208,7 +211,7 @@ func testNewRelicNotificationDestinationConfigByType(name string, channelType st
 	`, name, channelType, auth, properties)
 }
 
-func testAccCheckNewRelicNotificationDestinationExists(n string) resource.TestCheckFunc {
+func testAccCheckNewRelicNotificationDestinationExists(n string, destinationId string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		providerConfig := testAccProvider.Meta().(*ProviderConfig)
 		client := providerConfig.NewClient
@@ -237,6 +240,8 @@ func testAccCheckNewRelicNotificationDestinationExists(n string) resource.TestCh
 		if string(found.Entities[0].ID) != rs.Primary.ID {
 			return fmt.Errorf("destination not found: %v - %v", rs.Primary.ID, found)
 		}
+
+		destinationId = id
 
 		return nil
 	}

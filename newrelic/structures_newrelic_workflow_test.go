@@ -56,9 +56,9 @@ func TestExpandWorkflow(t *testing.T) {
 				"destinations_enabled":  true,
 				"workflow_enabled":      true,
 				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
-				"enrichments": map[string]interface{}{
+				"enrichments": []map[string]interface{}{{
 					"nrql": nrql,
-				},
+				}},
 				"issues_filter": []map[string]interface{}{{
 					"name": "issues-filter-test",
 					"type": "FILTER",
@@ -79,6 +79,36 @@ func TestExpandWorkflow(t *testing.T) {
 				WorkflowEnabled:           true,
 				MutingRulesHandling:       workflows.AiWorkflowsMutingRulesHandlingTypes.NOTIFY_ALL_ISSUES,
 				Enrichments:               enrichments,
+				DestinationConfigurations: destinationConfigurations,
+				IssuesFilter:              issuesFilter,
+			},
+		},
+		"valid workflow without enrichments": {
+			Data: map[string]interface{}{
+				"name":                  "workflow-test",
+				"enrichments_enabled":   true,
+				"destinations_enabled":  true,
+				"workflow_enabled":      true,
+				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
+				"issues_filter": []map[string]interface{}{{
+					"name": "issues-filter-test",
+					"type": "FILTER",
+					"predicates": []map[string]interface{}{{
+						"attribute": "source",
+						"operator":  "EQUAL",
+						"values":    []string{"newrelic"},
+					}},
+				}},
+				"destination_configurations": []map[string]interface{}{{
+					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
+				}},
+			},
+			Expanded: &workflows.AiWorkflowsWorkflow{
+				Name:                      "workflow-test",
+				EnrichmentsEnabled:        true,
+				DestinationsEnabled:       true,
+				WorkflowEnabled:           true,
+				MutingRulesHandling:       workflows.AiWorkflowsMutingRulesHandlingTypes.NOTIFY_ALL_ISSUES,
 				DestinationConfigurations: destinationConfigurations,
 				IssuesFilter:              issuesFilter,
 			},

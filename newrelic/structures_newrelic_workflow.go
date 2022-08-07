@@ -54,10 +54,6 @@ func expandWorkflow(d *schema.ResourceData) (*workflows.AiWorkflowsCreateWorkflo
 
 	enrichments, enrichmentsOk := d.GetOk("enrichments")
 
-	if !enrichmentsOk {
-		return nil, errors.New("workflow requires a enrichments attribute")
-	}
-
 	if enrichmentsOk {
 		e, err := expandWorkflowsEnrichments(enrichments.(*schema.Set).List())
 		if err != nil {
@@ -65,6 +61,8 @@ func expandWorkflow(d *schema.ResourceData) (*workflows.AiWorkflowsCreateWorkflo
 		}
 
 		workflow.Enrichments = e
+	} else {
+		workflow.Enrichments = nil
 	}
 
 	return &workflow, nil

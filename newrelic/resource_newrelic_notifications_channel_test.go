@@ -21,6 +21,7 @@ func TestNewRelicNotificationChannelWebhook_Basic(t *testing.T) {
 	resourceName := "newrelic_notification_channel.webhook_test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	var id string
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -35,7 +36,7 @@ func TestNewRelicNotificationChannelWebhook_Basic(t *testing.T) {
 					label = "Payload Template"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationChannelExists(resourceName),
+					testAccCheckNewRelicNotificationChannelExists(resourceName, id),
 				),
 			},
 			// Test: Update
@@ -46,7 +47,7 @@ func TestNewRelicNotificationChannelWebhook_Basic(t *testing.T) {
 					label = "Payload Template Update"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationChannelExists(resourceName),
+					testAccCheckNewRelicNotificationChannelExists(resourceName, id),
 				),
 			},
 			// Test: Import
@@ -65,6 +66,7 @@ func TestNewRelicNotificationChannelEmail_Basic(t *testing.T) {
 	resourceName := "newrelic_notification_channel.email_test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	var id string
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -75,7 +77,7 @@ func TestNewRelicNotificationChannelEmail_Basic(t *testing.T) {
 			{
 				Config: testNewRelicNotificationChannelConfigByType(rName, "EMAIL", "IINT", "0115e01f-5636-496e-947f-6ce0322d7c5d", ""),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationChannelExists(resourceName),
+					testAccCheckNewRelicNotificationChannelExists(resourceName, id),
 				),
 			},
 			// Test: Update
@@ -85,7 +87,7 @@ func TestNewRelicNotificationChannelEmail_Basic(t *testing.T) {
 					value = "Update: {{ issueTitle }}"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationChannelExists(resourceName),
+					testAccCheckNewRelicNotificationChannelExists(resourceName, id),
 				),
 			},
 			// Test: Import
@@ -147,7 +149,7 @@ func testNewRelicNotificationChannelConfigByType(name string, channelType string
 	`, name, channelType, product, destinationId, properties)
 }
 
-func testAccCheckNewRelicNotificationChannelExists(n string) resource.TestCheckFunc {
+func testAccCheckNewRelicNotificationChannelExists(n string, channelId string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		providerConfig := testAccProvider.Meta().(*ProviderConfig)
 		client := providerConfig.NewClient
@@ -176,6 +178,8 @@ func testAccCheckNewRelicNotificationChannelExists(n string) resource.TestCheckF
 		if string(found.Entities[0].ID) != rs.Primary.ID {
 			return fmt.Errorf("channel not found: %v - %v", rs.Primary.ID, found)
 		}
+
+		channelId = id
 
 		return nil
 	}

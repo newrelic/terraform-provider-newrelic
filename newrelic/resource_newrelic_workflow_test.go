@@ -19,18 +19,61 @@ func TestNewRelicWorkflow_Basic(t *testing.T) {
 	resourceName := "newrelic_workflow.test-workflow"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+	enrichments := `{
+						nrql {
+						  name = "Log"
+						  configurations {
+						   query = "SELECT count(*) FROM Log"
+						  }
+						}
+					}`
+
+	var channelId string
+	var destinationID string
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicWorkflowDestroy,
 		Steps: []resource.TestStep{
-			// Test: Create
+			// Test: Create destination
 			{
-				Config: testNewRelicWorkflowConfigByType(rName, true, true, true, "NOTIFY_ALL_ISSUES", "", "", `{
+				Config: testNewRelicNotificationDestinationConfigByType(rName, "WEBHOOK", `{
+					type = "BASIC"
+					user = "test-user"
+					password = "pass123"
+				}`, `{
+					key = "url"
+					value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName, destinationID),
+				),
+			},
+			// Create channel
+			{
+				Config: testNewRelicNotificationChannelConfigByType(rName, "WEBHOOK", "IINT", destinationID, `{
 					key = "payload"
 					value = "{\n\t\"id\": \"test\"\n}"
 					label = "Payload Template"
+				}`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationChannelExists(resourceName, channelId),
+				),
+			},
+			// Test: Create workflow
+			{
+				Config: testNewRelicWorkflowConfigByType(rName, "true", "true", "true", "NOTIFY_ALL_ISSUES", "", `{
+						name = "filter1"
+						type = "FILTER"
+					
+						predicates {
+						  attribute = "source"
+						  operator = "EQUAL"
+						  values = [ "newrelic" ]
+						}
+					}`, `{
+					channel_id = "channelId"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
@@ -38,10 +81,17 @@ func TestNewRelicWorkflow_Basic(t *testing.T) {
 			},
 			// Test: Update
 			{
-				Config: testNewRelicWorkflowConfigByType(rName, false, true, false, "DONT_NOTIFY_FULLY_MUTED_ISSUES", "", "", `{
-					key = "payload"
-					value = "{\n\t\"id\": \"test-update\"\n}"
-					label = "Payload Template Update"
+				Config: testNewRelicWorkflowConfigByType(rName, "false", "true", "false", "DONT_NOTIFY_FULLY_MUTED_ISSUES", enrichments, `{
+						name = "filter-update"
+						type = "FILTER"
+					
+						predicates {
+						  attribute = "source"
+						  operator = "CONTAINS"
+						  values = [ "newrelic" ]
+						}
+					}`, `{
+					channel_id = "7510bd1b-3f66-43d1-9731-75ea0a05886c"
 				}`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
@@ -83,6 +133,24 @@ func testAccNewRelicWorkflowDestroy(s *terraform.State) error {
 }
 
 func testNewRelicWorkflowConfigByType(name string, enrichments_enabled string, destinations_enabled string, workflow_enabled string, muting_rules_handling string, enrichments string, issuesFilter string, destinationConfigurations string) string {
+	if enrichments == "" {
+		return fmt.Sprintf(`
+		resource "newrelic_workflow" "test-workflow" {
+			name = "%s"
+			enrichments_enabled = "%s"
+			destinations_enabled = "%s"
+			workflow_enabled = "%s"
+			muting_rules_handling %s
+			issues_filter = {
+				%s
+			}
+			destination_configurations {
+				%s
+			}
+		}
+	`, name, enrichments_enabled, destinations_enabled, workflow_enabled, muting_rules_handling, issuesFilter, destinationConfigurations)
+	}
+
 	return fmt.Sprintf(`
 		resource "newrelic_workflow" "test-workflow" {
 			name = "%s"

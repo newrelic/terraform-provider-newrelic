@@ -49,7 +49,11 @@ resource "newrelic_workflow" "foo" {
   }
 
   destination_configurations {
-    channel_id = "20d86999-169b-461a-9c16-3cf330f4b3aa"
+    channel_id = "20d86999-169c-461a-9c16-3cf330f4b3aa"
+  }
+
+  destination_configurations {
+    channel_id = "20d86999-169a-461a-9c16-3cf330f4b3aa"
   }
 }
 ```
@@ -60,82 +64,34 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the workflow will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the workflow.
-* `enrichments_enabled` - (Optional) Whether enrichments are enabled..
-* `destinations_enabled` - (Optional) Whether destinations are enabled..
-* `workflow_enabled` - (Optional) Whether workflow is enabled.
-* `muting_rules_handling` - (Optional) Which muting rule handling this workflow has.
-* `destination_configurations` - A nested block that describes a notification channel properties. See [Nested properties blocks](#nested-properties-blocks) below for details.
-* `issues_filter` - (Required) The type of product.  One of: `DISCUSSIONS`, `ERROR_TRACKING` or `IINT` (workflows).
-* `enrichments` - (Optional) A nested block that describes a notification channel properties. See [Nested properties blocks](#nested-properties-blocks) below for details.
-
-### Nested `destination_configurations` blocks
-
-Each workflow type supports a specific set of arguments for the `destination_configurations` block:
-
-* `WEBHOOK`
-  * `headers` - (Optional) A map of key/value pairs that represents the webhook headers.
-  * `payload` - (Required) A map of key/value pairs that represents the webhook payload.
-* `SERVICENOW_INCIDENTS`
-  * `description` - (Optional) A map of key/value pairs that represents a description.
-  * `short_description` - (Optional) A map of key/value pairs that represents a short description.
-* `JIRA_CLASSIC`, `JIRA_NEXTGEN`
-  * `project` - (Required) A map of key/value pairs that represents the jira project id.
-  * `issuetype` - (Required) A map of key/value pairs that represents the issue type id.
-* `EMAIL`
-  * `subject` - (Optional) A map of key/value pairs that represents the email subject title.
-  * `customDetailsEmail` - (Optional) A map of key/value pairs that represents the email custom details.
-* `PAGERDUTY_SERVICE_INTEGRATION`
-  * `summary` - (Required) A map of key/value pairs that represents the summery.
-* `PAGERDUTY_ACCOUNT_INTEGRATION`
-  * `summary` - (Required) A map of key/value pairs that represents the summery.
-  * `service` - (Required) Specifies the service id for integrating with Pagerduty.
-  * `email` - (Required) Specifies the user email for integrating with Pagerduty.
+* `enrichments_enabled` - Whether enrichments are enabled..
+* `destinations_enabled` - Whether destinations are enabled..
+* `workflow_enabled` - Whether workflow is enabled.
+* `muting_rules_handling` - Which muting rule handling this workflow has.
+* `destination_configurations` - A list of destinations channel ids.
+* `issues_filter` - (Required) The issues filter.  See [Nested issues_filter blocks](#nested-issues_filter-blocks) below for details.
+* `enrichments` - (Optional) A nested block that describes a workflow's enrichments. See [Nested enrichments blocks](#nested-enrichments-blocks) below for details.
 
 ### Nested `issues_filter` blocks
 
-Each workflow type supports a specific set of arguments for the `issues_filter` block:
+Each workflow type supports a set of arguments for the `issues_filter` block:
 
-* `WEBHOOK`
-  * `headers` - (Optional) A map of key/value pairs that represents the webhook headers.
-  * `payload` - (Required) A map of key/value pairs that represents the webhook payload.
-* `SERVICENOW_INCIDENTS`
-  * `description` - (Optional) A map of key/value pairs that represents a description.
-  * `short_description` - (Optional) A map of key/value pairs that represents a short description.
-* `JIRA_CLASSIC`, `JIRA_NEXTGEN`
-  * `project` - (Required) A map of key/value pairs that represents the jira project id.
-  * `issuetype` - (Required) A map of key/value pairs that represents the issue type id.
-* `EMAIL`
-  * `subject` - (Optional) A map of key/value pairs that represents the email subject title.
-  * `customDetailsEmail` - (Optional) A map of key/value pairs that represents the email custom details.
-* `PAGERDUTY_SERVICE_INTEGRATION`
-  * `summary` - (Required) A map of key/value pairs that represents the summery.
-* `PAGERDUTY_ACCOUNT_INTEGRATION`
-  * `summary` - (Required) A map of key/value pairs that represents the summery.
-  * `service` - (Required) Specifies the service id for integrating with Pagerduty.
-  * `email` - (Required) Specifies the user email for integrating with Pagerduty.
+* `name` - the filter's name.
+* `type` - the filter's type.   One of: `FILTER` or `VIEW`.
+* `predicates`
+  * `attribute` - A predicates attribute.
+  * `operator` - A predicates operator. One of: `CONTAINS`, `DOES_NOT_CONTAIN`, `DOES_NOT_EQUAL`, `DOES_NOT_EXACTLY_MATCH`, `ENDS_WITH`, `EQUAL`, `EXACTLY_MATCHES`, `GREATER_OR_EQUAL`, `GREATER_THAN`, `IS`, `IS_NOT`, `LESS_OR_EQUAL`, `LESS_THAN` or `STARTS_WITH` (workflows).
+  * `values` - A list of values.
 
 ### Nested `enrichments` blocks
 
 Each workflow type supports a specific set of arguments for the `enrichments` block:
 
-* `WEBHOOK`
-  * `headers` - (Optional) A map of key/value pairs that represents the webhook headers.
-  * `payload` - (Required) A map of key/value pairs that represents the webhook payload.
-* `SERVICENOW_INCIDENTS`
-  * `description` - (Optional) A map of key/value pairs that represents a description.
-  * `short_description` - (Optional) A map of key/value pairs that represents a short description.
-* `JIRA_CLASSIC`, `JIRA_NEXTGEN`
-  * `project` - (Required) A map of key/value pairs that represents the jira project id.
-  * `issuetype` - (Required) A map of key/value pairs that represents the issue type id.
-* `EMAIL`
-  * `subject` - (Optional) A map of key/value pairs that represents the email subject title.
-  * `customDetailsEmail` - (Optional) A map of key/value pairs that represents the email custom details.
-* `PAGERDUTY_SERVICE_INTEGRATION`
-  * `summary` - (Required) A map of key/value pairs that represents the summery.
-* `PAGERDUTY_ACCOUNT_INTEGRATION`
-  * `summary` - (Required) A map of key/value pairs that represents the summery.
-  * `service` - (Required) Specifies the service id for integrating with Pagerduty.
-  * `email` - (Required) Specifies the user email for integrating with Pagerduty.
+* `nrql`
+  * `name` - A nrql enrichment name.
+  * `configurations` - A list of nrql enrichments.
+    * `query` - the nrql query.
+
 
 ## Attributes Reference
 
