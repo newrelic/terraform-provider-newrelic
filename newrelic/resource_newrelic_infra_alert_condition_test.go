@@ -28,7 +28,7 @@ func TestAccNewRelicInfraAlertCondition_Basic(t *testing.T) {
 				Config: testAccNewRelicInfraAlertConditionConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
-					resource.TestCheckNoResourceAttr("newrelic_infra_alert_condition.foo", "warning"),
+					resource.TestCheckNoResourceAttr("newrelic_infra_alert_condition.foo", "warning.0"),
 				),
 			},
 			// Test: Update
@@ -128,7 +128,7 @@ func TestAccNewRelicInfraAlertCondition_Thresholds(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicInfraAlertConditionExists(resourceName),
 					resource.TestCheckNoResourceAttr(
-						"newrelic_infra_alert_condition.foo", "warning"),
+						"newrelic_infra_alert_condition.foo", "warning.0"),
 				),
 			},
 			// Test: Import
@@ -542,7 +542,7 @@ resource "newrelic_infra_alert_condition" "foo" {
 	comparison = "above"
 
 	critical {
-		duration      = "1440"
+		duration      = "120"
 		time_function = "all"
 		value         = "25"
 	}
@@ -565,7 +565,7 @@ resource "newrelic_infra_alert_condition" "foo" {
 	event                = "SystemSample"
 
 	critical {
-		duration      = "1440"
+		duration      = "120"
 		time_function = "all"
 		value         = "1.5"
 	}
@@ -588,7 +588,7 @@ resource "newrelic_infra_alert_condition" "foo" {
 	event                = "SystemSample"
 
 	critical {
-		duration      = "1440"
+		duration      = "120"
 		time_function = "all"
 		value         = "1.5"
 	}
