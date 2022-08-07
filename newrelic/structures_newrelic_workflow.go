@@ -59,7 +59,7 @@ func expandWorkflow(d *schema.ResourceData) (*workflows.AiWorkflowsCreateWorkflo
 	}
 
 	if enrichmentsOk {
-		e, err := expandWorkflowsEnrichment(enrichments)
+		e, err := expandWorkflowsEnrichments(enrichments.(*schema.Set).List())
 		if err != nil {
 			return nil, err
 		}
@@ -72,6 +72,7 @@ func expandWorkflow(d *schema.ResourceData) (*workflows.AiWorkflowsCreateWorkflo
 
 func expandWorkflowUpdate(d *schema.ResourceData) (*workflows.AiWorkflowsUpdateWorkflowInput, error) {
 	workflow := workflows.AiWorkflowsUpdateWorkflowInput{
+		ID:                  d.Get("workflow_id").(string),
 		Name:                d.Get("name").(string),
 		EnrichmentsEnabled:  d.Get("enrichments_enabled").(bool),
 		DestinationsEnabled: d.Get("destinations_enabled").(bool),
@@ -99,39 +100,35 @@ func expandWorkflowUpdate(d *schema.ResourceData) (*workflows.AiWorkflowsUpdateW
 		}
 	}
 
-	//issuesFilter, issuesFilterOk := d.GetOk("issues_filter")
-	//
-	//if !issuesFilterOk {
-	//	return nil, errors.New("workflow requires a issues filter attribute")
-	//}
-	//
-	//if issuesFilterOk {
-	//	f, err := expandWorkflowsIssuesFilter(issuesFilter.(*schema.Set).List())
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//
-	//	workflow.IssuesFilter = f
-	//}
-	//
-	//enrichments, enrichmentsOk := d.GetOk("enrichments")
-	//
-	//if !enrichmentsOk {
-	//	return nil, errors.New("workflow requires a enrichments attribute")
-	//}
-	//
-	//if enrichmentsOk {
-	//	var enrichment map[string]interface{}
-	//
-	//	x := enrichments.([]interface{})
-	//
-	//	for _, currEnrichment := range x {
-	//		enrichment = currEnrichment.(map[string]interface{})
-	//		if val, err := expandWorkflowsEnrichment(enrichment); err == nil {
-	//			workflow.Enrichments = append(workflow.Enrichments, *val)
-	//		}
-	//	}
-	//}
+	issuesFilter, issuesFilterOk := d.GetOk("issues_filter")
+
+	if !issuesFilterOk {
+		return nil, errors.New("workflow requires a issues filter attribute")
+	}
+
+	if issuesFilterOk {
+		f, err := expandWorkflowsUpdateIssuesFilter(issuesFilter.(*schema.Set).List())
+		if err != nil {
+			return nil, err
+		}
+
+		workflow.IssuesFilter = f
+	}
+
+	enrichments, enrichmentsOk := d.GetOk("enrichments")
+
+	if !enrichmentsOk {
+		return nil, errors.New("workflow requires a enrichments attribute")
+	}
+
+	if enrichmentsOk {
+		e, err := expandWorkflowsUpdateEnrichments(enrichments.(*schema.Set).List())
+		if err != nil {
+			return nil, err
+		}
+
+		workflow.Enrichments = e
+	}
 
 	return &workflow, nil
 }
@@ -180,6 +177,44 @@ func expandWorkflowsIssuesFilter(issuesFilterSet []interface{}) (workflows.AiWor
 	return issuesFilter[0], nil
 }
 
+func expandWorkflowsUpdateIssuesFilter(issuesFilterSet []interface{}) (workflows.AiWorkflowsUpdatedFilterInput, error) {
+	issuesFilter := make([]workflows.AiWorkflowsUpdatedFilterInput, len(issuesFilterSet))
+
+	for _, issuesFilterConfig := range issuesFilterSet {
+		cfg := issuesFilterConfig.(map[string]interface{})
+
+		if id, ok := cfg["filter_id"]; ok {
+			issuesFilter[0].ID = id.(string)
+		}
+
+		if name, ok := cfg["name"]; ok {
+			issuesFilter[0].FilterInput.Name = name.(string)
+		}
+
+		if filterType, ok := cfg["type"]; ok {
+			issuesFilter[0].FilterInput.Type = workflows.AiWorkflowsFilterType(filterType.(string))
+		}
+
+		if predicates, ok := cfg["predicates"]; ok {
+			var predicateInput map[string]interface{}
+
+			x := predicates.([]interface{})
+
+			for _, predicate := range x {
+				predicateInput = predicate.(map[string]interface{})
+
+				if val, err := expandWorkflowPredicate(predicateInput); err == nil {
+					issuesFilter[0].FilterInput.Predicates = append(issuesFilter[0].FilterInput.Predicates, *val)
+				}
+			}
+		}
+
+		break
+	}
+
+	return issuesFilter[0], nil
+}
+
 func expandWorkflowPredicate(cfg map[string]interface{}) (*workflows.AiWorkflowsPredicateInput, error) {
 	predicateInput := workflows.AiWorkflowsPredicateInput{}
 
@@ -207,32 +242,56 @@ func expandWorkflowPredicate(cfg map[string]interface{}) (*workflows.AiWorkflows
 	return &predicateInput, nil
 }
 
-func expandWorkflowsEnrichment(enrichmentsList interface{}) (*workflows.AiWorkflowsEnrichmentsInput, error) {
-	enrichment := workflows.AiWorkflowsEnrichmentsInput{}
+func expandWorkflowsEnrichments(enrichmentsSet []interface{}) (*workflows.AiWorkflowsEnrichmentsInput, error) {
+	enrichments := make([]workflows.AiWorkflowsEnrichmentsInput, len(enrichmentsSet))
 
-	enrichmentsConfig := enrichmentsList.([]interface{})
-	enrichmentsConfigList := make([]workflows.AiWorkflowsEnrichmentsInput, len(enrichmentsConfig))
+	for _, enrichmentsConfig := range enrichmentsSet {
+		cfg := enrichmentsConfig.(map[string]interface{})
 
-	for _, currEnrichmentConfig := range enrichmentsConfigList {
-		enrichmentNRQL := currEnrichmentConfig.NRQL
-		enrichment.NRQL = enrichmentNRQL
+		if nrqlList, ok := cfg["nrql"]; ok {
+			var nrqlInput map[string]interface{}
 
-		//if nrqlList, ok := enrichmentConfig["nrql"]; ok {
-		//	var nrqlInput map[string]interface{}
-		//
-		//	x := nrqlList.([]interface{})
-		//
-		//	for _, nrql := range enrichmentNRQL {
-		//		nrqlInput = nrql.(map[string]interface{})
-		//
-		//		if val, err := expandWorkflowNrqlInput(nrql); err == nil {
-		//			enrichment.NRQL = append(enrichment.NRQL, *val)
-		//		}
-		//	}
-		//}
+			x := nrqlList.([]interface{})
+
+			for _, nrql := range x {
+				nrqlInput = nrql.(map[string]interface{})
+
+				if val, err := expandWorkflowNrqlInput(nrqlInput); err == nil {
+					enrichments[0].NRQL = append(enrichments[0].NRQL, *val)
+				}
+			}
+		}
+
+		break
 	}
 
-	return &enrichment, nil
+	return &enrichments[0], nil
+}
+
+func expandWorkflowsUpdateEnrichments(enrichmentsSet []interface{}) (*workflows.AiWorkflowsUpdateEnrichmentsInput, error) {
+	enrichments := make([]workflows.AiWorkflowsUpdateEnrichmentsInput, len(enrichmentsSet))
+
+	for _, enrichmentsConfig := range enrichmentsSet {
+		cfg := enrichmentsConfig.(map[string]interface{})
+
+		if nrqlList, ok := cfg["nrql"]; ok {
+			var nrqlInput map[string]interface{}
+
+			x := nrqlList.([]interface{})
+
+			for _, nrql := range x {
+				nrqlInput = nrql.(map[string]interface{})
+
+				if val, err := expandWorkflowUpdateNrqlInput(nrqlInput); err == nil {
+					enrichments[0].NRQL = append(enrichments[0].NRQL, *val)
+				}
+			}
+		}
+
+		break
+	}
+
+	return &enrichments[0], nil
 }
 
 func expandWorkflowNrqlInput(cfg map[string]interface{}) (*workflows.AiWorkflowsNRQLEnrichmentInput, error) {
@@ -242,7 +301,35 @@ func expandWorkflowNrqlInput(cfg map[string]interface{}) (*workflows.AiWorkflows
 		nrqlInput.Name = name.(string)
 	}
 
-	if configurationList, ok := cfg["configuration"]; ok {
+	if configurationList, ok := cfg["configurations"]; ok {
+		var configurationsInput map[string]interface{}
+
+		x := configurationList.([]interface{})
+
+		for _, configuration := range x {
+			configurationsInput = configuration.(map[string]interface{})
+
+			if val, err := expandWorkflowConfigurationInput(configurationsInput); err == nil {
+				nrqlInput.Configuration = append(nrqlInput.Configuration, *val)
+			}
+		}
+	}
+
+	return &nrqlInput, nil
+}
+
+func expandWorkflowUpdateNrqlInput(cfg map[string]interface{}) (*workflows.AiWorkflowsNRQLUpdateEnrichmentInput, error) {
+	nrqlInput := workflows.AiWorkflowsNRQLUpdateEnrichmentInput{}
+
+	if name, ok := cfg["name"]; ok {
+		nrqlInput.Name = name.(string)
+	}
+
+	if id, ok := cfg["enrichment_id"]; ok {
+		nrqlInput.ID = id.(string)
+	}
+
+	if configurationList, ok := cfg["configurations"]; ok {
 		var configurationsInput map[string]interface{}
 
 		x := configurationList.([]interface{})
@@ -421,18 +508,24 @@ func flattenWorkflowPredicate(p *workflows.AiWorkflowsPredicate) (map[string]int
 	return predicateResult, nil
 }
 
-func flattenWorkflowEnrichments(e *[]workflows.AiWorkflowsEnrichment) ([]map[string]interface{}, error) {
+func flattenWorkflowEnrichments(e *[]workflows.AiWorkflowsEnrichment) (interface{}, error) {
 	if e == nil {
 		return nil, nil
 	}
 
-	var enrichments []map[string]interface{}
+	nrql := make([]map[string]interface{}, len(*e))
 
-	for _, enrichment := range *e {
+	for i, enrichment := range *e {
 		if val, err := flattenWorkflowEnrichment(&enrichment); err == nil {
-			enrichments = append(enrichments, val)
+			nrql[i] = val
 		}
 	}
+
+	enrichmentsResult := make(map[string]interface{})
+	enrichmentsResult["nrql"] = nrql
+
+	enrichments := make([]interface{}, 1)
+	enrichments[0] = enrichmentsResult
 
 	return enrichments, nil
 }

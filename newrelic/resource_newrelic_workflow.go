@@ -36,21 +36,23 @@ func resourceNewRelicWorkflow() *schema.Resource {
 				Description: "Workflow's destination configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						// Required
 						"channel_id": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "(Required) Destination's channel id.",
 						},
+
+						// Computed
 						"name": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "(Required) Destination's name.",
 						},
 						"type": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validation.StringInSlice(listValidWorkflowsDestinationTypes(), false),
-							Description:  fmt.Sprintf("(Required) The type of the destination. One of: (%s).", strings.Join(listValidWorkflowsDestinationTypes(), ", ")),
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: fmt.Sprintf("(Required) The type of the destination. One of: (%s).", strings.Join(listValidWorkflowsDestinationTypes(), ", ")),
 						},
 					},
 				},
@@ -61,6 +63,7 @@ func resourceNewRelicWorkflow() *schema.Resource {
 				Description: "Workflow's destination configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						// Required
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
@@ -68,10 +71,12 @@ func resourceNewRelicWorkflow() *schema.Resource {
 						},
 						"type": {
 							Type:         schema.TypeString,
-							Optional:     true,
+							Required:     true,
 							ValidateFunc: validation.StringInSlice(listValidWorkflowsFilterTypes(), false),
 							Description:  fmt.Sprintf("(Required) The type of the filter. One of: (%s).", strings.Join(listValidWorkflowsFilterTypes(), ", ")),
 						},
+
+						// Optional
 						"predicates": {
 							Type:        schema.TypeList,
 							Optional:    true,
@@ -85,13 +90,13 @@ func resourceNewRelicWorkflow() *schema.Resource {
 									},
 									"operator": {
 										Type:         schema.TypeString,
-										Optional:     true,
+										Required:     true,
 										ValidateFunc: validation.StringInSlice(listValidWorkflowsOperatorTypes(), false),
 										Description:  fmt.Sprintf("The type of the operator. One of: (%s).", strings.Join(listValidWorkflowsOperatorTypes(), ", ")),
 									},
 									"values": {
 										Type:        schema.TypeList,
-										Optional:    true,
+										Required:    true,
 										Description: "List of predicate values.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
@@ -132,48 +137,56 @@ func resourceNewRelicWorkflow() *schema.Resource {
 				Description: "Indicates whether the destinations are enabled.",
 			},
 			"enrichments": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Workflow's destination configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "(Required) Enrichment's name.",
-						},
-						"type": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validation.StringInSlice(listValidWorkflowsEnrichmentTypes(), false),
-							Description:  fmt.Sprintf("The type of the enrichment. One of: (%s).", strings.Join(listValidWorkflowsEnrichmentTypes(), ", ")),
-						},
-						"account_id": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							ForceNew:    true,
-							Description: "The account id of the enrichment.",
-						},
-						"configurations": {
+						"nrql": {
 							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "A set of key-value pairs to represent a destination configuration.",
+							Required:    true,
+							Description: "(Required) Nrql type Enrichments.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"query": {
+									// Required
+									"name": {
 										Type:        schema.TypeString,
 										Required:    true,
-										Description: "NRQL query.",
+										Description: "(Required) Enrichment's name.",
+									},
+									"configurations": {
+										Type:        schema.TypeList,
+										Required:    true,
+										Description: "A set of key-value pairs to represent a enrichment configuration.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"query": {
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "enrichment's NRQL query",
+												},
+											},
+										},
+									},
+
+									// Computed
+									"account_id": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The account id of the enrichment.",
+									},
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: fmt.Sprintf("The type of the enrichment. One of: (%s).", strings.Join(listValidWorkflowsEnrichmentTypes(), ", ")),
+									},
+									"enrichment_id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Enrichment's id.",
 									},
 								},
 							},
-						},
-
-						// Computed
-						"enrichment_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Enrichment's id.",
 						},
 					},
 				},
@@ -320,7 +333,7 @@ func listValidWorkflowsFilterTypes() []string {
 	}
 }
 
-// Validation function to validate allowed operator types
+// Validation function to validate allowed predicate operator types
 func listValidWorkflowsOperatorTypes() []string {
 	return []string{
 		string(workflows.AiWorkflowsOperatorTypes.CONTAINS),

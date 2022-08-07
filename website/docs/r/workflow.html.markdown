@@ -14,42 +14,42 @@ Use this resource to create and manage New Relic workflow.
 
 ##### Workflow
 ```hcl
-# Workflows
 resource "newrelic_workflow" "foo" {
   name = "workflow-example"
-  enrichments_enabled = true
+  enrichments_enabled = false
   destinations_enabled = true
   workflow_enabled = true
   muting_rules_handling = "NOTIFY_ALL_ISSUES"
 
-  enrichments = {
-    nrql = {
+  enrichments {
+    nrql {
       name = "Log"
-      configurations = {
+      configurations {
         query = "SELECT * FROM Log"
       }
     }
 
-    nrql = {
+    nrql {
       name = "Metric"
-      configurations = {
+      configurations {
         query = "SELECT * FROM Metric"
       }
     }
   }
 
-  issues_filter = {
-    name = "Filter1"
+  issues_filter {
+    name = "filter-name"
     type = "FILTER"
-    predicates = {
+
+    predicates {
       attribute = "source"
       operator = "EQUAL"
-      values = "newrelic"
+      values = [ "newrelic", "pagerduty" ]
     }
   }
 
   destination_configurations {
-    channel_id = "d8ad79ce-c8e9-4451-8f7e-1f04a613997e"
+    channel_id = "20d86999-169b-461a-9c16-3cf330f4b3aa"
   }
 }
 ```
