@@ -264,9 +264,10 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Description: "The duration of overlapping timewindows used to smooth the chart line, in seconds. Must be a factor of `aggregation_window` and less than the aggregation window. It should be greater or equal to 30 seconds if `aggregation_window` is less than or equal to 3600 seconds, or greater or equal to `aggregation_window / 120` if `aggregation_window` is greater than 3600 seconds.",
 			},
 			"expiration_duration": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "The amount of time (in seconds) to wait before considering the signal expired.  Must be in the range of 30 to 172800 (inclusive)",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "The amount of time (in seconds) to wait before considering the signal expired.  Must be in the range of 30 to 172800 (inclusive)",
+				ValidateFunc: validation.IntBetween(30, 172800),
 			},
 			"fill_option": {
 				Type:         schema.TypeString,
