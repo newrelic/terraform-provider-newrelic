@@ -231,6 +231,11 @@ func resourceNewRelicWorkflowCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	errors := buildAiWorkflowsCreateResponseError(workflowResponse.Errors)
+	if len(errors) > 0 {
+		return errors
+	}
+
 	d.SetId(workflowResponse.Workflow.ID)
 
 	return resourceNewRelicWorkflowRead(updatedContext, d, meta)
@@ -270,9 +275,14 @@ func resourceNewRelicWorkflowUpdate(ctx context.Context, d *schema.ResourceData,
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	_, err = client.Workflows.AiWorkflowsUpdateWorkflowWithContext(updatedContext, accountID, *updateInput)
+	workflowResponse, err := client.Workflows.AiWorkflowsUpdateWorkflowWithContext(updatedContext, accountID, *updateInput)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	errors := buildAiWorkflowsUpdateResponseError(workflowResponse.Errors)
+	if len(errors) > 0 {
+		return errors
 	}
 
 	return resourceNewRelicWorkflowRead(updatedContext, d, meta)
@@ -287,8 +297,14 @@ func resourceNewRelicWorkflowDelete(ctx context.Context, d *schema.ResourceData,
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	if _, err := client.Workflows.AiWorkflowsDeleteWorkflowWithContext(updatedContext, accountID, d.Id()); err != nil {
+	workflowResponse, err := client.Workflows.AiWorkflowsDeleteWorkflowWithContext(updatedContext, accountID, d.Id())
+	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	errors := buildAiWorkflowsDeleteResponseError(workflowResponse.Errors)
+	if len(errors) > 0 {
+		return errors
 	}
 
 	return nil
