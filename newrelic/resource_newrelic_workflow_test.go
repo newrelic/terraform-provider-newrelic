@@ -28,28 +28,14 @@ func TestNewRelicWorkflow_Basic(t *testing.T) {
 						}
 					}`
 
+	destinationID := "4756c466-c29f-4f89-9cb4-382cabfcef61"
 	var channelId string
-	var destinationID string
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicWorkflowDestroy,
 		Steps: []resource.TestStep{
-			// Test: Create destination
-			{
-				Config: testNewRelicNotificationDestinationConfigByType(rName, "WEBHOOK", `{
-					type = "BASIC"
-					user = "test-user"
-					password = "pass123"
-				}`, `{
-					key = "url"
-					value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
-				}`),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationDestinationExists(resourceName, destinationID),
-				),
-			},
 			// Create channel
 			{
 				Config: testNewRelicNotificationChannelConfigByType(rName, "WEBHOOK", "IINT", destinationID, `{
