@@ -37,6 +37,14 @@ func expandNotificationChannel(d *schema.ResourceData) (*notifications.AiNotific
 		channel.Properties = []notifications.AiNotificationsPropertyInput{{Key: "subject", Value: "{{ issueTitle }}"}} // Default subject
 	}
 
+	// Create terraform source property
+	terraformProperty := notifications.AiNotificationsPropertyInput{
+		Key:   "source",
+		Value: "terraform",
+		Label: "terraform-source-internal",
+	}
+	channel.Properties = append(channel.Properties, terraformProperty)
+
 	return &channel, nil
 }
 
