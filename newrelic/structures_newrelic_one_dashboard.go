@@ -16,25 +16,6 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/nrdb"
 )
 
-type RawConfigurationPlatformOptions struct {
-	IgnoreTimeRange bool `json:"ignoreTimeRange,omitempty"`
-}
-
-type RawConfiguration struct {
-	// Used by all widgets
-	NRQLQueries     []dashboards.DashboardWidgetNRQLQueryInput `json:"nrqlQueries,omitempty"`
-	PlatformOptions *RawConfigurationPlatformOptions           `json:"platformOptions,omitempty"`
-
-	// Used by viz.bullet
-	Limit float64 `json:"limit,omitempty"`
-
-	// Used by viz.markdown
-	Text string `json:"text,omitempty"`
-
-	// Used by viz.billboard
-	Thresholds []dashboards.DashboardBillboardWidgetThresholdInput `json:"thresholds,omitempty"`
-}
-
 // Assemble the *dashboards.DashboardInput struct.
 // Used by the newrelic_one_dashboard Create function.
 func expandDashboardInput(d *schema.ResourceData, meta interface{}) (*dashboards.DashboardInput, error) {
@@ -368,10 +349,10 @@ func expandDashboardBillboardWidgetConfigurationInput(d *schema.ResourceData, i 
 
 // expandDashboardWidgetInput expands the common items in WidgetInput, but not the configuration
 // which is specific to the widgets
-func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visualisation string) (*dashboards.DashboardWidgetInput, *RawConfiguration, error) {
+func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visualisation string) (*dashboards.DashboardWidgetInput, *dashboards.RawConfiguration, error) {
 	var widget dashboards.DashboardWidgetInput
 	var err error
-	var cfg RawConfiguration
+	var cfg dashboards.RawConfiguration
 
 	if i, ok := w["id"]; ok {
 		widget.ID = i.(string)
@@ -408,7 +389,7 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	}
 
 	if l, ok := w["ignore_time_range"]; ok {
-		var platformOptions = RawConfigurationPlatformOptions{}
+		var platformOptions = dashboards.RawConfigurationPlatformOptions{}
 		platformOptions.IgnoreTimeRange = l.(bool)
 		cfg.PlatformOptions = &platformOptions
 	}
@@ -595,7 +576,7 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	}
 
 	// Read out the rawConfiguration field for use in all widgets
-	rawCfg := RawConfiguration{}
+	rawCfg := dashboards.RawConfiguration{}
 	if len(in.RawConfiguration) > 0 {
 		if err := json.Unmarshal(in.RawConfiguration, &rawCfg); err != nil {
 			log.Printf("Error parsing: %s", err)
