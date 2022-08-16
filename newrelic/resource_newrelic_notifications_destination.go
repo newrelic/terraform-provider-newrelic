@@ -177,7 +177,7 @@ func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	destinationID := d.Get("id").(string)
+	destinationID := d.Get("destination_id").(string)
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)

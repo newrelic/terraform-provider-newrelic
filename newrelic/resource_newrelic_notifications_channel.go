@@ -173,7 +173,7 @@ func resourceNewRelicNotificationChannelUpdate(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	channelID := d.Get("id").(string)
+	channelID := d.Get("channel_id").(string)
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
