@@ -3,6 +3,7 @@ package newrelic
 import (
 	"errors"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/workflows"
@@ -144,32 +145,29 @@ func expandWorkflowDestinationConfiguration(cfg map[string]interface{}) (*workfl
 func expandWorkflowsIssuesFilter(issuesFilterSet []interface{}) (workflows.AiWorkflowsFilterInput, error) {
 	issuesFilter := make([]workflows.AiWorkflowsFilterInput, len(issuesFilterSet))
 
-	for _, issuesFilterConfig := range issuesFilterSet {
-		cfg := issuesFilterConfig.(map[string]interface{})
+	issuesFilterConfig := issuesFilterSet[0]
+	cfg := issuesFilterConfig.(map[string]interface{})
 
-		if name, ok := cfg["name"]; ok {
-			issuesFilter[0].Name = name.(string)
-		}
+	if name, ok := cfg["name"]; ok {
+		issuesFilter[0].Name = name.(string)
+	}
 
-		if filterType, ok := cfg["type"]; ok {
-			issuesFilter[0].Type = workflows.AiWorkflowsFilterType(filterType.(string))
-		}
+	if filterType, ok := cfg["type"]; ok {
+		issuesFilter[0].Type = workflows.AiWorkflowsFilterType(filterType.(string))
+	}
 
-		if predicates, ok := cfg["predicates"]; ok {
-			var predicateInput map[string]interface{}
+	if predicates, ok := cfg["predicates"]; ok {
+		var predicateInput map[string]interface{}
 
-			x := predicates.([]interface{})
+		x := predicates.([]interface{})
 
-			for _, predicate := range x {
-				predicateInput = predicate.(map[string]interface{})
+		for _, predicate := range x {
+			predicateInput = predicate.(map[string]interface{})
 
-				if val, err := expandWorkflowPredicate(predicateInput); err == nil {
-					issuesFilter[0].Predicates = append(issuesFilter[0].Predicates, *val)
-				}
+			if val, err := expandWorkflowPredicate(predicateInput); err == nil {
+				issuesFilter[0].Predicates = append(issuesFilter[0].Predicates, *val)
 			}
 		}
-
-		break
 	}
 
 	return issuesFilter[0], nil
@@ -178,36 +176,33 @@ func expandWorkflowsIssuesFilter(issuesFilterSet []interface{}) (workflows.AiWor
 func expandWorkflowsUpdateIssuesFilter(issuesFilterSet []interface{}) (workflows.AiWorkflowsUpdatedFilterInput, error) {
 	issuesFilter := make([]workflows.AiWorkflowsUpdatedFilterInput, len(issuesFilterSet))
 
-	for _, issuesFilterConfig := range issuesFilterSet {
-		cfg := issuesFilterConfig.(map[string]interface{})
+	issuesFilterConfig := issuesFilterSet[0]
+	cfg := issuesFilterConfig.(map[string]interface{})
 
-		if id, ok := cfg["filter_id"]; ok {
-			issuesFilter[0].ID = id.(string)
-		}
+	if id, ok := cfg["filter_id"]; ok {
+		issuesFilter[0].ID = id.(string)
+	}
 
-		if name, ok := cfg["name"]; ok {
-			issuesFilter[0].FilterInput.Name = name.(string)
-		}
+	if name, ok := cfg["name"]; ok {
+		issuesFilter[0].FilterInput.Name = name.(string)
+	}
 
-		if filterType, ok := cfg["type"]; ok {
-			issuesFilter[0].FilterInput.Type = workflows.AiWorkflowsFilterType(filterType.(string))
-		}
+	if filterType, ok := cfg["type"]; ok {
+		issuesFilter[0].FilterInput.Type = workflows.AiWorkflowsFilterType(filterType.(string))
+	}
 
-		if predicates, ok := cfg["predicates"]; ok {
-			var predicateInput map[string]interface{}
+	if predicates, ok := cfg["predicates"]; ok {
+		var predicateInput map[string]interface{}
 
-			x := predicates.([]interface{})
+		x := predicates.([]interface{})
 
-			for _, predicate := range x {
-				predicateInput = predicate.(map[string]interface{})
+		for _, predicate := range x {
+			predicateInput = predicate.(map[string]interface{})
 
-				if val, err := expandWorkflowPredicate(predicateInput); err == nil {
-					issuesFilter[0].FilterInput.Predicates = append(issuesFilter[0].FilterInput.Predicates, *val)
-				}
+			if val, err := expandWorkflowPredicate(predicateInput); err == nil {
+				issuesFilter[0].FilterInput.Predicates = append(issuesFilter[0].FilterInput.Predicates, *val)
 			}
 		}
-
-		break
 	}
 
 	return issuesFilter[0], nil
@@ -243,24 +238,21 @@ func expandWorkflowPredicate(cfg map[string]interface{}) (*workflows.AiWorkflows
 func expandWorkflowsEnrichments(enrichmentsSet []interface{}) (*workflows.AiWorkflowsEnrichmentsInput, error) {
 	enrichments := make([]workflows.AiWorkflowsEnrichmentsInput, len(enrichmentsSet))
 
-	for _, enrichmentsConfig := range enrichmentsSet {
-		cfg := enrichmentsConfig.(map[string]interface{})
+	enrichmentsConfig := enrichmentsSet[0]
+	cfg := enrichmentsConfig.(map[string]interface{})
 
-		if nrqlList, ok := cfg["nrql"]; ok {
-			var nrqlInput map[string]interface{}
+	if nrqlList, ok := cfg["nrql"]; ok {
+		var nrqlInput map[string]interface{}
 
-			x := nrqlList.([]interface{})
+		x := nrqlList.([]interface{})
 
-			for _, nrql := range x {
-				nrqlInput = nrql.(map[string]interface{})
+		for _, nrql := range x {
+			nrqlInput = nrql.(map[string]interface{})
 
-				if val, err := expandWorkflowNrqlInput(nrqlInput); err == nil {
-					enrichments[0].NRQL = append(enrichments[0].NRQL, *val)
-				}
+			if val, err := expandWorkflowNrqlInput(nrqlInput); err == nil {
+				enrichments[0].NRQL = append(enrichments[0].NRQL, *val)
 			}
 		}
-
-		break
 	}
 
 	return &enrichments[0], nil
@@ -269,24 +261,21 @@ func expandWorkflowsEnrichments(enrichmentsSet []interface{}) (*workflows.AiWork
 func expandWorkflowsUpdateEnrichments(enrichmentsSet []interface{}) (*workflows.AiWorkflowsUpdateEnrichmentsInput, error) {
 	enrichments := make([]workflows.AiWorkflowsUpdateEnrichmentsInput, len(enrichmentsSet))
 
-	for _, enrichmentsConfig := range enrichmentsSet {
-		cfg := enrichmentsConfig.(map[string]interface{})
+	enrichmentsConfig := enrichmentsSet[0]
+	cfg := enrichmentsConfig.(map[string]interface{})
 
-		if nrqlList, ok := cfg["nrql"]; ok {
-			var nrqlInput map[string]interface{}
+	if nrqlList, ok := cfg["nrql"]; ok {
+		var nrqlInput map[string]interface{}
 
-			x := nrqlList.([]interface{})
+		x := nrqlList.([]interface{})
 
-			for _, nrql := range x {
-				nrqlInput = nrql.(map[string]interface{})
+		for _, nrql := range x {
+			nrqlInput = nrql.(map[string]interface{})
 
-				if val, err := expandWorkflowUpdateNrqlInput(nrqlInput); err == nil {
-					enrichments[0].NRQL = append(enrichments[0].NRQL, *val)
-				}
+			if val, err := expandWorkflowUpdateNrqlInput(nrqlInput); err == nil {
+				enrichments[0].NRQL = append(enrichments[0].NRQL, *val)
 			}
 		}
-
-		break
 	}
 
 	return &enrichments[0], nil

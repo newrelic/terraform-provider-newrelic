@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"fmt"
+
 	"github.com/newrelic/newrelic-client-go/pkg/workflows"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

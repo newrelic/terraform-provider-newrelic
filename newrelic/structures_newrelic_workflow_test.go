@@ -4,8 +4,9 @@
 package newrelic
 
 import (
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"testing"
+
+	"github.com/newrelic/newrelic-client-go/pkg/ai"
 
 	"github.com/newrelic/newrelic-client-go/pkg/workflows"
 
