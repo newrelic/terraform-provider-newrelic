@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"fmt"
+
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 
