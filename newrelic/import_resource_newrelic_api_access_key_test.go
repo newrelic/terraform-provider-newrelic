@@ -43,5 +43,4 @@ func testAccNewRelicAPIAccessKeyImportStateIdFunc_Basic(resourceName string) res
 
 		return fmt.Sprintf("%s:%s", rs.Primary.Attributes["id"], rs.Primary.Attributes["key_type"]), nil
 	}
-
 }
