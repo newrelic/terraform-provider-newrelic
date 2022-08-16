@@ -58,9 +58,15 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 				destination.Properties = append(destination.Properties, *val)
 			}
 		}
-	} else if isPagerDutyType {
-		destination.Properties = []notifications.AiNotificationsPropertyInput{{Key: "", Value: ""}} // Empty
 	}
+
+	// Create terraform source property
+	terraformProperty := notifications.AiNotificationsPropertyInput{
+		Key:   "source",
+		Value: "terraform",
+		Label: "terraform-source-internal",
+	}
+	destination.Properties = append(destination.Properties, terraformProperty)
 
 	return &destination, nil
 }
