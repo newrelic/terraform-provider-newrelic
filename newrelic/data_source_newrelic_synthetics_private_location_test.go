@@ -47,12 +47,6 @@ func TestAccNewRelicSyntheticsMonitorLocationDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testConfigDataSourceSyntheticsLocation("label", privateLocationName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_monitor_location.bar", "label"),
-				),
-			},
-			{
 				Config: testConfigDataSourceSyntheticsLocation("name", privateLocationName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_monitor_location.bar", "name"),
