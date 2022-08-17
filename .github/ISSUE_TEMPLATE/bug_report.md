@@ -38,7 +38,8 @@ If this issue appears to affect multiple resources, it may be an issue with Terr
 ```hcl
 # Copy-paste your Terraform configurations here - for large Terraform configs,
 # please use a service like Dropbox and share a link to the ZIP file. For
-# security, you can also encrypt the files using our GPG public key.
+# security, you can also encrypt the files using our [GPG public key](https://github.com/newrelic/observability-as-code/blob/master/docs/developer-toolkit.asc).
+# For more information on how to encrypt files check out the [GPG Privacy handbook](https://www.gnupg.org/gph/en/manual/x110.html).
 ```
 
 ### Actual Behavior
