@@ -18,7 +18,7 @@ func expandWorkflow(d *schema.ResourceData) (*workflows.AiWorkflowsCreateWorkflo
 		MutingRulesHandling: workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
 	}
 
-	destinationConfigurations, destinationConfigurationsOk := d.GetOk("destination_configurations")
+	destinationConfigurations, destinationConfigurationsOk := d.GetOk("destination_configuration")
 
 	if !destinationConfigurationsOk {
 		return nil, errors.New("workflow requires a destination configurations attribute")
@@ -27,7 +27,7 @@ func expandWorkflow(d *schema.ResourceData) (*workflows.AiWorkflowsCreateWorkflo
 	if destinationConfigurationsOk {
 		var destination map[string]interface{}
 
-		x := destinationConfigurations.([]interface{})
+		x := destinationConfigurations.(*schema.Set).List()
 
 		for _, destinationConfiguration := range x {
 			destination = destinationConfiguration.(map[string]interface{})
@@ -79,7 +79,7 @@ func expandWorkflowUpdate(d *schema.ResourceData) (*workflows.AiWorkflowsUpdateW
 		MutingRulesHandling: workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
 	}
 
-	destinationConfigurations, destinationConfigurationsOk := d.GetOk("destination_configurations")
+	destinationConfigurations, destinationConfigurationsOk := d.GetOk("destination_configuration")
 
 	if !destinationConfigurationsOk {
 		return nil, errors.New("workflow requires a destination configurations attribute")
@@ -387,7 +387,7 @@ func flattenWorkflow(workflow *workflows.AiWorkflowsWorkflow, d *schema.Resource
 		return destinationConfigurationsErr
 	}
 
-	if err := d.Set("destination_configurations", destinationConfigurations); err != nil {
+	if err := d.Set("destination_configuration", destinationConfigurations); err != nil {
 		return err
 	}
 

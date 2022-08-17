@@ -31,8 +31,8 @@ func resourceNewRelicWorkflow() *schema.Resource {
 				Required:    true,
 				Description: "(Required) The name of the workflow.",
 			},
-			"destination_configurations": {
-				Type:        schema.TypeList,
+			"destination_configuration": {
+				Type:        schema.TypeSet,
 				Required:    true,
 				Description: "Workflow's destination configuration.",
 				Elem: &schema.Resource{
