@@ -63,7 +63,24 @@ detail here.
 
 ## Development Process
 
-### main.tf
+### Building
+
+Clone repository to: `$GOPATH/src/github.com/newrelic/terraform-provider-newrelic`
+
+```sh
+$ mkdir -p $GOPATH/src/github.com/newrelic;
+$ cd $GOPATH/src/github.com/newrelic
+$ git clone git@github.com:newrelic/terraform-provider-newrelic.git
+```
+
+Enter the provider directory and build the provider. To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
+
+```sh
+$ cd $GOPATH/src/github.com/newrelic/terraform-provider-newrelic
+$ make build
+```
+
+### testing/newrelic.tf
 
 When working to implement a feature or test a change, it's helpful to have an
 HCL file that is isolated from any real production/staging environment.  When
@@ -89,6 +106,43 @@ provider "newrelic" {}
 Then you can begin to include a resource or data source that you want to test,
 and experiment with changing attributes while running plan/apply to see the
 results of how Terraform will behave.
+
+### Testing
+
+In order to test the provider, run `make test`. This will run the full test suite.
+
+```sh
+$ make test
+```
+
+In order to run the unit test suite only, run `make test-unit`.
+
+```sh
+$ make test-unit
+```
+
+In order to run the acceptance test suite only, run `make test-integration`.
+
+```sh
+$ make test-integration
+```
+
+_Note:_ Acceptance tests _create real resources_. The following environment
+variables must bet set for acceptance tests to run:
+
+```sh
+NEW_RELIC_API_KEY
+NEW_RELIC_ACCOUNT_ID
+NEW_RELIC_INSIGHTS_INSERT_KEY
+NEW_RELIC_LICENSE_KEY
+NEW_RELIC_REGION
+```
+
+In order to run a single test, run the following command and replace `{testName}` with function name of your test.
+
+```sh
+TF_ACC=1 NR_ACC_TESTING=1 gotestsum -f testname -- -v --tags=integration -timeout 10m ./newrelic --run {testName}
+```
 
 ### Changes to the provider
 
@@ -134,10 +188,6 @@ Once complete, you can PR the change in the client repository, and then `git
 checkout go.mod` in the provider to go back to a released version of client.
 You'll want to make sure the version number in the provider lines up with the
 client version you want to be using as well.
-
-### Testing
-
-Check out [testing in README.md](README.md#testing)
 
 ### Commit messages
 
