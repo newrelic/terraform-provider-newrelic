@@ -196,7 +196,7 @@ Nested `nrql_query` blocks allow you to make one or more NRQL queries within a w
 
 The following arguments are supported:
 
-  * `account_id` - (Optional) The New Relic account ID to issue the query against. Defaults to the Account ID where the dashboard was created.
+  * `account_id` - (Optional) The New Relic account ID to issue the query against. Defaults to the Account ID where the dashboard was created. When using an account ID you don't have permissions for the widget will be replaced with a widget showing the data is inaccessible. Terraform will not throw an error, so this widget will only be visible in the UI.
   * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
 
 ```hcl
