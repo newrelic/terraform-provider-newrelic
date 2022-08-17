@@ -2,6 +2,8 @@
 
 # New Relic Terraform Provider
 
+New Relic offers tools that help you fix problems quickly, maintain complex systems, improve your code, and accelerate your digital transformation. With the New Relic Terraform provider you are able to automate the configuration of New Relic.
+
 - Documentation: <https://registry.terraform.io/providers/newrelic/newrelic/latest/docs>
 - Terraform Website: <https://www.terraform.io>
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
@@ -32,7 +34,7 @@ terraform {
 }
 ```
 
-If you're developing and building the provider, follow the instructions to [install it as a plugin](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin). After placing the provider your plugins directory, run `terraform init` to initialize it.
+If you're developing and building the provider locally, follow the [instructions in our contribution guide](https://github.com/newrelic/terraform-provider-newrelic/blob/main/CONTRIBUTING.md#development-process).
 
 For more information on using the provider and the associated resources, please see the [provider documentation][provider_docs] page.
 
@@ -54,70 +56,14 @@ If you wish to work on the provider, you'll first need [Go](http://www.golang.or
 machine (version 1.18 is _required_). You'll also need to correctly setup a
 [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
-Please see our [CONTRIBUTING][contributing] guide for more detail on the APIs
-in use by this provider.
-
-#### Building
-
-Clone repository to: `$GOPATH/src/github.com/newrelic/terraform-provider-newrelic`
-
-```sh
-$ mkdir -p $GOPATH/src/github.com/newrelic;
-$ cd $GOPATH/src/github.com/newrelic
-$ git clone git@github.com:newrelic/terraform-provider-newrelic.git
-```
-
-Enter the provider directory and build the provider. To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
-
-```sh
-$ cd $GOPATH/src/github.com/newrelic/terraform-provider-newrelic
-$ make build
-```
-
-#### Testing
-
-In order to test the provider, run `make test`. This will run the full test suite.
-
-```sh
-$ make test
-```
-
-In order to run the unit test suite only, run `make test-unit`.
-
-```sh
-$ make test-unit
-```
-
-In order to run the acceptance test suite only, run `make test-integration`.
-
-```sh
-$ make test-integration
-```
-
-_Note:_ Acceptance tests _create real resources_. The following environment
-variables must bet set for acceptance tests to run:
-
-```sh
-NEW_RELIC_API_KEY
-NEW_RELIC_ACCOUNT_ID
-NEW_RELIC_INSIGHTS_INSERT_KEY
-NEW_RELIC_LICENSE_KEY
-NEW_RELIC_REGION
-```
-
-In order to run a single test, run the following command and replace `{testName}` with function name of your test.
-
-```sh
-TF_ACC=1 NR_ACC_TESTING=1 gotestsum -f testname -- -v --tags=integration -timeout 10m ./newrelic --run {testName}
-```
+Please see our [CONTRIBUTING][contributing] guide for more information about developing and testing the New Relic Terraform provider.
 
 #### Go Version Support
 
 We'll aim to support the latest supported release of Go, along with the
 previous release. This doesn't mean that building with an older version of Go
 will not work, but we don't intend to support a Go version in this project that
-is not supported by the larger Go community. Please see the [Go
-releases][go_releases] page for more details.
+is not supported by the larger Go community. Please see the [Go releases][go_releases] page for more details.
 
 [provider_docs]: https://www.terraform.io/docs/providers/newrelic/index.html
 [contributing]: https://github.com/newrelic/terraform-provider-newrelic/blob/main/CONTRIBUTING.md

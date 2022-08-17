@@ -127,6 +127,11 @@ func resourceNewRelicNotificationChannelCreate(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
+	errors := buildAiNotificationsErrors(channelResponse.Errors)
+	if len(errors) > 0 {
+		return errors
+	}
+
 	d.SetId(channelResponse.Channel.ID)
 
 	return resourceNewRelicNotificationChannelRead(updatedContext, d, meta)
@@ -153,6 +158,11 @@ func resourceNewRelicNotificationChannelRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	errors := buildAiNotificationsResponseErrors(channelResponse.Errors)
+	if len(errors) > 0 {
+		return errors
+	}
+
 	return diag.FromErr(flattenNotificationChannel(&channelResponse.Entities[0], d))
 }
 
@@ -163,14 +173,19 @@ func resourceNewRelicNotificationChannelUpdate(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	channelID := d.Get("id").(string)
+	channelID := d.Get("channel_id").(string)
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	_, err = client.Notifications.AiNotificationsUpdateChannelWithContext(updatedContext, accountID, *updateInput, channelID)
+	channelResponse, err := client.Notifications.AiNotificationsUpdateChannelWithContext(updatedContext, accountID, *updateInput, channelID)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	errors := buildAiNotificationsErrors(channelResponse.Errors)
+	if len(errors) > 0 {
+		return errors
 	}
 
 	return resourceNewRelicNotificationChannelRead(updatedContext, d, meta)
@@ -185,8 +200,14 @@ func resourceNewRelicNotificationChannelDelete(ctx context.Context, d *schema.Re
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	if _, err := client.Notifications.AiNotificationsDeleteChannelWithContext(updatedContext, accountID, d.Id()); err != nil {
+	channelResponse, err := client.Notifications.AiNotificationsDeleteChannelWithContext(updatedContext, accountID, d.Id())
+	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	errors := buildAiNotificationsResponseErrors(channelResponse.Errors)
+	if len(errors) > 0 {
+		return errors
 	}
 
 	return nil
