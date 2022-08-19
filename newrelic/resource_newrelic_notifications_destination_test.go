@@ -18,7 +18,7 @@ import (
 func TestNewRelicNotificationDestinationWebhook_Basic(t *testing.T) {
 	t.Skip("Skipping TestNewRelicNotificationDestinationWebhook_Basic. AWAITING FINAL IMPLEMENTATION!")
 
-	resourceName := "newrelic_notification_destination.webhook_test_foo"
+	resourceName := "newrelic_notification_destination.test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
 
@@ -68,7 +68,7 @@ func TestNewRelicNotificationDestinationWebhook_Basic(t *testing.T) {
 func TestNewRelicNotificationDestinationEmail_Basic(t *testing.T) {
 	t.Skip("Skipping TestNewRelicNotificationDestinationEmail_Basic. AWAITING FINAL IMPLEMENTATION!")
 
-	resourceName := "newrelic_notification_destination.email_test_foo"
+	resourceName := "newrelic_notification_destination.test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
 
@@ -110,7 +110,7 @@ func TestNewRelicNotificationDestinationEmail_Basic(t *testing.T) {
 func TestNewRelicNotificationDestinationPagerDuty_Basic(t *testing.T) {
 	t.Skip("Skipping TestNewRelicNotificationDestinationPagerDuty_Basic. AWAITING FINAL IMPLEMENTATION!")
 
-	resourceName := "newrelic_notification_destination.pagerduty_test_foo"
+	resourceName := "newrelic_notification_destination.test_foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
 

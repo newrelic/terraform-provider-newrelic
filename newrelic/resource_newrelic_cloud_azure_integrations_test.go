@@ -84,7 +84,7 @@ func testAccCheckNewRelicCloudAzureIntegrationsExist(n string) resource.TestChec
 		resourceId, err := strconv.Atoi(rs.Primary.ID)
 
 		if err != nil {
-			fmt.Errorf("error converting string id to int")
+			return fmt.Errorf("error converting string id to int")
 		}
 
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
@@ -94,7 +94,7 @@ func testAccCheckNewRelicCloudAzureIntegrationsExist(n string) resource.TestChec
 		}
 
 		if len(linkedAccount.Integrations) == 0 {
-			fmt.Errorf("An error occurred creating Azure integrations")
+			return fmt.Errorf("An error occurred creating Azure integrations")
 		}
 
 		return nil
@@ -111,7 +111,7 @@ func testAccCheckNewRelicCloudAzureIntegrationsDestroy(s *terraform.State) error
 		resourceId, err := strconv.Atoi(r.Primary.ID)
 
 		if err != nil {
-			fmt.Errorf("error converting string id to int")
+			return fmt.Errorf("error converting string id to int")
 		}
 
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)

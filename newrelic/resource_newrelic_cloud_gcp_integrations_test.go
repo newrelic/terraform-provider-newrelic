@@ -58,7 +58,7 @@ func testAccNewRelicCloudGcpIntegrationsExists(n string) resource.TestCheckFunc 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			fmt.Errorf("not found %s", n)
+			return fmt.Errorf("not found %s", n)
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
@@ -66,7 +66,7 @@ func testAccNewRelicCloudGcpIntegrationsExists(n string) resource.TestCheckFunc 
 		resourceId, err := strconv.Atoi(rs.Primary.ID)
 
 		if err != nil {
-			fmt.Errorf("error converting string to int")
+			return fmt.Errorf("error converting string to int")
 		}
 
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
@@ -75,7 +75,7 @@ func testAccNewRelicCloudGcpIntegrationsExists(n string) resource.TestCheckFunc 
 		}
 
 		if len(linkedAccount.Integrations) == 0 {
-			fmt.Errorf("An error occurred creating GCP integrations")
+			return fmt.Errorf("An error occurred creating GCP integrations")
 		}
 
 		return nil
@@ -92,7 +92,7 @@ func testAccNewRelicCloudGcpIntegrationsDestroy(s *terraform.State) error {
 		resourceId, err := strconv.Atoi(r.Primary.ID)
 
 		if err != nil {
-			fmt.Errorf("error converting string to int")
+			return fmt.Errorf("error converting string to int")
 		}
 
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)

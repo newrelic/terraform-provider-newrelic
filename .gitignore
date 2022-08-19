@@ -13,6 +13,7 @@
 .idea
 .terraform/
 .vagrant/
+.vscode
 /pkg/
 bin/
 tmp/*
@@ -33,3 +34,7 @@ website/vendor
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
 !command/test-fixtures/**/.terraform/
+
+# Ignore tf files in testing, except for newrelic.tf
+testing/*.tf
+!testing/newrelic.tf

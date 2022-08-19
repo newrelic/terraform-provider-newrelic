@@ -87,8 +87,8 @@ The following arguments are supported:
 
 - `fill_option` - (Optional) Which strategy to use when filling gaps in the signal. Possible values are `none`, `last_value` or `static`. If `static`, the `fill_value` field will be used for filling gaps in the signal.
 - `fill_value` - (Optional, required when `fill_option` is `static`) This value will be used for filling gaps in the signal.
-- `aggregation_window` - (Optional) The duration of the time window used to evaluate the NRQL query, in seconds. The value must be at least 30 seconds, and no more than 15 minutes (900 seconds). Default is 60 seconds.
-- `expiration_duration` - (Optional) The amount of time (in seconds) to wait before considering the signal expired.
+- `aggregation_window` - (Optional) The duration of the time window used to evaluate the NRQL query, in seconds. The value must be at least 30 seconds, and no more than 900 seconds (15 minutes). Default is 60 seconds.
+- `expiration_duration` - (Optional) The amount of time (in seconds) to wait before considering the signal expired. The value must be at least 30 seconds, and no more than 172800 seconds (48 hours).
 - `open_violation_on_expiration` - (Optional) Whether to create a new violation to capture that the signal expired.
 - `close_violations_on_expiration` - (Optional) Whether to close all open violations when the signal expires.
 - `aggregation_method` - (Optional) Determines when we consider an aggregation window to be complete so that we can evaluate the signal for violations. Possible values are `cadence`, `event_flow` or `event_timer`. Default is `event_flow`. `aggregation_method` cannot be set with `nrql.evaluation_offset`.

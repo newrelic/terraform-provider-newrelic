@@ -131,6 +131,11 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
+	errors := buildAiNotificationsErrors(destinationResponse.Errors)
+	if len(errors) > 0 {
+		return errors
+	}
+
 	d.SetId(destinationResponse.Destination.ID)
 
 	return resourceNewRelicNotificationDestinationRead(updatedContext, d, meta)
@@ -157,6 +162,11 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
+	errors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
+	if len(errors) > 0 {
+		return errors
+	}
+
 	return diag.FromErr(flattenNotificationDestination(&destinationResponse.Entities[0], d))
 }
 
@@ -167,14 +177,19 @@ func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	destinationID := d.Get("id").(string)
+	destinationID := d.Get("destination_id").(string)
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	_, err = client.Notifications.AiNotificationsUpdateDestinationWithContext(updatedContext, accountID, *destinationInput, destinationID)
+	destinationResponse, err := client.Notifications.AiNotificationsUpdateDestinationWithContext(updatedContext, accountID, *destinationInput, destinationID)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	errors := buildAiNotificationsErrors(destinationResponse.Errors)
+	if len(errors) > 0 {
+		return errors
 	}
 
 	return resourceNewRelicNotificationDestinationRead(updatedContext, d, meta)
@@ -189,8 +204,14 @@ func resourceNewRelicNotificationDestinationDelete(ctx context.Context, d *schem
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	if _, err := client.Notifications.AiNotificationsDeleteDestinationWithContext(updatedContext, accountID, d.Id()); err != nil {
+	destinationResponse, err := client.Notifications.AiNotificationsDeleteDestinationWithContext(updatedContext, accountID, d.Id())
+	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	errors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
+	if len(errors) > 0 {
+		return errors
 	}
 
 	return nil

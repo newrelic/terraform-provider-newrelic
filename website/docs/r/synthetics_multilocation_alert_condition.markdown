@@ -24,7 +24,7 @@ resource "newrelic_synthetics_multilocation_alert_condition" "example" {
   violation_time_limit_seconds = "3600"
 
 	entities = [
-		"<GUID_GOES_HERE>"
+		"<Monitor ID>"
 	]
 
 	critical {
@@ -44,7 +44,7 @@ The following arguments are supported:
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
   * `enabled` - (Optional) Set whether to enable the alert condition.  Defaults to true.
   * `violation_time_limit_seconds` - (Required) The maximum number of seconds a violation can remain open before being closed by the system. Must be one of: 0, 3600, 7200, 14400, 28800, 43200, 86400.
-  * `entities` - (Required) The GUIDs of the Synthetics monitors to alert on.
+  * `entities` - (Required) The Monitor ID's of the Synthetics monitors to alert on. You can find them in the UI under tags, or using this NRQL query `SELECT monitorId FROM SyntheticCheck WHERE monitorName = 'myMonitorName'`
   * `critical` - (Required) A condition term with the priority set to critical.
   * `warning` - (Optional) A condition term with the priority set to warning.
 
