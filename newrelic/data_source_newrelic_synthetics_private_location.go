@@ -11,41 +11,27 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
 
-func dataSourceNewRelicSyntheticsMonitorLocation() *schema.Resource {
+func dataSourceNewRelicSyntheticsPrivateLocation() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceNewRelicSyntheticsMonitorLocationRead,
+		ReadContext: dataSourceNewRelicSyntheticsPrivateLocationRead,
 		Schema: map[string]*schema.Schema{
-			"label": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The name of the Synthetics monitor private location.",
-				Deprecated:  "Use `name` attribute instead.",
-			},
 			"name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The name of the Synthetics monitor private location.",
-				ConflictsWith: []string{"label"},
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name of the Synthetics monitor private location.",
 			},
 		},
 	}
 }
 
-func dataSourceNewRelicSyntheticsMonitorLocationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading Synthetics monitor locations")
 
-	// Note: The legacy `label` field is the equivalent of `name` in NerdGraph
-	label, labelOk := d.GetOk("label")
 	name, nameOk := d.GetOk("name")
-	if !labelOk && !nameOk {
-		return diag.FromErr(errors.New("one of `label` or `name` must be configured"))
-	}
-
-	// If `label` was set in the data source config, set `name` to its value.
-	if labelOk {
-		name = label
+	if !nameOk {
+		return diag.FromErr(errors.New("`name` is required"))
 	}
 
 	query := fmt.Sprintf("domain = 'SYNTH' AND type = 'PRIVATE_LOCATION' AND name = '%s'", name)
@@ -78,12 +64,7 @@ func dataSourceNewRelicSyntheticsMonitorLocationRead(ctx context.Context, d *sch
 
 	d.SetId(string(location.GUID))
 
-	if labelOk {
-		err = d.Set("label", location.Name)
-	} else {
-		err = d.Set("name", location.Name)
-	}
-
+	err = d.Set("name", location.Name)
 	if err != nil {
 		return diag.FromErr(err)
 	}

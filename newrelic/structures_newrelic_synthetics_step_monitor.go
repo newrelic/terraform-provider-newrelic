@@ -79,10 +79,10 @@ func expandPrivateLocations(locations []interface{}) []synthetics.SyntheticsPriv
 	pl := []synthetics.SyntheticsPrivateLocationInput{}
 
 	for _, v := range locations {
-		loc := v.(map[string]string)
+		loc := v.(map[string]interface{})
 		pl = append(pl, synthetics.SyntheticsPrivateLocationInput{
-			GUID:        loc["guid"],
-			VsePassword: synthetics.SecureValue(loc["vse_password"]),
+			GUID:        loc["guid"].(string),
+			VsePassword: synthetics.SecureValue(loc["vse_password"].(string)),
 		})
 	}
 

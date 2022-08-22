@@ -14,7 +14,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
-func TestAccNewRelicSyntheticsMonitorLocationDataSource(t *testing.T) {
+func TestAccNewRelicSyntheticsPrivateLocationDataSource(t *testing.T) {
 	t.Parallel()
 
 	privateLocationName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
@@ -47,15 +47,9 @@ func TestAccNewRelicSyntheticsMonitorLocationDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testConfigDataSourceSyntheticsLocation("label", privateLocationName),
+				Config: testConfigDataSourceSyntheticsLocation(privateLocationName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_monitor_location.bar", "label"),
-				),
-			},
-			{
-				Config: testConfigDataSourceSyntheticsLocation("name", privateLocationName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_monitor_location.bar", "name"),
+					testAccNewRelicSyntheticsLocationDataSource("data.newrelic_synthetics_private_location.bar", "name"),
 				),
 			},
 		},
@@ -79,10 +73,10 @@ func testAccNewRelicSyntheticsLocationDataSource(n string, attr string) resource
 	}
 }
 
-func testConfigDataSourceSyntheticsLocation(attr string, value string) string {
+func testConfigDataSourceSyntheticsLocation(value string) string {
 	return fmt.Sprintf(`
-data "newrelic_synthetics_monitor_location" "bar" {
-	%s = "%s"
+data "newrelic_synthetics_private_location" "bar" {
+	name = "%s"
 }
-`, attr, value)
+`, value)
 }
