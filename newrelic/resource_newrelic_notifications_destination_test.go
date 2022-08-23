@@ -15,12 +15,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestNewRelicNotificationDestinationWebhook_Basic(t *testing.T) {
-	// t.Skip("Skipping TestNewRelicNotificationDestinationWebhook_Basic. AWAITING FINAL IMPLEMENTATION!")
-
+func TestNewRelicNotificationDestination_BasicAuth(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+
+	authAttr := `auth_basic {
+		user = "username"
+		password = "abc123"
+	}`
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -29,33 +32,97 @@ func TestNewRelicNotificationDestinationWebhook_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testNewRelicNotificationDestinationConfig(rName),
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, rName, authAttr),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
 				),
+			},
+			// Update
+			{
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, fmt.Sprintf("%s-updated", rName), authAttr),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+				),
+			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"auth_token.0.token",
+					"auth_basic.0.password",
+				},
 			},
 		},
 	})
 }
 
-func testNewRelicNotificationDestinationConfig(name string) string {
+func TestNewRelicNotificationDestination_TokenAuth(t *testing.T) {
+	resourceName := "newrelic_notification_destination.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+
+	authAttr := `auth_token {
+		prefix = "testprefix"
+		token = "abc123"
+	}`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationDestinationDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, rName, authAttr),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+				),
+			},
+			// Update
+			{
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, fmt.Sprintf("%s-updated", rName), authAttr),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+				),
+			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"auth_token.0.token",
+					"auth_basic.0.password",
+				},
+			},
+		},
+	})
+}
+
+func testNewRelicNotificationDestinationConfig(accountID int, name string, auth string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
-	name = "%s"
+	account_id = %[1]d
+	name = "%[2]s"
 	type = "WEBHOOK"
+	active = true
 
-	properties {
+	property {
 		key = "url"
 		value = "https://webhook.site/"
 	}
 
-	auth = {
-		type = "BASIC"
-		user = "username"
-		password = "password"
+	property {
+		key = "source"
+		value = "terraform"
+		label = "terraform-integration-test"
 	}
+
+	%[3]s
 }
-`, name)
+`, accountID, name, auth)
 }
 
 func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {
@@ -77,9 +144,9 @@ func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {
 
 		resp, err := client.Notifications.GetDestinations(accountID, "", filters, sorter)
 
-		fmt.Print("\n\n **************************** \n")
-		fmt.Printf("\n DestinationDestroy:  %+v \n", *resp)
-		fmt.Print("\n **************************** \n\n")
+		// fmt.Print("\n\n **************************** \n")
+		// fmt.Printf("\n DestinationDestroy:  %+v \n", toJSON(r.Primary.Attributes))
+		// fmt.Print("\n **************************** \n\n")
 
 		if len(resp.Entities) > 0 {
 			return fmt.Errorf("notification destination still exists")

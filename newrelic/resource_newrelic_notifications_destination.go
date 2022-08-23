@@ -25,7 +25,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			// Required
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -38,11 +37,9 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(listValidNotificationsDestinationTypes(), false),
 				Description:  fmt.Sprintf("(Required) The type of the destination. One of: (%s).", strings.Join(listValidNotificationsDestinationTypes(), ", ")),
 			},
-
-			// Optional
-			"properties": {
-				Type:        schema.TypeList,
-				Optional:    true,
+			"property": {
+				Type:        schema.TypeSet,
+				Required:    true,
 				Description: "Notification destination property type.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -69,13 +66,106 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 					},
 				},
 			},
-			"auth": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Description: "A set of key-value pairs to represent a Notification destination auth.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Sensitive:   true,
+
+			"auth_basic": {
+				Type:         schema.TypeList,
+				Optional:     true,
+				MinItems:     1,
+				MaxItems:     1,
+				ExactlyOneOf: []string{"auth_basic", "auth_token"},
+				Description:  "Basic username and password authentication credentials.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"user": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"password": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+					},
+				},
 			},
+
+			"auth_token": {
+				Type:         schema.TypeList,
+				Optional:     true,
+				MinItems:     1,
+				MaxItems:     1,
+				ExactlyOneOf: []string{"auth_basic", "auth_token"},
+				Description:  "Token authentication credentials.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"prefix": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"token": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+					},
+				},
+			},
+
+			// "auth_oauth2": {
+			// 	Type:         schema.TypeList,
+			// 	Optional:     true,
+			// 	Sensitive:    true,
+			// 	MinItems:     1,
+			// 	MaxItems:     1,
+			// 	ExactlyOneOf: []string{"auth_basic", "auth_oauth2", "auth_token"},
+			// 	Description:  "OAuth2 authentication credentials.",
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"access_token_url": {
+			// 				Type:     schema.TypeString,
+			// 				Required: true,
+			// 			},
+			// 			"authorization_url": {
+			// 				Type:     schema.TypeString,
+			// 				Required: true,
+			// 			},
+			// 			"client_id": {
+			// 				Type:     schema.TypeString,
+			// 				Required: true,
+			// 			},
+			// 			"client_secret": {
+			// 				Type:      schema.TypeString,
+			// 				Required:  true,
+			// 				Sensitive: true,
+			// 			},
+			// 			"prefix": {
+			// 				Type:     schema.TypeString,
+			// 				Optional: true,
+			// 			},
+			// 			"refreshInterval": {
+			// 				Type:     schema.TypeInt,
+			// 				Optional: true,
+			// 			},
+			// 			"refresh_token": {
+			// 				Type:     schema.TypeString,
+			// 				Optional: true,
+			// 			},
+			// 			"refreshable": {
+			// 				Type:     schema.TypeBool,
+			// 				Required: true,
+			// 			},
+			// 			"scope": {
+			// 				Type:     schema.TypeString,
+			// 				Optional: true,
+			// 			},
+			// 			"token": {
+			// 				Type:     schema.TypeString,
+			// 				Required: true,
+			// 			},
+			// 		},
+			// 	},
+			// },
+
 			"active": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -85,7 +175,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The account id of the destination.",
+				Description: "The account ID under which to put the destination.",
 			},
 
 			// Computed
@@ -103,11 +193,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The last time a notification was sent.",
-			},
-			"destination_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The id of the destination.",
 			},
 		},
 	}
@@ -162,12 +247,8 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	fmt.Print("\n\n **************************** \n")
-	fmt.Printf("\n READ:  %+v \n", destinationResponse.Entities)
-	fmt.Print("\n **************************** \n\n")
-
-	if destinationResponse == nil || len(destinationResponse.Entities) == 0 {
-		return diag.FromErr(fmt.Errorf("[ERROR] notification destination response is empty"))
+	if len(destinationResponse.Entities) == 0 {
+		return diag.FromErr(fmt.Errorf("[ERROR] notification destinationResponse.Entities response is empty"))
 	}
 
 	errors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
@@ -185,12 +266,11 @@ func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	destinationID := d.Get("destination_id").(string)
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	destinationResponse, err := client.Notifications.AiNotificationsUpdateDestinationWithContext(updatedContext, accountID, *destinationInput, destinationID)
+	destinationResponse, err := client.Notifications.AiNotificationsUpdateDestinationWithContext(updatedContext, accountID, *destinationInput, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
