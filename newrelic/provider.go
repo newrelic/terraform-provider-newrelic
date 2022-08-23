@@ -163,6 +163,7 @@ func Provider() *schema.Provider {
 			"newrelic_synthetics_multilocation_alert_condition": resourceNewRelicSyntheticsMultiLocationAlertCondition(),
 			"newrelic_synthetics_secure_credential":             resourceNewRelicSyntheticsSecureCredential(),
 			"newrelic_synthetics_step_monitor":                  resourceNewRelicSyntheticsStepMonitor(),
+			"newrelic_workflow":                                 resourceNewRelicWorkflow(),
 			"newrelic_workload":                                 resourceNewRelicWorkload(),
 		},
 	}

@@ -1,0 +1,320 @@
+//go:build unit
+// +build unit
+
+package newrelic
+
+import (
+	"testing"
+
+	"github.com/newrelic/newrelic-client-go/pkg/ai"
+
+	"github.com/newrelic/newrelic-client-go/pkg/workflows"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestExpandWorkflow(t *testing.T) {
+	nrql := []map[string]interface{}{{
+		"name": "enrichment-test-1",
+		"configurations": []map[string]interface{}{{
+			"query": "SELECT * FROM Log",
+		}},
+	}}
+	enrichments := []workflows.AiWorkflowsEnrichment{{
+		Name: "enrichment-test-1",
+		Type: workflows.AiWorkflowsEnrichmentTypeTypes.NRQL,
+		Configurations: []ai.AiWorkflowsConfiguration{{
+			Query: "SELECT * FROM Log",
+		}},
+	}}
+
+	destinationConfigurations := []workflows.AiWorkflowsDestinationConfiguration{{
+		Name:      "destination-test",
+		Type:      workflows.AiWorkflowsDestinationTypeTypes.WEBHOOK,
+		ChannelId: "300848f9-c713-463c-9036-40b45c4c970f",
+	}}
+
+	issuesFilter := workflows.AiWorkflowsFilter{
+		Name: "issues-filter-test",
+		Type: workflows.AiWorkflowsFilterTypeTypes.FILTER,
+		Predicates: []workflows.AiWorkflowsPredicate{{
+			Attribute: "source",
+			Operator:  workflows.AiWorkflowsOperatorTypes.EQUAL,
+			Values:    []string{"newrelic"},
+		}},
+	}
+
+	cases := map[string]struct {
+		Data         map[string]interface{}
+		ExpectErr    bool
+		ExpectReason string
+		Expanded     *workflows.AiWorkflowsWorkflow
+	}{
+		"valid workflow": {
+			Data: map[string]interface{}{
+				"name":                  "workflow-test",
+				"enrichments_enabled":   true,
+				"destinations_enabled":  true,
+				"workflow_enabled":      true,
+				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
+				"enrichments": []map[string]interface{}{{
+					"nrql": nrql,
+				}},
+				"issues_filter": []map[string]interface{}{{
+					"name": "issues-filter-test",
+					"type": "FILTER",
+					"predicates": []map[string]interface{}{{
+						"attribute": "source",
+						"operator":  "EQUAL",
+						"values":    []string{"newrelic"},
+					}},
+				}},
+				"destination_configurations": []map[string]interface{}{{
+					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
+				}},
+			},
+			Expanded: &workflows.AiWorkflowsWorkflow{
+				Name:                      "workflow-test",
+				EnrichmentsEnabled:        true,
+				DestinationsEnabled:       true,
+				WorkflowEnabled:           true,
+				MutingRulesHandling:       workflows.AiWorkflowsMutingRulesHandlingTypes.NOTIFY_ALL_ISSUES,
+				Enrichments:               enrichments,
+				DestinationConfigurations: destinationConfigurations,
+				IssuesFilter:              issuesFilter,
+			},
+		},
+		"valid workflow without enrichments": {
+			Data: map[string]interface{}{
+				"name":                  "workflow-test",
+				"enrichments_enabled":   true,
+				"destinations_enabled":  true,
+				"workflow_enabled":      true,
+				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
+				"issues_filter": []map[string]interface{}{{
+					"name": "issues-filter-test",
+					"type": "FILTER",
+					"predicates": []map[string]interface{}{{
+						"attribute": "source",
+						"operator":  "EQUAL",
+						"values":    []string{"newrelic"},
+					}},
+				}},
+				"destination_configurations": []map[string]interface{}{{
+					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
+				}},
+			},
+			Expanded: &workflows.AiWorkflowsWorkflow{
+				Name:                      "workflow-test",
+				EnrichmentsEnabled:        true,
+				DestinationsEnabled:       true,
+				WorkflowEnabled:           true,
+				MutingRulesHandling:       workflows.AiWorkflowsMutingRulesHandlingTypes.NOTIFY_ALL_ISSUES,
+				DestinationConfigurations: destinationConfigurations,
+				IssuesFilter:              issuesFilter,
+			},
+		},
+	}
+
+	r := resourceNewRelicWorkflow()
+
+	for _, tc := range cases {
+		d := r.TestResourceData()
+
+		for k, v := range tc.Data {
+			if err := d.Set(k, v); err != nil {
+				t.Fatalf("err: %s", err)
+			}
+		}
+
+		expanded, err := expandWorkflow(d)
+
+		if tc.ExpectErr {
+			assert.NotNil(t, err)
+			assert.Equal(t, err.Error(), tc.ExpectReason)
+		} else {
+			assert.Nil(t, err)
+		}
+
+		if tc.Expanded != nil {
+			assert.Equal(t, tc.Expanded.Name, expanded.Name)
+		}
+	}
+}
+
+func TestFlattenWorkflow(t *testing.T) {
+	enrichments := []workflows.AiWorkflowsEnrichment{{
+		Name: "enrichment-test-1",
+		Type: workflows.AiWorkflowsEnrichmentTypeTypes.NRQL,
+		Configurations: []ai.AiWorkflowsConfiguration{{
+			Query: "SELECT * FROM Log",
+		}},
+	}}
+
+	destinationConfigurations := []workflows.AiWorkflowsDestinationConfiguration{{
+		Name:      "destination-test",
+		Type:      workflows.AiWorkflowsDestinationTypeTypes.WEBHOOK,
+		ChannelId: "300848f9-c713-463c-9036-40b45c4c970f",
+	}}
+
+	issuesFilter := workflows.AiWorkflowsFilter{
+		Name: "issues-filter-test",
+		Type: workflows.AiWorkflowsFilterTypeTypes.FILTER,
+		Predicates: []workflows.AiWorkflowsPredicate{{
+			Attribute: "source",
+			Operator:  workflows.AiWorkflowsOperatorTypes.EQUAL,
+			Values:    []string{"newrelic"},
+		}},
+	}
+
+	r := resourceNewRelicWorkflow()
+
+	cases := map[string]struct {
+		Data         map[string]interface{}
+		ExpectErr    bool
+		ExpectReason string
+		Flattened    *workflows.AiWorkflowsWorkflow
+	}{
+		"minimal": {
+			Data: map[string]interface{}{
+				"name":                  "workflow-test",
+				"enrichments_enabled":   true,
+				"destinations_enabled":  true,
+				"workflow_enabled":      true,
+				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
+				"enrichments": []map[string]interface{}{{
+					"name": "enrichment-test-1",
+					"type": "NRQL",
+					"configurations": []map[string]interface{}{{
+						"query": "SELECT * FROM Log",
+					}},
+				}},
+				"issues_filter": map[string]interface{}{
+					"name": "issues-filter-test",
+					"type": "FILTER",
+					"predicates": []map[string]interface{}{{
+						"attribute": "source",
+						"operator":  "EQUAL",
+						"values":    []string{"newrelic"},
+					}},
+				},
+				"destination_configurations": []map[string]interface{}{{
+					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
+					"name":       "destination-test",
+					"type":       "WEBHOOK",
+				}},
+			},
+			Flattened: &workflows.AiWorkflowsWorkflow{
+				Name:                      "workflow-test",
+				EnrichmentsEnabled:        true,
+				DestinationsEnabled:       true,
+				WorkflowEnabled:           true,
+				MutingRulesHandling:       workflows.AiWorkflowsMutingRulesHandlingTypes.NOTIFY_ALL_ISSUES,
+				Enrichments:               enrichments,
+				DestinationConfigurations: destinationConfigurations,
+				IssuesFilter:              issuesFilter,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		if tc.Flattened != nil {
+			d := r.TestResourceData()
+			err := flattenWorkflow(tc.Flattened, d)
+			assert.NoError(t, err)
+
+			for k, v := range tc.Data {
+				var x interface{}
+				var ok bool
+				if x, ok = d.GetOk(k); !ok {
+					t.Fatalf("err: %s", err)
+				}
+
+				if k == "issues_filter" {
+					testFlattenWorkflowsIssuesFilter(t, v, tc.Flattened.IssuesFilter)
+				} else if k == "enrichments" {
+					for _, enrichment := range tc.Flattened.Enrichments {
+						testFlattenWorkflowsEnrichment(t, v, enrichment)
+					}
+				} else if k == "destination_configurations" {
+					for _, configuration := range tc.Flattened.DestinationConfigurations {
+						testFlattenWorkflowsDestinationConfiguration(t, v, configuration)
+					}
+				} else {
+					assert.Equal(t, x, v)
+				}
+			}
+		}
+	}
+}
+
+func testFlattenWorkflowsIssuesFilter(t *testing.T, v interface{}, issuesFilter workflows.AiWorkflowsFilter) {
+	for ck, cv := range v.(map[string]interface{}) {
+		switch ck {
+		case "type":
+			assert.Equal(t, cv, string(issuesFilter.Type))
+		case "name":
+			assert.Equal(t, cv, issuesFilter.Name)
+		case "predicates":
+			for _, predicate := range issuesFilter.Predicates {
+				testFlattenWorkflowsIssuesFilterPredicate(t, v, predicate)
+			}
+		}
+	}
+}
+
+func testFlattenWorkflowsIssuesFilterPredicate(t *testing.T, v interface{}, predicate workflows.AiWorkflowsPredicate) {
+	for ck, cv := range v.(map[string]interface{}) {
+		switch ck {
+		case "attribute":
+			assert.Equal(t, cv, predicate.Attribute)
+		case "operator":
+			assert.Equal(t, cv, string(predicate.Operator))
+		case "values":
+			assert.Equal(t, cv, predicate.Values)
+		}
+	}
+}
+
+func testFlattenWorkflowsDestinationConfiguration(t *testing.T, v interface{}, configuration workflows.AiWorkflowsDestinationConfiguration) {
+	for _, v1 := range v.([]map[string]interface{}) {
+		for ck, cv := range v1 {
+			switch ck {
+			case "channel_id":
+				assert.Equal(t, cv, configuration.ChannelId)
+			case "name":
+				assert.Equal(t, cv, configuration.Name)
+			case "type":
+				assert.Equal(t, cv, string(configuration.Type))
+			}
+		}
+	}
+}
+
+func testFlattenWorkflowsEnrichment(t *testing.T, v interface{}, enrichment workflows.AiWorkflowsEnrichment) {
+	for _, v1 := range v.([]map[string]interface{}) {
+		for ck, cv := range v1 {
+			switch ck {
+			case "configurations":
+				for _, configuration := range enrichment.Configurations {
+					testFlattenWorkflowsEnrichmentConfiguration(t, cv, configuration)
+				}
+			case "name":
+				assert.Equal(t, cv, enrichment.Name)
+			case "type":
+				assert.Equal(t, cv, string(enrichment.Type))
+			}
+		}
+	}
+}
+
+func testFlattenWorkflowsEnrichmentConfiguration(t *testing.T, v interface{}, configuration ai.AiWorkflowsConfiguration) {
+	for _, v1 := range v.([]map[string]interface{}) {
+		for ck, cv := range v1 {
+			switch ck {
+			case "query":
+				assert.Equal(t, cv, configuration.Query)
+			}
+		}
+	}
+}
