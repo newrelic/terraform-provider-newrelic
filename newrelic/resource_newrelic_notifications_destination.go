@@ -162,6 +162,14 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
+	fmt.Print("\n\n **************************** \n")
+	fmt.Printf("\n READ:  %+v \n", destinationResponse.Entities)
+	fmt.Print("\n **************************** \n\n")
+
+	if destinationResponse == nil || len(destinationResponse.Entities) == 0 {
+		return diag.FromErr(fmt.Errorf("[ERROR] notification destination response is empty"))
+	}
+
 	errors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
 	if len(errors) > 0 {
 		return errors

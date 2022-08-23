@@ -196,11 +196,17 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return err
 	}
 
-	if err := d.Set("auth", flattenNotificationDestinationAuth(&destination.Auth)); err != nil {
+	auth := flattenNotificationDestinationAuth(destination.Auth)
+
+	fmt.Print("\n\n **************************** \n")
+	fmt.Printf("\n flattenNotificationDestinationAuth:  %+v \n", auth)
+	fmt.Print("\n **************************** \n\n")
+
+	if err := d.Set("auth", auth); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting notification auth: %#v", err)
 	}
 
-	properties, propertiesErr := flattenNotificationDestinationProperties(&destination.Properties)
+	properties, propertiesErr := flattenNotificationDestinationProperties(destination.Properties)
 	if propertiesErr != nil {
 		return propertiesErr
 	}
@@ -212,27 +218,25 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 	return nil
 }
 
-func flattenNotificationDestinationProperties(p *[]notifications.AiNotificationsProperty) ([]map[string]interface{}, error) {
-	if p == nil {
-		return nil, nil
-	}
+func flattenNotificationDestinationProperties(p []notifications.AiNotificationsProperty) ([]map[string]interface{}, error) {
+	fmt.Print("\n\n **************************** \n")
+	fmt.Printf("\n properties IN:  %+v \n", p)
 
 	var properties []map[string]interface{}
 
-	for _, property := range *p {
-		if val, err := flattenNotificationDestinationProperty(&property); err == nil {
+	for _, property := range p {
+		if val, err := flattenNotificationDestinationProperty(property); err == nil {
 			properties = append(properties, val)
 		}
 	}
 
+	fmt.Printf("\n properties OUT:  %+v \n", properties)
+	fmt.Print("\n **************************** \n\n")
+
 	return properties, nil
 }
 
-func flattenNotificationDestinationProperty(p *notifications.AiNotificationsProperty) (map[string]interface{}, error) {
-	if p == nil {
-		return nil, nil
-	}
-
+func flattenNotificationDestinationProperty(p notifications.AiNotificationsProperty) (map[string]interface{}, error) {
 	propertyResult := make(map[string]interface{})
 
 	propertyResult["key"] = p.Key
@@ -249,21 +253,20 @@ func flattenNotificationDestinationProperty(p *notifications.AiNotificationsProp
 	return propertyResult, nil
 }
 
-func flattenNotificationDestinationAuth(a *ai.AiNotificationsAuth) interface{} {
-
+func flattenNotificationDestinationAuth(a ai.AiNotificationsAuth) interface{} {
 	authConfig := map[string]interface{}{
 		"authType": a.AuthType,
 	}
 
-	if authConfig["authType"] == notifications.AiNotificationsAuthTypeTypes.BASIC {
+	if notifications.AiNotificationsAuthType(a.AuthType) == notifications.AiNotificationsAuthTypeTypes.BASIC {
 		authConfig["user"] = a.User
 	}
 
-	if authConfig["authType"] == notifications.AiNotificationsAuthTypeTypes.TOKEN {
+	if notifications.AiNotificationsAuthType(a.AuthType) == notifications.AiNotificationsAuthTypeTypes.TOKEN {
 		authConfig["prefix"] = a.Prefix
 	}
 
-	if authConfig["authType"] == notifications.AiNotificationsAuthTypeTypes.OAUTH2 {
+	if notifications.AiNotificationsAuthType(a.AuthType) == notifications.AiNotificationsAuthTypeTypes.OAUTH2 {
 		authConfig["access_token_url"] = a.AccessTokenURL
 	}
 
