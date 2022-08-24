@@ -205,31 +205,3 @@ func flattenNotificationDestinationProperty(p notifications.AiNotificationsPrope
 
 	return propertyResult
 }
-
-func validateDestinationAuth(auth notifications.AiNotificationsCredentialsInput) error {
-	// if auth.Type == "" {
-	// 	return errors.New("auth type is required")
-	// }
-
-	// if auth.Type != notifications.AiNotificationsAuthTypeTypes.TOKEN && auth.Type != notifications.AiNotificationsAuthTypeTypes.BASIC {
-	// 	return errors.New("auth type must be token or basic")
-	// }
-
-	// if auth.Type == notifications.AiNotificationsAuthTypeTypes.TOKEN && (auth.Token.Token == "" || auth.Token.Prefix == "") {
-	// 	return errors.New("token and prefix are required when using token auth type")
-	// }
-
-	// if auth.Type == notifications.AiNotificationsAuthTypeTypes.BASIC && (auth.Basic.User == "" || auth.Basic.Password == "") {
-	// 	return errors.New("user and password are required when using basic auth type")
-	// }
-
-	return nil
-}
-
-func validatePagerDutyDestinationType(destinationType notifications.AiNotificationsDestinationType) bool {
-	return destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION || destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION
-}
-
-func validateEmailDestinationType(destinationType notifications.AiNotificationsDestinationType) bool {
-	return destinationType == notifications.AiNotificationsDestinationTypeTypes.EMAIL
-}
