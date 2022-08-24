@@ -7,7 +7,35 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+func notificationsPropertySchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"key": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Notification property key.",
+			},
+			"value": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Notification property value.",
+			},
+			"label": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Notification property label.",
+			},
+			"display_value": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Notification property display key.",
+			},
+		},
+	}
+}
 
 // Builds an array of typed notifications error interface based on the GraphQL `response.errors` array.
 func buildAiNotificationsErrors(errors []ai.AiNotificationsError) diag.Diagnostics {

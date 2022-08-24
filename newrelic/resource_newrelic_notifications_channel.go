@@ -51,36 +51,11 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(listValidNotificationsProductTypes(), false),
 				Description:  fmt.Sprintf("(Required) The type of the channel product. One of: (%s).", strings.Join(listValidNotificationsProductTypes(), ", ")),
 			},
-
-			// Optional
-			"properties": {
+			"property": {
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				Description: "Notification channel property type.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Notification channel property key.",
-						},
-						"value": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Notification channel property value.",
-						},
-						"label": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Notification channel property label.",
-						},
-						"display_value": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Notification channel property display key.",
-						},
-					},
-				},
+				Elem:        notificationsPropertySchema(),
 			},
 			"active": {
 				Type:        schema.TypeBool,

@@ -41,30 +41,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Description: "Notification destination property type.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Notification destination property key.",
-						},
-						"value": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Notification destination property value.",
-						},
-						"label": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Notification destination property label.",
-						},
-						"display_value": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Notification destination property display key.",
-						},
-					},
-				},
+				Elem:        notificationsPropertySchema(),
 			},
 
 			"auth_basic": {
