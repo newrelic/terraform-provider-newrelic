@@ -170,7 +170,6 @@ func TestFlattenMultiLocationSyntheticsCondition(t *testing.T) {
 				"violation_time_limit_seconds": 100,
 				"critical":                     criticalTerms,
 				"warning":                      warningTerms,
-				"entities":                     []string{"one", "two"},
 			},
 			Flattened: &alerts.MultiLocationSyntheticsCondition{
 				ID:                        503,
