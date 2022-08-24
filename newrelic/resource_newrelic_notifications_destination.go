@@ -25,6 +25,12 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The account ID under which to put the destination.",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -147,12 +153,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Indicates whether the destination is active.",
-			},
-			"account_id": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The account ID under which to put the destination.",
+				Default:     true,
 			},
 
 			// Computed

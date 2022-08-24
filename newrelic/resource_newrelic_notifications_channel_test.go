@@ -5,6 +5,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
@@ -15,89 +16,212 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestNewRelicNotificationChannelWebhook_Basic(t *testing.T) {
-	t.Skip("Skipping TestNewRelicNotificationChannelWebhook_Basic.  AWAITING FINAL IMPLEMENTATION!")
-
-	resourceName := "newrelic_notification_channel.test_foo"
+func TestNewRelicNotificationChannel_Webhook(t *testing.T) {
+	resourceName := "newrelic_notification_channel.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
-	destinationId := "4756c466-c29f-4f89-9cb4-382cabfcef61"
+	channelPropsAttr := `property {
+		key = "payload"
+		value = "{\n\t\"id\": \"test\"\n}"
+		label = "Payload Template"
+	}
+
+	property {
+		key = "url"
+		value = "https://webhook.site/"
+	}
+	`
+	destinationPropsAttr := `property {
+		key = "url"
+		value = "https://webhook.site/"
+	}
+	`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicNotificationChannelDestroy,
 		Steps: []resource.TestStep{
-			// Test: Create
+			// Create
 			{
-				Config: testNewRelicNotificationChannelConfigByType(rName, "WEBHOOK", "IINT", destinationId, `{
-					key = "payload"
-					value = "{\n\t\"id\": \"test\"\n}"
-					label = "Payload Template"
-				}`),
+				Config: testNewRelicNotificationChannelConfig(
+					testAccountID,
+					rName,
+					string(notifications.AiNotificationsChannelTypeTypes.WEBHOOK),
+					channelPropsAttr,
+					destinationPropsAttr,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationChannelExists(resourceName),
 				),
 			},
-			// Test: Update
+			// Update
 			{
-				Config: testNewRelicNotificationChannelConfigByType(rName, "WEBHOOK", "IINT", destinationId, `{
-					key = "payload"
-					value = "{\n\t\"id\": \"test-update\"\n}"
-					label = "Payload Template Update"
-				}`),
+				Config: testNewRelicNotificationChannelConfig(
+					testAccountID,
+					fmt.Sprintf("%s-updated", rName),
+					string(notifications.AiNotificationsChannelTypeTypes.WEBHOOK),
+					channelPropsAttr,
+					destinationPropsAttr,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationChannelExists(resourceName),
 				),
 			},
-			// Test: Import
+			// Import
 			{
+				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ResourceName:      resourceName,
 			},
 		},
 	})
 }
 
-func TestNewRelicNotificationChannelEmail_Basic(t *testing.T) {
-	t.Skip("Skipping TestNewRelicNotificationChannelWebhook_Basic. AWAITING FINAL IMPLEMENTATION!")
-
-	resourceName := "newrelic_notification_channel.test_foo"
+func TestNewRelicNotificationChannel_WebhookPropertyError(t *testing.T) {
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
-	destinationID := "d112de81-46be-4b52-959d-945448a64cc1"
+	channelPropsAttr := `property {
+		key = "payload"
+		value = "{\n\t\"id\": \"test\"\n}"
+		label = "Payload Template"
+	}
+
+	# Test error for missing property key = url
+	`
+	destinationPropsAttr := `property {
+		key = "url"
+		value = "https://webhook.site/"
+	}
+	`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicNotificationChannelDestroy,
 		Steps: []resource.TestStep{
-			// Test: Create
+			// Create
 			{
-				Config: testNewRelicNotificationChannelConfigByType(rName, "EMAIL", "IINT", destinationID, ""),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationChannelExists(resourceName),
+				Config: testNewRelicNotificationChannelConfig(
+					testAccountID,
+					rName,
+					string(notifications.AiNotificationsChannelTypeTypes.WEBHOOK),
+					channelPropsAttr,
+					destinationPropsAttr,
 				),
-			},
-			// Test: Update
-			{
-				Config: testNewRelicNotificationChannelConfigByType(rName, "EMAIL", "IINT", destinationID, `{
-					key = "subject"
-					value = "Update: {{ issueTitle }}"
-				}`),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationChannelExists(resourceName),
-				),
-			},
-			// Test: Import
-			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      resourceName,
+				ExpectError: regexp.MustCompile(`Missing mandatory field: "Domain"`),
 			},
 		},
 	})
+}
+
+func TestNewRelicNotificationChannel_Email(t *testing.T) {
+	resourceName := "newrelic_notification_channel.foo"
+	rand := acctest.RandString(6)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	channelPropsAttr := `property {
+		key = "email"
+		value = "no-reply+terraformtest@newrelic.com"
+	}`
+	destinationPropsAttr := `property {
+		key = "subject"
+		value = "some subject"
+	}`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationChannelDestroy,
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: testNewRelicNotificationChannelConfig(
+					testAccountID,
+					rName,
+					string(notifications.AiNotificationsChannelTypeTypes.EMAIL),
+					channelPropsAttr,
+					destinationPropsAttr,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationChannelExists(resourceName),
+				),
+			},
+			// Update
+			{
+				Config: testNewRelicNotificationChannelConfig(
+					testAccountID,
+					fmt.Sprintf("%s-updated", rName),
+					string(notifications.AiNotificationsChannelTypeTypes.EMAIL),
+					channelPropsAttr,
+					destinationPropsAttr,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationChannelExists(resourceName),
+				),
+			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestNewRelicNotificationChannel_EmailPropertyError(t *testing.T) {
+	rand := acctest.RandString(6)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	propsAttr := `property {
+		key = "invalid-for-email"
+		value = "email-error-test"
+	}`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationChannelDestroy,
+		Steps: []resource.TestStep{
+			// Test error scenario
+			{
+				Config: testNewRelicNotificationChannelConfig(
+					testAccountID,
+					rName,
+					string(notifications.AiNotificationsChannelTypeTypes.EMAIL),
+					propsAttr,
+					propsAttr,
+				),
+				ExpectError: regexp.MustCompile(`Missing mandatory field: "Email"`),
+			},
+		},
+	})
+}
+
+func testNewRelicNotificationChannelConfig(accountID int, name string, notificationType string, channelProps string, destinationProps string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "foo" {
+	account_id = %[1]d
+	name = "destination-%[2]s"
+	type = "%[3]s"
+
+	auth_basic {
+		user = "username"
+		password = "password"
+	}
+
+	%[4]s
+}
+
+resource "newrelic_notification_channel" "foo" {
+	account_id = newrelic_notification_destination.foo.account_id
+	name = "%[2]s"
+	type = "%[3]s"
+	product = "IINT"
+	destination_id = newrelic_notification_destination.foo.id
+
+	%[4]s
+}
+`, accountID, name, notificationType, channelProps, destinationProps)
 }
 
 func testAccNewRelicNotificationChannelDestroy(s *terraform.State) error {
@@ -124,29 +248,6 @@ func testAccNewRelicNotificationChannelDestroy(s *terraform.State) error {
 
 	}
 	return nil
-}
-
-func testNewRelicNotificationChannelConfigByType(name string, channelType string, product string, destinationId string, properties string) string {
-	if properties == "" {
-		return fmt.Sprintf(`
-		resource "newrelic_notification_channel" "test_foo" {
-			name = "%s"
-			type = "%s"
-			product = "%s"
-			destination_id = "%s"
-		}
-	`, name, channelType, product, destinationId)
-	}
-
-	return fmt.Sprintf(`
-		resource "newrelic_notification_channel" "test_foo" {
-			name = "%s"
-			type = "%s"
-			product = "%s"
-			destination_id = "%s"
-			properties %s
-		}
-	`, name, channelType, product, destinationId, properties)
 }
 
 func testAccCheckNewRelicNotificationChannelExists(n string) resource.TestCheckFunc {

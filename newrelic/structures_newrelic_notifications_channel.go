@@ -1,105 +1,62 @@
 package newrelic
 
 import (
-	"errors"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 )
 
-func expandNotificationChannel(d *schema.ResourceData) (*notifications.AiNotificationsChannelInput, error) {
+func expandNotificationChannel(d *schema.ResourceData) notifications.AiNotificationsChannelInput {
 	channel := notifications.AiNotificationsChannelInput{
 		Name:          d.Get("name").(string),
 		DestinationId: d.Get("destination_id").(string),
 		Type:          notifications.AiNotificationsChannelType(d.Get("type").(string)),
 		Product:       notifications.AiNotificationsProduct(d.Get("product").(string)),
 	}
+	channel.Properties = expandNotificationChannelProperties(d.Get("property").(*schema.Set).List())
 
-	properties, propertiesOk := d.GetOk("properties")
-	isEmailType := validateEmailChannelType(channel.Type)
-
-	if !propertiesOk && !isEmailType {
-		return nil, errors.New("notification channel requires a properties attribute")
-	}
-
-	if propertiesOk {
-		var destinationProperty map[string]interface{}
-
-		x := properties.([]interface{})
-
-		for _, property := range x {
-			destinationProperty = property.(map[string]interface{})
-			if val, err := expandNotificationChannelProperty(destinationProperty); err == nil {
-				channel.Properties = append(channel.Properties, *val)
-			}
-		}
-	} else if isEmailType {
-		channel.Properties = []notifications.AiNotificationsPropertyInput{{Key: "subject", Value: "{{ issueTitle }}"}} // Default subject
-	}
-
-	// Create terraform source property
-	terraformProperty := notifications.AiNotificationsPropertyInput{
-		Key:   "source",
-		Value: "terraform",
-		Label: "terraform-source-internal",
-	}
-	channel.Properties = append(channel.Properties, terraformProperty)
-
-	return &channel, nil
+	return channel
 }
 
-func expandNotificationChannelUpdate(d *schema.ResourceData) (*notifications.AiNotificationsChannelUpdate, error) {
+func expandNotificationChannelUpdate(d *schema.ResourceData) notifications.AiNotificationsChannelUpdate {
 	channel := notifications.AiNotificationsChannelUpdate{
 		Name:   d.Get("name").(string),
 		Active: d.Get("active").(bool),
 	}
-	channelType := notifications.AiNotificationsChannelType(d.Get("type").(string))
+	channel.Properties = expandNotificationDestinationProperties(d.Get("property").(*schema.Set).List())
 
-	properties, propertiesOk := d.GetOk("properties")
-	isEmailType := validateEmailChannelType(channelType)
-
-	if !propertiesOk && !isEmailType {
-		return nil, errors.New("notification channel requires a properties attribute")
-	}
-
-	if propertiesOk {
-		var destinationProperty map[string]interface{}
-
-		x := properties.([]interface{})
-
-		for _, property := range x {
-			destinationProperty = property.(map[string]interface{})
-			if val, err := expandNotificationChannelProperty(destinationProperty); err == nil {
-				channel.Properties = append(channel.Properties, *val)
-			}
-		}
-	} else if isEmailType {
-		channel.Properties = []notifications.AiNotificationsPropertyInput{{Key: "subject", Value: "{{ issueTitle }}"}} // Default subject
-	}
-
-	return &channel, nil
+	return channel
 }
 
-func expandNotificationChannelProperty(cfg map[string]interface{}) (*notifications.AiNotificationsPropertyInput, error) {
+func expandNotificationChannelProperties(properties []interface{}) []notifications.AiNotificationsPropertyInput {
+	props := []notifications.AiNotificationsPropertyInput{}
+
+	for _, p := range properties {
+		props = append(props, expandNotificationChannelProperty(p.(map[string]interface{})))
+	}
+
+	return props
+}
+
+func expandNotificationChannelProperty(cfg map[string]interface{}) notifications.AiNotificationsPropertyInput {
 	property := notifications.AiNotificationsPropertyInput{}
 
-	if propertyKey, ok := cfg["key"]; ok {
-		property.Key = propertyKey.(string)
+	if p, ok := cfg["key"]; ok {
+		property.Key = p.(string)
 	}
 
-	if propertyValue, ok := cfg["value"]; ok {
-		property.Value = propertyValue.(string)
+	if p, ok := cfg["value"]; ok {
+		property.Value = p.(string)
 	}
 
-	if propertyDisplayValue, ok := cfg["display_value"]; ok {
-		property.DisplayValue = propertyDisplayValue.(string)
+	if p, ok := cfg["display_value"]; ok {
+		property.DisplayValue = p.(string)
 	}
 
-	if propertyLabel, ok := cfg["label"]; ok {
-		property.Label = propertyLabel.(string)
+	if p, ok := cfg["label"]; ok {
+		property.Label = p.(string)
 	}
 
-	return &property, nil
+	return property
 }
 
 func flattenNotificationChannel(channel *notifications.AiNotificationsChannel, d *schema.ResourceData) error {
@@ -125,53 +82,44 @@ func flattenNotificationChannel(channel *notifications.AiNotificationsChannel, d
 		return err
 	}
 
-	properties, propertiesErr := flattenNotificationChannelProperties(&channel.Properties)
-	if propertiesErr != nil {
-		return propertiesErr
+	if err := d.Set("property", flattenNotificationChannelProperties(channel.Properties)); err != nil {
+		return err
 	}
 
-	if err := d.Set("properties", properties); err != nil {
+	if err := d.Set("account_id", channel.AccountID); err != nil {
+		return err
+	}
+
+	if err := d.Set("status", channel.Status); err != nil {
+		return err
+	}
+
+	if err := d.Set("active", channel.Active); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func flattenNotificationChannelProperties(p *[]notifications.AiNotificationsProperty) ([]map[string]interface{}, error) {
-	if p == nil {
-		return nil, nil
+func flattenNotificationChannelProperties(p []notifications.AiNotificationsProperty) []map[string]interface{} {
+	properties := []map[string]interface{}{}
+
+	for _, property := range p {
+		properties = append(properties, flattenNotificationChannelProperty(property))
 	}
 
-	var properties []map[string]interface{}
-
-	for _, property := range *p {
-		if val, err := flattenNotificationChannelProperty(&property); err == nil {
-			properties = append(properties, val)
-		}
-	}
-
-	return properties, nil
+	return properties
 }
 
-func flattenNotificationChannelProperty(p *notifications.AiNotificationsProperty) (map[string]interface{}, error) {
-	if p == nil {
-		return nil, nil
-	}
-
+func flattenNotificationChannelProperty(p notifications.AiNotificationsProperty) map[string]interface{} {
 	propertyResult := make(map[string]interface{})
 
 	propertyResult["key"] = p.Key
 	propertyResult["value"] = p.Value
+	propertyResult["display_value"] = p.DisplayValue
+	propertyResult["label"] = p.Label
 
-	if p.DisplayValue != "" {
-		propertyResult["display_value"] = p.DisplayValue
-	}
-
-	if p.Label != "" {
-		propertyResult["label"] = p.Label
-	}
-
-	return propertyResult, nil
+	return propertyResult
 }
 
 func validateEmailChannelType(channelType notifications.AiNotificationsChannelType) bool {
