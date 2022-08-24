@@ -28,7 +28,7 @@ func expandMultiLocationSyntheticsCondition(d *schema.ResourceData) (*alerts.Mul
 
 	var entities []string
 	for _, x := range d.Get("entities").([]interface{}) {
-		entities = append(entities, x.(string))
+		entities = append(entities, getMonitorID(x.(string)))
 	}
 
 	condition.Entities = entities
@@ -98,7 +98,6 @@ func flattenMultiLocationSyntheticsCondition(condition *alerts.MultiLocationSynt
 	_ = d.Set("runbook_url", condition.RunbookURL)
 	_ = d.Set("enabled", condition.Enabled)
 	_ = d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
-	_ = d.Set("entities", condition.Entities)
 	_ = d.Set("policy_id", policyID)
 
 	for _, term := range condition.Terms {

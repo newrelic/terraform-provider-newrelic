@@ -1,7 +1,9 @@
 package newrelic
 
 import (
+	"encoding/base64"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -224,7 +226,7 @@ func expandSyntheticsCustomHeaders(headers []interface{}) []synthetics.Synthetic
 	return output
 }
 
-//validation function to validate monitor period
+// validation function to validate monitor period
 func listValidSyntheticsMonitorPeriods() []string {
 	return []string{
 		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE),
@@ -239,7 +241,7 @@ func listValidSyntheticsMonitorPeriods() []string {
 	}
 }
 
-//validate func to validate monitor status
+// validate func to validate monitor status
 func listValidSyntheticsMonitorStatuses() []string {
 	return []string{
 		string(synthetics.SyntheticsMonitorStatusTypes.DISABLED),
@@ -274,6 +276,7 @@ func listValidSyntheticsScriptMonitorTypes() []string {
 type SyntheticsPublicLocation string
 
 // TODO: Move to newrelic-client-go
+//
 //nolint:revive
 var syntheticsPublicLocations = struct {
 	US_EAST_1      SyntheticsPublicLocation
@@ -365,4 +368,11 @@ func getPublicLocationsFromEntityTags(tags []entities.EntityTag) []string {
 	}
 
 	return out
+}
+
+func getMonitorID(monitorGUID string) string {
+	decodedGUID, _ := base64.RawStdEncoding.DecodeString(monitorGUID)
+	splitGUID := strings.Split(string(decodedGUID), "|")
+	monitorID := splitGUID[3]
+	return monitorID
 }

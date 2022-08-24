@@ -2,15 +2,12 @@ package newrelic
 
 import (
 	"context"
-	"encoding/base64"
-	"log"
-	"strconv"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"log"
+	"strconv"
 )
 
 func resourceNewRelicSyntheticsAlertCondition() *schema.Resource {
@@ -192,11 +189,4 @@ func resourceNewRelicSyntheticsAlertConditionDelete(ctx context.Context, d *sche
 	}
 
 	return nil
-}
-
-func getMonitorID(monitorGUID string) string {
-	decodedGUID, _ := base64.RawStdEncoding.DecodeString(monitorGUID)
-	splitGUID := strings.Split(string(decodedGUID), "|")
-	monitorID := splitGUID[3]
-	return monitorID
 }
