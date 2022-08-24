@@ -65,7 +65,7 @@ func resourceNewRelicEntityTags() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Second),
+			Create: schema.DefaultTimeout(20 * time.Second),
 		},
 	}
 }
@@ -314,7 +314,9 @@ func tagValuesExist(t *entities.TaggingTagInput, values []string) bool {
 
 func getTag(tags []*entities.TaggingTagInput, key string) *entities.TaggingTagInput {
 	for _, t := range tags {
+		log.Printf("[INFO] Checking tag %s compared to tag %s", t.Key, key)
 		if t.Key == key {
+			log.Printf("[INFO] All good! %s = %s", t.Key, key)
 			return t
 		}
 	}

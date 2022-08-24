@@ -67,6 +67,7 @@ resources compared to which endpoint is in use.
 | `newrelic_synthetics_monitor_script`                | Synthetics REST API     | `api_key`             |
 | `newrelic_synthetics_multilocation_alert_condition` | RESTv2                  | `api_key`             |
 | `newrelic_synthetics_secure_credential`             | Synthetics REST API     | `api_key`             |
+| `newrelic_workflow`                                 | NerdGraph               | `api_key`             |
 | `newrelic_workload`                                 | NerdGraph               | `api_key`             |
 
 ### Data Sources

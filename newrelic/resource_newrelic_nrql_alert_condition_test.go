@@ -496,6 +496,32 @@ func TestAccNewRelicNrqlAlertCondition_RevertToDeprecatedSinceValue(t *testing.T
 	})
 }
 
+// https://github.com/newrelic/terraform-provider-newrelic/issues/1900
+func TestAccNewRelicNrqlAlertCondition_StreamingMethodsDefaults(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create a condition without streaming methods
+			{
+				Config: testAccNewRelicNrqlAlertConditionStreamingMethodsDefaults(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Check no diff on re-apply
+			{
+				Config:             testAccNewRelicNrqlAlertConditionStreamingMethodsDefaults(rName),
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
 func TestAccNewRelicNrqlAlertCondition_StaticConditionOptionalValueFunction(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
@@ -873,6 +899,38 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	aggregation_timer = %[4]s
 }
 `, name, method, delay, timer)
+}
+
+func testAccNewRelicNrqlAlertConditionStreamingMethodsDefaults(
+	name string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+    name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+    policy_id                      = newrelic_alert_policy.foo.id
+    name                           = "tf-test-%[1]s"
+    description                    = "Test desc"
+    runbook_url                    = "REDACTED"
+    enabled                        = true
+    violation_time_limit_seconds   = 86400
+
+    critical {
+	    operator              = "above"
+	    threshold             = 80
+	    threshold_duration    = 5 * 60
+	    threshold_occurrences = "all"
+    }
+
+    nrql {
+        query = <<-EOT
+			SELECT count(*) FROM TestEvent
+		EOT
+	}
+}
+`, name)
 }
 
 func testAccNewRelicNrqlAlertConditionSinceValue(
