@@ -36,10 +36,11 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 			Description: "Capture a screenshot during job execution.",
 			Optional:    true,
 		},
-		"locations_private": {
-			Type:        schema.TypeSet,
-			Description: "",
-			Optional:    true,
+		"location_private": {
+			Type:         schema.TypeSet,
+			Description:  "",
+			Optional:     true,
+			AtLeastOneOf: []string{"location_private", "locations_public"},
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"guid": {
@@ -57,11 +58,12 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 			},
 		},
 		"locations_public": {
-			Type:        schema.TypeSet,
-			Elem:        &schema.Schema{Type: schema.TypeString},
-			MinItems:    1,
-			Optional:    true,
-			Description: "The public location(s) that the monitor will run jobs from.",
+			Type:         schema.TypeSet,
+			Elem:         &schema.Schema{Type: schema.TypeString},
+			MinItems:     1,
+			Optional:     true,
+			Description:  "The public location(s) that the monitor will run jobs from.",
+			AtLeastOneOf: []string{"location_private", "locations_public"},
 		},
 		"steps": {
 			Type:        schema.TypeList,

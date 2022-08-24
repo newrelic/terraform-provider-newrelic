@@ -28,11 +28,11 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 		simpleBrowserMonitorInput.AdvancedOptions.EnableScreenshotOnFailureAndScript = &e
 	}
 
-	if v, ok := d.GetOk("location_public"); ok {
+	if v, ok := d.GetOk("locations_public"); ok {
 		simpleBrowserMonitorInput.Locations.Public = expandStringSlice(v.(*schema.Set).List())
 	}
 
-	if v, ok := d.GetOk("location_private"); ok {
+	if v, ok := d.GetOk("locations_private"); ok {
 		simpleBrowserMonitorInput.Locations.Private = expandStringSlice(v.(*schema.Set).List())
 	}
 
@@ -78,11 +78,11 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 		simpleBrowserMonitorUpdateInput.Uri = v.(string)
 	}
 
-	if v, ok := d.GetOk("location_public"); ok {
+	if v, ok := d.GetOk("locations_public"); ok {
 		simpleBrowserMonitorUpdateInput.Locations.Public = expandStringSlice(v.(*schema.Set).List())
 	}
 
-	if v, ok := d.GetOk("location_private"); ok {
+	if v, ok := d.GetOk("locations_private"); ok {
 		simpleBrowserMonitorUpdateInput.Locations.Private = expandStringSlice(v.(*schema.Set).List())
 	}
 

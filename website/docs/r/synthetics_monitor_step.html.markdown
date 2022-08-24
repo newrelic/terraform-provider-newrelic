@@ -41,15 +41,15 @@ The following are the common arguments supported for `STEP` monitor:
 * `name` - (Required) The name for the monitor.
 * `uri` - (Required) The uri the monitor runs against.
 * `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. Exactly one of `locations_public` or `locations_private` is required.
-* `locations_private` - (Required) The location the monitor will run from. Exactly one of `locations_public` or `locations_private` is required. See [Nested locations_private blocks](#nested-locations-private-blocks) below for details.
+* `location_private` - (Required) The location the monitor will run from. Exactly one of `locations_public` or `locations_private` is required. See [Nested locations_private blocks](#nested-locations-private-blocks) below for details.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
 * `steps` - (Required) The steps that make up the script the monitor will run. See [Nested steps blocks](#nested-steps-blocks) below for details.
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
 
-### Nested `locations private` blocks
+### Nested `location private` blocks
 
-All nested `locations_private` blocks support the following common arguments:
+All nested `location_private` blocks support the following common arguments:
 
 * `guid` - (Required) The unique identifier for the Synthetics private location in New Relic.
 * `vse_password` - (Optional) The location's Verified Script Execution password, Only necessary if Verified Script Execution is enabled for the location.
@@ -87,7 +87,7 @@ resource "newrelic_synthetics_private_location" "private_location" {
 resource "newrelic_synthetics_step_monitor" "bar" {
   name = "step_monitor"
   uri  = "https://www.one.example.com"
-  locations_private {
+  location_private {
     guid         = "newrelic_synthetics_private_location.private_location.id"
     vse_password = secret
   }

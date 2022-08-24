@@ -45,8 +45,8 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
 					"period",
-					"location_public",
-					"location_private",
+					"locations_public",
+					"locations_private",
 					"status",
 					"validation_string",
 					"verify_ssl",
@@ -75,7 +75,7 @@ func testAccNewRelicSyntheticsSimpleMonitorConfig(name string, monitorType strin
 			validation_string	=	"success"
 			bypass_head_request	=	false
 			verify_ssl	=	false
-			location_public	=	["AP_SOUTH_1"]
+			locations_public	=	["AP_SOUTH_1"]
 			name	=	"%s"
 			period	=	"EVERY_MINUTE"
 			status	=	"ENABLED"
@@ -99,7 +99,7 @@ func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorTyp
 			validation_string	=	"succeeded"
 			bypass_head_request	=	false
 			verify_ssl	=	true
-			location_public	=	["AP_SOUTH_1","AP_EAST_1"]
+			locations_public	=	["AP_SOUTH_1","AP_EAST_1"]
 			name	=	"%s-updated"
 			period	=	"EVERY_5_MINUTES"
 			status	=	"DISABLED"
@@ -143,8 +143,8 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
 					"period",
-					"location_public",
-					"location_private",
+					"locations_public",
+					"locations_private",
 					"status",
 					"validation_string",
 					"verify_ssl",
@@ -165,14 +165,14 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorType string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_monitor" "bar" {
-		custom_header{
+		custom_header {
 			name	= "name"
 			value	= "simple_browser"
 		}
 		enable_screenshot_on_failure_and_script	=	true
 		validation_string	=	"success"
 		verify_ssl	=	true
-		location_public	=	["AP_SOUTH_1"]
+		locations_public	=	["AP_SOUTH_1"]
 		name	=	"%s"
 		period	=	"EVERY_MINUTE"
 		runtime_type_version	=	"100"
@@ -187,14 +187,14 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, monitorType string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_monitor" "bar" {
-			custom_header{
+			custom_header {
 				name  = "name"
 				value = "simple_browser"
 			}
 			enable_screenshot_on_failure_and_script	=	false
 			validation_string	=	"success"
 			verify_ssl	=	false
-			location_public	=	["AP_SOUTH_1","AP_EAST_1"]
+			locations_public	=	["AP_SOUTH_1","AP_EAST_1"]
 			name	=	"%s-Updated"
 			period	=	"EVERY_5_MINUTES"
 			runtime_type_version	=	"100"

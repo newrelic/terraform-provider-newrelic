@@ -25,7 +25,7 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 		input.Locations.Private = expandSyntheticsPrivateLocations(attr.(*schema.Set).List())
 	}
 
-	if v, ok := d.GetOk("location_public"); ok {
+	if v, ok := d.GetOk("locations_public"); ok {
 		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
 	}
 
@@ -60,7 +60,7 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &e
 	}
 
-	if v, ok := d.GetOk("location_public"); ok {
+	if v, ok := d.GetOk("locations_public"); ok {
 		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
 	}
 

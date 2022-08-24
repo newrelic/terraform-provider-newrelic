@@ -46,7 +46,7 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
 					"period",
-					"location_public",
+					"locations_public",
 					"location_private",
 					"status",
 					"runtime_type",
@@ -91,7 +91,7 @@ func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
 					"period",
-					"location_public",
+					"locations_public",
 					"location_private",
 					"status",
 					"runtime_type",
@@ -111,7 +111,7 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfig(name string, scriptMonitorT
 		resource "newrelic_synthetics_script_monitor" "foo" {
 			name	=	"%s"
 			type	=	"%s"
-			location_public	=	["AP_SOUTH_1"]
+			locations_public	=	["AP_SOUTH_1"]
 			period	=	"EVERY_HOUR"
 			status	=	"ENABLED"
 			script	=	"console.log('terraform integration test')"
@@ -129,7 +129,7 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "bar" {
 			enable_screenshot_on_failure_and_script	=	true
-			location_public	=	["AP_SOUTH_1"]
+			locations_public	=	["AP_SOUTH_1"]
 			name	=	"%[1]s"
 			period	=	"EVERY_HOUR"
 			runtime_type_version	=	"100"

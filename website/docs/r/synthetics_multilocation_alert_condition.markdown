@@ -16,24 +16,25 @@ Use this resource to create, update, and delete a New Relic Synthetics Location 
 
 ```hcl
 resource "newrelic_synthetics_multilocation_alert_condition" "example" {
-	policy_id = newrelic_alert_policy.example.id
+  policy_id = newrelic_alert_policy.example.id
 
   name                         = "Example condition"
   runbook_url                  = "https://example.com"
   enabled                      = true
   violation_time_limit_seconds = "3600"
 
-	entities = [
-		"<GUID_GOES_HERE>"
-	]
+  entities = [
+    "<GUID_GOES_HERE>"
+  ]
 
-	critical {
+  critical {
     threshold = 2
-	}
+  }
 
-	warning {
+  warning {
     threshold = 1
-	}
+  }
+}
 ```
 ## Argument Reference
 

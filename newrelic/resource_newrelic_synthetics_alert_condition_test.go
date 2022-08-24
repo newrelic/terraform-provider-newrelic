@@ -136,7 +136,7 @@ resource "newrelic_synthetics_monitor" "bar" {
 	type      = "SIMPLE"
 	period    = "EVERY_10_MINUTES"
 	status    = "DISABLED"
-	location_public = ["US_EAST_1"]
+	locations_public = ["US_EAST_1"]
 	uri       = "https://google.com"
 }
 
@@ -161,7 +161,7 @@ resource "newrelic_synthetics_monitor" "bar" {
 	type      = "SIMPLE"
 	period    = "EVERY_15_MINUTES"
 	status    = "DISABLED"
-	location_public = ["US_EAST_1"]
+	locations_public = ["US_EAST_1"]
 	uri       = "https://google.com"
 }
 

@@ -54,20 +54,20 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Optional:    true,
 				Description: "The URI for the monitor to hit.",
 			},
-			"location_public": {
+			"locations_public": {
 				Type:         schema.TypeSet,
 				Elem:         &schema.Schema{Type: schema.TypeString},
 				MinItems:     1,
 				Optional:     true,
-				AtLeastOneOf: []string{"location_public", "location_private"},
+				AtLeastOneOf: []string{"locations_public", "locations_private"},
 				Description:  "The locations in which this monitor should be run.",
 			},
-			"location_private": {
+			"locations_private": {
 				Type:         schema.TypeSet,
 				Elem:         &schema.Schema{Type: schema.TypeString},
 				MinItems:     1,
 				Optional:     true,
-				AtLeastOneOf: []string{"location_public", "location_private"},
+				AtLeastOneOf: []string{"locations_public", "locations_private"},
 				Description:  "The locations in which this monitor should be run.",
 			},
 			"status": {
@@ -220,8 +220,8 @@ func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreat
 	_ = d.Set("status", string(res.Monitor.Status))
 	_ = d.Set("period", string(res.Monitor.Period))
 	_ = d.Set("uri", res.Monitor.Uri)
-	_ = d.Set("location_public", res.Monitor.Locations.Public)
-	_ = d.Set("location_private", res.Monitor.Locations.Private)
+	_ = d.Set("locations_public", res.Monitor.Locations.Public)
+	_ = d.Set("locations_private", res.Monitor.Locations.Private)
 }
 
 func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -247,7 +247,7 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-//func to set output values in the read func.
+// func to set output values in the read func.
 func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
 	switch e := (*v).(type) {
 	case *entities.SyntheticMonitorEntity:
@@ -326,8 +326,8 @@ func setSimpleMonitorAttributesFromUpdate(res *synthetics.SyntheticsSimpleMonito
 	_ = d.Set("verify_ssl", res.Monitor.AdvancedOptions.UseTlsValidation)
 	_ = d.Set("treat_redirect_as_failure", res.Monitor.AdvancedOptions.RedirectIsFailure)
 	_ = d.Set("bypass_head_request", res.Monitor.AdvancedOptions.ShouldBypassHeadRequest)
-	_ = d.Set("location_public", res.Monitor.Locations.Public)
-	_ = d.Set("location_private", res.Monitor.Locations.Private)
+	_ = d.Set("locations_public", res.Monitor.Locations.Public)
+	_ = d.Set("locations_private", res.Monitor.Locations.Private)
 }
 
 func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowserMonitorUpdateMutationResult, d *schema.ResourceData) {
@@ -341,8 +341,8 @@ func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowse
 	_ = d.Set("runtime_type_version", string(res.Monitor.Runtime.RuntimeTypeVersion))
 	_ = d.Set("script_language", res.Monitor.Runtime.ScriptLanguage)
 	_ = d.Set("enable_screenshot_on_failure_and_script", res.Monitor.AdvancedOptions.EnableScreenshotOnFailureAndScript)
-	_ = d.Set("location_public", res.Monitor.Locations.Public)
-	_ = d.Set("location_private", res.Monitor.Locations.Private)
+	_ = d.Set("locations_public", res.Monitor.Locations.Public)
+	_ = d.Set("locations_private", res.Monitor.Locations.Private)
 }
 
 func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -35,9 +35,10 @@ func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 func syntheticsScriptMonitorLocationsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"location_private": {
-			Type:        schema.TypeSet,
-			Description: "",
-			Optional:    true, // Note: Optional
+			Type:         schema.TypeSet,
+			Description:  "",
+			Optional:     true, // Note: Optional
+			AtLeastOneOf: []string{"location_private", "locations_public"},
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"guid": {
@@ -54,12 +55,13 @@ func syntheticsScriptMonitorLocationsSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"location_public": {
-			Type:        schema.TypeSet,
-			Elem:        &schema.Schema{Type: schema.TypeString},
-			MinItems:    1,
-			Optional:    true,
-			Description: "The public location(s) that the monitor will run jobs from.",
+		"locations_public": {
+			Type:         schema.TypeSet,
+			Elem:         &schema.Schema{Type: schema.TypeString},
+			MinItems:     1,
+			Optional:     true,
+			Description:  "The public location(s) that the monitor will run jobs from.",
+			AtLeastOneOf: []string{"location_private", "locations_public"},
 		},
 	}
 }
@@ -221,7 +223,6 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"name": resp.Monitor.Name,
 			"guid": string(resp.Monitor.GUID),
-			// "type": string(SyntheticsMonitorTypes.SCRIPT_API),
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -242,7 +243,6 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"name": resp.Monitor.Name,
 			"guid": string(resp.Monitor.GUID),
-			// "type": string(SyntheticsMonitorTypes.SCRIPT_BROWSER),
 		})
 		if err != nil {
 			return diag.FromErr(err)

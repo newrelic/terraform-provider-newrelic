@@ -23,11 +23,11 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 		simpleMonitorInput.Uri = v.(string)
 	}
 
-	if v, ok := d.GetOk("location_public"); ok {
+	if v, ok := d.GetOk("locations_public"); ok {
 		simpleMonitorInput.Locations.Public = expandStringSlice(v.(*schema.Set).List())
 	}
 
-	if v, ok := d.GetOk("location_private"); ok {
+	if v, ok := d.GetOk("locations_private"); ok {
 		simpleMonitorInput.Locations.Private = expandStringSlice(v.(*schema.Set).List())
 	}
 
@@ -63,11 +63,11 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 	simpleMonitorUpdateInput.Status = inputBase.Status
 	simpleMonitorUpdateInput.Tags = inputBase.Tags
 
-	if v, ok := d.GetOk("location_public"); ok {
+	if v, ok := d.GetOk("locations_public"); ok {
 		simpleMonitorUpdateInput.Locations.Public = expandStringSlice(v.(*schema.Set).List())
 	}
 
-	if v, ok := d.GetOk("location_private"); ok {
+	if v, ok := d.GetOk("locations_private"); ok {
 		simpleMonitorUpdateInput.Locations.Private = expandStringSlice(v.(*schema.Set).List())
 	}
 

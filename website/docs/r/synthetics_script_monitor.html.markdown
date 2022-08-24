@@ -20,7 +20,7 @@ Use this resource to create update, and delete a Script API or Script Browser Sy
 resource "newrelic_synthetics_script_monitor" "monitor" {
   name                 = "monitor"
   type                 = "SCRIPT_API"
-  location_public      = ["AP_SOUTH_1", "AP_EAST_1"]
+  locations_public      = ["AP_SOUTH_1", "AP_EAST_1"]
   period               = "EVERY_6_HOURS"
   status               = "ENABLED"
   script               = "console.log('terraform integration test updated')"
@@ -40,7 +40,7 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
 ```hcl
 resource "newrelic_synthetics_script_monitor" "monitor" {
   enable_screenshot_on_failure_and_script = false
-  location_public                         = ["AP_SOUTH_1", "AP_EAST_1"]
+  locations_public                         = ["AP_SOUTH_1", "AP_EAST_1"]
   name                                    = "monitor"
   period                                  = "EVERY_HOUR"
   runtime_type_version                    = "100"
@@ -64,8 +64,8 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 * `account_id`- (Optional) The account in which the Synthetics monitor will be created.
 * `name` - (Required) The name for the monitor.
 * `type` - (Required) The plaintext representing the monitor script. Valid values are SCRIPT_BROWSER or SCRIPT_API
-* `location_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. Exactly one of either `locations_public` or `location_private` is required.
-* `location_private` - (Required) The location the monitor will run from. See [Nested location_private blocks](#nested-location-private-blocks) below for details. Exactly one of either `locations_public` or `location_private` is required.
+* `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. At least one of either `locations_public` or `location_private` is required.
+* `location_private` - (Required) The location the monitor will run from. See [Nested location_private blocks](#nested-location-private-blocks) below for details. At least one of either `locations_public` or `location_private` is required.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `runtime_type` - (Required) The runtime that the monitor will use to run jobs.
 * `runtime_type_version` - (Required) The specific version of the runtime type selected.

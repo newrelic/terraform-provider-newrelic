@@ -19,7 +19,7 @@ func buildSyntheticsScriptAPIMonitorInput(d *schema.ResourceData) synthetics.Syn
 	if attr, ok := d.GetOk("location_private"); ok {
 		input.Locations.Private = expandSyntheticsPrivateLocations(attr.(*schema.Set).List())
 	}
-	if attr, ok := d.GetOk("location_public"); ok {
+	if attr, ok := d.GetOk("locations_public"); ok {
 		input.Locations.Public = expandSyntheticsPublicLocations(attr.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("script_language"); ok {
@@ -48,7 +48,7 @@ func buildSyntheticsScriptAPIMonitorUpdateInput(d *schema.ResourceData) syntheti
 	if v, ok := d.GetOk("location_private"); ok {
 		input.Locations.Private = expandSyntheticsPrivateLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("location_public"); ok {
+	if v, ok := d.GetOk("locations_public"); ok {
 		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("script_language"); ok {
