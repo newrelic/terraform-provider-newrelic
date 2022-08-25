@@ -62,8 +62,6 @@ func expandWorkflow(d *schema.ResourceData) (*workflows.AiWorkflowsCreateWorkflo
 		}
 
 		workflow.Enrichments = e
-	} else {
-		workflow.Enrichments = nil
 	}
 
 	return &workflow, nil

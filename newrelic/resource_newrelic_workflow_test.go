@@ -16,7 +16,7 @@ import (
 func TestNewRelicWorkflow_Basic(t *testing.T) {
 	// t.Skip("Skipping TestNewRelicWorkflow_Basic.  AWAITING FINAL IMPLEMENTATION!")
 
-	resourceName := "newrelic_workflow"
+	resourceName := "newrelic_workflow.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
 	// enrichments := `{
@@ -36,7 +36,7 @@ func TestNewRelicWorkflow_Basic(t *testing.T) {
 
 			// Test: Create workflow
 			{
-				Config: testAccNewRelicWorkflowConfiguration(rName),
+				Config: testAccNewRelicWorkflowConfiguration(testAccountID, rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
@@ -58,6 +58,73 @@ func TestNewRelicWorkflow_Basic(t *testing.T) {
 	})
 }
 
+func testAccNewRelicWorkflowConfiguration(accountID int, name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "foo" {
+  account_id = %[1]d
+  name = "tf-test-destination"
+  type = "WEBHOOK"
+
+  property {
+    key   = "url"
+    value = "https://webhook.site/"
+  }
+
+  auth_basic {
+    user     = "username"
+    password = "password"
+  }
+}
+
+resource "newrelic_notification_channel" "foo" {
+  account_id     = newrelic_notification_destination.foo.account_id
+  name           = "webhook-example"
+  type           = "WEBHOOK"
+  product        = "IINT"
+  destination_id = newrelic_notification_destination.foo.id
+
+  property {
+    key   = "payload"
+    value = "{\n\t\"name\": \"foo\"\n}"
+    label = "Payload Template"
+  }
+}
+
+resource "newrelic_workflow" "foo" {
+  account_id            = newrelic_notification_destination.foo.account_id
+  name                  = "%[2]s"
+  enrichments_enabled   = true
+  destinations_enabled  = true
+  workflow_enabled      = true
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+
+  issues_filter {
+    name = "filter-name"
+    type = "FILTER"
+
+    predicates {
+      attribute = "source"
+      operator  = "EQUAL"
+      values    = ["newrelic", "pagerduty"]
+    }
+  }
+
+  enrichments {
+    nrql {
+      name = "Log"
+      configurations {
+        query = "SELECT count(*) FROM Log"
+      }
+    }
+  }
+
+  destination_configuration {
+    channel_id = newrelic_notification_channel.foo.id
+  }
+}
+`, accountID, name)
+}
+
 func testAccNewRelicWorkflowDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -71,108 +138,17 @@ func testAccNewRelicWorkflowDestroy(s *terraform.State) error {
 			ID: r.Primary.ID,
 		}
 
-		_, err := client.Workflows.GetWorkflows(testAccountID, "", filters)
-		if err == nil {
+		resp, err := client.Workflows.GetWorkflows(testAccountID, "", filters)
+		if len(resp.Entities) > 0 {
 			return fmt.Errorf("workflow still exists")
+		}
+
+		if err != nil {
+			return err
 		}
 
 	}
 	return nil
-}
-
-func testAccNewRelicWorkflowConfiguration(name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_notification_destination" "foo" {
-	name = "tf-test-destination"
-	type = "WEBHOOK"
-
-	properties {
-		key   = "url"
-		value = "https://webhook.site/"
-	}
-
-	auth = {
-		type     = "BASIC"
-		user     = "username"
-		password = "password"
-	}
-}
-
-resource "newrelic_notification_channel" "foo" {
-	name           = "webhook-example"
-	type           = "WEBHOOK"
-	product        = "IINT"
-	destination_id = newrelic_notification_destination.foo.id
-
-	properties {
-		key   = "payload"
-		value = "{\n\t\"name\": \"foo\"\n}"
-		label = "Payload Template"
-	}
-}
-
-resource "newrelic_workflow" "foo" {
-	name                  = "%s"
-	enrichments_enabled   = false
-	destinations_enabled  = true
-	workflow_enabled      = true
-	muting_rules_handling = "NOTIFY_ALL_ISSUES"
-
-	issues_filter {
-		name = "filter-name"
-		type = "FILTER"
-
-		predicates {
-			attribute = "source"
-			operator  = "EQUAL"
-			values    = ["newrelic", "pagerduty"]
-		}
-	}
-
-	destination_configuration {
-		channel_id = newrelic_notification_channel.foo.id
-	}
-}
-`, name)
-}
-
-func testNewRelicWorkflowConfigByType(name string, enrichments_enabled string, destinations_enabled string, workflow_enabled string, muting_rules_handling string, enrichments string, issuesFilter string, destinationConfigurations string) string {
-	if enrichments == "" {
-		return fmt.Sprintf(`
-		resource "newrelic_workflow" "test-workflow" {
-			name = "%s"
-			enrichments_enabled = "%s"
-			destinations_enabled = "%s"
-			workflow_enabled = "%s"
-			muting_rules_handling %s
-			issues_filter = {
-				%s
-			}
-			destination_configurations {
-				%s
-			}
-		}
-	`, name, enrichments_enabled, destinations_enabled, workflow_enabled, muting_rules_handling, issuesFilter, destinationConfigurations)
-	}
-
-	return fmt.Sprintf(`
-		resource "newrelic_workflow" "test-workflow" {
-			name = "%s"
-			enrichments_enabled = "%s"
-			destinations_enabled = "%s"
-			workflow_enabled = "%s"
-			muting_rules_handling %s
-			enrichments {
-				%s
-			}
-			issues_filter = {
-				%s
-			}
-			destination_configurations {
-				%s
-			}
-		}
-	`, name, enrichments_enabled, destinations_enabled, workflow_enabled, muting_rules_handling, enrichments, issuesFilter, destinationConfigurations)
 }
 
 func testAccCheckNewRelicWorkflowExists(n string) resource.TestCheckFunc {

@@ -140,7 +140,7 @@ func resourceNewRelicWorkflow() *schema.Resource {
 			"enrichments": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Workflow's destination configuration.",
+				Description: "Enrichments can give additional context on alert notifications by adding NRQL query results to them.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"nrql": {
