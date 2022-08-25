@@ -61,7 +61,9 @@ func resourceNewRelicWorkflow() *schema.Resource {
 			"issues_filter": {
 				Type:        schema.TypeSet,
 				Required:    true,
-				Description: "Workflow's destination configuration.",
+				Description: "",
+				MaxItems:    1,
+				MinItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						// Required
@@ -81,7 +83,7 @@ func resourceNewRelicWorkflow() *schema.Resource {
 						"predicates": {
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "Workflow's destination configuration.",
+							Description: "",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"attribute": {
@@ -140,6 +142,8 @@ func resourceNewRelicWorkflow() *schema.Resource {
 			"enrichments": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				MaxItems:    1,
+				MinItems:    1,
 				Description: "Enrichments can give additional context on alert notifications by adding NRQL query results to them.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

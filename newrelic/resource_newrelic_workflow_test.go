@@ -14,19 +14,9 @@ import (
 )
 
 func TestNewRelicWorkflow_Basic(t *testing.T) {
-	// t.Skip("Skipping TestNewRelicWorkflow_Basic.  AWAITING FINAL IMPLEMENTATION!")
-
 	resourceName := "newrelic_workflow.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
-	// enrichments := `{
-	// 					nrql {
-	// 					  name = "Log"
-	// 					  configurations {
-	// 					   query = "SELECT count(*) FROM Log"
-	// 					  }
-	// 					}
-	// 				}`
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -41,13 +31,13 @@ func TestNewRelicWorkflow_Basic(t *testing.T) {
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
 			},
-			// // Test: Update
-			// {
-			// 	Config: testAccNewRelicWorkflowConfiguration(rName),
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		testAccCheckNewRelicWorkflowExists(resourceName),
-			// 	),
-			// },
+			// Test: Update
+			{
+				Config: testAccNewRelicWorkflowConfiguration(testAccountID, fmt.Sprintf("%s-updated", rName)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
 			// Test: Import
 			// {
 			// 	ImportState:       true,

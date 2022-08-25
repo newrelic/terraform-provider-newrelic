@@ -1,7 +1,6 @@
 package newrelic
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,53 +17,126 @@ func expandWorkflow(d *schema.ResourceData) (*workflows.AiWorkflowsCreateWorkflo
 		MutingRulesHandling: workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
 	}
 
-	destinationConfigurations, destinationConfigurationsOk := d.GetOk("destination_configuration")
-
-	if !destinationConfigurationsOk {
-		return nil, errors.New("workflow requires a destination configurations attribute")
-	}
-
-	if destinationConfigurationsOk {
-		var destination map[string]interface{}
-
-		x := destinationConfigurations.(*schema.Set).List()
-
-		for _, destinationConfiguration := range x {
-			destination = destinationConfiguration.(map[string]interface{})
-
-			if val, err := expandWorkflowDestinationConfiguration(destination); err == nil {
-				workflow.DestinationConfigurations = append(workflow.DestinationConfigurations, *val)
-			}
-		}
-	}
-
-	issuesFilter, issuesFilterOk := d.GetOk("issues_filter")
-
-	if !issuesFilterOk {
-		return nil, errors.New("workflow requires a issues filter attribute")
-	}
-
-	if issuesFilterOk {
-		f, err := expandWorkflowsIssuesFilter(issuesFilter.(*schema.Set).List())
-		if err != nil {
-			return nil, err
-		}
-
-		workflow.IssuesFilter = f
-	}
+	workflow.DestinationConfigurations = expandWorkflowDestinationConfigurations(d.Get("destination_configuration").(*schema.Set).List())
+	workflow.IssuesFilter = expandWorkflowIssuesFilter(d.Get("issues_filter").(*schema.Set).List())
 
 	enrichments, enrichmentsOk := d.GetOk("enrichments")
-
 	if enrichmentsOk {
-		e, err := expandWorkflowsEnrichments(enrichments.(*schema.Set).List())
-		if err != nil {
-			return nil, err
-		}
-
-		workflow.Enrichments = e
+		workflow.Enrichments = expandWorkflowEnrichments(enrichments.(*schema.Set).List())
 	}
 
 	return &workflow, nil
+}
+
+func expandWorkflowEnrichments(enrichments []interface{}) *workflows.AiWorkflowsEnrichmentsInput {
+	input := workflows.AiWorkflowsEnrichmentsInput{}
+
+	if len(enrichments) != 1 {
+		return &input
+	}
+
+	richments := enrichments[0].(map[string]interface{})
+	nrql := richments["nrql"].([]interface{})
+	input.NRQL = expandWorkflowNrqls(nrql)
+
+	return &input
+}
+
+func expandWorkflowNrqls(nrqls []interface{}) []workflows.AiWorkflowsNRQLEnrichmentInput {
+	input := []workflows.AiWorkflowsNRQLEnrichmentInput{}
+
+	for _, n := range nrqls {
+		input = append(input, expandWorkflowNrql(n.(map[string]interface{})))
+	}
+
+	return input
+}
+
+func expandWorkflowNrql(nrqlConfig map[string]interface{}) workflows.AiWorkflowsNRQLEnrichmentInput {
+	return workflows.AiWorkflowsNRQLEnrichmentInput{
+		Name:          nrqlConfig["name"].(string),
+		Configuration: expandWorkflowEnrichmentNrqlConfigurations(nrqlConfig["configurations"].([]interface{})),
+	}
+}
+
+func expandWorkflowEnrichmentNrqlConfigurations(nrqlConfigs []interface{}) []workflows.AiWorkflowsNRQLConfigurationInput {
+	input := []workflows.AiWorkflowsNRQLConfigurationInput{}
+
+	for _, n := range nrqlConfigs {
+		input = append(input, expandWorkflowConfiguration(n.(map[string]interface{})))
+	}
+
+	return input
+}
+
+func expandWorkflowConfiguration(cfg map[string]interface{}) workflows.AiWorkflowsNRQLConfigurationInput {
+	return workflows.AiWorkflowsNRQLConfigurationInput{
+		Query: cfg["query"].(string),
+	}
+}
+
+func expandWorkflowDestinationConfigurations(destinationConfigurations []interface{}) []workflows.AiWorkflowsDestinationConfigurationInput {
+	input := []workflows.AiWorkflowsDestinationConfigurationInput{}
+
+	for _, d := range destinationConfigurations {
+		input = append(input, expandWorkflowDestinationConfiguration(d.(map[string]interface{})))
+	}
+
+	return input
+}
+
+func expandWorkflowDestinationConfiguration(cfg map[string]interface{}) workflows.AiWorkflowsDestinationConfigurationInput {
+	destinationConfigurationInput := workflows.AiWorkflowsDestinationConfigurationInput{}
+
+	if channelID, ok := cfg["channel_id"]; ok {
+		destinationConfigurationInput.ChannelId = channelID.(string)
+	}
+
+	return destinationConfigurationInput
+}
+
+func expandWorkflowIssuesFilter(issuesFilter []interface{}) workflows.AiWorkflowsFilterInput {
+	if len(issuesFilter) == 1 {
+		filter := issuesFilter[0].(map[string]interface{})
+		predicates := []workflows.AiWorkflowsPredicateInput{}
+
+		if p, ok := filter["predicates"]; ok {
+			predicates = expandWorkflowIssuePredicates(p.([]interface{}))
+		}
+
+		return workflows.AiWorkflowsFilterInput{
+			Name:       filter["name"].(string),
+			Type:       workflows.AiWorkflowsFilterType(filter["type"].(string)),
+			Predicates: predicates,
+		}
+	}
+
+	return workflows.AiWorkflowsFilterInput{}
+}
+
+func expandWorkflowIssuePredicates(predicates []interface{}) []workflows.AiWorkflowsPredicateInput {
+	input := []workflows.AiWorkflowsPredicateInput{}
+
+	for _, p := range predicates {
+		input = append(input, expandWorkflowIssuePredicate(p.(map[string]interface{})))
+	}
+
+	return input
+}
+
+func expandWorkflowIssuePredicate(predicate map[string]interface{}) workflows.AiWorkflowsPredicateInput {
+	var valuesList []string
+
+	for _, v := range predicate["values"].([]interface{}) {
+		vInput := v.(string)
+		valuesList = append(valuesList, vInput)
+	}
+
+	return workflows.AiWorkflowsPredicateInput{
+		Attribute: predicate["attribute"].(string),
+		Operator:  workflows.AiWorkflowsOperator(predicate["operator"].(string)),
+		Values:    valuesList,
+	}
 }
 
 func expandWorkflowUpdate(d *schema.ResourceData) (*workflows.AiWorkflowsUpdateWorkflowInput, error) {
@@ -77,47 +149,10 @@ func expandWorkflowUpdate(d *schema.ResourceData) (*workflows.AiWorkflowsUpdateW
 		MutingRulesHandling: workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
 	}
 
-	destinationConfigurations, destinationConfigurationsOk := d.GetOk("destination_configuration")
-
-	if !destinationConfigurationsOk {
-		return nil, errors.New("workflow requires a destination configurations attribute")
-	}
-
-	if destinationConfigurationsOk {
-		var destination map[string]interface{}
-
-		x := destinationConfigurations.([]interface{})
-
-		for _, destinationConfiguration := range x {
-			destination = destinationConfiguration.(map[string]interface{})
-
-			if val, err := expandWorkflowDestinationConfiguration(destination); err == nil {
-				workflow.DestinationConfigurations = append(workflow.DestinationConfigurations, *val)
-			}
-		}
-	}
-
-	issuesFilter, issuesFilterOk := d.GetOk("issues_filter")
-
-	if !issuesFilterOk {
-		return nil, errors.New("workflow requires a issues filter attribute")
-	}
-
-	if issuesFilterOk {
-		f, err := expandWorkflowsUpdateIssuesFilter(issuesFilter.(*schema.Set).List())
-		if err != nil {
-			return nil, err
-		}
-
-		workflow.IssuesFilter = f
-	}
+	workflow.DestinationConfigurations = expandWorkflowDestinationConfigurations(d.Get("destination_configuration").(*schema.Set).List())
+	workflow.IssuesFilter = expandWorkflowUpdateIssuesFilter(d.Get("issues_filter").(*schema.Set).List())
 
 	enrichments, enrichmentsOk := d.GetOk("enrichments")
-
-	if !enrichmentsOk {
-		return nil, errors.New("workflow requires a enrichments attribute")
-	}
-
 	if enrichmentsOk {
 		e, err := expandWorkflowsUpdateEnrichments(enrichments.(*schema.Set).List())
 		if err != nil {
@@ -130,130 +165,17 @@ func expandWorkflowUpdate(d *schema.ResourceData) (*workflows.AiWorkflowsUpdateW
 	return &workflow, nil
 }
 
-func expandWorkflowDestinationConfiguration(cfg map[string]interface{}) (*workflows.AiWorkflowsDestinationConfigurationInput, error) {
-	destinationConfigurationInput := workflows.AiWorkflowsDestinationConfigurationInput{}
+func expandWorkflowUpdateIssuesFilter(issuesFilter []interface{}) workflows.AiWorkflowsUpdatedFilterInput {
+	if len(issuesFilter) == 1 {
+		filter := issuesFilter[0].(map[string]interface{})
 
-	if channelID, ok := cfg["channel_id"]; ok {
-		destinationConfigurationInput.ChannelId = channelID.(string)
-	}
-
-	return &destinationConfigurationInput, nil
-}
-
-func expandWorkflowsIssuesFilter(issuesFilterSet []interface{}) (workflows.AiWorkflowsFilterInput, error) {
-	issuesFilter := make([]workflows.AiWorkflowsFilterInput, len(issuesFilterSet))
-
-	issuesFilterConfig := issuesFilterSet[0]
-	cfg := issuesFilterConfig.(map[string]interface{})
-
-	if name, ok := cfg["name"]; ok {
-		issuesFilter[0].Name = name.(string)
-	}
-
-	if filterType, ok := cfg["type"]; ok {
-		issuesFilter[0].Type = workflows.AiWorkflowsFilterType(filterType.(string))
-	}
-
-	if predicates, ok := cfg["predicates"]; ok {
-		var predicateInput map[string]interface{}
-
-		x := predicates.([]interface{})
-
-		for _, predicate := range x {
-			predicateInput = predicate.(map[string]interface{})
-
-			if val, err := expandWorkflowPredicate(predicateInput); err == nil {
-				issuesFilter[0].Predicates = append(issuesFilter[0].Predicates, *val)
-			}
+		return workflows.AiWorkflowsUpdatedFilterInput{
+			ID:          filter["filter_id"].(string),
+			FilterInput: expandWorkflowIssuesFilter(issuesFilter),
 		}
 	}
 
-	return issuesFilter[0], nil
-}
-
-func expandWorkflowsUpdateIssuesFilter(issuesFilterSet []interface{}) (workflows.AiWorkflowsUpdatedFilterInput, error) {
-	issuesFilter := make([]workflows.AiWorkflowsUpdatedFilterInput, len(issuesFilterSet))
-
-	issuesFilterConfig := issuesFilterSet[0]
-	cfg := issuesFilterConfig.(map[string]interface{})
-
-	if id, ok := cfg["filter_id"]; ok {
-		issuesFilter[0].ID = id.(string)
-	}
-
-	if name, ok := cfg["name"]; ok {
-		issuesFilter[0].FilterInput.Name = name.(string)
-	}
-
-	if filterType, ok := cfg["type"]; ok {
-		issuesFilter[0].FilterInput.Type = workflows.AiWorkflowsFilterType(filterType.(string))
-	}
-
-	if predicates, ok := cfg["predicates"]; ok {
-		var predicateInput map[string]interface{}
-
-		x := predicates.([]interface{})
-
-		for _, predicate := range x {
-			predicateInput = predicate.(map[string]interface{})
-
-			if val, err := expandWorkflowPredicate(predicateInput); err == nil {
-				issuesFilter[0].FilterInput.Predicates = append(issuesFilter[0].FilterInput.Predicates, *val)
-			}
-		}
-	}
-
-	return issuesFilter[0], nil
-}
-
-func expandWorkflowPredicate(cfg map[string]interface{}) (*workflows.AiWorkflowsPredicateInput, error) {
-	predicateInput := workflows.AiWorkflowsPredicateInput{}
-
-	if attribute, ok := cfg["attribute"]; ok {
-		predicateInput.Attribute = attribute.(string)
-	}
-
-	if operator, ok := cfg["operator"]; ok {
-		predicateInput.Operator = workflows.AiWorkflowsOperator(operator.(string))
-	}
-
-	if values, ok := cfg["values"]; ok {
-		var valuesList []string
-
-		x := values.([]interface{})
-
-		for _, v := range x {
-			vInput := v.(string)
-			valuesList = append(valuesList, vInput)
-		}
-
-		predicateInput.Values = valuesList
-	}
-
-	return &predicateInput, nil
-}
-
-func expandWorkflowsEnrichments(enrichmentsSet []interface{}) (*workflows.AiWorkflowsEnrichmentsInput, error) {
-	enrichments := make([]workflows.AiWorkflowsEnrichmentsInput, len(enrichmentsSet))
-
-	enrichmentsConfig := enrichmentsSet[0]
-	cfg := enrichmentsConfig.(map[string]interface{})
-
-	if nrqlList, ok := cfg["nrql"]; ok {
-		var nrqlInput map[string]interface{}
-
-		x := nrqlList.([]interface{})
-
-		for _, nrql := range x {
-			nrqlInput = nrql.(map[string]interface{})
-
-			if val, err := expandWorkflowNrqlInput(nrqlInput); err == nil {
-				enrichments[0].NRQL = append(enrichments[0].NRQL, *val)
-			}
-		}
-	}
-
-	return &enrichments[0], nil
+	return workflows.AiWorkflowsUpdatedFilterInput{}
 }
 
 func expandWorkflowsUpdateEnrichments(enrichmentsSet []interface{}) (*workflows.AiWorkflowsUpdateEnrichmentsInput, error) {
@@ -277,30 +199,6 @@ func expandWorkflowsUpdateEnrichments(enrichmentsSet []interface{}) (*workflows.
 	}
 
 	return &enrichments[0], nil
-}
-
-func expandWorkflowNrqlInput(cfg map[string]interface{}) (*workflows.AiWorkflowsNRQLEnrichmentInput, error) {
-	nrqlInput := workflows.AiWorkflowsNRQLEnrichmentInput{}
-
-	if name, ok := cfg["name"]; ok {
-		nrqlInput.Name = name.(string)
-	}
-
-	if configurationList, ok := cfg["configurations"]; ok {
-		var configurationsInput map[string]interface{}
-
-		x := configurationList.([]interface{})
-
-		for _, configuration := range x {
-			configurationsInput = configuration.(map[string]interface{})
-
-			if val, err := expandWorkflowConfigurationInput(configurationsInput); err == nil {
-				nrqlInput.Configuration = append(nrqlInput.Configuration, *val)
-			}
-		}
-	}
-
-	return &nrqlInput, nil
 }
 
 func expandWorkflowUpdateNrqlInput(cfg map[string]interface{}) (*workflows.AiWorkflowsNRQLUpdateEnrichmentInput, error) {
