@@ -13,7 +13,7 @@ resource "newrelic_alert_condition" "response_time_web" {
 
 	name            = "High Response Time (web)"
 	type            = "apm_app_metric"
-	entities        = [data.newrelic_application.application.application_id]
+	entities        = [data.newrelic_entity.application.application_id]
 	metric          = "response_time_web"
 	condition_scope = "application"
 
