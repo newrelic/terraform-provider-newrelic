@@ -167,8 +167,15 @@ func resourceNewRelicNotificationChannelDelete(ctx context.Context, d *schema.Re
 	}
 
 	errors := buildAiNotificationsResponseErrors(channelResponse.Errors)
+
 	if len(errors) > 0 {
-		return errors
+		for _, e := range errors {
+			// Since deleting a workflow also deletes the associated channel,
+			// we need to ignore when the entity is not found during `terraform destroy`.
+			if !isNotificationChannelNotFound(e) {
+				return errors
+			}
+		}
 	}
 
 	return nil
@@ -194,4 +201,8 @@ func listValidNotificationsProductTypes() []string {
 		string(notifications.AiNotificationsProductTypes.ERROR_TRACKING),
 		string(notifications.AiNotificationsProductTypes.IINT),
 	}
+}
+
+func isNotificationChannelNotFound(err diag.Diagnostic) bool {
+	return strings.Contains(err.Summary, "INVALID_PARAMETER") && strings.Contains(err.Summary, "does not correspond to any valid entity")
 }

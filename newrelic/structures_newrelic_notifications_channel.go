@@ -121,7 +121,3 @@ func flattenNotificationChannelProperty(p notifications.AiNotificationsProperty)
 
 	return propertyResult
 }
-
-func validateEmailChannelType(channelType notifications.AiNotificationsChannelType) bool {
-	return channelType == notifications.AiNotificationsChannelTypeTypes.EMAIL
-}
