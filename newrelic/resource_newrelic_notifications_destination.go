@@ -49,7 +49,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Description: "Notification destination property type.",
 				Elem:        notificationsPropertySchema(),
 			},
-
 			"auth_basic": {
 				Type:         schema.TypeList,
 				Optional:     true,
@@ -71,7 +70,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 					},
 				},
 			},
-
 			"auth_token": {
 				Type:         schema.TypeList,
 				Optional:     true,
@@ -93,62 +91,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 					},
 				},
 			},
-
-			// "auth_oauth2": {
-			// 	Type:         schema.TypeList,
-			// 	Optional:     true,
-			// 	Sensitive:    true,
-			// 	MinItems:     1,
-			// 	MaxItems:     1,
-			// 	ExactlyOneOf: []string{"auth_basic", "auth_oauth2", "auth_token"},
-			// 	Description:  "OAuth2 authentication credentials.",
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"access_token_url": {
-			// 				Type:     schema.TypeString,
-			// 				Required: true,
-			// 			},
-			// 			"authorization_url": {
-			// 				Type:     schema.TypeString,
-			// 				Required: true,
-			// 			},
-			// 			"client_id": {
-			// 				Type:     schema.TypeString,
-			// 				Required: true,
-			// 			},
-			// 			"client_secret": {
-			// 				Type:      schema.TypeString,
-			// 				Required:  true,
-			// 				Sensitive: true,
-			// 			},
-			// 			"prefix": {
-			// 				Type:     schema.TypeString,
-			// 				Optional: true,
-			// 			},
-			// 			"refreshInterval": {
-			// 				Type:     schema.TypeInt,
-			// 				Optional: true,
-			// 			},
-			// 			"refresh_token": {
-			// 				Type:     schema.TypeString,
-			// 				Optional: true,
-			// 			},
-			// 			"refreshable": {
-			// 				Type:     schema.TypeBool,
-			// 				Required: true,
-			// 			},
-			// 			"scope": {
-			// 				Type:     schema.TypeString,
-			// 				Optional: true,
-			// 			},
-			// 			"token": {
-			// 				Type:     schema.TypeString,
-			// 				Required: true,
-			// 			},
-			// 		},
-			// 	},
-			// },
-
 			"active": {
 				Type:        schema.TypeBool,
 				Optional:    true,
