@@ -75,6 +75,37 @@ func expandWorkflowConfiguration(cfg map[string]interface{}) workflows.AiWorkflo
 	}
 }
 
+func expandWorkflowUpdateEnrichments(enrichments []interface{}) *workflows.AiWorkflowsUpdateEnrichmentsInput {
+	input := workflows.AiWorkflowsUpdateEnrichmentsInput{}
+
+	if len(enrichments) != 1 {
+		return &input
+	}
+
+	richments := enrichments[0].(map[string]interface{})
+	nrql := richments["nrql"].([]interface{})
+	input.NRQL = expandWorkflowUpdateNrqls(nrql)
+
+	return &input
+}
+
+func expandWorkflowUpdateNrqls(nrqls []interface{}) []workflows.AiWorkflowsNRQLUpdateEnrichmentInput {
+	input := []workflows.AiWorkflowsNRQLUpdateEnrichmentInput{}
+
+	for _, n := range nrqls {
+		input = append(input, expandWorkflowUpdateNrql(n.(map[string]interface{})))
+	}
+
+	return input
+}
+
+func expandWorkflowUpdateNrql(nrqlConfig map[string]interface{}) workflows.AiWorkflowsNRQLUpdateEnrichmentInput {
+	return workflows.AiWorkflowsNRQLUpdateEnrichmentInput{
+		Name:          nrqlConfig["name"].(string),
+		Configuration: expandWorkflowEnrichmentNrqlConfigurations(nrqlConfig["configurations"].([]interface{})),
+	}
+}
+
 func expandWorkflowDestinationConfigurations(destinationConfigurations []interface{}) []workflows.AiWorkflowsDestinationConfigurationInput {
 	input := []workflows.AiWorkflowsDestinationConfigurationInput{}
 
@@ -154,12 +185,7 @@ func expandWorkflowUpdate(d *schema.ResourceData) (*workflows.AiWorkflowsUpdateW
 
 	enrichments, enrichmentsOk := d.GetOk("enrichments")
 	if enrichmentsOk {
-		e, err := expandWorkflowsUpdateEnrichments(enrichments.(*schema.Set).List())
-		if err != nil {
-			return nil, err
-		}
-
-		workflow.Enrichments = e
+		workflow.Enrichments = expandWorkflowUpdateEnrichments(enrichments.(*schema.Set).List())
 	}
 
 	return &workflow, nil
@@ -176,67 +202,6 @@ func expandWorkflowUpdateIssuesFilter(issuesFilter []interface{}) workflows.AiWo
 	}
 
 	return workflows.AiWorkflowsUpdatedFilterInput{}
-}
-
-func expandWorkflowsUpdateEnrichments(enrichmentsSet []interface{}) (*workflows.AiWorkflowsUpdateEnrichmentsInput, error) {
-	enrichments := make([]workflows.AiWorkflowsUpdateEnrichmentsInput, len(enrichmentsSet))
-
-	enrichmentsConfig := enrichmentsSet[0]
-	cfg := enrichmentsConfig.(map[string]interface{})
-
-	if nrqlList, ok := cfg["nrql"]; ok {
-		var nrqlInput map[string]interface{}
-
-		x := nrqlList.([]interface{})
-
-		for _, nrql := range x {
-			nrqlInput = nrql.(map[string]interface{})
-
-			if val, err := expandWorkflowUpdateNrqlInput(nrqlInput); err == nil {
-				enrichments[0].NRQL = append(enrichments[0].NRQL, *val)
-			}
-		}
-	}
-
-	return &enrichments[0], nil
-}
-
-func expandWorkflowUpdateNrqlInput(cfg map[string]interface{}) (*workflows.AiWorkflowsNRQLUpdateEnrichmentInput, error) {
-	nrqlInput := workflows.AiWorkflowsNRQLUpdateEnrichmentInput{}
-
-	if name, ok := cfg["name"]; ok {
-		nrqlInput.Name = name.(string)
-	}
-
-	if id, ok := cfg["enrichment_id"]; ok {
-		nrqlInput.ID = id.(string)
-	}
-
-	if configurationList, ok := cfg["configurations"]; ok {
-		var configurationsInput map[string]interface{}
-
-		x := configurationList.([]interface{})
-
-		for _, configuration := range x {
-			configurationsInput = configuration.(map[string]interface{})
-
-			if val, err := expandWorkflowConfigurationInput(configurationsInput); err == nil {
-				nrqlInput.Configuration = append(nrqlInput.Configuration, *val)
-			}
-		}
-	}
-
-	return &nrqlInput, nil
-}
-
-func expandWorkflowConfigurationInput(cfg map[string]interface{}) (*workflows.AiWorkflowsNRQLConfigurationInput, error) {
-	configurationInput := workflows.AiWorkflowsNRQLConfigurationInput{}
-
-	if query, ok := cfg["query"]; ok {
-		configurationInput.Query = query.(string)
-	}
-
-	return &configurationInput, nil
 }
 
 func flattenWorkflow(workflow *workflows.AiWorkflowsWorkflow, d *schema.ResourceData) error {
