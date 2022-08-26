@@ -133,7 +133,8 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorUpdate(ctx context.Context, d *
 }
 
 // NOTE: We can make rename this to reusable function for all new monitor types,
-//       but the legacy function already has a good generic name (`resourceNewRelicSyntheticsMonitorDelete()`)
+//
+//	but the legacy function already has a good generic name (`resourceNewRelicSyntheticsMonitorDelete()`)
 func resourceNewRelicSyntheticsBrokenLinksMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	guid := synthetics.EntityGUID(d.Id())

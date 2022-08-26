@@ -72,8 +72,8 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 	return diags
 }
 
-//expand function to extract inputs from the schema.
-//Here it takes ResourceData as input and returns cloudLinkCloudAccountsInput.
+// expand function to extract inputs from the schema.
+// Here it takes ResourceData as input and returns cloudLinkCloudAccountsInput.
 func expandGcpCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
 
 	gcpAccount := cloud.CloudGcpLinkAccountInput{}
@@ -117,8 +117,8 @@ func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.Reso
 
 }
 
-//readGcpLinkedAccount function to store name and ExternalId.
-//Using set func to store the output values.
+// readGcpLinkedAccount function to store name and ExternalId.
+// Using set func to store the output values.
 func readGcpLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
 	_ = d.Set("account_id", result.NrAccountId)
 	_ = d.Set("name", result.Name)
