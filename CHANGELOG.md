@@ -1,3 +1,23 @@
+<a name="v3.0.0"></a>
+## [v3.0.0] - 2022-08-26
+### Documentation Updates
+- add v3 migration guide
+- added the changes in website guide
+- adding the website guides
+- doc of simple & browser synthectics monitor
+- **synthetics:** update docs for private location data source
+
+### Features
+- add new synthetics resources
+- swap secure credential resource to GraphQL API
+- **synthetics:** added private location resource
+- **synthetics:** add newrelic_synthetics_script_monitor resource
+- **synthetics:** migrate monitor location data source to new GraphQL API
+
+### BREAKING CHANGE
+
+new synthetics resources use GraphQL API schema
+
 <a name="v2.50.0"></a>
 ## [v2.50.0] - 2022-08-26
 ### Bug Fixes
@@ -1372,23 +1392,7 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.16...HEAD
-[v3.0.16]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.15...v3.0.16
-[v3.0.15]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.14...v3.0.15
-[v3.0.14]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.13...v3.0.14
-[v3.0.13]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.12...v3.0.13
-[v3.0.12]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.11...v3.0.12
-[v3.0.11]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.10...v3.0.11
-[v3.0.10]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.9...v3.0.10
-[v3.0.9]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.8...v3.0.9
-[v3.0.8]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.7...v3.0.8
-[v3.0.7]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.6...v3.0.7
-[v3.0.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.5...v3.0.6
-[v3.0.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.4...v3.0.5
-[v3.0.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.3...v3.0.4
-[v3.0.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.2...v3.0.3
-[v3.0.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.1...v3.0.2
-[v3.0.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.0...v3.0.1
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.0...HEAD
 [v3.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.50.0...v3.0.0
 [v2.50.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.1...v2.50.0
 [v2.49.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.0...v2.49.1
