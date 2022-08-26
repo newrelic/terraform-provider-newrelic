@@ -66,6 +66,8 @@ func resourceNewRelicAlertPolicyCreate(ctx context.Context, d *schema.ResourceDa
 
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
+	// We're creating this updatedContext for the findExistingChannelIDs function which is still REST based
+	// It does not have an effect on the GraphQL calls
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
 	policy := alerts.AlertsPolicyInput{}
@@ -142,13 +144,12 @@ func resourceNewRelicAlertPolicyRead(ctx context.Context, d *schema.ResourceData
 		err := fmt.Errorf("unhandled id format %s", d.Id())
 		return diag.FromErr(err)
 	}
-	updatedContext := updateContextWithAccountID(ctx, accountID)
 
 	log.Printf("[INFO] Reading New Relic alert policy %d from account %d", policyID, accountID)
 
 	id := strconv.Itoa(policyID)
 
-	queryPolicy, queryErr := client.Alerts.QueryPolicyWithContext(updatedContext, accountID, id)
+	queryPolicy, queryErr := client.Alerts.QueryPolicyWithContext(ctx, accountID, id)
 
 	if queryErr != nil {
 		if _, ok := queryErr.(*nrErrors.NotFound); ok {
@@ -172,7 +173,6 @@ func resourceNewRelicAlertPolicyUpdate(ctx context.Context, d *schema.ResourceDa
 	client := providerConfig.NewClient
 
 	accountID := selectAccountID(providerConfig, d)
-	updatedContext := updateContextWithAccountID(ctx, accountID)
 
 	log.Printf("[INFO] Updating New Relic alert policy %s from account %d", d.Id(), accountID)
 
@@ -188,7 +188,7 @@ func resourceNewRelicAlertPolicyUpdate(ctx context.Context, d *schema.ResourceDa
 		updatePolicy.Name = attr.(string)
 	}
 
-	updateResult, updateErr := client.Alerts.UpdatePolicyMutationWithContext(updatedContext, accountID, d.Id(), updatePolicy)
+	updateResult, updateErr := client.Alerts.UpdatePolicyMutationWithContext(ctx, accountID, d.Id(), updatePolicy)
 	if updateErr != nil {
 		return diag.FromErr(updateErr)
 	}
@@ -207,11 +207,10 @@ func resourceNewRelicAlertPolicyDelete(ctx context.Context, d *schema.ResourceDa
 	client := providerConfig.NewClient
 
 	accountID := selectAccountID(providerConfig, d)
-	updatedContext := updateContextWithAccountID(ctx, accountID)
 
 	log.Printf("[INFO] Deleting New Relic alert policy %s from account %d", d.Id(), accountID)
 
-	_, err := client.Alerts.DeletePolicyMutationWithContext(updatedContext, accountID, d.Id())
+	_, err := client.Alerts.DeletePolicyMutationWithContext(ctx, accountID, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
