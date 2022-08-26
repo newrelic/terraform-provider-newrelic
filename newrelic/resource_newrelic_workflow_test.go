@@ -13,7 +13,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
 )
 
-func TestNewRelicWorkflow_Basic(t *testing.T) {
+func TestNewRelicWorkflow_Webhook(t *testing.T) {
 	resourceName := "newrelic_workflow.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
@@ -26,14 +26,14 @@ func TestNewRelicWorkflow_Basic(t *testing.T) {
 
 			// Test: Create workflow
 			{
-				Config: testAccNewRelicWorkflowConfiguration(testAccountID, rName),
+				Config: testAccNewRelicWorkflowConfigurationWebhook(testAccountID, rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicWorkflowConfiguration(testAccountID, fmt.Sprintf("%s-updated", rName)),
+				Config: testAccNewRelicWorkflowConfigurationWebhook(testAccountID, fmt.Sprintf("%s-updated", rName)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
@@ -83,7 +83,7 @@ func TestNewRelicWorkflow_Email(t *testing.T) {
 	})
 }
 
-func testAccNewRelicWorkflowConfiguration(accountID int, name string) string {
+func testAccNewRelicWorkflowConfigurationWebhook(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
   account_id = %[1]d
