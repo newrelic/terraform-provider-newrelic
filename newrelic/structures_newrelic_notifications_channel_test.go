@@ -28,7 +28,7 @@ func TestExpandNotificationChannel(t *testing.T) {
 			Data: map[string]interface{}{
 				"name":           "webhook-test",
 				"type":           "WEBHOOK",
-				"properties":     []interface{}{property},
+				"property":       []interface{}{property},
 				"product":        "IINT",
 				"destination_id": "b1e90a32-23b7-4028-b2c7-ffbdfe103852",
 			},
@@ -75,14 +75,7 @@ func TestExpandNotificationChannel(t *testing.T) {
 			}
 		}
 
-		expanded, err := expandNotificationChannel(d)
-
-		if tc.ExpectErr {
-			assert.NotNil(t, err)
-			assert.Equal(t, err.Error(), tc.ExpectReason)
-		} else {
-			assert.Nil(t, err)
-		}
+		expanded := expandNotificationChannel(d)
 
 		if tc.Expanded != nil {
 			assert.Equal(t, tc.Expanded.Name, expanded.Name)

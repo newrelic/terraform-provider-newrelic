@@ -69,7 +69,7 @@ func TestExpandWorkflow(t *testing.T) {
 						"values":    []string{"newrelic"},
 					}},
 				}},
-				"destination_configurations": []map[string]interface{}{{
+				"destination_configuration": []map[string]interface{}{{
 					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
 				}},
 			},
@@ -100,7 +100,7 @@ func TestExpandWorkflow(t *testing.T) {
 						"values":    []string{"newrelic"},
 					}},
 				}},
-				"destination_configurations": []map[string]interface{}{{
+				"destination_configuration": []map[string]interface{}{{
 					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
 				}},
 			},
@@ -198,7 +198,7 @@ func TestFlattenWorkflow(t *testing.T) {
 						"values":    []string{"newrelic"},
 					}},
 				},
-				"destination_configurations": []map[string]interface{}{{
+				"destination_configuration": []map[string]interface{}{{
 					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
 					"name":       "destination-test",
 					"type":       "WEBHOOK",
@@ -236,7 +236,7 @@ func TestFlattenWorkflow(t *testing.T) {
 					for _, enrichment := range tc.Flattened.Enrichments {
 						testFlattenWorkflowsEnrichment(t, v, enrichment)
 					}
-				} else if k == "destination_configurations" {
+				} else if k == "destination_configuration" {
 					for _, configuration := range tc.Flattened.DestinationConfigurations {
 						testFlattenWorkflowsDestinationConfiguration(t, v, configuration)
 					}
