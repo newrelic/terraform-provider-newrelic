@@ -146,8 +146,6 @@ resource "newrelic_synthetics_monitor" "monitor" {
 ```
 ##### Type: `BROWSER`
 
--> **NOTE:** Currently, it's only possible to use a private location with a monitor running on a legacy runtime. Leave `runtime_type_version`, `runtime_type` & `script_language` empty to use legacy runtime. See example below.
-
 ```hcl
 resource "newrelic_synthetics_private_location" "private_location" {
   description               = "Test Description"
@@ -166,9 +164,9 @@ resource "newrelic_synthetics_monitor" "monitor" {
   verify_ssl                              = true
   name                                    = "monitor"
   period                                  = "EVERY_MINUTE"
-  runtime_type_version                    = ""
-  runtime_type                            = ""
-  script_language                         = ""
+  runtime_type_version                    = "100"
+  runtime_type                            = "CHROME_BROWSER"
+  script_language                         = "JAVASCRIPT"
   status                                  = "ENABLED"
   type                                    = "BROWSER"
   uri                                     = "https://www.one.newrelic.com"
