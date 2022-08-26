@@ -25,7 +25,12 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			// Required
+			"account_id": {
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The account id of the channel.",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -51,47 +56,17 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(listValidNotificationsProductTypes(), false),
 				Description:  fmt.Sprintf("(Required) The type of the channel product. One of: (%s).", strings.Join(listValidNotificationsProductTypes(), ", ")),
 			},
-
-			// Optional
-			"properties": {
-				Type:        schema.TypeList,
-				Optional:    true,
+			"property": {
+				Type:        schema.TypeSet,
+				Required:    true,
 				Description: "Notification channel property type.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Notification channel property key.",
-						},
-						"value": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Notification channel property value.",
-						},
-						"label": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Notification channel property label.",
-						},
-						"display_value": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Notification channel property display key.",
-						},
-					},
-				},
+				Elem:        notificationsPropertySchema(),
 			},
 			"active": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Indicates whether the channel is active.",
-			},
-			"account_id": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The account id of the channel.",
+				Default:     true,
 			},
 
 			// Computed
@@ -100,29 +75,20 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the channel.",
 			},
-			"channel_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The id of the channel.",
-			},
 		},
 	}
 }
 
 func resourceNewRelicNotificationChannelCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
-	channelInput, err := expandNotificationChannel(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	log.Printf("[INFO] Creating New Relic notification channelResponse %s", channelInput.Name)
-
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
+	channelInput := expandNotificationChannel(d)
 
-	channelResponse, err := client.Notifications.AiNotificationsCreateChannelWithContext(updatedContext, accountID, *channelInput)
+	log.Printf("[INFO] Creating New Relic notification channelResponse %s", channelInput.Name)
+
+	channelResponse, err := client.Notifications.AiNotificationsCreateChannelWithContext(updatedContext, accountID, channelInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -168,17 +134,12 @@ func resourceNewRelicNotificationChannelRead(ctx context.Context, d *schema.Reso
 
 func resourceNewRelicNotificationChannelUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
-	updateInput, err := expandNotificationChannelUpdate(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	channelID := d.Get("channel_id").(string)
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
+	updateInput := expandNotificationChannelUpdate(d)
 
-	channelResponse, err := client.Notifications.AiNotificationsUpdateChannelWithContext(updatedContext, accountID, *updateInput, channelID)
+	channelResponse, err := client.Notifications.AiNotificationsUpdateChannelWithContext(updatedContext, accountID, updateInput, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -206,8 +167,15 @@ func resourceNewRelicNotificationChannelDelete(ctx context.Context, d *schema.Re
 	}
 
 	errors := buildAiNotificationsResponseErrors(channelResponse.Errors)
+
 	if len(errors) > 0 {
-		return errors
+		for _, e := range errors {
+			// Since deleting a workflow also deletes the associated channel,
+			// we need to ignore when the entity is not found during `terraform destroy`.
+			if !isNotificationChannelNotFound(e) {
+				return errors
+			}
+		}
 	}
 
 	return nil
@@ -233,4 +201,8 @@ func listValidNotificationsProductTypes() []string {
 		string(notifications.AiNotificationsProductTypes.ERROR_TRACKING),
 		string(notifications.AiNotificationsProductTypes.IINT),
 	}
+}
+
+func isNotificationChannelNotFound(err diag.Diagnostic) bool {
+	return strings.Contains(err.Summary, "INVALID_PARAMETER") && strings.Contains(err.Summary, "does not correspond to any valid entity")
 }

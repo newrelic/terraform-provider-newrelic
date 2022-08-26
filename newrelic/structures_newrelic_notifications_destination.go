@@ -1,7 +1,6 @@
 package newrelic
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,60 +14,45 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 		Type: notifications.AiNotificationsDestinationType(d.Get("type").(string)),
 	}
 
-	var auth, authOk = d.GetOk("auth")
-	isEmailType := validateEmailDestinationType(destination.Type)
-
-	if !authOk && !isEmailType {
-		return nil, errors.New("notification destination requires an auth attribute")
+	if attr, ok := d.GetOk("auth_basic"); ok {
+		destination.Auth = expandNotificationDestinationAuthBasic(attr.([]interface{}))
 	}
 
-	if authOk {
-		a, err := expandNotificationDestinationAuth(auth)
-		if err != nil {
-			return nil, err
-		}
-
-		destination.Auth = a
-	} else if isEmailType {
-		destination.Auth = nil
+	if attr, ok := d.GetOk("auth_token"); ok {
+		destination.Auth = expandNotificationDestinationAuthToken(attr.([]interface{}))
 	}
 
-	if !isEmailType {
-		err := validateDestinationAuth(*destination.Auth)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	properties, propertiesOk := d.GetOk("properties")
-	isPagerDutyType := validatePagerDutyDestinationType(destination.Type)
-
-	if !propertiesOk && !isPagerDutyType {
-		return nil, errors.New("notification destination requires a properties attribute")
-	}
-
-	if propertiesOk {
-		var destinationProperty map[string]interface{}
-
-		x := properties.([]interface{})
-
-		for _, property := range x {
-			destinationProperty = property.(map[string]interface{})
-			if val, err := expandNotificationDestinationProperty(destinationProperty); err == nil {
-				destination.Properties = append(destination.Properties, *val)
-			}
-		}
-	}
-
-	// Create terraform source property
-	terraformProperty := notifications.AiNotificationsPropertyInput{
-		Key:   "source",
-		Value: "terraform",
-		Label: "terraform-source-internal",
-	}
-	destination.Properties = append(destination.Properties, terraformProperty)
+	properties := d.Get("property")
+	props := properties.(*schema.Set).List()
+	destination.Properties = expandNotificationDestinationProperties(props)
 
 	return &destination, nil
+}
+
+func expandNotificationDestinationAuthBasic(authRaw []interface{}) *notifications.AiNotificationsCredentialsInput {
+	authInput := notifications.AiNotificationsCredentialsInput{}
+	authInput.Type = notifications.AiNotificationsAuthTypeTypes.BASIC
+
+	for _, a := range authRaw {
+		aa := a.(map[string]interface{})
+		authInput.Basic.User = aa["user"].(string)
+		authInput.Basic.Password = notifications.SecureValue(aa["password"].(string))
+	}
+
+	return &authInput
+}
+
+func expandNotificationDestinationAuthToken(authRaw []interface{}) *notifications.AiNotificationsCredentialsInput {
+	authInput := notifications.AiNotificationsCredentialsInput{}
+	authInput.Type = notifications.AiNotificationsAuthTypeTypes.TOKEN
+
+	for _, a := range authRaw {
+		aa := a.(map[string]interface{})
+		authInput.Token.Token = notifications.SecureValue(aa["token"].(string))
+		authInput.Token.Prefix = aa["prefix"].(string)
+	}
+
+	return &authInput
 }
 
 func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications.AiNotificationsDestinationUpdate, error) {
@@ -76,90 +60,33 @@ func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications
 		Name:   d.Get("name").(string),
 		Active: d.Get("active").(bool),
 	}
-	destinationType := notifications.AiNotificationsDestinationType(d.Get("type").(string))
 
-	var auth, authOk = d.GetOk("auth")
-	isEmailType := validateEmailDestinationType(destinationType)
-
-	if !authOk && !isEmailType {
-		return nil, errors.New("notification destination requires an auth attribute")
+	if attr, ok := d.GetOk("auth_basic"); ok {
+		destination.Auth = expandNotificationDestinationAuthBasic(attr.([]interface{}))
 	}
 
-	if authOk {
-		a, err := expandNotificationDestinationAuth(auth)
-		if err != nil {
-			return nil, err
-		}
-
-		destination.Auth = a
-	} else if isEmailType {
-		destination.Auth = nil
+	if attr, ok := d.GetOk("auth_token"); ok {
+		destination.Auth = expandNotificationDestinationAuthToken(attr.([]interface{}))
 	}
 
-	if !isEmailType {
-		err := validateDestinationAuth(*destination.Auth)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	properties, propertiesOk := d.GetOk("properties")
-	isPagerDutyType := validatePagerDutyDestinationType(destinationType)
-
-	if !propertiesOk && !isPagerDutyType {
-		return nil, errors.New("notification destination requires a properties attribute")
-	}
-
-	if propertiesOk {
-		var destinationProperty map[string]interface{}
-
-		x := properties.([]interface{})
-
-		for _, property := range x {
-			destinationProperty = property.(map[string]interface{})
-			if val, err := expandNotificationDestinationProperty(destinationProperty); err == nil {
-				destination.Properties = append(destination.Properties, *val)
-			}
-		}
-	} else if isPagerDutyType {
-		destination.Properties = []notifications.AiNotificationsPropertyInput{{Key: "", Value: ""}} // Empty
-	}
+	properties := d.Get("property")
+	props := properties.(*schema.Set).List()
+	destination.Properties = expandNotificationDestinationProperties(props)
 
 	return &destination, nil
 }
 
-func expandNotificationDestinationAuth(authList interface{}) (*notifications.AiNotificationsCredentialsInput, error) {
-	auth := notifications.AiNotificationsCredentialsInput{}
-	authConfig := authList.(map[string]interface{})
+func expandNotificationDestinationProperties(properties []interface{}) []notifications.AiNotificationsPropertyInput {
+	props := []notifications.AiNotificationsPropertyInput{}
 
-	if typeAuth, ok := authConfig["type"]; ok {
-		auth.Type = notifications.AiNotificationsAuthType(typeAuth.(string))
+	for _, p := range properties {
+		props = append(props, expandNotificationDestinationProperty(p.(map[string]interface{})))
 	}
 
-	if auth.Type == notifications.AiNotificationsAuthTypeTypes.TOKEN {
-		if prefix, ok := authConfig["prefix"]; ok {
-			auth.Token.Prefix = prefix.(string)
-		}
-
-		if token, ok := authConfig["token"]; ok {
-			auth.Token.Token = notifications.SecureValue(token.(string))
-		}
-	}
-
-	if auth.Type == notifications.AiNotificationsAuthTypeTypes.BASIC {
-		if user, ok := authConfig["user"]; ok {
-			auth.Basic.User = user.(string)
-		}
-
-		if password, ok := authConfig["password"]; ok {
-			auth.Basic.Password = notifications.SecureValue(password.(string))
-		}
-	}
-
-	return &auth, nil
+	return props
 }
 
-func expandNotificationDestinationProperty(cfg map[string]interface{}) (*notifications.AiNotificationsPropertyInput, error) {
+func expandNotificationDestinationProperty(cfg map[string]interface{}) notifications.AiNotificationsPropertyInput {
 	property := notifications.AiNotificationsPropertyInput{}
 
 	if propertyKey, ok := cfg["key"]; ok {
@@ -178,7 +105,7 @@ func expandNotificationDestinationProperty(cfg map[string]interface{}) (*notific
 		property.Label = propertyLabel.(string)
 	}
 
-	return &property, nil
+	return property
 }
 
 func flattenNotificationDestination(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
@@ -196,104 +123,85 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return err
 	}
 
-	if err := d.Set("auth", flattenNotificationDestinationAuth(&destination.Auth)); err != nil {
+	auth := flattenNotificationDestinationAuth(destination.Auth, d)
+
+	authAttr := "auth_basic"
+	switch destination.Auth.AuthType {
+	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.OAUTH2):
+		authAttr = "auth_oauth2"
+	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.TOKEN):
+		authAttr = "auth_token"
+	}
+
+	if err := d.Set(authAttr, auth); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting notification auth: %#v", err)
 	}
 
-	properties, propertiesErr := flattenNotificationDestinationProperties(&destination.Properties)
-	if propertiesErr != nil {
-		return propertiesErr
+	if err := d.Set("property", flattenNotificationDestinationProperties(destination.Properties)); err != nil {
+		return err
 	}
 
-	if err := d.Set("properties", properties); err != nil {
+	if err := d.Set("active", destination.Active); err != nil {
+		return err
+	}
+
+	if err := d.Set("account_id", destination.AccountID); err != nil {
+		return err
+	}
+
+	if err := d.Set("is_user_authenticated", destination.IsUserAuthenticated); err != nil {
+		return err
+	}
+
+	if err := d.Set("status", destination.Status); err != nil {
+		return err
+	}
+
+	if err := d.Set("last_sent", destination.LastSent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func flattenNotificationDestinationProperties(p *[]notifications.AiNotificationsProperty) ([]map[string]interface{}, error) {
-	if p == nil {
-		return nil, nil
-	}
+func flattenNotificationDestinationAuth(a ai.AiNotificationsAuth, d *schema.ResourceData) []map[string]interface{} {
+	authConfig := make([]map[string]interface{}, 1)
 
-	var properties []map[string]interface{}
-
-	for _, property := range *p {
-		if val, err := flattenNotificationDestinationProperty(&property); err == nil {
-			properties = append(properties, val)
+	switch a.AuthType {
+	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.BASIC):
+		authConfig[0] = map[string]interface{}{
+			"user":     a.User,
+			"password": d.Get("auth_basic.0.password"),
 		}
-	}
-
-	return properties, nil
-}
-
-func flattenNotificationDestinationProperty(p *notifications.AiNotificationsProperty) (map[string]interface{}, error) {
-	if p == nil {
-		return nil, nil
-	}
-
-	propertyResult := make(map[string]interface{})
-
-	propertyResult["key"] = p.Key
-	propertyResult["value"] = p.Value
-
-	if p.DisplayValue != "" {
-		propertyResult["display_value"] = p.DisplayValue
-	}
-
-	if p.Label != "" {
-		propertyResult["label"] = p.Label
-	}
-
-	return propertyResult, nil
-}
-
-func flattenNotificationDestinationAuth(a *ai.AiNotificationsAuth) interface{} {
-
-	authConfig := map[string]interface{}{
-		"authType": a.AuthType,
-	}
-
-	if authConfig["authType"] == notifications.AiNotificationsAuthTypeTypes.BASIC {
-		authConfig["user"] = a.User
-	}
-
-	if authConfig["authType"] == notifications.AiNotificationsAuthTypeTypes.TOKEN {
-		authConfig["prefix"] = a.Prefix
-	}
-
-	if authConfig["authType"] == notifications.AiNotificationsAuthTypeTypes.OAUTH2 {
-		authConfig["access_token_url"] = a.AccessTokenURL
+	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.TOKEN):
+		authConfig[0] = map[string]interface{}{
+			"prefix": a.Prefix,
+			"token":  d.Get("auth_token.0.token"),
+		}
+	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.OAUTH2):
+		// ...
 	}
 
 	return authConfig
 }
 
-func validateDestinationAuth(auth notifications.AiNotificationsCredentialsInput) error {
-	if auth.Type == "" {
-		return errors.New("auth type is required")
+func flattenNotificationDestinationProperties(p []notifications.AiNotificationsProperty) []map[string]interface{} {
+	properties := []map[string]interface{}{}
+
+	for _, property := range p {
+		properties = append(properties, flattenNotificationDestinationProperty(property))
 	}
 
-	if auth.Type != notifications.AiNotificationsAuthTypeTypes.TOKEN && auth.Type != notifications.AiNotificationsAuthTypeTypes.BASIC {
-		return errors.New("auth type must be token or basic")
-	}
-
-	if auth.Type == notifications.AiNotificationsAuthTypeTypes.TOKEN && (auth.Token.Token == "" || auth.Token.Prefix == "") {
-		return errors.New("token and prefix are required when using token auth type")
-	}
-
-	if auth.Type == notifications.AiNotificationsAuthTypeTypes.BASIC && (auth.Basic.User == "" || auth.Basic.Password == "") {
-		return errors.New("user and password are required when using basic auth type")
-	}
-
-	return nil
+	return properties
 }
 
-func validatePagerDutyDestinationType(destinationType notifications.AiNotificationsDestinationType) bool {
-	return destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION || destinationType == notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION
-}
+func flattenNotificationDestinationProperty(p notifications.AiNotificationsProperty) map[string]interface{} {
+	propertyResult := make(map[string]interface{})
 
-func validateEmailDestinationType(destinationType notifications.AiNotificationsDestinationType) bool {
-	return destinationType == notifications.AiNotificationsDestinationTypeTypes.EMAIL
+	propertyResult["key"] = p.Key
+	propertyResult["value"] = p.Value
+	propertyResult["display_value"] = p.DisplayValue
+	propertyResult["label"] = p.Label
+
+	return propertyResult
 }

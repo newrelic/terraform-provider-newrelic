@@ -13,84 +13,212 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
 )
 
-func TestNewRelicWorkflow_Basic(t *testing.T) {
-	t.Skip("Skipping TestNewRelicWorkflow_Basic.  AWAITING FINAL IMPLEMENTATION!")
-
-	resourceName := "newrelic_workflow.test-workflow"
+func TestNewRelicWorkflow_Webhook(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
-	enrichments := `{
-						nrql {
-						  name = "Log"
-						  configurations {
-						   query = "SELECT count(*) FROM Log"
-						  }
-						}
-					}`
-
-	destinationID := "4756c466-c29f-4f89-9cb4-382cabfcef61"
-	var channelId string
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicWorkflowDestroy,
 		Steps: []resource.TestStep{
-			// Create channel
-			{
-				Config: testNewRelicNotificationChannelConfigByType(rName, "WEBHOOK", "IINT", destinationID, `{
-					key = "payload"
-					value = "{\n\t\"id\": \"test\"\n}"
-					label = "Payload Template"
-				}`),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationChannelExists(resourceName, channelId),
-				),
-			},
+
 			// Test: Create workflow
 			{
-				Config: testNewRelicWorkflowConfigByType(rName, "true", "true", "true", "NOTIFY_ALL_ISSUES", "", `{
-						name = "filter1"
-						type = "FILTER"
-					
-						predicates {
-						  attribute = "source"
-						  operator = "EQUAL"
-						  values = [ "newrelic" ]
-						}
-					}`, `{
-					channel_id = "channelId"
-				}`),
+				Config: testAccNewRelicWorkflowConfigurationWebhook(testAccountID, rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testNewRelicWorkflowConfigByType(rName, "false", "true", "false", "DONT_NOTIFY_FULLY_MUTED_ISSUES", enrichments, `{
-						name = "filter-update"
-						type = "FILTER"
-					
-						predicates {
-						  attribute = "source"
-						  operator = "CONTAINS"
-						  values = [ "newrelic" ]
-						}
-					}`, `{
-					channel_id = "7510bd1b-3f66-43d1-9731-75ea0a05886c"
-				}`),
+				Config: testAccNewRelicWorkflowConfigurationWebhook(testAccountID, fmt.Sprintf("%s-updated", rName)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
 			},
 			// Test: Import
-			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      resourceName,
-			},
+			// {
+			// 	ImportState:       true,
+			// 	ImportStateVerify: true,
+			// 	ResourceName:      resourceName,
+			// },
 		},
 	})
+}
+
+func TestNewRelicWorkflow_Email(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+
+			// Test: Create workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationEmail(testAccountID, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicWorkflowConfigurationEmail(testAccountID, fmt.Sprintf("%s-updated", rName)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Import
+			// {
+			// 	ImportState:       true,
+			// 	ImportStateVerify: true,
+			// 	ResourceName:      resourceName,
+			// },
+		},
+	})
+}
+
+func testAccNewRelicWorkflowConfigurationWebhook(accountID int, name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "foo" {
+  account_id = %[1]d
+  name = "tf-test-destination"
+  type = "WEBHOOK"
+
+  property {
+    key   = "url"
+    value = "https://webhook.site/"
+  }
+
+  auth_basic {
+    user     = "username"
+    password = "password"
+  }
+}
+
+resource "newrelic_notification_channel" "foo" {
+  account_id     = newrelic_notification_destination.foo.account_id
+  name           = "webhook-example"
+  type           = "WEBHOOK"
+  product        = "IINT"
+  destination_id = newrelic_notification_destination.foo.id
+
+  property {
+    key   = "payload"
+    value = "{\n\t\"name\": \"foo\"\n}"
+    label = "Payload Template"
+  }
+}
+
+resource "newrelic_workflow" "foo" {
+  account_id            = newrelic_notification_destination.foo.account_id
+  name                  = "%[2]s"
+  enrichments_enabled   = true
+  destinations_enabled  = true
+  workflow_enabled      = true
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+
+  issues_filter {
+    name = "filter-name"
+    type = "FILTER"
+
+    predicates {
+      attribute = "source"
+      operator  = "EQUAL"
+      values    = ["newrelic", "pagerduty"]
+    }
+  }
+
+  enrichments {
+    nrql {
+      name = "Log"
+      configurations {
+        query = "SELECT count(*) FROM Log"
+      }
+    }
+  }
+
+  destination_configuration {
+    channel_id = newrelic_notification_channel.foo.id
+  }
+}
+`, accountID, name)
+}
+
+func testAccNewRelicWorkflowConfigurationEmail(accountID int, name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "foo" {
+  account_id = %[1]d
+  name = "tf-test-destination-email"
+  type = "EMAIL"
+
+  property {
+    key   = "email"
+    value = "noreply+terraform-test@newrelic.com"
+  }
+
+  auth_basic {
+    user     = "username"
+    password = "password"
+  }
+}
+
+resource "newrelic_notification_channel" "foo" {
+  account_id     = newrelic_notification_destination.foo.account_id
+  name           = "tf-test-notification-channel-email"
+  type           = "EMAIL"
+  product        = "IINT"
+  destination_id = newrelic_notification_destination.foo.id
+
+  property {
+    key   = "subject"
+    value = "{{ issueTitle }}"
+  }
+
+	property {
+    key   = "customDetailsEmail"
+    value = "This text is a part of the email body"
+  }
+}
+
+resource "newrelic_workflow" "foo" {
+  account_id            = newrelic_notification_destination.foo.account_id
+  name                  = "%[2]s"
+  enrichments_enabled   = true
+  destinations_enabled  = true
+  workflow_enabled      = true
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+
+  issues_filter {
+    name = "example-filter-by-team-name"
+    type = "FILTER"
+
+    predicates {
+      attribute = "accumulations.tag.Team"
+      operator  = "EXACTLY_MATCHES"
+      values    = ["developer-toolkit"]
+    }
+  }
+
+  enrichments {
+    nrql {
+      name = "Log"
+      configurations {
+        query = "SELECT count(*) FROM Log"
+      }
+    }
+  }
+
+  destination_configuration {
+    channel_id = newrelic_notification_channel.foo.id
+  }
+}
+`, accountID, name)
 }
 
 func testAccNewRelicWorkflowDestroy(s *terraform.State) error {
@@ -102,59 +230,21 @@ func testAccNewRelicWorkflowDestroy(s *terraform.State) error {
 			continue
 		}
 
-		var accountID int
-		id := r.Primary.ID
-		accountID = providerConfig.AccountID
 		filters := ai.AiWorkflowsFilters{
-			ID: id,
+			ID: r.Primary.ID,
 		}
 
-		_, err := client.Workflows.GetWorkflows(accountID, "", filters)
-		if err == nil {
+		resp, err := client.Workflows.GetWorkflows(testAccountID, "", filters)
+		if len(resp.Entities) > 0 {
 			return fmt.Errorf("workflow still exists")
+		}
+
+		if err != nil {
+			return err
 		}
 
 	}
 	return nil
-}
-
-func testNewRelicWorkflowConfigByType(name string, enrichments_enabled string, destinations_enabled string, workflow_enabled string, muting_rules_handling string, enrichments string, issuesFilter string, destinationConfigurations string) string {
-	if enrichments == "" {
-		return fmt.Sprintf(`
-		resource "newrelic_workflow" "test-workflow" {
-			name = "%s"
-			enrichments_enabled = "%s"
-			destinations_enabled = "%s"
-			workflow_enabled = "%s"
-			muting_rules_handling %s
-			issues_filter = {
-				%s
-			}
-			destination_configurations {
-				%s
-			}
-		}
-	`, name, enrichments_enabled, destinations_enabled, workflow_enabled, muting_rules_handling, issuesFilter, destinationConfigurations)
-	}
-
-	return fmt.Sprintf(`
-		resource "newrelic_workflow" "test-workflow" {
-			name = "%s"
-			enrichments_enabled = "%s"
-			destinations_enabled = "%s"
-			workflow_enabled = "%s"
-			muting_rules_handling %s
-			enrichments {
-				%s
-			}
-			issues_filter = {
-				%s
-			}
-			destination_configurations {
-				%s
-			}
-		}
-	`, name, enrichments_enabled, destinations_enabled, workflow_enabled, muting_rules_handling, enrichments, issuesFilter, destinationConfigurations)
 }
 
 func testAccCheckNewRelicWorkflowExists(n string) resource.TestCheckFunc {
