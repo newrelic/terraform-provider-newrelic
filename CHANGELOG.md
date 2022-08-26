@@ -1,5 +1,7 @@
+<a name="v3.0.14"></a>
+## [v3.0.14] - 0001-01-01
 <a name="v3.0.13"></a>
-## [v3.0.13] - 0001-01-01
+## [v3.0.13] - 2022-08-26
 <a name="v3.0.12"></a>
 ## [v3.0.12] - 2022-08-26
 <a name="v3.0.11"></a>
@@ -1418,7 +1420,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.13...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.14...HEAD
+[v3.0.14]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.13...v3.0.14
 [v3.0.13]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.12...v3.0.13
 [v3.0.12]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.11...v3.0.12
 [v3.0.11]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.10...v3.0.11
