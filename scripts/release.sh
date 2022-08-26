@@ -8,13 +8,13 @@ COLOR_LIGHT_GREEN='\033[1;32m'
 DEFAULT_BRANCH='main'
 CURRENT_GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-# if [ $CURRENT_GIT_BRANCH != $DEFAULT_BRANCH ]; then
-#   printf "\n"
-#   printf "${COLOR_RED} Error: The release.sh script must be run while on the main branch. \n ${COLOR_NONE}"
-#   printf "\n"
+if [ $CURRENT_GIT_BRANCH != $DEFAULT_BRANCH ]; then
+  printf "\n"
+  printf "${COLOR_RED} Error: The release.sh script must be run while on the main branch. \n ${COLOR_NONE}"
+  printf "\n"
 
-#   exit 1
-# fi
+  exit 1
+fi
 
 # Set GOBIN env variable for Go dependencies
 GOBIN=$(go env GOPATH)/bin
