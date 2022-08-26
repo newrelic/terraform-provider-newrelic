@@ -240,7 +240,8 @@ func resourceNewRelicServiceLevelRead(ctx context.Context, d *schema.ResourceDat
 	indicators, err := client.ServiceLevel.GetIndicatorsWithContext(ctx, common.EntityGUID(sliGUID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
-			return diag.Errorf("err: SLI with id=%s not found.", d.Id())
+			d.SetId("")
+			return nil
 		}
 		return diag.FromErr(err)
 	}
