@@ -48,6 +48,41 @@ func TestNewRelicWorkflow_Basic(t *testing.T) {
 	})
 }
 
+func TestNewRelicWorkflow_Email(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+
+			// Test: Create workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationEmail(testAccountID, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicWorkflowConfigurationEmail(testAccountID, fmt.Sprintf("%s-updated", rName)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Import
+			// {
+			// 	ImportState:       true,
+			// 	ImportStateVerify: true,
+			// 	ResourceName:      resourceName,
+			// },
+		},
+	})
+}
+
 func testAccNewRelicWorkflowConfiguration(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
@@ -96,6 +131,77 @@ resource "newrelic_workflow" "foo" {
       attribute = "source"
       operator  = "EQUAL"
       values    = ["newrelic", "pagerduty"]
+    }
+  }
+
+  enrichments {
+    nrql {
+      name = "Log"
+      configurations {
+        query = "SELECT count(*) FROM Log"
+      }
+    }
+  }
+
+  destination_configuration {
+    channel_id = newrelic_notification_channel.foo.id
+  }
+}
+`, accountID, name)
+}
+
+func testAccNewRelicWorkflowConfigurationEmail(accountID int, name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "foo" {
+  account_id = %[1]d
+  name = "tf-test-destination-email"
+  type = "EMAIL"
+
+  property {
+    key   = "email"
+    value = "noreply+terraform-test@newrelic.com"
+  }
+
+  auth_basic {
+    user     = "username"
+    password = "password"
+  }
+}
+
+resource "newrelic_notification_channel" "foo" {
+  account_id     = newrelic_notification_destination.foo.account_id
+  name           = "tf-test-notification-channel-email"
+  type           = "EMAIL"
+  product        = "IINT"
+  destination_id = newrelic_notification_destination.foo.id
+
+  property {
+    key   = "subject"
+    value = "{{ issueTitle }}"
+  }
+
+	property {
+    key   = "customDetailsEmail"
+    value = "This text is a part of the email body"
+  }
+}
+
+resource "newrelic_workflow" "foo" {
+  account_id            = newrelic_notification_destination.foo.account_id
+  name                  = "%[2]s"
+  enrichments_enabled   = true
+  destinations_enabled  = true
+  workflow_enabled      = true
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+
+  issues_filter {
+    name = "example-filter-by-team-name"
+    type = "FILTER"
+
+    predicates {
+      attribute = "accumulations.tag.Team"
+      operator  = "EXACTLY_MATCHES"
+      values    = ["developer-toolkit"]
     }
   }
 
