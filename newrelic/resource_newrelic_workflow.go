@@ -127,16 +127,19 @@ func resourceNewRelicWorkflow() *schema.Resource {
 			"workflow_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     true,
 				Description: "Indicates whether the workflow is enabled.",
 			},
 			"enrichments_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     true,
 				Description: "Indicates whether the enrichments are enabled.",
 			},
 			"destinations_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     true,
 				Description: "Indicates whether the destinations are enabled.",
 			},
 			"enrichments": {

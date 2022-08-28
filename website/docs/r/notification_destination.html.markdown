@@ -15,16 +15,16 @@ Use this resource to create and manage New Relic notification destinations. Deta
 ##### [Webhook](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#webhook)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
+  account_id = 1
   name = "foo"
   type = "WEBHOOK"
 
-  properties {
+  property {
     key = "url"
     value = "https://webhook.site/"
   }
 
-  auth = {
-    type = "BASIC"
+  auth_basic {
     user = "username"
     password = "password"
   }
@@ -36,30 +36,33 @@ See additional [examples](#additional-examples).
 
 The following arguments are supported:
 
-* `account_id` - (Optional) Determines the New Relic account where the notification destination will be created. Defaults to the account associated with the API key used.
+* `account_id` - (Required) Determines the New Relic account where the notification destination will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the destination.
 * `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `WEBHOOK`, `JIRA`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
-* `auth` - A nested block that describes a notification destination authentication. Only one auth block is permitted per notification destination definition.  See [Nested auth blocks](#nested-auth-blocks) below for details.
-* `properties` - A nested block that describes a notification destination properties. See [Nested properties blocks](#nested-properties-blocks) below for details.
+* `auth_basic` - (Optional) A nested block that describes a basic username and password authentication credentials. Only one auth_basic block is permitted per notification destination definition.  See [Nested auth_basic blocks](#nested-auth_basic-blocks) below for details.
+* `auth_token` - (Optional) A nested block that describes a token authentication credentials. Only one auth_token block is permitted per notification destination definition.  See [Nested auth_token blocks](#nested-auth_token-blocks) below for details.
+* `property` - (Optional) A nested block that describes a notification destination property. See [Nested property blocks](#nested-property-blocks) below for details.
 
-### Nested `auth` blocks
+### Nested `auth_basic` blocks
 
-* `type` - (Required) The type of the auth.  One of: `TOKEN` or `BASIC`.
+* `user` - (Required) The username of the basic auth.
+* `password` - (Required) Specifies an authentication password for use with a destination.
 
-Each authentication type supports a specific set of arguments:
+### Nested `auth_token` blocks
 
-* `BASIC`
-  * `user` - (Required) The username of the basic auth.
-  * `password` - (Required) Specifies an authentication password for use with a destination.
-* `TOKEN`
-  * `prefix` - (Required) The prefix of the token auth.
-  * `token` - (Required) Specifies the token for integrating.
+* `prefix` - (Required) The prefix of the token auth.
+* `token` - (Required) Specifies the token for integrating.
 
 ~> **NOTE:** OAuth2 authentication type is not available via terraform for notifications destinations.
 
-### Nested `properties` blocks
+### Nested `property` blocks
 
-Each notification destination type supports a specific set of arguments for the `properties` block:
+* `key` - (Required) The notification property key.
+* `value` - (Required) The notification property value.
+* `label` - (Optional) The notification property label.
+* `display_value` - (Optional) The notification property display value.
+
+Each notification destination type supports a specific set of arguments for the `property` block:
 
 * `EMAIL`
   * `email` - (Required) A map of key/value pairs that represents the email addresses.
@@ -86,21 +89,21 @@ In addition to all arguments above, the following attributes are exported:
 
 ```hcl
 resource "newrelic_notification_destination" "foo" {
+  account_id = 1
   name = "servicenow-example"
   type = "SERVICE_NOW"
 
-  properties {
+  property {
     key = "url"
     value = "https://service-now.com/"
   }
 
-  properties {
+  property {
     key = "two_way_integration"
     value = "true"
   }
 
-  auth = {
-    type = "BASIC"
+  auth_basic {
     user = "username"
     password = "password"
   }
@@ -110,10 +113,11 @@ resource "newrelic_notification_destination" "foo" {
 ##### [Email](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#email)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
+  account_id = 1
   name = "email-example"
   type = "EMAIL"
 
-  properties {
+  property {
     key = "email"
     value = "email@email.com,email2@email.com"
   }
@@ -123,16 +127,16 @@ resource "newrelic_notification_destination" "foo" {
 ##### [Jira](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#jira)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
+  account_id = 1
   name = "jira-example"
   type = "JIRA"
 
-  properties {
+  property {
     key = "url"
     value = "https://example.atlassian.net"
   }
-  
-  auth = {
-    type = "BASIC"
+
+  auth_basic {
     user = "example@email.com"
     password = "password"
   }
@@ -142,11 +146,11 @@ resource "newrelic_notification_destination" "foo" {
 ##### [PagerDuty with service integration](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#pagerduty-sli)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
+  account_id = 1
   name = "pagerduty-service-example"
   type = "PAGERDUTY_SERVICE_INTEGRATION"
 
-  auth = {
-    type   = "TOKEN"
+  auth_token {
     prefix = "Token token="
     token  = "10567a689d984d03c021034b22a789e2"
   }
@@ -156,16 +160,16 @@ resource "newrelic_notification_destination" "foo" {
 ##### [PagerDuty with account integration](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#pagerduty-ali)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
+  account_id = 1
   name = "pagerduty-account-example"
   type = "PAGERDUTY_ACCOUNT_INTEGRATION"
 
-  properties {
+  property {
     key = "two_way_integration"
     value = "true"
   }
 
-  auth = {
-    type   = "TOKEN"
+  auth_token {
     prefix = "Token token="
     token  = "u+E8EU3MhsZwLfZ1ic1A"
   }

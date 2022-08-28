@@ -16,6 +16,7 @@ Use this resource to create and manage New Relic workflow.
 ```hcl
 resource "newrelic_workflow" "foo" {
   name = "workflow-example"
+  account_id = 1
   enrichments_enabled = false
   destinations_enabled = true
   workflow_enabled = true
@@ -48,11 +49,11 @@ resource "newrelic_workflow" "foo" {
     }
   }
 
-  destination_configurations {
+  destination_configuration {
     channel_id = "20d86999-169c-461a-9c16-3cf330f4b3aa"
   }
 
-  destination_configurations {
+  destination_configuration {
     channel_id = "20d86999-169a-461a-9c16-3cf330f4b3aa"
   }
 }
@@ -67,8 +68,8 @@ The following arguments are supported:
 * `enrichments_enabled` - Whether enrichments are enabled..
 * `destinations_enabled` - Whether destinations are enabled..
 * `workflow_enabled` - Whether workflow is enabled.
-* `muting_rules_handling` - Which muting rule handling this workflow has.
-* `destination_configurations` - A list of destinations channel ids.
+* `muting_rules_handling` - (Required) Which muting rule handling this workflow has.
+* `destination_configuration` - (Required) A nested block that contains a channel id.
 * `issues_filter` - (Required) The issues filter.  See [Nested issues_filter blocks](#nested-issues_filter-blocks) below for details.
 * `enrichments` - (Optional) A nested block that describes a workflow's enrichments. See [Nested enrichments blocks](#nested-enrichments-blocks) below for details.
 
