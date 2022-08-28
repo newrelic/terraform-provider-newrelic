@@ -43,8 +43,8 @@ resource "newrelic_workflow" "foo" {
     type = "FILTER"
 
     predicates {
-      attribute = "source"
-      operator = "EQUAL"
+      attribute = "accumulations.sources"
+      operator = "EXACTLY_MATCHES"
       values = [ "newrelic", "pagerduty" ]
     }
   }
@@ -54,7 +54,7 @@ resource "newrelic_workflow" "foo" {
   }
 
   destination_configuration {
-    channel_id = "20d86999-169a-461a-9c16-3cf330f4b3aa"
+    channel_id = "e6af0870-cabb-453f-bf0d-fb2b6a14e05c"
   }
 }
 ```
@@ -65,9 +65,9 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the workflow will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the workflow.
-* `enrichments_enabled` - Whether enrichments are enabled..
-* `destinations_enabled` - Whether destinations are enabled..
-* `workflow_enabled` - Whether workflow is enabled.
+* `enrichments_enabled` - (Optional) Whether enrichments are enabled..
+* `destinations_enabled` - (Optional) Whether destinations are enabled..
+* `workflow_enabled` - (Optional) Whether workflow is enabled.
 * `muting_rules_handling` - (Required) Which muting rule handling this workflow has.
 * `destination_configuration` - (Required) A nested block that contains a channel id.
 * `issues_filter` - (Required) The issues filter.  See [Nested issues_filter blocks](#nested-issues_filter-blocks) below for details.
