@@ -23,7 +23,7 @@ resource "newrelic_notification_channel" "foo" {
 
   property {
     key = "payload"
-    value = "{\n\t\"name\": \"foo\"\n}"
+    value = "name: {{ foo }}"
     label = "Payload Template"
   }
 }
