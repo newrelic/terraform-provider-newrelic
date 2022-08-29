@@ -15,7 +15,7 @@ Use this resource to create and manage New Relic notification channels. Details 
 ##### [Webhook](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#webhook)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
-  account_id = 1
+  account_id = 12345678
   name = "webhook-example"
   type = "WEBHOOK"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
@@ -80,7 +80,7 @@ In addition to all arguments above, the following attributes are exported:
 ##### [ServiceNow](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#servicenow)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
-  account_id = 1
+  account_id = 12345678
   name = "servicenow-incident-example"
   type = "SERVICENOW_INCIDENTS"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
@@ -101,7 +101,7 @@ resource "newrelic_notification_channel" "foo" {
 ##### [Email](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#email)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
-  account_id = 1
+  account_id = 12345678
   name = "email-example"
   type = "EMAIL"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
@@ -117,7 +117,7 @@ resource "newrelic_notification_channel" "foo" {
 ##### [Jira Classic](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#jira)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
-  account_id = 1
+  account_id = 12345678
   name = "jira-example"
   type = "JIRA_CLASSIC"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
@@ -148,7 +148,7 @@ resource "newrelic_notification_channel" "foo" {
 ##### [PagerDuty with account integration](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#pagerduty)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
-  account_id = 1
+  account_id = 12345678
   name = "pagerduty-account-example"
   type = "PAGERDUTY_ACCOUNT_INTEGRATION"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
@@ -174,7 +174,7 @@ resource "newrelic_notification_channel" "foo" {
 ##### [PagerDuty with service integration](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#pagerduty)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
-  account_id = 1
+  account_id = 12345678
   name = "pagerduty-account-example"
   type = "PAGERDUTY_SERVICE_INTEGRATION"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
@@ -195,7 +195,7 @@ Create a destination resource and reference that destination to the channel reso
 ### Create a destination
 ```hcl
 resource "newrelic_notification_destination" "webhook-destination" {
-  account_id = 1
+  account_id = 12345678
   name = "destination-webhook"
   type = "WEBHOOK"
 
@@ -214,7 +214,7 @@ resource "newrelic_notification_destination" "webhook-destination" {
 ### Create a channel
 ```hcl
 resource "newrelic_notification_channel" "webhook-channel" {
-  account_id = 1
+  account_id = 12345678
   name = "channel-webhook"
   type = "WEBHOOK"
   destination_id = newrelic_notification_destination.webhook-destination.id

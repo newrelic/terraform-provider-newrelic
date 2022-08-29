@@ -106,7 +106,7 @@ Create a destination resource and reference that destination to the channel reso
 ### Create a destination
 ```hcl
 resource "newrelic_notification_destination" "webhook-destination" {
-  account_id = 1
+  account_id = 12345678
   name = "destination-webhook"
   type = "WEBHOOK"
 
