@@ -15,7 +15,7 @@ Use this resource to create and manage New Relic notification destinations. Deta
 ##### [Webhook](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#webhook)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
-  account_id = 1
+  account_id = 12345678
   name = "foo"
   type = "WEBHOOK"
 
@@ -89,7 +89,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ```hcl
 resource "newrelic_notification_destination" "foo" {
-  account_id = 1
+  account_id = 12345678
   name = "servicenow-example"
   type = "SERVICE_NOW"
 
@@ -113,7 +113,7 @@ resource "newrelic_notification_destination" "foo" {
 ##### [Email](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#email)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
-  account_id = 1
+  account_id = 12345678
   name = "email-example"
   type = "EMAIL"
 
@@ -127,7 +127,7 @@ resource "newrelic_notification_destination" "foo" {
 ##### [Jira](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#jira)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
-  account_id = 1
+  account_id = 12345678
   name = "jira-example"
   type = "JIRA"
 
@@ -146,7 +146,7 @@ resource "newrelic_notification_destination" "foo" {
 ##### [PagerDuty with service integration](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#pagerduty-sli)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
-  account_id = 1
+  account_id = 12345678
   name = "pagerduty-service-example"
   type = "PAGERDUTY_SERVICE_INTEGRATION"
 
@@ -160,7 +160,7 @@ resource "newrelic_notification_destination" "foo" {
 ##### [PagerDuty with account integration](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#pagerduty-ali)
 ```hcl
 resource "newrelic_notification_destination" "foo" {
-  account_id = 1
+  account_id = 12345678
   name = "pagerduty-account-example"
   type = "PAGERDUTY_ACCOUNT_INTEGRATION"
 
