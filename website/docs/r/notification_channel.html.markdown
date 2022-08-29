@@ -15,14 +15,15 @@ Use this resource to create and manage New Relic notification channels. Details 
 ##### [Webhook](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#webhook)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
+  account_id = 12345678
   name = "webhook-example"
   type = "WEBHOOK"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "IINT"
 
-  properties {
+  property {
     key = "payload"
-    value = "{\n\t\"name\": \"foo\"\n}"
+    value = "name: {{ foo }}"
     label = "Payload Template"
   }
 }
@@ -38,11 +39,16 @@ The following arguments are supported:
 * `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `WEBHOOK`, `JIRA_CLASSIC`, `JIRA_NEXTGEN`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
 * `destination_id` - (Required) The id of the destination.
 * `product` - (Required) The type of product.  One of: `DISCUSSIONS`, `ERROR_TRACKING` or `IINT` (workflows).
-* `properties` - A nested block that describes a notification channel properties. See [Nested properties blocks](#nested-properties-blocks) below for details.
+* `property` - A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
 
-### Nested `properties` blocks
+### Nested `property` blocks
 
-Each notification channel type supports a specific set of arguments for the `properties` block:
+* `key` - (Required) The notification property key.
+* `value` - (Required) The notification property value.
+* `label` - (Optional) The notification property label.
+* `display_value` - (Optional) The notification property display value.
+* 
+Each notification channel type supports a specific set of arguments for the `property` block:
 
 * `WEBHOOK`
   * `headers` - (Optional) A map of key/value pairs that represents the webhook headers.
@@ -74,17 +80,18 @@ In addition to all arguments above, the following attributes are exported:
 ##### [ServiceNow](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#servicenow)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
+  account_id = 12345678
   name = "servicenow-incident-example"
   type = "SERVICENOW_INCIDENTS"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "IINT"
 
-  properties {
+  property {
     key = "description"
     value = "General description"
   }
 
-  properties {
+  property {
     key = "short_description"
     value = "Short description"
   }
@@ -94,12 +101,13 @@ resource "newrelic_notification_channel" "foo" {
 ##### [Email](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#email)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
+  account_id = 12345678
   name = "email-example"
   type = "EMAIL"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "ERROR_TRACKING"
 
-  properties {
+  property {
     key = "subject"
     value = "New Subject Title"
   }
@@ -109,27 +117,28 @@ resource "newrelic_notification_channel" "foo" {
 ##### [Jira Classic](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#jira)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
+  account_id = 12345678
   name = "jira-example"
   type = "JIRA_CLASSIC"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "ERROR_TRACKING"
-  
-  properties {
+
+  property {
     key = "project"
     value = "10000"
   }
 
-  properties {
+  property {
     key = "issuetype"
     value = "10004"
   }
 
-  properties {
+  property {
     key = "description"
     value = "Issue ID: {{ issueId }}"
   }
 
-  properties {
+  property {
     key = "summary"
     value = "{{ annotations.title.[0] }}"
   }
@@ -139,22 +148,23 @@ resource "newrelic_notification_channel" "foo" {
 ##### [PagerDuty with account integration](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#pagerduty)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
+  account_id = 12345678
   name = "pagerduty-account-example"
   type = "PAGERDUTY_ACCOUNT_INTEGRATION"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "IINT"
 
-  properties {
+  property {
     key = "summary"
     value = "General summary"
   }
 
-  properties {
+  property {
     key = "service"
     value = "PTQK3FM"
   }
 
-  properties {
+  property {
     key = "email"
     value = "example@email.com"
   }
@@ -164,12 +174,13 @@ resource "newrelic_notification_channel" "foo" {
 ##### [PagerDuty with service integration](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#pagerduty)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
+  account_id = 12345678
   name = "pagerduty-account-example"
   type = "PAGERDUTY_SERVICE_INTEGRATION"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "IINT"
 
-  properties {
+  property {
     key = "summary"
     value = "General summary"
   }
@@ -177,6 +188,45 @@ resource "newrelic_notification_channel" "foo" {
 ```
 
 ~> **NOTE:** Sensitive data such as channel API keys, service keys, etc are not returned from the underlying API for security reasons and may not be set in state when importing.
+
+## Full Scenario Example
+Create a destination resource and reference that destination to the channel resource:
+
+### Create a destination
+```hcl
+resource "newrelic_notification_destination" "webhook-destination" {
+  account_id = 12345678
+  name = "destination-webhook"
+  type = "WEBHOOK"
+
+  property {
+    key = "url"
+    value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
+  }
+
+  auth_basic {
+    user = "username"
+    password = "password"
+  }
+}
+```
+
+### Create a channel
+```hcl
+resource "newrelic_notification_channel" "webhook-channel" {
+  account_id = 12345678
+  name = "channel-webhook"
+  type = "WEBHOOK"
+  destination_id = newrelic_notification_destination.webhook-destination.id
+  product = "IINT"
+
+  property {
+    key = "payload"
+    value = "{name: foo}"
+    label = "Payload Template"
+  }
+}
+```
 
 ## Additional Information
 More details about the channels API can be found [here](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels).
