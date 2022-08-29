@@ -16,7 +16,7 @@ Use this resource to create and manage New Relic workflow.
 ```hcl
 resource "newrelic_workflow" "foo" {
   name = "workflow-example"
-  account_id = 1
+  account_id = 12345678
   enrichments_enabled = false
   destinations_enabled = true
   workflow_enabled = true
@@ -125,7 +125,7 @@ resource "newrelic_notification_destination" "webhook-destination" {
 ### Create a channel
 ```hcl
 resource "newrelic_notification_channel" "webhook-channel" {
-  account_id = 1
+  account_id = 12345678
   name = "channel-webhook"
   type = "WEBHOOK"
   destination_id = newrelic_notification_destination.webhook-destination.id
@@ -143,7 +143,7 @@ resource "newrelic_notification_channel" "webhook-channel" {
 ```hcl
 resource "newrelic_workflow" "workflow-example" {
   name = "workflow-example"
-  account_id = 1
+  account_id = 12345678
   muting_rules_handling = "NOTIFY_ALL_ISSUES"
 
   enrichments {
