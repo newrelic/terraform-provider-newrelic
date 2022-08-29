@@ -100,5 +100,77 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the workflow.
 
+## Full Scenario Example
+Create a destination resource and reference that destination to the channel resource. Then create a workflow and reference the channel resource to it.
+
+### Create a destination
+```hcl
+resource "newrelic_notification_destination" "webhook-destination" {
+  account_id = 1
+  name = "destination-webhook"
+  type = "WEBHOOK"
+
+  property {
+    key = "url"
+    value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
+  }
+
+  auth_basic {
+    user = "username"
+    password = "password"
+  }
+}
+```
+
+### Create a channel
+```hcl
+resource "newrelic_notification_channel" "webhook-channel" {
+  account_id = 1
+  name = "channel-webhook"
+  type = "WEBHOOK"
+  destination_id = newrelic_notification_destination.webhook-destination.id
+  product = "IINT"
+
+  property {
+    key = "payload"
+    value = "{name: foo}"
+    label = "Payload Template"
+  }
+}
+```
+
+### Create a workflow
+```hcl
+resource "newrelic_workflow" "workflow-example" {
+  name = "workflow-example"
+  account_id = 1
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+
+  enrichments {
+    nrql {
+      name = "Log count"
+      configurations {
+       query = "SELECT count(*) FROM Log"
+      }
+    }
+  }
+
+  issues_filter {
+    name = "Filter-name"
+    type = "FILTER"
+
+    predicates {
+      attribute = "accumulations.sources"
+      operator = "EXACTLY_MATCHES"
+      values = [ "newrelic" ]
+    }
+  }
+
+  destination_configuration {
+    channel_id = newrelic_notification_channel.webhook-channel.id
+  }
+}
+```
+
 ## Additional Information
 More details about the workflows can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/applied-intelligence/incident-workflows/incident-workflows/).

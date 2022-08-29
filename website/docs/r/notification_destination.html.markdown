@@ -62,7 +62,7 @@ The following arguments are supported:
 * `label` - (Optional) The notification property label.
 * `display_value` - (Optional) The notification property display value.
 
-Each notification destination type supports a specific set of arguments for the `property` block:
+Each notification destination type supports a specific set of arguments for the `property` block. See [Additional Examples](#additional-examples) below for details:
 
 * `EMAIL`
   * `email` - (Required) A map of key/value pairs that represents the email addresses.
