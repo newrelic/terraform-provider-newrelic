@@ -811,7 +811,7 @@ func resourceNewRelicAwsGovCloudIntegrationsCreate(ctx context.Context, d *schem
 }
 
 // TODO: Reduce the cyclomatic complexity of this func
-//nolint: gocyclo
+// nolint: gocyclo
 func expandAwsGovCloudIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
 	awsGovCloudIntegration := cloud.CloudAwsGovcloudIntegrationsInput{}
 	cloudDisableAwsGovCloudIntegration := cloud.CloudAwsGovcloudDisableIntegrationsInput{}
@@ -1834,7 +1834,7 @@ func resourceNewRelicAwsGovCloudIntegrationsRead(ctx context.Context, d *schema.
 
 /// flatten
 
-//nolint: gocyclo
+// nolint: gocyclo
 func flattenAwsGovCloudLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
 	_ = d.Set("account_id", result.NrAccountId)
 	_ = d.Set("linked_account_id", result.ID)
@@ -2296,7 +2296,7 @@ func resourceNewRelicAwsGovCloudIntegrationsDelete(ctx context.Context, d *schem
 	return nil
 }
 
-//nolint: gocyclo
+// nolint: gocyclo
 func expandAwsGovCloudDisableInputs(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
 	awsGovCloudDisableInputs := cloud.CloudAwsGovcloudDisableIntegrationsInput{}
 	var linkedAccountID int

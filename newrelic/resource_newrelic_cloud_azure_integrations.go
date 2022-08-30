@@ -250,7 +250,7 @@ func cloudAzureIntegrationSchemaBase() map[string]*schema.Schema {
 	}
 }
 
-//function to add schema for azure API management
+// function to add schema for azure API management
 func cloudAzureIntegrationAPIManagementElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
@@ -404,7 +404,7 @@ func cloudAzureIntegrationExpressRouteElem() *schema.Resource {
 
 }
 
-//function to add schema for azure firewalls
+// function to add schema for azure firewalls
 func cloudAzureIntegrationFirewallsElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
@@ -539,7 +539,7 @@ func cloudAzureIntegrationMariadbElem() *schema.Resource {
 
 }
 
-//  function to add schema for azure mysql
+// function to add schema for azure mysql
 func cloudAzureIntegrationMysqlElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
@@ -778,10 +778,10 @@ func resourceNewRelicCloudAzureIntegrationsCreate(ctx context.Context, d *schema
 	return nil
 }
 
-//expand function to extract inputs from the schema.
-//It takes ResourceData as input and returns CloudDisableIntegrationsInput.
+// expand function to extract inputs from the schema.
+// It takes ResourceData as input and returns CloudDisableIntegrationsInput.
 // TODO: Reduce the cyclomatic complexity of this func
-//nolint: gocyclo
+// nolint: gocyclo
 func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
 	cloudAzureIntegration := cloud.CloudAzureIntegrationsInput{}
 	cloudDisableAzureIntegration := cloud.CloudAzureDisableIntegrationsInput{}
@@ -2046,7 +2046,7 @@ func resourceNewRelicCloudAzureIntegrationsRead(ctx context.Context, d *schema.R
 
 /// flatten
 
-//nolint: gocyclo
+// nolint: gocyclo
 func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
 	_ = d.Set("account_id", result.NrAccountId)
 	_ = d.Set("linked_account_id", result.ID)
@@ -2593,7 +2593,7 @@ func resourceNewRelicCloudAzureIntegrationsUpdate(ctx context.Context, d *schema
 	return nil
 }
 
-/// Delete
+// / Delete
 func resourceNewRelicCloudAzureIntegrationsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -2621,7 +2621,7 @@ func resourceNewRelicCloudAzureIntegrationsDelete(ctx context.Context, d *schema
 	return nil
 }
 
-//nolint: gocyclo
+// nolint: gocyclo
 func expandCloudAzureDisableInputs(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
 	cloudAzureDisableInput := cloud.CloudAzureDisableIntegrationsInput{}
 	var linkedAccountID int
