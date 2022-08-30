@@ -3,6 +3,8 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"github.com/newrelic/newrelic-client-go/pkg/common"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"log"
 	"strconv"
 	"strings"
@@ -32,6 +34,11 @@ func resourceNewRelicWorkload() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The workload's name.",
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Relevant information about the workload.",
 			},
 			"entity_guids": {
 				Type:        schema.TypeSet,
@@ -93,7 +100,7 @@ func resourceNewRelicWorkloadCreate(ctx context.Context, d *schema.ResourceData,
 
 	log.Printf("[INFO] Creating New Relic One workload %s", createInput.Name)
 
-	created, err := client.Workloads.CreateWorkloadWithContext(ctx, accountID, createInput)
+	created, err := client.Workloads.WorkloadCreateWithContext(ctx, accountID, createInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -110,13 +117,11 @@ func resourceNewRelicWorkloadCreate(ctx context.Context, d *schema.ResourceData,
 
 func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
-
 	ids, err := parseWorkloadIDs(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	workload, err := client.Workloads.GetWorkloadWithContext(ctx, ids.AccountID, ids.GUID)
+	resp, err := client.Entities.GetEntityWithContext(ctx, ids.GUID)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -126,7 +131,16 @@ func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return diag.FromErr(flattenWorkload(workload, d))
+	switch workload := (*resp).(type) {
+	case *entities.WorkloadEntity:
+		err := setWorkloadAttributes(d, map[string]string{
+			"name": workload.Name,
+		})
+		if err != nil {
+			diag.FromErr(err)
+		}
+	}
+	return nil
 }
 
 func resourceNewRelicWorkloadUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -140,7 +154,7 @@ func resourceNewRelicWorkloadUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_, err = client.Workloads.UpdateWorkloadWithContext(ctx, ids.GUID, updateInput)
+	_, err = client.Workloads.WorkloadUpdateWithContext(ctx, ids.GUID, updateInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -160,7 +174,7 @@ func resourceNewRelicWorkloadDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	if _, err := client.Workloads.DeleteWorkloadWithContext(ctx, ids.GUID); err != nil {
+	if _, err := client.Workloads.WorkloadDeleteWithContext(ctx, common.EntityGUID(ids.GUID)); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -183,14 +197,14 @@ func parseWorkloadIDs(ids string) (*workloadIDs, error) {
 	return &workloadIDs{
 		AccountID: int(accountID),
 		ID:        int(workloadID),
-		GUID:      split[2],
+		GUID:      common.EntityGUID(split[2]),
 	}, nil
 }
 
 type workloadIDs struct {
 	AccountID int
 	ID        int
-	GUID      string
+	GUID      common.EntityGUID
 }
 
 func (w *workloadIDs) String() string {

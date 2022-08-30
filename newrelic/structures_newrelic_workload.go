@@ -2,11 +2,12 @@ package newrelic
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/workloads"
 )
 
-func expandWorkloadCreateInput(d *schema.ResourceData) workloads.CreateInput {
-	createInput := workloads.CreateInput{
+func expandWorkloadCreateInput(d *schema.ResourceData) workloads.WorkloadCreateInput {
+	createInput := workloads.WorkloadCreateInput{
 		Name: d.Get("name").(string),
 	}
 
@@ -19,15 +20,18 @@ func expandWorkloadCreateInput(d *schema.ResourceData) workloads.CreateInput {
 	}
 
 	if e, ok := d.GetOk("scope_account_ids"); ok {
-		createInput.ScopeAccountsInput = expandWorkloadScopeAccountsInput(e.(*schema.Set).List())
+		createInput.ScopeAccounts = expandWorkloadScopeAccountsInput(e.(*schema.Set).List())
+	}
+	if e, ok := d.GetOk("description"); ok {
+		createInput.Description = e.(string)
 	}
 
 	return createInput
 }
 
-func expandWorkloadUpdateInput(d *schema.ResourceData) workloads.UpdateInput {
+func expandWorkloadUpdateInput(d *schema.ResourceData) workloads.WorkloadUpdateInput {
 	name := d.Get("name").(string)
-	updateInput := workloads.UpdateInput{
+	updateInput := workloads.WorkloadUpdateInput{
 		Name: name,
 	}
 
@@ -36,36 +40,36 @@ func expandWorkloadUpdateInput(d *schema.ResourceData) workloads.UpdateInput {
 	}
 
 	if e, ok := d.GetOk("entity_search_query"); ok {
-		updateInput.EntitySearchQueries = expandWorkloadEntitySearchQueryInputs(e.(*schema.Set).List())
+		updateInput.EntitySearchQueries = expandWorkloadUpdateCollectionEntitySearchQueryInputs(e.(*schema.Set).List())
 	}
 
 	if e, ok := d.GetOk("scope_account_ids"); ok {
-		updateInput.ScopeAccountsInput = expandWorkloadScopeAccountsInput(e.(*schema.Set).List())
+		updateInput.ScopeAccounts = expandWorkloadScopeAccountsInput(e.(*schema.Set).List())
 	}
 
 	return updateInput
 }
 
-func expandWorkloadEntityGUIDs(cfg []interface{}) []string {
+func expandWorkloadEntityGUIDs(cfg []interface{}) []common.EntityGUID {
 	if len(cfg) == 0 {
-		return []string{}
+		return []common.EntityGUID{}
 	}
 
-	perms := make([]string, len(cfg))
+	perms := make([]common.EntityGUID, len(cfg))
 
 	for i, rawCfg := range cfg {
-		perms[i] = rawCfg.(string)
+		perms[i] = common.EntityGUID(rawCfg.(string))
 	}
 
 	return perms
 }
 
-func expandWorkloadEntitySearchQueryInputs(cfg []interface{}) []workloads.EntitySearchQueryInput {
+func expandWorkloadEntitySearchQueryInputs(cfg []interface{}) []workloads.WorkloadEntitySearchQueryInput {
 	if len(cfg) == 0 {
-		return []workloads.EntitySearchQueryInput{}
+		return []workloads.WorkloadEntitySearchQueryInput{}
 	}
 
-	perms := make([]workloads.EntitySearchQueryInput, len(cfg))
+	perms := make([]workloads.WorkloadEntitySearchQueryInput, len(cfg))
 
 	for i, rawCfg := range cfg {
 		cfg := rawCfg.(map[string]interface{})
@@ -77,8 +81,8 @@ func expandWorkloadEntitySearchQueryInputs(cfg []interface{}) []workloads.Entity
 	return perms
 }
 
-func expandWorkloadEntitySearchQueryInput(cfg map[string]interface{}) workloads.EntitySearchQueryInput {
-	queryInput := workloads.EntitySearchQueryInput{}
+func expandWorkloadEntitySearchQueryInput(cfg map[string]interface{}) workloads.WorkloadEntitySearchQueryInput {
+	queryInput := workloads.WorkloadEntitySearchQueryInput{}
 
 	if query, ok := cfg["query"]; ok {
 		queryInput.Query = query.(string)
@@ -87,8 +91,8 @@ func expandWorkloadEntitySearchQueryInput(cfg map[string]interface{}) workloads.
 	return queryInput
 }
 
-func expandWorkloadScopeAccountsInput(cfg []interface{}) *workloads.ScopeAccountsInput {
-	scopeAccounts := workloads.ScopeAccountsInput{}
+func expandWorkloadScopeAccountsInput(cfg []interface{}) *workloads.WorkloadScopeAccountsInput {
+	scopeAccounts := workloads.WorkloadScopeAccountsInput{}
 
 	for _, a := range cfg {
 		scopeAccounts.AccountIDs = append(scopeAccounts.AccountIDs, a.(int))
@@ -97,40 +101,42 @@ func expandWorkloadScopeAccountsInput(cfg []interface{}) *workloads.ScopeAccount
 	return &scopeAccounts
 }
 
-func flattenWorkload(workload *workloads.Workload, d *schema.ResourceData) error {
-	_ = d.Set("account_id", workload.Account.ID)
-	_ = d.Set("guid", workload.GUID)
-	_ = d.Set("workload_id", workload.ID)
-	_ = d.Set("name", workload.Name)
-	_ = d.Set("permalink", workload.Permalink)
-	_ = d.Set("composite_entity_search_query", workload.EntitySearchQuery)
+func expandWorkloadUpdateCollectionEntitySearchQueryInputs(cfg []interface{}) []workloads.WorkloadUpdateCollectionEntitySearchQueryInput {
+	if len(cfg) == 0 {
+		return []workloads.WorkloadUpdateCollectionEntitySearchQueryInput{}
+	}
 
-	_ = d.Set("entity_guids", flattenWorkloadEntityGUIDs(workload.Entities))
-	_ = d.Set("entity_search_query", flattenWorkloadEntitySearchQueries(workload.EntitySearchQueries))
-	_ = d.Set("scope_account_ids", workload.ScopeAccounts.AccountIDs)
+	perms := make([]workloads.WorkloadUpdateCollectionEntitySearchQueryInput, len(cfg))
+
+	for i, rawCfg := range cfg {
+		cfg := rawCfg.(map[string]interface{})
+		entitySearchQuery := expandWorkloadUpdateCollectionEntitySearchQueryInput(cfg)
+
+		perms[i] = entitySearchQuery
+	}
+
+	return perms
+}
+
+func expandWorkloadUpdateCollectionEntitySearchQueryInput(cfg map[string]interface{}) workloads.WorkloadUpdateCollectionEntitySearchQueryInput {
+	queryInput := workloads.WorkloadUpdateCollectionEntitySearchQueryInput{}
+
+	if query, ok := cfg["query"]; ok {
+		queryInput.Query = query.(string)
+	}
+
+	return queryInput
+}
+
+// Handles setting simple string attributes in the schema. If the attribute/key is
+// invalid or the value is not a correct type, an error will be returned.
+func setWorkloadAttributes(d *schema.ResourceData, attributes map[string]string) error {
+	for key := range attributes {
+		err := d.Set(key, attributes[key])
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
-}
-
-func flattenWorkloadEntityGUIDs(in []workloads.EntityRef) interface{} {
-	out := make([]interface{}, len(in))
-
-	for i, e := range in {
-		out[i] = e.GUID
-	}
-
-	return out
-}
-
-func flattenWorkloadEntitySearchQueries(in []workloads.EntitySearchQuery) interface{} {
-	out := make([]interface{}, len(in))
-
-	for i, e := range in {
-		m := make(map[string]interface{})
-		m["query"] = e.Query
-
-		out[i] = m
-	}
-
-	return out
 }
