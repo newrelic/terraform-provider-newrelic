@@ -140,3 +140,33 @@ func setWorkloadAttributes(d *schema.ResourceData, attributes map[string]string)
 
 	return nil
 }
+
+func listValidWorkloadStatuses() []string {
+	return []string{
+		string(workloads.WorkloadStatusValueTypes.DEGRADED),
+		string(workloads.WorkloadStatusValueTypes.OPERATIONAL),
+		string(workloads.WorkloadStatusValueTypes.UNKNOWN),
+		string(workloads.WorkloadStatusValueTypes.DISRUPTED),
+	}
+}
+
+func listValidWorkloadGroupBy() []string {
+	return []string{
+		string(workloads.WorkloadResultingGroupTypeTypes.REGULAR_GROUP),
+		string(workloads.WorkloadResultingGroupTypeTypes.REMAINING_ENTITIES),
+	}
+}
+
+func listValidWorkloadStrategy() []string {
+	return []string{
+		string(workloads.WorkloadRollupStrategyTypes.BEST_STATUS_WINS),
+		string(workloads.WorkloadRollupStrategyTypes.WORST_STATUS_WINS),
+	}
+}
+
+func listValidWorkloadRuleThresholdType() []string {
+	return []string{
+		string(workloads.WorkloadRuleThresholdTypeTypes.FIXED),
+		string(workloads.WorkloadRuleThresholdTypeTypes.PERCENTAGE),
+	}
+}
