@@ -8,9 +8,9 @@ COLOR_LIGHT_GREEN='\033[1;32m'
 DEFAULT_BRANCH='main'
 CURRENT_GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-if [ $CURRENT_GIT_BRANCH != $DEFAULT_BRANCH ]; then
+if [ $CURRENT_GIT_BRANCH != $DEFAULT_BRANCH ] && [ $CURRENT_GIT_BRANCH != 'v2' ]; then
   printf "\n"
-  printf "${COLOR_RED} Error: The release.sh script must be run while on the main branch. \n ${COLOR_NONE}"
+  printf "${COLOR_RED} Error: The release.sh script must be run while on the main or v2 branch. \n ${COLOR_NONE}"
   printf "\n"
 
   exit 1
@@ -73,7 +73,7 @@ ${SPELL_CMD} -source text -w ${CHANGELOG_FILE}
 # Commit CHANGELOG updates
 git add ${CHANGELOG_FILE}
 git commit --no-verify -m "chore(changelog): update CHANGELOG for ${VER_NEXT}"
-git push --no-verify origin HEAD:${DEFAULT_BRANCH}
+git push --no-verify origin HEAD:${CURRENT_GIT_BRANCH}
 
 if [ $? -ne 0 ]; then
   echo "Failed to push branch updates, exiting"
@@ -82,7 +82,7 @@ fi
 
 # Create and push new tag
 git tag ${VER_NEXT}
-git push --no-verify origin HEAD:${DEFAULT_BRANCH} --tags
+git push --no-verify origin HEAD:${CURRENT_GIT_BRANCH} --tags
 
 if [ $? -ne 0 ]; then
   echo "Failed to push tag, exiting"
