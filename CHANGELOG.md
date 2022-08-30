@@ -1,3 +1,72 @@
+<a name="v2.50.0"></a>
+## [v2.50.0] - 2022-08-30
+### Features
+- updated dependencies
+
+<a name="v3.0.1"></a>
+## [v3.0.1] - 2022-08-29
+<a name="v3.0.0"></a>
+## [v3.0.0] - 2022-08-26
+### Bug Fixes
+- **Notifications:** add update to destinations and channels + rename properties
+- **Notifications:** pr review fixes: not needed remove computes and forcenew
+- **channels:** renaming - wip
+- **channels:** add tests
+- **channels:** small renaming
+- **channels:** fix lint
+- **destinations:** general adjustments for destinations read functionality
+- **destinations:** upgrade client version
+- **destinations:** update docs
+- **docs:** add notifications resources to index doc
+- **newrelic_entity_tags:** extended timeout to see if it fixes not found errors
+- **notification_channel:** ignore channel not found error during terraform destroy (deleting workflow deletes channel)
+- **notifications:** add custom errors handling to notifications
+- **notifications:** fix tests -wip
+- **notifications:** fix tests
+- **notifications:** fix tests + add jira
+- **notifications:** cr changes
+- **notifications:** add tests + update docs
+- **notifications:** update docs
+- **notifications:** add internal property
+- **notifications:** upgrade newrelic-client-go
+- **notifications:** lint fix
+- **nrql_alert_condition:** do not show diff for streaming methods when not provided and defaults are used
+- **nrql_alert_condition:** update docs and validation for 'expiration_duration'
+- **workflows:** add custom errors handling to workflows
+- **workflows:** small workflows test twick
+- **workflows:** upgrade newrelic-client-go
+- **workflows:** lint fix
+
+### Documentation Updates
+- add v3 migration guide
+- boeken links monitor docs
+- documentation for cert_broken_step monitors
+- added the changes in website guide
+- adding the website guides
+- doc of simple & browser synthectics monitor
+- **synthetics:** update docs for private location data source
+
+### Features
+- swap secure credential resource to GraphQL API
+- add new synthetics resources
+- **newrelic_synthetics_cert_check_monitor:** adding cert check monitor
+- **synthetics:** added private location resource
+- **synthetics:** add step monitor resource
+- **synthetics:** [wip] add broken links monitor resource
+- **synthetics:** add newrelic_synthetics_script_monitor resource
+- **synthetics:** migrate monitor location data source to new GraphQL API
+- **workflows:** add workflows resources - wip
+- **workflows:** add workflows resources
+- **workflows:** add workflows resources workinggg - wip
+- **workflows:** add tests
+- **workflows:** resolve conflict
+
+### BREAKING CHANGE
+
+new synthetics resources use GraphQL API schema
+
+<a name="2.51.0"></a>
+## [2.51.0] - 2022-07-22
 <a name="v2.49.1"></a>
 ## [v2.49.1] - 2022-07-22
 ### Bug Fixes
@@ -164,8 +233,8 @@
 <a name="v2.41.2"></a>
 ## [v2.41.2] - 2022-03-25
 ### Bug Fixes
-- Allow 0 values for aggregation_delay
 - add len check when creating cloud link accounts
+- Allow 0 values for aggregation_delay
 - Allow 0 values for aggregation_delay
 - **cloud:** add import
 - **cloud_azure_link_account:** rename client_secret_id to client_secret
@@ -231,20 +300,20 @@
 - fixed mistakes in the Doc
 
 ### Documentation Updates
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
+- added gcp integration documentation
+- minor changes
+- added gcp integration documentation
+- added gcp integration documentation
 - minor changes
 - added gcp integration documentation
 - added gcp integration documentation
 - added gcp integration documentation
-- added gcp integration documentation
-- minor changes
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
-- added gcp integration documentation
-- update version in docs
 - add cloud_aws_link_account resource to docs
+- update version in docs
 - **servicelevel:** SLO periods now include complete weeks
 
 ### Features
@@ -464,10 +533,10 @@
 - **OneDashboardRaw:** Update docs
 
 ### Features
-- use client method context from within resources
 - removed binary file
 - fix tests
 - 0 violation TTL for Infra Conditions returns warning
+- use client method context from within resources
 - **MonitorScript:** Add monitor script locations
 - **dashboard_raw:** add newrelic_one_dashboard_raw
 - **docs:** added documentation links to the dashboard migration guide
@@ -701,14 +770,14 @@
 <a name="v2.8.0"></a>
 ## [v2.8.0] - 2020-09-30
 ### Documentation Updates
-- update infra alert condition api key type
-- update changelog
 - update development instructions for new TF version
 - DEPRECATION notice for newrelic_alert_condition
 - update supported Go information and test config
+- update infra alert condition api key type
+- update changelog
 - **README:** update provider configuration pin version examples
-- **dashboard:** update docs with info regarding widget.account_id and cross-account widgets
 - **dashboard:** add cross-account example
+- **dashboard:** update docs with info regarding widget.account_id and cross-account widgets
 
 ### Features
 - **dashboard:** support cross-account widgets :)
@@ -862,12 +931,12 @@
 - **alerts:** improve nil handling for alert_channel
 
 ### Documentation Updates
-- **provider:** additional v2 updates, migration guide updates
 - **provider:** add getting started guide to the quick links
 - **provider:** fix incorrect newrelic_application reference in some examples
 - **provider:** add account_id to argument reference, move argument reference above the fold
 - **provider:** add environment variables and schema attribute table
 - **provider:** update getting started example to reflect v2 updates
+- **provider:** additional v2 updates, migration guide updates
 - **readme:** update title, add link to latest documentation
 
 <a name="v2.1.1"></a>
@@ -890,30 +959,30 @@
 - Require condition_scope = `instance` for validation_close_timer
 - Add validation to newrelic_alert_condtion condition_scope
 - **alerts:** remove DiffSuppressFunc on TypeSet to avoid test drift
-- **alerts:** infra alert condition zero value detection
 - **alerts:** handle a nil reference with more grace
+- **alerts:** infra alert condition zero value detection
 - **application_settings:** Remove delete, as it is not possible
 - **deps:** Revert terraform sdk to 1.10.0
 - **newrelic:** fix the failing integration tests ([#519](https://github.com/newrelic/terraform-provider-newrelic/issues/519))
 - **nrql_alert_condition:** threshold_occurrences is case insensitive, attribute description updates
 
 ### Documentation Updates
-- add callout to top of each v1.x doc page
-- tidy up after review
+- update API key references to match desires
+- prep for v2.x, isolate v1.x docs
 - DEPRECATION notice for 1.x
 - update index header with improved words
-- update getting started guide to reference new material
-- update README with new pointers
-- add table for current endpoint in use per resource
-- include documentation about upgrading the provider to 2.x
-- update API key references to match desires
 - include v1 index.html in sidebar
-- prep for v2.x, isolate v1.x docs
+- update README with new pointers
+- tidy up after review
+- add table for current endpoint in use per resource
+- update getting started guide to reference new material
+- add callout to top of each v1.x doc page
+- include documentation about upgrading the provider to 2.x
 - **alert_channel:** fix broken 'nested config' anchor link
-- **alerts:** include caveat about NRQL alerts condition operator usage with outliers
+- **alerts:** update examples to reflect deprecation
 - **alerts:** update wording to avoid implementation details
 - **alerts:** include deprecation notice for "terms"
-- **alerts:** update examples to reflect deprecation
+- **alerts:** include caveat about NRQL alerts condition operator usage with outliers
 - **getting started:** fix resource naming
 - **nrql_alert_condition:** add outlier example, add new attributes, deprecate old attributes, update import section
 - **nrql_alert_condition:** update docs to reflect version 2.0 changes
@@ -1326,7 +1395,11 @@
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.50.0...HEAD
+[v2.50.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.1...v2.50.0
+[v3.0.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.0...v3.0.1
+[v3.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.51.0...v3.0.0
+[2.51.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.1...2.51.0
 [v2.49.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.0...v2.49.1
 [v2.49.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.2...v2.49.0
 [v2.48.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.1...v2.48.2
