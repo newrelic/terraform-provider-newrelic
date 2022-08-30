@@ -52,8 +52,61 @@ func expandWorkloadUpdateInput(d *schema.ResourceData) workloads.WorkloadUpdateI
 	if e, ok := d.GetOk("scope_account_ids"); ok {
 		updateInput.ScopeAccounts = expandWorkloadScopeAccountsInput(e.(*schema.Set).List())
 	}
+	if e, ok := d.GetOk("description"); ok {
+		updateInput.Description = e.(string)
+	}
+	if e, ok := d.GetOk("status_config_static"); ok {
+		updateInput.StatusConfig.Static = expandWorkloadUpdateStatusConfigStaticInput(e.(*schema.Set).List())
+	}
+	if _, ok := d.GetOk("status_config_automatic"); ok {
+		updateInput.StatusConfig.Automatic = expandWorkloadUpdateStatusConfigAutomaticInput(d)
+	}
 
 	return updateInput
+}
+
+func expandWorkloadUpdateStatusConfigAutomaticInput(d *schema.ResourceData) workloads.WorkloadUpdateAutomaticStatusInput {
+	autoOut := workloads.WorkloadUpdateAutomaticStatusInput{
+		Enabled: d.Get("enabled").(bool),
+	}
+	if e, ok := d.GetOk("remaining_entities_rule_rollup"); ok {
+		autoOut.RemainingEntitiesRule.Rollup = expandRemainingEntityRuleRollup(e.(*schema.Set).List())
+	}
+	if e, ok := d.GetOk("rules"); ok {
+		autoOut.Rules = expandUpdateAutoConfigRule(e.(*schema.Set).List())
+	}
+	return autoOut
+}
+
+func expandUpdateAutoConfigRule(list []interface{}) []workloads.WorkloadUpdateRegularRuleInput {
+	ruleOut := make([]workloads.WorkloadUpdateRegularRuleInput, len(list))
+	for i, r := range list {
+		setRule := r.(map[string]interface{})
+		x := workloads.WorkloadUpdateRegularRuleInput{
+			EntityGUIDs:         expandWorkloadEntityGUIDs(setRule["entity_guids"].(*schema.Set).List()),
+			EntitySearchQueries: expandWorkloadUpdateCollectionEntitySearchQueryInputs(setRule["nrql_query"].(*schema.Set).List()),
+			Rollup:              expandRuleRollUp(setRule["rollup"].(*schema.Set).List()),
+		}
+		ruleOut[i] = x
+	}
+	return ruleOut
+}
+
+func expandWorkloadUpdateStatusConfigStaticInput(cfg []interface{}) []workloads.WorkloadUpdateStaticStatusInput {
+	staticOut := make([]workloads.WorkloadUpdateStaticStatusInput, len(cfg))
+
+	for i, s := range cfg {
+		setStatic := s.(map[string]interface{})
+		x := workloads.WorkloadUpdateStaticStatusInput{
+			Enabled:     setStatic["enabled"].(bool),
+			Status:      workloads.WorkloadStatusValueInput(setStatic["status"].(string)),
+			Summary:     setStatic["summary"].(string),
+			Description: setStatic["description"].(string),
+		}
+		staticOut[i] = x
+	}
+
+	return staticOut
 }
 
 func expandWorkloadEntityGUIDs(cfg []interface{}) []common.EntityGUID {
