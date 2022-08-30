@@ -87,33 +87,42 @@ func resourceNewRelicWorkload() *schema.Resource {
 							Description: "The input object used to represent a rollup strategy.",
 							Elem:        WorkloadremainingEntitiesRuleSchemaElem(),
 						},
-						"rule_entity_guids": {
+						"rules": {
 							Type:        schema.TypeSet,
 							Optional:    true,
-							Computed:    true,
-							Description: "A list of entity GUIDs composing the rule.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"rule_nrql_query": {
-							Type:        schema.TypeSet,
-							Optional:    true,
-							Description: "The entity search query that is used to perform the search of a group of entities.",
-							ForceNew:    true,
+							Description: "A list of rules.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"query": {
-										Type:        schema.TypeString,
+									"entity_guids": {
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Computed:    true,
+										Description: "A list of entity GUIDs composing the rule.",
+										Elem:        &schema.Schema{Type: schema.TypeString},
+									},
+									"nrql_query": {
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Description: "A list of entity search queries used to retrieve the entities that compose the rule.",
+										ForceNew:    true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"query": {
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "The query.",
+												},
+											},
+										},
+									},
+									"rollup": {
+										Type:        schema.TypeSet,
 										Required:    true,
-										Description: "The query.",
+										Description: "The input object used to represent a rollup strategy.",
+										Elem:        WorkloadRuleRollupInputSchemaElem(),
 									},
 								},
 							},
-						},
-						"rule_rollup": {
-							Type:        schema.TypeSet,
-							Optional:    true,
-							Description: "The input object used to represent a rollup strategy.",
-							Elem:        WorkloadRuleRollupInputSchemaElem(),
 						},
 					},
 				},
@@ -194,7 +203,6 @@ func WorkloadremainingEntitiesRuleSchemaElem() *schema.Resource {
 	return &schema.Resource{
 		Schema: s,
 	}
-
 }
 
 func WorkloadRollupInputSchemaElem() map[string]*schema.Schema {

@@ -25,6 +25,12 @@ func expandWorkloadCreateInput(d *schema.ResourceData) workloads.WorkloadCreateI
 	if e, ok := d.GetOk("description"); ok {
 		createInput.Description = e.(string)
 	}
+	if e, ok := d.GetOk("status_config_static"); ok {
+		createInput.StatusConfig.Static = expandWorkloadStatusConfigStaticInput(e.(*schema.Set).List())
+	}
+	if e, ok := d.GetOk("status_config_automatic"); ok {
+		createInput.StatusConfig.Automatic = expandWorkloadStatusConfigAutomaticInput(d, e.(*schema.Set).List())
+	}
 
 	return createInput
 }
@@ -169,4 +175,75 @@ func listValidWorkloadRuleThresholdType() []string {
 		string(workloads.WorkloadRuleThresholdTypeTypes.FIXED),
 		string(workloads.WorkloadRuleThresholdTypeTypes.PERCENTAGE),
 	}
+}
+
+func expandWorkloadStatusConfigAutomaticInput(d *schema.ResourceData, list []interface{}) workloads.WorkloadAutomaticStatusInput {
+	autoOut := workloads.WorkloadAutomaticStatusInput{
+		Enabled: d.Get("enabled").(bool),
+	}
+	if e, ok := d.GetOk("remaining_entities_rule_rollup"); ok {
+		autoOut.RemainingEntitiesRule.Rollup = expandRemainingEntityRuleRollup(e.(*schema.Set).List())
+	}
+	if e, ok := d.GetOk("rules"); ok {
+		autoOut.Rules = expandAutoConfigRule(e.(*schema.Set).List())
+	}
+	return autoOut
+}
+
+func expandAutoConfigRule(list []interface{}) []workloads.WorkloadRegularRuleInput {
+	ruleOut := make([]workloads.WorkloadRegularRuleInput, len(list))
+	for i, r := range list {
+		setRule := r.(map[string]interface{})
+		x := workloads.WorkloadRegularRuleInput{
+			EntityGUIDs:         expandWorkloadEntityGUIDs(setRule["entity_guids"].(*schema.Set).List()),
+			EntitySearchQueries: expandWorkloadEntitySearchQueryInputs(setRule["nrql_query"].(*schema.Set).List()),
+			Rollup:              expandRuleRollUp(setRule["rollup"].(*schema.Set).List()),
+		}
+		ruleOut[i] = x
+	}
+	return ruleOut
+}
+
+func expandRuleRollUp(rollResource []interface{}) workloads.WorkloadRollupInput {
+	var x workloads.WorkloadRollupInput
+	for _, r := range rollResource {
+		setRoll := r.(map[string]interface{})
+		x = workloads.WorkloadRollupInput{
+			Strategy:       workloads.WorkloadRollupStrategy(setRoll["strategy"].(string)),
+			ThresholdValue: setRoll["threshold_type"].(int),
+			ThresholdType:  workloads.WorkloadRuleThresholdType(setRoll["threshold_value"].(string)),
+		}
+	}
+	return x
+}
+
+func expandRemainingEntityRuleRollup(rollResource []interface{}) workloads.WorkloadRemainingEntitiesRuleRollupInput {
+	var x workloads.WorkloadRemainingEntitiesRuleRollupInput
+	for _, r := range rollResource {
+		setRoll := r.(map[string]interface{})
+		x = workloads.WorkloadRemainingEntitiesRuleRollupInput{
+			GroupBy:        workloads.WorkloadGroupRemainingEntitiesRuleBy(setRoll["group_by"].(string)),
+			Strategy:       workloads.WorkloadRollupStrategy(setRoll["strategy"].(string)),
+			ThresholdValue: setRoll["threshold_type"].(int),
+			ThresholdType:  workloads.WorkloadRuleThresholdType(setRoll["threshold_value"].(string)),
+		}
+	}
+	return x
+}
+
+func expandWorkloadStatusConfigStaticInput(e []interface{}) []workloads.WorkloadStaticStatusInput {
+	staticOut := make([]workloads.WorkloadStaticStatusInput, len(e))
+
+	for i, s := range e {
+		setStatic := s.(map[string]interface{})
+		x := workloads.WorkloadStaticStatusInput{
+			Enabled:     setStatic["enabled"].(bool),
+			Status:      workloads.WorkloadStatusValueInput(setStatic["status"].(string)),
+			Summary:     setStatic["summary"].(string),
+			Description: setStatic["description"].(string),
+		}
+		staticOut[i] = x
+	}
+
+	return staticOut
 }
