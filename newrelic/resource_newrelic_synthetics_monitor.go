@@ -2,6 +2,8 @@ package newrelic
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
 	"log"
 
 	"github.com/newrelic/newrelic-client-go/pkg/common"
@@ -229,6 +231,13 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading New Relic Synthetics monitor %s", d.Id())
+
+	// Detect old ID and convert to new format
+	if len(d.Id()) == 36 {
+		newGuid := fmt.Sprintf("%d|SYNTH|MONITOR|%s", accountID, d.Id())
+		log.Printf("[INFO] Detected old ID %s converting to GUID %s", d.Id(), newGuid)
+		d.SetId(base64.RawStdEncoding.EncodeToString([]byte(newGuid)))
+	}
 
 	resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
 	if err != nil {
