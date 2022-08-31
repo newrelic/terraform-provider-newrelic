@@ -50,12 +50,11 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Elem:        notificationsPropertySchema(),
 			},
 			"auth_basic": {
-				Type:         schema.TypeList,
-				Optional:     true,
-				MinItems:     1,
-				MaxItems:     1,
-				ExactlyOneOf: []string{"auth_basic", "auth_token"},
-				Description:  "Basic username and password authentication credentials.",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MinItems:    1,
+				MaxItems:    1,
+				Description: "Basic username and password authentication credentials.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"user": {
@@ -71,12 +70,11 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				},
 			},
 			"auth_token": {
-				Type:         schema.TypeList,
-				Optional:     true,
-				MinItems:     1,
-				MaxItems:     1,
-				ExactlyOneOf: []string{"auth_basic", "auth_token"},
-				Description:  "Token authentication credentials.",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MinItems:    1,
+				MaxItems:    1,
+				Description: "Token authentication credentials.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"prefix": {
