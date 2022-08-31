@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
@@ -352,12 +353,13 @@ func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.Reso
 
 	log.Printf("[INFO] Deleting New Relic Synthetics monitor %s", d.Id())
 
-	_, err := client.Synthetics.SyntheticsDeleteMonitorWithContext(ctx, guid)
-	if err != nil {
+	if _, err := client.Synthetics.SyntheticsDeleteMonitorWithContext(ctx, guid); err != nil {
+		// This should probably be in go-client so we can use *errors.NotFound
+		if strings.Contains(err.Error(), "Monitor does not exist") {
+			return nil
+		}
 		return diag.FromErr(err)
 	}
-
-	d.SetId("")
 
 	return nil
 }
