@@ -234,9 +234,9 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 
 	// Detect old ID and convert to new format
 	if len(d.Id()) == 36 {
-		newGuid := fmt.Sprintf("%d|SYNTH|MONITOR|%s", accountID, d.Id())
-		log.Printf("[INFO] Detected old ID %s converting to GUID %s", d.Id(), newGuid)
-		d.SetId(base64.RawStdEncoding.EncodeToString([]byte(newGuid)))
+		newGUID := fmt.Sprintf("%d|SYNTH|MONITOR|%s", accountID, d.Id())
+		log.Printf("[INFO] Detected old ID %s converting to GUID %s", d.Id(), newGUID)
+		d.SetId(base64.RawStdEncoding.EncodeToString([]byte(newGUID)))
 	}
 
 	resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
