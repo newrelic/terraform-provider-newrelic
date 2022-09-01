@@ -33,6 +33,7 @@ resource "newrelic_alert_policy_channel" "foo" {
 The following arguments are supported:
 
 * `name` - (Required) The name of the alert policy in New Relic.
+* `account_id` - (Optional) The New Relic account ID to operate on.  This allows you to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 
 ## Attributes Reference
 
