@@ -34,7 +34,7 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Computed:    true,
+				ForceNew:    true,
 				Description: "The New Relic account ID to operate on.",
 			},
 			"incident_preference": {
@@ -66,6 +66,9 @@ func resourceNewRelicAlertPolicyCreate(ctx context.Context, d *schema.ResourceDa
 
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
+	// We're creating this updatedContext for the findExistingChannelIDs function which is still REST based
+	// It does not have an effect on the GraphQL calls
+	updatedContext := updateContextWithAccountID(ctx, accountID)
 
 	policy := alerts.AlertsPolicyInput{}
 
@@ -79,7 +82,7 @@ func resourceNewRelicAlertPolicyCreate(ctx context.Context, d *schema.ResourceDa
 		policy.Name = attr.(string)
 	}
 
-	createResult, err := client.Alerts.CreatePolicyMutationWithContext(ctx, accountID, policy)
+	createResult, err := client.Alerts.CreatePolicyMutationWithContext(updatedContext, accountID, policy)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -93,7 +96,7 @@ func resourceNewRelicAlertPolicyCreate(ctx context.Context, d *schema.ResourceDa
 
 	if len(channels) > 0 {
 		channelIDs := expandAlertChannelIDs(channels)
-		matchedChannelIDs, err := findExistingChannelIDs(ctx, client, channelIDs)
+		matchedChannelIDs, err := findExistingChannelIDs(updatedContext, client, channelIDs)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -105,7 +108,7 @@ func resourceNewRelicAlertPolicyCreate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		_, err = client.Alerts.UpdatePolicyChannelsWithContext(ctx, createResultID, matchedChannelIDs)
+		_, err = client.Alerts.UpdatePolicyChannelsWithContext(updatedContext, createResultID, matchedChannelIDs)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -224,11 +227,16 @@ func findExistingChannelIDs(ctx context.Context, client *newrelic.NewRelic, chan
 
 	matched := make([]int, 0)
 
-	for i := range channels {
-		for n := range channelIDs {
+	for n := range channelIDs {
+		found := false
+		for i := range channels {
 			if channelIDs[n] == channels[i].ID {
+				found = true
 				matched = append(matched, channelIDs[n])
 			}
+		}
+		if !found {
+			return nil, fmt.Errorf("[ERROR] Channel ID %d not found", channelIDs[n])
 		}
 	}
 

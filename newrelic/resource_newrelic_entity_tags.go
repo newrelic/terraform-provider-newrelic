@@ -65,7 +65,7 @@ func resourceNewRelicEntityTags() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(20 * time.Second),
+			Create: schema.DefaultTimeout(60 * time.Second),
 		},
 	}
 }
@@ -100,11 +100,11 @@ func resourceNewRelicEntityTagsCreate(ctx context.Context, d *schema.ResourceDat
 		for _, t := range tags {
 			var tag *entities.TaggingTagInput
 			if tag = getTag(currentTags, t.Key); tag == nil {
-				return resource.RetryableError(fmt.Errorf("expected entity tag %s to have been updated but was not found", t.Key))
+				return resource.RetryableError(fmt.Errorf("expected entity tag %s to have been created but was not found", t.Key))
 			}
 
 			if ok := tagValuesExist(tag, t.Values); !ok {
-				return resource.RetryableError(fmt.Errorf("expected entity tag values %s to have been updated for tag %s but were not found", t.Values, t.Key))
+				return resource.RetryableError(fmt.Errorf("expected entity tag values %s to have been created for tag %s but were not found", t.Values, t.Key))
 			}
 		}
 
@@ -187,7 +187,7 @@ func resourceNewRelicEntityTagsUpdate(ctx context.Context, d *schema.ResourceDat
 			}
 
 			if ok := tagValuesExist(tag, t.Values); !ok {
-				return resource.RetryableError(fmt.Errorf("expected entity tag values %s to have been created for tag %s but were not found", t.Values, t.Key))
+				return resource.RetryableError(fmt.Errorf("expected entity tag values %s to have been updated for tag %s but were not found", t.Values, t.Key))
 			}
 		}
 

@@ -1,3 +1,15 @@
+<a name="v3.0.4"></a>
+## [v3.0.4] - 2022-09-01
+### Bug Fixes
+- **data_alert_channel:** added missing account_id
+- **data_source_newrelic_alert_channel:** fixed support for multi accounts
+- **newrelic_alert_policy:** added multi account support
+
+<a name="v3.0.3"></a>
+## [v3.0.3] - 2022-09-01
+### Bug Fixes
+- **newrelic_entity_tags:** increased timeout level
+
 <a name="v3.0.2"></a>
 ## [v3.0.2] - 2022-08-31
 ### Bug Fixes
@@ -1407,7 +1419,9 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.4...HEAD
+[v3.0.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.3...v3.0.4
+[v3.0.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.2...v3.0.3
 [v3.0.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.1...v3.0.2
 [v3.0.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.0...v3.0.1
 [v3.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.51.0...v3.0.0
