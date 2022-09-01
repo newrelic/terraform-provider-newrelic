@@ -49,6 +49,11 @@ func dataSourceNewRelicAlertChannel() *schema.Resource {
 				Description: "Alert channel configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"account_id": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "The New Relic account ID where you want to get alert channels.",
+						},
 						"api_key": {
 							Type:      schema.TypeString,
 							Optional:  true,
