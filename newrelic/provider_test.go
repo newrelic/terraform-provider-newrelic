@@ -126,6 +126,20 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
+func testAccPreCheckEnvVars(t *testing.T) {
+	if v := os.Getenv("NEW_RELIC_API_KEY"); v == "" {
+		t.Skipf("[WARN] NEW_RELIC_API_KEY has not been set for acceptance tests")
+	}
+
+	if v := os.Getenv("NEW_RELIC_LICENSE_KEY"); v == "" {
+		t.Skipf("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
+	}
+
+	if v := os.Getenv("NEW_RELIC_ACCOUNT_ID"); v == "" {
+		t.Skipf("NEW_RELIC_ACCOUNT_ID must be set for acceptance tests")
+	}
+}
+
 func testAccCreateApplication(t *testing.T) {
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigFromEnvironment(),
@@ -184,18 +198,4 @@ func testAccApplicationsCleanup(t *testing.T) {
 	t.Logf("testacc cleanup of %d applications complete", deletedAppCount)
 
 	testAccCleanupComplete = true
-}
-
-func testAccPreCheckEnvVars(t *testing.T) {
-	if v := os.Getenv("NEW_RELIC_API_KEY"); v == "" {
-		t.Skipf("[WARN] NEW_RELIC_API_KEY has not been set for acceptance tests")
-	}
-
-	if v := os.Getenv("NEW_RELIC_LICENSE_KEY"); v == "" {
-		t.Skipf("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
-	}
-
-	if v := os.Getenv("NEW_RELIC_ACCOUNT_ID"); v == "" {
-		t.Skipf("NEW_RELIC_ACCOUNT_ID must be set for acceptance tests")
-	}
 }

@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
 
@@ -36,10 +35,11 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 			Description: "Capture a screenshot during job execution.",
 			Optional:    true,
 		},
-		"locations_private": {
-			Type:        schema.TypeSet,
-			Description: "",
-			Optional:    true,
+		"location_private": {
+			Type:         schema.TypeSet,
+			Description:  "",
+			Optional:     true,
+			AtLeastOneOf: []string{"location_private", "locations_public"},
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"guid": {
@@ -57,11 +57,12 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 			},
 		},
 		"locations_public": {
-			Type:        schema.TypeSet,
-			Elem:        &schema.Schema{Type: schema.TypeString},
-			MinItems:    1,
-			Optional:    true,
-			Description: "The public location(s) that the monitor will run jobs from.",
+			Type:         schema.TypeSet,
+			Elem:         &schema.Schema{Type: schema.TypeString},
+			MinItems:     1,
+			Optional:     true,
+			Description:  "The public location(s) that the monitor will run jobs from.",
+			AtLeastOneOf: []string{"location_private", "locations_public"},
 		},
 		"steps": {
 			Type:        schema.TypeList,
@@ -133,11 +134,13 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 
 	resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
 	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
 		return diag.FromErr(err)
+	}
+
+	// This should probably be in go-client so we can use *errors.NotFound
+	if *resp == nil {
+		d.SetId("")
+		return nil
 	}
 
 	switch e := (*resp).(type) {
@@ -204,8 +207,6 @@ func resourceNewRelicSyntheticsStepMonitorDelete(ctx context.Context, d *schema.
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId("")
 
 	return diag.FromErr(err)
 }

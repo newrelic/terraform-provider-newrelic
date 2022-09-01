@@ -2,11 +2,13 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
 
 func dataSourceNewRelicSyntheticsSecureCredential() *schema.Resource {
@@ -26,11 +28,6 @@ func dataSourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 				Computed:    true,
 				Description: "The secure credential's description.",
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The time the secure credential was created.",
-			},
 			"last_updated": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -48,12 +45,23 @@ func dataSourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sc
 	key := d.Get("key").(string)
 	key = strings.ToUpper(key)
 
-	sc, err := client.Synthetics.GetSecureCredentialWithContext(ctx, key)
+	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", key)
+
+	entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
 	if err != nil {
-		return diag.Errorf("the key '%s' does not match any New Relic Synthetics secure credential", key)
+		return diag.FromErr(err)
+	}
+
+	var entity *entities.EntityOutlineInterface
+	for _, e := range entityResults.Results.Entities {
+		// Conditional on case sensitive match
+		if e.GetName() == key {
+			entity = &e
+			break
+		}
 	}
 
 	d.SetId(key)
 
-	return diag.FromErr(flattenSyntheticsSecureCredential(sc, d))
+	return flattenSyntheticsSecureCredential(entity, d)
 }

@@ -31,10 +31,6 @@ func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
 			},
 			// Update
 			{
-				PreConfig: func() {
-					// Unfortunately we still have to wait due to async delay with entity indexing :(
-					time.Sleep(10 * time.Second)
-				},
 				Config: testAccNewRelicSyntheticsCertCheckMonitorConfig(fmt.Sprintf("%s-updated", rName), "EVERY_10_MINUTES", "DISABLED", 20),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicSyntheticsCertCheckMonitorExists(resourceName),
@@ -106,6 +102,9 @@ func testAccCheckNewRelicSyntheticsCertCheckMonitorResourceDestroy(s *terraform.
 		if r.Type != "newrelic_synthetics_cert_check_monitor" {
 			continue
 		}
+
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
+		time.Sleep(5 * time.Second)
 
 		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
 		if (*found) != nil {

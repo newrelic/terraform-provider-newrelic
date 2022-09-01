@@ -43,9 +43,10 @@ func TestAccNewRelicSyntheticsAlertCondition_Basic(t *testing.T) {
 			},
 			// Test: Import
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"monitor_id"},
 			},
 		},
 	})
@@ -133,9 +134,9 @@ func testAccNewRelicSyntheticsAlertConditionConfig(name string) string {
 resource "newrelic_synthetics_monitor" "bar" {
 	name      = "tf-test-synthetic-%[1]s"
 	type      = "SIMPLE"
-	frequency = 15
+	period    = "EVERY_10_MINUTES"
 	status    = "DISABLED"
-	locations = ["AWS_US_EAST_1"]
+	locations_public = ["US_EAST_1"]
 	uri       = "https://google.com"
 }
 
@@ -158,9 +159,9 @@ func testAccCheckNewRelicSyntheticsAlertConditionUpdated(name string) string {
 resource "newrelic_synthetics_monitor" "bar" {
 	name      = "tf-test-synthetic-%[1]s"
 	type      = "SIMPLE"
-	frequency = 15
+	period    = "EVERY_15_MINUTES"
 	status    = "DISABLED"
-	locations = ["AWS_US_EAST_1"]
+	locations_public = ["US_EAST_1"]
 	uri       = "https://google.com"
 }
 

@@ -31,8 +31,8 @@ func resourceNewRelicWorkflow() *schema.Resource {
 				Required:    true,
 				Description: "(Required) The name of the workflow.",
 			},
-			"destination_configurations": {
-				Type:        schema.TypeList,
+			"destination_configuration": {
+				Type:        schema.TypeSet,
 				Required:    true,
 				Description: "Workflow's destination configuration.",
 				Elem: &schema.Resource{
@@ -61,7 +61,9 @@ func resourceNewRelicWorkflow() *schema.Resource {
 			"issues_filter": {
 				Type:        schema.TypeSet,
 				Required:    true,
-				Description: "Workflow's destination configuration.",
+				Description: "",
+				MaxItems:    1,
+				MinItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						// Required
@@ -81,7 +83,7 @@ func resourceNewRelicWorkflow() *schema.Resource {
 						"predicates": {
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "Workflow's destination configuration.",
+							Description: "",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"attribute": {
@@ -125,22 +127,27 @@ func resourceNewRelicWorkflow() *schema.Resource {
 			"workflow_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     true,
 				Description: "Indicates whether the workflow is enabled.",
 			},
 			"enrichments_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     true,
 				Description: "Indicates whether the enrichments are enabled.",
 			},
 			"destinations_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     true,
 				Description: "Indicates whether the destinations are enabled.",
 			},
 			"enrichments": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Workflow's destination configuration.",
+				MaxItems:    1,
+				MinItems:    1,
+				Description: "Enrichments can give additional context on alert notifications by adding NRQL query results to them.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"nrql": {

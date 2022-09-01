@@ -1,13 +1,91 @@
 package newrelic
 
 import (
+	"encoding/base64"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 )
+
+// Returns the common schema attributes shared by all Synthetics monitor types.
+func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"account_id": {
+			Type:        schema.TypeInt,
+			Description: "ID of the newrelic account.",
+			Computed:    true,
+			Optional:    true,
+		},
+		"guid": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The unique entity identifier of the monitor in New Relic.",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The title of this monitor.",
+		},
+		"status": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED).",
+			ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorStatuses(), false),
+		},
+		"tag": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			MinItems:    1,
+			Description: "The tags that will be associated with the monitor.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Name of the tag key",
+					},
+					"values": {
+						Type:        schema.TypeList,
+						Elem:        &schema.Schema{Type: schema.TypeString},
+						Required:    true,
+						Description: "Values associated with the tag key",
+					},
+				},
+			},
+		},
+		"period": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  "The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.",
+			ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPeriods(), false),
+		},
+	}
+}
+
+// NOTE: This can be a shared schema partial for other synthetics monitor resources
+func syntheticsMonitorLocationsAsStringsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"locations_private": {
+			Type:         schema.TypeSet,
+			Elem:         &schema.Schema{Type: schema.TypeString},
+			Description:  "List private location GUIDs for which the monitor will run.",
+			Optional:     true,
+			AtLeastOneOf: []string{"locations_public", "locations_private"},
+		},
+		"locations_public": {
+			Type:         schema.TypeSet,
+			Elem:         &schema.Schema{Type: schema.TypeString},
+			Description:  "Publicly available location names in which the monitor will run.",
+			Optional:     true,
+			AtLeastOneOf: []string{"locations_public", "locations_private"},
+		},
+	}
+}
 
 var syntheticsMonitorPeriodValueMap = map[int]synthetics.SyntheticsMonitorPeriod{
 	1:    synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE,
@@ -39,51 +117,6 @@ func setSyntheticsMonitorAttributes(d *schema.ResourceData, attributes map[strin
 	}
 
 	return nil
-}
-
-func buildSyntheticsBrokenLinksMonitorCreateInput(d *schema.ResourceData) *synthetics.SyntheticsCreateBrokenLinksMonitorInput {
-	inputBase := expandSyntheticsMonitorBase(d)
-
-	input := synthetics.SyntheticsCreateBrokenLinksMonitorInput{
-		Name:   inputBase.Name,
-		Period: inputBase.Period,
-		Status: inputBase.Status,
-		Tags:   inputBase.Tags,
-	}
-
-	if attr, ok := d.GetOk("locations_private"); ok {
-		input.Locations.Private = expandStringSlice(attr.(*schema.Set).List())
-	}
-	if attr, ok := d.GetOk("locations_public"); ok {
-		input.Locations.Public = expandStringSlice(attr.(*schema.Set).List())
-	}
-	if v, ok := d.GetOk("uri"); ok {
-		input.Uri = v.(string)
-	}
-	return &input
-}
-
-func buildSyntheticsBrokenLinksMonitorUpdateInput(d *schema.ResourceData) *synthetics.SyntheticsUpdateBrokenLinksMonitorInput {
-	inputBase := expandSyntheticsMonitorBase(d)
-
-	input := synthetics.SyntheticsUpdateBrokenLinksMonitorInput{
-		Name:   inputBase.Name,
-		Period: inputBase.Period,
-		Status: inputBase.Status,
-		Tags:   inputBase.Tags,
-	}
-
-	if attr, ok := d.GetOk("locations_private"); ok {
-		input.Locations.Private = expandStringSlice(attr.(*schema.Set).List())
-	}
-	if attr, ok := d.GetOk("locations_public"); ok {
-		input.Locations.Public = expandStringSlice(attr.(*schema.Set).List())
-	}
-	if v, ok := d.GetOk("uri"); ok {
-		input.Uri = v.(string)
-	}
-
-	return &input
 }
 
 // Builds an array of typed diagnostic errors based on the GraphQL `response.errors` array.
@@ -157,7 +190,43 @@ func expandStringSlice(strings []interface{}) []string {
 	return out
 }
 
-//validation function to validate monitor period
+func expandSyntheticsPublicLocations(locations []interface{}) []string {
+	locationsOut := make([]string, len(locations))
+
+	for i, v := range locations {
+		locationsOut[i] = v.(string)
+	}
+	return locationsOut
+}
+
+func expandSyntheticsPrivateLocations(locations []interface{}) []synthetics.SyntheticsPrivateLocationInput {
+	locationsOut := make([]synthetics.SyntheticsPrivateLocationInput, len(locations))
+
+	for i, v := range locations {
+		pl := v.(map[string]interface{})
+		locationsOut[i].GUID = pl["guid"].(string)
+		if v, ok := pl["vse_password"]; ok {
+			locationsOut[i].VsePassword = synthetics.SecureValue(v.(string))
+		}
+	}
+	return locationsOut
+}
+
+func expandSyntheticsCustomHeaders(headers []interface{}) []synthetics.SyntheticsCustomHeaderInput {
+	output := make([]synthetics.SyntheticsCustomHeaderInput, len(headers))
+
+	for i, v := range headers {
+		header := v.(map[string]interface{})
+		expanded := synthetics.SyntheticsCustomHeaderInput{
+			Name:  header["name"].(string),
+			Value: header["value"].(string),
+		}
+		output[i] = expanded
+	}
+	return output
+}
+
+// validation function to validate monitor period
 func listValidSyntheticsMonitorPeriods() []string {
 	return []string{
 		string(synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE),
@@ -172,7 +241,7 @@ func listValidSyntheticsMonitorPeriods() []string {
 	}
 }
 
-//validate func to validate monitor status
+// validate func to validate monitor status
 func listValidSyntheticsMonitorStatuses() []string {
 	return []string{
 		string(synthetics.SyntheticsMonitorStatusTypes.DISABLED),
@@ -181,10 +250,33 @@ func listValidSyntheticsMonitorStatuses() []string {
 	}
 }
 
+type SyntheticsMonitorType string
+
+// nolint:revive
+var SyntheticsMonitorTypes = struct {
+	SIMPLE         SyntheticsMonitorType
+	BROWSER        SyntheticsMonitorType
+	SCRIPT_API     SyntheticsMonitorType
+	SCRIPT_BROWSER SyntheticsMonitorType
+}{
+	SIMPLE:         "SIMPLE",
+	BROWSER:        "BROWSER",
+	SCRIPT_API:     "SCRIPT_API",
+	SCRIPT_BROWSER: "SCRIPT_BROWSER",
+}
+
+func listValidSyntheticsScriptMonitorTypes() []string {
+	return []string{
+		string(SyntheticsMonitorTypes.SCRIPT_API),
+		string(SyntheticsMonitorTypes.SCRIPT_BROWSER),
+	}
+}
+
 // TODO: Move to newrelic-client-go
 type SyntheticsPublicLocation string
 
 // TODO: Move to newrelic-client-go
+//
 //nolint:revive
 var syntheticsPublicLocations = struct {
 	US_EAST_1      SyntheticsPublicLocation
@@ -276,4 +368,11 @@ func getPublicLocationsFromEntityTags(tags []entities.EntityTag) []string {
 	}
 
 	return out
+}
+
+func getMonitorID(monitorGUID string) string {
+	decodedGUID, _ := base64.RawStdEncoding.DecodeString(monitorGUID)
+	splitGUID := strings.Split(string(decodedGUID), "|")
+	monitorID := splitGUID[3]
+	return monitorID
 }

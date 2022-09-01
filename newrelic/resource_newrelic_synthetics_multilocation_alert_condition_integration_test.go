@@ -37,13 +37,10 @@ func TestAccNewRelicSyntheticsMultiLocationAlertCondition_Basic(t *testing.T) {
 			},
 			// Test: Import
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// Ignore items with deprecated fields because
-				// we don't set deprecated fields on import
-				// ImportStateVerifyIgnore: []string{"term", "nrql", "violation_time_limit"},
-				// ImportStateIdFunc: testAccImportStateIDFunc(resourceName, "static"),
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"entities"},
 			},
 		},
 	})
@@ -92,12 +89,21 @@ func testAccNewRelicSyntheticsMultiLocationConditionConfigBasic(
 	conditionalAttrs string,
 ) string {
 	return fmt.Sprintf(`
-resource "newrelic_alert_policy" "foo" {
+resource "newrelic_alert_policy" "policy" {
   name = "tf-test-%[1]s"
 }
 
+resource "newrelic_synthetics_monitor" "monitor" {
+  locations_public          = ["US_WEST_1"]
+  name                      = "tf-test-%[1]s"
+  period                    = "EVERY_10_MINUTES"
+  status                    = "DISABLED"
+  type                      = "SIMPLE"
+  uri = "https://www.one.newrelic.com"
+}
+
 resource "newrelic_synthetics_multilocation_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.foo.id
+	policy_id = newrelic_alert_policy.policy.id
 
   name                         = "tf-test-%[1]s"
   runbook_url                  = "https://foo.example.com"
@@ -105,7 +111,7 @@ resource "newrelic_synthetics_multilocation_alert_condition" "foo" {
   violation_time_limit_seconds = "3600"
 
 	entities = [
-		"758116a0-58c3-437c-9ab0-a8a62db02b07"
+		newrelic_synthetics_monitor.monitor.id
 	]
 
 	critical {
