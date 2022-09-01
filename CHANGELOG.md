@@ -1,27 +1,15 @@
+<a name="v3.0.2"></a>
+## [v3.0.2] - 2022-08-31
+### Bug Fixes
+- **newrelic_synthetics_monitor:** convert old ID's into GUID
+- **newrelic_synthetics_monitor:** deleted synthetics monitors are not detected
+- **newrelic_synthetics_monitor:** handle already deleted checks
+- **synthetics:** catch when synthetic check have been deleted from ui
+
 <a name="v3.0.1"></a>
 ## [v3.0.1] - 2022-08-29
 <a name="v3.0.0"></a>
 ## [v3.0.0] - 2022-08-26
-### Documentation Updates
-- add v3 migration guide
-- added the changes in website guide
-- adding the website guides
-- doc of simple & browser synthectics monitor
-- **synthetics:** update docs for private location data source
-
-### Features
-- add new synthetics resources
-- swap secure credential resource to GraphQL API
-- **synthetics:** added private location resource
-- **synthetics:** add newrelic_synthetics_script_monitor resource
-- **synthetics:** migrate monitor location data source to new GraphQL API
-
-### BREAKING CHANGE
-
-new synthetics resources use GraphQL API schema
-
-<a name="v2.50.0"></a>
-## [v2.50.0] - 2022-08-26
 ### Bug Fixes
 - **Notifications:** pr review fixes: not needed remove computes and forcenew
 - **Notifications:** add update to destinations and channels + rename properties
@@ -53,18 +41,43 @@ new synthetics resources use GraphQL API schema
 - **workflows:** upgrade newrelic-client-go
 
 ### Documentation Updates
+- add v3 migration guide
 - boeken links monitor docs
 - documentation for cert_broken_step monitors
+- added the changes in website guide
+- adding the website guides
+- doc of simple & browser synthectics monitor
+- **synthetics:** update docs for private location data source
 
 ### Features
+- add new synthetics resources
+- swap secure credential resource to GraphQL API
 - **newrelic_synthetics_cert_check_monitor:** adding cert check monitor
 - **synthetics:** [wip] add broken links monitor resource
+- **synthetics:** added private location resource
+- **synthetics:** add newrelic_synthetics_script_monitor resource
+- **synthetics:** migrate monitor location data source to new GraphQL API
 - **synthetics:** add step monitor resource
+- **workflows:** add tests
 - **workflows:** add workflows resources workinggg - wip
 - **workflows:** add workflows resources - wip
 - **workflows:** add workflows resources
 - **workflows:** resolve conflict
-- **workflows:** add tests
+
+### BREAKING CHANGE
+
+new synthetics resources use GraphQL API schema
+
+<a name="2.51.0"></a>
+## [2.51.0] - 2022-07-22
+<a name="v2.50.2"></a>
+## [v2.50.2] - 2022-08-30
+<a name="v2.50.1"></a>
+## [v2.50.1] - 2022-08-30
+<a name="v2.50.0"></a>
+## [v2.50.0] - 2022-08-30
+### Features
+- updated dependencies
 
 <a name="v2.49.1"></a>
 ## [v2.49.1] - 2022-07-22
@@ -1394,9 +1407,13 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.2...HEAD
+[v3.0.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.1...v3.0.2
 [v3.0.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.0...v3.0.1
-[v3.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.50.0...v3.0.0
+[v3.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.51.0...v3.0.0
+[2.51.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.50.2...2.51.0
+[v2.50.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.50.1...v2.50.2
+[v2.50.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.50.0...v2.50.1
 [v2.50.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.1...v2.50.0
 [v2.49.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.0...v2.49.1
 [v2.49.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.2...v2.49.0

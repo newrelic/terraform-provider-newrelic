@@ -6,7 +6,6 @@ import (
 
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -175,11 +174,13 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 
 	resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
 	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
 		return diag.FromErr(err)
+	}
+
+	// This should probably be in go-client so we can use *errors.NotFound
+	if *resp == nil {
+		d.SetId("")
+		return nil
 	}
 
 	_ = d.Set("account_id", accountID)
@@ -263,8 +264,6 @@ func resourceNewRelicSyntheticsScriptMonitorDelete(ctx context.Context, d *schem
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId("")
 
 	return nil
 }
