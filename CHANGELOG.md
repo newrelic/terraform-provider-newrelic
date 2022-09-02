@@ -1,3 +1,11 @@
+<a name="v3.1.0"></a>
+## [v3.1.0] - 2022-09-02
+### Bug Fixes
+- **src:** Delete exactlyOne validation in scheme of Notification Destination
+
+### Features
+- **src:** Add ConflictsWith schema validation - Add this validation within the auth_token and auth_basic to validate uniqueness of each other
+
 <a name="v3.0.4"></a>
 ## [v3.0.4] - 2022-09-01
 ### Bug Fixes
@@ -1419,7 +1427,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.4...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.1.0...HEAD
+[v3.1.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.4...v3.1.0
 [v3.0.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.3...v3.0.4
 [v3.0.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.2...v3.0.3
 [v3.0.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.1...v3.0.2
