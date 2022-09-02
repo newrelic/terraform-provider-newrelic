@@ -68,6 +68,8 @@ Each notification channel type supports a specific set of arguments for the `pro
   * `summary` - (Required) A map of key/value pairs that represents the summery.
   * `service` - (Required) Specifies the service id for integrating with Pagerduty.
   * `email` - (Required) Specifies the user email for integrating with Pagerduty.
+* `SLACK`
+  * `channelId` - (Required) The slack channel id you want to sent to. Must be of the referenced destination.
 
 ## Attributes Reference
 

@@ -191,6 +191,7 @@ func listValidNotificationsChannelTypes() []string {
 		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
 		string(notifications.AiNotificationsChannelTypeTypes.JIRA_NEXTGEN),
 		string(notifications.AiNotificationsChannelTypeTypes.JIRA_CLASSIC),
+		string(notifications.AiNotificationsChannelTypeTypes.SLACK),
 	}
 }
 
