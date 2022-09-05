@@ -25,6 +25,16 @@ resource "newrelic_synthetics_monitor" "foo" {
 
 -> This data source only works for `simple`, `browser`, `cert_check` and `broken_links` monitors
 
+```hcl
+data "newrelic_synthetics_private_location" "example" {
+name = "My private location"
+}
+resource "newrelic_synthetics_monitor" "foo" {
+// Reference the private location data source in the monitor resource
+location_private { guid = data.newrelic_synthetics_private_location.foo.id }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
