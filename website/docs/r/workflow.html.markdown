@@ -17,7 +17,7 @@ Use this resource to create and manage New Relic workflow.
 resource "newrelic_workflow" "foo" {
   name = "workflow-example"
   account_id = 12345678
-  enrichments_enabled = false
+  enrichments_enabled = true
   destinations_enabled = true
   workflow_enabled = true
   muting_rules_handling = "NOTIFY_ALL_ISSUES"
@@ -26,14 +26,14 @@ resource "newrelic_workflow" "foo" {
     nrql {
       name = "Log"
       configurations {
-        query = "SELECT * FROM Log"
+        query = "select count(*) from Log where message like '%error%' since 10 minutes ago"
       }
     }
 
     nrql {
       name = "Metric"
       configurations {
-        query = "SELECT * FROM Metric"
+        query = "SELECT count(*) FROM Metric where metricName = 'myMetric'"
       }
     }
   }
@@ -103,6 +103,11 @@ In addition to all arguments above, the following attributes are exported:
 ## Full Scenario Example
 Create a destination resource and reference that destination to the channel resource. Then create a workflow and reference the channel resource to it.
 
+### Create a policy
+resource "newrelic_alert_policy" "collector-policy" {
+  name = "my_policy"
+}
+
 ### Create a destination
 ```hcl
 resource "newrelic_notification_destination" "webhook-destination" {
@@ -112,7 +117,7 @@ resource "newrelic_notification_destination" "webhook-destination" {
 
   property {
     key = "url"
-    value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
+    value = "https://webhook.mywebhook.com"
   }
 
   auth_basic {
@@ -133,7 +138,7 @@ resource "newrelic_notification_channel" "webhook-channel" {
 
   property {
     key = "payload"
-    value = "{name: foo}"
+    value = "{name: {{ variable }} }"
     label = "Payload Template"
   }
 }
@@ -150,7 +155,7 @@ resource "newrelic_workflow" "workflow-example" {
     nrql {
       name = "Log count"
       configurations {
-       query = "SELECT count(*) FROM Log"
+       query = "select count(*) from Log where message like '%error%' since 10 minutes ago"
       }
     }
   }
@@ -160,9 +165,9 @@ resource "newrelic_workflow" "workflow-example" {
     type = "FILTER"
 
     predicates {
-      attribute = "accumulations.sources"
+      attribute = "accumulations.policyName"
       operator = "EXACTLY_MATCHES"
-      values = [ "newrelic" ]
+      values = [ "my_policy" ]
     }
   }
 

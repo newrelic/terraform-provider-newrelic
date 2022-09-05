@@ -21,7 +21,7 @@ resource "newrelic_notification_destination" "foo" {
 
   property {
     key = "url"
-    value = "https://webhook.site/"
+    value = "https://webhook.mywebhook.com"
   }
 
   auth_basic {
@@ -82,6 +82,7 @@ Each notification destination type supports a specific set of arguments for the 
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the destination.
+* `status` - The status of the destination can indicate a configuration issue. The default status is DEFUALT.
 
 ## Additional Examples
 

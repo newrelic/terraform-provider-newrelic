@@ -14,12 +14,13 @@ Use this resource to create and manage New Relic notification channels. Details 
 
 ##### [Webhook](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#webhook)
 ```hcl
+
 resource "newrelic_notification_channel" "foo" {
   account_id = 12345678
   name = "webhook-example"
   type = "WEBHOOK"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
-  product = "IINT"
+  product = "IINT" // (Workflows)
 
   property {
     key = "payload"
@@ -36,7 +37,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the notification channel will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the channel.
-* `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `WEBHOOK`, `JIRA_CLASSIC`, `JIRA_NEXTGEN`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
+* `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `WEBHOOK`, `JIRA_CLASSIC`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
 * `destination_id` - (Required) The id of the destination.
 * `product` - (Required) The type of product.  One of: `DISCUSSIONS`, `ERROR_TRACKING` or `IINT` (workflows).
 * `property` - A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
@@ -74,7 +75,7 @@ Each notification channel type supports a specific set of arguments for the `pro
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the channel.
-
+* `status` - The status of the channel can indicate a configuration issue. The default status is DEFUALT.
 ## Additional Examples
 
 ##### [ServiceNow](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#servicenow)
@@ -201,7 +202,7 @@ resource "newrelic_notification_destination" "webhook-destination" {
 
   property {
     key = "url"
-    value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
+    value = "https://webhook.mywebhook.com"
   }
 
   auth_basic {
