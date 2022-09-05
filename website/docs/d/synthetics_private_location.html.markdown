@@ -23,6 +23,8 @@ resource "newrelic_synthetics_monitor" "foo" {
 }
 ```
 
+-> This data source only works for `simple`, `browser`, `cert_check` and `broken_links` monitors
+
 ## Argument Reference
 
 The following arguments are supported:
