@@ -27,11 +27,11 @@ resource "newrelic_synthetics_monitor" "foo" {
 
 ```hcl
 data "newrelic_synthetics_private_location" "example" {
-name = "My private location"
+  name = "My private location"
 }
 resource "newrelic_synthetics_monitor" "foo" {
-// Reference the private location data source in the monitor resource
-location_private { guid = data.newrelic_synthetics_private_location.foo.id }
+  // Reference the private location data source in the monitor resource
+  location_private { guid = data.newrelic_synthetics_private_location.example.id }
 }
 ```
 
