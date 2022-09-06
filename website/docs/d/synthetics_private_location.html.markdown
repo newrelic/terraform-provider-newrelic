@@ -23,7 +23,7 @@ resource "newrelic_synthetics_monitor" "foo" {
 }
 ```
 
--> This data source only works for `simple`, `browser`, `cert_check` and `broken_links` monitors
+-> This data source doesn't work for `scripted_api`, `scripted_browser` and `step` monitors which works with the latest script runtime.
 
 ```hcl
 data "newrelic_synthetics_private_location" "example" {
