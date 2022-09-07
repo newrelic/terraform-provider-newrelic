@@ -131,7 +131,7 @@ func expandWorkflowIssuesFilter(issuesFilter []interface{}) workflows.AiWorkflow
 		filter := issuesFilter[0].(map[string]interface{})
 		predicates := []workflows.AiWorkflowsPredicateInput{}
 
-		if p, ok := filter["predicates"]; ok {
+		if p, ok := filter["predicate"]; ok {
 			predicates = expandWorkflowIssuePredicates(p.([]interface{}))
 		}
 
@@ -319,7 +319,7 @@ func flattenWorkflowIssuesFilter(f *workflows.AiWorkflowsFilter) (interface{}, e
 	if predicatesErr != nil {
 		return nil, predicatesErr
 	}
-	issuesFilterResult["predicates"] = predicates
+	issuesFilterResult["predicate"] = predicates
 
 	issuesFilter[0] = issuesFilterResult
 

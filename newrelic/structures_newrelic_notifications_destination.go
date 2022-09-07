@@ -149,10 +149,6 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return err
 	}
 
-	if err := d.Set("is_user_authenticated", destination.IsUserAuthenticated); err != nil {
-		return err
-	}
-
 	if err := d.Set("status", destination.Status); err != nil {
 		return err
 	}

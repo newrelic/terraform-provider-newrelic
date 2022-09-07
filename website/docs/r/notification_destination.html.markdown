@@ -21,7 +21,7 @@ resource "newrelic_notification_destination" "foo" {
 
   property {
     key = "url"
-    value = "https://webhook.site/"
+    value = "https://webhook.mywebhook.com"
   }
 
   auth_basic {
@@ -38,7 +38,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the notification destination will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the destination.
-* `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `WEBHOOK`, `JIRA`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
+* `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `WEBHOOK`, `JIRA`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`. The types `SLACK` and `SLACK_COLLABORATION` can only be imported, updated and destroyed (cannot be created via terraform).
 * `auth_basic` - (Optional) A nested block that describes a basic username and password authentication credentials. Only one auth_basic block is permitted per notification destination definition.  See [Nested auth_basic blocks](#nested-auth_basic-blocks) below for details.
 * `auth_token` - (Optional) A nested block that describes a token authentication credentials. Only one auth_token block is permitted per notification destination definition.  See [Nested auth_token blocks](#nested-auth_token-blocks) below for details.
 * `property` - (Optional) A nested block that describes a notification destination property. See [Nested property blocks](#nested-property-blocks) below for details.
@@ -174,8 +174,40 @@ resource "newrelic_notification_destination" "foo" {
     token  = "u+E8EU3MhsZwLfZ1ic1A"
   }
 }
-``` 
+```
 
+#### Mobile Push
+```hcl
+resource "newrelic_notification_destination" "foo" {
+  account_id = 12345678
+  name = "mobile-push-example"
+  type = "MOBILE_PUSH"
+
+  property {
+    key = "userId"
+    value = "12345678"
+  }
+}
+```
+
+#### [AWS Event Bridge](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#eventBridge)
+```hcl
+resource "newrelic_notification_destination" "foo" {
+  account_id = 12345678
+  name = "event-bridge-example"
+  type = "EVENT_BRIDGE"
+
+  property {
+    key = "AWSAccountId"
+    value = "123456789123456"
+  }
+
+  property {
+    key = "AWSRegion"
+    value = "us-east-2"
+  }
+}
+```
 
 ~> **NOTE:** Sensitive data such as destination API keys, service keys, auth object, etc are not returned from the underlying API for security reasons and may not be set in state when importing.
 

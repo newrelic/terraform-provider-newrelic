@@ -189,8 +189,12 @@ func listValidNotificationsChannelTypes() []string {
 		string(notifications.AiNotificationsChannelTypeTypes.SERVICENOW_INCIDENTS),
 		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
 		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
-		string(notifications.AiNotificationsChannelTypeTypes.JIRA_NEXTGEN),
 		string(notifications.AiNotificationsChannelTypeTypes.JIRA_CLASSIC),
+		string(notifications.AiNotificationsChannelTypeTypes.SLACK),
+		string(notifications.AiNotificationsChannelTypeTypes.SLACK_COLLABORATION),
+		string(notifications.AiNotificationsChannelTypeTypes.SLACK_LEGACY),
+		string(notifications.AiNotificationsChannelTypeTypes.MOBILE_PUSH),
+		string(notifications.AiNotificationsChannelTypeTypes.EVENT_BRIDGE),
 	}
 }
 

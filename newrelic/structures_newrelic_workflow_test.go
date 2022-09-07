@@ -63,7 +63,7 @@ func TestExpandWorkflow(t *testing.T) {
 				"issues_filter": []map[string]interface{}{{
 					"name": "issues-filter-test",
 					"type": "FILTER",
-					"predicates": []map[string]interface{}{{
+					"predicate": []map[string]interface{}{{
 						"attribute": "source",
 						"operator":  "EQUAL",
 						"values":    []string{"newrelic"},
@@ -94,7 +94,7 @@ func TestExpandWorkflow(t *testing.T) {
 				"issues_filter": []map[string]interface{}{{
 					"name": "issues-filter-test",
 					"type": "FILTER",
-					"predicates": []map[string]interface{}{{
+					"predicate": []map[string]interface{}{{
 						"attribute": "source",
 						"operator":  "EQUAL",
 						"values":    []string{"newrelic"},
@@ -192,7 +192,7 @@ func TestFlattenWorkflow(t *testing.T) {
 				"issues_filter": map[string]interface{}{
 					"name": "issues-filter-test",
 					"type": "FILTER",
-					"predicates": []map[string]interface{}{{
+					"predicate": []map[string]interface{}{{
 						"attribute": "source",
 						"operator":  "EQUAL",
 						"values":    []string{"newrelic"},
@@ -255,7 +255,7 @@ func testFlattenWorkflowsIssuesFilter(t *testing.T, v interface{}, issuesFilter 
 			assert.Equal(t, cv, string(issuesFilter.Type))
 		case "name":
 			assert.Equal(t, cv, issuesFilter.Name)
-		case "predicates":
+		case "predicate":
 			for _, predicate := range issuesFilter.Predicates {
 				testFlattenWorkflowsIssuesFilterPredicate(t, v, predicate)
 			}

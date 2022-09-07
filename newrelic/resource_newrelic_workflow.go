@@ -80,7 +80,7 @@ func resourceNewRelicWorkflow() *schema.Resource {
 						},
 
 						// Optional
-						"predicates": {
+						"predicate": {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "",

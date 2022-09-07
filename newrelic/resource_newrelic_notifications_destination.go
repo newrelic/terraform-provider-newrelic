@@ -104,11 +104,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the destination.",
 			},
-			"is_user_authenticated": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Indicates whether the user is authenticated with the destination.",
-			},
 			"last_sent": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -123,6 +118,10 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 	destinationInput, err := expandNotificationDestination(d)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if isOAuth2SlackType(destinationInput.Type) {
+		return diag.FromErr(fmt.Errorf("a destination with '%s' type cannot be created via terraform", destinationInput.Type))
 	}
 
 	log.Printf("[INFO] Creating New Relic notification destinationResponse %s", destinationInput.Name)
@@ -234,5 +233,15 @@ func listValidNotificationsDestinationTypes() []string {
 		string(notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
 		string(notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
 		string(notifications.AiNotificationsDestinationTypeTypes.JIRA),
+		string(notifications.AiNotificationsDestinationTypeTypes.SLACK),
+		string(notifications.AiNotificationsDestinationTypeTypes.SLACK_COLLABORATION),
+		string(notifications.AiNotificationsDestinationTypeTypes.SLACK_LEGACY),
+		string(notifications.AiNotificationsDestinationTypeTypes.MOBILE_PUSH),
+		string(notifications.AiNotificationsDestinationTypeTypes.EVENT_BRIDGE),
 	}
+}
+
+// Validation function to OAuth2 slack types
+func isOAuth2SlackType(destinationType notifications.AiNotificationsDestinationType) bool {
+	return destinationType == notifications.AiNotificationsDestinationTypeTypes.SLACK || destinationType == notifications.AiNotificationsDestinationTypeTypes.SLACK_COLLABORATION
 }

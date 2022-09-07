@@ -127,7 +127,7 @@ resource "newrelic_workflow" "foo" {
     name = "filter-name"
     type = "FILTER"
 
-    predicates {
+    predicate {
       attribute = "source"
       operator  = "EQUAL"
       values    = ["newrelic", "pagerduty"]
@@ -198,7 +198,7 @@ resource "newrelic_workflow" "foo" {
     name = "example-filter-by-team-name"
     type = "FILTER"
 
-    predicates {
+    predicate {
       attribute = "accumulations.tag.Team"
       operator  = "EXACTLY_MATCHES"
       values    = ["developer-toolkit"]
