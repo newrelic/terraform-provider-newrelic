@@ -137,13 +137,13 @@ resource "newrelic_workflow" "foo" {
   enrichments {
     nrql {
       name = "Log"
-      configurations {
+      configuration {
         query = "SELECT count(*) FROM Log"
       }
     }
   }
 
-  destination_configuration {
+  destination {
     channel_id = newrelic_notification_channel.foo.id
   }
 }
@@ -208,13 +208,13 @@ resource "newrelic_workflow" "foo" {
   enrichments {
     nrql {
       name = "Log"
-      configurations {
+      configuration {
         query = "SELECT count(*) FROM Log"
       }
     }
   }
 
-  destination_configuration {
+  destination {
     channel_id = newrelic_notification_channel.foo.id
   }
 }

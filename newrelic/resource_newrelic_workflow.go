@@ -31,7 +31,7 @@ func resourceNewRelicWorkflow() *schema.Resource {
 				Required:    true,
 				Description: "(Required) The name of the workflow.",
 			},
-			"destination_configuration": {
+			"destination": {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Description: "Workflow's destination configuration.",
@@ -162,7 +162,7 @@ func resourceNewRelicWorkflow() *schema.Resource {
 										Required:    true,
 										Description: "(Required) Enrichment's name.",
 									},
-									"configurations": {
+									"configuration": {
 										Type:        schema.TypeList,
 										Required:    true,
 										Description: "A set of key-value pairs to represent a enrichment configuration.",

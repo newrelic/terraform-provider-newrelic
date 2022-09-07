@@ -16,7 +16,7 @@ import (
 func TestExpandWorkflow(t *testing.T) {
 	nrql := []map[string]interface{}{{
 		"name": "enrichment-test-1",
-		"configurations": []map[string]interface{}{{
+		"configuration": []map[string]interface{}{{
 			"query": "SELECT * FROM Log",
 		}},
 	}}
@@ -69,7 +69,7 @@ func TestExpandWorkflow(t *testing.T) {
 						"values":    []string{"newrelic"},
 					}},
 				}},
-				"destination_configuration": []map[string]interface{}{{
+				"destination": []map[string]interface{}{{
 					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
 				}},
 			},
@@ -100,7 +100,7 @@ func TestExpandWorkflow(t *testing.T) {
 						"values":    []string{"newrelic"},
 					}},
 				}},
-				"destination_configuration": []map[string]interface{}{{
+				"destination": []map[string]interface{}{{
 					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
 				}},
 			},
@@ -185,7 +185,7 @@ func TestFlattenWorkflow(t *testing.T) {
 				"enrichments": []map[string]interface{}{{
 					"name": "enrichment-test-1",
 					"type": "NRQL",
-					"configurations": []map[string]interface{}{{
+					"configuration": []map[string]interface{}{{
 						"query": "SELECT * FROM Log",
 					}},
 				}},
@@ -198,7 +198,7 @@ func TestFlattenWorkflow(t *testing.T) {
 						"values":    []string{"newrelic"},
 					}},
 				},
-				"destination_configuration": []map[string]interface{}{{
+				"destination": []map[string]interface{}{{
 					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
 					"name":       "destination-test",
 					"type":       "WEBHOOK",
@@ -236,7 +236,7 @@ func TestFlattenWorkflow(t *testing.T) {
 					for _, enrichment := range tc.Flattened.Enrichments {
 						testFlattenWorkflowsEnrichment(t, v, enrichment)
 					}
-				} else if k == "destination_configuration" {
+				} else if k == "destination" {
 					for _, configuration := range tc.Flattened.DestinationConfigurations {
 						testFlattenWorkflowsDestinationConfiguration(t, v, configuration)
 					}
@@ -295,7 +295,7 @@ func testFlattenWorkflowsEnrichment(t *testing.T, v interface{}, enrichment work
 	for _, v1 := range v.([]map[string]interface{}) {
 		for ck, cv := range v1 {
 			switch ck {
-			case "configurations":
+			case "configuration":
 				for _, configuration := range enrichment.Configurations {
 					testFlattenWorkflowsEnrichmentConfiguration(t, cv, configuration)
 				}

@@ -25,14 +25,14 @@ resource "newrelic_workflow" "foo" {
   enrichments {
     nrql {
       name = "Log"
-      configurations {
+      configuration {
         query = "SELECT count(*) FROM Log WHERE message like '%error%' since 10 minutes ago"
       }
     }
 
     nrql {
       name = "Metric"
-      configurations {
+      configuration {
         query = "SELECT count(*) FROM Metric WHERE metricName = 'myMetric'"
       }
     }
@@ -49,11 +49,11 @@ resource "newrelic_workflow" "foo" {
     }
   }
 
-  destination_configuration {
+  destination {
     channel_id = "20d86999-169c-461a-9c16-3cf330f4b3aa"
   }
 
-  destination_configuration {
+  destination {
     channel_id = "e6af0870-cabb-453f-bf0d-fb2b6a14e05c"
   }
 }
@@ -69,7 +69,7 @@ The following arguments are supported:
 * `destinations_enabled` - (Optional) Whether destinations are enabled..
 * `workflow_enabled` - (Optional) Whether workflow is enabled.
 * `muting_rules_handling` - (Required) Which muting rule handling this workflow has.
-* `destination_configuration` - (Required) A nested block that contains a channel id.
+* `destination` - (Required) A nested block that contains a channel id.
 * `issues_filter` - (Required) The issues filter.  See [Nested issues_filter blocks](#nested-issues_filter-blocks) below for details.
 * `enrichments` - (Optional) A nested block that describes a workflow's enrichments. See [Nested enrichments blocks](#nested-enrichments-blocks) below for details.
 
@@ -90,7 +90,7 @@ Each workflow type supports a specific set of arguments for the `enrichments` bl
 
 * `nrql`
   * `name` - A nrql enrichment name.
-  * `configurations` - A list of nrql enrichments.
+  * `configuration` - A list of nrql enrichments.
     * `query` - the nrql query.
 
 
@@ -156,7 +156,7 @@ resource "newrelic_workflow" "workflow-example" {
   enrichments {
     nrql {
       name = "Log count"
-      configurations {
+      configuration {
        query = "SELECT count(*) FROM Log WHERE message like '%error%' since 10 minutes ago"
       }
     }
@@ -179,7 +179,7 @@ resource "newrelic_workflow" "workflow-example" {
     }
   }
 
-  destination_configuration {
+  destination {
     channel_id = newrelic_notification_channel.webhook-channel.id
   }
 }

@@ -17,7 +17,7 @@ func expandWorkflow(d *schema.ResourceData) (*workflows.AiWorkflowsCreateWorkflo
 		MutingRulesHandling: workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
 	}
 
-	workflow.DestinationConfigurations = expandWorkflowDestinationConfigurations(d.Get("destination_configuration").(*schema.Set).List())
+	workflow.DestinationConfigurations = expandWorkflowDestinationConfigurations(d.Get("destination").(*schema.Set).List())
 	workflow.IssuesFilter = expandWorkflowIssuesFilter(d.Get("issues_filter").(*schema.Set).List())
 
 	enrichments, enrichmentsOk := d.GetOk("enrichments")
@@ -55,7 +55,7 @@ func expandWorkflowNrqls(nrqls []interface{}) []workflows.AiWorkflowsNRQLEnrichm
 func expandWorkflowNrql(nrqlConfig map[string]interface{}) workflows.AiWorkflowsNRQLEnrichmentInput {
 	return workflows.AiWorkflowsNRQLEnrichmentInput{
 		Name:          nrqlConfig["name"].(string),
-		Configuration: expandWorkflowEnrichmentNrqlConfigurations(nrqlConfig["configurations"].([]interface{})),
+		Configuration: expandWorkflowEnrichmentNrqlConfigurations(nrqlConfig["configuration"].([]interface{})),
 	}
 }
 
@@ -102,7 +102,7 @@ func expandWorkflowUpdateNrqls(nrqls []interface{}) []workflows.AiWorkflowsNRQLU
 func expandWorkflowUpdateNrql(nrqlConfig map[string]interface{}) workflows.AiWorkflowsNRQLUpdateEnrichmentInput {
 	return workflows.AiWorkflowsNRQLUpdateEnrichmentInput{
 		Name:          nrqlConfig["name"].(string),
-		Configuration: expandWorkflowEnrichmentNrqlConfigurations(nrqlConfig["configurations"].([]interface{})),
+		Configuration: expandWorkflowEnrichmentNrqlConfigurations(nrqlConfig["configuration"].([]interface{})),
 	}
 }
 
@@ -180,7 +180,7 @@ func expandWorkflowUpdate(d *schema.ResourceData) (*workflows.AiWorkflowsUpdateW
 		MutingRulesHandling: workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
 	}
 
-	workflow.DestinationConfigurations = expandWorkflowDestinationConfigurations(d.Get("destination_configuration").(*schema.Set).List())
+	workflow.DestinationConfigurations = expandWorkflowDestinationConfigurations(d.Get("destination").(*schema.Set).List())
 	workflow.IssuesFilter = expandWorkflowUpdateIssuesFilter(d.Get("issues_filter").(*schema.Set).List())
 
 	enrichments, enrichmentsOk := d.GetOk("enrichments")
@@ -248,7 +248,7 @@ func flattenWorkflow(workflow *workflows.AiWorkflowsWorkflow, d *schema.Resource
 		return destinationConfigurationsErr
 	}
 
-	if err := d.Set("destination_configuration", destinationConfigurations); err != nil {
+	if err := d.Set("destination", destinationConfigurations); err != nil {
 		return err
 	}
 
@@ -394,7 +394,7 @@ func flattenWorkflowEnrichment(e *workflows.AiWorkflowsEnrichment) (map[string]i
 	if configurationErr != nil {
 		return nil, configurationErr
 	}
-	enrichmentResult["configurations"] = configuration
+	enrichmentResult["configuration"] = configuration
 
 	return enrichmentResult, nil
 }
