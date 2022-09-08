@@ -1,3 +1,16 @@
+<a name="v3.2.0"></a>
+## [v3.2.0] - 2022-09-08
+### Bug Fixes
+- made accountId optional in the schema
+- **alert_policy:** added computed to account_id
+
+### Documentation Updates
+- added note in the synthetics private locations data source docs
+- added note in the synthetics private locations data source docs
+
+### Features
+- add s3 and docDb to AWS integration
+
 <a name="v3.1.0"></a>
 ## [v3.1.0] - 2022-09-02
 ### Bug Fixes
@@ -1427,7 +1440,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.2.0...HEAD
+[v3.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.1.0...v3.2.0
 [v3.1.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.4...v3.1.0
 [v3.0.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.3...v3.0.4
 [v3.0.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.2...v3.0.3
