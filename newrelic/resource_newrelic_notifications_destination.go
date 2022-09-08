@@ -27,7 +27,8 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "The account ID under which to put the destination.",
 			},

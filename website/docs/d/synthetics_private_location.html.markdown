@@ -23,6 +23,18 @@ resource "newrelic_synthetics_monitor" "foo" {
 }
 ```
 
+-> This data source doesn't work for `scripted_api`, `scripted_browser` and `step` monitors which works with the latest script runtime.
+
+```hcl
+data "newrelic_synthetics_private_location" "example" {
+  name = "My private location"
+}
+resource "newrelic_synthetics_monitor" "foo" {
+  // Reference the private location data source in the monitor resource
+  location_private { guid = data.newrelic_synthetics_private_location.example.id }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
