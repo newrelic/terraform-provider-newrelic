@@ -34,6 +34,7 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "The New Relic account ID to operate on.",
 			},
