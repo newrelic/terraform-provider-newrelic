@@ -209,6 +209,20 @@ resource "newrelic_notification_destination" "foo" {
 }
 ```
 
+#### [Slack](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#slack)
+
+##### Import Slack Destination
+
+1. Add an empty resource to your terraform file: 
+```hcl
+resource "newrelic_notification_destination" "foo" {
+}
+```
+
+2. Run import command:
+`terraform import newrelic_notification_destination.foo <destination_id>`
+
+
 ~> **NOTE:** Sensitive data such as destination API keys, service keys, auth object, etc are not returned from the underlying API for security reasons and may not be set in state when importing.
 
 ## Additional Information
