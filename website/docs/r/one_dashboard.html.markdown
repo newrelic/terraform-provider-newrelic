@@ -13,7 +13,7 @@ description: |-
 ```hcl
 resource "newrelic_one_dashboard" "exampledash" {
   name = "New Relic Terraform Example"
-  permissions = "public_read"
+  permissions = "public_read_only"
 
   page {
     name = "New Relic Terraform Example"
