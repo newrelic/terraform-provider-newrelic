@@ -55,7 +55,7 @@ func TestExpandWorkflow(t *testing.T) {
 				"name":                  "workflow-test",
 				"enrichments_enabled":   true,
 				"destinations_enabled":  true,
-				"workflow_enabled":      true,
+				"enabled":               true,
 				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
 				"enrichments": []map[string]interface{}{{
 					"nrql": nrql,
@@ -89,7 +89,7 @@ func TestExpandWorkflow(t *testing.T) {
 				"name":                  "workflow-test",
 				"enrichments_enabled":   true,
 				"destinations_enabled":  true,
-				"workflow_enabled":      true,
+				"enabled":               true,
 				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
 				"issues_filter": []map[string]interface{}{{
 					"name": "issues-filter-test",
@@ -180,7 +180,7 @@ func TestFlattenWorkflow(t *testing.T) {
 				"name":                  "workflow-test",
 				"enrichments_enabled":   true,
 				"destinations_enabled":  true,
-				"workflow_enabled":      true,
+				"enabled":               true,
 				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
 				"enrichments": []map[string]interface{}{{
 					"name": "enrichment-test-1",

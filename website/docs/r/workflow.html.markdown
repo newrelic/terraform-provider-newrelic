@@ -19,7 +19,7 @@ resource "newrelic_workflow" "foo" {
   account_id = 12345678
   enrichments_enabled = true
   destinations_enabled = true
-  workflow_enabled = true
+  enabled = true
   muting_rules_handling = "NOTIFY_ALL_ISSUES"
 
   enrichments {
@@ -67,7 +67,7 @@ The following arguments are supported:
 * `name` - (Required) The name of the workflow.
 * `enrichments_enabled` - (Optional) Whether enrichments are enabled..
 * `destinations_enabled` - (Optional) Whether destinations are enabled..
-* `workflow_enabled` - (Optional) Whether workflow is enabled.
+* `enabled` - (Optional) Whether workflow is enabled.
 * `muting_rules_handling` - (Required) Which muting rule handling this workflow has.
 * `destination` - (Required) A nested block that contains a channel id.
 * `issues_filter` - (Required) The issues filter.  See [Nested issues_filter blocks](#nested-issues_filter-blocks) below for details.
@@ -187,3 +187,11 @@ resource "newrelic_workflow" "workflow-example" {
 
 ## Additional Information
 More details about the workflows can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/applied-intelligence/incident-workflows/incident-workflows/).
+
+## V1 changes:
+In workflow resource V1 we renamed the following arguments:
+
+- `workflow_enabled` changed to `enabled`.
+- `destination_configuration` changed to `destination`.
+- `predicates` changed to `predicate`.
+- Enrichment's `configurations` changed to `configuration`.

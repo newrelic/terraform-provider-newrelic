@@ -1,6 +1,7 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -8,12 +9,21 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/workflows"
 )
 
+// migrateStateNewRelicWorkflowV0toV1 currently facilitates migrating:
+// `destination_configuration` to `destination`
+// `configurations` to singular
+// `predicates` to singular
+// `workflow_enabled` to `enable`
+func migrateStateNewRelicWorkflowV0toV1(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	return rawState, nil
+}
+
 func expandWorkflow(d *schema.ResourceData) (*workflows.AiWorkflowsCreateWorkflowInput, error) {
 	workflow := workflows.AiWorkflowsCreateWorkflowInput{
 		Name:                d.Get("name").(string),
 		EnrichmentsEnabled:  d.Get("enrichments_enabled").(bool),
 		DestinationsEnabled: d.Get("destinations_enabled").(bool),
-		WorkflowEnabled:     d.Get("workflow_enabled").(bool),
+		WorkflowEnabled:     d.Get("enabled").(bool),
 		MutingRulesHandling: workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
 	}
 
@@ -176,7 +186,7 @@ func expandWorkflowUpdate(d *schema.ResourceData) (*workflows.AiWorkflowsUpdateW
 		Name:                d.Get("name").(string),
 		EnrichmentsEnabled:  d.Get("enrichments_enabled").(bool),
 		DestinationsEnabled: d.Get("destinations_enabled").(bool),
-		WorkflowEnabled:     d.Get("workflow_enabled").(bool),
+		WorkflowEnabled:     d.Get("enabled").(bool),
 		MutingRulesHandling: workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
 	}
 
@@ -235,7 +245,7 @@ func flattenWorkflow(workflow *workflows.AiWorkflowsWorkflow, d *schema.Resource
 		return err
 	}
 
-	if err = d.Set("workflow_enabled", workflow.WorkflowEnabled); err != nil {
+	if err = d.Set("enabled", workflow.WorkflowEnabled); err != nil {
 		return err
 	}
 

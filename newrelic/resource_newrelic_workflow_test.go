@@ -120,7 +120,7 @@ resource "newrelic_workflow" "foo" {
   name                  = "%[2]s"
   enrichments_enabled   = true
   destinations_enabled  = true
-  workflow_enabled      = true
+  enabled      = true
   muting_rules_handling = "NOTIFY_ALL_ISSUES"
 
   issues_filter {
@@ -191,7 +191,7 @@ resource "newrelic_workflow" "foo" {
   name                  = "%[2]s"
   enrichments_enabled   = true
   destinations_enabled  = true
-  workflow_enabled      = true
+  enabled      = true
   muting_rules_handling = "NOTIFY_ALL_ISSUES"
 
   issues_filter {
