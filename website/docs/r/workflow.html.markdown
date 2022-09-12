@@ -156,6 +156,7 @@ resource "newrelic_workflow" "workflow-example" {
   enrichments {
     nrql {
       name = "Log count"
+      
       configuration {
        query = "SELECT count(*) FROM Log WHERE message like '%error%' since 10 minutes ago"
       }

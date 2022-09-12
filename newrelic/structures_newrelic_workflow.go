@@ -10,12 +10,69 @@ import (
 )
 
 // migrateStateNewRelicWorkflowV0toV1 currently facilitates migrating:
+// `workflow_enabled` to `enabled`
 // `destination_configuration` to `destination`
-// `configurations` to singular
 // `predicates` to singular
-// `workflow_enabled` to `enable`
+// `configurations` to singular
 func migrateStateNewRelicWorkflowV0toV1(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	rawState["workflow_enabled"] = rawState["enabled"]
+	rawState["destination_configuration"] = rawState["destination"]
+
+	var issueFilter = rawState["issues_filter"]
+	rawState["issues_filter"] = migrateWorkflowIssuesFilterV0toV1(issueFilter.(*schema.Set).List())
+
+	var enrichments = rawState["enrichments"]
+	rawState["enrichments"] = migrateWorkflowEnrichmentsV0toV1(enrichments.(*schema.Set).List())
+
 	return rawState, nil
+}
+
+func migrateWorkflowIssuesFilterV0toV1(issuesFilter []interface{}) map[string]interface{} {
+	var input map[string]interface{}
+
+	if len(issuesFilter) == 1 {
+		filter := issuesFilter[0].(map[string]interface{})
+
+		if p, ok := filter["predicate"]; ok {
+			migrateWorkflowIssuePredicatesV0toV1(p.([]interface{}))
+		}
+	}
+
+	return input
+}
+
+func migrateWorkflowIssuePredicatesV0toV1(predicates []interface{}) []map[string]interface{} {
+	var input []map[string]interface{}
+
+	for _, p := range predicates {
+		input = append(input, p.(map[string]interface{}))
+	}
+
+	return input
+}
+
+func migrateWorkflowEnrichmentsV0toV1(enrichments []interface{}) map[string]interface{} {
+	input := map[string]interface{}{}
+
+	if len(enrichments) != 1 {
+		return input
+	}
+
+	richments := enrichments[0].(map[string]interface{})
+	nrql := richments["nrql"].([]interface{})
+	input["nrql"] = migrateWorkflowNrqlsV0toV1(nrql)
+
+	return input
+}
+
+func migrateWorkflowNrqlsV0toV1(nrqls []interface{}) []map[string]interface{} {
+	var input []map[string]interface{}
+
+	for _, n := range nrqls {
+		input = append(input, n.(map[string]interface{}))
+	}
+
+	return input
 }
 
 func expandWorkflow(d *schema.ResourceData) (*workflows.AiWorkflowsCreateWorkflowInput, error) {
