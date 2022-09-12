@@ -15,14 +15,14 @@ import (
 // `predicates` to singular
 // `configurations` to singular
 func migrateStateNewRelicWorkflowV0toV1(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
-	rawState["workflow_enabled"] = rawState["enabled"]
-	rawState["destination_configuration"] = rawState["destination"]
+	rawState["enabled"] = rawState["workflow_enabled"]
+	rawState["destination"] = rawState["destination_configuration"]
 
 	var issueFilter = rawState["issues_filter"]
-	rawState["issues_filter"] = migrateWorkflowIssuesFilterV0toV1(issueFilter.(*schema.Set).List())
+	rawState["issues_filter"] = migrateWorkflowIssuesFilterV0toV1(issueFilter.([]interface{}))
 
 	var enrichments = rawState["enrichments"]
-	rawState["enrichments"] = migrateWorkflowEnrichmentsV0toV1(enrichments.(*schema.Set).List())
+	rawState["enrichments"] = migrateWorkflowEnrichmentsV0toV1(enrichments.([]interface{}))
 
 	return rawState, nil
 }
@@ -31,21 +31,9 @@ func migrateWorkflowIssuesFilterV0toV1(issuesFilter []interface{}) map[string]in
 	var input map[string]interface{}
 
 	if len(issuesFilter) == 1 {
-		filter := issuesFilter[0].(map[string]interface{})
+		input = issuesFilter[0].(map[string]interface{})
 
-		if p, ok := filter["predicate"]; ok {
-			migrateWorkflowIssuePredicatesV0toV1(p.([]interface{}))
-		}
-	}
-
-	return input
-}
-
-func migrateWorkflowIssuePredicatesV0toV1(predicates []interface{}) []map[string]interface{} {
-	var input []map[string]interface{}
-
-	for _, p := range predicates {
-		input = append(input, p.(map[string]interface{}))
+		input["predicate"] = input["predicates"]
 	}
 
 	return input
@@ -69,7 +57,9 @@ func migrateWorkflowNrqlsV0toV1(nrqls []interface{}) []map[string]interface{} {
 	var input []map[string]interface{}
 
 	for _, n := range nrqls {
-		input = append(input, n.(map[string]interface{}))
+		var newN = n.(map[string]interface{})
+		newN["configuration"] = newN["configurations"]
+		input = append(input, newN)
 	}
 
 	return input
