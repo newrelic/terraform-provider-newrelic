@@ -27,7 +27,8 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "The account id of the channel.",
 			},

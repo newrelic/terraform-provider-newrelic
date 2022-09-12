@@ -38,6 +38,13 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Elem:        cloudAwsIntegrationBillingSchemaElem(),
 				MaxItems:    1,
 			},
+			"doc_db": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Billing integration",
+				Elem:        cloudAwsIntegrationDocDBSchemaElem(),
+				MaxItems:    1,
+			},
 			"cloudtrail": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -57,6 +64,13 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Optional:    true,
 				Description: "Trusted Advisor integration",
 				Elem:        cloudAwsIntegrationTrustedAdvisorSchemaElem(),
+				MaxItems:    1,
+			},
+			"s3": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "S3 integration",
+				Elem:        cloudAwsIntegrationS3SchemaElem(),
 				MaxItems:    1,
 			},
 			"vpc": {
@@ -112,6 +126,14 @@ func cloudAwsIntegrationCloudTrailSchemaElem() *schema.Resource {
 	}
 }
 
+func cloudAwsIntegrationDocDBSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
 func cloudAwsIntegrationHealthSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
 
@@ -121,6 +143,14 @@ func cloudAwsIntegrationHealthSchemaElem() *schema.Resource {
 }
 
 func cloudAwsIntegrationTrustedAdvisorSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func cloudAwsIntegrationS3SchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
 
 	return &schema.Resource{
@@ -240,6 +270,12 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 		cloudDisableAwsIntegration.Cloudtrail = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
+	if t, ok := d.GetOk("doc_db"); ok {
+		cloudAwsIntegration.AwsDocdb = expandCloudAwsIntegrationDocDBInput(t.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("doc_db"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsIntegration.AwsDocdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
 	if h, ok := d.GetOk("health"); ok {
 		cloudAwsIntegration.Health = expandCloudAwsIntegrationHealthInput(h.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("health"); len(n.([]interface{})) < len(o.([]interface{})) {
@@ -250,6 +286,12 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 		cloudAwsIntegration.Trustedadvisor = expandCloudAwsIntegrationTrustedAdvisorInput(t.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("trusted_advisor"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAwsIntegration.Trustedadvisor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if t, ok := d.GetOk("s3"); ok {
+		cloudAwsIntegration.S3 = expandCloudAwsIntegrationS3Input(t.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("s3"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAwsIntegration.S3 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("vpc"); ok {
@@ -360,6 +402,31 @@ func expandCloudAwsIntegrationHealthInput(h []interface{}, linkedAccountID int) 
 	return expanded
 }
 
+func expandCloudAwsIntegrationDocDBInput(h []interface{}, linkedAccountID int) []cloud.CloudAwsDocdbIntegrationInput {
+	expanded := make([]cloud.CloudAwsDocdbIntegrationInput, len(h))
+
+	for i, docDb := range h {
+		var docDbInput cloud.CloudAwsDocdbIntegrationInput
+
+		if docDb == nil {
+			docDbInput.LinkedAccountId = linkedAccountID
+			expanded[i] = docDbInput
+			return expanded
+		}
+
+		in := docDb.(map[string]interface{})
+
+		docDbInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			docDbInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = docDbInput
+	}
+
+	return expanded
+}
+
 func expandCloudAwsIntegrationTrustedAdvisorInput(t []interface{}, linkedAccountID int) []cloud.CloudTrustedadvisorIntegrationInput {
 	expanded := make([]cloud.CloudTrustedadvisorIntegrationInput, len(t))
 
@@ -381,6 +448,32 @@ func expandCloudAwsIntegrationTrustedAdvisorInput(t []interface{}, linkedAccount
 		}
 
 		expanded[i] = trustedAdvisorInput
+	}
+
+	return expanded
+}
+
+func expandCloudAwsIntegrationS3Input(t []interface{}, linkedAccountID int) []cloud.CloudS3IntegrationInput {
+	expanded := make([]cloud.CloudS3IntegrationInput, len(t))
+
+	for i, s3 := range t {
+		var s3Input cloud.CloudS3IntegrationInput
+
+		if s3 == nil {
+			s3Input.LinkedAccountId = linkedAccountID
+			expanded[i] = s3Input
+			return expanded
+		}
+
+		in := s3.(map[string]interface{})
+
+		s3Input.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			s3Input.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = s3Input
 	}
 
 	return expanded
@@ -687,6 +780,10 @@ func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInpu
 		cloudDisableAwsIntegration.Cloudtrail = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
+	if _, ok := d.GetOk("doc_db"); ok {
+		cloudDisableAwsIntegration.AwsDocdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
 	if _, ok := d.GetOk("health"); ok {
 		cloudDisableAwsIntegration.Health = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
@@ -697,6 +794,10 @@ func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInpu
 
 	if _, ok := d.GetOk("vpc"); ok {
 		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("s3"); ok {
+		cloudDisableAwsIntegration.S3 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if _, ok := d.GetOk("x_ray"); ok {
