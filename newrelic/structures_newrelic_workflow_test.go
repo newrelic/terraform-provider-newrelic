@@ -4,6 +4,7 @@
 package newrelic
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
@@ -256,27 +257,14 @@ func TestWorkflowStateUpgradeV0(t *testing.T) {
 		t.Fatalf("error migrating state: %s", err)
 	}
 
-	//if !reflect.DeepEqual(expected, actual) {
-	//	t.Fatalf("\n\nexpected:\n\n%#v\n\ngot:\n\n%#v\n\n", expected, actual)
-	//}
+	if !reflect.DeepEqual(expected, actual) {
+		t.Fatalf("\n\nexpected:\n\n%#v\n\ngot:\n\n%#v\n\n", expected, actual)
+	}
 }
 
 func testWorkflowStateDataV0() map[string]any {
 	return map[string]interface{}{
-		"name":                  "workflow-test",
-		"enrichments_enabled":   true,
-		"destinations_enabled":  true,
-		"workflow_enabled":      true,
-		"muting_rules_handling": "NOTIFY_ALL_ISSUES",
-		"issues_filter": []map[string]interface{}{{
-			"name": "issues-filter-test",
-			"type": "FILTER",
-			"predicates": []map[string]interface{}{{
-				"attribute": "source",
-				"operator":  "EQUAL",
-				"values":    []string{"newrelic"},
-			}},
-		}},
+		"workflow_enabled": true,
 		"destination_configuration": []map[string]interface{}{{
 			"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
 		}},
@@ -287,20 +275,7 @@ func testWorkflowStateDataV1() map[string]any {
 	v0 := testWorkflowStateDataV0()
 
 	return map[string]interface{}{
-		"name":                  v0["name"],
-		"enrichments_enabled":   v0["enrichments_enabled"],
-		"destinations_enabled":  v0["destinations_enabled"],
-		"enabled":               v0["workflow_enabled"],
-		"muting_rules_handling": v0["muting_rules_handling"],
-		"issues_filter": []map[string]interface{}{{
-			"name": "issues-filter-test",
-			"type": "FILTER",
-			"predicate": []map[string]interface{}{{
-				"attribute": "source",
-				"operator":  "EQUAL",
-				"values":    []string{"newrelic"},
-			}},
-		}},
+		"enabled":     v0["workflow_enabled"],
 		"destination": v0["destination_configuration"],
 	}
 }

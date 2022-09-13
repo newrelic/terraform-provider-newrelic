@@ -1,12 +1,21 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/pkg/notifications"
 )
+
+// migrateStateNewRelicNotificationDestinationV0toV1 currently facilitates migrating:
+// remove is_user_authenticated argument
+func migrateStateNewRelicNotificationDestinationV0toV1(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	delete(rawState, "is_user_authenticated")
+
+	return rawState, nil
+}
 
 func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNotificationsDestinationInput, error) {
 	destination := notifications.AiNotificationsDestinationInput{

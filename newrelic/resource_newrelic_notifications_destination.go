@@ -111,6 +111,119 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Description: "The last time a notification was sent.",
 			},
 		},
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    resourceNewRelicNotificationDestinationV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: migrateStateNewRelicNotificationDestinationV0toV1,
+				Version: 0,
+			},
+		},
+	}
+}
+
+func resourceNewRelicNotificationDestinationV0() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: resourceNewRelicNotificationDestinationCreate,
+		ReadContext:   resourceNewRelicNotificationDestinationRead,
+		UpdateContext: resourceNewRelicNotificationDestinationUpdate,
+		DeleteContext: resourceNewRelicNotificationDestinationDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The account ID under which to put the destination.",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "(Required) The name of the destination.",
+			},
+			"type": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice(listValidNotificationsDestinationTypes(), false),
+				Description:  fmt.Sprintf("(Required) The type of the destination. One of: (%s).", strings.Join(listValidNotificationsDestinationTypes(), ", ")),
+			},
+			"property": {
+				Type:        schema.TypeSet,
+				Required:    true,
+				Description: "Notification destination property type.",
+				Elem:        notificationsPropertySchema(),
+			},
+			"auth_basic": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MinItems:      1,
+				MaxItems:      1,
+				ConflictsWith: []string{"auth_token"},
+				Description:   "Basic username and password authentication credentials.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"user": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"password": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+					},
+				},
+			},
+			"auth_token": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MinItems:      1,
+				MaxItems:      1,
+				ConflictsWith: []string{"auth_basic"},
+				Description:   "Token authentication credentials.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"prefix": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"token": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+					},
+				},
+			},
+			"active": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Indicates whether the destination is active.",
+				Default:     true,
+			},
+
+			// Computed
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the destination.",
+			},
+			"is_user_authenticated": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether the user is authenticated with the destination.",
+			},
+			"last_sent": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The last time a notification was sent.",
+			},
+		},
+		SchemaVersion: 0,
 	}
 }
 

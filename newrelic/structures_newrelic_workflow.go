@@ -17,49 +17,64 @@ import (
 func migrateStateNewRelicWorkflowV0toV1(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
 	rawState["enabled"] = rawState["workflow_enabled"]
 	rawState["destination"] = rawState["destination_configuration"]
+	delete(rawState, "workflow_enabled")
+	delete(rawState, "destination_configuration")
 
 	var issueFilter = rawState["issues_filter"]
-	rawState["issues_filter"] = migrateWorkflowIssuesFilterV0toV1(issueFilter.([]interface{}))
+
+	if issueFilter != nil {
+		rawState["issues_filter"] = migrateWorkflowIssuesFilterV0toV1(issueFilter.([]interface{}))
+	}
 
 	var enrichments = rawState["enrichments"]
-	rawState["enrichments"] = migrateWorkflowEnrichmentsV0toV1(enrichments.([]interface{}))
+
+	if enrichments != nil {
+		rawState["enrichments"] = migrateWorkflowEnrichmentsV0toV1(enrichments.([]interface{}))
+	}
 
 	return rawState, nil
 }
 
-func migrateWorkflowIssuesFilterV0toV1(issuesFilter []interface{}) map[string]interface{} {
+func migrateWorkflowIssuesFilterV0toV1(issuesFilter []interface{}) []map[string]interface{} {
 	var input map[string]interface{}
 
 	if len(issuesFilter) == 1 {
 		input = issuesFilter[0].(map[string]interface{})
 
 		input["predicate"] = input["predicates"]
+		delete(input, "predicates")
 	}
 
-	return input
+	var returnInput []map[string]interface{}
+	returnInput = append(returnInput, input)
+
+	return returnInput
 }
 
-func migrateWorkflowEnrichmentsV0toV1(enrichments []interface{}) map[string]interface{} {
+func migrateWorkflowEnrichmentsV0toV1(enrichments []interface{}) []map[string]interface{} {
 	input := map[string]interface{}{}
+	var returnInput []map[string]interface{}
 
 	if len(enrichments) != 1 {
-		return input
+		return returnInput
 	}
 
 	richments := enrichments[0].(map[string]interface{})
 	nrql := richments["nrql"].([]interface{})
 	input["nrql"] = migrateWorkflowNrqlsV0toV1(nrql)
 
-	return input
+	returnInput = append(returnInput, input)
+	return returnInput
 }
 
 func migrateWorkflowNrqlsV0toV1(nrqls []interface{}) []map[string]interface{} {
 	var input []map[string]interface{}
 
-	for _, n := range nrqls {
+	for i, n := range nrqls {
 		var newN = n.(map[string]interface{})
 		newN["configuration"] = newN["configurations"]
 		input = append(input, newN)
+		delete(input[i], "configurations")
 	}
 
 	return input
