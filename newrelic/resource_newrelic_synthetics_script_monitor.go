@@ -94,6 +94,7 @@ func syntheticsScriptMonitorCommonSchema() map[string]*schema.Schema {
 		"script_language": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Default:     "JAVASCRIPT",
 			Description: "The programing language that should execute the script.",
 		},
 		"runtime_type": {

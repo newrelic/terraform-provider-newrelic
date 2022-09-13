@@ -90,7 +90,7 @@ The `BROWSER` monitor type supports the following additional arguments:
 * `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution.
 * `runtime_type_version` - (Required) The runtime type that the monitor will run.
 * `runtime_type` - (Required) The runtime type that the monitor will run.
-* `script_language` - (Optional) The programing language that should execute the script.
+* `script_language` - (Optional) The programing language that should execute the script. Defaults to `"JAVASCRIPT"`.
 
 ### Nested `custom header` blocks
 
