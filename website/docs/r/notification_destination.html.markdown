@@ -41,7 +41,7 @@ The following arguments are supported:
 * `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `WEBHOOK`, `JIRA`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
 * `auth_basic` - (Optional) A nested block that describes a basic username and password authentication credentials. Only one auth_basic block is permitted per notification destination definition.  See [Nested auth_basic blocks](#nested-auth_basic-blocks) below for details.
 * `auth_token` - (Optional) A nested block that describes a token authentication credentials. Only one auth_token block is permitted per notification destination definition.  See [Nested auth_token blocks](#nested-auth_token-blocks) below for details.
-* `property` - (Optional) A nested block that describes a notification destination property. See [Nested property blocks](#nested-property-blocks) below for details.
+* `property` - (Required) A nested block that describes a notification destination property. See [Nested property blocks](#nested-property-blocks) below for details.
 
 ### Nested `auth_basic` blocks
 
