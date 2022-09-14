@@ -4,6 +4,7 @@
 package newrelic
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/newrelic/newrelic-client-go/pkg/ai"
@@ -16,7 +17,7 @@ import (
 func TestExpandWorkflow(t *testing.T) {
 	nrql := []map[string]interface{}{{
 		"name": "enrichment-test-1",
-		"configurations": []map[string]interface{}{{
+		"configuration": []map[string]interface{}{{
 			"query": "SELECT * FROM Log",
 		}},
 	}}
@@ -55,7 +56,7 @@ func TestExpandWorkflow(t *testing.T) {
 				"name":                  "workflow-test",
 				"enrichments_enabled":   true,
 				"destinations_enabled":  true,
-				"workflow_enabled":      true,
+				"enabled":               true,
 				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
 				"enrichments": []map[string]interface{}{{
 					"nrql": nrql,
@@ -63,13 +64,13 @@ func TestExpandWorkflow(t *testing.T) {
 				"issues_filter": []map[string]interface{}{{
 					"name": "issues-filter-test",
 					"type": "FILTER",
-					"predicates": []map[string]interface{}{{
+					"predicate": []map[string]interface{}{{
 						"attribute": "source",
 						"operator":  "EQUAL",
 						"values":    []string{"newrelic"},
 					}},
 				}},
-				"destination_configuration": []map[string]interface{}{{
+				"destination": []map[string]interface{}{{
 					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
 				}},
 			},
@@ -89,18 +90,18 @@ func TestExpandWorkflow(t *testing.T) {
 				"name":                  "workflow-test",
 				"enrichments_enabled":   true,
 				"destinations_enabled":  true,
-				"workflow_enabled":      true,
+				"enabled":               true,
 				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
 				"issues_filter": []map[string]interface{}{{
 					"name": "issues-filter-test",
 					"type": "FILTER",
-					"predicates": []map[string]interface{}{{
+					"predicate": []map[string]interface{}{{
 						"attribute": "source",
 						"operator":  "EQUAL",
 						"values":    []string{"newrelic"},
 					}},
 				}},
-				"destination_configuration": []map[string]interface{}{{
+				"destination": []map[string]interface{}{{
 					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
 				}},
 			},
@@ -180,25 +181,25 @@ func TestFlattenWorkflow(t *testing.T) {
 				"name":                  "workflow-test",
 				"enrichments_enabled":   true,
 				"destinations_enabled":  true,
-				"workflow_enabled":      true,
+				"enabled":               true,
 				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
 				"enrichments": []map[string]interface{}{{
 					"name": "enrichment-test-1",
 					"type": "NRQL",
-					"configurations": []map[string]interface{}{{
+					"configuration": []map[string]interface{}{{
 						"query": "SELECT * FROM Log",
 					}},
 				}},
 				"issues_filter": map[string]interface{}{
 					"name": "issues-filter-test",
 					"type": "FILTER",
-					"predicates": []map[string]interface{}{{
+					"predicate": []map[string]interface{}{{
 						"attribute": "source",
 						"operator":  "EQUAL",
 						"values":    []string{"newrelic"},
 					}},
 				},
-				"destination_configuration": []map[string]interface{}{{
+				"destination": []map[string]interface{}{{
 					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
 					"name":       "destination-test",
 					"type":       "WEBHOOK",
@@ -236,7 +237,7 @@ func TestFlattenWorkflow(t *testing.T) {
 					for _, enrichment := range tc.Flattened.Enrichments {
 						testFlattenWorkflowsEnrichment(t, v, enrichment)
 					}
-				} else if k == "destination_configuration" {
+				} else if k == "destination" {
 					for _, configuration := range tc.Flattened.DestinationConfigurations {
 						testFlattenWorkflowsDestinationConfiguration(t, v, configuration)
 					}
@@ -248,6 +249,37 @@ func TestFlattenWorkflow(t *testing.T) {
 	}
 }
 
+func TestWorkflowStateUpgradeV0(t *testing.T) {
+	expected := testWorkflowStateDataV1()
+	actual, err := migrateStateNewRelicWorkflowV0toV1(nil, testWorkflowStateDataV0(), nil)
+
+	if err != nil {
+		t.Fatalf("error migrating state: %s", err)
+	}
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Fatalf("\n\nexpected:\n\n%#v\n\ngot:\n\n%#v\n\n", expected, actual)
+	}
+}
+
+func testWorkflowStateDataV0() map[string]any {
+	return map[string]interface{}{
+		"workflow_enabled": true,
+		"destination_configuration": []map[string]interface{}{{
+			"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
+		}},
+	}
+}
+
+func testWorkflowStateDataV1() map[string]any {
+	v0 := testWorkflowStateDataV0()
+
+	return map[string]interface{}{
+		"enabled":     v0["workflow_enabled"],
+		"destination": v0["destination_configuration"],
+	}
+}
+
 func testFlattenWorkflowsIssuesFilter(t *testing.T, v interface{}, issuesFilter workflows.AiWorkflowsFilter) {
 	for ck, cv := range v.(map[string]interface{}) {
 		switch ck {
@@ -255,7 +287,7 @@ func testFlattenWorkflowsIssuesFilter(t *testing.T, v interface{}, issuesFilter 
 			assert.Equal(t, cv, string(issuesFilter.Type))
 		case "name":
 			assert.Equal(t, cv, issuesFilter.Name)
-		case "predicates":
+		case "predicate":
 			for _, predicate := range issuesFilter.Predicates {
 				testFlattenWorkflowsIssuesFilterPredicate(t, v, predicate)
 			}
@@ -295,7 +327,7 @@ func testFlattenWorkflowsEnrichment(t *testing.T, v interface{}, enrichment work
 	for _, v1 := range v.([]map[string]interface{}) {
 		for ck, cv := range v1 {
 			switch ck {
-			case "configurations":
+			case "configuration":
 				for _, configuration := range enrichment.Configurations {
 					testFlattenWorkflowsEnrichmentConfiguration(t, cv, configuration)
 				}

@@ -21,6 +21,12 @@ func dataSourceNewRelicAlertChannel() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNewRelicAlertChannelRead,
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The New Relic account ID where you want to retrieve the alert channel.",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -149,8 +155,11 @@ func dataSourceNewRelicAlertChannelRead(ctx context.Context, d *schema.ResourceD
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Alert Channels")
+	providerConfig := meta.(*ProviderConfig)
+	accountID := selectAccountID(providerConfig, d)
+	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	channels, err := client.Alerts.ListChannelsWithContext(ctx)
+	channels, err := client.Alerts.ListChannelsWithContext(updatedContext)
 	if err != nil {
 		return diag.FromErr(err)
 	}

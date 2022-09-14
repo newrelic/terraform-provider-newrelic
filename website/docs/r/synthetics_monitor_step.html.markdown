@@ -21,15 +21,14 @@ resource "newrelic_synthetics_step_monitor" "monitor" {
   status                                  = "ENABLED"
   steps {
     ordinal = 0
-    types   = "NAVIGATE"
-    values  = "ASSERT_ELEMENT"
+    type    = "NAVIGATE"
+    values  = ["https://www.newrelic.com"]
   }
   tag {
     key    = "some_key"
     values = ["some_value"]
   }
 }
-
 ```
 See additional [examples](#additional-examples).
 
