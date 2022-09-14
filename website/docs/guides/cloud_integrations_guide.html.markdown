@@ -55,7 +55,7 @@ The Microsoft Azure integrations reports data from various Azure platform servic
 
 This example will integrate the following resources: `API Management`, `App Gateway`, `App Service`, `Containers`, `Cosmos DB`, `Cost Management`, `Data Factory`, `Eventhub`, `Express Route`, `Firewalls`, `FrontDoor`, `Functions`, `KeyVault`, `Load Balancer`, `Logic apps`, `Machine learning`, `MariaDB`, `Mysql`, `Postgresql`, `PowerBI Dedicated`, `Redis cache`, `Service Bus`, `Sql`, `Sql Managed`, `Storage`, `Virtual Machine`, `Virtual Networks`, `Vms`, and `VPN gateway`. Feel free to adapt the example to your needs.
 
-Link: https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/cloud-integrations-aws.tf
+Link: https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/cloud-integrations-azure.tf
 
 Variables:
 
