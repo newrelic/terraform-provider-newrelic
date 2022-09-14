@@ -17,23 +17,23 @@ Use this resource to create and manage New Relic workflow.
 resource "newrelic_workflow" "foo" {
   name = "workflow-example"
   account_id = 12345678
-  enrichments_enabled = false
+  enrichments_enabled = true
   destinations_enabled = true
-  workflow_enabled = true
+  enabled = true
   muting_rules_handling = "NOTIFY_ALL_ISSUES"
 
   enrichments {
     nrql {
       name = "Log"
-      configurations {
-        query = "SELECT * FROM Log"
+      configuration {
+        query = "SELECT count(*) FROM Log WHERE message like '%error%' since 10 minutes ago"
       }
     }
 
     nrql {
       name = "Metric"
-      configurations {
-        query = "SELECT * FROM Metric"
+      configuration {
+        query = "SELECT count(*) FROM Metric WHERE metricName = 'myMetric'"
       }
     }
   }
@@ -42,18 +42,18 @@ resource "newrelic_workflow" "foo" {
     name = "filter-name"
     type = "FILTER"
 
-    predicates {
+    predicate {
       attribute = "accumulations.sources"
       operator = "EXACTLY_MATCHES"
       values = [ "newrelic", "pagerduty" ]
     }
   }
 
-  destination_configuration {
+  destination {
     channel_id = "20d86999-169c-461a-9c16-3cf330f4b3aa"
   }
 
-  destination_configuration {
+  destination {
     channel_id = "e6af0870-cabb-453f-bf0d-fb2b6a14e05c"
   }
 }
@@ -67,9 +67,9 @@ The following arguments are supported:
 * `name` - (Required) The name of the workflow.
 * `enrichments_enabled` - (Optional) Whether enrichments are enabled..
 * `destinations_enabled` - (Optional) Whether destinations are enabled..
-* `workflow_enabled` - (Optional) Whether workflow is enabled.
+* `enabled` - (Optional) Whether workflow is enabled.
 * `muting_rules_handling` - (Required) Which muting rule handling this workflow has.
-* `destination_configuration` - (Required) A nested block that contains a channel id.
+* `destination` - (Required) A nested block that contains a channel id.
 * `issues_filter` - (Required) The issues filter.  See [Nested issues_filter blocks](#nested-issues_filter-blocks) below for details.
 * `enrichments` - (Optional) A nested block that describes a workflow's enrichments. See [Nested enrichments blocks](#nested-enrichments-blocks) below for details.
 
@@ -79,9 +79,9 @@ Each workflow type supports a set of arguments for the `issues_filter` block:
 
 * `name` - the filter's name.
 * `type` - the filter's type.   One of: `FILTER` or `VIEW`.
-* `predicates`
-  * `attribute` - A predicates attribute.
-  * `operator` - A predicates operator. One of: `CONTAINS`, `DOES_NOT_CONTAIN`, `DOES_NOT_EQUAL`, `DOES_NOT_EXACTLY_MATCH`, `ENDS_WITH`, `EQUAL`, `EXACTLY_MATCHES`, `GREATER_OR_EQUAL`, `GREATER_THAN`, `IS`, `IS_NOT`, `LESS_OR_EQUAL`, `LESS_THAN` or `STARTS_WITH` (workflows).
+* `predicate`
+  * `attribute` - A predicate's attribute.
+  * `operator` - A predicate's operator. One of: `CONTAINS`, `DOES_NOT_CONTAIN`, `DOES_NOT_EQUAL`, `DOES_NOT_EXACTLY_MATCH`, `ENDS_WITH`, `EQUAL`, `EXACTLY_MATCHES`, `GREATER_OR_EQUAL`, `GREATER_THAN`, `IS`, `IS_NOT`, `LESS_OR_EQUAL`, `LESS_THAN` or `STARTS_WITH` (workflows).
   * `values` - A list of values.
 
 ### Nested `enrichments` blocks
@@ -90,7 +90,7 @@ Each workflow type supports a specific set of arguments for the `enrichments` bl
 
 * `nrql`
   * `name` - A nrql enrichment name.
-  * `configurations` - A list of nrql enrichments.
+  * `configuration` - A list of nrql enrichments.
     * `query` - the nrql query.
 
 
@@ -103,6 +103,13 @@ In addition to all arguments above, the following attributes are exported:
 ## Full Scenario Example
 Create a destination resource and reference that destination to the channel resource. Then create a workflow and reference the channel resource to it.
 
+### Create a policy
+```hcl
+resource "newrelic_alert_policy" "collector-policy" {
+  name = "my_policy"
+}
+```
+
 ### Create a destination
 ```hcl
 resource "newrelic_notification_destination" "webhook-destination" {
@@ -112,7 +119,7 @@ resource "newrelic_notification_destination" "webhook-destination" {
 
   property {
     key = "url"
-    value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
+    value = "https://webhook.mywebhook.com"
   }
 
   auth_basic {
@@ -133,7 +140,7 @@ resource "newrelic_notification_channel" "webhook-channel" {
 
   property {
     key = "payload"
-    value = "{name: foo}"
+    value = "{name: {{ variable }} }"
     label = "Payload Template"
   }
 }
@@ -149,8 +156,9 @@ resource "newrelic_workflow" "workflow-example" {
   enrichments {
     nrql {
       name = "Log count"
-      configurations {
-       query = "SELECT count(*) FROM Log"
+      
+      configuration {
+       query = "SELECT count(*) FROM Log WHERE message like '%error%' since 10 minutes ago"
       }
     }
   }
@@ -159,14 +167,20 @@ resource "newrelic_workflow" "workflow-example" {
     name = "Filter-name"
     type = "FILTER"
 
-    predicates {
+    predicate {
+      attribute = "accumulations.policyName"
+      operator = "EXACTLY_MATCHES"
+      values = [ "my_policy" ]
+    }
+
+    predicate {
       attribute = "accumulations.sources"
       operator = "EXACTLY_MATCHES"
       values = [ "newrelic" ]
     }
   }
 
-  destination_configuration {
+  destination {
     channel_id = newrelic_notification_channel.webhook-channel.id
   }
 }
@@ -174,3 +188,11 @@ resource "newrelic_workflow" "workflow-example" {
 
 ## Additional Information
 More details about the workflows can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/applied-intelligence/incident-workflows/incident-workflows/).
+
+## v3.3 changes
+In version v3.3 we renamed the following arguments:
+
+- `workflow_enabled` changed to `enabled`.
+- `destination_configuration` changed to `destination`.
+- `predicates` changed to `predicate`.
+- Enrichment's `configurations` changed to `configuration`.
