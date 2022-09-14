@@ -15,15 +15,11 @@ Use this resource to create and manage synthetics alert conditions in New Relic.
 ## Example Usage
 
 ```hcl
-data "newrelic_synthetics_monitor" "foo" {
-  name = "foo"
-}
-
 resource "newrelic_synthetics_alert_condition" "foo" {
   policy_id = newrelic_alert_policy.foo.id
 
   name        = "foo"
-  monitor_id  = data.newrelic_synthetics_monitor.foo.id
+  monitor_id  = newrelic_synthetics_monitor.foo.id
   runbook_url = "https://www.example.com"
 }
 ```
