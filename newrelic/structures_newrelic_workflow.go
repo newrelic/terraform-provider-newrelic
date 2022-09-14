@@ -1,6 +1,7 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -8,16 +9,87 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/workflows"
 )
 
+// migrateStateNewRelicWorkflowV0toV1 currently facilitates migrating:
+// `workflow_enabled` to `enabled`
+// `destination_configuration` to `destination`
+// `predicates` to singular
+// `configurations` to singular
+func migrateStateNewRelicWorkflowV0toV1(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	rawState["enabled"] = rawState["workflow_enabled"]
+	rawState["destination"] = rawState["destination_configuration"]
+	delete(rawState, "workflow_enabled")
+	delete(rawState, "destination_configuration")
+
+	var issueFilter = rawState["issues_filter"]
+
+	if issueFilter != nil {
+		rawState["issues_filter"] = migrateWorkflowIssuesFilterV0toV1(issueFilter.([]interface{}))
+	}
+
+	var enrichments = rawState["enrichments"]
+
+	if enrichments != nil {
+		rawState["enrichments"] = migrateWorkflowEnrichmentsV0toV1(enrichments.([]interface{}))
+	}
+
+	return rawState, nil
+}
+
+func migrateWorkflowIssuesFilterV0toV1(issuesFilter []interface{}) []map[string]interface{} {
+	var input map[string]interface{}
+
+	if len(issuesFilter) == 1 {
+		input = issuesFilter[0].(map[string]interface{})
+
+		input["predicate"] = input["predicates"]
+		delete(input, "predicates")
+	}
+
+	var returnInput []map[string]interface{}
+	returnInput = append(returnInput, input)
+
+	return returnInput
+}
+
+func migrateWorkflowEnrichmentsV0toV1(enrichments []interface{}) []map[string]interface{} {
+	input := map[string]interface{}{}
+	var returnInput []map[string]interface{}
+
+	if len(enrichments) != 1 {
+		return returnInput
+	}
+
+	richments := enrichments[0].(map[string]interface{})
+	nrql := richments["nrql"].([]interface{})
+	input["nrql"] = migrateWorkflowNrqlsV0toV1(nrql)
+
+	returnInput = append(returnInput, input)
+	return returnInput
+}
+
+func migrateWorkflowNrqlsV0toV1(nrqls []interface{}) []map[string]interface{} {
+	var input []map[string]interface{}
+
+	for i, n := range nrqls {
+		var newN = n.(map[string]interface{})
+		newN["configuration"] = newN["configurations"]
+		input = append(input, newN)
+		delete(input[i], "configurations")
+	}
+
+	return input
+}
+
 func expandWorkflow(d *schema.ResourceData) (*workflows.AiWorkflowsCreateWorkflowInput, error) {
 	workflow := workflows.AiWorkflowsCreateWorkflowInput{
 		Name:                d.Get("name").(string),
 		EnrichmentsEnabled:  d.Get("enrichments_enabled").(bool),
 		DestinationsEnabled: d.Get("destinations_enabled").(bool),
-		WorkflowEnabled:     d.Get("workflow_enabled").(bool),
+		WorkflowEnabled:     d.Get("enabled").(bool),
 		MutingRulesHandling: workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
 	}
 
-	workflow.DestinationConfigurations = expandWorkflowDestinationConfigurations(d.Get("destination_configuration").(*schema.Set).List())
+	workflow.DestinationConfigurations = expandWorkflowDestinationConfigurations(d.Get("destination").(*schema.Set).List())
 	workflow.IssuesFilter = expandWorkflowIssuesFilter(d.Get("issues_filter").(*schema.Set).List())
 
 	enrichments, enrichmentsOk := d.GetOk("enrichments")
@@ -55,7 +127,7 @@ func expandWorkflowNrqls(nrqls []interface{}) []workflows.AiWorkflowsNRQLEnrichm
 func expandWorkflowNrql(nrqlConfig map[string]interface{}) workflows.AiWorkflowsNRQLEnrichmentInput {
 	return workflows.AiWorkflowsNRQLEnrichmentInput{
 		Name:          nrqlConfig["name"].(string),
-		Configuration: expandWorkflowEnrichmentNrqlConfigurations(nrqlConfig["configurations"].([]interface{})),
+		Configuration: expandWorkflowEnrichmentNrqlConfigurations(nrqlConfig["configuration"].([]interface{})),
 	}
 }
 
@@ -102,7 +174,7 @@ func expandWorkflowUpdateNrqls(nrqls []interface{}) []workflows.AiWorkflowsNRQLU
 func expandWorkflowUpdateNrql(nrqlConfig map[string]interface{}) workflows.AiWorkflowsNRQLUpdateEnrichmentInput {
 	return workflows.AiWorkflowsNRQLUpdateEnrichmentInput{
 		Name:          nrqlConfig["name"].(string),
-		Configuration: expandWorkflowEnrichmentNrqlConfigurations(nrqlConfig["configurations"].([]interface{})),
+		Configuration: expandWorkflowEnrichmentNrqlConfigurations(nrqlConfig["configuration"].([]interface{})),
 	}
 }
 
@@ -131,7 +203,7 @@ func expandWorkflowIssuesFilter(issuesFilter []interface{}) workflows.AiWorkflow
 		filter := issuesFilter[0].(map[string]interface{})
 		predicates := []workflows.AiWorkflowsPredicateInput{}
 
-		if p, ok := filter["predicates"]; ok {
+		if p, ok := filter["predicate"]; ok {
 			predicates = expandWorkflowIssuePredicates(p.([]interface{}))
 		}
 
@@ -176,11 +248,11 @@ func expandWorkflowUpdate(d *schema.ResourceData) (*workflows.AiWorkflowsUpdateW
 		Name:                d.Get("name").(string),
 		EnrichmentsEnabled:  d.Get("enrichments_enabled").(bool),
 		DestinationsEnabled: d.Get("destinations_enabled").(bool),
-		WorkflowEnabled:     d.Get("workflow_enabled").(bool),
+		WorkflowEnabled:     d.Get("enabled").(bool),
 		MutingRulesHandling: workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
 	}
 
-	workflow.DestinationConfigurations = expandWorkflowDestinationConfigurations(d.Get("destination_configuration").(*schema.Set).List())
+	workflow.DestinationConfigurations = expandWorkflowDestinationConfigurations(d.Get("destination").(*schema.Set).List())
 	workflow.IssuesFilter = expandWorkflowUpdateIssuesFilter(d.Get("issues_filter").(*schema.Set).List())
 
 	enrichments, enrichmentsOk := d.GetOk("enrichments")
@@ -235,7 +307,7 @@ func flattenWorkflow(workflow *workflows.AiWorkflowsWorkflow, d *schema.Resource
 		return err
 	}
 
-	if err = d.Set("workflow_enabled", workflow.WorkflowEnabled); err != nil {
+	if err = d.Set("enabled", workflow.WorkflowEnabled); err != nil {
 		return err
 	}
 
@@ -248,7 +320,7 @@ func flattenWorkflow(workflow *workflows.AiWorkflowsWorkflow, d *schema.Resource
 		return destinationConfigurationsErr
 	}
 
-	if err := d.Set("destination_configuration", destinationConfigurations); err != nil {
+	if err := d.Set("destination", destinationConfigurations); err != nil {
 		return err
 	}
 
@@ -319,7 +391,7 @@ func flattenWorkflowIssuesFilter(f *workflows.AiWorkflowsFilter) (interface{}, e
 	if predicatesErr != nil {
 		return nil, predicatesErr
 	}
-	issuesFilterResult["predicates"] = predicates
+	issuesFilterResult["predicate"] = predicates
 
 	issuesFilter[0] = issuesFilterResult
 
@@ -394,7 +466,7 @@ func flattenWorkflowEnrichment(e *workflows.AiWorkflowsEnrichment) (map[string]i
 	if configurationErr != nil {
 		return nil, configurationErr
 	}
-	enrichmentResult["configurations"] = configuration
+	enrichmentResult["configuration"] = configuration
 
 	return enrichmentResult, nil
 }
