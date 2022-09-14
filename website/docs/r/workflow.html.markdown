@@ -189,8 +189,8 @@ resource "newrelic_workflow" "workflow-example" {
 ## Additional Information
 More details about the workflows can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/applied-intelligence/incident-workflows/incident-workflows/).
 
-## V1 changes:
-In workflow resource V1 we renamed the following arguments:
+## v3.3 changes
+In version v3.3 we renamed the following arguments:
 
 - `workflow_enabled` changed to `enabled`.
 - `destination_configuration` changed to `destination`.
