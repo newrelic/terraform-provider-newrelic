@@ -105,6 +105,113 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the destination.",
 			},
+			"last_sent": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The last time a notification was sent.",
+			},
+		},
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    resourceNewRelicNotificationDestinationV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: migrateStateNewRelicNotificationDestinationV0toV1,
+				Version: 0,
+			},
+		},
+	}
+}
+
+func resourceNewRelicNotificationDestinationV0() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: resourceNewRelicNotificationDestinationCreate,
+		ReadContext:   resourceNewRelicNotificationDestinationRead,
+		UpdateContext: resourceNewRelicNotificationDestinationUpdate,
+		DeleteContext: resourceNewRelicNotificationDestinationDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The account ID under which to put the destination.",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "(Required) The name of the destination.",
+			},
+			"type": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice(listValidNotificationsDestinationTypes(), false),
+				Description:  fmt.Sprintf("(Required) The type of the destination. One of: (%s).", strings.Join(listValidNotificationsDestinationTypes(), ", ")),
+			},
+			"property": {
+				Type:        schema.TypeSet,
+				Required:    true,
+				Description: "Notification destination property type.",
+				Elem:        notificationsPropertySchema(),
+			},
+			"auth_basic": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MinItems:      1,
+				MaxItems:      1,
+				ConflictsWith: []string{"auth_token"},
+				Description:   "Basic username and password authentication credentials.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"user": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"password": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+					},
+				},
+			},
+			"auth_token": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MinItems:      1,
+				MaxItems:      1,
+				ConflictsWith: []string{"auth_basic"},
+				Description:   "Token authentication credentials.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"prefix": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"token": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+					},
+				},
+			},
+			"active": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Indicates whether the destination is active.",
+				Default:     true,
+			},
+
+			// Computed
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the destination.",
+			},
 			"is_user_authenticated": {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -116,6 +223,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Description: "The last time a notification was sent.",
 			},
 		},
+		SchemaVersion: 0,
 	}
 }
 
@@ -124,6 +232,10 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 	destinationInput, err := expandNotificationDestination(d)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if isOAuth2SlackType(destinationInput.Type) {
+		return diag.FromErr(fmt.Errorf("a destination with '%s' type cannot be created via terraform", destinationInput.Type))
 	}
 
 	log.Printf("[INFO] Creating New Relic notification destinationResponse %s", destinationInput.Name)
@@ -235,5 +347,15 @@ func listValidNotificationsDestinationTypes() []string {
 		string(notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
 		string(notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
 		string(notifications.AiNotificationsDestinationTypeTypes.JIRA),
+		string(notifications.AiNotificationsDestinationTypeTypes.SLACK),
+		string(notifications.AiNotificationsDestinationTypeTypes.SLACK_COLLABORATION),
+		string(notifications.AiNotificationsDestinationTypeTypes.SLACK_LEGACY),
+		string(notifications.AiNotificationsDestinationTypeTypes.MOBILE_PUSH),
+		string(notifications.AiNotificationsDestinationTypeTypes.EVENT_BRIDGE),
 	}
+}
+
+// Validation function to OAuth2 slack types
+func isOAuth2SlackType(destinationType notifications.AiNotificationsDestinationType) bool {
+	return destinationType == notifications.AiNotificationsDestinationTypeTypes.SLACK || destinationType == notifications.AiNotificationsDestinationTypeTypes.SLACK_COLLABORATION
 }

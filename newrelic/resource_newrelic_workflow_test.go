@@ -120,14 +120,14 @@ resource "newrelic_workflow" "foo" {
   name                  = "%[2]s"
   enrichments_enabled   = true
   destinations_enabled  = true
-  workflow_enabled      = true
+  enabled      = true
   muting_rules_handling = "NOTIFY_ALL_ISSUES"
 
   issues_filter {
     name = "filter-name"
     type = "FILTER"
 
-    predicates {
+    predicate {
       attribute = "source"
       operator  = "EQUAL"
       values    = ["newrelic", "pagerduty"]
@@ -137,13 +137,13 @@ resource "newrelic_workflow" "foo" {
   enrichments {
     nrql {
       name = "Log"
-      configurations {
+      configuration {
         query = "SELECT count(*) FROM Log"
       }
     }
   }
 
-  destination_configuration {
+  destination {
     channel_id = newrelic_notification_channel.foo.id
   }
 }
@@ -191,14 +191,14 @@ resource "newrelic_workflow" "foo" {
   name                  = "%[2]s"
   enrichments_enabled   = true
   destinations_enabled  = true
-  workflow_enabled      = true
+  enabled      = true
   muting_rules_handling = "NOTIFY_ALL_ISSUES"
 
   issues_filter {
     name = "example-filter-by-team-name"
     type = "FILTER"
 
-    predicates {
+    predicate {
       attribute = "accumulations.tag.Team"
       operator  = "EXACTLY_MATCHES"
       values    = ["developer-toolkit"]
@@ -208,13 +208,13 @@ resource "newrelic_workflow" "foo" {
   enrichments {
     nrql {
       name = "Log"
-      configurations {
+      configuration {
         query = "SELECT count(*) FROM Log"
       }
     }
   }
 
-  destination_configuration {
+  destination {
     channel_id = newrelic_notification_channel.foo.id
   }
 }
