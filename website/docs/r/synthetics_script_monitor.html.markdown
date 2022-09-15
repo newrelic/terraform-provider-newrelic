@@ -14,7 +14,7 @@ Use this resource to create update, and delete a Script API or Script Browser Sy
 
 ##### Type: `SCRIPT_API`
 
--> **NOTE:** The preferred runtime is `NODE_16.10.0` while configuring the `SCRIPT_API` monitor. Other runtime may be deprecated in the future and receive fewer product updates. 
+-> **NOTE:** The preferred runtime is `NODE_16.10.0` while configuring the `SCRIPT_API` monitor. The runtime fields `runtime_type`, `runtime_type_version` and `script_language` are required. Other runtime may be deprecated in the future and receive fewer product updates. 
 
 ```hcl
 resource "newrelic_synthetics_script_monitor" "monitor" {
@@ -35,7 +35,7 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
 ```
 ##### Type: `SCRIPT_BROWSER`
 
--> **NOTE:** The preferred runtime is `CHROME_BROWSER_100` while configuring the `SCRIPT_BROWSER` monitor. Other runtime may be deprecated in the future and receive fewer product updates.
+-> **NOTE:** The preferred runtime is `CHROME_BROWSER_100` while configuring the `SCRIPT_BROWSER` monitor. The runtime fields `runtime_type`, `runtime_type_version` and `script_language` are required. Other runtime may be deprecated in the future and receive fewer product updates.
 
 ```hcl
 resource "newrelic_synthetics_script_monitor" "monitor" {
@@ -69,7 +69,7 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `runtime_type` - (Required) The runtime that the monitor will use to run jobs.
 * `runtime_type_version` - (Required) The specific version of the runtime type selected.
-* `script_language` - (Optional) The programing language that should execute the script. Defaults to `"JAVASCRIPT"`.
+* `script_language` - (Optional) The programing language that should execute the script.
 * `status` - (Required) The run state of the monitor.
 * `script` - (Required) The script that the monitor runs.
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
