@@ -19,7 +19,7 @@ resource "newrelic_notification_channel" "foo" {
   name = "webhook-example"
   type = "WEBHOOK"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
-  product = "IINT"
+  product = "IINT" // (Workflows)
 
   property {
     key = "payload"
@@ -36,7 +36,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the notification channel will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the channel.
-* `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `WEBHOOK`, `JIRA_CLASSIC`, `JIRA_NEXTGEN`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
+* `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `WEBHOOK`, `JIRA_CLASSIC`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `SLACK` and `SLACK_COLLABORATION`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
 * `destination_id` - (Required) The id of the destination.
 * `product` - (Required) The type of product.  One of: `DISCUSSIONS`, `ERROR_TRACKING` or `IINT` (workflows).
 * `property` - A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
@@ -187,6 +187,54 @@ resource "newrelic_notification_channel" "foo" {
 }
 ```
 
+#### Mobile Push
+```hcl
+resource "newrelic_notification_channel" "foo" {
+  account_id = 12345678
+  name = "mobile-push-example"
+  type = "MOBILE_PUSH"
+  destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
+  product = "IINT"
+}
+```
+
+#### [AWS Event Bridge](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#eventBridge)
+```hcl
+resource "newrelic_notification_channel" "foo" {
+  account_id = 12345678
+  name = "event-bridge-example"
+  type = "EVENT_BRIDGE"
+  destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
+  product = "IINT"
+
+  property {
+    key = "eventSource"
+    value = "aws.partner/mydomain/myaccountid/name"
+  }
+
+  property {
+    key = "eventContent"
+    value = "{ id: {{ json issueId }} }"
+  }
+}
+```
+
+#### [SLACK](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#slack)
+```hcl
+resource "newrelic_notification_channel" "foo" {
+  account_id = 12345678
+  name = "slack-example"
+  type = "SLACK"
+  destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
+  product = "IINT"
+
+  property {
+    key = "channelId"
+    value = "123456"
+  }
+}
+```
+
 ~> **NOTE:** Sensitive data such as channel API keys, service keys, etc are not returned from the underlying API for security reasons and may not be set in state when importing.
 
 ## Full Scenario Example
@@ -201,7 +249,7 @@ resource "newrelic_notification_destination" "webhook-destination" {
 
   property {
     key = "url"
-    value = "https://webhook.site/94193c01-4a81-4782-8f1b-554d5230395b"
+    value = "https://webhook.mywebhook.com"
   }
 
   auth_basic {
