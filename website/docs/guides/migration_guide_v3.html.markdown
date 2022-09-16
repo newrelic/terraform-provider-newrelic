@@ -56,7 +56,7 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
 2. Remove `AWS_` from the location name, e.g. `AWS_US_EAST_1` becomes `US_EAST_1`
 3. Rename `frequency` to `period` and change to one of the valid values - EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY
 4. Run `terraform state rm newrelic_synthetics_monitor_script.<your_monitor_name>` and then log in to New Relic to find your monitor guid.
-5. Using the guid e.g. `MTk2MQxYjk3YWIzLWZlM05JVE9SfDQxYj...` run `terraform import newrelic_synthetics_script_monitor.<your_monitor_name>` to continue managing your existing monitor in Terraform. There won't be any down time, only a brief moment where your monitor is not managed by Terraform.
+5. Using the guid e.g. `MTk2MQxYjk3YWIzLWZlM05JVE9SfDQxYj...` run `terraform import newrelic_synthetics_script_monitor.<your_monitor_name> guid` to continue managing your existing monitor in Terraform. There won't be any down time, only a brief moment where your monitor is not managed by Terraform.
 
 ### Migrating script Synthetics monitor resources with VSE
 
