@@ -207,31 +207,22 @@ func WorkloadremainingEntitiesRuleSchemaElem() *schema.Resource {
 
 func WorkloadRollupInputSchemaElem() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"rollup": {
-			Type:        schema.TypeSet,
-			Required:    true,
-			Description: "The input object used to represent a rollup strategy.",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"strategy": {
-						Type:         schema.TypeString,
-						Required:     true,
-						Description:  "The rollup strategy that is applied to a group of entities.",
-						ValidateFunc: validation.StringInSlice(listValidWorkloadStrategy(), false),
-					},
-					"threshold_type": {
-						Type:         schema.TypeString,
-						Optional:     true,
-						Description:  "Type of threshold defined for the rule. This is an optional field that only applies when strategy is WORST_STATUS_WINS. Use a threshold to roll up the worst status only after a certain amount of entities are not operational.",
-						ValidateFunc: validation.StringInSlice(listValidWorkloadRuleThresholdType(), false),
-					},
-					"threshold_value": {
-						Type:        schema.TypeInt,
-						Optional:    true,
-						Description: "Threshold value defined for the rule. This optional field is used in combination with thresholdType. If the threshold type is null, the threshold value will be ignored.",
-					},
-				},
-			},
+		"strategy": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  "The rollup strategy that is applied to a group of entities.",
+			ValidateFunc: validation.StringInSlice(listValidWorkloadStrategy(), false),
+		},
+		"threshold_type": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "Type of threshold defined for the rule. This is an optional field that only applies when strategy is WORST_STATUS_WINS. Use a threshold to roll up the worst status only after a certain amount of entities are not operational.",
+			ValidateFunc: validation.StringInSlice(listValidWorkloadRuleThresholdType(), false),
+		},
+		"threshold_value": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "Threshold value defined for the rule. This optional field is used in combination with thresholdType. If the threshold type is null, the threshold value will be ignored.",
 		},
 	}
 }

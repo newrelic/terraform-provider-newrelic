@@ -67,3 +67,5 @@ require (
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/newrelic/newrelic-client-go => /Users/pniladhuri/myWork/src/local/newrelic/newrelic-client-go
