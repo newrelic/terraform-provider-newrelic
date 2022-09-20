@@ -149,7 +149,7 @@ func expandWorkloadUpdateCollectionEntitySearchQueryInput(cfg map[string]interfa
 	return queryInput
 }
 
-//Static
+// Static
 func expandWorkloadStatusConfigStaticInput(e []interface{}) []workloads.WorkloadStaticStatusInput {
 	staticOut := make([]workloads.WorkloadStaticStatusInput, len(e))
 
@@ -167,7 +167,7 @@ func expandWorkloadStatusConfigStaticInput(e []interface{}) []workloads.Workload
 	return staticOut
 }
 
-//Update Static
+// Update Static
 func expandWorkloadUpdateStatusConfigStaticInput(cfg []interface{}) []workloads.WorkloadUpdateStaticStatusInput {
 	staticOut := make([]workloads.WorkloadUpdateStaticStatusInput, len(cfg))
 
@@ -185,25 +185,21 @@ func expandWorkloadUpdateStatusConfigStaticInput(cfg []interface{}) []workloads.
 	return staticOut
 }
 
-//TRY 1
-//Automatic
+// TRY 1
+// Automatic
 func expandWorkloadStatusConfigAutomaticInput(rcfg []interface{}) *workloads.WorkloadAutomaticStatusInput {
-	prem := workloads.WorkloadAutomaticStatusInput{
-		RemainingEntitiesRule: &workloads.WorkloadRemainingEntitiesRuleInput{},
-	}
+	prem := workloads.WorkloadAutomaticStatusInput{}
 	for _, v := range rcfg {
 		cfg := v.(map[string]interface{})
 		if x, ok := cfg["enabled"]; ok {
 			prem.Enabled = x.(bool)
 		}
-		if x, ok := cfg["remaining_entities_rule_rollup"]; ok {
+		if x := cfg["remaining_entities_rule_rollup"]; x.(*schema.Set).Len() != 0 {
 			prem.RemainingEntitiesRule.Rollup = expandRemainingEntityRuleRollup(x.(*schema.Set).List())
 		}
 		if x, ok := cfg["rules"]; ok {
 			prem.Rules = expandAutoConfigRule(x.(*schema.Set).List())
 		}
-		log.Printf("[INFO] pks RemainingEntitiesRuleRollup value %v", prem.RemainingEntitiesRule.Rollup)
-		log.Printf("[INFO] pks RemainingEntitiesRule value %v", prem.RemainingEntitiesRule)
 	}
 
 	return &prem
@@ -281,7 +277,7 @@ func expandRuleRollUp(rcfg []interface{}) *workloads.WorkloadRollupInput {
 	return &inp
 }
 
-//Update Automatic
+// Update Automatic
 func expandWorkloadStatusConfigUpdateAutomaticInput(rcfg []interface{}) *workloads.WorkloadUpdateAutomaticStatusInput {
 	prem := workloads.WorkloadUpdateAutomaticStatusInput{
 		RemainingEntitiesRule: &workloads.WorkloadRemainingEntitiesRuleInput{},
@@ -291,7 +287,7 @@ func expandWorkloadStatusConfigUpdateAutomaticInput(rcfg []interface{}) *workloa
 		if x, ok := cfg["enabled"]; ok {
 			prem.Enabled = x.(bool)
 		}
-		if x, ok := cfg["remaining_entities_rule_rollup"]; ok {
+		if x := cfg["remaining_entities_rule_rollup"]; x.(*schema.Set).Len() > 0 {
 			prem.RemainingEntitiesRule.Rollup = expandRemainingEntityRuleRollup(x.(*schema.Set).List())
 		}
 		if x, ok := cfg["rules"]; ok {

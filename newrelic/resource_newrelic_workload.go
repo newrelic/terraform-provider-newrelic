@@ -74,6 +74,7 @@ func resourceNewRelicWorkload() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "An input object used to represent an automatic status configuration.",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
