@@ -35,7 +35,7 @@ resource "newrelic_synthetics_monitor" "monitor" {
 ```
 ##### Type: `SIMPLE BROWSER`
 
--> **NOTE:** The preferred runtime is `CHROME_BROWSER_100` while configuring the `SIMPLE_BROWSER` monitor. Other runtime may be deprecated in the future and receive fewer product updates.
+-> **NOTE:** The preferred runtime is `CHROME_BROWSER_100` while configuring the `SIMPLE_BROWSER` monitor. The runtime fields `runtime_type`, `runtime_type_version` and `script_language` are required. Other runtime may be deprecated in the future and receive fewer product updates.
 
 ```hcl
 resource "newrelic_synthetics_monitor" "bar" {
