@@ -27,7 +27,8 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "The account id of the channel.",
 			},
@@ -124,6 +125,10 @@ func resourceNewRelicNotificationChannelRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	if len(channelResponse.Entities) == 0 {
+		return diag.FromErr(fmt.Errorf("[ERROR] notification channelResponse.Entities response is empty"))
+	}
+
 	errors := buildAiNotificationsResponseErrors(channelResponse.Errors)
 	if len(errors) > 0 {
 		return errors
@@ -189,8 +194,12 @@ func listValidNotificationsChannelTypes() []string {
 		string(notifications.AiNotificationsChannelTypeTypes.SERVICENOW_INCIDENTS),
 		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
 		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
-		string(notifications.AiNotificationsChannelTypeTypes.JIRA_NEXTGEN),
 		string(notifications.AiNotificationsChannelTypeTypes.JIRA_CLASSIC),
+		string(notifications.AiNotificationsChannelTypeTypes.SLACK),
+		string(notifications.AiNotificationsChannelTypeTypes.SLACK_COLLABORATION),
+		string(notifications.AiNotificationsChannelTypeTypes.SLACK_LEGACY),
+		string(notifications.AiNotificationsChannelTypeTypes.MOBILE_PUSH),
+		string(notifications.AiNotificationsChannelTypeTypes.EVENT_BRIDGE),
 	}
 }
 

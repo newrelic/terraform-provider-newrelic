@@ -63,6 +63,14 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 	simpleMonitorUpdateInput.Status = inputBase.Status
 	simpleMonitorUpdateInput.Tags = inputBase.Tags
 
+	if v, ok := d.GetOk("custom_header"); ok {
+		simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandSyntheticsCustomHeaders(v.(*schema.Set).List())
+	}
+
+	if v, ok := d.GetOk("uri"); ok {
+		simpleMonitorUpdateInput.Uri = v.(string)
+	}
+
 	if v, ok := d.GetOk("locations_public"); ok {
 		simpleMonitorUpdateInput.Locations.Public = expandStringSlice(v.(*schema.Set).List())
 	}
