@@ -305,6 +305,9 @@ func dashboardWidgetFunnelSchemaElem() *schema.Resource {
 func dashboardWidgetHeatmapSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
 
+	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
+	s["filter_current_dashboard"] = dashboardWidgetFilterCurrentDashboardSchema()
+
 	return &schema.Resource{
 		Schema: s,
 	}
