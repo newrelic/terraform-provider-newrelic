@@ -98,3 +98,11 @@ func buildAiNotificationsResponseErrors(errors []notifications.AiNotificationsRe
 	}
 	return diagErrors
 }
+
+func createMonitoringProperty() notifications.AiNotificationsPropertyInput {
+	return notifications.AiNotificationsPropertyInput{
+		Key:   "source",
+		Value: "terraform",
+		Label: "terraform-source-internal",
+	}
+}

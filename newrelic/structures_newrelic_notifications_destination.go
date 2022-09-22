@@ -87,6 +87,7 @@ func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications
 
 func expandNotificationDestinationProperties(properties []interface{}) []notifications.AiNotificationsPropertyInput {
 	props := []notifications.AiNotificationsPropertyInput{}
+	props = append(props, createMonitoringProperty())
 
 	for _, p := range properties {
 		props = append(props, expandNotificationDestinationProperty(p.(map[string]interface{})))
