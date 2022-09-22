@@ -4,7 +4,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/workloads"
-	"log"
 )
 
 func expandWorkloadCreateInput(d *schema.ResourceData) workloads.WorkloadCreateInput {
@@ -24,17 +23,18 @@ func expandWorkloadCreateInput(d *schema.ResourceData) workloads.WorkloadCreateI
 	if e, ok := d.GetOk("scope_account_ids"); ok {
 		createInput.ScopeAccounts = expandWorkloadScopeAccountsInput(e.(*schema.Set).List())
 	}
+
 	if e, ok := d.GetOk("description"); ok {
+
 		createInput.Description = e.(string)
 	}
 	if e, ok := d.GetOk("status_config_static"); ok {
 		createInput.StatusConfig.Static = expandWorkloadStatusConfigStaticInput(e.(*schema.Set).List())
 	}
+
 	if e, ok := d.GetOk("status_config_automatic"); ok {
 		createInput.StatusConfig.Automatic = expandWorkloadStatusConfigAutomaticInput(e.(*schema.Set).List())
 	}
-	log.Printf("[INFO] pks automatic value %v", createInput.StatusConfig.Automatic)
-	log.Printf("[INFO] pks StatusConfig value %v", createInput.StatusConfig)
 
 	return createInput
 }
@@ -57,16 +57,18 @@ func expandWorkloadUpdateInput(d *schema.ResourceData) workloads.WorkloadUpdateI
 	if e, ok := d.GetOk("scope_account_ids"); ok {
 		updateInput.ScopeAccounts = expandWorkloadScopeAccountsInput(e.(*schema.Set).List())
 	}
+
 	if e, ok := d.GetOk("description"); ok {
 		updateInput.Description = e.(string)
 	}
+
 	if e, ok := d.GetOk("status_config_static"); ok {
 		updateInput.StatusConfig.Static = expandWorkloadUpdateStatusConfigStaticInput(e.(*schema.Set).List())
 	}
+
 	if e, ok := d.GetOk("status_config_automatic"); ok {
 		updateInput.StatusConfig.Automatic = expandWorkloadStatusConfigUpdateAutomaticInput(e.(*schema.Set).List())
 	}
-	log.Printf("[INFO] pks automatic value %v", updateInput.StatusConfig.Automatic)
 
 	return updateInput
 }
@@ -95,7 +97,6 @@ func expandWorkloadEntitySearchQueryInputs(cfg []interface{}) []workloads.Worklo
 	for i, rawCfg := range cfg {
 		cfg := rawCfg.(map[string]interface{})
 		entitySearchQuery := expandWorkloadEntitySearchQueryInput(cfg)
-
 		perms[i] = entitySearchQuery
 	}
 
@@ -149,7 +150,7 @@ func expandWorkloadUpdateCollectionEntitySearchQueryInput(cfg map[string]interfa
 	return queryInput
 }
 
-//Static
+// Static
 func expandWorkloadStatusConfigStaticInput(e []interface{}) []workloads.WorkloadStaticStatusInput {
 	staticOut := make([]workloads.WorkloadStaticStatusInput, len(e))
 
@@ -167,7 +168,7 @@ func expandWorkloadStatusConfigStaticInput(e []interface{}) []workloads.Workload
 	return staticOut
 }
 
-//Update Static
+// Update Static
 func expandWorkloadUpdateStatusConfigStaticInput(cfg []interface{}) []workloads.WorkloadUpdateStaticStatusInput {
 	staticOut := make([]workloads.WorkloadUpdateStaticStatusInput, len(cfg))
 
@@ -185,57 +186,72 @@ func expandWorkloadUpdateStatusConfigStaticInput(cfg []interface{}) []workloads.
 	return staticOut
 }
 
-//TRY 1
-//Automatic
+// TRY 1
+// Automatic
 func expandWorkloadStatusConfigAutomaticInput(rcfg []interface{}) *workloads.WorkloadAutomaticStatusInput {
 	prem := workloads.WorkloadAutomaticStatusInput{
-		RemainingEntitiesRule: &workloads.WorkloadRemainingEntitiesRuleInput{},
+		//RemainingEntitiesRule: &workloads.WorkloadRemainingEntitiesRuleInput{},
 	}
 	for _, v := range rcfg {
 		cfg := v.(map[string]interface{})
+
 		if x, ok := cfg["enabled"]; ok {
 			prem.Enabled = x.(bool)
 		}
-		if x, ok := cfg["remaining_entities_rule_rollup"]; ok {
-			prem.RemainingEntitiesRule.Rollup = expandRemainingEntityRuleRollup(x.(*schema.Set).List())
+
+		if x := cfg["remaining_entities_rule"]; x.(*schema.Set).Len() != 0 {
+			prem.RemainingEntitiesRule = expandRemainingEntityRule(x.(*schema.Set).List())
 		}
+
 		if x, ok := cfg["rules"]; ok {
 			prem.Rules = expandAutoConfigRule(x.(*schema.Set).List())
 		}
-		log.Printf("[INFO] pks RemainingEntitiesRuleRollup value %v", prem.RemainingEntitiesRule.Rollup)
-		log.Printf("[INFO] pks RemainingEntitiesRule value %v", prem.RemainingEntitiesRule)
 	}
 
 	return &prem
 }
 
-func expandRemainingEntityRuleRollup(rcfg []interface{}) *workloads.WorkloadRemainingEntitiesRuleRollupInput {
-	var prem workloads.WorkloadRemainingEntitiesRuleRollupInput
+func expandRemainingEntityRule(rcfg []interface{}) *workloads.WorkloadRemainingEntitiesRuleInput {
+	var prem workloads.WorkloadRemainingEntitiesRuleInput
 	for _, v := range rcfg {
 		cfg := v.(map[string]interface{})
+
+		if x := cfg["remaining_entities_rule_rollup"]; x.(*schema.Set).Len() != 0 {
+			prem.Rollup = expandRemainingEntityRuleRollup(x.(*schema.Set).List())
+		}
+	}
+	return &prem
+}
+
+func expandRemainingEntityRuleRollup(rcfg []interface{}) *workloads.WorkloadRemainingEntitiesRuleRollupInput {
+	prem := &workloads.WorkloadRemainingEntitiesRuleRollupInput{}
+	for _, v := range rcfg {
+		cfg := v.(map[string]interface{})
+
 		if x, ok := cfg["group_by"]; ok {
 			prem.GroupBy = workloads.WorkloadGroupRemainingEntitiesRuleBy(x.(string))
 		}
+
 		if x, ok := cfg["strategy"]; ok {
 			prem.Strategy = workloads.WorkloadRollupStrategy(x.(string))
 		}
+
 		if x, ok := cfg["threshold_type"]; ok {
 			prem.ThresholdType = (workloads.WorkloadRuleThresholdType)(x.(string))
-			//s := x.(string)
-			//prem.ThresholdType = (*workloads.WorkloadRuleThresholdType)(&s)
-
 		}
+
 		if x, ok := cfg["threshold_value"]; ok {
 			prem.ThresholdValue = x.(int)
 		}
 	}
-	return &prem
+	return prem
 }
 
 func expandAutoConfigRule(cfg []interface{}) []workloads.WorkloadRegularRuleInput {
 	if len(cfg) == 0 {
 		return []workloads.WorkloadRegularRuleInput{}
 	}
+
 	perms := make([]workloads.WorkloadRegularRuleInput, len(cfg))
 	for i, rawCfg := range cfg {
 		cfg := rawCfg.(map[string]interface{})
@@ -252,12 +268,15 @@ func expandRules(cfg map[string]interface{}) workloads.WorkloadRegularRuleInput 
 	if x, ok := cfg["entity_guids"]; ok {
 		inp.EntityGUIDs = expandWorkloadEntityGUIDs(x.(*schema.Set).List())
 	}
+
 	if x, ok := cfg["nrql_query"]; ok {
 		inp.EntitySearchQueries = expandWorkloadEntitySearchQueryInputs(x.(*schema.Set).List())
 	}
+
 	if x, ok := cfg["rollup"]; ok {
 		inp.Rollup = expandRuleRollUp(x.(*schema.Set).List())
 	}
+
 	return inp
 }
 
@@ -265,35 +284,39 @@ func expandRuleRollUp(rcfg []interface{}) *workloads.WorkloadRollupInput {
 	var inp workloads.WorkloadRollupInput
 	for _, v := range rcfg {
 		cfg := v.(map[string]interface{})
+
 		if x, ok := cfg["strategy"]; ok {
 			inp.Strategy = workloads.WorkloadRollupStrategy(x.(string))
 		}
+
 		if x, ok := cfg["threshold_value"]; ok {
 			inp.ThresholdValue = x.(int)
 		}
+
 		if x, ok := cfg["threshold_type"]; ok {
 			inp.ThresholdType = workloads.WorkloadRuleThresholdType(x.(string))
-			//s := x.(string)
-			//inp.ThresholdType = (*workloads.WorkloadRuleThresholdType)(&s)
 		}
 	}
 
 	return &inp
 }
 
-//Update Automatic
+// Update Automatic
 func expandWorkloadStatusConfigUpdateAutomaticInput(rcfg []interface{}) *workloads.WorkloadUpdateAutomaticStatusInput {
 	prem := workloads.WorkloadUpdateAutomaticStatusInput{
-		RemainingEntitiesRule: &workloads.WorkloadRemainingEntitiesRuleInput{},
+		//RemainingEntitiesRule: &workloads.WorkloadRemainingEntitiesRuleInput{},
 	}
 	for _, v := range rcfg {
 		cfg := v.(map[string]interface{})
+
 		if x, ok := cfg["enabled"]; ok {
 			prem.Enabled = x.(bool)
 		}
-		if x, ok := cfg["remaining_entities_rule_rollup"]; ok {
-			prem.RemainingEntitiesRule.Rollup = expandRemainingEntityRuleRollup(x.(*schema.Set).List())
+
+		if x := cfg["remaining_entities_rule"]; x.(*schema.Set).Len() != 0 {
+			prem.RemainingEntitiesRule = expandRemainingEntityRule(x.(*schema.Set).List())
 		}
+
 		if x, ok := cfg["rules"]; ok {
 			prem.Rules = expandUpdateAutoConfigRule(x.(*schema.Set).List())
 		}
@@ -322,12 +345,15 @@ func expandUpdateRules(cfg map[string]interface{}) workloads.WorkloadUpdateRegul
 	if x, ok := cfg["entity_guids"]; ok {
 		inp.EntityGUIDs = expandWorkloadEntityGUIDs(x.(*schema.Set).List())
 	}
+
 	if x, ok := cfg["nrql_query"]; ok {
 		inp.EntitySearchQueries = expandWorkloadUpdateCollectionEntitySearchQueryInputs(x.(*schema.Set).List())
 	}
+
 	if x, ok := cfg["rollup"]; ok {
 		inp.Rollup = expandRuleRollUp(x.(*schema.Set).List())
 	}
+
 	return inp
 }
 
@@ -346,10 +372,9 @@ func setWorkloadAttributes(d *schema.ResourceData, attributes map[string]string)
 
 func listValidWorkloadStatuses() []string {
 	return []string{
-		string(workloads.WorkloadStatusValueTypes.DEGRADED),
-		string(workloads.WorkloadStatusValueTypes.OPERATIONAL),
-		string(workloads.WorkloadStatusValueTypes.UNKNOWN),
-		string(workloads.WorkloadStatusValueTypes.DISRUPTED),
+		string(workloads.WorkloadStatusValueInputTypes.DEGRADED),
+		string(workloads.WorkloadStatusValueInputTypes.OPERATIONAL),
+		string(workloads.WorkloadStatusValueInputTypes.DISRUPTED),
 	}
 }
 

@@ -6,13 +6,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/pkg/common"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/pkg/workloads"
 	"log"
 	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
 func resourceNewRelicWorkload() *schema.Resource {
@@ -74,6 +75,7 @@ func resourceNewRelicWorkload() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "An input object used to represent an automatic status configuration.",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
@@ -81,12 +83,22 @@ func resourceNewRelicWorkload() *schema.Resource {
 							Required:    true,
 							Description: "Whether the automatic status configuration is enabled or not.",
 						},
-						"remaining_entities_rule_rollup": {
+						"remaining_entities_rule": {
 							Type:        schema.TypeSet,
 							Optional:    true,
-							Description: "The input object used to represent a rollup strategy.",
-							Elem:        WorkloadremainingEntitiesRuleSchemaElem(),
+							Description: "An additional meta-rule that can consider all entities that haven't been evaluated by any other rule.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"remaining_entities_rule_rollup": {
+										Type:        schema.TypeSet,
+										Required:    true,
+										Description: "The input object used to represent a rollup strategy.",
+										Elem:        WorkloadremainingEntitiesRuleSchemaElem(),
+									},
+								},
+							},
 						},
+
 						"rules": {
 							Type:        schema.TypeSet,
 							Optional:    true,
@@ -244,9 +256,52 @@ func resourceNewRelicWorkloadCreate(ctx context.Context, d *schema.ResourceData,
 		ID:        created.ID,
 		GUID:      created.GUID,
 	}
-
 	d.SetId(ids.String())
+	//d.SetId(string(created.GUID))
+
+	setAttributes(created, d)
 	return resourceNewRelicWorkloadRead(ctx, d, meta)
+}
+
+func setAttributes(res *workloads.WorkloadCollection, d *schema.ResourceData) {
+	_ = d.Set("account_id", res.Account.ID)
+	_ = d.Set("guid", res.GUID)
+	_ = d.Set("workload_id", res.ID)
+	_ = d.Set("name", res.Name)
+	_ = d.Set("permalink", res.Permalink)
+	_ = d.Set("entity_guids", flattenWorkloadEntityGUIDs(res.Entities))
+	_ = d.Set("entity_search_query", flattenWorkloadEntitySearchQueries(res.EntitySearchQueries))
+	_ = d.Set("scope_account_ids", res.ScopeAccounts.AccountIDs)
+	//	_ = d.Set("composite_entity_search_query", res.EntitySearchQuery)
+	//
+	//_ = d.Set("name", res.Name)
+	//_ = d.Set("account_id", string(res.Account.Name))
+	//_ = d.Set("entity_search_query", res.EntitySearchQueries)
+	//_ = d.Set("description", res.Description)
+	//_ = d.Set("status_config_static", res.StatusConfig.Static)
+	//_ = d.Set("status_config_automatic", res.StatusConfig.Automatic)
+	//_ = d.Set("scope_account_ids", res.ScopeAccounts)
+	//_ = d.Set("entity_guids", res.Entities)
+	//_ = d.Set("name", res.EntitySearchQuery)
+}
+func flattenWorkloadEntityGUIDs(in []workloads.WorkloadEntityRef) interface{} {
+	out := make([]interface{}, len(in))
+	for i, e := range in {
+		out[i] = e.GUID
+	}
+
+	return out
+}
+
+func flattenWorkloadEntitySearchQueries(in []workloads.WorkloadEntitySearchQuery) interface{} {
+	out := make([]interface{}, len(in))
+	for i, e := range in {
+		m := make(map[string]interface{})
+		m["query"] = e.Query
+		out[i] = m
+	}
+
+	return out
 }
 
 func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -257,18 +312,29 @@ func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, m
 	}
 	resp, err := client.Entities.GetEntityWithContext(ctx, ids.GUID)
 	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
+		if err != nil {
+			if _, ok := err.(*errors.NotFound); ok {
+				d.SetId("")
+				return nil
+			}
 
-		return diag.FromErr(err)
+			return diag.FromErr(err)
+		}
 	}
+
+	// This should probably be in go-client so we can use *errors.NotFound
+	//if *resp == nil {
+	//	d.SetId("")
+	//	return nil
+	//}
 
 	switch workload := (*resp).(type) {
 	case *entities.WorkloadEntity:
 		err := setWorkloadAttributes(d, map[string]string{
 			"name": workload.Name,
+			//"account_id": string(workload.AccountID),
+			//"description":,
+
 		})
 		if err != nil {
 			diag.FromErr(err)
