@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -299,10 +298,6 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 
-		sort.Slice(page.Widgets, func(i, j int) bool {
-			return page.Widgets[i].Title < page.Widgets[j].Title
-		})
-
 		expanded[pageIndex] = page
 	}
 
@@ -514,13 +509,6 @@ func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
 		if p.Description != "" {
 			m["description"] = p.Description
 		}
-
-		// Sort the widgets by name
-		// We do this when expanding and flattening
-		// This resolves the issue of widget order changing on API side
-		sort.Slice(p.Widgets, func(i, j int) bool {
-			return p.Widgets[i].Title < p.Widgets[j].Title
-		})
 
 		for _, widget := range p.Widgets {
 			widgetType, w := flattenDashboardWidget(&widget, string(p.GUID))
