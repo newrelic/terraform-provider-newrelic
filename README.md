@@ -53,7 +53,7 @@ Should you need assistance with New Relic products, you are in good hands with s
 ## Developing the Provider
 
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your
-machine (version 1.18 is _required_). You'll also need to correctly setup a
+machine (version 1.19 is _required_). You'll also need to correctly setup a
 [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 Please see our [CONTRIBUTING][contributing] guide for more information about developing and testing the New Relic Terraform provider.
