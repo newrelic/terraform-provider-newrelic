@@ -33,6 +33,22 @@ func resourceNewRelicOneDashboardJson() *schema.Resource {
 				Computed:    true,
 				Description: "The New Relic account ID where you want to create the dashboard.",
 			},
+			// Computed
+			"hash_remote": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The hash of the remote json, used to detect changes in the API data.",
+			},
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique entity identifier of the dashboard in New Relic.",
+			},
+			"permalink": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the dashboard.",
+			},
 		},
 	}
 }

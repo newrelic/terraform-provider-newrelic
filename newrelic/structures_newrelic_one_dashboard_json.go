@@ -1,6 +1,8 @@
 package newrelic
 
 import (
+	"crypto/sha1"
+	"encoding/base64"
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,13 +25,21 @@ func expandDashboardJsonInput(d *schema.ResourceData, meta interface{}) (*dashbo
 
 func flattenDashboardJsonEntity(dashboard *entities.DashboardEntity, d *schema.ResourceData) error {
 	_ = d.Set("account_id", dashboard.AccountID)
+	_ = d.Set("guid", dashboard.GUID)
+	_ = d.Set("permalink", dashboard.Permalink)
 
 	json, err := json.Marshal(dashboard)
 	if err != nil {
 		return err
 	}
 
-	_ = d.Set("json", string(json))
+	_ = d.Set("hash_remote", hashString(json))
 
 	return nil
+}
+
+func hashString(content []byte) string {
+	hasher := sha1.New()
+	hasher.Write([]byte(content))
+	return base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 }
