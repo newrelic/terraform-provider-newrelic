@@ -60,7 +60,7 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(30 * time.Second),
+			Read: schema.DefaultTimeout(45 * time.Second),
 		},
 	}
 }
@@ -118,6 +118,7 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 		if entityResults.Count != 1 {
 			return resource.RetryableError(fmt.Errorf("entity not found, or found more than one"))
 		}
+
 		for _, e := range entityResults.Results.Entities {
 			// Conditional on case sensitive match
 			if e.GetName() == d.Id() {
