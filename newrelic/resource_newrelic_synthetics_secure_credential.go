@@ -60,7 +60,7 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(45 * time.Second),
+			Read: schema.DefaultTimeout(30 * time.Second),
 		},
 	}
 }
@@ -97,7 +97,7 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 
 	d.SetId(res.Key)
 
-	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
+	return nil
 }
 
 func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -130,6 +130,7 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 	})
 
 	if retryErr != nil {
+		d.SetId("")
 		return diag.FromErr(retryErr)
 	}
 
@@ -166,7 +167,7 @@ func resourceNewRelicSyntheticsSecureCredentialUpdate(ctx context.Context, d *sc
 		return diags
 	}
 
-	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
+	return nil
 }
 
 func resourceNewRelicSyntheticsSecureCredentialDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
