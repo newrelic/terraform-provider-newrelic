@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
 )
 
 // Assemble the *dashboards.DashboardInput struct.
@@ -21,21 +20,6 @@ func expandDashboardJsonInput(d *schema.ResourceData, meta interface{}) (*dashbo
 	}
 
 	return &dash, nil
-}
-
-func flattenDashboardJsonEntity(dashboard *entities.DashboardEntity, d *schema.ResourceData) error {
-	_ = d.Set("account_id", dashboard.AccountID)
-	_ = d.Set("guid", dashboard.GUID)
-	_ = d.Set("permalink", dashboard.Permalink)
-
-	json, err := json.Marshal(dashboard)
-	if err != nil {
-		return err
-	}
-
-	_ = d.Set("hash_remote", hashString(json))
-
-	return nil
 }
 
 func hashString(content []byte) string {

@@ -2,7 +2,9 @@ package newrelic
 
 import (
 	"context"
+	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -34,7 +36,7 @@ func resourceNewRelicOneDashboardJson() *schema.Resource {
 				Description: "The New Relic account ID where you want to create the dashboard.",
 			},
 			// Computed
-			"hash_remote": {
+			"hash_local": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The hash of the remote json, used to detect changes in the API data.",
@@ -116,7 +118,57 @@ func resourceNewRelicOneDashboardJsonRead(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	return diag.FromErr(flattenDashboardJsonEntity(dashboard, d))
+	_ = d.Set("account_id", dashboard.AccountID)
+	_ = d.Set("guid", dashboard.GUID)
+	_ = d.Set("permalink", dashboard.Permalink)
+
+	dashboardJson, err := json.Marshal(dashboard)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	hashRemote := hashString(dashboardJson)
+	hashLocal := d.Get("hash_local").(string)
+	isNewOrUpdated := hashLocal == ""
+	hasChanged := hashRemote != hashLocal
+
+	// For new dashboards we set the local hash on first create to the value of the remote
+	// This will allow us to detect changes in the dashboard on API side
+	if isNewOrUpdated {
+		// We need to make sure the hash is stable on create or update
+		// as the dashboard struct returned by GetDashboardEntityWithContext can still change
+		// For this reason we sleep for a couple of seconds, and run the get again
+		time.Sleep(5 * time.Second)
+
+		dashboard, err := client.Dashboards.GetDashboardEntityWithContext(ctx, common.EntityGUID(d.Id()))
+		if err != nil {
+			if _, ok := err.(*errors.NotFound); ok {
+				d.SetId("")
+				return nil
+			}
+
+			return diag.FromErr(err)
+		}
+		dashboardJson, err := json.Marshal(dashboard)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		hashRemote := hashString(dashboardJson)
+
+		d.Set("hash_local", hashRemote)
+		return nil
+	}
+
+	// In subsequent reads we compare the local hash, to the new hash created for the returned dashboard
+	// If both are different the dashboard has been changed on the API side
+	if hasChanged {
+		_ = d.Set("hash_local", hashLocal)
+		_ = d.Set("json", "The dashboard has been changed: updating")
+
+		return nil
+	}
+
+	return nil
 }
 
 func resourceNewRelicOneDashboardJsonUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -149,6 +201,9 @@ func resourceNewRelicOneDashboardJsonUpdate(ctx context.Context, d *schema.Resou
 
 		return diag.Errorf("err: newrelic_one_dashboard_json Update failed: %s", errMessages)
 	}
+
+	// Reset hash_local as we've updated the dashboard
+	d.Set("hash_local", "")
 
 	return resourceNewRelicOneDashboardJsonRead(ctx, d, meta)
 }
