@@ -153,7 +153,7 @@ func Provider() *schema.Provider {
 			"newrelic_nrql_drop_rule":                           resourceNewRelicNRQLDropRule(),
 			"newrelic_one_dashboard":                            resourceNewRelicOneDashboard(),
 			"newrelic_one_dashboard_raw":                        resourceNewRelicOneDashboardRaw(),
-			"newrelic_one_dashboard_json":                       resourceNewRelicOneDashboardJson(),
+			"newrelic_one_dashboard_json":                       resourceNewRelicOneDashboardJSON(),
 			"newrelic_service_level":                            resourceNewRelicServiceLevel(),
 			"newrelic_synthetics_alert_condition":               resourceNewRelicSyntheticsAlertCondition(),
 			"newrelic_synthetics_broken_links_monitor":          resourceNewRelicSyntheticsBrokenLinksMonitor(),

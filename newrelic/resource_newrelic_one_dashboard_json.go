@@ -12,12 +12,12 @@ import (
 	"github.com/newrelic/newrelic-client-go/pkg/errors"
 )
 
-func resourceNewRelicOneDashboardJson() *schema.Resource {
+func resourceNewRelicOneDashboardJSON() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNewRelicOneDashboardJsonCreate,
-		ReadContext:   resourceNewRelicOneDashboardJsonRead,
-		UpdateContext: resourceNewRelicOneDashboardJsonUpdate,
-		DeleteContext: resourceNewRelicOneDashboardJsonDelete,
+		CreateContext: resourceNewRelicOneDashboardJSONCreate,
+		ReadContext:   resourceNewRelicOneDashboardJSONRead,
+		UpdateContext: resourceNewRelicOneDashboardJSONUpdate,
+		DeleteContext: resourceNewRelicOneDashboardJSONDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -55,7 +55,7 @@ func resourceNewRelicOneDashboardJson() *schema.Resource {
 	}
 }
 
-func resourceNewRelicOneDashboardJsonCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicOneDashboardJSONCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
 	if !providerConfig.hasNerdGraphCredentials() {
@@ -68,7 +68,7 @@ func resourceNewRelicOneDashboardJsonCreate(ctx context.Context, d *schema.Resou
 	defaultInfo := map[string]interface{}{
 		"account_id": accountID,
 	}
-	dashboard, err := expandDashboardJsonInput(d, defaultInfo)
+	dashboard, err := expandDashboardJSONInput(d, defaultInfo)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -93,7 +93,7 @@ func resourceNewRelicOneDashboardJsonCreate(ctx context.Context, d *schema.Resou
 
 	d.SetId(string(guid))
 
-	res := resourceNewRelicOneDashboardJsonRead(ctx, d, meta)
+	res := resourceNewRelicOneDashboardJSONRead(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -102,7 +102,7 @@ func resourceNewRelicOneDashboardJsonCreate(ctx context.Context, d *schema.Resou
 }
 
 // resourceNewRelicOneDashboardRead NerdGraph => Terraform reader
-func resourceNewRelicOneDashboardJsonRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicOneDashboardJSONRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
@@ -122,12 +122,12 @@ func resourceNewRelicOneDashboardJsonRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("guid", dashboard.GUID)
 	_ = d.Set("permalink", dashboard.Permalink)
 
-	dashboardJson, err := json.Marshal(dashboard)
+	dashboardJSON, err := json.Marshal(dashboard)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	hashRemote := hashString(dashboardJson)
+	hashRemote := hashString(dashboardJSON)
 	hashLocal := d.Get("hash_local").(string)
 	isNewOrUpdated := hashLocal == ""
 	hasChanged := hashRemote != hashLocal
@@ -149,13 +149,13 @@ func resourceNewRelicOneDashboardJsonRead(ctx context.Context, d *schema.Resourc
 
 			return diag.FromErr(err)
 		}
-		dashboardJson, err := json.Marshal(dashboard)
+		dashboardJSON, err := json.Marshal(dashboard)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		hashRemote := hashString(dashboardJson)
+		hashRemote := hashString(dashboardJSON)
 
-		d.Set("hash_local", hashRemote)
+		_ = d.Set("hash_local", hashRemote)
 		return nil
 	}
 
@@ -171,7 +171,7 @@ func resourceNewRelicOneDashboardJsonRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceNewRelicOneDashboardJsonUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicOneDashboardJSONUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -180,7 +180,7 @@ func resourceNewRelicOneDashboardJsonUpdate(ctx context.Context, d *schema.Resou
 		"account_id": accountID,
 	}
 
-	dashboard, err := expandDashboardJsonInput(d, defaultInfo)
+	dashboard, err := expandDashboardJSONInput(d, defaultInfo)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -203,12 +203,12 @@ func resourceNewRelicOneDashboardJsonUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	// Reset hash_local as we've updated the dashboard
-	d.Set("hash_local", "")
+	_ = d.Set("hash_local", "")
 
-	return resourceNewRelicOneDashboardJsonRead(ctx, d, meta)
+	return resourceNewRelicOneDashboardJSONRead(ctx, d, meta)
 }
 
-func resourceNewRelicOneDashboardJsonDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicOneDashboardJSONDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Deleting New Relic One JSON dashboard %v", d.Id())

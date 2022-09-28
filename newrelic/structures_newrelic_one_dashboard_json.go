@@ -12,7 +12,7 @@ import (
 
 // Assemble the *dashboards.DashboardInput struct.
 // Used by the newrelic_one_dashboard Create function.
-func expandDashboardJsonInput(d *schema.ResourceData, meta interface{}) (*dashboards.DashboardInput, error) {
+func expandDashboardJSONInput(d *schema.ResourceData, meta interface{}) (*dashboards.DashboardInput, error) {
 	dash := dashboards.DashboardInput{}
 	err := json.Unmarshal([]byte(d.Get("json").(string)), &dash)
 	if err != nil {
@@ -24,6 +24,6 @@ func expandDashboardJsonInput(d *schema.ResourceData, meta interface{}) (*dashbo
 
 func hashString(content []byte) string {
 	hasher := sha1.New()
-	hasher.Write([]byte(content))
+	hasher.Write(content)
 	return base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 }
