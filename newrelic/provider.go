@@ -42,7 +42,7 @@ func Provider() *schema.Provider {
 			},
 			"api_key": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_API_KEY", nil),
 				Sensitive:   true,
 			},

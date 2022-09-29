@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -60,11 +59,6 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 
 func resourceNewRelicAlertPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Create")
-	}
-
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 	// We're creating this updatedContext for the findExistingChannelIDs function which is still REST based
@@ -120,11 +114,6 @@ func resourceNewRelicAlertPolicyCreate(ctx context.Context, d *schema.ResourceDa
 
 func resourceNewRelicAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Read")
-	}
-
 	client := providerConfig.NewClient
 
 	ids, err := parseHashedIDs(d.Id())
@@ -166,11 +155,6 @@ func resourceNewRelicAlertPolicyRead(ctx context.Context, d *schema.ResourceData
 
 func resourceNewRelicAlertPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Update")
-	}
-
 	client := providerConfig.NewClient
 
 	accountID := selectAccountID(providerConfig, d)
@@ -199,12 +183,6 @@ func resourceNewRelicAlertPolicyUpdate(ctx context.Context, d *schema.ResourceDa
 
 func resourceNewRelicAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		err := errors.New("err: NerdGraph support not present, but required for Delete")
-		return diag.FromErr(err)
-	}
-
 	client := providerConfig.NewClient
 
 	accountID := selectAccountID(providerConfig, d)
