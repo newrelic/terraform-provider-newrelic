@@ -53,7 +53,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			"auth_basic": {
 				Type:          schema.TypeList,
 				Optional:      true,
-				MinItems:      1,
 				MaxItems:      1,
 				ConflictsWith: []string{"auth_token"},
 				Description:   "Basic username and password authentication credentials.",
@@ -74,7 +73,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			"auth_token": {
 				Type:          schema.TypeList,
 				Optional:      true,
-				MinItems:      1,
 				MaxItems:      1,
 				ConflictsWith: []string{"auth_basic"},
 				Description:   "Token authentication credentials.",
