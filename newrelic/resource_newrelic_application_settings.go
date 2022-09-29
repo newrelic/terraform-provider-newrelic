@@ -55,14 +55,17 @@ func resourceNewRelicApplicationSettingsCreate(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	if len(result) != 1 {
-		return diag.Errorf("more/less than one result from query for %s", userApp.Name)
+	var app *apm.Application
+
+	for _, a := range result {
+		if a.Name == userApp.Name {
+			app = a
+			break
+		}
 	}
 
-	app := *result[0]
-
-	if app.Name != userApp.Name {
-		return diag.Errorf("the result name %s does not match requested name %s", app.Name, userApp.Name)
+	if app == nil {
+		return diag.Errorf("the name '%s' does not match any New Relic applications", userApp.Name)
 	}
 
 	d.SetId(strconv.Itoa(app.ID))
