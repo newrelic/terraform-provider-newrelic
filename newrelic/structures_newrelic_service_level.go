@@ -55,7 +55,7 @@ func flattenServiceLevelEventsQuerySelect(selectValue servicelevel.ServiceLevelE
 	selectOutput := make([]interface{}, 1)
 
 	selectQueryMap["attribute"] = selectValue.Attribute
-	selectQueryMap["where"] = selectValue.Function
+	selectQueryMap["function"] = selectValue.Function
 
 	selectOutput[0] = selectQueryMap
 	return selectOutput
