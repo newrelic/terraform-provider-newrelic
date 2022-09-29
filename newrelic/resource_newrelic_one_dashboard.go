@@ -413,11 +413,6 @@ func dashboardWidgetFilterCurrentDashboardSchema() *schema.Schema {
 
 func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Create")
-	}
-
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
@@ -487,11 +482,6 @@ func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceD
 // resourceNewRelicOneDashboardRead NerdGraph => Terraform reader
 func resourceNewRelicOneDashboardRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Read")
-	}
-
 	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Reading New Relic One dashboard %s", d.Id())
@@ -511,11 +501,6 @@ func resourceNewRelicOneDashboardRead(ctx context.Context, d *schema.ResourceDat
 
 func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Update")
-	}
-
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 

@@ -47,13 +47,7 @@ func dataSourceNewRelicAlertPolicy() *schema.Resource {
 
 func dataSourceNewRelicAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cfg := meta.(*ProviderConfig)
-
-	if !cfg.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Read")
-	}
-
 	client := cfg.NewClient
-
 	log.Printf("[INFO] Reading New Relic Alert Policies")
 
 	name := d.Get("name").(string)

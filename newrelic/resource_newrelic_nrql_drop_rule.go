@@ -61,11 +61,6 @@ func resourceNewRelicNRQLDropRule() *schema.Resource {
 
 func resourceNewRelicNRQLDropRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Create")
-	}
-
 	client := providerConfig.NewClient
 
 	accountID := selectAccountID(providerConfig, d)
@@ -98,11 +93,6 @@ func resourceNewRelicNRQLDropRuleCreate(ctx context.Context, d *schema.ResourceD
 
 func resourceNewRelicNRQLDropRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Read")
-	}
-
 	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Reading New Relic NRQL Drop Rule for %s", d.Id())
@@ -148,11 +138,6 @@ func resourceNewRelicNRQLDropRuleRead(ctx context.Context, d *schema.ResourceDat
 
 func resourceNewRelicNRQLDropRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Delete")
-	}
-
 	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Deleting New Relic entity tags from entity guid %s", d.Id())
