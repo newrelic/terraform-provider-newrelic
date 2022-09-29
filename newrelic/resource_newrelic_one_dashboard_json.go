@@ -120,9 +120,9 @@ func resourceNewRelicOneDashboardJSONRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("guid", dashboard.GUID)
 	_ = d.Set("permalink", dashboard.Permalink)
 
-	updated_at := d.Get("updated_at").(string)
-	isNewOrUpdated := updated_at == ""
-	hasChanged := updated_at != string(dashboard.UpdatedAt)
+	updatedAt := d.Get("updated_at").(string)
+	isNewOrUpdated := updatedAt == ""
+	hasChanged := updatedAt != string(dashboard.UpdatedAt)
 
 	// For new dashboards we set the local hash on first create to the value of the remote
 	// This will allow us to detect changes in the dashboard on API side
