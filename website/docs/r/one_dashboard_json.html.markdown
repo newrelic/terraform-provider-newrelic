@@ -28,3 +28,4 @@ In addition to all arguments above, the following attributes are exported:
 
 - `guid` - The unique entity identifier of the dashboard in New Relic.
 - `permalink` - The URL for viewing the dashboard.
+- `updated_at` - The date and time when the dashboard was last updated.

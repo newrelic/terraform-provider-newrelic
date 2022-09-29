@@ -1,8 +1,6 @@
 package newrelic
 
 import (
-	"crypto/sha1"
-	"encoding/base64"
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,10 +18,4 @@ func expandDashboardJSONInput(d *schema.ResourceData, meta interface{}) (*dashbo
 	}
 
 	return &dash, nil
-}
-
-func hashString(content []byte) string {
-	hasher := sha1.New()
-	hasher.Write(content)
-	return base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 }
