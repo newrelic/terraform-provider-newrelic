@@ -230,6 +230,7 @@ func resourceNewRelicNotificationDestinationV0() *schema.Resource {
 func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	destinationInput, err := expandNotificationDestination(d)
+	destinationInput.Properties = append(destinationInput.Properties, createMonitoringProperty())
 	if err != nil {
 		return diag.FromErr(err)
 	}

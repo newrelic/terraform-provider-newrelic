@@ -29,7 +29,6 @@ func expandNotificationChannelUpdate(d *schema.ResourceData) notifications.AiNot
 
 func expandNotificationChannelProperties(properties []interface{}) []notifications.AiNotificationsPropertyInput {
 	props := []notifications.AiNotificationsPropertyInput{}
-	props = append(props, createMonitoringProperty())
 
 	for _, p := range properties {
 		props = append(props, expandNotificationChannelProperty(p.(map[string]interface{})))
