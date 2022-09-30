@@ -20,7 +20,7 @@ Use this resource to create update, and delete a Script API or Script Browser Sy
 resource "newrelic_synthetics_script_monitor" "monitor" {
   name                 = "monitor"
   type                 = "SCRIPT_API"
-  locations_public      = ["AP_SOUTH_1", "AP_EAST_1"]
+  locations_public     = ["AP_SOUTH_1", "AP_EAST_1"]
   period               = "EVERY_6_HOURS"
   status               = "ENABLED"
   script               = "console.log('terraform integration test updated')"
@@ -40,7 +40,7 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
 ```hcl
 resource "newrelic_synthetics_script_monitor" "monitor" {
   enable_screenshot_on_failure_and_script = false
-  locations_public                         = ["AP_SOUTH_1", "AP_EAST_1"]
+  locations_public                        = ["AP_SOUTH_1", "AP_EAST_1"]
   name                                    = "monitor"
   period                                  = "EVERY_HOUR"
   runtime_type_version                    = "100"
@@ -50,8 +50,8 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
   type                                    = "SCRIPT_BROWSER"
   script                                  = "$browser.get('https://one.newrelic.com')"
   tag {
-    key    = "Name"
-    values = ["scriptedMonitor", "hello"]
+    key    = "some_key"
+    values = ["some_value1", "some_value2"]
   }
 }
 ```
