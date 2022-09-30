@@ -153,6 +153,7 @@ func Provider() *schema.Provider {
 			"newrelic_nrql_drop_rule":                           resourceNewRelicNRQLDropRule(),
 			"newrelic_one_dashboard":                            resourceNewRelicOneDashboard(),
 			"newrelic_one_dashboard_raw":                        resourceNewRelicOneDashboardRaw(),
+			"newrelic_one_dashboard_json":                       resourceNewRelicOneDashboardJSON(),
 			"newrelic_service_level":                            resourceNewRelicServiceLevel(),
 			"newrelic_synthetics_alert_condition":               resourceNewRelicSyntheticsAlertCondition(),
 			"newrelic_synthetics_broken_links_monitor":          resourceNewRelicSyntheticsBrokenLinksMonitor(),
@@ -223,6 +224,10 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		InsightsInsertClient: clientInsightsInsert,
 		PersonalAPIKey:       personalAPIKey,
 		AccountID:            accountID,
+	}
+
+	if !providerConfig.hasNerdGraphCredentials() {
+		return nil, fmt.Errorf("err: NerdGraph support not present, but required. Set the 'api_key' attribute to a New Relic User API key")
 	}
 
 	return &providerConfig, nil
