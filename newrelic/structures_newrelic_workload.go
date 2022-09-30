@@ -186,12 +186,9 @@ func expandWorkloadUpdateStatusConfigStaticInput(cfg []interface{}) []workloads.
 	return staticOut
 }
 
-// TRY 1
 // Automatic
 func expandWorkloadStatusConfigAutomaticInput(rcfg []interface{}) *workloads.WorkloadAutomaticStatusInput {
-	prem := workloads.WorkloadAutomaticStatusInput{
-		//RemainingEntitiesRule: &workloads.WorkloadRemainingEntitiesRuleInput{},
-	}
+	prem := workloads.WorkloadAutomaticStatusInput{}
 	for _, v := range rcfg {
 		cfg := v.(map[string]interface{})
 
@@ -303,9 +300,7 @@ func expandRuleRollUp(rcfg []interface{}) *workloads.WorkloadRollupInput {
 
 // Update Automatic
 func expandWorkloadStatusConfigUpdateAutomaticInput(rcfg []interface{}) *workloads.WorkloadUpdateAutomaticStatusInput {
-	prem := workloads.WorkloadUpdateAutomaticStatusInput{
-		//RemainingEntitiesRule: &workloads.WorkloadRemainingEntitiesRuleInput{},
-	}
+	prem := workloads.WorkloadUpdateAutomaticStatusInput{}
 	for _, v := range rcfg {
 		cfg := v.(map[string]interface{})
 
@@ -357,19 +352,6 @@ func expandUpdateRules(cfg map[string]interface{}) workloads.WorkloadUpdateRegul
 	return inp
 }
 
-// Handles setting simple string attributes in the schema. If the attribute/key is
-// invalid or the value is not a correct type, an error will be returned.
-func setWorkloadAttributes(d *schema.ResourceData, attributes map[string]string) error {
-	for key := range attributes {
-		err := d.Set(key, attributes[key])
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func listValidWorkloadStatuses() []string {
 	return []string{
 		string(workloads.WorkloadStatusValueInputTypes.DEGRADED),
@@ -397,4 +379,36 @@ func listValidWorkloadRuleThresholdType() []string {
 		string(workloads.WorkloadRuleThresholdTypeTypes.FIXED),
 		string(workloads.WorkloadRuleThresholdTypeTypes.PERCENTAGE),
 	}
+}
+
+func flattenWorkload(workload *workloads.Workload, d *schema.ResourceData) error {
+	_ = d.Set("account_id", workload.Account.ID)
+	_ = d.Set("guid", workload.GUID)
+	_ = d.Set("workload_id", workload.ID)
+	_ = d.Set("name", workload.Name)
+	_ = d.Set("permalink", workload.Permalink)
+	_ = d.Set("composite_entity_search_query", workload.EntitySearchQuery)
+	_ = d.Set("entity_guids", flattenWorkloadEntityGUIDs(workload.Entities))
+	_ = d.Set("entity_search_query", flattenWorkloadEntitySearchQueries(workload.EntitySearchQueries))
+	_ = d.Set("scope_account_ids", workload.ScopeAccounts.AccountIDs)
+	return nil
+
+}
+
+func flattenWorkloadEntityGUIDs(in []workloads.EntityRef) interface{} {
+	out := make([]interface{}, len(in))
+	for i, e := range in {
+		out[i] = e.GUID
+	}
+	return out
+}
+
+func flattenWorkloadEntitySearchQueries(in []workloads.EntitySearchQuery) interface{} {
+	out := make([]interface{}, len(in))
+	for i, e := range in {
+		m := make(map[string]interface{})
+		m["query"] = e.Query
+		out[i] = m
+	}
+	return out
 }
