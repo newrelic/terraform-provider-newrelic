@@ -357,19 +357,6 @@ func expandUpdateRules(cfg map[string]interface{}) workloads.WorkloadUpdateRegul
 	return inp
 }
 
-// Handles setting simple string attributes in the schema. If the attribute/key is
-// invalid or the value is not a correct type, an error will be returned.
-func setWorkloadAttributes(d *schema.ResourceData, attributes map[string]string) error {
-	for key := range attributes {
-		err := d.Set(key, attributes[key])
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func listValidWorkloadStatuses() []string {
 	return []string{
 		string(workloads.WorkloadStatusValueInputTypes.DEGRADED),
@@ -399,93 +386,34 @@ func listValidWorkloadRuleThresholdType() []string {
 	}
 }
 
-////Try 2
-//func expandWorkloadStatusConfigAutomaticInput(rcfg []interface{}) *workloads.WorkloadAutomaticStatusInput {
-//	for _, v := range rcfg {
-//		cfg := v.(map[string]interface{})
-//		prem := workloads.WorkloadAutomaticStatusInput{
-//			Enabled: cfg["enabled"].(bool),
-//			RemainingEntitiesRule: workloads.WorkloadRemainingEntitiesRuleInput{
-//				Rollup: expandRemainingEntityRuleRollup(cfg["remaining_entities_rule_rollup"].(*schema.Set).List()),
-//			},
-//			Rules: expandAutoConfigRule(cfg["rules"].(*schema.Set).List()),
-//		}
-//		log.Printf("[INFO] pks RemainingEntitiesRuleRollup value %v", prem.RemainingEntitiesRule.Rollup)
-//		log.Printf("[INFO] pks RemainingEntitiesRule value %v", prem.RemainingEntitiesRule)
-//
-//		return &prem
-//	}
-//
-//	return nil
-//}
-//
-//func expandRemainingEntityRuleRollup(rollResource []interface{}) *workloads.WorkloadRemainingEntitiesRuleRollupInput {
-//	var x workloads.WorkloadRemainingEntitiesRuleRollupInput
-//	for _, r := range rollResource {
-//		setRoll := r.(map[string]interface{})
-//		v := setRoll["threshold_type"].(string)
-//		x = workloads.WorkloadRemainingEntitiesRuleRollupInput{
-//			GroupBy:        workloads.WorkloadGroupRemainingEntitiesRuleBy(setRoll["group_by"].(string)),
-//			Strategy:       workloads.WorkloadRollupStrategy(setRoll["strategy"].(string)),
-//			ThresholdValue: setRoll["threshold_value"].(int),
-//			ThresholdType:  (workloads.WorkloadRuleThresholdType)(v),
-//		}
-//	}
-//	return &x
-//}
-//
-//func expandAutoConfigRule(list []interface{}) []workloads.WorkloadRegularRuleInput {
-//	ruleOut := make([]workloads.WorkloadRegularRuleInput, len(list))
-//	for i, r := range list {
-//		setRule := r.(map[string]interface{})
-//		x := workloads.WorkloadRegularRuleInput{
-//			EntityGUIDs:         expandWorkloadEntityGUIDs(setRule["entity_guids"].(*schema.Set).List()),
-//			EntitySearchQueries: expandWorkloadEntitySearchQueryInputs(setRule["nrql_query"].(*schema.Set).List()),
-//			Rollup:              expandRuleRollUp(setRule["rollup"].(*schema.Set).List()),
-//		}
-//		ruleOut[i] = x
-//	}
-//	return ruleOut
-//}
-//func expandRuleRollUp(rollResource []interface{}) *workloads.WorkloadRollupInput {
-//	var x workloads.WorkloadRollupInput
-//	for _, r := range rollResource {
-//		setRoll := r.(map[string]interface{})
-//		v := setRoll["threshold_type"].(string)
-//		x = workloads.WorkloadRollupInput{
-//			Strategy:       workloads.WorkloadRollupStrategy(setRoll["strategy"].(string)),
-//			ThresholdValue: setRoll["threshold_value"].(int),
-//			ThresholdType:  (workloads.WorkloadRuleThresholdType)(v),
-//		}
-//	}
-//	return &x
-//}
-//
-//func expandWorkloadStatusConfigUpdateAutomaticInput(rcfg []interface{}) *workloads.WorkloadUpdateAutomaticStatusInput {
-//	for _, v := range rcfg {
-//		cfg := v.(map[string]interface{})
-//		prem := workloads.WorkloadUpdateAutomaticStatusInput{
-//			Enabled: cfg["enabled"].(bool),
-//			RemainingEntitiesRule: workloads.WorkloadRemainingEntitiesRuleInput{
-//				Rollup: expandRemainingEntityRuleRollup(cfg["remaining_entities_rule_rollup"].(*schema.Set).List()),
-//			},
-//			Rules: expandUpdateAutoConfigRule(cfg["rules"].(*schema.Set).List()),
-//		}
-//		return &prem
-//	}
-//
-//	return nil
-//}
-//func expandUpdateAutoConfigRule(list []interface{}) []workloads.WorkloadUpdateRegularRuleInput {
-//	ruleOut := make([]workloads.WorkloadUpdateRegularRuleInput, len(list))
-//	for i, r := range list {
-//		setRule := r.(map[string]interface{})
-//		x := workloads.WorkloadUpdateRegularRuleInput{
-//			EntityGUIDs:         expandWorkloadEntityGUIDs(setRule["entity_guids"].(*schema.Set).List()),
-//			EntitySearchQueries: expandWorkloadUpdateCollectionEntitySearchQueryInputs(setRule["nrql_query"].(*schema.Set).List()),
-//			Rollup:              expandRuleRollUp(setRule["rollup"].(*schema.Set).List()),
-//		}
-//		ruleOut[i] = x
-//	}
-//	return ruleOut
-//}
+func flattenWorkload(workload *workloads.Workload, d *schema.ResourceData) error {
+	_ = d.Set("account_id", workload.Account.ID)
+	_ = d.Set("guid", workload.GUID)
+	_ = d.Set("workload_id", workload.ID)
+	_ = d.Set("name", workload.Name)
+	_ = d.Set("permalink", workload.Permalink)
+	_ = d.Set("composite_entity_search_query", workload.EntitySearchQuery)
+	_ = d.Set("entity_guids", flattenWorkloadEntityGUIDs(workload.Entities))
+	_ = d.Set("entity_search_query", flattenWorkloadEntitySearchQueries(workload.EntitySearchQueries))
+	_ = d.Set("scope_account_ids", workload.ScopeAccounts.AccountIDs)
+	return nil
+
+}
+
+func flattenWorkloadEntityGUIDs(in []workloads.EntityRef) interface{} {
+	out := make([]interface{}, len(in))
+	for i, e := range in {
+		out[i] = e.GUID
+	}
+	return out
+}
+
+func flattenWorkloadEntitySearchQueries(in []workloads.EntitySearchQuery) interface{} {
+	out := make([]interface{}, len(in))
+	for i, e := range in {
+		m := make(map[string]interface{})
+		m["query"] = e.Query
+		out[i] = m
+	}
+	return out
+}
