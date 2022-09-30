@@ -186,12 +186,9 @@ func expandWorkloadUpdateStatusConfigStaticInput(cfg []interface{}) []workloads.
 	return staticOut
 }
 
-// TRY 1
 // Automatic
 func expandWorkloadStatusConfigAutomaticInput(rcfg []interface{}) *workloads.WorkloadAutomaticStatusInput {
-	prem := workloads.WorkloadAutomaticStatusInput{
-		//RemainingEntitiesRule: &workloads.WorkloadRemainingEntitiesRuleInput{},
-	}
+	prem := workloads.WorkloadAutomaticStatusInput{}
 	for _, v := range rcfg {
 		cfg := v.(map[string]interface{})
 
@@ -303,9 +300,7 @@ func expandRuleRollUp(rcfg []interface{}) *workloads.WorkloadRollupInput {
 
 // Update Automatic
 func expandWorkloadStatusConfigUpdateAutomaticInput(rcfg []interface{}) *workloads.WorkloadUpdateAutomaticStatusInput {
-	prem := workloads.WorkloadUpdateAutomaticStatusInput{
-		//RemainingEntitiesRule: &workloads.WorkloadRemainingEntitiesRuleInput{},
-	}
+	prem := workloads.WorkloadUpdateAutomaticStatusInput{}
 	for _, v := range rcfg {
 		cfg := v.(map[string]interface{})
 
