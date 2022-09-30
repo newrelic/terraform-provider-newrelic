@@ -38,7 +38,7 @@ v3
 resource "newrelic_synthetics_script_monitor" "monitor" {
   name            = "monitor-name"
   type            = "SCRIPT_API"
-  location_public = ["US_EAST_1"]
+  locations_public = ["US_EAST_1"]
   period          = "EVERY_HOUR"
   status          = "ENABLED"
   script          = "console.log('hello, world')"
