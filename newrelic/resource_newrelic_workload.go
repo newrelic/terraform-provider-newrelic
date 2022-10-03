@@ -97,7 +97,7 @@ func resourceNewRelicWorkload() *schema.Resource {
 							},
 						},
 
-						"rules": {
+						"rule": {
 							Type:        schema.TypeSet,
 							Optional:    true,
 							Description: "A list of rules.",
@@ -120,7 +120,7 @@ func resourceNewRelicWorkload() *schema.Resource {
 												"query": {
 													Type:        schema.TypeString,
 													Required:    true,
-													Description: "The query.",
+													Description: "The entity search query that is used to perform the search of a group of entities.",
 												},
 											},
 										},

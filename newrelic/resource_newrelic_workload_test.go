@@ -358,7 +358,7 @@ resource "newrelic_workload" "foo" {
 			  group_by = "ENTITY_TYPE"
 			}
 		}
-		rules{
+		rule{
 		 entity_guids = [data.newrelic_entity.app.guid]
 		 nrql_query{
 		   query = "name like 'ok'"
@@ -529,7 +529,7 @@ resource "newrelic_workload" "foo" {
 			  group_by = "ENTITY_TYPE"
 			}
 		}
-		rules{
+		rule{
 		 entity_guids = [data.newrelic_entity.app.guid]
 		 nrql_query{
 		   query = "name like 'ok'"
@@ -596,7 +596,7 @@ resource "newrelic_workload" "foo" {
  	description = "something"
 	status_config_automatic {
 		enabled = true
-		rules{
+		rule{
 		 entity_guids = [data.newrelic_entity.app.guid]
 		 nrql_query{
 		   query = "name like 'ok'"
@@ -625,7 +625,7 @@ resource "newrelic_workload" "foo" {
 
 	status_config_automatic {
 		enabled = true
-		rules{
+		rule{
 		 entity_guids = [data.newrelic_entity.app.guid]
 		 nrql_query{
 		   query = "name like 'ok'"
@@ -636,7 +636,7 @@ resource "newrelic_workload" "foo" {
 				threshold_value = 100
 			}
 		}
-		rules{
+		rule{
 		 entity_guids = [data.newrelic_entity.app.guid]
 		 nrql_query{
 		   query = "name like 'ok'"
@@ -661,7 +661,7 @@ resource "newrelic_workload" "foo" {
 
 	status_config_automatic {
 		enabled = true
-		rules{
+		rule{
 			rollup{
 				strategy = "BEST_STATUS_WINS"
 				threshold_type = "FIXED"

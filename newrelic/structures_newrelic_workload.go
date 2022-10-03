@@ -200,7 +200,7 @@ func expandWorkloadStatusConfigAutomaticInput(rcfg []interface{}) *workloads.Wor
 			prem.RemainingEntitiesRule = expandRemainingEntityRule(x.(*schema.Set).List())
 		}
 
-		if x, ok := cfg["rules"]; ok {
+		if x, ok := cfg["rule"]; ok {
 			prem.Rules = expandAutoConfigRule(x.(*schema.Set).List())
 		}
 	}
@@ -312,7 +312,7 @@ func expandWorkloadStatusConfigUpdateAutomaticInput(rcfg []interface{}) *workloa
 			prem.RemainingEntitiesRule = expandRemainingEntityRule(x.(*schema.Set).List())
 		}
 
-		if x, ok := cfg["rules"]; ok {
+		if x, ok := cfg["rule"]; ok {
 			prem.Rules = expandUpdateAutoConfigRule(x.(*schema.Set).List())
 		}
 	}
