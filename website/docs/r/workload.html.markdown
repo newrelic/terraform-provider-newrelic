@@ -94,7 +94,7 @@ resource "newrelic_workload" "foo" {
 				group_by = "ENTITY_TYPE"
 			}
 		}
-		rules{
+		rule{
 			entity_guids = ["MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1"]
 			nrql_query{
 				query = "name like '%Example application2%'"
@@ -160,7 +160,7 @@ All nested `entity_search_query` blocks support the following common arguments:
 
   * `enabled` - (Required) Whether the automatic status configuration is enabled or not.
   * `remaining_entities_rule` - (Optional) An additional meta-rule that can consider all entities that haven't been evaluated by any other rule. See [Nested remaining_entities_rule blocks](#nested-remaining_entities_rule-blocks) below for details.
-  * `rules` - (Optional) The input object used to represent a rollup strategy. See [Nested rules blocks](#nested-rules-blocks) below for details.
+  * `rule` - (Optional) The input object used to represent a rollup strategy. See [Nested rule blocks](#nested-rule-blocks) below for details.
 
 ### Nested `status_config_static` blocks
   
@@ -174,9 +174,9 @@ All nested `entity_search_query` blocks support the following common arguments:
 
   * `remaining_entities_rule_rollup` - (Required) The input object used to represent a rollup strategy. See [Nested remaining_entities_rule_rollup blocks](#nested-remaining_entities_rule_rollup-blocks) below for details.
 
-### Nested `rules` blocks
+### Nested `rule` blocks
 
-All nested `rules` blocks support the following common arguments:
+All nested `rule` blocks support the following common arguments:
 
   * `entity_guids` - (Optional) A list of entity GUIDs composing the rule.
   * `nrql_query` - (Optional) A list of entity search queries used to retrieve the entities that compose the rule. See [Nested nrql_query blocks](#nested-nrql_query-blocks) below for details.
