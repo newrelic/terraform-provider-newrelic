@@ -16,7 +16,7 @@ func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) *synthetics.S
 		Steps:  expandSyntheticsMonitorSteps(d.Get("steps").([]interface{})),
 	}
 
-	if attr, ok := d.GetOk("locations_private"); ok {
+	if attr, ok := d.GetOk("location_private"); ok {
 		input.Locations.Private = expandPrivateLocations(attr.(*schema.Set).List())
 	}
 
