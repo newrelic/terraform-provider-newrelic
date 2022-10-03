@@ -74,7 +74,7 @@ The following are the common arguments supported for `SIMPLE` and `BROWSER` moni
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor.
 * `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. You don't need the `AWS_` prefix as the provider uses NerdGraph. At least one of either `locations_public` or `location_private` is required.
-* `locations_private` - (Required) The location the monitor will run from. At least one of either `locations_public` or `location_private` is required.
+* `locations_private` - (Required) The location the monitor will run from. Accepts a list of private location GUIDs. At least one of either `locations_public` or `locations_private` is required.
 * `name` - (Required) The human-readable identifier for the monitor.
 * `uri` - (Required) The uri the monitor runs against.
 * `type` - (Required) THE monitor type. Valid values are `SIMPLE` and `BROWSER`.
@@ -160,7 +160,7 @@ resource "newrelic_synthetics_monitor" "monitor" {
     name  = "name"
     value = "simple_browser"
   }
-  location_private                        = ["newrelic_synthetics_private_location.bar1"]
+  locations_private                        = ["newrelic_synthetics_private_location.private_location.id"]
   enable_screenshot_on_failure_and_script = true
   validation_string                       = "success"
   verify_ssl                              = true
