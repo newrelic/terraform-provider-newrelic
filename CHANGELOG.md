@@ -1,3 +1,18 @@
+<a name="v3.4.0"></a>
+## [v3.4.0] - 2022-10-03
+### Bug Fixes
+- stop setting enrichments to an empty array on state update
+- stop fuzzy search on resource_newrelic_application_settings failing apply
+
+### Documentation Updates
+- fix issues with synthetics monitors docs
+- Update migration_guide_v3.html.markdown
+- **synthetics_monitor:** mentions NerdGraph is used.
+- **synthetics_monitor:** mentions NerdGraph is used.
+
+### Features
+- **one_dashboard_json:** added newrelic_one_dashboard_json resource
+
 <a name="v3.3.0"></a>
 ## [v3.3.0] - 2022-09-22
 ### Bug Fixes
@@ -1469,7 +1484,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.3.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.0...HEAD
+[v3.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.3.0...v3.4.0
 [v3.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.2.1...v3.3.0
 [v3.2.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.2.0...v3.2.1
 [v3.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.1.0...v3.2.0
