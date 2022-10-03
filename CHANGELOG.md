@@ -1,3 +1,47 @@
+<a name="v3.4.0"></a>
+## [v3.4.0] - 2022-10-03
+### Bug Fixes
+- stop setting enrichments to an empty array on state update
+- stop fuzzy search on resource_newrelic_application_settings failing apply
+
+### Documentation Updates
+- fix issues with synthetics monitors docs
+- Update migration_guide_v3.html.markdown
+- **synthetics_monitor:** mentions NerdGraph is used.
+- **synthetics_monitor:** mentions NerdGraph is used.
+
+### Features
+- **one_dashboard_json:** added newrelic_one_dashboard_json resource
+
+<a name="v3.3.0"></a>
+## [v3.3.0] - 2022-09-22
+### Bug Fixes
+- **docs:** Add guid to import command
+- **docs:** Add safe migration pathway for monitors
+
+### Features
+- **one_dashboard:** added linked_entity_guids and filter_current_dashboard to heatmap
+
+<a name="v3.2.1"></a>
+## [v3.2.1] - 2022-09-15
+### Bug Fixes
+- **channels:** lint
+- **channels:** add check for read channels
+- **docs:** link to Azure cloud integration example
+- **notifications:** add missing destination types
+- **notifications:** add examples to docs
+- **notifications:** made account_id optional [#1994](https://github.com/newrelic/terraform-provider-newrelic/issues/1994)
+- **simple_monitor:** [#1984](https://github.com/newrelic/terraform-provider-newrelic/issues/1984) populating uri and custom headers on input struct
+- **workflows:** add schema upgrade version - wip
+- **workflows:** add schema upgrade version
+- **workflows:** add schema upgrade version - wip
+- **workflows:** change workflows schema
+- **workflows:** add schema upgrade version
+- **workflows:** docs small change
+
+### Documentation Updates
+- **newrelic_one_dashboard:** Fix incorrect permission value)
+
 <a name="v3.2.0"></a>
 ## [v3.2.0] - 2022-09-08
 ### Bug Fixes
@@ -1440,7 +1484,10 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.0...HEAD
+[v3.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.3.0...v3.4.0
+[v3.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.2.1...v3.3.0
+[v3.2.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.2.0...v3.2.1
 [v3.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.1.0...v3.2.0
 [v3.1.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.4...v3.1.0
 [v3.0.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.3...v3.0.4

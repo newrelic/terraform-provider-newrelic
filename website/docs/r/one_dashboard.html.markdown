@@ -13,7 +13,7 @@ description: |-
 ```hcl
 resource "newrelic_one_dashboard" "exampledash" {
   name = "New Relic Terraform Example"
-  permissions = "public_read"
+  permissions = "public_read_only"
 
   page {
     name = "New Relic Terraform Example"
@@ -171,6 +171,8 @@ Each widget type supports an additional set of arguments:
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
   * `widget_heatmap`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
+    * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
   * `widget_histogram`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
   * `widget_line`
@@ -196,7 +198,7 @@ Nested `nrql_query` blocks allow you to make one or more NRQL queries within a w
 
 The following arguments are supported:
 
-  * `account_id` - (Optional) The New Relic account ID to issue the query against. Defaults to the Account ID where the dashboard was created.
+  * `account_id` - (Optional) The New Relic account ID to issue the query against. Defaults to the Account ID where the dashboard was created. When using an account ID you don't have permissions for the widget will be replaced with a widget showing the data is inaccessible. Terraform will not throw an error, so this widget will only be visible in the UI.
   * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
 
 ```hcl

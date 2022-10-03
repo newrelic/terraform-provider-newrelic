@@ -150,6 +150,11 @@ resource "newrelic_notification_destination" "foo" {
   name = "pagerduty-service-example"
   type = "PAGERDUTY_SERVICE_INTEGRATION"
 
+  property {
+    key = ""
+    value = ""
+  }
+  
   auth_token {
     prefix = "Token token="
     token  = "10567a689d984d03c021034b22a789e2"

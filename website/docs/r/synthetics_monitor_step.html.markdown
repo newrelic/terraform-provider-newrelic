@@ -39,8 +39,8 @@ The following are the common arguments supported for `STEP` monitor:
 * `account_id`- (Optional) The account in which the Synthetics monitor will be created.
 * `name` - (Required) The name for the monitor.
 * `uri` - (Required) The uri the monitor runs against.
-* `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. Exactly one of `locations_public` or `locations_private` is required.
-* `location_private` - (Required) The location the monitor will run from. Exactly one of `locations_public` or `locations_private` is required. See [Nested locations_private blocks](#nested-locations-private-blocks) below for details.
+* `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. You don't need the `AWS_` prefix as the provider uses NerdGraph. At least one of either `locations_public` or `location_private` is required.
+* `location_private` - (Required) The location the monitor will run from. At least one of `locations_public` or `location_private` is required. See [Nested locations_private blocks](#nested-locations-private-blocks) below for details.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
 * `steps` - (Required) The steps that make up the script the monitor will run. See [Nested steps blocks](#nested-steps-blocks) below for details.
@@ -88,7 +88,7 @@ resource "newrelic_synthetics_step_monitor" "bar" {
   uri  = "https://www.one.example.com"
   location_private {
     guid         = "newrelic_synthetics_private_location.private_location.id"
-    vse_password = secret
+    vse_password = "secret"
   }
   period = "EVERY_6_HOURS"
   status = "ENABLED"
