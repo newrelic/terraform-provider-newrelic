@@ -20,7 +20,7 @@ resource "newrelic_one_dashboard_json" "foo" {
 
 The following arguments are supported:
 
-- `json` - (Required) The JSON exporet of a dashboard. [The JSON can be exported from the UI](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/dashboards-charts-import-export-data/#dashboards)
+- `json` - (Required) The JSON export of a dashboard. [The JSON can be exported from the UI](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/dashboards-charts-import-export-data/#dashboards)
 
 ## Attribute Reference
 
