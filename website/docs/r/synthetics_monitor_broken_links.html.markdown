@@ -35,10 +35,10 @@ The following are the common arguments supported for `BROKEN LINKS` monitor:
 * `name` - (Required) The name for the monitor.
 * `uri` - (Required) The uri the monitor runs against.
 * `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. You don't need the `AWS_` prefix as the provider uses NerdGraph. At least one of either `locations_public` or `location_private` is required.
-* `locations_private` - (Required) The location the monitor will run from. At least one of either `locations_public` or `location_private` is required.
+* `locations_private` - (Required) The location the monitor will run from. Accepts a list of private location GUIDs. At least one of either `locations_public` or `locations_private` is required.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
-* `tag` - (Optional) The tags that will be associated with the monitor. See See [Nested tag blocks](#nested-tag-blocks) below for details
+* `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details
 
 ### Nested `tag` blocks
 
@@ -56,12 +56,12 @@ The below example shows how you can define a private location and attach it to a
 -> **NOTE:** It can take up to 10 minutes for a private location to become available.
 
 ```hcl
-resource "newrelic_synthetics_private_location" "bar1" {
+resource "newrelic_synthetics_private_location" "private_location" {
   description               = "Test Description"
   name                      = "private_location"
   verified_script_execution = false
 }
-resource "newrelic_synthetics_broken_links_monitor" "bar" {
+resource "newrelic_synthetics_broken_links_monitor" "monitor" {
   name              = "broken-links-monitor"
   uri               = "https://www.one.example.com"
   locations_private = ["newrelic_synthetics_private_location.private_location.id"]
