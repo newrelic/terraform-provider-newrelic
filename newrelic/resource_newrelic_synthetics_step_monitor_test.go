@@ -44,7 +44,7 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"locations_private",
+					"location_private",
 					"tag",
 					"enable_screenshot_on_failure_and_script",
 				},
