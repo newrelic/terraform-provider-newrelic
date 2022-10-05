@@ -459,7 +459,10 @@ func resourceNewRelicWorkflowCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(workflowResponse.Workflow.ID)
-	flattenWorkflow(&workflowResponse.Workflow, d)
+	err = flattenWorkflow(&workflowResponse.Workflow, d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -502,13 +505,16 @@ func resourceNewRelicWorkflowUpdate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	
+
 	errors := buildAiWorkflowsUpdateResponseError(workflowResponse.Errors)
 	if len(errors) > 0 {
 		return errors
 	}
 
-	flattenWorkflow(&workflowResponse.Workflow, d)
+	err = flattenWorkflow(&workflowResponse.Workflow, d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
