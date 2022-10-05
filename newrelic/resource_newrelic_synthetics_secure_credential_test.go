@@ -66,7 +66,7 @@ func testAccCheckNewRelicSyntheticsSecureCredentialExists(n string) resource.Tes
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
-		time.Sleep(20 * time.Second)
+		time.Sleep(10 * time.Second)
 
 		nrqlQuery := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", rs.Primary.ID)
 		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, nrqlQuery, []entities.EntitySearchSortCriteria{})
@@ -92,7 +92,7 @@ func testAccCheckNewRelicSyntheticsSecureCredentialDestroy(s *terraform.State) e
 		}
 
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
-		time.Sleep(20 * time.Second)
+		time.Sleep(15 * time.Second)
 
 		nrqlQuery := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", r.Primary.ID)
 		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, nrqlQuery, []entities.EntitySearchSortCriteria{})

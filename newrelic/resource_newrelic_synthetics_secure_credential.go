@@ -60,7 +60,7 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(30 * time.Second),
+			Read: schema.DefaultTimeout(20 * time.Second),
 		},
 	}
 }
@@ -96,6 +96,10 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 	}
 
 	d.SetId(res.Key)
+	d.Set("key", res.Key)
+	d.Set("description", res.Description)
+	d.Set("last_updated", time.Time(res.LastUpdate).Format(time.RFC3339))
+	d.Set("account_id", accountID)
 
 	return nil
 }
@@ -120,7 +124,7 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 		}
 
 		for _, e := range entityResults.Results.Entities {
-			// Conditional on case sensitive match
+			// Conditional on case-sensitive match
 			if e.GetName() == d.Id() {
 				entity = &e
 				break
@@ -166,6 +170,11 @@ func resourceNewRelicSyntheticsSecureCredentialUpdate(ctx context.Context, d *sc
 	if len(diags) > 0 {
 		return diags
 	}
+
+	d.Set("key", res.Key)
+	d.Set("description", res.Description)
+	d.Set("last_updated", time.Time(res.LastUpdate).Format(time.RFC3339))
+	d.Set("account_id", accountID)
 
 	return nil
 }
@@ -216,6 +225,7 @@ func expandSyntheticsSecureCredential(d *schema.ResourceData) *synthetics.Secure
 func flattenSyntheticsSecureCredential(sc *entities.EntityOutlineInterface, d *schema.ResourceData) diag.Diagnostics {
 	switch e := (*sc).(type) {
 	case *entities.SecureCredentialEntityOutline:
+		_ = d.Set("account_id", e.AccountID)
 		_ = d.Set("key", e.GetName())
 		_ = d.Set("description", e.Description)
 		_ = d.Set("last_updated", time.Time(*e.UpdatedAt).Format(time.RFC3339))
