@@ -1,6 +1,7 @@
 package newrelic
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/pkg/servicelevel"
 )
@@ -18,15 +19,15 @@ func flattenServiceLevelIndicator(indicator servicelevel.ServiceLevelIndicator, 
 	eventsMap["account_id"] = identifier.AccountID
 
 	if indicator.Events.ValidEvents != nil {
-		eventsMap["valid_events"] = flattenServiceLevelEventsQuery(indicator.Events.ValidEvents)
+		eventsMap["valid_events"] = flattenServiceLevelEventsQuery(indicator.Events.ValidEvents, d, "valid_events")
 	}
 
 	if indicator.Events.GoodEvents != nil {
-		eventsMap["good_events"] = flattenServiceLevelEventsQuery(indicator.Events.GoodEvents)
+		eventsMap["good_events"] = flattenServiceLevelEventsQuery(indicator.Events.GoodEvents, d, "good_events")
 	}
 
 	if indicator.Events.BadEvents != nil {
-		eventsMap["bad_events"] = flattenServiceLevelEventsQuery(indicator.Events.BadEvents)
+		eventsMap["bad_events"] = flattenServiceLevelEventsQuery(indicator.Events.BadEvents, d, "bad_events")
 	}
 
 	events[0] = eventsMap
@@ -38,13 +39,16 @@ func flattenServiceLevelIndicator(indicator servicelevel.ServiceLevelIndicator, 
 	return nil
 }
 
-func flattenServiceLevelEventsQuery(eventsQuery *servicelevel.ServiceLevelEventsQuery) []interface{} {
+func flattenServiceLevelEventsQuery(eventsQuery *servicelevel.ServiceLevelEventsQuery, d *schema.ResourceData, eventType string) []interface{} {
 	eventsQueryMap := make(map[string]interface{})
 	eventsQueryOutput := make([]interface{}, 1)
 
 	eventsQueryMap["from"] = eventsQuery.From
 	eventsQueryMap["where"] = eventsQuery.Where
-	eventsQueryMap["select"] = flattenServiceLevelEventsQuerySelect(eventsQuery.Select)
+
+	if value, ok := d.GetOk(fmt.Sprintf("events.0.%s.0.select", eventType)); ok && len(value.([]interface{})) > 0 {
+		eventsQueryMap["select"] = flattenServiceLevelEventsQuerySelect(eventsQuery.Select)
+	}
 
 	eventsQueryOutput[0] = eventsQueryMap
 	return eventsQueryOutput
