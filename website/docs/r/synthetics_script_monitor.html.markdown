@@ -100,8 +100,6 @@ The below example shows how you can define a private location and attach it to a
 
 -> **NOTE:** It can take up to 10 minutes for a private location to become available.
 
--> **NOTE:** Currently, it's only possible to use a private location with a monitor running on a legacy runtime. Leave `runtime_type_version`, `runtime_type` & `script_language` empty to use legacy runtime. See example below.
-
 ##### Type: `SCRIPT_API`
 
 ```hcl
@@ -121,9 +119,9 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
   period               = "EVERY_6_HOURS"
   status               = "ENABLED"
   script               = "console.log('terraform integration test updated')"
-  script_language      = ""
-  runtime_type         = ""
-  runtime_type_version = ""
+  script_language      = "JAVASCRIPT"
+  runtime_type         = "NODE_API"
+  runtime_type_version = "16.10"
   tag {
     key    = "some_key"
     values = ["some_value"]
@@ -131,8 +129,6 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
 }   
 ```
 ##### Type: `SCRIPT_BROWSER`
-
--> **NOTE:** Currently, it's only possible to use a private location with a monitor running on a legacy runtime. Leave `runtime_type_version`, `runtime_type` & `script_language` empty to use legacy runtime. See example below.
 
 ```hcl
 resource "newrelic_synthetics_private_location" "private_location" {
@@ -149,9 +145,9 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
   }
   name                 = "monitor"
   period               = "EVERY_HOUR"
-  runtime_type_version = ""
-  runtime_type         = ""
-  script_language      = ""
+  runtime_type_version = "100"
+  runtime_type         = "CHROME_BROWSER"
+  script_language      = "JAVASCRIPT"
   status               = "DISABLED"
   type                 = "SCRIPT_BROWSER"
   script               = "$browser.get('https://one.newrelic.com')"

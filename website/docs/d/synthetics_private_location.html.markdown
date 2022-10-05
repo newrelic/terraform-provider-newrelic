@@ -19,11 +19,9 @@ data "newrelic_synthetics_private_location" "example" {
 
 resource "newrelic_synthetics_monitor" "foo" {
   // Reference the private location data source in the monitor resource
-  location_private = [data.newrelic_synthetics_monitor_location.example.id]
+  locations_private = [data.newrelic_synthetics_monitor_location.example.id]
 }
 ```
-
--> This data source doesn't work for `scripted_api`, `scripted_browser` and `step` monitors which works with the latest script runtime.
 
 ```hcl
 data "newrelic_synthetics_private_location" "example" {
