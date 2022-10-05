@@ -58,8 +58,7 @@ func dataSourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sc
 	}
 
 	if entityResults.Count != 1 {
-		d.SetId("")
-		return nil
+		return diag.FromErr(fmt.Errorf("the key '%s' does not match any New Relic secure credential or matches more than one", key))
 	}
 
 	var entity *entities.EntityOutlineInterface
