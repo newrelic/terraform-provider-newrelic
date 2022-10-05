@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 
@@ -58,9 +57,6 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 				Optional:    true,
 				Description: "The time the secure credential was last updated.",
 			},
-		},
-		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(20 * time.Second),
 		},
 	}
 }
@@ -113,29 +109,22 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 
 	var entity *entities.EntityOutlineInterface
 
-	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
+	entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-		if entityResults.Count != 1 {
-			return resource.RetryableError(fmt.Errorf("entity not found, or found more than one"))
-		}
-
-		for _, e := range entityResults.Results.Entities {
-			// Conditional on case-sensitive match
-			if e.GetName() == d.Id() {
-				entity = &e
-				break
-			}
-		}
-		return nil
-	})
-
-	if retryErr != nil {
+	if entityResults.Count != 1 {
 		d.SetId("")
-		return diag.FromErr(retryErr)
+		return nil
+	}
+
+	for _, e := range entityResults.Results.Entities {
+		// Conditional on case-sensitive match
+		if e.GetName() == d.Id() {
+			entity = &e
+			break
+		}
 	}
 
 	return flattenSyntheticsSecureCredential(entity, d)
