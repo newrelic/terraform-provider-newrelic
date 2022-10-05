@@ -92,10 +92,10 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 	}
 
 	d.SetId(res.Key)
-	d.Set("key", res.Key)
-	d.Set("description", res.Description)
-	d.Set("last_updated", time.Time(res.LastUpdate).Format(time.RFC3339))
-	d.Set("account_id", accountID)
+	_ = d.Set("key", res.Key)
+	_ = d.Set("description", res.Description)
+	_ = d.Set("last_updated", time.Time(res.LastUpdate).Format(time.RFC3339))
+	_ = d.Set("account_id", accountID)
 
 	return nil
 }
@@ -160,10 +160,10 @@ func resourceNewRelicSyntheticsSecureCredentialUpdate(ctx context.Context, d *sc
 		return diags
 	}
 
-	d.Set("key", res.Key)
-	d.Set("description", res.Description)
-	d.Set("last_updated", time.Time(res.LastUpdate).Format(time.RFC3339))
-	d.Set("account_id", accountID)
+	_ = d.Set("key", res.Key)
+	_ = d.Set("description", res.Description)
+	_ = d.Set("last_updated", time.Time(res.LastUpdate).Format(time.RFC3339))
+	_ = d.Set("account_id", accountID)
 
 	return nil
 }
