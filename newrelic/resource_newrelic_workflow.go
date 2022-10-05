@@ -25,6 +25,13 @@ func resourceNewRelicWorkflow() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The account id of the workflow.",
+			},
 			// Required
 			"name": {
 				Type:        schema.TypeString,
@@ -198,13 +205,6 @@ func resourceNewRelicWorkflow() *schema.Resource {
 					},
 				},
 			},
-			"account_id": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The account id of the workflow.",
-			},
-
 			// Computed
 			"last_run": {
 				Type:        schema.TypeString,
@@ -238,6 +238,13 @@ func resourceNewRelicWorkflowV0() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The account id of the workflow.",
+			},
 			// Required
 			"name": {
 				Type:        schema.TypeString,
@@ -412,13 +419,6 @@ func resourceNewRelicWorkflowV0() *schema.Resource {
 					},
 				},
 			},
-			"account_id": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The account id of the workflow.",
-			},
-
 			// Computed
 			"last_run": {
 				Type:        schema.TypeString,
@@ -459,8 +459,9 @@ func resourceNewRelicWorkflowCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(workflowResponse.Workflow.ID)
+	flattenWorkflow(&workflowResponse.Workflow, d)
 
-	return resourceNewRelicWorkflowRead(updatedContext, d, meta)
+	return nil
 }
 
 func resourceNewRelicWorkflowRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -501,13 +502,15 @@ func resourceNewRelicWorkflowUpdate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	
 	errors := buildAiWorkflowsUpdateResponseError(workflowResponse.Errors)
 	if len(errors) > 0 {
 		return errors
 	}
 
-	return resourceNewRelicWorkflowRead(updatedContext, d, meta)
+	flattenWorkflow(&workflowResponse.Workflow, d)
+
+	return nil
 }
 
 func resourceNewRelicWorkflowDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
