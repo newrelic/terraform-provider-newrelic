@@ -49,7 +49,7 @@ The following arguments are supported:
 * `value` - (Required) The notification property value.
 * `label` - (Optional) The notification property label.
 * `display_value` - (Optional) The notification property display value.
-*
+
 Each notification channel type supports a specific set of arguments for the `property` block:
 
 * `WEBHOOK`
