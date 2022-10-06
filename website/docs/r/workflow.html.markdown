@@ -10,6 +10,8 @@ Create and manage a workflow in New Relic.
 
 Use this resource to create and manage New Relic workflow.
 
+-> **WARNING:** The newrelic\_workflow resource is a new resource based on a newly developed API, because of that you might encounter bugs and timeouts when using it. The New Relic teams are working hard to resolve these issues as fast as they can, but we ask you to be patient as this might take some time. Please [report any issues that you may find on Github](https://github.com/newrelic/terraform-provider-newrelic/issues/new/choose), so we can analyse and resolve them as soon as possible.
+
 ## Example Usage
 
 ##### Workflow
@@ -156,7 +158,7 @@ resource "newrelic_workflow" "workflow-example" {
   enrichments {
     nrql {
       name = "Log count"
-      
+
       configuration {
        query = "SELECT count(*) FROM Log WHERE message like '%error%' since 10 minutes ago"
       }

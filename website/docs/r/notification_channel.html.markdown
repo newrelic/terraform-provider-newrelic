@@ -10,6 +10,8 @@ Create and manage a notification channel for notifications in New Relic.
 
 Use this resource to create and manage New Relic notification channels. Details regarding supported products and permissions can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/destinations).
 
+-> **WARNING:** The newrelic\_notification\_channel resource is a new resource based on a newly developed API, because of that you might encounter bugs and timeouts when using it. The New Relic teams are working hard to resolve these issues as fast as they can, but we ask you to be patient as this might take some time. Please [report any issues that you may find on Github](https://github.com/newrelic/terraform-provider-newrelic/issues/new/choose), so we can analyse and resolve them as soon as possible.
+
 ## Example Usage
 
 ##### [Webhook](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#webhook)
@@ -47,7 +49,7 @@ The following arguments are supported:
 * `value` - (Required) The notification property value.
 * `label` - (Optional) The notification property label.
 * `display_value` - (Optional) The notification property display value.
-* 
+*
 Each notification channel type supports a specific set of arguments for the `property` block:
 
 * `WEBHOOK`

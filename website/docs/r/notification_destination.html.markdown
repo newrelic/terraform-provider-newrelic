@@ -10,6 +10,8 @@ Create and manage a notification destination for notifications in New Relic.
 
 Use this resource to create and manage New Relic notification destinations. Details regarding supported products and permissions can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/destinations).
 
+-> **WARNING:** The newrelic\_notification\_destination resource is a new resource based on a newly developed API, because of that you might encounter bugs and timeouts when using it. The New Relic teams are working hard to resolve these issues as fast as they can, but we ask you to be patient as this might take some time. Please [report any issues that you may find on Github](https://github.com/newrelic/terraform-provider-newrelic/issues/new/choose), so we can analyse and resolve them as soon as possible.
+
 ## Example Usage
 
 ##### [Webhook](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#webhook)
@@ -154,7 +156,7 @@ resource "newrelic_notification_destination" "foo" {
     key = ""
     value = ""
   }
-  
+
   auth_token {
     prefix = "Token token="
     token  = "10567a689d984d03c021034b22a789e2"
@@ -218,7 +220,7 @@ resource "newrelic_notification_destination" "foo" {
 
 ##### Import Slack Destination
 
-1. Add an empty resource to your terraform file: 
+1. Add an empty resource to your terraform file:
 ```hcl
 resource "newrelic_notification_destination" "foo" {
 }
