@@ -17,16 +17,25 @@ func notificationsPropertySchema() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Notification property key.",
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					return oldValue == "source"
+				},
 			},
 			"value": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Notification property value.",
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					return oldValue == "terraform"
+				},
 			},
 			"label": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Notification property label.",
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					return oldValue == "terraform-source-internal"
+				},
 			},
 			"display_value": {
 				Type:        schema.TypeString,
