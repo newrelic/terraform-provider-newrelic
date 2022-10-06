@@ -39,7 +39,7 @@ resource "newrelic_synthetics_monitor" "monitor" {
 
 ```hcl
 resource "newrelic_synthetics_monitor" "bar" {
-  custom_headers {
+  custom_header {
     name  = "name"
     value = "simple_browser"
   }
@@ -68,7 +68,7 @@ See additional [examples](#additional-examples).
 The following are the common arguments supported for `SIMPLE` and `BROWSER` monitors:
 
 * `account_id`- (Optional) The account in which the Synthetics monitor will be created.
-* `custom_header`- (Optional) Custom headers to use in monitor job. See [Nested customer_header blocks](#nested-custom-header-blocks) below for details.
+* `custom_header`- (Optional) Custom headers to use in monitor job. See [Nested custom_header blocks](#nested-custom-header-blocks) below for details.
 * `validation_string` - (Optional) Validation text for monitor to search for at given URI.
 * `verify_ssl` - (Optional) Monitor should validate SSL certificate chain.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
@@ -154,7 +154,7 @@ resource "newrelic_synthetics_private_location" "private_location" {
 }
 
 resource "newrelic_synthetics_monitor" "monitor" {
-  custom_headers {
+  custom_header {
     name  = "name"
     value = "simple_browser"
   }
