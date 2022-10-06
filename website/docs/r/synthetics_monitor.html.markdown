@@ -39,7 +39,7 @@ resource "newrelic_synthetics_monitor" "monitor" {
 
 ```hcl
 resource "newrelic_synthetics_monitor" "bar" {
-  custom_headers {
+  custom_header {
     name  = "name"
     value = "simple_browser"
   }
@@ -68,13 +68,13 @@ See additional [examples](#additional-examples).
 The following are the common arguments supported for `SIMPLE` and `BROWSER` monitors:
 
 * `account_id`- (Optional) The account in which the Synthetics monitor will be created.
-* `custom_header`- (Optional) Custom headers to use in monitor job. See [Nested customer_header blocks](#nested-custom-header-blocks) below for details.
+* `custom_header`- (Optional) Custom headers to use in monitor job. See [Nested custom_header blocks](#nested-custom-header-blocks) below for details.
 * `validation_string` - (Optional) Validation text for monitor to search for at given URI.
 * `verify_ssl` - (Optional) Monitor should validate SSL certificate chain.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor.
 * `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. You don't need the `AWS_` prefix as the provider uses NerdGraph. At least one of either `locations_public` or `location_private` is required.
-* `locations_private` - (Required) The location the monitor will run from. At least one of either `locations_public` or `location_private` is required.
+* `locations_private` - (Required) The location the monitor will run from. Accepts a list of private location GUIDs. At least one of either `locations_public` or `locations_private` is required.
 * `name` - (Required) The human-readable identifier for the monitor.
 * `uri` - (Required) The uri the monitor runs against.
 * `type` - (Required) THE monitor type. Valid values are `SIMPLE` and `BROWSER`.
@@ -146,8 +146,6 @@ resource "newrelic_synthetics_monitor" "monitor" {
 ```
 ##### Type: `BROWSER`
 
--> **NOTE:** Currently, it's only possible to use a private location with a monitor running on a legacy runtime. Leave `runtime_type_version`, `runtime_type` & `script_language` empty to use legacy runtime. See example below.
-
 ```hcl
 resource "newrelic_synthetics_private_location" "private_location" {
   description               = "Test Description"
@@ -156,19 +154,19 @@ resource "newrelic_synthetics_private_location" "private_location" {
 }
 
 resource "newrelic_synthetics_monitor" "monitor" {
-  custom_headers {
+  custom_header {
     name  = "name"
     value = "simple_browser"
   }
-  location_private                        = ["newrelic_synthetics_private_location.bar1"]
+  locations_private                        = ["newrelic_synthetics_private_location.private_location.id"]
   enable_screenshot_on_failure_and_script = true
   validation_string                       = "success"
   verify_ssl                              = true
   name                                    = "monitor"
   period                                  = "EVERY_MINUTE"
-  runtime_type_version                    = ""
-  runtime_type                            = ""
-  script_language                         = ""
+  runtime_type_version                    = "100"
+  runtime_type                            = "CHROME_BROWSER"
+  script_language                         = "JAVASCRIPT"
   status                                  = "ENABLED"
   type                                    = "BROWSER"
   uri                                     = "https://www.one.newrelic.com"
