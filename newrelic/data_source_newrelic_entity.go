@@ -117,7 +117,11 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 	var entity *entities.EntityOutlineInterface
 	for _, e := range entityResults.Results.Entities {
 		// Conditional on case sensitive match
-		if e.GetName() == name || (ignoreCase && strings.EqualFold(e.GetName(), name)) {
+
+		str := e.GetName()
+		str = strings.TrimSpace(str)
+
+		if strings.Compare(str, name) == 0 || (ignoreCase && strings.EqualFold(str, name)) {
 			entity = &e
 			break
 		}
