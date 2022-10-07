@@ -338,8 +338,10 @@ func flattenWorkflow(workflow *workflows.AiWorkflowsWorkflow, d *schema.Resource
 		return fmt.Errorf("[DEBUG] Error setting workflows enrichments: %#v", enrichmentsErr)
 	}
 
-	if err := d.Set("enrichments", enrichments); err != nil {
-		return err
+	if len(enrichments) > 0 {
+		if err := d.Set("enrichments", enrichments); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -428,8 +430,8 @@ func flattenWorkflowPredicate(p *workflows.AiWorkflowsPredicate) (map[string]int
 	return predicateResult, nil
 }
 
-func flattenWorkflowEnrichments(e *[]workflows.AiWorkflowsEnrichment) (interface{}, error) {
-	if e == nil {
+func flattenWorkflowEnrichments(e *[]workflows.AiWorkflowsEnrichment) ([]interface{}, error) {
+	if e == nil || len(*e) == 0 {
 		return nil, nil
 	}
 
