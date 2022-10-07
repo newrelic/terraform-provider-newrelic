@@ -1,3 +1,18 @@
+<a name="v3.4.4"></a>
+## [v3.4.4] - 2022-10-06
+### Bug Fixes
+- add account_id to secure credential data source schema
+
+<a name="v3.4.3"></a>
+## [v3.4.3] - 2022-10-05
+### Bug Fixes
+- up timeout to give entity chance to index
+
+<a name="v3.4.2"></a>
+## [v3.4.2] - 2022-10-04
+### Documentation Updates
+- change custom_headers to custom_header
+
 <a name="v3.4.1"></a>
 ## [v3.4.1] - 2022-10-03
 ### Documentation Updates
@@ -1489,7 +1504,10 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.4...HEAD
+[v3.4.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.3...v3.4.4
+[v3.4.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.2...v3.4.3
+[v3.4.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.1...v3.4.2
 [v3.4.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.0...v3.4.1
 [v3.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.3.0...v3.4.0
 [v3.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.2.1...v3.3.0
