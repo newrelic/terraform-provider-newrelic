@@ -240,7 +240,8 @@ func WorkloadRollupInputSchemaElem() map[string]*schema.Schema {
 func resourceNewRelicWorkloadCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	createInput := expandWorkloadCreateInput(d)
-	accountID := d.Get("account_id").(int)
+	providerConfig := meta.(*ProviderConfig)
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Creating New Relic One workload %s", createInput.Name)
 

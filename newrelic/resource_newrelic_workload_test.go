@@ -40,7 +40,7 @@ func TestAccNewRelicWorkload_Basic(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"entity_search_query", "composite_entity_search_query"},
+				ImportStateVerifyIgnore: []string{"entity_search_query", "composite_entity_search_query", "description", "status_config_automatic", "status_config_static"},
 			},
 		},
 	})
@@ -122,7 +122,6 @@ func TestAccNewRelicWorkload_EntityScopeAccountsOnly(t *testing.T) {
 	})
 }
 
-////TODO changes
 func TestAccNewRelicWorkload_BasicOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
 	rName := acctest.RandString(5)
@@ -137,6 +136,20 @@ func TestAccNewRelicWorkload_BasicOnly(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkloadExists(resourceName),
 				),
+			},
+			// Test: Update
+			//{
+			//	Config: testAccNewRelicWorkloadConfigUpdatedBasicConfigOnly(rName),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		testAccCheckNewRelicWorkloadExists(resourceName),
+			//	),
+			//},
+			// Test: Import
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"entity_search_query", "composite_entity_search_query", "description"},
 			},
 		},
 	})
@@ -401,6 +414,63 @@ resource "newrelic_workload" "foo" {
 	}
 
 	scope_account_ids =  [%[1]d]
+
+  	description = "something"
+
+	status_config_automatic {
+		enabled = true
+		remaining_entities_rule{
+			remaining_entities_rule_rollup {
+			  strategy = "WORST_STATUS_WINS"
+			  threshold_type = "FIXED"
+			  threshold_value = 100
+			  group_by = "ENTITY_TYPE"
+			}
+		}
+		rule{
+		 entity_guids = [data.newrelic_entity.app.guid]
+		 nrql_query{
+		   query = "name like 'ok-updated'"
+		 }
+		rollup{
+			strategy = "BEST_STATUS_WINS"
+			threshold_type = "FIXED"
+			threshold_value = 100
+			}
+		}
+	}
+	
+	status_config_static {
+	description = "test"
+	enabled = true
+	status = "OPERATIONAL"
+	summary = "summary - updated"
+	}
+}
+`, testAccountID, name, testAccExpectedApplicationName)
+}
+
+func testAccNewRelicWorkloadConfigUpdatedBasicConfigOnly(name string) string {
+	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name = "%[3]s"
+	domain = "APM"
+	type = "APPLICATION"
+}
+
+resource "newrelic_workload" "foo" {
+	name = "%[2]s-updated"
+	account_id = %[1]d
+
+	entity_guids = [data.newrelic_entity.app.guid]
+
+	entity_search_query {
+		query = "name like '%[3]s'"
+	}
+
+	scope_account_ids =  [%[1]d]
+
+	description="something-updated"
 }
 `, testAccountID, name, testAccExpectedApplicationName)
 }
