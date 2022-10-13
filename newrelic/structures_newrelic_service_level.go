@@ -45,7 +45,6 @@ func flattenServiceLevelEventsQuery(eventsQuery *servicelevel.ServiceLevelEvents
 
 	eventsQueryMap["from"] = eventsQuery.From
 	eventsQueryMap["where"] = eventsQuery.Where
-	eventsQueryMap["select"] = flattenServiceLevelEventsQuerySelect(eventsQuery.Select)
 
 	apiReturnedDefaultValue := len(eventsQuery.Select.Attribute) == 0 && eventsQuery.Select.Function == "COUNT"
 
