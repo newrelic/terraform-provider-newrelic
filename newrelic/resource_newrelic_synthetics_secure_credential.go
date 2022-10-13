@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/newrelic/newrelic-client-go/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
 
@@ -59,9 +58,6 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 				Description: "The time the secure credential was last updated.",
 			},
 		},
-		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(20 * time.Second),
-		},
 	}
 }
 
@@ -96,8 +92,12 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 	}
 
 	d.SetId(res.Key)
+	_ = d.Set("key", res.Key)
+	_ = d.Set("description", res.Description)
+	_ = d.Set("last_updated", time.Time(res.LastUpdate).Format(time.RFC3339))
+	_ = d.Set("account_id", accountID)
 
-	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
+	return nil
 }
 
 func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -109,27 +109,22 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 
 	var entity *entities.EntityOutlineInterface
 
-	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
+	entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-		if entityResults.Count != 1 {
-			return resource.RetryableError(fmt.Errorf("entity not found, or found more than one"))
-		}
-		for _, e := range entityResults.Results.Entities {
-			// Conditional on case sensitive match
-			if e.GetName() == d.Id() {
-				entity = &e
-				break
-			}
-		}
+	if entityResults.Count != 1 {
+		d.SetId("")
 		return nil
-	})
+	}
 
-	if retryErr != nil {
-		return diag.FromErr(retryErr)
+	for _, e := range entityResults.Results.Entities {
+		// Conditional on case-sensitive match
+		if e.GetName() == d.Id() {
+			entity = &e
+			break
+		}
 	}
 
 	return flattenSyntheticsSecureCredential(entity, d)
@@ -165,7 +160,12 @@ func resourceNewRelicSyntheticsSecureCredentialUpdate(ctx context.Context, d *sc
 		return diags
 	}
 
-	return resourceNewRelicSyntheticsSecureCredentialRead(ctx, d, meta)
+	_ = d.Set("key", res.Key)
+	_ = d.Set("description", res.Description)
+	_ = d.Set("last_updated", time.Time(res.LastUpdate).Format(time.RFC3339))
+	_ = d.Set("account_id", accountID)
+
+	return nil
 }
 
 func resourceNewRelicSyntheticsSecureCredentialDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -214,6 +214,7 @@ func expandSyntheticsSecureCredential(d *schema.ResourceData) *synthetics.Secure
 func flattenSyntheticsSecureCredential(sc *entities.EntityOutlineInterface, d *schema.ResourceData) diag.Diagnostics {
 	switch e := (*sc).(type) {
 	case *entities.SecureCredentialEntityOutline:
+		_ = d.Set("account_id", e.AccountID)
 		_ = d.Set("key", e.GetName())
 		_ = d.Set("description", e.Description)
 		_ = d.Set("last_updated", time.Time(*e.UpdatedAt).Format(time.RFC3339))
