@@ -37,10 +37,10 @@ func TestAccNewRelicWorkload_Basic(t *testing.T) {
 			},
 			// Test: Import
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"entity_search_query", "composite_entity_search_query", "description", "status_config_automatic", "status_config_static"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				//ImportStateVerifyIgnore: []string{"entity_search_query", "composite_entity_search_query", "description", "status_config_automatic", "status_config_static"},
 			},
 		},
 	})
@@ -137,19 +137,19 @@ func TestAccNewRelicWorkload_BasicOnly(t *testing.T) {
 					testAccCheckNewRelicWorkloadExists(resourceName),
 				),
 			},
-			// Test: Update
-			//{
-			//	Config: testAccNewRelicWorkloadConfigUpdatedBasicConfigOnly(rName),
-			//	Check: resource.ComposeTestCheckFunc(
-			//		testAccCheckNewRelicWorkloadExists(resourceName),
-			//	),
-			//},
+			//Test: Update
+			{
+				Config: testAccNewRelicWorkloadConfigUpdatedBasicConfigOnly(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkloadExists(resourceName),
+				),
+			},
 			// Test: Import
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"entity_search_query", "composite_entity_search_query", "description"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				//ImportStateVerifyIgnore: []string{"entity_search_query", "composite_entity_search_query", "description"},
 			},
 		},
 	})
@@ -306,12 +306,12 @@ func testAccCheckNewRelicWorkloadExists(n string) resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		found, err := client.Workloads.GetWorkload(ids.AccountID, string(ids.GUID))
+		found, err := client.Workloads.GetCollection(ids.AccountID, (ids.GUID))
 		if err != nil {
 			return err
 		}
 
-		if found.GUID != string(ids.GUID) {
+		if found.GUID != (ids.GUID) {
 			return fmt.Errorf("workload not found: %v - %v", rs.Primary.ID, found)
 		}
 
@@ -331,7 +331,7 @@ func testAccCheckNewRelicWorkloadDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = client.Workloads.GetWorkload(ids.AccountID, string(ids.GUID))
+		_, err = client.Workloads.GetCollection(ids.AccountID, (ids.GUID))
 		if err == nil {
 			return fmt.Errorf("workload still exists")
 		}

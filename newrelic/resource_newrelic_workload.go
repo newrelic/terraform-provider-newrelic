@@ -266,7 +266,7 @@ func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	workload, err := client.Workloads.GetWorkloadWithContext(ctx, ids.AccountID, string(ids.GUID))
+	workload, err := client.Workloads.GetCollectionWithContext(ctx, ids.AccountID, ids.GUID)
 	if err != nil {
 		if err != nil {
 			if _, ok := err.(*errors.NotFound); ok {

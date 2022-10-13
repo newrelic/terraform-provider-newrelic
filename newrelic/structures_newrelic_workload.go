@@ -380,8 +380,7 @@ func listValidWorkloadRuleThresholdType() []string {
 		string(workloads.WorkloadRuleThresholdTypeTypes.PERCENTAGE),
 	}
 }
-
-func flattenWorkload(workload *workloads.Workload, d *schema.ResourceData) error {
+func flattenWorkload(workload *workloads.WorkloadCollection, d *schema.ResourceData) error {
 	_ = d.Set("account_id", workload.Account.ID)
 	_ = d.Set("guid", workload.GUID)
 	_ = d.Set("workload_id", workload.ID)
@@ -391,11 +390,98 @@ func flattenWorkload(workload *workloads.Workload, d *schema.ResourceData) error
 	_ = d.Set("entity_guids", flattenWorkloadEntityGUIDs(workload.Entities))
 	_ = d.Set("entity_search_query", flattenWorkloadEntitySearchQueries(workload.EntitySearchQueries))
 	_ = d.Set("scope_account_ids", workload.ScopeAccounts.AccountIDs)
-	return nil
 
+	if workload.Description != "" {
+		_ = d.Set("description", workload.Description)
+	}
+
+	if workload.StatusConfig.Static != nil {
+		statusStatic := flattenStatusConfigStatic(workload.StatusConfig.Static)
+		if err := d.Set("status_config_static", statusStatic); err != nil {
+			return err
+		}
+	}
+	if err := d.Set("status_config_automatic", flattenStatusConfigAutomatic(workload.StatusConfig.Automatic)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func flattenWorkloadEntityGUIDs(in []workloads.EntityRef) interface{} {
+func flattenStatusConfigAutomatic(in workloads.WorkloadAutomaticStatus) []interface{} {
+
+	automaticStatus := map[string]interface{}{
+		"enabled": in.Enabled,
+	}
+
+	automaticStatus["remaining_entities_rule"] = flattenWorkloadsRemainingEntitiesRule(in.RemainingEntitiesRule)
+	automaticStatus["rule"] = flattenWorkloadRule(&in.Rules)
+	//m := make(map[string]interface{})
+	//m["enabled"] = in.Enabled
+	//m["remaining_entities_rule"] = flattenWorkloadsRemainingEntitiesRule(in.RemainingEntitiesRule)
+	//m["rule"] = flattenWorkloadRule(&in.Rules)
+
+	return []interface{}{automaticStatus}
+}
+
+func flattenWorkloadsRemainingEntitiesRule(rule workloads.WorkloadRemainingEntitiesRule) interface{} {
+	m := make(map[string]interface{})
+	m["remaining_entities_rule_rollup"] = flattenWorkloadsRemainingEntitieRuleRollup(rule.Rollup)
+	return m
+}
+
+func flattenWorkloadRule(in *[]workloads.WorkloadRegularRule) []interface{} {
+	out := make([]interface{}, len(*in))
+	for i, p := range *in {
+		m := make(map[string]interface{})
+		m["entity_guids"] = flattenWorkloadEntityGUIDs(p.Entities)
+		m["nrql_query"] = flattenWorkloadEntitySearchQueries(p.EntitySearchQueries)
+		m["rollup"] = flattenWorkloadRollUp(p.Rollup)
+		out[i] = m
+	}
+	return out
+}
+
+func flattenWorkloadRollUp(in workloads.WorkloadRollup) interface{} {
+	m := make(map[string]interface{})
+	m["strategy"] = in.Strategy
+	m["threshold_type"] = in.ThresholdType
+	m["threshold_value"] = in.ThresholdValue
+	return m
+}
+
+func flattenWorkloadsRemainingEntitieRuleRollup(in workloads.WorkloadRemainingEntitiesRuleRollup) interface{} {
+	m := make(map[string]interface{})
+	m["group_by"] = in.GroupBy
+	m["strategy"] = in.Strategy
+	m["threshold_type"] = in.ThresholdType
+	m["threshold_value"] = in.ThresholdValue
+	return m
+}
+
+func flattenStatusConfigStatic(in []workloads.WorkloadStaticStatus) []interface{} {
+
+	out := make([]interface{}, len(in))
+
+	for _, p := range in {
+		m := make(map[string]interface{})
+		m["enabled"] = p.Enabled
+
+		if p.Description != "" {
+			m["description"] = p.Description
+		}
+
+		if p.Summary != "" {
+			m["summary"] = p.Summary
+		}
+
+		m["status"] = p.Status
+		out[0] = m
+	}
+	return out
+}
+
+func flattenWorkloadEntityGUIDs(in []workloads.WorkloadEntityRef) interface{} {
 	out := make([]interface{}, len(in))
 	for i, e := range in {
 		out[i] = e.GUID
@@ -403,7 +489,7 @@ func flattenWorkloadEntityGUIDs(in []workloads.EntityRef) interface{} {
 	return out
 }
 
-func flattenWorkloadEntitySearchQueries(in []workloads.EntitySearchQuery) interface{} {
+func flattenWorkloadEntitySearchQueries(in []workloads.WorkloadEntitySearchQuery) interface{} {
 	out := make([]interface{}, len(in))
 	for i, e := range in {
 		m := make(map[string]interface{})
