@@ -86,6 +86,7 @@ func resourceNewRelicNotificationChannelCreate(ctx context.Context, d *schema.Re
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 	channelInput := expandNotificationChannel(d)
+	channelInput.Properties = append(channelInput.Properties, createMonitoringProperty())
 
 	log.Printf("[INFO] Creating New Relic notification channelResponse %s", channelInput.Name)
 
