@@ -83,6 +83,86 @@ func TestNewRelicWorkflow_Email(t *testing.T) {
 	})
 }
 
+func TestNewRelicWorkflow_MinimalConfig(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+
+			// Test: Create workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationMinimal(testAccountID, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicWorkflowConfigurationMinimal(testAccountID, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func testAccNewRelicWorkflowConfigurationMinimal(accountID int, name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "foo" {
+  name = "tf-test-destination"
+  type = "WEBHOOK"
+
+  property {
+    key   = "url"
+    value = "https://webhook.site/"
+  }
+
+  auth_basic {
+    user     = "username"
+    password = "password"
+  }
+}
+
+resource "newrelic_notification_channel" "foo" {
+  name           = "webhook-example"
+  type           = "WEBHOOK"
+  product        = "IINT"
+  destination_id = newrelic_notification_destination.foo.id
+
+  property {
+    key   = "payload"
+    value = "{}"
+  }
+}
+
+resource "newrelic_workflow" "foo" {
+  name                  = "%[2]s"
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+
+  issues_filter {
+    name = "filter-name"
+    type = "FILTER"
+
+    predicate {
+      attribute = "source"
+      operator  = "EQUAL"
+      values    = ["newrelic"]
+    }
+  }
+
+  destination {
+    channel_id = newrelic_notification_channel.foo.id
+  }
+}
+`, accountID, name)
+}
+
 func testAccNewRelicWorkflowConfigurationWebhook(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
