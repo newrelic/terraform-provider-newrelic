@@ -61,6 +61,10 @@ resource "newrelic_service_level" "sli" {
 		}
 		good_events {
 			from = "Transaction"
+			select {
+				attribute = "duration"
+				function = "COUNT"
+			}
 		}
 	}
 
@@ -94,6 +98,10 @@ resource "newrelic_service_level" "sli" {
 		account_id = %[1]d
 		valid_events {
 			from = "Transaction"
+			select {
+				attribute = "duration"
+				function = "SUM"
+			}
 		}
 		good_events {
 			from = "Transaction"
