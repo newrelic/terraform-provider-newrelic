@@ -40,7 +40,6 @@ func TestAccNewRelicWorkload_Basic(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				//ImportStateVerifyIgnore: []string{"entity_search_query", "composite_entity_search_query", "description", "status_config_automatic", "status_config_static"},
 			},
 		},
 	})
@@ -371,12 +370,12 @@ resource "newrelic_workload" "foo" {
 			  group_by = "ENTITY_TYPE"
 			}
 		}
-		rule{
+		rule {
 		 entity_guids = [data.newrelic_entity.app.guid]
 		 nrql_query{
 		   query = "name like 'ok'"
 		 }
-		rollup{
+		rollup {
 			strategy = "BEST_STATUS_WINS"
 			threshold_type = "FIXED"
 			threshold_value = 100

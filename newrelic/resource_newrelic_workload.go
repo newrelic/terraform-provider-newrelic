@@ -84,19 +84,20 @@ func resourceNewRelicWorkload() *schema.Resource {
 						"remaining_entities_rule": {
 							Type:        schema.TypeSet,
 							Optional:    true,
+							MaxItems:    1,
 							Description: "An additional meta-rule that can consider all entities that haven't been evaluated by any other rule.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"remaining_entities_rule_rollup": {
 										Type:        schema.TypeSet,
 										Required:    true,
+										MaxItems:    1,
 										Description: "The input object used to represent a rollup strategy.",
 										Elem:        WorkloadremainingEntitiesRuleSchemaElem(),
 									},
 								},
 							},
 						},
-
 						"rule": {
 							Type:        schema.TypeSet,
 							Optional:    true,
@@ -128,6 +129,7 @@ func resourceNewRelicWorkload() *schema.Resource {
 									"rollup": {
 										Type:        schema.TypeSet,
 										Required:    true,
+										MaxItems:    1,
 										Description: "The input object used to represent a rollup strategy.",
 										Elem:        WorkloadRuleRollupInputSchemaElem(),
 									},
@@ -168,7 +170,6 @@ func resourceNewRelicWorkload() *schema.Resource {
 					},
 				},
 			},
-
 			"workload_id": {
 				Type:        schema.TypeInt,
 				Computed:    true,

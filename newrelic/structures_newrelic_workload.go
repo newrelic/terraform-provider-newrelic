@@ -25,9 +25,9 @@ func expandWorkloadCreateInput(d *schema.ResourceData) workloads.WorkloadCreateI
 	}
 
 	if e, ok := d.GetOk("description"); ok {
-
 		createInput.Description = e.(string)
 	}
+
 	if e, ok := d.GetOk("status_config_static"); ok {
 		createInput.StatusConfig.Static = expandWorkloadStatusConfigStaticInput(e.(*schema.Set).List())
 	}
@@ -424,10 +424,12 @@ func flattenStatusConfigAutomatic(in workloads.WorkloadAutomaticStatus) []interf
 	return []interface{}{automaticStatus}
 }
 
-func flattenWorkloadsRemainingEntitiesRule(rule workloads.WorkloadRemainingEntitiesRule) interface{} {
+func flattenWorkloadsRemainingEntitiesRule(rule workloads.WorkloadRemainingEntitiesRule) []interface{} {
 	m := make(map[string]interface{})
+
 	m["remaining_entities_rule_rollup"] = flattenWorkloadsRemainingEntitieRuleRollup(rule.Rollup)
-	return m
+
+	return []interface{}{m}
 }
 
 func flattenWorkloadRule(in *[]workloads.WorkloadRegularRule) []interface{} {
@@ -442,21 +444,25 @@ func flattenWorkloadRule(in *[]workloads.WorkloadRegularRule) []interface{} {
 	return out
 }
 
-func flattenWorkloadRollUp(in workloads.WorkloadRollup) interface{} {
+func flattenWorkloadRollUp(in workloads.WorkloadRollup) []interface{} {
 	m := make(map[string]interface{})
+
 	m["strategy"] = in.Strategy
 	m["threshold_type"] = in.ThresholdType
 	m["threshold_value"] = in.ThresholdValue
-	return m
+
+	return []interface{}{m}
 }
 
-func flattenWorkloadsRemainingEntitieRuleRollup(in workloads.WorkloadRemainingEntitiesRuleRollup) interface{} {
+func flattenWorkloadsRemainingEntitieRuleRollup(in workloads.WorkloadRemainingEntitiesRuleRollup) []interface{} {
 	m := make(map[string]interface{})
+
 	m["group_by"] = in.GroupBy
 	m["strategy"] = in.Strategy
 	m["threshold_type"] = in.ThresholdType
 	m["threshold_value"] = in.ThresholdValue
-	return m
+
+	return []interface{}{m}
 }
 
 func flattenStatusConfigStatic(in []workloads.WorkloadStaticStatus) []interface{} {
