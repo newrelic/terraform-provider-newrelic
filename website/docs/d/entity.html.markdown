@@ -91,3 +91,4 @@ In addition to all arguments above, the following attributes are exported:
 * `guid` - The unique GUID of the entity.
 * `account_id` - The New Relic account ID associated with this entity.
 * `application_id` - The domain-specific application ID of the entity. Only returned for APM and Browser applications.
+* `serving_apm_application_id` - The browser-specific ID of the backing APM entity. (only returned for Browser applications)
