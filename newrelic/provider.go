@@ -42,7 +42,7 @@ func Provider() *schema.Provider {
 			},
 			"api_key": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_API_KEY", nil),
 				Sensitive:   true,
 			},
@@ -224,10 +224,6 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		InsightsInsertClient: clientInsightsInsert,
 		PersonalAPIKey:       personalAPIKey,
 		AccountID:            accountID,
-	}
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return nil, fmt.Errorf("err: NerdGraph support not present, but required. Set the 'api_key' attribute to a New Relic User API key")
 	}
 
 	return &providerConfig, nil

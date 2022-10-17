@@ -1,3 +1,15 @@
+<a name="v3.5.0"></a>
+## [v3.5.0] - 2022-10-14
+### Bug Fixes
+- add check of default answer of the API for service level select
+- correct attribute mapping in service level event query select
+- **notifications:** fix monitoring property to destinations & channels
+- **notifications:** add monitoring property to destinations & channels
+- **workflows:** stop forcing workflow recreation when using the default account id
+
+### Features
+- bump of new-relic-client-go and add service level capability to use select field for event queries
+
 <a name="v3.4.4"></a>
 ## [v3.4.4] - 2022-10-06
 ### Bug Fixes
@@ -1504,7 +1516,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.4...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.0...HEAD
+[v3.5.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.4...v3.5.0
 [v3.4.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.3...v3.4.4
 [v3.4.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.2...v3.4.3
 [v3.4.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.1...v3.4.2
