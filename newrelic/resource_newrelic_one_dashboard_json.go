@@ -55,11 +55,6 @@ func resourceNewRelicOneDashboardJSON() *schema.Resource {
 
 func resourceNewRelicOneDashboardJSONCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Create")
-	}
-
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
