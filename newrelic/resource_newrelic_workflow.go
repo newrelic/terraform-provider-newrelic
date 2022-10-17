@@ -201,6 +201,7 @@ func resourceNewRelicWorkflow() *schema.Resource {
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "The account id of the workflow.",
 			},
