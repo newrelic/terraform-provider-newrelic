@@ -139,10 +139,6 @@ type ProviderConfig struct {
 	PersonalAPIKey       string
 }
 
-func (c *ProviderConfig) hasNerdGraphCredentials() bool {
-	return c.AccountID > 0 && c.PersonalAPIKey != ""
-}
-
 // If the argument is a path, Read loads it and returns the contents,
 // otherwise the argument is assumed to be the desired contents and is simply
 // returned.
