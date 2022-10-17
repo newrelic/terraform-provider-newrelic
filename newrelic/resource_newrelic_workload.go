@@ -115,7 +115,7 @@ func resourceNewRelicWorkload() *schema.Resource {
 										Type:        schema.TypeSet,
 										Optional:    true,
 										Description: "A list of entity search queries used to retrieve the entities that compose the rule.",
-										ForceNew:    true,
+										//ForceNew:    true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"query": {
@@ -269,14 +269,12 @@ func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, m
 	}
 	workload, err := client.Workloads.GetCollectionWithContext(ctx, ids.AccountID, ids.GUID)
 	if err != nil {
-		if err != nil {
-			if _, ok := err.(*errors.NotFound); ok {
-				d.SetId("")
-				return nil
-			}
-
-			return diag.FromErr(err)
+		if _, ok := err.(*errors.NotFound); ok {
+			d.SetId("")
+			return nil
 		}
+
+		return diag.FromErr(err)
 	}
 
 	return diag.FromErr(flattenWorkload(workload, d))

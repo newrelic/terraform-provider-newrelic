@@ -401,9 +401,19 @@ func flattenWorkload(workload *workloads.WorkloadCollection, d *schema.ResourceD
 			return err
 		}
 	}
-	if err := d.Set("status_config_automatic", flattenStatusConfigAutomatic(workload.StatusConfig.Automatic)); err != nil {
-		return err
-	}
+
+	//if v, ok := d.GetOk("status_config_automatic"); ok && v != nil {
+	//	_ = d.Set("status_config_automatic", flattenStatusConfigAutomatic(workload.StatusConfig.Automatic))
+	//}
+
+	//if []interface{}{workload.StatusConfig.Automatic} != nil {
+	//	if err := d.Set("status_config_automatic", flattenStatusConfigAutomatic(workload.StatusConfig.Automatic)); err != nil {
+	//		return err
+	//	}
+	//}
+	//if err := d.Set("status_config_automatic", flattenStatusConfigAutomatic(workload.StatusConfig.Automatic)); err != nil {
+	//	return err
+	//}
 
 	return nil
 }
@@ -416,10 +426,6 @@ func flattenStatusConfigAutomatic(in workloads.WorkloadAutomaticStatus) []interf
 
 	automaticStatus["remaining_entities_rule"] = flattenWorkloadsRemainingEntitiesRule(in.RemainingEntitiesRule)
 	automaticStatus["rule"] = flattenWorkloadRule(&in.Rules)
-	//m := make(map[string]interface{})
-	//m["enabled"] = in.Enabled
-	//m["remaining_entities_rule"] = flattenWorkloadsRemainingEntitiesRule(in.RemainingEntitiesRule)
-	//m["rule"] = flattenWorkloadRule(&in.Rules)
 
 	return []interface{}{automaticStatus}
 }

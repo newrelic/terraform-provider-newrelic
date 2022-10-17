@@ -148,7 +148,6 @@ func TestAccNewRelicWorkload_BasicOnly(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				//ImportStateVerifyIgnore: []string{"entity_search_query", "composite_entity_search_query", "description"},
 			},
 		},
 	})
@@ -599,15 +598,15 @@ resource "newrelic_workload" "foo" {
 			}
 		}
 		rule{
-		 entity_guids = [data.newrelic_entity.app.guid]
-		 nrql_query{
-		   query = "name like 'ok'"
-		 }
-		rollup{
-			strategy = "BEST_STATUS_WINS"
-			threshold_type = "FIXED"
-			threshold_value = 100
-			}
+			entity_guids = [data.newrelic_entity.app.guid]
+			nrql_query{
+				query = "name like 'ok'"
+			 }
+			rollup{
+				strategy = "BEST_STATUS_WINS"
+				threshold_type = "FIXED"
+				threshold_value = 100
+				}
 		}
 	}
 }
@@ -731,6 +730,9 @@ resource "newrelic_workload" "foo" {
 	status_config_automatic {
 		enabled = true
 		rule{
+		 nrql_query{
+		   query = "name like 'ok'"
+		 }
 			rollup{
 				strategy = "BEST_STATUS_WINS"
 				threshold_type = "FIXED"
