@@ -226,10 +226,6 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		AccountID:            accountID,
 	}
 
-	if !providerConfig.hasNerdGraphCredentials() {
-		return nil, fmt.Errorf("err: NerdGraph support not present, but required. Set the 'api_key' attribute to a New Relic User API key")
-	}
-
 	return &providerConfig, nil
 }
 
