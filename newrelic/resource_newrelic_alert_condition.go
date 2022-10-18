@@ -193,8 +193,8 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 			"user_defined_value_function": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"average", "min", "max", "total", "sample_size"}, false),
-				Description:  "One of: (average, min, max, total, sample_size).",
+				ValidateFunc: validation.StringInSlice([]string{"average", "min", "max", "total", "sample_size", "percent", "rate"}, false),
+				Description:  "One of: (average, min, max, total, sample_size, percent, rate).",
 			},
 		},
 	}
