@@ -127,7 +127,8 @@ func resourceNewRelicNotificationChannelRead(ctx context.Context, d *schema.Reso
 	}
 
 	if len(channelResponse.Entities) == 0 {
-		return diag.FromErr(fmt.Errorf("[ERROR] notification channelResponse.Entities response is empty"))
+		d.SetId("")
+		return nil
 	}
 
 	errors := buildAiNotificationsResponseErrors(channelResponse.Errors)

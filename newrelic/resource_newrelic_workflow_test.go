@@ -38,12 +38,6 @@ func TestNewRelicWorkflow_Webhook(t *testing.T) {
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
 			},
-			// Test: Import
-			// {
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// 	ResourceName:      resourceName,
-			// },
 		},
 	})
 }
@@ -73,12 +67,38 @@ func TestNewRelicWorkflow_Email(t *testing.T) {
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
 			},
-			// Test: Import
-			// {
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// 	ResourceName:      resourceName,
-			// },
+		},
+	})
+}
+
+func TestNewRelicWorkflow_DeleteWorkflowWithoutRemovingChannels(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	channelResourceName := "foo"
+	channelResources := testAccNewRelicChannelConfigurationEmail(channelResourceName)
+	workflowResource := testAccNewRelicWorkflowConfiguration(channelResourceName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+
+			// Test: Create workflow
+			{
+				Config: channelResources + workflowResource,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Delete workflow
+			{
+				Config:             channelResources,
+				ExpectNonEmptyPlan: true,
+			},
+			// Test: Apply without any changes after workflow deletion should succeed
+			{
+				Config: channelResources,
+			},
 		},
 	})
 }
@@ -228,6 +248,65 @@ resource "newrelic_workflow" "foo" {
   }
 }
 `, accountID, name)
+}
+
+func testAccNewRelicChannelConfigurationEmail(channelResourceName string) string {
+	destinationResourceName := "destination_" + acctest.RandString(5)
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "%[2]s" {
+  name = "tf-test-destination-email"
+  type = "EMAIL"
+
+  property {
+    key   = "email"
+    value = "noreply+terraform-test@newrelic.com"
+  }
+
+  auth_basic {
+    user     = "username"
+    password = "password"
+  }
+}
+
+resource "newrelic_notification_channel" "%[1]s" {
+  name           = "tf-test-notification-channel-email"
+  type           = "EMAIL"
+  product        = "IINT"
+  destination_id = newrelic_notification_destination.%[2]s.id
+
+  property {
+    key   = "subject"
+    value = "{{ issueTitle }}"
+  }
+}`, channelResourceName, destinationResourceName)
+}
+
+func testAccNewRelicWorkflowConfiguration(channelResourceName string) string {
+	workflowName := acctest.RandString(5)
+	return fmt.Sprintf(`
+resource "newrelic_workflow" "foo" {
+  account_id            = newrelic_notification_channel.%[1]s.account_id
+  name                  = "%[2]s"
+  enrichments_enabled   = true
+  destinations_enabled  = true
+  enabled      = true
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+
+  issues_filter {
+    name = "filter-name"
+    type = "FILTER"
+
+    predicate {
+      attribute = "attr"
+      operator  = "EQUAL"
+      values    = ["test"]
+    }
+  }
+
+  destination {
+    channel_id = newrelic_notification_channel.%[1]s.id
+  }
+}`, channelResourceName, workflowName)
 }
 
 func testAccNewRelicWorkflowConfigurationEmail(accountID int, name string) string {
