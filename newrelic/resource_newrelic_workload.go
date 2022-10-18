@@ -92,7 +92,7 @@ func resourceNewRelicWorkload() *schema.Resource {
 										Required:    true,
 										MaxItems:    1,
 										Description: "The input object used to represent a rollup strategy.",
-										Elem:        WorkloadremainingEntitiesRuleSchemaElem(),
+										Elem:        WorkloadRemainingEntitiesRuleSchemaElem(),
 									},
 								},
 							},
@@ -199,7 +199,7 @@ func WorkloadRuleRollupInputSchemaElem() *schema.Resource {
 	}
 }
 
-func WorkloadremainingEntitiesRuleSchemaElem() *schema.Resource {
+func WorkloadRemainingEntitiesRuleSchemaElem() *schema.Resource {
 	s := WorkloadRollupInputSchemaElem()
 
 	s["group_by"] = &schema.Schema{
@@ -265,6 +265,7 @@ func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	workload, err := client.Workloads.GetCollectionWithContext(ctx, ids.AccountID, ids.GUID)
 	if workload == nil {
 		d.SetId("")
@@ -305,7 +306,7 @@ func resourceNewRelicWorkloadDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	if _, err := client.Workloads.WorkloadDeleteWithContext(ctx, common.EntityGUID(ids.GUID)); err != nil {
+	if _, err := client.Workloads.WorkloadDeleteWithContext(ctx, ids.GUID); err != nil {
 		return diag.FromErr(err)
 	}
 
