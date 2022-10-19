@@ -266,8 +266,8 @@ func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	workload, err := client.Workloads.GetCollectionWithContext(ctx, ids.AccountID, ids.GUID)
-	if workload == nil {
+	workload, queryErr := client.Workloads.GetCollectionWithContext(ctx, ids.AccountID, ids.GUID)
+	if workload == nil && queryErr != nil {
 		d.SetId("")
 		return nil
 	}
