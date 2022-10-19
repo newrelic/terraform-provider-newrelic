@@ -158,6 +158,8 @@ All nested `entity_search_query` blocks support the following common arguments:
 
 ### Nested `status_config_automatic` blocks
 
+ -> At least one of entitySearchQueries or entityGuids should be defined for the rule
+
   * `enabled` - (Required) Whether the automatic status configuration is enabled or not.
   * `remaining_entities_rule` - (Optional) An additional meta-rule that can consider all entities that haven't been evaluated by any other rule. See [Nested remaining_entities_rule blocks](#nested-remaining_entities_rule-blocks) below for details.
   * `rule` - (Optional) The input object used to represent a rollup strategy. See [Nested rule blocks](#nested-rule-blocks) below for details.
