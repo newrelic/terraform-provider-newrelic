@@ -3,13 +3,14 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"log"
 	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
 
 func resourceNewRelicWorkload() *schema.Resource {
@@ -93,7 +94,7 @@ func resourceNewRelicWorkloadCreate(ctx context.Context, d *schema.ResourceData,
 
 	log.Printf("[INFO] Creating New Relic One workload %s", createInput.Name)
 
-	created, err := client.Workloads.CreateWorkloadWithContext(ctx, accountID, createInput)
+	created, err := client.Workloads.WorkloadCreateWithContext(ctx, accountID, createInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -101,7 +102,7 @@ func resourceNewRelicWorkloadCreate(ctx context.Context, d *schema.ResourceData,
 	ids := workloadIDs{
 		AccountID: accountID,
 		ID:        created.ID,
-		GUID:      created.GUID,
+		GUID:      string(created.GUID),
 	}
 
 	d.SetId(ids.String())
@@ -116,7 +117,7 @@ func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	workload, err := client.Workloads.GetWorkloadWithContext(ctx, ids.AccountID, ids.GUID)
+	workload, err := client.Workloads.GetCollectionWithContext(ctx, ids.AccountID, common.EntityGUID(ids.GUID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -140,7 +141,7 @@ func resourceNewRelicWorkloadUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_, err = client.Workloads.UpdateWorkloadWithContext(ctx, ids.GUID, updateInput)
+	_, err = client.Workloads.WorkloadUpdateWithContext(ctx, common.EntityGUID(ids.GUID), updateInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -160,7 +161,7 @@ func resourceNewRelicWorkloadDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	if _, err := client.Workloads.DeleteWorkloadWithContext(ctx, ids.GUID); err != nil {
+	if _, err := client.Workloads.WorkloadDeleteWithContext(ctx, common.EntityGUID(ids.GUID)); err != nil {
 		return diag.FromErr(err)
 	}
 

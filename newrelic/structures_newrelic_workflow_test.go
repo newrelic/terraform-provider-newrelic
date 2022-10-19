@@ -7,9 +7,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 
-	"github.com/newrelic/newrelic-client-go/pkg/workflows"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/workflows"
 
 	"github.com/stretchr/testify/assert"
 )
