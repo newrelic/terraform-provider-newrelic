@@ -15,7 +15,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 
 	insights "github.com/newrelic/go-insights/client"
-	nr "github.com/newrelic/newrelic-client-go/newrelic"
+	nr "github.com/newrelic/newrelic-client-go/v2/newrelic"
 )
 
 const serviceName = "terraform-provider-newrelic"
