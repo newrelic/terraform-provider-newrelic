@@ -5,6 +5,7 @@ package newrelic
 
 import (
 	"fmt"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -140,12 +141,12 @@ func testAccCheckNewRelicWorkloadExists(n string) resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		found, err := client.Workloads.GetWorkload(ids.AccountID, ids.GUID)
+		found, err := client.Workloads.GetCollection(ids.AccountID, common.EntityGUID(ids.GUID))
 		if err != nil {
 			return err
 		}
 
-		if found.GUID != ids.GUID {
+		if found.GUID != common.EntityGUID(ids.GUID) {
 			return fmt.Errorf("workload not found: %v - %v", rs.Primary.ID, found)
 		}
 
@@ -165,7 +166,7 @@ func testAccCheckNewRelicWorkloadDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = client.Workloads.GetWorkload(ids.AccountID, ids.GUID)
+		_, err = client.Workloads.GetCollection(ids.AccountID, common.EntityGUID(ids.GUID))
 		if err == nil {
 			return fmt.Errorf("workload still exists")
 		}

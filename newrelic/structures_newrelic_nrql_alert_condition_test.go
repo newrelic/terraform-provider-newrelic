@@ -7,13 +7,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 
-	"github.com/newrelic/newrelic-client-go/pkg/alerts"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	nr "github.com/newrelic/newrelic-client-go/pkg/testhelpers"
+	nr "github.com/newrelic/newrelic-client-go/v2/pkg/testhelpers"
 )
 
 var (

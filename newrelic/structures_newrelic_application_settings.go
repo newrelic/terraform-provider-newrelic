@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/apm"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/apm"
 )
 
 func expandApplication(d *schema.ResourceData) *apm.Application {
