@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"log"
 	"strconv"
 	"strings"
@@ -92,7 +92,7 @@ func resourceNewRelicWorkload() *schema.Resource {
 										Required:    true,
 										MaxItems:    1,
 										Description: "The input object used to represent a rollup strategy.",
-										Elem:        WorkloadRemainingEntitiesRuleSchemaElem(),
+										Elem:        WorkloadremainingEntitiesRuleSchemaElem(),
 									},
 								},
 							},
@@ -199,7 +199,7 @@ func WorkloadRuleRollupInputSchemaElem() *schema.Resource {
 	}
 }
 
-func WorkloadRemainingEntitiesRuleSchemaElem() *schema.Resource {
+func WorkloadremainingEntitiesRuleSchemaElem() *schema.Resource {
 	s := WorkloadRollupInputSchemaElem()
 
 	s["group_by"] = &schema.Schema{
@@ -265,9 +265,8 @@ func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	workload, queryErr := client.Workloads.GetCollectionWithContext(ctx, ids.AccountID, ids.GUID)
-	if workload == nil && queryErr != nil {
+	workload, err := client.Workloads.GetCollectionWithContext(ctx, ids.AccountID, ids.GUID)
+	if workload == nil {
 		d.SetId("")
 		return nil
 	}
@@ -306,7 +305,7 @@ func resourceNewRelicWorkloadDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	if _, err := client.Workloads.WorkloadDeleteWithContext(ctx, ids.GUID); err != nil {
+	if _, err := client.Workloads.WorkloadDeleteWithContext(ctx, common.EntityGUID(ids.GUID)); err != nil {
 		return diag.FromErr(err)
 	}
 
