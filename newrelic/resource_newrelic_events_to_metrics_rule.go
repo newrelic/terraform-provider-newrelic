@@ -10,8 +10,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	nrErrors "github.com/newrelic/newrelic-client-go/pkg/errors"
-	"github.com/newrelic/newrelic-client-go/pkg/eventstometrics"
+	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/eventstometrics"
 )
 
 func resourceNewRelicEventsToMetricsRule() *schema.Resource {

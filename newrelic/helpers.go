@@ -11,7 +11,7 @@ import (
 	"unicode"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/contextkeys"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/contextkeys"
 )
 
 func parseIDs(serializedID string, count int) ([]int, error) {
