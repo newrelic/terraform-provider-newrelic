@@ -731,8 +731,11 @@ resource "newrelic_workload" "foo" {
 
 	status_config_automatic {
 		enabled = true
-		rule{
-			rollup{
+		rule {
+    		nrql_query {
+     			query = "name like 'ok'"
+    		}
+			rollup {
 				strategy = "BEST_STATUS_WINS"
 				threshold_type = "FIXED"
 				threshold_value = 100
