@@ -3,11 +3,12 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -265,8 +266,9 @@ func resourceNewRelicWorkloadRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	workload, err := client.Workloads.GetCollectionWithContext(ctx, ids.AccountID, ids.GUID)
-	if workload == nil {
+
+	workload, queryErr := client.Workloads.GetCollectionWithContext(ctx, ids.AccountID, ids.GUID)
+	if workload == nil && queryErr != nil {
 		d.SetId("")
 		return nil
 	}
@@ -305,7 +307,7 @@ func resourceNewRelicWorkloadDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	if _, err := client.Workloads.WorkloadDeleteWithContext(ctx, common.EntityGUID(ids.GUID)); err != nil {
+	if _, err := client.Workloads.WorkloadDeleteWithContext(ctx, ids.GUID); err != nil {
 		return diag.FromErr(err)
 	}
 
