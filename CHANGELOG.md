@@ -1,3 +1,12 @@
+<a name="v3.5.2"></a>
+## [v3.5.2] - 2022-10-19
+### Bug Fixes
+- **workflows:** fix compilation issues after client version update
+- **workloads:** fix compilation issues after client version update
+
+### Documentation Updates
+- **alert_conditions:** added the docs for mobile_metric missing types
+
 <a name="v3.5.1"></a>
 ## [v3.5.1] - 2022-10-19
 ### Bug Fixes
@@ -1524,7 +1533,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.2...HEAD
+[v3.5.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.1...v3.5.2
 [v3.5.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.0...v3.5.1
 [v3.5.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.4...v3.5.0
 [v3.4.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.3...v3.4.4
