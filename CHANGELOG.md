@@ -1,5 +1,14 @@
+<a name="v3.6.0"></a>
+## [v3.6.0] - 2022-10-25
+### Documentation Updates
+- **workloads:** added note for rule
+- **workloads:** Updated docs on status config
+
+### Features
+- add workload status_config
+
 <a name="v3.5.2"></a>
-## [v3.5.2] - 2022-10-19
+## [v3.5.2] - 2022-10-21
 ### Bug Fixes
 - **workflows:** fix compilation issues after client version update
 - **workloads:** fix compilation issues after client version update
@@ -1533,7 +1542,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.6.0...HEAD
+[v3.6.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.2...v3.6.0
 [v3.5.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.1...v3.5.2
 [v3.5.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.0...v3.5.1
 [v3.5.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.4...v3.5.0
