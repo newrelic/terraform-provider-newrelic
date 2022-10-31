@@ -103,6 +103,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the workflow.
 
+To get the workflow ID you can get it from the workflow table by clicking on ... at the end of the row and choosing `Copy workflow id to clipboard`.
+
 ## Full Scenario Example
 Create a destination resource and reference that destination to the channel resource. Then create a workflow and reference the channel resource to it.
 
