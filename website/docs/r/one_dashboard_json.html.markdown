@@ -34,7 +34,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ##### Template
 
-Below is an example how you can use [`templatefile`](https://www.terraform.io/language/functions/templatefile) to dynamically generate pages based on a list. We also replace the `account_id` which is usually hardcoded in the json with a variable.
+Below is an example how you can use [templatefile](https://www.terraform.io/language/functions/templatefile) to dynamically generate pages based on a list. We also replace the `account_id` which is usually hardcoded in the json with a variable.
 
 ```hcl
 resource "newrelic_one_dashboard_json" "bar" {
