@@ -68,7 +68,10 @@ The following arguments are supported:
 * `enrichments_enabled` - (Optional) Whether enrichments are enabled..
 * `destinations_enabled` - (Optional) Whether destinations are enabled..
 * `enabled` - (Optional) Whether workflow is enabled.
-* `muting_rules_handling` - (Required) Which muting rule handling this workflow has.
+* `muting_rules_handling` - (Required) Specifies if the workflow should send notifications for muted issues. An issue can be either "Fully muted", "Partially muted" or "Not muted" (for more on these states go to [this](https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/alert-notifications/muting-rules-suppress-notifications/#workflow-behavior) page). One of:
+  * DONT_NOTIFY_FULLY_MUTED_ISSUES - Do not send notifications for fully muted issues.
+  * DONT_NOTIFY_FULLY_OR_PARTIALLY_MUTED_ISSUES - Do not send notifications for fully or partially muted issues.
+  * NOTIFY_ALL_ISSUES - Always send notifications.
 * `destination` - (Required) A nested block that contains a channel id.
 * `issues_filter` - (Required) The issues filter.  See [Nested issues_filter blocks](#nested-issues_filter-blocks) below for details.
 * `enrichments` - (Optional) A nested block that describes a workflow's enrichments. See [Nested enrichments blocks](#nested-enrichments-blocks) below for details.
@@ -99,6 +102,8 @@ Each workflow type supports a specific set of arguments for the `enrichments` bl
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the workflow.
+
+To get the workflow ID you can get it from the workflow table by clicking on ... at the end of the row and choosing `Copy workflow id to clipboard`.
 
 ## Full Scenario Example
 Create a destination resource and reference that destination to the channel resource. Then create a workflow and reference the channel resource to it.
