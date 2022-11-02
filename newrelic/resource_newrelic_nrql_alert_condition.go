@@ -417,10 +417,9 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 		_, err := client.Alerts.GetNrqlConditionQueryWithContext(ctx, accountID, strconv.Itoa(conditionID))
 		if err != nil {
 			if _, ok := err.(*errors.NotFound); ok {
-				resource.RetryableError(fmt.Errorf("nrql condition was not created"))
-				return nil
+				return resource.RetryableError(fmt.Errorf("nrql condition was not created"))
 			}
-			return resource.RetryableError(err)
+			return resource.NonRetryableError(err)
 		}
 
 		return nil
