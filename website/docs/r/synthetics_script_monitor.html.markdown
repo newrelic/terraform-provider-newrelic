@@ -27,7 +27,7 @@ resource "newrelic_synthetics_script_monitor" "foo" {
   ]
   period = "EVERY_6_HOURS"
 
-  script               = "console.log('it works!')"
+  script = "console.log('it works!')"
 
   script_language      = "JAVASCRIPT"
   runtime_type         = "NODE_API"
@@ -79,9 +79,9 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 * `location_private` - (Required) The location the monitor will run from. See [Nested location_private blocks](#nested-location-private-blocks) below for details. At least one of either `locations_public` or `location_private` is required.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `script` - (Required) The script that the monitor runs.
-* `runtime_type` - (Optional) The runtime that the monitor will use to run jobs.
-* `runtime_type_version` - (Optional) The specific version of the runtime type selected.
-* `script_language` - (Optional) The programing language that should execute the script.
+* `runtime_type` - (Optional) The runtime that the monitor will use to run jobs. Defaults to `CHROME_BROWSER`
+* `runtime_type_version` - (Optional) The specific version of the runtime type selected. Defaults to `100`
+* `script_language` - (Optional) The programing language that should execute the script. Defaults to `JAVASCRIPT`
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
 
 The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
@@ -117,15 +117,15 @@ The below example shows how you can define a private location and attach it to a
 ##### Type: `SCRIPT_API`
 
 ```hcl
-resource "newrelic_synthetics_private_location" "private_location" {
-  description               = "Test Description"
+resource "newrelic_synthetics_private_location" "foo" {
+  description               = "Example private location"
   name                      = "private_location"
   verified_script_execution = true
 }
 
-resource "newrelic_synthetics_script_monitor" "monitor" {
+resource "newrelic_synthetics_script_monitor" "bar" {
   status = "ENABLED"
-  name   = "monitor"
+  name   = "Example synthetics monitor"
   type   = "SCRIPT_API"
   location_private {
     guid         = "newrelic_synthetics_private_location.private_location.id"
@@ -147,24 +147,25 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
 ##### Type: `SCRIPT_BROWSER`
 
 ```hcl
-resource "newrelic_synthetics_private_location" "private_location" {
+resource "newrelic_synthetics_private_location" "foo" {
   description               = "Test Description"
   name                      = "private_location"
   verified_script_execution = true
 }
 
-resource "newrelic_synthetics_script_monitor" "monitor" {
-  status                                  = "ENABLED"
-  name                                    = "monitor"
-  type                                    = "SCRIPT_BROWSER"
-  period                                  = "EVERY_HOUR"
+resource "newrelic_synthetics_script_monitor" "bar" {
+  status = "ENABLED"
+  name   = "Example synthetics monitor"
+  type   = "SCRIPT_BROWSER"
+  period = "EVERY_HOUR"
+  script = "$browser.get('https://one.newrelic.com')"
+
   enable_screenshot_on_failure_and_script = false
   location_private {
     guid         = "newrelic_synthetics_private_location.private_location.id"
     vse_password = "secret"
   }
 
-  script               = "$browser.get('https://one.newrelic.com')"
   runtime_type_version = "100"
   runtime_type         = "CHROME_BROWSER"
   script_language      = "JAVASCRIPT"
