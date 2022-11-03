@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
-	"github.com/newrelic/newrelic-client-go/pkg/notifications"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -192,6 +192,43 @@ func TestNewRelicNotificationChannel_EmailPropertyError(t *testing.T) {
 					propsAttr,
 				),
 				ExpectError: regexp.MustCompile(`Missing mandatory field: "Email"`),
+			},
+		},
+	})
+}
+
+func TestNewRelicNotificationChannel_ImportChannel_WrongId(t *testing.T) {
+	resourceName := "newrelic_notification_channel.foo"
+	rand := acctest.RandString(6)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	channelPropsAttr := `property {
+		key = "email"
+		value = "no-reply+terraformtest@newrelic.com"
+	}`
+	destinationPropsAttr := `property {
+		key = "subject"
+		value = "some subject"
+	}`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationChannelDestroy,
+		Steps: []resource.TestStep{
+			// Import
+			{
+				Config: testNewRelicNotificationChannelConfig(
+					testAccountID,
+					rName,
+					string(notifications.AiNotificationsChannelTypeTypes.EMAIL),
+					channelPropsAttr,
+					destinationPropsAttr,
+				),
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateId:     "d20a6505-dbe3-4484-82ef-7723cb17a7d2",
+				ExpectError:       regexp.MustCompile("Error: Cannot import non-existent remote object"),
 			},
 		},
 	})
