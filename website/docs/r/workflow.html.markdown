@@ -8,7 +8,7 @@ Create and manage a workflow in New Relic.
 
 # Resource: newrelic\_workflow
 
-Use this resource to create and manage New Relic workflow.
+Use this resource to create and manage New Relic workflows.
 
 ## Example Usage
 
@@ -16,45 +16,21 @@ Use this resource to create and manage New Relic workflow.
 ```hcl
 resource "newrelic_workflow" "foo" {
   name = "workflow-example"
-  account_id = 12345678
-  enrichments_enabled = true
-  destinations_enabled = true
-  enabled = true
   muting_rules_handling = "NOTIFY_ALL_ISSUES"
-
-  enrichments {
-    nrql {
-      name = "Log"
-      configuration {
-        query = "SELECT count(*) FROM Log WHERE message like '%error%' since 10 minutes ago"
-      }
-    }
-
-    nrql {
-      name = "Metric"
-      configuration {
-        query = "SELECT count(*) FROM Metric WHERE metricName = 'myMetric'"
-      }
-    }
-  }
 
   issues_filter {
     name = "filter-name"
     type = "FILTER"
 
     predicate {
-      attribute = "accumulations.sources"
+      attribute = "accumulations.tag.team"
       operator = "EXACTLY_MATCHES"
-      values = [ "newrelic", "pagerduty" ]
+      values = [ "growth" ]
     }
   }
 
   destination {
-    channel_id = "20d86999-169c-461a-9c16-3cf330f4b3aa"
-  }
-
-  destination {
-    channel_id = "e6af0870-cabb-453f-bf0d-fb2b6a14e05c"
+    channel_id = newrelic_notification_channel.some_channel.id
   }
 }
 ```
@@ -63,38 +39,90 @@ resource "newrelic_workflow" "foo" {
 
 The following arguments are supported:
 
-* `account_id` - (Optional) Determines the New Relic account where the workflow will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the workflow.
-* `enrichments_enabled` - (Optional) Whether enrichments are enabled..
-* `destinations_enabled` - (Optional) Whether destinations are enabled..
-* `enabled` - (Optional) Whether workflow is enabled.
-* `muting_rules_handling` - (Required) Specifies if the workflow should send notifications for muted issues. An issue can be either "Fully muted", "Partially muted" or "Not muted" (for more on these states go to [this](https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/alert-notifications/muting-rules-suppress-notifications/#workflow-behavior) page). One of:
-  * DONT_NOTIFY_FULLY_MUTED_ISSUES - Do not send notifications for fully muted issues.
-  * DONT_NOTIFY_FULLY_OR_PARTIALLY_MUTED_ISSUES - Do not send notifications for fully or partially muted issues.
-  * NOTIFY_ALL_ISSUES - Always send notifications.
-* `destination` - (Required) A nested block that contains a channel id.
-* `issues_filter` - (Required) The issues filter.  See [Nested issues_filter blocks](#nested-issues_filter-blocks) below for details.
-* `enrichments` - (Optional) A nested block that describes a workflow's enrichments. See [Nested enrichments blocks](#nested-enrichments-blocks) below for details.
+* `issues_filter` - (Required) A filter used to identify issues handled by this workflow. See [Nested issues_filter blocks](#nested-issues_filter-blocks) below for details.
+* `muting_rules_handling` - (Required) How to handle muted issues. See [Muting Rules](#muting-rules) below for details.
+* `destination` - (Required) Notification configuration. See [Nested destination blocks](#nested-destination-blocks) below for details.
+* `account_id` - (Optional) Determines the New Relic account in which the workflow is created. Defaults to the account defined in the provider section.
+* `enrichments_enabled` - (Optional) Whether enrichments are enabled. Defaults to true.
+* `destinations_enabled` - (Optional) **DEPRECATED** Whether destinations are enabled. Please use `enabled` instead:
+these two are different flags, but they are functionally identical. Defaults to true.
+* `enabled` - (Optional) Whether workflow is enabled. Defaults to true.
+* `enrichments` - (Optional) Workflow's enrichments. See [Nested enrichments blocks](#nested-enrichments-blocks) below for details.
 
 ### Nested `issues_filter` blocks
 
-Each workflow type supports a set of arguments for the `issues_filter` block:
+Issue filter defines how to identify issues that should be handled by the workflow.
+It consists of one or more predicates.
 
-* `name` - the filter's name.
-* `type` - the filter's type.   One of: `FILTER` or `VIEW`.
-* `predicate`
-  * `attribute` - A predicate's attribute.
-  * `operator` - A predicate's operator. One of: `CONTAINS`, `DOES_NOT_CONTAIN`, `DOES_NOT_EQUAL`, `DOES_NOT_EXACTLY_MATCH`, `ENDS_WITH`, `EQUAL`, `EXACTLY_MATCHES`, `GREATER_OR_EQUAL`, `GREATER_THAN`, `IS`, `IS_NOT`, `LESS_OR_EQUAL`, `LESS_THAN` or `STARTS_WITH` (workflows).
-  * `values` - A list of values.
+An issue must match **all** predicates to be handled by the workflow.
 
+For example, we have a workflow with two predicates in the issue filter: 
+- `tag.team EXACTLY_MATCHES my_team` meaning "the issue has a tag called `team` and the tag value is set to 'my_team'" 
+- `labels.policyIds EXACTLY_MATCHES 123` meaning "the issue includes an incident triggered by an alert policy with id = 123"
+
+In this case, an issue would have to **both** have the tag and include an incident triggered by the said policy in order to be processed by the workflow.  
+
+Each `issues_filter` block supports the following arguments:
+
+* `name` - (Required) The name of the filter. The name only serves a cosmetic purpose and can only be seen through Terraform and GraphQL API.
+* `type` - (Required) Type of the filter. Please just set this field to `FILTER`. The field is likely to be deprecated/removed in the near future. 
+* `predicate` (Required) A condition an issue event should satisfy to be processed by the workflow 
+  * `attribute` - (Required) Issue event attribute to check
+  * `operator` - (Required) An operator to use to compare the attribute with the provided `values`. 
+One of: `CONTAINS`, `DOES_NOT_CONTAIN`, `EQUAL`, `DOES_NOT_EQUAL`, `DOES_NOT_EXACTLY_MATCH`, `STARTS_WITH`, `ENDS_WITH`,
+`EXACTLY_MATCHES`, `IS`, `IS_NOT`, `LESS_OR_EQUAL`, `LESS_THAN`, `GREATER_OR_EQUAL`, `GREATER_THAN` (see the note below)
+  * `values` - (Required) The `attribute` must match **any** of the values in this list  
+
+~> **NOTE:** We are currently working on improving documentation around for issue filters' attributes and operators. 
+For now, the easiest way to see which attributes your issue events have and which operators they support is though the 
+New Relic UI. In the future, we are going to provide a comprehensive guide to all attributes and operators.
+
+### Muting Rules
+
+An issue can be either "Fully muted", "Partially muted" or "Not muted" (for more on these states please visit [our official documentation page about them](https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/alert-notifications/muting-rules-suppress-notifications/#workflow-behavior)).
+
+Muting rule defines how to handle issues that are partially or fully muted. 
+
+Possible values:
+* `DONT_NOTIFY_FULLY_MUTED_ISSUES` - Do not send notifications for fully muted issues, do send notifications for partially muted issues
+* `DONT_NOTIFY_FULLY_OR_PARTIALLY_MUTED_ISSUES` - Do not send notifications for fully or partially muted issues.
+* `NOTIFY_ALL_ISSUES` - Always send notifications, no matter whether the issue is muted or not
+
+### Nested `destination` blocks
+
+In order to get notified via a workflow you need two things:
+- A [notification_destination](notification_destination.html) that defines reusable credentials/settings for a 
+notification provider (e.g. webhook's `basic` credentials, Slack's OAuth credentials, PagerDuty API key, etc)
+- A [notification_channel](notification_channel.html) that describes additional notification parameters to be used
+for this specific workflow. Different destination types allow for different channel configuration options. 
+For example, a webhook channel can define the payload template, while an email channel can define a subject as well as additional
+details to include into the email body
+  - **Please note that channels must be created with `product = "IINT"`** ("IINT" stands for "incident intelligence") in order to be used with workflows (see examples below)
+
+Destinations can be reused across multiple channels. But each channel can only be used in a single workflow (at least for now).
+
+When a workflow is deleted, all channels associated with it are also deleted. We might change this behaviour in the future, 
+but please keep this behaviour in mind when managing workflows right now. 
+If you only delete a workflow resource and not its channel resource, the next time you run TF it will report state drift.
+
+Each workflow resource requires one or more `destination` blocks. These blocks define notification channels to use for the
+workflow.
+
+Block's arguments:
+* `channel_id` - (Required) id of a [notification_channel](notification_channel.html) to use for notifications. Please note that you have to use a 
+**notification** channel, not an `alert_channel`.
+    
 ### Nested `enrichments` blocks
 
-Each workflow type supports a specific set of arguments for the `enrichments` block:
+Enrichments can give additional context on alert notifications by adding an [NRQL](https://docs.newrelic.com/docs/query-your-data/nrql-new-relic-query-language/get-started/introduction-nrql-new-relics-query-language/) query results to them.
+Read more about enrichments in [workflows documentation](https://docs.newrelic.com/docs/alerts-applied-intelligence/applied-intelligence/incident-workflows/incident-workflows/#enrichments) 
 
-* `nrql`
-  * `name` - A nrql enrichment name.
-  * `configuration` - A list of nrql enrichments.
-    * `query` - the nrql query.
+`Enrichments` blocks have the following structure:
+* `nrql` - a wrapper block 
+  * `name` - A nrql enrichment name. This name can be used in your notification templates (see [notification_channel documentation](notification_channel.html))
+  * `configuration` - Another wrapper block
+    * `query` - An NRQL query to run
 
 
 ## Attributes Reference
@@ -103,28 +131,32 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the workflow.
 
-To get the workflow ID you can get it from the workflow table by clicking on ... at the end of the row and choosing `Copy workflow id to clipboard`.
+## Import
 
-## Full Scenario Example
-Create a destination resource and reference that destination to the channel resource. Then create a workflow and reference the channel resource to it.
+Workflows can be imported using the `id`, e.g.
 
-### Create a policy
+```bash
+$ terraform import newrelic_workflow.foo <id>
+```
+You can find the workflow ID from the workflow table by clicking on ... at the end of the row and choosing `Copy workflow id to clipboard`.
+
+## Policy-Based Workflow Example
+This scenario describes one of most common ways of using workflows by defining a set of policies the workflow handles
+
 ```hcl
-resource "newrelic_alert_policy" "collector-policy" {
+// Create a policy to track
+resource "newrelic_alert_policy" "my-policy" {
   name = "my_policy"
 }
-```
 
-### Create a destination
-```hcl
+// Create a reusable notification destination
 resource "newrelic_notification_destination" "webhook-destination" {
-  account_id = 12345678
   name = "destination-webhook"
   type = "WEBHOOK"
 
   property {
     key = "url"
-    value = "https://webhook.mywebhook.com"
+    value = "https://example.com"
   }
 
   auth_basic {
@@ -132,56 +164,34 @@ resource "newrelic_notification_destination" "webhook-destination" {
     password = "password"
   }
 }
-```
 
-### Create a channel
-```hcl
+// Create a notification channel to use in the workflow
 resource "newrelic_notification_channel" "webhook-channel" {
-  account_id = 12345678
   name = "channel-webhook"
   type = "WEBHOOK"
   destination_id = newrelic_notification_destination.webhook-destination.id
-  product = "IINT"
+  product = "IINT" // Please note the product used!
 
   property {
     key = "payload"
-    value = "{name: {{ variable }} }"
+    value = "{}"
     label = "Payload Template"
   }
 }
-```
 
-### Create a workflow
-```hcl
+// A workflow that matches issues that include incidents triggered by the policy
 resource "newrelic_workflow" "workflow-example" {
   name = "workflow-example"
-  account_id = 12345678
   muting_rules_handling = "NOTIFY_ALL_ISSUES"
-
-  enrichments {
-    nrql {
-      name = "Log count"
-      
-      configuration {
-       query = "SELECT count(*) FROM Log WHERE message like '%error%' since 10 minutes ago"
-      }
-    }
-  }
 
   issues_filter {
     name = "Filter-name"
     type = "FILTER"
 
     predicate {
-      attribute = "accumulations.policyName"
+      attribute = "labels.policyIds"
       operator = "EXACTLY_MATCHES"
-      values = [ "my_policy" ]
-    }
-
-    predicate {
-      attribute = "accumulations.sources"
-      operator = "EXACTLY_MATCHES"
-      values = [ "newrelic" ]
+      values = [ newrelic_alert_policy.my-policy.id ]
     }
   }
 
@@ -190,6 +200,39 @@ resource "newrelic_workflow" "workflow-example" {
   }
 }
 ```
+
+### An example of a workflow with enrichments
+
+```hcl
+resource "newrelic_workflow" "workflow-example" {
+  name = "workflow-enrichment-example"
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+  
+  issues_filter {
+  name = "Filter-name"
+  type = "FILTER"
+      predicate {
+        attribute = "accumulations.tag.team"
+        operator = "EXACTLY_MATCHES"
+        values = [ "my_team" ]
+      }
+  }
+  
+  enrichments {
+    nrql {
+      name = "Log Count"
+      configuration {
+        query = "SELECT count(*) FROM Log WHERE message like '%error%' since 10 minutes ago"
+      }
+    }
+  }
+  
+  destination {
+    channel_id = newrelic_notification_channel.webhook-channel.id
+  }
+}
+```
+
 
 ## Additional Information
 More details about the workflows can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/applied-intelligence/incident-workflows/incident-workflows/).
