@@ -140,6 +140,7 @@ func resourceNewRelicWorkflow() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
+				Deprecated:  "Please use 'enabled' instead",
 				Description: "Indicates whether the destinations are enabled.",
 			},
 			"enrichments": {
