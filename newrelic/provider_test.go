@@ -88,7 +88,7 @@ func testAccPreCheck(t *testing.T) {
 	// Create a test application for use in newrelic_alert_condition and other tests
 	if !testAccAPMEntityCreated {
 		// Clean up old instances of the applications
-		testAccApplicationsCleanup(t)
+		// testAccApplicationsCleanup(t)
 
 		// Create the application
 		testAccCreateApplication(t)
