@@ -9,10 +9,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/newrelic/newrelic-client-go/pkg/common"
-	"github.com/newrelic/newrelic-client-go/pkg/dashboards"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
-	"github.com/newrelic/newrelic-client-go/pkg/nrdb"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/dashboards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/nrdb"
 )
 
 // Assemble the *dashboards.DashboardInput struct.

@@ -103,7 +103,9 @@ The following arguments are supported:
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
   * `term` - (Required) A list of terms for this condition. See [Terms](#terms) below for details.
   * `user_defined_metric` - (Optional) A custom metric to be evaluated.
-  * `user_defined_value_function` - (Optional) One of: `average`, `min`, `max`, `total`, or `sample_size`.
+  * `user_defined_value_function` - (Optional) One of: `average`, `min`, `max`, `total`, `sample_size`, `rate` or `percent`.
+
+-> **NOTE:** The `user_defined_value_function` can have `rate` or `percent` only when the `type` is `mobile_metric`.
 
 ```
 Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.

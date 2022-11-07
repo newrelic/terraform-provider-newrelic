@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
-	"github.com/newrelic/newrelic-client-go/pkg/workflows"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/workflows"
 )
 
 // migrateStateNewRelicWorkflowV0toV1 currently facilitates migrating:
@@ -243,17 +243,23 @@ func expandWorkflowIssuePredicate(predicate map[string]interface{}) workflows.Ai
 }
 
 func expandWorkflowUpdate(d *schema.ResourceData) (*workflows.AiWorkflowsUpdateWorkflowInput, error) {
-	workflow := workflows.AiWorkflowsUpdateWorkflowInput{
-		ID:                  d.Get("workflow_id").(string),
-		Name:                d.Get("name").(string),
-		EnrichmentsEnabled:  d.Get("enrichments_enabled").(bool),
-		DestinationsEnabled: d.Get("destinations_enabled").(bool),
-		WorkflowEnabled:     d.Get("enabled").(bool),
-		MutingRulesHandling: workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
-	}
+	name := d.Get("name").(string)
+	enrichmentsEnabled := d.Get("enrichments_enabled").(bool)
+	destinationsEnabled := d.Get("destinations_enabled").(bool)
+	workflowEnabled := d.Get("enabled").(bool)
+	configurations := expandWorkflowDestinationConfigurations(d.Get("destination").(*schema.Set).List())
+	filter := expandWorkflowUpdateIssuesFilter(d.Get("issues_filter").(*schema.Set).List())
 
-	workflow.DestinationConfigurations = expandWorkflowDestinationConfigurations(d.Get("destination").(*schema.Set).List())
-	workflow.IssuesFilter = expandWorkflowUpdateIssuesFilter(d.Get("issues_filter").(*schema.Set).List())
+	workflow := workflows.AiWorkflowsUpdateWorkflowInput{
+		ID:                        d.Get("workflow_id").(string),
+		Name:                      &name,
+		EnrichmentsEnabled:        &enrichmentsEnabled,
+		DestinationsEnabled:       &destinationsEnabled,
+		WorkflowEnabled:           &workflowEnabled,
+		MutingRulesHandling:       workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
+		DestinationConfigurations: &configurations,
+		IssuesFilter:              &filter,
+	}
 
 	enrichments, enrichmentsOk := d.GetOk("enrichments")
 	if enrichmentsOk {
