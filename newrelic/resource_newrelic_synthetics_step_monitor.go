@@ -147,7 +147,7 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 	case *entities.SyntheticMonitorEntity:
 		entity := (*resp).(*entities.SyntheticMonitorEntity)
 		stepsResp, errr := client.Synthetics.GetSteps(accountID, synthetics.EntityGUID(entity.GetGUID()))
-		if err != nil {
+		if errr != nil {
 			return diag.FromErr(errr)
 		}
 
