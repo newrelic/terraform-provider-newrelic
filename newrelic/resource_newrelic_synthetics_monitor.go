@@ -271,20 +271,6 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 	}
 }
 
-func getValuesFromEntityTags(tags []entities.EntityTag) []string {
-	out := []string{}
-
-	for _, t := range tags {
-		if t.Key == "publicLocation" {
-			for _, v := range t.Values {
-				out = append(out, string(syntheticsPublicLocationsMap[v]))
-			}
-		}
-	}
-
-	return out
-}
-
 func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
