@@ -95,19 +95,16 @@ func syntheticsScriptMonitorCommonSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "The programing language that should execute the script.",
-			Default:     "JAVASCRIPT",
 		},
 		"runtime_type": {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "The runtime type that the monitor will run.",
-			Default:     "CHROME_BROWSER",
 		},
 		"runtime_type_version": {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "The specific semver version of the runtime type.",
-			Default:     "100",
 		},
 	}
 }

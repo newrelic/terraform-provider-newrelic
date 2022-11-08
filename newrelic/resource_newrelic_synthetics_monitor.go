@@ -102,19 +102,16 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The runtime type that the monitor will run",
-				Default:     "CHROME_BROWSER",
 			},
 			"runtime_type_version": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The specific version of the runtime type selected",
-				Default:     "100",
 			},
 			"script_language": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The programing language that should execute the script",
-				Default:     "JAVASCRIPT",
 			},
 			"tag": {
 				Type:        schema.TypeSet,
@@ -272,6 +269,20 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 			diag.FromErr(err)
 		}
 	}
+}
+
+func getValuesFromEntityTags(tags []entities.EntityTag) []string {
+	out := []string{}
+
+	for _, t := range tags {
+		if t.Key == "publicLocation" {
+			for _, v := range t.Values {
+				out = append(out, string(syntheticsPublicLocationsMap[v]))
+			}
+		}
+	}
+
+	return out
 }
 
 func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
