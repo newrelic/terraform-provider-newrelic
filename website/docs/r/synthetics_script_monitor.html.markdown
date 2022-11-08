@@ -12,8 +12,6 @@ Use this resource to create update, and delete a Script API or Script Browser Sy
 
 ## Example Usage
 
--> **NOTE:** The preferred runtime is `NODE_16.10` for configuring the `SCRIPT_API` monitor. If you wish to use the old runtime, please remove the `script_language`, `runtime_type` and `runtime_type_version` attributes, or set them to empty string `""`. The old runtime will be deprecated in the future, so use the new version whenever you can.
-
 ##### Type: `SCRIPT_API`
 
 ```hcl
