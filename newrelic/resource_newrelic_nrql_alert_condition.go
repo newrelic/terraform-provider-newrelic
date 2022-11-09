@@ -452,7 +452,7 @@ func resourceNewRelicNrqlAlertConditionRead(ctx context.Context, d *schema.Resou
 	_, err = client.Alerts.QueryPolicyWithContext(ctx, accountID, strconv.Itoa(policyID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("") // triggers this line
+			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
