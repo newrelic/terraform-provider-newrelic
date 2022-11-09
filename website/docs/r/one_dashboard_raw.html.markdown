@@ -8,7 +8,7 @@ description: |-
 
 # Resource: newrelic\_one\_dashboard\_raw
 
--> **NOTE:** The [newrelic_one_dashboard_json](newrelic_one_dashboard_json.html) resource is preferred for configuring dashboards in New Relic. This resource does not support the latest dashboard features and will be deprecated in the future.
+-> **NOTE:** The [newrelic_one_dashboard_json](one_dashboard_json.html) resource is preferred for configuring dashboards in New Relic. This resource does not support the latest dashboard features and will be deprecated in the future.
 
 ## Example Usage: Create a New Relic One Dashboard with RawConfiguration
 
