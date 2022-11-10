@@ -60,7 +60,7 @@ func dataSourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *sch
 
 		// It's possible to have multiple private locations with the same name.
 		// Return the first matching private location.
-		if accountID == accountID && loc.Name == name {
+		if loc.AccountID == accountID && loc.Name == name {
 			location = loc
 			break
 		}
