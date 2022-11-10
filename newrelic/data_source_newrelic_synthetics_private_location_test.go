@@ -14,7 +14,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
-func TestAccNewRelicSyntheticsPrivateLocationDataSource(t *testing.T) {
+func TestAccNewRelicSyntheticsPrivateLocationDataSource_Basic(t *testing.T) {
 	t.Parallel()
 
 	privateLocationName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
