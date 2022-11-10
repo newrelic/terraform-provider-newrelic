@@ -8,14 +8,14 @@ Create and manage Obfuscation Expression.
 
 # Resource: newrelic\_obfuscation\_expression
 
-Use this resource to create, and delete New Relic Obfuscation Expression.
+Use this resource to create, update and delete New Relic Obfuscation Expressions.
 
 
 ## Example Usage
 
 ```hcl
 resource "newrelic_obfuscation_expression" "foo"{ 
-  account_id =12345
+  account_id = 12345
   name = "OExp"
   description = "The description"
   regex = "(regex.*)"
@@ -35,7 +35,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `expression_id` - The id of the obfuscation expression.
+* `id` - The id of the obfuscation expression.
 
 ## Import
 
