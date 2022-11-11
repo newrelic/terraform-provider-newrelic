@@ -39,11 +39,11 @@ func TestAccNewRelicEntityTags_Basic(t *testing.T) {
 				),
 			},
 			// Test: Import
-			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      resourceName,
-			},
+			//{
+			//	ImportState:       true,
+			//	ImportStateVerify: true,
+			//	ResourceName:      resourceName,
+			//},
 		},
 	})
 }

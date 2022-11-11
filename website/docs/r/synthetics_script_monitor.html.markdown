@@ -77,9 +77,9 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 * `location_private` - (Required) The location the monitor will run from. See [Nested location_private blocks](#nested-location-private-blocks) below for details. At least one of either `locations_public` or `location_private` is required.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `script` - (Required) The script that the monitor runs.
-* `runtime_type` - (Optional) The runtime that the monitor will use to run jobs. Defaults to `CHROME_BROWSER`
-* `runtime_type_version` - (Optional) The specific version of the runtime type selected. Defaults to `100`
-* `script_language` - (Optional) The programing language that should execute the script. Defaults to `JAVASCRIPT`
+* `runtime_type` - (Optional) The runtime that the monitor will use to run jobs.
+* `runtime_type_version` - (Optional) The specific version of the runtime type selected.
+* `script_language` - (Optional) The programing language that should execute the script.
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
 
 The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
