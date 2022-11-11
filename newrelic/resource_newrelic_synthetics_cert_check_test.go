@@ -82,7 +82,7 @@ func testAccNewRelicSyntheticsCertCheckMonitorExists(name string) resource.TestC
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		// We also have to wait for the monitor's deletion to be indexed as well :(
-		time.Sleep(5 * time.Second)
+		time.Sleep(60 * time.Second)
 
 		result, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
@@ -104,7 +104,7 @@ func testAccCheckNewRelicSyntheticsCertCheckMonitorResourceDestroy(s *terraform.
 		}
 
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
-		time.Sleep(5 * time.Second)
+		time.Sleep(60 * time.Second)
 
 		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
 		if (*found) != nil {

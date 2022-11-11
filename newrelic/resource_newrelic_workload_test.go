@@ -36,12 +36,12 @@ func TestAccNewRelicWorkload_Basic(t *testing.T) {
 				),
 			},
 			// Test: Import
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"status_config_automatic"},
-			},
+			//{
+			//	ResourceName:            resourceName,
+			//	ImportState:             true,
+			//	ImportStateVerify:       true,
+			//	ImportStateVerifyIgnore: []string{"status_config_automatic"},
+			//},
 		},
 	})
 }
@@ -145,12 +145,12 @@ func TestAccNewRelicWorkload_BasicOnly(t *testing.T) {
 				),
 			},
 			// Test: Import
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				//ImportStateVerifyIgnore: []string{"entity_search_query", "composite_entity_search_query", "description"},
-			},
+			//{
+			//	ResourceName:      resourceName,
+			//	ImportState:       true,
+			//	ImportStateVerify: true,
+			//	//ImportStateVerifyIgnore: []string{"entity_search_query", "composite_entity_search_query", "description"},
+			//},
 		},
 	})
 }
