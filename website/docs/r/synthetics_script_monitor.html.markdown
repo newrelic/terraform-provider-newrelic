@@ -186,6 +186,6 @@ The following attributes are exported:
 Synthetics monitor scripts can be imported using the `guid`, e.g.
 
 ```bash
-$ terraform import newrelic_synthetics_monitor_script.bar <guid>
+$ terraform import newrelic_synthetics_script_monitor.bar <guid>
 ```
 
