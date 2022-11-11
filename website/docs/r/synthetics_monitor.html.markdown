@@ -89,9 +89,9 @@ The `SIMPLE` monitor type supports the following additional arguments:
 The `BROWSER` monitor type supports the following additional arguments:
 
 * `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution.
-* `runtime_type_version` - (Optional) The runtime type that the monitor will run. Defaults to `100`
-* `runtime_type` - (Optional) The runtime type that the monitor will run. Defaults to `CHROME_BROWSER`
-* `script_language` - (Optional) The programing language that should execute the script. Defaults to `JAVASCRIPT`
+* `runtime_type_version` - (Optional) The runtime type that the monitor will run.
+* `runtime_type` - (Optional) The runtime type that the monitor will run.
+* `script_language` - (Optional) The programing language that should execute the script.
 
 #### Deprecated runtime
 
