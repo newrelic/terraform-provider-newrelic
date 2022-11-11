@@ -42,7 +42,7 @@ func TestAccNewRelicSyntheticsPrivateLocationDataSource(t *testing.T) {
 			privateLocationGUID = result.GUID
 
 			// Workaround for async entity creation so we can test the data source below
-			time.Sleep(20 * time.Second)
+			time.Sleep(60 * time.Second)
 		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

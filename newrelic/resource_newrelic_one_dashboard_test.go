@@ -113,7 +113,7 @@ func TestAccNewRelicOneDashboard_PageRename(t *testing.T) {
 			{
 				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFull(rNameUpdated, strconv.Itoa(testAccountID)),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 5), // Sleep waiting for entity re-indexing
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 60), // Sleep waiting for entity re-indexing
 				),
 			},
 		},
