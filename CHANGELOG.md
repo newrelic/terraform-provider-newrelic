@@ -1,3 +1,17 @@
+<a name="v3.7.0"></a>
+## [v3.7.0] - 2022-11-14
+### Bug Fixes
+- **workflows:** make it possible to remove all workflow enrichments
+
+### Documentation Updates
+- **obfuscation_expression:** minor changes
+- **obfuscation_expression:** added docs for obfuscation expression
+
+### Features
+- add optional account_id parameter to private location data source
+- **obfuscation_expression:** Added Obfuscation expression and tests
+- **synthetics:** set defaults for runtime to new runtime and added instructions for old runtime
+
 <a name="v3.6.1"></a>
 ## [v3.6.1] - 2022-10-27
 ### Bug Fixes
@@ -1550,7 +1564,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.6.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.0...HEAD
+[v3.7.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.6.1...v3.7.0
 [v3.6.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.6.0...v3.6.1
 [v3.6.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.2...v3.6.0
 [v3.5.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.1...v3.5.2
