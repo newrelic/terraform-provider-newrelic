@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
 
 func TestAccNewRelicSyntheticsSecureCredential_Basic(t *testing.T) {
@@ -66,7 +66,7 @@ func testAccCheckNewRelicSyntheticsSecureCredentialExists(n string) resource.Tes
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
-		time.Sleep(30 * time.Second)
+		time.Sleep(60 * time.Second)
 
 		nrqlQuery := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", rs.Primary.ID)
 		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, nrqlQuery, []entities.EntitySearchSortCriteria{})
@@ -92,7 +92,7 @@ func testAccCheckNewRelicSyntheticsSecureCredentialDestroy(s *terraform.State) e
 		}
 
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
-		time.Sleep(30 * time.Second)
+		time.Sleep(60 * time.Second)
 
 		nrqlQuery := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", r.Primary.ID)
 		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, nrqlQuery, []entities.EntitySearchSortCriteria{})

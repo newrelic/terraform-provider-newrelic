@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 )
 
 func TestNewRelicWorkflow_Webhook(t *testing.T) {
@@ -127,6 +127,45 @@ func TestNewRelicWorkflow_MinimalConfig(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
+			},
+		},
+	})
+}
+
+func TestNewRelicWorkflow_RemoveEnrichments(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	channelResourceName := "foo"
+	workflowName := acctest.RandString(5)
+	enrichmentsSection := `
+enrichments {
+	nrql {
+		name = "Log Count"
+		configuration {
+			query = "SELECT count(*) FROM Log"
+		}
+	}
+}
+`
+	channelResources := testAccNewRelicChannelConfigurationEmail(channelResourceName)
+	workflowWithEnrichment := testAccNewRelicWorkflowConfigurationCustom(workflowName, channelResourceName, enrichmentsSection)
+	workflowWithoutEnrichment := testAccNewRelicWorkflowConfigurationCustom(workflowName, channelResourceName, "")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+
+			// Test: Create workflow
+			{
+				Config: channelResources + workflowWithEnrichment,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Remove enrichments, verify that the plan is empty afterwards
+			{
+				Config: channelResources + workflowWithoutEnrichment,
 			},
 		},
 	})
@@ -282,7 +321,13 @@ resource "newrelic_notification_channel" "%[1]s" {
 }
 
 func testAccNewRelicWorkflowConfiguration(channelResourceName string) string {
-	workflowName := acctest.RandString(5)
+	return testAccNewRelicWorkflowConfigurationCustom(
+		acctest.RandString(5),
+		channelResourceName,
+		"")
+}
+
+func testAccNewRelicWorkflowConfigurationCustom(workflowName string, channelResourceName string, customSections string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow" "foo" {
   account_id            = newrelic_notification_channel.%[1]s.account_id
@@ -303,10 +348,12 @@ resource "newrelic_workflow" "foo" {
     }
   }
 
+  %[3]s
+
   destination {
     channel_id = newrelic_notification_channel.%[1]s.id
   }
-}`, channelResourceName, workflowName)
+}`, channelResourceName, workflowName, customSections)
 }
 
 func testAccNewRelicWorkflowConfigurationEmail(accountID int, name string) string {

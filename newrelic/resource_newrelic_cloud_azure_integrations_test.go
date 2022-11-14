@@ -18,6 +18,8 @@ func TestAccNewRelicCloudAzureIntegration_Basic(t *testing.T) {
 	randName := acctest.RandString(5)
 	resourceName := "newrelic_cloud_azure_integrations.bar"
 
+	t.Skip("Skipping test until we can get a better Azure test account")
+
 	testAzureApplicationID := os.Getenv("INTEGRATION_TESTING_AZURE_APPLICATION_ID")
 	if testAzureApplicationID == "" {
 		t.Skip("INTEGRATION_TESTING_AZURE_APPLICATION_ID must be set for acceptance test")

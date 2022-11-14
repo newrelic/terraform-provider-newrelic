@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/newrelic/newrelic-client-go/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 )
 
 func TestAccNewRelicServiceLevel_Basic(t *testing.T) {
@@ -137,7 +137,7 @@ func testAccCheckNewRelicServiceLevelExists(n string) resource.TestCheckFunc {
 			return err
 		}
 
-		time.Sleep(3 * time.Second)
+		time.Sleep(30 * time.Second)
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 		indicators, err := client.ServiceLevel.GetIndicators(common.EntityGUID(getSliGUID(identifier)))

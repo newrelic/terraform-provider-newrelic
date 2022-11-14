@@ -2,8 +2,9 @@ package newrelic
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/servicelevel"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicelevel"
 )
 
 func flattenServiceLevelIndicator(indicator servicelevel.ServiceLevelIndicator, identifier *serviceLevelIdentifier, d *schema.ResourceData, sliGUID string) error {

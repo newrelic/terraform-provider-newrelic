@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
-	"github.com/newrelic/newrelic-client-go/pkg/workflows"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/workflows"
 )
 
 // migrateStateNewRelicWorkflowV0toV1 currently facilitates migrating:
@@ -147,18 +147,16 @@ func expandWorkflowConfiguration(cfg map[string]interface{}) workflows.AiWorkflo
 	}
 }
 
-func expandWorkflowUpdateEnrichments(enrichments []interface{}) *workflows.AiWorkflowsUpdateEnrichmentsInput {
-	input := workflows.AiWorkflowsUpdateEnrichmentsInput{}
-
+func expandWorkflowUpdateEnrichments(enrichments []interface{}) workflows.AiWorkflowsUpdateEnrichmentsInput {
 	if len(enrichments) != 1 {
-		return &input
+		return workflows.AiWorkflowsUpdateEnrichmentsInput{}
 	}
 
 	richments := enrichments[0].(map[string]interface{})
 	nrql := richments["nrql"].([]interface{})
-	input.NRQL = expandWorkflowUpdateNrqls(nrql)
-
-	return &input
+	return workflows.AiWorkflowsUpdateEnrichmentsInput{
+		NRQL: expandWorkflowUpdateNrqls(nrql),
+	}
 }
 
 func expandWorkflowUpdateNrqls(nrqls []interface{}) []workflows.AiWorkflowsNRQLUpdateEnrichmentInput {
@@ -243,24 +241,38 @@ func expandWorkflowIssuePredicate(predicate map[string]interface{}) workflows.Ai
 }
 
 func expandWorkflowUpdate(d *schema.ResourceData) (*workflows.AiWorkflowsUpdateWorkflowInput, error) {
+	name := d.Get("name").(string)
+	enrichmentsEnabled := d.Get("enrichments_enabled").(bool)
+	destinationsEnabled := d.Get("destinations_enabled").(bool)
+	workflowEnabled := d.Get("enabled").(bool)
+	configurations := expandWorkflowDestinationConfigurations(d.Get("destination").(*schema.Set).List())
+	filter := expandWorkflowUpdateIssuesFilter(d.Get("issues_filter").(*schema.Set).List())
+	enrichments := getAndExpandWorkflowUpdateEnrichments(d)
+
 	workflow := workflows.AiWorkflowsUpdateWorkflowInput{
-		ID:                  d.Get("workflow_id").(string),
-		Name:                d.Get("name").(string),
-		EnrichmentsEnabled:  d.Get("enrichments_enabled").(bool),
-		DestinationsEnabled: d.Get("destinations_enabled").(bool),
-		WorkflowEnabled:     d.Get("enabled").(bool),
-		MutingRulesHandling: workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
-	}
-
-	workflow.DestinationConfigurations = expandWorkflowDestinationConfigurations(d.Get("destination").(*schema.Set).List())
-	workflow.IssuesFilter = expandWorkflowUpdateIssuesFilter(d.Get("issues_filter").(*schema.Set).List())
-
-	enrichments, enrichmentsOk := d.GetOk("enrichments")
-	if enrichmentsOk {
-		workflow.Enrichments = expandWorkflowUpdateEnrichments(enrichments.(*schema.Set).List())
+		ID:                        d.Get("workflow_id").(string),
+		Name:                      &name,
+		EnrichmentsEnabled:        &enrichmentsEnabled,
+		DestinationsEnabled:       &destinationsEnabled,
+		WorkflowEnabled:           &workflowEnabled,
+		MutingRulesHandling:       workflows.AiWorkflowsMutingRulesHandling(d.Get("muting_rules_handling").(string)),
+		DestinationConfigurations: &configurations,
+		IssuesFilter:              &filter,
+		Enrichments:               &enrichments,
 	}
 
 	return &workflow, nil
+}
+
+func getAndExpandWorkflowUpdateEnrichments(d *schema.ResourceData) workflows.AiWorkflowsUpdateEnrichmentsInput {
+	enrichmentsData, enrichmentsOk := d.GetOk("enrichments")
+	if !enrichmentsOk {
+		return workflows.AiWorkflowsUpdateEnrichmentsInput{
+			NRQL: []workflows.AiWorkflowsNRQLUpdateEnrichmentInput{},
+		}
+	}
+
+	return expandWorkflowUpdateEnrichments(enrichmentsData.(*schema.Set).List())
 }
 
 func expandWorkflowUpdateIssuesFilter(issuesFilter []interface{}) workflows.AiWorkflowsUpdatedFilterInput {

@@ -7,9 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/common"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
-	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
 func resourceNewRelicSyntheticsStepMonitor() *schema.Resource {
@@ -147,7 +147,7 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 	case *entities.SyntheticMonitorEntity:
 		entity := (*resp).(*entities.SyntheticMonitorEntity)
 		stepsResp, errr := client.Synthetics.GetSteps(accountID, synthetics.EntityGUID(entity.GetGUID()))
-		if err != nil {
+		if errr != nil {
 			return diag.FromErr(errr)
 		}
 
