@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -53,6 +54,9 @@ func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 				Upgrade: migrateStateNewRelicAlertPolicyChannelV0toV1,
 				Version: 0,
 			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Second),
 		},
 	}
 }

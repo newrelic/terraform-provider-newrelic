@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -354,6 +355,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
 			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Second),
 		},
 	}
 }
