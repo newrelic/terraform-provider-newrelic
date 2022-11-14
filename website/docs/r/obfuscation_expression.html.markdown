@@ -39,9 +39,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-New Relic obfuscation expression can be imported using a concatenated string of the format
-`<account_id>:<expression_id>`, e.g.
+New Relic obfuscation expression can be imported using the expression ID, e.g.
 
 ```bash
-$ terraform import newrelic_obfuscation_expression.foo 12345:34567
+$ terraform import newrelic_obfuscation_expression.foo 34567
 ```
