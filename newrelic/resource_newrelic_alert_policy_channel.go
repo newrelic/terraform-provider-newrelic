@@ -2,9 +2,12 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
@@ -51,6 +54,9 @@ func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 				Upgrade: migrateStateNewRelicAlertPolicyChannelV0toV1,
 				Version: 0,
 			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Second),
 		},
 	}
 }
@@ -116,9 +122,26 @@ func resourceNewRelicAlertPolicyChannelCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		exists, err := policyChannelsExist(updatedContext, client, policyChannels.ID, policyChannels.ChannelIDs)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		if !exists {
+			return resource.RetryableError(fmt.Errorf("alert policy channel was not created"))
+		}
+
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
+
 	d.SetId(serializedID)
 
-	return resourceNewRelicAlertPolicyChannelRead(updatedContext, d, meta)
+	return nil
 }
 
 func resourceNewRelicAlertPolicyChannelRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
