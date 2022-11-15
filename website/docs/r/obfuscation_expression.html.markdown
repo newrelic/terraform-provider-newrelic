@@ -28,8 +28,8 @@ The following arguments are supported:
 
 * `account_id` - (Optional) The account id associated with the obfuscation expression.
 * `description` - (Optional) Description of expression.
-* `name` - (Optional) Name of expression.
-* `regex` - (Optional) Regex of expression.
+* `name` - (Required) Name of expression.
+* `regex` - (Required) Regex of expression. Must be wrapped in parentheses, e.g. (regex.*).
 
 ## Attributes Reference
 
