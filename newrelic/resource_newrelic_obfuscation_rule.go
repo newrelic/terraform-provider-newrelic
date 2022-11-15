@@ -49,13 +49,13 @@ func resourceNewRelicObfuscationRule() *schema.Resource {
 				Optional:    true,
 			},
 			"action": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Description: "Actions for the rule. The actions will be applied in the order specified by this list.",
 				Required:    true,
 				Elem:        ObfuscationRuleActionInputSchemaElem(),
 			},
 			"action_id": {
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Description: "The id of the obfuscation action.",
 				Computed:    true,
 			},
@@ -125,7 +125,6 @@ func resourceNewRelicObfuscationRuleCreate(ctx context.Context, d *schema.Resour
 	}
 
 	ruleID := created.ID
-
 	d.SetId(ruleID)
 
 	return resourceNewRelicObfuscationRuleRead(ctx, d, meta)
@@ -137,8 +136,8 @@ func resourceNewRelicObfuscationRuleRead(ctx context.Context, d *schema.Resource
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	RuleID := d.Id()
-	rule, err := getObfuscationRuleByID(ctx, client, accountID, RuleID)
+	ruleID := d.Id()
+	rule, err := getObfuscationRuleByID(ctx, client, accountID, ruleID)
 
 	if err != nil && rule == nil {
 		d.SetId("")
@@ -165,25 +164,23 @@ func resourceNewRelicObfuscationRuleRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	actions := flattenActions(rule.Actions)
-
-	if err := d.Set("action", actions); err != nil {
+	if err := d.Set("action", flattenActions(&rule.Actions)); err != nil {
 		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func flattenActions(actions []logconfigurations.LogConfigurationsObfuscationAction) []interface{} {
-	flatActions := make([]interface{}, len(actions))
-
-	for i, v := range actions {
-		m := make(map[string]interface{})
-		m["expression_id"] = v.Expression
-		m["attribute"] = v.Attributes
-		m["method"] = v.Method
-		m["action_id"] = v.ID
-		flatActions[i] = m
+func flattenActions(actions *[]logconfigurations.LogConfigurationsObfuscationAction) []map[string]interface{} {
+	var flatActions []map[string]interface{}
+	for _, v := range *actions {
+		m := map[string]interface{}{
+			"expression_id": v.Expression.ID,
+			"attribute":     v.Attributes,
+			"method":        v.Method,
+			//"action_id":     v.ID,
+		}
+		flatActions = append(flatActions, m)
 	}
 	return flatActions
 }
@@ -223,6 +220,10 @@ func expandObfuscationRuleUpdateInput(d *schema.ResourceData) logconfigurations.
 		updateInp.Description = e.(string)
 	}
 
+	if e, ok := d.GetOk("filter"); ok {
+		updateInp.Filter = logconfigurations.NRQL(e.(string))
+	}
+
 	if e, ok := d.GetOk("action"); ok {
 		updateInp.Actions = expandObfuscationRuleActionUpdateInput(e.(*schema.Set).List())
 
@@ -257,7 +258,7 @@ func expandObfuscationRuleActionInput(list []interface{}) []logconfigurations.Lo
 		setActions := v.(map[string]interface{})
 		action := logconfigurations.LogConfigurationsCreateObfuscationActionInput{
 			Method:       logconfigurations.LogConfigurationsObfuscationMethod(setActions["method"].(string)),
-			Attributes:   expandAttributes(setActions["attribute"].([]interface{})),
+			Attributes:   expandAttributes(setActions["attribute"].(*schema.Set).List()),
 			ExpressionId: setActions["expression_id"].(string),
 		}
 		actionsList[i] = action
@@ -273,7 +274,7 @@ func expandObfuscationRuleActionUpdateInput(list []interface{}) []logconfigurati
 		setActions := v.(map[string]interface{})
 		action := logconfigurations.LogConfigurationsUpdateObfuscationActionInput{
 			Method:       logconfigurations.LogConfigurationsObfuscationMethod(setActions["method"].(string)),
-			Attributes:   expandAttributes(setActions["attribute"].([]interface{})),
+			Attributes:   expandAttributes(setActions["attribute"].(*schema.Set).List()),
 			ExpressionId: setActions["expression_id"].(string),
 		}
 		actionsList[i] = action
@@ -291,12 +292,12 @@ func expandAttributes(attributeList []interface{}) []string {
 }
 
 func getObfuscationRuleByID(ctx context.Context, client *newrelic.NewRelic, accountID int, ruleID string) (*logconfigurations.LogConfigurationsObfuscationRule, error) {
-	Rules, err := client.Logconfigurations.GetObfuscationRulesWithContext(ctx, accountID)
+	rules, err := client.Logconfigurations.GetObfuscationRulesWithContext(ctx, accountID)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, v := range *Rules {
+	for _, v := range *rules {
 		if v.ID == ruleID {
 			return &v, nil
 		}
