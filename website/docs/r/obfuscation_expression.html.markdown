@@ -1,7 +1,7 @@
 ---
 layout: "newrelic"
 page_title: "New Relic: newrelic_obfuscation_expression"
-sidebar_current: "docs-newrelic-resource-obfuscation-expressione"
+sidebar_current: "docs-newrelic-resource-obfuscation-expression"
 description: |-
 Create and manage Obfuscation Expression.
 ---
@@ -28,8 +28,8 @@ The following arguments are supported:
 
 * `account_id` - (Optional) The account id associated with the obfuscation expression.
 * `description` - (Optional) Description of expression.
-* `name` - (Optional) Name of expression.
-* `regex` - (Optional) Regex of expression.
+* `name` - (Required) Name of expression.
+* `regex` - (Required) Regex of expression.
 
 ## Attributes Reference
 
