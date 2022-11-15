@@ -14,7 +14,8 @@ Use this data source to get information about a specific Synthetics monitor priv
 
 ```hcl
 data "newrelic_synthetics_private_location" "example" {
-  name = "My private location"
+  account_id = 123456
+  name       = "My private location"
 }
 
 resource "newrelic_synthetics_monitor" "foo" {
@@ -25,11 +26,14 @@ resource "newrelic_synthetics_monitor" "foo" {
 
 ```hcl
 data "newrelic_synthetics_private_location" "example" {
-  name = "My private location"
+  account_id = 123456
+  name       = "My private location"
 }
-resource "newrelic_synthetics_monitor" "foo" {
+resource "newrelic_synthetics_step_monitor" "foo" {
   // Reference the private location data source in the monitor resource
-  location_private { guid = data.newrelic_synthetics_private_location.example.id }
+  location_private { 
+    guid = data.newrelic_synthetics_private_location.example.id 
+  }
 }
 ```
 
@@ -37,5 +41,5 @@ resource "newrelic_synthetics_monitor" "foo" {
 
 The following arguments are supported:
 
-
+* `account_id` - (Optional) The New Relic account ID of the associated private location. If left empty will default to account ID specified in provider level configuration.
 * `name` - (Required) The name of the Synthetics monitor private location.

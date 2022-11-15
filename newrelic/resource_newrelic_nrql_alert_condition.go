@@ -6,8 +6,10 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
@@ -354,6 +356,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				},
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Second),
+		},
 	}
 }
 
@@ -412,9 +417,25 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	d.SetId(serializeIDs([]int{d.Get("policy_id").(int), conditionID}))
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		_, err := client.Alerts.GetNrqlConditionQueryWithContext(ctx, accountID, strconv.Itoa(conditionID))
+		if err != nil {
+			if _, ok := err.(*errors.NotFound); ok {
+				return resource.RetryableError(fmt.Errorf("nrql condition was not created"))
+			}
+			return resource.NonRetryableError(err)
+		}
 
-	return resourceNewRelicNrqlAlertConditionRead(ctx, d, meta)
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
+
+	d.SetId(serializeIDs([]int{d.Get("policy_id").(int), conditionID})) // set to correct ID
+
+	return nil
 }
 
 func resourceNewRelicNrqlAlertConditionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
