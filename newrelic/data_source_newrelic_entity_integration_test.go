@@ -94,6 +94,10 @@ data "newrelic_entity" "entity" {
 		key = "accountId"
 		value = "%d"
 	}
+	tag {
+		key = "account"
+		value = "New Relic Terraform Provider Acceptance Testing"
+	}
 }
 `, name, accountId)
 }

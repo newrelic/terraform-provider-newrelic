@@ -82,7 +82,14 @@ The following arguments are supported:
 * `ignore_case` - (Optional) Ignore case of the `name` when searching for the entity. Defaults to false.
 * `type` - (Optional) The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, and WORKLOAD.
 * `domain` - (Optional) The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, SYNTH, and VIZ. If not specified, all domains are searched.
-* `tags` - (Optional) A tag applied to the entity.
+* `tag` - (Optional) A tag applied to the entity. See [Nested tag blocks](#nested-`tag`-blocks) below for details.
+
+### Nested `tag` blocks
+
+All nested `tag` blocks support the following common arguments:
+
+  * `key` - (Required) The tag key.
+  * `value` - (Required) The tag value.
 
 ## Attributes Reference
 
