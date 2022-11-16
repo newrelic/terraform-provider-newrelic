@@ -102,10 +102,10 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 
 func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
 	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
-	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", d.Id())
+	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s' AND accountId = '%d'", d.Id(), accountID)
 
 	var entity *entities.EntityOutlineInterface
 
