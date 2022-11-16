@@ -1,3 +1,8 @@
+<a name="v3.7.1"></a>
+## [v3.7.1] - 2022-11-15
+### Documentation Updates
+- **obfuscation_expression:** change name and regex to required
+
 <a name="v3.7.0"></a>
 ## [v3.7.0] - 2022-11-14
 ### Bug Fixes
@@ -1564,7 +1569,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.1...HEAD
+[v3.7.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.0...v3.7.1
 [v3.7.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.6.1...v3.7.0
 [v3.6.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.6.0...v3.6.1
 [v3.6.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.2...v3.6.0
