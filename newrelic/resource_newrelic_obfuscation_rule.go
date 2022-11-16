@@ -54,11 +54,6 @@ func resourceNewRelicObfuscationRule() *schema.Resource {
 				Required:    true,
 				Elem:        ObfuscationRuleActionInputSchemaElem(),
 			},
-			"action_id": {
-				Type:        schema.TypeString,
-				Description: "The id of the obfuscation action.",
-				Computed:    true,
-			},
 		},
 	}
 }
@@ -178,7 +173,6 @@ func flattenActions(actions *[]logconfigurations.LogConfigurationsObfuscationAct
 			"expression_id": v.Expression.ID,
 			"attribute":     v.Attributes,
 			"method":        v.Method,
-			//"action_id":     v.ID,
 		}
 		flatActions = append(flatActions, m)
 	}
