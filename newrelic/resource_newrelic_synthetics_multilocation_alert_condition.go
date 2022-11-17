@@ -18,7 +18,7 @@ func syntheticsMultiLocationConditionTermSchema() *schema.Resource {
 			"threshold": {
 				Type:        schema.TypeInt,
 				Required:    true,
-				Description: "The minimum number of monitor locations that must be concurrently failing before a violation is opened.",
+				Description: "The minimum number of monitor locations that must be concurrently failing before an incident is opened.",
 			},
 		},
 	}
@@ -83,7 +83,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertCondition() *schema.Resource {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validation.IntInSlice([]int{0, 3600, 7200, 14400, 28800, 43200, 86400}),
-				Description:  "The maximum number of seconds a violation can remain open before being closed by the system.  Must be one of: 0, 3600, 7200, 14400, 28800, 43200, 86400",
+				Description:  "The maximum number of seconds an incident can remain open before being closed by the system.  Must be one of: 0, 3600, 7200, 14400, 28800, 43200, 86400",
 			},
 		},
 	}
