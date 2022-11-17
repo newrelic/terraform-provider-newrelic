@@ -133,46 +133,6 @@ func TestNewRelicWorkflow_MinimalConfig(t *testing.T) {
 	})
 }
 
-func TestNewRelicWorkflow_RemoveEnrichments(t *testing.T) {
-	resourceName := "newrelic_workflow.foo"
-	channelResourceName := "foo"
-	workflowName := acctest.RandString(5)
-	issuesFilterName := acctest.RandString(5)
-	enrichmentsSection := `
-enrichments {
-	nrql {
-		name = "Log Count"
-		configuration {
-			query = "SELECT count(*) FROM Log"
-		}
-	}
-}
-`
-	channelResources := testAccNewRelicChannelConfigurationEmail(channelResourceName)
-	workflowWithEnrichment := testAccNewRelicWorkflowConfigurationCustom(workflowName, issuesFilterName, channelResourceName, enrichmentsSection)
-	workflowWithoutEnrichment := testAccNewRelicWorkflowConfigurationCustom(workflowName, issuesFilterName, channelResourceName, "")
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccNewRelicWorkflowDestroy,
-		Steps: []resource.TestStep{
-
-			// Test: Create workflow
-			{
-				Config: channelResources + workflowWithEnrichment,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicWorkflowExists(resourceName),
-				),
-			},
-			// Test: Remove enrichments, verify that the plan is empty afterwards
-			{
-				Config: channelResources + workflowWithoutEnrichment,
-			},
-		},
-	})
-}
-
 func TestNewRelicWorkflow_EmptyIssuesFilterName(t *testing.T) {
 	channelResourceName := "foo"
 	workflowName := acctest.RandString(5)
