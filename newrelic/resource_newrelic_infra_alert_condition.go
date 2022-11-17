@@ -144,7 +144,7 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 				MaxItems:    1,
 				Optional:    true,
 				Elem:        thresholdSchema(),
-				Description: "Identifies the threshold parameters for opening a critical alert violation.",
+				Description: "Identifies the threshold parameters for opening a critical alert incident.",
 				//TODO: ValidateFunc from thresholdConditionTypes map
 			},
 			"warning": {
@@ -154,7 +154,7 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 				MinItems:    1,
 				ForceNew:    true,
 				Elem:        thresholdSchema(),
-				Description: "Identifies the threshold parameters for opening a warning alert violation.",
+				Description: "Identifies the threshold parameters for opening a warning alert incident.",
 				//TODO: ValidateFunc from thresholdConditionTypes map
 			},
 			"integration_provider": {
@@ -167,7 +167,7 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 				Optional:     true,
 				Default:      24,
 				ValidateFunc: validateViolationCloseTimer(),
-				Description:  "Determines how much time, in hours, will pass before a violation is automatically closed. Valid values are 1, 2, 4, 8, 12, 24, 48, or 72",
+				Description:  "Determines how much time, in hours, will pass before an incident is automatically closed. Valid values are 1, 2, 4, 8, 12, 24, 48, or 72",
 			},
 			"description": {
 				Type:        schema.TypeString,
