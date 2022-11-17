@@ -5,6 +5,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -127,6 +128,68 @@ func TestNewRelicWorkflow_MinimalConfig(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
+			},
+		},
+	})
+}
+
+func TestNewRelicWorkflow_RemoveEnrichments(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	channelResourceName := "foo"
+	workflowName := acctest.RandString(5)
+	issuesFilterName := acctest.RandString(5)
+	enrichmentsSection := `
+enrichments {
+	nrql {
+		name = "Log Count"
+		configuration {
+			query = "SELECT count(*) FROM Log"
+		}
+	}
+}
+`
+	channelResources := testAccNewRelicChannelConfigurationEmail(channelResourceName)
+	workflowWithEnrichment := testAccNewRelicWorkflowConfigurationCustom(workflowName, issuesFilterName, channelResourceName, enrichmentsSection)
+	workflowWithoutEnrichment := testAccNewRelicWorkflowConfigurationCustom(workflowName, issuesFilterName, channelResourceName, "")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+
+			// Test: Create workflow
+			{
+				Config: channelResources + workflowWithEnrichment,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Remove enrichments, verify that the plan is empty afterwards
+			{
+				Config: channelResources + workflowWithoutEnrichment,
+			},
+		},
+	})
+}
+
+func TestNewRelicWorkflow_EmptyIssuesFilterName(t *testing.T) {
+	channelResourceName := "foo"
+	workflowName := acctest.RandString(5)
+	issuesFilterName := ""
+	channelResources := testAccNewRelicChannelConfigurationEmail(channelResourceName)
+	workflowWithEmptyIssuesFilterName := testAccNewRelicWorkflowConfigurationCustom(workflowName, issuesFilterName, channelResourceName, "")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+
+			// Test: Create workflow with empty issuesFilter name
+			{
+				Config: channelResources + workflowWithEmptyIssuesFilterName,
+				ExpectError: regexp.MustCompile(`expected \"issues_filter.0.name\" to not be an empty string or whitespace`),
 			},
 		},
 	})
@@ -282,18 +345,25 @@ resource "newrelic_notification_channel" "%[1]s" {
 }
 
 func testAccNewRelicWorkflowConfiguration(channelResourceName string) string {
-	workflowName := acctest.RandString(5)
+	return testAccNewRelicWorkflowConfigurationCustom(
+		acctest.RandString(5),
+		acctest.RandString(5),
+		channelResourceName,
+		"")
+}
+
+func testAccNewRelicWorkflowConfigurationCustom(workflowName string, issuesFilterName string, channelResourceName string, customSections string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow" "foo" {
   account_id            = newrelic_notification_channel.%[1]s.account_id
-  name                  = "%[2]s"
+  name                  = "%[3]s"
   enrichments_enabled   = true
   destinations_enabled  = true
   enabled      = true
   muting_rules_handling = "NOTIFY_ALL_ISSUES"
 
   issues_filter {
-    name = "filter-name"
+    name = "%[2]s"
     type = "FILTER"
 
     predicate {
@@ -303,10 +373,13 @@ resource "newrelic_workflow" "foo" {
     }
   }
 
+  %[4]s
+
   destination {
     channel_id = newrelic_notification_channel.%[1]s.id
   }
-}`, channelResourceName, workflowName)
+}
+`, channelResourceName, issuesFilterName, workflowName, customSections)
 }
 
 func testAccNewRelicWorkflowConfigurationEmail(accountID int, name string) string {
