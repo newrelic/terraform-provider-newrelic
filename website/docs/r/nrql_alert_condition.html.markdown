@@ -78,7 +78,6 @@ The following arguments are supported:
 - `term` - (Optional) **DEPRECATED** Use `critical`, and `warning` instead.  A list of terms for this condition. See [Terms](#terms) below for details.
 - `critical` - (Required) A list containing the `critical` threshold values. See [Terms](#terms) below for details.
 - `warning` - (Optional) A list containing the `warning` threshold values. See [Terms](#terms) below for details.
-- `value_function` - (Optional if `type` is `static`, omit when `type` is `baseline`) **DEPRECATED** Use `signal.slide_by` instead.
 - `violation_time_limit` - (Optional) **DEPRECATED:** Use `violation_time_limit_seconds` instead. Sets a time limit, in hours, that will automatically force-close a long-lasting incident after the time limit you select. Possible values are `ONE_HOUR`, `TWO_HOURS`, `FOUR_HOURS`, `EIGHT_HOURS`, `TWELVE_HOURS`, `TWENTY_FOUR_HOURS`, `THIRTY_DAYS` (case insensitive).<br>
 <small>\***Note**: One of `violation_time_limit` _or_ `violation_time_limit_seconds` must be set, but not both.</small>
 
@@ -94,7 +93,7 @@ The following arguments are supported:
 - `aggregation_method` - (Optional) Determines when we consider an aggregation window to be complete so that we can evaluate the signal for incidents. Possible values are `cadence`, `event_flow` or `event_timer`. Default is `event_flow`. `aggregation_method` cannot be set with `nrql.evaluation_offset`.
 - `aggregation_delay` - (Optional) How long we wait for data that belongs in each aggregation window. Depending on your data, a longer delay may increase accuracy but delay notifications. Use `aggregation_delay` with the `event_flow` and `cadence` methods. The maximum delay is 1200 seconds (20 minutes) when using `event_flow` and 3600 seconds (60 minutes) when using `cadence`. In both cases, the minimum delay is 0 seconds and the default is 120 seconds. `aggregation_delay` cannot be set with `nrql.evaluation_offset`.
 - `aggregation_timer` - (Optional) How long we wait after each data point arrives to make sure we've processed the whole batch. Use `aggregation_timer` with the `event_timer` method. The timer value can range from 0 seconds to 1200 seconds (20 minutes); the default is 60 seconds. `aggregation_timer` cannot be set with `nrql.evaluation_offset`.
-- `slide_by` - (Optional) Gathers data in overlapping time windows to smooth the chart line, making it easier to spot trends. The `slide_by` value is specified in seconds and must be smaller than and a factor of the `aggregation_window`. `slide_by` cannot be used with `static` NRQL conditions using the `sum` `value_function`.
+- `slide_by` - (Optional) Gathers data in overlapping time windows to smooth the chart line, making it easier to spot trends. The `slide_by` value is specified in seconds and must be smaller than and a factor of the `aggregation_window`. 
 
 ## NRQL
 
@@ -118,8 +117,7 @@ The `term` block supports the following arguments:
 <br>For _baseline_ NRQL alert conditions, the value must be in the range [1, 1000]. The value is the number of standard deviations from the baseline that the metric must exceed in order to create an incident.
 - `threshold_duration` - (Optional) The duration, in seconds, that the threshold must violate in order to create an incident. Value must be a multiple of the `aggregation_window` (which has a default of 60 seconds).
 <br>For _baseline_ NRQL alert conditions, the value must be within 120-3600 seconds (inclusive).
-<br>For _static_ NRQL alert conditions with the `sum` value function, the value must be within 120-7200 seconds (inclusive).
-<br>For _static_ NRQL alert conditions with the `single_value` value function, the value must be within 60-7200 seconds (inclusive).
+<br>For _static_ NRQL alert conditions, the value must be within 60-7200 seconds (inclusive).
 
 - `threshold_occurrences` - (Optional) The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: `all` or `at_least_once` (case insensitive).
 - `duration` - (Optional) **DEPRECATED:** Use `threshold_duration` instead. The duration of time, in _minutes_, that the threshold must violate for in order to create an incident. Must be within 1-120 (inclusive).
