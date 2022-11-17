@@ -137,7 +137,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: intInSlice([]int{1, 2, 4, 8, 12, 24}),
-				Description:  "Automatically close instance-based violations, including JVM health metric violations, after the number of hours specified. Must be: 1, 2, 4, 8, 12 or 24.",
+				Description:  "Automatically close instance-based incidents, including JVM health metric incidents, after the number of hours specified. Must be: 1, 2, 4, 8, 12 or 24.",
 			},
 			"gc_metric": {
 				Type:        schema.TypeString,
