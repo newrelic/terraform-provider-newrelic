@@ -285,6 +285,7 @@ func resourceNewRelicWorkflowV0() *schema.Resource {
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
+							ValidateFunc: validation.StringIsNotWhiteSpace,
 							Description: "(Required) Filter's name.",
 						},
 						"type": {
