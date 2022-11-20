@@ -120,7 +120,7 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 			"condition": {
 				Type:        schema.TypeList,
 				Required:    true,
-				Description: "The condition that defines which violations to target.",
+				Description: "The condition that defines which incidents to target.",
 				MaxItems:    1,
 				MinItems:    1,
 				Elem: &schema.Resource{
@@ -135,7 +135,7 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 										Type:         schema.TypeString,
 										Required:     true,
 										ValidateFunc: validateMutingRuleConditionAttribute,
-										Description:  "The attribute on a violation.",
+										Description:  "The attribute on an incident.",
 									},
 									"operator": {
 										Type:         schema.TypeString,
@@ -182,7 +182,7 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 				MaxItems:    1,
 				Optional:    true,
 				Elem:        scheduleSchema(),
-				Description: "The time window when the MutingRule should actively mute violations.",
+				Description: "The time window when the MutingRule should actively mute incidents.",
 			},
 		},
 	}
