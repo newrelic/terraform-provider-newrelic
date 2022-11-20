@@ -30,9 +30,10 @@ func TestExpandWorkflow(t *testing.T) {
 	}}
 
 	destinationConfigurations := []workflows.AiWorkflowsDestinationConfiguration{{
-		Name:      "destination-test",
-		Type:      workflows.AiWorkflowsDestinationTypeTypes.WEBHOOK,
-		ChannelId: "300848f9-c713-463c-9036-40b45c4c970f",
+		Name:                 "destination-test",
+		Type:                 workflows.AiWorkflowsDestinationTypeTypes.WEBHOOK,
+		ChannelId:            "300848f9-c713-463c-9036-40b45c4c970f",
+		NotificationTriggers: []workflows.AiWorkflowsNotificationTrigger{workflows.AiWorkflowsNotificationTriggerTypes.ACTIVATED},
 	}}
 
 	issuesFilter := workflows.AiWorkflowsFilter{
@@ -71,7 +72,8 @@ func TestExpandWorkflow(t *testing.T) {
 					}},
 				}},
 				"destination": []map[string]interface{}{{
-					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
+					"channel_id":            "300848f9-c713-463c-9036-40b45c4c970f",
+					"notification_triggers": []string{"ACTIVATED"},
 				}},
 			},
 			Expanded: &workflows.AiWorkflowsWorkflow{
@@ -86,6 +88,37 @@ func TestExpandWorkflow(t *testing.T) {
 			},
 		},
 		"valid workflow without enrichments": {
+			Data: map[string]interface{}{
+				"name":                  "workflow-test",
+				"enrichments_enabled":   true,
+				"destinations_enabled":  true,
+				"enabled":               true,
+				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
+				"issues_filter": []map[string]interface{}{{
+					"name": "issues-filter-test",
+					"type": "FILTER",
+					"predicate": []map[string]interface{}{{
+						"attribute": "source",
+						"operator":  "EQUAL",
+						"values":    []string{"newrelic"},
+					}},
+				}},
+				"destination": []map[string]interface{}{{
+					"channel_id":            "300848f9-c713-463c-9036-40b45c4c970f",
+					"notification_triggers": []string{"ACTIVATED"},
+				}},
+			},
+			Expanded: &workflows.AiWorkflowsWorkflow{
+				Name:                      "workflow-test",
+				EnrichmentsEnabled:        true,
+				DestinationsEnabled:       true,
+				WorkflowEnabled:           true,
+				MutingRulesHandling:       workflows.AiWorkflowsMutingRulesHandlingTypes.NOTIFY_ALL_ISSUES,
+				DestinationConfigurations: destinationConfigurations,
+				IssuesFilter:              issuesFilter,
+			},
+		},
+		"valid workflow without notification triggers": {
 			Data: map[string]interface{}{
 				"name":                  "workflow-test",
 				"enrichments_enabled":   true,
@@ -158,6 +191,10 @@ func TestFlattenWorkflow(t *testing.T) {
 		ChannelId: "300848f9-c713-463c-9036-40b45c4c970f",
 	}}
 
+	destinationConfigurationsWithNotificationTriggers := destinationConfigurations
+	destinationConfigurationsWithNotificationTriggers[0].NotificationTriggers =
+		[]workflows.AiWorkflowsNotificationTrigger{workflows.AiWorkflowsNotificationTriggerTypes.ACTIVATED}
+
 	issuesFilter := workflows.AiWorkflowsFilter{
 		Name: "issues-filter-test",
 		Type: workflows.AiWorkflowsFilterTypeTypes.FILTER,
@@ -203,6 +240,7 @@ func TestFlattenWorkflow(t *testing.T) {
 					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
 					"name":       "destination-test",
 					"type":       "WEBHOOK",
+					"notification_triggers": []workflows.AiWorkflowsNotificationTrigger{workflows.AiWorkflowsNotificationTriggerTypes.ACTIVATED},
 				}},
 			},
 			Flattened: &workflows.AiWorkflowsWorkflow{
@@ -236,6 +274,7 @@ func TestFlattenWorkflow(t *testing.T) {
 					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
 					"name":       "destination-test",
 					"type":       "WEBHOOK",
+					"notification_triggers": []workflows.AiWorkflowsNotificationTrigger{workflows.AiWorkflowsNotificationTriggerTypes.ACTIVATED},
 				}},
 			},
 			Flattened: &workflows.AiWorkflowsWorkflow{
@@ -246,6 +285,39 @@ func TestFlattenWorkflow(t *testing.T) {
 				MutingRulesHandling:       workflows.AiWorkflowsMutingRulesHandlingTypes.NOTIFY_ALL_ISSUES,
 				Enrichments:               []workflows.AiWorkflowsEnrichment{},
 				DestinationConfigurations: destinationConfigurations,
+				IssuesFilter:              issuesFilter,
+			},
+		},
+		"no_notification_triggers": {
+			Data: map[string]interface{}{
+				"name":                  "workflow-test",
+				"enrichments_enabled":   true,
+				"destinations_enabled":  true,
+				"enabled":               true,
+				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
+				"issues_filter": map[string]interface{}{
+					"name": "issues-filter-test",
+					"type": "FILTER",
+					"predicate": []map[string]interface{}{{
+						"attribute": "source",
+						"operator":  "EQUAL",
+						"values":    []string{"newrelic"},
+					}},
+				},
+				"destination": []map[string]interface{}{{
+					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
+					"name":       "destination-test",
+					"type":       "WEBHOOK",
+				}},
+			},
+			Flattened: &workflows.AiWorkflowsWorkflow{
+				Name:                      "workflow-test",
+				EnrichmentsEnabled:        true,
+				DestinationsEnabled:       true,
+				WorkflowEnabled:           true,
+				MutingRulesHandling:       workflows.AiWorkflowsMutingRulesHandlingTypes.NOTIFY_ALL_ISSUES,
+				Enrichments:               []workflows.AiWorkflowsEnrichment{},
+				DestinationConfigurations: destinationConfigurationsWithNotificationTriggers,
 				IssuesFilter:              issuesFilter,
 			},
 		},
@@ -351,6 +423,8 @@ func testFlattenWorkflowsDestinationConfiguration(t *testing.T, v interface{}, c
 				assert.Equal(t, cv, configuration.Name)
 			case "type":
 				assert.Equal(t, cv, string(configuration.Type))
+			case "notification_triggers":
+				assert.Equal(t, cv, configuration.NotificationTriggers)
 			}
 		}
 	}

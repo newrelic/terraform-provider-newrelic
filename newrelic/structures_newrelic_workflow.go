@@ -188,9 +188,17 @@ func expandWorkflowDestinationConfigurations(destinationConfigurations []interfa
 
 func expandWorkflowDestinationConfiguration(cfg map[string]interface{}) workflows.AiWorkflowsDestinationConfigurationInput {
 	destinationConfigurationInput := workflows.AiWorkflowsDestinationConfigurationInput{}
+	var notificationTriggersInput []workflows.AiWorkflowsNotificationTrigger
 
 	if channelID, ok := cfg["channel_id"]; ok {
 		destinationConfigurationInput.ChannelId = channelID.(string)
+	}
+
+	if notificationTriggers, ok := cfg["notification_triggers"]; ok {
+		for _, p := range notificationTriggers.([]interface{}) {
+			notificationTriggersInput = append(notificationTriggersInput, workflows.AiWorkflowsNotificationTrigger(p.(string)))
+		}
+		destinationConfigurationInput.NotificationTriggers = notificationTriggersInput
 	}
 
 	return destinationConfigurationInput
