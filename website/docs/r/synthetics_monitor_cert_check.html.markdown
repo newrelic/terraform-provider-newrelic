@@ -8,14 +8,14 @@ Create and manage a Synthetics Cert Check monitor in New Relic.
 
 # Resource: newrelic\_synthetics\_cert\_check\_monitor
 
-Use this resource to create, update, and delete a synthetics certificate check monitor in New Relic.
+Use this resource to create, update, and delete a Synthetics Certificate Check monitor in New Relic.
 
 ## Example Usage
 
 ```hcl
 resource "newrelic_synthetics_cert_check_monitor" "cert-check-monitor" {
   name                   = "cert-check-monitor"
-  domain                 = "http://www.example.com"
+  domain                 = "www.example.com"
   locations_public       = ["AP_SOUTH_1"]
   certificate_expiration = "10"
   period                 = "EVERY_6_HOURS"
@@ -58,16 +58,16 @@ The below example shows how you can define a private location and attach it to a
 -> **NOTE:** It can take up to 10 minutes for a private location to become available.
 
 ```hcl
-resource "newrelic_synthetics_private_location" "private_location" {
+resource "newrelic_synthetics_private_location" "location" {
   description               = "Test Description"
   name                      = "private_location"
   verified_script_execution = false
 }
 
 resource "newrelic_synthetics_cert_check_monitor" "monitor" {
-  name              = "cert_check"
+  name              = "cert_check_monitor"
   uri               = "https://www.one.example.com"
-  locations_private = ["newrelic_synthetics_private_location.private_location.id"]
+  locations_private = ["newrelic_synthetics_private_location.location.id"]
   period            = "EVERY_6_HOURS"
   status            = "ENABLED"
   tag {
@@ -81,7 +81,7 @@ resource "newrelic_synthetics_cert_check_monitor" "monitor" {
 
 The following attributes are exported:
 
-* `id` - The ID of the certificate check synthetics monitor.
+* `id` - The ID (GUID) of the certificate check synthetics monitor.
 
 ## Import
 
