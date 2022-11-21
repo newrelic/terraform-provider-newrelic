@@ -12,17 +12,17 @@ Use this resource to create, update, and delete a Simple or Browser Synthetics M
 
 ## Example Usage
 ```hcl
-resource "newrelic_synthetics_monitor" "bar" {
+resource "newrelic_synthetics_monitor" "monitor" {
   status           = "ENABLED"
-  name             = "Example synthetics monitor"
+  name             = "monitor"
   period           = "EVERY_MINUTE"
   uri              = "https://www.one.newrelic.com"
   type             = "SIMPLE"
   locations_public = ["AP_SOUTH_1"]
 
   custom_header {
-    name  = "Name"
-    value = "simpleMonitor"
+    name  = "some_name"
+    value = "some_value"
   }
 
   treat_redirect_as_failure = true
@@ -39,17 +39,17 @@ resource "newrelic_synthetics_monitor" "bar" {
 ##### Type: `SIMPLE BROWSER`
 
 ```hcl
-resource "newrelic_synthetics_monitor" "bar" {
+resource "newrelic_synthetics_monitor" "monitor" {
   status           = "ENABLED"
-  name             = "Example synthetics monitor"
+  name             = "monitor"
   period           = "EVERY_MINUTE"
   uri              = "https://www.one.newrelic.com"
   type             = "BROWSER"
   locations_public = ["AP_SOUTH_1"]
 
   custom_header {
-    name  = "name"
-    value = "simple_browser"
+    name  = "some_name"
+    value = "some_value"
   }
 
   enable_screenshot_on_failure_and_script = true
@@ -57,8 +57,8 @@ resource "newrelic_synthetics_monitor" "bar" {
   verify_ssl                              = true
 
   tag {
-    key    = "name"
-    values = ["SimpleBrowserMonitor"]
+    key    = "some_key"
+    values = ["some_value"]
   }
 }
 ```
@@ -72,8 +72,8 @@ The following are the common arguments supported for `SIMPLE` and `BROWSER` moni
 * `status` - (Required) The run state of the monitor.
 * `name` - (Required) The human-readable identifier for the monitor.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
-* `uri` - (Required) The uri the monitor runs against.
-* `type` - (Required) THE monitor type. Valid values are `SIMPLE` and `BROWSER`.
+* `uri` - (Required) The URI the monitor runs against.
+* `type` - (Required) The monitor type. Valid values are `SIMPLE` and `BROWSER`.
 * `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. You don't need the `AWS_` prefix as the provider uses NerdGraph. At least one of either `locations_public` or `location_private` is required.
 * `locations_private` - (Required) The location the monitor will run from. Accepts a list of private location GUIDs. At least one of either `locations_public` or `locations_private` is required.
 * `custom_header`- (Optional) Custom headers to use in monitor job. See [Nested custom_header blocks](#nested-custom-header-blocks) below for details.
@@ -95,7 +95,9 @@ The `BROWSER` monitor type supports the following additional arguments:
 
 #### Deprecated runtime
 
-If you want to use the deprecated Node 10 runtime you can set the `runtime_type`, `runtime_type_version` and `script_language` to empty string `""`. The old runtime will be deprecated in the future, so use the new version whenever you can.
+If you want to use the legacy runtime you can set the `runtime_type`, `runtime_type_version` and `script_language` to empty string `""`. 
+
+-> **NOTE:** The old runtime will be deprecated in the future, so use the new version whenever you can.
 
 ### Nested `custom header` blocks
 
@@ -122,23 +124,23 @@ The below example shows how you can define a private location and attach it to a
 ##### Type: `SIMPLE`
 
 ```hcl
-resource "newrelic_synthetics_private_location" "foo" {
+resource "newrelic_synthetics_private_location" "location" {
   description               = "Example private location"
   name                      = "private_location"
   verified_script_execution = false
 }
 
-resource "newrelic_synthetics_monitor" "bar" {
+resource "newrelic_synthetics_monitor" "monitor" {
   status           = "ENABLED"
-  name             = "Example synthetics monitor"
+  name             = "monitor"
   period           = "EVERY_MINUTE"
   uri              = "https://www.one.newrelic.com"
   type             = "SIMPLE"
-  location_private = ["newrelic_synthetics_private_location.private_location.id"]
+  locations_private = ["newrelic_synthetics_private_location.location.id"]
 
   custom_header {
-    name  = "name"
-    value = "simple_browser"
+    name  = "some_name"
+    value = "some_value"
   }
 
   treat_redirect_as_failure = true
@@ -155,23 +157,23 @@ resource "newrelic_synthetics_monitor" "bar" {
 ##### Type: `BROWSER`
 
 ```hcl
-resource "newrelic_synthetics_private_location" "foo" {
+resource "newrelic_synthetics_private_location" "location" {
   description               = "Example private location"
   name                      = "private-location"
   verified_script_execution = false
 }
 
-resource "newrelic_synthetics_monitor" "bar" {
+resource "newrelic_synthetics_monitor" "monitor" {
   status            = "ENABLED"
   type              = "BROWSER"
   uri               = "https://www.one.newrelic.com"
-  name              = "Example synthetics monitor"
+  name              = "monitor"
   period            = "EVERY_MINUTE"
-  locations_private = ["newrelic_synthetics_private_location.private_location.id"]
+  locations_private = ["newrelic_synthetics_private_location.location.id"]
 
   custom_header {
-    name  = "name"
-    value = "simple_browser"
+    name  = "some_name"
+    value = "some_value"
   }
 
   enable_screenshot_on_failure_and_script = true
@@ -192,12 +194,12 @@ resource "newrelic_synthetics_monitor" "bar" {
 
 The following attributes are exported:
 
-* `id` - The ID (guid) of the Synthetics monitor that the script is attached to.
+* `id` - The ID (GUID) of the Synthetics monitor that the script is attached to.
 
 ## Import
 
 Synthetics monitor can be imported using the `guid`, e.g.
 
 ```bash
-$ terraform import newrelic_synthetics_monitor.bar <guid>
+$ terraform import newrelic_synthetics_monitor.monitor <guid>
 ```
