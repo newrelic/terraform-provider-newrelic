@@ -217,6 +217,7 @@ resource "newrelic_workflow" "foo" {
 
   destination {
     channel_id = newrelic_notification_channel.foo.id
+	notification_triggers = ["ACTIVATED"]
   }
 }
 `, accountID, name)
@@ -284,6 +285,7 @@ resource "newrelic_workflow" "foo" {
 
   destination {
     channel_id = newrelic_notification_channel.foo.id
+    notification_triggers = ["ACTIVATED"]
   }
 }
 `, accountID, name)
@@ -352,6 +354,7 @@ resource "newrelic_workflow" "foo" {
 
   destination {
     channel_id = newrelic_notification_channel.%[1]s.id
+    notification_triggers = ["ACTIVATED"]
   }
 }`, channelResourceName, workflowName, customSections)
 }
@@ -422,6 +425,7 @@ resource "newrelic_workflow" "foo" {
 
   destination {
     channel_id = newrelic_notification_channel.foo.id
+	notification_triggers = ["ACTIVATED"]
   }
 }
 `, accountID, name)

@@ -393,6 +393,7 @@ func flattenWorkflowDestinationConfiguration(d *workflows.AiWorkflowsDestination
 	destinationConfigurationResult["channel_id"] = d.ChannelId
 	destinationConfigurationResult["name"] = d.Name
 	destinationConfigurationResult["type"] = d.Type
+	destinationConfigurationResult["notification_triggers"] = d.NotificationTriggers
 
 	return destinationConfigurationResult, nil
 }
