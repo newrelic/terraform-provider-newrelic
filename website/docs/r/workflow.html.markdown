@@ -31,6 +31,7 @@ resource "newrelic_workflow" "foo" {
 
   destination {
     channel_id = newrelic_notification_channel.some_channel.id
+    notification_triggers = [ "ACTIVATED" ]
   }
 }
 ```
@@ -110,8 +111,22 @@ Each workflow resource requires one or more `destination` blocks. These blocks d
 workflow.
 
 Block's arguments:
-* `channel_id` - (Required) id of a [notification_channel](notification_channel.html) to use for notifications. Please note that you have to use a 
+* `channel_id` - (Required) Id of a [notification_channel](notification_channel.html) to use for notifications. Please note that you have to use a 
 **notification** channel, not an `alert_channel`.
+* `notification_triggers` - (Optional) Issue events to notify on. The value is a list of possible issue events. See [Notification Triggers](#notification-triggers) below for details. 
+
+### Notification Triggers
+
+An issue has multiple event types that signify different situations of the issue.
+
+Notification triggers define on which issue events the channel will be notified.
+
+Possible values:
+* `ACTIVATED` - Send a notification when an issue is activated
+* `ACKNOWLEDGED` - Send a notification when an issue is acknowledged
+* `PRIORITY_CHANGED` - Send a notification when an issue's priority has been changed
+* `CLOSED` - Send a notification when an issue is
+
     
 ### Nested `enrichments` blocks
 
