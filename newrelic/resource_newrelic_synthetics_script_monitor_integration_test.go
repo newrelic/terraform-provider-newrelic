@@ -31,27 +31,22 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
 				),
 			},
-			// //Test: Update
-			// {
-			// 	Config: testAccNewRelicSyntheticsScriptAPIMonitorConfig(fmt.Sprintf("%s-updated", rName), monitorTypeStr),
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
-			// 	),
-			// },
+			//Test: Update
+			{
+				Config: testAccNewRelicSyntheticsScriptAPIMonitorConfig(fmt.Sprintf("%s-updated", rName), monitorTypeStr),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
+				),
+			},
 			// Test: Import
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					// not returned from the API
-					"period",
+					// Technical limitations with the API prevent us from setting the following attributes.
 					"locations_public",
 					"location_private",
-					"status",
-					"runtime_type",
-					"runtime_type_version",
-					"script_language",
 					"tag",
 					"script",
 					"enable_screenshot_on_failure_and_script",

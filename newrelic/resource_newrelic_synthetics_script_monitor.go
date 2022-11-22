@@ -232,8 +232,10 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 		}
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
-			"name": resp.Monitor.Name,
-			"guid": string(resp.Monitor.GUID),
+			"name":   resp.Monitor.Name,
+			"guid":   string(resp.Monitor.GUID),
+			"period": string(resp.Monitor.Period),
+			"status": string(resp.Monitor.Status),
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -252,8 +254,10 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 		}
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
-			"name": resp.Monitor.Name,
-			"guid": string(resp.Monitor.GUID),
+			"name":   resp.Monitor.Name,
+			"guid":   string(resp.Monitor.GUID),
+			"period": string(resp.Monitor.Period),
+			"status": string(resp.Monitor.Status),
 		})
 		if err != nil {
 			return diag.FromErr(err)
