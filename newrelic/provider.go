@@ -151,6 +151,8 @@ func Provider() *schema.Provider {
 			"newrelic_notification_destination":                 resourceNewRelicNotificationDestination(),
 			"newrelic_nrql_alert_condition":                     resourceNewRelicNrqlAlertCondition(),
 			"newrelic_nrql_drop_rule":                           resourceNewRelicNRQLDropRule(),
+			"newrelic_obfuscation_expression":                   resourceNewRelicObfuscationExpression(),
+			"newrelic_obfuscation_rule":                         resourceNewRelicObfuscationRule(),
 			"newrelic_one_dashboard":                            resourceNewRelicOneDashboard(),
 			"newrelic_one_dashboard_raw":                        resourceNewRelicOneDashboardRaw(),
 			"newrelic_one_dashboard_json":                       resourceNewRelicOneDashboardJSON(),
