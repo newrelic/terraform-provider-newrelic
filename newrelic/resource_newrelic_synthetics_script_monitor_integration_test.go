@@ -60,9 +60,9 @@ func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_script_monitor.bar"
 	rName := acctest.RandString(5)
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheckEnvVars(t) },
-		Providers: testAccProviders,
-		// CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
