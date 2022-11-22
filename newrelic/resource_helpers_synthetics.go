@@ -376,3 +376,14 @@ func getMonitorID(monitorGUID string) string {
 	monitorID := splitGUID[3]
 	return monitorID
 }
+
+// This map is used to facilitate safely setting the schema attributes which
+// are returned as part of the monitor's entity tags. We have a limited set
+// of attributes we can set due to technical limitations in the API.
+// Note this is a caveat in how synthetics monitor data is provided
+// from the entity API. This is not a common resource pattern.
+var syntheticsMonitorTagKeyToSchemaAttrMap = map[string]string{
+	"runtimeType":        "runtime_type",
+	"runtimeTypeVersion": "runtime_type_version",
+	"scriptLanguage":     "script_language",
+}

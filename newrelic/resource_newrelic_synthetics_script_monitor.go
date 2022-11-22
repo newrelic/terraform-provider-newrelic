@@ -188,10 +188,20 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 	switch e := (*resp).(type) {
 	case *entities.SyntheticMonitorEntity:
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
-			"name": e.Name,
-			"type": string(e.MonitorType),
-			"guid": string(e.GUID),
+			"name":   e.Name,
+			"type":   string(e.MonitorType),
+			"guid":   string(e.GUID),
+			"period": string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
+			"status": string(e.MonitorSummary.Status),
 		})
+
+		for _, t := range e.Tags {
+			if k, ok := syntheticsMonitorTagKeyToSchemaAttrMap[t.Key]; ok {
+				if len(t.Values) == 1 {
+					_ = d.Set(k, t.Values[0])
+				}
+			}
+		}
 	}
 
 	return diag.FromErr(err)
@@ -205,7 +215,7 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 
 	monitorType, ok := d.GetOk("type")
 	if !ok {
-		log.Printf("Not Monitor type specified")
+		log.Printf("No monitor type specified")
 	}
 
 	switch monitorType {
