@@ -3,7 +3,9 @@ package newrelic
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/newrelic"
@@ -53,11 +55,6 @@ func resourceNewRelicObfuscationRule() *schema.Resource {
 				Description: "Actions for the rule. The actions will be applied in the order specified by this list.",
 				Required:    true,
 				Elem:        ObfuscationRuleActionInputSchemaElem(),
-			},
-			"action_id": {
-				Type:        schema.TypeString,
-				Description: "The id of the obfuscation action.",
-				Computed:    true,
 			},
 		},
 	}
@@ -127,7 +124,25 @@ func resourceNewRelicObfuscationRuleCreate(ctx context.Context, d *schema.Resour
 	ruleID := created.ID
 	d.SetId(ruleID)
 
-	return resourceNewRelicObfuscationRuleRead(ctx, d, meta)
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		rules, err := client.Logconfigurations.GetObfuscationRulesWithContext(ctx, accountID)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		for _, v := range *rules {
+			if v.ID == ruleID {
+				return nil
+			}
+		}
+		return resource.RetryableError(fmt.Errorf("obfuscation rule was not created"))
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
+
+	return nil
 }
 
 //Read the obfuscation Rule
@@ -178,7 +193,6 @@ func flattenActions(actions *[]logconfigurations.LogConfigurationsObfuscationAct
 			"expression_id": v.Expression.ID,
 			"attribute":     v.Attributes,
 			"method":        v.Method,
-			//"action_id":     v.ID,
 		}
 		flatActions = append(flatActions, m)
 	}
