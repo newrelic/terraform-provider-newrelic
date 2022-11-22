@@ -26,7 +26,7 @@ func resourceNewRelicObfuscationRule() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
-				Description: "The account id associated with the obfuscation expression.",
+				Description: "The account id associated with the obfuscation rule.",
 				Computed:    true,
 				Optional:    true,
 			},
