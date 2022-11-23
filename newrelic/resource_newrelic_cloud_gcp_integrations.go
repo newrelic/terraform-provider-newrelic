@@ -30,6 +30,13 @@ func resourceNewrelicCloudGcpIntegrations() *schema.Resource {
 				Description: "Id of the linked gcp account in New Relic",
 				Required:    true,
 			},
+			"alloy_db": {
+				Type:        schema.TypeList,
+				Description: "GCP alloy DB integration",
+				Optional:    true,
+				Elem:        cloudGcpIntegrationsAlloyDBSchemaElem(),
+				MaxItems:    1,
+			},
 			"app_engine": {
 				Type:        schema.TypeList,
 				Description: "GCP app engine service",
@@ -217,6 +224,14 @@ func cloudGcpIntegrationSchemaBase() map[string]*schema.Schema {
 			Description: "the data polling interval in seconds",
 			Optional:    true,
 		},
+	}
+}
+
+// function to add schema for gcp AppEngine
+func cloudGcpIntegrationsAlloyDBSchemaElem() *schema.Resource {
+	s := cloudGcpIntegrationSchemaBase()
+	return &schema.Resource{
+		Schema: s,
 	}
 }
 
@@ -475,6 +490,11 @@ func expandCloudGcpIntegrationsinputs(d *schema.ResourceData) (cloud.CloudIntegr
 	if lid, ok := d.GetOk("linked_account_id"); ok {
 		linkedAccountID = lid.(int)
 	}
+	if v, ok := d.GetOk("alloy_db"); ok {
+		gcpCloudIntegrations.GcpAlloydb = expandCloudGcpAlloyDBIntegrationsinputs(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("alloy_db"); len(n.([]interface{})) < len(o.([]interface{})) {
+		gcpDisableIntegrations.GcpAlloydb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
 	if v, ok := d.GetOk("app_engine"); ok {
 		gcpCloudIntegrations.GcpAppengine = expandCloudGcpAppEngineIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("app_engine"); len(n.([]interface{})) < len(o.([]interface{})) {
@@ -645,6 +665,25 @@ func expandCloudGcpAppEngineIntegrationsinputs(b []interface{}, linkedAccountID 
 	expanded := make([]cloud.CloudGcpAppengineIntegrationInput, len(b))
 	for i, expand := range b {
 		var input cloud.CloudGcpAppengineIntegrationInput
+		if expand == nil {
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
+			return expanded
+		}
+		in := expand.(map[string]interface{})
+		input.LinkedAccountId = linkedAccountID
+		if a, ok := in["metrics_polling_interval"]; ok {
+			input.MetricsPollingInterval = a.(int)
+		}
+		expanded[i] = input
+	}
+	return expanded
+}
+
+func expandCloudGcpAlloyDBIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpAlloydbIntegrationInput {
+	expanded := make([]cloud.CloudGcpAlloydbIntegrationInput, len(b))
+	for i, expand := range b {
+		var input cloud.CloudGcpAlloydbIntegrationInput
 		if expand == nil {
 			input.LinkedAccountId = linkedAccountID
 			expanded[i] = input
@@ -1178,6 +1217,8 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 	_ = d.Set("linked_account_id", linkedAccount.ID)
 	for _, i := range linkedAccount.Integrations {
 		switch t := i.(type) {
+		case *cloud.CloudGcpAlloydbIntegration:
+			_ = d.Set("alloy_db", flattenCloudGcpAlloyDBIntegration(t))
 		case *cloud.CloudGcpAppengineIntegration:
 			_ = d.Set("app_engine", flattenCloudGcpAppEngineIntegration(t))
 		case *cloud.CloudGcpBigqueryIntegration:
@@ -1234,6 +1275,14 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 
 // flatten function to set(store) outputs from the terraform apply
 func flattenCloudGcpAppEngineIntegration(in *cloud.CloudGcpAppengineIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+	out := make(map[string]interface{})
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	flattened[0] = out
+	return flattened
+}
+
+func flattenCloudGcpAlloyDBIntegration(in *cloud.CloudGcpAlloydbIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
@@ -1536,6 +1585,10 @@ func expandCloudGcpDisableinputs(d *schema.ResourceData) cloud.CloudDisableInteg
 	if l, ok := d.GetOk("linked_account_id"); ok {
 		linkedAccountID = l.(int)
 	}
+	if _, ok := d.GetOk("alloy_db"); ok {
+		cloudGcpDisableInput.GcpAlloydb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
 	if _, ok := d.GetOk("app_engine"); ok {
 		cloudGcpDisableInput.GcpAppengine = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}

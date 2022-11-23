@@ -127,7 +127,17 @@ resource "newrelic_cloud_azure_integrations" "foo" {
     resource_groups = ["resource_groups"]
   }
 
+  mysql_flexible {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
+
   postgresql {
+    metrics_polling_interval = 1200
+    resource_groups = ["resource_groups"]
+  }
+
+  postgresql_flexible {
     metrics_polling_interval = 1200
     resource_groups = ["resource_groups"]
   }
@@ -194,27 +204,29 @@ The following arguments are supported with minimum metric polling interval of 30
 * `app_service` - (Optional) Azure App Service. See [Integration blocks](#integration-blocks) below for details.
 * `containers` - (Optional) Azure Containers. See [Integration blocks](#integration-blocks) below for details.
 * `cosmos_db` - (Optional) Azure CosmosDB. See [Integration blocks](#integration-blocks) below for details.
-* `data_factory` - (Optional) for Azure Data Factory. See [Integration blocks](#integration-blocks) below for details.
-* `event_hub` - (Optional) for Azure Event Hub. See [Integration blocks](#integration-blocks) below for details.
-* `express_route` - (Optional) for Azure Express Route. See [Integration blocks](#integration-blocks) below for details.
-* `firewalls` - (Optional) for Azure Firewalls. See [Integration blocks](#integration-blocks) below for details.
-* `front_door` - (Optional) for Azure Front Door. See [Integration blocks](#integration-blocks) below for details.
-* `functions` - (Optional) for Azure Functions. See [Integration blocks](#integration-blocks) below for details.
-* `key_vault` - (Optional) for Azure Key Vault. See [Integration blocks](#integration-blocks) below for details.
-* `load_balancer` - (Optional) for Azure Load Balancer. See [Integration blocks](#integration-blocks) below for details.
-* `logic_apps` - (Optional) for Azure Logic Apps. See [Integration blocks](#integration-blocks) below for details.
-* `machine_learning` - (Optional) for Azure Machine Learning. See [Integration blocks](#integration-blocks) below for details.
-* `maria_db` - (Optional) for Azure MariaDB. See [Integration blocks](#integration-blocks) below for details.
-* `mysql` - (Optional) for Azure MySQL. See [Integration blocks](#integration-blocks) below for details.
-* `postgresql` - (Optional) for Azure PostgreSQL. See [Integration blocks](#integration-blocks) below for details.
-* `power_bi_dedicated` - (Optional) for Azure Power BI Dedicated. See [Integration blocks](#integration-blocks) below for details.
-* `redis_cache` - (Optional) for Azure Redis Cache. See [Integration blocks](#integration-blocks) below for details.
-* `service_bus` - (Optional) for Azure Service Bus. See [Integration blocks](#integration-blocks) below for details.
-* `sql` - (Optional) for Azure SQL. See [Integration blocks](#integration-blocks) below for details.
-* `sql_managed` - (Optional) for SQL Managed. See [Integration blocks](#integration-blocks) below for details.
-* `virtual_machine` - (Optional) for Azure Virtual machine. See [Integration blocks](#integration-blocks) below for details.
-* `vms` - (Optional) for Azure VMs. See [Integration blocks](#integration-blocks) below for details.
-* `vpn_gateway` - (Optional) for Azure VPN Gateway. See [Integration blocks](#integration-blocks) below for details.
+* `data_factory` - (Optional) Azure Data Factory. See [Integration blocks](#integration-blocks) below for details.
+* `event_hub` - (Optional) Azure Event Hub. See [Integration blocks](#integration-blocks) below for details.
+* `express_route` - (Optional) Azure Express Route. See [Integration blocks](#integration-blocks) below for details.
+* `firewalls` - (Optional) Azure Firewalls. See [Integration blocks](#integration-blocks) below for details.
+* `front_door` - (Optional) Azure Front Door. See [Integration blocks](#integration-blocks) below for details.
+* `functions` - (Optional) Azure Functions. See [Integration blocks](#integration-blocks) below for details.
+* `key_vault` - (Optional) Azure Key Vault. See [Integration blocks](#integration-blocks) below for details.
+* `load_balancer` - (Optional) Azure Load Balancer. See [Integration blocks](#integration-blocks) below for details.
+* `logic_apps` - (Optional) Azure Logic Apps. See [Integration blocks](#integration-blocks) below for details.
+* `machine_learning` - (Optional) Azure Machine Learning. See [Integration blocks](#integration-blocks) below for details.
+* `maria_db` - (Optional) Azure MariaDB. See [Integration blocks](#integration-blocks) below for details.
+* `mysql` - (Optional) Azure MySQL. See [Integration blocks](#integration-blocks) below for details.
+* `mysql_flexible` - (Optional) Azure MySQL Flexible Server. See [Integration blocks](#integration-blocks) below for details.
+* `postgresql` - (Optional) Azure PostgreSQL. See [Integration blocks](#integration-blocks) below for details.
+* `postgresql_flexible` - (Optional) Azure PostgreSQL Flexible Server. See [Integration blocks](#integration-blocks) below for details.
+* `power_bi_dedicated` - (Optional) Azure Power BI Dedicated. See [Integration blocks](#integration-blocks) below for details.
+* `redis_cache` - (Optional) Azure Redis Cache. See [Integration blocks](#integration-blocks) below for details.
+* `service_bus` - (Optional) Azure Service Bus. See [Integration blocks](#integration-blocks) below for details.
+* `sql` - (Optional) Azure SQL. See [Integration blocks](#integration-blocks) below for details.
+* `sql_managed` - (Optional) Azure SQL Managed. See [Integration blocks](#integration-blocks) below for details.
+* `virtual_machine` - (Optional) Azure Virtual machine. See [Integration blocks](#integration-blocks) below for details.
+* `vms` - (Optional) Azure VMs. See [Integration blocks](#integration-blocks) below for details.
+* `vpn_gateway` - (Optional) Azure VPN Gateway. See [Integration blocks](#integration-blocks) below for details.
 
 Below arguments supports the minimum metric polling interval of 900 seconds
 
