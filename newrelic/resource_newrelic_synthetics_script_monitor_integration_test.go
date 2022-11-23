@@ -44,14 +44,9 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					// not returned from the API
-					"period",
+					// Technical limitations with the API prevent us from setting the following attributes.
 					"locations_public",
 					"location_private",
-					"status",
-					"runtime_type",
-					"runtime_type_version",
-					"script_language",
 					"tag",
 					"script",
 					"enable_screenshot_on_failure_and_script",
@@ -89,14 +84,9 @@ func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					// not returned from the API
-					"period",
+					// Technical limitations with the API prevent us from setting the following attributes.
 					"locations_public",
 					"location_private",
-					"status",
-					"runtime_type",
-					"runtime_type_version",
-					"script_language",
 					"tag",
 					"script",
 					"enable_screenshot_on_failure_and_script",
@@ -129,7 +119,7 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "bar" {
 			enable_screenshot_on_failure_and_script	=	true
-			locations_public	=	["AP_SOUTH_1"]
+			locations_public	=	["AP_SOUTH_1", "US_EAST_1"]
 			name	=	"%[1]s"
 			period	=	"EVERY_HOUR"
 			runtime_type_version	=	"100"
