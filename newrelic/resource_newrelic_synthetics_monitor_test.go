@@ -41,15 +41,11 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateVerify: true, //name,type,uri
+				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					// not returned from the API
-					"period",
+					// Technical limitations with the API prevent us from setting the following attributes.
 					"locations_public",
 					"locations_private",
-					"status",
-					"validation_string",
-					"verify_ssl",
 					"bypass_head_request",
 					"treat_redirect_as_failure",
 					"runtime_type",
@@ -66,50 +62,50 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 
 func testAccNewRelicSyntheticsSimpleMonitorConfig(name string, monitorType string) string {
 	return fmt.Sprintf(`
-		resource "newrelic_synthetics_monitor" "foo" {
-			custom_header {
-				name	=	"Name"
-				value	=	"simpleMonitor"
-				}
-            treat_redirect_as_failure	=	false
-			validation_string	=	"success"
-			bypass_head_request	=	false
-			verify_ssl	=	false
-			locations_public	=	["AP_SOUTH_1"]
-			name	=	"%s"
-			period	=	"EVERY_MINUTE"
-			status	=	"ENABLED"
-			type	=	"%s"
-			tag {
-				key = "pineapple"
-				values = ["pizza"]
-            }
-			uri	=	"https://www.one.newrelic.com"
-		}`, name, monitorType)
+resource "newrelic_synthetics_monitor" "foo" {
+	custom_header {
+		name  = "Name"
+		value = "simpleMonitor"
+	}
+	treat_redirect_as_failure = false
+	validation_string         = "success"
+	bypass_head_request       = false
+	verify_ssl                = false
+	locations_public          = ["AP_SOUTH_1"]
+	name                      = "%s"
+	period                    = "EVERY_MINUTE"
+	status                    = "ENABLED"
+	type                      = "%s"
+	tag {
+		key    = "pineapple"
+		values = ["pizza"]
+	}
+	uri = "https://www.one.newrelic.com"
+}`, name, monitorType)
 }
 
 func testAccNewRelicSyntheticsSimpleMonitorConfigUpdated(name string, monitorType string) string {
 	return fmt.Sprintf(`
-		resource "newrelic_synthetics_monitor" "foo" {
-			custom_header{
-				name	=	"name"
-				value	=	"simpleMonitorUpdated"
-			}
-			treat_redirect_as_failure	=	true
-			validation_string	=	"succeeded"
-			bypass_head_request	=	false
-			verify_ssl	=	true
-			locations_public	=	["AP_SOUTH_1","AP_EAST_1"]
-			name	=	"%s-updated"
-			period	=	"EVERY_5_MINUTES"
-			status	=	"DISABLED"
-			type	=	"%s"
-            tag {
-				key = "pineapple"
-				values = ["pizza", "cake"]
-            }
-			uri	=	"https://www.one.newrelic.com"
-		}`, name, monitorType)
+resource "newrelic_synthetics_monitor" "foo" {
+	custom_header {
+		name  = "name"
+		value = "simpleMonitorUpdated"
+	}
+	treat_redirect_as_failure = true
+	validation_string         = "succeeded"
+	bypass_head_request       = false
+	verify_ssl                = true
+	locations_public          = ["AP_SOUTH_1", "AP_EAST_1"]
+	name                      = "%s-updated"
+	period                    = "EVERY_5_MINUTES"
+	status                    = "DISABLED"
+	type                      = "%s"
+	tag {
+		key    = "pineapple"
+		values = ["pizza", "cake"]
+	}
+	uri = "https://www.one.newrelic.com"
+}`, name, monitorType)
 }
 
 func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
@@ -139,20 +135,13 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateVerify: true, //name,type,uri
+				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					// not returned from the API
-					"period",
+					// Technical limitations with the API prevent us from setting the following attributes.
 					"locations_public",
 					"locations_private",
-					"status",
-					"validation_string",
-					"verify_ssl",
 					"bypass_head_request",
 					"treat_redirect_as_failure",
-					"runtime_type",
-					"runtime_type_version",
-					"script_language",
 					"tag",
 					"enable_screenshot_on_failure_and_script",
 					"custom_header",
@@ -166,8 +155,12 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_monitor" "bar" {
 		custom_header {
-			name	= "name"
-			value	= "simple_browser"
+			name	= "custom-header-1"
+			value	= "header-value-1"
+		}
+		custom_header {
+			name	= "customer-header-2"
+			value	= "header-value-2"
 		}
 		enable_screenshot_on_failure_and_script	=	true
 		validation_string	=	"success"
