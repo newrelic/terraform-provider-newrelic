@@ -142,10 +142,10 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 				ImportStateVerify: true, //name,type,uri
 				ImportStateVerifyIgnore: []string{
 					// not returned from the API
-					"period",
+					// "period",
 					"locations_public",
 					"locations_private",
-					"status",
+					// "status",
 					"validation_string",
 					"verify_ssl",
 					"bypass_head_request",

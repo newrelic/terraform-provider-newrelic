@@ -261,9 +261,11 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 	switch e := (*v).(type) {
 	case *entities.SyntheticMonitorEntity:
 		err := setSyntheticsMonitorAttributes(d, map[string]string{
-			"name": e.Name,
-			"type": string(e.MonitorType),
-			"uri":  e.MonitoredURL,
+			"name":   e.Name,
+			"type":   string(e.MonitorType),
+			"uri":    e.MonitoredURL,
+			"period": string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
+			"status": string(e.MonitorSummary.Status),
 		})
 		if err != nil {
 			diag.FromErr(err)
