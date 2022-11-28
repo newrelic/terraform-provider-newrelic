@@ -125,19 +125,7 @@ func resourceNewRelicDataPartitionCreate(ctx context.Context, d *schema.Resource
 	}
 
 	//The name of a log data partition. Has to start with 'Log_' prefix and can only contain alphanumeric characters and underscores.
-	//Prepending Log_ if not present
-
 	if e, ok := d.GetOk("target_data_partition"); ok {
-		//sample := e.(string)
-		//if !strings.HasPrefix(sample, "Log_") {
-		//	log.Printf("[INFO] Prepended \"Log_\" to the given target_data_partition value")
-		//	if strings.HasPrefix(strings.ToUpper(sample), "LOG_") {
-		//		sample = cases.Title(language.English, cases.Compact).String(sample)
-		//	} else {
-		//		sample = "Log_" + sample
-		//	}
-		//}
-		//e = sample
 		createInput.TargetDataPartition = logconfigurations.LogConfigurationsLogDataPartitionName(e.(string))
 	}
 
@@ -164,6 +152,7 @@ func resourceNewRelicDataPartitionCreate(ctx context.Context, d *schema.Resource
 
 	var apiDiags diag.Diagnostics
 
+	//Setting the errors
 	if created.Errors != nil {
 		for _, err := range created.Errors {
 			apiDiags = append(apiDiags, diag.Diagnostic{
@@ -213,7 +202,7 @@ func resourceNewRelicDataPartitionRead(ctx context.Context, d *schema.ResourceDa
 	ruleID := d.Id()
 	rule, err := getDataPartitionByID(ctx, client, accountID, ruleID)
 
-	if err != nil && rule == nil {
+	if err != nil || rule == nil || rule.Deleted == true {
 		d.SetId("")
 		return nil
 	}
@@ -221,6 +210,8 @@ func resourceNewRelicDataPartitionRead(ctx context.Context, d *schema.ResourceDa
 	log.Printf("type of MatchingCriteria.MatchingExpression in read method: %[1]s and type %[1]T", str)
 	str = strings.Trim(str, "'")
 	log.Printf("type of MatchingCriteria.MatchingExpression in read method: %[1]s and type %[1]T", str)
+
+	log.Printf("type of MatchingCriteria.MatchingExpression in read method: %[1]t and type %[1]T", rule.Enabled)
 
 	if err := d.Set("account_id", accountID); err != nil {
 		return diag.FromErr(err)
@@ -236,6 +227,7 @@ func resourceNewRelicDataPartitionRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("matching_expression", str)
 	_ = d.Set("matching_method", rule.MatchingCriteria.MatchingOperator)
 	_ = d.Set("retention_policy", rule.RetentionPolicy)
+	_ = d.Set("deleted", rule.Deleted)
 
 	return nil
 }
@@ -249,9 +241,24 @@ func resourceNewRelicDataPartitionUpdate(ctx context.Context, d *schema.Resource
 
 	accountID := selectAccountID(meta.(*ProviderConfig), d)
 
-	_, err := client.Logconfigurations.LogConfigurationsUpdateDataPartitionRuleWithContext(ctx, accountID, updateInput)
+	updated, err := client.Logconfigurations.LogConfigurationsUpdateDataPartitionRuleWithContext(ctx, accountID, updateInput)
+
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	var apiDiags diag.Diagnostics
+
+	//Setting the errors
+	if updated.Errors != nil {
+		for _, err := range updated.Errors {
+			apiDiags = append(apiDiags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Message,
+				Detail:   string(err.Type),
+			})
+		}
+		return apiDiags
 	}
 
 	return resourceNewRelicDataPartitionRead(ctx, d, meta)
@@ -262,10 +269,7 @@ func expandDataPartitionUpdateInput(d *schema.ResourceData) logconfigurations.Lo
 		ID:               d.Id(),
 		MatchingCriteria: &logconfigurations.LogConfigurationsDataPartitionRuleMatchingCriteriaInput{},
 	}
-
-	if e, ok := d.GetOk("enabled"); ok {
-		updateInp.Enabled = e.(bool)
-	}
+	updateInp.Enabled = d.Get("enabled").(bool)
 
 	if e, ok := d.GetOk("description"); ok {
 		updateInp.Description = e.(string)
