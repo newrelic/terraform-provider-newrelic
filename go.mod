@@ -5,9 +5,9 @@ go 1.18
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.20.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/newrelic/go-agent/v3 v3.17.0
+	github.com/newrelic/go-agent/v3 v3.20.0
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go/v2 v2.3.0
+	github.com/newrelic/newrelic-client-go/v2 v2.4.0
 	github.com/stretchr/testify v1.8.0
 )
 
@@ -63,7 +63,7 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d // indirect
-	google.golang.org/grpc v1.48.0 // indirect
+	google.golang.org/grpc v1.49.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

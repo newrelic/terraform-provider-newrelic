@@ -49,7 +49,6 @@ func dataSourceNewRelicEntity() *schema.Resource {
 			},
 			"tag": {
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Optional:    true,
 				Description: "A tag applied to the entity.",
 				Elem: &schema.Resource{

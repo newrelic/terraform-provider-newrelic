@@ -3,18 +3,18 @@ layout: "newrelic"
 page_title: "New Relic: newrelic_synthetics_step_monitor"
 sidebar_current: "docs-newrelic-resource-synthetics-step-monitor"
 description: |-
-Create and manage a Synthetics step monitor in New Relic.
+Create and manage a Synthetics Step monitor in New Relic.
 ---
 
 # Resource: newrelic\_synthetics\_step\_monitor
 
-Use this resource to create, update, and delete a synthetics step monitor in New Relic.
+Use this resource to create, update, and delete a Synthetics Step monitor in New Relic.
 
 ## Example Usage
 
 ```hcl
 resource "newrelic_synthetics_step_monitor" "monitor" {
-  name                                    = "monitor"
+  name                                    = "step_monitor"
   enable_screenshot_on_failure_and_script = true
   locations_public                        = ["US_EAST_1", "US_EAST_2"]
   period                                  = "EVERY_6_HOURS"
@@ -77,7 +77,7 @@ The below example shows how you can define a private location and attach it to a
 -> **NOTE:** It can take up to 10 minutes for a private location to become available.
 
 ```hcl
-resource "newrelic_synthetics_private_location" "private_location" {
+resource "newrelic_synthetics_private_location" "location" {
   description               = "Test Description"
   name                      = "private-location"
   verified_script_execution = true
@@ -87,7 +87,7 @@ resource "newrelic_synthetics_step_monitor" "bar" {
   name = "step_monitor"
   uri  = "https://www.one.example.com"
   location_private {
-    guid         = "newrelic_synthetics_private_location.private_location.id"
+    guid         = "newrelic_synthetics_private_location.location.id"
     vse_password = "secret"
   }
   period = "EVERY_6_HOURS"
@@ -107,12 +107,12 @@ resource "newrelic_synthetics_step_monitor" "bar" {
 
 The following attributes are exported:
 
-* `id` - The ID of the synthetics step monitor.
+* `id` - The ID (GUID) of the synthetics step monitor.
 
 ## Import
 
 Synthetics step monitor scripts can be imported using the `guid`, e.g.
 
 ```bash
-$ terraform import newrelic_synthetics_step_monitor.bar <guid>
+$ terraform import newrelic_synthetics_step_monitor.monitor <guid>
 ```
