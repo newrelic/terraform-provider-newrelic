@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
@@ -270,6 +271,31 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 		if err != nil {
 			diag.FromErr(err)
 		}
+
+		if e.MonitorType == entities.SyntheticMonitorTypeTypes.BROWSER {
+			for _, t := range e.Tags {
+				if k, ok := syntheticsMonitorTagKeyToSchemaAttrMap[t.Key]; ok {
+					if len(t.Values) == 1 {
+						_ = d.Set(k, t.Values[0])
+					}
+				}
+			}
+		}
+
+		for _, t := range e.Tags {
+			if t.Key == "responseValidationText" {
+				if len(t.Values) == 1 {
+					_ = d.Set("validation_string", t.Values[0])
+				}
+			}
+
+			if t.Key == "useTlsValidation" {
+				if len(t.Values) == 1 {
+					v, _ := strconv.ParseBool(t.Values[0])
+					_ = d.Set("verify_ssl", v)
+				}
+			}
+		}
 	}
 }
 
@@ -282,7 +308,7 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 
 	monitorType, ok := d.GetOk("type")
 	if !ok {
-		log.Printf("Not Monitor type specified")
+		log.Printf("monitor type must be specified")
 	}
 
 	guid := synthetics.EntityGUID(d.Id())
