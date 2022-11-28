@@ -531,12 +531,6 @@ func expandCloudGcpIntegrationsinputs(d *schema.ResourceData) (cloud.CloudIntegr
 		gcpDisableIntegrations.GcpDataproc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("data_proc"); ok {
-		gcpCloudIntegrations.GcpDataproc = expandCloudGcpDataProcIntegrationsinputs(v.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("data_proc"); len(n.([]interface{})) < len(o.([]interface{})) {
-		gcpDisableIntegrations.GcpDataproc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
 	if v, ok := d.GetOk("data_store"); ok {
 		gcpCloudIntegrations.GcpDatastore = expandCloudGcpDataStoreIntegrationsinputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("data_store"); len(n.([]interface{})) < len(o.([]interface{})) {
