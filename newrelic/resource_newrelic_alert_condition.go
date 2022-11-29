@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
 
 var alertConditionTypes = map[string][]string{
@@ -137,7 +137,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: intInSlice([]int{1, 2, 4, 8, 12, 24}),
-				Description:  "Automatically close instance-based violations, including JVM health metric violations, after the number of hours specified. Must be: 1, 2, 4, 8, 12 or 24.",
+				Description:  "Automatically close instance-based incidents, including JVM health metric incidents, after the number of hours specified. Must be: 1, 2, 4, 8, 12 or 24.",
 			},
 			"gc_metric": {
 				Type:        schema.TypeString,
@@ -193,8 +193,8 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 			"user_defined_value_function": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"average", "min", "max", "total", "sample_size"}, false),
-				Description:  "One of: (average, min, max, total, sample_size).",
+				ValidateFunc: validation.StringInSlice([]string{"average", "min", "max", "total", "sample_size", "percent", "rate"}, false),
+				Description:  "One of: (average, min, max, total, sample_size, percent, rate).",
 			},
 		},
 	}

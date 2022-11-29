@@ -15,7 +15,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 
 	insights "github.com/newrelic/go-insights/client"
-	nr "github.com/newrelic/newrelic-client-go/newrelic"
+	nr "github.com/newrelic/newrelic-client-go/v2/newrelic"
 )
 
 const serviceName = "terraform-provider-newrelic"
@@ -137,10 +137,6 @@ type ProviderConfig struct {
 	InsightsInsertClient *insights.InsertClient
 	AccountID            int
 	PersonalAPIKey       string
-}
-
-func (c *ProviderConfig) hasNerdGraphCredentials() bool {
-	return c.AccountID > 0 && c.PersonalAPIKey != ""
 }
 
 // If the argument is a path, Read loads it and returns the contents,

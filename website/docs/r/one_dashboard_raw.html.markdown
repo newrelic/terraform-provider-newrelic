@@ -6,7 +6,9 @@ description: |-
   Create and manage dashboards with custom visualizations and/or RawConfiguration in New Relic One.
 ---
 
-# Resource: newrelic_one_dashboard_raw
+# Resource: newrelic\_one\_dashboard\_raw
+
+-> **NOTE:** The [newrelic_one_dashboard_json](one_dashboard_json.html) resource is preferred for configuring dashboards in New Relic. This resource does not support the latest dashboard features and will be deprecated in the future.
 
 ## Example Usage: Create a New Relic One Dashboard with RawConfiguration
 
@@ -129,4 +131,4 @@ Nested `widget` blocks support the following common arguments:
 - `height` - (Optional) Height of the widget. Valid values are `1` to `12` inclusive. Defaults to `3`.
 - `visualization_id` - (Required) The visualization ID of the widget
 - `configuration` - (Required) The configuration of the widget.
-- `linked_entity_guids` - (Optional) Related entity GUIDs. 
+- `linked_entity_guids` - (Optional) Related entity GUIDs.

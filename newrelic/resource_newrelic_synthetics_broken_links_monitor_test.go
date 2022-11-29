@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/newrelic/newrelic-client-go/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 )
 
 func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
@@ -79,7 +79,7 @@ func testAccCheckNewRelicSyntheticsMonitorEntityExists(n string) resource.TestCh
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
-		time.Sleep(5 * time.Second)
+		time.Sleep(60 * time.Second)
 
 		result, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
@@ -101,7 +101,7 @@ func testAccCheckNewRelicSyntheticsMonitorResourceDestroy(s *terraform.State) er
 		}
 
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
-		time.Sleep(5 * time.Second)
+		time.Sleep(60 * time.Second)
 
 		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
 		if (*found) != nil {

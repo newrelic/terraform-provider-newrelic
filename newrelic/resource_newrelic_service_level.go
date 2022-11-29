@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/common"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
 
 func resourceNewRelicServiceLevel() *schema.Resource {
@@ -125,6 +125,33 @@ func eventsQuerySchema() *schema.Resource {
 				Optional:     true,
 				Description:  "",
 				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
+			"select": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "",
+				MinItems:    0,
+				MaxItems:    1,
+				Elem:        eventsQuerySelectSchema(),
+			},
+		},
+	}
+}
+
+func eventsQuerySelectSchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"attribute": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "",
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
+			"function": {
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "",
+				ValidateFunc: validation.StringInSlice([]string{"COUNT", "SUM"}, false),
 			},
 		},
 	}
@@ -266,7 +293,7 @@ func resourceNewRelicServiceLevelUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	_, err = client.ServiceLevel.ServiceLevelUpdateWithContext(ctx, identifier.ID, updateInput)
+	_, err = client.ServiceLevel.ServiceLevelUpdateWithContext(ctx, common.EntityGUID(getSliGUID(identifier)), updateInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -284,7 +311,7 @@ func resourceNewRelicServiceLevelDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	if _, err := client.ServiceLevel.ServiceLevelDeleteWithContext(ctx, identifier.ID); err != nil {
+	if _, err := client.ServiceLevel.ServiceLevelDeleteWithContext(ctx, common.EntityGUID(getSliGUID(identifier))); err != nil {
 		return diag.FromErr(err)
 	}
 

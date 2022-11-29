@@ -99,11 +99,13 @@ The following arguments are supported:
   * `condition_scope` - (Required for some types) `application` or `instance`.  Choose `application` for most scenarios.  If you are using the JVM plugin in New Relic, the `instance` setting allows your condition to trigger [for specific app instances](https://docs.newrelic.com/docs/alerts/new-relic-alerts/defining-conditions/scope-alert-thresholds-specific-instances).
   * `enabled` - (Optional) Whether the condition is enabled or not. Defaults to true.
   * `gc_metric` - (Optional) A valid Garbage Collection metric e.g. `GC/G1 Young Generation`.
-  * `violation_close_timer` - (Optional) Automatically close instance-based violations, including JVM health metric violations, after the number of hours specified. Must be: `1`, `2`, `4`, `8`, `12` or `24`.
+  * `violation_close_timer` - (Optional) Automatically close instance-based incidents, including JVM health metric incidents, after the number of hours specified. Must be: `1`, `2`, `4`, `8`, `12` or `24`.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
   * `term` - (Required) A list of terms for this condition. See [Terms](#terms) below for details.
   * `user_defined_metric` - (Optional) A custom metric to be evaluated.
-  * `user_defined_value_function` - (Optional) One of: `average`, `min`, `max`, `total`, or `sample_size`.
+  * `user_defined_value_function` - (Optional) One of: `average`, `min`, `max`, `total`, `sample_size`, `rate` or `percent`.
+
+-> **NOTE:** The `user_defined_value_function` can have `rate` or `percent` only when the `type` is `mobile_metric`.
 
 ```
 Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.

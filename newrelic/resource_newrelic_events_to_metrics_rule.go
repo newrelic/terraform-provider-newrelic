@@ -10,8 +10,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	nrErrors "github.com/newrelic/newrelic-client-go/pkg/errors"
-	"github.com/newrelic/newrelic-client-go/pkg/eventstometrics"
+	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/eventstometrics"
 )
 
 func resourceNewRelicEventsToMetricsRule() *schema.Resource {
@@ -64,11 +64,6 @@ func resourceNewRelicEventsToMetricsRule() *schema.Resource {
 
 func resourceNewRelicEventsToMetricsRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Create")
-	}
-
 	client := providerConfig.NewClient
 
 	createInput := []eventstometrics.EventsToMetricsCreateRuleInput{
@@ -111,11 +106,6 @@ func resourceNewRelicEventsToMetricsRuleCreate(ctx context.Context, d *schema.Re
 
 func resourceNewRelicEventsToMetricsRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Read")
-	}
-
 	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Reading New Relic entity tags for entity guid %s", d.Id())
@@ -168,11 +158,6 @@ func resourceNewRelicEventsToMetricsRuleRead(ctx context.Context, d *schema.Reso
 
 func resourceNewRelicEventsToMetricsRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Update")
-	}
-
 	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Updating New Relic events to metric rules")
@@ -200,11 +185,6 @@ func resourceNewRelicEventsToMetricsRuleUpdate(ctx context.Context, d *schema.Re
 
 func resourceNewRelicEventsToMetricsRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Delete")
-	}
-
 	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Deleting New Relic entity tags from entity guid %s", d.Id())

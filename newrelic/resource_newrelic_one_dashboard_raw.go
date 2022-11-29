@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/common"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
 
 func resourceNewRelicOneDashboardRaw() *schema.Resource {
@@ -172,11 +172,6 @@ func dashboardRawWidgetSchemaBase() map[string]*schema.Schema {
 
 func resourceNewRelicOneDashboardRawCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Create")
-	}
-
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
@@ -212,11 +207,6 @@ func resourceNewRelicOneDashboardRawCreate(ctx context.Context, d *schema.Resour
 // resourceNewRelicOneDashboardRawRead NerdGraph => Terraform reader
 func resourceNewRelicOneDashboardRawRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Read")
-	}
-
 	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Reading New Relic One dashboard %s", d.Id())
@@ -236,11 +226,6 @@ func resourceNewRelicOneDashboardRawRead(ctx context.Context, d *schema.Resource
 
 func resourceNewRelicOneDashboardRawUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Update")
-	}
-
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
