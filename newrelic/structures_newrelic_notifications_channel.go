@@ -2,7 +2,7 @@ package newrelic
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/notifications"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
 )
 
 func expandNotificationChannel(d *schema.ResourceData) notifications.AiNotificationsChannelInput {

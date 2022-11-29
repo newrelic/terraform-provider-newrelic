@@ -6,13 +6,13 @@ import (
 	"log"
 	"strings"
 
-	"github.com/newrelic/newrelic-client-go/pkg/workflows"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/workflows"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
 
 func resourceNewRelicWorkflow() *schema.Resource {
@@ -140,13 +140,13 @@ func resourceNewRelicWorkflow() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
+				Deprecated:  "Please use 'enabled' instead",
 				Description: "Indicates whether the destinations are enabled.",
 			},
 			"enrichments": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				MaxItems:    1,
-				MinItems:    1,
 				Description: "Enrichments can give additional context on alert notifications by adding NRQL query results to them.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -202,6 +202,7 @@ func resourceNewRelicWorkflow() *schema.Resource {
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "The account id of the workflow.",
 			},

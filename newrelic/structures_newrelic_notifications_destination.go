@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
-	"github.com/newrelic/newrelic-client-go/pkg/notifications"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
 )
 
 // migrateStateNewRelicNotificationDestinationV0toV1 currently facilitates migrating:
@@ -135,16 +135,20 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 
 	auth := flattenNotificationDestinationAuth(destination.Auth, d)
 
-	authAttr := "auth_basic"
+	var authAttr string
 	switch destination.Auth.AuthType {
+	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.BASIC):
+		authAttr = "auth_basic"
 	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.OAUTH2):
 		authAttr = "auth_oauth2"
 	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.TOKEN):
 		authAttr = "auth_token"
 	}
 
-	if err := d.Set(authAttr, auth); err != nil {
-		return fmt.Errorf("[DEBUG] Error setting notification auth: %#v", err)
+	if authAttr != "" {
+		if err := d.Set(authAttr, auth); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting notification auth: %#v", err)
+		}
 	}
 
 	if err := d.Set("property", flattenNotificationDestinationProperties(destination.Properties)); err != nil {
@@ -185,7 +189,7 @@ func flattenNotificationDestinationAuth(a ai.AiNotificationsAuth, d *schema.Reso
 			"token":  d.Get("auth_token.0.token"),
 		}
 	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.OAUTH2):
-		// ...
+		// This auth type is not supported
 	}
 
 	return authConfig

@@ -7,9 +7,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 
-	"github.com/newrelic/newrelic-client-go/pkg/workflows"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/workflows"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -212,6 +212,39 @@ func TestFlattenWorkflow(t *testing.T) {
 				WorkflowEnabled:           true,
 				MutingRulesHandling:       workflows.AiWorkflowsMutingRulesHandlingTypes.NOTIFY_ALL_ISSUES,
 				Enrichments:               enrichments,
+				DestinationConfigurations: destinationConfigurations,
+				IssuesFilter:              issuesFilter,
+			},
+		},
+		"no_enrichments": {
+			Data: map[string]interface{}{
+				"name":                  "workflow-test",
+				"enrichments_enabled":   true,
+				"destinations_enabled":  true,
+				"enabled":               true,
+				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
+				"issues_filter": map[string]interface{}{
+					"name": "issues-filter-test",
+					"type": "FILTER",
+					"predicate": []map[string]interface{}{{
+						"attribute": "source",
+						"operator":  "EQUAL",
+						"values":    []string{"newrelic"},
+					}},
+				},
+				"destination": []map[string]interface{}{{
+					"channel_id": "300848f9-c713-463c-9036-40b45c4c970f",
+					"name":       "destination-test",
+					"type":       "WEBHOOK",
+				}},
+			},
+			Flattened: &workflows.AiWorkflowsWorkflow{
+				Name:                      "workflow-test",
+				EnrichmentsEnabled:        true,
+				DestinationsEnabled:       true,
+				WorkflowEnabled:           true,
+				MutingRulesHandling:       workflows.AiWorkflowsMutingRulesHandlingTypes.NOTIFY_ALL_ISSUES,
+				Enrichments:               []workflows.AiWorkflowsEnrichment{},
 				DestinationConfigurations: destinationConfigurations,
 				IssuesFilter:              issuesFilter,
 			},

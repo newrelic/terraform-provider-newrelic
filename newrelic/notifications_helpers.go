@@ -3,8 +3,8 @@ package newrelic
 import (
 	"fmt"
 
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
-	"github.com/newrelic/newrelic-client-go/pkg/notifications"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,16 +17,25 @@ func notificationsPropertySchema() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Notification property key.",
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					return oldValue == "source"
+				},
 			},
 			"value": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Notification property value.",
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					return oldValue == "terraform"
+				},
 			},
 			"label": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Notification property label.",
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					return oldValue == "terraform-source-internal"
+				},
 			},
 			"display_value": {
 				Type:        schema.TypeString,
@@ -97,4 +106,12 @@ func buildAiNotificationsResponseErrors(errors []notifications.AiNotificationsRe
 		})
 	}
 	return diagErrors
+}
+
+func createMonitoringProperty() notifications.AiNotificationsPropertyInput {
+	return notifications.AiNotificationsPropertyInput{
+		Key:   "source",
+		Value: "terraform",
+		Label: "terraform-source-internal",
+	}
 }

@@ -6,7 +6,7 @@ package newrelic
 import (
 	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/notifications"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
 
 	"github.com/stretchr/testify/assert"
 )
