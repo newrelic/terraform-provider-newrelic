@@ -45,26 +45,8 @@ func TestAccNewRelicDataPartitionRule_Basic(t *testing.T) {
 	})
 }
 
-//Must fail if given the same name
-func TestAccNewRelicDataPartitionRule_Validation(t *testing.T) {
-	rName := acctest.RandString(7)
-	expectedMsg, _ := regexp.Compile("DUPLICATE_DATA_PARTITION_RULE_NAME")
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicDataPartitionRuleDestroy,
-		Steps: []resource.TestStep{
-			//create
-			{
-				Config:      testAccNewRelicDataPartitionRule_ValidateName(rName),
-				ExpectError: expectedMsg,
-			},
-		},
-	})
-}
-
-//Checking the creation, update name, import and deletion of data partition rule
-func TestAccNewRelicDataPartitionRule_Basic(t *testing.T) {
+//Checking the creation, update name and deletion of data partition rule
+func TestAccNewRelicDataPartitionRule_EnableUpdate(t *testing.T) {
 	resourceName := "newrelic_data_partition_rule.foo"
 	rName := acctest.RandString(7)
 	resource.ParallelTest(t, resource.TestCase{
@@ -88,7 +70,8 @@ func TestAccNewRelicDataPartitionRule_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicDataPartitionRule_Name(t *testing.T) {
+//Checking the creation of new resource on update in name
+func TestAccNewRelicDataPartitionRule_NameUpdate(t *testing.T) {
 	resourceName := "newrelic_data_partition_rule.foo"
 	rName := acctest.RandString(7)
 	resource.ParallelTest(t, resource.TestCase{
@@ -112,6 +95,67 @@ func TestAccNewRelicDataPartitionRule_Name(t *testing.T) {
 	})
 }
 
+//Checking the creation of new resource on update in name
+func TestAccNewRelicDataPartitionRule_MatchingCriteriaUpdate(t *testing.T) {
+	resourceName := "newrelic_data_partition_rule.foo"
+	rName := acctest.RandString(7)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicDataPartitionRuleDestroy,
+		Steps: []resource.TestStep{
+			//create
+			{
+				Config: testAccNewRelicDataPartitionRuleConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicDataPartitionRuleExists(resourceName)),
+			},
+			//update
+			{
+				Config: testAccNewRelicDataPartitionRuleUpdate_MatchingCriteria(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicDataPartitionRuleExists(resourceName)),
+			},
+		},
+	})
+}
+
+//Must fail if given the same name
+func TestAccNewRelicDataPartitionRule_DuplicateName(t *testing.T) {
+	rName := acctest.RandString(7)
+	expectedMsg, _ := regexp.Compile("DUPLICATE_DATA_PARTITION_RULE_NAME")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicDataPartitionRuleDestroy,
+		Steps: []resource.TestStep{
+			//create
+			{
+				Config:      testAccNewRelicDataPartitionRule_DuplicateName(rName),
+				ExpectError: expectedMsg,
+			},
+		},
+	})
+}
+
+//Must fail if given the invalid name
+func TestAccNewRelicDataPartitionRule_Validation(t *testing.T) {
+	rName := acctest.RandString(7)
+	expectedMsg, _ := regexp.Compile("INVALID_DATA_PARTITION_INPUT")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicDataPartitionRuleDestroy,
+		Steps: []resource.TestStep{
+			//create
+			{
+				Config:      testAccNewRelicDataPartitionRule_ValidateName(rName),
+				ExpectError: expectedMsg,
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicDataPartitionRuleDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, rs := range s.RootModule().Resources {
@@ -126,21 +170,6 @@ func testAccCheckNewRelicDataPartitionRuleDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func testAccNewRelicDataPartitionRuleConfig(name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_data_partition_rule" "foo"{
-	account_id = %[1]d
-	description = "%[3]s"
-	enabled = true
-    attribute_name = "hostname"
-    matching_expression = "localhost"
-    matching_method = "EQUALS"
-    retention_policy = "SECONDARY"
-    target_data_partition = "Log_Test_%[2]s"
-}
-`, testAccountID, name, testAccExpectedApplicationName)
 }
 
 func testAccCheckNewRelicDataPartitionRuleExists(n string) resource.TestCheckFunc {
@@ -165,6 +194,21 @@ func testAccCheckNewRelicDataPartitionRuleExists(n string) resource.TestCheckFun
 	}
 }
 
+func testAccNewRelicDataPartitionRuleConfig(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_data_partition_rule" "foo"{
+	account_id = %[1]d
+	description = "%[3]s"
+	enabled = true
+    attribute_name = "hostname"
+    matching_expression = "localhost"
+    matching_method = "EQUALS"
+    retention_policy = "SECONDARY"
+    target_data_partition = "Log_Test_%[2]s"
+}
+`, testAccountID, name, testAccExpectedApplicationName)
+}
+
 func testAccNewRelicDataPartitionRuleUpdate(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_data_partition_rule" "foo"{
@@ -180,7 +224,7 @@ resource "newrelic_data_partition_rule" "foo"{
 `, testAccountID, name, testAccExpectedApplicationName)
 }
 
-func testAccNewRelicDataPartitionRule_ValidateName(name string) string {
+func testAccNewRelicDataPartitionRule_DuplicateName(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_data_partition_rule" "foo"{
 	account_id = %[1]d
@@ -202,6 +246,21 @@ resource "newrelic_data_partition_rule" "bar"{
     matching_method = "EQUALS"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s"
+}
+`, testAccountID, name, testAccExpectedApplicationName)
+}
+
+func testAccNewRelicDataPartitionRule_ValidateName(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_data_partition_rule" "foo"{
+	account_id = %[1]d
+	description = "%[3]s"
+	enabled = true
+    attribute_name = "hostname"
+    matching_expression = "localhost"
+    matching_method = "EQUALS"
+    retention_policy = "SECONDARY"
+    target_data_partition = "Test_%[2]s"
 }
 `, testAccountID, name, testAccExpectedApplicationName)
 }
@@ -230,6 +289,21 @@ resource "newrelic_data_partition_rule" "foo"{
     attribute_name = "hostname_update"
     matching_expression = "localhost"
     matching_method = "EQUALS"
+    retention_policy = "SECONDARY"
+    target_data_partition = "Log_Test_%[2]s_update"
+}
+`, testAccountID, name, testAccExpectedApplicationName)
+}
+
+func testAccNewRelicDataPartitionRuleUpdate_MatchingCriteria(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_data_partition_rule" "foo"{
+	account_id = %[1]d
+	description = "%[3]s_update"
+	enabled = true
+    attribute_name = "hostname_update"
+    matching_expression = "localhost"
+    matching_method = "LIKE"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s_update"
 }

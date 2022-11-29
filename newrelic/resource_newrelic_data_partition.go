@@ -207,11 +207,7 @@ func resourceNewRelicDataPartitionRead(ctx context.Context, d *schema.ResourceDa
 		return nil
 	}
 	str := rule.MatchingCriteria.MatchingExpression
-	log.Printf("type of MatchingCriteria.MatchingExpression in read method: %[1]s and type %[1]T", str)
 	str = strings.Trim(str, "'")
-	log.Printf("type of MatchingCriteria.MatchingExpression in read method: %[1]s and type %[1]T", str)
-
-	log.Printf("type of MatchingCriteria.MatchingExpression in read method: %[1]t and type %[1]T", rule.Enabled)
 
 	if err := d.Set("account_id", accountID); err != nil {
 		return diag.FromErr(err)
@@ -261,7 +257,8 @@ func resourceNewRelicDataPartitionUpdate(ctx context.Context, d *schema.Resource
 		return apiDiags
 	}
 
-	return resourceNewRelicDataPartitionRead(ctx, d, meta)
+	return nil
+	//return resourceNewRelicDataPartitionRead(ctx, d, meta)
 }
 
 func expandDataPartitionUpdateInput(d *schema.ResourceData) logconfigurations.LogConfigurationsUpdateDataPartitionRuleInput {
