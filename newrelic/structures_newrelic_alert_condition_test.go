@@ -6,7 +6,7 @@ package newrelic
 import (
 	"testing"
 
-	"github.com/newrelic/newrelic-client-go/pkg/alerts"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
 	"github.com/stretchr/testify/require"
 )
 

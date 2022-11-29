@@ -8,13 +8,18 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
 
 func dataSourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNewRelicSyntheticsSecureCredentialRead,
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The New Relic account ID associated with this secure credential.",
+			},
 			"key": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -52,9 +57,13 @@ func dataSourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sc
 		return diag.FromErr(err)
 	}
 
+	if entityResults.Count != 1 {
+		return diag.FromErr(fmt.Errorf("the key '%s' does not match any New Relic secure credential or matches more than one", key))
+	}
+
 	var entity *entities.EntityOutlineInterface
 	for _, e := range entityResults.Results.Entities {
-		// Conditional on case sensitive match
+		// Conditional on case-sensitive match
 		if e.GetName() == key {
 			entity = &e
 			break

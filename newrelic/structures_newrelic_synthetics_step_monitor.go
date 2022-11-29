@@ -2,7 +2,7 @@ package newrelic
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
 func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) *synthetics.SyntheticsCreateStepMonitorInput {
@@ -16,7 +16,7 @@ func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) *synthetics.S
 		Steps:  expandSyntheticsMonitorSteps(d.Get("steps").([]interface{})),
 	}
 
-	if attr, ok := d.GetOk("locations_private"); ok {
+	if attr, ok := d.GetOk("location_private"); ok {
 		input.Locations.Private = expandPrivateLocations(attr.(*schema.Set).List())
 	}
 

@@ -1,8 +1,10 @@
 package newrelic
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/servicelevel"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicelevel"
 )
 
 func flattenServiceLevelIndicator(indicator servicelevel.ServiceLevelIndicator, identifier *serviceLevelIdentifier, d *schema.ResourceData, sliGUID string) error {
@@ -18,15 +20,15 @@ func flattenServiceLevelIndicator(indicator servicelevel.ServiceLevelIndicator, 
 	eventsMap["account_id"] = identifier.AccountID
 
 	if indicator.Events.ValidEvents != nil {
-		eventsMap["valid_events"] = flattenServiceLevelEventsQuery(indicator.Events.ValidEvents)
+		eventsMap["valid_events"] = flattenServiceLevelEventsQuery(indicator.Events.ValidEvents, d, "valid_events")
 	}
 
 	if indicator.Events.GoodEvents != nil {
-		eventsMap["good_events"] = flattenServiceLevelEventsQuery(indicator.Events.GoodEvents)
+		eventsMap["good_events"] = flattenServiceLevelEventsQuery(indicator.Events.GoodEvents, d, "good_events")
 	}
 
 	if indicator.Events.BadEvents != nil {
-		eventsMap["bad_events"] = flattenServiceLevelEventsQuery(indicator.Events.BadEvents)
+		eventsMap["bad_events"] = flattenServiceLevelEventsQuery(indicator.Events.BadEvents, d, "bad_events")
 	}
 
 	events[0] = eventsMap
@@ -38,15 +40,32 @@ func flattenServiceLevelIndicator(indicator servicelevel.ServiceLevelIndicator, 
 	return nil
 }
 
-func flattenServiceLevelEventsQuery(eventsQuery *servicelevel.ServiceLevelEventsQuery) []interface{} {
+func flattenServiceLevelEventsQuery(eventsQuery *servicelevel.ServiceLevelEventsQuery, d *schema.ResourceData, eventType string) []interface{} {
 	eventsQueryMap := make(map[string]interface{})
 	eventsQueryOutput := make([]interface{}, 1)
 
 	eventsQueryMap["from"] = eventsQuery.From
 	eventsQueryMap["where"] = eventsQuery.Where
 
+	apiReturnedDefaultValue := len(eventsQuery.Select.Attribute) == 0 && eventsQuery.Select.Function == "COUNT"
+
+	if value, ok := d.GetOk(fmt.Sprintf("events.0.%s.0.select", eventType)); ok && len(value.([]interface{})) > 0 || !apiReturnedDefaultValue {
+		eventsQueryMap["select"] = flattenServiceLevelEventsQuerySelect(eventsQuery.Select)
+	}
+
 	eventsQueryOutput[0] = eventsQueryMap
 	return eventsQueryOutput
+}
+
+func flattenServiceLevelEventsQuerySelect(selectValue servicelevel.ServiceLevelEventsQuerySelect) []interface{} {
+	selectQueryMap := make(map[string]interface{})
+	selectOutput := make([]interface{}, 1)
+
+	selectQueryMap["attribute"] = selectValue.Attribute
+	selectQueryMap["function"] = selectValue.Function
+
+	selectOutput[0] = selectQueryMap
+	return selectOutput
 }
 
 func flattenServiceLevelObjectives(objectives []servicelevel.ServiceLevelObjective) []interface{} {
@@ -140,7 +159,23 @@ func expandServiceLevelEventsQueryCreateInput(cfg map[string]interface{}) *servi
 		eventsQuery.Where = servicelevel.NRQL(where.(string))
 	}
 
+	if value, ok := cfg["select"].([]interface{}); ok && len(value) > 0 {
+		eventsQuery.Select = expandServiceLevelEventsQuerySelectCreateInput(value[0].(map[string]interface{}))
+	}
+
 	return &eventsQuery
+}
+
+func expandServiceLevelEventsQuerySelectCreateInput(cfg map[string]interface{}) *servicelevel.ServiceLevelEventsQuerySelectCreateInput {
+	selectValue := servicelevel.ServiceLevelEventsQuerySelectCreateInput{}
+
+	if attribute, ok := cfg["attribute"]; ok {
+		selectValue.Attribute = attribute.(string)
+	}
+
+	selectValue.Function = servicelevel.ServiceLevelEventsQuerySelectFunction(cfg["function"].(string))
+
+	return &selectValue
 }
 
 func expandServiceLevelObjectivesCreateInput(cfg []interface{}) []servicelevel.ServiceLevelObjectiveCreateInput {
@@ -245,7 +280,23 @@ func expandServiceLevelEventsQueryUpdateInput(cfg map[string]interface{}) *servi
 		eventsQuery.Where = servicelevel.NRQL(where.(string))
 	}
 
+	if value, ok := cfg["select"].([]interface{}); ok && len(value) > 0 {
+		eventsQuery.Select = expandServiceLevelEventsQuerySelectUpdateInput(value[0].(map[string]interface{}))
+	}
+
 	return &eventsQuery
+}
+
+func expandServiceLevelEventsQuerySelectUpdateInput(cfg map[string]interface{}) *servicelevel.ServiceLevelEventsQuerySelectUpdateInput {
+	selectValue := servicelevel.ServiceLevelEventsQuerySelectUpdateInput{}
+
+	if attribute, ok := cfg["attribute"]; ok {
+		selectValue.Attribute = attribute.(string)
+	}
+
+	selectValue.Function = servicelevel.ServiceLevelEventsQuerySelectFunction(cfg["function"].(string))
+
+	return &selectValue
 }
 
 func expandServiceLevelObjectivesUpdateInput(cfg []interface{}) []servicelevel.ServiceLevelObjectiveUpdateInput {

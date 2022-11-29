@@ -6,13 +6,13 @@ import (
 	"log"
 	"strings"
 
-	"github.com/newrelic/newrelic-client-go/pkg/ai"
-	"github.com/newrelic/newrelic-client-go/pkg/notifications"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
 
 func resourceNewRelicNotificationDestination() *schema.Resource {
@@ -53,7 +53,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			"auth_basic": {
 				Type:          schema.TypeList,
 				Optional:      true,
-				MinItems:      1,
 				MaxItems:      1,
 				ConflictsWith: []string{"auth_token"},
 				Description:   "Basic username and password authentication credentials.",
@@ -74,7 +73,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			"auth_token": {
 				Type:          schema.TypeList,
 				Optional:      true,
-				MinItems:      1,
 				MaxItems:      1,
 				ConflictsWith: []string{"auth_basic"},
 				Description:   "Token authentication credentials.",
@@ -230,6 +228,7 @@ func resourceNewRelicNotificationDestinationV0() *schema.Resource {
 func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	destinationInput, err := expandNotificationDestination(d)
+	destinationInput.Properties = append(destinationInput.Properties, createMonitoringProperty())
 	if err != nil {
 		return diag.FromErr(err)
 	}

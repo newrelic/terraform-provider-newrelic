@@ -10,9 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/common"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
-	nrErrors "github.com/newrelic/newrelic-client-go/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
+	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
 
 var (
@@ -72,11 +72,6 @@ func resourceNewRelicEntityTags() *schema.Resource {
 
 func resourceNewRelicEntityTagsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Create")
-	}
-
 	client := providerConfig.NewClient
 
 	guid := common.EntityGUID(d.Get("guid").(string))
@@ -125,11 +120,6 @@ func resourceNewRelicEntityTagsCreate(ctx context.Context, d *schema.ResourceDat
 
 func resourceNewRelicEntityTagsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Read")
-	}
-
 	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Reading New Relic entity tags for entity guid %s", d.Id())
@@ -152,11 +142,6 @@ func resourceNewRelicEntityTagsRead(ctx context.Context, d *schema.ResourceData,
 
 func resourceNewRelicEntityTagsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Update")
-	}
-
 	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Updating New Relic entity tags for entity guid %s", d.Id())
@@ -222,11 +207,6 @@ func convertTagTypes(tags []*entities.EntityTag) []*entities.TaggingTagInput {
 
 func resourceNewRelicEntityTagsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
-	if !providerConfig.hasNerdGraphCredentials() {
-		return diag.Errorf("err: NerdGraph support not present, but required for Delete")
-	}
-
 	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Deleting New Relic entity tags from entity guid %s", d.Id())
