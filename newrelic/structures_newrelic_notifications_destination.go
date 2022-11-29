@@ -65,9 +65,10 @@ func expandNotificationDestinationAuthToken(authRaw []interface{}) *notification
 }
 
 func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications.AiNotificationsDestinationUpdate, error) {
+	active := d.Get("active").(bool)
 	destination := notifications.AiNotificationsDestinationUpdate{
 		Name:   d.Get("name").(string),
-		Active: d.Get("active").(bool),
+		Active: &active,
 	}
 
 	if attr, ok := d.GetOk("auth_basic"); ok {
