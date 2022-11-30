@@ -485,6 +485,11 @@ func resourceNewRelicWorkflowRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	if len(workflowResponse.Entities) == 0 {
+		d.SetId("")
+		return nil
+	}
+
 	return diag.FromErr(flattenWorkflow(&workflowResponse.Entities[0], d))
 }
 
