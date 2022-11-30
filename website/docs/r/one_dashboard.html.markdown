@@ -121,11 +121,7 @@ The following arguments are supported:
   * `account_id` - (Optional) Determines the New Relic account where the dashboard will be created. Defaults to the account associated with the API key used.
   * `description` - (Optional) Brief text describing the dashboard.
   * `permissions` - (Optional) Determines who can see the dashboard in an account. Valid values are `private`, `public_read_only`, or `public_read_write`.  Defaults to `public_read_only`.
-<<<<<<< Updated upstream
-  * `variable` - (Optional) a nested block that describes a dashboard-local variable. See [Nested variable blocks](#nested-variable-blocks) below for details.
-=======
   * `variable` - (Optional) A nested block that describes a dashboard-local variable. See [Nested variable blocks](#nested-variable-blocks) below for details.
->>>>>>> Stashed changes
 
 ## Attribute Reference
 
