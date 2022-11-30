@@ -280,7 +280,8 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 	}
 
 	if len(destinationResponse.Entities) == 0 {
-		return diag.FromErr(fmt.Errorf("[ERROR] notification destinationResponse.Entities response is empty"))
+		d.SetId("")
+		return nil
 	}
 
 	errors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
