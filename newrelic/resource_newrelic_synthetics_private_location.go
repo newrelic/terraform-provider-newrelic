@@ -122,6 +122,11 @@ func resourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
+	if resp == nil {
+		d.SetId("")
+		return nil
+	}
+
 	setCommonSyntheticsPrivateLocationAttributes(resp, d)
 
 	return nil
