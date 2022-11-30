@@ -250,10 +250,9 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 		newDiagErr := diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diagErr[0].Severity,
-				Summary: diagErr[0].Summary,
-				Detail: "NOTICE: fields are statically typed. Make sure all fields are of the correct type",
+				Summary:  diagErr[0].Summary,
+				Detail:   "NOTICE: fields are statically typed. Make sure all fields are of the correct type",
 			},
-
 		}
 		return newDiagErr
 	}
