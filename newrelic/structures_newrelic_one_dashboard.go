@@ -29,6 +29,8 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}) (*dashboards
 		return nil, err
 	}
 
+	dash.Variables = expandDashboardVariablesInput(d.Get("variable").([]interface{}))
+
 	// Optional, with default
 	perm := d.Get("permissions").(string)
 	dash.Permissions = entities.DashboardPermissions(strings.ToUpper(perm))
@@ -39,6 +41,104 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}) (*dashboards
 	}
 
 	return &dash, nil
+}
+
+func expandDashboardVariablesInput(variables []interface{}) []dashboards.DashboardVariableInput {
+	if len(variables) < 1 {
+		return []dashboards.DashboardVariableInput{}
+	}
+
+	expanded := make([]dashboards.DashboardVariableInput, len(variables))
+
+	for i, val := range variables {
+		var variable dashboards.DashboardVariableInput
+		v := val.(map[string]interface{})
+
+		if d, ok := v["default_values"]; ok {
+			variable.DefaultValues = expandVariableDefaultValues(d.([]interface{}))
+		}
+
+		if m, ok := v["is_multi_selection"]; ok {
+			variable.IsMultiSelection = m.(bool)
+		}
+
+		if i, ok := v["item"]; ok && len(i.([]interface{})) > 0 {
+			variable.Items = expandVariableItems(i.([]interface{}))
+		}
+
+		if n, ok := v["name"]; ok {
+			variable.Name = n.(string)
+		}
+
+		if q, ok := v["nrql_query"]; ok && len(q.([]interface{})) > 0 {
+			variable.NRQLQuery = expandVariableNRQLQuery(q.([]interface{}))
+		}
+
+		if r, ok := v["replacement_strategy"]; ok {
+			variable.ReplacementStrategy = dashboards.DashboardVariableReplacementStrategy(strings.ToUpper(r.(string)))
+		}
+
+		if t, ok := v["title"]; ok {
+			variable.Title = t.(string)
+		}
+
+		if ty, ok := v["type"]; ok {
+			variable.Type = dashboards.DashboardVariableType(strings.ToUpper(ty.(string)))
+		}
+
+		expanded[i] = variable
+	}
+	return expanded
+}
+
+func expandVariableDefaultValues(in []interface{}) []dashboards.DashboardVariableDefaultItemInput {
+	out := make([]dashboards.DashboardVariableDefaultItemInput, len(in))
+
+	for i, v := range in {
+		cfg := v.(string)
+		expanded := dashboards.DashboardVariableDefaultItemInput{Value: dashboards.DashboardVariableDefaultValueInput{String: cfg}}
+		out[i] = expanded
+	}
+
+	return out
+}
+
+func expandVariableItems(in []interface{}) []dashboards.DashboardVariableEnumItemInput {
+	out := make([]dashboards.DashboardVariableEnumItemInput, len(in))
+
+	for i, v := range in {
+		cfg := v.(map[string]interface{})
+		expanded := dashboards.DashboardVariableEnumItemInput{
+			Title: cfg["title"].(string),
+			Value: cfg["value"].(string),
+		}
+		out[i] = expanded
+	}
+
+	return out
+}
+
+func expandVariableNRQLQuery(in []interface{}) dashboards.DashboardVariableNRQLQueryInput {
+	var out dashboards.DashboardVariableNRQLQueryInput
+
+	for _, v := range in {
+		cfg := v.(map[string]interface{})
+		out = dashboards.DashboardVariableNRQLQueryInput{
+			AccountIDs: expandVariableAccountIDs(cfg["account_ids"].([]interface{})),
+			Query:      nrdb.NRQL(cfg["query"].(string))}
+	}
+
+	return out
+}
+
+func expandVariableAccountIDs(in []interface{}) []int {
+	out := make([]int, len(in))
+
+	for i := range out {
+		out[i] = in[i].(int)
+	}
+
+	return out
 }
 
 // TODO: Reduce the cyclomatic complexity of this func
@@ -493,7 +593,69 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 		}
 	}
 
+	if dashboard.Variables != nil && len(dashboard.Variables) > 0 {
+		variables := flattenDashboardVariable(&dashboard.Variables)
+		if err := d.Set("variable", variables); err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+func flattenDashboardVariable(in *[]dashboards.DashboardVariable) []interface{} {
+	out := make([]interface{}, len(*in))
+
+	for i, v := range *in {
+		m := make(map[string]interface{})
+
+		m["default_values"] = flattenVariableDefaultValues(v.DefaultValues)
+		m["is_multi_selection"] = v.IsMultiSelection
+		m["item"] = flattenVariableItems(v.Items)
+		m["name"] = v.Name
+		m["nrql_query"] = flattenVariableNRQLQuery(v.NRQLQuery)
+		m["replacement_strategy"] = strings.ToLower(string(v.ReplacementStrategy))
+		m["title"] = v.Title
+		m["type"] = strings.ToLower(string(v.Type))
+
+		out[i] = m
+	}
+	return out
+}
+
+func flattenVariableDefaultValues(in []dashboards.DashboardVariableDefaultItem) []string {
+	out := make([]string, len(in))
+
+	for i, v := range in {
+		out[i] = v.Value.String
+	}
+	return out
+}
+
+func flattenVariableItems(in []dashboards.DashboardVariableEnumItem) []interface{} {
+	out := make([]interface{}, len(in))
+
+	for _, v := range in {
+		item := make(map[string]interface{})
+		item["title"] = v.Title
+		item["value"] = v.Value
+
+		out = append(out, item)
+	}
+	return out
+}
+
+func flattenVariableNRQLQuery(in dashboards.DashboardVariableNRQLQuery) []interface{} {
+	out := make([]interface{}, 1)
+
+	n := make(map[string]interface{})
+
+	n["account_ids"] = in.AccountIDs
+	n["query"] = in.Query
+
+	out = append(out, n)
+
+	return out
 }
 
 // return []interface{} because Page is a SetList

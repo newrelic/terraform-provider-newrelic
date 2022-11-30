@@ -403,6 +403,31 @@ func testAccCheckNewRelicOneDashboard_UnlinkFilterCurrentDashboard(name string) 
 	}
 }
 
+// TestAccNewRelicOneDashboard_CreateOnePage Ensure that we can create a NR1 Dashboard
+func TestAccNewRelicOneDashboard_Variables(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFullVariables(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			// Import
+			{
+				ResourceName:      "newrelic_one_dashboard.bar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 // testAccCheckNewRelicOneDashboardConfig_TwoPageBasic generates a TF config snippet for a simple
 // two page dashboard.
 func testAccCheckNewRelicOneDashboardConfig_TwoPageBasic(dashboardName string, accountID string) string {
@@ -425,6 +450,17 @@ resource "newrelic_one_dashboard" "bar" {
   permissions = "private"
 
 ` + testAccCheckNewRelicOneDashboardConfig_PageFull(dashboardName, accountID) + `
+}`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariables(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+` + testAccCheckNewRelicOneDashboardConfig_PageSimple(dashboardName) + `
+` + testAccCheckNewRelicOneDashboardConfig_Variable() + `
 }`
 }
 
@@ -632,6 +668,27 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
 		  query      = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES"
 		}
 	}
+  }
+`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_Variable() string {
+	return `
+  variable {
+    default_values = ["value"]
+	is_multi_selection = true
+	item {
+		title = "item"
+		value = "ITEM"
+	}
+    name = "variable"
+	nrql_query {
+		account_ids = [2520528]
+		query = "FROM Transaction SELECT average(duration) FACET appName"
+	}
+	replacement_strategy = "default"
+	title = "title"
+	type = "nrql"
   }
 `
 }
