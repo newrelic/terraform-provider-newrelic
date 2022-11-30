@@ -14,34 +14,34 @@ description: |-
 
 ```hcl
 resource "newrelic_one_dashboard" "exampledash" {
-  name = "New Relic Terraform Example"
+  name        = "New Relic Terraform Example"
   permissions = "public_read_only"
 
   page {
     name = "New Relic Terraform Example"
 
     widget_billboard {
-      title = "Requests per minute"
-      row = 1
+      title  = "Requests per minute"
+      row    = 1
       column = 1
-      width = 6
+      width  = 6
       height = 3
 
       nrql_query {
-        query       = "FROM Transaction SELECT rate(count(*), 1 minute)"
+        query = "FROM Transaction SELECT rate(count(*), 1 minute)"
       }
     }
 
     widget_bar {
-      title = "Average transaction duration, by application"
-      row = 1
+      title  = "Average transaction duration, by application"
+      row    = 1
       column = 7
-      width = 6
+      width  = 6
       height = 3
 
       nrql_query {
-        account_id  = <Another Account ID>
-        query       = "FROM Transaction SELECT average(duration) FACET appName"
+        account_id = 12345
+        query      = "FROM Transaction SELECT average(duration) FACET appName"
       }
 
       # Must be another dashboard GUID
@@ -49,15 +49,15 @@ resource "newrelic_one_dashboard" "exampledash" {
     }
 
     widget_bar {
-      title = "Average transaction duration, by application"
-      row = 4
+      title  = "Average transaction duration, by application"
+      row    = 4
       column = 1
-      width = 6
+      width  = 6
       height = 3
 
       nrql_query {
-        account_id  = <Another Account ID>
-        query       = "FROM Transaction SELECT average(duration) FACET appName"
+        account_id = 12345
+        query      = "FROM Transaction SELECT average(duration) FACET appName"
       }
 
       # Must be another dashboard GUID
@@ -65,30 +65,47 @@ resource "newrelic_one_dashboard" "exampledash" {
     }
 
     widget_line {
-      title = "Average transaction duration and the request per minute, by application"
-      row = 4
+      title  = "Average transaction duration and the request per minute, by application"
+      row    = 4
       column = 7
-      width = 6
+      width  = 6
       height = 3
 
       nrql_query {
-        account_id  = <Another Account ID>
-        query       = "FROM Transaction SELECT average(duration) FACET appName"
+        account_id = 12345
+        query      = "FROM Transaction SELECT average(duration) FACET appName"
       }
 
       nrql_query {
-        query       = "FROM Transaction SELECT rate(count(*), 1 minute)"
+        query = "FROM Transaction SELECT rate(count(*), 1 minute)"
       }
     }
 
     widget_markdown {
-      title = "Dashboard Note"
+      title  = "Dashboard Note"
       row    = 7
       column = 1
-      width = 12
+      width  = 12
       height = 3
 
       text = "### Helpful Links\n\n* [New Relic One](https://one.newrelic.com)\n* [Developer Portal](https://developer.newrelic.com)"
+    }
+
+    variable {
+      default_values     = ["value"]
+      is_multi_selection = true
+      item {
+        title = "item"
+        value = "ITEM"
+      }
+      name = "variable"
+      nrql_query {
+        account_ids = [12345]
+        query       = "FROM Transaction SELECT average(duration) FACET appName"
+      }
+      replacement_strategy = "default"
+      title                = "title"
+      type                 = "nrql"
     }
   }
 }
@@ -104,6 +121,11 @@ The following arguments are supported:
   * `account_id` - (Optional) Determines the New Relic account where the dashboard will be created. Defaults to the account associated with the API key used.
   * `description` - (Optional) Brief text describing the dashboard.
   * `permissions` - (Optional) Determines who can see the dashboard in an account. Valid values are `private`, `public_read_only`, or `public_read_write`.  Defaults to `public_read_only`.
+<<<<<<< Updated upstream
+  * `variable` - (Optional) a nested block that describes a dashboard-local variable. See [Nested variable blocks](#nested-variable-blocks) below for details.
+=======
+  * `variable` - (Optional) A nested block that describes a dashboard-local variable. See [Nested variable blocks](#nested-variable-blocks) below for details.
+>>>>>>> Stashed changes
 
 ## Attribute Reference
 
@@ -221,6 +243,26 @@ widget_line {
   }
 }
 ```
+
+### Nested `variable` blocks
+
+The following arguments are supported:
+
+  * `default_values` - (Optional) A list of default values for this variable.
+  * `is_multi_selection` - (Optional) Indicates whether this variable supports multiple selection or not. Only applies to variables of type `nrql` or `enum`.
+  * `item` - (Optional) List of possible values for variables of type `enum`. See [Nested item blocks](#nested-item-blocks) below for details.
+  * `name` - (Required) The variable identifier.
+  * `nrql_query` - (Optional) Configuration for variables of type `nrql`. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) for details.
+  * `replacement_strategy` - (Optional) Indicates the strategy to apply when replacing a variable in a NRQL query. One of `default`, `identifier`, `number` or `string`.
+  * `title` - (Optional) Human-friendly display string for this variable.
+  * `type` - (Required) Specifies the data type of the variable and where its possible values may come from. One of `enum`, `nrql` or `string`
+
+### Nested `item` blocks
+
+The following arguments are supported:
+
+  * `title` - (Optional) A human-friendly display string for this value.
+  * `value` - (Required) A possible variable value
 
 ## Additional Examples
 
