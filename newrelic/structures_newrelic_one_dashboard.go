@@ -563,6 +563,13 @@ func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.Resou
 		}
 	}
 
+	if dashboard.Variables != nil && len(dashboard.Variables) > 0 {
+		variables := flattenDashboardVariable(&dashboard.Variables)
+		if err := d.Set("variable", variables); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -603,7 +610,7 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 	return nil
 }
 
-func flattenDashboardVariable(in *[]dashboards.DashboardVariable) []interface{} {
+func flattenDashboardVariable(in *[]entities.DashboardVariable) []interface{} {
 	out := make([]interface{}, len(*in))
 
 	for i, v := range *in {
@@ -623,7 +630,7 @@ func flattenDashboardVariable(in *[]dashboards.DashboardVariable) []interface{} 
 	return out
 }
 
-func flattenVariableDefaultValues(in []dashboards.DashboardVariableDefaultItem) []string {
+func flattenVariableDefaultValues(in []entities.DashboardVariableDefaultItem) []string {
 	out := make([]string, len(in))
 
 	for i, v := range in {
@@ -632,20 +639,20 @@ func flattenVariableDefaultValues(in []dashboards.DashboardVariableDefaultItem) 
 	return out
 }
 
-func flattenVariableItems(in []dashboards.DashboardVariableEnumItem) []interface{} {
+func flattenVariableItems(in []entities.DashboardVariableEnumItem) []interface{} {
 	out := make([]interface{}, len(in))
 
-	for _, v := range in {
+	for i, v := range in {
 		item := make(map[string]interface{})
 		item["title"] = v.Title
 		item["value"] = v.Value
 
-		out = append(out, item)
+		out[i] = item
 	}
 	return out
 }
 
-func flattenVariableNRQLQuery(in dashboards.DashboardVariableNRQLQuery) []interface{} {
+func flattenVariableNRQLQuery(in entities.DashboardVariableNRQLQuery) []interface{} {
 	out := make([]interface{}, 1)
 
 	n := make(map[string]interface{})
@@ -653,7 +660,7 @@ func flattenVariableNRQLQuery(in dashboards.DashboardVariableNRQLQuery) []interf
 	n["account_ids"] = in.AccountIDs
 	n["query"] = in.Query
 
-	out = append(out, n)
+	out[0] = n
 
 	return out
 }
