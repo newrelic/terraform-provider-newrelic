@@ -8,13 +8,18 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
 
 func dataSourceNewRelicSyntheticsPrivateLocation() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNewRelicSyntheticsPrivateLocationRead,
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The ID of the account in New Relic.",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -25,7 +30,9 @@ func dataSourceNewRelicSyntheticsPrivateLocation() *schema.Resource {
 }
 
 func dataSourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading Synthetics monitor locations")
 
@@ -35,7 +42,8 @@ func dataSourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *sch
 	}
 
 	query := fmt.Sprintf("domain = 'SYNTH' AND type = 'PRIVATE_LOCATION' AND name = '%s'", name)
-	entitySearch, err := client.Entities.GetEntitySearchByQuery(
+	entitySearch, err := client.Entities.GetEntitySearchByQueryWithContext(
+		ctx,
 		entities.EntitySearchOptions{},
 		query,
 		[]entities.EntitySearchSortCriteria{},
@@ -52,7 +60,7 @@ func dataSourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *sch
 
 		// It's possible to have multiple private locations with the same name.
 		// Return the first matching private location.
-		if loc.Name == name {
+		if loc.AccountID == accountID && loc.Name == name {
 			location = loc
 			break
 		}

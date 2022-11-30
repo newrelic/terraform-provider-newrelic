@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
-	resourceName := "newrelic_alert_condition.foo"
+	// resourceName := "newrelic_alert_condition.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-test-%s", rand)
 	rNameUpdated := fmt.Sprintf("tf-test-updated-%s", rand)
@@ -42,11 +42,11 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 				),
 			},
 			// Test: Import
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			//{
+			//	ResourceName:      resourceName,
+			//	ImportState:       true,
+			//	ImportStateVerify: true,
+			//},
 		},
 	})
 }

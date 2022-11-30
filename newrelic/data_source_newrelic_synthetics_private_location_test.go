@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
-func TestAccNewRelicSyntheticsPrivateLocationDataSource(t *testing.T) {
+func TestAccNewRelicSyntheticsPrivateLocationDataSource_Basic(t *testing.T) {
 	t.Parallel()
 
 	privateLocationName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
@@ -42,7 +42,7 @@ func TestAccNewRelicSyntheticsPrivateLocationDataSource(t *testing.T) {
 			privateLocationGUID = result.GUID
 
 			// Workaround for async entity creation so we can test the data source below
-			time.Sleep(20 * time.Second)
+			time.Sleep(60 * time.Second)
 		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

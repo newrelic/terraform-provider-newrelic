@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/entities"
-	"github.com/newrelic/newrelic-client-go/pkg/synthetics"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
 // Returns the common schema attributes shared by all Synthetics monitor types.
@@ -375,4 +375,15 @@ func getMonitorID(monitorGUID string) string {
 	splitGUID := strings.Split(string(decodedGUID), "|")
 	monitorID := splitGUID[3]
 	return monitorID
+}
+
+// This map facilitates safely setting the schema attributes which
+// are returned as part of the monitor's entity tags. We have a limited
+// set of attributes we can set from tags due to technical limitations in the API.
+// Note this is a caveat in how synthetics monitor data is provided
+// from the entity API. This is not a common resource pattern.
+var syntheticsMonitorTagKeyToSchemaAttrMap = map[string]string{
+	"runtimeType":        "runtime_type",
+	"runtimeTypeVersion": "runtime_type_version",
+	"scriptLanguage":     "script_language",
 }

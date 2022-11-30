@@ -6,12 +6,14 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/pkg/alerts"
-	"github.com/newrelic/newrelic-client-go/pkg/errors"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
 
 // termSchema returns the schema used for a critical or warning term priority.
@@ -70,7 +72,7 @@ func termSchema() *schema.Resource {
 			"threshold_duration": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The duration, in seconds, that the threshold must violate in order to create a violation. Value must be a multiple of the 'aggregation_window' (which has a default of 60 seconds). Value must be within 120-3600 seconds for baseline conditions, within 120-7200 seconds for static conditions with the sum value function, and within 60-7200 seconds for static conditions with the single_value value function.",
+				Description: "The duration, in seconds, that the threshold must violate in order to create an incident. Value must be a multiple of the 'aggregation_window' (which has a default of 60 seconds). Value must be within 120-3600 seconds for baseline conditions, and within 60-7200 seconds for static conditions with the single_value value function.",
 			},
 		},
 	}
@@ -201,7 +203,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"violation_time_limit_seconds": {
 				Type:          schema.TypeInt,
 				Optional:      true,
-				Description:   "Sets a time limit, in seconds, that will automatically force-close a long-lasting violation after the time limit you select.  Must be in the range of 300 to 2592000 (inclusive)",
+				Description:   "Sets a time limit, in seconds, that will automatically force-close a long-lasting incident after the time limit you select.  Must be in the range of 300 to 2592000 (inclusive)",
 				ConflictsWith: []string{"violation_time_limit"},
 				ValidateFunc:  validation.IntBetween(300, 2592000),
 			},
@@ -235,7 +237,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Deprecated:    "use `violation_time_limit_seconds` attribute instead",
 				Optional:      true,
 				Computed:      true,
-				Description:   "Sets a time limit, in hours, that will automatically force-close a long-lasting violation after the time limit you select. Possible values are 'ONE_HOUR', 'TWO_HOURS', 'FOUR_HOURS', 'EIGHT_HOURS', 'TWELVE_HOURS', 'TWENTY_FOUR_HOURS', 'THIRTY_DAYS' (case insensitive).",
+				Description:   "Sets a time limit, in hours, that will automatically force-close a long-lasting incident after the time limit you select. Possible values are 'ONE_HOUR', 'TWO_HOURS', 'FOUR_HOURS', 'EIGHT_HOURS', 'TWELVE_HOURS', 'TWENTY_FOUR_HOURS', 'THIRTY_DAYS' (case insensitive).",
 				ConflictsWith: []string{"violation_time_limit_seconds"},
 				ValidateFunc:  validation.StringInSlice([]string{"ONE_HOUR", "TWO_HOURS", "FOUR_HOURS", "EIGHT_HOURS", "TWELVE_HOURS", "TWENTY_FOUR_HOURS", "THIRTY_DAYS"}, true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
@@ -245,12 +247,12 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"open_violation_on_expiration": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Whether to create a new violation to capture that the signal expired.",
+				Description: "Whether to create a new incident to capture that the signal expired.",
 			},
 			"close_violations_on_expiration": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Whether to close all open violations when the signal expires.",
+				Description: "Whether to close all open incidents when the signal expires.",
 			},
 			"aggregation_window": {
 				Type:        schema.TypeInt,
@@ -293,7 +295,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"CADENCE", "EVENT_FLOW", "EVENT_TIMER"}, true),
-				Description:  "The method that determines when we consider an aggregation window to be complete so that we can evaluate the signal for violations. Default is EVENT_FLOW.",
+				Description:  "The method that determines when we consider an aggregation window to be complete so that we can evaluate the signal for incidents. Default is EVENT_FLOW.",
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					_, sinceValueExists := d.GetOk("nrql.0.since_value")
 					if sinceValueExists {
@@ -354,6 +356,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				},
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Second),
+		},
 	}
 }
 
@@ -412,9 +417,25 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	d.SetId(serializeIDs([]int{d.Get("policy_id").(int), conditionID}))
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		_, err := client.Alerts.GetNrqlConditionQueryWithContext(ctx, accountID, strconv.Itoa(conditionID))
+		if err != nil {
+			if _, ok := err.(*errors.NotFound); ok {
+				return resource.RetryableError(fmt.Errorf("nrql condition was not created"))
+			}
+			return resource.NonRetryableError(err)
+		}
 
-	return resourceNewRelicNrqlAlertConditionRead(ctx, d, meta)
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
+
+	d.SetId(serializeIDs([]int{d.Get("policy_id").(int), conditionID})) // set to correct ID
+
+	return nil
 }
 
 func resourceNewRelicNrqlAlertConditionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

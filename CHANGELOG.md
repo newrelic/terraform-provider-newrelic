@@ -1,3 +1,103 @@
+<a name="v3.7.1"></a>
+## [v3.7.1] - 2022-11-15
+### Documentation Updates
+- **obfuscation_expression:** change name and regex to required
+
+<a name="v3.7.0"></a>
+## [v3.7.0] - 2022-11-14
+### Bug Fixes
+- **workflows:** make it possible to remove all workflow enrichments
+
+### Documentation Updates
+- **obfuscation_expression:** minor changes
+- **obfuscation_expression:** added docs for obfuscation expression
+
+### Features
+- add optional account_id parameter to private location data source
+- **obfuscation_expression:** Added Obfuscation expression and tests
+- **synthetics:** set defaults for runtime to new runtime and added instructions for old runtime
+
+<a name="v3.6.1"></a>
+## [v3.6.1] - 2022-10-27
+### Bug Fixes
+- dashboard import statement missing guid
+
+### Documentation Updates
+- improve the documentation for the muting rules handling parameter
+
+<a name="v3.6.0"></a>
+## [v3.6.0] - 2022-10-26
+### Documentation Updates
+- **workloads:** added note for rule
+- **workloads:** Updated docs on status config
+
+### Features
+- add workload status_config
+
+<a name="v3.5.2"></a>
+## [v3.5.2] - 2022-10-21
+### Bug Fixes
+- **workflows:** fix compilation issues after client version update
+- **workloads:** fix compilation issues after client version update
+
+### Documentation Updates
+- **alert_conditions:** added the docs for mobile_metric missing types
+
+<a name="v3.5.1"></a>
+## [v3.5.1] - 2022-10-19
+### Bug Fixes
+- **workflows:** correctly handle notification channels deleted outside TF
+
+### Documentation Updates
+- Update reference for data.newrelic_entity
+
+<a name="v3.5.0"></a>
+## [v3.5.0] - 2022-10-14
+### Bug Fixes
+- add check of default answer of the API for service level select
+- correct attribute mapping in service level event query select
+- **notifications:** fix monitoring property to destinations & channels
+- **notifications:** add monitoring property to destinations & channels
+- **workflows:** stop forcing workflow recreation when using the default account id
+
+### Features
+- bump of new-relic-client-go and add service level capability to use select field for event queries
+
+<a name="v3.4.4"></a>
+## [v3.4.4] - 2022-10-06
+### Bug Fixes
+- add account_id to secure credential data source schema
+
+<a name="v3.4.3"></a>
+## [v3.4.3] - 2022-10-05
+### Bug Fixes
+- up timeout to give entity chance to index
+
+<a name="v3.4.2"></a>
+## [v3.4.2] - 2022-10-04
+### Documentation Updates
+- change custom_headers to custom_header
+
+<a name="v3.4.1"></a>
+## [v3.4.1] - 2022-10-03
+### Documentation Updates
+- update monitor with private location examples
+
+<a name="v3.4.0"></a>
+## [v3.4.0] - 2022-10-03
+### Bug Fixes
+- stop setting enrichments to an empty array on state update
+- stop fuzzy search on resource_newrelic_application_settings failing apply
+
+### Documentation Updates
+- fix issues with synthetics monitors docs
+- Update migration_guide_v3.html.markdown
+- **synthetics_monitor:** mentions NerdGraph is used.
+- **synthetics_monitor:** mentions NerdGraph is used.
+
+### Features
+- **one_dashboard_json:** added newrelic_one_dashboard_json resource
+
 <a name="v3.3.0"></a>
 ## [v3.3.0] - 2022-09-22
 ### Bug Fixes
@@ -799,10 +899,10 @@ new synthetics resources use GraphQL API schema
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="2.11.1"></a>
-## [2.11.1] - 2020-10-07
 <a name="v2.11.1"></a>
 ## [v2.11.1] - 2020-10-07
+<a name="2.11.1"></a>
+## [2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -1469,7 +1569,19 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.3.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.1...HEAD
+[v3.7.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.0...v3.7.1
+[v3.7.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.6.1...v3.7.0
+[v3.6.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.6.0...v3.6.1
+[v3.6.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.2...v3.6.0
+[v3.5.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.1...v3.5.2
+[v3.5.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.5.0...v3.5.1
+[v3.5.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.4...v3.5.0
+[v3.4.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.3...v3.4.4
+[v3.4.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.2...v3.4.3
+[v3.4.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.1...v3.4.2
+[v3.4.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.4.0...v3.4.1
+[v3.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.3.0...v3.4.0
 [v3.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.2.1...v3.3.0
 [v3.2.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.2.0...v3.2.1
 [v3.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.1.0...v3.2.0
@@ -1558,9 +1670,9 @@ new synthetics resources use GraphQL API schema
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2
