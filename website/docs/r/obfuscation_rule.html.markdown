@@ -1,9 +1,9 @@
 ---
 layout: "newrelic"
-page_title: "New Relic: newrelic_obfuscation_expression"
-sidebar_current: "docs-newrelic-resource-obfuscation-expression"
+page_title: "New Relic: newrelic_obfuscation_rule"
+sidebar_current: "docs-newrelic-resource-obfuscation-rule"
 description: |-
-Create and manage Obfuscation Expression.
+Create and manage Obfuscation Rule.
 ---
 
 # Resource: newrelic\_obfuscation\_rule
@@ -38,9 +38,9 @@ resource "newrelic_obfuscation_rule" "foo" {
 
 The following arguments are supported:
 
-* `account_id` - (Optional) The account id associated with the obfuscation expression.
-* `description` - (Optional) Description of expression.
-* `name` - (Required) Name of expression.
+* `account_id` - (Optional) The account id associated with the obfuscation rule.
+* `description` - (Optional) Description of rule.
+* `name` - (Required) Name of rule.
 * `filter` - (Required) NRQL for determining whether a given log record should have obfuscation actions applied.
 * `enabled` - (Required) Whether the rule should be applied or not to incoming data.
 * `action` - (Required) Actions for the rule. The actions will be applied in the order specified by this list.
@@ -62,7 +62,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-New Relic obfuscation expression can be imported using the rule ID, e.g.
+New Relic obfuscation rule can be imported using the rule ID, e.g.
 
 ```bash
 $ terraform import newrelic_obfuscation_rule.foo 34567
