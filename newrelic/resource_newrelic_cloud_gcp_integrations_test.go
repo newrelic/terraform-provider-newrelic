@@ -107,97 +107,98 @@ func testAccNewRelicCloudGcpIntegrationsDestroy(s *terraform.State) error {
 func testAccNewRelicCloudGcpIntegrationsConfig(projectID string, name string) string {
 	return fmt.Sprintf(`
 
-	resource "newrelic_cloud_gcp_link_account" "foo"{
-			name = "%[2]s"
-			account_id = 2520528
-			project_id="%[1]s"
-	}
-	resource "newrelic_cloud_gcp_integrations" "foo1" {
-		  account_id = 2520528
-		  linked_account_id = newrelic_cloud_gcp_link_account.foo.id
-			alloy_db {
-				metrics_polling_interval = 400
-		  }
-		  app_engine {
-				metrics_polling_interval = 400
-		  }
-		  big_query {
-				metrics_polling_interval = 400
-				fetch_tags = true
-		  }
-		  big_table {
-				metrics_polling_interval = 400
-		  }
-		  composer{
-				metrics_polling_interval = 400
-		  }
-		  data_flow {
-				metrics_polling_interval = 400
-		  }
-		  data_proc{
-				metrics_polling_interval = 400
-		  }
-		  data_store{
-				metrics_polling_interval = 400
-		  }
-		  fire_base_database{
-				metrics_polling_interval = 400
-		  }
-		  fire_base_hosting{
-				metrics_polling_interval = 400
-		  }
-		  fire_base_storage {
-				metrics_polling_interval = 400
-		  }
-		  fire_store {
-				metrics_polling_interval = 400
-		  }
-		  functions {
-				metrics_polling_interval = 400
-		  }
-		  interconnect {
-				metrics_polling_interval = 400
-		  }
-		  kubernetes {
-				metrics_polling_interval = 400
-		  }
-		  load_balancing {
-				metrics_polling_interval = 400
-		  }
-		  mem_cache {
-				metrics_polling_interval = 400
-		  }
-		  pub_sub {
-				metrics_polling_interval = 400
-				fetch_tags=true
-		  }
-		  redis{ 
-				metrics_polling_interval = 400
-		  }
-		  router {
-			metrics_polling_interval = 400
-		  }
-		  run {
-				metrics_polling_interval = 400
-		  }
-		  spanner {
-				metrics_polling_interval = 400
-				fetch_tags=true
-		  }
-		  sql {
-				metrics_polling_interval = 400
-		  }
-		  storage {
-				metrics_polling_interval = 400
-				fetch_tags=true
-		  }
-		  virtual_machines {
-				metrics_polling_interval = 400
-		  }
-		  vpc_access {
-				metrics_polling_interval = 400
-		  }
-	}
+resource "newrelic_cloud_gcp_link_account" "foo" {
+  name       = "%[2]s"
+  account_id = 2520528
+  project_id = "%[1]s"
+}
+
+resource "newrelic_cloud_gcp_integrations" "foo1" {
+  account_id        = 2520528
+  linked_account_id = newrelic_cloud_gcp_link_account.foo.id
+  alloy_db {
+    metrics_polling_interval = 400
+  }
+  app_engine {
+    metrics_polling_interval = 400
+  }
+  big_query {
+    metrics_polling_interval = 400
+    fetch_tags               = true
+  }
+  big_table {
+    metrics_polling_interval = 400
+  }
+  composer {
+    metrics_polling_interval = 400
+  }
+  data_flow {
+    metrics_polling_interval = 400
+  }
+  data_proc {
+    metrics_polling_interval = 400
+  }
+  data_store {
+    metrics_polling_interval = 400
+  }
+  fire_base_database {
+    metrics_polling_interval = 400
+  }
+  fire_base_hosting {
+    metrics_polling_interval = 400
+  }
+  fire_base_storage {
+    metrics_polling_interval = 400
+  }
+  fire_store {
+    metrics_polling_interval = 400
+  }
+  functions {
+    metrics_polling_interval = 400
+  }
+  interconnect {
+    metrics_polling_interval = 400
+  }
+  kubernetes {
+    metrics_polling_interval = 400
+  }
+  load_balancing {
+    metrics_polling_interval = 400
+  }
+  mem_cache {
+    metrics_polling_interval = 400
+  }
+  pub_sub {
+    metrics_polling_interval = 400
+    fetch_tags               = true
+  }
+  redis {
+    metrics_polling_interval = 400
+  }
+  router {
+    metrics_polling_interval = 400
+  }
+  run {
+    metrics_polling_interval = 400
+  }
+  spanner {
+    metrics_polling_interval = 400
+    fetch_tags               = true
+  }
+  sql {
+    metrics_polling_interval = 400
+  }
+  storage {
+    metrics_polling_interval = 400
+    fetch_tags               = true
+  }
+  virtual_machines {
+    metrics_polling_interval = 400
+  }
+  vpc_access {
+    metrics_polling_interval = 400
+  }
+}
 	`, projectID, name)
 }
 
