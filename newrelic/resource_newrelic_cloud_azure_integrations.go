@@ -159,11 +159,25 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Elem:        cloudAzureIntegrationMysqlElem(),
 				MaxItems:    1,
 			},
+			"mysql_flexible": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The Azure mysql flexible service integration",
+				Elem:        cloudAzureIntegrationMysqlFlexElem(),
+				MaxItems:    1,
+			},
 			"postgresql": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure postgresql",
 				Elem:        cloudAzureIntegrationPostgresqlElem(),
+				MaxItems:    1,
+			},
+			"postgresql_flexible": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The Azure postgresql flexible service integration",
+				Elem:        cloudAzureIntegrationPostgresqlFlexElem(),
 				MaxItems:    1,
 			},
 			"power_bi_dedicated": {
@@ -556,8 +570,42 @@ func cloudAzureIntegrationMysqlElem() *schema.Resource {
 
 }
 
+// function to add schema for azure mysql
+func cloudAzureIntegrationMysqlFlexElem() *schema.Resource {
+	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	return &schema.Resource{
+		Schema: s,
+	}
+
+}
+
 // function to add schema for azure postgresql
 func cloudAzureIntegrationPostgresqlElem() *schema.Resource {
+	s := cloudAzureIntegrationSchemaBase()
+	s["resource_groups"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	return &schema.Resource{
+		Schema: s,
+	}
+
+}
+
+// function to add schema for azure postgresql
+func cloudAzureIntegrationPostgresqlFlexElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
 	s["resource_groups"] = &schema.Schema{
 		Type:        schema.TypeList,
@@ -897,10 +945,22 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 		cloudDisableAzureIntegration.AzureMysql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
+	if v, ok := d.GetOk("mysql_flexible"); ok {
+		cloudAzureIntegration.AzureMysqlflexible = expandCloudAzureIntegrationMysqlFlexibleInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("mysql_flexible"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureMysqlflexible = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
 	if v, ok := d.GetOk("postgresql"); ok {
 		cloudAzureIntegration.AzurePostgresql = expandCloudAzureIntegrationPostgresqlInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("postgresql"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzurePostgresql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("postgresql_flexible"); ok {
+		cloudAzureIntegration.AzurePostgresqlflexible = expandCloudAzureIntegrationPostgresqlFlexibleInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("postgresql_flexible"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzurePostgresqlflexible = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("power_bi_dedicated"); ok {
@@ -1624,6 +1684,40 @@ func expandCloudAzureIntegrationMysqlInput(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
+func expandCloudAzureIntegrationMysqlFlexibleInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureMysqlflexibleIntegrationInput {
+	expanded := make([]cloud.CloudAzureMysqlflexibleIntegrationInput, len(b))
+
+	for i, azureMysql := range b {
+		var azureMysqlInput cloud.CloudAzureMysqlflexibleIntegrationInput
+
+		if azureMysql == nil {
+			azureMysqlInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureMysqlInput
+			return expanded
+		}
+
+		in := azureMysql.(map[string]interface{})
+
+		azureMysqlInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureMysqlInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureMysqlInput.ResourceGroups = groups
+		}
+		expanded[i] = azureMysqlInput
+	}
+
+	return expanded
+}
+
 // Expanding the azure_postgresql
 
 func expandCloudAzureIntegrationPostgresqlInput(b []interface{}, linkedAccountID int) []cloud.CloudAzurePostgresqlIntegrationInput {
@@ -1631,6 +1725,40 @@ func expandCloudAzureIntegrationPostgresqlInput(b []interface{}, linkedAccountID
 
 	for i, azurePostgresql := range b {
 		var azurePostgresqlInput cloud.CloudAzurePostgresqlIntegrationInput
+
+		if azurePostgresql == nil {
+			azurePostgresqlInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azurePostgresqlInput
+			return expanded
+		}
+
+		in := azurePostgresql.(map[string]interface{})
+
+		azurePostgresqlInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azurePostgresqlInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azurePostgresqlInput.ResourceGroups = groups
+		}
+		expanded[i] = azurePostgresqlInput
+	}
+
+	return expanded
+}
+
+func expandCloudAzureIntegrationPostgresqlFlexibleInput(b []interface{}, linkedAccountID int) []cloud.CloudAzurePostgresqlflexibleIntegrationInput {
+	expanded := make([]cloud.CloudAzurePostgresqlflexibleIntegrationInput, len(b))
+
+	for i, azurePostgresql := range b {
+		var azurePostgresqlInput cloud.CloudAzurePostgresqlflexibleIntegrationInput
 
 		if azurePostgresql == nil {
 			azurePostgresqlInput.LinkedAccountId = linkedAccountID
@@ -2089,8 +2217,12 @@ func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudL
 			_ = d.Set("maria_db", flattenCloudAzureMariadbIntegration(t))
 		case *cloud.CloudAzureMysqlIntegration:
 			_ = d.Set("mysql", flattenCloudAzureMysqlIntegration(t))
+		case *cloud.CloudAzureMysqlflexibleIntegration:
+			_ = d.Set("mysql_flexible", flattenCloudAzureMysqlFlexibleIntegration(t))
 		case *cloud.CloudAzurePostgresqlIntegration:
 			_ = d.Set("postgresql", flattenCloudAzurePostgresqlIntegration(t))
+		case *cloud.CloudAzurePostgresqlflexibleIntegration:
+			_ = d.Set("postgresql_flexible", flattenCloudAzurePostgresqlFlexibleIntegration(t))
 		case *cloud.CloudAzurePowerbidedicatedIntegration:
 			_ = d.Set("power_bi_dedicated", flattenCloudAzurePowerBIDedicatedIntegration(t))
 		case *cloud.CloudAzureRediscacheIntegration:
@@ -2386,9 +2518,35 @@ func flattenCloudAzureMysqlIntegration(in *cloud.CloudAzureMysqlIntegration) []i
 	return flattened
 }
 
+func flattenCloudAzureMysqlFlexibleIntegration(in *cloud.CloudAzureMysqlflexibleIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
+
+	flattened[0] = out
+
+	return flattened
+}
+
 // flatten for azure_postgresql
 
 func flattenCloudAzurePostgresqlIntegration(in *cloud.CloudAzurePostgresqlIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAzurePostgresqlFlexibleIntegration(in *cloud.CloudAzurePostgresqlflexibleIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
 	out := make(map[string]interface{})
@@ -2683,8 +2841,14 @@ func expandCloudAzureDisableInputs(d *schema.ResourceData) cloud.CloudDisableInt
 	if _, ok := d.GetOk("mysql"); ok {
 		cloudAzureDisableInput.AzureMysql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
+	if _, ok := d.GetOk("mysql_flexible"); ok {
+		cloudAzureDisableInput.AzureMysqlflexible = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
 	if _, ok := d.GetOk("postgresql"); ok {
 		cloudAzureDisableInput.AzurePostgresql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("postgresql_flexible"); ok {
+		cloudAzureDisableInput.AzurePostgresqlflexible = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 	if _, ok := d.GetOk("power_bi_dedicated"); ok {
 		cloudAzureDisableInput.AzurePowerbidedicated = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
