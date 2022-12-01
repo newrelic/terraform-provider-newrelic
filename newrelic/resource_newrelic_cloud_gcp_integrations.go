@@ -491,7 +491,7 @@ func expandCloudGcpIntegrationsinputs(d *schema.ResourceData) (cloud.CloudIntegr
 		linkedAccountID = lid.(int)
 	}
 	if v, ok := d.GetOk("alloy_db"); ok {
-		gcpCloudIntegrations.GcpAlloydb = expandCloudGcpAlloyDBIntegrationsinputs(v.([]interface{}), linkedAccountID)
+		gcpCloudIntegrations.GcpAlloydb = expandCloudGcpAlloyDBIntegrationsInputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("alloy_db"); len(n.([]interface{})) < len(o.([]interface{})) {
 		gcpDisableIntegrations.GcpAlloydb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
