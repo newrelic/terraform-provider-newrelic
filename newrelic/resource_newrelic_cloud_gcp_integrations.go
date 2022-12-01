@@ -674,7 +674,7 @@ func expandCloudGcpAppEngineIntegrationsinputs(b []interface{}, linkedAccountID 
 	return expanded
 }
 
-func expandCloudGcpAlloyDBIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpAlloydbIntegrationInput {
+func expandCloudGcpAlloyDBIntegrationsInputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpAlloydbIntegrationInput {
 	expanded := make([]cloud.CloudGcpAlloydbIntegrationInput, len(b))
 	for i, expand := range b {
 		var input cloud.CloudGcpAlloydbIntegrationInput
