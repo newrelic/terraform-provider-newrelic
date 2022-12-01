@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -56,6 +58,9 @@ func resourceNewRelicNRQLDropRule() *schema.Resource {
 				Description: "The id, uniquely identifying the rule.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Second),
+		},
 	}
 }
 
@@ -77,18 +82,48 @@ func resourceNewRelicNRQLDropRuleCreate(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if created == nil || len(created.Successes) == 0 {
-		return diag.Errorf("err: drop rule create result wasn't returned. Validate the action value or NRQL query.")
+	//retry needed to check failure
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		created, err := client.Nrqldroprules.NRQLDropRulesCreateWithContext(ctx, accountID, createInput)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+		if len(created.Successes) == 0 {
+			//assuming failures are returned a bit late
+			log.Printf("The value of the failure is : %v ", created.Failures)
+			return resource.RetryableError(fmt.Errorf("err: drop rule create result wasn't returned. Validate the action value or NRQL query."))
+		}
+		return nil
+	})
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
 	}
 
+	//Setting the errors
+	//var apiDiags diag.Diagnostics
+
+	if created == nil || len(created.Successes) == 0 {
+
+		//for _, err := range created.Failures {
+		//	apiDiags = append(apiDiags, diag.Diagnostic{
+		//		Severity: diag.Error,
+		//		Summary:  err.Error.Description,
+		//		Detail:   string(err.Error.Reason),
+		//	})
+		//}
+		//return apiDiags
+		return diag.Errorf("err: drop rule create result wasn't returned. Validate the action value or NRQL query.")
+	}
 	rule := created.Successes[0]
 
 	id := fmt.Sprintf("%d:%s", rule.AccountID, rule.ID)
 
 	d.SetId(id)
 
-	return resourceNewRelicNRQLDropRuleRead(ctx, d, meta)
+	//put retry if  required
+
+	return nil
+	//return resourceNewRelicNRQLDropRuleRead(ctx, d, meta)
 }
 
 func resourceNewRelicNRQLDropRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -102,14 +137,23 @@ func resourceNewRelicNRQLDropRuleRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	rule, err := getNRQLDropRuleByID(ctx, client, accountID, ruleID)
+	rule, err, apiErr := getNRQLDropRuleByID(ctx, client, accountID, ruleID)
 
-	if err != nil {
-		if _, ok := err.(*nrErrors.NotFound); ok {
+	if err != nil || apiErr != nil {
+		if _, ok := err.(*nrErrors.NotFound); ok || apiErr.Reason == "RULE_NOT_FOUND" {
 			d.SetId("")
 			return nil
 		}
 
+		var apiDiags diag.Diagnostics
+		apiDiags = append(apiDiags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  apiErr.Description,
+			Detail:   string(apiErr.Reason),
+		})
+		if apiDiags.HasError() {
+			return apiDiags
+		}
 		return diag.FromErr(err)
 	}
 
@@ -149,9 +193,22 @@ func resourceNewRelicNRQLDropRuleDelete(ctx context.Context, d *schema.ResourceD
 
 	deleteInput := []string{ruleID}
 
-	_, err = client.Nrqldroprules.NRQLDropRulesDeleteWithContext(ctx, accountID, deleteInput)
+	deleted, err := client.Nrqldroprules.NRQLDropRulesDeleteWithContext(ctx, accountID, deleteInput)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	//Setting the errors
+	var apiDiags diag.Diagnostics
+	if len(deleted.Failures) != 0 {
+		for _, err := range deleted.Failures {
+			apiDiags = append(apiDiags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Error.Description,
+				Detail:   string(err.Error.Reason),
+			})
+		}
+		return apiDiags
 	}
 
 	return nil
@@ -172,16 +229,21 @@ func parseNRQLDropRuleIDs(id string) (int, string, error) {
 	return accountID, strIDs[1], nil
 }
 
-func getNRQLDropRuleByID(ctx context.Context, client *newrelic.NewRelic, accountID int, ruleID string) (*nrqldroprules.NRQLDropRulesDropRule, error) {
+//getNRQLDropRuleByID() returns the rule with the given ID.
+func getNRQLDropRuleByID(ctx context.Context, client *newrelic.NewRelic, accountID int, ruleID string) (*nrqldroprules.NRQLDropRulesDropRule, error, *nrqldroprules.NRQLDropRulesError) {
 	rules, err := client.Nrqldroprules.GetListWithContext(ctx, accountID)
 	if err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
+	if &rules.Error != nil {
+		//set the values
+		return nil, err, &rules.Error
+	}
 	for _, v := range rules.Rules {
 		if v.ID == ruleID {
-			return &v, nil
+			return &v, nil, nil
 		}
 	}
-	return nil, errors.New("drop rule not found")
+	return nil, errors.New("drop rule not found"), nil
 }

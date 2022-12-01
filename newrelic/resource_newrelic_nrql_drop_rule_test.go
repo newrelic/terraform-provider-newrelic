@@ -141,6 +141,25 @@ func TestAccNewRelicNRQLDropRule_AccountIDInheritance(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNRQLDropRule_InvalidQuery(t *testing.T) {
+	rand := acctest.RandString(5)
+	description := fmt.Sprintf("nrql_drop_rule_%s", rand)
+	//resourceName := "newrelic_nrql_drop_rule.foo"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNRQLDropRuleDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create failure
+			{
+				Config:      testAccNewRelicNRQLDropRuleConfig(description, "drop_attributes_from_metric_aggregates", "SELECT nothing"),
+				ExpectError: regexp.MustCompile("INVALID_QUERY"),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicNRQLDropRuleDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
@@ -153,7 +172,7 @@ func testAccCheckNewRelicNRQLDropRuleDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = getNRQLDropRuleByID(context.Background(), client, accountID, ruleID)
+		_, err, _ = getNRQLDropRuleByID(context.Background(), client, accountID, ruleID)
 
 		if err == nil {
 			return fmt.Errorf("drop rule still exists: %s", err)
