@@ -18,23 +18,59 @@ Before upgrading to version 2.0.0 or later, it is recommended to upgrade to the 
 
 ```hcl
 data "newrelic_entity" "foo" {
-    name = "Example application"
-    type = "APPLICATION"
-    domain = "APM"
+  name   = "Example application"
+  type   = "APPLICATION"
+  domain = "APM"
 }
 
 resource "newrelic_entity_tags" "foo" {
-	guid = data.newrelic_entity.foo.guid
+  guid = data.newrelic_entity.foo.guid
 
-	tag {
-        key = "my-key"
-        values = ["my-value", "my-other-value"]
-    }
+  tag {
+    key    = "my-key"
+    values = ["my-value", "my-other-value"]
+  }
 
-	tag {
-        key = "my-key-2"
-        values = ["my-value-2"]
+  tag {
+    key    = "my-key-2"
+    values = ["my-value-2"]
+  }
+}
+```
+
+#### Example of applying multiple tags to multiple entities using a nested [`dynamic`](https://developer.hashicorp.com/terraform/language/expressions/dynamic-blocks) block
+```hcl
+locals {
+  apps = toset([
+    "Example App Name 1",
+    "Example App Name 2",
+  ])
+
+  custom_tags = {
+    "tag-key-1" = "tag-value-1"
+    "tag-key-2" = "tag-value-2"
+    "tag-key-3" = "tag-value-3"
+  }
+}
+
+data "newrelic_entity" "foo" {
+  for_each = local.apps
+  name     = each.key # Note: each.key and each.value are the same for a set
+  type     = "APPLICATION"
+  domain   = "APM"
+}
+
+resource "newrelic_entity_tags" "foo" {
+  for_each = local.apps
+  guid     = data.newrelic_entity.foo[each.key].guid
+
+  dynamic "tag" {
+    for_each = local.custom_tags
+    content {
+      key    = tag.key
+      values = [tag.value]
     }
+  }
 }
 ```
 
