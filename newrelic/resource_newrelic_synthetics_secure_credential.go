@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
 	"strings"
 	"time"
@@ -58,6 +59,9 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 				Description: "The time the secure credential was last updated.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(30 * time.Second),
+		},
 	}
 }
 
@@ -108,10 +112,29 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s' AND accountId = '%d'", d.Id(), accountID)
 
 	var entity *entities.EntityOutlineInterface
+	var entityResults *entities.EntitySearch
+	var reqErr error
+	var diags diag.Diagnostics
 
-	entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
-	if err != nil {
-		return diag.FromErr(err)
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		entityResults, reqErr = client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
+		if reqErr != nil {
+			return resource.NonRetryableError(reqErr)
+		}
+
+		if entityResults.Count != 1 {
+			return resource.RetryableError(fmt.Errorf("Failed to read secure credential"))
+		}
+
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
+
+	if len(diags) > 0 {
+		return diags
 	}
 
 	if entityResults.Count != 1 {
@@ -126,7 +149,6 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 			break
 		}
 	}
-	return nil
 
 	return flattenSyntheticsSecureCredential(entity, d)
 }
