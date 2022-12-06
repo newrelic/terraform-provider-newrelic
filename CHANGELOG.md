@@ -1,5 +1,5 @@
 <a name="v3.9.0"></a>
-## [v3.9.0] - 2022-12-05
+## [v3.9.0] - 2022-12-06
 ### Bug Fixes
 - linting2
 - linting
@@ -8,6 +8,7 @@
 
 ### Documentation Updates
 - **dashboard:** add documentation for variables
+- **entity_tags:** add example of using a dynamic block to apply multiple tags to an entity
 
 ### Features
 - **cloud:** add azure mysql flexible, postgres flexible and gcp alloydb integrations
