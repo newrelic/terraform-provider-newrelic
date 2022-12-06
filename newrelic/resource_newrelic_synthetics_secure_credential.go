@@ -58,9 +58,6 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 				Description: "The time the secure credential was last updated.",
 			},
 		},
-		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(60 * time.Second),
-		},
 	}
 }
 
