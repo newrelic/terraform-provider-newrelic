@@ -5,6 +5,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -48,6 +49,26 @@ func TestAccNewRelicSyntheticsSecureCredential_Basic(t *testing.T) {
 					"value",
 					"last_updated",
 				},
+			},
+		},
+	})
+}
+
+func TestAccNewRelicSyntheticsSecureCredential_Error(t *testing.T) {
+	resourceName := "newrelic_synthetics_secure_credential.foo"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsSecureCredentialDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicSyntheticsSecureCredentialConfig("bad-key"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsSecureCredentialExists(resourceName),
+				),
+				ExpectError: regexp.MustCompile("Invalid key specified: key is blank, too long, or contains invalid characters."),
 			},
 		},
 	})

@@ -58,6 +58,9 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 				Description: "The time the secure credential was last updated.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(60 * time.Second),
+		},
 	}
 }
 
@@ -94,7 +97,7 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 	d.SetId(res.Key)
 	_ = d.Set("key", res.Key)
 	_ = d.Set("description", res.Description)
-	_ = d.Set("last_updated", time.Time(res.LastUpdate).Format(time.RFC3339))
+	_ = d.Set("last_updated", time.Time(*res.LastUpdate).Format(time.RFC3339))
 	_ = d.Set("account_id", accountID)
 
 	return nil
@@ -126,6 +129,7 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 			break
 		}
 	}
+	return nil
 
 	return flattenSyntheticsSecureCredential(entity, d)
 }
@@ -162,7 +166,7 @@ func resourceNewRelicSyntheticsSecureCredentialUpdate(ctx context.Context, d *sc
 
 	_ = d.Set("key", res.Key)
 	_ = d.Set("description", res.Description)
-	_ = d.Set("last_updated", time.Time(res.LastUpdate).Format(time.RFC3339))
+	_ = d.Set("last_updated", time.Time(*res.LastUpdate).Format(time.RFC3339))
 	_ = d.Set("account_id", accountID)
 
 	return nil
