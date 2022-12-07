@@ -117,16 +117,21 @@ Block's arguments:
 
 ### Notification Triggers
 
-An issue has multiple event types that signify different situations of the issue.
+Each issue produces multiple events during its lifetime.
+For example, issue activation, acknowledgement, and resolution are all separate events in issue's lifecycle.
 
-Notification triggers define on which issue events the channel will be notified.
+It allows you to choose which events trigger notifications and which are ignored. This configuration is separate for each of the channels added to the workflow.
+One could, for example, configure a workflow to open a Jira ticket and send Slack notifications once an issue is opened, but only send a Slack notification once it is closed.
 
 Possible values:
 * `ACTIVATED` - Send a notification when an issue is activated
 * `ACKNOWLEDGED` - Send a notification when an issue is acknowledged
 * `PRIORITY_CHANGED` - Send a notification when an issue's priority has been changed
 * `CLOSED` - Send a notification when an issue is closed
-* `OTHER_UPDATES` - Send a notification on other updates on the issue
+* `OTHER_UPDATES` - Send a notification on other updates on the issue. These updates include:
+1. An incident has been added to the issue
+2. An incident in the issue has been closed
+3. A different issue has been merged to this issue
 
     
 ### Nested `enrichments` blocks
