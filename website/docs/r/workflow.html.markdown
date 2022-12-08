@@ -31,7 +31,6 @@ resource "newrelic_workflow" "foo" {
 
   destination {
     channel_id = newrelic_notification_channel.some_channel.id
-    notification_triggers = [ "ACTIVATED" ]
   }
 }
 ```
@@ -254,6 +253,29 @@ resource "newrelic_workflow" "workflow-example" {
 }
 ```
 
+### An example of a workflow with notification triggers
+
+```hcl
+resource "newrelic_workflow" "workflow-example" {
+  name = "workflow-enrichment-example"
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+  
+  issues_filter {
+  name = "Filter-name"
+  type = "FILTER"
+      predicate {
+        attribute = "accumulations.tag.team"
+        operator = "EXACTLY_MATCHES"
+        values = [ "my_team" ]
+      }
+  }
+  
+  destination {
+    channel_id = newrelic_notification_channel.webhook-channel.id
+    notification_triggers = [ "ACTIVATED" ]
+  }
+}
+```
 
 ## Additional Information
 More details about the workflows can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/applied-intelligence/incident-workflows/incident-workflows/).
