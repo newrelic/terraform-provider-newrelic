@@ -77,6 +77,7 @@ func buildAiNotificationsDataValidationError(err ai.AiNotificationsDataValidatio
 	return diag.Diagnostic{
 		Severity: diag.Error,
 		Summary:  fmt.Sprintf("%s", err.Fields),
+		Detail:   err.Details,
 	}
 }
 
@@ -93,6 +94,7 @@ func buildAiNotificationsResponseError(err ai.AiNotificationsResponseError) diag
 	return diag.Diagnostic{
 		Severity: diag.Error,
 		Summary:  fmt.Sprintf("%s: %s", string(err.Type), err.Description),
+		Detail:   err.Details,
 	}
 }
 

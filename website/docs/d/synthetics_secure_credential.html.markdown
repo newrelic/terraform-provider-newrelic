@@ -24,6 +24,7 @@ data "newrelic_synthetics_secure_credential" "foo" {
 
 The following arguments are supported:
 
+  * `account_id` - (Optional) The account in New Relic associated with the secure credential. Defaults to the account associated with the API key used.
   * `key` - (Required) The secure credential's key name.  Regardless of the case used in the configuration, the provider will provide an upcased key to the underlying API.
 
 ## Attributes Reference
@@ -32,7 +33,3 @@ In addition to all arguments above, the following attributes are exported:
 
   * `description` - The secure credential's description.
   * `last_updated` - The time the secure credential was last updated.
-
-```
-Warning: This data source will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
-```
