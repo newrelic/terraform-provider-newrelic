@@ -1,3 +1,19 @@
+<a name="v3.9.0"></a>
+## [v3.9.0] - 2022-12-06
+### Bug Fixes
+- linting2
+- linting
+- **notifications errors:** Added error details to response
+- **synthetics:** unset private location ID and return nil if entity not found
+
+### Documentation Updates
+- **dashboard:** add documentation for variables
+- **entity_tags:** add example of using a dynamic block to apply multiple tags to an entity
+
+### Features
+- **cloud:** add azure mysql flexible, postgres flexible and gcp alloydb integrations
+- **one_dashboard:** add variables
+
 <a name="v3.8.0"></a>
 ## [v3.8.0] - 2022-11-30
 ### Bug Fixes
@@ -1595,7 +1611,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.8.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.9.0...HEAD
+[v3.9.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.8.0...v3.9.0
 [v3.8.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.1...v3.8.0
 [v3.7.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.0...v3.7.1
 [v3.7.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.6.1...v3.7.0

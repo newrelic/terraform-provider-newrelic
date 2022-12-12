@@ -82,7 +82,7 @@ func resourceNewRelicNRQLDropRuleCreate(ctx context.Context, d *schema.ResourceD
 	if len(created.Failures) != 0 || created == nil {
 		for _, resp := range created.Failures {
 			switch resp.Error.Reason {
-			case "GENERAL":
+			case nrqldroprules.NRQLDropRulesErrorReasonTypes.GENERAL:
 				return diag.Errorf("err: drop rule create result wasn't returned. Validate the action value or NRQL query.")
 			default:
 				diags = append(diags, diag.Diagnostic{
@@ -118,7 +118,7 @@ func resourceNewRelicNRQLDropRuleRead(ctx context.Context, d *schema.ResourceDat
 	rule, err := getNRQLDropRuleByID(ctx, client, accountID, ruleID)
 
 	if err != nil {
-		if _, ok := err.(*nrErrors.NotFound); ok || errors.Is(err, errors.New("RULE_NOT_FOUND")) {
+		if _, ok := err.(*nrErrors.NotFound); ok || errors.Is(err, errors.New(string(nrqldroprules.NRQLDropRulesErrorReasonTypes.RULE_NOT_FOUND))) {
 			d.SetId("")
 			return nil
 		}
@@ -171,7 +171,7 @@ func resourceNewRelicNRQLDropRuleDelete(ctx context.Context, d *schema.ResourceD
 	if len(deleted.Failures) != 0 {
 		for _, resp := range deleted.Failures {
 			switch resp.Error.Reason {
-			case "GENERAL":
+			case nrqldroprules.NRQLDropRulesErrorReasonTypes.GENERAL:
 				return diag.Errorf("err: drop rule create result wasn't returned. Validate the action value or NRQL query.")
 			default:
 				diags = append(diags, diag.Diagnostic{
@@ -208,7 +208,7 @@ func getNRQLDropRuleByID(ctx context.Context, client *newrelic.NewRelic, account
 		return nil, err
 	}
 
-	if rules.Error.Reason == "RULE_NOT_FOUND" {
+	if rules.Error.Reason == nrqldroprules.NRQLDropRulesErrorReasonTypes.RULE_NOT_FOUND {
 		return nil, errors.New("RULE_NOT_FOUND\n" + rules.Error.Description)
 	}
 	for _, v := range rules.Rules {

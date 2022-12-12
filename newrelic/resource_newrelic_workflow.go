@@ -45,6 +45,15 @@ func resourceNewRelicWorkflow() *schema.Resource {
 						},
 
 						// Computed
+						"notification_triggers": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "List of triggers to notify about in this destination configuration.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+
+						// Computed
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -258,7 +267,6 @@ func resourceNewRelicWorkflowV0() *schema.Resource {
 							Required:    true,
 							Description: "(Required) Destination's channel id.",
 						},
-
 						// Computed
 						"name": {
 							Type:        schema.TypeString,

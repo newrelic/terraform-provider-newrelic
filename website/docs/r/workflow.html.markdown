@@ -110,8 +110,28 @@ Each workflow resource requires one or more `destination` blocks. These blocks d
 workflow.
 
 Block's arguments:
-* `channel_id` - (Required) id of a [notification_channel](notification_channel.html) to use for notifications. Please note that you have to use a 
+* `channel_id` - (Required) Id of a [notification_channel](notification_channel.html) to use for notifications. Please note that you have to use a 
 **notification** channel, not an `alert_channel`.
+* `notification_triggers` - (Optional) Issue events to notify on. The value is a list of possible issue events. See [Notification Triggers](#notification-triggers) below for details. 
+
+### Notification Triggers
+
+Each issue produces multiple events during its lifetime.
+For example, issue activation, acknowledgement, and resolution are all separate events in issue's lifecycle.
+
+It allows you to choose which events trigger notifications and which are ignored. This configuration is separate for each of the channels added to the workflow.
+One could, for example, configure a workflow to open a Jira ticket and send Slack notifications once an issue is opened, but only send a Slack notification once it is closed.
+
+Possible values:
+* `ACTIVATED` - Send a notification when an issue is activated
+* `ACKNOWLEDGED` - Send a notification when an issue is acknowledged
+* `PRIORITY_CHANGED` - Send a notification when an issue's priority has been changed
+* `CLOSED` - Send a notification when an issue is closed
+* `OTHER_UPDATES` - Send a notification on other updates on the issue. These updates include:
+1. An incident has been added to the issue
+2. An incident in the issue has been closed
+3. A different issue has been merged to this issue
+
     
 ### Nested `enrichments` blocks
 
@@ -233,6 +253,29 @@ resource "newrelic_workflow" "workflow-example" {
 }
 ```
 
+### An example of a workflow with notification triggers
+
+```hcl
+resource "newrelic_workflow" "workflow-example" {
+  name = "workflow-enrichment-example"
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+  
+  issues_filter {
+  name = "Filter-name"
+  type = "FILTER"
+      predicate {
+        attribute = "accumulations.tag.team"
+        operator = "EXACTLY_MATCHES"
+        values = [ "my_team" ]
+      }
+  }
+  
+  destination {
+    channel_id = newrelic_notification_channel.webhook-channel.id
+    notification_triggers = [ "ACTIVATED" ]
+  }
+}
+```
 
 ## Additional Information
 More details about the workflows can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/applied-intelligence/incident-workflows/incident-workflows/).

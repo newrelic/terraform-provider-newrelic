@@ -171,6 +171,93 @@ enrichments {
 	})
 }
 
+func TestNewRelicWorkflow_WithCreatedNotificationTriggers(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+
+			// Test: Create workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, rName, `["ACTIVATED"]`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Update workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, fmt.Sprintf("%s-updated", rName), `["ACTIVATED", "CLOSED"]`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func TestNewRelicWorkflow_WithNonCreatedNotificationTriggers(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+
+			// Test: Create workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, rName, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, fmt.Sprintf("%s-updated", rName), `["ACTIVATED"]`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func TestNewRelicWorkflow_WithUpdatedNotificationTriggers(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+
+			// Test: Create workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, rName, "[ACTIVATED]"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, fmt.Sprintf("%s-updated", rName), "[ACTIVATED, CLOSED]"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func testAccNewRelicWorkflowConfigurationMinimal(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
@@ -287,6 +374,78 @@ resource "newrelic_workflow" "foo" {
   }
 }
 `, accountID, name)
+}
+
+func testAccNewRelicWorkflowConfigurationWithNotificationTriggers(accountID int, name string, notificationTriggers string) string {
+	parsedNotificationTriggers := ""
+	if notificationTriggers != "" {
+		parsedNotificationTriggers = fmt.Sprintf(`notification_triggers = %[1]s`, notificationTriggers)
+	}
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "foo" {
+  account_id = %[1]d
+  name = "tf-test-destination"
+  type = "WEBHOOK"
+
+  property {
+    key   = "url"
+    value = "https://webhook.site/"
+  }
+
+  auth_basic {
+    user     = "username"
+    password = "password"
+  }
+}
+
+resource "newrelic_notification_channel" "foo" {
+  account_id     = newrelic_notification_destination.foo.account_id
+  name           = "webhook-example"
+  type           = "WEBHOOK"
+  product        = "IINT"
+  destination_id = newrelic_notification_destination.foo.id
+
+  property {
+    key   = "payload"
+    value = "{\n\t\"name\": \"foo\"\n}"
+    label = "Payload Template"
+  }
+}
+
+resource "newrelic_workflow" "foo" {
+  account_id            = newrelic_notification_destination.foo.account_id
+  name                  = "%[2]s"
+  enrichments_enabled   = true
+  destinations_enabled  = true
+  enabled      = true
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+
+  issues_filter {
+    name = "filter-name"
+    type = "FILTER"
+
+    predicate {
+      attribute = "source"
+      operator  = "EQUAL"
+      values    = ["newrelic", "pagerduty"]
+    }
+  }
+
+  enrichments {
+    nrql {
+      name = "Log"
+      configuration {
+        query = "SELECT count(*) FROM Log"
+      }
+    }
+  }
+
+  destination {
+    channel_id = newrelic_notification_channel.foo.id
+    %[3]s
+  }
+}
+`, accountID, name, parsedNotificationTriggers)
 }
 
 func testAccNewRelicChannelConfigurationEmail(channelResourceName string) string {

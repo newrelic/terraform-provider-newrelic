@@ -17,6 +17,7 @@ func dataSourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
+				Optional:    true,
 				Computed:    true,
 				Description: "The New Relic account ID associated with this secure credential.",
 			},
@@ -43,14 +44,16 @@ func dataSourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 }
 
 func dataSourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading New Relic Synthetics secure credential")
 
 	key := d.Get("key").(string)
 	key = strings.ToUpper(key)
 
-	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", key)
+	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%[1]s' AND accountId = '%[2]d'", key, accountID)
 
 	entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
 	if err != nil {
