@@ -148,6 +148,7 @@ func Provider() *schema.Provider {
 			"newrelic_events_to_metrics_rule":                   resourceNewRelicEventsToMetricsRule(),
 			"newrelic_infra_alert_condition":                    resourceNewRelicInfraAlertCondition(),
 			"newrelic_insights_event":                           resourceNewRelicInsightsEvent(),
+			"newrelic_log_parsing_rule":                         resourceNewRelicLogParsingRule(),
 			"newrelic_notification_channel":                     resourceNewRelicNotificationChannel(),
 			"newrelic_notification_destination":                 resourceNewRelicNotificationDestination(),
 			"newrelic_nrql_alert_condition":                     resourceNewRelicNrqlAlertCondition(),
