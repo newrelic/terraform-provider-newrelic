@@ -511,8 +511,9 @@ func resourceNewRelicWorkflowUpdate(ctx context.Context, d *schema.ResourceData,
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
-
-	workflowResponse, err := client.Workflows.AiWorkflowsUpdateWorkflowWithContext(updatedContext, accountID, true, *updateInput)
+	
+	// Setting to false to fix compilation errors 
+	workflowResponse, err := client.Workflows.AiWorkflowsUpdateWorkflowWithContext(updatedContext, accountID, false, *updateInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -534,7 +535,8 @@ func resourceNewRelicWorkflowDelete(ctx context.Context, d *schema.ResourceData,
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	workflowResponse, err := client.Workflows.AiWorkflowsDeleteWorkflowWithContext(updatedContext, accountID, true, d.Id())
+	// Setting to false to fix compilation errors
+	workflowResponse, err := client.Workflows.AiWorkflowsDeleteWorkflowWithContext(updatedContext, accountID, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
