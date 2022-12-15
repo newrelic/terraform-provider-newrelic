@@ -511,8 +511,8 @@ func resourceNewRelicWorkflowUpdate(ctx context.Context, d *schema.ResourceData,
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
-	
-	// Setting to false to fix compilation errors 
+
+	// Setting to false to fix compilation errors
 	workflowResponse, err := client.Workflows.AiWorkflowsUpdateWorkflowWithContext(updatedContext, accountID, false, *updateInput)
 	if err != nil {
 		return diag.FromErr(err)
