@@ -90,8 +90,9 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       text = "### Helpful Links\n\n* [New Relic One](https://one.newrelic.com)\n* [Developer Portal](https://developer.newrelic.com)"
     }
-
-    variable {
+  }
+  
+  variable {
       default_values     = ["value"]
       is_multi_selection = true
       item {
@@ -106,7 +107,6 @@ resource "newrelic_one_dashboard" "exampledash" {
       replacement_strategy = "default"
       title                = "title"
       type                 = "nrql"
-    }
   }
 }
 ```
