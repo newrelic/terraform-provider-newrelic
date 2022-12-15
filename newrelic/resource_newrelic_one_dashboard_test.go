@@ -803,6 +803,7 @@ func testAccCheckNewRelicOneDashboardConfig_VariableEnum() string {
 func testAccCheckNewRelicOneDashboardConfig_VariableEnumUpdated() string {
 	return `
   variable {
+	default_values = ["default"]
 	is_multi_selection = true
 	item {
 		title = "item"
