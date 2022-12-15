@@ -245,7 +245,15 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 
 	destinationResponse, err := client.Notifications.AiNotificationsCreateDestinationWithContext(updatedContext, accountID, *destinationInput)
 	if err != nil {
-		return diag.FromErr(err)
+		diagErr := diag.FromErr(err)
+		newDiagErr := diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diagErr[0].Severity,
+				Summary:  diagErr[0].Summary,
+				Detail:   "NOTICE: fields are statically typed. Make sure all fields are of the correct type",
+			},
+		}
+		return newDiagErr
 	}
 
 	errors := buildAiNotificationsErrors(destinationResponse.Errors)

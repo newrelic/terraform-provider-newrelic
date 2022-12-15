@@ -5,6 +5,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -53,6 +54,26 @@ func TestAccNewRelicSyntheticsSecureCredential_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicSyntheticsSecureCredential_Error(t *testing.T) {
+	resourceName := "newrelic_synthetics_secure_credential.foo"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsSecureCredentialDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicSyntheticsSecureCredentialConfig("bad-key"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsSecureCredentialExists(resourceName),
+				),
+				ExpectError: regexp.MustCompile("Invalid key specified: key is blank, too long, or contains invalid characters."),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicSyntheticsSecureCredentialExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -68,7 +89,7 @@ func testAccCheckNewRelicSyntheticsSecureCredentialExists(n string) resource.Tes
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
 		time.Sleep(60 * time.Second)
 
-		nrqlQuery := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", rs.Primary.ID)
+		nrqlQuery := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s' AND accountId = '%d'", rs.Primary.ID, testAccountID)
 		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, nrqlQuery, []entities.EntitySearchSortCriteria{})
 		if err != nil {
 			return err
@@ -94,7 +115,7 @@ func testAccCheckNewRelicSyntheticsSecureCredentialDestroy(s *terraform.State) e
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
 		time.Sleep(60 * time.Second)
 
-		nrqlQuery := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", r.Primary.ID)
+		nrqlQuery := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s' AND accountId = '%d'", r.Primary.ID, testAccountID)
 		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, nrqlQuery, []entities.EntitySearchSortCriteria{})
 		if err != nil {
 			return err
