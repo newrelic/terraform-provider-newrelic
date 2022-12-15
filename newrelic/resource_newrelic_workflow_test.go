@@ -242,14 +242,14 @@ func TestNewRelicWorkflow_WithUpdatedNotificationTriggers(t *testing.T) {
 
 			// Test: Create workflow
 			{
-				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, rName, "[ACTIVATED]"),
+				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, rName, `["ACTIVATED"]`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, fmt.Sprintf("%s-updated", rName), "[ACTIVATED, CLOSED]"),
+				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, fmt.Sprintf("%s-updated", rName), `["ACTIVATED", "CLOSED"]`),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
