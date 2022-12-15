@@ -19,7 +19,7 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -59,7 +59,7 @@ func TestAccNewRelicNrqlAlertCondition_MissingPolicy(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -89,7 +89,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphThresholdDurationValidationError
 	conditionalAttrBaseline := `baseline_direction = "lower_only"`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -130,7 +130,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphBaseline(t *testing.T) {
 	conditionalAttr := `baseline_direction = "lower_only"` // value transformed to UPPERCASE in expand/flatten
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -220,7 +220,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 	conditionalAttr := `value_function = "Single_valuE"` // value transformed to UPPERCASE in expand/flatten
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -309,7 +309,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStreamingMethods(t *testing.T) {
 	timer := "null"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -347,7 +347,7 @@ func TestAccNewRelicNrqlAlertCondition_AggregationDelayZero(t *testing.T) {
 	timer := "null"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -388,7 +388,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphNrqlEvaluationOffset(t *testing.
 	method := "null"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -439,7 +439,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphValidationErrorBadUserInputOnCre
 	rNameStatic := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -464,7 +464,7 @@ func TestAccNewRelicNrqlAlertCondition_RevertToDeprecatedSinceValue(t *testing.T
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -502,7 +502,7 @@ func TestAccNewRelicNrqlAlertCondition_StreamingMethodsDefaults(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -527,7 +527,7 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionOptionalValueFunction(t *t
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -559,7 +559,7 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionConvertSumToSlideBy(t *tes
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -591,7 +591,7 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionSlideByNoValueFunction(t *
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
@@ -941,7 +941,7 @@ func testAccNewRelicNrqlAlertConditionSinceValue(
       name = "tf-test-%[1]s"
 	}
 
-	
+
 	resource "newrelic_nrql_alert_condition" "since_value" {
       policy_id                      = newrelic_alert_policy.foo.id
 	  type                           = "static"
@@ -952,7 +952,7 @@ func testAccNewRelicNrqlAlertConditionSinceValue(
 	  violation_time_limit_seconds   = 86400
 	  expiration_duration            = 120
 	  close_violations_on_expiration = true
-	
+
 	  nrql {
 		query       = <<-EOT
 			SELECT count(*) FROM TestEvent
