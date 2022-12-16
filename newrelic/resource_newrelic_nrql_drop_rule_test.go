@@ -71,7 +71,7 @@ func TestAccNewRelicNRQLDropRule_Attributes(t *testing.T) {
 func TestAccNewRelicNRQLDropRule_AttributesInvalidNRQL(t *testing.T) {
 	rand := acctest.RandString(5)
 	description := fmt.Sprintf("nrql_drop_rule_%s", rand)
-	expectedErrorMsg, _ := regexp.Compile(`drop rule create result wasn't returned`)
+	expectedErrorMsg, _ := regexp.Compile(`INVALID_QUERY`)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
