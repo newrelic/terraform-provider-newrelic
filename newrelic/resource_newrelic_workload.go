@@ -41,17 +41,18 @@ func resourceNewRelicWorkload() *schema.Resource {
 				Description: "Relevant information about the workload.",
 			},
 			"entity_guids": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Computed:    true,
-				Description: "A list of entity GUIDs manually assigned to this workload.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:         schema.TypeSet,
+				Optional:     true,
+				Computed:     true,
+				Description:  "A list of entity GUIDs manually assigned to this workload.",
+				AtLeastOneOf: []string{"entity_guids", "entity_search_query"},
+				Elem:         &schema.Schema{Type: schema.TypeString},
 			},
 			"entity_search_query": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "A list of search queries that define a dynamic workload.",
-				ForceNew:    true,
+				Type:         schema.TypeSet,
+				Optional:     true,
+				Description:  "A list of search queries that define a dynamic workload.",
+				AtLeastOneOf: []string{"entity_guids", "entity_search_query"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"query": {

@@ -143,8 +143,8 @@ The following arguments are supported:
 
   * `name` - (Required) The workload's name.
   * `account_id` - (Required) The New Relic account ID where you want to create the workload.
-  * `entity_guids` - (Optional) A list of entity GUIDs manually assigned to this workload.
-  * `entity_search_query` - (Optional) A list of search queries that define a dynamic workload.  See [Nested entity_search_query blocks](#nested-entity_search_query-blocks) below for details.
+  * `entity_guids` - (Optional) A list of entity GUIDs manually assigned to this workload. At least one of either `entity_guids` or `entity_search_query` is required.
+  * `entity_search_query` - (Optional) A list of search queries that define a dynamic workload. At least one of either `entity_guids` or `entity_search_query` is required. See [Nested entity_search_query blocks](#nested-entity_search_query-blocks) below for details.
   * `scope_account_ids` - (Optional) A list of account IDs that will be used to get entities from.
   * `description` - (Optional) Relevant information about the workload.
   * `status_config_automatic` - (Optional) An input object used to represent an automatic status configuration.See [Nested status_config_automatic blocks](#nested-status_config_automatic-blocks) below for details.
