@@ -5,6 +5,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -104,7 +105,6 @@ func TestAccNewRelicWorkload_EntityMultiSearchQueriesOnly(t *testing.T) {
 }
 
 func TestAccNewRelicWorkload_EntityScopeAccountsOnly(t *testing.T) {
-	resourceName := "newrelic_workload.foo"
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -113,10 +113,8 @@ func TestAccNewRelicWorkload_EntityScopeAccountsOnly(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicWorkloadDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicWorkloadConfigScopeAccountsOnly(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicWorkloadExists(resourceName),
-				),
+				Config:      testAccNewRelicWorkloadConfigScopeAccountsOnly(rName),
+				ExpectError: regexp.MustCompile("Missing required argument"),
 			},
 		},
 	})
@@ -165,7 +163,7 @@ func TestAccNewRelicWorkload_StaticOnly(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicWorkloadDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicWorkloadConfigSaticOnly(rName),
+				Config: testAccNewRelicWorkloadConfigStaticOnly(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkloadExists(resourceName),
 				),
@@ -559,11 +557,19 @@ resource "newrelic_workload" "foo" {
 `, testAccountID, name, testAccExpectedApplicationName)
 }
 
-func testAccNewRelicWorkloadConfigSaticOnly(name string) string {
+func testAccNewRelicWorkloadConfigStaticOnly(name string) string {
 	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name = "%[3]s"
+	domain = "APM"
+	type = "APPLICATION"
+}
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
+
 
 	status_config_static {
 		description = "test"
@@ -572,7 +578,7 @@ resource "newrelic_workload" "foo" {
 		summary = "egetgykwesgksegkerh"
 	  }
 }
-`, testAccountID, name)
+`, testAccountID, name, testAccExpectedApplicationName)
 }
 
 func testAccNewRelicWorkloadAutomaticConfigOnly(name string) string {
@@ -587,6 +593,7 @@ data "newrelic_entity" "app" {
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
 
  	description = "something"
 	status_config_automatic {
@@ -617,22 +624,36 @@ resource "newrelic_workload" "foo" {
 
 func testAccNewRelicWorkloadAutomaticConfig_EnabledOnly(name string) string {
 	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name = "%[3]s"
+	domain = "APM"
+	type = "APPLICATION"
+}
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
 
 	status_config_automatic {
 		enabled = true
 	}
 }
-`, testAccountID, name)
+`, testAccountID, name, testAccExpectedApplicationName)
 }
 
 func testAccNewRelicWorkloadAutomaticConfig_RemainingEntitiesOnly(name string) string {
 	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name = "%[3]s"
+	domain = "APM"
+	type = "APPLICATION"
+}
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
 
  	description = "something"
 	status_config_automatic {
@@ -647,7 +668,7 @@ resource "newrelic_workload" "foo" {
 		}
 	}
 }
-`, testAccountID, name)
+`, testAccountID, name, testAccExpectedApplicationName)
 }
 
 func testAccNewRelicWorkloadAutomaticConfig_RuleOnly(name string) string {
@@ -662,6 +683,7 @@ data "newrelic_entity" "app" {
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
 
  	description = "something"
 	status_config_automatic {
@@ -689,9 +711,12 @@ data "newrelic_entity" "app" {
 	domain = "APM"
 	type = "APPLICATION"
 }
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
+
 
 	status_config_automatic {
 		enabled = true
@@ -725,9 +750,16 @@ resource "newrelic_workload" "foo" {
 func testAccNewRelicWorkloadAutomaticConfig_RuleRollupOnly(name string) string {
 	return fmt.Sprintf(`
 
+data "newrelic_entity" "app" {
+	name = "%[3]s"
+	domain = "APM"
+	type = "APPLICATION"
+}
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
 
 	status_config_automatic {
 		enabled = true
@@ -743,5 +775,5 @@ resource "newrelic_workload" "foo" {
 		}
 	}
 }
-`, testAccountID, name)
+`, testAccountID, name, testAccExpectedApplicationName)
 }

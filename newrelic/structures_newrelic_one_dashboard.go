@@ -54,7 +54,7 @@ func expandDashboardVariablesInput(variables []interface{}) []dashboards.Dashboa
 		var variable dashboards.DashboardVariableInput
 		v := val.(map[string]interface{})
 
-		if d, ok := v["default_values"]; ok {
+		if d, ok := v["default_values"]; ok && len(d.([]interface{})) > 0 {
 			variable.DefaultValues = expandVariableDefaultValues(d.([]interface{}))
 		}
 
@@ -91,7 +91,7 @@ func expandDashboardVariablesInput(variables []interface{}) []dashboards.Dashboa
 	return expanded
 }
 
-func expandVariableDefaultValues(in []interface{}) []dashboards.DashboardVariableDefaultItemInput {
+func expandVariableDefaultValues(in []interface{}) *[]dashboards.DashboardVariableDefaultItemInput {
 	out := make([]dashboards.DashboardVariableDefaultItemInput, len(in))
 
 	for i, v := range in {
@@ -100,7 +100,7 @@ func expandVariableDefaultValues(in []interface{}) []dashboards.DashboardVariabl
 		out[i] = expanded
 	}
 
-	return out
+	return &out
 }
 
 func expandVariableItems(in []interface{}) []dashboards.DashboardVariableEnumItemInput {
@@ -118,7 +118,7 @@ func expandVariableItems(in []interface{}) []dashboards.DashboardVariableEnumIte
 	return out
 }
 
-func expandVariableNRQLQuery(in []interface{}) dashboards.DashboardVariableNRQLQueryInput {
+func expandVariableNRQLQuery(in []interface{}) *dashboards.DashboardVariableNRQLQueryInput {
 	var out dashboards.DashboardVariableNRQLQueryInput
 
 	for _, v := range in {
@@ -128,7 +128,7 @@ func expandVariableNRQLQuery(in []interface{}) dashboards.DashboardVariableNRQLQ
 			Query:      nrdb.NRQL(cfg["query"].(string))}
 	}
 
-	return out
+	return &out
 }
 
 func expandVariableAccountIDs(in []interface{}) []int {
@@ -616,11 +616,15 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable) []interface{} {
 	for i, v := range *in {
 		m := make(map[string]interface{})
 
-		m["default_values"] = flattenVariableDefaultValues(v.DefaultValues)
+		if v.DefaultValues != nil {
+			m["default_values"] = flattenVariableDefaultValues(v.DefaultValues)
+		}
 		m["is_multi_selection"] = v.IsMultiSelection
 		m["item"] = flattenVariableItems(v.Items)
 		m["name"] = v.Name
-		m["nrql_query"] = flattenVariableNRQLQuery(v.NRQLQuery)
+		if v.NRQLQuery != nil {
+			m["nrql_query"] = flattenVariableNRQLQuery(v.NRQLQuery)
+		}
 		m["replacement_strategy"] = strings.ToLower(string(v.ReplacementStrategy))
 		m["title"] = v.Title
 		m["type"] = strings.ToLower(string(v.Type))
@@ -630,10 +634,10 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable) []interface{} {
 	return out
 }
 
-func flattenVariableDefaultValues(in []entities.DashboardVariableDefaultItem) []string {
-	out := make([]string, len(in))
+func flattenVariableDefaultValues(in *[]entities.DashboardVariableDefaultItem) []string {
+	out := make([]string, len(*in))
 
-	for i, v := range in {
+	for i, v := range *in {
 		out[i] = v.Value.String
 	}
 	return out
@@ -652,7 +656,7 @@ func flattenVariableItems(in []entities.DashboardVariableEnumItem) []interface{}
 	return out
 }
 
-func flattenVariableNRQLQuery(in entities.DashboardVariableNRQLQuery) []interface{} {
+func flattenVariableNRQLQuery(in *entities.DashboardVariableNRQLQuery) []interface{} {
 	out := make([]interface{}, 1)
 
 	n := make(map[string]interface{})

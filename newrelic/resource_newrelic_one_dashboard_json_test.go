@@ -87,7 +87,37 @@ func testAccCheckNewRelicOneDashboardJsonConfig_Full(pageName string, accountID 
 			]
 		  }
 		],
-		"variables": []
+		"variables": [{
+				"isMultiSelection": true,
+				"items": [{
+					"title": "item",
+					"value": "ITEM"
+				}],
+				"name": "variableEnum",
+				"replacementStrategy": "DEFAULT",
+				"title": "title",
+				"type": "ENUM"
+			},
+			{
+				"defaultValues": [{
+					"value": {
+						"string": "value"
+					}
+				}],
+				"isMultiSelection": true,
+				"items": [{
+					"title": "item",
+					"value": "ITEM"
+				}],
+				"nrqlQuery": {
+					"accountIds": [` + accountID + `],
+					"query": "FROM Transaction SELECT average(duration) FACET appName"
+				},
+				"name": "variableNRQL",
+				"replacementStrategy": "DEFAULT",
+				"title": "title",
+				"type": "NRQL"
+			}]
 	}
 	`
 }

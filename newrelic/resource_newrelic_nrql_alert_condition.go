@@ -404,7 +404,7 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 	}
 
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		_, err := client.Alerts.GetNrqlConditionQueryWithContext(ctx, accountID, strconv.Itoa(conditionID))
+		condition, err = client.Alerts.GetNrqlConditionQueryWithContext(ctx, accountID, strconv.Itoa(conditionID))
 		if err != nil {
 			if _, ok := err.(*errors.NotFound); ok {
 				return resource.RetryableError(fmt.Errorf("nrql condition was not created"))
@@ -421,7 +421,7 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 
 	d.SetId(serializeIDs([]int{d.Get("policy_id").(int), conditionID})) // set to correct ID
 
-	return nil
+	return diag.FromErr(flattenNrqlAlertCondition(accountID, condition, d))
 }
 
 func resourceNewRelicNrqlAlertConditionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
