@@ -403,8 +403,7 @@ func testAccCheckNewRelicOneDashboard_UnlinkFilterCurrentDashboard(name string) 
 	}
 }
 
-// TestAccNewRelicOneDashboard_CreateOnePage Ensure that we can create a NR1 Dashboard
-func TestAccNewRelicOneDashboard_Variables(t *testing.T) {
+func TestAccNewRelicOneDashboard_VariablesNRQL(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -413,14 +412,45 @@ func TestAccNewRelicOneDashboard_Variables(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFullVariables(rName),
+				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQL(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesUpdated(rName),
+				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLUpdated(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			// Import
+			{
+				ResourceName:      "newrelic_one_dashboard.bar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicOneDashboard_VariablesEnum(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesEnum(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesEnumUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
 				),
@@ -460,25 +490,47 @@ resource "newrelic_one_dashboard" "bar" {
 }`
 }
 
-func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariables(dashboardName string) string {
+func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQL(dashboardName string) string {
 	return `
 resource "newrelic_one_dashboard" "bar" {
   name = "` + dashboardName + `"
   permissions = "private"
 
 ` + testAccCheckNewRelicOneDashboardConfig_PageSimple(dashboardName) + `
-` + testAccCheckNewRelicOneDashboardConfig_Variable() + `
+` + testAccCheckNewRelicOneDashboardConfig_VariableNRQL() + `
 }`
 }
 
-func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesUpdated(dashboardName string) string {
+func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLUpdated(dashboardName string) string {
 	return `
 resource "newrelic_one_dashboard" "bar" {
   name = "` + dashboardName + `"
   permissions = "private"
 
 ` + testAccCheckNewRelicOneDashboardConfig_PageSimple(dashboardName) + `
-` + testAccCheckNewRelicOneDashboardConfig_VariableUpdated() + `
+` + testAccCheckNewRelicOneDashboardConfig_VariableNRQLUpdated() + `
+}`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesEnum(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+` + testAccCheckNewRelicOneDashboardConfig_PageSimple(dashboardName) + `
+` + testAccCheckNewRelicOneDashboardConfig_VariableEnum() + `
+}`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesEnumUpdated(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+` + testAccCheckNewRelicOneDashboardConfig_PageSimple(dashboardName) + `
+` + testAccCheckNewRelicOneDashboardConfig_VariableEnumUpdated() + `
 }`
 }
 
@@ -690,7 +742,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
 `
 }
 
-func testAccCheckNewRelicOneDashboardConfig_Variable() string {
+func testAccCheckNewRelicOneDashboardConfig_VariableNRQL() string {
 	return `
   variable {
     default_values = ["value"]
@@ -711,7 +763,7 @@ func testAccCheckNewRelicOneDashboardConfig_Variable() string {
 `
 }
 
-func testAccCheckNewRelicOneDashboardConfig_VariableUpdated() string {
+func testAccCheckNewRelicOneDashboardConfig_VariableNRQLUpdated() string {
 	return `
   variable {
     default_values = ["value"]
@@ -728,6 +780,39 @@ func testAccCheckNewRelicOneDashboardConfig_VariableUpdated() string {
 	replacement_strategy = "default"
 	title = "title"
 	type = "nrql"
+  }
+`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_VariableEnum() string {
+	return `
+  variable {
+	is_multi_selection = true
+	item {
+		title = "item"
+		value = "ITEM"
+	}
+    name = "variable"
+	replacement_strategy = "default"
+	title = "title"
+	type = "enum"
+  }
+`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_VariableEnumUpdated() string {
+	return `
+  variable {
+	default_values = ["default"]
+	is_multi_selection = true
+	item {
+		title = "item"
+		value = "ITEM"
+	}
+    name = "variableUpdated"
+	replacement_strategy = "default"
+	title = "title"
+	type = "enum"
   }
 `
 }
