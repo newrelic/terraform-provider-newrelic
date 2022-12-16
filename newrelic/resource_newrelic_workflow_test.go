@@ -92,11 +92,6 @@ func TestNewRelicWorkflow_DeleteWorkflowWithoutRemovingChannels(t *testing.T) {
 			},
 			// Test: Delete workflow
 			{
-				Config:             channelResources,
-				ExpectNonEmptyPlan: true,
-			},
-			// Test: Apply without any changes after workflow deletion should succeed
-			{
 				Config: channelResources,
 			},
 		},
@@ -127,6 +122,42 @@ func TestNewRelicWorkflow_MinimalConfig(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
+			},
+		},
+	})
+}
+
+func TestNewRelicWorkflow_UpdateChannels(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	channelResourceName := "oldChannel"
+	workflowName := acctest.RandString(10)
+	channelResources := testAccNewRelicChannelConfigurationEmail(channelResourceName)
+
+	// On order for the test to work, it is really important to make sure that TF does not decide to delete this
+	// workflow instead of updating it. Using a minimal workflow allows us to minimise the chance that we touch
+	// something that triggers re-creation (accountId is the most important one to avoid)
+	workflowResource := testAccNewRelicOnlyWorkflowConfigurationMinimal(workflowName, channelResourceName)
+
+	channelResourceNameNew := "newChannel"
+	channelResourcesNew := testAccNewRelicChannelConfigurationEmail(channelResourceNameNew)
+	workflowResourceUpdated := testAccNewRelicOnlyWorkflowConfigurationMinimal(workflowName, channelResourceNameNew)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+
+			// Test: Create workflow
+			{
+				Config: channelResources + workflowResource,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Replace channel in the workflow
+			{
+				Config: channelResources + channelResourcesNew + workflowResourceUpdated,
 			},
 		},
 	})
@@ -489,7 +520,6 @@ func testAccNewRelicWorkflowConfiguration(channelResourceName string) string {
 func testAccNewRelicWorkflowConfigurationCustom(workflowName string, channelResourceName string, customSections string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow" "foo" {
-  account_id            = newrelic_notification_channel.%[1]s.account_id
   name                  = "%[2]s"
   enrichments_enabled   = true
   destinations_enabled  = true
@@ -513,6 +543,29 @@ resource "newrelic_workflow" "foo" {
     channel_id = newrelic_notification_channel.%[1]s.id
   }
 }`, channelResourceName, workflowName, customSections)
+}
+
+func testAccNewRelicOnlyWorkflowConfigurationMinimal(workflowName string, channelResourceName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_workflow" "foo" {
+  name                  = "%[2]s"
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+
+  issues_filter {
+    name = "filter-name"
+    type = "FILTER"
+
+    predicate {
+      attribute = "attr"
+      operator  = "EQUAL"
+      values    = ["test"]
+    }
+  }
+
+  destination {
+    channel_id = newrelic_notification_channel.%[1]s.id
+  }
+}`, channelResourceName, workflowName)
 }
 
 func testAccNewRelicWorkflowConfigurationEmail(accountID int, name string) string {
