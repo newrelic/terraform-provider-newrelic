@@ -116,7 +116,7 @@ resource "newrelic_notification_channel" "foo" {
   name = "email-example"
   type = "EMAIL"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
-  product = "ERROR_TRACKING"
+  product = "IINT"
 
   property {
     key = "subject"
