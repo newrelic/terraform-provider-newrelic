@@ -289,6 +289,50 @@ func TestNewRelicWorkflow_WithUpdatedNotificationTriggers(t *testing.T) {
 	})
 }
 
+func TestNewRelicWorkflow_BooleanFlags_DisableOnUpdate(t *testing.T) {
+	channelResourceName := "foo"
+	workflowName := acctest.RandString(10)
+	channelResources := testAccNewRelicChannelConfigurationEmail(channelResourceName)
+	workflowResource := testAccNewRelicOnlyWorkflowConfigurationMinimal(workflowName, channelResourceName)
+	disabledWorkflowResource := testAccNewRelicWorkflowMinimalDisabledConfiguration(workflowName,channelResourceName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+
+			// Test: Create workflow
+			{
+				Config: channelResources + workflowResource,
+			},
+			// Test: Disable workflow
+			{
+				Config: channelResources + disabledWorkflowResource,
+			},
+		},
+	})
+}
+
+func TestNewRelicWorkflow_BooleanFlags_DisableOnCreation(t *testing.T) {
+	channelResourceName := "foo"
+	workflowName := acctest.RandString(10)
+	channelResources := testAccNewRelicChannelConfigurationEmail(channelResourceName)
+	disabledWorkflowResource := testAccNewRelicWorkflowMinimalDisabledConfiguration(workflowName,channelResourceName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create workflow
+			{
+				Config: channelResources + disabledWorkflowResource,
+			},
+		},
+	})
+}
+
 func testAccNewRelicWorkflowConfigurationMinimal(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
@@ -566,6 +610,34 @@ resource "newrelic_workflow" "foo" {
     channel_id = newrelic_notification_channel.%[1]s.id
   }
 }`, channelResourceName, workflowName)
+}
+
+func testAccNewRelicWorkflowMinimalDisabledConfiguration(workflowName, channelResourceName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_workflow" "foo" {
+	name                  = "%[2]s"
+	muting_rules_handling = "NOTIFY_ALL_ISSUES"
+	enrichments_enabled   = false
+	destinations_enabled  = false
+	enabled      = false
+
+	issues_filter {
+		name = "filter-name"
+		type = "FILTER"
+
+		predicate {
+		attribute = "attr"
+		operator  = "EQUAL"
+		values    = ["test"]
+	}
+	}
+
+	destination {
+		channel_id = newrelic_notification_channel.%[1]s.id
+	}
+}`, channelResourceName, workflowName)
+
+
 }
 
 func testAccNewRelicWorkflowConfigurationEmail(accountID int, name string) string {
