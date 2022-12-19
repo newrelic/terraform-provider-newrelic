@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
@@ -15,7 +14,7 @@ import (
 
 func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_broken_links_monitor.foo"
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },

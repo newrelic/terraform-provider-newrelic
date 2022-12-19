@@ -5,16 +5,24 @@ package newrelic
 
 import (
 	"fmt"
+	"log"
+	"regexp"
 	"testing"
+	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
 
 func TestAccNewRelicWorkload_Basic(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
+
+	// TODO: Need to move this to Terraform sweeper so this runs
+	//       after all tests have completed.
+	// defer cleanupDanglingWorkloadResources()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -36,19 +44,19 @@ func TestAccNewRelicWorkload_Basic(t *testing.T) {
 				),
 			},
 			// Test: Import
-			//{
-			//	ResourceName:            resourceName,
-			//	ImportState:             true,
-			//	ImportStateVerify:       true,
-			//	ImportStateVerifyIgnore: []string{"status_config_automatic"},
-			//},
+			// {
+			// 	ResourceName:            resourceName,
+			// 	ImportState:             true,
+			// 	ImportStateVerify:       true,
+			// 	ImportStateVerifyIgnore: []string{"status_config_automatic"},
+			// },
 		},
 	})
 }
 
 func TestAccNewRelicWorkload_EntitiesOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -67,7 +75,7 @@ func TestAccNewRelicWorkload_EntitiesOnly(t *testing.T) {
 
 func TestAccNewRelicWorkload_EntitySearchQueriesOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -86,7 +94,7 @@ func TestAccNewRelicWorkload_EntitySearchQueriesOnly(t *testing.T) {
 
 func TestAccNewRelicWorkload_EntityMultiSearchQueriesOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -104,8 +112,7 @@ func TestAccNewRelicWorkload_EntityMultiSearchQueriesOnly(t *testing.T) {
 }
 
 func TestAccNewRelicWorkload_EntityScopeAccountsOnly(t *testing.T) {
-	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -113,10 +120,8 @@ func TestAccNewRelicWorkload_EntityScopeAccountsOnly(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicWorkloadDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicWorkloadConfigScopeAccountsOnly(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicWorkloadExists(resourceName),
-				),
+				Config:      testAccNewRelicWorkloadConfigScopeAccountsOnly(rName),
+				ExpectError: regexp.MustCompile("Missing required argument"),
 			},
 		},
 	})
@@ -124,7 +129,7 @@ func TestAccNewRelicWorkload_EntityScopeAccountsOnly(t *testing.T) {
 
 func TestAccNewRelicWorkload_BasicOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -157,7 +162,7 @@ func TestAccNewRelicWorkload_BasicOnly(t *testing.T) {
 
 func TestAccNewRelicWorkload_StaticOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -165,7 +170,7 @@ func TestAccNewRelicWorkload_StaticOnly(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicWorkloadDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicWorkloadConfigSaticOnly(rName),
+				Config: testAccNewRelicWorkloadConfigStaticOnly(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkloadExists(resourceName),
 				),
@@ -176,7 +181,7 @@ func TestAccNewRelicWorkload_StaticOnly(t *testing.T) {
 
 func TestAccNewRelicWorkload_AutomaticOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -195,7 +200,7 @@ func TestAccNewRelicWorkload_AutomaticOnly(t *testing.T) {
 
 func TestAccNewRelicWorkload_AutomaticEnabledOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -214,7 +219,7 @@ func TestAccNewRelicWorkload_AutomaticEnabledOnly(t *testing.T) {
 
 func TestAccNewRelicWorkload_AutomaticRemainingEntitiesOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -233,7 +238,7 @@ func TestAccNewRelicWorkload_AutomaticRemainingEntitiesOnly(t *testing.T) {
 
 func TestAccNewRelicWorkload_AutomaticRuleOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -252,7 +257,7 @@ func TestAccNewRelicWorkload_AutomaticRuleOnly(t *testing.T) {
 
 func TestAccNewRelicWorkload_AutomaticRulesOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -271,7 +276,7 @@ func TestAccNewRelicWorkload_AutomaticRulesOnly(t *testing.T) {
 
 func TestAccNewRelicWorkload_AutomaticRuleRollupOnly(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -339,6 +344,44 @@ func testAccCheckNewRelicWorkloadDestroy(s *terraform.State) error {
 	return nil
 }
 
+func cleanupDanglingWorkloadResources() error {
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
+	query := "domain = 'NR1' AND type = 'WORKLOAD' AND (name LIKE '%tf-test-%' OR name LIKE '%tf_test_%')"
+
+	fmt.Printf("\n[INFO] cleaning up any dangling integration test resources... \n")
+	time.Sleep(1 * time.Second)
+
+	for {
+		matches, err := client.Entities.GetEntitySearchByQuery(
+			entities.EntitySearchOptions{},
+			query,
+			[]entities.EntitySearchSortCriteria{},
+		)
+
+		if err != nil {
+			return fmt.Errorf("error cleaning up dangling synthetics resources: %s", err)
+		}
+
+		if matches != nil {
+			resources := matches.Results.Entities
+			for _, r := range resources {
+				_, err := client.Workloads.WorkloadDelete(common.EntityGUID(string(r.GetGUID())))
+				if err != nil {
+					log.Printf("[ERROR] error deleting dangling resource: %s", err)
+				}
+			}
+
+			fmt.Printf("\n[INFO] deleted %d dangling resources", len(resources))
+		}
+
+		if matches.Results.NextCursor == "" {
+			break
+		}
+	}
+
+	return nil
+}
+
 func testAccNewRelicWorkloadConfig(name string) string {
 	return fmt.Sprintf(`
 
@@ -383,7 +426,7 @@ resource "newrelic_workload" "foo" {
 			}
 		}
 	}
-	
+
 	status_config_static {
 	description = "test"
 	enabled = true
@@ -439,7 +482,7 @@ resource "newrelic_workload" "foo" {
 			}
 		}
 	}
-	
+
 	status_config_static {
 	description = "test"
 	enabled = true
@@ -559,11 +602,19 @@ resource "newrelic_workload" "foo" {
 `, testAccountID, name, testAccExpectedApplicationName)
 }
 
-func testAccNewRelicWorkloadConfigSaticOnly(name string) string {
+func testAccNewRelicWorkloadConfigStaticOnly(name string) string {
 	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name = "%[3]s"
+	domain = "APM"
+	type = "APPLICATION"
+}
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
+
 
 	status_config_static {
 		description = "test"
@@ -572,7 +623,7 @@ resource "newrelic_workload" "foo" {
 		summary = "egetgykwesgksegkerh"
 	  }
 }
-`, testAccountID, name)
+`, testAccountID, name, testAccExpectedApplicationName)
 }
 
 func testAccNewRelicWorkloadAutomaticConfigOnly(name string) string {
@@ -587,6 +638,7 @@ data "newrelic_entity" "app" {
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
 
  	description = "something"
 	status_config_automatic {
@@ -617,22 +669,36 @@ resource "newrelic_workload" "foo" {
 
 func testAccNewRelicWorkloadAutomaticConfig_EnabledOnly(name string) string {
 	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name = "%[3]s"
+	domain = "APM"
+	type = "APPLICATION"
+}
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
 
 	status_config_automatic {
 		enabled = true
 	}
 }
-`, testAccountID, name)
+`, testAccountID, name, testAccExpectedApplicationName)
 }
 
 func testAccNewRelicWorkloadAutomaticConfig_RemainingEntitiesOnly(name string) string {
 	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name = "%[3]s"
+	domain = "APM"
+	type = "APPLICATION"
+}
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
 
  	description = "something"
 	status_config_automatic {
@@ -647,7 +713,7 @@ resource "newrelic_workload" "foo" {
 		}
 	}
 }
-`, testAccountID, name)
+`, testAccountID, name, testAccExpectedApplicationName)
 }
 
 func testAccNewRelicWorkloadAutomaticConfig_RuleOnly(name string) string {
@@ -662,6 +728,7 @@ data "newrelic_entity" "app" {
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
 
  	description = "something"
 	status_config_automatic {
@@ -689,9 +756,12 @@ data "newrelic_entity" "app" {
 	domain = "APM"
 	type = "APPLICATION"
 }
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
+
 
 	status_config_automatic {
 		enabled = true
@@ -725,9 +795,16 @@ resource "newrelic_workload" "foo" {
 func testAccNewRelicWorkloadAutomaticConfig_RuleRollupOnly(name string) string {
 	return fmt.Sprintf(`
 
+data "newrelic_entity" "app" {
+	name = "%[3]s"
+	domain = "APM"
+	type = "APPLICATION"
+}
+
 resource "newrelic_workload" "foo" {
 	name = "%[2]s"
 	account_id = %[1]d
+	entity_guids = [data.newrelic_entity.app.guid]
 
 	status_config_automatic {
 		enabled = true
@@ -743,5 +820,5 @@ resource "newrelic_workload" "foo" {
 		}
 	}
 }
-`, testAccountID, name)
+`, testAccountID, name, testAccExpectedApplicationName)
 }

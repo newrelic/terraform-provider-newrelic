@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
 	"strings"
 	"time"
@@ -58,6 +59,9 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 				Description: "The time the secure credential was last updated.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Read: schema.DefaultTimeout(30 * time.Second),
+		},
 	}
 }
 
@@ -94,7 +98,7 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 	d.SetId(res.Key)
 	_ = d.Set("key", res.Key)
 	_ = d.Set("description", res.Description)
-	_ = d.Set("last_updated", time.Time(res.LastUpdate).Format(time.RFC3339))
+	_ = d.Set("last_updated", time.Time(*res.LastUpdate).Format(time.RFC3339))
 	_ = d.Set("account_id", accountID)
 
 	return nil
@@ -102,16 +106,35 @@ func resourceNewRelicSyntheticsSecureCredentialCreate(ctx context.Context, d *sc
 
 func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
-
 	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
-	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", d.Id())
+	queryString := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s' AND accountId = '%d'", d.Id(), accountID)
 
 	var entity *entities.EntityOutlineInterface
+	var entityResults *entities.EntitySearch
+	var reqErr error
+	var diags diag.Diagnostics
 
-	entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
-	if err != nil {
-		return diag.FromErr(err)
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		entityResults, reqErr = client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
+		if reqErr != nil {
+			return resource.NonRetryableError(reqErr)
+		}
+
+		if entityResults.Count != 1 {
+			return resource.RetryableError(fmt.Errorf("failed to read secure credential"))
+		}
+
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
+
+	if len(diags) > 0 {
+		return diags
 	}
 
 	if entityResults.Count != 1 {
@@ -162,7 +185,7 @@ func resourceNewRelicSyntheticsSecureCredentialUpdate(ctx context.Context, d *sc
 
 	_ = d.Set("key", res.Key)
 	_ = d.Set("description", res.Description)
-	_ = d.Set("last_updated", time.Time(res.LastUpdate).Format(time.RFC3339))
+	_ = d.Set("last_updated", time.Time(*res.LastUpdate).Format(time.RFC3339))
 	_ = d.Set("account_id", accountID)
 
 	return nil

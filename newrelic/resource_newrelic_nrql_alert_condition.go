@@ -72,7 +72,7 @@ func termSchema() *schema.Resource {
 			"threshold_duration": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The duration, in seconds, that the threshold must violate in order to create an incident. Value must be a multiple of the 'aggregation_window' (which has a default of 60 seconds). Value must be within 120-3600 seconds for baseline conditions, and within 60-7200 seconds for static conditions with the single_value value function.",
+				Description: "The duration, in seconds, that the threshold must violate in order to create an incident. Value must be a multiple of the 'aggregation_window' (which has a default of 60 seconds). Value must be within 120-3600 seconds for baseline conditions, and within 60-7200 seconds for static conditions",
 			},
 		},
 	}
@@ -207,20 +207,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				ConflictsWith: []string{"violation_time_limit"},
 				ValidateFunc:  validation.IntBetween(300, 2592000),
 			},
-			// Exists in NerdGraph, but with different values. Conversion
-			// between new:old and old:new is handled via maps in structures file.
-			// Conflicts with `baseline_direction` when using NerdGraph.
-			"value_function": {
-				Deprecated:   "'value_function' is deprecated.  Remove this field and condition will evaluate as 'single_value' by default.  To replicate 'sum' behavior, use 'slide_by'.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Values are: 'single_value' (deprecated) or 'sum' (deprecated)",
-				ValidateFunc: validation.StringInSlice([]string{"single_value", "sum"}, true),
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					// If a value is not provided and the condition uses the default value (single_value), don't show a diff
-					return (strings.EqualFold(old, "SINGLE_VALUE") && new == "") || strings.EqualFold(old, new)
-				},
-			},
+
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -346,11 +333,10 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			},
 			// Baseline ONLY
 			"baseline_direction": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The baseline direction of a baseline NRQL alert condition. Valid values are: 'LOWER_ONLY', 'UPPER_AND_LOWER', 'UPPER_ONLY' (case insensitive).",
-				ConflictsWith: []string{"value_function"},
-				ValidateFunc:  validation.StringInSlice([]string{"LOWER_ONLY", "UPPER_AND_LOWER", "UPPER_ONLY"}, true),
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "The baseline direction of a baseline NRQL alert condition. Valid values are: 'LOWER_ONLY', 'UPPER_AND_LOWER', 'UPPER_ONLY' (case insensitive).",
+				ValidateFunc: validation.StringInSlice([]string{"LOWER_ONLY", "UPPER_AND_LOWER", "UPPER_ONLY"}, true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
@@ -418,7 +404,7 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 	}
 
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		_, err := client.Alerts.GetNrqlConditionQueryWithContext(ctx, accountID, strconv.Itoa(conditionID))
+		condition, err = client.Alerts.GetNrqlConditionQueryWithContext(ctx, accountID, strconv.Itoa(conditionID))
 		if err != nil {
 			if _, ok := err.(*errors.NotFound); ok {
 				return resource.RetryableError(fmt.Errorf("nrql condition was not created"))
@@ -435,7 +421,7 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 
 	d.SetId(serializeIDs([]int{d.Get("policy_id").(int), conditionID})) // set to correct ID
 
-	return nil
+	return diag.FromErr(flattenNrqlAlertCondition(accountID, condition, d))
 }
 
 func resourceNewRelicNrqlAlertConditionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

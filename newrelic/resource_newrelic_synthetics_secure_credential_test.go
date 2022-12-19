@@ -5,11 +5,11 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
@@ -17,7 +17,7 @@ import (
 
 func TestAccNewRelicSyntheticsSecureCredential_Basic(t *testing.T) {
 	resourceName := "newrelic_synthetics_secure_credential.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -53,6 +53,26 @@ func TestAccNewRelicSyntheticsSecureCredential_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicSyntheticsSecureCredential_Error(t *testing.T) {
+	resourceName := "newrelic_synthetics_secure_credential.foo"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsSecureCredentialDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicSyntheticsSecureCredentialConfig("bad-key"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsSecureCredentialExists(resourceName),
+				),
+				ExpectError: regexp.MustCompile("Invalid key specified: key is blank, too long, or contains invalid characters."),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicSyntheticsSecureCredentialExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -68,7 +88,7 @@ func testAccCheckNewRelicSyntheticsSecureCredentialExists(n string) resource.Tes
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
 		time.Sleep(60 * time.Second)
 
-		nrqlQuery := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", rs.Primary.ID)
+		nrqlQuery := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s' AND accountId = '%d'", rs.Primary.ID, testAccountID)
 		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, nrqlQuery, []entities.EntitySearchSortCriteria{})
 		if err != nil {
 			return err
@@ -94,7 +114,7 @@ func testAccCheckNewRelicSyntheticsSecureCredentialDestroy(s *terraform.State) e
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
 		time.Sleep(60 * time.Second)
 
-		nrqlQuery := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s'", r.Primary.ID)
+		nrqlQuery := fmt.Sprintf("domain = 'SYNTH' AND type = 'SECURE_CRED' AND name = '%s' AND accountId = '%d'", r.Primary.ID, testAccountID)
 		found, err := client.Entities.GetEntitySearchByQuery(entities.EntitySearchOptions{}, nrqlQuery, []entities.EntitySearchSortCriteria{})
 		if err != nil {
 			return err
@@ -111,7 +131,7 @@ func testAccCheckNewRelicSyntheticsSecureCredentialDestroy(s *terraform.State) e
 func testAccNewRelicSyntheticsSecureCredentialConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_synthetics_secure_credential" "foo" {
-	key          = "tf_test_%[1]s"
+	key          = "%[1]s"
 	value        = "Test Value"
 	description  = "Test Description"
 }
@@ -121,7 +141,7 @@ resource "newrelic_synthetics_secure_credential" "foo" {
 func testAccNewRelicSyntheticsSecureCredentialConfigUpdated(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_synthetics_secure_credential" "foo" {
-	key         = "tf_test_%[1]s"
+	key         = "%[1]s"
 	value        = "Test Value Updated"
 	description  = "Test Description"
 }
