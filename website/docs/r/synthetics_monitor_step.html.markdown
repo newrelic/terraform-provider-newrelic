@@ -87,7 +87,7 @@ resource "newrelic_synthetics_step_monitor" "bar" {
   name = "step_monitor"
   uri  = "https://www.one.example.com"
   location_private {
-    guid         = "newrelic_synthetics_private_location.location.id"
+    guid         = newrelic_synthetics_private_location.location.id
     vse_password = "secret"
   }
   period = "EVERY_6_HOURS"
