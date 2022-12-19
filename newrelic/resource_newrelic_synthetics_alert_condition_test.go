@@ -7,14 +7,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNewRelicSyntheticsAlertCondition_Basic(t *testing.T) {
 	resourceName := "newrelic_synthetics_alert_condition.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -53,7 +52,7 @@ func TestAccNewRelicSyntheticsAlertCondition_Basic(t *testing.T) {
 }
 
 func TestAccNewRelicSyntheticsAlertCondition_MissingPolicy(t *testing.T) {
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },

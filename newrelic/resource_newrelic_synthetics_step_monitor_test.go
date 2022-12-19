@@ -6,13 +6,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_step_monitor.foo"
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rName := generateNameForIntegrationTestResource()
 	updateStep := `steps {
 		ordinal = 1
 		type    = "ASSERT_TITLE"
