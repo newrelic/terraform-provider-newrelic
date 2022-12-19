@@ -17,7 +17,7 @@ import (
 func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
 	resourceName := "newrelic_alert_channel.foo"
 	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 	rNameUpdated := fmt.Sprintf("tf-test-updated-%s", rand)
 	rNameDeprecatedUpdated := fmt.Sprintf("tf-test-deprecated-updated-%s", rand)
 
@@ -73,8 +73,7 @@ func TestAccNewRelicAlertChannel_Webhook(t *testing.T) {
 	t.Skip("Skipping test due to odd API error. Needs investigation.")
 
 	resourceName := "newrelic_alert_channel.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -116,8 +115,7 @@ func TestAccNewRelicAlertChannel_Webhook(t *testing.T) {
 func TestAccNewRelicAlertChannel_WebhookPayloadHeaderStringConflicts(t *testing.T) {
 	t.Skip("Skipping test due to odd API error. Needs investigation.")
 
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -159,8 +157,7 @@ func TestAccNewRelicAlertChannel_WebhookPayloadHeaderString(t *testing.T) {
 	t.Skip("Skipping test due to odd API error. Needs investigation.")
 
 	resourceName := "newrelic_alert_channel.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -186,8 +183,7 @@ func TestAccNewRelicAlertChannel_Slack(t *testing.T) {
 	t.Skip("Skipping test due to odd API error. Needs investigation.")
 
 	resourceName := "newrelic_alert_channel.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -225,8 +221,7 @@ func TestAccNewRelicAlertChannel_PagerDuty(t *testing.T) {
 	t.Skip("Skipping test due to odd API error. Needs investigation.")
 
 	resourceName := "newrelic_alert_channel.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -274,8 +269,7 @@ func TestAccNewRelicAlertChannel_OpsGenie(t *testing.T) {
 	t.Skip("Skipping test due to odd API error. Needs investigation.")
 
 	resourceName := "newrelic_alert_channel.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -316,8 +310,7 @@ func TestAccNewRelicAlertChannel_VictorOps(t *testing.T) {
 	t.Skip("Skipping test due to odd API error. Needs investigation.")
 
 	resourceName := "newrelic_alert_channel.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -353,8 +346,7 @@ func TestAccNewRelicAlertChannel_VictorOps(t *testing.T) {
 func TestAccNewRelicAlertChannel_WebhookPayloadValidation(t *testing.T) {
 	t.Skip("Skipping test due to odd API error. Needs investigation.")
 
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 	expectedErrorMsg, _ := regexp.Compile(`payload_type is required when using payload`)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -377,8 +369,8 @@ func TestAccNewRelicAlertChannel_WebhookPayloadValidation(t *testing.T) {
 }
 
 func TestAccNewRelicAlertChannel_ResourceNotFound(t *testing.T) {
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-test-%s", rand)
+
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

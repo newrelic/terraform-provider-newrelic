@@ -16,7 +16,7 @@ import (
 
 func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_script_monitor.foo"
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rName := generateNameForIntegrationTestResource()
 	monitorTypeStr := string(SyntheticsMonitorTypes.SCRIPT_API)
 
 	resource.Test(t, resource.TestCase{
