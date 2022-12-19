@@ -391,7 +391,17 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     resource_groups          = ["beyond"]
   }
 
+  mysql_flexible {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
   postgresql {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+  }
+
+  postgresql_flexible {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
   }

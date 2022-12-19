@@ -92,7 +92,15 @@ func resourceNewRelicNotificationChannelCreate(ctx context.Context, d *schema.Re
 
 	channelResponse, err := client.Notifications.AiNotificationsCreateChannelWithContext(updatedContext, accountID, channelInput)
 	if err != nil {
-		return diag.FromErr(err)
+		diagErr := diag.FromErr(err)
+		newDiagErr := diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diagErr[0].Severity,
+				Summary:  diagErr[0].Summary,
+				Detail:   "NOTICE: fields are statically typed. Make sure all fields are of the correct type",
+			},
+		}
+		return newDiagErr
 	}
 
 	errors := buildAiNotificationsErrors(channelResponse.Errors)
