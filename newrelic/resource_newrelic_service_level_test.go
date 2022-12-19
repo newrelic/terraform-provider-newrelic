@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
@@ -18,9 +17,7 @@ import (
 
 func TestAccNewRelicServiceLevel_Basic(t *testing.T) {
 	resourceName := "newrelic_service_level.sli"
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-
-	defer cleanupDanglingServiceLevelResources()
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -185,7 +182,7 @@ func testAccCheckNewRelicServiceLevelDestroy(s *terraform.State) error {
 
 func cleanupDanglingServiceLevelResources() error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
-	query := "domain = 'EXT' AND type = 'SERVICE_LEVEL' AND name LIKE '%tf-test-%'"
+	query := "domain = 'EXT' AND type = 'SERVICE_LEVEL' AND (name LIKE '%tf-test-%' OR name LIKE '%tf_test_%')"
 
 	fmt.Printf("\n[INFO] cleaning up any dangling integration test resources... \n")
 	time.Sleep(1 * time.Second)
