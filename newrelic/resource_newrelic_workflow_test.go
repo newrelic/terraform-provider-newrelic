@@ -15,15 +15,13 @@ import (
 
 func TestNewRelicWorkflow_Webhook(t *testing.T) {
 	resourceName := "newrelic_workflow.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicWorkflowDestroy,
 		Steps: []resource.TestStep{
-
 			// Test: Create workflow
 			{
 				Config: testAccNewRelicWorkflowConfigurationWebhook(testAccountID, rName),
@@ -44,15 +42,13 @@ func TestNewRelicWorkflow_Webhook(t *testing.T) {
 
 func TestNewRelicWorkflow_Email(t *testing.T) {
 	resourceName := "newrelic_workflow.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicWorkflowDestroy,
 		Steps: []resource.TestStep{
-
 			// Test: Create workflow
 			{
 				Config: testAccNewRelicWorkflowConfigurationEmail(testAccountID, rName),
@@ -82,7 +78,6 @@ func TestNewRelicWorkflow_DeleteWorkflowWithoutRemovingChannels(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicWorkflowDestroy,
 		Steps: []resource.TestStep{
-
 			// Test: Create workflow
 			{
 				Config: channelResources + workflowResource,
@@ -100,15 +95,13 @@ func TestNewRelicWorkflow_DeleteWorkflowWithoutRemovingChannels(t *testing.T) {
 
 func TestNewRelicWorkflow_MinimalConfig(t *testing.T) {
 	resourceName := "newrelic_workflow.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicWorkflowDestroy,
 		Steps: []resource.TestStep{
-
 			// Test: Create workflow
 			{
 				Config: testAccNewRelicWorkflowConfigurationMinimal(testAccountID, rName),
@@ -166,7 +159,7 @@ func TestNewRelicWorkflow_UpdateChannels(t *testing.T) {
 func TestNewRelicWorkflow_RemoveEnrichments(t *testing.T) {
 	resourceName := "newrelic_workflow.foo"
 	channelResourceName := "foo"
-	workflowName := acctest.RandString(5)
+	workflowName := generateNameForIntegrationTestResource()
 	enrichmentsSection := `
 enrichments {
 	nrql {
@@ -186,7 +179,6 @@ enrichments {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicWorkflowDestroy,
 		Steps: []resource.TestStep{
-
 			// Test: Create workflow
 			{
 				Config: channelResources + workflowWithEnrichment,
@@ -204,15 +196,13 @@ enrichments {
 
 func TestNewRelicWorkflow_WithCreatedNotificationTriggers(t *testing.T) {
 	resourceName := "newrelic_workflow.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicWorkflowDestroy,
 		Steps: []resource.TestStep{
-
 			// Test: Create workflow
 			{
 				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, rName, `["ACTIVATED"]`),
@@ -233,15 +223,13 @@ func TestNewRelicWorkflow_WithCreatedNotificationTriggers(t *testing.T) {
 
 func TestNewRelicWorkflow_WithNonCreatedNotificationTriggers(t *testing.T) {
 	resourceName := "newrelic_workflow.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicWorkflowDestroy,
 		Steps: []resource.TestStep{
-
 			// Test: Create workflow
 			{
 				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, rName, ""),
@@ -262,15 +250,13 @@ func TestNewRelicWorkflow_WithNonCreatedNotificationTriggers(t *testing.T) {
 
 func TestNewRelicWorkflow_WithUpdatedNotificationTriggers(t *testing.T) {
 	resourceName := "newrelic_workflow.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-workflow-test-%s", rand)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicWorkflowDestroy,
 		Steps: []resource.TestStep{
-
 			// Test: Create workflow
 			{
 				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, rName, `["ACTIVATED"]`),
