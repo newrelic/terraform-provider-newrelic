@@ -18,9 +18,9 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", rand)
 	rNameUpdated := fmt.Sprintf("tf-test-updated-%s", rand)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
@@ -89,9 +89,9 @@ func TestAccNewRelicAlertCondition_AlertPolicyNotFound(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNewRelicAlertConditionConfig(rName),
@@ -109,9 +109,9 @@ func TestAccNewRelicAlertCondition_ApplicationScopeWithCloseTimer(t *testing.T) 
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicAlertConditionApplicationScopeWithCloseTimerConfig(rName),

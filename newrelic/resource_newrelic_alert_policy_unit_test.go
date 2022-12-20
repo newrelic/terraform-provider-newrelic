@@ -15,9 +15,9 @@ func TestAccNewRelicAlertPolicy_ErrorThrownWhenNameEmpty(t *testing.T) {
 	expectedErrorMsg, _ := regexp.Compile(`name must not be empty`)
 
 	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest:   true,
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
+		IsUnitTest:        true,
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckNewRelicAlertPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicAlertPolicyConfigNameEmpty(),

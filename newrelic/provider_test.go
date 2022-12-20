@@ -37,6 +37,12 @@ var (
 	testAccountName                 string
 	testAccAPMEntityCreated         = false
 	testAccCleanupComplete          = false
+
+	testAccProviderFactories = map[string]func() (*schema.Provider, error){
+		"kubernetes": func() (*schema.Provider, error) {
+			return Provider(), nil
+		},
+	}
 )
 
 func init() {
@@ -46,6 +52,11 @@ func init() {
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{
 		"newrelic": testAccProvider,
+	}
+	testAccProviderFactories = map[string]func() (*schema.Provider, error){
+		"newrelic": func() (*schema.Provider, error) {
+			return Provider(), nil
+		},
 	}
 	testAccAPIKey = os.Getenv("NEW_RELIC_API_KEY")
 	if v := os.Getenv("NEW_RELIC_API_KEY"); v == "" {

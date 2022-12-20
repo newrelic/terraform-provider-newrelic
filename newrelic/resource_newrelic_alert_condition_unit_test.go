@@ -17,9 +17,9 @@ func TestAccNewRelicAlertCondition_ShortTermDuration(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest:   true,
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
+		IsUnitTest:        true,
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicAlertConditionConfigDuration(rName, 4),
@@ -34,9 +34,9 @@ func TestAccNewRelicAlertCondition_LongTermDuration(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	expectedErrorMsg, _ := regexp.Compile(`expected term.0.duration to be in the range \(5 - 120\)`)
 	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest:   true,
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
+		IsUnitTest:        true,
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicAlertConditionConfigDuration(rName, 121),
@@ -50,9 +50,9 @@ func TestAccNewRelicAlertCondition_EmptyName(t *testing.T) {
 	avoidEmptyAccountID()
 	expectedErrorMsg, _ := regexp.Compile(`name must not be empty`)
 	resource.ParallelTest(t, resource.TestCase{
-		IsUnitTest:   true,
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertConditionDestroy,
+		IsUnitTest:        true,
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckNewRelicAlertConditionDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicAlertConditionConfig(""),
