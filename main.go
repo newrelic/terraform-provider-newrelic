@@ -14,12 +14,19 @@ var (
 	// ProviderVersion is set during the release process to the release version of the binary.
 	// See .goreleaser.yml for more details.
 	ProviderVersion = "dev"
+
+	// UserAgentServiceName can be set via -ldflags and used to customize
+	// the provider's user agent string in request headers to facilitate
+	// a better understanding of what additional services may "wrap" our
+	// provider, such as Pulumi.
+	UserAgentServiceName = ""
 )
 
 func main() {
-	// We need to set the ProviderVersion variable in the newrelic package
-	// to ensure it gets properly set as part of the user agent header.
+	// We need to set the following package variables in the newrelic package
+	// to ensure they are properly set as part of the provider's user agent header.
 	newrelic.ProviderVersion = ProviderVersion
+	newrelic.UserAgentServiceName = UserAgentServiceName
 
 	var debugMode bool
 
