@@ -39,7 +39,7 @@ var (
 	testAccCleanupComplete          = false
 
 	testAccProviderFactories = map[string]func() (*schema.Provider, error){
-		"kubernetes": func() (*schema.Provider, error) {
+		"newrelic": func() (*schema.Provider, error) {
 			return Provider(), nil
 		},
 	}
