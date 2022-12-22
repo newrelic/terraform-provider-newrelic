@@ -2,13 +2,14 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
@@ -114,12 +115,14 @@ func resourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *schem
 
 	resp, err := client.Entities.GetEntityWithContext(ctx, guid)
 	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
+		if err.Error() == "Argument \"guid\" has invalid value $guid." {
+			return diag.FromErr(fmt.Errorf("invalid GUID"))
 		}
-
 		return diag.FromErr(err)
+	}
+	if _, ok := err.(*errors.NotFound); ok {
+		d.SetId("")
+		return nil
 	}
 
 	if resp == nil {
