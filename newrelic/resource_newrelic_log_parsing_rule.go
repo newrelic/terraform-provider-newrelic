@@ -62,6 +62,11 @@ func resourceNewRelicLogParsingRule() *schema.Resource {
 				Description: "Whether or not this rule is deleted.",
 				Computed:    true,
 			},
+			"matched": {
+				Type:        schema.TypeBool,
+				Description: "Whether the Grok pattern matched.",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -84,19 +89,31 @@ func resourceNewRelicLogParsingRuleCreate(ctx context.Context, d *schema.Resourc
 	if e, ok := d.GetOk("attribute"); ok {
 		createInput.Attribute = e.(string)
 	}
+	if e, ok := d.GetOk("matched"); ok {
+		if e.(bool) == true {
+			created, err := client.Logconfigurations.LogConfigurationsCreateParsingRuleWithContext(ctx, accountID, createInput)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
-	created, err := client.Logconfigurations.LogConfigurationsCreateParsingRuleWithContext(ctx, accountID, createInput)
-	if err != nil {
-		return diag.FromErr(err)
+			if created == nil {
+				return diag.Errorf("err: rule not created.")
+			}
+
+			parsingRuleID := created.Rule.ID
+
+			d.SetId(parsingRuleID)
+			d.Set("matched", e.(bool))
+		}
+	} else {
+		var diags diag.Diagnostics
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "The grok pattern is not tested against log lines from the New Relic",
+		})
+
+		return diags
 	}
-
-	if created == nil {
-		return diag.Errorf("err: rule not created.")
-	}
-
-	parsingRuleID := created.Rule.ID
-
-	d.SetId(parsingRuleID)
 
 	return resourceNewRelicLogParsingRuleRead(ctx, d, meta)
 }
@@ -160,10 +177,21 @@ func resourceNewRelicLogParsingRuleUpdate(ctx context.Context, d *schema.Resourc
 	accountID := selectAccountID(meta.(*ProviderConfig), d)
 
 	ruleID := d.Id()
+	if e, ok := d.GetOk("matched"); ok {
+		if e.(bool) == true {
+			_, err := client.Logconfigurations.LogConfigurationsUpdateParsingRuleWithContext(ctx, accountID, ruleID, updateInput)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	} else {
+		var diags diag.Diagnostics
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "The grok pattern is not tested against log lines from the New Relic",
+		})
 
-	_, err := client.Logconfigurations.LogConfigurationsUpdateParsingRuleWithContext(ctx, accountID, ruleID, updateInput)
-	if err != nil {
-		return diag.FromErr(err)
+		return diags
 	}
 
 	return resourceNewRelicLogParsingRuleRead(ctx, d, meta)
