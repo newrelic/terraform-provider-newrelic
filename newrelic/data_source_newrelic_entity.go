@@ -32,7 +32,7 @@ func dataSourceNewRelicEntity() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				Description:  "The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, and WORKLOAD.",
-				ValidateFunc: validation.StringInSlice([]string{"APPLICATION", "DASHBOARD", "HOST", "MONITOR", "WORKLOAD"}, true),
+				ValidateFunc: validation.StringInSlice(listValidEntitySearchQueryBuilderTypeTypes(), true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
@@ -42,7 +42,7 @@ func dataSourceNewRelicEntity() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				Description:  "The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, SYNTH, and VIZ. If not specified, all domains are searched.",
-				ValidateFunc: validation.StringInSlice([]string{"APM", "BROWSER", "INFRA", "MOBILE", "SYNTH", "VIZ"}, true),
+				ValidateFunc: validation.StringInSlice(listValidEntitySearchQueryBuilderDomainTypes(), true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
@@ -210,4 +210,26 @@ func expandEntityTag(cfg []interface{}) []entities.EntitySearchQueryBuilderTag {
 	}
 
 	return tags
+}
+
+func listValidEntitySearchQueryBuilderDomainTypes() []string {
+	return []string{
+		string(entities.EntitySearchQueryBuilderDomainTypes.APM),
+		string(entities.EntitySearchQueryBuilderDomainTypes.EXT),
+		string(entities.EntitySearchQueryBuilderDomainTypes.INFRA),
+		string(entities.EntitySearchQueryBuilderDomainTypes.BROWSER),
+		string(entities.EntitySearchQueryBuilderDomainTypes.SYNTH),
+		string(entities.EntitySearchQueryBuilderDomainTypes.MOBILE),
+	}
+}
+
+func listValidEntitySearchQueryBuilderTypeTypes() []string {
+	return []string{
+		string(entities.EntitySearchQueryBuilderTypeTypes.HOST),
+		string(entities.EntitySearchQueryBuilderTypeTypes.APPLICATION),
+		string(entities.EntitySearchQueryBuilderTypeTypes.DASHBOARD),
+		string(entities.EntitySearchQueryBuilderTypeTypes.MONITOR),
+		string(entities.EntitySearchQueryBuilderTypeTypes.SERVICE),
+		string(entities.EntitySearchQueryBuilderTypeTypes.WORKLOAD),
+	}
 }
