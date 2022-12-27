@@ -48,4 +48,5 @@ closeComment: >
   for an extended period of time.
 
 # Limit to only `issues` or `pulls`
+
 only: issues
