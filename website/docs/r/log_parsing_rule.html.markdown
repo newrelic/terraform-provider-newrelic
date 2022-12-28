@@ -14,8 +14,7 @@ Use this resource to create, update and delete New Relic Log Parsing Rule.
 
 ```hcl
 
-resource "newrelic_log_parsing_rule" "foo"
-{
+resource "newrelic_log_parsing_rule" "foo"{
     account_id  = %[1]d
     name        = "%[2]s"
     attribute   = "%[3]s"
