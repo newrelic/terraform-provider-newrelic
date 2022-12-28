@@ -14,7 +14,8 @@ Use this resource to create, update and delete New Relic Log Parsing Rule.
 
 ```hcl
 
-resource "newrelic_log_parsing_rule" "foo"{
+resource "newrelic_log_parsing_rule" "foo"
+{
 	account_id = %[1]d
 	name = "%[2]s"
 	attribute = "%[3]s"
@@ -31,13 +32,13 @@ resource "newrelic_log_parsing_rule" "foo"{
 
 The following arguments are supported:
 
-* `account_id` - (Optional) The account id associated with the obfuscation rule.
 * `name` - (Required) Name of rule.
 * `grok` - (Required) The Grok of what to parse.
 * `lucene` - (Required) The Lucene to match events to the parsing rule.
 * `enabled` - (Required) Whether the rule should be applied or not to incoming data.
-* `matched` - (Optional) Whether the Grok pattern matched.
 * `nrql` - (Required) The NRQL to match events to the parsing rule.
+* `account_id` - (Optional) The account id associated with the obfuscation rule.
+* `matched` - (Optional) Whether the Grok pattern matched.
 
 
 
