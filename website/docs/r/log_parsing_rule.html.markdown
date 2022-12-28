@@ -16,10 +16,10 @@ Use this resource to create, update and delete New Relic Log Parsing Rule.
 
 resource "newrelic_log_parsing_rule" "foo"
 {
-	account_id = %[1]d
-	name = "%[2]s"
-	attribute = "%[3]s"
-	enabled     = true
+    account_id  = %[1]d
+    name        = "%[2]s"
+    attribute   = "%[3]s"
+    enabled     = true
     grok        = "sampleattribute='%%{NUMBER:test:int}'"
     lucene      = "logtype:linux_messages"
     nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
