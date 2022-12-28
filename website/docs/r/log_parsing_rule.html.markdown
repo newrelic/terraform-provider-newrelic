@@ -37,7 +37,7 @@ The following arguments are supported:
 * `lucene` - (Required) The Lucene to match events to the parsing rule.
 * `enabled` - (Required) Whether the rule should be applied or not to incoming data.
 * `matched` - (Optional) Whether the Grok pattern matched.
-* `nrql` - (Optional) The NRQL to match events to the parsing rule.
+* `nrql` - (Required) The NRQL to match events to the parsing rule.
 
 
 
