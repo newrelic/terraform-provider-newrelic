@@ -99,7 +99,7 @@ func dataSourceNewRelicTestGrokRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 	d.SetId(fmt.Sprintf("%d", rand.Int()))
-	d.Set("test_grok", flattenTestGrokResponse(res))
+	_ = d.Set("test_grok", flattenTestGrokResponse(res))
 
 	return nil
 

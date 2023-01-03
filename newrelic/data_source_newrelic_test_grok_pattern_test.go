@@ -56,8 +56,8 @@ func testAccNewRelicTestGrokDataSourceConfig() string {
 	return fmt.Sprintf(`
 data "newrelic_test_grok_pattern" "grok"{
 	account_id = %[1]d
-	grok = "%%{IP:host_ip}"
-	log_lines = ["host_ip: 43.3.120.2","bytes_received: 2048""]
+	grok = "%%%%{IP:host_ip}"
+	log_lines = ["host_ip: 43.3.120.2","bytes_received: 2048"]
 }
 `, testAccountID)
 }
