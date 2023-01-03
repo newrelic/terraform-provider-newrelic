@@ -1,3 +1,26 @@
+<a name="v3.11.0"></a>
+## [v3.11.0] - 2022-12-16
+### Bug Fixes
+- **workflows:** fix a bug that would prevent creation of disabled workflows
+
+### Features
+- Remove value_function from nrql alert condition resource
+
+<a name="v3.10.0"></a>
+## [v3.10.0] - 2022-12-16
+### Bug Fixes
+- **dashboards:** handle empty values returned from API
+- **drop_rules:** verbose error message :bug:
+- **newrelic_nrql_alert_condition:** Set entity_guid after creating NRQL alert condition
+- **workflows:** stop silently removing channels on workflow updates/deletes
+- **workloads:** Removed forcenew for entity guids and changed docs
+
+### Documentation Updates
+- **Workflow:** Changes in examples
+
+### Features
+- **secure_credential:** add account id in secure credential search
+
 <a name="v3.9.0"></a>
 ## [v3.9.0] - 2022-12-06
 ### Bug Fixes
@@ -1611,7 +1634,9 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.9.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.11.0...HEAD
+[v3.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.10.0...v3.11.0
+[v3.10.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.9.0...v3.10.0
 [v3.9.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.8.0...v3.9.0
 [v3.8.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.1...v3.8.0
 [v3.7.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.0...v3.7.1
