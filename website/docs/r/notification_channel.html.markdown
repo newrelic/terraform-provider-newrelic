@@ -88,7 +88,11 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Additional Examples
 
+~> **NOTE:** We support all properties. The mentioned properties are just an example.
+
 ##### [ServiceNow](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#servicenow)
+To see the properties’ keys for your account, check ServiceNow incidents table.
+
 ```hcl
 resource "newrelic_notification_channel" "foo" {
   account_id = 12345678
@@ -338,3 +342,5 @@ resource "newrelic_notification_channel" "webhook-channel" {
 
 ## Additional Information
 More details about the channels API can be found [here](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels).
+
+~> **NOTE:** [`newrelic_alert_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_channel) and [`newrelic_alert_policy_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_policy_channel) are legacy resources.
