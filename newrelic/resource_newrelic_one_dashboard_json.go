@@ -2,9 +2,12 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
@@ -50,6 +53,10 @@ func resourceNewRelicOneDashboardJSON() *schema.Resource {
 				Description: "The URL of the dashboard.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Second),
+			Update: schema.DefaultTimeout(30 * time.Second),
+		},
 	}
 }
 
@@ -83,15 +90,27 @@ func resourceNewRelicOneDashboardJSONCreate(ctx context.Context, d *schema.Resou
 	}
 
 	log.Printf("[INFO] New JSON Dashboard GUID: %s", guid)
-
 	d.SetId(string(guid))
 
-	res := resourceNewRelicOneDashboardJSONRead(ctx, d, meta)
-	if err != nil {
-		return diag.FromErr(err)
+	// Wait until the API returns the same value as our create call
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		dashboard, err := client.Dashboards.GetDashboardEntityWithContext(ctx, common.EntityGUID(d.Id()))
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		if dashboard.UpdatedAt != created.EntityResult.UpdatedAt {
+			return resource.RetryableError(fmt.Errorf("one_dashboard_json updated_at get value does not match one returned from create call, retrying"))
+		}
+
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
 	}
 
-	return res
+	return nil
 }
 
 // resourceNewRelicOneDashboardRead NerdGraph => Terraform reader
@@ -170,8 +189,26 @@ func resourceNewRelicOneDashboardJSONUpdate(ctx context.Context, d *schema.Resou
 		return diag.Errorf("err: newrelic_one_dashboard_json Update failed: %s", errMessages)
 	}
 
-	// Reset updated_at as we've updated the dashboard
-	_ = d.Set("updated_at", "")
+	// Set updated_at as we've updated the dashboard
+	_ = d.Set("updated_at", updated.EntityResult.UpdatedAt)
+
+	// Wait until the API returns the same value as our update call
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+		dashboard, err := client.Dashboards.GetDashboardEntityWithContext(ctx, common.EntityGUID(d.Id()))
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		if dashboard.UpdatedAt != updated.EntityResult.UpdatedAt {
+			return resource.RetryableError(fmt.Errorf("one_dashboard_json updated_at get value does not match one returned from update call, retrying"))
+		}
+
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
 
 	return resourceNewRelicOneDashboardJSONRead(ctx, d, meta)
 }
