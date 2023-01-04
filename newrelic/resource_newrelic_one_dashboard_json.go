@@ -189,9 +189,6 @@ func resourceNewRelicOneDashboardJSONUpdate(ctx context.Context, d *schema.Resou
 		return diag.Errorf("err: newrelic_one_dashboard_json Update failed: %s", errMessages)
 	}
 
-	// Set updated_at as we've updated the dashboard
-	_ = d.Set("updated_at", updated.EntityResult.UpdatedAt)
-
 	// Wait until the API returns the same value as our update call
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
 		dashboard, err := client.Dashboards.GetDashboardEntityWithContext(ctx, common.EntityGUID(d.Id()))
@@ -209,6 +206,9 @@ func resourceNewRelicOneDashboardJSONUpdate(ctx context.Context, d *schema.Resou
 	if retryErr != nil {
 		return diag.FromErr(retryErr)
 	}
+
+	// Set updated_at as we've updated the dashboard
+	_ = d.Set("updated_at", updated.EntityResult.UpdatedAt)
 
 	return resourceNewRelicOneDashboardJSONRead(ctx, d, meta)
 }
