@@ -110,7 +110,7 @@ func resourceNewRelicOneDashboardJSONCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(retryErr)
 	}
 
-	return nil
+	return resourceNewRelicOneDashboardJSONRead(ctx, d, meta)
 }
 
 // resourceNewRelicOneDashboardRead NerdGraph => Terraform reader
