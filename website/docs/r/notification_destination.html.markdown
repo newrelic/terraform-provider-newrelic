@@ -89,7 +89,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Additional Examples
 
-**NOTE:** We support all properties. The mentioned properties are just an example.
+~> **NOTE:** We support all properties. The mentioned properties are just an example.
 
 
 ##### [ServiceNow](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#servicenow)
@@ -232,9 +232,9 @@ resource "newrelic_notification_destination" "foo" {
 }
 ```
 2. Run import command: `terraform import newrelic_notification_destination.foo <destination_id>`
-3. Run the following command after the import and copy the information to your Slack resource:
+3. Run the following command after the import successfully done and copy the information to your Slack resource:
 `terraform state show newrelic_notification_destination.foo`
-4. Add `ignore_changes` attribute on `auth_token`:
+4. Add `ignore_changes` attribute on `auth_token` in your imported resource:
 ```terraform
 lifecycle {
     ignore_changes = [auth_token]
