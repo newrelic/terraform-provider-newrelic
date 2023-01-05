@@ -19,7 +19,6 @@ data "newrelic_test_grok_pattern" "foo" {
   log_lines = ["host_ip: 43.3.120.2","bytes_received: 2048"]
 }
 
-# Resource
 
 ```
 

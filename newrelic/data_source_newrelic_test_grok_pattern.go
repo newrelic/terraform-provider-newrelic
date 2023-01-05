@@ -2,9 +2,8 @@ package newrelic
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"math/rand"
+	"strconv"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
 	"log"
@@ -31,10 +30,11 @@ func dataSourceNewRelicTestGrokPattern() *schema.Resource {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Required:    true,
+				MinItems:    1,
 				Description: "The log lines to test the Grok pattern against.",
 			},
 			"test_grok": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Test a Grok pattern against a list of log lines.",
 				Elem: &schema.Resource{
@@ -83,9 +83,6 @@ func dataSourceNewRelicTestGrokRead(ctx context.Context, d *schema.ResourceData,
 	log.Printf("[INFO] Test a Grok pattern against a list of log lines.")
 	lines := d.Get("log_lines").(*schema.Set).List()
 
-	if len(lines) == 0 {
-		return diag.FromErr(errors.New("`log_lines` is required"))
-	}
 	perms := make([]string, len(lines))
 
 	for i, line := range lines {
@@ -98,7 +95,7 @@ func dataSourceNewRelicTestGrokRead(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(fmt.Sprintf("%d", rand.Int()))
+	d.SetId(strconv.Itoa(rand.Int()))
 	_ = d.Set("test_grok", flattenTestGrokResponse(res))
 
 	return nil
