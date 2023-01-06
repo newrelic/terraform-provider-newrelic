@@ -10,6 +10,8 @@ description: |-
 
 Use this resource to map alert policies to alert channels in New Relic.
 
+~> **NOTE:** This is a legacy resource. For managing channel resources in Workflows, use [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel).
+
 ## Example Usage
 
 The example below will apply multiple alert channels to an existing New Relic alert policy.
