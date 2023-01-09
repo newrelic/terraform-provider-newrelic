@@ -156,31 +156,31 @@ func testAccCheckNewRelicLogParsingRuleDestroy(s *terraform.State) error {
 func testAccNewRelicLogParsingRuleConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_log_parsing_rule" "foo"{
-	account_id = %[1]d
-	name = "%[2]s"
-	attribute = "%[3]s"
+	account_id  = %[1]d
+	name        = "%[2]s"
+	attribute   = "%[3]s"
 	enabled     = true
-    grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
-    lucene      = "logtype:linux_messages"
-    nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+	grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
+	lucene      = "logtype:linux_messages"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
 }
 `, testAccountID, name, testAccExpectedApplicationName)
 }
 func testAccNewRelicLogParsingRuleConfigCreateUniqueName(name1 string, name2 string) string {
 	return fmt.Sprintf(`
 resource "newrelic_log_parsing_rule" "foo"{
-	account_id = %[1]d
-	name = "%[2]s"
-	attribute = "%[3]s"
+	account_id  = %[1]d
+	name        = "%[2]s"
+	attribute   = "%[3]s"
 	enabled     = true
-    grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
-    lucene      = "logtype:linux_messages"
-    nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+	grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
+	lucene      = "logtype:linux_messages"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
 }
 resource "newrelic_log_parsing_rule" "bar"{
-	account_id = %[1]d
-	name = "%[4]s"
-	attribute = "%[3]s"
+	account_id  = %[1]d
+	name        = "%[4]s"
+	attribute   = "%[3]s"
 	enabled     = true
     grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
     lucene      = "logtype:linux_messages"
@@ -192,22 +192,22 @@ resource "newrelic_log_parsing_rule" "bar"{
 func testAccNewRelicLogParsingRuleConfigUpdateUniqueName(name1 string) string {
 	return fmt.Sprintf(`
 resource "newrelic_log_parsing_rule" "foo"{
-	account_id = %[1]d
-	name = "%[2]s"
-	attribute = "%[3]s"
+	account_id  = %[1]d
+	name        = "%[2]s"
+	attribute   = "%[3]s"
 	enabled     = true
-    grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
-    lucene      = "logtype:linux_messages"
-    nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+	grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
+	lucene      = "logtype:linux_messages"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
 }
 resource "newrelic_log_parsing_rule" "bar"{
-	account_id = %[1]d
-	name = "%[2]s"
-	attribute = "%[3]s"
+	account_id  = %[1]d
+	name        = "%[2]s"
+	attribute   = "%[3]s"
 	enabled     = true
-    grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
-    lucene      = "logtype:linux_messages"
-    nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+	grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
+	lucene      = "logtype:linux_messages"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
 }
 `, testAccountID, name1, testAccExpectedApplicationName)
 }
@@ -215,23 +215,23 @@ resource "newrelic_log_parsing_rule" "bar"{
 func testAccNewRelicLogParsingRuleUniqueNameConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_log_parsing_rule" "foo"{
-	account_id = %[1]d
-	name = "%[2]s"
-	attribute = "%[3]s"
+	account_id  = %[1]d
+	name        = "%[2]s"
+	attribute   = "%[3]s"
 	enabled     = true
-    grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
-    lucene      = "logtype:linux_messages"
-    nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+	grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
+	lucene      = "logtype:linux_messages"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
 }
 resource "newrelic_log_parsing_rule" "bar"{
-	account_id = %[1]d
-	name = "%[2]s"
-	attribute = "%[3]s"
+	account_id  = %[1]d
+	name        = "%[2]s"
+	attribute   = "%[3]s"
 	enabled     = true
-    grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
-    lucene      = "logtype:linux_messages"
-    nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
-	depends_on = ["newrelic_log_parsing_rule.foo"
+	grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
+	lucene      = "logtype:linux_messages"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+	depends_on  = ["newrelic_log_parsing_rule.foo"
   ]
 
 }
@@ -241,19 +241,19 @@ resource "newrelic_log_parsing_rule" "bar"{
 func testAccNewRelicLogParsingRuleGrokConfigMatched(name string) string {
 	return fmt.Sprintf(`
 data "newrelic_test_grok_pattern" "grok"{
-	account_id = %[1]d
-	grok = "%%%%{IP:host_ip}"
-	log_lines = ["host_ip: 43.3.120.2"]
+	account_id  = %[1]d
+	grok        = "%%%%{IP:host_ip}"
+	log_lines   = ["host_ip: 43.3.120.2"]
 }
 resource "newrelic_log_parsing_rule" "foo"{
-	account_id = %[1]d
-	name = "%[2]s"
-	attribute = "%[3]s"
+	account_id  = %[1]d
+	name        = "%[2]s"
+	attribute   = "%[3]s"
 	enabled     = true
-    grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
-    lucene      = "logtype:linux_messages"
-    nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
-	matched=data.newrelic_test_grok_pattern.grok.test_grok[0].matched
+	grok        = data.newrelic_test_grok_pattern.grok.grok
+	lucene      = "logtype:linux_messages"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+	matched     = data.newrelic_test_grok_pattern.grok.test_grok[0].matched
 }
 `, testAccountID, name, testAccExpectedApplicationName)
 }
@@ -261,19 +261,19 @@ resource "newrelic_log_parsing_rule" "foo"{
 func testAccNewRelicLogParsingRuleGrokConfigUnmatched(name string) string {
 	return fmt.Sprintf(`
 data "newrelic_test_grok_pattern" "grok"{
-	account_id = %[1]d
-	grok = "%%%%{IP:host_ip}"
-	log_lines = ["bytes_received: 2048"]
+	account_id  = %[1]d
+	grok        = "%%%%{IP:host_ip}"
+	log_lines   = ["bytes_received: 2048"]
 }
 resource "newrelic_log_parsing_rule" "foo"{
-	account_id = %[1]d
-	name = "%[2]s"
-	attribute = "%[3]s"
+	account_id  = %[1]d
+	name        = "%[2]s"
+	attribute   = "%[3]s"
 	enabled     = true
-    grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
-    lucene      = "logtype:linux_messages"
-    nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
-	matched=data.newrelic_test_grok_pattern.grok.test_grok[0].matched
+	grok        = data.newrelic_test_grok_pattern.grok.grok
+	lucene      = "logtype:linux_messages"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+	matched     = data.newrelic_test_grok_pattern.grok.test_grok[0].matched
 }
 `, testAccountID, name, testAccExpectedApplicationName)
 }
@@ -281,19 +281,19 @@ resource "newrelic_log_parsing_rule" "foo"{
 func testAccNewRelicLogParsingRuleInvalidGrokConfig(name string) string {
 	return fmt.Sprintf(`
 data "newrelic_test_grok_pattern" "grok"{
-	account_id = %[1]d
-grok = "{IP:host_ip}"
-	log_lines = ["host_ip: 43.3.120.2","bytes_received: 2048"]
+	account_id  = %[1]d
+	grok        = "{IP:host_ip}"
+	log_lines   = ["host_ip: 43.3.120.2","bytes_received: 2048"]
 }
 resource "newrelic_log_parsing_rule" "foo"{
-	account_id = %[1]d
-	name = "%[2]s"
-	attribute = "%[3]s"
+	account_id  = %[1]d
+	name        = "%[2]s"
+	attribute   = "%[3]s"
 	enabled     = true
-    grok        = data.newrelic_test_grok_pattern.grok.grok
-    lucene      = "logtype:linux_messages"
-    nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
-matched=data.newrelic_test_grok_pattern.grok.test_grok[0].matched
+	grok        = data.newrelic_test_grok_pattern.grok.grok
+	lucene      = "logtype:linux_messages"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+	matched     = data.newrelic_test_grok_pattern.grok.test_grok[0].matched
 }
 `, testAccountID, name, testAccExpectedApplicationName)
 }
@@ -323,13 +323,13 @@ func testAccCheckNewRelicLogParsingRuleExists(n string) resource.TestCheckFunc {
 func testAccNewRelicLogParsingRuleUpdate(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_log_parsing_rule" "foo"{
-	account_id = %[1]d
-	name = "%[2]s_update"
-	attribute = "%[3]s"
+	account_id  = %[1]d
+	name        = "%[2]s_update"
+	attribute   = "%[3]s"
 	enabled     = false
-    grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
-    lucene      = "logtype:linux_messages"
-    nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"                                                
+	grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
+	lucene      = "logtype:linux_messages"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"                                                
 }
 `, testAccountID, name, testAccExpectedApplicationName)
 }
