@@ -10,7 +10,6 @@ import (
 	"log"
 )
 
-//
 func resourceNewRelicLogParsingRule() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicLogParsingRuleCreate,
@@ -66,12 +65,13 @@ func resourceNewRelicLogParsingRule() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Whether the Grok pattern matched.",
 				Optional:    true,
+				Computed:    true,
 			},
 		},
 	}
 }
 
-//Create the obfuscation expression
+// Create the obfuscation expression
 func resourceNewRelicLogParsingRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -79,46 +79,46 @@ func resourceNewRelicLogParsingRuleCreate(ctx context.Context, d *schema.Resourc
 	accountID := selectAccountID(providerConfig, d)
 
 	createInput := logconfigurations.LogConfigurationsParsingRuleConfiguration{
-		Description: d.Get("name").(string),
-		Enabled:     d.Get("enabled").(bool),
-		Grok:        d.Get("grok").(string),
-		Lucene:      d.Get("lucene").(string),
-		NRQL:        logconfigurations.NRQL(d.Get("nrql").(string)),
+		Enabled: d.Get("enabled").(bool),
+		Grok:    d.Get("grok").(string),
+		Lucene:  d.Get("lucene").(string),
+		NRQL:    logconfigurations.NRQL(d.Get("nrql").(string)),
 	}
-
+	var diags diag.Diagnostics
 	if e, ok := d.GetOk("attribute"); ok {
 		createInput.Attribute = e.(string)
 	}
-	if e, ok := d.GetOk("matched"); ok {
-		if e.(bool) == true {
-			created, err := client.Logconfigurations.LogConfigurationsCreateParsingRuleWithContext(ctx, accountID, createInput)
-			if err != nil {
-				return diag.FromErr(err)
-			}
 
-			if created == nil {
-				return diag.Errorf("err: rule not created.")
-			}
-
-			parsingRuleID := created.Rule.ID
-
-			d.SetId(parsingRuleID)
-			d.Set("matched", e.(bool))
-		}
+	e := d.Get("name")
+	rule, err := getLogParsingRuleByName(ctx, client, accountID, e.(string))
+	if (rule != nil && err != nil) || (rule == nil && err != nil) {
+		return diag.FromErr(err)
 	} else {
-		var diags diag.Diagnostics
+		createInput.Description = e.(string)
+	}
+	if d.Get("matched") == false {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  "The grok pattern is not tested against log lines from the New Relic",
 		})
-
-		return diags
 	}
 
-	return resourceNewRelicLogParsingRuleRead(ctx, d, meta)
+	created, err := client.Logconfigurations.LogConfigurationsCreateParsingRuleWithContext(ctx, accountID, createInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if created == nil {
+		return diag.Errorf("err: rule not created.")
+	}
+
+	parsingRuleID := created.Rule.ID
+
+	d.SetId(parsingRuleID)
+	return diags
 }
 
-//Read the obfuscation expression
+// Read the obfuscation expression
 func resourceNewRelicLogParsingRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -167,33 +167,37 @@ func resourceNewRelicLogParsingRuleRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-//Update the obfuscation expression
+// Update the obfuscation expression
 func resourceNewRelicLogParsingRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
+	accountID := selectAccountID(meta.(*ProviderConfig), d)
+	if e, ok := d.GetOk("name"); ok {
+		rule, err := getLogParsingRuleByName(ctx, client, accountID, e.(string))
+		if (rule != nil && err != nil) || (rule == nil && err != nil) {
+			return diag.FromErr(err)
+		}
+	}
+
 	updateInput := expandLogParsingRuleUpdateInput(d)
 
 	log.Printf("[INFO] Updating New Relic logging parsing rule %s", d.Id())
 
-	accountID := selectAccountID(meta.(*ProviderConfig), d)
-
 	ruleID := d.Id()
-	if e, ok := d.GetOk("matched"); ok {
-		if e.(bool) == true {
-			_, err := client.Logconfigurations.LogConfigurationsUpdateParsingRuleWithContext(ctx, accountID, ruleID, updateInput)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	} else {
-		var diags diag.Diagnostics
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "The grok pattern is not tested against log lines from the New Relic",
-		})
 
+	var diags diag.Diagnostics
+	if e, ok := d.GetOk("matched"); ok {
+		if e.(bool) == false {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "The grok pattern is not tested against log lines from the New Relic",
+			})
+		}
 		return diags
 	}
-
+	_, err := client.Logconfigurations.LogConfigurationsUpdateParsingRuleWithContext(ctx, accountID, ruleID, updateInput)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	return resourceNewRelicLogParsingRuleRead(ctx, d, meta)
 }
 
@@ -227,7 +231,7 @@ func expandLogParsingRuleUpdateInput(d *schema.ResourceData) logconfigurations.L
 	return updateInp
 }
 
-//Delete the logging parsing rule
+// Delete the logging parsing rule
 func resourceNewRelicLogParsingRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -257,5 +261,19 @@ func getLogParsingRuleByID(ctx context.Context, client *newrelic.NewRelic, accou
 		}
 	}
 	return nil, errors.New("parsing rule not found")
+
+}
+
+func getLogParsingRuleByName(ctx context.Context, client *newrelic.NewRelic, accountID int, name string) (*logconfigurations.LogConfigurationsParsingRule, error) {
+	rules, err := client.Logconfigurations.GetParsingRulesWithContext(ctx, accountID)
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range *rules {
+		if v.Description == name && v.Deleted == false {
+			return v, errors.New("name is already in use by another rule")
+		}
+	}
+	return nil, nil
 
 }
