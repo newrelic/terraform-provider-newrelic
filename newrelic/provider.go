@@ -126,6 +126,7 @@ func Provider() *schema.Provider {
 			"newrelic_obfuscation_expression":       dataSourceNewRelicObfuscationExpression(),
 			"newrelic_synthetics_private_location":  dataSourceNewRelicSyntheticsPrivateLocation(),
 			"newrelic_synthetics_secure_credential": dataSourceNewRelicSyntheticsSecureCredential(),
+			"newrelic_test_grok_pattern":            dataSourceNewRelicTestGrokPattern(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
