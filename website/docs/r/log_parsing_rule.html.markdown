@@ -32,9 +32,9 @@ Use this example to validate a grok pattern and create the log parse rule.  More
 information on grok pattern can be found [here](https://docs.newrelic.com/docs/logs/ui-data/parsing/#grok)
 ```hcl
 data "newrelic_test_grok_pattern" "grok"{
-    account_id = 12345
-    grok = "%%{IP:host_ip}"
-    log_lines = ["host_ip: 43.3.120.2"]
+    account_id  = 12345
+    grok        = "%%{IP:host_ip}"
+    log_lines   = ["host_ip: 43.3.120.2"]
 }
 resource "newrelic_log_parsing_rule" "foo"{
     account_id  = 12345
@@ -44,7 +44,7 @@ resource "newrelic_log_parsing_rule" "foo"{
     grok        = data.newrelic_test_grok_pattern.grok.grok
     lucene      = "logtype:linux_messages"
     nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
-    matched=data.newrelic_test_grok_pattern.grok.test_grok[0].matched
+    matched     = data.newrelic_test_grok_pattern.grok.test_grok[0].matched
 }
 
 ```
