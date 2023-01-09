@@ -93,9 +93,8 @@ func resourceNewRelicLogParsingRuleCreate(ctx context.Context, d *schema.Resourc
 	rule, err := getLogParsingRuleByName(ctx, client, accountID, e.(string))
 	if (rule != nil && err != nil) || (rule == nil && err != nil) {
 		return diag.FromErr(err)
-	} else {
-		createInput.Description = e.(string)
 	}
+	createInput.Description = e.(string)
 	if d.Get("matched") == false {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
@@ -186,7 +185,7 @@ func resourceNewRelicLogParsingRuleUpdate(ctx context.Context, d *schema.Resourc
 
 	var diags diag.Diagnostics
 	if e, ok := d.GetOk("matched"); ok {
-		if e.(bool) == false {
+		if !e.(bool) {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  "The grok pattern is not tested against log lines from the New Relic",
@@ -270,7 +269,7 @@ func getLogParsingRuleByName(ctx context.Context, client *newrelic.NewRelic, acc
 		return nil, err
 	}
 	for _, v := range *rules {
-		if v.Description == name && v.Deleted == false {
+		if v.Description == name && !v.Deleted {
 			return v, errors.New("name is already in use by another rule")
 		}
 	}
