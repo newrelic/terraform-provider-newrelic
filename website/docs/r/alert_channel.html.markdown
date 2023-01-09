@@ -10,6 +10,8 @@ description: |-
 
 Use this resource to create and manage New Relic alert channels.
 
+~> **NOTE:** This is a legacy resource. For managing channel resources in Workflows, use [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel).
+
 ## Example Usage
 
 ##### Email
