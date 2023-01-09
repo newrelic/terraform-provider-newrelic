@@ -12,16 +12,39 @@ Use this resource to create, update and delete New Relic Log Parsing Rule.
 
 ## Example Usage
 
+Use this example to create the log parse rule.
 ```hcl
 
 resource "newrelic_log_parsing_rule" "foo"{
-    account_id  = %[1]d
-    name        = "%[2]s"
-    attribute   = "%[3]s"
+    account_id  = 12345
+    name        = "log_parse_rule"
+    attribute   = "message"
     enabled     = true
     grok        = "sampleattribute='%%{NUMBER:test:int}'"
     lucene      = "logtype:linux_messages"
     nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+}
+
+```
+
+## Additional Example
+Use this example to validate a grok pattern and create the log parse rule.  More
+information on grok pattern can be found [here](https://docs.newrelic.com/docs/logs/ui-data/parsing/#grok)
+```hcl
+data "newrelic_test_grok_pattern" "grok"{
+    account_id = 12345
+    grok = "%%{IP:host_ip}"
+    log_lines = ["host_ip: 43.3.120.2"]
+}
+resource "newrelic_log_parsing_rule" "foo"{
+    account_id  = 12345
+    name        = "log_parse_rule"
+    attribute   = "message"
+    enabled     = true
+    grok        = data.newrelic_test_grok_pattern.grok.grok
+    lucene      = "logtype:linux_messages"
+    nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+    matched=data.newrelic_test_grok_pattern.grok.test_grok[0].matched
 }
 
 ```
