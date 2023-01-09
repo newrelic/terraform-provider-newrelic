@@ -182,9 +182,9 @@ resource "newrelic_log_parsing_rule" "bar"{
 	name        = "%[4]s"
 	attribute   = "%[3]s"
 	enabled     = true
-    grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
-    lucene      = "logtype:linux_messages"
-    nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+	grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
+	lucene      = "logtype:linux_messages"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
 }
 `, testAccountID, name1, testAccExpectedApplicationName, name2)
 }
