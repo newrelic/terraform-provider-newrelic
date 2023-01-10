@@ -14,10 +14,14 @@ var (
 	// ProviderVersion is set during the release process to the
 	// release version of the binary via `-ldflags`. This is technically
 	// set in main.go which sets the variable below.
-	//
-	// Note: This is a temporary workaround until we figure out why the original way
-	// no longer works.
 	ProviderVersion = "dev"
+
+	// UserAgentServiceName can be set via -ldflags and used to customize
+	// the provider's user agent string in request headers to facilitate
+	// a better understanding of what additional services may "wrap" our
+	// provider, such as Pulumi. This is technically set in main.go which
+	// sets the variable below.
+	UserAgentServiceName = ""
 )
 
 // TerraformProviderProductUserAgent string used to identify this provider in User Agent requests
@@ -186,12 +190,35 @@ func Provider() *schema.Provider {
 	return provider
 }
 
+func buildUserAgentString(terraformUA string, userAgentServiceName string, providerVersion string) string {
+	serviceName := userAgentServiceName
+	if serviceName == "" {
+		serviceName = getUserAgentServiceName()
+	}
+
+	return fmt.Sprintf("%s %s/%s", terraformUA, serviceName, providerVersion)
+}
+
+func getUserAgentServiceName() string {
+	serviceName := TerraformProviderProductUserAgent
+
+	// UserAgentServiceName is set at compile time via -ldflags. Default value is an empty string.
+	// If it was set at compile time, we concatenate it with our default Terraform user agent.
+	if UserAgentServiceName != "" {
+		serviceName = fmt.Sprintf("%s/%s", UserAgentServiceName, TerraformProviderProductUserAgent)
+	}
+
+	return serviceName
+}
+
 func providerConfigure(data *schema.ResourceData, terraformVersion string) (interface{}, error) {
 	adminAPIKey := data.Get("admin_api_key").(string)
 	personalAPIKey := data.Get("api_key").(string)
-	terraformUA := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", terraformVersion, meta.SDKVersionString())
-	userAgent := fmt.Sprintf("%s %s/%s", terraformUA, TerraformProviderProductUserAgent, ProviderVersion)
 	accountID := data.Get("account_id").(int)
+
+	terraformUA := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", terraformVersion, meta.SDKVersionString())
+	userAgentServiceName := getUserAgentServiceName()
+	userAgent := buildUserAgentString(terraformUA, userAgentServiceName, ProviderVersion)
 
 	log.Printf("[INFO] UserAgent: %s", userAgent)
 
@@ -206,6 +233,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		userAgent:            userAgent,
 		InsecureSkipVerify:   data.Get("insecure_skip_verify").(bool),
 		CACertFile:           data.Get("cacert_file").(string),
+		serviceName:          userAgentServiceName,
 	}
 	log.Println("[INFO] Initializing newrelic-client-go")
 
@@ -229,6 +257,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		InsightsInsertClient: clientInsightsInsert,
 		PersonalAPIKey:       personalAPIKey,
 		AccountID:            accountID,
+		userAgent:            cfg.userAgent,
 	}
 
 	return &providerConfig, nil
