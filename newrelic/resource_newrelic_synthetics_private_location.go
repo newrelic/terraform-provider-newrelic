@@ -115,14 +115,14 @@ func resourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *schem
 
 	resp, err := client.Entities.GetEntityWithContext(ctx, guid)
 	if err != nil {
+		if _, ok := err.(*errors.NotFound); ok {
+			d.SetId("")
+			return nil
+		}
 		if err.Error() == "Argument \"guid\" has invalid value $guid." {
-			return diag.FromErr(fmt.Errorf("invalid GUID"))
+			return diag.FromErr(fmt.Errorf("%v is invalid GUID", guid))
 		}
 		return diag.FromErr(err)
-	}
-	if _, ok := err.(*errors.NotFound); ok {
-		d.SetId("")
-		return nil
 	}
 
 	if resp == nil {
