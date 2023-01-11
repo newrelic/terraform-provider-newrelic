@@ -6,21 +6,11 @@
 
 ### Documentation Updates
 - **log_parsing:** added docs for log parsing rule
-- **log_parsing:** added docs for log parsing rule
-- **log_parsing:** added docs for log parsing rule
-- **log_parsing:** added docs for log parsing rule
-- **log_parsing:** added docs for log parsing rule
-- **log_parsing:** added docs for log parsing rule
 - **notification_channel:** fix email notification channel example
 - **synthetics:** remove unnecessary quotes around private location guid
 - **test_grok:** Document for testgrok data source
 
 ### Features
-- **log_parsing_rule:** added data source, resource, and tests - NR-53373
-- **log_parsing_rule:** Added provider and tests for log parsing rule
-- **log_parsing_rule:** Added provider and tests for log parsing rule
-- **log_parsing_rule:** Added provider and tests for log parsing rule
-- **log_parsing_rule:** Added provider and tests for log parsing rule
 - **log_parsing_rule:** Added provider and tests for log parsing rule
 - **provider:** set user agent service name via -ldflags
 - **test_grok:**  added data source provider
