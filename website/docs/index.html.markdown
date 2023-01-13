@@ -220,6 +220,4 @@ Keep in mind that when you submit your pull request, you'll need to sign the CLA
 
 New Relic has open-sourced this project. This project is provided AS-IS WITHOUT WARRANTY OR SUPPORT, although you can report issues and contribute to the project here on GitHub.
 
-_Please do not report issues with this software to New Relic Global Technical Support._
-
 [provider_version_configuration]: https://www.terraform.io/language/providers/requirements#requiring-providers
