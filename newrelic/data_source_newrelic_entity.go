@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
 
@@ -28,21 +27,19 @@ func dataSourceNewRelicEntity() *schema.Resource {
 				Description: "Ignore case when searching the entity name.",
 			},
 			"type": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, and WORKLOAD.",
-				ValidateFunc: validation.StringInSlice(listValidEntitySearchQueryBuilderTypeTypes(), true),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, SERVICE and WORKLOAD.",
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
 			},
 			"domain": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, SYNTH, and VIZ. If not specified, all domains are searched.",
-				ValidateFunc: validation.StringInSlice(listValidEntitySearchQueryBuilderDomainTypes(), true),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, SYNTH, and EXT. If not specified, all domains are searched.",
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
@@ -109,6 +106,7 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	entityResults, err := client.Entities.GetEntitySearchWithContext(ctx, entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -210,26 +208,4 @@ func expandEntityTag(cfg []interface{}) []entities.EntitySearchQueryBuilderTag {
 	}
 
 	return tags
-}
-
-func listValidEntitySearchQueryBuilderDomainTypes() []string {
-	return []string{
-		string(entities.EntitySearchQueryBuilderDomainTypes.APM),
-		string(entities.EntitySearchQueryBuilderDomainTypes.EXT),
-		string(entities.EntitySearchQueryBuilderDomainTypes.INFRA),
-		string(entities.EntitySearchQueryBuilderDomainTypes.BROWSER),
-		string(entities.EntitySearchQueryBuilderDomainTypes.SYNTH),
-		string(entities.EntitySearchQueryBuilderDomainTypes.MOBILE),
-	}
-}
-
-func listValidEntitySearchQueryBuilderTypeTypes() []string {
-	return []string{
-		string(entities.EntitySearchQueryBuilderTypeTypes.HOST),
-		string(entities.EntitySearchQueryBuilderTypeTypes.APPLICATION),
-		string(entities.EntitySearchQueryBuilderTypeTypes.DASHBOARD),
-		string(entities.EntitySearchQueryBuilderTypeTypes.MONITOR),
-		string(entities.EntitySearchQueryBuilderTypeTypes.SERVICE),
-		string(entities.EntitySearchQueryBuilderTypeTypes.WORKLOAD),
-	}
 }
