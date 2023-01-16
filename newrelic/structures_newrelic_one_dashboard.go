@@ -763,6 +763,11 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
 		if len(rawCfg.Thresholds) > 0 {
 			for _, v := range rawCfg.Thresholds {
+				// Double check if we have a value, the API sometimes returns a null
+				if v.Value == nil {
+					continue
+				}
+
 				switch v.AlertSeverity {
 				case entities.DashboardAlertSeverityTypes.CRITICAL:
 					out["critical"] = strconv.FormatFloat(*v.Value, 'f', -1, 64)
