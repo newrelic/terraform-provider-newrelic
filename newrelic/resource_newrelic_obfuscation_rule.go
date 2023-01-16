@@ -37,7 +37,7 @@ func resourceNewRelicObfuscationRule() *schema.Resource {
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "Name of expression.",
+				Description: "Name of rule.",
 				Required:    true,
 			},
 			"enabled": {

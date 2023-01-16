@@ -1,3 +1,85 @@
+<a name="v3.12.0"></a>
+## [v3.12.0] - 2023-01-10
+### Bug Fixes
+- **one_dashboard_json:** added retry mechanism to create/update to handle updateAt changes
+- **private_locations:** returning the right err ([#2177](https://github.com/newrelic/terraform-provider-newrelic/issues/2177))
+
+### Documentation Updates
+- **log_parsing:** added docs for log parsing rule
+- **notification_channel:** fix email notification channel example
+- **synthetics:** remove unnecessary quotes around private location guid
+- **test_grok:** Document for testgrok data source
+
+### Features
+- **log_parsing_rule:** Added provider and tests for log parsing rule
+- **provider:** set user agent service name via -ldflags
+- **test_grok:**  added data source provider
+
+<a name="v3.11.0"></a>
+## [v3.11.0] - 2022-12-16
+### Bug Fixes
+- **workflows:** fix a bug that would prevent creation of disabled workflows
+
+### Features
+- Remove value_function from nrql alert condition resource
+
+<a name="v3.10.0"></a>
+## [v3.10.0] - 2022-12-16
+### Bug Fixes
+- **dashboards:** handle empty values returned from API
+- **drop_rules:** verbose error message :bug:
+- **newrelic_nrql_alert_condition:** Set entity_guid after creating NRQL alert condition
+- **workflows:** stop silently removing channels on workflow updates/deletes
+- **workloads:** Removed forcenew for entity guids and changed docs
+
+### Documentation Updates
+- **Workflow:** Changes in examples
+
+### Features
+- **secure_credential:** add account id in secure credential search
+
+<a name="v3.9.0"></a>
+## [v3.9.0] - 2022-12-06
+### Bug Fixes
+- linting2
+- linting
+- **notifications errors:** Added error details to response
+- **synthetics:** unset private location ID and return nil if entity not found
+
+### Documentation Updates
+- **dashboard:** add documentation for variables
+- **entity_tags:** add example of using a dynamic block to apply multiple tags to an entity
+
+### Features
+- **cloud:** add azure mysql flexible, postgres flexible and gcp alloydb integrations
+- **one_dashboard:** add variables
+
+<a name="v3.8.0"></a>
+## [v3.8.0] - 2022-11-30
+### Bug Fixes
+- **destination:** unset destination ID and return nil if destination not found (prevents crash)
+- **notifications:** added deleted test
+- **notifications:** fix auth_basic bug
+- **synthetics:** set additional attribute values on import
+- **synthetics:** set verify_ssl and validation_string during read/import operations
+- **synthetics:** set period and status during read/import operations
+- **synthetics:** set period and status on update of newrelic_synthetics_script_monitor
+- **workflow:** unset workflow ID and return nil if workflow not found (prevents crash)
+
+### Documentation Updates
+- fix import command for script monitor
+- Update 'violations' to 'incidents' in Alerts docs
+- **notifications:** Updated notifications channel / destination docs to be clearer about properties
+- **obfusation_rule:** added rules docs and fixed expression docs
+- **obfuscation_expression:** Added the data source document for the expression
+- **obfuscation_rule:** minor changes
+- **synthetics_cert_check_monitor:** fix url instead of domain in domain field
+
+### Features
+- **data_source_entity:** remove limit on tags
+- **obfuscation_expression:** Added Obfuscation expression data source
+- **obfuscation_rule:** Added Obfuscation rule and tests
+
 <a name="v3.7.1"></a>
 ## [v3.7.1] - 2022-11-15
 ### Documentation Updates
@@ -899,10 +981,10 @@ new synthetics resources use GraphQL API schema
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="v2.11.1"></a>
-## [v2.11.1] - 2020-10-07
 <a name="2.11.1"></a>
 ## [2.11.1] - 2020-10-07
+<a name="v2.11.1"></a>
+## [v2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -1569,7 +1651,12 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.12.0...HEAD
+[v3.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.11.0...v3.12.0
+[v3.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.10.0...v3.11.0
+[v3.10.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.9.0...v3.10.0
+[v3.9.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.8.0...v3.9.0
+[v3.8.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.1...v3.8.0
 [v3.7.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.0...v3.7.1
 [v3.7.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.6.1...v3.7.0
 [v3.6.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.6.0...v3.6.1
@@ -1670,9 +1757,9 @@ new synthetics resources use GraphQL API schema
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2

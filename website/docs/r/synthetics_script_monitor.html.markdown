@@ -123,7 +123,7 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
   name   = "script_monitor"
   type   = "SCRIPT_API"
   location_private {
-    guid         = "newrelic_synthetics_private_location.location.id"
+    guid         = newrelic_synthetics_private_location.location.id
     vse_password = "secret"
   }
   period = "EVERY_6_HOURS"
@@ -157,7 +157,7 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
 
   enable_screenshot_on_failure_and_script = false
   location_private {
-    guid         = "newrelic_synthetics_private_location.location.id"
+    guid         = newrelic_synthetics_private_location.location.id
     vse_password = "secret"
   }
 

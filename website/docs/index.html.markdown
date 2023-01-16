@@ -17,8 +17,22 @@ Use the navigation to the left to read about the available resources.
 
 ## Quick Links
 
+### Getting started
+
 - [**Configure the Provider**](guides/provider_configuration.html)
 - [**Getting Started Guide**](guides/getting_started.html)
+
+### Data sources
+
+- [**New Relic Cloud integrations example for AWS, GCP, Azure**](guides/cloud_integrations_guide.html)
+
+### Advanced
+
+#### Dashboards
+
+- [**Part 1: Creating dashboards with Terraform and JSON templates**](https://newrelic.com/blog/how-to-relic/create-nr-dashboards-with-terraform-part-1)
+- [**Part 2: Dynamically creating New Relic dashboards with Terraform**](https://newrelic.com/blog/how-to-relic/create-nr-dashboards-with-terraform-part-2)
+- [**Part 3: Using Terraform to generate New Relic dashboards from NRQL queries**](https://newrelic.com/blog/how-to-relic/create-nr-dashboards-with-terraform-part-3)
 
 ## Argument Reference
 
@@ -205,7 +219,5 @@ Keep in mind that when you submit your pull request, you'll need to sign the CLA
 ## Support
 
 New Relic has open-sourced this project. This project is provided AS-IS WITHOUT WARRANTY OR SUPPORT, although you can report issues and contribute to the project here on GitHub.
-
-_Please do not report issues with this software to New Relic Global Technical Support._
 
 [provider_version_configuration]: https://www.terraform.io/language/providers/requirements#requiring-providers

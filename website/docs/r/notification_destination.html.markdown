@@ -65,18 +65,22 @@ The following arguments are supported:
 Each notification destination type supports a specific set of arguments for the `property` block. See [Additional Examples](#additional-examples) below for details:
 
 * `EMAIL`
-  * `email` - (Required) A map of key/value pairs that represents the email addresses.
+  * `email` - (Required) A list of email addresses.
 * `WEBHOOK`
-  * `url` - (Required) A map of key/value pairs that represents the webhook url.
+  * `url` - (Required) The webhook url.
 * `SERVICE_NOW`
-  * `url` - (Required) A map of key/value pairs that represents the service now destination url.
-  * `two_way_integration` - (Optional) A map of key/value pairs that represents the two-way integration on/off flag.
+  * `url` - (Required) The service now destination url (only base url).
+  * `two_way_integration` - (Optional) A boolean that represents the two-way integration on/off flag.
 * `JIRA`
-  * `url` - (Required) A map of key/value pairs that represents the jira url.
-  * `two_way_integration` - (Optional) A map of key/value pairs that represents the two-way integration on/off flag.
+  * `url` - (Required) The jira url (only base url).
+  * `two_way_integration` - (Optional) A boolean that represents the two-way integration on/off flag.
 * `PAGERDUTY_ACCOUNT_INTEGRATION`
-  * `two_way_integration` - (Optional) A map of key/value pairs that represents the two-way integration on/off flag.
-
+  * `two_way_integration` - (Optional) A boolean that represents the two-way integration on/off flag.
+* `MOBILE_PUSH`
+  * `userId` - (Required) The new relic user id.
+* `EVENT_BRIDGE`
+  * `AWSAccountId` - (Required) The account id to integrate to.
+  * `AWSRegion` - (Required) The AWS region this account is in.
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -84,6 +88,9 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - The ID of the destination.
 
 ## Additional Examples
+
+~> **NOTE:** We support all properties. The mentioned properties are just an example.
+
 
 ##### [ServiceNow](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#servicenow)
 
@@ -216,19 +223,48 @@ resource "newrelic_notification_destination" "foo" {
 
 #### [Slack](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#slack)
 
-##### Import Slack Destination
+Slack destinations are created by actively interacting with the UI. This is how OAuth authentication works and there is no way to authenticate otherwise. Because of this, there is no way to create a slack destination via terraform, and must be created in the UI and imported into terraform.
 
+##### Import Slack Destination
 1. Add an empty resource to your terraform file: 
-```hcl
+```terraform
 resource "newrelic_notification_destination" "foo" {
 }
 ```
+2. Run import command: `terraform import newrelic_notification_destination.foo <destination_id>`
+3. Run the following command after the import successfully done and copy the information to your Slack resource:
+`terraform state show newrelic_notification_destination.foo`
+4. Add `ignore_changes` attribute on `auth_token` in your imported resource:
+```terraform
+lifecycle {
+    ignore_changes = [auth_token]
+  }
+```
 
-2. Run import command:
-`terraform import newrelic_notification_destination.foo <destination_id>`
+Your imported Slack destination should look like that:
+```terraform
+resource "newrelic_notification_destination" "foo" {
+  lifecycle {
+    ignore_changes = [auth_token]
+  }
+
+  name = "*********"
+  type = "SLACK"
+
+  auth_token {
+    prefix = "Bearer"
+  }
+  
+  property {
+      key   = "teamName"
+      label = "Team Name"
+      value = "******"
+  }
+}
+```
 
 
-~> **NOTE:** Sensitive data such as destination API keys, service keys, auth object, etc are not returned from the underlying API for security reasons and may not be set in state when importing.
+~> **NOTE:** Sensitive data such as destination API keys, service keys, auth object etc. are not returned from the underlying API for security reasons and may not be set in state when importing.
 
 ## Additional Information
 More information about destinations integrations can be found in NewRelic [documentation](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/).

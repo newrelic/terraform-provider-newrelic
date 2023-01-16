@@ -115,6 +115,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked GCP account in New Relic.
+* `alloy_db` - (Optional) Alloy DB integration. See [Integration blocks](#integration-blocks) below for details.
 * `app_engine` - (Optional) App Engine integration. See [Integration blocks](#integration-blocks) below for details.
 * `big_query` - (Optional) Biq Query integration. See [Integration blocks](#integration-blocks) below for details.
 * `big_table` - (Optional) Big Table. See [Integration blocks](#integration-blocks) below for details.
