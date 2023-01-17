@@ -6,7 +6,7 @@ GO              ?= go
 BUILD_DIR       ?= ./bin/
 PROJECT_MODULE  ?= $(shell $(GO) list -m)
 # $b replaced by the binary name in the compile loop, -s/w remove debug symbols
-LDFLAGS         ?= "-s -w -X main.version=$(PROJECT_VER) -X main.appName=newrelic -X $(PROJECT_MODULE)/internal/client.version=$(PROJECT_VER)"
+LDFLAGS         ?= "-s -w -X main.ProviderVersion=$(PROJECT_VER)"
 SRCDIR          ?= .
 COMPILE_OS      ?= darwin linux windows
 BINARY ?= terraform-provider-newrelic

@@ -8,7 +8,7 @@ description: |-
 
 # Resource: newrelic\_one\_dashboard
 
--> **NOTE:** The [newrelic_one_dashboard_json](one_dashboard_json.html) resource is preferred for configuring dashboards in New Relic. This resource does not support the latest dashboard features and will be deprecated in the future.
+-> **NOTE:** The [newrelic_one_dashboard_json](one_dashboard_json.html) resource is preferred for configuring dashboards in New Relic. This resource does not support the latest dashboard features and will receive less investment compared to [newrelic_one_dashboard_json](one_dashboard_json.html).
 
 ## Example Usage: Create a New Relic One Dashboard
 
@@ -91,7 +91,7 @@ resource "newrelic_one_dashboard" "exampledash" {
       text = "### Helpful Links\n\n* [New Relic One](https://one.newrelic.com)\n* [Developer Portal](https://developer.newrelic.com)"
     }
   }
-  
+
   variable {
       default_values     = ["value"]
       is_multi_selection = true
