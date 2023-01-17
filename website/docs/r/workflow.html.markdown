@@ -65,7 +65,7 @@ In this case, an issue would have to **both** have the tag and include an incide
 
 Each `issues_filter` block supports the following arguments:
 
-* `name` - (Required) The name of the filter. The name only serves a cosmetic purpose and can only be seen through Terraform and GraphQL API.
+* `name` - (Required) The name of the filter. The name only serves a cosmetic purpose and can only be seen through Terraform and GraphQL API. It can't be empty.
 * `type` - (Required) Type of the filter. Please just set this field to `FILTER`. The field is likely to be deprecated/removed in the near future. 
 * `predicate` (Required) A condition an issue event should satisfy to be processed by the workflow 
   * `attribute` - (Required) Issue event attribute to check
