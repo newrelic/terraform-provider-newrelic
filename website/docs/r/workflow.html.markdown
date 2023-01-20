@@ -69,14 +69,72 @@ Each `issues_filter` block supports the following arguments:
 * `type` - (Required) Type of the filter. Please just set this field to `FILTER`. The field is likely to be deprecated/removed in the near future. 
 * `predicate` (Required) A condition an issue event should satisfy to be processed by the workflow 
   * `attribute` - (Required) Issue event attribute to check
-  * `operator` - (Required) An operator to use to compare the attribute with the provided `values`. 
-One of: `CONTAINS`, `DOES_NOT_CONTAIN`, `EQUAL`, `DOES_NOT_EQUAL`, `DOES_NOT_EXACTLY_MATCH`, `STARTS_WITH`, `ENDS_WITH`,
-`EXACTLY_MATCHES`, `IS`, `IS_NOT`, `LESS_OR_EQUAL`, `LESS_THAN`, `GREATER_OR_EQUAL`, `GREATER_THAN` (see the note below)
+  * `operator` - (Required) An operator to use to compare the attribute with the provided `values`, see supported operators below
   * `values` - (Required) The `attribute` must match **any** of the values in this list  
 
-~> **NOTE:** We are currently working on improving documentation around for issue filters' attributes and operators. 
-For now, the easiest way to see which attributes your issue events have and which operators they support is though the 
-New Relic UI. In the future, we are going to provide a comprehensive guide to all attributes and operators.
+#### Issue Attribute Types
+
+Each attribute can have one of the following types:
+- Plain String
+  - String attributes normally represent a text property of an NR issue (i.e. not a property of a child incident)
+  - Example attributes: `state`, `priority`
+- Numbers
+  - Similarly to strings, number attributes represent a numerical property of an NR issue  
+  - Most of the number attributes are timestamps, e.g.: `timestamp`, `acknowledgedAt`
+- Lists
+  - Attributes that belong to issue's child incidents are represented as lists of strings 
+  - Each issue might consist of multiple incidents, which is why incident properties are lists of values
+  - Examples:
+    - `labels.policyIds` - a list of IDs of alert policies that triggered the incidents included in the issue
+    - `accumulations.tags.X` - a list of values of a tag `X` collected from all incidents in the issue
+
+While the descriptions above might allow you to guess the field type, you can also check the type by going to
+the issue page in the UI and inspecting the issue payload using a button at the top.
+- If the attribute value is `null`, you can try checking a different issue
+- If the value is a number, then it is a number field
+- If the value is a string that contains square brackets, then it is most likely a list field
+  - Example: `"[\"some_value\"]"`
+- Otherwise, it is a string field 
+
+#### Operators
+
+Depending on their type, different issue attributes support different operators.
+
+**All operators are case-insensitive**
+
+##### Plan String
+
+Plain strings support the following operators:
+- `CONTAINS`, `DOES_NOT_CONTAIN` - check if the value contains one of the given strings 
+- `EQUAL`, `DOES_NOT_EQUAL` - check if the value is equal to one of the given strings
+- `STARTS_WITH` - check if the value starts from one of the given strings
+- `ENDS_WITH` - check if the value starts from one of the given strings
+
+##### Numbers
+
+Numbers support the following operators:
+- `EQUAL`
+- `DOES_NOT_EQUAL`
+- `LESS_OR_EQUAL`
+- `LESS_THAN`
+- `GREATER_OR_EQUAL`
+- `GREATER_THAN`
+
+These operators directly correspond to the mathematical operations.
+
+##### Lists
+
+Lists support the following operators:
+- `DOES_NOT_EXACTLY_MATCH`, `EXACTLY_MATCHES` - check if the array contains one of the given items
+  - `["Aa","Bb"]` would "exactly match" `Aa`
+  - `["Aa","Bb"]` would not "exactly match" `A`
+- `CONTAINS`, `DOES_NOT_CONTAIN` - **[please avoid]** check if the array has an item with a value that contains any of the given values
+  `["Aa","Bb"]` would "contain" **both** `A` **and** `Aa`
+
+#### Other
+
+All fields also support 
+- `IS`, `IS_NOT` - **[please avoid]** check if something is `NULL` or not. Should only be used with `NULL` value
 
 ### Muting Rules
 
