@@ -3,6 +3,7 @@ module github.com/newrelic/terraform-provider-newrelic/v2
 go 1.18
 
 require (
+	github.com/google/uuid v1.1.2
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.20.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.20.2
