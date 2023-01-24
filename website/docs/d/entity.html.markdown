@@ -99,3 +99,33 @@ In addition to all arguments above, the following attributes are exported:
 * `account_id` - The New Relic account ID associated with this entity.
 * `application_id` - The domain-specific application ID of the entity. Only returned for APM and Browser applications.
 * `serving_apm_application_id` - The browser-specific ID of the backing APM entity. Only returned for Browser applications.
+
+
+## Additional Examples
+
+-> If the entities are not found please try again without providing the `types` field.
+### An example of querying OTEL entities
+
+```hcl
+data "newrelic_entity" "app" {
+  name = "my-otel-app"
+  domain = "EXT"
+  tag {
+    key = "accountID"
+    value = "12345"
+  }
+}
+```
+
+### An example of querying AWS lambda entities
+
+```hcl
+data "newrelic_entity" "app" {
+  name = "my_lambda_trace"
+  domain = "INFRA"
+  tag {
+    key = "accountID"
+    value = "12345"
+  }
+}
+```
