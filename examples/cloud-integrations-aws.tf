@@ -39,13 +39,13 @@ data "aws_iam_policy_document" "newrelic_assume_policy" {
 }
 
 resource "aws_iam_role" "newrelic_aws_role" {
-  name               = "NewRelicInfrastructure-Integrations"
+  name               = "NewRelicInfrastructure-Integrations-${var.NEW_RELIC_ACCOUNT_NAME}"
   description        = "New Relic Cloud integration role"
   assume_role_policy = data.aws_iam_policy_document.newrelic_assume_policy.json
 }
 
 resource "aws_iam_policy" "newrelic_aws_permissions" {
-  name        = "NewRelicCloudStreamReadPermissions"
+  name        = "NewRelicCloudStreamReadPermissions-${var.NEW_RELIC_ACCOUNT_NAME}"
   description = ""
   policy      = <<EOF
 {
@@ -100,12 +100,12 @@ resource "newrelic_api_access_key" "newrelic_aws_access_key" {
   account_id  = var.NEW_RELIC_ACCOUNT_ID
   key_type    = "INGEST"
   ingest_type = "LICENSE"
-  name        = "Ingest License key"
+  name        = "Ingest License key for ${var.NEW_RELIC_ACCOUNT_NAME}"
   notes       = "AWS Cloud Integrations Firehost Key"
 }
 
 resource "aws_iam_role" "firehose_newrelic_role" {
-  name = "firehose_newrelic_role"
+  name = "firehose_newrelic_role_${var.NEW_RELIC_ACCOUNT_NAME}"
 
   assume_role_policy = <<EOF
 {
@@ -140,7 +140,7 @@ resource "aws_s3_bucket_acl" "newrelic_aws_bucket_acl" {
 }
 
 resource "aws_kinesis_firehose_delivery_stream" "newrelic_firehost_stream" {
-  name        = "newrelic_firehost_stream"
+  name        = "newrelic_firehost_stream_${var.NEW_RELIC_ACCOUNT_NAME}"
   destination = "http_endpoint"
 
   s3_configuration {
@@ -153,7 +153,7 @@ resource "aws_kinesis_firehose_delivery_stream" "newrelic_firehost_stream" {
 
   http_endpoint_configuration {
     url                = var.NEW_RELIC_CLOUDWATCH_ENDPOINT
-    name               = "New Relic"
+    name               = "New Relic ${var.NEW_RELIC_ACCOUNT_NAME}"
     access_key         = newrelic_api_access_key.newrelic_aws_access_key.key
     buffering_size     = 1
     buffering_interval = 60
@@ -167,7 +167,7 @@ resource "aws_kinesis_firehose_delivery_stream" "newrelic_firehost_stream" {
 }
 
 resource "aws_iam_role" "metric_stream_to_firehose" {
-  name = "metric_stream_to_firehose_role"
+  name = "newrelic_metric_stream_to_firehose_role_${var.NEW_RELIC_ACCOUNT_NAME}"
 
   assume_role_policy = <<EOF
 {
@@ -208,7 +208,7 @@ EOF
 }
 
 resource "aws_cloudwatch_metric_stream" "newrelic_metric_stream" {
-  name          = "newrelic-metric-stream"
+  name          = "newrelic-metric-stream-${var.NEW_RELIC_ACCOUNT_NAME}"
   role_arn      = aws_iam_role.metric_stream_to_firehose.arn
   firehose_arn  = aws_kinesis_firehose_delivery_stream.newrelic_firehost_stream.arn
   output_format = "opentelemetry0.7"
@@ -222,7 +222,7 @@ resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_pull" {
   depends_on = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
 }
 
-resource "newrelic_cloud_aws_integrations" "foo" {
+resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
   account_id = var.NEW_RELIC_ACCOUNT_ID
   linked_account_id = newrelic_cloud_aws_link_account.newrelic_cloud_integration_pull.id
   billing {}
@@ -231,4 +231,72 @@ resource "newrelic_cloud_aws_integrations" "foo" {
   trusted_advisor {}
   vpc {}
   x_ray {}
+}
+
+resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {
+  bucket = "newrelic-configuration-recorder-${random_string.s3-bucket-name.id}"
+}
+
+resource "aws_iam_role" "newrelic_configuration_recorder" {
+  name = "newrelic_configuration_recorder-${var.NEW_RELIC_ACCOUNT_NAME}"
+
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "sts:AssumeRole",
+            "Principal": {
+                "Service": "config.amazonaws.com"
+            },
+            "Effect": "Allow",
+            "Sid": ""
+        }
+      ]
+    }
+EOF
+}
+
+resource "aws_iam_role_policy" "newrelic_configuration_recorder_s3" {
+  name = "newrelic-configuration-recorder-s3-${var.NEW_RELIC_ACCOUNT_NAME}"
+  role = aws_iam_role.newrelic_configuration_recorder.id
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "s3:*"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "${aws_s3_bucket.newrelic_configuration_recorder_s3.arn}",
+        "${aws_s3_bucket.newrelic_configuration_recorder_s3.arn}/*"
+      ]
+    }
+  ]
+}
+POLICY
+}
+
+resource "aws_iam_role_policy_attachment" "newrelic_configuration_recorder" {
+  role       = aws_iam_role.newrelic_configuration_recorder.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
+}
+
+resource "aws_config_configuration_recorder" "newrelic_recorder" {
+  name     = "newrelic_configuration_recorder-${var.NEW_RELIC_ACCOUNT_NAME}"
+  role_arn = aws_iam_role.newrelic_configuration_recorder.arn
+}
+
+resource "aws_config_configuration_recorder_status" "newrelic_recorder_status" {
+  name       = aws_config_configuration_recorder.newrelic_recorder.name
+  is_enabled = true
+  depends_on = [aws_config_delivery_channel.newrelic_recorder_delivery]
+}
+
+resource "aws_config_delivery_channel" "newrelic_recorder_delivery" {
+  name           = "newrelic_configuration_recorder-${var.NEW_RELIC_ACCOUNT_NAME}"
+  s3_bucket_name = aws_s3_bucket.newrelic_configuration_recorder_s3.bucket
 }
