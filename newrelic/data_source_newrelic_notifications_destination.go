@@ -3,11 +3,12 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
-	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -54,7 +55,7 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"user": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
 						},
 					},
 				},
