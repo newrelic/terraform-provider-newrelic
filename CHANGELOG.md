@@ -1,3 +1,16 @@
+<a name="v3.13.0"></a>
+## [v3.13.0] - 2023-01-17
+### Bug Fixes
+- **Workflow:** Linting issues
+- **newrelic_one_dashboard:** fix for null pointer when using thresholds in widget_billboard
+
+### Documentation Updates
+- **Workflow:** Updated docs
+- **dashboards:** improved deprecation message to be less scary
+
+### Features
+- **Workflows:** Merge conflict resolved
+
 <a name="v3.12.0"></a>
 ## [v3.12.0] - 2023-01-10
 ### Bug Fixes
@@ -6,11 +19,21 @@
 
 ### Documentation Updates
 - **log_parsing:** added docs for log parsing rule
+- **log_parsing:** added docs for log parsing rule
+- **log_parsing:** added docs for log parsing rule
+- **log_parsing:** added docs for log parsing rule
+- **log_parsing:** added docs for log parsing rule
+- **log_parsing:** added docs for log parsing rule
 - **notification_channel:** fix email notification channel example
 - **synthetics:** remove unnecessary quotes around private location guid
 - **test_grok:** Document for testgrok data source
 
 ### Features
+- **log_parsing_rule:** added data source, resource, and tests - NR-53373
+- **log_parsing_rule:** Added provider and tests for log parsing rule
+- **log_parsing_rule:** Added provider and tests for log parsing rule
+- **log_parsing_rule:** Added provider and tests for log parsing rule
+- **log_parsing_rule:** Added provider and tests for log parsing rule
 - **log_parsing_rule:** Added provider and tests for log parsing rule
 - **provider:** set user agent service name via -ldflags
 - **test_grok:**  added data source provider
@@ -981,10 +1004,10 @@ new synthetics resources use GraphQL API schema
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="2.11.1"></a>
-## [2.11.1] - 2020-10-07
 <a name="v2.11.1"></a>
 ## [v2.11.1] - 2020-10-07
+<a name="2.11.1"></a>
+## [2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -1651,7 +1674,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.12.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.13.0...HEAD
+[v3.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.12.0...v3.13.0
 [v3.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.11.0...v3.12.0
 [v3.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.10.0...v3.11.0
 [v3.10.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.9.0...v3.10.0
@@ -1757,9 +1781,9 @@ new synthetics resources use GraphQL API schema
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2
