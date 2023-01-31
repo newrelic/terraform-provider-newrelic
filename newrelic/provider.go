@@ -178,6 +178,7 @@ func Provider() *schema.Provider {
 			"newrelic_synthetics_private_location":              resourceNewRelicSyntheticsPrivateLocation(),
 			"newrelic_synthetics_secure_credential":             resourceNewRelicSyntheticsSecureCredential(),
 			"newrelic_synthetics_step_monitor":                  resourceNewRelicSyntheticsStepMonitor(),
+			"newrelic_user_group":                               resourceNewRelicUserGroup(),
 			"newrelic_workflow":                                 resourceNewRelicWorkflow(),
 			"newrelic_workload":                                 resourceNewRelicWorkload(),
 			"newrelic_account_management":                       resourceNewRelicWorkloadAccountManagement(),
