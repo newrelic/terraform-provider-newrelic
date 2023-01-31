@@ -277,7 +277,6 @@ resource "newrelic_nrql_alert_condition" "z" {
   type                 = "static"
   runbook_url          = "https://localhost"
   enabled              = true
-  value_function       = "sum"
   violation_time_limit = "TWENTY_FOUR_HOURS"
 
   critical {
@@ -304,7 +303,6 @@ resource "newrelic_nrql_alert_condition" "z" {
   type                         = "static"
   runbook_url                  = "https://localhost"
   enabled                      = true
-  value_function               = "sum"
   violation_time_limit_seconds = 86400
 
   term {
