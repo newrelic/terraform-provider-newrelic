@@ -99,7 +99,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphThresholdDurationValidationError
 					rNameBaseline,
 					"baseline",
 					20,
-					7200, // outside of accepted range [120, 3600] to test error handling
+					86460, // outside of accepted range [120, 86400] to test error handling
 					"static",
 					"0",
 					conditionalAttrBaseline,
@@ -112,7 +112,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphThresholdDurationValidationError
 					rNameBaseline,
 					"baseline",
 					20,
-					60, // outside of accepted range [120, 3600] to test error handling
+					60, // outside of accepted range [120, 86400] to test error handling
 					"static",
 					"0",
 					conditionalAttrBaseline,
