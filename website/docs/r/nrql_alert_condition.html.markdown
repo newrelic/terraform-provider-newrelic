@@ -117,8 +117,8 @@ The `term` block supports the following arguments:
 - `threshold` - (Required) The value which will trigger an incident.
 <br>For _baseline_ NRQL alert conditions, the value must be in the range [1, 1000]. The value is the number of standard deviations from the baseline that the metric must exceed in order to create an incident.
 - `threshold_duration` - (Optional) The duration, in seconds, that the threshold must violate in order to create an incident. Value must be a multiple of the `aggregation_window` (which has a default of 60 seconds).
-<br>For _baseline_ NRQL alert conditions, the value must be within 120-3600 seconds (inclusive).
-<br>For _static_ NRQL alert conditions, the value must be within 60-7200 seconds (inclusive).
+<br>For _baseline_ NRQL alert conditions, the value must be within 120-86400 seconds (inclusive).
+<br>For _static_ NRQL alert conditions, the value must be within 60-86400 seconds (inclusive).
 
 - `threshold_occurrences` - (Optional) The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: `all` or `at_least_once` (case insensitive).
 - `duration` - (Optional) **DEPRECATED:** Use `threshold_duration` instead. The duration of time, in _minutes_, that the threshold must violate for in order to create an incident. Must be within 1-120 (inclusive).
@@ -278,7 +278,6 @@ resource "newrelic_nrql_alert_condition" "z" {
   type                 = "static"
   runbook_url          = "https://localhost"
   enabled              = true
-  value_function       = "sum"
   violation_time_limit = "TWENTY_FOUR_HOURS"
 
   critical {
@@ -305,7 +304,6 @@ resource "newrelic_nrql_alert_condition" "z" {
   type                         = "static"
   runbook_url                  = "https://localhost"
   enabled                      = true
-  value_function               = "sum"
   violation_time_limit_seconds = 86400
 
   term {
