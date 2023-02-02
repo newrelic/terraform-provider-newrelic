@@ -154,9 +154,10 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 							},
 						},
 						"operator": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The operator used to combine all the MutingRuleConditions within the group.",
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "The operator used to combine all the MutingRuleConditions within the group.",
+							ValidateFunc: validation.StringInSlice([]string{"AND", "OR"}, true),
 						},
 					},
 				},
