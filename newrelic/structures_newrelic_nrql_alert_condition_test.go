@@ -332,6 +332,31 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				},
 			},
 		},
+		"evaluation delay nil": {
+			Data: map[string]interface{}{
+				"nrql":              []interface{}{nrql},
+				"evaluation_delay": nil,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{},
+				},
+			},
+		},
+		"evaluation delay not nil": {
+			Data: map[string]interface{}{
+				"nrql":              []interface{}{nrql},
+				"evaluation_delay": 60,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
+						EvaluationDelay: &[]int{60}[0],
+					},
+				},
+			},
+		},
+
 	}
 
 	r := resourceNewRelicNrqlAlertCondition()
@@ -434,6 +459,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 				AggregationMethod: &alerts.NrqlConditionAggregationMethodTypes.Cadence,
 				AggregationDelay:  &[]int{60}[0],
 				AggregationTimer:  &[]int{60}[0],
+				EvaluationDelay: &[]int{60}[0],
 			},
 			Expiration: &alerts.AlertsNrqlConditionExpiration{
 				ExpirationDuration:          &[]int{120}[0],
@@ -452,6 +478,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		AggregationMethod: &alerts.NrqlConditionAggregationMethodTypes.Cadence,
 		AggregationDelay:  &[]int{60}[0],
 		AggregationTimer:  &[]int{60}[0],
+		EvaluationDelay:   &[]int{60}[0],
 	}
 	nrqlConditionBaseline.Type = alerts.NrqlConditionTypes.Baseline
 	nrqlConditionBaseline.BaselineDirection = &alerts.NrqlBaselineDirections.LowerOnly
@@ -526,6 +553,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
 			require.Equal(t, "60", d.Get("aggregation_delay").(string))
 			require.Equal(t, "60", d.Get("aggregation_timer").(string))
+			require.Equal(t, 60, d.Get("evaluation_delay").(int))
 			require.Equal(t, nrqlConditionBaseline.EntityGUID, common.EntityGUID(d.Get("entity_guid").(string)))
 
 		case alerts.NrqlConditionTypes.Static:
@@ -538,6 +566,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
 			require.Equal(t, "60", d.Get("aggregation_delay").(string))
 			require.Equal(t, "60", d.Get("aggregation_timer").(string))
+			require.Equal(t, 60, d.Get("evaluation_delay").(int))
 			require.Equal(t, nrqlConditionStatic.EntityGUID, common.EntityGUID(d.Get("entity_guid").(string)))
 		}
 	}

@@ -309,6 +309,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					return oldInt == 120 && newInt == 0 && (aggregationMethod == "event_flow" || aggregationMethod == "cadence")
 				},
 			},
+			"evaluation_delay": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "How long we wait until the signal starts evaluating. The maximum delay is 7200 seconds (120 minutes)",
+			},
 			"aggregation_timer": {
 				Type:         schema.TypeString,
 				Optional:     true,
