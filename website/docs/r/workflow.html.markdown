@@ -160,10 +160,6 @@ details to include into the email body
 
 Destinations can be reused across multiple channels. But each channel can only be used in a single workflow (at least for now).
 
-When a workflow is deleted, all channels associated with it are also deleted. We might change this behaviour in the future, 
-but please keep this behaviour in mind when managing workflows right now. 
-If you only delete a workflow resource and not its channel resource, the next time you run TF it will report state drift.
-
 Each workflow resource requires one or more `destination` blocks. These blocks define notification channels to use for the
 workflow.
 
