@@ -630,7 +630,6 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 	}
 
 	if signal.EvaluationDelay != nil {
-		fmt.Println(d)
 		if err := d.Set("evaluation_delay", signal.EvaluationDelay); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `evaluation_delay`: %v", err)
 		}
