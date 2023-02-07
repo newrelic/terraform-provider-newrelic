@@ -15,6 +15,8 @@ import (
 )
 
 func TestAccNewRelicAlertChannel_Basic(t *testing.T) {
+	t.Skip("Skipping. API has been deprecated and has reached EOL.")
+
 	resourceName := "newrelic_alert_channel.foo"
 	rand := acctest.RandString(5)
 	rName := generateNameForIntegrationTestResource()
