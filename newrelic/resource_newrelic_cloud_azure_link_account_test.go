@@ -12,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/config"
 )
 
 func TestAccNewRelicCloudAzureLinkAccount_Basic(t *testing.T) {
@@ -39,13 +41,23 @@ func TestAccNewRelicCloudAzureLinkAccount_Basic(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicCloudAzureLinkAccountDestroy,
 		Steps: []resource.TestStep{
-
 			// Test: Create
 			{
+				PreConfig: func() {
+					client := cloud.New(config.Config{
+						PersonalAPIKey: testAccAPIKey,
+					})
+
+					client.CloudUnlinkAccount(testAccountID, []cloud.CloudUnlinkAccountsInput{
+						{
+							LinkedAccountId: 155123,
+						},
+					})
+				},
 				Config: testAccNewRelicAzureLinkAccountConfig(testAzureApplicationID, testAzureClientSecretID, testAzureSubscriptionID, testAzureTenantID, randName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAzureLinkAccountExists(resourceName),
@@ -54,6 +66,17 @@ func TestAccNewRelicCloudAzureLinkAccount_Basic(t *testing.T) {
 
 			// Test: Update
 			{
+				PreConfig: func() {
+					client := cloud.New(config.Config{
+						PersonalAPIKey: testAccAPIKey,
+					})
+
+					client.CloudUnlinkAccount(testAccountID, []cloud.CloudUnlinkAccountsInput{
+						{
+							LinkedAccountId: testAccountID,
+						},
+					})
+				},
 				Config: testAccNewRelicAzureLinkAccountConfigUpdated(testAzureApplicationID, testAzureClientSecretID, testAzureSubscriptionID, testAzureSubscriptionID, randName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAzureLinkAccountExists(resourceName),
