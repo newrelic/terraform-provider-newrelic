@@ -56,11 +56,6 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the destination.",
 			},
-			"last_sent": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The last time a notification was sent.",
-			},
 		},
 	}
 }

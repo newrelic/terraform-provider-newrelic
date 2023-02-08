@@ -18,13 +18,13 @@ func TestAccNewRelicNotificationsDestinationDataSource_Basic(t *testing.T) {
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNewRelicNotificationsDestinationDataSourceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicNotificationsDestination("data.newrelic_notifications_destination.foo-source"),
+					testAccNewRelicNotificationsDestination("newrelic_notifications_destination.foo"),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "type", "WEBHOOK"),
 				),
@@ -46,7 +46,7 @@ resource "newrelic_notification_destination" "foo" {
 	}
 }
 
-data "newrelic_notification_destination" "foo-source" {
+data "newrelic_notification_destination" "foo" {
 	id = newrelic_notification_destination.foo.id
 }
 `, name)
@@ -55,9 +55,14 @@ data "newrelic_notification_destination" "foo-source" {
 func testAccNewRelicNotificationsDestination(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
+		id := r.Primary.ID
 		a := r.Primary.Attributes
 
-		if a["id"] == "" {
+		if id == "" {
+			return fmt.Errorf("expected to get a notification destination id from New Relic")
+		}
+
+		if a["name"] == "" {
 			return fmt.Errorf("expected to get a notification destination from New Relic")
 		}
 

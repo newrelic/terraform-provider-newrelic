@@ -217,5 +217,35 @@ func flattenNotificationDestinationProperty(p notifications.AiNotificationsPrope
 func flattenNotificationDestinationDataSource(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
 	d.SetId(destination.ID)
 
-	return flattenNotificationDestination(destination, d)
+	if destination == nil {
+		return nil
+	}
+
+	var err error
+
+	if err = d.Set("name", destination.Name); err != nil {
+		return err
+	}
+
+	if err = d.Set("type", destination.Type); err != nil {
+		return err
+	}
+
+	if err := d.Set("property", flattenNotificationDestinationProperties(destination.Properties)); err != nil {
+		return err
+	}
+
+	if err := d.Set("active", destination.Active); err != nil {
+		return err
+	}
+
+	if err := d.Set("account_id", destination.AccountID); err != nil {
+		return err
+	}
+
+	if err := d.Set("status", destination.Status); err != nil {
+		return err
+	}
+
+	return nil
 }
