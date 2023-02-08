@@ -97,5 +97,5 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 		return errors
 	}
 
-	return diag.FromErr(flattenNotificationDestination(&destinationResponse.Entities[0], d))
+	return diag.FromErr(flattenNotificationDestinationDataSource(&destinationResponse.Entities[0], d))
 }
