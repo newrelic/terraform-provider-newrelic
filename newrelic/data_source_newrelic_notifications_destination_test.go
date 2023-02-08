@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccNewRelicNotificationsDestinationDataSource_Basic(t *testing.T) {
-	resourceName := "newrelic_notifications_destination.foo"
+func TestAccNewRelicNotificationDestinationDataSource_Basic(t *testing.T) {
+	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
 
@@ -24,7 +24,7 @@ func TestAccNewRelicNotificationsDestinationDataSource_Basic(t *testing.T) {
 			{
 				Config: testAccNewRelicNotificationsDestinationDataSourceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccNewRelicNotificationsDestination("newrelic_notifications_destination.foo"),
+					testAccNewRelicNotificationDestination("data.newrelic_notification_destination.foo"),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "type", "WEBHOOK"),
 				),
@@ -52,7 +52,7 @@ data "newrelic_notification_destination" "foo" {
 `, name)
 }
 
-func testAccNewRelicNotificationsDestination(n string) resource.TestCheckFunc {
+func testAccNewRelicNotificationDestination(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
 		id := r.Primary.ID

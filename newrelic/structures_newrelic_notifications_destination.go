@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
@@ -215,13 +216,13 @@ func flattenNotificationDestinationProperty(p notifications.AiNotificationsPrope
 }
 
 func flattenNotificationDestinationDataSource(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
-	d.SetId(destination.ID)
-
 	if destination == nil {
 		return nil
 	}
 
 	var err error
+
+	d.SetId(destination.ID)
 
 	if err = d.Set("name", destination.Name); err != nil {
 		return err
