@@ -78,7 +78,7 @@ func testAccCheckNewRelicEntityTagsExist(n string, keysToCheck []string) resourc
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		retryErr := resource.RetryContext(context.Background(), 5*time.Second, func() *resource.RetryError {
+		retryErr := resource.RetryContext(context.Background(), 10*time.Second, func() *resource.RetryError {
 			t, err := client.Entities.GetTagsForEntityMutable(common.EntityGUID(rs.Primary.ID))
 			if err != nil {
 				return resource.RetryableError(err)

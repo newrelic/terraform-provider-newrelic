@@ -1,5 +1,23 @@
+<a name="v3.14.0"></a>
+## [v3.14.0] - 2023-02-08
+### Bug Fixes
+- Muting rule inter condition operator ambiguous ([#2219](https://github.com/newrelic/terraform-provider-newrelic/issues/2219))
+- **entities:** validations for domain and type
+- **entity:** removed vaildations of domain and types
+
+### Documentation Updates
+- Removing value_function from the markdowns
+- **alert:** Updated NRQL condition term duration max
+- **entity:** Added additional examples
+- **entity:** Added new entity type and domain
+
+### Features
+- Add evaluation delay to nrql alert condition
+- **NotificationDestinationDataSpurce:** destination data source tests + lint
+- **NotificationDestinationDataSpurce:** add notification destination data source
+
 <a name="v3.13.0"></a>
-## [v3.13.0] - 2023-01-17
+## [v3.13.0] - 2023-01-19
 ### Bug Fixes
 - **Workflow:** Linting issues
 - **newrelic_one_dashboard:** fix for null pointer when using thresholds in widget_billboard
@@ -1674,7 +1692,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.13.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.14.0...HEAD
+[v3.14.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.13.0...v3.14.0
 [v3.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.12.0...v3.13.0
 [v3.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.11.0...v3.12.0
 [v3.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.10.0...v3.11.0

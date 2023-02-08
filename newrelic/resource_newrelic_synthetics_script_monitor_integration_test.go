@@ -31,7 +31,7 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
 				),
 			},
-			//Test: Update
+			// Test: Update
 			{
 				Config: testAccNewRelicSyntheticsScriptAPIMonitorConfig(fmt.Sprintf("%s-updated", rName), monitorTypeStr),
 				Check: resource.ComposeTestCheckFunc(
@@ -50,6 +50,50 @@ func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
 					"tag",
 					"script",
 					"enable_screenshot_on_failure_and_script",
+				},
+			},
+		},
+	})
+}
+
+func TestAccNewRelicSyntheticsScriptAPIMonitor_LegacyRuntime(t *testing.T) {
+	resourceName := "newrelic_synthetics_script_monitor.foo"
+	rName := generateNameForIntegrationTestResource()
+	monitorTypeStr := string(SyntheticsMonitorTypes.SCRIPT_API)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicSyntheticsScriptAPIMonitorConfigLegacyRuntime(rName, monitorTypeStr),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicSyntheticsScriptAPIMonitorConfigLegacyRuntime(fmt.Sprintf("%s-updated", rName), monitorTypeStr),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					// Technical limitations with the API prevent us from setting the following attributes.
+					"locations_public",
+					"location_private",
+					"tag",
+					"script",
+					"enable_screenshot_on_failure_and_script",
+					"runtime_type",
+					"runtime_type_version",
 				},
 			},
 		},
@@ -115,6 +159,23 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfig(name string, scriptMonitorT
 		}`, name, scriptMonitorType)
 }
 
+func testAccNewRelicSyntheticsScriptAPIMonitorConfigLegacyRuntime(name string, scriptMonitorType string) string {
+	return fmt.Sprintf(`
+		resource "newrelic_synthetics_script_monitor" "foo" {
+			name	=	"%s"
+			type	=	"%s"
+			locations_public	=	["US_WEST_1"]
+			period	=	"EVERY_HOUR"
+			status	=	"ENABLED"
+			script	=	"console.log('terraform integration test')"
+
+			# Set empty strings below for legacy runtime
+			runtime_type	=	""
+			runtime_type_version	=	""
+			script_language	=	""
+		}`, name, scriptMonitorType)
+}
+
 func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "bar" {
@@ -148,7 +209,7 @@ func testAccCheckNewRelicSyntheticsScriptMonitorExists(n string) resource.TestCh
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
-		time.Sleep(60 * time.Second)
+		time.Sleep(10 * time.Second)
 
 		result, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
@@ -170,7 +231,7 @@ func testAccCheckNewRelicSyntheticsScriptMonitorDestroy(s *terraform.State) erro
 		}
 
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
-		time.Sleep(60 * time.Second)
+		time.Sleep(10 * time.Second)
 
 		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
 		if (*found) != nil {
