@@ -45,36 +45,6 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 				Description: "Notification destination property type.",
 				Elem:        notificationsPropertySchema(),
 			},
-			"auth_basic": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				ConflictsWith: []string{"auth_token"},
-				Description:   "Basic username and password authentication credentials.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"user": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
-			"auth_token": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				ConflictsWith: []string{"auth_basic"},
-				Description:   "Token authentication credentials.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"prefix": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
 			"active": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -103,7 +73,7 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
-	id := d.Id()
+	id := d.Get("id").(string)
 	filters := ai.AiNotificationsDestinationFilter{ID: id}
 	sorter := notifications.AiNotificationsDestinationSorter{}
 
