@@ -133,7 +133,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
   nrql {
     query             = "SELECT average(duration) FROM Transaction where appName = '${data.newrelic_entity.foo.name}'"
-    evaluation_offset = 3
   }
 
   critical {
