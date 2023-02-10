@@ -6,7 +6,7 @@ description: |-
 Looks up if the given Grok pattern is matched against the log lines in New Relic.
 ---
 
-# Data Source: newrelic\_grok\_pattern
+# Data Source: newrelic\_test\_grok\_pattern
 
 Use this data source to validate a grok pattern.  More information on Terraform's data sources can be found [here](https://www.terraform.io/language/data-sources).
 
