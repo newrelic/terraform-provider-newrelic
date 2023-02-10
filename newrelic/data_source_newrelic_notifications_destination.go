@@ -31,23 +31,23 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "The name of the destination.",
 			},
 			"type": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: fmt.Sprintf("The type of the destination. One of: (%s).", strings.Join(listValidNotificationsDestinationTypes(), ", ")),
 			},
 			"property": {
 				Type:        schema.TypeSet,
-				Optional:    true,
+				Computed:    true,
 				Description: "Notification destination property type.",
 				Elem:        notificationsPropertySchema(),
 			},
 			"active": {
 				Type:        schema.TypeBool,
-				Optional:    true,
+				Computed:    true,
 				Description: "Indicates whether the destination is active.",
 				Default:     true,
 			},
