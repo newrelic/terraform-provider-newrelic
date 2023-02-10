@@ -544,7 +544,7 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionSlideByNoValueFunction(t *
 }
 
 func TestAccNewRelicNrqlAlertCondition_StaticConditionEvaluationDelay(t *testing.T) {
-	resourceName := "newrelic_nrql_alert_condition.evaluation_delay"
+	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -552,7 +552,7 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionEvaluationDelay(t *testing
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
-			// Test: Create (NerdGraph) static condition with slide by and no value function
+			// Test: Create
 			{
 				Config: testAccNewRelicNrqlAlertConditionStaticWithEvaluationDelay(
 					rName,
@@ -1096,7 +1096,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
 }
 `, name)
 }
-
 
 func testAccNewRelicNrqlAlertConditionStaticWithEvaluationDelay(
 	name string,

@@ -13,6 +13,8 @@ import (
 )
 
 func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
+	t.Skip("Skipping. API has been deprecated and has reached EOL.")
+
 	// resourceName := "newrelic_alert_condition.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-test-%s", rand)
@@ -52,6 +54,8 @@ func TestAccNewRelicAlertCondition_Basic(t *testing.T) {
 }
 
 func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
+	t.Skip("Skipping. API has been deprecated and has reached EOL.")
+
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -69,6 +73,8 @@ func TestAccNewRelicAlertCondition_ZeroThreshold(t *testing.T) {
 }
 
 func TestAccNewRelicAlertCondition_FloatThreshold(t *testing.T) {
+	t.Skip("Skipping. API has been deprecated and has reached EOL.")
+
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -86,6 +92,8 @@ func TestAccNewRelicAlertCondition_FloatThreshold(t *testing.T) {
 }
 
 func TestAccNewRelicAlertCondition_AlertPolicyNotFound(t *testing.T) {
+	t.Skip("Skipping. API has been deprecated and has reached EOL.")
+
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -106,6 +114,8 @@ func TestAccNewRelicAlertCondition_AlertPolicyNotFound(t *testing.T) {
 }
 
 func TestAccNewRelicAlertCondition_ApplicationScopeWithCloseTimer(t *testing.T) {
+	t.Skip("Skipping. API has been deprecated and has reached EOL.")
+
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -122,6 +132,8 @@ func TestAccNewRelicAlertCondition_ApplicationScopeWithCloseTimer(t *testing.T) 
 }
 
 func TestAccNewRelicAlertCondition_InstanceScopeWithCloseTimer(t *testing.T) {
+	t.Skip("Skipping. API has been deprecated and has reached EOL.")
+
 	if !nrInternalAccount {
 		t.Skipf("New Relic internal testing account required")
 	}
@@ -141,6 +153,8 @@ func TestAccNewRelicAlertCondition_InstanceScopeWithCloseTimer(t *testing.T) {
 }
 
 func TestAccNewRelicAlertCondition_APMJVMMetricApplicationScope(t *testing.T) {
+	t.Skip("Skipping. API has been deprecated and has reached EOL.")
+
 	if !nrInternalAccount {
 		t.Skipf("New Relic internal testing account required")
 	}
@@ -159,6 +173,8 @@ func TestAccNewRelicAlertCondition_APMJVMMetricApplicationScope(t *testing.T) {
 	})
 }
 func TestAccNewRelicAlertCondition_APMJVMMetricInstanceScope(t *testing.T) {
+	t.Skip("Skipping. API has been deprecated and has reached EOL.")
+
 	if !nrInternalAccount {
 		t.Skipf("New Relic internal testing account required")
 	}
