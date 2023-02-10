@@ -49,7 +49,6 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Indicates whether the destination is active.",
-				Default:     true,
 			},
 			"status": {
 				Type:        schema.TypeString,
