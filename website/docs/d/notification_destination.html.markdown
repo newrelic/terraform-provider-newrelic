@@ -14,7 +14,7 @@ Use this data source to get information about a specific notification destinatio
 
 ```hcl
 # Data source
-data "newrelic_notifications_destination" "foo" {
+data "newrelic_notification_destination" "foo" {
   id = "1e543419-0c25-456a-9057-fb0eb310e60b"
 }
 
