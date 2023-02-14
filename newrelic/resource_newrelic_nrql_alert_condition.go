@@ -72,7 +72,7 @@ func termSchema() *schema.Resource {
 			"threshold_duration": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The duration, in seconds, that the threshold must violate in order to create an incident. Value must be a multiple of the 'aggregation_window' (which has a default of 60 seconds). Value must be within 120-3600 seconds for baseline conditions, and within 60-7200 seconds for static conditions",
+				Description: "The duration, in seconds, that the threshold must violate in order to create an incident. Value must be a multiple of the 'aggregation_window' (which has a default of 60 seconds). Value must be within 120-86400 seconds for baseline conditions, and within 60-86400 seconds for static conditions",
 			},
 		},
 	}
@@ -308,6 +308,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					aggregationMethod := strings.ToLower(d.Get("aggregation_method").(string))
 					return oldInt == 120 && newInt == 0 && (aggregationMethod == "event_flow" || aggregationMethod == "cadence")
 				},
+			},
+			"evaluation_delay": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "How long we wait until the signal starts evaluating. The maximum delay is 7200 seconds (120 minutes)",
 			},
 			"aggregation_timer": {
 				Type:         schema.TypeString,

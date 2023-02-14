@@ -421,6 +421,11 @@ func expandCreateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionCrea
 		}
 	}
 
+	if evaluationDelay, ok := d.GetOk("evaluation_delay"); ok {
+		value := evaluationDelay.(int)
+		signal.EvaluationDelay = &value
+	}
+
 	return &signal, nil
 }
 
@@ -469,6 +474,11 @@ func expandUpdateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionUpda
 			v, _ := strconv.Atoi(value)
 			signal.AggregationTimer = &v
 		}
+	}
+
+	if evaluationDelay, ok := d.GetOk("evaluation_delay"); ok {
+		value := evaluationDelay.(int)
+		signal.EvaluationDelay = &value
 	}
 
 	return &signal, nil
@@ -617,6 +627,13 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 		if err := d.Set("aggregation_timer", timer); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_timer`: %v", err)
 		}
+	}
+
+	if signal.EvaluationDelay != nil {
+		if err := d.Set("evaluation_delay", signal.EvaluationDelay); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `evaluation_delay`: %v", err)
+		}
+
 	}
 
 	return nil

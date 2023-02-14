@@ -60,7 +60,7 @@ The following arguments are supported:
 
 All nested `condition` blocks support the following arguments:
   * `conditions` - (Optional) The individual MutingRuleConditions within the group. See [Nested conditions blocks](#nested-conditions-blocks) below for details.
-  * `operator` - (Required) The operator used to combine all the MutingRuleConditions within the group.
+  * `operator` - (Required) The operator used to combine all the MutingRuleConditions within the group. Valid values are `AND`, `OR`. 
 
 
 ### Nested `conditions` blocks
