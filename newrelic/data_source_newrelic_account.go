@@ -60,7 +60,11 @@ func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, 
 	var account *accounts.AccountOutline
 
 	if !idOk && !nameOk {
-		return diag.FromErr(fmt.Errorf(`one of "name" or "account_id" is required to locate a New Relic account`))
+		id = meta.(*ProviderConfig).AccountID
+		if id == 0 {
+			return diag.FromErr(fmt.Errorf(`one of "name" or "account_id" is required to locate a New Relic account`))
+		}
+		idOk = true
 	}
 
 	if idOk && nameOk {
