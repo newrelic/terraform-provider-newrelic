@@ -14,7 +14,7 @@ Use this data source to get information about a specific notification destinatio
 
 ```hcl
 # Data source
-data "newrelic_notifications_destination" "foo" {
+data "newrelic_notification_destination" "foo" {
   id = "1e543419-0c25-456a-9057-fb0eb310e60b"
 }
 
@@ -46,7 +46,6 @@ In addition to all arguments above, the following attributes are exported:
 
 * `name` - The name of the notification destination.
 * `type` - The notification destination type, either: `EMAIL`, `SERVICE_NOW`, `WEBHOOK`, `JIRA`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`, `SLACK` and `SLACK_COLLABORATION`.
-* `auth_basic` \ `auth_token` - A nested block that describes a basic ot token authentication credentials..
 * `property` - A nested block that describes a notification destination property.
 * `active` - An indication whether the notification destination is active or not.
 * `status` - The status of the notification destination.
