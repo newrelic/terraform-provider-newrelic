@@ -31,65 +31,29 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "The name of the destination.",
 			},
 			"type": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: fmt.Sprintf("The type of the destination. One of: (%s).", strings.Join(listValidNotificationsDestinationTypes(), ", ")),
 			},
 			"property": {
 				Type:        schema.TypeSet,
-				Optional:    true,
+				Computed:    true,
 				Description: "Notification destination property type.",
 				Elem:        notificationsPropertySchema(),
 			},
-			"auth_basic": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				ConflictsWith: []string{"auth_token"},
-				Description:   "Basic username and password authentication credentials.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"user": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
-			"auth_token": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				ConflictsWith: []string{"auth_basic"},
-				Description:   "Token authentication credentials.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"prefix": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
 			"active": {
 				Type:        schema.TypeBool,
-				Optional:    true,
+				Computed:    true,
 				Description: "Indicates whether the destination is active.",
-				Default:     true,
 			},
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of the destination.",
-			},
-			"last_sent": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The last time a notification was sent.",
 			},
 		},
 	}
@@ -103,7 +67,7 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
-	id := d.Id()
+	id := d.Get("id").(string)
 	filters := ai.AiNotificationsDestinationFilter{ID: id}
 	sorter := notifications.AiNotificationsDestinationSorter{}
 
@@ -127,5 +91,5 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 		return errors
 	}
 
-	return diag.FromErr(flattenNotificationDestination(&destinationResponse.Entities[0], d))
+	return diag.FromErr(flattenNotificationDestinationDataSource(&destinationResponse.Entities[0], d))
 }

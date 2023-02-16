@@ -155,6 +155,46 @@ func TestFlattenNotificationDestination(t *testing.T) {
 	}
 }
 
+func TestFlattenNotificationDestinationDataSource(t *testing.T) {
+	r := dataSourceNewRelicNotificationDestination()
+
+	cases := map[string]struct {
+		Data         map[string]interface{}
+		ExpectErr    bool
+		ExpectReason string
+		Flattened    *notifications.AiNotificationsDestination
+	}{
+		"minimal": {
+			Data: map[string]interface{}{
+				"name": "testing123",
+				"type": "WEBHOOK",
+			},
+			Flattened: &notifications.AiNotificationsDestination{
+				Name: "testing123",
+				Type: "WEBHOOK",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		if tc.Flattened != nil {
+			d := r.TestResourceData()
+			err := flattenNotificationDestinationDataSource(tc.Flattened, d)
+			assert.NoError(t, err)
+
+			for k, v := range tc.Data {
+				var x interface{}
+				var ok bool
+				if x, ok = d.GetOk(k); !ok {
+					t.Fatalf("err: %s", err)
+				}
+
+				assert.Equal(t, x, v)
+			}
+		}
+	}
+}
+
 func testFlattenNotificationDestinationAuth(t *testing.T, v interface{}, auth ai.AiNotificationsAuth) {
 	for ck, cv := range v.(map[string]interface{}) {
 		switch ck {
