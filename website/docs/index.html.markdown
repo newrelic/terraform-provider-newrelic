@@ -164,30 +164,36 @@ resource "newrelic_alert_policy_channel" "alert_email" {
 }
 ```
 
-## Support for v2.x
+## Support for v3.x
 
-The v2.x version of the New Relic Terraform provider will get continued support from the New Relic Observability as Code team. We advise to always upgrade to the latest versions of the v2.x branch as support is only given for the most recent versions. Older versions of the v2.x branch could get deprecated when new product releases are made. In those cases a notice will be put on the repository and communication will be sent out to you by New Relic.
+The v3.x version of the New Relic Terraform provider will get continued support from the New Relic Observability as Code team. We advise to always upgrade to the latest versions of the v3.x branch as support is only given for the most recent versions. Older versions of the v3.x branch could get deprecated when new product releases are made. In those cases a notice will be put on the repository and communication will be sent out to you by New Relic.
 
-Please see the section below about upgrading to the latest versions of the provider. All new feature work and focus will be
-directed at the newer provider version. If you wish to pin your environment to a specific release, you can do so with a `required_providers` statement in your Terraform manifest. You can also pin the version within your `provider` block.
-
-Using the `provider` block:
-
-```hcl
-provider "newrelic" {
-  version = "~> 2.37.0"
-}
-```
+Please see the section below about upgrading to the latest versions of the provider. All new feature work and focus will be directed at the newer provider version. If you wish to pin your environment to a specific release, you can do so with a `required_providers` statement in your Terraform manifest.
 
 Using the `required_providers` block:
 
 ```hcl
-required_providers {
-  newrelic = "~> 2.37.0"
+terraform {
+  required_version = "~> 1.0"
+  required_providers {
+    newrelic = {
+      source  = "newrelic/newrelic"
+    }
+  }
 }
 ```
 
 See the [Terraform docs][provider_version_configuration] for more information on pinning versions.
+
+## Upgrading to v3.x
+
+Upgrading to v3 of the provider involves some changes to your provider configuration. Please view our [**migration guide**](guides/migration_guide_v3.html) for more information and assistance.
+
+Please see the [latest provider configuration docs](guides/provider_configuration.html) for the current recommended configuration settings.
+
+## Support for v2.x
+
+The v2.x version of the New Relic Terraform provider is supported as is and will not receive new features or bugfixes. The v2 release or older versions of the v2.x branch could get deprecated when new product releases are made. In those cases a notice will be put on the repository and communication will be sent out to you by New Relic.
 
 ## Upgrading to v2.x
 
