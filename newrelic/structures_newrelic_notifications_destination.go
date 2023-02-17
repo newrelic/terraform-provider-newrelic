@@ -3,7 +3,6 @@ package newrelic
 import (
 	"context"
 	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
@@ -134,16 +133,20 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 
 	auth := flattenNotificationDestinationAuth(destination.Auth, d)
 
-	authAttr := "auth_basic"
+	var authAttr string
 	switch destination.Auth.AuthType {
+	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.BASIC):
+		authAttr = "auth_basic"
 	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.OAUTH2):
 		authAttr = "auth_oauth2"
 	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.TOKEN):
 		authAttr = "auth_token"
 	}
 
-	if err := d.Set(authAttr, auth); err != nil {
-		return fmt.Errorf("[DEBUG] Error setting notification auth: %#v", err)
+	if authAttr != "" {
+		if err := d.Set(authAttr, auth); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting notification auth: %#v", err)
+		}
 	}
 
 	if err := d.Set("property", flattenNotificationDestinationProperties(destination.Properties)); err != nil {
@@ -184,7 +187,7 @@ func flattenNotificationDestinationAuth(a ai.AiNotificationsAuth, d *schema.Reso
 			"token":  d.Get("auth_token.0.token"),
 		}
 	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.OAUTH2):
-		// ...
+		// This auth type is not supported
 	}
 
 	return authConfig
@@ -209,4 +212,40 @@ func flattenNotificationDestinationProperty(p notifications.AiNotificationsPrope
 	propertyResult["label"] = p.Label
 
 	return propertyResult
+}
+
+func flattenNotificationDestinationDataSource(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
+	if destination == nil {
+		return nil
+	}
+
+	var err error
+
+	d.SetId(destination.ID)
+
+	if err = d.Set("name", destination.Name); err != nil {
+		return err
+	}
+
+	if err = d.Set("type", destination.Type); err != nil {
+		return err
+	}
+
+	if err := d.Set("property", flattenNotificationDestinationProperties(destination.Properties)); err != nil {
+		return err
+	}
+
+	if err := d.Set("active", destination.Active); err != nil {
+		return err
+	}
+
+	if err := d.Set("account_id", destination.AccountID); err != nil {
+		return err
+	}
+
+	if err := d.Set("status", destination.Status); err != nil {
+		return err
+	}
+
+	return nil
 }

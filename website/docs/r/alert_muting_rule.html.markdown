@@ -3,12 +3,12 @@ layout: 'newrelic'
 page_title: 'New Relic: newrelic_alert_muting_rule'
 sidebar_current: 'docs-newrelic-resource-alert-muting-rule'
 description: |-
-  Create a muting rule for New Relic Alerts violations.
+  Create a muting rule for New Relic Alerts incidents.
 ---
 
 # Resource: newrelic_alert_muting_rule
 
-Use this resource to create a muting rule for New Relic Alerts violations.
+Use this resource to create a muting rule for New Relic Alerts incidents.
 
 -> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](/providers/newrelic/newrelic/latest/docs/guides/migration_guide_v2) for configuring the provider.
 <br><br>
@@ -49,7 +49,7 @@ resource "newrelic_alert_muting_rule" "foo" {
 
 The following arguments are supported:
   * `account_id` - (Optional) The account id of the MutingRule.
-  * `condition`  - (Required) The condition that defines which violations to target. See [Nested condition blocks](#nested-condition-blocks) below for details.
+  * `condition`  - (Required) The condition that defines which incidents to target. See [Nested condition blocks](#nested-condition-blocks) below for details.
   * `enabled` - (Required) Whether the MutingRule is enabled.
   * `name` - The name of the MutingRule.
   * `description` - The description of the MutingRule.
@@ -60,11 +60,11 @@ The following arguments are supported:
 
 All nested `condition` blocks support the following arguments:
   * `conditions` - (Optional) The individual MutingRuleConditions within the group. See [Nested conditions blocks](#nested-conditions-blocks) below for details.
-  * `operator` - (Required) The operator used to combine all the MutingRuleConditions within the group.
+  * `operator` - (Required) The operator used to combine all the MutingRuleConditions within the group. Valid values are `AND`, `OR`. 
 
 
 ### Nested `conditions` blocks
-* `attribute` - (Required) The attribute on a violation. Valid values are   `accountId`, `conditionId`, `conditionName`, `conditionRunbookUrl`, `conditionType`, `entity.guid`, `nrqlEventType`, `nrqlQuery`, `policyId`, `policyName`, `product`, `tags.<NAME>`, `targetId`, `targetName`
+* `attribute` - (Required) The attribute on an incident. Valid values are   `accountId`, `conditionId`, `conditionName`, `conditionRunbookUrl`, `conditionType`, `entity.guid`, `nrqlEventType`, `nrqlQuery`, `policyId`, `policyName`, `product`, `tags.<NAME>`, `targetId`, `targetName`
 * `operator` - (Required) The operator used to compare the attribute's value with the supplied value(s). Valid values are `ANY`, `CONTAINS`, `ENDS_WITH`, `EQUALS`, `IN`, `IS_BLANK`, `IS_NOT_BLANK`, `NOT_CONTAINS`, `NOT_ENDS_WITH`, `NOT_EQUALS`, `NOT_IN`, `NOT_STARTS_WITH`, `STARTS_WITH`
 * `values` - (Required) The value(s) to compare against the attribute's value.
 

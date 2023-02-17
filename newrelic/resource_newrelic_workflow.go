@@ -45,6 +45,15 @@ func resourceNewRelicWorkflow() *schema.Resource {
 						},
 
 						// Computed
+						"notification_triggers": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "List of triggers to notify about in this destination configuration.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+
+						// Computed
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -218,6 +227,11 @@ func resourceNewRelicWorkflow() *schema.Resource {
 				Computed:    true,
 				Description: "The id of the workflow.",
 			},
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Workflow entity GUID",
+			},
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
@@ -258,7 +272,6 @@ func resourceNewRelicWorkflowV0() *schema.Resource {
 							Required:    true,
 							Description: "(Required) Destination's channel id.",
 						},
-
 						// Computed
 						"name": {
 							Type:        schema.TypeString,
@@ -283,9 +296,10 @@ func resourceNewRelicWorkflowV0() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						// Required
 						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "(Required) Filter's name.",
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotWhiteSpace,
+							Description:  "(Required) Filter's name.",
 						},
 						"type": {
 							Type:         schema.TypeString,
@@ -485,6 +499,11 @@ func resourceNewRelicWorkflowRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	if len(workflowResponse.Entities) == 0 {
+		d.SetId("")
+		return nil
+	}
+
 	return diag.FromErr(flattenWorkflow(&workflowResponse.Entities[0], d))
 }
 
@@ -499,7 +518,7 @@ func resourceNewRelicWorkflowUpdate(ctx context.Context, d *schema.ResourceData,
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	workflowResponse, err := client.Workflows.AiWorkflowsUpdateWorkflowWithContext(updatedContext, accountID, *updateInput)
+	workflowResponse, err := client.Workflows.AiWorkflowsUpdateWorkflowWithContext(updatedContext, accountID, false, *updateInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -521,7 +540,7 @@ func resourceNewRelicWorkflowDelete(ctx context.Context, d *schema.ResourceData,
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	workflowResponse, err := client.Workflows.AiWorkflowsDeleteWorkflowWithContext(updatedContext, accountID, d.Id())
+	workflowResponse, err := client.Workflows.AiWorkflowsDeleteWorkflowWithContext(updatedContext, accountID, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

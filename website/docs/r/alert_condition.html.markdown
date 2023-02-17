@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create and manage alert conditions for APM, Browser, and Mobile in New Relic.
 
--> **NOTE:** The [newrelic_nrql_alert_condition](nrql_alert_condition.html) resource is preferred for configuring alerts conditions. In most cases feature parity can be achieved with a NRQL query. Other condition types may be deprecated in the future and receive fewer product updates.
+-> **WARNING:** The  newrelic_alert_condition resource will be deprecated in the near future and will no longer receive product updates. Please use the [newrelic_nrql_alert_condition](nrql_alert_condition.html) resource to avoid being impacted by these changes.
 
 ## Example Usage
 
@@ -99,7 +99,7 @@ The following arguments are supported:
   * `condition_scope` - (Required for some types) `application` or `instance`.  Choose `application` for most scenarios.  If you are using the JVM plugin in New Relic, the `instance` setting allows your condition to trigger [for specific app instances](https://docs.newrelic.com/docs/alerts/new-relic-alerts/defining-conditions/scope-alert-thresholds-specific-instances).
   * `enabled` - (Optional) Whether the condition is enabled or not. Defaults to true.
   * `gc_metric` - (Optional) A valid Garbage Collection metric e.g. `GC/G1 Young Generation`.
-  * `violation_close_timer` - (Optional) Automatically close instance-based violations, including JVM health metric violations, after the number of hours specified. Must be: `1`, `2`, `4`, `8`, `12` or `24`.
+  * `violation_close_timer` - (Optional) Automatically close instance-based incidents, including JVM health metric incidents, after the number of hours specified. Must be: `1`, `2`, `4`, `8`, `12` or `24`.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
   * `term` - (Required) A list of terms for this condition. See [Terms](#terms) below for details.
   * `user_defined_metric` - (Optional) A custom metric to be evaluated.

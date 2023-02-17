@@ -62,6 +62,36 @@ func TestAccNewRelicEntityData_IgnoreCase(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicEntityData_TypeFail(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicEntityDataConfig_InvalidType(strings.ToUpper(testAccExpectedApplicationName), testAccountID),
+				ExpectError: regexp.MustCompile("Argument \"queryBuilder\""),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicEntityData_DomainFail(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicEntityDataConfig_InvalidDomain(strings.ToUpper(testAccExpectedApplicationName), testAccountID),
+				ExpectError: regexp.MustCompile("Argument \"queryBuilder\""),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicEntityDataExists(t *testing.T, n string, appName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
@@ -94,6 +124,10 @@ data "newrelic_entity" "entity" {
 		key = "accountId"
 		value = "%d"
 	}
+	tag {
+		key = "account"
+		value = "New Relic Terraform Provider Acceptance Testing"
+	}
 }
 `, name, accountId)
 }
@@ -109,6 +143,44 @@ data "newrelic_entity" "entity" {
 	tag {
 		key = "accountId"
 		value = "%d"
+	}
+}
+`, name, accountId)
+}
+
+// The test entity for this data source is created in provider_test.go
+func testAccNewRelicEntityDataConfig_InvalidType(name string, accountId int) string {
+	return fmt.Sprintf(`
+data "newrelic_entity" "entity" {
+	name = "%s"
+	type = "app"
+	domain = "apm"
+	tag {
+		key = "accountId"
+		value = "%d"
+	}
+	tag {
+		key = "account"
+		value = "New Relic Terraform Provider Acceptance Testing"
+	}
+}
+`, name, accountId)
+}
+
+// The test entity for this data source is created in provider_test.go
+func testAccNewRelicEntityDataConfig_InvalidDomain(name string, accountId int) string {
+	return fmt.Sprintf(`
+data "newrelic_entity" "entity" {
+	name = "%s"
+	type = "application"
+	domain = "VIZ"
+	tag {
+		key = "accountId"
+		value = "%d"
+	}
+	tag {
+		key = "account"
+		value = "New Relic Terraform Provider Acceptance Testing"
 	}
 }
 `, name, accountId)

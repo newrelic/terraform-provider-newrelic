@@ -18,8 +18,6 @@ import (
 	nr "github.com/newrelic/newrelic-client-go/v2/newrelic"
 )
 
-const serviceName = "terraform-provider-newrelic"
-
 // Config contains New Relic provider settings
 type Config struct {
 	AdminAPIKey          string
@@ -37,6 +35,7 @@ type Config struct {
 	NerdGraphAPIURL      string
 	SyntheticsAPIURL     string
 	userAgent            string
+	serviceName          string
 }
 
 // Client returns a new client for accessing New Relic
@@ -47,7 +46,7 @@ func (c *Config) Client() (*nr.NewRelic, error) {
 		nr.ConfigAdminAPIKey(c.AdminAPIKey),
 		nr.ConfigPersonalAPIKey(c.PersonalAPIKey),
 		nr.ConfigUserAgent(c.userAgent),
-		nr.ConfigServiceName(serviceName),
+		nr.ConfigServiceName(c.serviceName),
 		nr.ConfigRegion(c.Region),
 	)
 
@@ -137,6 +136,11 @@ type ProviderConfig struct {
 	InsightsInsertClient *insights.InsertClient
 	AccountID            int
 	PersonalAPIKey       string
+	userAgent            string
+}
+
+func (p *ProviderConfig) GetUserAgent() string {
+	return p.userAgent
 }
 
 // If the argument is a path, Read loads it and returns the contents,

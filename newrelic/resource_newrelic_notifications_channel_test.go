@@ -313,7 +313,7 @@ func testAccCheckNewRelicNotificationChannelExists(n string) resource.TestCheckF
 			return err
 		}
 
-		if string(found.Entities[0].ID) != rs.Primary.ID {
+		if len(found.Entities) == 0 || string(found.Entities[0].ID) != rs.Primary.ID {
 			return fmt.Errorf("channel not found: %v - %v", rs.Primary.ID, found)
 		}
 

@@ -15,18 +15,15 @@ Use this resource to create update, and delete a Script API or Script Browser Sy
 ##### Type: `SCRIPT_API`
 
 ```hcl
-resource "newrelic_synthetics_script_monitor" "foo" {
-  status = "ENABLED"
-  name   = "monitor"
-  type   = "SCRIPT_API"
-  locations_public = [
-    "AP_SOUTH_1",
-    "AP_EAST_1"
-  ]
-  period = "EVERY_6_HOURS"
-
-  script = "console.log('it works!')"
-
+resource "newrelic_synthetics_script_monitor" "monitor" {
+  status               = "ENABLED"
+  name                 = "script_monitor"
+  type                 = "SCRIPT_API"
+  locations_public     = ["AP_SOUTH_1", "AP_EAST_1"]
+  period               = "EVERY_6_HOURS"
+  
+  script               = "console.log('it works!')"
+  
   script_language      = "JAVASCRIPT"
   runtime_type         = "NODE_API"
   runtime_type_version = "16.10"
@@ -41,14 +38,12 @@ resource "newrelic_synthetics_script_monitor" "foo" {
 
 ```hcl
 resource "newrelic_synthetics_script_monitor" "monitor" {
-  status = "ENABLED"
-  name   = "monitor"
-  type   = "SCRIPT_BROWSER"
-  locations_public = [
-    "AP_SOUTH_1",
-    "AP_EAST_1"
-  ]
-  period                                  = "EVERY_HOUR"
+  status           = "ENABLED"
+  name             = "script_monitor"
+  type             = "SCRIPT_BROWSER"
+  locations_public = ["AP_SOUTH_1", "AP_EAST_1"]
+  period           = "EVERY_HOUR"
+
   enable_screenshot_on_failure_and_script = false
 
   script = "$browser.get('https://one.newrelic.com')"
@@ -59,7 +54,7 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
 
   tag {
     key    = "some_key"
-    values = ["some_value1", "some_value2"]
+    values = ["some_value"]
   }
 }
 ```
@@ -88,7 +83,9 @@ The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
 
 #### Deprecated runtime
 
-If you want to use the deprecated Node 10 runtime you can set the `runtime_type`, `runtime_type_version` and `script_language` to empty string `""`. The old runtime will be deprecated in the future, so use the new version whenever you can.
+If you want to use a legacy runtime (Node 10 or Chrome 72) you can set the `runtime_type`, `runtime_type_version` and `script_language` to empty string `""`. 
+
+-> **NOTE:** The old runtime will be deprecated in the future, so use the new version whenever you can.
 
 ### Nested `tag` blocks
 
@@ -115,18 +112,18 @@ The below example shows how you can define a private location and attach it to a
 ##### Type: `SCRIPT_API`
 
 ```hcl
-resource "newrelic_synthetics_private_location" "foo" {
+resource "newrelic_synthetics_private_location" "location" {
   description               = "Example private location"
   name                      = "private_location"
   verified_script_execution = true
 }
 
-resource "newrelic_synthetics_script_monitor" "bar" {
+resource "newrelic_synthetics_script_monitor" "monitor" {
   status = "ENABLED"
-  name   = "Example synthetics monitor"
+  name   = "script_monitor"
   type   = "SCRIPT_API"
   location_private {
-    guid         = "newrelic_synthetics_private_location.private_location.id"
+    guid         = newrelic_synthetics_private_location.location.id
     vse_password = "secret"
   }
   period = "EVERY_6_HOURS"
@@ -145,22 +142,22 @@ resource "newrelic_synthetics_script_monitor" "bar" {
 ##### Type: `SCRIPT_BROWSER`
 
 ```hcl
-resource "newrelic_synthetics_private_location" "foo" {
+resource "newrelic_synthetics_private_location" "location" {
   description               = "Test Description"
   name                      = "private_location"
   verified_script_execution = true
 }
 
-resource "newrelic_synthetics_script_monitor" "bar" {
+resource "newrelic_synthetics_script_monitor" "monitor" {
   status = "ENABLED"
-  name   = "Example synthetics monitor"
+  name   = "script_monitor"
   type   = "SCRIPT_BROWSER"
   period = "EVERY_HOUR"
   script = "$browser.get('https://one.newrelic.com')"
 
   enable_screenshot_on_failure_and_script = false
   location_private {
-    guid         = "newrelic_synthetics_private_location.private_location.id"
+    guid         = newrelic_synthetics_private_location.location.id
     vse_password = "secret"
   }
 
@@ -179,13 +176,13 @@ resource "newrelic_synthetics_script_monitor" "bar" {
 
 The following attributes are exported:
 
-* `id` - The ID of the Synthetics monitor that the script is attached to.
+* `id` - The ID of the Synthetics script monitor.
 
 ## Import
 
 Synthetics monitor scripts can be imported using the `guid`, e.g.
 
 ```bash
-$ terraform import newrelic_synthetics_monitor_script.bar <guid>
+$ terraform import newrelic_synthetics_script_monitor.monitor <guid>
 ```
 

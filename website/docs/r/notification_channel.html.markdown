@@ -10,6 +10,8 @@ Create and manage a notification channel for notifications in New Relic.
 
 Use this resource to create and manage New Relic notification channels. Details regarding supported products and permissions can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/destinations).
 
+A channel is an entity that is used to configure notifications. It is also called a message template. It is a separate entity from workflows, but a channel is required in order to create a workflow.
+
 ## Example Usage
 
 ##### [Webhook](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#webhook)
@@ -21,6 +23,7 @@ resource "newrelic_notification_channel" "foo" {
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
   product = "IINT" // (Workflows)
 
+  // must be valid json
   property {
     key = "payload"
     value = "name: {{ foo }}"
@@ -42,32 +45,40 @@ The following arguments are supported:
 * `property` - A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
 
 ### Nested `property` blocks
+Most properties can use variables, which will be filled at the time of sending the notification with data from the issue. The properties where this is not available generally correlate to identifiers in the third party, such as Slack channel id or Jira project id. 
 
 * `key` - (Required) The notification property key.
 * `value` - (Required) The notification property value.
 * `label` - (Optional) The notification property label.
 * `display_value` - (Optional) The notification property display value.
-* 
+
 Each notification channel type supports a specific set of arguments for the `property` block:
 
 * `WEBHOOK`
   * `headers` - (Optional) A map of key/value pairs that represents the webhook headers.
   * `payload` - (Required) A map of key/value pairs that represents the webhook payload.
 * `SERVICENOW_INCIDENTS`
-  * `description` - (Optional) A map of key/value pairs that represents a description.
-  * `short_description` - (Optional) A map of key/value pairs that represents a short description.
+  * `description` - (Optional) Free text that represents a description.
+  * `short_description` - (Optional) Free text that represents a short description.
 * `JIRA_CLASSIC`, `JIRA_NEXTGEN`
-  * `project` - (Required) A map of key/value pairs that represents the jira project id.
-  * `issuetype` - (Required) A map of key/value pairs that represents the issue type id.
+  * `project` - (Required) Identifier that specifies jira project id.
+  * `issuetype` - (Required) Identifier that specifies the issue type id.
+  * `description` - (Required) Free text that represents a description.
+  * `summary` - (Required) Free text that represents the summery.
 * `EMAIL`
-  * `subject` - (Optional) A map of key/value pairs that represents the email subject title.
-  * `customDetailsEmail` - (Optional) A map of key/value pairs that represents the email custom details.
+  * `subject` - (Optional) Free text that represents the email subject title.
+  * `customDetailsEmail` - (Optional) Free text that represents the email custom details.
 * `PAGERDUTY_SERVICE_INTEGRATION`
-  * `summary` - (Required) A map of key/value pairs that represents the summery.
+  * `summary` - (Required) Free text that represents the summery.
+  * `customDetails` - (Optional) Free text that *replaces* the content of the alert.
 * `PAGERDUTY_ACCOUNT_INTEGRATION`
-  * `summary` - (Required) A map of key/value pairs that represents the summery.
-  * `service` - (Required) Specifies the service id for integrating with Pagerduty.
+  * `summary` - (Required) Free text that represents the summery.
+  * `service` - (Required) Identifier that specifies the service id to alert to.
   * `email` - (Required) Specifies the user email for integrating with Pagerduty.
+  * `customDetails` - (Optional) Free text that *replaces* the content of the alert.
+* `SLACK`
+  * `channelId` - (Required) Specifies the Slack channel id. This can be found in slack browser via the url. Example - https://app.slack.com/client/<UserId>/<ChannelId>.
+  * `customDetailsSlack` - (Optional) A map of key/value pairs that represents the slack custom details. Must be compatible with Slack's blocks api. 
 
 ## Attributes Reference
 
@@ -77,7 +88,11 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Additional Examples
 
+~> **NOTE:** We support all properties. The mentioned properties are just an example.
+
 ##### [ServiceNow](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#servicenow)
+To see the properties’ keys for your account, check ServiceNow incidents table.
+
 ```hcl
 resource "newrelic_notification_channel" "foo" {
   account_id = 12345678
@@ -105,11 +120,16 @@ resource "newrelic_notification_channel" "foo" {
   name = "email-example"
   type = "EMAIL"
   destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
-  product = "ERROR_TRACKING"
+  product = "IINT"
 
   property {
     key = "subject"
     value = "New Subject Title"
+  }
+
+  property {
+    key = "customDetailsEmail"
+    value = "issue id - {{issueId}}"
   }
 }
 ```
@@ -168,6 +188,26 @@ resource "newrelic_notification_channel" "foo" {
     key = "email"
     value = "example@email.com"
   }
+  
+  // must be valid json
+  property {
+    key   = "customDetails"
+    value = <<-EOT
+            {
+            "id":{{json issueId}},
+            "IssueURL":{{json issuePageUrl}},
+            "NewRelic priority":{{json priority}},
+            "Total Incidents":{{json totalIncidents}},
+            "Impacted Entities":"{{#each entitiesData.names}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}",
+            "Runbook":"{{#each accumulations.runbookUrl}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}",
+            "Description":"{{#each annotations.description}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}",
+            "isCorrelated":{{json isCorrelated}},
+            "Alert Policy Names":"{{#each accumulations.policyName}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}",
+            "Alert Condition Names":"{{#each accumulations.conditionName}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}",
+            "Workflow Name":{{json workflowName}}
+            }
+        EOT
+  }
 }
 ```
 
@@ -183,6 +223,25 @@ resource "newrelic_notification_channel" "foo" {
   property {
     key = "summary"
     value = "General summary"
+  }
+  // must be valid json
+  property {
+    key   = "customDetails"
+    value = <<-EOT
+            {
+            "id":{{json issueId}},
+            "IssueURL":{{json issuePageUrl}},
+            "NewRelic priority":{{json priority}},
+            "Total Incidents":{{json totalIncidents}},
+            "Impacted Entities":"{{#each entitiesData.names}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}",
+            "Runbook":"{{#each accumulations.runbookUrl}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}",
+            "Description":"{{#each annotations.description}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}",
+            "isCorrelated":{{json isCorrelated}},
+            "Alert Policy Names":"{{#each accumulations.policyName}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}",
+            "Alert Condition Names":"{{#each accumulations.conditionName}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}",
+            "Workflow Name":{{json workflowName}}
+            }
+        EOT
   }
 }
 ```
@@ -211,7 +270,7 @@ resource "newrelic_notification_channel" "foo" {
     key = "eventSource"
     value = "aws.partner/mydomain/myaccountid/name"
   }
-
+  // must be valid json
   property {
     key = "eventContent"
     value = "{ id: {{ json issueId }} }"
@@ -231,6 +290,11 @@ resource "newrelic_notification_channel" "foo" {
   property {
     key = "channelId"
     value = "123456"
+  }
+
+  property {
+    key = "customDetailsSlack"
+    value = "issue id - {{issueId}}"
   }
 }
 ```
@@ -278,3 +342,5 @@ resource "newrelic_notification_channel" "webhook-channel" {
 
 ## Additional Information
 More details about the channels API can be found [here](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels).
+
+~> **NOTE:** [`newrelic_alert_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_channel) and [`newrelic_alert_policy_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_policy_channel) are legacy resources.
