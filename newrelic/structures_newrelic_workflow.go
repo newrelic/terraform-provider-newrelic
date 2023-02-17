@@ -364,6 +364,10 @@ func flattenWorkflow(workflow *workflows.AiWorkflowsWorkflow, d *schema.Resource
 		}
 	}
 
+	if err := d.Set("guid", workflow.GUID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
