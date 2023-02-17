@@ -205,6 +205,7 @@ func TestFlattenWorkflow(t *testing.T) {
 		}},
 	}
 
+	guid := workflows.EntityGUID("testworkflowentityguid")
 	r := resourceNewRelicWorkflow()
 
 	cases := map[string]struct {
@@ -220,6 +221,7 @@ func TestFlattenWorkflow(t *testing.T) {
 				"destinations_enabled":  true,
 				"enabled":               true,
 				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
+				"guid":                  "testworkflowentityguid",
 				"enrichments": []map[string]interface{}{{
 					"name": "enrichment-test-1",
 					"type": "NRQL",
@@ -252,6 +254,7 @@ func TestFlattenWorkflow(t *testing.T) {
 				Enrichments:               enrichments,
 				DestinationConfigurations: destinationConfigurations,
 				IssuesFilter:              issuesFilter,
+				GUID:                      guid,
 			},
 		},
 		"no_enrichments": {
@@ -261,6 +264,7 @@ func TestFlattenWorkflow(t *testing.T) {
 				"destinations_enabled":  true,
 				"enabled":               true,
 				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
+				"guid":                  "testworkflowentityguid",
 				"issues_filter": map[string]interface{}{
 					"name": "issues-filter-test",
 					"type": "FILTER",
@@ -286,6 +290,7 @@ func TestFlattenWorkflow(t *testing.T) {
 				Enrichments:               []workflows.AiWorkflowsEnrichment{},
 				DestinationConfigurations: destinationConfigurations,
 				IssuesFilter:              issuesFilter,
+				GUID:                      guid,
 			},
 		},
 		"no_notification_triggers": {
@@ -295,6 +300,7 @@ func TestFlattenWorkflow(t *testing.T) {
 				"destinations_enabled":  true,
 				"enabled":               true,
 				"muting_rules_handling": "NOTIFY_ALL_ISSUES",
+				"guid":                  "testworkflowentityguid",
 				"issues_filter": map[string]interface{}{
 					"name": "issues-filter-test",
 					"type": "FILTER",
@@ -319,6 +325,7 @@ func TestFlattenWorkflow(t *testing.T) {
 				Enrichments:               []workflows.AiWorkflowsEnrichment{},
 				DestinationConfigurations: destinationConfigurationsWithNotificationTriggers,
 				IssuesFilter:              issuesFilter,
+				GUID:                      guid,
 			},
 		},
 	}
