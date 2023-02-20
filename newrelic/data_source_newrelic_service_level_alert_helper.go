@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func dataSourceNewRelicServiceLevelAlertThreshold() *schema.Resource { return &schema.Resource{
-		ReadContext: dataSourceNewRelicServiceLevelAlertThresholdRead,
+func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource { return &schema.Resource{
+		ReadContext: dataSourceNewRelicServiceLevelAlertHelperRead,
 		Schema: map[string]*schema.Schema{
 			"slo_target": {
 				Type:        schema.TypeFloat,
@@ -56,8 +56,8 @@ func dataSourceNewRelicServiceLevelAlertThreshold() *schema.Resource { return &s
 	}
 }
 
-func dataSourceNewRelicServiceLevelAlertThresholdRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-    d.SetId("serviceLevelAlertThreshold")
+func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+    d.SetId("serviceLevelAlertHelper")
 
 	var sloPeriod = d.Get("slo_period").(int)
 	var sloTarget = d.Get("slo_target").(float64)
