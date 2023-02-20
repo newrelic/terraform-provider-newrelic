@@ -1,6 +1,6 @@
 ---
 layout: "newrelic"
-page_title: "New Relic: newrelic_service_leel_alert_threshold"
+page_title: "New Relic: newrelic_service_level_alert_threshold"
 sidebar_current: "docs-newrelic-datasource-service-level-alert-threshold"
 description: |-
   Calculates alert thresholds.

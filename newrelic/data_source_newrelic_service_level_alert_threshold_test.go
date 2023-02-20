@@ -13,7 +13,7 @@ func TestCalculateAlertThreshold(t *testing.T) {
 	var sloPeriod = 28
 	var sloTarget = 99.9
 	var toleratedBudgetConsumption = 2.0
-	var evaluationPeriod = 1
+	var evaluationPeriod = 60
 
 	threshold := calculateAlertThreshold(sloTarget, toleratedBudgetConsumption, sloPeriod, evaluationPeriod)
 
