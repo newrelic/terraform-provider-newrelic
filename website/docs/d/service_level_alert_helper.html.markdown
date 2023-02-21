@@ -49,7 +49,7 @@ The following arguments are supported:
   * `slo_target` - (Required) The target of the objective, valid values between `0` and `100`.
   * `slo_period` - (Required) Time window is the period of the objective in days. Valid values are `1`, `7` and `28`.
   * `tolerated_budget_consumption` - (Required) How much budget you tolerate to consume in the evaluation period, valid values between `0` and `100`.
-  * `evaluation_period` - (Required) Aggregation window taken into consideration in hours.
+  * `evaluation_period` - (Required) Aggregation window taken into consideration in minutes.
 
 ## Attributes Reference
 

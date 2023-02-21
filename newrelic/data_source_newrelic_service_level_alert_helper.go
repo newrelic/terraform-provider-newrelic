@@ -8,88 +8,102 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource { return &schema.Resource{
+func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource { 
+    return &schema.Resource{
 		ReadContext: dataSourceNewRelicServiceLevelAlertHelperRead,
 		Schema: map[string]*schema.Schema{
+			"sli_guid": {
+				Type:        schema.TypeString,
+				Required:    true,
+			},
 			"slo_target": {
 				Type:        schema.TypeFloat,
 				Required:    true,
-				Description: "",
                 ValidateFunc: validation.FloatBetween(0, 100),
 			},
 			"slo_period": {
 				Type:        schema.TypeInt,
 				Required:    true,
-				Description: "",
                 ValidateFunc: validation.IntInSlice([]int{1,7,28}),
 			},
-			"tolerated_budget_consumption": {
+			"custom_tolerated_budget_consumption": {
 				Type:        schema.TypeFloat,
                 Optional:    true,
-                Default:     2,
-				Description: "",
                 ValidateFunc: validation.FloatBetween(0, 100),
 			},
-			"evaluation_period": {
-				Type:        schema.TypeInt,
+            "custom_evaluation_period": {
+                Type: schema.TypeInt,
                 Optional:    true,
-                Default:     60,
-				Description: "",
                 ValidateFunc: validation.IntAtLeast(1),
-			},
-			"custom_alert_threshold": {
-				Type:        schema.TypeFloat,
-				Computed:    true,
-				Description: "",
-			},
-			"fast_burn_alert_threshold": {
-				Type:        schema.TypeFloat,
-				Computed:    true,
-				Description: "",
-			},
-			"slow_burn_alert_threshold": {
-				Type:        schema.TypeFloat,
-				Computed:    true,
-				Description: "",
-			},
+            },
+            "custom_threshold": {
+                Type: schema.TypeFloat,
+                Computed: true,
+            },
+            "fast_burn_threshold": {
+                Type: schema.TypeFloat,
+                Computed: true,
+            },
+            "fast_burn_evaluation_period": {
+                Type: schema.TypeInt,
+                Computed: true,
+            },
+            "slow_burn_threshold": {
+                Type: schema.TypeFloat,
+                Computed: true,
+            },
+            "slow_burn_evaluation_period": {
+                Type: schema.TypeInt,
+                Computed: true,
+            },
 		},
 	}
 }
 
 func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-    d.SetId("serviceLevelAlertHelper")
+    d.SetId(d.Get("sli_guid").(string))
 
 	var sloPeriod = d.Get("slo_period").(int)
 	var sloTarget = d.Get("slo_target").(float64)
-    _, toleratedOk := d.GetOk("tolerated_budget_consumption")
-    _, evalPeriodOk := d.GetOk("evaluation_period")
-    
-    var err error
-    if toleratedOk && evalPeriodOk {
-        toleratedBudgetConsumption := d.Get("tolerated_budget_consumption").(float64)
-        evaluationPeriod := d.Get("evaluation_period").(int)
-        var customAlertThreshold = calculateAlertThreshold(sloTarget, toleratedBudgetConsumption, sloPeriod, evaluationPeriod)
+    _, tOk := d.GetOk("custom_tolerated_budget_consumption")
+    _, eOk := d.GetOk("custom_evaluation_period")
 
-        err = d.Set("custom_alert_threshold", customAlertThreshold)
+    var err error
+    if tOk && eOk {
+        toleratedBudgetConsumption := d.Get("custom_tolerated_budget_consumption").(float64)
+        evaluationPeriod := d.Get("custom_evaluation_period").(int)
+        var customAlertThreshold = calculateThreshold(sloTarget, toleratedBudgetConsumption, sloPeriod, evaluationPeriod)
+
+        err = d.Set("custom_threshold", customAlertThreshold)
 
         if err != nil {
             return diag.FromErr(err)
         }
     }
 
-    fastBurnAlertThreshold := calculateAlertThreshold(sloTarget, 2, sloPeriod, 60)
-    err = d.Set("fast_burn_alert_threshold", fastBurnAlertThreshold)
+    fastBurnThreshold := calculateThreshold(sloTarget, 2, sloPeriod, 60)
+    err = d.Set("fast_burn_threshold", fastBurnThreshold)
+    if err != nil {
+        return diag.FromErr(err)
+    }
+    err = d.Set("fast_burn_evaluation_period", 60)
+    if err != nil {
+        return diag.FromErr(err)
+    }
 
-    slowBurnAlertThreshold := calculateAlertThreshold(sloTarget, 2, sloPeriod, 600)
-    err = d.Set("slow_burn_alert_threshold", slowBurnAlertThreshold)
-
+    slowBurnAlertThreshold := calculateThreshold(sloTarget, 2, sloPeriod, 600)
+    err = d.Set("slow_burn_threshold", slowBurnAlertThreshold)
+    if err != nil {
+        return diag.FromErr(err)
+    }
+    err = d.Set("slow_burn_evaluation_period", 600)
     if err != nil {
         return diag.FromErr(err)
     }
 	return nil
 }
 
-func calculateAlertThreshold(sloTarget float64, toleratedBudgetConsumption float64, sloPeriod int, evaluationPeriod int) float64 {
+func calculateThreshold(sloTarget float64, toleratedBudgetConsumption float64, sloPeriod int, evaluationPeriod int) float64 {
 	return (100.0 - sloTarget) * ((toleratedBudgetConsumption / 100 * float64(sloPeriod) * 24) / (float64(evaluationPeriod) / 60.0))
 }
 
