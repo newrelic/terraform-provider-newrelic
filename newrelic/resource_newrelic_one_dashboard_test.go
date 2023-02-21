@@ -1101,3 +1101,99 @@ func testAccCheckNewRelicOneDashboardDestroy(s *terraform.State) error {
 	}
 	return nil
 }
+
+func TestAccNewRelicOneDashboard_FilterCurrentDashboardPageChange(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicOneDashboard_FilterCurrentDashboardPageChange_TwoPages(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			{
+				Config: testAccNewRelicOneDashboard_FilterCurrentDashboardPageChange_OnePage(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			{
+				Config: testAccNewRelicOneDashboard_FilterCurrentDashboardPageChange_TwoPages(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+		},
+	})
+}
+
+func testAccNewRelicOneDashboard_FilterCurrentDashboardPageChange_OnePage(dashboardName string) string {
+	return `
+	resource "newrelic_one_dashboard" "bar" {
+	  name = "` + dashboardName + `"
+	  permissions = "private"
+
+	  page {
+		name = "` + dashboardName + ` page one"
+
+		widget_bar {
+			title = "Average transaction duration, by application"
+			row = 1
+			column = 1
+
+			nrql_query {
+			  query      = "FROM Transaction SELECT average(duration) FACET appName"
+			}
+
+			# Linking to self
+			filter_current_dashboard = true
+		  }
+	  }
+	}`
+}
+
+func testAccNewRelicOneDashboard_FilterCurrentDashboardPageChange_TwoPages(dashboardName string) string {
+	return `
+	resource "newrelic_one_dashboard" "bar" {
+	  name = "` + dashboardName + `"
+	  permissions = "private"
+
+	  page {
+		name = "` + dashboardName + ` page one"
+
+		widget_bar {
+			title = "Average transaction duration, by application"
+			row = 1
+			column = 1
+
+			nrql_query {
+			  query      = "FROM Transaction SELECT average(duration) FACET appName"
+			}
+
+			# Linking to self
+			filter_current_dashboard = true
+		  }
+	  }
+	  page {
+		name = "` + dashboardName + ` page two"
+
+		widget_bar {
+			title = "A different widget name cause debugging was getting confusing :)"
+			row = 1
+			column = 1
+
+			nrql_query {
+			  query      = "FROM Transaction SELECT average(duration) FACET appName"
+			}
+
+			# Linking to self
+			filter_current_dashboard = true
+		  }
+	  }
+	}`
+}
