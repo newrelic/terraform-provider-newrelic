@@ -136,6 +136,10 @@ func resourceNewRelicCloudAwsAccountLinkRead(ctx context.Context, d *schema.Reso
 	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
 
 	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
