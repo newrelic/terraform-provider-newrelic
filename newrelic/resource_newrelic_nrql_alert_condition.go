@@ -417,6 +417,10 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 			return resource.NonRetryableError(err)
 		}
 
+		if condition.EntityGUID == "" {
+			return resource.RetryableError(fmt.Errorf("nrql condition did not return a guid, retrying"))
+		}
+
 		return nil
 	})
 
