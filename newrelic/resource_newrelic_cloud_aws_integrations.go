@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 
@@ -579,6 +580,10 @@ func resourceNewRelicCloudAwsIntegrationsRead(ctx context.Context, d *schema.Res
 
 	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
 	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 

@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -108,6 +109,10 @@ func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.Reso
 	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
 
 	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
