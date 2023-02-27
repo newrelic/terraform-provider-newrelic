@@ -11,7 +11,6 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
 )
 
-//
 func resourceNewRelicObfuscationExpression() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicObfuscationExpressionCreate,
@@ -47,7 +46,7 @@ func resourceNewRelicObfuscationExpression() *schema.Resource {
 	}
 }
 
-//Create the obfuscation expression
+// Create the obfuscation expression
 func resourceNewRelicObfuscationExpressionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -76,7 +75,7 @@ func resourceNewRelicObfuscationExpressionCreate(ctx context.Context, d *schema.
 	return resourceNewRelicObfuscationExpressionRead(ctx, d, meta)
 }
 
-//Read the obfuscation expression
+// Read the obfuscation expression
 func resourceNewRelicObfuscationExpressionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -109,7 +108,7 @@ func resourceNewRelicObfuscationExpressionRead(ctx context.Context, d *schema.Re
 	return nil
 }
 
-//Update the obfuscation expression
+// Update the obfuscation expression
 func resourceNewRelicObfuscationExpressionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	updateInput := expandObfuscationExpressionUpdateInput(d)
@@ -146,7 +145,7 @@ func expandObfuscationExpressionUpdateInput(d *schema.ResourceData) logconfigura
 	return updateInp
 }
 
-//Delete the obfuscation expression
+// Delete the obfuscation expression
 func resourceNewRelicObfuscationExpressionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
