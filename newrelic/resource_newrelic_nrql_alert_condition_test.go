@@ -25,14 +25,14 @@ func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "20", "120", "sTaTiC", "0", "", "60", "30", "259200"),
+				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "120", "120", "sTaTiC", "0", "", "60", "30", "259200"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "5", "180", "last_value", "null", "", "60", "30", "259200"),
+				Config: testAccNewRelicNrqlAlertConditionConfigBasic(rName, "300", "180", "last_value", "null", "", "60", "30", "259200"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
@@ -98,7 +98,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphThresholdDurationValidationError
 				Config: testAccNewRelicNrqlAlertConditionNerdGraphConfig(
 					rNameBaseline,
 					"baseline",
-					20,
+					120,
 					86460, // outside of accepted range [120, 86400] to test error handling
 					"static",
 					"0",
@@ -111,7 +111,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphThresholdDurationValidationError
 				Config: testAccNewRelicNrqlAlertConditionNerdGraphConfig(
 					rNameBaseline,
 					"baseline",
-					20,
+					120,
 					60, // outside of accepted range [120, 86400] to test error handling
 					"static",
 					"0",
@@ -169,7 +169,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphBaseline(t *testing.T) {
 				Config: testAccNewRelicNrqlAlertConditionNerdGraphConfig(
 					rName,
 					conditionType,
-					5,
+					300,
 					3600,
 					"last_value",
 					"null",
@@ -184,7 +184,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphBaseline(t *testing.T) {
 				Config: testAccNewRelicNrqlAlertConditionNerdGraphConfig(
 					rName,
 					conditionType,
-					20,
+					1200,
 					1800,
 					"static",
 					"0",
@@ -258,7 +258,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 				Config: testAccNewRelicNrqlAlertConditionNerdGraphConfig(
 					rName,
 					conditionType,
-					5,
+					300,
 					3600,
 					"last_value",
 					"null",
@@ -273,7 +273,7 @@ func TestAccNewRelicNrqlAlertCondition_NerdGraphStatic(t *testing.T) {
 				Config: testAccNewRelicNrqlAlertConditionNerdGraphConfig(
 					rName,
 					conditionType,
-					20,
+					1200,
 					1800,
 					"static",
 					"0",
@@ -646,7 +646,7 @@ func testAccCheckNewRelicNrqlAlertConditionExists(n string) resource.TestCheckFu
 
 func testAccNewRelicNrqlAlertConditionConfigBasic(
 	name string,
-	evaluationOffset string,
+	aggregationDelay string,
 	duration string,
 	fillOption string,
 	fillValue string,
@@ -661,7 +661,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.foo.id
+  policy_id = newrelic_alert_policy.foo.id
 
   name                           = "tf-test-%[1]s"
   runbook_url                    = "https://foo.example.com"
@@ -669,34 +669,34 @@ resource "newrelic_nrql_alert_condition" "foo" {
   fill_option                    = "%[4]s"
   fill_value                     = %[5]s
   aggregation_window             = %[7]s
-  slide_by						 = %[8]s
+  slide_by                       = %[8]s
+  aggregation_delay              = %[2]s
   close_violations_on_expiration = true
   open_violation_on_expiration   = true
   expiration_duration            = 120
   violation_time_limit_seconds   = %[9]s
 
-	nrql {
-    query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
-    evaluation_offset = "%[2]s"
-	}
+  nrql {
+    query = "SELECT uniqueCount(hostname) FROM ComputeSample"
+  }
 
-	critical {
+  critical {
     operator              = "above"
     threshold             = 0.75
     threshold_duration    = %[3]s
     threshold_occurrences = "all"
-	}
+  }
 
-	warning {
-		operator              = "equals"
-		threshold             = 0.5
-		threshold_duration    = 120
-		threshold_occurrences = "AT_LEAST_ONCE"
-	}
+  warning {
+    operator              = "equals"
+    threshold             = 0.5
+    threshold_duration    = 120
+    threshold_occurrences = "AT_LEAST_ONCE"
+  }
 
-	%[6]s
+  %[6]s
 }
-`, name, evaluationOffset, duration, fillOption, fillValue, conditionalAttrs, aggregationWindow, slideBy, violation_time_limit_seconds)
+`, name, aggregationDelay, duration, fillOption, fillValue, conditionalAttrs, aggregationWindow, slideBy, violation_time_limit_seconds)
 }
 
 // Uses deprecated attributes for test case
@@ -761,7 +761,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 func testAccNewRelicNrqlAlertConditionNerdGraphConfig(
 	name string,
 	conditionType string,
-	nrqlEvalOffset int,
+	aggregationDelay int,
 	termDuration int,
 	fillOption string,
 	fillValue string,
@@ -787,10 +787,10 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	open_violation_on_expiration   = true
 	expiration_duration            = 120
 	aggregation_window             = 60
+	aggregation_delay              = %[3]d
 
 	nrql {
 		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
-		evaluation_offset = %[3]d
 	}
 
 	critical {
@@ -810,7 +810,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	# Will be baseline_direction depending on condition type
 	%[7]s
 }
-`, name, conditionType, nrqlEvalOffset, termDuration, fillOption, fillValue, conditionalAttr)
+`, name, conditionType, aggregationDelay, termDuration, fillOption, fillValue, conditionalAttr)
 }
 
 func testAccNewRelicNrqlAlertConditionStreamingMethodsNerdGraphConfig(
