@@ -28,6 +28,7 @@ func TestNewRelicWorkflow_Webhook(t *testing.T) {
 				Config: testAccNewRelicWorkflowConfigurationWebhook(testAccountID, rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
 				),
 			},
 			// Test: Update

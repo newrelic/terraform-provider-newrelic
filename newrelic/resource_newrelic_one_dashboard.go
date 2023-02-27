@@ -603,6 +603,7 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	// Update the linked guid entities, if the page guid value is empty it is set to nil
 	err = setDashboardWidgetFilterCurrentDashboardLinkedEntity(d, filterWidgets)
 	if err != nil {
 		return diag.FromErr(err)
@@ -628,6 +629,30 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 		}
 
 		return diag.Errorf("err: newrelic_one_dashboard Update failed: %s", errMessages)
+	}
+
+	diagErr := resourceNewRelicOneDashboardRead(ctx, d, meta)
+	if diagErr != nil {
+		return diagErr
+	}
+
+	log.Printf("[INFO] Number of widgets with filter_current_dashboard: %d", len(filterWidgets))
+	// If there are widgets with filter_current_dashboard, we need to update the linked guid entities
+	if len(filterWidgets) > 0 {
+		err = setDashboardWidgetFilterCurrentDashboardLinkedEntity(d, filterWidgets)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		dashboard, err = expandDashboardInput(d, defaultInfo)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		updated, err = client.Dashboards.DashboardUpdateWithContext(ctx, *dashboard, guid)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	// We have to use the Update Result, not a re-read of the entity as the changes take

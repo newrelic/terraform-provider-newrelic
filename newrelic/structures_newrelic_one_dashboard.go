@@ -907,7 +907,12 @@ func setDashboardWidgetFilterCurrentDashboardLinkedEntity(d *schema.ResourceData
 						e := f.(map[string]interface{})
 						if e["page"] == i {
 							if w["title"] == e["title"] && w["column"] == e["column"] && w["row"] == e["row"] {
-								w["linked_entity_guids"] = []string{p["guid"].(string)}
+								guid := p["guid"].(string)
+								if guid == "" {
+									w["linked_entity_guids"] = nil
+								} else {
+									w["linked_entity_guids"] = []string{guid}
+								}
 							}
 						}
 					}

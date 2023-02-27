@@ -51,15 +51,15 @@ The following are the common arguments supported for `STEP` monitor:
 All nested `location_private` blocks support the following common arguments:
 
 * `guid` - (Required) The unique identifier for the Synthetics private location in New Relic.
-* `vse_password` - (Optional) The location's Verified Script Execution password, Only necessary if Verified Script Execution is enabled for the location.
+* `vse_password` - (Optional) The location's Verified Script Execution password, only necessary if Verified Script Execution is enabled for the location.
 
 ### Nested `steps` blocks
 
 All nested `steps` blocks support the following common arguments:
 
 * `ordinal` - (Required) The position of the step within the script ranging from 0-100.
-* `type` - (Required) Name of the tag key.
-* `values` - (Optional) The metadata values related to the step. valid values are ASSERT_ELEMENT, ASSERT_MODAL, ASSERT_TEXT, ASSERT_TITLE, CLICK_ELEMENT, DISMISS_MODAL, DOUBLE_CLICK_ELEMENT, HOVER_ELEMENT, NAVIGATE, SECURE_TEXT_ENTRY, SELECT_ELEMENT, TEXT_ENTRY.
+* `type` - (Required) Name of the tag key. Valid values are ASSERT_ELEMENT, ASSERT_MODAL, ASSERT_TEXT, ASSERT_TITLE, CLICK_ELEMENT, DISMISS_MODAL, DOUBLE_CLICK_ELEMENT, HOVER_ELEMENT, NAVIGATE, SECURE_TEXT_ENTRY, SELECT_ELEMENT, TEXT_ENTRY.
+* `values` - (Optional) The metadata values related to the step.
 
 ### Nested `tag` blocks
 

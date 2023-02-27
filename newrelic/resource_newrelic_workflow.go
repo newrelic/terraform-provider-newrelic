@@ -227,6 +227,11 @@ func resourceNewRelicWorkflow() *schema.Resource {
 				Computed:    true,
 				Description: "The id of the workflow.",
 			},
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Workflow entity GUID",
+			},
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
