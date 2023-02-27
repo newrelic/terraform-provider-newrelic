@@ -216,7 +216,7 @@ func testAccApplicationsCleanup(t *testing.T) {
 // resources with names that start with "tf-test-". This helps avoid
 // deleting any resources that might be cross-account, such as workloads.
 func generateNameForIntegrationTestResource() string {
-	return fmt.Sprintf("tf_test_%s", acctest.RandString(5))
+	return fmt.Sprintf("tf-test-%s", acctest.RandString(15))
 }
 
 // Deleting the data partitions as they start with "Log_Test_"
