@@ -73,9 +73,6 @@ func testAccCheckNewRelicAlertConditionExists(n string) resource.TestCheckFunc {
 
 func testAccNewRelicAlertConditionConfig(rName string) string {
 	return fmt.Sprintf(`
-provider "newrelic" {
-	api_key = "%[3]s"
-}
 data "newrelic_application" "app" {
 	name = "%[2]s"
 }
@@ -166,9 +163,6 @@ resource "newrelic_alert_condition" "foo" {
 
 func testAccNewRelicAlertConditionConfigDuration(name string, duration int) string {
 	return fmt.Sprintf(`
-provider "newrelic" {
-	api_key = "foo"
-}
 resource "newrelic_alert_policy" "foo" {
 	name = "%[1]s"
 }
@@ -194,9 +188,6 @@ resource "newrelic_alert_condition" "foo" {
 
 func testAccNewRelicAlertConditionApplicationScopeWithCloseTimerConfig(rName string) string {
 	return fmt.Sprintf(`
-provider "newrelic" {
-	api_key = "%[3]s"
-}
 data "newrelic_application" "app" {
 	name = "%[2]s"
 }
@@ -228,9 +219,6 @@ resource "newrelic_alert_condition" "foo" {
 
 func testAccNewRelicAlertConditionInstanceScopeWithCloseTimerConfig(rName string) string {
 	return fmt.Sprintf(`
-provider "newrelic" {
-	api_key = "%[3]s"
-}
 data "newrelic_application" "app" {
 	name = "%[2]s"
 }
@@ -262,9 +250,6 @@ resource "newrelic_alert_condition" "foo" {
 
 func testAccNewRelicAlertConditionAPMJVMMetricApplicationScopeConfig(rName string) string {
 	return fmt.Sprintf(`
-provider "newrelic" {
-	api_key = "%[3]s"
-}
 data "newrelic_application" "app" {
 	name = "%[2]s"
 }
@@ -296,9 +281,6 @@ resource "newrelic_alert_condition" "foo" {
 
 func testAccNewRelicAlertConditionAPMJVMMetricInstanceScopeConfig(rName string) string {
 	return fmt.Sprintf(`
-provider "newrelic" {
-	api_key = "%[3]s"
-}
 data "newrelic_application" "app" {
 	name = "%[2]s"
 }
