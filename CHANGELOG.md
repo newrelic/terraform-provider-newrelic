@@ -1,3 +1,24 @@
+<a name="v3.15.0"></a>
+## [v3.15.0] - 2023-02-23
+### Bug Fixes
+- **data_notification_destination:** fix data source + try to fix tests
+- **data_notification_destination:** fix naming
+- **data_notification_destination:** add missing test - small fix
+- **data_notification_destination:** add missing test
+- **data_notification_destination:** fix test
+- **data_notification_destination:** fix data source wip
+- **data_notification_destination:** fix data source - wip
+- **one_dashboard:** fix for updating with filter_current_dashboard
+
+### Documentation Updates
+- moved list of valid values to correct argument ([#2251](https://github.com/newrelic/terraform-provider-newrelic/issues/2251))
+- updated notice for v2 support and v3 details
+- rename files to match resource names
+- **index:** Note on default region
+
+### Features
+- **workflows:** expose workflow entity guid
+
 <a name="v3.14.0"></a>
 ## [v3.14.0] - 2023-02-08
 ### Bug Fixes
@@ -1692,7 +1713,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.14.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.15.0...HEAD
+[v3.15.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.14.0...v3.15.0
 [v3.14.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.13.0...v3.14.0
 [v3.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.12.0...v3.13.0
 [v3.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.11.0...v3.12.0
