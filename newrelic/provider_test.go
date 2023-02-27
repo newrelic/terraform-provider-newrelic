@@ -71,12 +71,14 @@ func init() {
 func testAccNewRelicProviderConfig(region string, baseURL string, resourceName string) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
+	alias = "integration-test-provider"
 	region = "%[1]s"
 
 	%[2]s
 }
 
 resource "newrelic_alert_policy" "foo" {
+	provider = newrelic.integration-test-provider
   name = "tf-test-%[3]s"
 }
 `, region, baseURL, resourceName)
