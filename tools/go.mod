@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/bflad/tfproviderlint v0.28.1
 	github.com/client9/misspell v0.3.4
-	github.com/git-chglog/git-chglog v0.15.2
+	github.com/git-chglog/git-chglog v0.15.4
 	github.com/golangci/golangci-lint v1.51.2
 	github.com/goreleaser/goreleaser v1.7.0
 	github.com/llorllale/go-gitlint v0.0.0-20210608233938-d6303cc52cc5
@@ -279,7 +279,7 @@ require (
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/ultraware/funlen v0.0.3 // indirect
 	github.com/ultraware/whitespace v0.0.5 // indirect
-	github.com/urfave/cli/v2 v2.23.7 // indirect
+	github.com/urfave/cli/v2 v2.24.3 // indirect
 	github.com/uudashr/gocognit v1.0.6 // indirect
 	github.com/xanzy/go-gitlab v0.59.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.1 // indirect
