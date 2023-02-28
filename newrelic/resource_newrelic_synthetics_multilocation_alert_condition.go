@@ -26,10 +26,11 @@ func syntheticsMultiLocationConditionTermSchema() *schema.Resource {
 
 func resourceNewRelicSyntheticsMultiLocationAlertCondition() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNewRelicSyntheticsMultiLocationAlertConditionCreate,
-		ReadContext:   resourceNewRelicSyntheticsMultiLocationAlertConditionRead,
-		UpdateContext: resourceNewRelicSyntheticsMultiLocationAlertConditionUpdate,
-		DeleteContext: resourceNewRelicSyntheticsMultiLocationAlertConditionDelete,
+		DeprecationMessage: "The `newrelic_synthetics_multilocation_alert_condition` resource is deprecated. Please use `newrelic_nrql_alert_condition` instead.",
+		CreateContext:      resourceNewRelicSyntheticsMultiLocationAlertConditionCreate,
+		ReadContext:        resourceNewRelicSyntheticsMultiLocationAlertConditionRead,
+		UpdateContext:      resourceNewRelicSyntheticsMultiLocationAlertConditionUpdate,
+		DeleteContext:      resourceNewRelicSyntheticsMultiLocationAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

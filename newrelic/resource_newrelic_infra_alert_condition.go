@@ -58,10 +58,11 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		CreateContext: resourceNewRelicInfraAlertConditionCreate,
-		ReadContext:   resourceNewRelicInfraAlertConditionRead,
-		UpdateContext: resourceNewRelicInfraAlertConditionUpdate,
-		DeleteContext: resourceNewRelicInfraAlertConditionDelete,
+		DeprecationMessage: "The `newrelic_infra_alert_condition` resource is deprecated. Please use `newrelic_nrql_alert_condition` instead.",
+		CreateContext:      resourceNewRelicInfraAlertConditionCreate,
+		ReadContext:        resourceNewRelicInfraAlertConditionRead,
+		UpdateContext:      resourceNewRelicInfraAlertConditionUpdate,
+		DeleteContext:      resourceNewRelicInfraAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
