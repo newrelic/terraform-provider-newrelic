@@ -43,21 +43,10 @@ func resourceNewRelicDataPartition() *schema.Resource {
 				Description: "Whether or not this data partition rule is enabled.",
 				Required:    true,
 			},
-			"attribute_name": {
+			"nrql": {
 				Type:        schema.TypeString,
-				Description: "The attribute name against which this matching condition will be evaluated.",
+				Description: "The NRQL to match events for this data partition rule. Logs matching this criteria will be routed to the specified data partition.",
 				Required:    true,
-			},
-			"matching_expression": {
-				Type:        schema.TypeString,
-				Description: "The matching expression of the data partition rule definition.",
-				Required:    true,
-			},
-			"matching_method": {
-				Type:         schema.TypeString,
-				Description:  "The matching method of the data partition rule definition.",
-				Required:     true,
-				ValidateFunc: validation.StringInSlice(listValidDataPartitionRuleMatchingOperator(), false),
 			},
 			"retention_policy": {
 				Type:         schema.TypeString,
@@ -104,14 +93,7 @@ func listValidDataPartitionRuleRetentionPolicyType() []string {
 	}
 }
 
-func listValidDataPartitionRuleMatchingOperator() []string {
-	return []string{
-		string(logconfigurations.LogConfigurationsDataPartitionRuleMatchingOperatorTypes.EQUALS),
-		string(logconfigurations.LogConfigurationsDataPartitionRuleMatchingOperatorTypes.LIKE),
-	}
-}
-
-//Create the data partition rule
+// Create the data partition rule
 func resourceNewRelicDataPartitionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -119,9 +101,9 @@ func resourceNewRelicDataPartitionCreate(ctx context.Context, d *schema.Resource
 	accountID := selectAccountID(providerConfig, d)
 
 	createInput := logconfigurations.LogConfigurationsCreateDataPartitionRuleInput{
-		Description:      d.Get("description").(string),
-		Enabled:          d.Get("enabled").(bool),
-		MatchingCriteria: &logconfigurations.LogConfigurationsDataPartitionRuleMatchingCriteriaInput{},
+		Description: d.Get("description").(string),
+		Enabled:     d.Get("enabled").(bool),
+		NRQL:        logconfigurations.NRQL(d.Get("nrql").(string)),
 	}
 
 	//The name of a log data partition. Has to start with 'Log_' prefix and can only contain alphanumeric characters and underscores.
@@ -129,17 +111,6 @@ func resourceNewRelicDataPartitionCreate(ctx context.Context, d *schema.Resource
 		createInput.TargetDataPartition = logconfigurations.LogConfigurationsLogDataPartitionName(e.(string))
 	}
 
-	if e, ok := d.GetOk("attribute_name"); ok {
-		createInput.MatchingCriteria.AttributeName = e.(string)
-	}
-	if e, ok := d.GetOk("matching_expression"); ok {
-		log.Printf("type of MatchingCriteria.MatchingExpression in checking create:%[1]s and type: %[1]T", e.(string))
-
-		createInput.MatchingCriteria.MatchingExpression = e.(string)
-	}
-	if e, ok := d.GetOk("matching_method"); ok {
-		createInput.MatchingCriteria.MatchingMethod = logconfigurations.LogConfigurationsDataPartitionRuleMatchingOperator(e.(string))
-	}
 	if e, ok := d.GetOk("retention_policy"); ok {
 		createInput.RetentionPolicy = logconfigurations.LogConfigurationsDataPartitionRuleRetentionPolicyType(e.(string))
 	}
@@ -193,7 +164,7 @@ func resourceNewRelicDataPartitionCreate(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-//Read the data partition rule
+// Read the data partition rule
 func resourceNewRelicDataPartitionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -219,16 +190,14 @@ func resourceNewRelicDataPartitionRead(ctx context.Context, d *schema.ResourceDa
 
 	_ = d.Set("enabled", rule.Enabled)
 	_ = d.Set("target_data_partition", rule.TargetDataPartition)
-	_ = d.Set("attribute_name", rule.MatchingCriteria.AttributeName)
-	_ = d.Set("matching_expression", str)
-	_ = d.Set("matching_method", rule.MatchingCriteria.MatchingOperator)
+	_ = d.Set("nrql", rule.NRQL)
 	_ = d.Set("retention_policy", rule.RetentionPolicy)
 	_ = d.Set("deleted", rule.Deleted)
 
 	return nil
 }
 
-//Update the data partition rule
+// Update the data partition rule
 func resourceNewRelicDataPartitionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	updateInput := expandDataPartitionUpdateInput(d)
@@ -258,7 +227,6 @@ func resourceNewRelicDataPartitionUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	return nil
-	//return resourceNewRelicDataPartitionRead(ctx, d, meta)
 }
 
 func expandDataPartitionUpdateInput(d *schema.ResourceData) logconfigurations.LogConfigurationsUpdateDataPartitionRuleInput {
@@ -272,22 +240,14 @@ func expandDataPartitionUpdateInput(d *schema.ResourceData) logconfigurations.Lo
 		updateInp.Description = e.(string)
 	}
 
-	if e, ok := d.GetOk("attribute_name"); ok {
-		updateInp.MatchingCriteria.AttributeName = e.(string)
-	}
-
-	if e, ok := d.GetOk("matching_expression"); ok {
-		updateInp.MatchingCriteria.MatchingExpression = e.(string)
-	}
-
-	if e, ok := d.GetOk("matching_method"); ok {
-		updateInp.MatchingCriteria.MatchingMethod = logconfigurations.LogConfigurationsDataPartitionRuleMatchingOperator(e.(string))
+	if e, ok := d.GetOk("nrql"); ok {
+		updateInp.NRQL = logconfigurations.NRQL(e.(string))
 	}
 
 	return updateInp
 }
 
-//Delete the data partition rule
+// Delete the data partition rule
 func resourceNewRelicDataPartitionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient

@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-//Checking the creation, update, import and deletion of data partition rule
+// Checking the creation, update, import and deletion of data partition rule
 func TestAccNewRelicDataPartitionRule_Basic(t *testing.T) {
 	resourceName := "newrelic_data_partition_rule.foo"
 	rName := acctest.RandString(7)
@@ -45,7 +45,7 @@ func TestAccNewRelicDataPartitionRule_Basic(t *testing.T) {
 	})
 }
 
-//Checking the creation, update name and deletion of data partition rule
+// Checking the creation, update name and deletion of data partition rule
 func TestAccNewRelicDataPartitionRule_EnableUpdate(t *testing.T) {
 	resourceName := "newrelic_data_partition_rule.foo"
 	rName := acctest.RandString(7)
@@ -70,7 +70,7 @@ func TestAccNewRelicDataPartitionRule_EnableUpdate(t *testing.T) {
 	})
 }
 
-//Checking the creation of new resource on update in name
+// Checking the creation of new resource on update in name
 func TestAccNewRelicDataPartitionRule_NameUpdate(t *testing.T) {
 	resourceName := "newrelic_data_partition_rule.foo"
 	rName := acctest.RandString(7)
@@ -95,7 +95,7 @@ func TestAccNewRelicDataPartitionRule_NameUpdate(t *testing.T) {
 	})
 }
 
-//Checking the creation of new resource on update in name
+// Checking the creation of new resource on update in name
 func TestAccNewRelicDataPartitionRule_MatchingCriteriaUpdate(t *testing.T) {
 	resourceName := "newrelic_data_partition_rule.foo"
 	rName := acctest.RandString(7)
@@ -120,7 +120,7 @@ func TestAccNewRelicDataPartitionRule_MatchingCriteriaUpdate(t *testing.T) {
 	})
 }
 
-//Must fail if given the same name
+// Must fail if given the same name
 func TestAccNewRelicDataPartitionRule_DuplicateName(t *testing.T) {
 	rName := acctest.RandString(7)
 	expectedMsg, _ := regexp.Compile("DUPLICATE_DATA_PARTITION_RULE_NAME")
@@ -138,7 +138,7 @@ func TestAccNewRelicDataPartitionRule_DuplicateName(t *testing.T) {
 	})
 }
 
-//Must fail if given the invalid name
+// Must fail if given the invalid name
 func TestAccNewRelicDataPartitionRule_Validation(t *testing.T) {
 	rName := acctest.RandString(7)
 	expectedMsg, _ := regexp.Compile("INVALID_DATA_PARTITION_INPUT")
@@ -203,6 +203,7 @@ resource "newrelic_data_partition_rule" "foo"{
     attribute_name = "hostname"
     matching_expression = "localhost"
     matching_method = "EQUALS"
+	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s"
 }
@@ -218,6 +219,7 @@ resource "newrelic_data_partition_rule" "foo"{
     attribute_name = "hostname_update"
     matching_expression = "localhost"
     matching_method = "EQUALS"
+	nrql = "logtype='linux_messages'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s"
 }
@@ -233,6 +235,7 @@ resource "newrelic_data_partition_rule" "foo"{
     attribute_name = "hostname"
     matching_expression = "localhost"
     matching_method = "EQUALS"
+	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s"
 }
@@ -244,6 +247,7 @@ resource "newrelic_data_partition_rule" "bar"{
     attribute_name = "hostname"
     matching_expression = "localhost"
     matching_method = "EQUALS"
+	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s"
 }
@@ -259,6 +263,7 @@ resource "newrelic_data_partition_rule" "foo"{
     attribute_name = "hostname"
     matching_expression = "localhost"
     matching_method = "EQUALS"
+	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Test_%[2]s"
 }
@@ -274,6 +279,7 @@ resource "newrelic_data_partition_rule" "foo"{
     attribute_name = "hostname_update"
     matching_expression = "localhost"
     matching_method = "EQUALS"
+	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s"
 }
@@ -289,6 +295,7 @@ resource "newrelic_data_partition_rule" "foo"{
     attribute_name = "hostname_update"
     matching_expression = "localhost"
     matching_method = "EQUALS"
+	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s_update"
 }
@@ -304,6 +311,7 @@ resource "newrelic_data_partition_rule" "foo"{
     attribute_name = "hostname_update"
     matching_expression = "localhost"
     matching_method = "LIKE"
+	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s_update"
 }
