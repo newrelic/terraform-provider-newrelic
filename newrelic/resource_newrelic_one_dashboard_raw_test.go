@@ -158,7 +158,7 @@ func testAccCheckNewRelicOneDashboardRawConfig_PageFull(pageName string, account
           ]
         }
       )
-      linked_entity_guids = ["MzI5ODAxNnxWSVp8REFTSEJPQVJEfDI2MTcxNDc"]
+      linked_entity_guids = ["MzgwNjUyNnxWSVp8REFTSEJPQVJEfGRhOjI5Mjk0MjA"]
     }
   }
 `
