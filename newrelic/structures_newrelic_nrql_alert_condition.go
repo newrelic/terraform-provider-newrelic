@@ -72,13 +72,6 @@ func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		}
 	}
 
-	if conditionType == "static" {
-		if attr, ok := d.GetOk("value_function"); ok {
-			valFn := alerts.NrqlConditionValueFunction(strings.ToUpper(attr.(string)))
-			input.ValueFunction = &valFn
-		}
-	}
-
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
 		input.RunbookURL = runbookURL.(string)
 	}
@@ -131,15 +124,6 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 			input.BaselineDirection = &direction
 		} else {
 			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", "baseline_direction", conditionType)
-		}
-	}
-
-	if conditionType == "static" {
-		if attr, ok := d.GetOk("value_function"); ok {
-			valFn := alerts.NrqlConditionValueFunction(strings.ToUpper(attr.(string)))
-			input.ValueFunction = &valFn
-		} else {
-			input.ValueFunction = &alerts.NrqlConditionValueFunctions.SingleValue
 		}
 	}
 
@@ -437,6 +421,11 @@ func expandCreateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionCrea
 		}
 	}
 
+	if evaluationDelay, ok := d.GetOk("evaluation_delay"); ok {
+		value := evaluationDelay.(int)
+		signal.EvaluationDelay = &value
+	}
+
 	return &signal, nil
 }
 
@@ -487,6 +476,11 @@ func expandUpdateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionUpda
 		}
 	}
 
+	if evaluationDelay, ok := d.GetOk("evaluation_delay"); ok {
+		value := evaluationDelay.(int)
+		signal.EvaluationDelay = &value
+	}
+
 	return &signal, nil
 }
 
@@ -510,10 +504,6 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 
 	if conditionType == "baseline" {
 		_ = d.Set("baseline_direction", string(*condition.BaselineDirection))
-	}
-
-	if conditionType == "static" {
-		_ = d.Set("value_function", string(*condition.ValueFunction))
 	}
 
 	configuredNrql := d.Get("nrql.0").(map[string]interface{})
@@ -637,6 +627,13 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 		if err := d.Set("aggregation_timer", timer); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_timer`: %v", err)
 		}
+	}
+
+	if signal.EvaluationDelay != nil {
+		if err := d.Set("evaluation_delay", signal.EvaluationDelay); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `evaluation_delay`: %v", err)
+		}
+
 	}
 
 	return nil

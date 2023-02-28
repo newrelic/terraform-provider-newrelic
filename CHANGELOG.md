@@ -1,3 +1,121 @@
+<a name="v3.15.0"></a>
+## [v3.15.0] - 2023-02-23
+### Bug Fixes
+- **data_notification_destination:** fix data source + try to fix tests
+- **data_notification_destination:** fix naming
+- **data_notification_destination:** add missing test - small fix
+- **data_notification_destination:** add missing test
+- **data_notification_destination:** fix test
+- **data_notification_destination:** fix data source wip
+- **data_notification_destination:** fix data source - wip
+- **one_dashboard:** fix for updating with filter_current_dashboard
+
+### Documentation Updates
+- moved list of valid values to correct argument ([#2251](https://github.com/newrelic/terraform-provider-newrelic/issues/2251))
+- updated notice for v2 support and v3 details
+- rename files to match resource names
+- **index:** Note on default region
+
+### Features
+- **workflows:** expose workflow entity guid
+
+<a name="v3.14.0"></a>
+## [v3.14.0] - 2023-02-08
+### Bug Fixes
+- Muting rule inter condition operator ambiguous ([#2219](https://github.com/newrelic/terraform-provider-newrelic/issues/2219))
+- **entities:** validations for domain and type
+- **entity:** removed vaildations of domain and types
+
+### Documentation Updates
+- Removing value_function from the markdowns
+- **alert:** Updated NRQL condition term duration max
+- **entity:** Added additional examples
+- **entity:** Added new entity type and domain
+
+### Features
+- Add evaluation delay to nrql alert condition
+- **NotificationDestinationDataSpurce:** destination data source tests + lint
+- **NotificationDestinationDataSpurce:** add notification destination data source
+
+<a name="v3.13.0"></a>
+## [v3.13.0] - 2023-01-19
+### Bug Fixes
+- **Workflow:** Linting issues
+- **newrelic_one_dashboard:** fix for null pointer when using thresholds in widget_billboard
+
+### Documentation Updates
+- **Workflow:** Updated docs
+- **dashboards:** improved deprecation message to be less scary
+
+### Features
+- **Workflows:** Merge conflict resolved
+
+<a name="v3.12.0"></a>
+## [v3.12.0] - 2023-01-10
+### Bug Fixes
+- **one_dashboard_json:** added retry mechanism to create/update to handle updateAt changes
+- **private_locations:** returning the right err ([#2177](https://github.com/newrelic/terraform-provider-newrelic/issues/2177))
+
+### Documentation Updates
+- **log_parsing:** added docs for log parsing rule
+- **log_parsing:** added docs for log parsing rule
+- **log_parsing:** added docs for log parsing rule
+- **log_parsing:** added docs for log parsing rule
+- **log_parsing:** added docs for log parsing rule
+- **log_parsing:** added docs for log parsing rule
+- **notification_channel:** fix email notification channel example
+- **synthetics:** remove unnecessary quotes around private location guid
+- **test_grok:** Document for testgrok data source
+
+### Features
+- **log_parsing_rule:** added data source, resource, and tests - NR-53373
+- **log_parsing_rule:** Added provider and tests for log parsing rule
+- **log_parsing_rule:** Added provider and tests for log parsing rule
+- **log_parsing_rule:** Added provider and tests for log parsing rule
+- **log_parsing_rule:** Added provider and tests for log parsing rule
+- **log_parsing_rule:** Added provider and tests for log parsing rule
+- **provider:** set user agent service name via -ldflags
+- **test_grok:**  added data source provider
+
+<a name="v3.11.0"></a>
+## [v3.11.0] - 2022-12-16
+### Bug Fixes
+- **workflows:** fix a bug that would prevent creation of disabled workflows
+
+### Features
+- Remove value_function from nrql alert condition resource
+
+<a name="v3.10.0"></a>
+## [v3.10.0] - 2022-12-16
+### Bug Fixes
+- **dashboards:** handle empty values returned from API
+- **drop_rules:** verbose error message :bug:
+- **newrelic_nrql_alert_condition:** Set entity_guid after creating NRQL alert condition
+- **workflows:** stop silently removing channels on workflow updates/deletes
+- **workloads:** Removed forcenew for entity guids and changed docs
+
+### Documentation Updates
+- **Workflow:** Changes in examples
+
+### Features
+- **secure_credential:** add account id in secure credential search
+
+<a name="v3.9.0"></a>
+## [v3.9.0] - 2022-12-06
+### Bug Fixes
+- linting2
+- linting
+- **notifications errors:** Added error details to response
+- **synthetics:** unset private location ID and return nil if entity not found
+
+### Documentation Updates
+- **dashboard:** add documentation for variables
+- **entity_tags:** add example of using a dynamic block to apply multiple tags to an entity
+
+### Features
+- **cloud:** add azure mysql flexible, postgres flexible and gcp alloydb integrations
+- **one_dashboard:** add variables
+
 <a name="v3.8.0"></a>
 ## [v3.8.0] - 2022-11-30
 ### Bug Fixes
@@ -1595,7 +1713,14 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.8.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.15.0...HEAD
+[v3.15.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.14.0...v3.15.0
+[v3.14.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.13.0...v3.14.0
+[v3.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.12.0...v3.13.0
+[v3.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.11.0...v3.12.0
+[v3.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.10.0...v3.11.0
+[v3.10.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.9.0...v3.10.0
+[v3.9.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.8.0...v3.9.0
 [v3.8.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.1...v3.8.0
 [v3.7.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.7.0...v3.7.1
 [v3.7.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.6.1...v3.7.0

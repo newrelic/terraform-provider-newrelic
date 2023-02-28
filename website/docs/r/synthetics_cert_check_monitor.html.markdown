@@ -67,7 +67,7 @@ resource "newrelic_synthetics_private_location" "location" {
 resource "newrelic_synthetics_cert_check_monitor" "monitor" {
   name              = "cert_check_monitor"
   uri               = "https://www.one.example.com"
-  locations_private = ["newrelic_synthetics_private_location.location.id"]
+  locations_private = [newrelic_synthetics_private_location.location.id]
   period            = "EVERY_6_HOURS"
   status            = "ENABLED"
   tag {

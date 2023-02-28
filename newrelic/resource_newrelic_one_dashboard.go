@@ -63,6 +63,96 @@ func resourceNewRelicOneDashboard() *schema.Resource {
 				Computed:    true,
 				Description: "The URL of the dashboard.",
 			},
+			"variable": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Dashboard-local variable definitions.",
+				Elem:        dashboardVariableSchemaElem(),
+			},
+		},
+	}
+}
+
+func dashboardVariableSchemaElem() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"default_values": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Default values for this variable.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"is_multi_selection": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Indicates whether this variable supports multiple selection or not. Only applies to variables of type NRQL or ENUM.",
+			},
+			"item": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "List of possible values for variables of type ENUM",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"title": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "A human-friendly display string for this value.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "A possible variable value",
+						},
+					},
+				},
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The variable identifier.",
+			},
+			"nrql_query": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Configuration for variables of type NRQL.",
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"account_ids": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "New Relic account ID(s) to issue the query against.",
+							Elem: &schema.Schema{
+								Type: schema.TypeInt,
+							},
+						},
+						"query": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "NRQL formatted query.",
+						},
+					},
+				},
+			},
+			"replacement_strategy": {
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "Indicates the strategy to apply when replacing a variable in a NRQL query.",
+				ValidateFunc: validation.StringInSlice([]string{"default", "identifier", "number", "string"}, false),
+			},
+			"title": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Human-friendly display string for this variable.",
+			},
+			"type": {
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "Specifies the data type of the variable and where its possible values may come from.",
+				ValidateFunc: validation.StringInSlice([]string{"enum", "nrql", "string"}, false),
+			},
 		},
 	}
 }
@@ -513,6 +603,7 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	// Update the linked guid entities, if the page guid value is empty it is set to nil
 	err = setDashboardWidgetFilterCurrentDashboardLinkedEntity(d, filterWidgets)
 	if err != nil {
 		return diag.FromErr(err)
@@ -538,6 +629,30 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 		}
 
 		return diag.Errorf("err: newrelic_one_dashboard Update failed: %s", errMessages)
+	}
+
+	diagErr := resourceNewRelicOneDashboardRead(ctx, d, meta)
+	if diagErr != nil {
+		return diagErr
+	}
+
+	log.Printf("[INFO] Number of widgets with filter_current_dashboard: %d", len(filterWidgets))
+	// If there are widgets with filter_current_dashboard, we need to update the linked guid entities
+	if len(filterWidgets) > 0 {
+		err = setDashboardWidgetFilterCurrentDashboardLinkedEntity(d, filterWidgets)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		dashboard, err = expandDashboardInput(d, defaultInfo)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		updated, err = client.Dashboards.DashboardUpdateWithContext(ctx, *dashboard, guid)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	// We have to use the Update Result, not a re-read of the entity as the changes take

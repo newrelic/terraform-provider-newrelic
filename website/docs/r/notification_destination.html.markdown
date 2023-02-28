@@ -89,6 +89,9 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Additional Examples
 
+~> **NOTE:** We support all properties. The mentioned properties are just an example.
+
+
 ##### [ServiceNow](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#servicenow)
 
 ```hcl
@@ -224,16 +227,44 @@ Slack destinations are created by actively interacting with the UI. This is how 
 
 ##### Import Slack Destination
 1. Add an empty resource to your terraform file: 
-```hcl
+```terraform
 resource "newrelic_notification_destination" "foo" {
 }
 ```
+2. Run import command: `terraform import newrelic_notification_destination.foo <destination_id>`
+3. Run the following command after the import successfully done and copy the information to your Slack resource:
+`terraform state show newrelic_notification_destination.foo`
+4. Add `ignore_changes` attribute on `auth_token` in your imported resource:
+```terraform
+lifecycle {
+    ignore_changes = [auth_token]
+  }
+```
 
-2. Run import command:
-`terraform import newrelic_notification_destination.foo <destination_id>`
+Your imported Slack destination should look like that:
+```terraform
+resource "newrelic_notification_destination" "foo" {
+  lifecycle {
+    ignore_changes = [auth_token]
+  }
+
+  name = "*********"
+  type = "SLACK"
+
+  auth_token {
+    prefix = "Bearer"
+  }
+  
+  property {
+      key   = "teamName"
+      label = "Team Name"
+      value = "******"
+  }
+}
+```
 
 
-~> **NOTE:** Sensitive data such as destination API keys, service keys, auth object, etc are not returned from the underlying API for security reasons and may not be set in state when importing.
+~> **NOTE:** Sensitive data such as destination API keys, service keys, auth object etc. are not returned from the underlying API for security reasons and may not be set in state when importing.
 
 ## Additional Information
 More information about destinations integrations can be found in NewRelic [documentation](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/).

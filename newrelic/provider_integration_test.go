@@ -4,7 +4,9 @@
 package newrelic
 
 import (
+	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -30,7 +32,7 @@ func TestAccNewRelicProvider_Region(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: func(*terraform.State) error { return nil },
 		Steps: []resource.TestStep{
@@ -58,4 +60,42 @@ func TestAccNewRelicProvider_Region(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccNewRelicProvider_UserAgent(t *testing.T) {
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: func(*terraform.State) error { return nil },
+		Steps: []resource.TestStep{
+			// Test default user agent
+			{
+				Config: testAccNewRelicProviderConfig("US", "", rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicProviderConfigurationHasDefaultUserAgent(),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckNewRelicProviderConfigurationHasDefaultUserAgent() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		providerConfig := testAccProvider.Meta().(*ProviderConfig)
+		ua := providerConfig.GetUserAgent()
+		uaSplit := strings.Split(ua, " ")
+		uaServiceName := uaSplit[len(uaSplit)-1]
+
+		if strings.Contains(ua, "/terraform-provider/dev") {
+			return fmt.Errorf(`user agent service name "%s" does not match expected result`, uaServiceName)
+		}
+
+		if !strings.EqualFold(uaServiceName, "terraform-provider-newrelic/dev") {
+			return fmt.Errorf(`user agent service name "%s" does not match expected result`, uaServiceName)
+		}
+
+		return nil
+	}
 }

@@ -103,3 +103,12 @@ func TestMergeSchemas(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "test", defaultStringAttrValue)
 }
+
+func TestToJSON(t *testing.T) {
+	data := map[string]interface{}{
+		"test": "test",
+	}
+	result := toJSON(data)
+
+	require.Contains(t, result, "test")
+}
