@@ -21,6 +21,7 @@ resource "newrelic_data_partition_rule" "foo"{
   attribute_name = "Name"
   matching_expression = "expression"
   matching_method = "EQUALS"
+  nrql = "logtype='node'"
   retention_policy = "STANDARD"
   target_data_partition = "Log_name"
 }
@@ -36,6 +37,7 @@ The following arguments are supported:
 * `attribute_name` - (Required) The attribute name against which this matching condition will be evaluated.
 * `matching_expression` - (Required) The matching expression of the data partition rule definition.
 * `matching_method` - (Required) The matching method of the data partition rule definition. Valid values are `EQUALS` and `LIKE`.
+* `nrql` - (Required) The NRQL to match events for this data partition rule. Logs matching this criteria will be routed to the specified data partition.
 * `retention_policy` - (Required) The retention policy of the data partition data. Valid values are `SECONDARY` and `STANDARD`.
 * `target_data_partition` - (Required) The name of the data partition where logs will be allocated once the rule is enabled.
 
