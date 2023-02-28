@@ -8,7 +8,10 @@ description: |-
 
 # Data Source: newrelic\_alert\_channel
 
-Use this data source to get information about a specific alert channel in New Relic that already exists.  More information on Terraform's data sources can be found [here](https://www.terraform.io/language/data-sources).
+Use this data source to get information about a specific alert channel in New Relic that already exists. More information on Terraform's data sources can be found [here](https://www.terraform.io/language/data-sources).
+
+-> **WARNING:** The `newrelic_alert_channel` data source is deprecated and will be removed in the next major release.
+
 
 ## Example Usage
 
