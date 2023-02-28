@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
@@ -15,7 +14,7 @@ import (
 
 func TestAccNewRelicSyntheticsPrivateLocation_Basic(t *testing.T) {
 	resourceName := "newrelic_synthetics_private_location.bar"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

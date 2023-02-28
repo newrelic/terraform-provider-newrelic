@@ -188,9 +188,17 @@ func expandWorkflowDestinationConfigurations(destinationConfigurations []interfa
 
 func expandWorkflowDestinationConfiguration(cfg map[string]interface{}) workflows.AiWorkflowsDestinationConfigurationInput {
 	destinationConfigurationInput := workflows.AiWorkflowsDestinationConfigurationInput{}
+	var notificationTriggersInput []workflows.AiWorkflowsNotificationTrigger
 
 	if channelID, ok := cfg["channel_id"]; ok {
 		destinationConfigurationInput.ChannelId = channelID.(string)
+	}
+
+	if notificationTriggers, ok := cfg["notification_triggers"]; ok {
+		for _, p := range notificationTriggers.([]interface{}) {
+			notificationTriggersInput = append(notificationTriggersInput, workflows.AiWorkflowsNotificationTrigger(p.(string)))
+		}
+		destinationConfigurationInput.NotificationTriggers = notificationTriggersInput
 	}
 
 	return destinationConfigurationInput
@@ -356,6 +364,10 @@ func flattenWorkflow(workflow *workflows.AiWorkflowsWorkflow, d *schema.Resource
 		}
 	}
 
+	if err := d.Set("guid", workflow.GUID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -385,6 +397,7 @@ func flattenWorkflowDestinationConfiguration(d *workflows.AiWorkflowsDestination
 	destinationConfigurationResult["channel_id"] = d.ChannelId
 	destinationConfigurationResult["name"] = d.Name
 	destinationConfigurationResult["type"] = d.Type
+	destinationConfigurationResult["notification_triggers"] = d.NotificationTriggers
 
 	return destinationConfigurationResult, nil
 }

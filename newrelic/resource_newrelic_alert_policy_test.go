@@ -91,10 +91,6 @@ resource "newrelic_alert_policy" "foo" {
 
 func testAccNewRelicAlertPolicyConfigNameEmpty() string {
 	return `
-provider "newrelic" {
-	api_key = "foo"
-}
-
 resource "newrelic_alert_policy" "foo" {
   name = ""
 }

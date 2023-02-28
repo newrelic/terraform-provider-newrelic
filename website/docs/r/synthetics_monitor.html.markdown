@@ -136,7 +136,7 @@ resource "newrelic_synthetics_monitor" "monitor" {
   period           = "EVERY_MINUTE"
   uri              = "https://www.one.newrelic.com"
   type             = "SIMPLE"
-  locations_private = ["newrelic_synthetics_private_location.location.id"]
+  locations_private = [newrelic_synthetics_private_location.location.id]
 
   custom_header {
     name  = "some_name"
@@ -169,7 +169,7 @@ resource "newrelic_synthetics_monitor" "monitor" {
   uri               = "https://www.one.newrelic.com"
   name              = "monitor"
   period            = "EVERY_MINUTE"
-  locations_private = ["newrelic_synthetics_private_location.location.id"]
+  locations_private = [newrelic_synthetics_private_location.location.id]
 
   custom_header {
     name  = "some_name"

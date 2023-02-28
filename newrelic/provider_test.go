@@ -71,12 +71,14 @@ func init() {
 func testAccNewRelicProviderConfig(region string, baseURL string, resourceName string) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
+	alias = "integration-test-provider"
 	region = "%[1]s"
 
 	%[2]s
 }
 
 resource "newrelic_alert_policy" "foo" {
+	provider = newrelic.integration-test-provider
   name = "tf-test-%[3]s"
 }
 `, region, baseURL, resourceName)
@@ -198,4 +200,13 @@ func testAccApplicationsCleanup(t *testing.T) {
 	t.Logf("testacc cleanup of %d applications complete", deletedAppCount)
 
 	testAccCleanupComplete = true
+}
+
+// Facilitates using a standardized name when creating test resources.
+// The name will always be prefixed with "tf-test-". This ensures when
+// we attempt to delete any dangling extraneous resources, we only delete
+// resources with names that start with "tf-test-". This helps avoid
+// deleting any resources that might be cross-account, such as workloads.
+func generateNameForIntegrationTestResource() string {
+	return fmt.Sprintf("tf_test_%s", acctest.RandString(5))
 }

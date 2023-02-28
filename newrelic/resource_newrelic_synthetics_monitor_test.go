@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
@@ -16,7 +15,7 @@ import (
 
 func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.foo"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -110,7 +109,7 @@ resource "newrelic_synthetics_monitor" "foo" {
 
 func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.bar"
-	rName := acctest.RandString(5)
+	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },

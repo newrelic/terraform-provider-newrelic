@@ -17,21 +17,35 @@ Use the navigation to the left to read about the available resources.
 
 ## Quick Links
 
+### Getting started
+
 - [**Configure the Provider**](guides/provider_configuration.html)
 - [**Getting Started Guide**](guides/getting_started.html)
+
+### Data sources
+
+- [**New Relic Cloud integrations example for AWS, GCP, Azure**](guides/cloud_integrations_guide.html)
+
+### Advanced
+
+#### Dashboards
+
+- [**Part 1: Creating dashboards with Terraform and JSON templates**](https://newrelic.com/blog/how-to-relic/create-nr-dashboards-with-terraform-part-1)
+- [**Part 2: Dynamically creating New Relic dashboards with Terraform**](https://newrelic.com/blog/how-to-relic/create-nr-dashboards-with-terraform-part-2)
+- [**Part 3: Using Terraform to generate New Relic dashboards from NRQL queries**](https://newrelic.com/blog/how-to-relic/create-nr-dashboards-with-terraform-part-3)
 
 ## Argument Reference
 
 The following arguments are supported.
 
-| Argument               | Required? | Description                                                                                                                                                                 |
-| ---------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `account_id`           | Required  | Your New Relic account ID. The `NEW_RELIC_ACCOUNT_ID` environment variable can also be used.                                                                                |
-| `api_key`              | Required  | Your New Relic Personal API key (usually prefixed with `NRAK`). The `NEW_RELIC_API_KEY` environment variable can also be used.                                              |
-| `region`               | Required  | The region for the data center for which your New Relic account is configured. The `NEW_RELIC_REGION` environment variable can also be used. Valid values are `US` or `EU`. |
-| `insecure_skip_verify` | Optional  | Trust self-signed SSL certificates. If omitted, the `NEW_RELIC_API_SKIP_VERIFY` environment variable is used.                                                               |
-| `insights_insert_key`  | Optional  | Your Insights insert key used when inserting Insights events via the `newrelic_insights_event` resource. Can also use `NEW_RELIC_INSIGHTS_INSERT_KEY` environment variable. |
-| `cacert_file`          | Optional  | A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEW_RELIC_API_CACERT` environment variable can also be used.              |
+| Argument               | Required? | Description                                                                                                                                                                                        |
+| ---------------------- | --------- |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `account_id`           | Required  | Your New Relic account ID. The `NEW_RELIC_ACCOUNT_ID` environment variable can also be used.                                                                                                       |
+| `api_key`              | Required  | Your New Relic Personal API key (usually prefixed with `NRAK`). The `NEW_RELIC_API_KEY` environment variable can also be used.                                                                     |
+| `region`               | Optional  | The region for the data center for which your New Relic account is configured. The `NEW_RELIC_REGION` environment variable can also be used. Valid values are `US` or `EU`. Default value is `US`. |
+| `insecure_skip_verify` | Optional  | Trust self-signed SSL certificates. If omitted, the `NEW_RELIC_API_SKIP_VERIFY` environment variable is used.                                                                                      |
+| `insights_insert_key`  | Optional  | Your Insights insert key used when inserting Insights events via the `newrelic_insights_event` resource. Can also use `NEW_RELIC_INSIGHTS_INSERT_KEY` environment variable.                        |
+| `cacert_file`          | Optional  | A path to a PEM-encoded certificate authority used to verify the remote agent's certificate. The `NEW_RELIC_API_CACERT` environment variable can also be used.                                     |
 
 ## Authentication Requirements
 
@@ -119,7 +133,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
   nrql {
     query             = "SELECT average(duration) FROM Transaction where appName = '${data.newrelic_entity.foo.name}'"
-    evaluation_offset = 3
   }
 
   critical {
@@ -150,30 +163,36 @@ resource "newrelic_alert_policy_channel" "alert_email" {
 }
 ```
 
-## Support for v2.x
+## Support for v3.x
 
-The v2.x version of the New Relic Terraform provider will get continued support from the New Relic Observability as Code team. We advise to always upgrade to the latest versions of the v2.x branch as support is only given for the most recent versions. Older versions of the v2.x branch could get deprecated when new product releases are made. In those cases a notice will be put on the repository and communication will be sent out to you by New Relic.
+The v3.x version of the New Relic Terraform provider will get continued support from the New Relic Observability as Code team. We advise to always upgrade to the latest versions of the v3.x branch as support is only given for the most recent versions. Older versions of the v3.x branch could get deprecated when new product releases are made. In those cases a notice will be put on the repository and communication will be sent out to you by New Relic.
 
-Please see the section below about upgrading to the latest versions of the provider. All new feature work and focus will be
-directed at the newer provider version. If you wish to pin your environment to a specific release, you can do so with a `required_providers` statement in your Terraform manifest. You can also pin the version within your `provider` block.
-
-Using the `provider` block:
-
-```hcl
-provider "newrelic" {
-  version = "~> 2.37.0"
-}
-```
+Please see the section below about upgrading to the latest versions of the provider. All new feature work and focus will be directed at the newer provider version. If you wish to pin your environment to a specific release, you can do so with a `required_providers` statement in your Terraform manifest.
 
 Using the `required_providers` block:
 
 ```hcl
-required_providers {
-  newrelic = "~> 2.37.0"
+terraform {
+  required_version = "~> 1.0"
+  required_providers {
+    newrelic = {
+      source  = "newrelic/newrelic"
+    }
+  }
 }
 ```
 
 See the [Terraform docs][provider_version_configuration] for more information on pinning versions.
+
+## Upgrading to v3.x
+
+Upgrading to v3 of the provider involves some changes to your provider configuration. Please view our [**migration guide**](guides/migration_guide_v3.html) for more information and assistance.
+
+Please see the [latest provider configuration docs](guides/provider_configuration.html) for the current recommended configuration settings.
+
+## Support for v2.x
+
+The v2.x version of the New Relic Terraform provider is supported as is and will not receive new features or bugfixes. The v2 release or older versions of the v2.x branch could get deprecated when new product releases are made. In those cases a notice will be put on the repository and communication will be sent out to you by New Relic.
 
 ## Upgrading to v2.x
 
@@ -205,7 +224,5 @@ Keep in mind that when you submit your pull request, you'll need to sign the CLA
 ## Support
 
 New Relic has open-sourced this project. This project is provided AS-IS WITHOUT WARRANTY OR SUPPORT, although you can report issues and contribute to the project here on GitHub.
-
-_Please do not report issues with this software to New Relic Global Technical Support._
 
 [provider_version_configuration]: https://www.terraform.io/language/providers/requirements#requiring-providers

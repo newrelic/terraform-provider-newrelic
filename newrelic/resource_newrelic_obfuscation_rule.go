@@ -4,16 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
-	"log"
 )
 
-//Defining the schema of the New Relic Obfuscation rule
+// Defining the schema of the New Relic Obfuscation rule
 func resourceNewRelicObfuscationRule() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicObfuscationRuleCreate,
@@ -60,7 +61,7 @@ func resourceNewRelicObfuscationRule() *schema.Resource {
 	}
 }
 
-//ObfuscationRuleActionInputSchemaElem returns the schema of the actions of the New Relic obfuscation rule
+// ObfuscationRuleActionInputSchemaElem returns the schema of the actions of the New Relic obfuscation rule
 func ObfuscationRuleActionInputSchemaElem() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -94,7 +95,7 @@ func listValidLogConfigurationsObfuscationMethod() []string {
 	}
 }
 
-//Create the obfuscation rule
+// Create the obfuscation rule
 func resourceNewRelicObfuscationRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -145,7 +146,7 @@ func resourceNewRelicObfuscationRuleCreate(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-//Read the obfuscation Rule
+// Read the obfuscation Rule
 func resourceNewRelicObfuscationRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -199,7 +200,7 @@ func flattenActions(actions *[]logconfigurations.LogConfigurationsObfuscationAct
 	return flatActions
 }
 
-//Update the obfuscation Rule
+// Update the obfuscation Rule
 func resourceNewRelicObfuscationRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	updateInput := expandObfuscationRuleUpdateInput(d)
@@ -246,7 +247,7 @@ func expandObfuscationRuleUpdateInput(d *schema.ResourceData) logconfigurations.
 	return updateInp
 }
 
-//Delete the obfuscation Rule
+// Delete the obfuscation Rule
 func resourceNewRelicObfuscationRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient

@@ -65,18 +65,76 @@ In this case, an issue would have to **both** have the tag and include an incide
 
 Each `issues_filter` block supports the following arguments:
 
-* `name` - (Required) The name of the filter. The name only serves a cosmetic purpose and can only be seen through Terraform and GraphQL API.
+* `name` - (Required) The name of the filter. The name only serves a cosmetic purpose and can only be seen through Terraform and GraphQL API. It can't be empty.
 * `type` - (Required) Type of the filter. Please just set this field to `FILTER`. The field is likely to be deprecated/removed in the near future. 
 * `predicate` (Required) A condition an issue event should satisfy to be processed by the workflow 
   * `attribute` - (Required) Issue event attribute to check
-  * `operator` - (Required) An operator to use to compare the attribute with the provided `values`. 
-One of: `CONTAINS`, `DOES_NOT_CONTAIN`, `EQUAL`, `DOES_NOT_EQUAL`, `DOES_NOT_EXACTLY_MATCH`, `STARTS_WITH`, `ENDS_WITH`,
-`EXACTLY_MATCHES`, `IS`, `IS_NOT`, `LESS_OR_EQUAL`, `LESS_THAN`, `GREATER_OR_EQUAL`, `GREATER_THAN` (see the note below)
+  * `operator` - (Required) An operator to use to compare the attribute with the provided `values`, see supported operators below
   * `values` - (Required) The `attribute` must match **any** of the values in this list  
 
-~> **NOTE:** We are currently working on improving documentation around for issue filters' attributes and operators. 
-For now, the easiest way to see which attributes your issue events have and which operators they support is though the 
-New Relic UI. In the future, we are going to provide a comprehensive guide to all attributes and operators.
+#### Issue Attribute Types
+
+Each attribute can have one of the following types:
+- Plain String
+  - String attributes normally represent a text property of an NR issue (i.e. not a property of a child incident)
+  - Example attributes: `state`, `priority`
+- Numbers
+  - Similarly to strings, number attributes represent a numerical property of an NR issue  
+  - Most of the number attributes are timestamps, e.g.: `timestamp`, `acknowledgedAt`
+- Lists
+  - Attributes that belong to issue's child incidents are represented as lists of strings 
+  - Each issue might consist of multiple incidents, which is why incident properties are lists of values
+  - Examples:
+    - `labels.policyIds` - a list of IDs of alert policies that triggered the incidents included in the issue
+    - `accumulations.tags.X` - a list of values of a tag `X` collected from all incidents in the issue
+
+While the descriptions above might allow you to guess the field type, you can also check the type by going to
+the issue page in the UI and inspecting the issue payload using a button at the top.
+- If the attribute value is `null`, you can try checking a different issue
+- If the value is a number, then it is a number field
+- If the value is a string that contains square brackets, then it is most likely a list field
+  - Example: `"[\"some_value\"]"`
+- Otherwise, it is a string field 
+
+#### Operators
+
+Depending on their type, different issue attributes support different operators.
+
+**All operators are case-insensitive**
+
+##### Plan String
+
+Plain strings support the following operators:
+- `CONTAINS`, `DOES_NOT_CONTAIN` - check if the value contains one of the given strings 
+- `EQUAL`, `DOES_NOT_EQUAL` - check if the value is equal to one of the given strings
+- `STARTS_WITH` - check if the value starts from one of the given strings
+- `ENDS_WITH` - check if the value starts from one of the given strings
+
+##### Numbers
+
+Numbers support the following operators:
+- `EQUAL`
+- `DOES_NOT_EQUAL`
+- `LESS_OR_EQUAL`
+- `LESS_THAN`
+- `GREATER_OR_EQUAL`
+- `GREATER_THAN`
+
+These operators directly correspond to the mathematical operations.
+
+##### Lists
+
+Lists support the following operators:
+- `DOES_NOT_EXACTLY_MATCH`, `EXACTLY_MATCHES` - check if the array contains one of the given items
+  - `["Aa","Bb"]` would "exactly match" `Aa`
+  - `["Aa","Bb"]` would not "exactly match" `A`
+- `CONTAINS`, `DOES_NOT_CONTAIN` - **[please avoid]** check if the array has an item with a value that contains any of the given values
+  `["Aa","Bb"]` would "contain" **both** `A` **and** `Aa`
+
+#### Other
+
+All fields also support 
+- `IS`, `IS_NOT` - **[please avoid]** check if something is `NULL` or not. Should only be used with `NULL` value
 
 ### Muting Rules
 
@@ -102,16 +160,32 @@ details to include into the email body
 
 Destinations can be reused across multiple channels. But each channel can only be used in a single workflow (at least for now).
 
-When a workflow is deleted, all channels associated with it are also deleted. We might change this behaviour in the future, 
-but please keep this behaviour in mind when managing workflows right now. 
-If you only delete a workflow resource and not its channel resource, the next time you run TF it will report state drift.
-
 Each workflow resource requires one or more `destination` blocks. These blocks define notification channels to use for the
 workflow.
 
 Block's arguments:
-* `channel_id` - (Required) id of a [notification_channel](notification_channel.html) to use for notifications. Please note that you have to use a 
+* `channel_id` - (Required) Id of a [notification_channel](notification_channel.html) to use for notifications. Please note that you have to use a 
 **notification** channel, not an `alert_channel`.
+* `notification_triggers` - (Optional) Issue events to notify on. The value is a list of possible issue events. See [Notification Triggers](#notification-triggers) below for details. 
+
+### Notification Triggers
+
+Each issue produces multiple events during its lifetime.
+For example, issue activation, acknowledgement, and resolution are all separate events in issue's lifecycle.
+
+It allows you to choose which events trigger notifications and which are ignored. This configuration is separate for each of the channels added to the workflow.
+One could, for example, configure a workflow to open a Jira ticket and send Slack notifications once an issue is opened, but only send a Slack notification once it is closed.
+
+Possible values:
+* `ACTIVATED` - Send a notification when an issue is activated
+* `ACKNOWLEDGED` - Send a notification when an issue is acknowledged
+* `PRIORITY_CHANGED` - Send a notification when an issue's priority has been changed
+* `CLOSED` - Send a notification when an issue is closed
+* `OTHER_UPDATES` - Send a notification on other updates on the issue. These updates include:
+1. An incident has been added to the issue
+2. An incident in the issue has been closed
+3. A different issue has been merged to this issue
+
     
 ### Nested `enrichments` blocks
 
@@ -233,6 +307,29 @@ resource "newrelic_workflow" "workflow-example" {
 }
 ```
 
+### An example of a workflow with notification triggers
+
+```hcl
+resource "newrelic_workflow" "workflow-example" {
+  name = "workflow-enrichment-example"
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+  
+  issues_filter {
+  name = "Filter-name"
+  type = "FILTER"
+      predicate {
+        attribute = "accumulations.tag.team"
+        operator = "EXACTLY_MATCHES"
+        values = [ "my_team" ]
+      }
+  }
+  
+  destination {
+    channel_id = newrelic_notification_channel.webhook-channel.id
+    notification_triggers = [ "ACTIVATED" ]
+  }
+}
+```
 
 ## Additional Information
 More details about the workflows can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/applied-intelligence/incident-workflows/incident-workflows/).

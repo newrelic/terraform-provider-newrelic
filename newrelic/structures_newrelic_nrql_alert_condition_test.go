@@ -81,31 +81,16 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				BaselineDirection: &alerts.NrqlBaselineDirections.LowerOnly,
 			},
 		},
-		"static condition, has value_function attr": {
-			Data: map[string]interface{}{
-				"nrql":           []interface{}{nrql},
-				"type":           "static",
-				"value_function": "single_value",
-			},
-			ExpectErr:    false,
-			ExpectReason: "",
-			Expanded: &alerts.NrqlConditionCreateInput{
-				ValueFunction: &alerts.NrqlConditionValueFunctions.SingleValue,
-			},
-		},
 		"critical term": {
 			Data: map[string]interface{}{
-				"nrql":           []interface{}{nrql},
-				"type":           "static",
-				"value_function": "single_value",
-				"critical":       criticalTerms,
+				"nrql":     []interface{}{nrql},
+				"type":     "static",
+				"critical": criticalTerms,
 			},
 			ExpectErr:    false,
 			ExpectReason: "",
 			Expanded: func() *alerts.NrqlConditionCreateInput {
-				x := alerts.NrqlConditionCreateInput{
-					ValueFunction: &alerts.NrqlConditionValueFunctions.SingleValue,
-				}
+				x := alerts.NrqlConditionCreateInput{}
 				x.Terms = []alerts.NrqlConditionTerm{
 					{
 						Threshold:            &testThresholdLow,
@@ -121,18 +106,15 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 		},
 		"critical and warning terms": {
 			Data: map[string]interface{}{
-				"nrql":           []interface{}{nrql},
-				"type":           "static",
-				"value_function": "single_value",
-				"critical":       criticalTerms,
-				"warning":        warningTerms,
+				"nrql":     []interface{}{nrql},
+				"type":     "static",
+				"critical": criticalTerms,
+				"warning":  warningTerms,
 			},
 			ExpectErr:    false,
 			ExpectReason: "",
 			Expanded: func() *alerts.NrqlConditionCreateInput {
-				x := alerts.NrqlConditionCreateInput{
-					ValueFunction: &alerts.NrqlConditionValueFunctions.SingleValue,
-				}
+				x := alerts.NrqlConditionCreateInput{}
 				x.Terms = []alerts.NrqlConditionTerm{
 					{
 						Threshold:            &testThresholdLow,
@@ -350,6 +332,31 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				},
 			},
 		},
+		"evaluation delay nil": {
+			Data: map[string]interface{}{
+				"nrql":              []interface{}{nrql},
+				"evaluation_delay": nil,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{},
+				},
+			},
+		},
+		"evaluation delay not nil": {
+			Data: map[string]interface{}{
+				"nrql":              []interface{}{nrql},
+				"evaluation_delay": 60,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
+						EvaluationDelay: &[]int{60}[0],
+					},
+				},
+			},
+		},
+
 	}
 
 	r := resourceNewRelicNrqlAlertCondition()
@@ -385,11 +392,6 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 			}
 
 			if tc.Expanded != nil {
-				// Static conditions specific
-				if tc.Expanded.ValueFunction != nil {
-					require.Equal(t, *tc.Expanded.ValueFunction, *expanded.ValueFunction)
-				}
-
 				// Baseline conditions specific
 				if tc.Expanded.BaselineDirection != nil {
 					require.Equal(t, *tc.Expanded.BaselineDirection, *expanded.BaselineDirection)
@@ -457,6 +459,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 				AggregationMethod: &alerts.NrqlConditionAggregationMethodTypes.Cadence,
 				AggregationDelay:  &[]int{60}[0],
 				AggregationTimer:  &[]int{60}[0],
+				EvaluationDelay: &[]int{60}[0],
 			},
 			Expiration: &alerts.AlertsNrqlConditionExpiration{
 				ExpirationDuration:          &[]int{120}[0],
@@ -475,6 +478,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		AggregationMethod: &alerts.NrqlConditionAggregationMethodTypes.Cadence,
 		AggregationDelay:  &[]int{60}[0],
 		AggregationTimer:  &[]int{60}[0],
+		EvaluationDelay:   &[]int{60}[0],
 	}
 	nrqlConditionBaseline.Type = alerts.NrqlConditionTypes.Baseline
 	nrqlConditionBaseline.BaselineDirection = &alerts.NrqlBaselineDirections.LowerOnly
@@ -483,7 +487,6 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	// Static
 	nrqlConditionStatic := nrqlCondition
 	nrqlConditionStatic.Type = alerts.NrqlConditionTypes.Static
-	nrqlConditionStatic.ValueFunction = &alerts.NrqlConditionValueFunctions.Sum
 	nrqlConditionStatic.EntityGUID = common.EntityGUID("TkRJVElPTnwxNDMzNjc3NDAwMzA0fEFP")
 
 	conditions := []*alerts.NrqlAlertCondition{
@@ -542,7 +545,6 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		switch condition.Type {
 		case alerts.NrqlConditionTypes.Baseline:
 			require.Equal(t, string(alerts.NrqlBaselineDirections.LowerOnly), d.Get("baseline_direction").(string))
-			require.Zero(t, d.Get("value_function").(string))
 			require.Equal(t, 120, d.Get("expiration_duration").(int))
 			require.True(t, d.Get("open_violation_on_expiration").(bool))
 			require.True(t, d.Get("close_violations_on_expiration").(bool))
@@ -551,10 +553,10 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
 			require.Equal(t, "60", d.Get("aggregation_delay").(string))
 			require.Equal(t, "60", d.Get("aggregation_timer").(string))
+			require.Equal(t, 60, d.Get("evaluation_delay").(int))
 			require.Equal(t, nrqlConditionBaseline.EntityGUID, common.EntityGUID(d.Get("entity_guid").(string)))
 
 		case alerts.NrqlConditionTypes.Static:
-			require.Equal(t, string(alerts.NrqlConditionValueFunctions.Sum), d.Get("value_function").(string))
 			require.Zero(t, d.Get("baseline_direction").(string))
 			require.Equal(t, 120, d.Get("expiration_duration").(int))
 			require.True(t, d.Get("open_violation_on_expiration").(bool))
@@ -564,6 +566,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
 			require.Equal(t, "60", d.Get("aggregation_delay").(string))
 			require.Equal(t, "60", d.Get("aggregation_timer").(string))
+			require.Equal(t, 60, d.Get("evaluation_delay").(int))
 			require.Equal(t, nrqlConditionStatic.EntityGUID, common.EntityGUID(d.Get("entity_guid").(string)))
 		}
 	}
