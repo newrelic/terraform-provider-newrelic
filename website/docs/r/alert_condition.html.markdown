@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create and manage alert conditions for APM, Browser, and Mobile in New Relic.
 
--> **WARNING:** The  newrelic_alert_condition resource will be deprecated in the near future and will no longer receive product updates. Please use the [newrelic_nrql_alert_condition](nrql_alert_condition.html) resource to avoid being impacted by these changes.
+-> **WARNING:** The `newrelic_alert_condition` resource is deprecated and will be removed in the next major release. Please use the [newrelic_nrql_alert_condition](nrql_alert_condition.html) resource to avoid being impacted by these changes.
 
 ## Example Usage
 
