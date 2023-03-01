@@ -231,8 +231,7 @@ func resourceNewRelicDataPartitionUpdate(ctx context.Context, d *schema.Resource
 
 func expandDataPartitionUpdateInput(d *schema.ResourceData) logconfigurations.LogConfigurationsUpdateDataPartitionRuleInput {
 	updateInp := logconfigurations.LogConfigurationsUpdateDataPartitionRuleInput{
-		ID:               d.Id(),
-		MatchingCriteria: &logconfigurations.LogConfigurationsDataPartitionRuleMatchingCriteriaInput{},
+		ID: d.Id(),
 	}
 	updateInp.Enabled = d.Get("enabled").(bool)
 
