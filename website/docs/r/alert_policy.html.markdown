@@ -26,7 +26,7 @@ The following arguments are supported:
 
   * `name` - (Required) The name of the policy.
   * `incident_preference` - (Optional) The rollup strategy for the policy.  Options include: `PER_POLICY`, `PER_CONDITION`, or `PER_CONDITION_AND_TARGET`.  The default is `PER_POLICY`.
-  * `channel_ids` - (Optional) An array of channel IDs (integers) to assign to the policy. Adding or removing channel IDs from this array will result in a new alert policy resource being created and the old one being destroyed. Also note that channel IDs _cannot_ be imported via `terraform import` (see [Import](#import) for info).
+  * `channel_ids` - (Optional) **DEPRECATED** The `channel_ids` argument is deprecated and will be removed in the next major release of the provider. An array of channel IDs (integers) to assign to the policy. Adding or removing channel IDs from this array will result in a new alert policy resource being created and the old one being destroyed. Also note that channel IDs _cannot_ be imported via `terraform import` (see [Import](#import) for info).
   * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 
 ## Attributes Reference
@@ -66,6 +66,7 @@ resource "newrelic_alert_policy" "policy_with_channels" {
   name                = "example-with-channels"
   incident_preference = "PER_CONDITION"
 
+  # NOTE: The `channel_ids` argument has been deprecated. Avoid usage.
   # Add the provisioned channels to the policy.
   channel_ids = [
     newrelic_alert_channel.slack_channel.id,
@@ -92,6 +93,7 @@ resource "newrelic_alert_policy" "policy_with_channels" {
   name                = "example-with-channels"
   incident_preference = "PER_CONDITION"
 
+  # NOTE: The `channel_ids` argument has been deprecated. Avoid usage.
   # Add the referenced channels to the policy.
   channel_ids = [
     data.newrelic_alert_channel.slack_channel.id,

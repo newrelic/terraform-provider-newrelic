@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create and manage synthetics alert conditions in New Relic.
 
--> **WARNING:** The `newrelic_synthetics_alert_condition` resource is deprecated and will be removed in the next major release. Please use the [newrelic_nrql_alert_condition](nrql_alert_condition.html) resource to avoid being impacted by these changes.
+-> **NOTE:** This is a legacy resource. The [newrelic_nrql_alert_condition](nrql_alert_condition.html) resource is preferred for configuring alerts conditions. In most cases feature parity can be achieved with a NRQL query. This condition type may be deprecated in the future.
 
 ## Example Usage
 

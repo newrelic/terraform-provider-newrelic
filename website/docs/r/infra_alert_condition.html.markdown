@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create and manage Infrastructure alert conditions in New Relic.
 
--> **NOTE:** The [newrelic_nrql_alert_condition](nrql_alert_condition.html) resource is preferred for configuring alerts conditions. In most cases feature parity can be achieved with a NRQL query. Other condition types may be deprecated in the future and receive fewer product updates.
+-> **NOTE:** This is a legacy resource. The [newrelic_nrql_alert_condition](nrql_alert_condition.html) resource is preferred for configuring alerts conditions. In most cases feature parity can be achieved with a NRQL query. This condition type may be deprecated in the future.
 
 ## Example Usage
 
@@ -110,7 +110,7 @@ The following arguments are supported:
   * `integration_provider` - (Optional) For alerts on integrations, use this instead of `event`.  Supported by the `infra_metric` condition type.
   * `description` - (Optional) The description of the Infrastructure alert condition.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
-  * `violation_close_timer` - (Optional) Determines how much time will pass (in hours) before an incident is automatically closed. Valid values are `1 2 4 8 12 24 48 72`. Defaults to 24. If `0` is provided, default of `24` is used and will have configuration drift during the apply phase until a valid value is provided. 
+  * `violation_close_timer` - (Optional) Determines how much time will pass (in hours) before an incident is automatically closed. Valid values are `1 2 4 8 12 24 48 72`. Defaults to 24. If `0` is provided, default of `24` is used and will have configuration drift during the apply phase until a valid value is provided.
 
 ```
 Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
