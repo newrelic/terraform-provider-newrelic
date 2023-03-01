@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to map alert policies to alert channels in New Relic.
 
-~> **NOTE:** This is a legacy resource. For managing channel resources in Workflows, use [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel).
+-> **WARNING:** The `newrelic_alert_policy_channel` resource is deprecated and will be removed in the next major release. For managing channel resources in Workflows, use [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel).
 
 ## Example Usage
 
@@ -73,4 +73,3 @@ $ terraform import newrelic_alert_policy_channel.foo 123456:3462754:2938324
 ```
 
 When importing `newrelic_alert_policy_channel` resource, the attribute `channel_ids`\* will be set in your Terraform state. You can import multiple channels as long as those channel IDs are included as part of the import ID hash.
-
