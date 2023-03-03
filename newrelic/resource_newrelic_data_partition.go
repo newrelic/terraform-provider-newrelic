@@ -5,16 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/go-cty/cty"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
-	"strings"
-
-	"log"
-	"time"
 )
 
 func resourceNewRelicDataPartition() *schema.Resource {
@@ -66,8 +66,8 @@ func resourceNewRelicDataPartition() *schema.Resource {
 					if !strings.HasPrefix(value, "Log_") {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
-							Summary:  "Invalid value",
-							Detail:   fmt.Sprintf("Prepend \"Log_\" to the given target_data_partition value."),
+							Summary:  "INVALID_DATA_PARTITION_INPUT",
+							Detail:   "Prepend \"Log_\" to the given target_data_partition value.",
 						}
 						diags = append(diags, diag)
 					}
@@ -173,12 +173,10 @@ func resourceNewRelicDataPartitionRead(ctx context.Context, d *schema.ResourceDa
 	ruleID := d.Id()
 	rule, err := getDataPartitionByID(ctx, client, accountID, ruleID)
 
-	if err != nil || rule == nil || rule.Deleted == true {
+	if err != nil || rule == nil || rule.Deleted {
 		d.SetId("")
 		return nil
 	}
-	str := rule.MatchingCriteria.MatchingExpression
-	str = strings.Trim(str, "'")
 
 	if err := d.Set("account_id", accountID); err != nil {
 		return diag.FromErr(err)
@@ -233,7 +231,9 @@ func expandDataPartitionUpdateInput(d *schema.ResourceData) logconfigurations.Lo
 	updateInp := logconfigurations.LogConfigurationsUpdateDataPartitionRuleInput{
 		ID: d.Id(),
 	}
-	updateInp.Enabled = d.Get("enabled").(bool)
+	if e, ok := d.GetOk("enabled"); ok {
+		updateInp.Enabled = e.(bool)
+	}
 
 	if e, ok := d.GetOk("description"); ok {
 		updateInp.Description = e.(string)

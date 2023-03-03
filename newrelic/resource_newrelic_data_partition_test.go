@@ -45,32 +45,7 @@ func TestAccNewRelicDataPartitionRule_Basic(t *testing.T) {
 	})
 }
 
-// Checking the creation, update name and deletion of data partition rule
-func TestAccNewRelicDataPartitionRule_EnableUpdate(t *testing.T) {
-	resourceName := "newrelic_data_partition_rule.foo"
-	rName := acctest.RandString(7)
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicDataPartitionRuleDestroy,
-		Steps: []resource.TestStep{
-			//create
-			{
-				Config: testAccNewRelicDataPartitionRuleConfig(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicDataPartitionRuleExists(resourceName)),
-			},
-			//update
-			{
-				Config: testAccNewRelicDataPartitionRuleUpdate_Enabled(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicDataPartitionRuleExists(resourceName)),
-			},
-		},
-	})
-}
-
-// Checking the creation of new resource on update in name
+// Checking the creation of new resource on update name
 func TestAccNewRelicDataPartitionRule_NameUpdate(t *testing.T) {
 	resourceName := "newrelic_data_partition_rule.foo"
 	rName := acctest.RandString(7)
@@ -95,8 +70,8 @@ func TestAccNewRelicDataPartitionRule_NameUpdate(t *testing.T) {
 	})
 }
 
-// Checking the creation of new resource on update in name
-func TestAccNewRelicDataPartitionRule_MatchingCriteriaUpdate(t *testing.T) {
+// Checking the creation of new resource on update NRQL
+func TestAccNewRelicDataPartitionRule_NRQLUpdate(t *testing.T) {
 	resourceName := "newrelic_data_partition_rule.foo"
 	rName := acctest.RandString(7)
 	resource.ParallelTest(t, resource.TestCase{
@@ -112,7 +87,7 @@ func TestAccNewRelicDataPartitionRule_MatchingCriteriaUpdate(t *testing.T) {
 			},
 			//update
 			{
-				Config: testAccNewRelicDataPartitionRuleUpdate_MatchingCriteria(rName),
+				Config: testAccNewRelicDataPartitionRuleUpdate_NRQL(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDataPartitionRuleExists(resourceName)),
 			},
@@ -200,9 +175,6 @@ resource "newrelic_data_partition_rule" "foo"{
 	account_id = %[1]d
 	description = "%[3]s"
 	enabled = true
-    attribute_name = "hostname"
-    matching_expression = "localhost"
-    matching_method = "EQUALS"
 	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s"
@@ -216,9 +188,6 @@ resource "newrelic_data_partition_rule" "foo"{
 	account_id = %[1]d
 	description = "%[3]s_update"
 	enabled = true
-    attribute_name = "hostname_update"
-    matching_expression = "localhost"
-    matching_method = "EQUALS"
 	nrql = "logtype='linux_messages'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s"
@@ -232,9 +201,6 @@ resource "newrelic_data_partition_rule" "foo"{
 	account_id = %[1]d
 	description = "%[3]s"
 	enabled = true
-    attribute_name = "hostname"
-    matching_expression = "localhost"
-    matching_method = "EQUALS"
 	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s"
@@ -244,9 +210,6 @@ resource "newrelic_data_partition_rule" "bar"{
 	account_id = %[1]d
 	description = "%[3]s"
 	enabled = true
-    attribute_name = "hostname"
-    matching_expression = "localhost"
-    matching_method = "EQUALS"
 	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s"
@@ -260,9 +223,6 @@ resource "newrelic_data_partition_rule" "foo"{
 	account_id = %[1]d
 	description = "%[3]s"
 	enabled = true
-    attribute_name = "hostname"
-    matching_expression = "localhost"
-    matching_method = "EQUALS"
 	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Test_%[2]s"
@@ -276,9 +236,6 @@ resource "newrelic_data_partition_rule" "foo"{
 	account_id = %[1]d
 	description = "%[3]s_update"
 	enabled = false
-    attribute_name = "hostname_update"
-    matching_expression = "localhost"
-    matching_method = "EQUALS"
 	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s"
@@ -292,9 +249,6 @@ resource "newrelic_data_partition_rule" "foo"{
 	account_id = %[1]d
 	description = "%[3]s_update"
 	enabled = true
-    attribute_name = "hostname_update"
-    matching_expression = "localhost"
-    matching_method = "EQUALS"
 	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s_update"
@@ -302,15 +256,12 @@ resource "newrelic_data_partition_rule" "foo"{
 `, testAccountID, name, testAccExpectedApplicationName)
 }
 
-func testAccNewRelicDataPartitionRuleUpdate_MatchingCriteria(name string) string {
+func testAccNewRelicDataPartitionRuleUpdate_NRQL(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_data_partition_rule" "foo"{
 	account_id = %[1]d
 	description = "%[3]s_update"
 	enabled = true
-    attribute_name = "hostname_update"
-    matching_expression = "localhost"
-    matching_method = "LIKE"
 	nrql = "logtype='node'"
     retention_policy = "SECONDARY"
     target_data_partition = "Log_Test_%[2]s_update"
