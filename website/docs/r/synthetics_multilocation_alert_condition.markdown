@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create, update, and delete a New Relic Synthetics Location Alerts.
 
--> **NOTE:** The [newrelic_nrql_alert_condition](nrql_alert_condition.html) resource is preferred for configuring alerts conditions. In most cases feature parity can be achieved with a NRQL query. Other condition types may be deprecated in the future and receive fewer product updates.
+-> **NOTE:** This is a legacy resource. The [newrelic_nrql_alert_condition](nrql_alert_condition.html) resource is preferred for configuring alerts conditions. In most cases feature parity can be achieved with a NRQL query. This condition type may be deprecated in the future.
 
 ## Example Usage
 
@@ -74,4 +74,3 @@ New Relic Synthetics MultiLocation Conditions can be imported using a concatenat
 ```bash
 $ terraform import newrelic_synthetics_multilocation_alert_condition.example 12345678:1456
 ```
-

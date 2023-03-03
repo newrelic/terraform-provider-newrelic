@@ -19,7 +19,8 @@ func dataSourceNewRelicAlertChannel() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		ReadContext: dataSourceNewRelicAlertChannelRead,
+		DeprecationMessage: "The `newrelic_alert_channel` data source is deprecated and will be removed in the next major release.",
+		ReadContext:        dataSourceNewRelicAlertChannelRead,
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
