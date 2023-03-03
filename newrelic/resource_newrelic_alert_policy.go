@@ -52,6 +52,7 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Description: "An array of channel IDs (integers) to assign to the policy. Adding or removing channel IDs from this array will result in a new alert policy resource being created and the old one being destroyed. Also note that channel IDs cannot be imported via terraform import.",
+				Deprecated:  "The `channel_ids` attribute is deprecated and will be removed in the next major release of the provider.",
 			},
 		},
 	}

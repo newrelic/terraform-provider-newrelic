@@ -671,6 +671,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   aggregation_window             = %[7]s
   slide_by                       = %[8]s
   aggregation_delay              = %[2]s
+	aggregation_method             = "EVENT_FLOW"
   close_violations_on_expiration = true
   open_violation_on_expiration   = true
   expiration_duration            = 120
@@ -722,7 +723,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	runbook_url                    = "https://foo.example.com"
 	enabled                        = false
 	description                    = "test description"
-    fill_option                    = "%[5]s"
+  fill_option                    = "%[5]s"
 	fill_value                     = %[6]s
 	close_violations_on_expiration = true
 	open_violation_on_expiration   = true
@@ -788,6 +789,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	expiration_duration            = 120
 	aggregation_window             = 60
 	aggregation_delay              = %[3]d
+	aggregation_method             = "EVENT_FLOW"
 
 	nrql {
 		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"

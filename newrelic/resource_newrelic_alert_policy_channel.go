@@ -16,8 +16,9 @@ import (
 
 func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNewRelicAlertPolicyChannelCreate,
-		ReadContext:   resourceNewRelicAlertPolicyChannelRead,
+		DeprecationMessage: "The `newrelic_alert_policy_channel` resource is deprecated and will be removed in the next major release.",
+		CreateContext:      resourceNewRelicAlertPolicyChannelCreate,
+		ReadContext:        resourceNewRelicAlertPolicyChannelRead,
 		// Update: Not currently supported in API
 		DeleteContext: resourceNewRelicAlertPolicyChannelDelete,
 		Importer: &schema.ResourceImporter{
