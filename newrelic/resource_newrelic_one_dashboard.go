@@ -307,6 +307,124 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 			Type:     schema.TypeBool,
 			Optional: true,
 		},
+		"facet_show_other_series": {
+			Type:     schema.TypeBool,
+			Optional: true,
+		},
+		"legend_enabled": {
+			Type:     schema.TypeBool,
+			Optional: true,
+		},
+		"y_axis_left_min": {
+			Type:     schema.TypeFloat,
+			Optional: true,
+		},
+		"y_axis_left_max": {
+			Type:     schema.TypeFloat,
+			Optional: true,
+		},
+		"null_values": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     dashboardWidgetNullValuesSchemaElem(),
+		},
+		"units": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     dashboardWidgetUnitsSchemaElem(),
+		},
+		"colors": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     dashboardWidgetColorSchemaElem(),
+		},
+	}
+}
+
+func dashboardWidgetColorSchemaElem() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"color": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"series_overrides": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"color": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Color code",
+						},
+						"series_name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Series name",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func dashboardWidgetUnitsSchemaElem() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"unit": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"series_overrides": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"unit": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Unit name",
+						},
+						"series_name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Series name",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func dashboardWidgetNullValuesSchemaElem() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"null_value": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"series_overrides": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"null_value": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Null value",
+						},
+						"series_name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Series name",
+						},
+					},
+				},
+			},
+		},
 	}
 }
 
