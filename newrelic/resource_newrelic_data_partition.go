@@ -4,9 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/go-cty/cty"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -60,19 +58,6 @@ func resourceNewRelicDataPartition() *schema.Resource {
 				Description: "The name of the data partition where logs will be allocated once the rule is enabled.",
 				Required:    true,
 				ForceNew:    true,
-				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
-					value := v.(string)
-					var diags diag.Diagnostics
-					if !strings.HasPrefix(value, "Log_") {
-						diag := diag.Diagnostic{
-							Severity: diag.Error,
-							Summary:  "INVALID_DATA_PARTITION_INPUT",
-							Detail:   "Prepend \"Log_\" to the given target_data_partition value.",
-						}
-						diags = append(diags, diag)
-					}
-					return diags
-				},
 			},
 			"deleted": {
 				Type:        schema.TypeBool,
