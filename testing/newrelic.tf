@@ -9,3 +9,7 @@ terraform {
 provider "newrelic" {
   region = "US" # US or EU
 }
+
+provider "aws" {
+  region = "us-east-1"
+}
