@@ -128,7 +128,7 @@ func testAccNewRelicCloudAwsGovCloudIntegrationsConfig(access_key_id string, aws
    secret_access_key = "%[3]s"
 }
    resource "newrelic_cloud_aws_govcloud_integrations" "foo" {
-     account_id=2520528
+     account_id=3806526
      linked_account_id=newrelic_cloud_awsGovcloud_link_account.account.id
      alb{
       metrics_polling_interval=1000
@@ -268,7 +268,7 @@ func testAccNewRelicCloudAwsGovCloudIntegrationsConfigUpdated(access_key_id stri
    secret_access_key = "%[3]s"
 }
    resource "newrelic_cloud_aws_govcloud_integrations" "foo" {
-     account_id=2520528
+     account_id=3806526
      linked_account_id=newrelic_cloud_awsGovcloud_link_account.account.id
      alb{
       metrics_polling_interval=2000

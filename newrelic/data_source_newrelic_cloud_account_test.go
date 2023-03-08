@@ -44,7 +44,7 @@ func TestAccNewRelicCloudAccountDataSource_Error(t *testing.T) {
 func testNewRelicCloudAccountDataSourceBasicConfig() string {
 	return fmt.Sprintf(`
 data "newrelic_cloud_account" "account" {
-	account_id = 2508259
+	account_id = 3814156
 	name = "NEW-DTK-NAME"
 	cloud_provider = "aws"
 }

@@ -109,12 +109,12 @@ func testAccNewRelicCloudGcpIntegrationsConfig(projectID string, name string) st
 
 resource "newrelic_cloud_gcp_link_account" "foo" {
   name       = "%[2]s"
-  account_id = 2520528
+  account_id = 3806526
   project_id = "%[1]s"
 }
 
 resource "newrelic_cloud_gcp_integrations" "foo1" {
-  account_id        = 2520528
+  account_id        = 3806526
   linked_account_id = newrelic_cloud_gcp_link_account.foo.id
   alloy_db {
     metrics_polling_interval = 400
@@ -206,12 +206,12 @@ func testAccNewRelicCloudGcpIntegrationsConfigUpdated(projectID string, name str
 	return fmt.Sprintf(`
 	resource "newrelic_cloud_gcp_link_account" "foo"{
 			name = "%[2]s"
-			account_id = 2520528
+			account_id = 3806526
 			project_id="%[1]s"
 	}
 
 	resource "newrelic_cloud_gcp_integrations" "foo1" {
-		  account_id = 2520528
+		  account_id = 3806526
 		  linked_account_id = newrelic_cloud_gcp_link_account.foo.id
 		  app_engine {
 			metrics_polling_interval = 1400
