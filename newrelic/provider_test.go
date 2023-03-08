@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -23,6 +24,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/apm"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/config"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
 )
 
 var (
@@ -86,6 +88,12 @@ resource "newrelic_alert_policy" "foo" {
 
 func testAccPreCheck(t *testing.T) {
 	testAccPreCheckEnvVars(t)
+
+	// Clean up old data partitions
+	//testAccLogDataPartitionsCleanup(t)
+
+	// Cleaning up the Parsing rules
+	//testAccLogParsingRulesCleanup(t)
 
 	// Create a test application for use in newrelic_alert_condition and other tests
 	if !testAccAPMEntityCreated {
@@ -209,4 +217,74 @@ func testAccApplicationsCleanup(t *testing.T) {
 // deleting any resources that might be cross-account, such as workloads.
 func generateNameForIntegrationTestResource() string {
 	return fmt.Sprintf("tf_test_%s", acctest.RandString(5))
+}
+
+// Deleting the data partitions as they start with "Log_Test_"
+// Only run if the data partitions limit exceeded
+func testAccLogDataPartitionsCleanup(t *testing.T) {
+	// Only run cleanup once per test run
+	if testAccCleanupComplete {
+		return
+	}
+	client := logconfigurations.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
+	t.Logf("***** Deleting data partitions ******")
+	dataPartitions, err := client.GetDataPartitionRules(testAccountID)
+	if err != nil {
+		t.Logf("error fetching data partitions: %s", err)
+	}
+	deletedDataPartitionCount := 0
+
+	for _, v := range *dataPartitions {
+		str := string(v.TargetDataPartition)
+		if (strings.Contains(str, "Log_Test_") || strings.Contains(str, "Log_testName_")) && v.Deleted != true {
+			_, err = client.LogConfigurationsDeleteDataPartitionRule(testAccountID, v.ID)
+
+			if err == nil {
+				deletedDataPartitionCount++
+				t.Logf("deleted data partition %s (%d/%d)", v.ID, deletedDataPartitionCount, len(*dataPartitions))
+			}
+		}
+	}
+
+	t.Logf("testacc cleanup of %d DataPartition complete", deletedDataPartitionCount)
+
+	testAccCleanupComplete = true
+
+}
+
+// delete the parsing rules
+// Only run if the limit is exceeded
+func testAccLogParsingRulesCleanup(t *testing.T) {
+	// Only run cleanup once per test run
+	if testAccCleanupComplete {
+		return
+	}
+	client := logconfigurations.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
+	t.Logf("***** Deleting parsing rules ******")
+	rules, err := client.GetParsingRules(testAccountID)
+	if err != nil {
+		t.Logf("error fetching data parsing rules: %s", err)
+	}
+	deletedCount := 0
+
+	for _, v := range *rules {
+		str := string(v.Description)
+		if (strings.Contains(str, "testDescription_") || strings.Contains(str, "tf_test_")) && v.Deleted != true {
+			_, err = client.LogConfigurationsDeleteParsingRule(testAccountID, v.ID)
+
+			if err == nil {
+				deletedCount++
+				t.Logf("deleted parsing rules %s (%d/%d)", v.ID, deletedCount, len(*rules))
+			}
+		}
+	}
+
+	t.Logf("testacc cleanup of %d DataPartition complete", deletedCount)
+
+	testAccCleanupComplete = true
+
 }
