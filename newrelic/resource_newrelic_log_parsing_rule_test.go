@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -17,7 +16,7 @@ import (
 // Checking the creation, update, import and deletion of logging parsing rule
 func TestAccNewRelicLogParsingRule_Basic(t *testing.T) {
 	resourceName := "newrelic_log_parsing_rule.foo"
-	rName := acctest.RandString(7)
+	rName := generateNameForIntegrationTestResource()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -48,8 +47,8 @@ func TestAccNewRelicLogParsingRule_Basic(t *testing.T) {
 func TestAccNewRelicLogParsingRule_Unique_Name_Update(t *testing.T) {
 	resourceName := "newrelic_log_parsing_rule.foo"
 	expectedErrorMsg := regexp.MustCompile("name is already in use by another rule")
-	rName1 := acctest.RandString(7)
-	rName2 := acctest.RandString(7)
+	rName1 := generateNameForIntegrationTestResource()
+	rName2 := generateNameForIntegrationTestResource()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -78,7 +77,7 @@ func TestAccNewRelicLogParsingRule_Unique_Name_Create(t *testing.T) {
 		Steps: []resource.TestStep{
 			//create
 			{
-				Config:      testAccNewRelicLogParsingRuleUniqueNameConfig("testDescUnique"),
+				Config:      testAccNewRelicLogParsingRuleUniqueNameConfig("test_tf_DescUnique"),
 				ExpectError: expectedErrorMsg,
 			},
 		},
@@ -87,7 +86,7 @@ func TestAccNewRelicLogParsingRule_Unique_Name_Create(t *testing.T) {
 
 func TestAccNewRelicLogParsingRule_Grok_Test_Matched(t *testing.T) {
 	resourceName := "newrelic_log_parsing_rule.foo"
-	rName := acctest.RandString(7)
+	rName := generateNameForIntegrationTestResource()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -105,7 +104,7 @@ func TestAccNewRelicLogParsingRule_Grok_Test_Matched(t *testing.T) {
 
 func TestAccNewRelicLogParsingRule_Grok_Test_Unmatched(t *testing.T) {
 	resourceName := "newrelic_log_parsing_rule.foo"
-	rName := acctest.RandString(7)
+	rName := generateNameForIntegrationTestResource()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -122,7 +121,7 @@ func TestAccNewRelicLogParsingRule_Grok_Test_Unmatched(t *testing.T) {
 }
 
 func TestAccNewRelicLogParsingRule_Invalid_Grok_Test(t *testing.T) {
-	rName := acctest.RandString(7)
+	rName := generateNameForIntegrationTestResource()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
