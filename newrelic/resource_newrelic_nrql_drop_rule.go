@@ -116,9 +116,8 @@ func resourceNewRelicNRQLDropRuleRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	rule, err := getNRQLDropRuleByID(ctx, client, accountID, ruleID)
-
 	if err != nil {
-		if _, ok := err.(*nrErrors.NotFound); ok || errors.Is(err, errors.New(string(nrqldroprules.NRQLDropRulesErrorReasonTypes.RULE_NOT_FOUND))) {
+		if _, ok := err.(*nrErrors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
@@ -209,12 +208,12 @@ func getNRQLDropRuleByID(ctx context.Context, client *newrelic.NewRelic, account
 	}
 
 	if rules.Error.Reason == nrqldroprules.NRQLDropRulesErrorReasonTypes.RULE_NOT_FOUND {
-		return nil, errors.New("RULE_NOT_FOUND\n" + rules.Error.Description)
+		return nil, nrErrors.NewNotFound("RULE_NOT_FOUND\n" + rules.Error.Description)
 	}
 	for _, v := range rules.Rules {
 		if v.ID == ruleID {
 			return &v, nil
 		}
 	}
-	return nil, errors.New("drop rule not found")
+	return nil, nrErrors.NewNotFound("RULE_NOT_FOUND")
 }
