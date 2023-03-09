@@ -62,6 +62,19 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       # Must be another dashboard GUID
       filter_current_dashboard = true
+      
+      # color customization
+      colors {
+        color = "#722727"
+        series_overrides {
+          color = "#722322"
+          series_name = "Node"
+        }
+        series_overrides {
+          color = "#236f70"
+          series_name = "Java"
+        }
+      }
     }
 
     widget_line {
@@ -73,12 +86,26 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       nrql_query {
         account_id = 12345
-        query      = "FROM Transaction SELECT average(duration) FACET appName"
+        query      = "FROM Transaction select max(duration) as 'max duration' where httpResponseCode = '504' timeseries since 5 minutes ago"
       }
 
       nrql_query {
         query = "FROM Transaction SELECT rate(count(*), 1 minute)"
       }
+      legend_enabled = true
+      ignore_time_range = false
+      y_axis_left_min = 0
+      y_axis_left_max = 1 
+      
+      units {
+        unit = "ms"
+        series_overrides {
+          unit = "ms"
+          series_name = "max duration"
+        }
+      }
+     
+      
     }
 
     widget_markdown {
@@ -90,6 +117,51 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       text = "### Helpful Links\n\n* [New Relic One](https://one.newrelic.com)\n* [Developer Portal](https://developer.newrelic.com)"
     }
+    
+    widget_line {
+      title = "Overall CPU % Statistics"
+      row = 1
+      column = 5
+      height = 3
+      width = 4
+
+      nrql_query {
+        query = <<EOT
+SELECT average(cpuSystemPercent), average(cpuUserPercent), average(cpuIdlePercent), average(cpuIOWaitPercent) FROM SystemSample  SINCE 1 hour ago TIMESERIES 
+EOT
+      }
+      facet_show_other_series = false
+      legend_enabled = true
+      ignore_time_range = false
+      y_axis_left_min = 0
+      y_axis_left_max = 0
+
+      null_values {
+        null_value = "default"
+
+        series_overrides {
+          null_value = "remove"
+          series_name = "Avg Cpu User Percent"
+        }
+
+        series_overrides {
+          null_value = "zero"
+          series_name = "Avg Cpu Idle Percent"
+        }
+
+        series_overrides {
+          null_value = "default"
+          series_name = "Avg Cpu IO Wait Percent"
+        }
+
+        series_overrides {
+          null_value = "preserve"
+          series_name = "Avg Cpu System Percent"
+        }
+      }
+
+    }
+    
   }
 
   variable {
@@ -169,6 +241,12 @@ All nested `widget` blocks support the following common arguments:
   * `width` - (Optional) Width of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `4`.
   * `height` - (Optional) Height of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `3`.
   * `ignore_time_range` - (Optional) With this turned on, the time range in this query will override the time picker on dashboards and other pages. Defaults to `false`.
+  * `facet_show_other_series` - (Optional) With this turned on, this customization allows you to have the Other groups option visible or not if a facets ona query returns are more than 2000 for bar charts, pie charts, tables, the Other groups facet aggregates the rest of the facets. Defaults to `false`
+  * `y_axis_left_min`, `y_axis_left_max` - (Optional) Adjust the Y axis to display the data within certain values by setting a minimum and maximum value for the axis for line charts and area charts. If no customization option is selected, dashboards automatically displays the full Y axis from 0 to the top value plus a margin.
+  * `legend_enabled` - (Optional) wWith this turned on, the legend will be displayed. Defaults to `false`.
+  * `null_values` - (Optional) A nested block that describes a Null Values.  See [Nested Null Values blocks](#nested-null-values-blocks) below for details.
+  * `units` - (Optional) A nested block that describes a Null Values.  See [Nested Units blocks](#nested-units-blocks) below for details.
+  * `colors` - (Optional) A nested block that describes a Null Values.  See [Nested Colors blocks](#nested-colors-blocks) below for details.
 
 Each widget type supports an additional set of arguments:
 
@@ -259,6 +337,27 @@ The following arguments are supported:
 
   * `title` - (Optional) A human-friendly display string for this value.
   * `value` - (Required) A possible variable value
+
+### Nested `Null Values` blocks
+
+The following arguments are supported:
+
+* `null_value` - (Optional) Choose an option in displaying null values. Accepted values are `deafult`, `remove`, `preserve`, or `zero`.
+* `series_overrides` - (Optional) A Nested block which will take two string attributes `null_value` and `series_name`. This nested block is used to customize null values of individual series.
+
+### Nested `Units` blocks
+
+The following arguments are supported:
+
+* `unit` - (Optional) Choose a unit to customize the unit on your Y axis and in each of your series.
+* `series_overrides` - (Optional) A Nested block which will take two string attributes `null_value` and `series_name`. This nested block is used to customize null values of individual series.
+
+### Nested `Colors` blocks
+
+The following arguments are supported:
+
+* `color` - (Optional) Choose a color to customize the color of your charts per series in area, bar, line, pie, and stacked bar charts. Accepted values are RGB, HEX, or HSL code.
+* `series_overrides` - (Optional) A Nested block which will take two string attributes `color` and `series_name`. This nested block is used to customize colors of individual series.
 
 ## Additional Examples
 
