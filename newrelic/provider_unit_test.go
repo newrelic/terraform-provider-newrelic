@@ -19,7 +19,7 @@ func TestGenerateNameForIntegrationTestResource(t *testing.T) {
 	t.Parallel()
 
 	result := generateNameForIntegrationTestResource()
-	require.Contains(t, result, "tf_test_")
+	require.Contains(t, result, "tf-test-")
 }
 
 func TestBuildUserAgentStringWithDefaultServiceName(t *testing.T) {
