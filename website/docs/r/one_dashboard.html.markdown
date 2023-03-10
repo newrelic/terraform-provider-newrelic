@@ -8,7 +8,6 @@ description: |-
 
 # Resource: newrelic\_one\_dashboard
 
--> **NOTE:** The [newrelic_one_dashboard_json](one_dashboard_json.html) resource is preferred for configuring dashboards in New Relic. This resource does not support the latest dashboard features and will receive less investment compared to [newrelic_one_dashboard_json](one_dashboard_json.html).
 
 ## Example Usage: Create a New Relic One Dashboard
 
@@ -244,9 +243,9 @@ All nested `widget` blocks support the following common arguments:
   * `facet_show_other_series` - (Optional) Enable or disable the Other group in visualisations. The other group is used if a facet on a query returns more than 2000 items for bar charts, pie charts, and tables. The other group aggregates the rest of the facets. Defaults to `false`
   * `y_axis_left_min`, `y_axis_left_max` - (Optional) Adjust the Y axis to display the data within certain values by setting a minimum and maximum value for the axis for line charts and area charts. If no customization option is selected, dashboards automatically displays the full Y axis from 0 to the top value plus a margin.
   * `legend_enabled` - (Optional) With this turned on, the legend will be displayed. Defaults to `true`.
-  * `null_values` - (Optional) A nested block that describes a Null Values.  See [Nested Null Values blocks](#nested-null-values-blocks) below for details.
-  * `units` - (Optional) A nested block that describes  units on your Y axis.  See [Nested Units blocks](#nested-units-blocks) below for details.
-  * `colors` - (Optional) A nested block that describes colors of your charts per series.  See [Nested Colors blocks](#nested-colors-blocks) below for details.
+  * `null_values` - (Optional) A nested block that describes a Null Values. See [Nested Null Values blocks](#nested-null-values-blocks) below for details.
+  * `units` - (Optional) A nested block that describes units on your Y axis. See [Nested Units blocks](#nested-units-blocks) below for details.
+  * `colors` - (Optional) A nested block that describes colors of your charts per series. See [Nested Colors blocks](#nested-colors-blocks) below for details.
 
 Each widget type supports an additional set of arguments:
 
@@ -342,22 +341,22 @@ The following arguments are supported:
 
 The following arguments are supported:
 
-* `null_value` -  Choose an option in displaying null values. Accepted values are `deafult`, `remove`, `preserve`, or `zero`.
-* `series_overrides` - (Optional) A Nested block which will take two string attributes `null_value` and `series_name`. This nested block is used to customize null values of individual series.
+* `null_value` -  Choose an option in displaying null values. Accepted values are `default`, `remove`, `preserve`, or `zero`.
+* `series_overrides` - (Optional) A Nested block which will take two string attributes `null_value` and `series_name`. This nested block is used to customize null values of individual.
 
 ### Nested `Units` blocks
 
 The following arguments are supported:
 
 * `unit` - (Optional) Choose a unit to customize the unit on your Y axis and in each of your series.
-* `series_overrides` - (Optional) A Nested block which will take two string attributes `unit` and `series_name`. This nested block is used to customize null values of individual series.
+* `series_overrides` - (Optional) A Nested block which will take two string attributes `unit` and `series_name`. This nested block is used to customize null values of individual.
 
 ### Nested `Colors` blocks
 
 The following arguments are supported:
 
 * `color` - (Optional) Choose a color to customize the color of your charts per series in area, bar, line, pie, and stacked bar charts. Accepted values are RGB, HEX, or HSL code.
-* `series_overrides` - (Optional) A Nested block which will take two string attributes `color` and `series_name`. This nested block is used to customize colors of individual series.
+* `series_overrides` - (Optional) A Nested block which will take two string attributes `color` and `series_name`. This nested block is used to customize colors of individual.
 
 ## Additional Examples
 
