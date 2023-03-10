@@ -498,6 +498,101 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 		cfg.YAxisLeft = &l
 	}
 
+	cfg = expandDashboardWidgetNullValuesInput(w, cfg)
+	cfg = expandDashboardWidgetColorsInput(w, cfg)
+	cfg = expandDashboardWidgetUnitsInput(w, cfg)
+
+	if l, ok := w["limit"]; ok {
+		cfg.Limit = l.(float64)
+	}
+
+	if l, ok := w["ignore_time_range"]; ok {
+		var platformOptions = dashboards.RawConfigurationPlatformOptions{}
+		platformOptions.IgnoreTimeRange = l.(bool)
+		cfg.PlatformOptions = &platformOptions
+	}
+
+	if t, ok := w["text"]; ok {
+		if t.(string) != "" {
+			cfg.Text = t.(string)
+		}
+	}
+
+	widget.Visualization.ID = visualisation
+
+	return &widget, &cfg, nil
+}
+
+func expandDashboardWidgetUnitsInput(w map[string]interface{}, cfg dashboards.RawConfiguration) dashboards.RawConfiguration {
+	if q, ok := w["units"]; ok {
+		units := q.([]interface{})
+		var n dashboards.DashboardWidgetUnits
+		if len(units) > 0 {
+			for _, y := range units {
+				if y != nil {
+					z := y.(map[string]interface{})
+					if v, ok := z["unit"]; ok {
+						n.Unit = v.(string)
+					}
+					if s, ok := z["series_overrides"]; ok {
+						var seriesOverrides = s.([]interface{})
+						n.SeriesOverrides = make([]dashboards.DashboardWidgetUnitOverrides, len(seriesOverrides))
+						for i, v := range seriesOverrides {
+							var t dashboards.DashboardWidgetUnitOverrides
+							k := v.(map[string]interface{})
+							if n, ok := k["unit"]; ok {
+								t.Unit = n.(string)
+							}
+							if n, ok := k["series_name"]; ok {
+								t.SeriesName = n.(string)
+							}
+							n.SeriesOverrides[i] = t
+						}
+					}
+				}
+			}
+			cfg.Units = &n
+		}
+	}
+	return cfg
+}
+
+func expandDashboardWidgetColorsInput(w map[string]interface{}, cfg dashboards.RawConfiguration) dashboards.RawConfiguration {
+	if q, ok := w["colors"]; ok {
+		colors := q.([]interface{})
+		var n dashboards.DashboardWidgetColors
+		if len(colors) > 0 {
+			for _, y := range colors {
+				if y != nil {
+					z := y.(map[string]interface{})
+					if v, ok := z["color"]; ok {
+						n.Color = v.(string)
+					}
+					if s, ok := z["series_overrides"]; ok {
+						var seriesOverrides = s.([]interface{})
+						n.SeriesOverrides = make([]dashboards.DashboardWidgetColorOverrides, len(seriesOverrides))
+						for i, v := range seriesOverrides {
+							var t dashboards.DashboardWidgetColorOverrides
+							k := v.(map[string]interface{})
+							if n, ok := k["color"]; ok {
+								t.Color = n.(string)
+							}
+							if n, ok := k["series_name"]; ok {
+								t.SeriesName = n.(string)
+							}
+							n.SeriesOverrides[i] = t
+						}
+
+					}
+				}
+			}
+			cfg.Colors = &n
+		}
+	}
+	return cfg
+}
+
+func expandDashboardWidgetNullValuesInput(w map[string]interface{}, cfg dashboards.RawConfiguration) dashboards.RawConfiguration {
 	if q, ok := w["null_values"]; ok {
 		nullValues := q.([]interface{})
 		if len(nullValues) > 0 {
@@ -530,88 +625,7 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 
 		}
 	}
-	if q, ok := w["colors"]; ok {
-		colors := q.([]interface{})
-		var n dashboards.DashboardWidgetColors
-		if len(colors) > 0 {
-			for _, y := range colors {
-				if y != nil {
-					z := y.(map[string]interface{})
-					if v, ok := z["color"]; ok {
-						n.Color = v.(string)
-					}
-					if s, ok := z["series_overrides"]; ok {
-						var seriesOverrides = s.([]interface{})
-						n.SeriesOverrides = make([]dashboards.DashboardWidgetColorOverrides, len(seriesOverrides))
-						for i, v := range seriesOverrides {
-							var t dashboards.DashboardWidgetColorOverrides
-							k := v.(map[string]interface{})
-							if n, ok := k["color"]; ok {
-								t.Color = n.(string)
-							}
-							if n, ok := k["series_name"]; ok {
-								t.SeriesName = n.(string)
-							}
-							n.SeriesOverrides[i] = t
-						}
-
-					}
-				}
-			}
-			cfg.Colors = &n
-		}
-	}
-	if q, ok := w["units"]; ok {
-		units := q.([]interface{})
-		var n dashboards.DashboardWidgetUnits
-		if len(units) > 0 {
-			for _, y := range units {
-				if y != nil {
-					z := y.(map[string]interface{})
-					if v, ok := z["unit"]; ok {
-						n.Unit = v.(string)
-					}
-					if s, ok := z["series_overrides"]; ok {
-						var seriesOverrides = s.([]interface{})
-						n.SeriesOverrides = make([]dashboards.DashboardWidgetUnitOverrides, len(seriesOverrides))
-						for i, v := range seriesOverrides {
-							var t dashboards.DashboardWidgetUnitOverrides
-							k := v.(map[string]interface{})
-							if n, ok := k["unit"]; ok {
-								t.Unit = n.(string)
-							}
-							if n, ok := k["series_name"]; ok {
-								t.SeriesName = n.(string)
-							}
-							n.SeriesOverrides[i] = t
-						}
-					}
-				}
-			}
-			cfg.Units = &n
-		}
-
-	}
-
-	if l, ok := w["limit"]; ok {
-		cfg.Limit = l.(float64)
-	}
-
-	if l, ok := w["ignore_time_range"]; ok {
-		var platformOptions = dashboards.RawConfigurationPlatformOptions{}
-		platformOptions.IgnoreTimeRange = l.(bool)
-		cfg.PlatformOptions = &platformOptions
-	}
-
-	if t, ok := w["text"]; ok {
-		if t.(string) != "" {
-			cfg.Text = t.(string)
-		}
-	}
-
-	widget.Visualization.ID = visualisation
-
-	return &widget, &cfg, nil
+	return cfg
 }
 
 func expandLinkedEntityGUIDs(guids []interface{}) []common.EntityGUID {
