@@ -128,7 +128,7 @@ func testAccNewRelicCloudAwsGovCloudIntegrationsConfig(access_key_id string, aws
    secret_access_key = "%[3]s"
 }
    resource "newrelic_cloud_aws_govcloud_integrations" "foo" {
-     account_id=3806526
+     account_id=%[5]d
      linked_account_id=newrelic_cloud_awsGovcloud_link_account.account.id
      alb{
       metrics_polling_interval=1000
@@ -255,7 +255,7 @@ func testAccNewRelicCloudAwsGovCloudIntegrationsConfig(access_key_id string, aws
       tag_value=""
      }
 }
-`, access_key_id, aws_account_id, secret_access_key, name)
+`, access_key_id, aws_account_id, secret_access_key, name, testAccountID)
 }
 
 func testAccNewRelicCloudAwsGovCloudIntegrationsConfigUpdated(access_key_id string, aws_account_id string, secret_access_key string, name string) string {
@@ -268,7 +268,7 @@ func testAccNewRelicCloudAwsGovCloudIntegrationsConfigUpdated(access_key_id stri
    secret_access_key = "%[3]s"
 }
    resource "newrelic_cloud_aws_govcloud_integrations" "foo" {
-     account_id=3806526
+     account_id=%[5]d
      linked_account_id=newrelic_cloud_awsGovcloud_link_account.account.id
      alb{
       metrics_polling_interval=2000
@@ -395,5 +395,5 @@ func testAccNewRelicCloudAwsGovCloudIntegrationsConfigUpdated(access_key_id stri
       tag_value=""
      }
 }
-`, access_key_id, aws_account_id, secret_access_key, name)
+`, access_key_id, aws_account_id, secret_access_key, name, testAccountID)
 }

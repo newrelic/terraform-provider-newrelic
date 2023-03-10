@@ -108,18 +108,18 @@ func testAccNewRelicCloudGcpLinkAccountConfig(name string, projectId string) str
 	return fmt.Sprintf(`
 	resource "newrelic_cloud_gcp_link_account" "foo"{
 			name = "%[1]s"
-			account_id = 3806526
+			account_id = %[3]d
 			project_id="%[2]s"
 	}
-	`, name, projectId)
+	`, name, projectId, testAccountID)
 }
 
 func testAccNewRelicCloudGcpLinkAccountConfigUpdated(name string, projectId string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_cloud_gcp_link_account" "foo"{
 			name = "%[1]s-updated"
-			account_id = 3806526
+			account_id = %[3]d
 			project_id="%[2]s"
 	}
-	`, name, projectId)
+	`, name, projectId, testAccountID)
 }
