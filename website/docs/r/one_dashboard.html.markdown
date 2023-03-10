@@ -241,12 +241,12 @@ All nested `widget` blocks support the following common arguments:
   * `width` - (Optional) Width of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `4`.
   * `height` - (Optional) Height of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `3`.
   * `ignore_time_range` - (Optional) With this turned on, the time range in this query will override the time picker on dashboards and other pages. Defaults to `false`.
-  * `facet_show_other_series` - (Optional) With this turned on, this customization allows you to have the Other groups option visible or not if a facets ona query returns are more than 2000 for bar charts, pie charts, tables, the Other groups facet aggregates the rest of the facets. Defaults to `false`
+  * `facet_show_other_series` - (Optional) Enable or disable the Other group in visualisations. The other group is used if a facet on a query returns more than 2000 items for bar charts, pie charts, and tables. The other group aggregates the rest of the facets. Defaults to `false`
   * `y_axis_left_min`, `y_axis_left_max` - (Optional) Adjust the Y axis to display the data within certain values by setting a minimum and maximum value for the axis for line charts and area charts. If no customization option is selected, dashboards automatically displays the full Y axis from 0 to the top value plus a margin.
-  * `legend_enabled` - (Optional) wWith this turned on, the legend will be displayed. Defaults to `false`.
+  * `legend_enabled` - (Optional) With this turned on, the legend will be displayed. Defaults to `true`.
   * `null_values` - (Optional) A nested block that describes a Null Values.  See [Nested Null Values blocks](#nested-null-values-blocks) below for details.
-  * `units` - (Optional) A nested block that describes a Null Values.  See [Nested Units blocks](#nested-units-blocks) below for details.
-  * `colors` - (Optional) A nested block that describes a Null Values.  See [Nested Colors blocks](#nested-colors-blocks) below for details.
+  * `units` - (Optional) A nested block that describes  units on your Y axis.  See [Nested Units blocks](#nested-units-blocks) below for details.
+  * `colors` - (Optional) A nested block that describes colors of your charts per series.  See [Nested Colors blocks](#nested-colors-blocks) below for details.
 
 Each widget type supports an additional set of arguments:
 
@@ -342,7 +342,7 @@ The following arguments are supported:
 
 The following arguments are supported:
 
-* `null_value` - (Optional) Choose an option in displaying null values. Accepted values are `deafult`, `remove`, `preserve`, or `zero`.
+* `null_value` -  Choose an option in displaying null values. Accepted values are `deafult`, `remove`, `preserve`, or `zero`.
 * `series_overrides` - (Optional) A Nested block which will take two string attributes `null_value` and `series_name`. This nested block is used to customize null values of individual series.
 
 ### Nested `Units` blocks
@@ -350,7 +350,7 @@ The following arguments are supported:
 The following arguments are supported:
 
 * `unit` - (Optional) Choose a unit to customize the unit on your Y axis and in each of your series.
-* `series_overrides` - (Optional) A Nested block which will take two string attributes `null_value` and `series_name`. This nested block is used to customize null values of individual series.
+* `series_overrides` - (Optional) A Nested block which will take two string attributes `unit` and `series_name`. This nested block is used to customize null values of individual series.
 
 ### Nested `Colors` blocks
 
