@@ -314,6 +314,7 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 		"legend_enabled": {
 			Type:     schema.TypeBool,
 			Optional: true,
+			Default:  true,
 		},
 		"y_axis_left_min": {
 			Type:     schema.TypeFloat,
