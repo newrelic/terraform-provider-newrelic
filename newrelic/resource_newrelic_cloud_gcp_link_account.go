@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -54,7 +55,11 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 	cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
 
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
+	}
+
+	if cloudLinkAccountPayload == nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] cloudLinkAccountPayload was nil"))
 	}
 
 	if len(cloudLinkAccountPayload.Errors) > 0 {
