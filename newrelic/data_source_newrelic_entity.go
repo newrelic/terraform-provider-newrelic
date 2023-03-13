@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
 
@@ -94,18 +95,17 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 
 	name := d.Get("name").(string)
 	ignoreCase := d.Get("ignore_case").(bool)
-	entityType := entities.EntitySearchQueryBuilderType(strings.ToUpper(d.Get("type").(string)))
-	tags := expandEntityTag(d.Get("tag").([]interface{}))
-	domain := entities.EntitySearchQueryBuilderDomain(strings.ToUpper(d.Get("domain").(string)))
+	entityType := strings.ToUpper(d.Get("type").(string))
+	domain := strings.ToUpper(d.Get("domain").(string))
+	tags := d.Get("tag").([]interface{})
 
-	params := entities.EntitySearchQueryBuilder{
-		Name:   name,
-		Type:   entityType,
-		Tags:   tags,
-		Domain: domain,
-	}
+	query := buildEntitySearchQuery(name, domain, entityType, tags)
 
-	entityResults, err := client.Entities.GetEntitySearchWithContext(ctx, entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
+	entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx,
+		entities.EntitySearchOptions{},
+		query,
+		[]entities.EntitySearchSortCriteria{},
+	)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -183,29 +183,43 @@ func flattenEntityData(entity *entities.EntityOutlineInterface, d *schema.Resour
 	return nil
 }
 
-func expandEntityTag(cfg []interface{}) []entities.EntitySearchQueryBuilderTag {
-	var tags []entities.EntitySearchQueryBuilderTag
+func buildEntitySearchQuery(name string, domain string, entityType string, tags []interface{}) string {
+	var query string
 
-	if len(cfg) == 0 {
-		return tags
+	if name != "" {
+		query = fmt.Sprintf("name = '%s'", name)
 	}
 
-	tags = make([]entities.EntitySearchQueryBuilderTag, 0, len(cfg))
+	if domain != "" {
+		query = fmt.Sprintf("%s AND domain = '%s'", query, domain)
+	}
 
-	for _, t := range cfg {
-		cfgTag := t.(map[string]interface{})
+	if entityType != "" {
+		query = fmt.Sprintf("%s AND type = '%s'", query, entityType)
+	}
 
-		tag := entities.EntitySearchQueryBuilderTag{}
+	if len(tags) > 0 {
+		query = fmt.Sprintf("%s AND %s", query, buildTagsQueryFragment(tags))
+	}
 
-		if k, ok := cfgTag["key"]; ok {
-			tag.Key = k.(string)
-			if v, ok := cfgTag["value"]; ok {
-				tag.Value = v.(string)
+	return query
+}
 
-				tags = append(tags, tag)
-			}
+func buildTagsQueryFragment(tags []interface{}) string {
+	var query string
+
+	for i, t := range tags {
+		tag := t.(map[string]interface{})
+
+		var q string
+		if i > 0 {
+			q = fmt.Sprintf(" AND tags.`%s` = '%s'", tag["key"], tag["value"].(string))
+		} else {
+			q = fmt.Sprintf("tags.`%s` = '%s'", tag["key"], tag["value"].(string))
 		}
+
+		query = fmt.Sprintf("%s%s", query, q)
 	}
 
-	return tags
+	return query
 }
