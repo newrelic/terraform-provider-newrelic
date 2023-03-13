@@ -66,7 +66,7 @@ func resourceNewRelicCloudAzureLinkAccountCreate(ctx context.Context, d *schema.
 	cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
 
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	if len(cloudLinkAccountPayload.Errors) > 0 {
