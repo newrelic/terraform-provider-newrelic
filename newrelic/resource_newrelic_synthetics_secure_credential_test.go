@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
@@ -17,10 +18,10 @@ import (
 
 func TestAccNewRelicSyntheticsSecureCredential_Basic(t *testing.T) {
 	resourceName := "newrelic_synthetics_secure_credential.foo"
-	rName := generateNameForIntegrationTestResource()
+	rName := fmt.Sprintf("TF_TEST_%s", acctest.RandString(7))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsSecureCredentialDestroy,
 		Steps: []resource.TestStep{
@@ -57,7 +58,7 @@ func TestAccNewRelicSyntheticsSecureCredential_Error(t *testing.T) {
 	resourceName := "newrelic_synthetics_secure_credential.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsSecureCredentialDestroy,
 		Steps: []resource.TestStep{
