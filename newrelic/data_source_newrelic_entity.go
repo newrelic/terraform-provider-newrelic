@@ -102,13 +102,19 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 	query := buildEntitySearchQuery(name, domain, entityType, tags)
 
 	entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx,
-		entities.EntitySearchOptions{},
+		entities.EntitySearchOptions{
+			CaseSensitiveTagMatching: ignoreCase,
+		},
 		query,
 		[]entities.EntitySearchSortCriteria{},
 	)
 
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if entityResults == nil {
+		return diag.FromErr(fmt.Errorf("GetEntitySearchByQuery response was nil"))
 	}
 
 	var entity *entities.EntityOutlineInterface
@@ -125,7 +131,7 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if entity == nil {
-		return diag.FromErr(fmt.Errorf("the name '%s' does not match any New Relic One entity for the given search parameters (ignore_case: %t)", name, ignoreCase))
+		return diag.FromErr(fmt.Errorf("no entities found for the provided search parameters, please ensure your schema attributes are valid"))
 	}
 
 	return diag.FromErr(flattenEntityData(entity, d))
