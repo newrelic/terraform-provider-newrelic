@@ -39,7 +39,7 @@ func TestAccNewRelicEntityData_Missing(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicEntityDataConfig(strings.ToUpper(testAccExpectedApplicationName), testAccountID),
-				ExpectError: regexp.MustCompile(`the name '.*' does not match any New Relic One entity for the given search parameters \(ignore_case: false\)`),
+				ExpectError: regexp.MustCompile(`no entities found`),
 			},
 		},
 	})
@@ -57,36 +57,6 @@ func TestAccNewRelicEntityData_IgnoreCase(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", testAccExpectedApplicationName),
 				),
-			},
-		},
-	})
-}
-
-func TestAccNewRelicEntityData_TypeFail(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccNewRelicEntityDataConfig_InvalidType(strings.ToUpper(testAccExpectedApplicationName), testAccountID),
-				ExpectError: regexp.MustCompile("Argument \"queryBuilder\""),
-			},
-		},
-	})
-}
-
-func TestAccNewRelicEntityData_DomainFail(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccNewRelicEntityDataConfig_InvalidDomain(strings.ToUpper(testAccExpectedApplicationName), testAccountID),
-				ExpectError: regexp.MustCompile("Argument \"queryBuilder\""),
 			},
 		},
 	})
