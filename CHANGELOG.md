@@ -1,3 +1,8 @@
+<a name="v3.16.1"></a>
+## [v3.16.1] - 2023-03-14
+### Bug Fixes
+- **cloud:** return err when error is present or payload is nil
+
 <a name="v3.16.0"></a>
 ## [v3.16.0] - 2023-03-09
 ### Bug Fixes
@@ -1727,7 +1732,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.16.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.16.1...HEAD
+[v3.16.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.16.0...v3.16.1
 [v3.16.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.15.0...v3.16.0
 [v3.15.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.14.0...v3.15.0
 [v3.14.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.13.0...v3.14.0
