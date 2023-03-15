@@ -30,9 +30,9 @@ In addition to all arguments above, the following attributes are exported:
 - `permalink` - The URL for viewing the dashboard.
 - `updated_at` - The date and time when the dashboard was last updated.
 
-## Additional examples
+## Additional Examples
 
-##### Template
+### Template
 
 Below is an example how you can use [templatefile](https://www.terraform.io/language/functions/templatefile) to dynamically generate pages based on a list. We also replace the `account_id` which is usually hardcoded in the json with a variable.
 
@@ -105,5 +105,63 @@ resource "newrelic_one_dashboard_json" "bar" {
   %{ endfor }
   ],
   "variables": []
+}
+```
+### Setting Thresholds
+
+Similar to the feature of setting warning/critical thresholds via the 'Edit Widget' option in the UI of New Relic Dashboards, thresholds may be configured using this resource, by adding the `thresholds` attribute to the JSON (which can also be done from the [New Relic Dashboard UI](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/dashboards-charts-import-export-data/#dashboards), so as to add the `threshold` attribute to the exported JSON). The following example demonstrates setting thresholds on a billboard widget.
+
+```hcl
+resource "newrelic_one_dashboard_json" "sample_json_dashboard" {
+  json = file("dashboard.json")
+}
+```
+
+`dashboard.json`
+```json
+{
+  "name" : "Sample",
+  "description" : null,
+  "permissions" : "PUBLIC_READ_WRITE",
+  "pages" : [
+    {
+      "name" : "Transaction Failure Tracker",
+      "description" : null,
+      "widgets" : [
+        {
+          "title" : "Transaction Failure Tracker",
+          "layout" : {
+            "column" : 1,
+            "row" : 1,
+            "width" : 10,
+            "height" : 5
+          },
+          "visualization" : {
+            "id" : "viz.billboard"
+          },
+          "rawConfiguration" : {
+            "nrqlQueries" : [
+              {
+                "accountIds" : [
+                  <Your Account ID>
+                ],
+                "query" : "SELECT count(*) from Transaction where httpResponseCode!=200 since 1 hour ago"
+              }
+            ],
+            "thresholds" : [
+              {
+                "alertSeverity" : "WARNING",
+                "value" : 12
+              },
+              {
+                "alertSeverity" : "CRITICAL",
+                "value" : 40
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
 }
 ```

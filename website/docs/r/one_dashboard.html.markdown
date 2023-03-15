@@ -310,6 +310,35 @@ resource "newrelic_one_dashboard" "multi_page_dashboard" {
   }
 }
 ```
+### Setting Thresholds
+
+The following example explains setting thresholds on a billboard widget.
+
+```hcl
+resource "newrelic_one_dashboard" "sample_dashboard" {
+  name = "Sample Dashboard"
+  page {
+    name        = "Transactions Page"
+    description = null
+
+    widget_billboard {
+      title  = "Transaction Latency Tracker"
+      row    = 1
+      column = 1
+      width  = 5
+      height = 5
+
+      nrql_query {
+        query = "select count(*) from Transaction where duration> 0.001 since 1 hour ago"
+      }
+      warning  = 15
+      critical = 40
+    }
+  }
+}
+```
+
+Alternatively, you can also implement the same using the [_newrelic_one_dashboard_json_](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/one_dashboard_json) resource, by adding the attribute `threshold` to the JSON file (which can also be done from the [New Relic Dashboard UI](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/dashboards-charts-import-export-data/#dashboards)). Please see the [Additional Examples](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/one_dashboard_json#additional-examples) section, under the aforementioned resource.
 
 ## Import
 
