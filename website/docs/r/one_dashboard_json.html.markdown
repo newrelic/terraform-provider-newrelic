@@ -30,9 +30,9 @@ In addition to all arguments above, the following attributes are exported:
 - `permalink` - The URL for viewing the dashboard.
 - `updated_at` - The date and time when the dashboard was last updated.
 
-## Additional examples
+## Additional Examples
 
-##### Template
+### Template
 
 Below is an example how you can use [templatefile](https://www.terraform.io/language/functions/templatefile) to dynamically generate pages based on a list. We also replace the `account_id` which is usually hardcoded in the json with a variable.
 
@@ -105,5 +105,56 @@ resource "newrelic_one_dashboard_json" "bar" {
   %{ endfor }
   ],
   "variables": []
+}
+```
+### Setting Thresholds
+
+The following example demonstrates setting thresholds on a billboard widget.
+
+`dashboard.json`
+```json
+{
+  "name" : "Sample",
+  "permissions" : "PUBLIC_READ_WRITE",
+  "pages" : [
+    {
+      "name" : "Sample Page",
+      "description" : "A guide to the metrics of daily transactions on the website.",
+      "widgets" : [
+        {
+          "title" : "Transaction Failure Tracker",
+          "layout" : {
+            "column" : 1,
+            "row" : 1,
+            "width" : 3,
+            "height" : 5
+          },
+          "visualization" : {
+            "id" : "viz.billboard"
+          },
+          "rawConfiguration" : {
+            "nrqlQueries" : [
+              {
+                "accountIds" : [
+                  {Your-Account-ID}
+                ],
+                "query" : "SELECT count(*) from Transaction where httpResponseCode!=200 since 1 hour ago"
+              }
+            ],
+            "thresholds" : [
+              {
+                "alertSeverity" : "WARNING",
+                "value" : 15
+              },
+              {
+                "alertSeverity" : "CRITICAL",
+                "value" : 40
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
 }
 ```
