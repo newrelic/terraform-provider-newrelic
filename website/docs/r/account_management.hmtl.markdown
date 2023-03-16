@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create and manage New Relic sub accounts.
 
--> **WARNING:** The `newrelic_account_management` resource will only create/edit but won't delete a sub account. Please visit our documentation on  [`Account Management`](https://docs.newrelic.com/docs/apis/nerdgraph/examples/manage-accounts-nerdgraph/#delete) for more information .
+-> **WARNING:** The `newrelic_account_management` resource will only create/update but won't delete a sub account. Please visit our documentation on  [`Account Management`](https://docs.newrelic.com/docs/apis/nerdgraph/examples/manage-accounts-nerdgraph/#delete) for more information .
 
 ## Example Usage
 
