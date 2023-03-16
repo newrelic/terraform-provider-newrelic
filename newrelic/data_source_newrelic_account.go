@@ -45,7 +45,7 @@ func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, 
 
 	scope := accounts.RegionScope(strings.ToUpper(d.Get("scope").(string)))
 
-	id, idOk := d.GetOk("account_id")
+	id := selectAccountID(meta.(*ProviderConfig), d)
 	name, nameOk := d.GetOk("name")
 
 	params := accounts.ListAccountsParams{
@@ -59,15 +59,11 @@ func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, 
 
 	var account *accounts.AccountOutline
 
-	if !idOk && !nameOk {
-		id = meta.(*ProviderConfig).AccountID
-		if id == 0 {
-			return diag.FromErr(fmt.Errorf(`one of "name" or "account_id" is required to locate a New Relic account`))
-		}
-		idOk = true
+	if !nameOk && id == 0 {
+		return diag.FromErr(fmt.Errorf(`one of "name" or "account_id" is required to locate a New Relic account`))
 	}
 
-	if idOk && nameOk {
+	if id != 0 && nameOk {
 		return diag.FromErr(fmt.Errorf(`exactly one of "name" or "account_id" is required to locate a New Relic account`))
 	}
 
@@ -84,9 +80,9 @@ func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	if idOk {
+	if id != 0 {
 		for _, a := range accts {
-			if a.ID == id.(int) {
+			if a.ID == id {
 				account = &a
 				break
 			}

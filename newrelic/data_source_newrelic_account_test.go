@@ -31,7 +31,9 @@ func TestAccNewRelicAccountDataSource_ByName(t *testing.T) {
 	if !nrInternalAccount {
 		t.Skipf("New Relic internal testing account required")
 	}
-
+	if testAccountID != 0 {
+		t.Skipf("Skipping as the attribute account_id is provided ")
+	}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -46,14 +48,16 @@ func TestAccNewRelicAccountDataSource_ByName(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicAccountDataSource_MissingAttributes(t *testing.T) {
+func TestAccNewRelicAccountDataSource_EnvAttributes(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccNewRelicAccountDataSourceConfigMissingAttributes(),
-				ExpectError: regexp.MustCompile("one of"),
+				Config: testAccNewRelicAccountDataSourceConfigEnvAttributes(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAccountDataSourceExists("data.newrelic_account.acc"),
+				),
 			},
 		},
 	})
@@ -111,7 +115,7 @@ data "newrelic_account" "acc" {
 `, testAccountName)
 }
 
-func testAccNewRelicAccountDataSourceConfigMissingAttributes() string {
+func testAccNewRelicAccountDataSourceConfigEnvAttributes() string {
 	return `data "newrelic_account" "acc" {}`
 }
 
