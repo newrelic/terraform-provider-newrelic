@@ -1197,3 +1197,91 @@ func testAccNewRelicOneDashboard_FilterCurrentDashboardPageChange_TwoPages(dashb
 	  }
 	}`
 }
+
+func TestAccNewRelicOneDashboard_CreateOnePage_RawConfig(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_RawConfig(rName, strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			// Import
+			{
+				ResourceName:      "newrelic_one_dashboard.bar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func testAccCheckNewRelicOneDashboardConfig_RawConfig(dashboardName string, accountID string) string {
+	return `
+	resource "newrelic_one_dashboard" "bar" {
+	  name = "` + dashboardName + `"
+	  permissions = "private"
+
+	  page {
+		name = "` + dashboardName + ` page one"
+
+		widget_area {
+      title = "Heap Utilization"
+      row = 1
+      column = 1
+      height = 3
+      width = 4
+
+      nrql_query {
+      account_id = ` + accountID + `
+        query = <<EOT
+FROM JVMSampleActiveMQ SELECT latest(HeapMemoryUsage.Used) / 1000, latest(HeapMemoryUsage.Max) / 1000, latest(HeapMemoryUsage.Committed) / 1000, latest(HeapMemoryUsage.Init) / 1000 TIMESERIES AUTO SINCE 3 month ago
+EOT
+      }
+      facet_show_other_series = true
+      legend_enabled = true
+      ignore_time_range = true
+      y_axis_left_min = 0
+      y_axis_left_max = 0
+
+      null_values {
+        null_value = "preserve"
+        series_overrides {
+          null_value = "default"
+          series_name = "Heap Memory Usage. Used"
+        }
+        series_overrides {
+          null_value = "zero"
+          series_name = "Heap Memory Usage. Max"
+        }
+      }
+
+      units {
+        unit = "BYTES"
+        series_overrides {
+          unit = "BYTES"
+          series_name = "Heap Memory Usage. Committed"
+        }
+      }
+
+      colors {
+        color = "#722727"
+        series_overrides {
+          color = "#722727"
+          series_name = "Heap Memory Usage. Used"
+        }
+        series_overrides {
+          color = "#236f70"
+          series_name = "Heap Memory Usage. Max"
+        }
+      }
+    }
+	  }
+	}`
+}
