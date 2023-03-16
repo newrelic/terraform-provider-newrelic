@@ -4,7 +4,6 @@
 package newrelic
 
 import (
-	"context"
 	"fmt"
 	"regexp"
 	"testing"
@@ -15,29 +14,27 @@ import (
 )
 
 func TestAccNewRelicAccountManagement(t *testing.T) {
+	//t.Skip("Skipping the test case,as there is no delete api to delete the account")
 	resourceName := "newrelic_account_management.foo"
 	rName := acctest.RandString(7)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			//create
+			//Import
 			{
-				Config: testAccNewRelicAccountCreateConfig("Test " + rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAccountExists(resourceName)),
+				ImportState:        true,
+				Config:             testAccNewRelicAccountImportConfig(),
+				ResourceName:       resourceName,
+				ImportStateId:      "3833494",
+				ImportStateCheck:   testAccCheckNewRelicAccountImportCheck(resourceName),
+				ImportStatePersist: true,
 			},
 			//update
 			{
-				Config: testAccNewRelicAccountUpdateConfig("Update " + rName),
+				Config: testAccNewRelicAccountUpdateConfig("Dont Delete " + rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAccountExists(resourceName)),
-			},
-			//import
-			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      resourceName,
 			},
 		},
 	})
@@ -73,22 +70,22 @@ func TestAccNewRelicAccountManagementInCorrectRegion(t *testing.T) {
 	})
 }
 
-func testAccNewRelicAccountCreateConfig(name string) string {
+func testAccNewRelicAccountImportConfig() string {
 	return fmt.Sprintf(`
 resource "newrelic_account_management" "foo"{
-	name=  "%[2]s"
+name =""
 	region= "us01"
 }
-`, testAccountID, name)
+`)
 }
 
 func testAccNewRelicAccountUpdateConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_account_management" "foo"{
-	name=  "%[2]s"
+	name=  "%[1]s"
 	region= "us01"
 }
-`, testAccountID, name)
+`, name)
 }
 
 func testAccCheckNewRelicAccountExists(n string) resource.TestCheckFunc {
@@ -104,7 +101,7 @@ func testAccCheckNewRelicAccountExists(n string) resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		account, err := getCreatedAccountByID(context.Background(), client, rs.Primary.ID)
+		account, err := getCreatedAccountByID(client, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -119,17 +116,34 @@ func testAccCheckNewRelicAccountExists(n string) resource.TestCheckFunc {
 func testAccNewRelicAccountCreateInvalidRegionConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_account_management" "foo"{
-	name=  "%[2]s"
+	name=  "%[1]s"
 	region= "abcd01"
 }
-`, testAccountID, name)
+`, name)
 }
 
 func testAccNewRelicAccountCreateConfigInCorrectRegion(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_account_management" "foo"{
-	name=  "%[2]s"
+	name=  "%[1]s"
 	region= "eu01"
 }
-`, testAccountID, name)
+`, name)
+}
+
+func testAccCheckNewRelicAccountImportCheck(resourceName string) resource.ImportStateCheckFunc {
+	return func(state []*terraform.InstanceState) error {
+		expectedRegionCode := "us01"
+		region := state[0].Attributes["region"]
+		if region != expectedRegionCode {
+			return fmt.Errorf(
+				"%s: Attribute '%s' expected %#v got nil",
+				resourceName,
+				"region.#",
+				expectedRegionCode,
+			)
+		}
+
+		return nil
+	}
 }

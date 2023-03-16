@@ -48,7 +48,7 @@ func resourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, me
 	client := providerConfig.NewClient
 
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		account, err := getCreatedAccountByID(ctx, client, d.Id())
+		account, err := getCreatedAccountByID(client, d.Id())
 		//		fmt.Println("read", account.ID, err)
 		if err != nil {
 			return resource.NonRetryableError(err)
@@ -57,8 +57,8 @@ func resourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, me
 		if account == nil {
 			return resource.RetryableError(fmt.Errorf("account not found"))
 		}
-		d.Set("region", account.RegionCode)
-		d.Set("name", account.Name)
+		_ = d.Set("region", account.RegionCode)
+		_ = d.Set("name", account.Name)
 
 		return nil
 	})
@@ -86,21 +86,21 @@ func resourceNewRelicAccountCreate(ctx context.Context, d *schema.ResourceData, 
 	if created == nil {
 		return diag.Errorf("err: Account not created. Please check the input details")
 	}
-	accountId := created.ManagedAccount.ID
+	accountID := created.ManagedAccount.ID
 
-	d.SetId(strconv.Itoa(accountId))
+	d.SetId(strconv.Itoa(accountID))
 	return resourceNewRelicAccountRead(ctx, d, meta)
 }
 func resourceNewRelicAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
-	accountId, err := strconv.Atoi(d.Id())
+	accountID, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	updateAccountInput := accountmanagement.AccountManagementUpdateInput{
 		Name: d.Get("name").(string),
-		ID:   accountId,
+		ID:   accountID,
 	}
 	updated, err := client.AccountManagement.AccountManagementUpdateAccount(updateAccountInput)
 
@@ -124,9 +124,9 @@ func resourceNewRelicAccountDelete(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func getCreatedAccountByID(ctx context.Context, client *newrelic.NewRelic, ruleID string) (*accountmanagement.AccountManagementManagedAccount, error) {
+func getCreatedAccountByID(client *newrelic.NewRelic, ruleID string) (*accountmanagement.AccountManagementManagedAccount, error) {
 
-	accountId, err := strconv.Atoi(ruleID)
+	accountID, err := strconv.Atoi(ruleID)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +135,7 @@ func getCreatedAccountByID(ctx context.Context, client *newrelic.NewRelic, ruleI
 		return nil, err
 	}
 	for _, account := range *accounts {
-		if account.ID == accountId {
+		if account.ID == accountID {
 			return &account, nil
 		}
 	}
