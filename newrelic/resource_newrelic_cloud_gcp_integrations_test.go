@@ -19,9 +19,6 @@ func TestAccNewRelicCloudGcpIntegrations_Basic(t *testing.T) {
 	//t.Skipf("Skipping test until environment variables are added")
 	resourceName := "newrelic_cloud_gcp_integrations.foo1"
 	testGcpIntegrationProjectID := os.Getenv("INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID")
-	if testGcpIntegrationProjectID == "" {
-		t.Skipf("INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID must be set for acceptance test")
-	}
 
 	testGcpAccountName := acctest.RandString(5)
 
@@ -109,12 +106,12 @@ func testAccNewRelicCloudGcpIntegrationsConfig(projectID string, name string) st
 
 resource "newrelic_cloud_gcp_link_account" "foo" {
   name       = "%[2]s"
-  account_id = 2520528
+  account_id = %[3]d
   project_id = "%[1]s"
 }
 
 resource "newrelic_cloud_gcp_integrations" "foo1" {
-  account_id        = 2520528
+  account_id        = %[3]d
   linked_account_id = newrelic_cloud_gcp_link_account.foo.id
   alloy_db {
     metrics_polling_interval = 400
@@ -199,19 +196,19 @@ resource "newrelic_cloud_gcp_integrations" "foo1" {
     metrics_polling_interval = 400
   }
 }
-	`, projectID, name)
+	`, projectID, name, testAccountID)
 }
 
 func testAccNewRelicCloudGcpIntegrationsConfigUpdated(projectID string, name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_cloud_gcp_link_account" "foo"{
 			name = "%[2]s"
-			account_id = 2520528
+			account_id = %[3]d
 			project_id="%[1]s"
 	}
 
 	resource "newrelic_cloud_gcp_integrations" "foo1" {
-		  account_id = 2520528
+		  account_id = %[3]d
 		  linked_account_id = newrelic_cloud_gcp_link_account.foo.id
 		  app_engine {
 			metrics_polling_interval = 1400
@@ -293,5 +290,5 @@ func testAccNewRelicCloudGcpIntegrationsConfigUpdated(projectID string, name str
 			metrics_polling_interval = 1400
 		  }
 	}
-	`, projectID, name)
+	`, projectID, name, testAccountID)
 }

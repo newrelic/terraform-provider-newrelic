@@ -79,7 +79,7 @@ func TestAccNewRelicOneDashboard_CrossAccountQueries(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccCheckNewRelicOneDashboardConfig_TwoPageBasic(rName, "1"), // Hard-coded accountID for NRQL queries
+				Config: testAccCheckNewRelicOneDashboardConfig_TwoPageBasic(rName, "3814156"), // Hard-coded accountID for NRQL queries
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
 				),
@@ -753,7 +753,7 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQL() string {
 	}
     name = "variable"
 	nrql_query {
-		account_ids = [2520528]
+		account_ids = [3806526]
 		query = "FROM Transaction SELECT average(duration) FACET appName"
 	}
 	replacement_strategy = "default"
@@ -774,7 +774,7 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQLUpdated() string {
 	}
     name = "variableUpdated"
 	nrql_query {
-		account_ids = [2520528, 1]
+		account_ids = [3806526, 3814156]
 		query = "FROM Transaction SELECT average(duration) FACET appName"
 	}
 	replacement_strategy = "default"
