@@ -31,6 +31,13 @@ func TestAccNewRelicServiceLevel_Basic(t *testing.T) {
 					testAccCheckNewRelicServiceLevelExists(resourceName),
 				),
 			},
+			// Test: Create with CDF
+			{
+				Config: testAccNewRelicServiceLevelConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicServiceLevelExists(resourceName),
+				),
+			},
 			// Test: Update
 			{
 				Config: testAccNewRelicServiceLevelConfigUpdated(rName),
@@ -67,6 +74,49 @@ resource "newrelic_service_level" "sli" {
 			select {
 				attribute = "duration"
 				function = "COUNT"
+			}
+		}
+	}
+
+	objective {
+		target = 99.00
+		time_window {
+			rolling {
+				count = 7
+				unit = "DAY"
+			}
+		}
+	}
+}
+`, testAccountID, name)
+}
+
+func testAccNewRelicServiceLevelWithCDFConfig(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_workload" "workload" {
+	name = "%[2]s"
+	account_id = %[1]d
+	entity_search_query {
+		query = "tags.namespace like '%%App%%' "
+	}
+	scope_account_ids =  [%[1]d]
+}
+
+resource "newrelic_service_level" "sli" {
+	guid = newrelic_workload.workload.guid
+	name = "%[2]s"
+
+	events {
+		account_id = %[1]d
+		valid_events {
+			from = "Transaction"
+		}
+		good_events {
+			from = "Transaction"
+			select {
+				attribute = "duration"
+				function = "GET_FIELD"
+				threshold = 1.5
 			}
 		}
 	}

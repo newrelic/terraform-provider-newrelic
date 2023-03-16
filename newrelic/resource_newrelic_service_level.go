@@ -151,7 +151,12 @@ func eventsQuerySelectSchema() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "",
-				ValidateFunc: validation.StringInSlice([]string{"COUNT", "SUM"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"COUNT", "SUM", "GET_CDF_COUNT", "GET_FIELD"}, false),
+			},
+			"threshold": {
+				Type:        schema.TypeFloat,
+				Required:    false,
+				Description: "The event threshold to use in the SELECT clause",
 			},
 		},
 	}

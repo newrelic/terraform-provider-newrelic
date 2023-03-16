@@ -63,6 +63,7 @@ func flattenServiceLevelEventsQuerySelect(selectValue servicelevel.ServiceLevelE
 
 	selectQueryMap["attribute"] = selectValue.Attribute
 	selectQueryMap["function"] = selectValue.Function
+	selectQueryMap["threshold"] = selectValue.Threshold
 
 	selectOutput[0] = selectQueryMap
 	return selectOutput
@@ -174,6 +175,10 @@ func expandServiceLevelEventsQuerySelectCreateInput(cfg map[string]interface{}) 
 	}
 
 	selectValue.Function = servicelevel.ServiceLevelEventsQuerySelectFunction(cfg["function"].(string))
+
+	if threshold, ok := cfg["threshold"]; ok {
+		selectValue.Threshold = threshold.(float64)
+	}
 
 	return &selectValue
 }
@@ -295,6 +300,10 @@ func expandServiceLevelEventsQuerySelectUpdateInput(cfg map[string]interface{}) 
 	}
 
 	selectValue.Function = servicelevel.ServiceLevelEventsQuerySelectFunction(cfg["function"].(string))
+
+	if threshold, ok := cfg["threshold"]; ok {
+		selectValue.Threshold = threshold.(float64)
+	}
 
 	return &selectValue
 }
