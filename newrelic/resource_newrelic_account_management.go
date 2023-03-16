@@ -119,7 +119,7 @@ func resourceNewRelicAccountDelete(ctx context.Context, d *schema.ResourceData, 
 	var diags diag.Diagnostics
 	diags = append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
-		Summary:  "Account cannot be deleted via Terraform. Please contact support",
+		Summary:  "Account cannot be deleted via Terraform. https://docs.newrelic.com/docs/apis/nerdgraph/examples/manage-accounts-nerdgraph/#delete",
 	})
 	return diags
 }

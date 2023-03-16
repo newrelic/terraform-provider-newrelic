@@ -1,7 +1,7 @@
 ---
 layout: "newrelic"
 page_title: "New Relic: newrelic_account_management"
-sidebar_current: "docs-newrelic-resource-account_management"
+sidebar_current: "docs-newrelic-resource-account-management"
 description: |-
   Create and manage  sub accounts in New Relic.
 ---

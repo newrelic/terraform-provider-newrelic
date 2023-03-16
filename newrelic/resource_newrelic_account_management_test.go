@@ -14,7 +14,6 @@ import (
 )
 
 func TestAccNewRelicAccountManagement(t *testing.T) {
-	//t.Skip("Skipping the test case,as there is no delete api to delete the account")
 	resourceName := "newrelic_account_management.foo"
 	rName := acctest.RandString(7)
 	resource.ParallelTest(t, resource.TestCase{
