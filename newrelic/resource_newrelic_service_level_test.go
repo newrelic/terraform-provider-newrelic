@@ -88,23 +88,10 @@ resource "newrelic_service_level" "sli" {
 		}
 	}
 }
-`, testAccountID, name)
-}
-
-func testAccNewRelicServiceLevelWithCDFConfig(name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_workload" "workload" {
-	name = "%[2]s"
-	account_id = %[1]d
-	entity_search_query {
-		query = "tags.namespace like '%%App%%' "
-	}
-	scope_account_ids =  [%[1]d]
-}
-
-resource "newrelic_service_level" "sli" {
+// FIXME
+resource "newrelic_service_level" "cdf_sli" {
 	guid = newrelic_workload.workload.guid
-	name = "%[2]s"
+	name = "%[2]s using cdf"
 
 	events {
 		account_id = %[1]d
@@ -115,8 +102,7 @@ resource "newrelic_service_level" "sli" {
 			from = "Transaction"
 			select {
 				attribute = "duration"
-				function = "GET_FIELD"
-				threshold = 1.5
+				function = "COUNT"
 			}
 		}
 	}

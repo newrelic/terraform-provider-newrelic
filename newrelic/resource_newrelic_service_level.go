@@ -155,7 +155,7 @@ func eventsQuerySelectSchema() *schema.Resource {
 			},
 			"threshold": {
 				Type:        schema.TypeFloat,
-				Required:    false,
+				Optional:    true,
 				Description: "The event threshold to use in the SELECT clause",
 			},
 		},
