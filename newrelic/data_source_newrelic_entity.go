@@ -94,6 +94,7 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 	log.Printf("[INFO] Reading New Relic entities")
 
 	name := d.Get("name").(string)
+	name = escapeSingleQuote(name)
 	ignoreCase := d.Get("ignore_case").(bool)
 	entityType := strings.ToUpper(d.Get("type").(string))
 	domain := strings.ToUpper(d.Get("domain").(string))
@@ -124,6 +125,7 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 		str := e.GetName()
 		str = strings.TrimSpace(str)
 
+		name = revertEscapedSingleQuote(name)
 		if strings.Compare(str, name) == 0 || (ignoreCase && strings.EqualFold(str, name)) {
 			entity = &e
 			break
