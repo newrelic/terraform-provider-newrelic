@@ -165,7 +165,7 @@ resource "newrelic_service_level" "my_synthetic_monitor_duration_service_level" 
   description = "Monitor created to test concurrent request from terraform"
 
   events {
-    account_id = 313870
+    account_id = 12345678
     valid_events {
       from = "Metric"
       select {
