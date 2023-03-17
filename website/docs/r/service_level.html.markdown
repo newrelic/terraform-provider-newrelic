@@ -154,7 +154,7 @@ resource "newrelic_entity_tags" "my_synthetic_monitor_service_level_tags" {
     }
 }
 ```
-
+For up-to-date documentation about the tagging resource, please check [newrelic_entity_tags](entity_tags.html#example-usage)
 
 Using `select` for events
 
@@ -197,9 +197,6 @@ resource "newrelic_service_level" "my_synthetic_monitor_duration_service_level" 
   }
 }
 ```
-
-
-For up-to-date documentation about the tagging resource, please check [newrelic_entity_tags](entity_tags.html#example-usage)
 
 ## Import
 
