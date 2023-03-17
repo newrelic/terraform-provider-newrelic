@@ -88,34 +88,42 @@ resource "newrelic_service_level" "sli" {
 		}
 	}
 }
-// FIXME
+
 resource "newrelic_service_level" "cdf_sli" {
-	guid = newrelic_workload.workload.guid
-	name = "%[2]s using cdf"
+  guid = newrelic_workload.workload.guid
+  name = "%[2]s using cdf"
 
-	events {
-		account_id = %[1]d
-		valid_events {
-			from = "Transaction"
-		}
-		good_events {
-			from = "Transaction"
-			select {
-				attribute = "duration"
-				function = "COUNT"
-			}
-		}
-	}
+  events {
+    account_id = %[1]d
+    valid_events {
+      from = "Metric"
+      select {
+        attribute = "query.wallClockTime.negative.distribution"
+        function = "GET_FIELD"
+      }
+      where = "metricName = 'query.wallClockTime.negative.distribution'"
+    }
 
-	objective {
-		target = 99.00
-		time_window {
-			rolling {
-				count = 7
-				unit = "DAY"
-			}
-		}
-	}
+    good_events {
+      from = "Metric"
+      select {
+        attribute = "query.wallClockTime.negative.distribution"
+        function =  "GET_CDF_COUNT"
+        threshold = 7
+      }
+      where = "metricName = 'query.wallClockTime.negative.distribution'"
+    }
+  }
+
+  objective {
+    target = 49
+    time_window {
+      rolling {
+        count = 7
+        unit  = "DAY"
+      }
+    }
+  }
 }
 `, testAccountID, name)
 }
