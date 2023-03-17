@@ -1,3 +1,8 @@
+<a name="v3.17.1"></a>
+## [v3.17.1] - 2023-03-17
+### Bug Fixes
+- **account_management:** fixed the docs page link issue ([#2294](https://github.com/newrelic/terraform-provider-newrelic/issues/2294))
+
 <a name="v3.17.0"></a>
 ## [v3.17.0] - 2023-03-16
 ### Bug Fixes
@@ -1744,7 +1749,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.1...HEAD
+[v3.17.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.0...v3.17.1
 [v3.17.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.16.1...v3.17.0
 [v3.16.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.16.0...v3.16.1
 [v3.16.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.15.0...v3.16.0
