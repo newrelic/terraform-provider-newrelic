@@ -1,5 +1,22 @@
+<a name="v3.17.1"></a>
+## [v3.17.1] - 2023-03-17
+### Bug Fixes
+- **account_management:** fixed the docs page link issue ([#2294](https://github.com/newrelic/terraform-provider-newrelic/issues/2294))
+
+<a name="v3.17.0"></a>
+## [v3.17.0] - 2023-03-16
+### Bug Fixes
+- **one_dashboard:** added raw configuration properties to one dashboard resource ([#2278](https://github.com/newrelic/terraform-provider-newrelic/issues/2278))
+
+### Documentation Updates
+- add additional example to one_dashboard_json to demonstrate setting thresholds ([#2292](https://github.com/newrelic/terraform-provider-newrelic/issues/2292))
+- add/update resources and data sources in the NR terraform registry ([#2287](https://github.com/newrelic/terraform-provider-newrelic/issues/2287))
+
+### Features
+- added account managent resource, docs, examples and test cases ([#2275](https://github.com/newrelic/terraform-provider-newrelic/issues/2275))
+
 <a name="v3.16.1"></a>
-## [v3.16.1] - 2023-03-14
+## [v3.16.1] - 2023-03-15
 ### Bug Fixes
 - **cloud:** return err when error is present or payload is nil
 
@@ -1062,10 +1079,10 @@ new synthetics resources use GraphQL API schema
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="2.11.1"></a>
-## [2.11.1] - 2020-10-07
 <a name="v2.11.1"></a>
 ## [v2.11.1] - 2020-10-07
+<a name="2.11.1"></a>
+## [2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -1732,7 +1749,9 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.16.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.1...HEAD
+[v3.17.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.0...v3.17.1
+[v3.17.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.16.1...v3.17.0
 [v3.16.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.16.0...v3.16.1
 [v3.16.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.15.0...v3.16.0
 [v3.15.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.14.0...v3.15.0
@@ -1843,9 +1862,9 @@ new synthetics resources use GraphQL API schema
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2
