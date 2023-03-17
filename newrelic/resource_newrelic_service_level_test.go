@@ -31,13 +31,6 @@ func TestAccNewRelicServiceLevel_Basic(t *testing.T) {
 					testAccCheckNewRelicServiceLevelExists(resourceName),
 				),
 			},
-			// Test: Create with CDF
-			{
-				Config: testAccNewRelicServiceLevelConfig(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicServiceLevelExists(resourceName),
-				),
-			},
 			// Test: Update
 			{
 				Config: testAccNewRelicServiceLevelConfigUpdated(rName),
