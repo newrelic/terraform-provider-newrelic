@@ -58,7 +58,7 @@ resources compared to which endpoint is in use.
 ### Resources
 
 | Resource                                            | Endpoint                | Authentication        |
-| --------------------------------------------------- | ----------------------- | --------------------- |
+| --------------------------------------------------- |-------------------------| --------------------- |
 | `newrelic_alert_channel`                            | RESTv2                  | `api_key`             |
 | `newrelic_alert_condition`                          | RESTv2                  | `api_key`             |
 | `newrelic_alert_muting_rule`                        | NerdGraph               | `api_key`             |
@@ -67,38 +67,59 @@ resources compared to which endpoint is in use.
 | `newrelic_api_access_key`                           | NerdGraph               | `api_key`             |
 | `newrelic_application_settings`                     | RESTv2                  | `api_key`             |
 | `newrelic_browser_application`                      | NerdGraph               | `api_key`             |
+| `newrelic_cloud_aws_govcloud_integrations`          | NerdGraph               | `api_key`             |
+| `newrelic_cloud_aws_govcloud_link_account`          | NerdGraph               | `api_key`             |
+| `newrelic_cloud_aws_integrations`                   | NerdGraph               | `api_key`             |
+| `newrelic_cloud_aws_link_account`                   | NerdGraph               | `api_key`             |
+| `newrelic_cloud_azure_integrations`                 | NerdGraph               | `api_key`             |
+| `newrelic_cloud_azure_link_account`                 | NerdGraph               | `api_key`             |
+| `newrelic_cloud_gcp_integrations`                   | NerdGraph               | `api_key`             |
+| `newrelic_cloud_gcp_link_account`                   | NerdGraph               | `api_key`             |
+| `newrelic_data_partition_rule`                      | NerdGraph               | `api_key`             |
 | `newrelic_entity_tags`                              | NerdGraph               | `api_key`             |
 | `newrelic_events_to_metrics_rule`                   | NerdGraph               | `api_key`             |
 | `newrelic_infra_alert_condition`                    | Infrastructure REST API | `api_key`             |
 | `newrelic_insights_event`                           | Insights API            | `insights_insert_key` |
+| `newrelic_log_parsing_rule`                         | NerdGraph               | `api_key`             |
 | `newrelic_notification_channel`                     | NerdGraph               | `api_key`             |
 | `newrelic_notification_destination`                 | NerdGraph               | `api_key`             |
 | `newrelic_nrql_alert_condition`                     | NerdGraph               | `api_key`             |
 | `newrelic_nrql_drop_rule`                           | NerdGraph               | `api_key`             |
+| `newrelic_obfuscation_expression`                   | NerdGraph               | `api_key`             |
+| `newrelic_obfuscation_rule`                         | NerdGraph               | `api_key`             |
 | `newrelic_one_dashboard`                            | NerdGraph               | `api_key`             |
-| `newrelic_one_dashboard_raw`                        | NerdGraph               | `api_key`             |
 | `newrelic_one_dashboard_json`                       | NerdGraph               | `api_key`             |
+| `newrelic_one_dashboard_raw`                        | NerdGraph               | `api_key`             |
 | `newrelic_service_level`                            | NerdGraph               | `api_key`             |
 | `newrelic_synthetics_alert_condition`               | RESTv2                  | `api_key`             |
-| `newrelic_synthetics_monitor`                       | Synthetics REST API     | `api_key`             |
-| `newrelic_synthetics_monitor_script`                | Synthetics REST API     | `api_key`             |
+| `newrelic_synthetics_broken_links_monitor`          | NerdGraph               | `api_key`             |
+| `newrelic_synthetics_cert_check_monitor`            | NerdGraph               | `api_key`             |
+| `newrelic_synthetics_monitor`                       | NerdGraph               | `api_key`             |
 | `newrelic_synthetics_multilocation_alert_condition` | RESTv2                  | `api_key`             |
-| `newrelic_synthetics_secure_credential`             | Synthetics REST API     | `api_key`             |
+| `newrelic_synthetics_private_location`              | NerdGraph               | `api_key`             |
+| `newrelic_synthetics_script_monitor`                | NerdGraph               | `api_key`             |
+| `newrelic_synthetics_secure_credential`             | NerdGraph               | `api_key`             |
+| `newrelic_synthetics_step_monitor`                  | NerdGraph               | `api_key`             |
 | `newrelic_workflow`                                 | NerdGraph               | `api_key`             |
 | `newrelic_workload`                                 | NerdGraph               | `api_key`             |
 
 ### Data Sources
 
-| Data Source                             | Endpoint            | Authentication |
-| --------------------------------------- | ------------------- | -------------- |
-| `newrelic_account`                      | NerdGraph           | `api_key`      |
-| `newrelic_alert_channel`                | RESTv2              | `api_key`      |
-| `newrelic_alert_policy`                 | NerdGraph           | `api_key`      |
-| `newrelic_application`                  | RESTv2              | `api_key`      |
-| `newrelic_entity`                       | NerdGraph           | `api_key`      |
-| `newrelic_key_transaction`              | RESTv2              | `api_key`      |
-| `newrelic_synthetics_monitor`           | Synthetics REST API | `api_key`      |
-| `newrelic_synthetics_secure_credential` | Synthetics REST API | `api_key`      |
+| Data Source                             | Endpoint  | Authentication |
+| --------------------------------------- |-----------| -------------- |
+| `newrelic_account`                      | NerdGraph | `api_key`      |
+| `newrelic_alert_channel`                | RESTv2    | `api_key`      |
+| `newrelic_alert_policy`                 | NerdGraph | `api_key`      |
+| `newrelic_application`                  | RESTv2    | `api_key`      |
+| `newrelic_cloud_account`                | NerdGraph | `api_key`      |
+| `newrelic_entity`                       | NerdGraph | `api_key`      |
+| `newrelic_key_transaction`              | RESTv2    | `api_key`      |
+| `newrelic_notification_destination`     | NerdGraph | `api_key`      |
+| `newrelic_obfuscation_expression`       | NerdGraph | `api_key`      |
+| `newrelic_synthetics_private_location`  | NerdGraph | `api_key`      |
+| `newrelic_synthetics_secure_credential` | NerdGraph | `api_key`      |
+| `newrelic_test_grok_pattern`            | NerdGraph | `api_key`      |
+
 
 ## Example Usage
 

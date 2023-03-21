@@ -479,6 +479,29 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 		}
 	}
 
+	if q, ok := w["legend_enabled"]; ok {
+		var l dashboards.DashboardWidgetLegend
+		l.Enabled = q.(bool)
+		cfg.Legend = &l
+	}
+	if q, ok := w["facet_show_other_series"]; ok {
+		var l dashboards.DashboardWidgetFacet
+		l.ShowOtherSeries = q.(bool)
+		cfg.Facet = &l
+	}
+	if q, ok := w["y_axis_left_min"]; ok {
+		var l dashboards.DashboardWidgetYAxisLeft
+		l.Min = q.(float64)
+		if q, ok := w["y_axis_left_max"]; ok {
+			l.Max = q.(float64)
+		}
+		cfg.YAxisLeft = &l
+	}
+
+	cfg = expandDashboardWidgetNullValuesInput(w, cfg)
+	cfg = expandDashboardWidgetColorsInput(w, cfg)
+	cfg = expandDashboardWidgetUnitsInput(w, cfg)
+
 	if l, ok := w["limit"]; ok {
 		cfg.Limit = l.(float64)
 	}
@@ -498,6 +521,111 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	widget.Visualization.ID = visualisation
 
 	return &widget, &cfg, nil
+}
+
+func expandDashboardWidgetUnitsInput(w map[string]interface{}, cfg dashboards.RawConfiguration) dashboards.RawConfiguration {
+	if q, ok := w["units"]; ok {
+		units := q.([]interface{})
+		var n dashboards.DashboardWidgetUnits
+		if len(units) > 0 {
+			for _, y := range units {
+				if y != nil {
+					z := y.(map[string]interface{})
+					if v, ok := z["unit"]; ok {
+						n.Unit = v.(string)
+					}
+					if s, ok := z["series_overrides"]; ok {
+						var seriesOverrides = s.([]interface{})
+						n.SeriesOverrides = make([]dashboards.DashboardWidgetUnitOverrides, len(seriesOverrides))
+						for i, v := range seriesOverrides {
+							var t dashboards.DashboardWidgetUnitOverrides
+							k := v.(map[string]interface{})
+							if n, ok := k["unit"]; ok {
+								t.Unit = n.(string)
+							}
+							if n, ok := k["series_name"]; ok {
+								t.SeriesName = n.(string)
+							}
+							n.SeriesOverrides[i] = t
+						}
+					}
+				}
+			}
+			cfg.Units = &n
+		}
+	}
+	return cfg
+}
+
+func expandDashboardWidgetColorsInput(w map[string]interface{}, cfg dashboards.RawConfiguration) dashboards.RawConfiguration {
+	if q, ok := w["colors"]; ok {
+		colors := q.([]interface{})
+		var n dashboards.DashboardWidgetColors
+		if len(colors) > 0 {
+			for _, y := range colors {
+				if y != nil {
+					z := y.(map[string]interface{})
+					if v, ok := z["color"]; ok {
+						n.Color = v.(string)
+					}
+					if s, ok := z["series_overrides"]; ok {
+						var seriesOverrides = s.([]interface{})
+						n.SeriesOverrides = make([]dashboards.DashboardWidgetColorOverrides, len(seriesOverrides))
+						for i, v := range seriesOverrides {
+							var t dashboards.DashboardWidgetColorOverrides
+							k := v.(map[string]interface{})
+							if n, ok := k["color"]; ok {
+								t.Color = n.(string)
+							}
+							if n, ok := k["series_name"]; ok {
+								t.SeriesName = n.(string)
+							}
+							n.SeriesOverrides[i] = t
+						}
+
+					}
+				}
+			}
+			cfg.Colors = &n
+		}
+	}
+	return cfg
+}
+
+func expandDashboardWidgetNullValuesInput(w map[string]interface{}, cfg dashboards.RawConfiguration) dashboards.RawConfiguration {
+	if q, ok := w["null_values"]; ok {
+		nullValues := q.([]interface{})
+		if len(nullValues) > 0 {
+			var n dashboards.DashboardWidgetNullValues
+			for _, y := range nullValues {
+				if y != nil {
+					z := y.(map[string]interface{})
+					if v, ok := z["null_value"]; ok {
+						n.NullValue = v.(string)
+					}
+					if s, ok := z["series_overrides"]; ok {
+						var seriesOverrides = s.([]interface{})
+						n.SeriesOverrides = make([]dashboards.DashboardWidgetNullValueOverrides, len(seriesOverrides))
+						for i, v := range seriesOverrides {
+							var t dashboards.DashboardWidgetNullValueOverrides
+							k := v.(map[string]interface{})
+							if n, ok := k["null_value"]; ok {
+								t.NullValue = n.(string)
+							}
+							if n, ok := k["series_name"]; ok {
+								t.SeriesName = n.(string)
+							}
+							n.SeriesOverrides[i] = t
+						}
+
+					}
+				}
+				cfg.NullValues = &n
+			}
+
+		}
+	}
+	return cfg
 }
 
 func expandLinkedEntityGUIDs(guids []interface{}) []common.EntityGUID {
@@ -749,6 +877,26 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 		out["ignore_time_range"] = rawCfg.PlatformOptions.IgnoreTimeRange
 	}
 
+	if rawCfg.Legend != nil {
+		out["legend_enabled"] = rawCfg.Legend.Enabled
+	}
+	if rawCfg.Facet != nil {
+		out["facet_show_other_series"] = rawCfg.Facet.ShowOtherSeries
+	}
+	if rawCfg.YAxisLeft != nil {
+		out["y_axis_left_min"] = rawCfg.YAxisLeft.Min
+		out["y_axis_left_max"] = rawCfg.YAxisLeft.Max
+	}
+	if rawCfg.NullValues != nil {
+		out["null_values"] = flattenDashboardWidgetNullValues(rawCfg.NullValues)
+	}
+	if rawCfg.Units != nil {
+		out["units"] = flattenDashboardWidgetUnits(rawCfg.Units)
+	}
+	if rawCfg.Colors != nil {
+		out["colors"] = flattenDashboardWidgetColors(rawCfg.Colors)
+	}
+
 	// Set widget type and arguments
 	switch in.Visualization.ID {
 	case "viz.area":
@@ -926,4 +1074,57 @@ func setDashboardWidgetFilterCurrentDashboardLinkedEntity(d *schema.ResourceData
 	}
 
 	return nil
+}
+func flattenDashboardWidgetNullValues(in *dashboards.DashboardWidgetNullValues) interface{} {
+	out := make([]interface{}, 1)
+	k := make(map[string]interface{})
+	k["null_value"] = in.NullValue
+	seriesOverrides := make([]interface{}, len(in.SeriesOverrides))
+	for i, v := range in.SeriesOverrides {
+		m := make(map[string]interface{})
+
+		m["null_value"] = v.NullValue
+		m["series_name"] = v.SeriesName
+
+		seriesOverrides[i] = m
+	}
+	k["series_overrides"] = seriesOverrides
+	out[0] = k
+	return out
+}
+
+func flattenDashboardWidgetColors(in *dashboards.DashboardWidgetColors) interface{} {
+	out := make([]interface{}, 1)
+	k := make(map[string]interface{})
+	k["color"] = in.Color
+	seriesOverrides := make([]interface{}, len(in.SeriesOverrides))
+	for i, v := range in.SeriesOverrides {
+		m := make(map[string]interface{})
+
+		m["color"] = v.Color
+		m["series_name"] = v.SeriesName
+
+		seriesOverrides[i] = m
+	}
+	k["series_overrides"] = seriesOverrides
+	out[0] = k
+	return out
+}
+
+func flattenDashboardWidgetUnits(in *dashboards.DashboardWidgetUnits) interface{} {
+	out := make([]interface{}, 1)
+	k := make(map[string]interface{})
+	k["unit"] = in.Unit
+	seriesOverrides := make([]interface{}, len(in.SeriesOverrides))
+	for i, v := range in.SeriesOverrides {
+		m := make(map[string]interface{})
+
+		m["unit"] = v.Unit
+		m["series_name"] = v.SeriesName
+
+		seriesOverrides[i] = m
+	}
+	k["series_overrides"] = seriesOverrides
+	out[0] = k
+	return out
 }
