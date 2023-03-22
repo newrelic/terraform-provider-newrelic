@@ -73,21 +73,21 @@ All nested `events` blocks support the following common arguments:
     * `where` - (Optional) A filter that specifies all the NRDB events that are considered in this SLI (e.g, those that refer to a particular entity).
     * `select` - (Optional) The NRQL SELECT clause to aggregate events.
       * `attribute` - (Optional) The event attribute to use in the SELECT clause.
-      * `function` - (Required) The function to use in the SELECT clause. Valid values are `COUNT`and `SUM`.
+      * `function` - (Required) The function to use in the SELECT clause. Valid values are `COUNT` and `SUM`.
   * `good_events` - (Optional) The definition of good responses. If you define an SLI from valid and good events, you must leave the bad events argument empty.
     * `from` - (Required) The event type where NRDB data will be fetched from.
     * `where` - (Optional) A filter that narrows down the NRDB events just to those that are considered good responses (e.g, those that refer to
     a particular entity and were successful).
     * `select` - (Optional) The NRQL SELECT clause to aggregate events.
         * `attribute` - (Optional) The event attribute to use in the SELECT clause.
-        * `function` - (Required) The function to use in the SELECT clause. Valid values are `COUNT`and `SUM`.
+        * `function` - (Required) The function to use in the SELECT clause. Valid values are `COUNT` and `SUM`.
   * `bad_events` - (Optional) The definition of the bad responses. If you define an SLI from valid and bad events, you must leave the good events argument empty.
     * `from` - (Required) The event type where NRDB data will be fetched from.
     * `where` - (Optional) A filter that narrows down the NRDB events just to those that are considered bad responses (e.g, those that refer to
     a particular entity and returned an error).
     * `select` - (Optional) The NRQL SELECT clause to aggregate events.
         * `attribute` - (Optional) The event attribute to use in the SELECT clause.
-        * `function` - (Required) The function to use in the SELECT clause. Valid values are `COUNT`and `SUM`.
+        * `function` - (Required) The function to use in the SELECT clause. Valid values are `COUNT` and `SUM`.
 
 ### Objective
 
@@ -151,7 +151,6 @@ resource "newrelic_entity_tags" "my_synthetic_monitor_service_level_tags" {
     }
 }
 ```
-
 For up-to-date documentation about the tagging resource, please check [newrelic_entity_tags](entity_tags.html#example-usage)
 
 ## Import
