@@ -5,8 +5,8 @@ package newrelic
 
 import (
 	"fmt"
-	"testing"
 	"regexp"
+	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -45,36 +45,36 @@ func TestAccNewRelicServiceLevelAlertHelper_Custom(t *testing.T) {
 }
 
 func TestAccNewRelicServiceLevelAlertHelper_FastBurnError(t *testing.T) {
-    expectedErrorMessage := regexp.MustCompile(`For fast_burn alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption'.`)
+	expectedErrorMessage := regexp.MustCompile(`For fast_burn alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption'.`)
 
 	resource.ParallelTest(t, resource.TestCase{
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicServiceLevelAlertHelperFastBurnEvaluationErrorConfig(),
-                ExpectError: expectedErrorMessage,
+				Config:      testAccNewRelicServiceLevelAlertHelperFastBurnEvaluationErrorConfig(),
+				ExpectError: expectedErrorMessage,
 			},
 			{
-				Config: testAccNewRelicServiceLevelAlertHelperFastBurnBudgetErrorConfig(),
-                ExpectError: expectedErrorMessage,
+				Config:      testAccNewRelicServiceLevelAlertHelperFastBurnBudgetErrorConfig(),
+				ExpectError: expectedErrorMessage,
 			},
 		},
 	})
 }
 
 func TestAccNewRelicServiceLevelAlertHelper_CustomError(t *testing.T) {
-    expectedErrorMessage := regexp.MustCompile(`For custom alert type the fields 'custom_evaluation_period' and 'custom_tolerated_budget_consumption' are mandatory.`)
+	expectedErrorMessage := regexp.MustCompile(`For custom alert type the fields 'custom_evaluation_period' and 'custom_tolerated_budget_consumption' are mandatory.`)
 
 	resource.ParallelTest(t, resource.TestCase{
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicServiceLevelAlertHelperCustomEvaluationErrorConfig(),
-                ExpectError: expectedErrorMessage,
+				Config:      testAccNewRelicServiceLevelAlertHelperCustomEvaluationErrorConfig(),
+				ExpectError: expectedErrorMessage,
 			},
 			{
-				Config: testAccNewRelicServiceLevelAlertHelperCustomBudgetErrorConfig(),
-                ExpectError: expectedErrorMessage,
+				Config:      testAccNewRelicServiceLevelAlertHelperCustomBudgetErrorConfig(),
+				ExpectError: expectedErrorMessage,
 			},
 		},
 	})
@@ -152,39 +152,25 @@ func testAccCheckNewRelicServiceLevelAlertHelper_FastBurn(n string) resource.Tes
 		}
 
 		a := rs.Primary.Attributes
-	
-        var err error
-		if err = runTest(a, "slo_period", "28"); err != nil {
-			return err
+
+		testCases := map[string]string{
+			"slo_period":                          "28",
+			"slo_target":                          "99.9",
+			"alert_type":                          "fast_burn",
+			"custom_evaluation_period":            "",
+			"custom_tolerated_budget_consumption": "",
+			"evaluation_period":                   "60",
+			"tolerated_budget_consumption":        "2",
+			"threshold":                           "1.3439999999999237",
+			"sli_guid":                            "sliGuid",
+			"nrql":                                "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = 'sliGuid'",
 		}
-		if err = runTest(a, "slo_target", "99.9"); err != nil {
-			return err
+
+		for attrName, expectedVal := range testCases {
+			if err := runTest(a, attrName, expectedVal); err != nil {
+				return err
+			}
 		}
-		if err = runTest(a, "alert_type", "fast_burn"); err != nil {
-			return err
-		}
-		if err = runTest(a, "custom_evaluation_period", ""); err != nil {
-			return err
-		}
-		if err = runTest(a, "custom_tolerated_budget_consumption", ""); err != nil {
-			return err
-		}
-		if err = runTest(a, "evaluation_period", "60"); err != nil {
-			return err
-		}
-		if err = runTest(a, "tolerated_budget_consumption", "2"); err != nil {
-			return err
-		}
-		if err = runTest(a, "threshold", "1.3439999999999237"); err != nil {
-			return err
-		}
-		if err = runTest(a, "sli_guid", "sliGuid"); err != nil {
-			return err
-		}
-		if err = runTest(a, "nrql", "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = 'sliGuid'"); err != nil {
-			return err
-		}
-            
 
 		return nil
 	}
@@ -216,39 +202,25 @@ func testAccCheckNewRelicServiceLevelAlertHelper_Custom(n string) resource.TestC
 		}
 
 		a := rs.Primary.Attributes
-	
-        var err error
-		if err = runTest(a, "slo_period", "7"); err != nil {
-			return err
+
+		testCases := map[string]string{
+			"slo_period":                          "7",
+			"slo_target":                          "98",
+			"alert_type":                          "custom",
+			"custom_evaluation_period":            "120",
+			"custom_tolerated_budget_consumption": "5",
+			"evaluation_period":                   "120",
+			"tolerated_budget_consumption":        "5",
+			"threshold":                           "8.4",
+			"sli_guid":                            "sliGuidCustom",
+			"nrql":                                "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = 'sliGuidCustom'",
 		}
-		if err = runTest(a, "slo_target", "98"); err != nil {
-			return err
+
+		for attrName, expectedVal := range testCases {
+			if err := runTest(a, attrName, expectedVal); err != nil {
+				return err
+			}
 		}
-		if err = runTest(a, "alert_type", "custom"); err != nil {
-			return err
-		}
-		if err = runTest(a, "custom_evaluation_period", "120"); err != nil {
-			return err
-		}
-		if err = runTest(a, "custom_tolerated_budget_consumption", "5"); err != nil {
-			return err
-		}
-		if err = runTest(a, "evaluation_period", "120"); err != nil {
-			return err
-		}
-		if err = runTest(a, "tolerated_budget_consumption", "5"); err != nil {
-			return err
-		}
-		if err = runTest(a, "threshold", "8.4"); err != nil {
-			return err
-		}
-		if err = runTest(a, "sli_guid", "sliGuidCustom"); err != nil {
-			return err
-		}
-		if err = runTest(a, "nrql", "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = 'sliGuidCustom'"); err != nil {
-			return err
-		}
-            
 
 		return nil
 	}
