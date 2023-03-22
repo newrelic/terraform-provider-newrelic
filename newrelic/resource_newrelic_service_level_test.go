@@ -83,6 +83,8 @@ resource "newrelic_service_level" "sli" {
 }
 
 resource "newrelic_service_level" "cdf_sli" {
+  # Set count to 0 while the API is in beta
+  count = 0
   guid = newrelic_workload.workload.guid
   name = "%[2]s using cdf"
 
