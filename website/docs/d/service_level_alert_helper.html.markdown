@@ -1,43 +1,89 @@
 ---
 layout: "newrelic"
-page_title: "New Relic: newrelic_service_level_alert_threshold"
-sidebar_current: "docs-newrelic-datasource-service-level-alert-threshold"
+page_title: "New Relic: newrelic_service_level_alert_helper"
+sidebar_current: "docs-newrelic-datasource-service-level-alert-helper"
 description: |-
-  Calculates alert thresholds.
+  Helper to set up alerts on Service Levels.
 ---
 
-# Data Source: newrelic\_service\_level\_alert\_threshold
+# Data Source: newrelic\_service\_level\_alert\_helper
 
-Use this data source to calculate the alert threshold of your Service
-Level Objective.
+Use this data source to obtain necessary fields to set up alerts on your service levels. It can be used for a `custom` alert_typein order to set up an alert with custom tolerated budget consumption and custom evaluation period or for recommended ones like `fast_burn`.
 
 ## Example Usage
 
+Firstly set up your service level objective, we recommend to use local variables for th `target` and `time_window.rolling.count`, as tehy are also necessary for the helper.
+
 ```hcl
-data "newrelic_service_level_alert_threshold" "fast" {
-    slo_target                   = 99.9
-    slo_period                   = 28
-    tolerated_budget_consumption = 2
-    evaluation_period            = 1
+locals {
+  foo_target = 99.9
+  foo_period = 28
 }
 
-resource "newrelic_alert_condition" "foo" {
-  policy_id = 123456
+resource "newrelic_service_level" "foo" {
+    guid = "MXxBUE18QVBQTElDQVRJT058MQ"
+    name = "Latency"
+    description = "Proportion of requests that are served faster than a threshold."
 
-  name            = "foo"
-  type            = "apm_app_metric"
-  entities        = 56789
-  metric          = "apdex"
-  runbook_url     = "https://www.example.com"
-  condition_scope = "application"
+    events {
+        account_id = 12345678
+        valid_events {
+            from = "Transaction"
+            where = "appName = 'Example application' AND (transactionType='Web')"
+        }
+        good_events {
+            from = "Transaction"
+            where = "appName = 'Example application' AND (transactionType= 'Web') AND duration < 0.1"
+        }
+    }
 
-  term {
-    duration      = 60
-    operator      = "below"
-    priority      = "critical"
-    threshold     = data.newrelic_service_level_alert_threshold.fast.alert_threshold
-    time_function = "all"
+    objective {
+        target = local.foo_target
+        time_window {
+            rolling {
+                count = local.foo_period
+                unit = "DAY"
+            }
+        }
+    }
+}
+```
+Then use the helper to obtain the necessary fields to set up an alert on that Service Level.
+
+```hcl
+
+data "newrelic_service_level_alert_helper" "foo_custom" {
+    alert_type = "custom"
+    sli_guid = "MXxBUE18QVBQTElDQVRJT058MQ"
+    slo_target = local.foo_target
+    slo_period = local.foo_period
+    custom_tolerated_budget_consumption = 5
+    custom_evaluation_period = 90
+}
+
+resource "newrelic_nrql_alert_condition" "your_condition" {
+  account_id = 12345678
+  policy_id = 67890
+  type = "static"
+  name = "Successs (Fast-burn rate)"
+  enabled = true
+  violation_time_limit_seconds = 259200
+
+  nrql {
+    query = data.newrelic_service_level_alert_helper.foo_custom.nrql
   }
+
+  critical {
+    operator = "above"
+    threshold = data.newrelic_service_level_alert_helper.foo_custom.threshold
+    threshold_duration = data.newrelic_service_level_alert_helper.foo_custom.evaluation_period
+    threshold_occurrences = "at_least_once"
+  }
+  fill_option = "none"
+  aggregation_window = 3600
+  aggregation_method = "event_flow"
+  aggregation_delay = 120
+  slide_by = 60
 }
 ```
 
@@ -46,13 +92,18 @@ resource "newrelic_alert_condition" "foo" {
 
 The following arguments are supported:
 
-  * `slo_target` - (Required) The target of the objective, valid values between `0` and `100`.
-  * `slo_period` - (Required) Time window is the period of the objective in days. Valid values are `1`, `7` and `28`.
-  * `tolerated_budget_consumption` - (Required) How much budget you tolerate to consume in the evaluation period, valid values between `0` and `100`.
-  * `evaluation_period` - (Required) Aggregation window taken into consideration in minutes.
+  * `alert_type` - (Required) The type of alert we want to set. Valid values are `custom` and `fast_burn`.
+  * `sli_guid` - (Required) The guid of the sli we want to set the alert on.
+  * `slo_target` - (Required) The target of the Service Level Objective, valid values between `0` and `100`.
+  * `slo_period` - (Required) The time window of the Service Level Objective in days. Valid values are `1`, `7` and `28`.
+  * `custom_tolerated_budget_consumption` - (Optional) How much budget you tolerate to consume during the custom evaluation period, valid values between `0` and `100`. Mandatory if `alert_type` is `custom`.
+  * `custom_evaluation_period` - (Optional) Aggregation window taken into consideration in minutes. Mandatory if `alert_type` is `custom`.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `alert_threshold` - (Computed) The computed threshold given the provided arguments.
+  * `threshold` - (Computed) The computed threshold given the provided arguments.
+  * `tolerated_budget_consumption` - (Computed) For non `custom` alert_type, this is the recommended for that type of alert. For `custom` alert_type it has the same value as `custom_tolerated_budget_consumption`.
+  * `evaluation_period` - (Computed) For non `custom` alert_type, this is the recommended for that type of alert. For `custom` alert_type` it has the same value as `custom_evaluation_period`.
+  * `nrql` - (Computed) The nrql query for the selected type of alert.
