@@ -8,11 +8,11 @@ description: |-
 
 # Data Source: newrelic\_service\_level\_alert\_helper
 
-Use this data source to obtain necessary fields to set up alerts on your service levels. It can be used for a `custom` alert_typein order to set up an alert with custom tolerated budget consumption and custom evaluation period or for recommended ones like `fast_burn`.
+Use this data source to obtain the necessary fields to set up alerts on your service levels. It can be used for a `custom` alert_type in order to set up an alert with custom tolerated budget consumption and custom evaluation period or for recommended ones like `fast_burn`.
 
 ## Example Usage
 
-Firstly set up your service level objective, we recommend to use local variables for th `target` and `time_window.rolling.count`, as tehy are also necessary for the helper.
+Firstly set up your service level objective, we recommend to use local variables for the `target` and `time_window.rolling.count`, as they are also necessary for the helper.
 
 ```hcl
 locals {
@@ -65,7 +65,7 @@ resource "newrelic_nrql_alert_condition" "your_condition" {
   account_id = 12345678
   policy_id = 67890
   type = "static"
-  name = "Successs (Fast-burn rate)"
+  name = "Successs (custom)"
   enabled = true
   violation_time_limit_seconds = 259200
 
@@ -105,5 +105,5 @@ In addition to all arguments above, the following attributes are exported:
 
   * `threshold` - (Computed) The computed threshold given the provided arguments.
   * `tolerated_budget_consumption` - (Computed) For non `custom` alert_type, this is the recommended for that type of alert. For `custom` alert_type it has the same value as `custom_tolerated_budget_consumption`.
-  * `evaluation_period` - (Computed) For non `custom` alert_type, this is the recommended for that type of alert. For `custom` alert_type` it has the same value as `custom_evaluation_period`.
+  * `evaluation_period` - (Computed) For non `custom` alert_type, this is the recommended for that type of alert. For `custom` alert_type it has the same value as `custom_evaluation_period`.
   * `nrql` - (Computed) The nrql query for the selected type of alert.
