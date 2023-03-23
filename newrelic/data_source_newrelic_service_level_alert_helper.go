@@ -97,7 +97,7 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 	switch alertType {
 	case fastBurn:
 		if tOk || eOk {
-			return diag.Errorf("For %s alert type do not fill '%s' or '%s', we use 60 minutes and 2 %.", fastBurn, customEvaluationPeriodField, customConsumptionField)
+			return diag.Errorf("For %s alert type do not fill '%s' or '%s', we use 60 minutes and 2%%.", fastBurn, customEvaluationPeriodField, customConsumptionField)
 		}
 
 		threshold := calculateThreshold(sloTarget, fastBurnConsumption, sloPeriod, fastBurnPeriod)
