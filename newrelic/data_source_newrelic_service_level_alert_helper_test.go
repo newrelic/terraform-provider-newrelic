@@ -143,7 +143,6 @@ func testAccCheckNewRelicServiceLevelAlertHelper_FastBurn(n string) resource.Tes
 	return func(s *terraform.State) error {
 
 		rs, ok := s.RootModule().Resources[n]
-		// fmt.Println(s.RootModule())
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
@@ -193,7 +192,6 @@ func testAccCheckNewRelicServiceLevelAlertHelper_Custom(n string) resource.TestC
 	return func(s *terraform.State) error {
 
 		rs, ok := s.RootModule().Resources[n]
-		// fmt.Println(s.RootModule())
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
