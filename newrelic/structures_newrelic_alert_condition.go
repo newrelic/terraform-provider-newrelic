@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"encoding/base64"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
@@ -74,15 +73,13 @@ func expandAlertConditionTerms(terms []interface{}) []alerts.ConditionTerm {
 	return perms
 }
 
-func getEntityGuid(condition *alerts.Condition, accountID int) string {
-	rawGuid := fmt.Sprintf("%d|AIOPS|CONDITION|%d", accountID, condition.ID)
-	return base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte(rawGuid))
+func getEntityGUID(condition *alerts.Condition, accountID int) string {
+	rawGUID := fmt.Sprintf("%d|AIOPS|CONDITION|%d", accountID, condition.ID)
+	return base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte(rawGUID))
 }
 
 func flattenAlertCondition(condition *alerts.Condition, accountID int, d *schema.ResourceData) error {
-
-	entityGuid := getEntityGuid(condition, accountID)
-	log.Printf("[INFO] +++ %s", entityGuid)
+	entityGUID := getEntityGUID(condition, accountID)
 
 	_ = d.Set("name", condition.Name)
 	_ = d.Set("enabled", condition.Enabled)
@@ -93,7 +90,7 @@ func flattenAlertCondition(condition *alerts.Condition, accountID int, d *schema
 	_ = d.Set("gc_metric", condition.GCMetric)
 	_ = d.Set("user_defined_metric", condition.UserDefined.Metric)
 	_ = d.Set("user_defined_value_function", condition.UserDefined.ValueFunction)
-	_ = d.Set("entity_guid", entityGuid)
+	_ = d.Set("entity_guid", entityGUID)
 
 	// The condition_scope field is not always returned by the API. This conditional
 	// handles flattening for all cases.
