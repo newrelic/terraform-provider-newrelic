@@ -85,6 +85,11 @@ func resourceNewRelicSyntheticsMultiLocationAlertCondition() *schema.Resource {
 				ValidateFunc: validation.IntInSlice([]int{0, 3600, 7200, 14400, 28800, 43200, 86400}),
 				Description:  "The maximum number of seconds an incident can remain open before being closed by the system.  Must be one of: 0, 3600, 7200, 14400, 28800, 43200, 86400",
 			},
+			"entity_guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique entity identifier of the condition in New Relic.",
+			},
 		},
 	}
 }
@@ -144,7 +149,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertConditionRead(ctx context.Conte
 		return diag.FromErr(err)
 	}
 
-	return diag.FromErr(flattenMultiLocationSyntheticsCondition(condition, d))
+	return diag.FromErr(flattenMultiLocationSyntheticsCondition(condition, accountID, d))
 }
 
 func resourceNewRelicSyntheticsMultiLocationAlertConditionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
