@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	"encoding/base64"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
@@ -80,11 +79,6 @@ func expandInfraAlertThreshold(v interface{}) *alerts.InfrastructureConditionThr
 	return alertInfraThreshold
 }
 
-func getInfrastructureConditionEntityGUID(condition *alerts.InfrastructureCondition, accountID int) string {
-	rawGUID := fmt.Sprintf("%d|AIOPS|CONDITION|%d", accountID, condition.ID)
-	return base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte(rawGUID))
-}
-
 func flattenInfraAlertCondition(condition *alerts.InfrastructureCondition, accountID int, d *schema.ResourceData) error {
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
@@ -92,7 +86,7 @@ func flattenInfraAlertCondition(condition *alerts.InfrastructureCondition, accou
 	}
 
 	policyID := ids[0]
-	entityGUID := getInfrastructureConditionEntityGUID(condition, accountID)
+	entityGUID := getConditionEntityGUID(condition.ID, accountID)
 
 	_ = d.Set("policy_id", policyID)
 	_ = d.Set("name", condition.Name)

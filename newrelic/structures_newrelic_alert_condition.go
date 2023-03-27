@@ -3,7 +3,6 @@ package newrelic
 import (
 	"fmt"
 	"strconv"
-	"encoding/base64"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
@@ -73,13 +72,8 @@ func expandAlertConditionTerms(terms []interface{}) []alerts.ConditionTerm {
 	return perms
 }
 
-func getEntityGUID(condition *alerts.Condition, accountID int) string {
-	rawGUID := fmt.Sprintf("%d|AIOPS|CONDITION|%d", accountID, condition.ID)
-	return base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte(rawGUID))
-}
-
 func flattenAlertCondition(condition *alerts.Condition, accountID int, d *schema.ResourceData) error {
-	entityGUID := getEntityGUID(condition, accountID)
+	entityGUID := getConditionEntityGUID(condition.ID, accountID)
 
 	_ = d.Set("name", condition.Name)
 	_ = d.Set("enabled", condition.Enabled)

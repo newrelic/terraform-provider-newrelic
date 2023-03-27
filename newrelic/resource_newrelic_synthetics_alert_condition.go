@@ -4,8 +4,6 @@ import (
 	"context"
 	"log"
 	"strconv"
-	"encoding/base64"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -74,11 +72,6 @@ func expandSyntheticsCondition(d *schema.ResourceData, monitorID string) *alerts
 	return &condition
 }
 
-func getSyntheticsConditionEntityGUID(condition *alerts.SyntheticsCondition, accountID int) string {
-	rawGUID := fmt.Sprintf("%d|AIOPS|CONDITION|%d", accountID, condition.ID)
-	return base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte(rawGUID))
-}
-
 func flattenSyntheticsCondition(condition *alerts.SyntheticsCondition, accountID int, d *schema.ResourceData) error {
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
@@ -86,7 +79,7 @@ func flattenSyntheticsCondition(condition *alerts.SyntheticsCondition, accountID
 	}
 
 	policyID := ids[0]
-	entityGUID := getSyntheticsConditionEntityGUID(condition, accountID)
+	entityGUID := getConditionEntityGUID(condition.ID, accountID)
 
 	_ = d.Set("policy_id", policyID)
 	_ = d.Set("name", condition.Name)
