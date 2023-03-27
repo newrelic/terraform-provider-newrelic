@@ -123,6 +123,7 @@ In addition to all arguments above, the following attributes are exported:
   * `id` - The ID of the Infrastructure alert condition.
   * `created_at` - The timestamp the alert condition was created.
   * `updated_at` - The timestamp the alert condition was last updated.
+  * `entity_guid` - The unique entity identifier of the condition in New Relic.
 
 ## Thresholds
 
@@ -140,3 +141,52 @@ Infrastructure alert conditions can be imported using a composite ID of `<policy
 ```
 $ terraform import newrelic_infra_alert_condition.main 12345:67890
 ```
+
+## Tags
+
+Manage infra alert condition tags with `newrelic_entity_tags`. For up-to-date documentation about the tagging resource, please check [newrelic_entity_tags](entity_tags.html#example-usage)
+
+```hcl
+resource "newrelic_alert_policy" "foo" {
+  name = "foo policy"
+}
+
+resource "newrelic_infra_alert_condition" "foo" {
+  policy_id = newrelic_alert_policy.foo.id
+
+  name        = "foo infra condition"
+  description = "Warning if disk usage goes above 80% and critical alert if goes above 90%"
+  type        = "infra_metric"
+  event       = "StorageSample"
+  select      = "diskUsedPercent"
+  comparison  = "above"
+  where       = "(hostname LIKE '%frontend%')"
+
+  critical {
+    duration      = 25
+    value         = 90
+    time_function = "all"
+  }
+
+  warning {
+    duration      = 10
+    value         = 80
+    time_function = "all"
+  }
+}
+
+resource "newrelic_entity_tags" "my_condition_entity_tags" {
+  guid = newrelic_infra_alert_condition.foo.entity_guid
+
+  tag {
+    key = "my-key"
+    values = ["my-value", "my-other-value"]
+  }
+
+  tag {
+    key = "my-key-2"
+    values = ["my-value-2"]
+  }
+}
+```
+

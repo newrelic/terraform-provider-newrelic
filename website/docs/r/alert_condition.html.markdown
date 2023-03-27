@@ -126,6 +126,7 @@ The `term` mapping supports the following arguments:
 In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the alert condition.
+  * `entity_guid` - The unique entity identifier of the condition in New Relic.
 
 ## Import
 
@@ -133,4 +134,51 @@ Alert conditions can be imported using notation `alert_policy_id:alert_condition
 
 ```
 $ terraform import newrelic_alert_condition.main 123456:6789012345
+```
+
+## Tags
+
+Manage alert condition tags with `newrelic_entity_tags`. For up-to-date documentation about the tagging resource, please check [newrelic_entity_tags](entity_tags.html#example-usage)
+
+```hcl
+data "newrelic_entity" "foo" {
+  name = "foo entitiy"
+}
+
+resource "newrelic_alert_policy" "foo" {
+  name = "foo policy"
+}
+
+resource "newrelic_alert_condition" "foo" {
+  policy_id = newrelic_alert_policy.foo.id
+
+  name            = "foo condition"
+  type            = "apm_app_metric"
+  entities        = [data.newrelic_entity.foo.application_id]
+  metric          = "apdex"
+  runbook_url     = "https://www.example.com"
+  condition_scope = "application"
+
+  term {
+    duration      = 5
+    operator      = "below"
+    priority      = "critical"
+    threshold     = "0.75"
+    time_function = "all"
+  }
+}
+
+resource "newrelic_entity_tags" "my_condition_entity_tags" {
+  guid = newrelic_alert_condition.foo.entity_guid
+
+  tag {
+    key = "my-key"
+    values = ["my-value", "my-other-value"]
+  }
+
+  tag {
+    key = "my-key-2"
+    values = ["my-value-2"]
+  }
+}
 ```

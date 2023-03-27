@@ -43,6 +43,7 @@ Warning: This resource will use the account ID linked to your API key. At the mo
 In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the Synthetics alert condition.
+  * `entity_guid` - The unique entity identifier of the condition in New Relic.
 
 
 ## Import
@@ -51,4 +52,61 @@ Synthetics alert conditions can be imported using a composite ID of `<policy_id>
 
 ```
 $ terraform import newrelic_synthetics_alert_condition.main 12345:67890
+```
+
+## Tags
+
+Manage synthetics alert condition tags with `newrelic_entity_tags`. For up-to-date documentation about the tagging resource, please check [newrelic_entity_tags](entity_tags.html#example-usage)
+
+```hcl
+resource "newrelic_alert_policy" "foo" {
+  name = "foo policy"
+}
+
+resource "newrelic_synthetics_monitor" "foo" {
+  status           = "ENABLED"
+  name             = "foo monitor"
+  period           = "EVERY_MINUTE"
+  uri              = "https://www.one.newrelic.com"
+  type             = "SIMPLE"
+  locations_public = ["AP_EAST_1"]
+
+  custom_header {
+    name  = "some_name"
+    value = "some_value"
+  }
+
+  treat_redirect_as_failure = true
+  validation_string         = "success"
+  bypass_head_request       = true
+  verify_ssl                = true
+
+  tag {
+    key    = "some_key"
+    values = ["some_value"]
+  }
+}
+
+resource "newrelic_synthetics_alert_condition" "foo" {
+  policy_id = newrelic_alert_policy.foo.id
+
+  name        = "foo synthetics condition"
+  monitor_id  = newrelic_synthetics_monitor.foo.id
+  runbook_url = "https://www.example.com"
+}
+
+resource "newrelic_entity_tags" "my_condition_entity_tags" {
+  guid = newrelic_synthetics_alert_condition.foo.entity_guid
+
+
+  tag {
+    key = "my-key"
+    values = ["my-value", "my-other-value"]
+  }
+
+  tag {
+    key = "my-key-2"
+    values = ["my-value-2"]
+  }
+}
 ```
