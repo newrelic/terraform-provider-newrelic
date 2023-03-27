@@ -1,8 +1,8 @@
 package newrelic
 
 import (
-	"fmt"
 	"encoding/base64"
+	"fmt"
 )
 
 // Builds a condition entity guid of the format "[accountID]|AIOPS|CONDITION|[conditionID]"
