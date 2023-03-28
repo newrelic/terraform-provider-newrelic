@@ -196,6 +196,11 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"average", "min", "max", "total", "sample_size", "percent", "rate"}, false),
 				Description:  "One of: (average, min, max, total, sample_size, percent, rate).",
 			},
+			"entity_guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique entity identifier of the condition in New Relic.",
+			},
 		},
 	}
 }
@@ -218,7 +223,7 @@ func resourceNewRelicAlertConditionCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(serializeIDs([]int{policyID, condition.ID}))
 
-	return nil
+	return resourceNewRelicAlertConditionRead(ctx, d, meta)
 }
 
 func resourceNewRelicAlertConditionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -257,10 +262,13 @@ func resourceNewRelicAlertConditionRead(ctx context.Context, d *schema.ResourceD
 
 	_ = d.Set("policy_id", policyID)
 
-	return diag.FromErr(flattenAlertCondition(condition, d))
+	return diag.FromErr(flattenAlertCondition(condition, accountID, d))
 }
 
 func resourceNewRelicAlertConditionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	accountID := selectAccountID(providerConfig, d)
+
 	client := meta.(*ProviderConfig).NewClient
 	condition, err := expandAlertCondition(d)
 	if err != nil {
@@ -285,7 +293,7 @@ func resourceNewRelicAlertConditionUpdate(ctx context.Context, d *schema.Resourc
 
 	_ = d.Set("policy_id", policyID)
 
-	return diag.FromErr(flattenAlertCondition(updatedCondition, d))
+	return diag.FromErr(flattenAlertCondition(updatedCondition, accountID, d))
 }
 
 func resourceNewRelicAlertConditionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
