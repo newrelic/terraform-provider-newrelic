@@ -9,7 +9,7 @@ require (
 	github.com/golangci/golangci-lint v1.51.2
 	github.com/goreleaser/goreleaser v1.7.0
 	github.com/llorllale/go-gitlint v0.0.0-20210608233938-d6303cc52cc5
-	github.com/psampaz/go-mod-outdated v0.8.0
+	github.com/psampaz/go-mod-outdated v0.9.0
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/tools v0.6.0
 	gotest.tools/gotestsum v1.9.0
@@ -203,7 +203,7 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-ieproxy v0.0.1 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
-	github.com/mattn/go-runewidth v0.0.10 // indirect
+	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mbilski/exhaustivestruct v1.2.0 // indirect
 	github.com/mgechev/revive v1.2.5 // indirect
@@ -237,7 +237,7 @@ require (
 	github.com/quasilyte/gogrep v0.5.0 // indirect
 	github.com/quasilyte/regex/syntax v0.0.0-20200407221936-30656e2c4a95 // indirect
 	github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567 // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/ryancurrah/gomodguard v1.3.0 // indirect
 	github.com/ryanrolds/sqlclosecheck v0.4.0 // indirect
