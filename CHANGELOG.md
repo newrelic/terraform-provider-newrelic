@@ -1,3 +1,11 @@
+<a name="v3.19.0"></a>
+## [v3.19.0] - 2023-03-28
+### Documentation Updates
+- add examples to dashboard resource to demonstrate importing dashboards using GUID ([#2300](https://github.com/newrelic/terraform-provider-newrelic/issues/2300))
+
+### Features
+- **Alerts:** Expose entity_guid for legacy alert conditions ([#2301](https://github.com/newrelic/terraform-provider-newrelic/issues/2301))
+
 <a name="v3.18.1"></a>
 ## [v3.18.1] - 2023-03-24
 ### Bug Fixes
@@ -1762,7 +1770,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.18.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.19.0...HEAD
+[v3.19.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.18.1...v3.19.0
 [v3.18.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.18.0...v3.18.1
 [v3.18.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.1...v3.18.0
 [v3.17.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.0...v3.17.1
