@@ -1,3 +1,15 @@
+<a name="v3.18.1"></a>
+## [v3.18.1] - 2023-03-24
+### Bug Fixes
+- **NRQLDropRule:** Handle case where resource in state has been deleted
+
+### Documentation Updates
+- **entity:** update entity data source docs with additional entity types and examples ([#2297](https://github.com/newrelic/terraform-provider-newrelic/issues/2297))
+
+<a name="v3.18.0"></a>
+## [v3.18.0] - 2023-03-22
+### Features
+- Allow creating SL using CDF functions. ([#2293](https://github.com/newrelic/terraform-provider-newrelic/issues/2293))
 
 <a name="v3.17.1"></a>
 ## [v3.17.1] - 2023-03-17
@@ -1752,7 +1764,9 @@ new synthetics resources use GraphQL API schema
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
 
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.18.1...HEAD
+[v3.18.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.18.0...v3.18.1
+[v3.18.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.1...v3.18.0
 [v3.17.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.0...v3.17.1
 [v3.17.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.16.1...v3.17.0
 [v3.16.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.16.0...v3.16.1
