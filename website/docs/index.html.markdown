@@ -58,7 +58,8 @@ resources compared to which endpoint is in use.
 ### Resources
 
 | Resource                                            | Endpoint                | Authentication        |
-| --------------------------------------------------- |-------------------------| --------------------- |
+|-----------------------------------------------------|-------------------------|-----------------------|
+| `newrelic_account_management`                       | NerdGraph               | `api_key`             |
 | `newrelic_alert_channel`                            | RESTv2                  | `api_key`             |
 | `newrelic_alert_condition`                          | RESTv2                  | `api_key`             |
 | `newrelic_alert_muting_rule`                        | NerdGraph               | `api_key`             |
