@@ -122,6 +122,22 @@ func TestNewRelicWorkflow_MinimalConfig(t *testing.T) {
 	})
 }
 
+func TestNewRelicWorkflow_InvalidIssuesFilterAttr(t *testing.T) {
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicWorkflowConfigurationInvalidIssuesFilterAttr(testAccountID, rName),
+				ExpectError: regexp.MustCompile("VALIDATION_ERROR"),
+			},
+		},
+	})
+}
+
 func TestNewRelicWorkflow_UpdateChannels(t *testing.T) {
 	resourceName := "newrelic_workflow.foo"
 	channelResourceName := "oldChannel"
@@ -387,7 +403,58 @@ resource "newrelic_workflow" "foo" {
     type = "FILTER"
 
     predicate {
-      attribute = "source"
+      attribute = "accumulations.sources"
+      operator  = "EQUAL"
+      values    = ["newrelic"]
+    }
+  }
+
+  destination {
+    channel_id = newrelic_notification_channel.foo.id
+  }
+}
+`, accountID, name)
+}
+
+func testAccNewRelicWorkflowConfigurationInvalidIssuesFilterAttr(accountID int, name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "foo" {
+  name = "tf-test-destination"
+  type = "WEBHOOK"
+
+  property {
+    key   = "url"
+    value = "https://webhook.site/"
+  }
+
+  auth_basic {
+    user     = "username"
+    password = "password"
+  }
+}
+
+resource "newrelic_notification_channel" "foo" {
+  name           = "webhook-example"
+  type           = "WEBHOOK"
+  product        = "IINT"
+  destination_id = newrelic_notification_destination.foo.id
+
+  property {
+    key   = "payload"
+    value = "{}"
+  }
+}
+
+resource "newrelic_workflow" "foo" {
+  name                  = "%[2]s"
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+
+  issues_filter {
+    name = "filter-name"
+    type = "FILTER"
+
+    predicate {
+      attribute = "invalid.attribute"
       operator  = "EQUAL"
       values    = ["newrelic"]
     }
@@ -445,7 +512,7 @@ resource "newrelic_workflow" "foo" {
     type = "FILTER"
 
     predicate {
-      attribute = "source"
+      attribute = "priority"
       operator  = "EQUAL"
       values    = ["newrelic", "pagerduty"]
     }
@@ -516,7 +583,7 @@ resource "newrelic_workflow" "foo" {
     type = "FILTER"
 
     predicate {
-      attribute = "source"
+      attribute = "priority"
       operator  = "EQUAL"
       values    = ["newrelic", "pagerduty"]
     }
@@ -592,7 +659,7 @@ resource "newrelic_workflow" "foo" {
     type = "FILTER"
 
     predicate {
-      attribute = "attr"
+      attribute = "priority"
       operator  = "EQUAL"
       values    = ["test"]
     }
@@ -617,7 +684,7 @@ resource "newrelic_workflow" "foo" {
     type = "FILTER"
 
     predicate {
-      attribute = "attr"
+      attribute = "priority"
       operator  = "EQUAL"
       values    = ["test"]
     }
@@ -643,10 +710,10 @@ resource "newrelic_workflow" "foo" {
 		type = "FILTER"
 
 		predicate {
-		attribute = "attr"
-		operator  = "EQUAL"
-		values    = ["test"]
-	}
+			attribute = "priority"
+			operator  = "EQUAL"
+			values    = ["test"]
+		}
 	}
 
 	destination {
