@@ -45,7 +45,7 @@ func TestAccNewRelicServiceLevelAlertHelper_Custom(t *testing.T) {
 }
 
 func TestAccNewRelicServiceLevelAlertHelper_FastBurnError(t *testing.T) {
-	expectedErrorMessage := regexp.MustCompile(`For fast_burn alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption'.`)
+	expectedErrorMessage := regexp.MustCompile(`For 'fast_burn' alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption'.`)
 
 	resource.ParallelTest(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -63,7 +63,7 @@ func TestAccNewRelicServiceLevelAlertHelper_FastBurnError(t *testing.T) {
 }
 
 func TestAccNewRelicServiceLevelAlertHelper_CustomError(t *testing.T) {
-	expectedErrorMessage := regexp.MustCompile(`For custom alert type the fields 'custom_evaluation_period' and 'custom_tolerated_budget_consumption' are mandatory.`)
+	expectedErrorMessage := regexp.MustCompile(`For 'custom' alert type the fields 'custom_evaluation_period' and 'custom_tolerated_budget_consumption' are mandatory.`)
 
 	resource.ParallelTest(t, resource.TestCase{
 		Providers: testAccProviders,

@@ -10,70 +10,62 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-const (
-	alertTypeField              = "alert_type"
-	sliGUIDField                = "sli_guid"
-	sloTargetField              = "slo_target"
-	sloPeriodField              = "slo_period"
-	customConsumptionField      = "custom_tolerated_budget_consumption"
-	customEvaluationPeriodField = "custom_evaluation_period"
-	consumptionField            = "tolerated_budget_consumption"
-	evaluationPeriodField       = "evaluation_period"
-	thresholdField              = "threshold"
-	nrqlField                   = "nrql"
+type serviceLevelAlertType string
 
-	custom              = "custom"
-	fastBurn            = "fast_burn"
-	fastBurnPeriod      = 60
-	fastBurnConsumption = 2
-)
+var serviceLevelAlertTypes = struct {
+	CUSTOM    serviceLevelAlertType
+	FAST_BURN serviceLevelAlertType
+}{
+	CUSTOM:    "custom",
+	FAST_BURN: "fast_burn",
+}
 
 func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNewRelicServiceLevelAlertHelperRead,
 		Schema: map[string]*schema.Schema{
-			alertTypeField: {
+			"alert_type": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{custom, fastBurn}, true),
+				ValidateFunc: validation.StringInSlice([]string{"custom", "fast_burn"}, true),
 			},
-			sliGUIDField: {
+			"sli_guid": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			sloTargetField: {
+			"slo_target": {
 				Type:         schema.TypeFloat,
 				Required:     true,
 				ValidateFunc: validation.FloatBetween(0, 100),
 			},
-			sloPeriodField: {
+			"slo_period": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validation.IntInSlice([]int{1, 7, 28}),
 			},
-			customConsumptionField: {
+			"custom_tolerated_budget_consumption": {
 				Type:         schema.TypeFloat,
 				Optional:     true,
 				ValidateFunc: validation.FloatBetween(0, 100),
 			},
-			customEvaluationPeriodField: {
+			"custom_evaluation_period": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: validation.IntAtLeast(1),
 			},
-			consumptionField: {
+			"tolerated_budget_consumption": {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			evaluationPeriodField: {
+			"evaluation_period": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			thresholdField: {
+			"threshold": {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			nrqlField: {
+			"nrql": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -83,65 +75,65 @@ func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource {
 
 func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	var sliGUID = d.Get(sliGUIDField).(string)
+	var sliGUID = d.Get("sli_guid").(string)
 	rnd := strconv.Itoa(rand.Int())
 	d.SetId(sliGUID + rnd)
 
-	var sloPeriod = d.Get(sloPeriodField).(int)
-	var sloTarget = d.Get(sloTargetField).(float64)
-	var alertType = d.Get(alertTypeField).(string)
+	var sloPeriod = d.Get("slo_period").(int)
+	var sloTarget = d.Get("slo_target").(float64)
+	var alertType = d.Get("alert_type").(string)
 
-	_, tOk := d.GetOk(customConsumptionField)
-	_, eOk := d.GetOk(customEvaluationPeriodField)
+	_, tOk := d.GetOk("custom_tolerated_budget_consumption")
+	_, eOk := d.GetOk("custom_evaluation_period")
 
-	switch alertType {
-	case fastBurn:
+	switch serviceLevelAlertType(alertType) {
+	case serviceLevelAlertTypes.FAST_BURN:
 		if tOk || eOk {
-			return diag.Errorf("For %s alert type do not fill '%s' or '%s', we use 60 minutes and 2%%.", fastBurn, customEvaluationPeriodField, customConsumptionField)
+			return diag.Errorf("For 'fast_burn' alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption', we use 60 minutes and 2%%.")
 		}
 
-		threshold := calculateThreshold(sloTarget, fastBurnConsumption, sloPeriod, fastBurnPeriod)
-		err := d.Set(thresholdField, threshold)
+		threshold := calculateThreshold(sloTarget, 2, sloPeriod, 60)
+		err := d.Set("threshold", threshold)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		err = d.Set(evaluationPeriodField, fastBurnPeriod)
+		err = d.Set("evaluation_period", 60)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		err = d.Set(consumptionField, fastBurnConsumption)
+		err = d.Set("tolerated_budget_consumption", 2)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-	case custom:
+	case serviceLevelAlertTypes.CUSTOM:
 		if !tOk || !eOk {
-			return diag.Errorf("For %s alert type the fields '%s' and '%s' are mandatory.", custom, customEvaluationPeriodField, customConsumptionField)
+			return diag.Errorf("For 'custom' alert type the fields 'custom_evaluation_period' and 'custom_tolerated_budget_consumption' are mandatory.")
 		}
 
-		toleratedBudgetConsumption := d.Get(customConsumptionField).(float64)
-		evaluationPeriod := d.Get(customEvaluationPeriodField).(int)
+		toleratedBudgetConsumption := d.Get("custom_tolerated_budget_consumption").(float64)
+		evaluationPeriod := d.Get("custom_evaluation_period").(int)
 		var threshold = calculateThreshold(sloTarget, toleratedBudgetConsumption, sloPeriod, evaluationPeriod)
 
-		err := d.Set(thresholdField, threshold)
+		err := d.Set("threshold", threshold)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		err = d.Set(evaluationPeriodField, evaluationPeriod)
+		err = d.Set("evaluation_period", evaluationPeriod)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		err = d.Set(consumptionField, toleratedBudgetConsumption)
+		err = d.Set("tolerated_budget_consumption", toleratedBudgetConsumption)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 	}
 
-	err := d.Set(nrqlField, "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = '"+sliGUID+"'")
+	err := d.Set("nrql", "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = '"+sliGUID+"'")
 	if err != nil {
 		return diag.FromErr(err)
 	}
