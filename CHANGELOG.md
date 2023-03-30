@@ -1,3 +1,15 @@
+<a name="v3.20.0"></a>
+## [v3.20.0] - 2023-03-30
+### Bug Fixes
+- **newrelic_entity:** add helpers to escape single quotes in NRQL que… ([#2295](https://github.com/newrelic/terraform-provider-newrelic/issues/2295))
+
+### Documentation Updates
+- update newrelic_synthetics_cert_check_monitor example to use correct argument. ([#2311](https://github.com/newrelic/terraform-provider-newrelic/issues/2311))
+- update docs with newrelic_account_management resource ([#2308](https://github.com/newrelic/terraform-provider-newrelic/issues/2308))
+
+### Features
+- **service_level:** add data source service_level_alert_helper ([#2298](https://github.com/newrelic/terraform-provider-newrelic/issues/2298))
+
 <a name="v3.19.0"></a>
 ## [v3.19.0] - 2023-03-28
 ### Documentation Updates
@@ -1770,7 +1782,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.19.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.0...HEAD
+[v3.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.19.0...v3.20.0
 [v3.19.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.18.1...v3.19.0
 [v3.18.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.18.0...v3.18.1
 [v3.18.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.1...v3.18.0
