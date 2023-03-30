@@ -1,0 +1,16 @@
+# Global
+*                                               @newrelic/virtuoso
+
+# Documentation
+/website/                                       @kidk
+
+# Service Levels
+/newrelic/*newrelic_service_level*              virtuoso@newrelic.com #?
+
+# Workflows
+/newrelic/*newrelic_workflow*                   incident-workflows-team@newrelic.com
+/newrelic/*newrelic_notification_channel*       incident-workflows-team@newrelic.com
+/newrelic/*newrelic_notification_destination*   incident-workflows-team@newrelic.com
+
+# Workloads
+/newrelic/*newrelic_workload*                   team_workloads@newrelic.com
