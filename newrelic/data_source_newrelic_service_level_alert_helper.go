@@ -13,11 +13,11 @@ import (
 type serviceLevelAlertType string
 
 var serviceLevelAlertTypes = struct {
-	CUSTOM    serviceLevelAlertType
-	FAST_BURN serviceLevelAlertType
+	custom   serviceLevelAlertType
+	fastBurn serviceLevelAlertType
 }{
-	CUSTOM:    "custom",
-	FAST_BURN: "fast_burn",
+	custom:   "custom",
+	fastBurn: "fast_burn",
 }
 
 func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource {
@@ -87,7 +87,7 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 	_, eOk := d.GetOk("custom_evaluation_period")
 
 	switch serviceLevelAlertType(alertType) {
-	case serviceLevelAlertTypes.FAST_BURN:
+	case serviceLevelAlertTypes.fastBurn:
 		if tOk || eOk {
 			return diag.Errorf("For 'fast_burn' alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption', we use 60 minutes and 2%%.")
 		}
@@ -107,7 +107,7 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 		if err != nil {
 			return diag.FromErr(err)
 		}
-	case serviceLevelAlertTypes.CUSTOM:
+	case serviceLevelAlertTypes.custom:
 		if !tOk || !eOk {
 			return diag.Errorf("For 'custom' alert type the fields 'custom_evaluation_period' and 'custom_tolerated_budget_consumption' are mandatory.")
 		}
