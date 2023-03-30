@@ -132,6 +132,7 @@ func Provider() *schema.Provider {
 			"newrelic_synthetics_private_location":  dataSourceNewRelicSyntheticsPrivateLocation(),
 			"newrelic_synthetics_secure_credential": dataSourceNewRelicSyntheticsSecureCredential(),
 			"newrelic_test_grok_pattern":            dataSourceNewRelicTestGrokPattern(),
+			"newrelic_service_level_alert_helper":   dataSourceNewRelicServiceLevelAlertHelper(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
