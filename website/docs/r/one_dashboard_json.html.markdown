@@ -158,3 +158,12 @@ The following example demonstrates setting thresholds on a billboard widget.
   ]
 }
 ```
+
+
+## Import
+
+New Relic dashboards can be imported using their GUID, e.g.
+
+```bash
+$ terraform import newrelic_one_dashboard_json.my_dashboard <dashboard GUID>
+```

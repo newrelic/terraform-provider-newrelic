@@ -30,6 +30,25 @@ func TestAccNewRelicEntityData_Basic(t *testing.T) {
 	})
 }
 
+// This test case checks if an entity with a single quote "'" in its name
+// is created, and is subsequently, fetched by the data source.
+func TestAccNewRelicSingleQuotedEntityData_Basic(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccSingleQuotedPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicEntityDataConfig(testAccExpectedSingleQuotedApplicationName, testAccountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", testAccExpectedSingleQuotedApplicationName),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicEntityData_Missing(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {

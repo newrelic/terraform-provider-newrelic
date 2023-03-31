@@ -72,7 +72,9 @@ func expandAlertConditionTerms(terms []interface{}) []alerts.ConditionTerm {
 	return perms
 }
 
-func flattenAlertCondition(condition *alerts.Condition, d *schema.ResourceData) error {
+func flattenAlertCondition(condition *alerts.Condition, accountID int, d *schema.ResourceData) error {
+	entityGUID := getConditionEntityGUID(condition.ID, accountID)
+
 	_ = d.Set("name", condition.Name)
 	_ = d.Set("enabled", condition.Enabled)
 	_ = d.Set("type", condition.Type)
@@ -82,6 +84,7 @@ func flattenAlertCondition(condition *alerts.Condition, d *schema.ResourceData) 
 	_ = d.Set("gc_metric", condition.GCMetric)
 	_ = d.Set("user_defined_metric", condition.UserDefined.Metric)
 	_ = d.Set("user_defined_value_function", condition.UserDefined.ValueFunction)
+	_ = d.Set("entity_guid", entityGUID)
 
 	// The condition_scope field is not always returned by the API. This conditional
 	// handles flattening for all cases.

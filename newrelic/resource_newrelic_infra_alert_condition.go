@@ -174,6 +174,11 @@ func resourceNewRelicInfraAlertCondition() *schema.Resource {
 				Optional:    true,
 				Description: "The description of the Infrastructure alert condition.",
 			},
+			"entity_guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique entity identifier of the condition in New Relic.",
+			},
 		},
 	}
 }
@@ -233,7 +238,7 @@ func resourceNewRelicInfraAlertConditionRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return diag.FromErr(flattenInfraAlertCondition(condition, d))
+	return diag.FromErr(flattenInfraAlertCondition(condition, accountID, d))
 }
 
 func resourceNewRelicInfraAlertConditionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

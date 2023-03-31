@@ -28,22 +28,25 @@ import (
 )
 
 var (
-	testAccExpectedAlertChannelName string
-	testAccExpectedApplicationName  string
-	testAccExpectedAlertPolicyName  string
-	testAccAPIKey                   string
-	testAccProviders                map[string]*schema.Provider
-	testAccProvider                 *schema.Provider
-	testAccountID                   int
-	testSubaccountID                int
-	testAccountName                 string
-	testAccAPMEntityCreated         = false
-	testAccCleanupComplete          = false
+	testAccExpectedAlertChannelName            string
+	testAccExpectedApplicationName             string
+	testAccExpectedSingleQuotedApplicationName string
+	testAccExpectedAlertPolicyName             string
+	testAccAPIKey                              string
+	testAccProviders                           map[string]*schema.Provider
+	testAccProvider                            *schema.Provider
+	testAccountID                              int
+	testSubaccountID                           int
+	testAccountName                            string
+	testAccAPMEntityCreated                    = false
+	testAccAPMSingleQuotedEntityCreated        = false
+	testAccCleanupComplete                     = false
 )
 
 func init() {
 	testAccExpectedAlertChannelName = fmt.Sprintf("%s tf-test@example.com", acctest.RandString(5))
 	testAccExpectedApplicationName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	testAccExpectedSingleQuotedApplicationName = fmt.Sprintf("tf_test_quote_%s%s%s", acctest.RandString(5), "'", acctest.RandString(5))
 	testAccExpectedAlertPolicyName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{
@@ -97,43 +100,64 @@ func testAccPreCheck(t *testing.T) {
 
 	// Create a test application for use in newrelic_alert_condition and other tests
 	if !testAccAPMEntityCreated {
-		// Clean up old instances of the applications
-		testAccApplicationsCleanup(t)
-
-		// Create the application
-		testAccCreateApplication(t)
-
-		// We need to give the entity search engine time to index the app so
-		// we try to get the entity, and retry if it fails for a certain amount
-		// of time
-		client := entities.New(config.Config{
-			PersonalAPIKey: testAccAPIKey,
-		})
-		params := entities.EntitySearchQueryBuilder{
-			Name:   testAccExpectedApplicationName,
-			Type:   "APPLICATION",
-			Domain: "APM",
-		}
-
-		retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
-			entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
-			if err != nil {
-				return resource.RetryableError(err)
-			}
-
-			if entityResults.Count != 1 {
-				return resource.RetryableError(fmt.Errorf("Entity not found, or found more than one"))
-			}
-
-			return nil
-		})
-
-		if retryErr != nil {
-			t.Fatalf("Unable to find application entity: %s", retryErr)
-		}
-
+		testAccCreateEntity(t, testAccExpectedApplicationName)
 		testAccAPMEntityCreated = true
 	}
+}
+
+func testAccSingleQuotedPreCheck(t *testing.T) {
+	testAccPreCheckEnvVars(t)
+
+	// Clean up old data partitions
+	//testAccLogDataPartitionsCleanup(t)
+
+	// Cleaning up the Parsing rules
+	//testAccLogParsingRulesCleanup(t)
+
+	// Create a test application for use in tests in the "entity" data source
+	// comprising an apostrophe "'".
+	if !testAccAPMSingleQuotedEntityCreated {
+		testAccCreateEntity(t, testAccExpectedSingleQuotedApplicationName)
+		testAccAPMSingleQuotedEntityCreated = true
+	}
+}
+
+func testAccCreateEntity(t *testing.T, name string) {
+	// Clean up old instances of the applications
+	testAccApplicationsCleanup(t)
+
+	// Create the application, with the given 'name' in the argument.
+	testAccCreateApplication(t, name)
+
+	// We need to give the entity search engine time to index the app so
+	// we try to get the entity, and retry if it fails for a certain amount
+	// of time
+	client := entities.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
+	params := entities.EntitySearchQueryBuilder{
+		Name:   escapeSingleQuote(name),
+		Type:   "APPLICATION",
+		Domain: "APM",
+	}
+
+	retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
+		entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
+		if err != nil {
+			return resource.RetryableError(err)
+		}
+
+		if entityResults.Count != 1 {
+			return resource.RetryableError(fmt.Errorf("Entity not found, or found more than one"))
+		}
+
+		return nil
+	})
+
+	if retryErr != nil {
+		t.Fatalf("Unable to find application entity: %s", retryErr)
+	}
+
 }
 
 func testAccPreCheckEnvVars(t *testing.T) {
@@ -150,10 +174,10 @@ func testAccPreCheckEnvVars(t *testing.T) {
 	}
 }
 
-func testAccCreateApplication(t *testing.T) {
+func testAccCreateApplication(t *testing.T, name string) {
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigFromEnvironment(),
-		newrelic.ConfigAppName(testAccExpectedApplicationName),
+		newrelic.ConfigAppName(name),
 		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
 	)
 

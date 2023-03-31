@@ -79,13 +79,14 @@ func expandInfraAlertThreshold(v interface{}) *alerts.InfrastructureConditionThr
 	return alertInfraThreshold
 }
 
-func flattenInfraAlertCondition(condition *alerts.InfrastructureCondition, d *schema.ResourceData) error {
+func flattenInfraAlertCondition(condition *alerts.InfrastructureCondition, accountID int, d *schema.ResourceData) error {
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
 		return err
 	}
 
 	policyID := ids[0]
+	entityGUID := getConditionEntityGUID(condition.ID, accountID)
 
 	_ = d.Set("policy_id", policyID)
 	_ = d.Set("name", condition.Name)
@@ -98,6 +99,7 @@ func flattenInfraAlertCondition(condition *alerts.InfrastructureCondition, d *sc
 	_ = d.Set("description", condition.Description)
 	_ = d.Set("created_at", time.Time(*condition.CreatedAt).Unix())
 	_ = d.Set("updated_at", time.Time(*condition.UpdatedAt).Unix())
+	_ = d.Set("entity_guid", entityGUID)
 
 	if condition.Where != "" {
 		_ = d.Set("where", condition.Where)

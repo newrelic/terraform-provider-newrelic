@@ -66,6 +66,12 @@ The following arguments are supported:
 Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
 ```
 
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+  * `entity_guid` - The unique entity identifier of the condition in New Relic.
+
 ## Import
 
 New Relic Synthetics MultiLocation Conditions can be imported using a concatenated string of the format
@@ -74,3 +80,74 @@ New Relic Synthetics MultiLocation Conditions can be imported using a concatenat
 ```bash
 $ terraform import newrelic_synthetics_multilocation_alert_condition.example 12345678:1456
 ```
+
+## Tags
+
+Manage synthetics multilocation alert condition tags with `newrelic_entity_tags`. For up-to-date documentation about the tagging resource, please check [newrelic_entity_tags](entity_tags.html#example-usage)
+
+```hcl
+resource "newrelic_alert_policy" "foo" {
+  name = "foo policy"
+}
+
+resource "newrelic_synthetics_monitor" "foo" {
+  status           = "ENABLED"
+  name             = "foo monitor"
+  period           = "EVERY_MINUTE"
+  uri              = "https://www.one.newrelic.com"
+  type             = "SIMPLE"
+  locations_public = ["AP_EAST_1"]
+
+  custom_header {
+    name  = "some_name"
+    value = "some_value"
+  }
+
+  treat_redirect_as_failure = true
+  validation_string         = "success"
+  bypass_head_request       = true
+  verify_ssl                = true
+
+  tag {
+    key    = "some_key"
+    values = ["some_value"]
+  }
+}
+
+resource "newrelic_synthetics_multilocation_alert_condition" "foo" {
+  policy_id = newrelic_alert_policy.foo.id
+
+  name                         = "foo condition"
+  runbook_url                  = "https://example.com"
+  enabled                      = true
+  violation_time_limit_seconds = "3600"
+
+  entities = [
+    newrelic_synthetics_monitor.foo.id
+  ]
+
+  critical {
+    threshold = 2
+  }
+
+  warning {
+    threshold = 1
+  }
+}
+
+
+resource "newrelic_entity_tags" "my_condition_entity_tags" {
+  guid = newrelic_synthetics_multilocation_alert_condition.foo.entity_guid
+
+  tag {
+    key = "my-key"
+    values = ["my-value", "my-other-value"]
+  }
+
+  tag {
+    key = "my-key-2"
+    values = ["my-value-2"]
+  }
+}
+```
+
