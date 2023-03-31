@@ -5,7 +5,7 @@
 /website/                                       @kidk
 
 # Service Levels
-/newrelic/*newrelic_service_level*              virtuoso@newrelic.com #?
+/newrelic/*newrelic_service_level*              @newrelic/virtuoso #?
 
 # Workflows
 /newrelic/*newrelic_workflow*                   incident-workflows-team@newrelic.com
