@@ -60,7 +60,7 @@ Each alert channel type supports a specific set of arguments for the `config` bl
     * `key` - (Required) The key for integrating with VictorOps.
     * `route_key` - (Required) The route key for integrating with VictorOps.
   * `slack`
-    * `url` - (Required) [Slack Webhook URL](https://slack.com/intl/en-es/help/articles/115005265063-Incoming-webhooks-for-Slack).
+    * `url` - (Required) [Slack Webhook URL](https://api.slack.com/messaging/webhooks#create_a_webhook).
     * `channel` - (Optional) The Slack channel to send notifications to.
   * `opsgenie`
     * `api_key` - (Required) The API key for integrating with OpsGenie.
@@ -89,6 +89,8 @@ resource "newrelic_alert_channel" "foo" {
   }
 }
 ```
+
+-> **NOTE:** For instructions on setting up Webhooks with Slack, please visit the article linked under the argument `slack` in the aforementioned configuration, or [this article](https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/alert-notifications/notification-channels-control-where-send-alerts/#slack) in New Relic's docs for additional details on setting up the `New Relic Alerts` Slack application, and subsequently using the generated Webhook URL.
 
 ##### OpsGenie
 ```hcl
