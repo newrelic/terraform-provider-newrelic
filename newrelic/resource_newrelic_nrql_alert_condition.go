@@ -201,8 +201,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				ConflictsWith: []string{"term"},
 			},
 			"violation_time_limit_seconds": {
-				Type:          schema.TypeInt,
-				Optional:      true,
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  259200,
+				// Default value added as expected by the NerdGraph API to prevent discrepancies with `terraform plan`
+				// Reference : https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/alert-violations/how-alert-condition-violations-are-closed/#time-limit
 				Description:   "Sets a time limit, in seconds, that will automatically force-close a long-lasting incident after the time limit you select.  Must be in the range of 300 to 2592000 (inclusive)",
 				ConflictsWith: []string{"violation_time_limit"},
 				ValidateFunc:  validation.IntBetween(300, 2592000),
