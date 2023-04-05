@@ -68,7 +68,7 @@ func expandSyntheticsMonitorSteps(steps []interface{}) []synthetics.SyntheticsSt
 		stepsOut = append(stepsOut, synthetics.SyntheticsStepInput{
 			Ordinal: st["ordinal"].(int),
 			Type:    synthetics.SyntheticsStepType(st["type"].(string)),
-			Values:  expandStringSlice(st["values"].([]interface{})),
+			Values:  expandStringSliceForStepMonitors(st["values"].([]interface{})),
 		})
 	}
 

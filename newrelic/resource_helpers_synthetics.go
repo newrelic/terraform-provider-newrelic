@@ -190,6 +190,20 @@ func expandStringSlice(strings []interface{}) []string {
 	return out
 }
 
+// Special function added to handle empty step values "" sent
+// when step monitors are created/updated
+func expandStringSliceForStepMonitors(strings []interface{}) []string {
+	out := make([]string, len(strings))
+	for i, v := range strings {
+		if v == nil {
+			out[i] = ""
+		} else {
+			out[i] = v.(string)
+		}
+	}
+	return out
+}
+
 func expandSyntheticsPublicLocations(locations []interface{}) []string {
 	locationsOut := make([]string, len(locations))
 
