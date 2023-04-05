@@ -1,3 +1,12 @@
+<a name="v3.20.1"></a>
+## [v3.20.1] - 2023-04-05
+### Bug Fixes
+- **newrelic_api_access_key:** add info to TF docs on API Access errors ([#2302](https://github.com/newrelic/terraform-provider-newrelic/issues/2302))
+
+### Documentation Updates
+- correct references to slack webhooks in newrelic_alert_channel ([#2315](https://github.com/newrelic/terraform-provider-newrelic/issues/2315))
+- **guide:** update synthetics migration guide with correct resource reference to remove state ([#2318](https://github.com/newrelic/terraform-provider-newrelic/issues/2318))
+
 <a name="v3.20.0"></a>
 ## [v3.20.0] - 2023-03-30
 ### Bug Fixes
@@ -1782,7 +1791,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.1...HEAD
+[v3.20.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.0...v3.20.1
 [v3.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.19.0...v3.20.0
 [v3.19.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.18.1...v3.19.0
 [v3.18.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.18.0...v3.18.1
