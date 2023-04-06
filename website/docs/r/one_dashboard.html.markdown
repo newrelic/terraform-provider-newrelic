@@ -322,7 +322,6 @@ widget_line {
 The following arguments are supported:
 
 * `default_values` - (Optional) A list of default values for this variable.
-    * **NOTE:** If you'd like to select **all** default values, the appropriate value to be used with this argument would be `["*"]`. 
 * `is_multi_selection` - (Optional) Indicates whether this variable supports multiple selection or not. Only applies to variables of type `nrql` or `enum`.
 * `item` - (Optional) List of possible values for variables of type `enum`. See [Nested item blocks](#nested-item-blocks) below for details.
 * `name` - (Required) The variable identifier.
