@@ -3,7 +3,7 @@ layout: "newrelic"
 page_title: "New Relic: newrelic_one_dashboard"
 sidebar_current: "docs-newrelic-resource-one-dashboard"
 description: |-
-  Create and manage dashboards in New Relic One.
+Create and manage dashboards in New Relic One.
 ---
 
 # Resource: newrelic\_one\_dashboard
@@ -187,19 +187,19 @@ See additional [examples](#additional-examples).
 
 The following arguments are supported:
 
-  * `name` - (Required) The title of the dashboard.
-  * `page` - (Required) A nested block that describes a page. See [Nested page blocks](#nested-page-blocks) below for details.
-  * `account_id` - (Optional) Determines the New Relic account where the dashboard will be created. Defaults to the account associated with the API key used.
-  * `description` - (Optional) Brief text describing the dashboard.
-  * `permissions` - (Optional) Determines who can see the dashboard in an account. Valid values are `private`, `public_read_only`, or `public_read_write`.  Defaults to `public_read_only`.
-  * `variable` - (Optional) A nested block that describes a dashboard-local variable. See [Nested variable blocks](#nested-variable-blocks) below for details.
+* `name` - (Required) The title of the dashboard.
+* `page` - (Required) A nested block that describes a page. See [Nested page blocks](#nested-page-blocks) below for details.
+* `account_id` - (Optional) Determines the New Relic account where the dashboard will be created. Defaults to the account associated with the API key used.
+* `description` - (Optional) Brief text describing the dashboard.
+* `permissions` - (Optional) Determines who can see the dashboard in an account. Valid values are `private`, `public_read_only`, or `public_read_write`.  Defaults to `public_read_only`.
+* `variable` - (Optional) A nested block that describes a dashboard-local variable. See [Nested variable blocks](#nested-variable-blocks) below for details.
 
 ## Attribute Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-  * `guid` - The unique entity identifier of the dashboard in New Relic.
-  * `permalink` - The URL for viewing the dashboard.
+* `guid` - The unique entity identifier of the dashboard in New Relic.
+* `permalink` - The URL for viewing the dashboard.
 
 ### Nested `page` blocks
 
@@ -208,83 +208,83 @@ various widgets for displaying data.
 
 The following arguments are supported:
 
-  * `name` - (Required) The name of the page. **Note:** If there is only one page, this name will be the name of the Dashboard.
-  * `description` - (Optional) Brief text describing the page.
-  * `widget_area` - (Optional) A nested block that describes an Area widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_bar` - (Optional) A nested block that describes a Bar widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_billboard` - (Optional) A nested block that describes a Billboard widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_bullet` - (Optional) A nested block that describes a Bullet widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_funnel` - (Optional) A nested block that describes a Funnel widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_json` - (Optional) A nested block that describes a JSON widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_heatmap` - (Optional) A nested block that describes a Heatmap widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_histogram` - (Optional) A nested block that describes a Histogram widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_line` - (Optional) A nested block that describes a Line widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_markdown` - (Optional) A nested block that describes a Markdown widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_stacked_bar` - (Optional) A nested block that describes a Stacked Bar widget. See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_pie` - (Optional) A nested block that describes a Pie widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_log_table` - (Optional) A nested block that describes a Log Table widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
-  * `widget_table` - (Optional) A nested block that describes a Table widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `name` - (Required) The name of the page. **Note:** If there is only one page, this name will be the name of the Dashboard.
+* `description` - (Optional) Brief text describing the page.
+* `widget_area` - (Optional) A nested block that describes an Area widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_bar` - (Optional) A nested block that describes a Bar widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_billboard` - (Optional) A nested block that describes a Billboard widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_bullet` - (Optional) A nested block that describes a Bullet widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_funnel` - (Optional) A nested block that describes a Funnel widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_json` - (Optional) A nested block that describes a JSON widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_heatmap` - (Optional) A nested block that describes a Heatmap widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_histogram` - (Optional) A nested block that describes a Histogram widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_line` - (Optional) A nested block that describes a Line widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_markdown` - (Optional) A nested block that describes a Markdown widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_stacked_bar` - (Optional) A nested block that describes a Stacked Bar widget. See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_pie` - (Optional) A nested block that describes a Pie widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_log_table` - (Optional) A nested block that describes a Log Table widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
+* `widget_table` - (Optional) A nested block that describes a Table widget.  See [Nested widget blocks](#nested-widget-blocks) below for details.
 
 
 In addition to all arguments above, the following attributes are exported:
 
-  * `guid` - The unique entity identifier of the dashboard page in New Relic.
+* `guid` - The unique entity identifier of the dashboard page in New Relic.
 
 ### Nested `widget` blocks
 
 All nested `widget` blocks support the following common arguments:
 
-  * `title` - (Required) A title for the widget.
-  * `row` - (Required) Row position of widget from top left, starting at `1`.
-  * `column` - (Required) Column position of widget from top left, starting at `1`.
-  * `width` - (Optional) Width of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `4`.
-  * `height` - (Optional) Height of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `3`.
-  * `ignore_time_range` - (Optional) With this turned on, the time range in this query will override the time picker on dashboards and other pages. Defaults to `false`.
-  * `facet_show_other_series` - (Optional) Enable or disable the Other group in visualisations. The other group is used if a facet on a query returns more than 2000 items for bar charts, pie charts, and tables. The other group aggregates the rest of the facets. Defaults to `false`
-  * `y_axis_left_min`, `y_axis_left_max` - (Optional) Adjust the Y axis to display the data within certain values by setting a minimum and maximum value for the axis for line charts and area charts. If no customization option is selected, dashboards automatically displays the full Y axis from 0 to the top value plus a margin.
-  * `legend_enabled` - (Optional) With this turned on, the legend will be displayed. Defaults to `true`.
-  * `null_values` - (Optional) A nested block that describes a Null Values. See [Nested Null Values blocks](#nested-null-values-blocks) below for details.
-  * `units` - (Optional) A nested block that describes units on your Y axis. See [Nested Units blocks](#nested-units-blocks) below for details.
-  * `colors` - (Optional) A nested block that describes colors of your charts per series. See [Nested Colors blocks](#nested-colors-blocks) below for details.
+* `title` - (Required) A title for the widget.
+* `row` - (Required) Row position of widget from top left, starting at `1`.
+* `column` - (Required) Column position of widget from top left, starting at `1`.
+* `width` - (Optional) Width of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `4`.
+* `height` - (Optional) Height of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `3`.
+* `ignore_time_range` - (Optional) With this turned on, the time range in this query will override the time picker on dashboards and other pages. Defaults to `false`.
+* `facet_show_other_series` - (Optional) Enable or disable the Other group in visualisations. The other group is used if a facet on a query returns more than 2000 items for bar charts, pie charts, and tables. The other group aggregates the rest of the facets. Defaults to `false`
+* `y_axis_left_min`, `y_axis_left_max` - (Optional) Adjust the Y axis to display the data within certain values by setting a minimum and maximum value for the axis for line charts and area charts. If no customization option is selected, dashboards automatically displays the full Y axis from 0 to the top value plus a margin.
+* `legend_enabled` - (Optional) With this turned on, the legend will be displayed. Defaults to `true`.
+* `null_values` - (Optional) A nested block that describes a Null Values. See [Nested Null Values blocks](#nested-null-values-blocks) below for details.
+* `units` - (Optional) A nested block that describes units on your Y axis. See [Nested Units blocks](#nested-units-blocks) below for details.
+* `colors` - (Optional) A nested block that describes colors of your charts per series. See [Nested Colors blocks](#nested-colors-blocks) below for details.
 
 Each widget type supports an additional set of arguments:
 
-  * `widget_area`
+* `widget_area`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
-  * `widget_bar`
+* `widget_bar`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
-  * `widget_billboard`
+* `widget_billboard`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `critical` - (Optional) Threshold above which the displayed value will be styled with a red color.
     * `warning` - (Optional) Threshold above which the displayed value will be styled with a yellow color.
-  * `widget_bullet`
+* `widget_bullet`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `limit` - (Required) Visualization limit for the widget.
-  * `widget_funnel`
+* `widget_funnel`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
-  * `widget_json`
+* `widget_json`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
-  * `widget_heatmap`
+* `widget_heatmap`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
-  * `widget_histogram`
+* `widget_histogram`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
-  * `widget_line`
+* `widget_line`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
-  * `widget_markdown`:
+* `widget_markdown`:
     * `text` - (Required) The markdown source to be rendered in the widget.
-  * `widget_stacked_bar`
+* `widget_stacked_bar`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
-  * `widget_pie`
+* `widget_pie`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
-  * `widget_log_table`
+* `widget_log_table`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
-  * `widget_table`
+* `widget_table`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
@@ -295,8 +295,8 @@ Nested `nrql_query` blocks allow you to make one or more NRQL queries within a w
 
 The following arguments are supported:
 
-  * `account_id` - (Optional) The New Relic account ID to issue the query against. Defaults to the Account ID where the dashboard was created. When using an account ID you don't have permissions for the widget will be replaced with a widget showing the data is inaccessible. Terraform will not throw an error, so this widget will only be visible in the UI.
-  * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
+* `account_id` - (Optional) The New Relic account ID to issue the query against. Defaults to the Account ID where the dashboard was created. When using an account ID you don't have permissions for the widget will be replaced with a widget showing the data is inaccessible. Terraform will not throw an error, so this widget will only be visible in the UI.
+* `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
 
 ```hcl
 widget_line {
@@ -321,21 +321,22 @@ widget_line {
 
 The following arguments are supported:
 
-  * `default_values` - (Optional) A list of default values for this variable.
-  * `is_multi_selection` - (Optional) Indicates whether this variable supports multiple selection or not. Only applies to variables of type `nrql` or `enum`.
-  * `item` - (Optional) List of possible values for variables of type `enum`. See [Nested item blocks](#nested-item-blocks) below for details.
-  * `name` - (Required) The variable identifier.
-  * `nrql_query` - (Optional) Configuration for variables of type `nrql`. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) for details.
-  * `replacement_strategy` - (Optional) Indicates the strategy to apply when replacing a variable in a NRQL query. One of `default`, `identifier`, `number` or `string`.
-  * `title` - (Optional) Human-friendly display string for this variable.
-  * `type` - (Required) Specifies the data type of the variable and where its possible values may come from. One of `enum`, `nrql` or `string`
+* `default_values` - (Optional) A list of default values for this variable.
+    * **NOTE:** If you'd like to select **all** default values, the appropriate value to be used with this argument would be `["*"]`. 
+* `is_multi_selection` - (Optional) Indicates whether this variable supports multiple selection or not. Only applies to variables of type `nrql` or `enum`.
+* `item` - (Optional) List of possible values for variables of type `enum`. See [Nested item blocks](#nested-item-blocks) below for details.
+* `name` - (Required) The variable identifier.
+* `nrql_query` - (Optional) Configuration for variables of type `nrql`. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) for details.
+* `replacement_strategy` - (Optional) Indicates the strategy to apply when replacing a variable in a NRQL query. One of `default`, `identifier`, `number` or `string`.
+* `title` - (Optional) Human-friendly display string for this variable.
+* `type` - (Required) Specifies the data type of the variable and where its possible values may come from. One of `enum`, `nrql` or `string`
 
 ### Nested `item` blocks
 
 The following arguments are supported:
 
-  * `title` - (Optional) A human-friendly display string for this value.
-  * `value` - (Required) A possible variable value
+* `title` - (Optional) A human-friendly display string for this value.
+* `value` - (Required) A possible variable value
 
 ### Nested `Null Values` blocks
 
@@ -407,32 +408,6 @@ resource "newrelic_one_dashboard" "multi_page_dashboard" {
     }
   }
 }
-```
-
-### Using the 'variable' block with dashboards
-
-As described above, the `variable` block may be used to define a dashboard-local variable, which may be used as a placeholder in queries used to retrieve data in widgets comprised by the dashboards, i.e. establish a dependency of the results shown by widgets on the variable. The created `variable` can then be used in the UI to select/deselect values assigned to it (based on the results of the query defined in the variable), and accordingly, reflect changes in the results displayed by widgets dependent on this variable.
-
-The `default_values` argument in the `variable` block can be used to specify values that should be taken by the variable by default - some examples in which this argument may be used have been listed below. 
-* `default_values = []` (an empty list) specifies that none of the values retrieved by the query in the variable may be selected as a default value of the variable.
-* `default_values = ["AppOne", "AppOneExtended"]` (for instance) specifies that "AppOne" and "AppOneExtended" may be selected as default values of the variable, of all the results fetched by the query in the variable block.
-* `default_values = ["*"]` specifies that all values retrieved by the query in the variable block may be selected as values of the variable.
-
-Below is an example that demonstrates the usage of the `variable` block with dashboards. For more details on adding variables to your dashboard, please visit [this page](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/dashboard-template-variables/) in New Relic's Docs, explaining various cases of using variables.
-
-```hcl
-    variable {
-        default_values     = ["*"]
-        is_multi_selection = true
-        name = "variable-name"
-        nrql_query {
-          account_ids = [12345]
-          query       = "SELECT uniques(appName) FROM Metric WHERE (appName like 'AppOne%')"
-        }
-        replacement_strategy = "default"
-        title                = "variable-title"
-        type                 = "nrql"
-    }
 ```
 
 ## Import
