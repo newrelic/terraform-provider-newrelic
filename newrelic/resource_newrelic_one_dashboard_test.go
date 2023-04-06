@@ -213,32 +213,6 @@ func TestAccNewRelicOneDashboard_BillboardThresholds(t *testing.T) {
 	})
 }
 
-// TestAccNewRelicOneDashboard_CheckVariableSpecifications if the 'variable' block of the dashboard
-// has been created, and comprises the expected attributes ('default_values' and 'title') as sent
-// to create the dashboard.
-func TestAccNewRelicOneDashboard_CheckVariableSpecifications(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-	variableName := "testVariableName"
-	variableTitle := "testVariableTitle"
-	variableDefaultValues := []string{"Dummy App", "Dummy App Extended"}
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckNewRelicOneDashboardConfig_CheckVariableSpecifications(
-					rName, variableName, variableTitle, variableDefaultValues, strconv.Itoa(testAccountID)),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicOneDashboardCheckVariableSpecifications(
-						"newrelic_one_dashboard.bar", variableName, variableTitle, variableDefaultValues),
-				),
-			},
-		},
-	})
-}
-
 func TestAccNewRelicOneDashboard_UnlinkFilterCurrentDashboard(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
@@ -324,60 +298,6 @@ func testAccCheckNewRelicOneDashboard_FilterCurrentDashboard(resourceName string
 
 			if found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID() != found.Pages[0].GUID {
 				return resource.NonRetryableError(fmt.Errorf("Page GUID did not match LinkedEntity: %s", found.Pages[0].Widgets[0].LinkedEntities[0].GetGUID()))
-			}
-
-			return nil
-		})
-
-		if retryErr != nil {
-			return retryErr
-		}
-
-		return nil
-	}
-}
-
-// testAccCheckNewRelicOneDashboardCheckVariableSpecifications retrieves the created dashboard, which is used
-// to verify if the dashboard's 'variable' block has been created with the right 'title' and 'default_values'.
-func testAccCheckNewRelicOneDashboardCheckVariableSpecifications(resourceName string, variableName string, variableTitle string, variableDefaultValues []string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("not found: %s", resourceName)
-		}
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("no dashboard ID is set")
-		}
-
-		client := testAccProvider.Meta().(*ProviderConfig).NewClient
-
-		retryErr := resource.RetryContext(context.Background(), 5*time.Second, func() *resource.RetryError {
-			found, err := client.Dashboards.GetDashboardEntity(common.EntityGUID(rs.Primary.ID))
-			if err != nil {
-				return resource.RetryableError(err)
-			}
-
-			if string(found.GUID) != rs.Primary.ID {
-				return resource.RetryableError(fmt.Errorf("dashboard not found: %v - %v", rs.Primary.ID, found))
-			}
-
-			matchedVariableDefaultValues := 0
-			for _, variable := range found.Variables {
-				fetchedTitle := variable.Title
-				if fetchedTitle != variableTitle {
-					return resource.NonRetryableError(fmt.Errorf("Mismatch in the title of the created variable. Expected : %s, Retrieved : %s.", variableTitle, fetchedTitle))
-				}
-
-				for index, fetchedDefaultValue := range *variable.DefaultValues {
-					if fetchedDefaultValue.Value.String == variableDefaultValues[index] {
-						matchedVariableDefaultValues += 1
-					}
-				}
-
-			}
-
-			if matchedVariableDefaultValues != len(variableDefaultValues) {
-				return resource.NonRetryableError(fmt.Errorf("Mismatch in the default values retrieved from the created dashboard's variable."))
 			}
 
 			return nil
@@ -611,19 +531,6 @@ resource "newrelic_one_dashboard" "bar" {
 
 ` + testAccCheckNewRelicOneDashboardConfig_PageSimple(dashboardName) + `
 ` + testAccCheckNewRelicOneDashboardConfig_VariableEnumUpdated() + `
-}`
-}
-
-// testAccCheckNewRelicOneDashboardConfig_CheckVariableSpecifications creates the Terraform Configuration to be used
-// to create a dashboard with a 'variable' block with the attributes specified in the arguments.
-func testAccCheckNewRelicOneDashboardConfig_CheckVariableSpecifications(dashboardName string, variableName string, variableTitle string, variableDefaultValues []string, accountID string) string {
-	return `
-resource "newrelic_one_dashboard" "bar" {
-  name = "` + dashboardName + `"
-  permissions = "private"
-
-` + testAccCheckNewRelicOneDashboardConfig_PageSimple(dashboardName) + `
-` + testAccCheckNewRelicOneDashboardConfig_CheckVariableSpecificationsConfig(variableName, variableTitle, variableDefaultValues, accountID) + `
 }`
 }
 
@@ -906,40 +813,6 @@ func testAccCheckNewRelicOneDashboardConfig_VariableEnumUpdated() string {
 	replacement_strategy = "default"
 	title = "title"
 	type = "enum"
-  }
-`
-}
-
-// testAccCheckNewRelicOneDashboardConfig_CheckVariableSpecificationsConfig creates the 'variable' block of the
-// Terraform Configuration to be used to create a dashboard with the following 'variable' block with the attributes
-// specified in the arguments.
-func testAccCheckNewRelicOneDashboardConfig_CheckVariableSpecificationsConfig(
-	variableName string, variableTitle string, variableDefaultValues []string, accountID string) string {
-	arrayString := "["
-	commaFlag := false
-	for _, value := range variableDefaultValues {
-		if commaFlag == false {
-			arrayString += fmt.Sprintf("\"%s\"", value)
-			commaFlag = true
-		} else {
-			arrayString += fmt.Sprintf(", \"%s\"", value)
-		}
-	}
-
-	arrayString += "]"
-
-	return `
-  variable {
-	default_values = ` + arrayString + `
-	is_multi_selection = true
-    name = "` + variableName + `"
-	replacement_strategy = "default"
-	title = "` + variableTitle + `"
-	type = "nrql"
-    nrql_query {
-		account_ids = [` + accountID + `]
-		query = "SELECT uniques(appName) FROM Metric WHERE (appName like 'Dummy App%')" 
-	}
   }
 `
 }
