@@ -1,3 +1,11 @@
+<a name="v3.20.2"></a>
+## [v3.20.2] - 2023-04-07
+### Bug Fixes
+- **newrelic_nrql_alert_condition:** add default 'violation_time_limit_seconds' ([#2319](https://github.com/newrelic/terraform-provider-newrelic/issues/2319))
+
+### Documentation Updates
+- add note on 'default_values' to one_dashboard ([#2321](https://github.com/newrelic/terraform-provider-newrelic/issues/2321))
+
 <a name="v3.20.1"></a>
 ## [v3.20.1] - 2023-04-05
 ### Bug Fixes
@@ -1791,7 +1799,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.2...HEAD
+[v3.20.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.1...v3.20.2
 [v3.20.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.0...v3.20.1
 [v3.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.19.0...v3.20.0
 [v3.19.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.18.1...v3.19.0
