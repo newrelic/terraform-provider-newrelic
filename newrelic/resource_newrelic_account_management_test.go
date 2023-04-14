@@ -71,9 +71,9 @@ func TestAccNewRelicAccountManagementInCorrectRegion(t *testing.T) {
 
 func testAccNewRelicAccountImportConfig() string {
 	return fmt.Sprintf(`
-resource "newrelic_account_management" "foo"{
-name =""
-	region= "us01"
+resource "newrelic_account_management" "foo" {
+  name   = ""
+  region = "us01"
 }
 `)
 }
