@@ -97,7 +97,29 @@ The `BROWSER` monitor type supports the following additional arguments:
 
 If you want to use the legacy runtime you can set the `runtime_type`, `runtime_type_version` and `script_language` to empty string `""`. 
 
--> **NOTE:** The old runtime will be deprecated in the future, so use the new version whenever you can.
+-> **NOTE:** The old runtime will be deprecated in the future, so use the new version whenever you can. Additionally, if you detect any terraform drift while using default runtime values, 
+please utilise the [ignore_changes](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes) lifecycle meta argument to resolve them.
+
+### Example Usage
+
+```hcl
+resource "newrelic_synthetics_monitor" "synthetic-simple-browser" {
+    status           = "ENABLED"
+    name             = "test simple browser"
+    period           = "EVERY_MINUTE"
+    uri              = "https://www.one.newrelic.com"
+    type             = "BROWSER"
+    locations_public = ["AP_NORTHEAST_1"]
+
+    lifecycle {
+        ignore_changes = [
+          script_language,
+          runtime_type,
+          runtime_type_version
+        ]
+    }
+}
+```
 
 ### Nested `custom header` blocks
 
