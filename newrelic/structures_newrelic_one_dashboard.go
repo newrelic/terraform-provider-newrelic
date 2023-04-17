@@ -489,20 +489,20 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 		l.ShowOtherSeries = q.(bool)
 		cfg.Facet = &l
 	}
-	if q, ok := w["y_axis_left_min"]; ok {
-		var l dashboards.DashboardWidgetYAxisLeft
-		l.Min = q.(float64)
-		if q, ok := w["y_axis_left_max"]; ok {
-			l.Max = q.(float64)
+
+	if visualisation != "viz.line" {
+		if q, ok := w["y_axis_left_min"]; ok {
+			var l dashboards.DashboardWidgetYAxisLeft
+			min := q.(float64)
+			l.Min = &min
+			if q, ok := w["y_axis_left_max"]; ok {
+				l.Max = q.(float64)
+			}
+			cfg.YAxisLeft = &l
 		}
-		cfg.YAxisLeft = &l
 	} else {
-		var l dashboards.DashboardWidgetYAxisLeft
-		l.Min = 0
-		if q, ok := w["y_axis_left_max"]; ok {
-			l.Max = q.(float64)
-		}
-		cfg.YAxisLeft = &l
+		lineWidgetYAxisLeft := expandDashboardWidgetYAxisLeft(w)
+		cfg.YAxisLeft = &lineWidgetYAxisLeft
 	}
 
 	cfg = expandDashboardWidgetNullValuesInput(w, cfg)
@@ -530,6 +530,36 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	return &widget, &cfg, nil
 }
 
+func expandDashboardWidgetYAxisLeft(w map[string]interface{}) dashboards.DashboardWidgetYAxisLeft {
+	var l dashboards.DashboardWidgetYAxisLeft
+	if q, ok := w["y_axis_left_zero"]; ok {
+		yAxisZero := q.(bool)
+		l.Zero = &yAxisZero
+		if !yAxisZero {
+			if yMin, okMin := w["y_axis_left_min"]; okMin {
+				if yMin.(float64) != 0 {
+					min := yMin.(float64)
+					l.Min = &min
+				}
+			}
+			if yMax, okMax := w["y_axis_left_max"]; okMax {
+				if yMax.(float64) != 0 {
+					l.Max = yMax.(float64)
+				}
+			}
+		} else {
+			if yMin, okMin := w["y_axis_left_min"]; okMin {
+				min := yMin.(float64)
+				l.Min = &min
+				if yMax, okMax := w["y_axis_left_max"]; okMax {
+					l.Max = yMax.(float64)
+				}
+			}
+		}
+	}
+
+	return l
+}
 func expandDashboardWidgetUnitsInput(w map[string]interface{}, cfg dashboards.RawConfiguration) dashboards.RawConfiguration {
 	if q, ok := w["units"]; ok {
 		units := q.([]interface{})
@@ -950,6 +980,9 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	case "viz.line":
 		widgetType = "widget_line"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
+		if rawCfg.YAxisLeft != nil {
+			out["y_axis_left_zero"] = rawCfg.YAxisLeft.Zero
+		}
 	case "viz.markdown":
 		widgetType = "widget_markdown"
 		out["text"] = rawCfg.Text

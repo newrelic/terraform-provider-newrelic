@@ -93,6 +93,7 @@ resource "newrelic_one_dashboard" "exampledash" {
       }
       legend_enabled = true
       ignore_time_range = false
+      y_axis_left_zero = true
       y_axis_left_min = 0
       y_axis_left_max = 1 
       
@@ -132,6 +133,7 @@ EOT
       facet_show_other_series = false
       legend_enabled = true
       ignore_time_range = false
+      y_axis_left_zero = true
       y_axis_left_min = 0
       y_axis_left_max = 0
 
@@ -274,6 +276,7 @@ Each widget type supports an additional set of arguments:
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
   * `widget_line`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `y_axis_left_zero` - (Optional) An attribute that specifies if the values on the graph to be rendered need to be fit to scale, or printed within the specified range from `y_axis_left_min` (or 0 if it is not defined) to `y_axis_left_max`. Use `y_axis_left_zero = true` with a combination of `y_axis_left_min` and `y_axis_left_max` to render values from 0 or the specified minimum to the maximum, and `y_axis_left_zero = false` to fit the graph to scale.
   * `widget_markdown`:
     * `text` - (Required) The markdown source to be rendered in the widget.
   * `widget_stacked_bar`
@@ -404,6 +407,7 @@ resource "newrelic_one_dashboard" "multi_page_dashboard" {
         account_id = <Second Account ID>
         query      = "FROM Metric SELECT rate(count(apm.service.transaction.duration), 1 minute) as 'Second Account Throughput' TIMESERIES"
       }
+      y_axis_left_zero = false
     }
   }
 }
