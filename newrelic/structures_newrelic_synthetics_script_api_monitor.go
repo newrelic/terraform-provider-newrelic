@@ -22,15 +22,25 @@ func buildSyntheticsScriptAPIMonitorInput(d *schema.ResourceData) synthetics.Syn
 	if attr, ok := d.GetOk("locations_public"); ok {
 		input.Locations.Public = expandSyntheticsPublicLocations(attr.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("script_language"); ok {
-		input.Runtime.ScriptLanguage = v.(string)
+
+	_, scriptLangOk := d.GetOk("script_language")
+	_, runtimeTypeOk := d.GetOk("runtime_type")
+	_, runtimeVersionOk := d.GetOk("runtime_type_version")
+
+	if scriptLangOk || runtimeTypeOk || runtimeVersionOk {
+		input.Runtime = &synthetics.SyntheticsRuntimeInput{}
+
+		if v, ok := d.GetOk("script_language"); ok {
+			input.Runtime.ScriptLanguage = v.(string)
+		}
+		if v, ok := d.GetOk("runtime_type"); ok {
+			input.Runtime.RuntimeType = v.(string)
+		}
+		if v, ok := d.GetOk("runtime_type_version"); ok {
+			input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+		}
 	}
-	if v, ok := d.GetOk("runtime_type"); ok {
-		input.Runtime.RuntimeType = v.(string)
-	}
-	if v, ok := d.GetOk("runtime_type_version"); ok {
-		input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
-	}
+
 	return input
 }
 
@@ -51,14 +61,24 @@ func buildSyntheticsScriptAPIMonitorUpdateInput(d *schema.ResourceData) syntheti
 	if v, ok := d.GetOk("locations_public"); ok {
 		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
 	}
-	if v, ok := d.GetOk("script_language"); ok {
-		input.Runtime.ScriptLanguage = v.(string)
+
+	_, scriptLangOk := d.GetOk("script_language")
+	_, runtimeTypeOk := d.GetOk("runtime_type")
+	_, runtimeVersionOk := d.GetOk("runtime_type_version")
+
+	if scriptLangOk || runtimeTypeOk || runtimeVersionOk {
+		input.Runtime = &synthetics.SyntheticsRuntimeInput{}
+
+		if v, ok := d.GetOk("script_language"); ok {
+			input.Runtime.ScriptLanguage = v.(string)
+		}
+		if v, ok := d.GetOk("runtime_type"); ok {
+			input.Runtime.RuntimeType = v.(string)
+		}
+		if v, ok := d.GetOk("runtime_type_version"); ok {
+			input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+		}
 	}
-	if v, ok := d.GetOk("runtime_type"); ok {
-		input.Runtime.RuntimeType = v.(string)
-	}
-	if v, ok := d.GetOk("runtime_type_version"); ok {
-		input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
-	}
+
 	return input
 }

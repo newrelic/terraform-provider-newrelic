@@ -532,7 +532,11 @@ func dashboardWidgetHistogramSchemaElem() *schema.Resource {
 
 func dashboardWidgetLineSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
-
+	s["y_axis_left_zero"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Description: "Specifies if the values on the graph to be rendered need to be fit to scale, or printed within the specified range.",
+	}
 	return &schema.Resource{
 		Schema: s,
 	}

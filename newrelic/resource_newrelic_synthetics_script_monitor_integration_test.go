@@ -134,6 +134,8 @@ func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 					"tag",
 					"script",
 					"enable_screenshot_on_failure_and_script",
+					"device_orientation",
+					"device_type",
 				},
 			},
 		},
@@ -170,9 +172,6 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfigLegacyRuntime(name string, s
 			script	=	"console.log('terraform integration test')"
 
 			# Set empty strings below for legacy runtime
-			runtime_type	=	""
-			runtime_type_version	=	""
-			script_language	=	""
 		}`, name, scriptMonitorType)
 }
 
@@ -189,6 +188,9 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 			status	=	"ENABLED"
 			type	=	"SCRIPT_BROWSER"
 			script	=	"$browser.get('https://one.newrelic.com')"
+			device_orientation = "PORTRAIT"
+			device_type = "MOBILE"
+
 			tag {
 				key	= "Name"
 				values	= ["scriptedMonitor"]
