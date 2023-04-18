@@ -9,11 +9,15 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	input := synthetics.SyntheticsCreateScriptBrowserMonitorInput{
-		Name:   inputBase.Name,
-		Period: inputBase.Period,
-		Status: inputBase.Status,
-		Tags:   inputBase.Tags,
-		Script: d.Get("script").(string),
+		Name:    inputBase.Name,
+		Period:  inputBase.Period,
+		Status:  inputBase.Status,
+		Tags:    inputBase.Tags,
+		Script:  d.Get("script").(string),
+		Runtime: &synthetics.SyntheticsRuntimeInput{},
+		AdvancedOptions: synthetics.SyntheticsScriptBrowserMonitorAdvancedOptionsInput{
+			DeviceEmulation: &synthetics.SyntheticsDeviceEmulationInput{},
+		},
 	}
 
 	if v := d.Get("enable_screenshot_on_failure_and_script"); v.(bool) {
@@ -41,6 +45,14 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 		input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
 	}
 
+	if v, ok := d.GetOk("device_orientation"); ok {
+		input.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(v.(string))
+	}
+
+	if v, ok := d.GetOk("device_type"); ok {
+		input.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(v.(string))
+	}
+
 	return input
 }
 
@@ -48,11 +60,15 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	input := synthetics.SyntheticsUpdateScriptBrowserMonitorInput{
-		Name:   inputBase.Name,
-		Period: inputBase.Period,
-		Status: inputBase.Status,
-		Tags:   inputBase.Tags,
-		Script: d.Get("script").(string),
+		Name:    inputBase.Name,
+		Period:  inputBase.Period,
+		Status:  inputBase.Status,
+		Tags:    inputBase.Tags,
+		Script:  d.Get("script").(string),
+		Runtime: &synthetics.SyntheticsRuntimeInput{},
+		AdvancedOptions: synthetics.SyntheticsScriptBrowserMonitorAdvancedOptionsInput{
+			DeviceEmulation: &synthetics.SyntheticsDeviceEmulationInput{},
+		},
 	}
 
 	if v := d.Get("enable_screenshot_on_failure_and_script"); v.(bool) {
@@ -78,6 +94,14 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 
 	if v, ok := d.GetOk("runtime_type_version"); ok {
 		input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	}
+
+	if v, ok := d.GetOk("device_orientation"); ok {
+		input.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(v.(string))
+	}
+
+	if v, ok := d.GetOk("device_type"); ok {
+		input.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(v.(string))
 	}
 
 	return input
