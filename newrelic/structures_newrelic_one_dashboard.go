@@ -491,14 +491,15 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	}
 	if q, ok := w["y_axis_left_min"]; ok {
 		var l dashboards.DashboardWidgetYAxisLeft
-		l.Min = q.(float64)
+		l.Min = q.(*float64)
 		if q, ok := w["y_axis_left_max"]; ok {
 			l.Max = q.(float64)
 		}
 		cfg.YAxisLeft = &l
 	} else {
 		var l dashboards.DashboardWidgetYAxisLeft
-		l.Min = 0
+		var m float64
+		l.Min = &m
 		if q, ok := w["y_axis_left_max"]; ok {
 			l.Max = q.(float64)
 		}
