@@ -172,9 +172,6 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfigLegacyRuntime(name string, s
 			script	=	"console.log('terraform integration test')"
 
 			# Set empty strings below for legacy runtime
-			runtime_type	=	""
-			runtime_type_version	=	""
-			script_language	=	""
 		}`, name, scriptMonitorType)
 }
 
