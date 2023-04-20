@@ -8,12 +8,13 @@ import (
 func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleBrowserMonitorInput {
 	inputBase := expandSyntheticsMonitorBase(d)
 
-	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{}
-
-	simpleBrowserMonitorInput.Name = inputBase.Name
-	simpleBrowserMonitorInput.Period = inputBase.Period
-	simpleBrowserMonitorInput.Status = inputBase.Status
-	simpleBrowserMonitorInput.Tags = inputBase.Tags
+	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{
+		Name:    inputBase.Name,
+		Period:  inputBase.Period,
+		Status:  inputBase.Status,
+		Tags:    inputBase.Tags,
+		Runtime: &synthetics.SyntheticsRuntimeInput{},
+	}
 
 	if v, ok := d.GetOk("custom_header"); ok {
 		simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = expandSyntheticsCustomHeaders(v.(*schema.Set).List())
@@ -63,12 +64,13 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleBrowserMonitorInput {
 	inputBase := expandSyntheticsMonitorBase(d)
 
-	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{}
-
-	simpleBrowserMonitorUpdateInput.Name = inputBase.Name
-	simpleBrowserMonitorUpdateInput.Period = inputBase.Period
-	simpleBrowserMonitorUpdateInput.Status = inputBase.Status
-	simpleBrowserMonitorUpdateInput.Tags = inputBase.Tags
+	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{
+		Name:    inputBase.Name,
+		Period:  inputBase.Period,
+		Status:  inputBase.Status,
+		Tags:    inputBase.Tags,
+		Runtime: &synthetics.SyntheticsRuntimeInput{},
+	}
 
 	if v, ok := d.GetOk("custom_header"); ok {
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandSyntheticsCustomHeaders(v.(*schema.Set).List())
