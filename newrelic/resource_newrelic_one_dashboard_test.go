@@ -683,6 +683,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       nrql_query {
         query      = "FROM Transaction SELECT 2 TIMESERIES"
       }
+	  y_axis_left_zero = false
     }
 
     widget_markdown {
@@ -906,8 +907,10 @@ func testAccCheckNewRelicOneDashboardConfig_PageFullChanged(pageName string, acc
         query      = "FROM Transaction SELECT 1 TIMESERIES LIMIT 10"
       }
 	  nrql_query {
-        query      = "FROM Transaction SELECT count(*) FACET name LIMIT 10"
+        query      = "FROM Transaction SELECT count(*) FACET name TIMESERIES LIMIT 10"
       }
+      y_axis_left_zero = true
+      y_axis_left_max = 25
     }
 
     widget_markdown {
