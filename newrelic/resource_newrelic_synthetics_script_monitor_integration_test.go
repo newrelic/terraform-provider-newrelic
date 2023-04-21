@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
 func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
@@ -176,6 +177,21 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfigLegacyRuntime(name string, s
 		}`, name, scriptMonitorType)
 }
 
+func testAccNewRelicSyntheticsScriptMonitorConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "newrelic_synthetics_script_monitor" "foo" {
+		    locations_public = [
+				"EU_WEST_1",
+				"EU_WEST_2",
+		  	]
+		    name             = "%s"
+		    period           = "EVERY_DAY"
+		    script           = "console.log('script update works!')"
+		    status           = "ENABLED"
+		    type             = "SCRIPT_BROWSER"
+		}`, name)
+}
+
 func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "bar" {
@@ -222,6 +238,31 @@ func testAccCheckNewRelicSyntheticsScriptMonitorExists(n string) resource.TestCh
 	}
 }
 
+func testAccCheckNewRelicSyntheticsMonitorScriptUpdate(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no synthetics monitor ID is set")
+		}
+
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+		providerConfig := testAccProvider.Meta().(*ProviderConfig)
+		accountId := providerConfig.AccountID
+
+		result, err := client.Synthetics.GetScript(accountId, synthetics.EntityGUID(rs.Primary.ID))
+		if err != nil {
+			return err
+		}
+		if len(result.Text) == 0 {
+			return fmt.Errorf("Synthetic Monitor Script update not successful !!")
+		}
+		return nil
+	}
+}
+
 func testAccCheckNewRelicSyntheticsScriptMonitorDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
@@ -239,4 +280,24 @@ func testAccCheckNewRelicSyntheticsScriptMonitorDestroy(s *terraform.State) erro
 		}
 	}
 	return nil
+}
+
+func TestAccNewRelicSyntheticsMonitorScriptUpdate(t *testing.T) {
+	resourceName := "newrelic_synthetics_script_monitor.foo"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
+		Steps: []resource.TestStep{
+
+			{
+				Config: testAccNewRelicSyntheticsScriptMonitorConfig(fmt.Sprintf(rName)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsMonitorScriptUpdate(resourceName),
+				),
+			},
+		},
+	})
 }

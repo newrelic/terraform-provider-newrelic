@@ -177,10 +177,28 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	// This should probably be in go-client so we can use *errors.NotFound
+	// This should probably be in go-client, so we can use *errors.NotFound
 	if *resp == nil {
 		d.SetId("")
 		return nil
+	}
+
+	response, error := client.Synthetics.GetScript(accountID, synthetics.EntityGUID(d.Id()))
+	if error != nil {
+		return diag.FromErr(error)
+	}
+
+	if response == nil {
+		d.SetId("")
+		return nil
+	}
+
+	error = setSyntheticsMonitorAttributes(d, map[string]string{
+		"script": response.Text,
+	})
+
+	if error != nil {
+		return diag.FromErr(error)
 	}
 
 	_ = d.Set("account_id", accountID)
