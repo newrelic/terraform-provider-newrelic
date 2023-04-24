@@ -154,7 +154,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		monitorInput := buildSyntheticsScriptBrowserMonitorInput(d)
 		resp, err := client.Synthetics.SyntheticsCreateScriptBrowserMonitorWithContext(ctx, accountID, monitorInput)
 		if err != nil {
-			diag.FromErr(err)
+			return diag.FromErr(err)
 		}
 
 		errors := buildCreateSyntheticsMonitorResponseErrors(resp.Errors)
