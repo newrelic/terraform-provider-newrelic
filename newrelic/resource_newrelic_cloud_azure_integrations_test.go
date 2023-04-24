@@ -222,6 +222,15 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     resource_groups          = ["beyond"]
   }
 
+  monitor {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+    include_tags             = ["env:testing", "env:production"]
+    exclude_tags             = ["env:staging"]
+    enabled                  = true
+    resource_types           = ["microsoft.datashare/accounts"]
+  }
+
   mysql {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
@@ -384,6 +393,15 @@ resource "newrelic_cloud_azure_integrations" "bar" {
   maria_db {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
+  }
+
+  monitor {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+    include_tags             = ["env:production"]
+    exclude_tags             = ["env:staging"]
+    enabled                  = true
+    resource_types           = ["microsoft.datashare/accounts", "microsoft.eventhub/clusters"]
   }
 
   mysql {

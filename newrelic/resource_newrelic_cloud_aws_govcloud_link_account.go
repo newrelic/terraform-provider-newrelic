@@ -88,7 +88,7 @@ func resourceNewRelicAwsGovCloudLinkAccountCreate(ctx context.Context, d *schema
 
 // Extracting the AWSGovCloud account  credentials from Schema using expandAzureCloudLinkAccountInput
 func expandAwsGovCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
-	awsGovCloud := cloud.CloudAwsGovcloudLinkAccountInput{}
+	awsGovCloud := cloud.CloudAwsGovCloudLinkAccountInput{}
 	if accessKeyID, ok := d.GetOk("access_key_id"); ok {
 		awsGovCloud.AccessKeyId = accessKeyID.(string)
 	}
@@ -105,7 +105,7 @@ func expandAwsGovCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCl
 		awsGovCloud.SecretAccessKey = secretKeyID.(cloud.SecureValue)
 	}
 	input := cloud.CloudLinkCloudAccountsInput{
-		AwsGovcloud: []cloud.CloudAwsGovcloudLinkAccountInput{awsGovCloud},
+		AwsGovcloud: []cloud.CloudAwsGovCloudLinkAccountInput{awsGovCloud},
 	}
 	return input
 }
