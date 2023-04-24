@@ -57,7 +57,7 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorCreate(ctx context.Context, d *
 	// Set attributes
 	d.SetId(string(resp.Monitor.GUID))
 	_ = d.Set("account_id", accountID)
-	err = setSyntheticsMonitorAttributes(d, map[string]string{
+	err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 		"guid":   string(resp.Monitor.GUID),
 		"name":   resp.Monitor.Name,
 		"period": string(resp.Monitor.Period),
@@ -94,7 +94,7 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorRead(ctx context.Context, d *sc
 		_ = d.Set("account_id", accountID)
 		_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
 
-		err = setSyntheticsMonitorAttributes(d, map[string]string{
+		err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 			"guid":   string(e.GUID),
 			"name":   entity.Name,
 			"period": string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
@@ -122,7 +122,7 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorUpdate(ctx context.Context, d *
 		return errors
 	}
 
-	err = setSyntheticsMonitorAttributes(d, map[string]string{
+	err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 		"guid":   string(resp.Monitor.GUID),
 		"name":   resp.Monitor.Name,
 		"period": string(resp.Monitor.Period),

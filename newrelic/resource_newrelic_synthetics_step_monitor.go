@@ -115,7 +115,7 @@ func resourceNewRelicSyntheticsStepMonitorCreate(ctx context.Context, d *schema.
 	_ = d.Set("account_id", accountID)
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
 
-	err = setSyntheticsMonitorAttributes(d, map[string]string{
+	err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 		"guid":   string(resp.Monitor.GUID),
 		"name":   resp.Monitor.Name,
 		"period": string(resp.Monitor.Period),
@@ -158,7 +158,7 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 		_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
 		_ = d.Set("steps", steps)
 
-		err = setSyntheticsMonitorAttributes(d, map[string]string{
+		err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 			"guid":   string(e.GUID),
 			"name":   entity.Name,
 			"period": string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
@@ -187,7 +187,7 @@ func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
 	_ = d.Set("steps", flattenSyntheticsMonitorSteps(resp.Monitor.Steps))
 
-	err = setSyntheticsMonitorAttributes(d, map[string]string{
+	err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 		"guid":   string(resp.Monitor.GUID),
 		"name":   resp.Monitor.Name,
 		"period": string(resp.Monitor.Period),

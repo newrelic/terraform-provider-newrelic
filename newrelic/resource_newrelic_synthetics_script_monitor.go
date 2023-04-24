@@ -146,7 +146,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		// Set attributes
 		d.SetId(string(resp.Monitor.GUID))
 		_ = d.Set("account_id", accountID)
-		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
+		attrs := map[string]interface{}{"guid": string(resp.Monitor.GUID)}
 		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
 		}
@@ -165,7 +165,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		// Set attributes
 		d.SetId(string(resp.Monitor.GUID))
 		_ = d.Set("account_id", accountID)
-		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
+		attrs := map[string]interface{}{"guid": string(resp.Monitor.GUID)}
 		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
 		}
@@ -203,7 +203,7 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 		return nil
 	}
 
-	error = setSyntheticsMonitorAttributes(d, map[string]string{
+	error = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 		"script": response.Text,
 	})
 
@@ -215,7 +215,7 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 
 	switch e := (*resp).(type) {
 	case *entities.SyntheticMonitorEntity:
-		err = setSyntheticsMonitorAttributes(d, map[string]string{
+		err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 			"name":   e.Name,
 			"type":   string(e.MonitorType),
 			"guid":   string(e.GUID),
@@ -259,7 +259,7 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 			return errors
 		}
 
-		err = setSyntheticsMonitorAttributes(d, map[string]string{
+		err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 			"name":   resp.Monitor.Name,
 			"guid":   string(resp.Monitor.GUID),
 			"period": string(resp.Monitor.Period),
@@ -281,7 +281,7 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 			return errors
 		}
 
-		err = setSyntheticsMonitorAttributes(d, map[string]string{
+		err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 			"name":   resp.Monitor.Name,
 			"guid":   string(resp.Monitor.GUID),
 			"period": string(resp.Monitor.Period),

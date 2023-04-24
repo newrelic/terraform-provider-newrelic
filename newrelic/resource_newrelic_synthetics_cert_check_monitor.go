@@ -125,7 +125,7 @@ func resourceNewRelicSyntheticsCertCheckMonitorCreate(ctx context.Context, d *sc
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
 	_ = d.Set("locations_private", resp.Monitor.Locations.Private)
 
-	err = setSyntheticsMonitorAttributes(d, map[string]string{
+	err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 		"domain": resp.Monitor.Domain,
 		"name":   resp.Monitor.Name,
 		"period": string(resp.Monitor.Period),
@@ -168,7 +168,7 @@ func resourceNewRelicSyntheticsCertCheckMonitorRead(ctx context.Context, d *sche
 		_ = d.Set("account_id", accountID)
 		_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
 
-		err = setSyntheticsMonitorAttributes(d, map[string]string{
+		err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 			"name":   e.Name,
 			"period": string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
 			"status": string(entity.MonitorSummary.Status),
@@ -203,7 +203,7 @@ func resourceNewRelicSyntheticsCertCheckMonitorUpdate(ctx context.Context, d *sc
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
 	_ = d.Set("locations_private", resp.Monitor.Locations.Private)
 
-	err = setSyntheticsMonitorAttributes(d, map[string]string{
+	err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
 		"domain": resp.Monitor.Domain,
 		"name":   resp.Monitor.Name,
 		"period": string(resp.Monitor.Period),

@@ -108,7 +108,7 @@ type SyntheticsMonitorBase struct {
 
 // Handles setting simple string attributes in the schema. If the attribute/key is
 // invalid or the value is not a correct type, an error will be returned.
-func setSyntheticsMonitorAttributes(d *schema.ResourceData, attributes map[string]string) error {
+func setSyntheticsMonitorAttributes(d *schema.ResourceData, attributes map[string]interface{}) error {
 	for key := range attributes {
 		err := d.Set(key, attributes[key])
 		if err != nil {
