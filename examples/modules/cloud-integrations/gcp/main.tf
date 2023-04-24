@@ -1,11 +1,11 @@
 resource "google_project_iam_member" "project" {
-  project = var.project_id
+  project = var.gcp_project_id
   role    = "roles/viewer"
-  member  = "serviceAccount:${var.NEW_RELIC_SERVICE_ACCOUNT_ID}"
+  member  = "serviceAccount:${var.gcp_service_account_id}"
 }
 
 resource "google_project_iam_binding" "project" {
-  project = var.project_id
+  project = var.gcp_project_id
   role    = "roles/serviceusage.serviceUsageConsumer"
 
   members = [
@@ -14,13 +14,13 @@ resource "google_project_iam_binding" "project" {
 }
 
 resource "newrelic_cloud_gcp_link_account" "gcp_account" {
-  account_id = var.account_id
-  project_id = var.project_id
-  name       = var.account_name
+  account_id = var.newrelic_account_id
+  project_id = var.gcp_project_id
+  name       = var.name
 }
 
 resource "newrelic_cloud_gcp_integrations" "gcp_integrations" {
-  account_id        = var.account_id
+  account_id        = var.newrelic_account_id
   linked_account_id = newrelic_cloud_gcp_link_account.gcp_account.id
   app_engine {}
   big_query {}

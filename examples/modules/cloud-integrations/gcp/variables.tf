@@ -1,16 +1,16 @@
-variable "account_id" {
+variable "newrelic_account_id" {
   type = string
 }
 
-variable "account_name" {
+variable "name" {
   type    = string
   default = "production"
 }
 
-variable "service_account_id" {
+variable "gcp_service_account_id" {
   type = string
 }
 
-variable "project_id" {
+variable "gcp_project_id" {
   type = string
 }

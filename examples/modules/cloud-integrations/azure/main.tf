@@ -32,12 +32,12 @@ resource "azuread_application_password" "newrelic_application_password" {
 }
 
 resource "newrelic_cloud_azure_link_account" "newrelic_cloud_azure_integration" {
-  account_id      = var.account_id
+  account_id      = var.newrelic_account_id
   application_id  = azuread_application.newrelic_application.application_id
   client_secret   = azuread_application_password.newrelic_application_password.value
   subscription_id = data.azurerm_subscription.newrelic_subscription.subscription_id
   tenant_id       = data.azurerm_subscription.newrelic_subscription.tenant_id
-  name            = var.account_name
+  name            = var.name
 
   depends_on = [
     azurerm_role_assignment.newrelic_role_assignment
@@ -45,7 +45,7 @@ resource "newrelic_cloud_azure_link_account" "newrelic_cloud_azure_integration" 
 }
 
 resource "newrelic_cloud_azure_integrations" "foo" {
-  account_id        = var.account_id
+  account_id        = var.newrelic_account_id
   linked_account_id = newrelic_cloud_azure_link_account.newrelic_cloud_azure_integration.id
 
   api_management {}

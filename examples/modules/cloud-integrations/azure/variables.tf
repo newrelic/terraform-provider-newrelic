@@ -1,8 +1,8 @@
-variable "account_id" {
+variable "newrelic_account_id" {
   type = string
 }
 
-variable "account_name" {
+variable "name" {
   type    = string
   default = "production"
 }
