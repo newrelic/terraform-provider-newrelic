@@ -109,7 +109,7 @@ func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
 		Steps: []resource.TestStep{
-			//Test: Create
+			// Test: Create
 			{
 				Config: testAccNewRelicSyntheticsScriptBrowserMonitorConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
@@ -119,6 +119,48 @@ func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 			// Test: Update
 			{
 				Config: testAccNewRelicSyntheticsScriptBrowserMonitorConfig(fmt.Sprintf("%s-updated", rName)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					// Technical limitations with the API prevent us from setting the following attributes.
+					"locations_public",
+					"location_private",
+					"tag",
+					"script",
+					"enable_screenshot_on_failure_and_script",
+					"device_orientation",
+					"device_type",
+				},
+			},
+		},
+	})
+}
+
+func TestAccNewRelicSyntheticsScriptBrowserMonitor_LegacyRuntime(t *testing.T) {
+	resourceName := "newrelic_synthetics_script_monitor.bar"
+	rName := acctest.RandString(5)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicSyntheticsScriptBrowserMonitorLegacyRuntimeConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicSyntheticsScriptBrowserMonitorLegacyRuntimeConfig(fmt.Sprintf("%s-updated", rName)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
 				),
@@ -172,7 +214,7 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfigLegacyRuntime(name string, s
 			status	=	"ENABLED"
 			script	=	"console.log('terraform integration test')"
 
-			# Set empty strings below for legacy runtime
+			# Omit runtime values for legacy runtime
 		}`, name, scriptMonitorType)
 }
 
@@ -198,12 +240,14 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 			locations_public	=	["AP_SOUTH_1", "US_EAST_1"]
 			name	=	"%[1]s"
 			period	=	"EVERY_HOUR"
+			status	=	"ENABLED"
+			type	=	"SCRIPT_BROWSER"
+
 			runtime_type_version	=	"100"
 			runtime_type	=	"CHROME_BROWSER"
 			script_language	=	"JAVASCRIPT"
-			status	=	"ENABLED"
-			type	=	"SCRIPT_BROWSER"
 			script	=	"$browser.get('https://one.newrelic.com')"
+
 			device_orientation = "PORTRAIT"
 			device_type = "MOBILE"
 
@@ -211,6 +255,21 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 				key	= "Name"
 				values	= ["scriptedMonitor"]
 			}
+		}`, name)
+}
+
+func testAccNewRelicSyntheticsScriptBrowserMonitorLegacyRuntimeConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "newrelic_synthetics_script_monitor" "bar" {
+			enable_screenshot_on_failure_and_script	=	true
+			locations_public	=	["AP_SOUTH_1", "US_EAST_1"]
+			name	=	"%[1]s"
+			period	=	"EVERY_HOUR"
+			status	=	"ENABLED"
+			type	=	"SCRIPT_BROWSER"
+			script	=	"$browser.get('https://one.newrelic.com')"
+
+			# Omit runtime values for legacy runtime
 		}`, name)
 }
 
