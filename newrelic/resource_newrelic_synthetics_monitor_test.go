@@ -11,7 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
+	mock "github.com/newrelic/newrelic-client-go/v2/pkg/testhelpers"
+	"github.com/stretchr/testify/require"
 )
+
+var tv bool = true
 
 func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.foo"
@@ -246,4 +251,101 @@ func testAccCheckNewRelicSyntheticsMonitorDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func TestAccNewRelicSyntheticsMonitorPeriodInMinutes(t *testing.T) {
+	resourceName := "newrelic_synthetics_monitor.bar"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
+		Steps: []resource.TestStep{
+
+			{
+				Config: testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(rName, string(SyntheticsMonitorTypes.BROWSER)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsMonitorPeriodInMinutesUpdate(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckNewRelicSyntheticsMonitorPeriodInMinutesUpdate(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no synthetics monitor ID is set")
+		}
+
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+		//providerConfig := testAccProvider.Meta().(*ProviderConfig)
+		// accountId := providerConfig.AccountID
+
+		result, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
+		if err != nil {
+			return err
+		}
+
+		if result == nil {
+			return fmt.Errorf("Synthetic Monitor Period update not successful !!")
+		}
+		return nil
+	}
+}
+
+func TestSyntheticsSimpleBrowserMonitor_PeriodInMinutes(t *testing.T) {
+	t.Parallel()
+
+	testAccountID, err := mock.GetTestAccountID()
+	if err != nil {
+		t.Skipf("%s", err)
+	}
+
+	a := createIntegrationTestClient(t)
+
+	monitorName := mock.RandSeq(5)
+
+	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{
+		Locations: synthetics.SyntheticsLocationsInput{
+			Public: []string{
+				"AP_SOUTH_1",
+			},
+		},
+		Name:   monitorName,
+		Period: synthetics.SyntheticsMonitorPeriodTypes.EVERY_5_MINUTES,
+		Status: synthetics.SyntheticsMonitorStatus(synthetics.SyntheticsMonitorStatusTypes.ENABLED),
+		Uri:    "https://www.one.newrelic.com",
+
+		AdvancedOptions: synthetics.SyntheticsSimpleBrowserMonitorAdvancedOptionsInput{
+			EnableScreenshotOnFailureAndScript: &tv,
+			ResponseValidationText:             "SUCCESS",
+			CustomHeaders: []synthetics.SyntheticsCustomHeaderInput{
+				{
+					Name:  "Monitor",
+					Value: "Synthetics",
+				},
+			},
+			UseTlsValidation: &tv,
+		},
+	}
+
+	createSimpleBrowserMonitor, err := a.SyntheticsCreateSimpleBrowserMonitor(testAccountID, simpleBrowserMonitorInput)
+	var periodInMinutes int = setPeriodInMinutes(createSimpleBrowserMonitor.Monitor.Period)
+
+	require.NoError(t, err)
+	require.NotNil(t, createSimpleBrowserMonitor)
+	require.Equal(t, 0, len(createSimpleBrowserMonitor.Errors))
+	require.Equal(t, 5, periodInMinutes)
+}
+
+func createIntegrationTestClient(t *testing.T) synthetics.Synthetics {
+	tc := mock.NewIntegrationTestConfig(t)
+
+	return synthetics.New(tc)
 }
