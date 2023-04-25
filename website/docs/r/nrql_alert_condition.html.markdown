@@ -75,9 +75,9 @@ The following arguments are supported:
 - `runbook_url` - (Optional) Runbook URL to display in notifications.
 - `enabled` - (Optional) Whether to enable the alert condition. Valid values are `true` and `false`. Defaults to `true`.
 - `nrql` - (Required) A NRQL query. See [NRQL](#nrql) below for details.
-- `term` - (Optional) **DEPRECATED** Use `critical`, and `warning` instead.  A list of terms for this condition. See [Terms](#terms) below for details.
-- `critical` - (Required) A list containing the `critical` threshold values. See [Terms](#terms) below for details.
-- `warning` - (Optional) A list containing the `warning` threshold values. See [Terms](#terms) below for details.
+- `term` - (Optional) **DEPRECATED** Use `critical`, and `warning` instead. A list of terms for this condition. See [Terms](#terms) below for details.
+- `critical` - A list containing the `critical` threshold values. At least one `critical` or `warning` threshold must be defined. See [Terms](#terms) below for details.
+- `warning` - A list containing the `warning` threshold values. At least one `critical` or `warning` threshold must be defined. See [Terms](#terms) below for details.
 - `violation_time_limit` - (Optional) **DEPRECATED:** Use `violation_time_limit_seconds` instead. Sets a time limit, in hours, that will automatically force-close a long-lasting incident after the time limit you select. Possible values are `ONE_HOUR`, `TWO_HOURS`, `FOUR_HOURS`, `EIGHT_HOURS`, `TWELVE_HOURS`, `TWENTY_FOUR_HOURS`, `THIRTY_DAYS` (case insensitive).<br>
 <small>\***Note**: One of `violation_time_limit` _or_ `violation_time_limit_seconds` must be set, but not both.</small>
 
@@ -106,7 +106,7 @@ The `nrql` block supports the following arguments:
 
 ## Terms
 
-~> **NOTE:** The direct use of the `term` has been deprecated, and users should use `critical` and `warning` instead.  What follows now applies to the named priority attributes for `critical` and `warning`, but for those attributes the priority is not allowed.
+~> **NOTE:** The direct use of the `term` has been deprecated, and users should use `critical` and `warning` instead.  What follows now applies to the named priority attributes for `critical` and `warning`, but for those attributes the priority is not allowed. At least one `critical` or `warning` term must be defined.
 
 NRQL alert conditions support up to two terms. At least one `term` must have `priority` set to `critical` and the second optional `term` must have `priority` set to `warning`.
 
@@ -265,7 +265,7 @@ resource "newrelic_entity_tags" "my_condition_entity_tags" {
 ## Upgrade from 1.x to 2.x
 
 There have been several deprecations in the `newrelic_nrql_alert_condition`
-resource.  Users will need to make some updates in order to have a smooth
+resource. Users will need to make some updates in order to have a smooth
 upgrade.
 
 An example resource from 1.x might look like the following.
