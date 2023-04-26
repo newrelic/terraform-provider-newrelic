@@ -217,6 +217,7 @@ resource "newrelic_synthetics_monitor" "monitor" {
 The following attributes are exported:
 
 * `id` - The ID (GUID) of the Synthetics monitor that the script is attached to.
+* `period_in_minutes` - The interval in minutes at which Synthetic monitor should run.
 
 ## Import
 
