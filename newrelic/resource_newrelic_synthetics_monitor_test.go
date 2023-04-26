@@ -144,6 +144,9 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 					"tag",
 					"enable_screenshot_on_failure_and_script",
 					"custom_header",
+					"runtime_type_version",
+					"runtime_type",
+					"script_language",
 				},
 			},
 		},
@@ -213,7 +216,7 @@ func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFun
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
-		time.Sleep(60 * time.Second)
+		time.Sleep(30 * time.Second)
 
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
@@ -237,7 +240,7 @@ func testAccCheckNewRelicSyntheticsMonitorDestroy(s *terraform.State) error {
 		}
 
 		// Unfortunately we still have to wait due to async delay with entity indexing :(
-		time.Sleep(60 * time.Second)
+		time.Sleep(30 * time.Second)
 
 		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
 		if (*found) != nil {
