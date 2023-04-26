@@ -216,14 +216,23 @@ func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreat
 	_ = d.Set("validation_string", res.Monitor.AdvancedOptions.ResponseValidationText)
 	_ = d.Set("verify_ssl", res.Monitor.AdvancedOptions.UseTlsValidation)
 	_ = d.Set("name", res.Monitor.Name)
-	_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
-	_ = d.Set("runtime_type_version", string(res.Monitor.Runtime.RuntimeTypeVersion))
-	_ = d.Set("script_language", res.Monitor.Runtime.ScriptLanguage)
 	_ = d.Set("status", string(res.Monitor.Status))
 	_ = d.Set("period", string(res.Monitor.Period))
 	_ = d.Set("uri", res.Monitor.Uri)
 	_ = d.Set("locations_public", res.Monitor.Locations.Public)
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
+
+	if res.Monitor.Runtime.RuntimeType != "" {
+		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
+	}
+
+	if res.Monitor.Runtime.RuntimeTypeVersion != "" {
+		_ = d.Set("runtime_type_version", string(res.Monitor.Runtime.RuntimeTypeVersion))
+	}
+
+	if res.Monitor.Runtime.ScriptLanguage != "" {
+		_ = d.Set("script_language", res.Monitor.Runtime.ScriptLanguage)
+	}
 }
 
 func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -374,12 +383,21 @@ func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowse
 	_ = d.Set("status", string(res.Monitor.Status))
 	_ = d.Set("validation_string", res.Monitor.AdvancedOptions.ResponseValidationText)
 	_ = d.Set("verify_ssl", res.Monitor.AdvancedOptions.UseTlsValidation)
-	_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
-	_ = d.Set("runtime_type_version", string(res.Monitor.Runtime.RuntimeTypeVersion))
-	_ = d.Set("script_language", res.Monitor.Runtime.ScriptLanguage)
 	_ = d.Set("enable_screenshot_on_failure_and_script", res.Monitor.AdvancedOptions.EnableScreenshotOnFailureAndScript)
 	_ = d.Set("locations_public", res.Monitor.Locations.Public)
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
+
+	if res.Monitor.Runtime.RuntimeType != "" {
+		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
+	}
+
+	if res.Monitor.Runtime.RuntimeTypeVersion != "" {
+		_ = d.Set("runtime_type_version", string(res.Monitor.Runtime.RuntimeTypeVersion))
+	}
+
+	if res.Monitor.Runtime.ScriptLanguage != "" {
+		_ = d.Set("script_language", res.Monitor.Runtime.ScriptLanguage)
+	}
 }
 
 func resourceNewRelicSyntheticsMonitorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
