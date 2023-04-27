@@ -82,6 +82,7 @@ resource "newrelic_synthetics_cert_check_monitor" "monitor" {
 The following attributes are exported:
 
 * `id` - The ID (GUID) of the certificate check synthetics monitor.
+* `period_in_minutes` - The interval in minutes at which Synthetic monitor should run.
 
 ## Import
 

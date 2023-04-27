@@ -241,34 +241,6 @@ func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreat
 	}
 }
 
-// This has been added to provide support to backward compatibility (older tf version supports period in minutes)
-func setPeriodInMinutes(syntheticsMonitorPeriod synthetics.SyntheticsMonitorPeriod) int {
-
-	switch string(syntheticsMonitorPeriod) {
-
-	case "EVERY_MINUTE":
-		return 1
-	case "EVERY_5_MINUTES":
-		return 5
-	case "EVERY_10_MINUTES":
-		return 10
-	case "EVERY_15_MINUTES":
-		return 15
-	case "EVERY_30_MINUTES":
-		return 30
-	case "EVERY_HOUR":
-		return 60
-	case "EVERY_6_HOURS":
-		return 360
-	case "EVERY_12_HOURS":
-		return 720
-	case "EVERY_DAY":
-		return 1440
-	default:
-		return 0
-	}
-}
-
 func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -304,14 +276,16 @@ func resourceNewRelicSyntheticsMonitorRead(ctx context.Context, d *schema.Resour
 func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema.ResourceData) {
 	switch e := (*v).(type) {
 	case *entities.SyntheticMonitorEntity:
-		err := setSyntheticsMonitorAttributes(d, map[string]interface{}{
-			"name":              e.Name,
-			"type":              string(e.MonitorType),
-			"uri":               e.MonitoredURL,
-			"period":            string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
-			"status":            string(e.MonitorSummary.Status),
-			"period_in_minutes": e.GetPeriod(),
+		err := setSyntheticsMonitorAttributes(d, map[string]string{
+			"name":   e.Name,
+			"type":   string(e.MonitorType),
+			"uri":    e.MonitoredURL,
+			"period": string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
+			"status": string(e.MonitorSummary.Status),
 		})
+
+		_ = d.Set("period_in_minutes", e.GetPeriod())
+
 		if err != nil {
 			diag.FromErr(err)
 		}

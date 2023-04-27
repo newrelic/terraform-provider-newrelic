@@ -64,6 +64,11 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 			Description:  "The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.",
 			ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPeriods(), false),
 		},
+		"period_in_minutes": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The interval in minutes at which this monitor should run.",
+		},
 	}
 }
 
@@ -99,6 +104,34 @@ var syntheticsMonitorPeriodValueMap = map[int]synthetics.SyntheticsMonitorPeriod
 	1440: synthetics.SyntheticsMonitorPeriodTypes.EVERY_DAY,
 }
 
+// This has been added to provide support to backward compatibility (older tf version supports period in minutes)
+func setPeriodInMinutes(syntheticsMonitorPeriod synthetics.SyntheticsMonitorPeriod) int {
+
+	switch string(syntheticsMonitorPeriod) {
+
+	case "EVERY_MINUTE":
+		return 1
+	case "EVERY_5_MINUTES":
+		return 5
+	case "EVERY_10_MINUTES":
+		return 10
+	case "EVERY_15_MINUTES":
+		return 15
+	case "EVERY_30_MINUTES":
+		return 30
+	case "EVERY_HOUR":
+		return 60
+	case "EVERY_6_HOURS":
+		return 360
+	case "EVERY_12_HOURS":
+		return 720
+	case "EVERY_DAY":
+		return 1440
+	default:
+		return 0
+	}
+}
+
 type SyntheticsMonitorBase struct {
 	Name   string
 	Period synthetics.SyntheticsMonitorPeriod
@@ -108,7 +141,7 @@ type SyntheticsMonitorBase struct {
 
 // Handles setting simple string attributes in the schema. If the attribute/key is
 // invalid or the value is not a correct type, an error will be returned.
-func setSyntheticsMonitorAttributes(d *schema.ResourceData, attributes map[string]interface{}) error {
+func setSyntheticsMonitorAttributes(d *schema.ResourceData, attributes map[string]string) error {
 	for key := range attributes {
 		err := d.Set(key, attributes[key])
 		if err != nil {

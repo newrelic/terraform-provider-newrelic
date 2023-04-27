@@ -146,7 +146,9 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		// Set attributes
 		d.SetId(string(resp.Monitor.GUID))
 		_ = d.Set("account_id", accountID)
-		attrs := map[string]interface{}{"guid": string(resp.Monitor.GUID)}
+		_ = d.Set("period_in_minutes", setPeriodInMinutes(resp.Monitor.Period))
+
+		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
 		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
 		}
@@ -165,7 +167,9 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		// Set attributes
 		d.SetId(string(resp.Monitor.GUID))
 		_ = d.Set("account_id", accountID)
-		attrs := map[string]interface{}{"guid": string(resp.Monitor.GUID)}
+		_ = d.Set("period_in_minutes", setPeriodInMinutes(resp.Monitor.Period))
+
+		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
 		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
 		}
@@ -203,7 +207,7 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 		return nil
 	}
 
-	error = setSyntheticsMonitorAttributes(d, map[string]interface{}{
+	error = setSyntheticsMonitorAttributes(d, map[string]string{
 		"script": response.Text,
 	})
 
@@ -215,13 +219,15 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 
 	switch e := (*resp).(type) {
 	case *entities.SyntheticMonitorEntity:
-		err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
+		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"name":   e.Name,
 			"type":   string(e.MonitorType),
 			"guid":   string(e.GUID),
 			"period": string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
 			"status": string(e.MonitorSummary.Status),
 		})
+
+		_ = d.Set("period_in_minutes", int(e.GetPeriod()))
 
 		for _, t := range e.Tags {
 			if k, ok := syntheticsMonitorTagKeyToSchemaAttrMap[t.Key]; ok {
@@ -259,12 +265,15 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 			return errors
 		}
 
-		err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
+		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"name":   resp.Monitor.Name,
 			"guid":   string(resp.Monitor.GUID),
 			"period": string(resp.Monitor.Period),
 			"status": string(resp.Monitor.Status),
 		})
+
+		_ = d.Set("period_in_minutes", setPeriodInMinutes(resp.Monitor.Period))
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -281,12 +290,15 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 			return errors
 		}
 
-		err = setSyntheticsMonitorAttributes(d, map[string]interface{}{
+		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"name":   resp.Monitor.Name,
 			"guid":   string(resp.Monitor.GUID),
 			"period": string(resp.Monitor.Period),
 			"status": string(resp.Monitor.Status),
 		})
+
+		_ = d.Set("period_in_minutes", setPeriodInMinutes(resp.Monitor.Period))
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
