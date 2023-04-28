@@ -406,6 +406,10 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 		return diags
 	}
 
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if condition == nil {
 		return diag.Errorf("error creating nrql alert condition: response was nil")
 	}
