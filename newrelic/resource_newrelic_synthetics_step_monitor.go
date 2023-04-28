@@ -114,7 +114,7 @@ func resourceNewRelicSyntheticsStepMonitorCreate(ctx context.Context, d *schema.
 	d.SetId(string(resp.Monitor.GUID))
 	_ = d.Set("account_id", accountID)
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
-	_ = d.Set("period_in_minutes", setPeriodInMinutes(resp.Monitor.Period))
+	_ = d.Set("period_in_minutes", int(syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period]))
 
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
 		"guid":   string(resp.Monitor.GUID),
@@ -188,7 +188,7 @@ func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.
 
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
 	_ = d.Set("steps", flattenSyntheticsMonitorSteps(resp.Monitor.Steps))
-	_ = d.Set("period_in_minutes", setPeriodInMinutes(resp.Monitor.Period))
+	_ = d.Set("period_in_minutes", int(syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period]))
 
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
 		"guid":   string(resp.Monitor.GUID),

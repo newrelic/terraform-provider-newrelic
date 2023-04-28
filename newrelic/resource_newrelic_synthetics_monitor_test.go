@@ -293,7 +293,7 @@ func TestSyntheticsSimpleBrowserMonitor_PeriodInMinutes(t *testing.T) {
 	}
 
 	createSimpleBrowserMonitor, err := a.SyntheticsCreateSimpleBrowserMonitor(testAccountID, simpleBrowserMonitorInput)
-	var periodInMinutes int = setPeriodInMinutes(createSimpleBrowserMonitor.Monitor.Period)
+	var periodInMinutes int = int(syntheticsMonitorPeriodInMinutesValueMap[createSimpleBrowserMonitor.Monitor.Period])
 
 	require.NoError(t, err)
 	require.NotNil(t, createSimpleBrowserMonitor)

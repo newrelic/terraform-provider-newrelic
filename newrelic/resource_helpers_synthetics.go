@@ -105,31 +105,17 @@ var syntheticsMonitorPeriodValueMap = map[int]synthetics.SyntheticsMonitorPeriod
 }
 
 // This has been added to provide support to backward compatibility (older tf version supports period in minutes)
-func setPeriodInMinutes(syntheticsMonitorPeriod synthetics.SyntheticsMonitorPeriod) int {
+var syntheticsMonitorPeriodInMinutesValueMap = map[synthetics.SyntheticsMonitorPeriod]int{
 
-	switch string(syntheticsMonitorPeriod) {
-
-	case "EVERY_MINUTE":
-		return 1
-	case "EVERY_5_MINUTES":
-		return 5
-	case "EVERY_10_MINUTES":
-		return 10
-	case "EVERY_15_MINUTES":
-		return 15
-	case "EVERY_30_MINUTES":
-		return 30
-	case "EVERY_HOUR":
-		return 60
-	case "EVERY_6_HOURS":
-		return 360
-	case "EVERY_12_HOURS":
-		return 720
-	case "EVERY_DAY":
-		return 1440
-	default:
-		return 0
-	}
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE:     1,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_5_MINUTES:  5,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_10_MINUTES: 10,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_15_MINUTES: 15,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_30_MINUTES: 30,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_HOUR:       60,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_6_HOURS:    360,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_12_HOURS:   720,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_DAY:        1440,
 }
 
 type SyntheticsMonitorBase struct {

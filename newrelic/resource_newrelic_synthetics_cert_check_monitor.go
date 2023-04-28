@@ -129,7 +129,7 @@ func resourceNewRelicSyntheticsCertCheckMonitorCreate(ctx context.Context, d *sc
 	_ = d.Set("certificate_expiration", resp.Monitor.NumberDaysToFailBeforeCertExpires)
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
 	_ = d.Set("locations_private", resp.Monitor.Locations.Private)
-	_ = d.Set("period_in_minutes", setPeriodInMinutes(resp.Monitor.Period))
+	_ = d.Set("period_in_minutes", int(syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period]))
 
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
 		"domain": resp.Monitor.Domain,
@@ -209,7 +209,7 @@ func resourceNewRelicSyntheticsCertCheckMonitorUpdate(ctx context.Context, d *sc
 	_ = d.Set("certificate_expiration", resp.Monitor.NumberDaysToFailBeforeCertExpires)
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
 	_ = d.Set("locations_private", resp.Monitor.Locations.Private)
-	_ = d.Set("period_in_minutes", setPeriodInMinutes(resp.Monitor.Period))
+	_ = d.Set("period_in_minutes", int(syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period]))
 
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
 		"domain": resp.Monitor.Domain,
