@@ -223,7 +223,7 @@ func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreat
 	_ = d.Set("name", res.Monitor.Name)
 	_ = d.Set("status", string(res.Monitor.Status))
 	_ = d.Set("period", string(res.Monitor.Period))
-	_ = d.Set("period_in_minutes", int(syntheticsMonitorPeriodInMinutesValueMap[res.Monitor.Period]))
+	_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[res.Monitor.Period])
 	_ = d.Set("uri", res.Monitor.Uri)
 	_ = d.Set("locations_public", res.Monitor.Locations.Public)
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
@@ -375,7 +375,7 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 func setSimpleMonitorAttributesFromUpdate(res *synthetics.SyntheticsSimpleMonitorUpdateMutationResult, d *schema.ResourceData) {
 	_ = d.Set("name", res.Monitor.Name)
 	_ = d.Set("period", string(res.Monitor.Period))
-	_ = d.Set("period_in_minutes", int(syntheticsMonitorPeriodInMinutesValueMap[res.Monitor.Period]))
+	_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[res.Monitor.Period])
 	_ = d.Set("uri", res.Monitor.Uri)
 	_ = d.Set("status", string(res.Monitor.Status))
 	_ = d.Set("validation_string", res.Monitor.AdvancedOptions.ResponseValidationText)
@@ -389,7 +389,7 @@ func setSimpleMonitorAttributesFromUpdate(res *synthetics.SyntheticsSimpleMonito
 func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowserMonitorUpdateMutationResult, d *schema.ResourceData) {
 	_ = d.Set("name", res.Monitor.Name)
 	_ = d.Set("period", string(res.Monitor.Period))
-	_ = d.Set("period_in_minutes", int(syntheticsMonitorPeriodInMinutesValueMap[res.Monitor.Period]))
+	_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[res.Monitor.Period])
 	_ = d.Set("uri", res.Monitor.Uri)
 	_ = d.Set("status", string(res.Monitor.Status))
 	_ = d.Set("validation_string", res.Monitor.AdvancedOptions.ResponseValidationText)
