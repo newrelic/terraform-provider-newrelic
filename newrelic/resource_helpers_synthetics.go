@@ -64,6 +64,11 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 			Description:  "The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.",
 			ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPeriods(), false),
 		},
+		"period_in_minutes": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The interval in minutes at which this monitor should run.",
+		},
 	}
 }
 
@@ -97,6 +102,20 @@ var syntheticsMonitorPeriodValueMap = map[int]synthetics.SyntheticsMonitorPeriod
 	360:  synthetics.SyntheticsMonitorPeriodTypes.EVERY_6_HOURS,
 	720:  synthetics.SyntheticsMonitorPeriodTypes.EVERY_12_HOURS,
 	1440: synthetics.SyntheticsMonitorPeriodTypes.EVERY_DAY,
+}
+
+// This has been added to provide support to backward compatibility (older tf version supports period in minutes)
+var syntheticsMonitorPeriodInMinutesValueMap = map[synthetics.SyntheticsMonitorPeriod]int{
+
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE:     1,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_5_MINUTES:  5,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_10_MINUTES: 10,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_15_MINUTES: 15,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_30_MINUTES: 30,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_HOUR:       60,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_6_HOURS:    360,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_12_HOURS:   720,
+	synthetics.SyntheticsMonitorPeriodTypes.EVERY_DAY:        1440,
 }
 
 type SyntheticsMonitorBase struct {

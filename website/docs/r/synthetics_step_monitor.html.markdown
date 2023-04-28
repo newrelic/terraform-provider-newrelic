@@ -108,6 +108,7 @@ resource "newrelic_synthetics_step_monitor" "bar" {
 The following attributes are exported:
 
 * `id` - The ID (GUID) of the synthetics step monitor.
+* `period_in_minutes` - The interval in minutes at which Synthetic monitor should run.
 
 ## Import
 

@@ -93,6 +93,11 @@ func resourceNewRelicSyntheticsCertCheckMonitor() *schema.Resource {
 				Description:  "The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.",
 				ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPeriods(), false),
 			},
+			"period_in_minutes": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The interval in minutes at which this monitor should run.",
+			},
 		},
 	}
 }
@@ -124,6 +129,7 @@ func resourceNewRelicSyntheticsCertCheckMonitorCreate(ctx context.Context, d *sc
 	_ = d.Set("certificate_expiration", resp.Monitor.NumberDaysToFailBeforeCertExpires)
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
 	_ = d.Set("locations_private", resp.Monitor.Locations.Private)
+	_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
 
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
 		"domain": resp.Monitor.Domain,
@@ -167,6 +173,7 @@ func resourceNewRelicSyntheticsCertCheckMonitorRead(ctx context.Context, d *sche
 		d.SetId(string(e.GUID))
 		_ = d.Set("account_id", accountID)
 		_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
+		_ = d.Set("period_in_minutes", int(entity.GetPeriod()))
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"name":   e.Name,
@@ -202,6 +209,7 @@ func resourceNewRelicSyntheticsCertCheckMonitorUpdate(ctx context.Context, d *sc
 	_ = d.Set("certificate_expiration", resp.Monitor.NumberDaysToFailBeforeCertExpires)
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
 	_ = d.Set("locations_private", resp.Monitor.Locations.Private)
+	_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
 
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
 		"domain": resp.Monitor.Domain,

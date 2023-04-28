@@ -51,6 +51,11 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description:  "The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.",
 				ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPeriods(), false),
 			},
+			"period_in_minutes": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The interval in minutes at which this monitor should run.",
+			},
 			"uri": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -218,6 +223,7 @@ func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreat
 	_ = d.Set("name", res.Monitor.Name)
 	_ = d.Set("status", string(res.Monitor.Status))
 	_ = d.Set("period", string(res.Monitor.Period))
+	_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[res.Monitor.Period])
 	_ = d.Set("uri", res.Monitor.Uri)
 	_ = d.Set("locations_public", res.Monitor.Locations.Public)
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
@@ -277,6 +283,9 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 			"period": string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
 			"status": string(e.MonitorSummary.Status),
 		})
+
+		_ = d.Set("period_in_minutes", e.GetPeriod())
+
 		if err != nil {
 			diag.FromErr(err)
 		}
@@ -366,6 +375,7 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 func setSimpleMonitorAttributesFromUpdate(res *synthetics.SyntheticsSimpleMonitorUpdateMutationResult, d *schema.ResourceData) {
 	_ = d.Set("name", res.Monitor.Name)
 	_ = d.Set("period", string(res.Monitor.Period))
+	_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[res.Monitor.Period])
 	_ = d.Set("uri", res.Monitor.Uri)
 	_ = d.Set("status", string(res.Monitor.Status))
 	_ = d.Set("validation_string", res.Monitor.AdvancedOptions.ResponseValidationText)
@@ -379,6 +389,7 @@ func setSimpleMonitorAttributesFromUpdate(res *synthetics.SyntheticsSimpleMonito
 func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowserMonitorUpdateMutationResult, d *schema.ResourceData) {
 	_ = d.Set("name", res.Monitor.Name)
 	_ = d.Set("period", string(res.Monitor.Period))
+	_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[res.Monitor.Period])
 	_ = d.Set("uri", res.Monitor.Uri)
 	_ = d.Set("status", string(res.Monitor.Status))
 	_ = d.Set("validation_string", res.Monitor.AdvancedOptions.ResponseValidationText)
