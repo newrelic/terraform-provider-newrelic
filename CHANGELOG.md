@@ -1,3 +1,21 @@
+<a name="v3.21.0"></a>
+## [v3.21.0] - 2023-04-28
+### Bug Fixes
+- **newrelic_synthetics_script_monitor:** Populate script argument changes upon modifications. ([#2335](https://github.com/newrelic/terraform-provider-newrelic/issues/2335))
+- **nrql_alert_condition:** check for nil response on create
+- **one_dashboard:** code changes to support y_axis_left_min=0 ([#2326](https://github.com/newrelic/terraform-provider-newrelic/issues/2326))
+- **synthetics:** handle omitting runtime values for legacy runtime
+
+### Documentation Updates
+- update synthetic monitor default runtime notes. ([#2325](https://github.com/newrelic/terraform-provider-newrelic/issues/2325))
+- **nrql_alert_condition:** Update nrql alert condition docs ([#2341](https://github.com/newrelic/terraform-provider-newrelic/issues/2341))
+
+### Features
+- **one_dashboard:** addition of the attribute zero to widget_line ([#2336](https://github.com/newrelic/terraform-provider-newrelic/issues/2336))
+- **synthetics:** Synthetics monitor additional field to output period in minutes ([#2340](https://github.com/newrelic/terraform-provider-newrelic/issues/2340))
+- **synthetics:** Synthetics monitor additional field to output period in minutes
+- **synthetics:** add device emulation options to newrelic_synthetics_script_browser_monitor resource
+
 <a name="v3.20.2"></a>
 ## [v3.20.2] - 2023-04-07
 ### Bug Fixes
@@ -1799,7 +1817,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.21.0...HEAD
+[v3.21.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.2...v3.21.0
 [v3.20.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.1...v3.20.2
 [v3.20.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.0...v3.20.1
 [v3.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.19.0...v3.20.0
