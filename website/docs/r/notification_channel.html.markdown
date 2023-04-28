@@ -77,7 +77,7 @@ Each notification channel type supports a specific set of arguments for the `pro
   * `email` - (Required) Specifies the user email for integrating with Pagerduty.
   * `customDetails` - (Optional) Free text that *replaces* the content of the alert.
 * `SLACK`
-  * `channelId` - (Required) Specifies the Slack channel id. This can be found in slack browser via the url. Example - https://app.slack.com/client/<UserId>/<ChannelId>.
+  * `channelId` - (Required) Specifies the Slack channel id. This can be found in slack browser via the url. Example - https://app.slack.com/client/\<UserId>/\<ChannelId>.
   * `customDetailsSlack` - (Optional) A map of key/value pairs that represents the slack custom details. Must be compatible with Slack's blocks api. 
 
 ## Attributes Reference
