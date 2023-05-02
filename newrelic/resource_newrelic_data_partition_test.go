@@ -25,7 +25,8 @@ func TestAccNewRelicDataPartitionRule_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			//create
 			{
-				Config: testAccNewRelicDataPartitionRuleConfig(rName),
+				PreConfig: testAccLogDataPartitionsCleanup(t),
+				Config:    testAccNewRelicDataPartitionRuleConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicDataPartitionRuleExists(resourceName)),
 			},
