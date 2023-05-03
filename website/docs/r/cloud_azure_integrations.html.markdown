@@ -122,6 +122,15 @@ resource "newrelic_cloud_azure_integrations" "foo" {
     resource_groups = ["resource_groups"]
   }
 
+  monitor {
+    metrics_polling_interval = 1200
+    resource_groups          = ["resource_groups"]
+    include_tags             = ["env:production"]
+    exclude_tags             = ["env:staging", "env:testing"]
+    enabled                  = true
+    resource_types           = ["microsoft.datashare/accounts"]
+  }
+  
   mysql {
     metrics_polling_interval = 1200
     resource_groups = ["resource_groups"]
@@ -215,6 +224,7 @@ The following arguments are supported with minimum metric polling interval of 30
 * `logic_apps` - (Optional) Azure Logic Apps. See [Integration blocks](#integration-blocks) below for details.
 * `machine_learning` - (Optional) Azure Machine Learning. See [Integration blocks](#integration-blocks) below for details.
 * `maria_db` - (Optional) Azure MariaDB. See [Integration blocks](#integration-blocks) below for details.
+* `monitor` - (Optional) Azure Monitor. See [Integration blocks](#integration-blocks) below for details.
 * `mysql` - (Optional) Azure MySQL. See [Integration blocks](#integration-blocks) below for details.
 * `mysql_flexible` - (Optional) Azure MySQL Flexible Server. See [Integration blocks](#integration-blocks) below for details.
 * `postgresql` - (Optional) Azure PostgreSQL. See [Integration blocks](#integration-blocks) below for details.
@@ -248,6 +258,12 @@ Other integration type support an additional argument:
 
 * `cost_management`
   * `tag_keys` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+
+* `monitor`
+  * `resource_types` - (Optional) A list of Azure resource types that need to be monitored.
+  * `include_tags` - (Optional) A list of resource tags associated with the resources that need to be monitored, in a "key:value" format. If this is not specified, all resources will be monitored.
+  * `exclude_tags` - (Optional) A list of resource tags associated with the resources that need to be excluded from monitoring.
+  * `enabled` - (Optional) A boolean value, that specifies if the integration needs to be active. Defaults to 'true' if not specified.
 
 ## Attributes Reference
 
