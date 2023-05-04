@@ -74,7 +74,7 @@ resource "newrelic_nrql_alert_condition" "your_condition" {
   }
 
   critical {
-    operator = "above"
+    operator = "above_or_equals"
     threshold = data.newrelic_service_level_alert_helper.foo_custom.threshold
     threshold_duration = data.newrelic_service_level_alert_helper.foo_custom.evaluation_period
     threshold_occurrences = "at_least_once"
