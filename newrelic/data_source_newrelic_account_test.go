@@ -52,8 +52,10 @@ func TestAccNewRelicAccountDataSource_MissingAttributes(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccNewRelicAccountDataSourceConfigMissingAttributes(),
-				ExpectError: regexp.MustCompile("one of"),
+				Config: testAccNewRelicAccountDataSourceConfigMissingAttributes(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAccountDataSourceExists("data.newrelic_account.acc"),
+				),
 			},
 		},
 	})

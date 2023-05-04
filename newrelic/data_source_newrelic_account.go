@@ -39,7 +39,8 @@ func dataSourceNewRelicAccount() *schema.Resource {
 }
 
 func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
 
 	log.Printf("[INFO] Reading New Relic accounts")
 
@@ -60,7 +61,8 @@ func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, 
 	var account *accounts.AccountOutline
 
 	if !idOk && !nameOk {
-		return diag.FromErr(fmt.Errorf(`one of "name" or "account_id" is required to locate a New Relic account`))
+		// Default to the provider's AccountID if no lookup attributes are provided.
+		id, idOk = selectAccountID(providerConfig, d), true
 	}
 
 	if idOk && nameOk {
