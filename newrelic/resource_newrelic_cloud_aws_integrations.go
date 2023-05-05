@@ -369,6 +369,11 @@ func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.R
 	return nil
 }
 
+type enableDisableAwsIntegration struct {
+	enableFunc  func([]interface{}, int)
+	disableFunc func(int)
+}
+
 func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
 	cloudAwsIntegration := cloud.CloudAwsIntegrationsInput{}
 	cloudDisableAwsIntegration := cloud.CloudAwsDisableIntegrationsInput{}
@@ -379,76 +384,111 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 		linkedAccountID = l.(int)
 	}
 
-	if b, ok := d.GetOk("billing"); ok {
-		cloudAwsIntegration.Billing = expandCloudAwsIntegrationBillingInput(b.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("billing"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Billing = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	awsIntegrationMap := map[string]enableDisableAwsIntegration{
+		"billing": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Billing = expandCloudAwsIntegrationBillingInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Billing = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"cloudtrail": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Cloudtrail = expandCloudAwsIntegrationCloudtrailInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Cloudtrail = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"doc_db": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsDocdb = expandCloudAwsIntegrationDocDBInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsDocdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"health": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Health = expandCloudAwsIntegrationHealthInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Health = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"trusted_advisor": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Trustedadvisor = expandCloudAwsIntegrationTrustedAdvisorInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Trustedadvisor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"s3": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.S3 = expandCloudAwsIntegrationS3Input(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.S3 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"vpc": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Vpc = expandCloudAwsIntegrationVpcInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"x_ray": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsXray = expandCloudAwsIntegrationXRayInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsXray = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"sqs": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Sqs = expandCloudAwsIntegrationSqsInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Sqs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"ebs": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Ebs = expandCloudAwsIntegrationEbsInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Ebs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"alb": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Alb = expandCloudAwsIntegrationAlbInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Alb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"elasticache": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Elasticache = expandCloudAwsIntegrationElasticacheInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Elasticache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
 	}
 
-	if c, ok := d.GetOk("cloudtrail"); ok {
-		cloudAwsIntegration.Cloudtrail = expandCloudAwsIntegrationCloudtrailInput(c.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("cloudtrail"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Cloudtrail = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if t, ok := d.GetOk("doc_db"); ok {
-		cloudAwsIntegration.AwsDocdb = expandCloudAwsIntegrationDocDBInput(t.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("doc_db"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.AwsDocdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if h, ok := d.GetOk("health"); ok {
-		cloudAwsIntegration.Health = expandCloudAwsIntegrationHealthInput(h.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("health"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Health = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if t, ok := d.GetOk("trusted_advisor"); ok {
-		cloudAwsIntegration.Trustedadvisor = expandCloudAwsIntegrationTrustedAdvisorInput(t.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("trusted_advisor"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Trustedadvisor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if t, ok := d.GetOk("s3"); ok {
-		cloudAwsIntegration.S3 = expandCloudAwsIntegrationS3Input(t.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("s3"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.S3 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if v, ok := d.GetOk("vpc"); ok {
-		cloudAwsIntegration.Vpc = expandCloudAwsIntegrationVpcInput(v.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("vpc"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if x, ok := d.GetOk("x_ray"); ok {
-		cloudAwsIntegration.AwsXray = expandCloudAwsIntegrationXRayInput(x.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("x_ray"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.AwsXray = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if x, ok := d.GetOk("sqs"); ok {
-		cloudAwsIntegration.Sqs = expandCloudAwsIntegrationSqsInput(x.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("sqs"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Sqs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if x, ok := d.GetOk("ebs"); ok {
-		cloudAwsIntegration.Ebs = expandCloudAwsIntegrationEbsInput(x.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("ebs"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Ebs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if x, ok := d.GetOk("alb"); ok {
-		cloudAwsIntegration.Alb = expandCloudAwsIntegrationAlbInput(x.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("docb"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Alb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if x, ok := d.GetOk("elasticache"); ok {
-		cloudAwsIntegration.Elasticache = expandCloudAwsIntegrationElasticacheInput(x.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("docb"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Elasticache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	for key, fun := range awsIntegrationMap {
+		if v, ok := d.GetOk(key); ok {
+			fun.enableFunc(v.([]interface{}), linkedAccountID)
+		} else if o, n := d.GetChange(key); len(n.([]interface{})) > len(o.([]interface{})) {
+			fun.disableFunc(linkedAccountID)
+		}
 	}
 
 	configureInput := cloud.CloudIntegrationsInput{
