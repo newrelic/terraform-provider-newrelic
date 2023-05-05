@@ -110,6 +110,11 @@ resource "newrelic_one_dashboard_json" "bar" {
 ### Dashboard With Multiple Pages
 
 The following example demonstrates creating a dashboard with multiple pages, with each page comprising a couple of widgets.
+```hcl
+resource "newrelic_one_dashboard_json" "foo" {
+   json = file("dashboard.json")
+}
+```
 
 `dashboard.json`
 ```json
@@ -144,7 +149,7 @@ The following example demonstrates creating a dashboard with multiple pages, wit
             "nrqlQueries": [
               {
                 "accountIds": [
-                  {Account-IDs}
+                  account_id
                 ],
                 "query": "FROM Metric SELECT average(apm.service.memory.physical) as avgMem WHERE appName='Dummy App' TIMESERIES 2 days since 2 months ago"
               }
@@ -193,7 +198,7 @@ The following example demonstrates creating a dashboard with multiple pages, wit
             "nrqlQueries": [
               {
                 "accountIds": [
-                  {Account-IDs}
+                  account_id
                 ],
                 "query": "select count(*) from Transaction facet appName since 1 month ago TIMESERIES 1 day"
               }
@@ -225,7 +230,7 @@ The following example demonstrates creating a dashboard with multiple pages, wit
             "nrqlQueries": [
               {
                 "accountIds": [
-                  {Account-IDs}
+                  account_id
                 ],
                 "query": "SELECT count(*) from Transaction facet response.headers.contentType since 2 months ago"
               }
@@ -263,7 +268,7 @@ The following example demonstrates creating a dashboard with multiple pages, wit
             "nrqlQueries": [
               {
                 "accountIds": [
-                  {Account-IDs}
+                  account_id
                 ],
                 "query": "SELECT count(*) from Log since 48 hours ago TIMESERIES 3 hours"
               }
@@ -284,7 +289,6 @@ The following example demonstrates creating a dashboard with multiple pages, wit
 
 The following example demonstrates using a pre-defined set of pages across a variable number of dashboards, by specifying a list of the required pages as arguments in the dashboards to be created. This helps reuse pages and the widgets they comprise, across multiple dashboards.
 
-`main.tf`
 ```tf
 resource "newrelic_one_dashboard_json" "dashboard_one" {
   json = templatefile("dashboard.json.tftpl", {
@@ -357,7 +361,7 @@ resource "newrelic_one_dashboard_json" "dashboard_three" {
         "nrqlQueries": [
           {
             "accountIds": [
-              {Account-IDs}
+              account_id
             ],
             "query": "FROM Metric SELECT average(apm.service.memory.physical) as avgMem WHERE appName='Dummy App' TIMESERIES 2 days since 2 months ago"
           }
@@ -410,7 +414,7 @@ resource "newrelic_one_dashboard_json" "dashboard_three" {
         "nrqlQueries": [
           {
             "accountIds": [
-              {Account-IDs}
+              account_id
             ],
             "query": "select count(*) from Transaction facet appName since 1 month ago TIMESERIES 1 day"
           }
@@ -442,7 +446,7 @@ resource "newrelic_one_dashboard_json" "dashboard_three" {
         "nrqlQueries": [
           {
             "accountIds": [
-              {Account-IDs}
+              account_id
             ],
             "query": "SELECT count(*) from Transaction facet response.headers.contentType since 2 months ago"
           }
@@ -484,7 +488,7 @@ resource "newrelic_one_dashboard_json" "dashboard_three" {
         "nrqlQueries": [
           {
             "accountIds": [
-              {Account-IDs}
+              account_id
             ],
             "query": "SELECT count(*) from Log since 48 hours ago TIMESERIES 3 hours"
           }
@@ -526,7 +530,7 @@ The following example demonstrates setting thresholds on a billboard widget.
             "nrqlQueries" : [
               {
                 "accountIds" : [
-                  {Your-Account-ID}
+                  account_id
                 ],
                 "query" : "SELECT count(*) from Transaction where httpResponseCode!=200 since 1 hour ago"
               }
@@ -549,6 +553,13 @@ The following example demonstrates setting thresholds on a billboard widget.
 }
 ```
 
+### More Complex Examples
+
+The following examples show more intricate use cases of creating dashboards from JSON files, using this resource.
+- [This example](https://github.com/newrelic-experimental/nr-terraform-json-dashboard-examples/blob/main/dash_composed.tf) illustrates the use of a variable list of items to create a dashboard, that may be used iteratively to populate queries and other arguments of widgets, using Terraform template files.
+- [This example](https://github.com/newrelic-experimental/nr-terraform-json-dashboard-examples/blob/main/dash_nrql_composed.tf) elaborates on the use of an apt Terraform configuration with additional dependencies, to instrument the use of values obtained from a GraphQL API response iteratively to configure widgets in the dashboard for each item in the response, using the Terraform `jsondecode` function.
+
+More of such examples may be found in ths [GitHub repository](https://github.com/newrelic-experimental/nr-terraform-json-dashboard-examples/tree/main).
 
 ## Import
 
