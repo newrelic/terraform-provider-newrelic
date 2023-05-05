@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-//Checking the creation, update, import and deletion of obfuscation expression
+// Checking the creation, update, import and deletion of obfuscation expression
 func TestAccNewRelicObfuscationExpression_Basic(t *testing.T) {
 	resourceName := "newrelic_obfuscation_expression.foo"
 	rName := acctest.RandString(7)
@@ -45,7 +45,7 @@ func TestAccNewRelicObfuscationExpression_Basic(t *testing.T) {
 	})
 }
 
-//Must fail if given the same name
+// Must fail if given the same name
 func TestAccNewRelicObfuscationExpression_Validation(t *testing.T) {
 	rName := acctest.RandString(7)
 	expectedMsg, _ := regexp.Compile("Invalid input: There is another obfuscation expression with the same name in this account")
