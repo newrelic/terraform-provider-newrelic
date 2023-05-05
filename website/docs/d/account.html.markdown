@@ -9,8 +9,8 @@ description: |-
 # Data Source: newrelic\_account
 
 Use this data source to get information about a specific account in New Relic.
-Accounts can be located by ID or name.  Exactly one of the two attributes is
-required.
+Accounts can be located by ID or name.  At most one of the two attributes can
+be provided. If neither are provided, the provider's `account_id` will be used.
 
 ## Example Usage
 
