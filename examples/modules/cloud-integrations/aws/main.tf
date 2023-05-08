@@ -114,13 +114,15 @@ resource "aws_s3_bucket" "newrelic_aws_bucket" {
   force_destroy = true
 }
 
-resource "aws_s3_bucket_acl" "newrelic_aws_bucket_acl" {
+resource "aws_s3_bucket_ownership_controls" "newrelic_ownership_controls" {
   bucket = aws_s3_bucket.newrelic_aws_bucket.id
-  acl    = "private"
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
 }
 
-resource "aws_kinesis_firehose_delivery_stream" "newrelic_firehost_stream" {
-  name        = "newrelic_firehost_stream_${var.name}"
+resource "aws_kinesis_firehose_delivery_stream" "newrelic_firehose_stream" {
+  name        = "newrelic_firehose_stream_${var.name}"
   destination = "http_endpoint"
 
   s3_configuration {
@@ -180,7 +182,7 @@ resource "aws_iam_role_policy" "metric_stream_to_firehose" {
                 "firehose:PutRecord",
                 "firehose:PutRecordBatch"
             ],
-            "Resource": "${aws_kinesis_firehose_delivery_stream.newrelic_firehost_stream.arn}"
+            "Resource": "${aws_kinesis_firehose_delivery_stream.newrelic_firehose_stream.arn}"
         }
     ]
 }
@@ -190,7 +192,7 @@ EOF
 resource "aws_cloudwatch_metric_stream" "newrelic_metric_stream" {
   name          = "newrelic-metric-stream-${var.name}"
   role_arn      = aws_iam_role.metric_stream_to_firehose.arn
-  firehose_arn  = aws_kinesis_firehose_delivery_stream.newrelic_firehost_stream.arn
+  firehose_arn  = aws_kinesis_firehose_delivery_stream.newrelic_firehose_stream.arn
   output_format = "opentelemetry0.7"
 }
 
@@ -211,6 +213,7 @@ resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
   trusted_advisor {}
   vpc {}
   x_ray {}
+  s3 {}
 }
 
 resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {

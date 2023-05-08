@@ -9,7 +9,7 @@ resource "google_project_iam_binding" "project" {
   role    = "roles/serviceusage.serviceUsageConsumer"
 
   members = [
-    "serviceAccount:${var.service_account_id}",
+    "serviceAccount:${var.gcp_service_account_id}",
   ]
 }
 

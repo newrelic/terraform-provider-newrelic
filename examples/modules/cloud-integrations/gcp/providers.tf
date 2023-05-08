@@ -1,7 +1,7 @@
 terraform {
   required_providers {
-    aws = {
-      source = "hashicorp/aws"
+    google = {
+      source = "hashicorp/google"
     }
     newrelic = {
       source = "newrelic/newrelic"
