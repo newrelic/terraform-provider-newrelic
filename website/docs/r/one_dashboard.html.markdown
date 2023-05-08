@@ -61,7 +61,7 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       # Must be another dashboard GUID
       filter_current_dashboard = true
-      
+
       # color customization
       colors {
         color = "#722727"
@@ -95,8 +95,8 @@ resource "newrelic_one_dashboard" "exampledash" {
       ignore_time_range = false
       y_axis_left_zero = true
       y_axis_left_min = 0
-      y_axis_left_max = 1 
-      
+      y_axis_left_max = 1
+
       units {
         unit = "ms"
         series_overrides {
@@ -104,8 +104,8 @@ resource "newrelic_one_dashboard" "exampledash" {
           series_name = "max duration"
         }
       }
-     
-      
+
+
     }
 
     widget_markdown {
@@ -117,7 +117,7 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       text = "### Helpful Links\n\n* [New Relic One](https://one.newrelic.com)\n* [Developer Portal](https://developer.newrelic.com)"
     }
-    
+
     widget_line {
       title = "Overall CPU % Statistics"
       row = 1
@@ -127,7 +127,7 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       nrql_query {
         query = <<EOT
-SELECT average(cpuSystemPercent), average(cpuUserPercent), average(cpuIdlePercent), average(cpuIOWaitPercent) FROM SystemSample  SINCE 1 hour ago TIMESERIES 
+SELECT average(cpuSystemPercent), average(cpuUserPercent), average(cpuIdlePercent), average(cpuIOWaitPercent) FROM SystemSample  SINCE 1 hour ago TIMESERIES
 EOT
       }
       facet_show_other_series = false
@@ -161,7 +161,7 @@ EOT
       }
 
     }
-    
+
   }
 
   variable {
@@ -362,6 +362,16 @@ The following arguments are supported:
 
 ## Additional Examples
 
+### Use the New Relic CLI to convert an existing dashboard
+
+You can use the New Relic CLI to convert an existing dashboard into HCL code for use in Terraform.
+
+1. [Download and install the New Relic CLI](https://github.com/newrelic/newrelic-cli#installation--upgrades)
+2. [Export the dashboard you want to add to Terraform from the UI](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/dashboards-charts-import-export-data/#dashboards). Copy the JSON from the UI and paste it into a `.json` file.
+3. Convert the `.json` file to HCL using the CLI: `cat dashboard.json | newrelic utils terraform dashboard --label my_dashboard_resource`
+
+If you encounter any issues converting your dashboard, [please create a ticket on the New Relic CLI Github repository](https://github.com/newrelic/newrelic-cli/issues/new/choose).
+
 ### Create a two page dashboard
 
 The example below shows how you can display data for an application from a primary account and an application from a subaccount. In order to create cross-account widgets, you must use an API key from a user with admin permissions in the primary account. Please see the [`widget` attribute documentation](#cross-account-widget-help) for more details.
@@ -419,5 +429,3 @@ New Relic dashboards can be imported using their GUID, e.g.
 ```bash
 $ terraform import newrelic_one_dashboard.my_dashboard <dashboard GUID>
 ```
-
-In addition you can use the [New Relic CLI](https://github.com/newrelic/newrelic-cli#readme) to convert existing dashboards to HCL. [Copy your dashboards as JSON using the UI](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/dashboards-charts-import-export-data/), save it as a file (for example `terraform.json`), and use the following command to convert it to HCL: `cat terraform.json | newrelic utils terraform dashboard --label my_dashboard_resource`.
