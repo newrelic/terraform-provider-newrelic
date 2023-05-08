@@ -429,5 +429,3 @@ New Relic dashboards can be imported using their GUID, e.g.
 ```bash
 $ terraform import newrelic_one_dashboard.my_dashboard <dashboard GUID>
 ```
-
-In addition you can use the [New Relic CLI](https://github.com/newrelic/newrelic-cli#readme) to convert existing dashboards to HCL. [Copy your dashboards as JSON using the UI](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/dashboards-charts-import-export-data/), save it as a file (for example `terraform.json`), and use the following command to convert it to HCL: `cat terraform.json | newrelic utils terraform dashboard --label my_dashboard_resource`.
