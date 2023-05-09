@@ -28,14 +28,14 @@ Add the following module to your Terraform code, and set the variables to your d
 
 ```
 module "newrelic-aws-cloud-integrations" {
-  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/aws"
+  source = "github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/aws"
 
   newrelic_account_id     = 1234567
   newrelic_account_region = "US
   name                    = "production"
 }
 ```
-[*You can find the sourcecode for the module on Github.*](https://github.com/newrelic/terraform-provider-newrelic/examples/modules/cloud-integrations/aws)
+[*You can find the sourcecode for the module on Github.*](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/aws)
 
 
 Variables:
@@ -57,13 +57,13 @@ Add the following module to your Terraform code, and set the variables to your d
 
 ```
 module "newrelic-azure-cloud-integrations" {
-  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/azure"
+  source = "github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/azure"
 
   newrelic_account_id     = 1234567
   name                    = "production"
 }
 ```
-[*You can find the sourcecode for the module on Github.*](https://github.com/newrelic/terraform-provider-newrelic/examples/modules/cloud-integrations/azure)
+[*You can find the sourcecode for the module on Github.*](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/azure)
 
 Variables:
 
@@ -83,7 +83,7 @@ Add the following module to your Terraform code, and set the variables to your d
 
 ```
 module "newrelic-gcp-cloud-integrations" {
-  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/gcp"
+  source = "github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/gcp"
 
   newrelic_account_id     = 1234567
   name                    = "production"
@@ -91,7 +91,7 @@ module "newrelic-gcp-cloud-integrations" {
   project_id              = 1234567
 }
 ```
-[*You can find the sourcecode for the module on Github.*](https://github.com/newrelic/terraform-provider-newrelic/examples/modules/cloud-integrations/gcp)
+[*You can find the sourcecode for the module on Github.*](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/gcp)
 
 Variables:
 
