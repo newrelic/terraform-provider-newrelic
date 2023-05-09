@@ -19,7 +19,7 @@ func TestAccNewRelicDataPartitionRule_Basic(t *testing.T) {
 	resourceName := "newrelic_data_partition_rule.foo"
 	rName := acctest.RandString(7)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccLogDataPartitionsCleanup(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicDataPartitionRuleDestroy,
 		Steps: []resource.TestStep{
@@ -50,7 +50,7 @@ func TestAccNewRelicDataPartitionRule_NameUpdate(t *testing.T) {
 	resourceName := "newrelic_data_partition_rule.foo"
 	rName := acctest.RandString(7)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccLogDataPartitionsCleanup(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicDataPartitionRuleDestroy,
 		Steps: []resource.TestStep{
@@ -75,7 +75,7 @@ func TestAccNewRelicDataPartitionRule_NRQLUpdate(t *testing.T) {
 	resourceName := "newrelic_data_partition_rule.foo"
 	rName := acctest.RandString(7)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccLogDataPartitionsCleanup(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicDataPartitionRuleDestroy,
 		Steps: []resource.TestStep{
@@ -100,7 +100,7 @@ func TestAccNewRelicDataPartitionRule_DuplicateName(t *testing.T) {
 	rName := acctest.RandString(7)
 	expectedMsg, _ := regexp.Compile("DUPLICATE_DATA_PARTITION_RULE_NAME")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccLogDataPartitionsCleanup(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicDataPartitionRuleDestroy,
 		Steps: []resource.TestStep{
@@ -118,7 +118,7 @@ func TestAccNewRelicDataPartitionRule_Validation(t *testing.T) {
 	rName := acctest.RandString(7)
 	expectedMsg, _ := regexp.Compile("INVALID_DATA_PARTITION_INPUT")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccLogDataPartitionsCleanup(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicDataPartitionRuleDestroy,
 		Steps: []resource.TestStep{
