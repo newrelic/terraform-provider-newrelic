@@ -950,6 +950,18 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 			_ = d.Set("vpc", flattenCloudAwsVpcIntegration(t))
 		case *cloud.CloudAwsXrayIntegration:
 			_ = d.Set("x_ray", flattenCloudAwsXRayIntegration(t))
+		case *cloud.CloudSqsIntegration:
+			_ = d.Set("sqs", flattenCloudAwsSqsIntegration(t))
+		case *cloud.CloudEbsIntegration:
+			_ = d.Set("ebs", flattenCloudAwsEbsIntegration(t))
+		case *cloud.CloudAlbIntegration:
+			_ = d.Set("alb", flattenCloudAwsAlbIntegration(t))
+		case *cloud.CloudElasticacheIntegration:
+			_ = d.Set("elasticache", flattenCloudAwsElasticacheIntegration(t))
+		case *cloud.CloudS3Integration:
+			_ = d.Set("s3", flattenCloudAwsS3Integration(t))
+		case *cloud.CloudAwsDocdbIntegration:
+			_ = d.Set("doc_db", flattenCloudAwsDocDBIntegration(t))
 		}
 	}
 }
@@ -1026,6 +1038,81 @@ func flattenCloudAwsXRayIntegration(in *cloud.CloudAwsXrayIntegration) []interfa
 	out := make(map[string]interface{})
 
 	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAwsSqsIntegration(in *cloud.CloudSqsIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAwsEbsIntegration(in *cloud.CloudEbsIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+	out["aws_regions"] = in.AwsRegions
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAwsAlbIntegration(in *cloud.CloudAlbIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAwsElasticacheIntegration(in *cloud.CloudElasticacheIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAwsS3Integration(in *cloud.CloudS3Integration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAwsDocDBIntegration(in *cloud.CloudAwsDocdbIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
 	flattened[0] = out
