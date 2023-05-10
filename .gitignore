@@ -38,3 +38,13 @@ website/vendor
 # Ignore testing directory except for newrelic.tf
 testing/*.tf
 !testing/newrelic.tf
+
+# Ignore .json, .pem files (which could include files with credentials) in directories with Terraform Executables
+testing/*.json
+testing/*.pem
+examples/modules/cloud-integrations/aws/*.json
+examples/modules/cloud-integrations/aws/*.pem
+examples/modules/cloud-integrations/azure/*.json
+examples/modules/cloud-integrations/azure/*.pem
+examples/modules/cloud-integrations/gcp/*.json
+examples/modules/cloud-integrations/gcp/*.pem
