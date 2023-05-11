@@ -334,7 +334,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 		},
 		"evaluation delay nil": {
 			Data: map[string]interface{}{
-				"nrql":              []interface{}{nrql},
+				"nrql":             []interface{}{nrql},
 				"evaluation_delay": nil,
 			},
 			Expanded: &alerts.NrqlConditionCreateInput{
@@ -345,7 +345,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 		},
 		"evaluation delay not nil": {
 			Data: map[string]interface{}{
-				"nrql":              []interface{}{nrql},
+				"nrql":             []interface{}{nrql},
 				"evaluation_delay": 60,
 			},
 			Expanded: &alerts.NrqlConditionCreateInput{
@@ -356,7 +356,6 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				},
 			},
 		},
-
 	}
 
 	r := resourceNewRelicNrqlAlertCondition()
@@ -459,7 +458,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 				AggregationMethod: &alerts.NrqlConditionAggregationMethodTypes.Cadence,
 				AggregationDelay:  &[]int{60}[0],
 				AggregationTimer:  &[]int{60}[0],
-				EvaluationDelay: &[]int{60}[0],
+				EvaluationDelay:   &[]int{60}[0],
 			},
 			Expiration: &alerts.AlertsNrqlConditionExpiration{
 				ExpirationDuration:          &[]int{120}[0],

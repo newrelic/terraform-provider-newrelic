@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-//Checking the creation, update, import and deletion of obfuscation expression
+// Checking the creation, update, import and deletion of obfuscation expression
 func TestAccNewRelicObfuscationRule_Basic(t *testing.T) {
 	resourceName := "newrelic_obfuscation_rule.foo"
 	rName := acctest.RandString(7)
@@ -62,7 +62,7 @@ func TestAccNewRelicObfuscationRule_NameValid(t *testing.T) {
 	})
 }
 
-//if the obfuscation expression is updated
+// if the obfuscation expression is updated
 func TestAccNewRelicObfuscationRule_ExpressionUpdate(t *testing.T) {
 	resourceName := "newrelic_obfuscation_rule.foo"
 	rName := acctest.RandString(7)
@@ -87,7 +87,7 @@ func TestAccNewRelicObfuscationRule_ExpressionUpdate(t *testing.T) {
 	})
 }
 
-//actions updated
+// actions updated
 func TestAccNewRelicObfuscationRule_ActionsUpdate(t *testing.T) {
 	resourceName := "newrelic_obfuscation_rule.foo"
 	rName := acctest.RandString(7)

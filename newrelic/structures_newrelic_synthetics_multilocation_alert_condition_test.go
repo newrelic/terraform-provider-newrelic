@@ -199,7 +199,6 @@ func TestFlattenMultiLocationSyntheticsCondition(t *testing.T) {
 
 			accountID := 1
 
-
 			err := flattenMultiLocationSyntheticsCondition(tc.Flattened, accountID, d)
 			assert.NoError(t, err)
 
