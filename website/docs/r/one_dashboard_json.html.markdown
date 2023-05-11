@@ -112,12 +112,14 @@ resource "newrelic_one_dashboard_json" "bar" {
 The following example demonstrates creating a dashboard with multiple pages, with each page comprising a couple of widgets.
 ```hcl
 resource "newrelic_one_dashboard_json" "foo" {
-   json = file("dashboard.json")
+  json = templatefile("dashboard.json.tftpl", {
+    account_id = 123456
+  })
 }
 ```
 
-`dashboard.json`
-```json
+`dashboard.json.tftpl`
+```tftpl
 {
   "name": "Multi - Page Dashboard Sample",
   "description": "An example that demonstrates creating a dashboard with multiple widgets, across a couple of pages.",
@@ -149,9 +151,9 @@ resource "newrelic_one_dashboard_json" "foo" {
             "nrqlQueries": [
               {
                 "accountIds": [
-                  account_id
+                  "${account_id}"
                 ],
-                "query": "FROM Metric SELECT average(apm.service.memory.physical) as avgMem WHERE appName='Dummy App' TIMESERIES 2 days since 2 months ago"
+                "query": "FROM Metric SELECT average(apm.service.memory.physical) as avgMem WHERE appName='sampleApp' TIMESERIES 2 days since 2 months ago"
               }
             ],
             "platformOptions": {
@@ -185,7 +187,7 @@ resource "newrelic_one_dashboard_json" "foo" {
               "seriesOverrides": [
                 {
                   "color": "#418ba4",
-                  "seriesName": "Dummy App"
+                  "seriesName": "sampleApp"
                 }
               ]
             },
@@ -198,7 +200,7 @@ resource "newrelic_one_dashboard_json" "foo" {
             "nrqlQueries": [
               {
                 "accountIds": [
-                  account_id
+                  "${account_id}"
                 ],
                 "query": "select count(*) from Transaction facet appName since 1 month ago TIMESERIES 1 day"
               }
@@ -230,7 +232,7 @@ resource "newrelic_one_dashboard_json" "foo" {
             "nrqlQueries": [
               {
                 "accountIds": [
-                  account_id
+                  "${account_id}"
                 ],
                 "query": "SELECT count(*) from Transaction facet response.headers.contentType since 2 months ago"
               }
@@ -268,7 +270,7 @@ resource "newrelic_one_dashboard_json" "foo" {
             "nrqlQueries": [
               {
                 "accountIds": [
-                  account_id
+                  "${account_id}"
                 ],
                 "query": "SELECT count(*) from Log since 48 hours ago TIMESERIES 3 hours"
               }
@@ -289,7 +291,7 @@ resource "newrelic_one_dashboard_json" "foo" {
 
 The following example demonstrates using a pre-defined set of pages across a variable number of dashboards, by specifying a list of the required pages as arguments in the dashboards to be created. This helps reuse pages and the widgets they comprise, across multiple dashboards.
 
-```tf
+```hcl
 resource "newrelic_one_dashboard_json" "dashboard_one" {
   json = templatefile("dashboard.json.tftpl", {
     name        = "Multipage Dashboard One",
@@ -363,7 +365,7 @@ resource "newrelic_one_dashboard_json" "dashboard_three" {
             "accountIds": [
               account_id
             ],
-            "query": "FROM Metric SELECT average(apm.service.memory.physical) as avgMem WHERE appName='Dummy App' TIMESERIES 2 days since 2 months ago"
+            "query": "FROM Metric SELECT average(apm.service.memory.physical) as avgMem WHERE appName='sampleApp' TIMESERIES 2 days since 2 months ago"
           }
         ],
         "platformOptions": {
@@ -401,7 +403,7 @@ resource "newrelic_one_dashboard_json" "dashboard_three" {
           "seriesOverrides": [
             {
               "color": "#418ba4",
-              "seriesName": "Dummy App"
+              "seriesName": "sampleApp"
             }
           ]
         },
