@@ -116,12 +116,87 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Elem:        cloudAwsIntegrationElasticacheSchemaElem(),
 				MaxItems:    1,
 			},
+			"api_gateway": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "API Gateway integration",
+				Elem:        cloudAwsIntegrationAPIGatewaySchemaElem(),
+				MaxItems:    1,
+			},
+			"auto_scaling": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "AutoScaling integration",
+				Elem:        cloudAwsIntegrationAutoscalingSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_app_sync": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Appsync integration",
+				Elem:        cloudAwsIntegrationAppsyncSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_athena": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Athena integration",
+				Elem:        cloudAwsIntegrationAthenaSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_cognito": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Cognito integration",
+				Elem:        cloudAwsIntegrationCognitoSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_connect": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Connect integration",
+				Elem:        cloudAwsIntegrationConnectSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_direct_connect": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Direct Connect integration",
+				Elem:        cloudAwsIntegrationDirectConnectSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_fsx": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Fsx integration",
+				Elem:        cloudAwsIntegrationFsxSchemaElem(),
+				MaxItems:    1,
+			},
 		},
 	}
 }
 
 func cloudAwsIntegrationSchemaBase() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"metrics_polling_interval": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The data polling interval in seconds.",
+		},
+	}
+}
+
+func cloudAwsIntegrationSchemaBaseExtended() map[string]*schema.Schema {
+
+	return map[string]*schema.Schema{
+		"aws_regions": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Specify each AWS region that includes the resources that you want to monitor.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
 		"metrics_polling_interval": {
 			Type:        schema.TypeInt,
 			Optional:    true,
@@ -337,6 +412,111 @@ func cloudAwsIntegrationElasticacheSchemaElem() *schema.Resource {
 	}
 }
 
+// function to add schema for api gateway
+
+func cloudAwsIntegrationAPIGatewaySchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+	s["aws_regions"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Description: "Specify each AWS region that includes the resources that you want to monitor",
+		Optional:    true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	s["stage_prefixes"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
+	}
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for autoscaling
+
+func cloudAwsIntegrationAutoscalingSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for appsync
+
+func cloudAwsIntegrationAppsyncSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for athena
+
+func cloudAwsIntegrationAthenaSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for cognito
+
+func cloudAwsIntegrationCognitoSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for connect
+
+func cloudAwsIntegrationConnectSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for direct connect
+
+func cloudAwsIntegrationDirectConnectSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws fsx
+
+func cloudAwsIntegrationFsxSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
 func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
@@ -479,6 +659,70 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 			},
 			disableFunc: func(id int) {
 				cloudDisableAwsIntegration.Elasticache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"api_gateway": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.APIgateway = expandCloudAwsIntegrationsAPIGatewayInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.APIgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"auto_scaling": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Autoscaling = expandCloudAwsIntegrationAutoscalingInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Autoscaling = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_app_sync": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsAppsync = expandCloudAwsIntegrationAppsyncInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsAppsync = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_athena": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsAthena = expandCloudAwsIntegrationAthenaInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsAthena = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_cognito": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsCognito = expandCloudAwsIntegrationCognitoInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsCognito = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_connect": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsConnect = expandCloudAwsIntegrationConnectInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsConnect = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_direct_connect": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsDirectconnect = expandCloudAwsIntegrationDirectconnectInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsDirectconnect = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_fsx": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsFsx = expandCloudAwsIntegrationFsxInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsFsx = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
 			},
 		},
 	}
@@ -906,6 +1150,314 @@ func expandCloudAwsIntegrationElasticacheInput(h []interface{}, linkedAccountID 
 	return expanded
 }
 
+// Expanding the api gateway
+func expandCloudAwsIntegrationsAPIGatewayInput(b []interface{}, linkedAccountID int) []cloud.CloudAPIgatewayIntegrationInput {
+	expanded := make([]cloud.CloudAPIgatewayIntegrationInput, len(b))
+
+	for i, apiGateway := range b {
+		var apiGatewayInput cloud.CloudAPIgatewayIntegrationInput
+
+		if apiGateway == nil {
+			apiGatewayInput.LinkedAccountId = linkedAccountID
+			expanded[i] = apiGatewayInput
+			return expanded
+		}
+
+		in := apiGateway.(map[string]interface{})
+
+		apiGatewayInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			apiGatewayInput.AwsRegions = regions
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			apiGatewayInput.MetricsPollingInterval = m.(int)
+		}
+
+		if sp, ok := in["stage_prefixes"]; ok {
+			stagePrefixes := sp.([]interface{})
+			var prefixes []string
+
+			for _, prefix := range stagePrefixes {
+				prefixes = append(prefixes, prefix.(string))
+			}
+			apiGatewayInput.StagePrefixes = prefixes
+
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			apiGatewayInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			apiGatewayInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = apiGatewayInput
+	}
+
+	return expanded
+}
+
+// Expanding the auto scaling
+func expandCloudAwsIntegrationAutoscalingInput(b []interface{}, linkedAccountID int) []cloud.CloudAutoscalingIntegrationInput {
+	expanded := make([]cloud.CloudAutoscalingIntegrationInput, len(b))
+
+	for i, autoScaling := range b {
+		var autoScalingInput cloud.CloudAutoscalingIntegrationInput
+
+		if autoScaling == nil {
+			autoScalingInput.LinkedAccountId = linkedAccountID
+			expanded[i] = autoScalingInput
+			return expanded
+		}
+
+		in := autoScaling.(map[string]interface{})
+
+		autoScalingInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			autoScalingInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			autoScalingInput.AwsRegions = regions
+		}
+
+		expanded[i] = autoScalingInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws app sync
+func expandCloudAwsIntegrationAppsyncInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsAppsyncIntegrationInput {
+	expanded := make([]cloud.CloudAwsAppsyncIntegrationInput, len(b))
+
+	for i, appSync := range b {
+		var appSyncInput cloud.CloudAwsAppsyncIntegrationInput
+
+		if appSync == nil {
+			appSyncInput.LinkedAccountId = linkedAccountID
+			expanded[i] = appSyncInput
+			return expanded
+		}
+
+		in := appSync.(map[string]interface{})
+
+		appSyncInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			appSyncInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			appSyncInput.AwsRegions = regions
+		}
+
+		expanded[i] = appSyncInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws athena
+func expandCloudAwsIntegrationAthenaInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsAthenaIntegrationInput {
+	expanded := make([]cloud.CloudAwsAthenaIntegrationInput, len(b))
+
+	for i, athena := range b {
+		var athenaInput cloud.CloudAwsAthenaIntegrationInput
+
+		if athena == nil {
+			athenaInput.LinkedAccountId = linkedAccountID
+			expanded[i] = athenaInput
+			return expanded
+		}
+
+		in := athena.(map[string]interface{})
+
+		athenaInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			athenaInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			athenaInput.AwsRegions = regions
+		}
+
+		expanded[i] = athenaInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws cognito
+func expandCloudAwsIntegrationCognitoInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsCognitoIntegrationInput {
+	expanded := make([]cloud.CloudAwsCognitoIntegrationInput, len(b))
+
+	for i, cognito := range b {
+		var cognitoInput cloud.CloudAwsCognitoIntegrationInput
+
+		if cognito == nil {
+			cognitoInput.LinkedAccountId = linkedAccountID
+			expanded[i] = cognitoInput
+			return expanded
+		}
+
+		in := cognito.(map[string]interface{})
+
+		cognitoInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			cognitoInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			cognitoInput.AwsRegions = regions
+		}
+
+		expanded[i] = cognitoInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws connect
+func expandCloudAwsIntegrationConnectInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsConnectIntegrationInput {
+	expanded := make([]cloud.CloudAwsConnectIntegrationInput, len(b))
+
+	for i, connect := range b {
+		var connectInput cloud.CloudAwsConnectIntegrationInput
+
+		if connect == nil {
+			connectInput.LinkedAccountId = linkedAccountID
+			expanded[i] = connectInput
+			return expanded
+		}
+
+		in := connect.(map[string]interface{})
+
+		connectInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			connectInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			connectInput.AwsRegions = regions
+		}
+
+		expanded[i] = connectInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws direct connect
+func expandCloudAwsIntegrationDirectconnectInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsDirectconnectIntegrationInput {
+	expanded := make([]cloud.CloudAwsDirectconnectIntegrationInput, len(b))
+
+	for i, directConnect := range b {
+		var directConnectInput cloud.CloudAwsDirectconnectIntegrationInput
+
+		if directConnect == nil {
+			directConnectInput.LinkedAccountId = linkedAccountID
+			expanded[i] = directConnectInput
+			return expanded
+		}
+
+		in := directConnect.(map[string]interface{})
+
+		directConnectInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			directConnectInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			directConnectInput.AwsRegions = regions
+		}
+
+		expanded[i] = directConnectInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws fsx
+func expandCloudAwsIntegrationFsxInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsFsxIntegrationInput {
+	expanded := make([]cloud.CloudAwsFsxIntegrationInput, len(b))
+
+	for i, fsx := range b {
+		var fsxInput cloud.CloudAwsFsxIntegrationInput
+
+		if fsx == nil {
+			fsxInput.LinkedAccountId = linkedAccountID
+			expanded[i] = fsxInput
+			return expanded
+		}
+
+		in := fsx.(map[string]interface{})
+
+		fsxInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			fsxInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			fsxInput.AwsRegions = regions
+		}
+
+		expanded[i] = fsxInput
+	}
+
+	return expanded
+}
+
 func resourceNewRelicCloudAwsIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -962,6 +1514,22 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 			_ = d.Set("s3", flattenCloudAwsS3Integration(t))
 		case *cloud.CloudAwsDocdbIntegration:
 			_ = d.Set("doc_db", flattenCloudAwsDocDBIntegration(t))
+		case *cloud.CloudAPIgatewayIntegration:
+			_ = d.Set("api_gateway", flattenCloudAwsAPIGatewayIntegration(t))
+		case *cloud.CloudAutoscalingIntegration:
+			_ = d.Set("auto_scaling", flattenCloudAwsAutoScalingIntegration(t))
+		case *cloud.CloudAwsAppsyncIntegration:
+			_ = d.Set("aws_app_sync", flattenCloudAwsAppsyncIntegration(t))
+		case *cloud.CloudAwsAthenaIntegration:
+			_ = d.Set("aws_athena", flattenCloudAwsAthenaIntegration(t))
+		case *cloud.CloudAwsCognitoIntegration:
+			_ = d.Set("aws_cognito", flattenCloudAwsCognitoIntegration(t))
+		case *cloud.CloudAwsConnectIntegration:
+			_ = d.Set("aws_connect", flattenCloudAwsConnectIntegration(t))
+		case *cloud.CloudAwsDirectconnectIntegration:
+			_ = d.Set("aws_direct_connect", flattenCloudAwsDirectconnectIntegration(t))
+		case *cloud.CloudAwsFsxIntegration:
+			_ = d.Set("aws_fsx", flattenCloudAwsFsxIntegration(t))
 		}
 	}
 }
@@ -1120,6 +1688,121 @@ func flattenCloudAwsDocDBIntegration(in *cloud.CloudAwsDocdbIntegration) []inter
 	return flattened
 }
 
+// flatten for api gateway
+func flattenCloudAwsAPIGatewayIntegration(in *cloud.CloudAPIgatewayIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+	out["stage_prefixes"] = in.StagePrefixes
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for autoscaling
+func flattenCloudAwsAutoScalingIntegration(in *cloud.CloudAutoscalingIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for appsync
+func flattenCloudAwsAppsyncIntegration(in *cloud.CloudAwsAppsyncIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for athena
+func flattenCloudAwsAthenaIntegration(in *cloud.CloudAwsAthenaIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for cognito
+func flattenCloudAwsCognitoIntegration(in *cloud.CloudAwsCognitoIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for connect
+func flattenCloudAwsConnectIntegration(in *cloud.CloudAwsConnectIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for direct connect
+func flattenCloudAwsDirectconnectIntegration(in *cloud.CloudAwsDirectconnectIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for fsx
+func flattenCloudAwsFsxIntegration(in *cloud.CloudAwsFsxIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
 func resourceNewRelicCloudAwsIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
@@ -1250,6 +1933,38 @@ func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInpu
 
 	if _, ok := d.GetOk("elasticache"); ok {
 		cloudDisableAwsIntegration.Elasticache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("api_gateway"); ok {
+		cloudDisableAwsIntegration.APIgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("auto_scaling"); ok {
+		cloudDisableAwsIntegration.Autoscaling = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_app_sync"); ok {
+		cloudDisableAwsIntegration.AwsAppsync = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_athena"); ok {
+		cloudDisableAwsIntegration.AwsAthena = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_cognito"); ok {
+		cloudDisableAwsIntegration.AwsCognito = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_connect"); ok {
+		cloudDisableAwsIntegration.AwsConnect = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_direct_connect"); ok {
+		cloudDisableAwsIntegration.AwsDirectconnect = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_fsx"); ok {
+		cloudDisableAwsIntegration.AwsFsx = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	deleteInput := cloud.CloudDisableIntegrationsInput{
