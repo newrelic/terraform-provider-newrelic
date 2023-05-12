@@ -141,6 +141,32 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 			aws_regions = ["us-east-1"]
 			metrics_polling_interval = 6000
 		}
+		s3 {
+			metrics_polling_interval = 6000
+		}
+		doc_db {
+			metrics_polling_interval = 6000
+		}
+		sqs {
+			metrics_polling_interval = 6000
+			aws_regions = ["us-east-1"]
+			tag_key = "test"
+			tag_value = "test"
+		}
+		ebs {
+			metrics_polling_interval = 6000
+			aws_regions = ["us-east-1"]
+			tag_key = "test"
+			tag_value = "test"
+		}
+		alb {
+			metrics_polling_interval = 6000
+			aws_regions = ["us-east-1"]
+		}
+		elasticache {
+			metrics_polling_interval = 6000
+			aws_regions = ["us-east-1"]
+		}
 	}
 `, arn)
 }
@@ -178,6 +204,32 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		x_ray {
 			aws_regions = ["us-east-1"]
 			metrics_polling_interval = 6000
+		}
+		s3 {
+			metrics_polling_interval = 6000
+		}
+		doc_db {
+			metrics_polling_interval = 6000
+		}
+		sqs {
+			metrics_polling_interval = 6000
+			aws_regions = ["us-east-1"]
+			tag_key = "test"
+			tag_value = "test"
+		}
+		ebs {
+			metrics_polling_interval = 6000
+			aws_regions = ["us-east-1"]
+			tag_key = "test"
+			tag_value = "test"
+		}
+		alb {
+			metrics_polling_interval = 6000
+			aws_regions = ["us-east-1"]
+		}
+		elasticache {
+			metrics_polling_interval = 6000
+			aws_regions = ["us-east-1"]
 		}
 	}
 `, arn)
