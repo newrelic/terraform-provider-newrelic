@@ -1484,6 +1484,8 @@ func resourceNewRelicCloudAwsIntegrationsRead(ctx context.Context, d *schema.Res
 	return nil
 }
 
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint: gocyclo
 func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.CloudLinkedAccount) {
 	_ = d.Set("account_id", linkedAccount.NrAccountId)
 	_ = d.Set("linked_account_id", linkedAccount.ID)
@@ -1878,6 +1880,8 @@ func resourceNewRelicCloudAwsIntegrationsDelete(ctx context.Context, d *schema.R
 	return nil
 }
 
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint: gocyclo
 func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
 	cloudDisableAwsIntegration := cloud.CloudAwsDisableIntegrationsInput{}
 
