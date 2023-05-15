@@ -178,30 +178,30 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
             aws_regions = ["us-east-1"]
             metrics_polling_interval = 6000
         }
-       aws_app_sync {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
-       }
-       aws_athena {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
-       }
-       aws_cognito {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
-       }
-       aws_connect {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
-       }
-       aws_direct_connect {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
-       }
-       aws_fsx {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
-       }
+		aws_app_sync {
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
+		aws_athena {
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
+		aws_cognito {
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
+		aws_connect {
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
+		aws_direct_connect {
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
+		aws_fsx {
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
 	}
 `, arn)
 }
@@ -274,33 +274,33 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
             tag_value = "test "
         }
         auto_scaling {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
         }
-       aws_app_sync {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
-        }
-       aws_athena {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
-        }
-       aws_cognito {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
-        }
-       aws_connect {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
-        }
-       aws_direct_connect {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
-        }
-       aws_fsx {
-            aws_regions = ["us-east-1"]
-            metrics_polling_interval = 6000
-        }
+		aws_app_sync {
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
+		aws_athena {
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
+		aws_cognito {
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
+		aws_connect {
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
+		aws_direct_connect {
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
+		aws_fsx {
+			aws_regions = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
 	}
 `, arn)
 }
