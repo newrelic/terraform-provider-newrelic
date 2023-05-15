@@ -167,7 +167,7 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 			metrics_polling_interval = 6000
 			aws_regions = ["us-east-1"]
 		}
-		api_gateway{
+		api_gateway {
             metrics_polling_interval = 6000
             aws_regions = ["us-east-1"]
             stage_prefixes = [""]
@@ -266,7 +266,7 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 			metrics_polling_interval = 6000
 			aws_regions = ["us-east-1"]
 		}
-		api_gateway{
+		api_gateway {
             metrics_polling_interval = 6000
             aws_regions = ["us-east-1"]
             stage_prefixes = [""]
