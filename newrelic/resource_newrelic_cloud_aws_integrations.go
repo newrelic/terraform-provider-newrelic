@@ -88,6 +88,34 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Elem:        cloudAwsIntegrationXRaySchemaElem(),
 				MaxItems:    1,
 			},
+			"sqs": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "SQS integration",
+				Elem:        cloudAwsIntegrationSqsSchemaElem(),
+				MaxItems:    1,
+			},
+			"ebs": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "EBS integration",
+				Elem:        cloudAwsIntegrationEbsSchemaElem(),
+				MaxItems:    1,
+			},
+			"alb": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "ALB integration",
+				Elem:        cloudAwsIntegrationAlbSchemaElem(),
+				MaxItems:    1,
+			},
+			"elasticache": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Elasticache integration",
+				Elem:        cloudAwsIntegrationElasticacheSchemaElem(),
+				MaxItems:    1,
+			},
 		},
 	}
 }
@@ -217,6 +245,98 @@ func cloudAwsIntegrationXRaySchemaElem() *schema.Resource {
 	}
 }
 
+func cloudAwsIntegrationSqsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["aws_regions"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Specify each AWS region that includes the resources that you want to monitor.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func cloudAwsIntegrationEbsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["aws_regions"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Specify each AWS region that includes the resources that you want to monitor.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func cloudAwsIntegrationAlbSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["aws_regions"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Specify each AWS region that includes the resources that you want to monitor.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func cloudAwsIntegrationElasticacheSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["aws_regions"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Specify each AWS region that includes the resources that you want to monitor.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
 func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
@@ -249,6 +369,11 @@ func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.R
 	return nil
 }
 
+type enableDisableAwsIntegration struct {
+	enableFunc  func([]interface{}, int)
+	disableFunc func(int)
+}
+
 func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
 	cloudAwsIntegration := cloud.CloudAwsIntegrationsInput{}
 	cloudDisableAwsIntegration := cloud.CloudAwsDisableIntegrationsInput{}
@@ -259,52 +384,111 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 		linkedAccountID = l.(int)
 	}
 
-	if b, ok := d.GetOk("billing"); ok {
-		cloudAwsIntegration.Billing = expandCloudAwsIntegrationBillingInput(b.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("billing"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Billing = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	awsIntegrationMap := map[string]enableDisableAwsIntegration{
+		"billing": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Billing = expandCloudAwsIntegrationBillingInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Billing = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"cloudtrail": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Cloudtrail = expandCloudAwsIntegrationCloudtrailInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Cloudtrail = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"doc_db": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsDocdb = expandCloudAwsIntegrationDocDBInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsDocdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"health": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Health = expandCloudAwsIntegrationHealthInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Health = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"trusted_advisor": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Trustedadvisor = expandCloudAwsIntegrationTrustedAdvisorInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Trustedadvisor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"s3": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.S3 = expandCloudAwsIntegrationS3Input(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.S3 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"vpc": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Vpc = expandCloudAwsIntegrationVpcInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"x_ray": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsXray = expandCloudAwsIntegrationXRayInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsXray = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"sqs": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Sqs = expandCloudAwsIntegrationSqsInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Sqs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"ebs": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Ebs = expandCloudAwsIntegrationEbsInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Ebs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"alb": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Alb = expandCloudAwsIntegrationAlbInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Alb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"elasticache": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Elasticache = expandCloudAwsIntegrationElasticacheInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Elasticache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
 	}
 
-	if c, ok := d.GetOk("cloudtrail"); ok {
-		cloudAwsIntegration.Cloudtrail = expandCloudAwsIntegrationCloudtrailInput(c.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("cloudtrail"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Cloudtrail = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if t, ok := d.GetOk("doc_db"); ok {
-		cloudAwsIntegration.AwsDocdb = expandCloudAwsIntegrationDocDBInput(t.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("doc_db"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.AwsDocdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if h, ok := d.GetOk("health"); ok {
-		cloudAwsIntegration.Health = expandCloudAwsIntegrationHealthInput(h.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("health"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Health = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if t, ok := d.GetOk("trusted_advisor"); ok {
-		cloudAwsIntegration.Trustedadvisor = expandCloudAwsIntegrationTrustedAdvisorInput(t.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("trusted_advisor"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Trustedadvisor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if t, ok := d.GetOk("s3"); ok {
-		cloudAwsIntegration.S3 = expandCloudAwsIntegrationS3Input(t.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("s3"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.S3 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if v, ok := d.GetOk("vpc"); ok {
-		cloudAwsIntegration.Vpc = expandCloudAwsIntegrationVpcInput(v.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("vpc"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if x, ok := d.GetOk("x_ray"); ok {
-		cloudAwsIntegration.AwsXray = expandCloudAwsIntegrationXRayInput(x.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("x_ray"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.AwsXray = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	for key, fun := range awsIntegrationMap {
+		if v, ok := d.GetOk(key); ok {
+			fun.enableFunc(v.([]interface{}), linkedAccountID)
+		} else if o, n := d.GetChange(key); len(n.([]interface{})) > len(o.([]interface{})) {
+			fun.disableFunc(linkedAccountID)
+		}
 	}
 
 	configureInput := cloud.CloudIntegrationsInput{
@@ -566,6 +750,162 @@ func expandCloudAwsIntegrationXRayInput(x []interface{}, linkedAccountID int) []
 	return expanded
 }
 
+func expandCloudAwsIntegrationSqsInput(h []interface{}, linkedAccountID int) []cloud.CloudSqsIntegrationInput {
+	expanded := make([]cloud.CloudSqsIntegrationInput, len(h))
+
+	for i, health := range h {
+		var sqsInput cloud.CloudSqsIntegrationInput
+
+		if health == nil {
+			sqsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = sqsInput
+			return expanded
+		}
+
+		in := health.(map[string]interface{})
+
+		sqsInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			sqsInput.AwsRegions = regions
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			sqsInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			sqsInput.TagValue = tv.(string)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			sqsInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = sqsInput
+	}
+
+	return expanded
+}
+
+func expandCloudAwsIntegrationEbsInput(h []interface{}, linkedAccountID int) []cloud.CloudEbsIntegrationInput {
+	expanded := make([]cloud.CloudEbsIntegrationInput, len(h))
+
+	for i, health := range h {
+		var ebsInput cloud.CloudEbsIntegrationInput
+
+		if health == nil {
+			ebsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = ebsInput
+			return expanded
+		}
+
+		in := health.(map[string]interface{})
+
+		ebsInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			ebsInput.AwsRegions = regions
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			ebsInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			ebsInput.TagValue = tv.(string)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			ebsInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = ebsInput
+	}
+
+	return expanded
+}
+
+func expandCloudAwsIntegrationAlbInput(h []interface{}, linkedAccountID int) []cloud.CloudAlbIntegrationInput {
+	expanded := make([]cloud.CloudAlbIntegrationInput, len(h))
+
+	for i, health := range h {
+		var albInput cloud.CloudAlbIntegrationInput
+
+		if health == nil {
+			albInput.LinkedAccountId = linkedAccountID
+			expanded[i] = albInput
+			return expanded
+		}
+
+		in := health.(map[string]interface{})
+
+		albInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			albInput.AwsRegions = regions
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			albInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = albInput
+	}
+
+	return expanded
+}
+
+func expandCloudAwsIntegrationElasticacheInput(h []interface{}, linkedAccountID int) []cloud.CloudElasticacheIntegrationInput {
+	expanded := make([]cloud.CloudElasticacheIntegrationInput, len(h))
+
+	for i, health := range h {
+		var elasticacheInput cloud.CloudElasticacheIntegrationInput
+
+		if health == nil {
+			elasticacheInput.LinkedAccountId = linkedAccountID
+			expanded[i] = elasticacheInput
+			return expanded
+		}
+
+		in := health.(map[string]interface{})
+
+		elasticacheInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			elasticacheInput.AwsRegions = regions
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			elasticacheInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = elasticacheInput
+	}
+
+	return expanded
+}
+
 func resourceNewRelicCloudAwsIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -610,6 +950,18 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 			_ = d.Set("vpc", flattenCloudAwsVpcIntegration(t))
 		case *cloud.CloudAwsXrayIntegration:
 			_ = d.Set("x_ray", flattenCloudAwsXRayIntegration(t))
+		case *cloud.CloudSqsIntegration:
+			_ = d.Set("sqs", flattenCloudAwsSqsIntegration(t))
+		case *cloud.CloudEbsIntegration:
+			_ = d.Set("ebs", flattenCloudAwsEbsIntegration(t))
+		case *cloud.CloudAlbIntegration:
+			_ = d.Set("alb", flattenCloudAwsAlbIntegration(t))
+		case *cloud.CloudElasticacheIntegration:
+			_ = d.Set("elasticache", flattenCloudAwsElasticacheIntegration(t))
+		case *cloud.CloudS3Integration:
+			_ = d.Set("s3", flattenCloudAwsS3Integration(t))
+		case *cloud.CloudAwsDocdbIntegration:
+			_ = d.Set("doc_db", flattenCloudAwsDocDBIntegration(t))
 		}
 	}
 }
@@ -686,6 +1038,81 @@ func flattenCloudAwsXRayIntegration(in *cloud.CloudAwsXrayIntegration) []interfa
 	out := make(map[string]interface{})
 
 	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAwsSqsIntegration(in *cloud.CloudSqsIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAwsEbsIntegration(in *cloud.CloudEbsIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+	out["aws_regions"] = in.AwsRegions
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAwsAlbIntegration(in *cloud.CloudAlbIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAwsElasticacheIntegration(in *cloud.CloudElasticacheIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAwsS3Integration(in *cloud.CloudS3Integration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+func flattenCloudAwsDocDBIntegration(in *cloud.CloudAwsDocdbIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
 	flattened[0] = out
@@ -807,6 +1234,22 @@ func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInpu
 
 	if _, ok := d.GetOk("x_ray"); ok {
 		cloudDisableAwsIntegration.AwsXray = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("sqs"); ok {
+		cloudDisableAwsIntegration.Sqs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("ebs"); ok {
+		cloudDisableAwsIntegration.Ebs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("alb"); ok {
+		cloudDisableAwsIntegration.Alb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("elasticache"); ok {
+		cloudDisableAwsIntegration.Elasticache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	deleteInput := cloud.CloudDisableIntegrationsInput{

@@ -107,6 +107,402 @@ resource "newrelic_one_dashboard_json" "bar" {
   "variables": []
 }
 ```
+### Dashboard With Multiple Pages
+
+The following example demonstrates creating a dashboard with multiple pages, with each page comprising a couple of widgets.
+```hcl
+resource "newrelic_one_dashboard_json" "foo" {
+  json = templatefile("dashboard.json.tftpl", {
+    account_id = 123456
+  })
+}
+```
+
+`dashboard.json.tftpl`
+```tftpl
+{
+  "name": "Multi - Page Dashboard Sample",
+  "description": "An example that demonstrates creating a dashboard with multiple widgets, across a couple of pages.",
+  "permissions": "PUBLIC_READ_WRITE",
+  "pages": [
+    {
+      "name": "Memory Metrics",
+      "description": "Widgets displaying metrics on memory utilization.",
+      "widgets": [
+        {
+          "title": "Memory Utilization",
+          "layout": {
+            "column": 1,
+            "row": 1,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.line"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "legend": {
+              "enabled": true
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  "${account_id}"
+                ],
+                "query": "FROM Metric SELECT average(apm.service.memory.physical) as avgMem WHERE appName='sampleApp' TIMESERIES 2 days since 2 months ago"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            },
+            "yAxisLeft": {
+              "zero": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transaction Metrics",
+      "description": "Widgets displaying metrics on Transactions.",
+      "widgets": [
+        {
+          "title": "Total Transaction Count Across Apps",
+          "layout": {
+            "column": 1,
+            "row": 1,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.line"
+          },
+          "rawConfiguration": {
+            "colors": {
+              "seriesOverrides": [
+                {
+                  "color": "#418ba4",
+                  "seriesName": "sampleApp"
+                }
+              ]
+            },
+            "facet": {
+              "showOtherSeries": false
+            },
+            "legend": {
+              "enabled": true
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  "${account_id}"
+                ],
+                "query": "select count(*) from Transaction facet appName since 1 month ago TIMESERIES 1 day"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            },
+            "yAxisLeft": {
+              "zero": true
+            }
+          }
+        },
+        {
+          "title": "Response Headers Summary",
+          "layout": {
+            "column": 5,
+            "row": 1,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.billboard"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  "${account_id}"
+                ],
+                "query": "SELECT count(*) from Transaction facet response.headers.contentType since 2 months ago"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Log Metrics",
+      "description": "Widgets displaying metrics on Logs.",
+      "widgets": [
+        {
+          "title": "Log Tracker",
+          "layout": {
+            "column": 1,
+            "row": 1,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.stacked-bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "legend": {
+              "enabled": true
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  "${account_id}"
+                ],
+                "query": "SELECT count(*) from Log since 48 hours ago TIMESERIES 3 hours"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variables": []
+}
+```
+
+### Configuring Multiple Dashboards with a Fixed Set of Pages
+
+The following example demonstrates using a pre-defined set of pages across a variable number of dashboards, by specifying a list of the required pages as arguments in the dashboards to be created. This helps reuse pages and the widgets they comprise, across multiple dashboards.
+
+```hcl
+resource "newrelic_one_dashboard_json" "dashboard_one" {
+  json = templatefile("dashboard.json.tftpl", {
+    name        = "Multipage Dashboard One",
+    description = "The first sample multipage dashboard in a set of three.",
+    permissions = "PUBLIC_READ_WRITE",
+    pages       = ["page_one.json", "page_two.json"]
+  })
+}
+
+resource "newrelic_one_dashboard_json" "dashboard_two" {
+  json = templatefile("dashboard.json.tftpl", {
+    name        = "Multipage Dashboard Two",
+    description = "The second sample multipage dashboard in a set of three.",
+    permissions = "PUBLIC_READ_WRITE",
+    pages       = ["page_two.json", "page_three.json"]
+  })
+}
+
+resource "newrelic_one_dashboard_json" "dashboard_three" {
+  json = templatefile("dashboard.json.tftpl", {
+    name        = "Multipage Dashboard Three",
+    description = "The third sample multipage dashboard in a set of three.",
+    permissions = "PUBLIC_READ_WRITE",
+    pages       = ["page_one.json", "page_two.json", "page_three.json"]
+  })
+}
+```
+
+`dashboard.json.tftpl`
+```tftpl
+{
+  "name": "${name}",
+  "description": "${description}",
+  "permissions": "${permissions}",
+  "pages": [
+    %{ for index, page_name in pages }
+    %{ if index!=0 }, %{ endif }
+    ${ file("${page_name}") }
+    %{ endfor }
+  ]
+}
+```
+
+`page_one.json`
+```json
+{
+  "name": "Memory Metrics",
+  "description": "Widgets displaying metrics on memory utilization.",
+  "widgets": [
+    {
+      "title": "Memory Utilization",
+      "layout": {
+        "column": 1,
+        "row": 1,
+        "width": 4,
+        "height": 3
+      },
+      "linkedEntityGuids": null,
+      "visualization": {
+        "id": "viz.line"
+      },
+      "rawConfiguration": {
+        "facet": {
+          "showOtherSeries": false
+        },
+        "legend": {
+          "enabled": true
+        },
+        "nrqlQueries": [
+          {
+            "accountIds": [
+              account_id
+            ],
+            "query": "FROM Metric SELECT average(apm.service.memory.physical) as avgMem WHERE appName='sampleApp' TIMESERIES 2 days since 2 months ago"
+          }
+        ],
+        "platformOptions": {
+          "ignoreTimeRange": false
+        },
+        "yAxisLeft": {
+          "zero": true
+        }
+      }
+    }
+  ]
+} 
+```
+
+`page_two.json`
+```json
+{
+  "name": "Transaction Metrics",
+  "description": "Widgets displaying metrics on Transactions.",
+  "widgets": [
+    {
+      "title": "Total Transaction Count Across Apps",
+      "layout": {
+        "column": 1,
+        "row": 1,
+        "width": 4,
+        "height": 3
+      },
+      "linkedEntityGuids": null,
+      "visualization": {
+        "id": "viz.line"
+      },
+      "rawConfiguration": {
+        "colors": {
+          "seriesOverrides": [
+            {
+              "color": "#418ba4",
+              "seriesName": "sampleApp"
+            }
+          ]
+        },
+        "facet": {
+          "showOtherSeries": false
+        },
+        "legend": {
+          "enabled": true
+        },
+        "nrqlQueries": [
+          {
+            "accountIds": [
+              account_id
+            ],
+            "query": "select count(*) from Transaction facet appName since 1 month ago TIMESERIES 1 day"
+          }
+        ],
+        "platformOptions": {
+          "ignoreTimeRange": false
+        },
+        "yAxisLeft": {
+          "zero": true
+        }
+      }
+    },
+    {
+      "title": "Response Headers Summary",
+      "layout": {
+        "column": 5,
+        "row": 1,
+        "width": 4,
+        "height": 3
+      },
+      "linkedEntityGuids": null,
+      "visualization": {
+        "id": "viz.billboard"
+      },
+      "rawConfiguration": {
+        "facet": {
+          "showOtherSeries": false
+        },
+        "nrqlQueries": [
+          {
+            "accountIds": [
+              account_id
+            ],
+            "query": "SELECT count(*) from Transaction facet response.headers.contentType since 2 months ago"
+          }
+        ],
+        "platformOptions": {
+          "ignoreTimeRange": false
+        }
+      }
+    }
+  ]
+} 
+```
+
+`page_three.json`
+```json
+{
+  "name": "Log Metrics",
+  "description": "Widgets displaying metrics on Logs.",
+  "widgets": [
+    {
+      "title": "Log Tracker",
+      "layout": {
+        "column": 1,
+        "row": 1,
+        "width": 4,
+        "height": 3
+      },
+      "linkedEntityGuids": null,
+      "visualization": {
+        "id": "viz.stacked-bar"
+      },
+      "rawConfiguration": {
+        "facet": {
+          "showOtherSeries": false
+        },
+        "legend": {
+          "enabled": true
+        },
+        "nrqlQueries": [
+          {
+            "accountIds": [
+              account_id
+            ],
+            "query": "SELECT count(*) from Log since 48 hours ago TIMESERIES 3 hours"
+          }
+        ],
+        "platformOptions": {
+          "ignoreTimeRange": false
+        }
+      }
+    }
+  ]
+} 
+```
 ### Setting Thresholds
 
 The following example demonstrates setting thresholds on a billboard widget.
@@ -136,7 +532,7 @@ The following example demonstrates setting thresholds on a billboard widget.
             "nrqlQueries" : [
               {
                 "accountIds" : [
-                  {Your-Account-ID}
+                  account_id
                 ],
                 "query" : "SELECT count(*) from Transaction where httpResponseCode!=200 since 1 hour ago"
               }
@@ -159,6 +555,13 @@ The following example demonstrates setting thresholds on a billboard widget.
 }
 ```
 
+### More Complex Examples
+
+The following examples show more intricate use cases of creating dashboards from JSON files, using this resource.
+- [This example](https://github.com/newrelic-experimental/nr-terraform-json-dashboard-examples/blob/main/dash_composed.tf) illustrates the use of a variable list of items to create a dashboard, that may be used iteratively to populate queries and other arguments of widgets, using Terraform template files.
+- [This example](https://github.com/newrelic-experimental/nr-terraform-json-dashboard-examples/blob/main/dash_nrql_composed.tf) elaborates on the use of an apt Terraform configuration with additional dependencies, to instrument the use of values obtained from a GraphQL API response iteratively to configure widgets in the dashboard for each item in the response, using the Terraform `jsondecode` function.
+
+More of such examples may be found in ths [GitHub repository](https://github.com/newrelic-experimental/nr-terraform-json-dashboard-examples/tree/main).
 
 ## Import
 
