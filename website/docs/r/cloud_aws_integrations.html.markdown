@@ -55,65 +55,65 @@ resource "newrelic_cloud_aws_integrations" "bar" {
     aws_regions = ["region-1", "region-2"]
   }
   s3 {
-			metrics_polling_interval = 6000
-		}
-	doc_db {
-			metrics_polling_interval = 6000
-		}
-	sqs {
-			metrics_polling_interval = 6000
-			aws_regions = ["us-east-1"]
-			tag_key = "test"
-			tag_value = "test"
-		}
-	ebs {
-			metrics_polling_interval = 6000
-			aws_regions = ["us-east-1"]
-			tag_key = "test"
-			tag_value = "test"
-		}
-	alb {
-			metrics_polling_interval = 6000
-			aws_regions = ["us-east-1"]
-		}
-	elasticache {
-			metrics_polling_interval = 6000
-			aws_regions = ["us-east-1"]
-		}
-	api_gateway{
-      metrics_polling_interval = 6000
-      aws_regions = ["us-east-1"]
-      stage_prefixes = [""]
-      tag_key = "test"
-      tag_value = "test "
+    metrics_polling_interval = 6000
   }
+	doc_db {
+    metrics_polling_interval = 6000
+  }
+	sqs {
+    metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    tag_key = "test"
+    tag_value = "test"
+  }
+	ebs {
+    metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    tag_key = "test"
+    tag_value = "test"
+  }
+	alb {
+    metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+  }
+	elasticache {
+    metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+  }
+	api_gateway{
+    metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    stage_prefixes = [""]
+    tag_key = "test"
+    tag_value = "test "
+  } 
   auto_scaling {
-      aws_regions = ["us-east-1"]
-      metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
   }
   aws_app_sync {
-      aws_regions = ["us-east-1"]
-      metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
   }
   aws_athena {
-      aws_regions = ["us-east-1"]
-      metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
   }
   aws_cognito {
-      aws_regions = ["us-east-1"]
-      metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
   }
   aws_connect {
-      aws_regions = ["us-east-1"]
-      metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
   }
   aws_direct_connect {
-      aws_regions = ["us-east-1"]
-      metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
   }
   aws_fsx {
-      aws_regions = ["us-east-1"]
-      metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
   }
 }
 ```
