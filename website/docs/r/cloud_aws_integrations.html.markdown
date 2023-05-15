@@ -167,7 +167,7 @@ Some integration types support an additional set of arguments:
   * `metrics_polling_interval` - (Optional) The data polling interval in seconds.
   * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
   * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
-  * `stage_prefixes` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `stage_prefixes` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
 
 
 ## Attributes Reference
