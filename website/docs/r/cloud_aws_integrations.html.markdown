@@ -85,7 +85,7 @@ resource "newrelic_cloud_aws_integrations" "bar" {
     aws_regions = ["us-east-1"]
     stage_prefixes = [""]
     tag_key = "test"
-    tag_value = "test "
+    tag_value = "test"
   } 
   auto_scaling {
     aws_regions = ["us-east-1"]
