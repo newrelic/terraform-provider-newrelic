@@ -231,7 +231,7 @@ func cloudAwsIntegrationCloudTrailSchemaElem() *schema.Resource {
 }
 
 func cloudAwsIntegrationDocDBSchemaElem() *schema.Resource {
-	s := cloudAwsIntegrationSchemaBase()
+	s := cloudAwsIntegrationSchemaBaseExtended()
 
 	return &schema.Resource{
 		Schema: s,
@@ -936,6 +936,16 @@ func expandCloudAwsIntegrationDocDBInput(h []interface{}, linkedAccountID int) [
 		if m, ok := in["metrics_polling_interval"]; ok {
 			docDbInput.MetricsPollingInterval = m.(int)
 		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			docDbInput.AwsRegions = regions
+		}
+
 		expanded[i] = docDbInput
 	}
 
@@ -1863,6 +1873,7 @@ func flattenCloudAwsDocDBIntegration(in *cloud.CloudAwsDocdbIntegration) []inter
 
 	out := make(map[string]interface{})
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
 
 	flattened[0] = out
 

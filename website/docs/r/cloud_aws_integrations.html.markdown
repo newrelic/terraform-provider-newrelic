@@ -162,12 +162,56 @@ Some integration types support an additional set of arguments:
   * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
 * `x_ray`
   * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `s3`
+  * `fetch_extended_inventory` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `fetch_tags` - (Optional) Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
+* `doc_db`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `sqs`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+  * `fetch_extended_inventory` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `fetch_tags` - (Optional) Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `queue_prefixes` - (Optional) Specify each name or prefix for the Queues that you want to monitor. Filter values are case-sensitive.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
+* `ebs`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+  * `fetch_extended_inventory` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
+* `alb`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+  * `fetch_extended_inventory` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `fetch_tags` - (Optional) Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `load_balancer_prefixes` - (Optional) Specify each name or prefix for the LBs that you want to monitor. Filter values are case-sensitive.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
+* `elasticache`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+  * `fetch_tags` - (Optional) Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
 * `api_gateway`
   * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-  * `metrics_polling_interval` - (Optional) The data polling interval in seconds.
   * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
   * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
   * `stage_prefixes` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
+* `auto_scaling`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `aws_app_sync`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `aws_athena`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `aws_cognito`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `aws_connect`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `aws_direct_connect`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `aws_fsx`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.  
 
 
 ## Attributes Reference
