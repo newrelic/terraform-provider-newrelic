@@ -149,12 +149,13 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		  tag_value                = "test"
 		}
 		doc_db {
+		  aws_regions              = ["us-east-1"]
 		  metrics_polling_interval = 6000
 		}
 		sqs {
 		  fetch_extended_inventory = true
 		  fetch_tags               = true
-		  queue_prefixes           = [""]
+		  queue_prefixes           = ["test prefix"]
 		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
@@ -170,7 +171,7 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		alb {
 		  fetch_extended_inventory = true
 		  fetch_tags               = true
-		  load_balancer_prefixes   = [""]
+		  load_balancer_prefixes   = ["test prefix"]
 		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
@@ -186,7 +187,7 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		api_gateway {
 		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
-		  stage_prefixes           = [""]
+		  stage_prefixes           = ["test prefix"]
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
@@ -264,12 +265,13 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		  tag_value                = "test"
 		}
 		doc_db {
+		  aws_regions              = ["us-east-1"]
 		  metrics_polling_interval = 6000
 		}
 		sqs {
 		  fetch_extended_inventory = true
 		  fetch_tags               = true
-		  queue_prefixes           = [""]
+		  queue_prefixes           = ["test prefix"]
 		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
@@ -285,7 +287,7 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		alb {
 		  fetch_extended_inventory = true
 		  fetch_tags               = true
-		  load_balancer_prefixes   = [""]
+		  load_balancer_prefixes   = ["test prefix"]
 		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
@@ -301,7 +303,7 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		api_gateway {
 		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
-		  stage_prefixes           = [""]
+		  stage_prefixes           = ["test prefix"]
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
