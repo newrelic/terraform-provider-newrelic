@@ -257,6 +257,30 @@ func cloudAwsIntegrationTrustedAdvisorSchemaElem() *schema.Resource {
 func cloudAwsIntegrationS3SchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
 
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	s["fetch_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -331,13 +355,29 @@ func cloudAwsIntegrationSqsSchemaElem() *schema.Resource {
 			Type: schema.TypeString,
 		},
 	}
-
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["fetch_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["queue_prefixes"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Description: "Specify each name or prefix for the Queues that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
 	s["tag_key"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 	}
-
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -360,13 +400,16 @@ func cloudAwsIntegrationEbsSchemaElem() *schema.Resource {
 			Type: schema.TypeString,
 		},
 	}
-
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
 	s["tag_key"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
 	}
-
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -389,6 +432,34 @@ func cloudAwsIntegrationAlbSchemaElem() *schema.Resource {
 			Type: schema.TypeString,
 		},
 	}
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["fetch_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["load_balancer_prefixes"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Description: "Specify each name or prefix for the LBs that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
+	}
 
 	return &schema.Resource{
 		Schema: s,
@@ -405,6 +476,21 @@ func cloudAwsIntegrationElasticacheSchemaElem() *schema.Resource {
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
+	}
+	s["fetch_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
 	}
 
 	return &schema.Resource{
@@ -902,6 +988,22 @@ func expandCloudAwsIntegrationS3Input(t []interface{}, linkedAccountID int) []cl
 			s3Input.MetricsPollingInterval = m.(int)
 		}
 
+		if f, ok := in["fetch_extended_inventory"]; ok {
+			s3Input.FetchExtendedInventory = f.(bool)
+		}
+
+		if f, ok := in["fetch_tags"]; ok {
+			s3Input.FetchTags = f.(bool)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			s3Input.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			s3Input.TagValue = tv.(string)
+		}
+
 		expanded[i] = s3Input
 	}
 
@@ -1020,6 +1122,24 @@ func expandCloudAwsIntegrationSqsInput(h []interface{}, linkedAccountID int) []c
 			sqsInput.AwsRegions = regions
 		}
 
+		if f, ok := in["fetch_extended_inventory"]; ok {
+			sqsInput.FetchExtendedInventory = f.(bool)
+		}
+
+		if f, ok := in["fetch_tags"]; ok {
+			sqsInput.FetchTags = f.(bool)
+		}
+
+		if f, ok := in["queue_prefixes"]; ok {
+			queuePrefixes := f.([]interface{})
+			var prefixes []string
+
+			for _, prefix := range queuePrefixes {
+				prefixes = append(prefixes, prefix.(string))
+			}
+			sqsInput.QueuePrefixes = prefixes
+		}
+
 		if tk, ok := in["tag_key"]; ok {
 			sqsInput.TagKey = tk.(string)
 		}
@@ -1061,6 +1181,10 @@ func expandCloudAwsIntegrationEbsInput(h []interface{}, linkedAccountID int) []c
 				regions = append(regions, region.(string))
 			}
 			ebsInput.AwsRegions = regions
+		}
+
+		if f, ok := in["fetch_extended_inventory"]; ok {
+			ebsInput.FetchExtendedInventory = f.(bool)
 		}
 
 		if tk, ok := in["tag_key"]; ok {
@@ -1109,6 +1233,33 @@ func expandCloudAwsIntegrationAlbInput(h []interface{}, linkedAccountID int) []c
 		if m, ok := in["metrics_polling_interval"]; ok {
 			albInput.MetricsPollingInterval = m.(int)
 		}
+
+		if f, ok := in["fetch_extended_inventory"]; ok {
+			albInput.FetchExtendedInventory = f.(bool)
+		}
+
+		if ft, ok := in["fetch_tags"]; ok {
+			albInput.FetchTags = ft.(bool)
+		}
+
+		if lb, ok := in["load_balancer_prefixes"]; ok {
+			loadBalancerPrefixes := lb.([]interface{})
+			var prefixes []string
+
+			for _, prefix := range loadBalancerPrefixes {
+				prefixes = append(prefixes, prefix.(string))
+			}
+			albInput.LoadBalancerPrefixes = prefixes
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			albInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			albInput.TagValue = tv.(string)
+		}
+
 		expanded[i] = albInput
 	}
 
@@ -1141,8 +1292,20 @@ func expandCloudAwsIntegrationElasticacheInput(h []interface{}, linkedAccountID 
 			elasticacheInput.AwsRegions = regions
 		}
 
+		if ft, ok := in["fetch_tags"]; ok {
+			elasticacheInput.FetchTags = ft.(bool)
+		}
+
 		if m, ok := in["metrics_polling_interval"]; ok {
 			elasticacheInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			elasticacheInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			elasticacheInput.TagValue = tv.(string)
 		}
 		expanded[i] = elasticacheInput
 	}
@@ -1621,6 +1784,9 @@ func flattenCloudAwsSqsIntegration(in *cloud.CloudSqsIntegration) []interface{} 
 	out := make(map[string]interface{})
 
 	out["aws_regions"] = in.AwsRegions
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+	out["fetch_tags"] = in.FetchTags
+	out["queue_prefixes"] = in.QueuePrefixes
 	out["tag_key"] = in.TagKey
 	out["tag_value"] = in.TagValue
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
@@ -1635,6 +1801,7 @@ func flattenCloudAwsEbsIntegration(in *cloud.CloudEbsIntegration) []interface{} 
 
 	out := make(map[string]interface{})
 	out["aws_regions"] = in.AwsRegions
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
 	out["tag_key"] = in.TagKey
 	out["tag_value"] = in.TagValue
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
@@ -1650,6 +1817,11 @@ func flattenCloudAwsAlbIntegration(in *cloud.CloudAlbIntegration) []interface{} 
 	out := make(map[string]interface{})
 	out["aws_regions"] = in.AwsRegions
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+	out["fetch_tags"] = in.FetchTags
+	out["load_balancer_prefixes"] = in.LoadBalancerPrefixes
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 
@@ -1661,7 +1833,10 @@ func flattenCloudAwsElasticacheIntegration(in *cloud.CloudElasticacheIntegration
 
 	out := make(map[string]interface{})
 	out["aws_regions"] = in.AwsRegions
+	out["fetch_tags"] = in.FetchTags
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 
@@ -1673,6 +1848,10 @@ func flattenCloudAwsS3Integration(in *cloud.CloudS3Integration) []interface{} {
 
 	out := make(map[string]interface{})
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
 
 	flattened[0] = out
 

@@ -142,12 +142,19 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		  metrics_polling_interval = 6000
 		}
 		s3 {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
 		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
 		}
 		doc_db {
 		  metrics_polling_interval = 6000
 		}
 		sqs {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  queue_prefixes           = [""]
 		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
@@ -155,24 +162,33 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		}
 		ebs {
 		  metrics_polling_interval = 6000
+		  fetch_extended_inventory = true
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
 		alb {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  load_balancer_prefixes   = [""]
 		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
 		}
 		elasticache {
-		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
 		}
 		api_gateway {
 		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
 		  stage_prefixes           = [""]
 		  tag_key                  = "test"
-		  tag_value                = "test "
+		  tag_value                = "test"
 		}
 		auto_scaling {
 		  aws_regions              = ["us-east-1"]
@@ -241,12 +257,19 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		  metrics_polling_interval = 6000
 		}
 		s3 {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
 		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
 		}
 		doc_db {
 		  metrics_polling_interval = 6000
 		}
 		sqs {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  queue_prefixes           = [""]
 		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
@@ -254,24 +277,33 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		}
 		ebs {
 		  metrics_polling_interval = 6000
+		  fetch_extended_inventory = true
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
 		alb {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  load_balancer_prefixes   = [""]
 		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
 		}
 		elasticache {
-		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
 		}
 		api_gateway {
 		  metrics_polling_interval = 6000
 		  aws_regions              = ["us-east-1"]
 		  stage_prefixes           = [""]
 		  tag_key                  = "test"
-		  tag_value                = "test "
+		  tag_value                = "test"
 		}
 		auto_scaling {
 		  aws_regions              = ["us-east-1"]
