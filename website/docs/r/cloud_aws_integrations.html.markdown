@@ -115,6 +115,71 @@ resource "newrelic_cloud_aws_integrations" "bar" {
     aws_regions = ["us-east-1"]
     metrics_polling_interval = 6000
   }
+  aws_glue {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_kinesis_analytics {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_media_convert {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_media_package_vod {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_meta_data {
+    metrics_polling_interval = 6000
+  }
+  aws_mq {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_msk {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_neptune {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_qldb {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_route53resolver {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_states {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_tags_global {
+    metrics_polling_interval = 6000
+    }
+  aws_transit_gateway {
+    aws_regions              = ["us-east-1"]
+      metrics_polling_interval = 6000
+  }
+  aws_waf {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_wafv2 {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  cloudfront {
+    fetch_lambdas_at_edge    = true
+    fetch_tags               = true
+    metrics_polling_interval = 6000
+    tag_key                  = "test"
+    tag_value                = "test"
+  }
 }
 ```
 ## Argument Reference
@@ -143,6 +208,23 @@ The following arguments are supported:
 * `aws_connect` - (Optional) Connect integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_direct_connect` - (Optional) DirectConnect integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_fsx` - (Optional) Fsx integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_glue` - (Optional) Glue integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_kinesis_analytics` - (Optional) Kinesis Analytics integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_media_convert` - (Optional) Media Convert integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_media_package_vod` - (Optional) Media Package vod integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_meta_data` - (Optional) Meta data integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_mq` - (Optional) Mq integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_msk` - (Optional) Msk integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_neptune` - (Optional) Neptune integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_qldb` - (Optional) Qldb integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_route53resolver` - (Optional) Route53resolver integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_states` - (Optional) States integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_tags_global` - (Optional) TagsGlobal integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_transit_gateway` - (Optional) TransitGateway integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_waf` - (Optional) Waf integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_wafv2` - (Optional) Wafv2 integration. See [Integration blocks](#integration-blocks) below for details.
+* `cloudfront` - (Optional) Cloudfront integration. See [Integration blocks](#integration-blocks) below for details.
+
 
 ### `Integration` blocks
 
@@ -198,21 +280,16 @@ Some integration types support an additional set of arguments:
   * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
   * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
   * `stage_prefixes` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
-* `auto_scaling`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-* `aws_app_sync`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-* `aws_athena`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-* `aws_cognito`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-* `aws_connect`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-* `aws_direct_connect`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-* `aws_fsx`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.  
+* `cloudfront`
+  * `fetch_lambdas_at_edge` - (Optional) Specify if Lambdas@Edge should be monitored. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `fetch_tags` - (Optional) Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
 
+Below integration types supports the following common arguments.
+
+* `auto_scaling`,`aws_app_sync`,`aws_athena`,`aws_cognito`,`aws_connect`,`aws_direct_connect`,`aws_fsx`,`aws_glue`,`aws_kinesis_analytics`,`aws_media_convert`,`aws_media_package_vod`,`aws_mq`,`aws_msk`,`aws_neptune`,`aws_qldb`,`aws_route53resolver`,`aws_states`,`aws_transit_gateway`,`aws_waf`,`aws_wafv2`.    
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
 
 ## Attributes Reference
 

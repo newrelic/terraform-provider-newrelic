@@ -172,6 +172,118 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Elem:        cloudAwsIntegrationFsxSchemaElem(),
 				MaxItems:    1,
 			},
+			"aws_glue": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Glue integration",
+				Elem:        cloudAwsIntegrationGlueSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_kinesis_analytics": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Kinesis Analytics integration",
+				Elem:        cloudAwsIntegrationKinesisAnalyticsSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_media_convert": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Media Convert integration",
+				Elem:        cloudAwsIntegrationMediaConvertSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_media_package_vod": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Media PackageVod integration",
+				Elem:        cloudAwsIntegrationMediaPackageVodSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_meta_data": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws MetaData integration",
+				Elem:        cloudAwsIntegrationMetaDataSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_mq": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Mq integration",
+				Elem:        cloudAwsIntegrationMqSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_msk": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Msk integration",
+				Elem:        cloudAwsIntegrationMskSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_neptune": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Neptune integration",
+				Elem:        cloudAwsIntegrationNeptuneSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_qldb": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Qldb integration",
+				Elem:        cloudAwsIntegrationQldbSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_route53resolver": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Route53resolver integration",
+				Elem:        cloudAwsIntegrationRoute53resolverSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_states": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws states integration",
+				Elem:        cloudAwsIntegrationStatesSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_tags_global": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Tags Global integration",
+				Elem:        cloudAwsIntegrationTagsGlobalSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_transit_gateway": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Transit Gateway integration",
+				Elem:        cloudAwsIntegrationTransitGatewaySchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_waf": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Waf integration",
+				Elem:        cloudAwsIntegrationWafSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_wafv2": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Wafv2 integration",
+				Elem:        cloudAwsIntegrationWafv2SchemaElem(),
+				MaxItems:    1,
+			},
+			"cloudfront": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Cloudfront integration",
+				Elem:        cloudAwsIntegrationCloudfrontSchemaElem(),
+				MaxItems:    1,
+			},
 		},
 	}
 }
@@ -603,6 +715,187 @@ func cloudAwsIntegrationFsxSchemaElem() *schema.Resource {
 	}
 }
 
+// function to add schema for aws glue
+
+func cloudAwsIntegrationGlueSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws kinesis analytics
+
+func cloudAwsIntegrationKinesisAnalyticsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws media convert
+
+func cloudAwsIntegrationMediaConvertSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws media package vod
+
+func cloudAwsIntegrationMediaPackageVodSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws meta data
+
+func cloudAwsIntegrationMetaDataSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws mq
+
+func cloudAwsIntegrationMqSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws msk
+
+func cloudAwsIntegrationMskSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws neptune
+
+func cloudAwsIntegrationNeptuneSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws qldb
+
+func cloudAwsIntegrationQldbSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws route53resolver
+
+func cloudAwsIntegrationRoute53resolverSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws states
+
+func cloudAwsIntegrationStatesSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws tags global
+
+func cloudAwsIntegrationTagsGlobalSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws transit gateway
+
+func cloudAwsIntegrationTransitGatewaySchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws waf
+
+func cloudAwsIntegrationWafSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for aws waf v2
+
+func cloudAwsIntegrationWafv2SchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for cloudfront
+
+func cloudAwsIntegrationCloudfrontSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["fetch_lambdas_at_edge"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if Lambdas@Edge should be monitored. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["fetch_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
 func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
@@ -809,6 +1102,134 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 			},
 			disableFunc: func(id int) {
 				cloudDisableAwsIntegration.AwsFsx = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_glue": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsGlue = expandCloudAwsIntegrationGlueInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsGlue = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_kinesis_analytics": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsKinesisanalytics = expandCloudAwsIntegrationKinesisAnalyticsInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsKinesisanalytics = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_media_convert": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsMediaconvert = expandCloudAwsIntegrationMediaConvertInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsMediaconvert = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_media_package_vod": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsMediapackagevod = expandCloudAwsIntegrationMediaPackageVodInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsMediapackagevod = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_meta_data": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsMetadata = expandCloudAwsIntegrationMetaDataInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsMetadata = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_mq": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsMq = expandCloudAwsIntegrationMqInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsMq = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_msk": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsMsk = expandCloudAwsIntegrationMskInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsMsk = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_neptune": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsNeptune = expandCloudAwsIntegrationNeptuneInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsNeptune = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_qldb": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsQldb = expandCloudAwsIntegrationQldbInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsQldb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_route53resolver": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsRoute53resolver = expandCloudAwsIntegrationRoute53resolverInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsRoute53resolver = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_states": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsStates = expandCloudAwsIntegrationStatesInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsStates = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_tags_global": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsTagsGlobal = expandCloudAwsIntegrationTagsGlobalInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsTagsGlobal = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_transit_gateway": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsTransitgateway = expandCloudAwsIntegrationTransitGatewayInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsTransitgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_waf": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsWaf = expandCloudAwsIntegrationWafInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsWaf = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"aws_wafv2": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsWafv2 = expandCloudAwsIntegrationWafv2Input(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsWafv2 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"cloudfront": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Cloudfront = expandCloudAwsIntegrationCloudfrontInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Cloudfront = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
 			},
 		},
 	}
@@ -1631,6 +2052,571 @@ func expandCloudAwsIntegrationFsxInput(b []interface{}, linkedAccountID int) []c
 	return expanded
 }
 
+// Expanding the aws glue
+func expandCloudAwsIntegrationGlueInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsGlueIntegrationInput {
+	expanded := make([]cloud.CloudAwsGlueIntegrationInput, len(b))
+
+	for i, glue := range b {
+		var glueInput cloud.CloudAwsGlueIntegrationInput
+
+		if glue == nil {
+			glueInput.LinkedAccountId = linkedAccountID
+			expanded[i] = glueInput
+			return expanded
+		}
+
+		in := glue.(map[string]interface{})
+
+		glueInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			glueInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			glueInput.AwsRegions = regions
+		}
+
+		expanded[i] = glueInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws kinesis analytics
+func expandCloudAwsIntegrationKinesisAnalyticsInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsKinesisanalyticsIntegrationInput {
+	expanded := make([]cloud.CloudAwsKinesisanalyticsIntegrationInput, len(b))
+
+	for i, kinesisAnalytics := range b {
+		var kinesisAnalyticsInput cloud.CloudAwsKinesisanalyticsIntegrationInput
+
+		if kinesisAnalytics == nil {
+			kinesisAnalyticsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = kinesisAnalyticsInput
+			return expanded
+		}
+
+		in := kinesisAnalytics.(map[string]interface{})
+
+		kinesisAnalyticsInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			kinesisAnalyticsInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			kinesisAnalyticsInput.AwsRegions = regions
+		}
+
+		expanded[i] = kinesisAnalyticsInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws media convert
+func expandCloudAwsIntegrationMediaConvertInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsMediaconvertIntegrationInput {
+	expanded := make([]cloud.CloudAwsMediaconvertIntegrationInput, len(b))
+
+	for i, mediaConvert := range b {
+		var mediaConvertInput cloud.CloudAwsMediaconvertIntegrationInput
+
+		if mediaConvert == nil {
+			mediaConvertInput.LinkedAccountId = linkedAccountID
+			expanded[i] = mediaConvertInput
+			return expanded
+		}
+
+		in := mediaConvert.(map[string]interface{})
+
+		mediaConvertInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			mediaConvertInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			mediaConvertInput.AwsRegions = regions
+		}
+
+		expanded[i] = mediaConvertInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws media package vod
+func expandCloudAwsIntegrationMediaPackageVodInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsMediapackagevodIntegrationInput {
+	expanded := make([]cloud.CloudAwsMediapackagevodIntegrationInput, len(b))
+
+	for i, mediaPackageVod := range b {
+		var mediaPackageVodInput cloud.CloudAwsMediapackagevodIntegrationInput
+
+		if mediaPackageVod == nil {
+			mediaPackageVodInput.LinkedAccountId = linkedAccountID
+			expanded[i] = mediaPackageVodInput
+			return expanded
+		}
+
+		in := mediaPackageVod.(map[string]interface{})
+
+		mediaPackageVodInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			mediaPackageVodInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			mediaPackageVodInput.AwsRegions = regions
+		}
+
+		expanded[i] = mediaPackageVodInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws meta data
+func expandCloudAwsIntegrationMetaDataInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsMetadataIntegrationInput {
+	expanded := make([]cloud.CloudAwsMetadataIntegrationInput, len(b))
+
+	for i, metaData := range b {
+		var metaDataInput cloud.CloudAwsMetadataIntegrationInput
+
+		if metaData == nil {
+			metaDataInput.LinkedAccountId = linkedAccountID
+			expanded[i] = metaDataInput
+			return expanded
+		}
+
+		in := metaData.(map[string]interface{})
+
+		metaDataInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			metaDataInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = metaDataInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws mq
+func expandCloudAwsIntegrationMqInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsMqIntegrationInput {
+	expanded := make([]cloud.CloudAwsMqIntegrationInput, len(b))
+
+	for i, mq := range b {
+		var mqInput cloud.CloudAwsMqIntegrationInput
+
+		if mq == nil {
+			mqInput.LinkedAccountId = linkedAccountID
+			expanded[i] = mqInput
+			return expanded
+		}
+
+		in := mq.(map[string]interface{})
+
+		mqInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			mqInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			mqInput.AwsRegions = regions
+		}
+
+		expanded[i] = mqInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws msk
+func expandCloudAwsIntegrationMskInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsMskIntegrationInput {
+	expanded := make([]cloud.CloudAwsMskIntegrationInput, len(b))
+
+	for i, msk := range b {
+		var mskInput cloud.CloudAwsMskIntegrationInput
+
+		if msk == nil {
+			mskInput.LinkedAccountId = linkedAccountID
+			expanded[i] = mskInput
+			return expanded
+		}
+
+		in := msk.(map[string]interface{})
+
+		mskInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			mskInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			mskInput.AwsRegions = regions
+		}
+
+		expanded[i] = mskInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws neptune
+func expandCloudAwsIntegrationNeptuneInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsNeptuneIntegrationInput {
+	expanded := make([]cloud.CloudAwsNeptuneIntegrationInput, len(b))
+
+	for i, neptune := range b {
+		var neptuneInput cloud.CloudAwsNeptuneIntegrationInput
+
+		if neptune == nil {
+			neptuneInput.LinkedAccountId = linkedAccountID
+			expanded[i] = neptuneInput
+			return expanded
+		}
+
+		in := neptune.(map[string]interface{})
+
+		neptuneInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			neptuneInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			neptuneInput.AwsRegions = regions
+		}
+
+		expanded[i] = neptuneInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws qldb
+func expandCloudAwsIntegrationQldbInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsQldbIntegrationInput {
+	expanded := make([]cloud.CloudAwsQldbIntegrationInput, len(b))
+
+	for i, qldb := range b {
+		var qldbInput cloud.CloudAwsQldbIntegrationInput
+
+		if qldb == nil {
+			qldbInput.LinkedAccountId = linkedAccountID
+			expanded[i] = qldbInput
+			return expanded
+		}
+
+		in := qldb.(map[string]interface{})
+
+		qldbInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			qldbInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			qldbInput.AwsRegions = regions
+		}
+
+		expanded[i] = qldbInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws route53resolver
+func expandCloudAwsIntegrationRoute53resolverInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsRoute53resolverIntegrationInput {
+	expanded := make([]cloud.CloudAwsRoute53resolverIntegrationInput, len(b))
+
+	for i, route53resolver := range b {
+		var route53resolverInput cloud.CloudAwsRoute53resolverIntegrationInput
+
+		if route53resolver == nil {
+			route53resolverInput.LinkedAccountId = linkedAccountID
+			expanded[i] = route53resolverInput
+			return expanded
+		}
+
+		in := route53resolver.(map[string]interface{})
+
+		route53resolverInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			route53resolverInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			route53resolverInput.AwsRegions = regions
+		}
+
+		expanded[i] = route53resolverInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws states
+func expandCloudAwsIntegrationStatesInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsStatesIntegrationInput {
+	expanded := make([]cloud.CloudAwsStatesIntegrationInput, len(b))
+
+	for i, states := range b {
+		var statesInput cloud.CloudAwsStatesIntegrationInput
+
+		if states == nil {
+			statesInput.LinkedAccountId = linkedAccountID
+			expanded[i] = statesInput
+			return expanded
+		}
+
+		in := states.(map[string]interface{})
+
+		statesInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			statesInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			statesInput.AwsRegions = regions
+		}
+
+		expanded[i] = statesInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws tags global
+func expandCloudAwsIntegrationTagsGlobalInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsTagsGlobalIntegrationInput {
+	expanded := make([]cloud.CloudAwsTagsGlobalIntegrationInput, len(b))
+
+	for i, tagsGlobal := range b {
+		var tagsGlobalInput cloud.CloudAwsTagsGlobalIntegrationInput
+
+		if tagsGlobal == nil {
+			tagsGlobalInput.LinkedAccountId = linkedAccountID
+			expanded[i] = tagsGlobalInput
+			return expanded
+		}
+
+		in := tagsGlobal.(map[string]interface{})
+
+		tagsGlobalInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			tagsGlobalInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = tagsGlobalInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws transit gateway
+func expandCloudAwsIntegrationTransitGatewayInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsTransitgatewayIntegrationInput {
+	expanded := make([]cloud.CloudAwsTransitgatewayIntegrationInput, len(b))
+
+	for i, transitGateway := range b {
+		var transitGatewayInput cloud.CloudAwsTransitgatewayIntegrationInput
+
+		if transitGateway == nil {
+			transitGatewayInput.LinkedAccountId = linkedAccountID
+			expanded[i] = transitGatewayInput
+			return expanded
+		}
+
+		in := transitGateway.(map[string]interface{})
+
+		transitGatewayInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			transitGatewayInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			transitGatewayInput.AwsRegions = regions
+		}
+
+		expanded[i] = transitGatewayInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws waf
+func expandCloudAwsIntegrationWafInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsWafIntegrationInput {
+	expanded := make([]cloud.CloudAwsWafIntegrationInput, len(b))
+
+	for i, waf := range b {
+		var wafInput cloud.CloudAwsWafIntegrationInput
+
+		if waf == nil {
+			wafInput.LinkedAccountId = linkedAccountID
+			expanded[i] = wafInput
+			return expanded
+		}
+
+		in := waf.(map[string]interface{})
+
+		wafInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			wafInput.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			wafInput.AwsRegions = regions
+		}
+
+		expanded[i] = wafInput
+	}
+
+	return expanded
+}
+
+// Expanding the aws wafv2
+func expandCloudAwsIntegrationWafv2Input(b []interface{}, linkedAccountID int) []cloud.CloudAwsWafv2IntegrationInput {
+	expanded := make([]cloud.CloudAwsWafv2IntegrationInput, len(b))
+
+	for i, wafv2 := range b {
+		var wafv2Input cloud.CloudAwsWafv2IntegrationInput
+
+		if wafv2 == nil {
+			wafv2Input.LinkedAccountId = linkedAccountID
+			expanded[i] = wafv2Input
+			return expanded
+		}
+
+		in := wafv2.(map[string]interface{})
+
+		wafv2Input.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			wafv2Input.MetricsPollingInterval = m.(int)
+		}
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			wafv2Input.AwsRegions = regions
+		}
+
+		expanded[i] = wafv2Input
+	}
+
+	return expanded
+}
+
+// Expanding the cloudfront
+func expandCloudAwsIntegrationCloudfrontInput(b []interface{}, linkedAccountID int) []cloud.CloudCloudfrontIntegrationInput {
+	expanded := make([]cloud.CloudCloudfrontIntegrationInput, len(b))
+
+	for i, cloudfront := range b {
+		var cloudfrontInput cloud.CloudCloudfrontIntegrationInput
+
+		if cloudfront == nil {
+			cloudfrontInput.LinkedAccountId = linkedAccountID
+			expanded[i] = cloudfrontInput
+			return expanded
+		}
+
+		in := cloudfront.(map[string]interface{})
+
+		cloudfrontInput.LinkedAccountId = linkedAccountID
+
+		if ft, ok := in["fetch_lambdas_at_edge"]; ok {
+			cloudfrontInput.FetchLambdasAtEdge = ft.(bool)
+		}
+
+		if ft, ok := in["fetch_tags"]; ok {
+			cloudfrontInput.FetchTags = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			cloudfrontInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			cloudfrontInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			cloudfrontInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = cloudfrontInput
+	}
+
+	return expanded
+}
+
 func resourceNewRelicCloudAwsIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -1705,6 +2691,38 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 			_ = d.Set("aws_direct_connect", flattenCloudAwsDirectconnectIntegration(t))
 		case *cloud.CloudAwsFsxIntegration:
 			_ = d.Set("aws_fsx", flattenCloudAwsFsxIntegration(t))
+		case *cloud.CloudAwsGlueIntegration:
+			_ = d.Set("aws_glue", flattenCloudAwsGlueIntegration(t))
+		case *cloud.CloudAwsKinesisanalyticsIntegration:
+			_ = d.Set("aws_kinesis_analytics", flattenCloudAwsKinesisAnalyticsIntegration(t))
+		case *cloud.CloudAwsMediaconvertIntegration:
+			_ = d.Set("aws_media_convert", flattenCloudAwsMediaConvertIntegration(t))
+		case *cloud.CloudAwsMediapackagevodIntegration:
+			_ = d.Set("aws_media_package_vod", flattenCloudAwsMediaPackageVodIntegration(t))
+		case *cloud.CloudAwsMetadataIntegration:
+			_ = d.Set("aws_meta_data", flattenCloudAwsMetaDataIntegration(t))
+		case *cloud.CloudAwsMqIntegration:
+			_ = d.Set("aws_mq", flattenCloudAwsMqIntegration(t))
+		case *cloud.CloudAwsMskIntegration:
+			_ = d.Set("aws_msk", flattenCloudAwsMskIntegration(t))
+		case *cloud.CloudAwsNeptuneIntegration:
+			_ = d.Set("aws_neptune", flattenCloudAwsNeptuneIntegration(t))
+		case *cloud.CloudAwsQldbIntegration:
+			_ = d.Set("aws_qldb", flattenCloudAwsQldbIntegration(t))
+		case *cloud.CloudAwsRoute53resolverIntegration:
+			_ = d.Set("aws_route53resolver", flattenCloudAwsRoute53resolverIntegration(t))
+		case *cloud.CloudAwsStatesIntegration:
+			_ = d.Set("aws_states", flattenCloudAwsStatesIntegration(t))
+		case *cloud.CloudAwsTagsGlobalIntegration:
+			_ = d.Set("aws_tags_global", flattenCloudAwsTagsGlobalIntegration(t))
+		case *cloud.CloudAwsTransitgatewayIntegration:
+			_ = d.Set("aws_transit_gateway", flattenCloudAwsTransitGatewayIntegration(t))
+		case *cloud.CloudAwsWafIntegration:
+			_ = d.Set("aws_waf", flattenCloudAwsWafIntegration(t))
+		case *cloud.CloudAwsWafv2Integration:
+			_ = d.Set("aws_wafv2", flattenCloudAwsWafv2Integration(t))
+		case *cloud.CloudCloudfrontIntegration:
+			_ = d.Set("cloudfront", flattenCloudCloudfrontIntegration(t))
 		}
 	}
 }
@@ -1995,6 +3013,229 @@ func flattenCloudAwsFsxIntegration(in *cloud.CloudAwsFsxIntegration) []interface
 	return flattened
 }
 
+// flatten for glue
+func flattenCloudAwsGlueIntegration(in *cloud.CloudAwsGlueIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for kinesis analytics
+func flattenCloudAwsKinesisAnalyticsIntegration(in *cloud.CloudAwsKinesisanalyticsIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for media convert
+func flattenCloudAwsMediaConvertIntegration(in *cloud.CloudAwsMediaconvertIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for media package vod
+func flattenCloudAwsMediaPackageVodIntegration(in *cloud.CloudAwsMediapackagevodIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for meta data
+func flattenCloudAwsMetaDataIntegration(in *cloud.CloudAwsMetadataIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for mq
+func flattenCloudAwsMqIntegration(in *cloud.CloudAwsMqIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for msk
+func flattenCloudAwsMskIntegration(in *cloud.CloudAwsMskIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for neptune
+func flattenCloudAwsNeptuneIntegration(in *cloud.CloudAwsNeptuneIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for qldb
+func flattenCloudAwsQldbIntegration(in *cloud.CloudAwsQldbIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for route53resolver
+func flattenCloudAwsRoute53resolverIntegration(in *cloud.CloudAwsRoute53resolverIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for aws states
+func flattenCloudAwsStatesIntegration(in *cloud.CloudAwsStatesIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for aws tags global
+func flattenCloudAwsTagsGlobalIntegration(in *cloud.CloudAwsTagsGlobalIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for transit gateway
+func flattenCloudAwsTransitGatewayIntegration(in *cloud.CloudAwsTransitgatewayIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for waf
+func flattenCloudAwsWafIntegration(in *cloud.CloudAwsWafIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for wafv2
+func flattenCloudAwsWafv2Integration(in *cloud.CloudAwsWafv2Integration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["aws_regions"] = in.AwsRegions
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for cloudfront
+func flattenCloudCloudfrontIntegration(in *cloud.CloudCloudfrontIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_lambdas_at_edge"] = in.FetchLambdasAtEdge
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
 func resourceNewRelicCloudAwsIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
@@ -2159,6 +3400,70 @@ func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInpu
 
 	if _, ok := d.GetOk("aws_fsx"); ok {
 		cloudDisableAwsIntegration.AwsFsx = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_glue"); ok {
+		cloudDisableAwsIntegration.AwsGlue = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_kinesis_analytics"); ok {
+		cloudDisableAwsIntegration.AwsKinesisanalytics = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_media_convert"); ok {
+		cloudDisableAwsIntegration.AwsMediaconvert = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_media_package_vod"); ok {
+		cloudDisableAwsIntegration.AwsMediapackagevod = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_meta_data"); ok {
+		cloudDisableAwsIntegration.AwsMetadata = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_mq"); ok {
+		cloudDisableAwsIntegration.AwsMq = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_msk"); ok {
+		cloudDisableAwsIntegration.AwsMsk = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_neptune"); ok {
+		cloudDisableAwsIntegration.AwsNeptune = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_qldb"); ok {
+		cloudDisableAwsIntegration.AwsQldb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_route53resolver"); ok {
+		cloudDisableAwsIntegration.AwsRoute53resolver = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_states"); ok {
+		cloudDisableAwsIntegration.AwsStates = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_tags_global"); ok {
+		cloudDisableAwsIntegration.AwsTagsGlobal = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_transit_gateway"); ok {
+		cloudDisableAwsIntegration.AwsTransitgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_waf"); ok {
+		cloudDisableAwsIntegration.AwsWaf = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("aws_wafv2"); ok {
+		cloudDisableAwsIntegration.AwsWafv2 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("cloudfront"); ok {
+		cloudDisableAwsIntegration.Cloudfront = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	deleteInput := cloud.CloudDisableIntegrationsInput{

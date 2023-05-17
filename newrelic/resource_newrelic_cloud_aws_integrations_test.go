@@ -219,6 +219,71 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		  aws_regions              = ["us-east-1"]
 		  metrics_polling_interval = 6000
 		}
+		aws_glue {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_kinesis_analytics {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_media_convert {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_media_package_vod {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_meta_data {
+		  metrics_polling_interval = 6000
+		}
+		aws_mq {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_msk {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_neptune {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_qldb {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_route53resolver {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_states {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_tags_global {
+		  metrics_polling_interval = 6000
+		 }
+		aws_transit_gateway {
+		  aws_regions              = ["us-east-1"]
+	      metrics_polling_interval = 6000
+		}
+		aws_waf {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_wafv2 {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		cloudfront {
+		  fetch_lambdas_at_edge    = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
 	  }
 `, arn)
 }
@@ -334,6 +399,71 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		aws_fsx {
 		  aws_regions              = ["us-east-1"]
 		  metrics_polling_interval = 6000
+		}
+		aws_glue {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_kinesis_analytics {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_media_convert {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_media_package_vod {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_meta_data {
+		  metrics_polling_interval = 6000
+		}
+		aws_mq {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_msk {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_neptune {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_qldb {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_route53resolver {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_states {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_tags_global {
+		  metrics_polling_interval = 6000
+		}
+		aws_transit_gateway {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_waf {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_wafv2 {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		cloudfront {
+		  fetch_lambdas_at_edge    = true
+		  fetch_tags               = true
+	      metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
 		}
 	  }
 `, arn)
