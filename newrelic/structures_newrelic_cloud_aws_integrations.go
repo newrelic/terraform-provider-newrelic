@@ -1,11 +1,6 @@
 package newrelic
 
 import (
-	"context"
-	"strconv"
-	"strings"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 )
@@ -557,6 +552,8 @@ type enableDisableAwsIntegration struct {
 	disableFunc func(int)
 }
 
+// Expanding the Billing input
+
 func expandCloudAwsIntegrationBillingInput(b []interface{}, linkedAccountID int) []cloud.CloudBillingIntegrationInput {
 	expanded := make([]cloud.CloudBillingIntegrationInput, len(b))
 
@@ -581,6 +578,8 @@ func expandCloudAwsIntegrationBillingInput(b []interface{}, linkedAccountID int)
 
 	return expanded
 }
+
+// Expanding the Cloud Trail input
 
 func expandCloudAwsIntegrationCloudtrailInput(c []interface{}, linkedAccountID int) []cloud.CloudCloudtrailIntegrationInput {
 	expanded := make([]cloud.CloudCloudtrailIntegrationInput, len(c))
@@ -617,6 +616,8 @@ func expandCloudAwsIntegrationCloudtrailInput(c []interface{}, linkedAccountID i
 	return expanded
 }
 
+// Expanding the Health input
+
 func expandCloudAwsIntegrationHealthInput(h []interface{}, linkedAccountID int) []cloud.CloudHealthIntegrationInput {
 	expanded := make([]cloud.CloudHealthIntegrationInput, len(h))
 
@@ -641,6 +642,8 @@ func expandCloudAwsIntegrationHealthInput(h []interface{}, linkedAccountID int) 
 
 	return expanded
 }
+
+// Expanding the Doc DB input
 
 func expandCloudAwsIntegrationDocDBInput(h []interface{}, linkedAccountID int) []cloud.CloudAwsDocdbIntegrationInput {
 	expanded := make([]cloud.CloudAwsDocdbIntegrationInput, len(h))
@@ -677,6 +680,8 @@ func expandCloudAwsIntegrationDocDBInput(h []interface{}, linkedAccountID int) [
 	return expanded
 }
 
+// Expanding the Trusted Advisor input
+
 func expandCloudAwsIntegrationTrustedAdvisorInput(t []interface{}, linkedAccountID int) []cloud.CloudTrustedadvisorIntegrationInput {
 	expanded := make([]cloud.CloudTrustedadvisorIntegrationInput, len(t))
 
@@ -702,6 +707,8 @@ func expandCloudAwsIntegrationTrustedAdvisorInput(t []interface{}, linkedAccount
 
 	return expanded
 }
+
+// Expanding the S3 input
 
 func expandCloudAwsIntegrationS3Input(t []interface{}, linkedAccountID int) []cloud.CloudS3IntegrationInput {
 	expanded := make([]cloud.CloudS3IntegrationInput, len(t))
@@ -744,6 +751,8 @@ func expandCloudAwsIntegrationS3Input(t []interface{}, linkedAccountID int) []cl
 
 	return expanded
 }
+
+// Expanding the VPC input
 
 func expandCloudAwsIntegrationVpcInput(v []interface{}, linkedAccountID int) []cloud.CloudVpcIntegrationInput {
 	expanded := make([]cloud.CloudVpcIntegrationInput, len(v))
@@ -796,6 +805,8 @@ func expandCloudAwsIntegrationVpcInput(v []interface{}, linkedAccountID int) []c
 	return expanded
 }
 
+// Expanding the XRay input
+
 func expandCloudAwsIntegrationXRayInput(x []interface{}, linkedAccountID int) []cloud.CloudAwsXrayIntegrationInput {
 	expanded := make([]cloud.CloudAwsXrayIntegrationInput, len(x))
 
@@ -830,6 +841,8 @@ func expandCloudAwsIntegrationXRayInput(x []interface{}, linkedAccountID int) []
 
 	return expanded
 }
+
+// Expanding the Sqs input
 
 func expandCloudAwsIntegrationSqsInput(h []interface{}, linkedAccountID int) []cloud.CloudSqsIntegrationInput {
 	expanded := make([]cloud.CloudSqsIntegrationInput, len(h))
@@ -892,6 +905,8 @@ func expandCloudAwsIntegrationSqsInput(h []interface{}, linkedAccountID int) []c
 	return expanded
 }
 
+// Expanding the Ebs input
+
 func expandCloudAwsIntegrationEbsInput(h []interface{}, linkedAccountID int) []cloud.CloudEbsIntegrationInput {
 	expanded := make([]cloud.CloudEbsIntegrationInput, len(h))
 
@@ -938,6 +953,8 @@ func expandCloudAwsIntegrationEbsInput(h []interface{}, linkedAccountID int) []c
 
 	return expanded
 }
+
+// Expanding the Alb input
 
 func expandCloudAwsIntegrationAlbInput(h []interface{}, linkedAccountID int) []cloud.CloudAlbIntegrationInput {
 	expanded := make([]cloud.CloudAlbIntegrationInput, len(h))
@@ -1001,6 +1018,8 @@ func expandCloudAwsIntegrationAlbInput(h []interface{}, linkedAccountID int) []c
 	return expanded
 }
 
+// Expanding the Elasticache input
+
 func expandCloudAwsIntegrationElasticacheInput(h []interface{}, linkedAccountID int) []cloud.CloudElasticacheIntegrationInput {
 	expanded := make([]cloud.CloudElasticacheIntegrationInput, len(h))
 
@@ -1048,7 +1067,8 @@ func expandCloudAwsIntegrationElasticacheInput(h []interface{}, linkedAccountID 
 	return expanded
 }
 
-// Expanding the api gateway
+// Expanding the api gateway input
+
 func expandCloudAwsIntegrationsAPIGatewayInput(b []interface{}, linkedAccountID int) []cloud.CloudAPIgatewayIntegrationInput {
 	expanded := make([]cloud.CloudAPIgatewayIntegrationInput, len(b))
 
@@ -1104,7 +1124,8 @@ func expandCloudAwsIntegrationsAPIGatewayInput(b []interface{}, linkedAccountID 
 	return expanded
 }
 
-// Expanding the auto scaling
+// Expanding the auto scaling input
+
 func expandCloudAwsIntegrationAutoscalingInput(b []interface{}, linkedAccountID int) []cloud.CloudAutoscalingIntegrationInput {
 	expanded := make([]cloud.CloudAutoscalingIntegrationInput, len(b))
 
@@ -1140,7 +1161,8 @@ func expandCloudAwsIntegrationAutoscalingInput(b []interface{}, linkedAccountID 
 	return expanded
 }
 
-// Expanding the aws app sync
+// Expanding the aws app sync input
+
 func expandCloudAwsIntegrationAppsyncInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsAppsyncIntegrationInput {
 	expanded := make([]cloud.CloudAwsAppsyncIntegrationInput, len(b))
 
@@ -1176,7 +1198,8 @@ func expandCloudAwsIntegrationAppsyncInput(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
-// Expanding the aws athena
+// Expanding the aws athena input
+
 func expandCloudAwsIntegrationAthenaInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsAthenaIntegrationInput {
 	expanded := make([]cloud.CloudAwsAthenaIntegrationInput, len(b))
 
@@ -1212,7 +1235,8 @@ func expandCloudAwsIntegrationAthenaInput(b []interface{}, linkedAccountID int) 
 	return expanded
 }
 
-// Expanding the aws cognito
+// Expanding the aws cognito input
+
 func expandCloudAwsIntegrationCognitoInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsCognitoIntegrationInput {
 	expanded := make([]cloud.CloudAwsCognitoIntegrationInput, len(b))
 
@@ -1248,7 +1272,8 @@ func expandCloudAwsIntegrationCognitoInput(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
-// Expanding the aws connect
+// Expanding the aws connect input
+
 func expandCloudAwsIntegrationConnectInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsConnectIntegrationInput {
 	expanded := make([]cloud.CloudAwsConnectIntegrationInput, len(b))
 
@@ -1284,7 +1309,8 @@ func expandCloudAwsIntegrationConnectInput(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
-// Expanding the aws direct connect
+// Expanding the aws direct connect input
+
 func expandCloudAwsIntegrationDirectconnectInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsDirectconnectIntegrationInput {
 	expanded := make([]cloud.CloudAwsDirectconnectIntegrationInput, len(b))
 
@@ -1320,7 +1346,8 @@ func expandCloudAwsIntegrationDirectconnectInput(b []interface{}, linkedAccountI
 	return expanded
 }
 
-// Expanding the aws fsx
+// Expanding the aws fsx input
+
 func expandCloudAwsIntegrationFsxInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsFsxIntegrationInput {
 	expanded := make([]cloud.CloudAwsFsxIntegrationInput, len(b))
 
@@ -1356,7 +1383,8 @@ func expandCloudAwsIntegrationFsxInput(b []interface{}, linkedAccountID int) []c
 	return expanded
 }
 
-// Expanding the aws glue
+// Expanding the aws glue input
+
 func expandCloudAwsIntegrationGlueInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsGlueIntegrationInput {
 	expanded := make([]cloud.CloudAwsGlueIntegrationInput, len(b))
 
@@ -1392,7 +1420,8 @@ func expandCloudAwsIntegrationGlueInput(b []interface{}, linkedAccountID int) []
 	return expanded
 }
 
-// Expanding the aws kinesis analytics
+// Expanding the aws kinesis analytics input
+
 func expandCloudAwsIntegrationKinesisAnalyticsInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsKinesisanalyticsIntegrationInput {
 	expanded := make([]cloud.CloudAwsKinesisanalyticsIntegrationInput, len(b))
 
@@ -1428,7 +1457,8 @@ func expandCloudAwsIntegrationKinesisAnalyticsInput(b []interface{}, linkedAccou
 	return expanded
 }
 
-// Expanding the aws media convert
+// Expanding the aws media convert input
+
 func expandCloudAwsIntegrationMediaConvertInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsMediaconvertIntegrationInput {
 	expanded := make([]cloud.CloudAwsMediaconvertIntegrationInput, len(b))
 
@@ -1464,7 +1494,8 @@ func expandCloudAwsIntegrationMediaConvertInput(b []interface{}, linkedAccountID
 	return expanded
 }
 
-// Expanding the aws media package vod
+// Expanding the aws media package vod input
+
 func expandCloudAwsIntegrationMediaPackageVodInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsMediapackagevodIntegrationInput {
 	expanded := make([]cloud.CloudAwsMediapackagevodIntegrationInput, len(b))
 
@@ -1500,7 +1531,8 @@ func expandCloudAwsIntegrationMediaPackageVodInput(b []interface{}, linkedAccoun
 	return expanded
 }
 
-// Expanding the aws mq
+// Expanding the aws mq input
+
 func expandCloudAwsIntegrationMqInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsMqIntegrationInput {
 	expanded := make([]cloud.CloudAwsMqIntegrationInput, len(b))
 
@@ -1536,7 +1568,8 @@ func expandCloudAwsIntegrationMqInput(b []interface{}, linkedAccountID int) []cl
 	return expanded
 }
 
-// Expanding the aws msk
+// Expanding the aws msk input
+
 func expandCloudAwsIntegrationMskInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsMskIntegrationInput {
 	expanded := make([]cloud.CloudAwsMskIntegrationInput, len(b))
 
@@ -1572,7 +1605,8 @@ func expandCloudAwsIntegrationMskInput(b []interface{}, linkedAccountID int) []c
 	return expanded
 }
 
-// Expanding the aws neptune
+// Expanding the aws neptune input
+
 func expandCloudAwsIntegrationNeptuneInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsNeptuneIntegrationInput {
 	expanded := make([]cloud.CloudAwsNeptuneIntegrationInput, len(b))
 
@@ -1608,7 +1642,8 @@ func expandCloudAwsIntegrationNeptuneInput(b []interface{}, linkedAccountID int)
 	return expanded
 }
 
-// Expanding the aws qldb
+// Expanding the aws qldb input
+
 func expandCloudAwsIntegrationQldbInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsQldbIntegrationInput {
 	expanded := make([]cloud.CloudAwsQldbIntegrationInput, len(b))
 
@@ -1644,7 +1679,8 @@ func expandCloudAwsIntegrationQldbInput(b []interface{}, linkedAccountID int) []
 	return expanded
 }
 
-// Expanding the aws route53resolver
+// Expanding the aws route53resolver input
+
 func expandCloudAwsIntegrationRoute53resolverInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsRoute53resolverIntegrationInput {
 	expanded := make([]cloud.CloudAwsRoute53resolverIntegrationInput, len(b))
 
@@ -1680,7 +1716,8 @@ func expandCloudAwsIntegrationRoute53resolverInput(b []interface{}, linkedAccoun
 	return expanded
 }
 
-// Expanding the aws states
+// Expanding the aws states input
+
 func expandCloudAwsIntegrationStatesInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsStatesIntegrationInput {
 	expanded := make([]cloud.CloudAwsStatesIntegrationInput, len(b))
 
@@ -1716,7 +1753,8 @@ func expandCloudAwsIntegrationStatesInput(b []interface{}, linkedAccountID int) 
 	return expanded
 }
 
-// Expanding the aws transit gateway
+// Expanding the aws transit gateway input
+
 func expandCloudAwsIntegrationTransitGatewayInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsTransitgatewayIntegrationInput {
 	expanded := make([]cloud.CloudAwsTransitgatewayIntegrationInput, len(b))
 
@@ -1752,7 +1790,8 @@ func expandCloudAwsIntegrationTransitGatewayInput(b []interface{}, linkedAccount
 	return expanded
 }
 
-// Expanding the aws waf
+// Expanding the aws waf input
+
 func expandCloudAwsIntegrationWafInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsWafIntegrationInput {
 	expanded := make([]cloud.CloudAwsWafIntegrationInput, len(b))
 
@@ -1788,7 +1827,8 @@ func expandCloudAwsIntegrationWafInput(b []interface{}, linkedAccountID int) []c
 	return expanded
 }
 
-// Expanding the aws wafv2
+// Expanding the aws wafv2 input
+
 func expandCloudAwsIntegrationWafv2Input(b []interface{}, linkedAccountID int) []cloud.CloudAwsWafv2IntegrationInput {
 	expanded := make([]cloud.CloudAwsWafv2IntegrationInput, len(b))
 
@@ -1824,7 +1864,8 @@ func expandCloudAwsIntegrationWafv2Input(b []interface{}, linkedAccountID int) [
 	return expanded
 }
 
-// Expanding the cloudfront
+// Expanding the cloudfront input
+
 func expandCloudAwsIntegrationCloudfrontInput(b []interface{}, linkedAccountID int) []cloud.CloudCloudfrontIntegrationInput {
 	expanded := make([]cloud.CloudCloudfrontIntegrationInput, len(b))
 
@@ -1867,31 +1908,7 @@ func expandCloudAwsIntegrationCloudfrontInput(b []interface{}, linkedAccountID i
 	return expanded
 }
 
-func resourceNewRelicCloudAwsIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	providerConfig := meta.(*ProviderConfig)
-	client := providerConfig.NewClient
-
-	accountID := selectAccountID(providerConfig, d)
-
-	linkedAccountID, convErr := strconv.Atoi(d.Id())
-
-	if convErr != nil {
-		return diag.FromErr(convErr)
-	}
-
-	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
-	flattenCloudAwsLinkedAccount(d, linkedAccount)
-
-	return nil
-}
+// flatten for Billing integration
 
 func flattenCloudAwsBillingIntegration(in *cloud.CloudBillingIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1904,6 +1921,8 @@ func flattenCloudAwsBillingIntegration(in *cloud.CloudBillingIntegration) []inte
 
 	return flattened
 }
+
+// flatten for Cloud Trail integration
 
 func flattenCloudAwsCloudTrailIntegration(in *cloud.CloudCloudtrailIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1918,6 +1937,8 @@ func flattenCloudAwsCloudTrailIntegration(in *cloud.CloudCloudtrailIntegration) 
 	return flattened
 }
 
+// flatten for Health integration
+
 func flattenCloudAwsHealthIntegration(in *cloud.CloudHealthIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -1930,6 +1951,8 @@ func flattenCloudAwsHealthIntegration(in *cloud.CloudHealthIntegration) []interf
 	return flattened
 }
 
+// flatten for Trusted Advisor integration
+
 func flattenCloudAwsTrustedAdvisorIntegration(in *cloud.CloudTrustedadvisorIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -1941,6 +1964,8 @@ func flattenCloudAwsTrustedAdvisorIntegration(in *cloud.CloudTrustedadvisorInteg
 
 	return flattened
 }
+
+// flatten for Vpc integration
 
 func flattenCloudAwsVpcIntegration(in *cloud.CloudVpcIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1959,6 +1984,8 @@ func flattenCloudAwsVpcIntegration(in *cloud.CloudVpcIntegration) []interface{} 
 	return flattened
 }
 
+// flatten for XRay integration
+
 func flattenCloudAwsXRayIntegration(in *cloud.CloudAwsXrayIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -1971,6 +1998,8 @@ func flattenCloudAwsXRayIntegration(in *cloud.CloudAwsXrayIntegration) []interfa
 
 	return flattened
 }
+
+// flatten for Sqs integration
 
 func flattenCloudAwsSqsIntegration(in *cloud.CloudSqsIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -1990,6 +2019,8 @@ func flattenCloudAwsSqsIntegration(in *cloud.CloudSqsIntegration) []interface{} 
 	return flattened
 }
 
+// flatten for Ebs integration
+
 func flattenCloudAwsEbsIntegration(in *cloud.CloudEbsIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2004,6 +2035,8 @@ func flattenCloudAwsEbsIntegration(in *cloud.CloudEbsIntegration) []interface{} 
 
 	return flattened
 }
+
+// flatten for Alb integration
 
 func flattenCloudAwsAlbIntegration(in *cloud.CloudAlbIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -2022,6 +2055,8 @@ func flattenCloudAwsAlbIntegration(in *cloud.CloudAlbIntegration) []interface{} 
 	return flattened
 }
 
+// flatten for Elasticache integration
+
 func flattenCloudAwsElasticacheIntegration(in *cloud.CloudElasticacheIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2036,6 +2071,8 @@ func flattenCloudAwsElasticacheIntegration(in *cloud.CloudElasticacheIntegration
 
 	return flattened
 }
+
+// flatten for S3 integration
 
 func flattenCloudAwsS3Integration(in *cloud.CloudS3Integration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -2052,6 +2089,8 @@ func flattenCloudAwsS3Integration(in *cloud.CloudS3Integration) []interface{} {
 	return flattened
 }
 
+// flatten for Doc DB integration
+
 func flattenCloudAwsDocDBIntegration(in *cloud.CloudAwsDocdbIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2064,7 +2103,8 @@ func flattenCloudAwsDocDBIntegration(in *cloud.CloudAwsDocdbIntegration) []inter
 	return flattened
 }
 
-// flatten for api gateway
+// flatten for api gateway integration
+
 func flattenCloudAwsAPIGatewayIntegration(in *cloud.CloudAPIgatewayIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2081,7 +2121,8 @@ func flattenCloudAwsAPIGatewayIntegration(in *cloud.CloudAPIgatewayIntegration) 
 	return flattened
 }
 
-// flatten for autoscaling
+// flatten for autoscaling integration
+
 func flattenCloudAwsAutoScalingIntegration(in *cloud.CloudAutoscalingIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2095,7 +2136,8 @@ func flattenCloudAwsAutoScalingIntegration(in *cloud.CloudAutoscalingIntegration
 	return flattened
 }
 
-// flatten for appsync
+// flatten for appsync integration
+
 func flattenCloudAwsAppsyncIntegration(in *cloud.CloudAwsAppsyncIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2109,7 +2151,8 @@ func flattenCloudAwsAppsyncIntegration(in *cloud.CloudAwsAppsyncIntegration) []i
 	return flattened
 }
 
-// flatten for athena
+// flatten for athena integration
+
 func flattenCloudAwsAthenaIntegration(in *cloud.CloudAwsAthenaIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2123,7 +2166,8 @@ func flattenCloudAwsAthenaIntegration(in *cloud.CloudAwsAthenaIntegration) []int
 	return flattened
 }
 
-// flatten for cognito
+// flatten for cognito integration
+
 func flattenCloudAwsCognitoIntegration(in *cloud.CloudAwsCognitoIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2137,7 +2181,8 @@ func flattenCloudAwsCognitoIntegration(in *cloud.CloudAwsCognitoIntegration) []i
 	return flattened
 }
 
-// flatten for connect
+// flatten for connect integration
+
 func flattenCloudAwsConnectIntegration(in *cloud.CloudAwsConnectIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2151,7 +2196,8 @@ func flattenCloudAwsConnectIntegration(in *cloud.CloudAwsConnectIntegration) []i
 	return flattened
 }
 
-// flatten for direct connect
+// flatten for direct connect integration
+
 func flattenCloudAwsDirectconnectIntegration(in *cloud.CloudAwsDirectconnectIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2165,7 +2211,8 @@ func flattenCloudAwsDirectconnectIntegration(in *cloud.CloudAwsDirectconnectInte
 	return flattened
 }
 
-// flatten for fsx
+// flatten for fsx integration
+
 func flattenCloudAwsFsxIntegration(in *cloud.CloudAwsFsxIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2179,7 +2226,8 @@ func flattenCloudAwsFsxIntegration(in *cloud.CloudAwsFsxIntegration) []interface
 	return flattened
 }
 
-// flatten for glue
+// flatten for glue integration
+
 func flattenCloudAwsGlueIntegration(in *cloud.CloudAwsGlueIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2193,7 +2241,8 @@ func flattenCloudAwsGlueIntegration(in *cloud.CloudAwsGlueIntegration) []interfa
 	return flattened
 }
 
-// flatten for kinesis analytics
+// flatten for kinesis analytics integration
+
 func flattenCloudAwsKinesisAnalyticsIntegration(in *cloud.CloudAwsKinesisanalyticsIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2207,7 +2256,8 @@ func flattenCloudAwsKinesisAnalyticsIntegration(in *cloud.CloudAwsKinesisanalyti
 	return flattened
 }
 
-// flatten for media convert
+// flatten for media convert integration
+
 func flattenCloudAwsMediaConvertIntegration(in *cloud.CloudAwsMediaconvertIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2221,7 +2271,8 @@ func flattenCloudAwsMediaConvertIntegration(in *cloud.CloudAwsMediaconvertIntegr
 	return flattened
 }
 
-// flatten for media package vod
+// flatten for media package vod integration
+
 func flattenCloudAwsMediaPackageVodIntegration(in *cloud.CloudAwsMediapackagevodIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2235,7 +2286,8 @@ func flattenCloudAwsMediaPackageVodIntegration(in *cloud.CloudAwsMediapackagevod
 	return flattened
 }
 
-// flatten for mq
+// flatten for mq integration
+
 func flattenCloudAwsMqIntegration(in *cloud.CloudAwsMqIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2249,7 +2301,8 @@ func flattenCloudAwsMqIntegration(in *cloud.CloudAwsMqIntegration) []interface{}
 	return flattened
 }
 
-// flatten for msk
+// flatten for msk integration
+
 func flattenCloudAwsMskIntegration(in *cloud.CloudAwsMskIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2263,7 +2316,8 @@ func flattenCloudAwsMskIntegration(in *cloud.CloudAwsMskIntegration) []interface
 	return flattened
 }
 
-// flatten for neptune
+// flatten for neptune integration
+
 func flattenCloudAwsNeptuneIntegration(in *cloud.CloudAwsNeptuneIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2277,7 +2331,8 @@ func flattenCloudAwsNeptuneIntegration(in *cloud.CloudAwsNeptuneIntegration) []i
 	return flattened
 }
 
-// flatten for qldb
+// flatten for qldb integration
+
 func flattenCloudAwsQldbIntegration(in *cloud.CloudAwsQldbIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2291,7 +2346,8 @@ func flattenCloudAwsQldbIntegration(in *cloud.CloudAwsQldbIntegration) []interfa
 	return flattened
 }
 
-// flatten for route53resolver
+// flatten for route53resolver integration
+
 func flattenCloudAwsRoute53resolverIntegration(in *cloud.CloudAwsRoute53resolverIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2305,7 +2361,8 @@ func flattenCloudAwsRoute53resolverIntegration(in *cloud.CloudAwsRoute53resolver
 	return flattened
 }
 
-// flatten for aws states
+// flatten for aws states integration
+
 func flattenCloudAwsStatesIntegration(in *cloud.CloudAwsStatesIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2319,7 +2376,8 @@ func flattenCloudAwsStatesIntegration(in *cloud.CloudAwsStatesIntegration) []int
 	return flattened
 }
 
-// flatten for transit gateway
+// flatten for transit gateway integration
+
 func flattenCloudAwsTransitGatewayIntegration(in *cloud.CloudAwsTransitgatewayIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2333,7 +2391,8 @@ func flattenCloudAwsTransitGatewayIntegration(in *cloud.CloudAwsTransitgatewayIn
 	return flattened
 }
 
-// flatten for waf
+// flatten for waf integration
+
 func flattenCloudAwsWafIntegration(in *cloud.CloudAwsWafIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2347,7 +2406,8 @@ func flattenCloudAwsWafIntegration(in *cloud.CloudAwsWafIntegration) []interface
 	return flattened
 }
 
-// flatten for wafv2
+// flatten for wafv2 integration
+
 func flattenCloudAwsWafv2Integration(in *cloud.CloudAwsWafv2Integration) []interface{} {
 	flattened := make([]interface{}, 1)
 
@@ -2361,7 +2421,8 @@ func flattenCloudAwsWafv2Integration(in *cloud.CloudAwsWafv2Integration) []inter
 	return flattened
 }
 
-// flatten for cloudfront
+// flatten for cloudfront integration
+
 func flattenCloudCloudfrontIntegration(in *cloud.CloudCloudfrontIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
 

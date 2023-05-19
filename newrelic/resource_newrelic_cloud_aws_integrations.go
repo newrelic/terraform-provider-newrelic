@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -300,6 +301,8 @@ func cloudAwsIntegrationSchemaBaseExtended() map[string]*schema.Schema {
 	}
 }
 
+// function to add schema for Billing integration
+
 func cloudAwsIntegrationBillingSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
 
@@ -307,6 +310,8 @@ func cloudAwsIntegrationBillingSchemaElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+// function to add schema for Cloud Trail integration
 
 func cloudAwsIntegrationCloudTrailSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
@@ -325,6 +330,8 @@ func cloudAwsIntegrationCloudTrailSchemaElem() *schema.Resource {
 	}
 }
 
+// function to add schema for Health integration
+
 func cloudAwsIntegrationHealthSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
 
@@ -333,6 +340,8 @@ func cloudAwsIntegrationHealthSchemaElem() *schema.Resource {
 	}
 }
 
+// function to add schema for Trutsted Advisor integration
+
 func cloudAwsIntegrationTrustedAdvisorSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
 
@@ -340,6 +349,8 @@ func cloudAwsIntegrationTrustedAdvisorSchemaElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+// function to add schema for S3 integration
 
 func cloudAwsIntegrationS3SchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
@@ -372,6 +383,8 @@ func cloudAwsIntegrationS3SchemaElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+// function to add schema for VPC integration
 
 func cloudAwsIntegrationVpcSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
@@ -414,6 +427,8 @@ func cloudAwsIntegrationVpcSchemaElem() *schema.Resource {
 	}
 }
 
+// function to add schema for XRay integration
+
 func cloudAwsIntegrationXRaySchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
 
@@ -430,6 +445,8 @@ func cloudAwsIntegrationXRaySchemaElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+// function to add schema for SQS integration
 
 func cloudAwsIntegrationSqsSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
@@ -476,6 +493,8 @@ func cloudAwsIntegrationSqsSchemaElem() *schema.Resource {
 	}
 }
 
+// function to add schema for Ebs integration
+
 func cloudAwsIntegrationEbsSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
 
@@ -507,6 +526,8 @@ func cloudAwsIntegrationEbsSchemaElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+// function to add schema for Alb integration
 
 func cloudAwsIntegrationAlbSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
@@ -553,6 +574,8 @@ func cloudAwsIntegrationAlbSchemaElem() *schema.Resource {
 	}
 }
 
+// function to add schema for Elasticache integration
+
 func cloudAwsIntegrationElasticacheSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
 
@@ -585,7 +608,7 @@ func cloudAwsIntegrationElasticacheSchemaElem() *schema.Resource {
 	}
 }
 
-// function to add schema for api gateway
+// function to add schema for api gateway integration
 
 func cloudAwsIntegrationAPIGatewaySchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
@@ -630,7 +653,7 @@ func cloudAwsIntegrationCommonSchemaElem() *schema.Resource {
 	}
 }
 
-// function to add schema for cloudfront
+// function to add schema for cloudfront integration
 
 func cloudAwsIntegrationCloudfrontSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
@@ -689,6 +712,32 @@ func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.R
 	if len(cloudAwsIntegrationsPayload.Integrations) > 0 {
 		d.SetId(strconv.Itoa(d.Get("linked_account_id").(int)))
 	}
+
+	return nil
+}
+
+func resourceNewRelicCloudAwsIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	accountID := selectAccountID(providerConfig, d)
+
+	linkedAccountID, convErr := strconv.Atoi(d.Id())
+
+	if convErr != nil {
+		return diag.FromErr(convErr)
+	}
+
+	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	flattenCloudAwsLinkedAccount(d, linkedAccount)
 
 	return nil
 }
