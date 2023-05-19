@@ -197,13 +197,6 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Elem:        cloudAwsIntegrationCommonSchemaElem(),
 				MaxItems:    1,
 			},
-			"aws_meta_data": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Aws MetaData integration",
-				Elem:        cloudAwsIntegrationMetaDataSchemaElem(),
-				MaxItems:    1,
-			},
 			"aws_mq": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -244,13 +237,6 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Optional:    true,
 				Description: "Aws states integration",
 				Elem:        cloudAwsIntegrationCommonSchemaElem(),
-				MaxItems:    1,
-			},
-			"aws_tags_global": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Aws Tags Global integration",
-				Elem:        cloudAwsIntegrationTagsGlobalSchemaElem(),
 				MaxItems:    1,
 			},
 			"aws_transit_gateway": {
@@ -629,26 +615,6 @@ func cloudAwsIntegrationAPIGatewaySchemaElem() *schema.Resource {
 		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
 		Optional:    true,
 	}
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for aws meta data
-
-func cloudAwsIntegrationMetaDataSchemaElem() *schema.Resource {
-	s := cloudAwsIntegrationSchemaBase()
-
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for aws tags global
-
-func cloudAwsIntegrationTagsGlobalSchemaElem() *schema.Resource {
-	s := cloudAwsIntegrationSchemaBase()
-
 	return &schema.Resource{
 		Schema: s,
 	}
