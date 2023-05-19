@@ -235,9 +235,6 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		  aws_regions              = ["us-east-1"]
 		  metrics_polling_interval = 6000
 		}
-		aws_meta_data {
-		  metrics_polling_interval = 6000
-		}
 		aws_mq {
 		  aws_regions              = ["us-east-1"]
 		  metrics_polling_interval = 6000
@@ -260,9 +257,6 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		}
 		aws_states {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_tags_global {
 		  metrics_polling_interval = 6000
 		}
 		aws_transit_gateway {
@@ -416,9 +410,6 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		  aws_regions              = ["us-east-1"]
 		  metrics_polling_interval = 6000
 		}
-		aws_meta_data {
-		  metrics_polling_interval = 6000
-		}
 		aws_mq {
 		  aws_regions              = ["us-east-1"]
 		  metrics_polling_interval = 6000
@@ -441,9 +432,6 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		}
 		aws_states {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_tags_global {
 		  metrics_polling_interval = 6000
 		}
 		aws_transit_gateway {

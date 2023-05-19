@@ -131,9 +131,6 @@ resource "newrelic_cloud_aws_integrations" "bar" {
     aws_regions              = ["us-east-1"]
     metrics_polling_interval = 6000
   }
-  aws_meta_data {
-    metrics_polling_interval = 6000
-  }
   aws_mq {
     aws_regions              = ["us-east-1"]
     metrics_polling_interval = 6000
@@ -156,9 +153,6 @@ resource "newrelic_cloud_aws_integrations" "bar" {
   }
   aws_states {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
-  }
-  aws_tags_global {
     metrics_polling_interval = 6000
   }
   aws_transit_gateway {
@@ -213,14 +207,12 @@ The following arguments are supported:
 * `aws_kinesis_analytics` - (Optional) Kinesis Analytics integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_media_convert` - (Optional) Media Convert integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_media_package_vod` - (Optional) Media Package vod integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_meta_data` - (Optional) Meta data integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_mq` - (Optional) Mq integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_msk` - (Optional) Msk integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_neptune` - (Optional) Neptune integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_qldb` - (Optional) Qldb integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_route53resolver` - (Optional) Route53resolver integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_states` - (Optional) States integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_tags_global` - (Optional) TagsGlobal integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_transit_gateway` - (Optional) TransitGateway integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_waf` - (Optional) Waf integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_wafv2` - (Optional) Wafv2 integration. See [Integration blocks](#integration-blocks) below for details.

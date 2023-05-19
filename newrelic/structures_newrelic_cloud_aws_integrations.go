@@ -214,14 +214,6 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 				cloudDisableAwsIntegration.AwsMediapackagevod = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
 			},
 		},
-		"aws_meta_data": {
-			enableFunc: func(a []interface{}, id int) {
-				cloudAwsIntegration.AwsMetadata = expandCloudAwsIntegrationMetaDataInput(a, id)
-			},
-			disableFunc: func(id int) {
-				cloudDisableAwsIntegration.AwsMetadata = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
-			},
-		},
 		"aws_mq": {
 			enableFunc: func(a []interface{}, id int) {
 				cloudAwsIntegration.AwsMq = expandCloudAwsIntegrationMqInput(a, id)
@@ -268,14 +260,6 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 			},
 			disableFunc: func(id int) {
 				cloudDisableAwsIntegration.AwsStates = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
-			},
-		},
-		"aws_tags_global": {
-			enableFunc: func(a []interface{}, id int) {
-				cloudAwsIntegration.AwsTagsGlobal = expandCloudAwsIntegrationTagsGlobalInput(a, id)
-			},
-			disableFunc: func(id int) {
-				cloudDisableAwsIntegration.AwsTagsGlobal = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
 			},
 		},
 		"aws_transit_gateway": {
@@ -388,8 +372,6 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 			_ = d.Set("aws_media_convert", flattenCloudAwsMediaConvertIntegration(t))
 		case *cloud.CloudAwsMediapackagevodIntegration:
 			_ = d.Set("aws_media_package_vod", flattenCloudAwsMediaPackageVodIntegration(t))
-		case *cloud.CloudAwsMetadataIntegration:
-			_ = d.Set("aws_meta_data", flattenCloudAwsMetaDataIntegration(t))
 		case *cloud.CloudAwsMqIntegration:
 			_ = d.Set("aws_mq", flattenCloudAwsMqIntegration(t))
 		case *cloud.CloudAwsMskIntegration:
@@ -402,8 +384,6 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 			_ = d.Set("aws_route53resolver", flattenCloudAwsRoute53resolverIntegration(t))
 		case *cloud.CloudAwsStatesIntegration:
 			_ = d.Set("aws_states", flattenCloudAwsStatesIntegration(t))
-		case *cloud.CloudAwsTagsGlobalIntegration:
-			_ = d.Set("aws_tags_global", flattenCloudAwsTagsGlobalIntegration(t))
 		case *cloud.CloudAwsTransitgatewayIntegration:
 			_ = d.Set("aws_transit_gateway", flattenCloudAwsTransitGatewayIntegration(t))
 		case *cloud.CloudAwsWafIntegration:
@@ -525,10 +505,6 @@ func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInpu
 		cloudDisableAwsIntegration.AwsMediapackagevod = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if _, ok := d.GetOk("aws_meta_data"); ok {
-		cloudDisableAwsIntegration.AwsMetadata = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
 	if _, ok := d.GetOk("aws_mq"); ok {
 		cloudDisableAwsIntegration.AwsMq = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
@@ -551,10 +527,6 @@ func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInpu
 
 	if _, ok := d.GetOk("aws_states"); ok {
 		cloudDisableAwsIntegration.AwsStates = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if _, ok := d.GetOk("aws_tags_global"); ok {
-		cloudDisableAwsIntegration.AwsTagsGlobal = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if _, ok := d.GetOk("aws_transit_gateway"); ok {
@@ -1528,33 +1500,6 @@ func expandCloudAwsIntegrationMediaPackageVodInput(b []interface{}, linkedAccoun
 	return expanded
 }
 
-// Expanding the aws meta data
-func expandCloudAwsIntegrationMetaDataInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsMetadataIntegrationInput {
-	expanded := make([]cloud.CloudAwsMetadataIntegrationInput, len(b))
-
-	for i, metaData := range b {
-		var metaDataInput cloud.CloudAwsMetadataIntegrationInput
-
-		if metaData == nil {
-			metaDataInput.LinkedAccountId = linkedAccountID
-			expanded[i] = metaDataInput
-			return expanded
-		}
-
-		in := metaData.(map[string]interface{})
-
-		metaDataInput.LinkedAccountId = linkedAccountID
-
-		if m, ok := in["metrics_polling_interval"]; ok {
-			metaDataInput.MetricsPollingInterval = m.(int)
-		}
-
-		expanded[i] = metaDataInput
-	}
-
-	return expanded
-}
-
 // Expanding the aws mq
 func expandCloudAwsIntegrationMqInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsMqIntegrationInput {
 	expanded := make([]cloud.CloudAwsMqIntegrationInput, len(b))
@@ -1766,33 +1711,6 @@ func expandCloudAwsIntegrationStatesInput(b []interface{}, linkedAccountID int) 
 		}
 
 		expanded[i] = statesInput
-	}
-
-	return expanded
-}
-
-// Expanding the aws tags global
-func expandCloudAwsIntegrationTagsGlobalInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsTagsGlobalIntegrationInput {
-	expanded := make([]cloud.CloudAwsTagsGlobalIntegrationInput, len(b))
-
-	for i, tagsGlobal := range b {
-		var tagsGlobalInput cloud.CloudAwsTagsGlobalIntegrationInput
-
-		if tagsGlobal == nil {
-			tagsGlobalInput.LinkedAccountId = linkedAccountID
-			expanded[i] = tagsGlobalInput
-			return expanded
-		}
-
-		in := tagsGlobal.(map[string]interface{})
-
-		tagsGlobalInput.LinkedAccountId = linkedAccountID
-
-		if m, ok := in["metrics_polling_interval"]; ok {
-			tagsGlobalInput.MetricsPollingInterval = m.(int)
-		}
-
-		expanded[i] = tagsGlobalInput
 	}
 
 	return expanded
@@ -2317,18 +2235,6 @@ func flattenCloudAwsMediaPackageVodIntegration(in *cloud.CloudAwsMediapackagevod
 	return flattened
 }
 
-// flatten for meta data
-func flattenCloudAwsMetaDataIntegration(in *cloud.CloudAwsMetadataIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-
-	flattened[0] = out
-
-	return flattened
-}
-
 // flatten for mq
 func flattenCloudAwsMqIntegration(in *cloud.CloudAwsMqIntegration) []interface{} {
 	flattened := make([]interface{}, 1)
@@ -2407,18 +2313,6 @@ func flattenCloudAwsStatesIntegration(in *cloud.CloudAwsStatesIntegration) []int
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 	out["aws_regions"] = in.AwsRegions
-
-	flattened[0] = out
-
-	return flattened
-}
-
-// flatten for aws tags global
-func flattenCloudAwsTagsGlobalIntegration(in *cloud.CloudAwsTagsGlobalIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
 	flattened[0] = out
 
