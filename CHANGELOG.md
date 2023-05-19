@@ -1,3 +1,22 @@
+<a name="v3.23.0"></a>
+## [v3.23.0] - 2023-05-16
+### Bug Fixes
+- update missing fields, docs etc
+- Missing fields from [#2289](https://github.com/newrelic/terraform-provider-newrelic/issues/2289)
+- lint errors
+
+### Documentation Updates
+- update aws docs
+- **cloud_integrations:** update to broken links ([#2365](https://github.com/newrelic/terraform-provider-newrelic/issues/2365))
+- **examples:** updated aws example to include config stream and moved cloud examples to modules ([#2225](https://github.com/newrelic/terraform-provider-newrelic/issues/2225))
+- **newrelic_cloud_aws_integrations:** update aws docs with new integrations.
+- **newrelic_cloud_aws_integrations:** update aws docs with new integrations.
+- **one_dashboard_json:** addition of a multipage dashboard example and other corrections ([#2347](https://github.com/newrelic/terraform-provider-newrelic/issues/2347))
+
+### Features
+- Add other polling integrations to newrelic_cloud_aws_integrations
+- additional poll integrations (sqs, ebs, alb, elasticache) ([#2289](https://github.com/newrelic/terraform-provider-newrelic/issues/2289))
+
 <a name="v3.22.0"></a>
 ## [v3.22.0] - 2023-05-08
 ### Documentation Updates
@@ -1833,7 +1852,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.22.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.23.0...HEAD
+[v3.23.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.22.0...v3.23.0
 [v3.22.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.21.3...v3.22.0
 [v3.21.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.21.2...v3.21.3
 [v3.21.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.21.1...v3.21.2

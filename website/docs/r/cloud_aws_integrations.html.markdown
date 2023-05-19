@@ -54,6 +54,67 @@ resource "newrelic_cloud_aws_integrations" "bar" {
     metrics_polling_interval = 6000
     aws_regions = ["region-1", "region-2"]
   }
+  s3 {
+    metrics_polling_interval = 6000
+  }
+	doc_db {
+    metrics_polling_interval = 6000
+  }
+	sqs {
+    metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    tag_key = "test"
+    tag_value = "test"
+  }
+	ebs {
+    metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    tag_key = "test"
+    tag_value = "test"
+  }
+	alb {
+    metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+  }
+	elasticache {
+    metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+  }
+	api_gateway{
+    metrics_polling_interval = 6000
+    aws_regions = ["us-east-1"]
+    stage_prefixes = [""]
+    tag_key = "test"
+    tag_value = "test"
+  } 
+  auto_scaling {
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_app_sync {
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_athena {
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_cognito {
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_connect {
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_direct_connect {
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
+  aws_fsx {
+    aws_regions = ["us-east-1"]
+    metrics_polling_interval = 6000
+  }
 }
 ```
 ## Argument Reference
@@ -68,6 +129,20 @@ The following arguments are supported:
 * `trusted_advisor` - (Optional) Trusted Advisor integration. See [Integration blocks](#integration-blocks) below for details.
 * `vpc` - (Optional) VPC integration. See [Integration blocks](#integration-blocks) below for details.
 * `x_ray` - (Optional) X-Ray integration. See [Integration blocks](#integration-blocks) below for details.
+* `s3` - (Optional) S3 integration. See [Integration blocks](#integration-blocks) below for details.
+* `doc_db` - (Optional) Doc_DB integration. See [Integration blocks](#integration-blocks) below for details.
+* `sqs` - (Optional) SQS integration. See [Integration blocks](#integration-blocks) below for details.
+* `ebs` - (Optional) EBS integration. See [Integration blocks](#integration-blocks) below for details.
+* `alb` - (Optional) ALB integration. See [Integration blocks](#integration-blocks) below for details.
+* `elasticache` - (Optional) Elasticache integration. See [Integration blocks](#integration-blocks) below for details.
+* `api_gateway` - (Optional) ApiGateway integration. See [Integration blocks](#integration-blocks) below for details.
+* `auto_scaling` - (Optional) AutoScaling integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_app_sync` - (Optional) AppSync integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_athena` - (Optional) Athena integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_cognito` - (Optional) Cognito integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_connect` - (Optional) Connect integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_direct_connect` - (Optional) DirectConnect integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_fsx` - (Optional) Fsx integration. See [Integration blocks](#integration-blocks) below for details.
 
 ### `Integration` blocks
 
@@ -87,6 +162,57 @@ Some integration types support an additional set of arguments:
   * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
 * `x_ray`
   * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `s3`
+  * `fetch_extended_inventory` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `fetch_tags` - (Optional) Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
+* `doc_db`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `sqs`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+  * `fetch_extended_inventory` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `fetch_tags` - (Optional) Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `queue_prefixes` - (Optional) Specify each name or prefix for the Queues that you want to monitor. Filter values are case-sensitive.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
+* `ebs`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+  * `fetch_extended_inventory` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
+* `alb`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+  * `fetch_extended_inventory` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `fetch_tags` - (Optional) Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `load_balancer_prefixes` - (Optional) Specify each name or prefix for the LBs that you want to monitor. Filter values are case-sensitive.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
+* `elasticache`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+  * `fetch_tags` - (Optional) Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
+* `api_gateway`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `stage_prefixes` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
+* `auto_scaling`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `aws_app_sync`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `aws_athena`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `aws_cognito`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `aws_connect`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `aws_direct_connect`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
+* `aws_fsx`
+  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.  
+
 
 ## Attributes Reference
 
