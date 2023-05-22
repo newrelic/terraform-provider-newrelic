@@ -178,9 +178,8 @@ resource "newrelic_cloud_aws_integrations" "bar" {
 ```
 ## Argument Reference
 
-The following arguments are supported:
-
 <details>
+  <summary> To view the comprehensive list of valid arguments, click here. </summary>
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked AWS account in New Relic.
 * `billing` - (Optional) Billing integration. See [Integration blocks](#integration-blocks) below for details.
@@ -225,9 +224,8 @@ All `integration` blocks support the following common arguments:
 
 * `metrics_polling_interval` - (Optional) The data polling interval in seconds.
 
-Some integration types support an additional set of arguments:
-
 <details>
+  <summary> Some integration types support an additional set of arguments. To delve deeper into the list of arguments, click here. </summary>
 * `cloudtrail`
   * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
 * `vpc`
@@ -280,7 +278,7 @@ Some integration types support an additional set of arguments:
   * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
   * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
 
-Below integration types supports the following common arguments.
+Furthermore, below integration types supports the following common arguments.
 
 * `auto_scaling`,`aws_app_sync`,`aws_athena`,`aws_cognito`,`aws_connect`,`aws_direct_connect`,`aws_fsx`,`aws_glue`,`aws_kinesis_analytics`,`aws_media_convert`,`aws_media_package_vod`,`aws_mq`,`aws_msk`,`aws_neptune`,`aws_qldb`,`aws_route53resolver`,`aws_states`,`aws_transit_gateway`,`aws_waf`,`aws_wafv2`.    
   * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.  
