@@ -214,6 +214,33 @@ resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
   vpc {}
   x_ray {}
   s3 {}
+  doc_db {}
+  sqs {}
+  ebs {}
+  alb {}
+  elasticache {}
+  api_gateway {}
+  auto_scaling {}
+  aws_app_sync {}
+  aws_athena {}
+  aws_cognito {}
+  aws_connect {}
+  aws_direct_connect {}
+  aws_fsx {}
+  aws_glue {}
+  aws_kinesis_analytics {}
+  aws_media_convert {}
+  aws_media_package_vod {}
+  aws_mq {}
+  aws_msk {}
+  aws_neptune {}
+  aws_qldb {}
+  aws_route53resolver {}
+  aws_states {}
+  aws_transit_gateway {}
+  aws_waf {}
+  aws_wafv2 {}
+  cloudfront {}
 }
 
 resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {
