@@ -2,14 +2,13 @@ package newrelic
 
 import (
 	"context"
+	"log"
 	"math/rand"
 	"strconv"
 
-	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
 )
 
 func dataSourceNewRelicTestGrokPattern() *schema.Resource {
