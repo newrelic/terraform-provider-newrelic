@@ -268,6 +268,132 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Elem:        cloudAwsIntegrationCloudfrontSchemaElem(),
 				MaxItems:    1,
 			},
+			"dynamodb": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Dynamo DB integration",
+				Elem:        cloudAwsIntegrationDynamoDBSchemaElem(),
+				MaxItems:    1,
+			},
+			"ec2": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Ec2 integration",
+				Elem:        cloudAwsIntegrationEc2SchemaElem(),
+				MaxItems:    1,
+			},
+			"ecs": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Ecs integration",
+				Elem:        cloudAwsIntegrationEcsSchemaElem(),
+				MaxItems:    1,
+			},
+			"efs": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Efs integration",
+				Elem:        cloudAwsIntegrationEfsSchemaElem(),
+				MaxItems:    1,
+			},
+			"elasticbeanstalk": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Elastic Bean Stalk integration",
+				Elem:        cloudAwsIntegrationElasticBeanStalkSchemaElem(),
+				MaxItems:    1,
+			},
+			"elasticsearch": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Elastic Search integration",
+				Elem:        cloudAwsIntegrationElasticSearchSchemaElem(),
+				MaxItems:    1,
+			},
+			"elb": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Elb integration",
+				Elem:        cloudAwsIntegrationElbSchemaElem(),
+				MaxItems:    1,
+			},
+			"emr": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Emr integration",
+				Elem:        cloudAwsIntegrationEmrSchemaElem(),
+				MaxItems:    1,
+			},
+			"iam": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Iam integration",
+				Elem:        cloudAwsIntegrationIamSchemaElem(),
+				MaxItems:    1,
+			},
+			"iot": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Iot integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"kinesis": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Kinesis integration",
+				Elem:        cloudAwsIntegrationKinesisSchemaElem(),
+				MaxItems:    1,
+			},
+			"kinesis_firehose": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Kinesis Firehose integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"lambda": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Lambda integration",
+				Elem:        cloudAwsIntegrationLambdaSchemaElem(),
+				MaxItems:    1,
+			},
+			"rds": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Rds integration",
+				Elem:        cloudAwsIntegrationRdsSchemaElem(),
+				MaxItems:    1,
+			},
+			"redshift": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Redshift integration",
+				Elem:        cloudAwsIntegrationRedshiftSchemaElem(),
+				MaxItems:    1,
+			},
+			"route53": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Route53 integration",
+				Elem:        cloudAwsIntegrationRoute53SchemaElem(),
+				MaxItems:    1,
+			},
+			"ses": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Ses integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"sns": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Sns integration",
+				Elem:        cloudAwsIntegrationSnsSchemaElem(),
+				MaxItems:    1,
+			},
 		},
 	}
 }
@@ -279,6 +405,16 @@ func cloudAwsIntegrationSchemaBase() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The data polling interval in seconds.",
 		},
+	}
+}
+
+// function to add common schema for various services.
+
+func cloudAwsIntegrationCommonSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
 	}
 }
 
@@ -297,6 +433,40 @@ func cloudAwsIntegrationSchemaBaseExtended() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Optional:    true,
 			Description: "The data polling interval in seconds.",
+		},
+	}
+}
+
+func cloudAwsIntegrationSchemaBaseExtendedOne() map[string]*schema.Schema {
+
+	return map[string]*schema.Schema{
+		"aws_regions": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Specify each AWS region that includes the resources that you want to monitor.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"fetch_tags": {
+			Type:        schema.TypeBool,
+			Description: "Specify if tags and the extended inventory should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+			Optional:    true,
+		},
+		"metrics_polling_interval": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The data polling interval in seconds.",
+		},
+		"tag_key": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		},
+		"tag_value": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
 		},
 	}
 }
@@ -643,16 +813,6 @@ func cloudAwsIntegrationAPIGatewaySchemaElem() *schema.Resource {
 	}
 }
 
-// function to add common schema for various services.
-
-func cloudAwsIntegrationCommonSchemaElem() *schema.Resource {
-	s := cloudAwsIntegrationSchemaBaseExtended()
-
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
 // function to add schema for cloudfront integration
 
 func cloudAwsIntegrationCloudfrontSchemaElem() *schema.Resource {
@@ -676,6 +836,256 @@ func cloudAwsIntegrationCloudfrontSchemaElem() *schema.Resource {
 	s["tag_value"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for DynamoDB integration
+
+func cloudAwsIntegrationDynamoDBSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for Ec2 integration
+
+func cloudAwsIntegrationEc2SchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	s["duplicate_ec2_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Description: "Specify if the old legacy metadata and tag names have to be kept, it will consume more ingest data size",
+	}
+	s["fetch_ip_addresses"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Description: "Specify if IP addresses of ec2 instance should be collected",
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for ecs integration.
+
+func cloudAwsIntegrationEcsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for efs integration.
+
+func cloudAwsIntegrationEfsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for elastic bean stalk integration.
+
+func cloudAwsIntegrationElasticBeanStalkSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for elastic search integration.
+
+func cloudAwsIntegrationElasticSearchSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	s["fetch_nodes"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if metrics should be collected for nodes. Turning it on will increase the number of API calls made to CloudWatch.",
+		Optional:    true,
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for Elb integration.
+
+func cloudAwsIntegrationElbSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["fetch_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for emr integration.
+
+func cloudAwsIntegrationEmrSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for iam integration.
+
+func cloudAwsIntegrationIamSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for kinesis integration.
+
+func cloudAwsIntegrationKinesisSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	s["fetch_shards"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if Shards should be monitored. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for lambda integration.
+
+func cloudAwsIntegrationLambdaSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for rds integration.
+
+func cloudAwsIntegrationRdsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for redshift integration.
+
+func cloudAwsIntegrationRedshiftSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for route53 integration.
+
+func cloudAwsIntegrationRoute53SchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for sns integration.
+
+func cloudAwsIntegrationSnsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
 	}
 

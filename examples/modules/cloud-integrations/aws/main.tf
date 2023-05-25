@@ -241,6 +241,24 @@ resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
   aws_waf {}
   aws_wafv2 {}
   cloudfront {}
+  dynamodb {}
+  ec2 {}
+  ecs {}
+  efs {}
+  elasticbeanstalk {}
+  elasticsearch {}
+  elb {}
+  emr {}
+  iam {}
+  iot {}
+  kinesis {}
+  kinesis_firehose {}
+  lambda {}
+  rds {}
+  redshift {}
+  route53 {}
+  ses {}
+  sns {}
 }
 
 resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {

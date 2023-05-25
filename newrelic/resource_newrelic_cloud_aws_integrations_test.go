@@ -113,7 +113,7 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		name                   = "integration test account"
 	  }
 
-	resource "newrelic_cloud_aws_integrations" "bar" {
+	  resource "newrelic_cloud_aws_integrations" "bar" {
 		linked_account_id = newrelic_cloud_aws_link_account.foo.id
 	  
 		billing {
@@ -278,6 +278,118 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
+		dynamodb {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		ec2 {
+		  aws_regions              = ["us-east-1"]
+		  duplicate_ec2_tags       = true
+		  fetch_ip_addresses       = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		ecs {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		efs {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elasticbeanstalk {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elasticsearch {
+		  aws_regions              = ["us-east-1"]
+		  fetch_nodes              = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elb {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		}
+		emr {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		iam {
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		iot {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		kinesis {
+		  aws_regions              = ["us-east-1"]
+		  fetch_shards             = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		kinesis_firehose {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		lambda {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		rds {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		redshift {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		route53 {
+		  fetch_extended_inventory = true
+		  metrics_polling_interval = 6000
+		}
+		ses {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		sns {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  metrics_polling_interval = 6000
+		}
 	  }
 `, arn)
 }
@@ -289,7 +401,7 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		metric_collection_mode = "PULL"
 		name                   = "integration test account - updated"
 	  }
-	resource "newrelic_cloud_aws_integrations" "bar" {
+	  resource "newrelic_cloud_aws_integrations" "bar" {
 		linked_account_id = newrelic_cloud_aws_link_account.foo.id
 		billing {
 		  metrics_polling_interval = 10000
@@ -452,6 +564,118 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		  metrics_polling_interval = 6000
 		  tag_key                  = "test"
 		  tag_value                = "test"
+		}
+		dynamodb {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		ec2 {
+		  aws_regions              = ["us-east-1"]
+		  duplicate_ec2_tags       = true
+		  fetch_ip_addresses       = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		ecs {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		efs {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elasticbeanstalk {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elasticsearch {
+		  aws_regions              = ["us-east-1"]
+		  fetch_nodes              = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elb {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		}
+		emr {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		iam {
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		iot {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		kinesis {
+		  aws_regions              = ["us-east-1"]
+		  fetch_shards             = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		kinesis_firehose {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		lambda {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		rds {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		redshift {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		route53 {
+		  fetch_extended_inventory = true
+		  metrics_polling_interval = 6000
+		}
+		ses {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		sns {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  metrics_polling_interval = 6000
 		}
 	  }
 `, arn)
