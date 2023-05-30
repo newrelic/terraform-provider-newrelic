@@ -40,7 +40,7 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 			"doc_db": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Billing integration",
+				Description: "Doc DB integration",
 				Elem:        cloudAwsIntegrationCommonSchemaElem(),
 				MaxItems:    1,
 			},
