@@ -31,96 +31,155 @@ resource "newrelic_cloud_aws_link_account" "foo" {
 
 resource "newrelic_cloud_aws_integrations" "bar" {
   linked_account_id = newrelic_cloud_aws_link_account.foo.id
-  billing { }
+  billing {}
   cloudtrail {
-    metrics_polling_interval = 6000
-    aws_regions = ["region-1", "region-2"]
+    metrics_polling_interval = 3600
+    aws_regions              = ["region-1", "region-2"]
   }
   health {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 3600
   }
   trusted_advisor {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 3600
   }
   vpc {
-    metrics_polling_interval = 6000
-    aws_regions = ["region-1", "region-2"]
-    fetch_nat_gateway = true
-    fetch_vpn = false
-    tag_key = "tag key"
-    tag_value = "tag value"
+    metrics_polling_interval = 3600
+    aws_regions              = ["region-1", "region-2"]
+    fetch_nat_gateway        = true
+    fetch_vpn                = false
+    tag_key                  = "tag key"
+    tag_value                = "tag value"
   }
   x_ray {
-    metrics_polling_interval = 6000
-    aws_regions = ["region-1", "region-2"]
+    metrics_polling_interval = 3600
+    aws_regions              = ["region-1", "region-2"]
   }
   s3 {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 3600
   }
-	doc_db {
-    metrics_polling_interval = 6000
+  doc_db {
+    metrics_polling_interval = 3600
   }
-	sqs {
-    metrics_polling_interval = 6000
-    aws_regions = ["us-east-1"]
-    tag_key = "test"
-    tag_value = "test"
+  sqs {
+    metrics_polling_interval = 3600
+    aws_regions              = ["us-east-1"]
+    tag_key                  = "test"
+    tag_value                = "test"
   }
-	ebs {
-    metrics_polling_interval = 6000
-    aws_regions = ["us-east-1"]
-    tag_key = "test"
-    tag_value = "test"
+  ebs {
+    metrics_polling_interval = 3600
+    aws_regions              = ["us-east-1"]
+    tag_key                  = "test"
+    tag_value                = "test"
   }
-	alb {
-    metrics_polling_interval = 6000
-    aws_regions = ["us-east-1"]
+  alb {
+    metrics_polling_interval = 3600
+    aws_regions              = ["us-east-1"]
   }
-	elasticache {
-    metrics_polling_interval = 6000
-    aws_regions = ["us-east-1"]
+  elasticache {
+    metrics_polling_interval = 3600
+    aws_regions              = ["us-east-1"]
   }
-	api_gateway{
-    metrics_polling_interval = 6000
-    aws_regions = ["us-east-1"]
-    stage_prefixes = [""]
-    tag_key = "test"
-    tag_value = "test"
-  } 
+  api_gateway {
+    metrics_polling_interval = 3600
+    aws_regions              = ["us-east-1"]
+    stage_prefixes           = [""]
+    tag_key                  = "test"
+    tag_value                = "test"
+  }
   auto_scaling {
-    aws_regions = ["us-east-1"]
-    metrics_polling_interval = 6000
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
   }
   aws_app_sync {
-    aws_regions = ["us-east-1"]
-    metrics_polling_interval = 6000
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
   }
   aws_athena {
-    aws_regions = ["us-east-1"]
-    metrics_polling_interval = 6000
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
   }
   aws_cognito {
-    aws_regions = ["us-east-1"]
-    metrics_polling_interval = 6000
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
   }
   aws_connect {
-    aws_regions = ["us-east-1"]
-    metrics_polling_interval = 6000
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
   }
   aws_direct_connect {
-    aws_regions = ["us-east-1"]
-    metrics_polling_interval = 6000
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
   }
   aws_fsx {
-    aws_regions = ["us-east-1"]
-    metrics_polling_interval = 6000
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_glue {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_kinesis_analytics {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_media_convert {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_media_package_vod {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_mq {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_msk {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_neptune {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_qldb {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_route53resolver {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_states {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_transit_gateway {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_waf {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  aws_wafv2 {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 3600
+  }
+  cloudfront {
+    fetch_lambdas_at_edge    = true
+    fetch_tags               = true
+    metrics_polling_interval = 3600
+    tag_key                  = "test"
+    tag_value                = "test"
   }
 }
 ```
 ## Argument Reference
 
-The following arguments are supported:
-
+<details>
+  <summary> To view the comprehensive list of valid arguments, click here. </summary>
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked AWS account in New Relic.
 * `billing` - (Optional) Billing integration. See [Integration blocks](#integration-blocks) below for details.
@@ -143,6 +202,21 @@ The following arguments are supported:
 * `aws_connect` - (Optional) Connect integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_direct_connect` - (Optional) DirectConnect integration. See [Integration blocks](#integration-blocks) below for details.
 * `aws_fsx` - (Optional) Fsx integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_glue` - (Optional) Glue integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_kinesis_analytics` - (Optional) Kinesis Analytics integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_media_convert` - (Optional) Media Convert integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_media_package_vod` - (Optional) Media Package vod integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_mq` - (Optional) Mq integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_msk` - (Optional) Msk integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_neptune` - (Optional) Neptune integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_qldb` - (Optional) Qldb integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_route53resolver` - (Optional) Route53resolver integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_states` - (Optional) States integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_transit_gateway` - (Optional) TransitGateway integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_waf` - (Optional) Waf integration. See [Integration blocks](#integration-blocks) below for details.
+* `aws_wafv2` - (Optional) Wafv2 integration. See [Integration blocks](#integration-blocks) below for details.
+* `cloudfront` - (Optional) Cloudfront integration. See [Integration blocks](#integration-blocks) below for details.
+</details>
 
 ### `Integration` blocks
 
@@ -150,8 +224,8 @@ All `integration` blocks support the following common arguments:
 
 * `metrics_polling_interval` - (Optional) The data polling interval in seconds.
 
-Some integration types support an additional set of arguments:
-
+<details>
+  <summary> Some integration types support an additional set of arguments. To delve deeper into the list of arguments, click here. </summary>
 * `cloudtrail`
   * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
 * `vpc`
@@ -198,20 +272,17 @@ Some integration types support an additional set of arguments:
   * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
   * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
   * `stage_prefixes` - (Optional) Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.
-* `auto_scaling`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-* `aws_app_sync`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-* `aws_athena`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-* `aws_cognito`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-* `aws_connect`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-* `aws_direct_connect`
-  * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
-* `aws_fsx`
+* `cloudfront`
+  * `fetch_lambdas_at_edge` - (Optional) Specify if Lambdas@Edge should be monitored. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `fetch_tags` - (Optional) Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `tag_key` - (Optional) Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.
+  * `tag_value` - (Optional) Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.
+
+Furthermore, below integration types supports the following common arguments.
+
+* `auto_scaling`,`aws_app_sync`,`aws_athena`,`aws_cognito`,`aws_connect`,`aws_direct_connect`,`aws_fsx`,`aws_glue`,`aws_kinesis_analytics`,`aws_media_convert`,`aws_media_package_vod`,`aws_mq`,`aws_msk`,`aws_neptune`,`aws_qldb`,`aws_route53resolver`,`aws_states`,`aws_transit_gateway`,`aws_waf`,`aws_wafv2`.    
   * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.  
+</details>
 
 
 ## Attributes Reference

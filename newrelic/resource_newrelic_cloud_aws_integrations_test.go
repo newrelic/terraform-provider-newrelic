@@ -117,52 +117,52 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		linked_account_id = newrelic_cloud_aws_link_account.foo.id
 	  
 		billing {
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		cloudtrail {
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  aws_regions              = ["us-east-1"]
 		}
 		health {
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		trusted_advisor {
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		vpc {
 		  aws_regions              = ["us-east-1"]
 		  fetch_nat_gateway        = true
 		  fetch_vpn                = true
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
 		x_ray {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		s3 {
 		  fetch_extended_inventory = true
 		  fetch_tags               = true
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
 		doc_db {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		sqs {
 		  fetch_extended_inventory = true
 		  fetch_tags               = true
 		  queue_prefixes           = ["test prefix"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
 		ebs {
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  fetch_extended_inventory = true
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
@@ -172,7 +172,7 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		  fetch_extended_inventory = true
 		  fetch_tags               = true
 		  load_balancer_prefixes   = ["test prefix"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
 		  tag_value                = "test"
@@ -180,12 +180,12 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		elasticache {
 		  aws_regions              = ["us-east-1"]
 		  fetch_tags               = true
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
 		api_gateway {
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  aws_regions              = ["us-east-1"]
 		  stage_prefixes           = ["test prefix"]
 		  tag_key                  = "test"
@@ -193,31 +193,90 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		}
 		auto_scaling {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		aws_app_sync {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		aws_athena {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		aws_cognito {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		aws_connect {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		aws_direct_connect {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		aws_fsx {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
+		}
+		aws_glue {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_kinesis_analytics {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_media_convert {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_media_package_vod {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_mq {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_msk {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_neptune {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_qldb {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_route53resolver {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_states {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_transit_gateway {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_waf {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_wafv2 {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		cloudfront {
+		  fetch_lambdas_at_edge    = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
 		}
 	  }
 `, arn)
@@ -230,55 +289,55 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		metric_collection_mode = "PULL"
 		name                   = "integration test account - updated"
 	  }
-	  resource "newrelic_cloud_aws_integrations" "bar" {
+	resource "newrelic_cloud_aws_integrations" "bar" {
 		linked_account_id = newrelic_cloud_aws_link_account.foo.id
 		billing {
-		  metrics_polling_interval = 10000
+		  metrics_polling_interval = 21600
 		}
 		cloudtrail {
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  aws_regions              = ["us-east-1"]
 		}
 		health {
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		trusted_advisor {
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		vpc {
 		  aws_regions              = ["us-east-1"]
 		  fetch_nat_gateway        = true
 		  fetch_vpn                = true
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
 		x_ray {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		s3 {
 		  fetch_extended_inventory = true
 		  fetch_tags               = true
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
 		doc_db {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		sqs {
 		  fetch_extended_inventory = true
 		  fetch_tags               = true
 		  queue_prefixes           = ["test prefix"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
 		ebs {
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  fetch_extended_inventory = true
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
@@ -288,7 +347,7 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		  fetch_extended_inventory = true
 		  fetch_tags               = true
 		  load_balancer_prefixes   = ["test prefix"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  aws_regions              = ["us-east-1"]
 		  tag_key                  = "test"
 		  tag_value                = "test"
@@ -296,12 +355,12 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		elasticache {
 		  aws_regions              = ["us-east-1"]
 		  fetch_tags               = true
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  tag_key                  = "test"
 		  tag_value                = "test"
 		}
 		api_gateway {
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		  aws_regions              = ["us-east-1"]
 		  stage_prefixes           = ["test prefix"]
 		  tag_key                  = "test"
@@ -309,31 +368,90 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		}
 		auto_scaling {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		aws_app_sync {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		aws_athena {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		aws_cognito {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		aws_connect {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		aws_direct_connect {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
 		}
 		aws_fsx {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 3600
+		}
+		aws_glue {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_kinesis_analytics {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_media_convert {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_media_package_vod {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_mq {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_msk {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_neptune {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_qldb {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_route53resolver {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_states {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_transit_gateway {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_waf {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_wafv2 {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		cloudfront {
+		  fetch_lambdas_at_edge    = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
 		}
 	  }
 `, arn)
