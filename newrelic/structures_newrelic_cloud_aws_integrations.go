@@ -289,6 +289,150 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 				cloudDisableAwsIntegration.Cloudfront = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
 			},
 		},
+		"dynamodb": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Dynamodb = expandCloudAwsIntegrationDynamoDBInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Dynamodb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"ec2": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Ec2 = expandCloudAwsIntegrationEc2Input(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Ec2 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"ecs": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Ecs = expandCloudAwsIntegrationEcsInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Ecs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"efs": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Efs = expandCloudAwsIntegrationEfsInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Efs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"elasticbeanstalk": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Elasticbeanstalk = expandCloudAwsIntegrationElasticbeanstalkInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Elasticbeanstalk = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"elasticsearch": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Elasticsearch = expandCloudAwsIntegrationElasticsearchInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Elasticsearch = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"elb": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Elb = expandCloudAwsIntegrationElbInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Elb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"emr": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Emr = expandCloudAwsIntegrationEmrInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Emr = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"iam": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Iam = expandCloudAwsIntegrationIamInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Iam = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"iot": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Iot = expandCloudAwsIntegrationIotInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Iot = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"kinesis": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Kinesis = expandCloudAwsIntegrationKinesisInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Kinesis = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"kinesis_firehose": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.KinesisFirehose = expandCloudAwsIntegrationKinesisFirehoseInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.KinesisFirehose = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"lambda": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Lambda = expandCloudAwsIntegrationLambdaInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Lambda = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"rds": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Rds = expandCloudAwsIntegrationRdsInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Rds = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"redshift": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Redshift = expandCloudAwsIntegrationRedshiftInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Redshift = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"route53": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Route53 = expandCloudAwsIntegrationRoute53Input(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Route53 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"ses": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Ses = expandCloudAwsIntegrationSesInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Ses = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
+		"sns": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.Sns = expandCloudAwsIntegrationSnsInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.Sns = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
 	}
 
 	for key, fun := range awsIntegrationMap {
@@ -387,7 +531,42 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 			_ = d.Set("aws_wafv2", flattenCloudAwsWafv2Integration(t))
 		case *cloud.CloudCloudfrontIntegration:
 			_ = d.Set("cloudfront", flattenCloudCloudfrontIntegration(t))
-
+		case *cloud.CloudDynamodbIntegration:
+			_ = d.Set("dynamodb", flattenCloudDynamodbIntegration(t))
+		case *cloud.CloudEc2Integration:
+			_ = d.Set("ec2", flattenCloudEc2Integration(t))
+		case *cloud.CloudEcsIntegration:
+			_ = d.Set("ecs", flattenCloudEcsIntegration(t))
+		case *cloud.CloudEfsIntegration:
+			_ = d.Set("efs", flattenCloudEfsIntegration(t))
+		case *cloud.CloudElasticbeanstalkIntegration:
+			_ = d.Set("elasticbeanstalk", flattenCloudElasticbeanstalkIntegration(t))
+		case *cloud.CloudElasticsearchIntegration:
+			_ = d.Set("elasticsearch", flattenCloudElasticsearchIntegration(t))
+		case *cloud.CloudElbIntegration:
+			_ = d.Set("elb", flattenCloudElbIntegration(t))
+		case *cloud.CloudEmrIntegration:
+			_ = d.Set("emr", flattenCloudEmrIntegration(t))
+		case *cloud.CloudIamIntegration:
+			_ = d.Set("iam", flattenCloudIamIntegration(t))
+		case *cloud.CloudIotIntegration:
+			_ = d.Set("iot", flattenCloudIotIntegration(t))
+		case *cloud.CloudKinesisIntegration:
+			_ = d.Set("kinesis", flattenCloudKinesisIntegration(t))
+		case *cloud.CloudKinesisFirehoseIntegration:
+			_ = d.Set("kinesis_firehose", flattenCloudKinesisfirehoseIntegration(t))
+		case *cloud.CloudLambdaIntegration:
+			_ = d.Set("lambda", flattenCloudLambdaIntegration(t))
+		case *cloud.CloudRdsIntegration:
+			_ = d.Set("rds", flattenCloudRdsIntegration(t))
+		case *cloud.CloudRedshiftIntegration:
+			_ = d.Set("redshift", flattenCloudRedshiftIntegration(t))
+		case *cloud.CloudRoute53Integration:
+			_ = d.Set("route53", flattenCloudRoute53Integration(t))
+		case *cloud.CloudSesIntegration:
+			_ = d.Set("ses", flattenCloudSesIntegration(t))
+		case *cloud.CloudSnsIntegration:
+			_ = d.Set("sns", flattenCloudSnsIntegration(t))
 		}
 	}
 }
@@ -538,6 +717,78 @@ func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInpu
 
 	if _, ok := d.GetOk("cloudfront"); ok {
 		cloudDisableAwsIntegration.Cloudfront = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("dynamodb"); ok {
+		cloudDisableAwsIntegration.Dynamodb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("ec2"); ok {
+		cloudDisableAwsIntegration.Ec2 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("ecs"); ok {
+		cloudDisableAwsIntegration.Ecs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("efs"); ok {
+		cloudDisableAwsIntegration.Efs = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("elasticbeanstalk"); ok {
+		cloudDisableAwsIntegration.Elasticbeanstalk = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("elasticsearch"); ok {
+		cloudDisableAwsIntegration.Elasticsearch = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("elb"); ok {
+		cloudDisableAwsIntegration.Elb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("emr"); ok {
+		cloudDisableAwsIntegration.Emr = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("iam"); ok {
+		cloudDisableAwsIntegration.Iam = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("iot"); ok {
+		cloudDisableAwsIntegration.Iot = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("kinesis"); ok {
+		cloudDisableAwsIntegration.Kinesis = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("kinesis_firehose"); ok {
+		cloudDisableAwsIntegration.KinesisFirehose = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("lambda"); ok {
+		cloudDisableAwsIntegration.Lambda = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("rds"); ok {
+		cloudDisableAwsIntegration.Rds = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("redshift"); ok {
+		cloudDisableAwsIntegration.Redshift = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("route53"); ok {
+		cloudDisableAwsIntegration.Route53 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("ses"); ok {
+		cloudDisableAwsIntegration.Ses = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("sns"); ok {
+		cloudDisableAwsIntegration.Sns = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	deleteInput := cloud.CloudDisableIntegrationsInput{
@@ -1908,6 +2159,837 @@ func expandCloudAwsIntegrationCloudfrontInput(b []interface{}, linkedAccountID i
 	return expanded
 }
 
+// Expanding the dynamodb input
+
+func expandCloudAwsIntegrationDynamoDBInput(b []interface{}, linkedAccountID int) []cloud.CloudDynamodbIntegrationInput {
+	expanded := make([]cloud.CloudDynamodbIntegrationInput, len(b))
+
+	for i, dynamodb := range b {
+		var dynamodbInput cloud.CloudDynamodbIntegrationInput
+
+		if dynamodb == nil {
+			dynamodbInput.LinkedAccountId = linkedAccountID
+			expanded[i] = dynamodbInput
+			return expanded
+		}
+
+		in := dynamodb.(map[string]interface{})
+
+		dynamodbInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			dynamodbInput.AwsRegions = regions
+		}
+
+		if ft, ok := in["fetch_extended_inventory"]; ok {
+			dynamodbInput.FetchExtendedInventory = ft.(bool)
+		}
+
+		if ft, ok := in["fetch_tags"]; ok {
+			dynamodbInput.FetchTags = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			dynamodbInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			dynamodbInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			dynamodbInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = dynamodbInput
+	}
+
+	return expanded
+}
+
+// Expanding the ec2 input
+
+func expandCloudAwsIntegrationEc2Input(b []interface{}, linkedAccountID int) []cloud.CloudEc2IntegrationInput {
+	expanded := make([]cloud.CloudEc2IntegrationInput, len(b))
+
+	for i, ec2 := range b {
+		var ec2Input cloud.CloudEc2IntegrationInput
+
+		if ec2 == nil {
+			ec2Input.LinkedAccountId = linkedAccountID
+			expanded[i] = ec2Input
+			return expanded
+		}
+
+		in := ec2.(map[string]interface{})
+
+		ec2Input.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			ec2Input.AwsRegions = regions
+		}
+
+		if ft, ok := in["duplicate_ec2_tags"]; ok {
+			ec2Input.DuplicateEc2Tags = ft.(bool)
+		}
+
+		if ft, ok := in["fetch_ip_addresses"]; ok {
+			ec2Input.FetchIpAddresses = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			ec2Input.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			ec2Input.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			ec2Input.TagValue = tv.(string)
+		}
+
+		expanded[i] = ec2Input
+	}
+
+	return expanded
+}
+
+// Expanding the ecs input
+
+func expandCloudAwsIntegrationEcsInput(b []interface{}, linkedAccountID int) []cloud.CloudEcsIntegrationInput {
+	expanded := make([]cloud.CloudEcsIntegrationInput, len(b))
+
+	for i, ecs := range b {
+		var ecsInput cloud.CloudEcsIntegrationInput
+
+		if ecs == nil {
+			ecsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = ecsInput
+			return expanded
+		}
+
+		in := ecs.(map[string]interface{})
+
+		ecsInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			ecsInput.AwsRegions = regions
+		}
+
+		if ft, ok := in["fetch_tags"]; ok {
+			ecsInput.FetchTags = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			ecsInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			ecsInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			ecsInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = ecsInput
+	}
+
+	return expanded
+}
+
+// Expanding the efs input
+
+func expandCloudAwsIntegrationEfsInput(b []interface{}, linkedAccountID int) []cloud.CloudEfsIntegrationInput {
+	expanded := make([]cloud.CloudEfsIntegrationInput, len(b))
+
+	for i, efs := range b {
+		var efsInput cloud.CloudEfsIntegrationInput
+
+		if efs == nil {
+			efsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = efsInput
+			return expanded
+		}
+
+		in := efs.(map[string]interface{})
+
+		efsInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			efsInput.AwsRegions = regions
+		}
+
+		if ft, ok := in["fetch_tags"]; ok {
+			efsInput.FetchTags = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			efsInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			efsInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			efsInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = efsInput
+	}
+
+	return expanded
+}
+
+// Expanding the elasticbeanstalk input
+
+func expandCloudAwsIntegrationElasticbeanstalkInput(b []interface{}, linkedAccountID int) []cloud.CloudElasticbeanstalkIntegrationInput {
+	expanded := make([]cloud.CloudElasticbeanstalkIntegrationInput, len(b))
+
+	for i, elasticbeanstalk := range b {
+		var elasticbeanstalkInput cloud.CloudElasticbeanstalkIntegrationInput
+
+		if elasticbeanstalk == nil {
+			elasticbeanstalkInput.LinkedAccountId = linkedAccountID
+			expanded[i] = elasticbeanstalkInput
+			return expanded
+		}
+
+		in := elasticbeanstalk.(map[string]interface{})
+
+		elasticbeanstalkInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			elasticbeanstalkInput.AwsRegions = regions
+		}
+
+		if ft, ok := in["fetch_extended_inventory"]; ok {
+			elasticbeanstalkInput.FetchExtendedInventory = ft.(bool)
+		}
+
+		if ft, ok := in["fetch_tags"]; ok {
+			elasticbeanstalkInput.FetchTags = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			elasticbeanstalkInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			elasticbeanstalkInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			elasticbeanstalkInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = elasticbeanstalkInput
+	}
+
+	return expanded
+}
+
+// Expanding the elasticsearch input
+
+func expandCloudAwsIntegrationElasticsearchInput(b []interface{}, linkedAccountID int) []cloud.CloudElasticsearchIntegrationInput {
+	expanded := make([]cloud.CloudElasticsearchIntegrationInput, len(b))
+
+	for i, elasticsearch := range b {
+		var elasticsearchInput cloud.CloudElasticsearchIntegrationInput
+
+		if elasticsearch == nil {
+			elasticsearchInput.LinkedAccountId = linkedAccountID
+			expanded[i] = elasticsearchInput
+			return expanded
+		}
+
+		in := elasticsearch.(map[string]interface{})
+
+		elasticsearchInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			elasticsearchInput.AwsRegions = regions
+		}
+
+		if ft, ok := in["fetch_nodes"]; ok {
+			elasticsearchInput.FetchNodes = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			elasticsearchInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			elasticsearchInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			elasticsearchInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = elasticsearchInput
+	}
+
+	return expanded
+}
+
+// Expanding the elb input
+
+func expandCloudAwsIntegrationElbInput(b []interface{}, linkedAccountID int) []cloud.CloudElbIntegrationInput {
+	expanded := make([]cloud.CloudElbIntegrationInput, len(b))
+
+	for i, elb := range b {
+		var elbInput cloud.CloudElbIntegrationInput
+
+		if elb == nil {
+			elbInput.LinkedAccountId = linkedAccountID
+			expanded[i] = elbInput
+			return expanded
+		}
+
+		in := elb.(map[string]interface{})
+
+		elbInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			elbInput.AwsRegions = regions
+		}
+
+		if ft, ok := in["fetch_extended_inventory"]; ok {
+			elbInput.FetchExtendedInventory = ft.(bool)
+		}
+
+		if ft, ok := in["fetch_tags"]; ok {
+			elbInput.FetchTags = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			elbInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = elbInput
+	}
+
+	return expanded
+}
+
+// Expanding the emr input
+
+func expandCloudAwsIntegrationEmrInput(b []interface{}, linkedAccountID int) []cloud.CloudEmrIntegrationInput {
+	expanded := make([]cloud.CloudEmrIntegrationInput, len(b))
+
+	for i, emr := range b {
+		var emrInput cloud.CloudEmrIntegrationInput
+
+		if emr == nil {
+			emrInput.LinkedAccountId = linkedAccountID
+			expanded[i] = emrInput
+			return expanded
+		}
+
+		in := emr.(map[string]interface{})
+
+		emrInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			emrInput.AwsRegions = regions
+		}
+
+		if ft, ok := in["fetch_tags"]; ok {
+			emrInput.FetchTags = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			emrInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			emrInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			emrInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = emrInput
+	}
+
+	return expanded
+}
+
+// Expanding the iam input
+
+func expandCloudAwsIntegrationIamInput(b []interface{}, linkedAccountID int) []cloud.CloudIamIntegrationInput {
+	expanded := make([]cloud.CloudIamIntegrationInput, len(b))
+
+	for i, iam := range b {
+		var iamInput cloud.CloudIamIntegrationInput
+
+		if iam == nil {
+			iamInput.LinkedAccountId = linkedAccountID
+			expanded[i] = iamInput
+			return expanded
+		}
+
+		in := iam.(map[string]interface{})
+
+		iamInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			iamInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			iamInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			iamInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = iamInput
+	}
+
+	return expanded
+}
+
+// Expanding the iot input
+
+func expandCloudAwsIntegrationIotInput(b []interface{}, linkedAccountID int) []cloud.CloudIotIntegrationInput {
+	expanded := make([]cloud.CloudIotIntegrationInput, len(b))
+
+	for i, iot := range b {
+		var iotInput cloud.CloudIotIntegrationInput
+
+		if iot == nil {
+			iotInput.LinkedAccountId = linkedAccountID
+			expanded[i] = iotInput
+			return expanded
+		}
+
+		in := iot.(map[string]interface{})
+
+		iotInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			iotInput.AwsRegions = regions
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			iotInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = iotInput
+	}
+
+	return expanded
+}
+
+// Expanding the kinesis input
+
+func expandCloudAwsIntegrationKinesisInput(b []interface{}, linkedAccountID int) []cloud.CloudKinesisIntegrationInput {
+	expanded := make([]cloud.CloudKinesisIntegrationInput, len(b))
+
+	for i, kinesis := range b {
+		var kinesisInput cloud.CloudKinesisIntegrationInput
+
+		if kinesis == nil {
+			kinesisInput.LinkedAccountId = linkedAccountID
+			expanded[i] = kinesisInput
+			return expanded
+		}
+
+		in := kinesis.(map[string]interface{})
+
+		kinesisInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			kinesisInput.AwsRegions = regions
+		}
+
+		if ft, ok := in["fetch_shards"]; ok {
+			kinesisInput.FetchShards = ft.(bool)
+		}
+
+		if ft, ok := in["fetch_tags"]; ok {
+			kinesisInput.FetchTags = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			kinesisInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			kinesisInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			kinesisInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = kinesisInput
+	}
+
+	return expanded
+}
+
+// Expanding the kinesisfirehose input
+
+func expandCloudAwsIntegrationKinesisFirehoseInput(b []interface{}, linkedAccountID int) []cloud.CloudKinesisFirehoseIntegrationInput {
+	expanded := make([]cloud.CloudKinesisFirehoseIntegrationInput, len(b))
+
+	for i, firehose := range b {
+		var firehoseInput cloud.CloudKinesisFirehoseIntegrationInput
+
+		if firehose == nil {
+			firehoseInput.LinkedAccountId = linkedAccountID
+			expanded[i] = firehoseInput
+			return expanded
+		}
+
+		in := firehose.(map[string]interface{})
+
+		firehoseInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			firehoseInput.AwsRegions = regions
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			firehoseInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = firehoseInput
+	}
+
+	return expanded
+}
+
+// Expanding the lambda input
+
+func expandCloudAwsIntegrationLambdaInput(b []interface{}, linkedAccountID int) []cloud.CloudLambdaIntegrationInput {
+	expanded := make([]cloud.CloudLambdaIntegrationInput, len(b))
+
+	for i, lambda := range b {
+		var lambdaInput cloud.CloudLambdaIntegrationInput
+
+		if lambda == nil {
+			lambdaInput.LinkedAccountId = linkedAccountID
+			expanded[i] = lambdaInput
+			return expanded
+		}
+
+		in := lambda.(map[string]interface{})
+
+		lambdaInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			lambdaInput.AwsRegions = regions
+		}
+
+		if ft, ok := in["fetch_tags"]; ok {
+			lambdaInput.FetchTags = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			lambdaInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			lambdaInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			lambdaInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = lambdaInput
+	}
+
+	return expanded
+}
+
+// Expanding the rds input
+
+func expandCloudAwsIntegrationRdsInput(b []interface{}, linkedAccountID int) []cloud.CloudRdsIntegrationInput {
+	expanded := make([]cloud.CloudRdsIntegrationInput, len(b))
+
+	for i, rds := range b {
+		var rdsInput cloud.CloudRdsIntegrationInput
+
+		if rds == nil {
+			rdsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = rdsInput
+			return expanded
+		}
+
+		in := rds.(map[string]interface{})
+
+		rdsInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			rdsInput.AwsRegions = regions
+		}
+
+		if ft, ok := in["fetch_tags"]; ok {
+			rdsInput.FetchTags = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			rdsInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			rdsInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			rdsInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = rdsInput
+	}
+
+	return expanded
+}
+
+// Expanding the redshift input
+
+func expandCloudAwsIntegrationRedshiftInput(b []interface{}, linkedAccountID int) []cloud.CloudRedshiftIntegrationInput {
+	expanded := make([]cloud.CloudRedshiftIntegrationInput, len(b))
+
+	for i, redshift := range b {
+		var redshiftInput cloud.CloudRedshiftIntegrationInput
+
+		if redshift == nil {
+			redshiftInput.LinkedAccountId = linkedAccountID
+			expanded[i] = redshiftInput
+			return expanded
+		}
+
+		in := redshift.(map[string]interface{})
+
+		redshiftInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			redshiftInput.AwsRegions = regions
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			redshiftInput.MetricsPollingInterval = m.(int)
+		}
+
+		if tk, ok := in["tag_key"]; ok {
+			redshiftInput.TagKey = tk.(string)
+		}
+
+		if tv, ok := in["tag_value"]; ok {
+			redshiftInput.TagValue = tv.(string)
+		}
+
+		expanded[i] = redshiftInput
+	}
+
+	return expanded
+}
+
+// Expanding the route53 input
+
+func expandCloudAwsIntegrationRoute53Input(b []interface{}, linkedAccountID int) []cloud.CloudRoute53IntegrationInput {
+	expanded := make([]cloud.CloudRoute53IntegrationInput, len(b))
+
+	for i, route53 := range b {
+		var route53Input cloud.CloudRoute53IntegrationInput
+
+		if route53 == nil {
+			route53Input.LinkedAccountId = linkedAccountID
+			expanded[i] = route53Input
+			return expanded
+		}
+
+		in := route53.(map[string]interface{})
+
+		route53Input.LinkedAccountId = linkedAccountID
+
+		if ft, ok := in["fetch_extended_inventory"]; ok {
+			route53Input.FetchExtendedInventory = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			route53Input.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = route53Input
+	}
+
+	return expanded
+}
+
+// Expanding the ses input
+
+func expandCloudAwsIntegrationSesInput(b []interface{}, linkedAccountID int) []cloud.CloudSesIntegrationInput {
+	expanded := make([]cloud.CloudSesIntegrationInput, len(b))
+
+	for i, ses := range b {
+		var sesInput cloud.CloudSesIntegrationInput
+
+		if ses == nil {
+			sesInput.LinkedAccountId = linkedAccountID
+			expanded[i] = sesInput
+			return expanded
+		}
+
+		in := ses.(map[string]interface{})
+
+		sesInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			sesInput.AwsRegions = regions
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			sesInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = sesInput
+	}
+
+	return expanded
+}
+
+// Expanding the sns input
+
+func expandCloudAwsIntegrationSnsInput(b []interface{}, linkedAccountID int) []cloud.CloudSnsIntegrationInput {
+	expanded := make([]cloud.CloudSnsIntegrationInput, len(b))
+
+	for i, sns := range b {
+		var snsInput cloud.CloudSnsIntegrationInput
+
+		if sns == nil {
+			snsInput.LinkedAccountId = linkedAccountID
+			expanded[i] = snsInput
+			return expanded
+		}
+
+		in := sns.(map[string]interface{})
+
+		snsInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			snsInput.AwsRegions = regions
+		}
+
+		if ft, ok := in["fetch_extended_inventory"]; ok {
+			snsInput.FetchExtendedInventory = ft.(bool)
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			snsInput.MetricsPollingInterval = m.(int)
+		}
+
+		expanded[i] = snsInput
+	}
+
+	return expanded
+}
+
 // flatten for Billing integration
 
 func flattenCloudAwsBillingIntegration(in *cloud.CloudBillingIntegration) []interface{} {
@@ -2433,6 +3515,316 @@ func flattenCloudCloudfrontIntegration(in *cloud.CloudCloudfrontIntegration) []i
 	out["fetch_tags"] = in.FetchTags
 	out["tag_key"] = in.TagKey
 	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for dynamodb integration
+
+func flattenCloudDynamodbIntegration(in *cloud.CloudDynamodbIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for ec2 integration
+
+func flattenCloudEc2Integration(in *cloud.CloudEc2Integration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["duplicate_ec2_tags"] = in.DuplicateEc2Tags
+	out["fetch_ip_addresses"] = in.FetchIpAddresses
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for ecs integration
+
+func flattenCloudEcsIntegration(in *cloud.CloudEcsIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for efs integration
+
+func flattenCloudEfsIntegration(in *cloud.CloudEfsIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for elasticbeanstalk integration
+
+func flattenCloudElasticbeanstalkIntegration(in *cloud.CloudElasticbeanstalkIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for elasticsearch integration
+
+func flattenCloudElasticsearchIntegration(in *cloud.CloudElasticsearchIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_nodes"] = in.FetchNodes
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for elb integration
+
+func flattenCloudElbIntegration(in *cloud.CloudElbIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+	out["fetch_tags"] = in.FetchTags
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for emr integration
+
+func flattenCloudEmrIntegration(in *cloud.CloudEmrIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for iam integration
+
+func flattenCloudIamIntegration(in *cloud.CloudIamIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for iot integration
+
+func flattenCloudIotIntegration(in *cloud.CloudIotIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for kinesis integration
+
+func flattenCloudKinesisIntegration(in *cloud.CloudKinesisIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_shards"] = in.FetchShards
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for kinesis firehose integration
+
+func flattenCloudKinesisfirehoseIntegration(in *cloud.CloudKinesisFirehoseIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for lambda integration
+
+func flattenCloudLambdaIntegration(in *cloud.CloudLambdaIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for rds integration
+
+func flattenCloudRdsIntegration(in *cloud.CloudRdsIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_tags"] = in.FetchTags
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for redshift integration
+
+func flattenCloudRedshiftIntegration(in *cloud.CloudRedshiftIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["tag_key"] = in.TagKey
+	out["tag_value"] = in.TagValue
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for route53 integration
+
+func flattenCloudRoute53Integration(in *cloud.CloudRoute53Integration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for ses integration
+
+func flattenCloudSesIntegration(in *cloud.CloudSesIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for sns integration
+
+func flattenCloudSnsIntegration(in *cloud.CloudSnsIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["fetch_extended_inventory"] = in.FetchExtendedInventory
 
 	flattened[0] = out
 
