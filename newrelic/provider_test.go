@@ -22,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/apm"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/config"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
@@ -36,11 +37,16 @@ var (
 	testAccProviders                           map[string]*schema.Provider
 	testAccProvider                            *schema.Provider
 	testAccountID                              int
-	testSubaccountID                           int
+	testSubAccountID                           int
 	testAccountName                            string
 	testAccAPMEntityCreated                    = false
 	testAccAPMSingleQuotedEntityCreated        = false
 	testAccCleanupComplete                     = false
+	testCloudAccCleanupComplete                = map[string]bool{
+		"aws":   false,
+		"azure": false,
+		"gcp":   false,
+	}
 )
 
 func init() {
@@ -63,9 +69,8 @@ func init() {
 
 	// Used for cross-account scenarios if needed, such as dashboard widgets.
 	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_SUBACCOUNT_ID")); v != 0 {
-		testSubaccountID = v
+		testSubAccountID = v
 	}
-
 	if v := os.Getenv("NEW_RELIC_ACCOUNT_NAME"); v != "" {
 		testAccountName = v
 	} else {
@@ -241,6 +246,42 @@ func testAccApplicationsCleanup(t *testing.T) {
 // deleting any resources that might be cross-account, such as workloads.
 func generateNameForIntegrationTestResource() string {
 	return fmt.Sprintf("tf-test-%s", acctest.RandString(15))
+}
+
+// testAccCloudLinkedAccountsCleanup handles cleaning up/deleting cloud accounts linked to the
+// specified New Relic account, of the specified provider (aws, azure, gcp).
+// Deleting linked accounts also deletes associated integrations
+func testAccCloudLinkedAccountsCleanup(t *testing.T, provider string) {
+	if testCloudAccCleanupComplete[provider] {
+		return
+	}
+	client := cloud.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
+	t.Logf("***** unlinking '%s' cloud accounts linked to the subaccount ******", provider)
+
+	cloudLinkedAccounts, err := client.GetLinkedAccounts(provider)
+	if err != nil {
+		t.Logf("error fetching '%s' cloud accounts linked to the subaccount: %s", provider, err)
+	}
+
+	if cloudLinkedAccounts == nil {
+		t.Logf("no '%s' cloud accounts linked to the subaccount found to be deleted.", provider)
+	} else {
+		cloudLinkedAccountsToBeDisabled := make([]cloud.CloudUnlinkAccountsInput, 0)
+		for _, cloudLinkedAccount := range *cloudLinkedAccounts {
+			if cloudLinkedAccount.NrAccountId == testSubAccountID {
+				cloudLinkedAccountsToBeDisabled = append(cloudLinkedAccountsToBeDisabled, cloud.CloudUnlinkAccountsInput{LinkedAccountId: cloudLinkedAccount.ID})
+				t.Logf("identified '%s' cloud account '%d' linked to the subaccount '%d'", provider, cloudLinkedAccount.ID, testSubAccountID)
+			}
+		}
+		_, err = client.CloudUnlinkAccount(testSubAccountID, cloudLinkedAccountsToBeDisabled)
+		if err == nil {
+			t.Logf("deleted %d '%s' cloud accounts linked to the subaccount: %v", len(cloudLinkedAccountsToBeDisabled), provider, cloudLinkedAccountsToBeDisabled)
+		}
+	}
+	t.Logf("testacc cleanup of '%s' cloud accounts linked to the subaccount complete", provider)
+	testCloudAccCleanupComplete[provider] = true
 }
 
 // Deleting the data partitions as they start with "Log_Test_"

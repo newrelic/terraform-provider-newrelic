@@ -16,29 +16,39 @@ import (
 )
 
 func TestAccNewRelicCloudAwsLinkAccount_Basic(t *testing.T) {
-	rName := acctest.RandString(5)
+	testAWSLinkAccountName := fmt.Sprintf("tf_cloud_link_account_test_aws_%s", acctest.RandString(5))
 	resourceName := "newrelic_cloud_aws_link_account.foo"
 
-	testAwsArn := os.Getenv("INTEGRATION_TESTING_AWS_ARN")
-	if testAwsArn == "" {
+	if subAccountIDExists := os.Getenv("NEW_RELIC_SUBACCOUNT_ID"); subAccountIDExists == "" {
+		t.Skipf("Skipping this test, as NEW_RELIC_SUBACCOUNT_ID must be set for this test to run.")
+	}
+
+	testAWSArn := os.Getenv("INTEGRATION_TESTING_AWS_ARN")
+	if testAWSArn == "" {
 		t.Skipf("INTEGRATION_TESTING_AWS_ARN must be set for this acceptance test")
 	}
 
+	AWSLinkAccountTestConfig := map[string]string{
+		"name":       testAWSLinkAccountName,
+		"account_id": strconv.Itoa(testSubAccountID),
+		"arn":        testAWSArn,
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccCloudLinkedAccountsCleanup(t, "aws") },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicCloudAwsLinkAccountDestroy,
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicAwsLinkAccountConfig(rName, testAwsArn),
+				Config: testAccNewRelicAwsLinkAccountConfig(AWSLinkAccountTestConfig, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsLinkAccountExists(resourceName),
 				),
 			},
 			//Test: Update
 			{
-				Config: testAccNewRelicAwsLinkAccountConfigUpdated(rName, testAwsArn),
+				Config: testAccNewRelicAwsLinkAccountConfig(AWSLinkAccountTestConfig, true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsLinkAccountExists(resourceName),
 				),
@@ -71,7 +81,7 @@ func testAccCheckNewRelicCloudAwsLinkAccountExists(n string) resource.TestCheckF
 			return fmt.Errorf("error converting string id to int")
 		}
 
-		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, resourceId)
 
 		if err != nil && linkedAccount == nil {
 			return err
@@ -94,7 +104,7 @@ func testAccCheckNewRelicCloudAwsLinkAccountDestroy(s *terraform.State) error {
 			return fmt.Errorf("error converting string id to int")
 		}
 
-		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, resourceId)
 
 		if linkedAccount != nil && err == nil {
 			return fmt.Errorf("linked aws account still exists: #{err}")
@@ -104,22 +114,22 @@ func testAccCheckNewRelicCloudAwsLinkAccountDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccNewRelicAwsLinkAccountConfig(name string, arn string) string {
-	return fmt.Sprintf(`
-	resource "newrelic_cloud_aws_link_account" "foo" {
-		arn = "%[2]s"
-		metric_collection_mode = "PUSH"
-		name = "%[1]s"
+func testAccNewRelicAwsLinkAccountConfig(AWSLinkAccountTestConfig map[string]string, updated bool) string {
+	if updated == true {
+		AWSLinkAccountTestConfig["name"] += "_updated"
 	}
-	`, name, arn)
-}
 
-func testAccNewRelicAwsLinkAccountConfigUpdated(name string, arn string) string {
 	return fmt.Sprintf(`
-	resource "newrelic_cloud_aws_link_account" "foo" {
-		arn = "%[2]s"
-		metric_collection_mode = "PUSH"
-		name = "%[1]s-updated"
+	provider "newrelic" {
+		account_id = "` + AWSLinkAccountTestConfig["account_id"] + `"
+		alias      = "cloud-integration-provider"
 	}
-	`, name, arn)
+
+	resource "newrelic_cloud_aws_link_account" "foo" {
+		provider        	   = newrelic.cloud-integration-provider
+		arn                    = "` + AWSLinkAccountTestConfig["arn"] + `"
+		metric_collection_mode = "PULL"
+		name                   = "` + AWSLinkAccountTestConfig["name"] + `"
+		account_id			   = "` + AWSLinkAccountTestConfig["account_id"] + `"
+	}`)
 }

@@ -8,34 +8,50 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNewRelicCloudAwsIntegrations_Basic(t *testing.T) {
 	resourceName := "newrelic_cloud_aws_integrations.bar"
+	testAWSIntegrationName := fmt.Sprintf("tf_cloud_integrations_test_aws_%s", acctest.RandString(5))
 
-	testAwsArn := os.Getenv("INTEGRATION_TESTING_AWS_ARN")
-	if testAwsArn == "" {
+	if subAccountIDExists := os.Getenv("NEW_RELIC_SUBACCOUNT_ID"); subAccountIDExists == "" {
+		t.Skipf("Skipping this test, as NEW_RELIC_SUBACCOUNT_ID must be set for this test to run.")
+	}
+
+	testAWSArn := os.Getenv("INTEGRATION_TESTING_AWS_ARN")
+	if testAWSArn == "" {
 		t.Skipf("INTEGRATION_TESTING_AWS_ARN must be set for this acceptance test")
 	}
 
+	AWSIntegrationsTestConfig := map[string]string{
+		"name":       testAWSIntegrationName,
+		"account_id": strconv.Itoa(testSubAccountID),
+		"arn":        testAWSArn,
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccCloudLinkedAccountsCleanup(t, "aws") },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicCloudAwsIntegrationsDestroy,
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicAwsIntegrationsConfig(testAwsArn),
+				Config: testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
+				PreConfig: func() {
+					time.Sleep(10 * time.Second)
+				},
 			},
 			//Test: Update
 			{
-				Config: testAccNewRelicAwsIntegrationsConfigUpdated(testAwsArn),
+				Config: testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
@@ -68,7 +84,7 @@ func testAccCheckNewRelicCloudAwsIntegrationsExist(n string) resource.TestCheckF
 			return fmt.Errorf("error converting string id to int")
 		}
 
-		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, resourceId)
 
 		if err != nil {
 			return err
@@ -85,7 +101,7 @@ func testAccCheckNewRelicCloudAwsIntegrationsExist(n string) resource.TestCheckF
 func testAccCheckNewRelicCloudAwsIntegrationsDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
-		if r.Type != "newrelic_cloud_aws_integrations" {
+		if r.Type != "newrelic_cloud_aws_integrations" && r.Type != "newrelic_cloud_aws_link_account" {
 			continue
 		}
 
@@ -95,7 +111,7 @@ func testAccCheckNewRelicCloudAwsIntegrationsDestroy(s *terraform.State) error {
 			return fmt.Errorf("error converting string id to int")
 		}
 
-		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, resourceId)
 
 		if linkedAccount != nil && err == nil {
 			return fmt.Errorf("linked aws account still exists: #{err}")
@@ -105,17 +121,25 @@ func testAccCheckNewRelicCloudAwsIntegrationsDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccNewRelicAwsIntegrationsConfig(arn string) string {
+func testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig map[string]string) string {
 	return fmt.Sprintf(`
+	provider "newrelic" {
+  		account_id = "` + AWSIntegrationsTestConfig["account_id"] + `"
+  		alias      = "cloud-integration-provider"
+	}
+
 	resource "newrelic_cloud_aws_link_account" "foo" {
-		arn                    = "%[1]s"
+        provider        	   = newrelic.cloud-integration-provider
+		arn                    = "` + AWSIntegrationsTestConfig["arn"] + `"
 		metric_collection_mode = "PULL"
-		name                   = "integration test account"
+		name                   = "` + AWSIntegrationsTestConfig["name"] + `"
+		account_id			   = "` + AWSIntegrationsTestConfig["account_id"] + `"
 	  }
 
 	  resource "newrelic_cloud_aws_integrations" "bar" {
-		linked_account_id = newrelic_cloud_aws_link_account.foo.id
-	  
+		provider        	   = newrelic.cloud-integration-provider
+		linked_account_id 	   = newrelic_cloud_aws_link_account.foo.id
+	    account_id             = "` + AWSIntegrationsTestConfig["account_id"] + `"
 		billing {
 		  metrics_polling_interval = 6000
 		}
@@ -391,18 +415,27 @@ func testAccNewRelicAwsIntegrationsConfig(arn string) string {
 		  metrics_polling_interval = 6000
 		}
 	  }
-`, arn)
+`)
 }
 
-func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
+func testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig map[string]string) string {
 	return fmt.Sprintf(`
+	provider "newrelic" {
+  		account_id = "` + AWSIntegrationsTestConfig["account_id"] + `"
+  		alias      = "cloud-integration-provider"
+	}
+
 	resource "newrelic_cloud_aws_link_account" "foo" {
-		arn                    = "%[1]s"
+		provider        	   = newrelic.cloud-integration-provider
+		arn                    = "` + AWSIntegrationsTestConfig["arn"] + `"
 		metric_collection_mode = "PULL"
-		name                   = "integration test account - updated"
+		name                   = "` + AWSIntegrationsTestConfig["name"] + `_updated"
+		account_id			   = "` + AWSIntegrationsTestConfig["account_id"] + `"
 	  }
 	  resource "newrelic_cloud_aws_integrations" "bar" {
-		linked_account_id = newrelic_cloud_aws_link_account.foo.id
+        provider        	   = newrelic.cloud-integration-provider
+		linked_account_id      = newrelic_cloud_aws_link_account.foo.id
+		account_id			   = "` + AWSIntegrationsTestConfig["account_id"] + `"
 		billing {
 		  metrics_polling_interval = 10000
 		}
@@ -678,5 +711,5 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(arn string) string {
 		  metrics_polling_interval = 6000
 		}
 	  }
-`, arn)
+`)
 }
