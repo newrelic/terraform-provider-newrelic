@@ -21,6 +21,7 @@ resource "newrelic_one_dashboard_json" "foo" {
 The following arguments are supported:
 
 - `json` - (Required) The JSON export of a dashboard. [The JSON can be exported from the UI](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/dashboards-charts-import-export-data/#dashboards)
+- `account_id` - (Optional) Determines the New Relic account where the dashboard will be created. Defaults to the account associated with the API key used.
 
 ## Attribute Reference
 
