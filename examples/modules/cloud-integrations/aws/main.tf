@@ -3,7 +3,7 @@ data "aws_iam_policy_document" "newrelic_assume_policy" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type = "AWS"
+      type        = "AWS"
       // This is the unique identifier for New Relic account on AWS, there is no need to change this
       identifiers = [754728514883]
     }
@@ -141,8 +141,8 @@ resource "aws_kinesis_firehose_delivery_stream" "newrelic_firehose_stream" {
     s3_configuration {
       role_arn           = aws_iam_role.firehose_newrelic_role.arn
       bucket_arn         = aws_s3_bucket.newrelic_aws_bucket.arn
-      buffer_size        = 10
-      buffer_interval    = 400
+      buffering_size     = 10
+      buffering_interval = 400
       compression_format = "GZIP"
     }
   }
@@ -328,7 +328,7 @@ resource "aws_config_configuration_recorder_status" "newrelic_recorder_status" {
 resource "aws_config_delivery_channel" "newrelic_recorder_delivery" {
   name           = "newrelic_configuration_recorder-${var.name}"
   s3_bucket_name = aws_s3_bucket.newrelic_configuration_recorder_s3.bucket
-  depends_on = [
+  depends_on     = [
     aws_config_configuration_recorder.newrelic_recorder
   ]
 }
