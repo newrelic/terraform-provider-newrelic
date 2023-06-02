@@ -125,14 +125,6 @@ resource "aws_kinesis_firehose_delivery_stream" "newrelic_firehose_stream" {
   name        = "newrelic_firehose_stream_${var.name}"
   destination = "http_endpoint"
 
-  s3_configuration {
-    role_arn           = aws_iam_role.firehose_newrelic_role.arn
-    bucket_arn         = aws_s3_bucket.newrelic_aws_bucket.arn
-    buffer_size        = 10
-    buffer_interval    = 400
-    compression_format = "GZIP"
-  }
-
   http_endpoint_configuration {
     url                = var.newrelic_account_region == "US" ? "https://aws-api.newrelic.com/cloudwatch-metrics/v1" : "https://aws-api.eu01.nr-data.net/cloudwatch-metrics/v1"
     name               = "New Relic ${var.name}"
@@ -144,6 +136,14 @@ resource "aws_kinesis_firehose_delivery_stream" "newrelic_firehose_stream" {
 
     request_configuration {
       content_encoding = "GZIP"
+    }
+
+    s3_configuration {
+      role_arn           = aws_iam_role.firehose_newrelic_role.arn
+      bucket_arn         = aws_s3_bucket.newrelic_aws_bucket.arn
+      buffer_size        = 10
+      buffer_interval    = 400
+      compression_format = "GZIP"
     }
   }
 }
