@@ -90,9 +90,10 @@ func dataSourceNewRelicEntity() *schema.Resource {
 
 func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
+	accountID := meta.(*ProviderConfig).AccountID
+	matchingEntityExistsWithOtherAccounts := false
 
 	log.Printf("[INFO] Reading New Relic entities")
-
 	name := d.Get("name").(string)
 	name = escapeSingleQuote(name)
 	ignoreCase := d.Get("ignore_case").(bool)
@@ -120,20 +121,34 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 
 	var entity *entities.EntityOutlineInterface
 	for _, e := range entityResults.Results.Entities {
-		// Conditional on case sensitive match
+		// Conditional on case-sensitive match
 
 		str := e.GetName()
 		str = strings.TrimSpace(str)
 
 		name = revertEscapedSingleQuote(name)
 		if strings.Compare(str, name) == 0 || (ignoreCase && strings.EqualFold(str, name)) {
-			entity = &e
-			break
+			if e.GetAccountID() != accountID {
+				if matchingEntityExistsWithOtherAccounts == false {
+					matchingEntityExistsWithOtherAccounts = true
+				}
+				continue
+			} else {
+				entity = &e
+				break
+			}
+
 		}
 	}
 
 	if entity == nil {
-		return diag.FromErr(fmt.Errorf("no entities found for the provided search parameters, please ensure your schema attributes are valid"))
+		errorMessage := "no entities found for the provided search parameters, please ensure your schema attributes are valid"
+		if matchingEntityExistsWithOtherAccounts == true {
+			errorMessage +=
+				"\nnote: an entity with the queried name has been found linked to other accounts associated with the account linked to the provided credentials;" +
+					"\nplease check if the right account/sub account has been used in the specified configuration"
+		}
+		return diag.FromErr(fmt.Errorf(errorMessage))
 	}
 
 	return diag.FromErr(flattenEntityData(entity, d))
