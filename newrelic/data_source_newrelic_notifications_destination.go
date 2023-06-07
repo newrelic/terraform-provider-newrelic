@@ -19,20 +19,22 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 		ReadContext: dataSourceNewRelicNotificationDestinationRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the destination.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
+				Description:  "The ID of the destination.",
+			},
+			"name": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
+				Description:  "The name of the destination.",
 			},
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
 				Description: "The account ID under which to put the destination.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name of the destination.",
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -68,7 +70,9 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 	id := d.Get("id").(string)
-	filters := ai.AiNotificationsDestinationFilter{ID: id}
+	name := d.Get("name").(string)
+
+	filters := ai.AiNotificationsDestinationFilter{ID: id, Name: name}
 	sorter := notifications.AiNotificationsDestinationSorter{}
 
 	destinationResponse, err := client.Notifications.GetDestinationsWithContext(updatedContext, accountID, "", filters, sorter)
