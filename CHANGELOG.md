@@ -1,3 +1,14 @@
+<a name="v3.24.1"></a>
+## [v3.24.1] - 2023-06-08
+### Bug Fixes
+- **cloud_tests:** adds precheck to cloud tests to delink accounts before test run ([#2384](https://github.com/newrelic/terraform-provider-newrelic/issues/2384))
+- **log_parsing:** fix to error handling in the log parsing resource ([#2390](https://github.com/newrelic/terraform-provider-newrelic/issues/2390))
+- **newrelic_entity:** filtering entites returned based on account_id ([#2389](https://github.com/newrelic/terraform-provider-newrelic/issues/2389))
+
+### Documentation Updates
+- account_id param for newrelic_one_dashboard_json ([#2385](https://github.com/newrelic/terraform-provider-newrelic/issues/2385))
+- **newrelic:** tiny typo corrections ([#2392](https://github.com/newrelic/terraform-provider-newrelic/issues/2392))
+
 <a name="v3.24.0"></a>
 ## [v3.24.0] - 2023-05-30
 ### Bug Fixes
@@ -1864,7 +1875,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.24.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.24.1...HEAD
+[v3.24.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.24.0...v3.24.1
 [v3.24.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.23.0...v3.24.0
 [v3.23.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.22.0...v3.23.0
 [v3.22.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.21.3...v3.22.0
