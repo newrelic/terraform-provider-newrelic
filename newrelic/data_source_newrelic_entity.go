@@ -90,6 +90,7 @@ func dataSourceNewRelicEntity() *schema.Resource {
 
 func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
+	accountID := meta.(*ProviderConfig).AccountID
 
 	log.Printf("[INFO] Reading New Relic entities")
 
@@ -120,15 +121,20 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 
 	var entity *entities.EntityOutlineInterface
 	for _, e := range entityResults.Results.Entities {
-		// Conditional on case sensitive match
+		// Conditional on case-sensitive match
 
 		str := e.GetName()
 		str = strings.TrimSpace(str)
 
 		name = revertEscapedSingleQuote(name)
 		if strings.Compare(str, name) == 0 || (ignoreCase && strings.EqualFold(str, name)) {
-			entity = &e
-			break
+			if e.GetAccountID() != accountID {
+				continue
+			} else {
+				entity = &e
+				break
+			}
+
 		}
 	}
 
