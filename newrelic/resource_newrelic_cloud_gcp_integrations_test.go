@@ -8,9 +8,9 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -18,25 +18,41 @@ import (
 func TestAccNewRelicCloudGcpIntegrations_Basic(t *testing.T) {
 	//t.Skipf("Skipping test until environment variables are added")
 	resourceName := "newrelic_cloud_gcp_integrations.foo1"
-	testGcpIntegrationProjectID := os.Getenv("INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID")
+	testGCPIntegrationName := fmt.Sprintf("tf_cloud_integrations_test_gcp_%s", acctest.RandString(5))
 
-	testGcpAccountName := acctest.RandString(5)
+	if subAccountIDExists := os.Getenv("NEW_RELIC_SUBACCOUNT_ID"); subAccountIDExists == "" {
+		t.Skipf("Skipping this test, as NEW_RELIC_SUBACCOUNT_ID must be set for this test to run.")
+	}
+
+	testGCPProjectID := os.Getenv("INTEGRATION_TESTING_GCP_PROJECT_ID")
+	if testGCPProjectID == "" {
+		t.Skipf("INTEGRATION_TESTING_GCP_PROJECT_ID must be set for acceptance test")
+	}
+
+	GCPIntegrationTestConfig := map[string]string{
+		"name":       testGCPIntegrationName,
+		"account_id": strconv.Itoa(testSubAccountID),
+		"project_id": testGCPProjectID,
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccCloudLinkedAccountsCleanup(t, "gcp") },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicCloudGcpIntegrationsDestroy,
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicCloudGcpIntegrationsConfig(testGcpIntegrationProjectID, testGcpAccountName),
+				Config: testAccNewRelicCloudGcpIntegrationsConfig(GCPIntegrationTestConfig),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicCloudGcpIntegrationsExists(resourceName),
 				),
+				PreConfig: func() {
+					time.Sleep(10 * time.Second)
+				},
 			},
 			//Test: Update
 			{
-				Config: testAccNewRelicCloudGcpIntegrationsConfigUpdated(testGcpIntegrationProjectID, testGcpAccountName),
+				Config: testAccNewRelicCloudGcpIntegrationsConfigUpdated(GCPIntegrationTestConfig),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicCloudGcpIntegrationsExists(resourceName),
 				),
@@ -66,7 +82,7 @@ func testAccNewRelicCloudGcpIntegrationsExists(n string) resource.TestCheckFunc 
 			return fmt.Errorf("error converting string to int")
 		}
 
-		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, resourceId)
 		if err != nil {
 			return err
 		}
@@ -82,7 +98,7 @@ func testAccNewRelicCloudGcpIntegrationsExists(n string) resource.TestCheckFunc 
 func testAccNewRelicCloudGcpIntegrationsDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
-		if r.Type != "newrelic_cloud_gcp_integrations" {
+		if r.Type != "newrelic_cloud_gcp_integrations" && r.Type != "newrelic_cloud_gcp_link_account" {
 			continue
 		}
 
@@ -92,7 +108,7 @@ func testAccNewRelicCloudGcpIntegrationsDestroy(s *terraform.State) error {
 			return fmt.Errorf("error converting string to int")
 		}
 
-		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, resourceId)
 
 		if linkedAccount != nil && err == nil {
 			return fmt.Errorf("GCP Linked account is not unlinked: #{err}")
@@ -101,17 +117,23 @@ func testAccNewRelicCloudGcpIntegrationsDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccNewRelicCloudGcpIntegrationsConfig(projectID string, name string) string {
+func testAccNewRelicCloudGcpIntegrationsConfig(GCPIntegrationTestConfig map[string]string) string {
 	return fmt.Sprintf(`
+	provider "newrelic" {
+  		account_id = "` + GCPIntegrationTestConfig["account_id"] + `"
+  		alias      = "cloud-integration-provider"
+	}
 
-resource "newrelic_cloud_gcp_link_account" "foo" {
-  name       = "%[2]s"
-  account_id = %[3]d
-  project_id = "%[1]s"
-}
+	resource "newrelic_cloud_gcp_link_account" "foo" {
+        provider        = newrelic.cloud-integration-provider
+  		name       = "` + GCPIntegrationTestConfig["name"] + `"
+  		account_id = "` + GCPIntegrationTestConfig["account_id"] + `"
+  		project_id = "` + GCPIntegrationTestConfig["project_id"] + `"
+	}
 
 resource "newrelic_cloud_gcp_integrations" "foo1" {
-  account_id        = %[3]d
+  provider        = newrelic.cloud-integration-provider
+  account_id 		= "` + GCPIntegrationTestConfig["account_id"] + `"
   linked_account_id = newrelic_cloud_gcp_link_account.foo.id
   alloy_db {
     metrics_polling_interval = 400
@@ -195,21 +217,27 @@ resource "newrelic_cloud_gcp_integrations" "foo1" {
   vpc_access {
     metrics_polling_interval = 400
   }
-}
-	`, projectID, name, testAccountID)
+}`)
 }
 
-func testAccNewRelicCloudGcpIntegrationsConfigUpdated(projectID string, name string) string {
+func testAccNewRelicCloudGcpIntegrationsConfigUpdated(GCPIntegrationTestConfig map[string]string) string {
 	return fmt.Sprintf(`
-	resource "newrelic_cloud_gcp_link_account" "foo"{
-			name = "%[2]s"
-			account_id = %[3]d
-			project_id="%[1]s"
+	provider "newrelic" {
+  		account_id = "` + GCPIntegrationTestConfig["account_id"] + `"
+  		alias      = "cloud-integration-provider"
+	}
+
+	resource "newrelic_cloud_gcp_link_account" "foo" {
+        provider        = newrelic.cloud-integration-provider
+  		name       = "` + GCPIntegrationTestConfig["name"] + `"
+  		account_id = "` + GCPIntegrationTestConfig["account_id"] + `"
+  		project_id = "` + GCPIntegrationTestConfig["project_id"] + `"
 	}
 
 	resource "newrelic_cloud_gcp_integrations" "foo1" {
-		  account_id = %[3]d
-		  linked_account_id = newrelic_cloud_gcp_link_account.foo.id
+  		provider        = newrelic.cloud-integration-provider
+  		account_id 		= "` + GCPIntegrationTestConfig["account_id"] + `"
+  		linked_account_id = newrelic_cloud_gcp_link_account.foo.id
 		  app_engine {
 			metrics_polling_interval = 1400
 		  }
@@ -290,5 +318,5 @@ func testAccNewRelicCloudGcpIntegrationsConfigUpdated(projectID string, name str
 			metrics_polling_interval = 1400
 		  }
 	}
-	`, projectID, name, testAccountID)
+`)
 }

@@ -10,29 +10,37 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
 	resourceName := "newrelic_cloud_gcp_link_account.foo"
+	testGCPLinkAccountName := fmt.Sprintf("tf_cloud_link_account_test_gcp_%s", acctest.RandString(5))
 
-	testGcpProjectID := os.Getenv("INTEGRATION_TESTING_GCP_PROJECT_ID")
-	if testGcpProjectID == "" {
+	if subAccountIDExists := os.Getenv("NEW_RELIC_SUBACCOUNT_ID"); subAccountIDExists == "" {
+		t.Skipf("Skipping this test, as NEW_RELIC_SUBACCOUNT_ID must be set for this test to run.")
+	}
+
+	testGCPProjectID := os.Getenv("INTEGRATION_TESTING_GCP_PROJECT_ID")
+	if testGCPProjectID == "" {
 		t.Skipf("INTEGRATION_TESTING_GCP_PROJECT_ID must be set for acceptance test")
 	}
 
-	testGcpAccountName := acctest.RandString(5)
+	GCPLinkAccountTestConfig := map[string]string{
+		"name":       testGCPLinkAccountName,
+		"account_id": strconv.Itoa(testSubAccountID),
+		"project_id": testGCPProjectID,
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccCloudLinkedAccountsCleanup(t, "gcp") },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccNewRelicCloudGcpLinkAccountDestroy,
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicCloudGcpLinkAccountConfig(testGcpAccountName, testGcpProjectID),
+				Config: testAccNewRelicCloudGcpLinkAccountConfig(GCPLinkAccountTestConfig, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicCloudGcpLinkAccountExists(resourceName),
 				),
@@ -42,7 +50,7 @@ func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
 			// NOTE: Skipping this step due to an API issue.
 
 			//{
-			//	Config: testAccNewRelicCloudGcpLinkAccountConfigUpdated(testGcpAccountName, testGcpProjectID),
+			//	Config: testAccNewRelicCloudGcpLinkAccountConfig(GCPLinkAccountTestConfig, true),
 			//	Check: resource.ComposeTestCheckFunc(
 			//		testAccNewRelicCloudGcpLinkAccountExists(resourceName),
 			//	),
@@ -72,7 +80,7 @@ func testAccNewRelicCloudGcpLinkAccountExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("error converting string to int")
 		}
 
-		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, resourceId)
 
 		if err != nil && linkedAccount == nil {
 			return err
@@ -94,7 +102,7 @@ func testAccNewRelicCloudGcpLinkAccountDestroy(s *terraform.State) error {
 			return fmt.Errorf("error converting string to int")
 		}
 
-		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, resourceId)
 
 		if linkedAccount != nil && err == nil {
 			return fmt.Errorf("Linked gcp account still exists: #{err}")
@@ -104,22 +112,22 @@ func testAccNewRelicCloudGcpLinkAccountDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccNewRelicCloudGcpLinkAccountConfig(name string, projectId string) string {
-	return fmt.Sprintf(`
-	resource "newrelic_cloud_gcp_link_account" "foo"{
-			name = "%[1]s"
-			account_id = %[3]d
-			project_id="%[2]s"
+func testAccNewRelicCloudGcpLinkAccountConfig(GCPLinkAccountTestConfig map[string]string, updated bool) string {
+	if updated == true {
+		GCPLinkAccountTestConfig["name"] += "_updated"
 	}
-	`, name, projectId, testAccountID)
-}
 
-func testAccNewRelicCloudGcpLinkAccountConfigUpdated(name string, projectId string) string {
 	return fmt.Sprintf(`
-	resource "newrelic_cloud_gcp_link_account" "foo"{
-			name = "%[1]s-updated"
-			account_id = %[3]d
-			project_id="%[2]s"
+	provider "newrelic" {
+  		account_id = "` + GCPLinkAccountTestConfig["account_id"] + `"
+  		alias      = "cloud-integration-provider"
 	}
-	`, name, projectId, testAccountID)
+
+	resource "newrelic_cloud_gcp_link_account" "foo"{
+            provider        = newrelic.cloud-integration-provider
+			name 		= "` + GCPLinkAccountTestConfig["name"] + `"
+            account_id  = "` + GCPLinkAccountTestConfig["account_id"] + `"
+			project_id  = "` + GCPLinkAccountTestConfig["project_id"] + `"
+	}
+	`)
 }
