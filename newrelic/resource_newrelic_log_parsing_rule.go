@@ -266,6 +266,9 @@ func getLogParsingRuleByID(ctx context.Context, client *newrelic.NewRelic, accou
 
 func getLogParsingRuleByName(ctx context.Context, client *newrelic.NewRelic, accountID int, name string) (*logconfigurations.LogConfigurationsParsingRule, error) {
 	rules, err := client.Logconfigurations.GetParsingRulesWithContext(ctx, accountID)
+	if rules == nil && err.Error() == "resource not found" {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
