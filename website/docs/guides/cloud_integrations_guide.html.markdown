@@ -10,7 +10,7 @@ description: |-
 
 The [New Relic Cloud integrations](https://docs.newrelic.com/docs/infrastructure/infrastructure-integrations/get-started/introduction-infrastructure-integrations/) collect data from cloud platform services and accounts. There's no installation process for cloud integrations and they do not require the use of our infrastructure agent: you simply connect your New Relic account to your cloud provider account. This guide describes the process of enabling the New Relic cloud integrations fully automated through Terraform.
 
-We have different instruqtions for each cloud provider, use the links below to go the relevant sections:
+We have different instructions for each cloud provider, use the links below to go the relevant sections:
 
 - [AWS](#aws)
 - [Azure](#azure)

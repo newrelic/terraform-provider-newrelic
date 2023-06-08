@@ -28,7 +28,7 @@ resource "newrelic_api_access_key" "foobar" {
   account_id  = 1234567
   key_type    = "INGEST"
   ingest_type = "LICENSE"
-  name        = "APM Ingest License Key (blue)"
+  name        = "APM Ingest License Key"
   notes       = "To be used with service X"
 }
 ```
