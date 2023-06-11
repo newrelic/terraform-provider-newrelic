@@ -49,6 +49,11 @@ func resourceNewRelicSyntheticsAlertCondition() *schema.Resource {
 				Default:     true,
 				Description: "Set whether to enable the alert condition. Defaults to true.",
 			},
+			"entity_guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique entity identifier of the condition in New Relic.",
+			},
 		},
 	}
 }
@@ -67,18 +72,20 @@ func expandSyntheticsCondition(d *schema.ResourceData, monitorID string) *alerts
 	return &condition
 }
 
-func flattenSyntheticsCondition(condition *alerts.SyntheticsCondition, d *schema.ResourceData) error {
+func flattenSyntheticsCondition(condition *alerts.SyntheticsCondition, accountID int, d *schema.ResourceData) error {
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
 		return err
 	}
 
 	policyID := ids[0]
+	entityGUID := getConditionEntityGUID(condition.ID, accountID)
 
 	_ = d.Set("policy_id", policyID)
 	_ = d.Set("name", condition.Name)
 	_ = d.Set("runbook_url", condition.RunbookURL)
 	_ = d.Set("enabled", condition.Enabled)
+	_ = d.Set("entity_guid", entityGUID)
 
 	return nil
 }
@@ -140,7 +147,7 @@ func resourceNewRelicSyntheticsAlertConditionRead(ctx context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	return diag.FromErr(flattenSyntheticsCondition(condition, d))
+	return diag.FromErr(flattenSyntheticsCondition(condition, accountID, d))
 }
 
 func resourceNewRelicSyntheticsAlertConditionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

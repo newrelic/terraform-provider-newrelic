@@ -79,7 +79,7 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the entity in New Relic One.  The first entity matching this name for the given search parameters will be returned.
 * `ignore_case` - (Optional) Ignore case of the `name` when searching for the entity. Defaults to false.
-* `type` - (Optional) The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, SERVICE and WORKLOAD.
+* `type` - (Optional) The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, WORKLOAD, AWSLAMBDAFUNCTION, SERVICE_LEVEL, and KEY_TRANSACTION. Note: Other entity types may also be queryable as the list of entity types may fluctuate over time.
 * `domain` - (Optional) The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, SYNTH, and EXT. If not specified, all domains are searched.
 * `tag` - (Optional) A tag applied to the entity. See [Nested tag blocks](#nested-`tag`-blocks) below for details.
 
@@ -103,12 +103,15 @@ In addition to all arguments above, the following attributes are exported:
 ## Additional Examples
 
 -> If the entities are not found please try again without providing the `types` field.
-### An example of querying OTEL entities
+
+### Query for an OTEL entity
 
 ```hcl
 data "newrelic_entity" "app" {
   name = "my-otel-app"
   domain = "EXT"
+  type = "SERVICE"
+
   tag {
     key = "accountID"
     value = "12345"
@@ -116,15 +119,11 @@ data "newrelic_entity" "app" {
 }
 ```
 
-### An example of querying AWS lambda entities
+### Query for an entity by type (AWS Lambda entity in this example)
 
 ```hcl
 data "newrelic_entity" "app" {
   name = "my_lambda_trace"
-  domain = "INFRA"
-  tag {
-    key = "accountID"
-    value = "12345"
-  }
+  type = "AWSLAMBDAFUNCTION"
 }
 ```

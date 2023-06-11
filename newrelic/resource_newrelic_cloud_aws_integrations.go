@@ -5,8 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -42,8 +40,8 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 			"doc_db": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Billing integration",
-				Elem:        cloudAwsIntegrationDocDBSchemaElem(),
+				Description: "Doc DB integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
 				MaxItems:    1,
 			},
 			"cloudtrail": {
@@ -88,6 +86,314 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Elem:        cloudAwsIntegrationXRaySchemaElem(),
 				MaxItems:    1,
 			},
+			"sqs": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "SQS integration",
+				Elem:        cloudAwsIntegrationSqsSchemaElem(),
+				MaxItems:    1,
+			},
+			"ebs": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "EBS integration",
+				Elem:        cloudAwsIntegrationEbsSchemaElem(),
+				MaxItems:    1,
+			},
+			"alb": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "ALB integration",
+				Elem:        cloudAwsIntegrationAlbSchemaElem(),
+				MaxItems:    1,
+			},
+			"elasticache": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Elasticache integration",
+				Elem:        cloudAwsIntegrationElasticacheSchemaElem(),
+				MaxItems:    1,
+			},
+			"api_gateway": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "API Gateway integration",
+				Elem:        cloudAwsIntegrationAPIGatewaySchemaElem(),
+				MaxItems:    1,
+			},
+			"auto_scaling": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "AutoScaling integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_app_sync": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Appsync integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_athena": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Athena integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_cognito": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Cognito integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_connect": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Connect integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_direct_connect": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Direct Connect integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_fsx": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Fsx integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_glue": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Glue integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_kinesis_analytics": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Kinesis Analytics integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_media_convert": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Media Convert integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_media_package_vod": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Media PackageVod integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_mq": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Mq integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_msk": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Msk integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_neptune": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Neptune integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_qldb": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Qldb integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_route53resolver": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Route53resolver integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_states": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws states integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_transit_gateway": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Transit Gateway integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_waf": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Waf integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"aws_wafv2": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Wafv2 integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"cloudfront": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Cloudfront integration",
+				Elem:        cloudAwsIntegrationCloudfrontSchemaElem(),
+				MaxItems:    1,
+			},
+			"dynamodb": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Dynamo DB integration",
+				Elem:        cloudAwsIntegrationDynamoDBSchemaElem(),
+				MaxItems:    1,
+			},
+			"ec2": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Ec2 integration",
+				Elem:        cloudAwsIntegrationEc2SchemaElem(),
+				MaxItems:    1,
+			},
+			"ecs": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Ecs integration",
+				Elem:        cloudAwsIntegrationEcsSchemaElem(),
+				MaxItems:    1,
+			},
+			"efs": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Efs integration",
+				Elem:        cloudAwsIntegrationEfsSchemaElem(),
+				MaxItems:    1,
+			},
+			"elasticbeanstalk": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Elastic Bean Stalk integration",
+				Elem:        cloudAwsIntegrationElasticBeanStalkSchemaElem(),
+				MaxItems:    1,
+			},
+			"elasticsearch": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Elastic Search integration",
+				Elem:        cloudAwsIntegrationElasticSearchSchemaElem(),
+				MaxItems:    1,
+			},
+			"elb": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Elb integration",
+				Elem:        cloudAwsIntegrationElbSchemaElem(),
+				MaxItems:    1,
+			},
+			"emr": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Emr integration",
+				Elem:        cloudAwsIntegrationEmrSchemaElem(),
+				MaxItems:    1,
+			},
+			"iam": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Iam integration",
+				Elem:        cloudAwsIntegrationIamSchemaElem(),
+				MaxItems:    1,
+			},
+			"iot": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Iot integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"kinesis": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Kinesis integration",
+				Elem:        cloudAwsIntegrationKinesisSchemaElem(),
+				MaxItems:    1,
+			},
+			"kinesis_firehose": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Kinesis Firehose integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"lambda": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Lambda integration",
+				Elem:        cloudAwsIntegrationLambdaSchemaElem(),
+				MaxItems:    1,
+			},
+			"rds": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Rds integration",
+				Elem:        cloudAwsIntegrationRdsSchemaElem(),
+				MaxItems:    1,
+			},
+			"redshift": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Redshift integration",
+				Elem:        cloudAwsIntegrationRedshiftSchemaElem(),
+				MaxItems:    1,
+			},
+			"route53": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Route53 integration",
+				Elem:        cloudAwsIntegrationRoute53SchemaElem(),
+				MaxItems:    1,
+			},
+			"ses": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Ses integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
+			"sns": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Sns integration",
+				Elem:        cloudAwsIntegrationSnsSchemaElem(),
+				MaxItems:    1,
+			},
 		},
 	}
 }
@@ -102,6 +408,71 @@ func cloudAwsIntegrationSchemaBase() map[string]*schema.Schema {
 	}
 }
 
+// function to add common schema for various services.
+
+func cloudAwsIntegrationCommonSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func cloudAwsIntegrationSchemaBaseExtended() map[string]*schema.Schema {
+
+	return map[string]*schema.Schema{
+		"aws_regions": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Specify each AWS region that includes the resources that you want to monitor.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"metrics_polling_interval": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The data polling interval in seconds.",
+		},
+	}
+}
+
+func cloudAwsIntegrationSchemaBaseExtendedOne() map[string]*schema.Schema {
+
+	return map[string]*schema.Schema{
+		"aws_regions": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Specify each AWS region that includes the resources that you want to monitor.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"fetch_tags": {
+			Type:        schema.TypeBool,
+			Description: "Specify if tags and the extended inventory should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+			Optional:    true,
+		},
+		"metrics_polling_interval": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The data polling interval in seconds.",
+		},
+		"tag_key": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		},
+		"tag_value": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		},
+	}
+}
+
+// function to add schema for Billing integration
+
 func cloudAwsIntegrationBillingSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
 
@@ -109,6 +480,8 @@ func cloudAwsIntegrationBillingSchemaElem() *schema.Resource {
 		Schema: s,
 	}
 }
+
+// function to add schema for Cloud Trail integration
 
 func cloudAwsIntegrationCloudTrailSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
@@ -127,13 +500,7 @@ func cloudAwsIntegrationCloudTrailSchemaElem() *schema.Resource {
 	}
 }
 
-func cloudAwsIntegrationDocDBSchemaElem() *schema.Resource {
-	s := cloudAwsIntegrationSchemaBase()
-
-	return &schema.Resource{
-		Schema: s,
-	}
-}
+// function to add schema for Health integration
 
 func cloudAwsIntegrationHealthSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
@@ -143,6 +510,8 @@ func cloudAwsIntegrationHealthSchemaElem() *schema.Resource {
 	}
 }
 
+// function to add schema for Trutsted Advisor integration
+
 func cloudAwsIntegrationTrustedAdvisorSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
 
@@ -151,13 +520,41 @@ func cloudAwsIntegrationTrustedAdvisorSchemaElem() *schema.Resource {
 	}
 }
 
+// function to add schema for S3 integration
+
 func cloudAwsIntegrationS3SchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
+
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	s["fetch_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
 
 	return &schema.Resource{
 		Schema: s,
 	}
 }
+
+// function to add schema for VPC integration
 
 func cloudAwsIntegrationVpcSchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
@@ -200,6 +597,8 @@ func cloudAwsIntegrationVpcSchemaElem() *schema.Resource {
 	}
 }
 
+// function to add schema for XRay integration
+
 func cloudAwsIntegrationXRaySchemaElem() *schema.Resource {
 	s := cloudAwsIntegrationSchemaBase()
 
@@ -210,6 +609,484 @@ func cloudAwsIntegrationXRaySchemaElem() *schema.Resource {
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for SQS integration
+
+func cloudAwsIntegrationSqsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["aws_regions"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Specify each AWS region that includes the resources that you want to monitor.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["fetch_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["queue_prefixes"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Description: "Specify each name or prefix for the Queues that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for Ebs integration
+
+func cloudAwsIntegrationEbsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["aws_regions"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Specify each AWS region that includes the resources that you want to monitor.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for Alb integration
+
+func cloudAwsIntegrationAlbSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["aws_regions"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Specify each AWS region that includes the resources that you want to monitor.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["fetch_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["load_balancer_prefixes"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Description: "Specify each name or prefix for the LBs that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for Elasticache integration
+
+func cloudAwsIntegrationElasticacheSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["aws_regions"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Specify each AWS region that includes the resources that you want to monitor.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	s["fetch_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for api gateway integration
+
+func cloudAwsIntegrationAPIGatewaySchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+	s["aws_regions"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Description: "Specify each AWS region that includes the resources that you want to monitor",
+		Optional:    true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	s["stage_prefixes"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
+	}
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for cloudfront integration
+
+func cloudAwsIntegrationCloudfrontSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["fetch_lambdas_at_edge"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if Lambdas@Edge should be monitored. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["fetch_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for DynamoDB integration
+
+func cloudAwsIntegrationDynamoDBSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for Ec2 integration
+
+func cloudAwsIntegrationEc2SchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	s["duplicate_ec2_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Description: "Specify if the old legacy metadata and tag names have to be kept, it will consume more ingest data size",
+	}
+	s["fetch_ip_addresses"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Description: "Specify if IP addresses of ec2 instance should be collected",
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for ecs integration.
+
+func cloudAwsIntegrationEcsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for efs integration.
+
+func cloudAwsIntegrationEfsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for elastic bean stalk integration.
+
+func cloudAwsIntegrationElasticBeanStalkSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for elastic search integration.
+
+func cloudAwsIntegrationElasticSearchSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	s["fetch_nodes"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if metrics should be collected for nodes. Turning it on will increase the number of API calls made to CloudWatch.",
+		Optional:    true,
+	}
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+		Optional:    true,
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.\n\n",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for Elb integration.
+
+func cloudAwsIntegrationElbSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+	s["fetch_tags"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if tags should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for emr integration.
+
+func cloudAwsIntegrationEmrSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for iam integration.
+
+func cloudAwsIntegrationIamSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for kinesis integration.
+
+func cloudAwsIntegrationKinesisSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	s["fetch_shards"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Specify if Shards should be monitored. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for lambda integration.
+
+func cloudAwsIntegrationLambdaSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for rds integration.
+
+func cloudAwsIntegrationRdsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtendedOne()
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for redshift integration.
+
+func cloudAwsIntegrationRedshiftSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	s["tag_key"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag key associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+	s["tag_value"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specify a Tag value associated with the resources that you want to monitor. Filter values are case-sensitive.",
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for route53 integration.
+
+func cloudAwsIntegrationRoute53SchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for sns integration.
+
+func cloudAwsIntegrationSnsSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBaseExtended()
+
+	s["fetch_extended_inventory"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
+		Optional:    true,
 	}
 
 	return &schema.Resource{
@@ -249,323 +1126,6 @@ func resourceNewRelicCloudAwsIntegrationsCreate(ctx context.Context, d *schema.R
 	return nil
 }
 
-func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegrationsInput, cloud.CloudDisableIntegrationsInput) {
-	cloudAwsIntegration := cloud.CloudAwsIntegrationsInput{}
-	cloudDisableAwsIntegration := cloud.CloudAwsDisableIntegrationsInput{}
-
-	var linkedAccountID int
-
-	if l, ok := d.GetOk("linked_account_id"); ok {
-		linkedAccountID = l.(int)
-	}
-
-	if b, ok := d.GetOk("billing"); ok {
-		cloudAwsIntegration.Billing = expandCloudAwsIntegrationBillingInput(b.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("billing"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Billing = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if c, ok := d.GetOk("cloudtrail"); ok {
-		cloudAwsIntegration.Cloudtrail = expandCloudAwsIntegrationCloudtrailInput(c.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("cloudtrail"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Cloudtrail = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if t, ok := d.GetOk("doc_db"); ok {
-		cloudAwsIntegration.AwsDocdb = expandCloudAwsIntegrationDocDBInput(t.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("doc_db"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.AwsDocdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if h, ok := d.GetOk("health"); ok {
-		cloudAwsIntegration.Health = expandCloudAwsIntegrationHealthInput(h.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("health"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Health = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if t, ok := d.GetOk("trusted_advisor"); ok {
-		cloudAwsIntegration.Trustedadvisor = expandCloudAwsIntegrationTrustedAdvisorInput(t.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("trusted_advisor"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Trustedadvisor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if t, ok := d.GetOk("s3"); ok {
-		cloudAwsIntegration.S3 = expandCloudAwsIntegrationS3Input(t.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("s3"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.S3 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if v, ok := d.GetOk("vpc"); ok {
-		cloudAwsIntegration.Vpc = expandCloudAwsIntegrationVpcInput(v.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("vpc"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if x, ok := d.GetOk("x_ray"); ok {
-		cloudAwsIntegration.AwsXray = expandCloudAwsIntegrationXRayInput(x.([]interface{}), linkedAccountID)
-	} else if o, n := d.GetChange("x_ray"); len(n.([]interface{})) < len(o.([]interface{})) {
-		cloudDisableAwsIntegration.AwsXray = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	configureInput := cloud.CloudIntegrationsInput{
-		Aws: cloudAwsIntegration,
-	}
-
-	disableInput := cloud.CloudDisableIntegrationsInput{
-		Aws: cloudDisableAwsIntegration,
-	}
-
-	return configureInput, disableInput
-}
-
-func expandCloudAwsIntegrationBillingInput(b []interface{}, linkedAccountID int) []cloud.CloudBillingIntegrationInput {
-	expanded := make([]cloud.CloudBillingIntegrationInput, len(b))
-
-	for i, billing := range b {
-		var billingInput cloud.CloudBillingIntegrationInput
-
-		if billing == nil {
-			billingInput.LinkedAccountId = linkedAccountID
-			expanded[i] = billingInput
-			return expanded
-		}
-
-		in := billing.(map[string]interface{})
-
-		billingInput.LinkedAccountId = linkedAccountID
-
-		if m, ok := in["metrics_polling_interval"]; ok {
-			billingInput.MetricsPollingInterval = m.(int)
-		}
-		expanded[i] = billingInput
-	}
-
-	return expanded
-}
-
-func expandCloudAwsIntegrationCloudtrailInput(c []interface{}, linkedAccountID int) []cloud.CloudCloudtrailIntegrationInput {
-	expanded := make([]cloud.CloudCloudtrailIntegrationInput, len(c))
-
-	for i, cloudtrail := range c {
-		var cloudtrailInput cloud.CloudCloudtrailIntegrationInput
-
-		if cloudtrail == nil {
-			cloudtrailInput.LinkedAccountId = linkedAccountID
-			expanded[i] = cloudtrailInput
-			return expanded
-		}
-
-		in := cloudtrail.(map[string]interface{})
-
-		cloudtrailInput.LinkedAccountId = linkedAccountID
-
-		if a, ok := in["aws_regions"]; ok {
-			awsRegions := a.([]interface{})
-			var regions []string
-
-			for _, region := range awsRegions {
-				regions = append(regions, region.(string))
-			}
-			cloudtrailInput.AwsRegions = regions
-		}
-
-		if m, ok := in["metrics_polling_interval"]; ok {
-			cloudtrailInput.MetricsPollingInterval = m.(int)
-		}
-		expanded[i] = cloudtrailInput
-	}
-
-	return expanded
-}
-
-func expandCloudAwsIntegrationHealthInput(h []interface{}, linkedAccountID int) []cloud.CloudHealthIntegrationInput {
-	expanded := make([]cloud.CloudHealthIntegrationInput, len(h))
-
-	for i, health := range h {
-		var healthInput cloud.CloudHealthIntegrationInput
-
-		if health == nil {
-			healthInput.LinkedAccountId = linkedAccountID
-			expanded[i] = healthInput
-			return expanded
-		}
-
-		in := health.(map[string]interface{})
-
-		healthInput.LinkedAccountId = linkedAccountID
-
-		if m, ok := in["metrics_polling_interval"]; ok {
-			healthInput.MetricsPollingInterval = m.(int)
-		}
-		expanded[i] = healthInput
-	}
-
-	return expanded
-}
-
-func expandCloudAwsIntegrationDocDBInput(h []interface{}, linkedAccountID int) []cloud.CloudAwsDocdbIntegrationInput {
-	expanded := make([]cloud.CloudAwsDocdbIntegrationInput, len(h))
-
-	for i, docDb := range h {
-		var docDbInput cloud.CloudAwsDocdbIntegrationInput
-
-		if docDb == nil {
-			docDbInput.LinkedAccountId = linkedAccountID
-			expanded[i] = docDbInput
-			return expanded
-		}
-
-		in := docDb.(map[string]interface{})
-
-		docDbInput.LinkedAccountId = linkedAccountID
-
-		if m, ok := in["metrics_polling_interval"]; ok {
-			docDbInput.MetricsPollingInterval = m.(int)
-		}
-		expanded[i] = docDbInput
-	}
-
-	return expanded
-}
-
-func expandCloudAwsIntegrationTrustedAdvisorInput(t []interface{}, linkedAccountID int) []cloud.CloudTrustedadvisorIntegrationInput {
-	expanded := make([]cloud.CloudTrustedadvisorIntegrationInput, len(t))
-
-	for i, trustedAdvisor := range t {
-		var trustedAdvisorInput cloud.CloudTrustedadvisorIntegrationInput
-
-		if trustedAdvisor == nil {
-			trustedAdvisorInput.LinkedAccountId = linkedAccountID
-			expanded[i] = trustedAdvisorInput
-			return expanded
-		}
-
-		in := trustedAdvisor.(map[string]interface{})
-
-		trustedAdvisorInput.LinkedAccountId = linkedAccountID
-
-		if m, ok := in["metrics_polling_interval"]; ok {
-			trustedAdvisorInput.MetricsPollingInterval = m.(int)
-		}
-
-		expanded[i] = trustedAdvisorInput
-	}
-
-	return expanded
-}
-
-func expandCloudAwsIntegrationS3Input(t []interface{}, linkedAccountID int) []cloud.CloudS3IntegrationInput {
-	expanded := make([]cloud.CloudS3IntegrationInput, len(t))
-
-	for i, s3 := range t {
-		var s3Input cloud.CloudS3IntegrationInput
-
-		if s3 == nil {
-			s3Input.LinkedAccountId = linkedAccountID
-			expanded[i] = s3Input
-			return expanded
-		}
-
-		in := s3.(map[string]interface{})
-
-		s3Input.LinkedAccountId = linkedAccountID
-
-		if m, ok := in["metrics_polling_interval"]; ok {
-			s3Input.MetricsPollingInterval = m.(int)
-		}
-
-		expanded[i] = s3Input
-	}
-
-	return expanded
-}
-
-func expandCloudAwsIntegrationVpcInput(v []interface{}, linkedAccountID int) []cloud.CloudVpcIntegrationInput {
-	expanded := make([]cloud.CloudVpcIntegrationInput, len(v))
-
-	for i, vpc := range v {
-		var vpcInput cloud.CloudVpcIntegrationInput
-
-		if vpc == nil {
-			vpcInput.LinkedAccountId = linkedAccountID
-			expanded[i] = vpcInput
-			return expanded
-		}
-
-		in := vpc.(map[string]interface{})
-
-		vpcInput.LinkedAccountId = linkedAccountID
-
-		if a, ok := in["aws_regions"]; ok {
-			awsRegions := a.([]interface{})
-			var regions []string
-
-			for _, region := range awsRegions {
-				regions = append(regions, region.(string))
-			}
-			vpcInput.AwsRegions = regions
-		}
-
-		if nat, ok := in["fetch_nat_gateway"]; ok {
-			vpcInput.FetchNatGateway = nat.(bool)
-		}
-
-		if vpn, ok := in["fetch_vpn"]; ok {
-			vpcInput.FetchVpn = vpn.(bool)
-		}
-
-		if m, ok := in["metrics_polling_interval"]; ok {
-			vpcInput.MetricsPollingInterval = m.(int)
-		}
-
-		if tk, ok := in["tag_key"]; ok {
-			vpcInput.TagKey = tk.(string)
-		}
-
-		if tv, ok := in["tag_value"]; ok {
-			vpcInput.TagValue = tv.(string)
-		}
-		expanded[i] = vpcInput
-	}
-
-	return expanded
-}
-
-func expandCloudAwsIntegrationXRayInput(x []interface{}, linkedAccountID int) []cloud.CloudAwsXrayIntegrationInput {
-	expanded := make([]cloud.CloudAwsXrayIntegrationInput, len(x))
-
-	for i, xray := range x {
-		var xrayInput cloud.CloudAwsXrayIntegrationInput
-
-		if xray == nil {
-			xrayInput.LinkedAccountId = linkedAccountID
-			expanded[i] = xrayInput
-			return expanded
-		}
-
-		in := xray.(map[string]interface{})
-
-		xrayInput.LinkedAccountId = linkedAccountID
-
-		if a, ok := in["aws_regions"]; ok {
-			awsRegions := a.([]interface{})
-			var regions []string
-
-			for _, region := range awsRegions {
-				regions = append(regions, region.(string))
-			}
-			xrayInput.AwsRegions = regions
-		}
-
-		if m, ok := in["metrics_polling_interval"]; ok {
-			xrayInput.MetricsPollingInterval = m.(int)
-		}
-		expanded[i] = xrayInput
-	}
-
-	return expanded
-}
-
 func resourceNewRelicCloudAwsIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -590,107 +1150,6 @@ func resourceNewRelicCloudAwsIntegrationsRead(ctx context.Context, d *schema.Res
 	flattenCloudAwsLinkedAccount(d, linkedAccount)
 
 	return nil
-}
-
-func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.CloudLinkedAccount) {
-	_ = d.Set("account_id", linkedAccount.NrAccountId)
-	_ = d.Set("linked_account_id", linkedAccount.ID)
-
-	for _, i := range linkedAccount.Integrations {
-		switch t := i.(type) {
-		case *cloud.CloudBillingIntegration:
-			_ = d.Set("billing", flattenCloudAwsBillingIntegration(t))
-		case *cloud.CloudCloudtrailIntegration:
-			_ = d.Set("cloudtrail", flattenCloudAwsCloudTrailIntegration(t))
-		case *cloud.CloudHealthIntegration:
-			_ = d.Set("health", flattenCloudAwsHealthIntegration(t))
-		case *cloud.CloudTrustedadvisorIntegration:
-			_ = d.Set("trusted_advisor", flattenCloudAwsTrustedAdvisorIntegration(t))
-		case *cloud.CloudVpcIntegration:
-			_ = d.Set("vpc", flattenCloudAwsVpcIntegration(t))
-		case *cloud.CloudAwsXrayIntegration:
-			_ = d.Set("x_ray", flattenCloudAwsXRayIntegration(t))
-		}
-	}
-}
-
-func flattenCloudAwsBillingIntegration(in *cloud.CloudBillingIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-
-	out := make(map[string]interface{})
-
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-
-	flattened[0] = out
-
-	return flattened
-}
-
-func flattenCloudAwsCloudTrailIntegration(in *cloud.CloudCloudtrailIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-
-	out := make(map[string]interface{})
-
-	out["aws_regions"] = in.AwsRegions
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-
-	flattened[0] = out
-
-	return flattened
-}
-
-func flattenCloudAwsHealthIntegration(in *cloud.CloudHealthIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-
-	out := make(map[string]interface{})
-
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-
-	flattened[0] = out
-
-	return flattened
-}
-
-func flattenCloudAwsTrustedAdvisorIntegration(in *cloud.CloudTrustedadvisorIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-
-	out := make(map[string]interface{})
-
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-
-	flattened[0] = out
-
-	return flattened
-}
-
-func flattenCloudAwsVpcIntegration(in *cloud.CloudVpcIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-
-	out := make(map[string]interface{})
-
-	out["aws_regions"] = in.AwsRegions
-	out["fetch_nat_gateway"] = in.FetchNatGateway
-	out["fetch_vpn"] = in.FetchVpn
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	out["tag_key"] = in.TagKey
-	out["tag_value"] = in.TagValue
-
-	flattened[0] = out
-
-	return flattened
-}
-
-func flattenCloudAwsXRayIntegration(in *cloud.CloudAwsXrayIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-
-	out := make(map[string]interface{})
-
-	out["aws_regions"] = in.AwsRegions
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-
-	flattened[0] = out
-
-	return flattened
 }
 
 func resourceNewRelicCloudAwsIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -766,52 +1225,4 @@ func resourceNewRelicCloudAwsIntegrationsDelete(ctx context.Context, d *schema.R
 	d.SetId("")
 
 	return nil
-}
-
-func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInput {
-	cloudDisableAwsIntegration := cloud.CloudAwsDisableIntegrationsInput{}
-
-	var linkedAccountID int
-
-	if l, ok := d.GetOk("linked_account_id"); ok {
-		linkedAccountID = l.(int)
-	}
-
-	if _, ok := d.GetOk("billing"); ok {
-		cloudDisableAwsIntegration.Billing = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if _, ok := d.GetOk("cloudtrail"); ok {
-		cloudDisableAwsIntegration.Cloudtrail = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if _, ok := d.GetOk("doc_db"); ok {
-		cloudDisableAwsIntegration.AwsDocdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if _, ok := d.GetOk("health"); ok {
-		cloudDisableAwsIntegration.Health = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if _, ok := d.GetOk("trusted_advisor"); ok {
-		cloudDisableAwsIntegration.Trustedadvisor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if _, ok := d.GetOk("vpc"); ok {
-		cloudDisableAwsIntegration.Vpc = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if _, ok := d.GetOk("s3"); ok {
-		cloudDisableAwsIntegration.S3 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if _, ok := d.GetOk("x_ray"); ok {
-		cloudDisableAwsIntegration.AwsXray = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	deleteInput := cloud.CloudDisableIntegrationsInput{
-		Aws: cloudDisableAwsIntegration,
-	}
-
-	return deleteInput
 }

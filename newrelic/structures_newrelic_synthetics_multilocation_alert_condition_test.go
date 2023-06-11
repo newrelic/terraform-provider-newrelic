@@ -197,7 +197,9 @@ func TestFlattenMultiLocationSyntheticsCondition(t *testing.T) {
 			id := fmt.Sprintf("%d:%d", tc.Data["policy_id"], tc.Flattened.ID)
 			d.SetId(id)
 
-			err := flattenMultiLocationSyntheticsCondition(tc.Flattened, d)
+			accountID := 1
+
+			err := flattenMultiLocationSyntheticsCondition(tc.Flattened, accountID, d)
 			assert.NoError(t, err)
 
 			for k, v := range tc.Data {

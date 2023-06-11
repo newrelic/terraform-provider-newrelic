@@ -6,6 +6,7 @@ package newrelic
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -23,7 +24,26 @@ func TestAccNewRelicEntityData_Basic(t *testing.T) {
 			{
 				Config: testAccNewRelicEntityDataConfig(testAccExpectedApplicationName, testAccountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", testAccExpectedApplicationName),
+					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", testAccExpectedApplicationName, testAccountID),
+				),
+			},
+		},
+	})
+}
+
+// This test case checks if an entity with a single quote "'" in its name
+// is created, and is subsequently, fetched by the data source.
+func TestAccNewRelicSingleQuotedEntityData_Basic(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccSingleQuotedPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicEntityDataConfig(testAccExpectedSingleQuotedApplicationName, testAccountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", testAccExpectedSingleQuotedApplicationName, testAccountID),
 				),
 			},
 		},
@@ -55,18 +75,53 @@ func TestAccNewRelicEntityData_IgnoreCase(t *testing.T) {
 			{
 				Config: testAccNewRelicEntityDataConfig_IgnoreCase(strings.ToUpper(testAccExpectedApplicationName), testAccountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", testAccExpectedApplicationName),
+					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", testAccExpectedApplicationName, testAccountID),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckNewRelicEntityDataExists(t *testing.T, n string, appName string) resource.TestCheckFunc {
+func TestAccNewRelicEntityData_EntityInSubAccount(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicEntityDataConfig_EntityInSubAccount("Dummy App Two", 3957524),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", "Dummy App Two", 3957524),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicEntityData_EntityAbsentInSubAccount(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicEntityDataConfig_EntityInSubAccount("Dummy App Two", 3814156),
+				ExpectError: regexp.MustCompile(`no entities found`),
+			},
+		},
+	})
+}
+
+func testAccCheckNewRelicEntityDataExists(t *testing.T, n string, appName string, accountID int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
 		a := r.Primary.Attributes
 
+		if a["account_id"] != strconv.Itoa(accountID) {
+			return fmt.Errorf("account ID mismatch: the account ID specified in the configuration used to create this entity, and the account ID linked to the retrieved entity are not identical")
+		}
 		if a["guid"] == "" {
 			return fmt.Errorf("expected to get an entity GUID")
 		}
@@ -154,4 +209,23 @@ data "newrelic_entity" "entity" {
 	}
 }
 `, name, accountId)
+}
+
+// testAccNewRelicEntityDataConfig_EntityInSubAccount checks if the entity retrieved by applying
+// the following configuration corresponds to the entity in the sub-account, and not the entity
+// with an identical name in the main account (NEW_RELIC_ACCOUNT_ID).
+func testAccNewRelicEntityDataConfig_EntityInSubAccount(name string, subAccountID int) string {
+	return fmt.Sprintf(`
+			provider "newrelic" {
+  				account_id = %d
+  				alias      = "entity-data-source-test-provider"
+			}
+
+			data "newrelic_entity" "entity" {
+				provider = newrelic.entity-data-source-test-provider
+				name = "%s"
+				type = "APPLICATION"
+				domain = "APM"
+			}
+`, subAccountID, name)
 }

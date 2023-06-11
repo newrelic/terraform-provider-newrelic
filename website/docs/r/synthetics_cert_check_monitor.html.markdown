@@ -66,7 +66,7 @@ resource "newrelic_synthetics_private_location" "location" {
 
 resource "newrelic_synthetics_cert_check_monitor" "monitor" {
   name              = "cert_check_monitor"
-  uri               = "https://www.one.example.com"
+  domain            = "https://www.one.example.com"
   locations_private = [newrelic_synthetics_private_location.location.id]
   period            = "EVERY_6_HOURS"
   status            = "ENABLED"
@@ -82,6 +82,7 @@ resource "newrelic_synthetics_cert_check_monitor" "monitor" {
 The following attributes are exported:
 
 * `id` - The ID (GUID) of the certificate check synthetics monitor.
+* `period_in_minutes` - The interval in minutes at which Synthetic monitor should run.
 
 ## Import
 

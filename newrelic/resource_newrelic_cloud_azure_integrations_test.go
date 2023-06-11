@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -15,10 +16,14 @@ import (
 )
 
 func TestAccNewRelicCloudAzureIntegration_Basic(t *testing.T) {
-	randName := acctest.RandString(5)
+	testAzureIntegrationName := fmt.Sprintf("tf_cloud_integrations_test_azure_%s", acctest.RandString(5))
 	resourceName := "newrelic_cloud_azure_integrations.bar"
 
-	t.Skip("Skipping test until we can get a better Azure test account")
+	// t.Skip("Skipping test until we can get a better Azure test account")
+
+	if subAccountIDExists := os.Getenv("NEW_RELIC_SUBACCOUNT_ID"); subAccountIDExists == "" {
+		t.Skipf("Skipping this test, as NEW_RELIC_SUBACCOUNT_ID must be set for this test to run.")
+	}
 
 	testAzureApplicationID := os.Getenv("INTEGRATION_TESTING_AZURE_APPLICATION_ID")
 	if testAzureApplicationID == "" {
@@ -40,23 +45,35 @@ func TestAccNewRelicCloudAzureIntegration_Basic(t *testing.T) {
 		t.Skip("INTEGRATION_TESTING_AZURE_TENANT_ID must be set for acceptance test")
 	}
 
+	azureIntegrationsTestConfig := map[string]string{
+		"name":            testAzureIntegrationName,
+		"account_id":      strconv.Itoa(testSubAccountID),
+		"application_id":  testAzureApplicationID,
+		"client_secret":   testAzureClientSecretID,
+		"subscription_id": testAzureSubscriptionID,
+		"tenant_id":       testAzureTenantID,
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccCloudLinkedAccountsCleanup(t, "azure") },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicCloudAzureIntegrationsDestroy,
 		Steps: []resource.TestStep{
 
 			//Test: Create
 			{
-				Config: testAccNewRelicAzureIntegrationsConfig(testAzureApplicationID, testAzureClientSecretID, testAzureSubscriptionID, testAzureTenantID, randName),
+				Config: testAccNewRelicAzureIntegrationsConfig(azureIntegrationsTestConfig),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAzureIntegrationsExist(resourceName),
 				),
+				PreConfig: func() {
+					time.Sleep(10 * time.Second)
+				},
 			},
 
 			// Test: Update
 			{
-				Config: testAccNewRelicAzureIntegrationsConfigUpdated(testAzureApplicationID, testAzureClientSecretID, testAzureSubscriptionID, testAzureSubscriptionID, randName),
+				Config: testAccNewRelicAzureIntegrationsConfigUpdated(azureIntegrationsTestConfig),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAzureIntegrationsExist(resourceName),
 				),
@@ -89,7 +106,7 @@ func testAccCheckNewRelicCloudAzureIntegrationsExist(n string) resource.TestChec
 			return fmt.Errorf("error converting string id to int")
 		}
 
-		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, resourceId)
 
 		if err != nil {
 			return err
@@ -106,7 +123,7 @@ func testAccCheckNewRelicCloudAzureIntegrationsExist(n string) resource.TestChec
 func testAccCheckNewRelicCloudAzureIntegrationsDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
-		if r.Type != "newrelic_cloud_azure_integrations" {
+		if r.Type != "newrelic_cloud_azure_integrations" && r.Type != "newrelic_cloud_azure_link_account" {
 			continue
 		}
 
@@ -116,7 +133,7 @@ func testAccCheckNewRelicCloudAzureIntegrationsDestroy(s *terraform.State) error
 			return fmt.Errorf("error converting string id to int")
 		}
 
-		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, resourceId)
 
 		if linkedAccount != nil && err == nil {
 			return fmt.Errorf("linked azure account still exists: #{err}")
@@ -126,18 +143,33 @@ func testAccCheckNewRelicCloudAzureIntegrationsDestroy(s *terraform.State) error
 	return nil
 }
 
-func testAccNewRelicAzureIntegrationsConfig(applicationID string, clientSecretID string, subscriptionID string, tenantID string, name string) string {
+func testAccNewRelicAzureIntegrationsCommonConfig(azureIntegrationsTestConfig map[string]string) string {
 	return fmt.Sprintf(`
-resource "newrelic_cloud_azure_link_account" "foo" {
-  application_id = "%[1]s"
-  client_secret = "%[2]s"
-  subscription_id = "%[3]s"
-  tenant_id = "%[4]s"
-  name  = "%[5]s"
+provider "newrelic" {
+  account_id = "` + azureIntegrationsTestConfig["account_id"] + `"
+  alias      = "cloud-integration-provider"
 }
 
+resource "newrelic_cloud_azure_link_account" "foo" {
+  provider        = newrelic.cloud-integration-provider
+  application_id  = "` + azureIntegrationsTestConfig["application_id"] + `"
+  client_secret   = "` + azureIntegrationsTestConfig["client_secret"] + `"
+  subscription_id = "` + azureIntegrationsTestConfig["subscription_id"] + `"
+  tenant_id       = "` + azureIntegrationsTestConfig["tenant_id"] + `"
+  name            = "` + azureIntegrationsTestConfig["name"] + `"
+  account_id      = "` + azureIntegrationsTestConfig["account_id"] + `"
+}
+`)
+}
+
+func testAccNewRelicAzureIntegrationsConfig(azureIntegrationsTestConfig map[string]string) string {
+	return fmt.Sprintf(`
+` + testAccNewRelicAzureIntegrationsCommonConfig(azureIntegrationsTestConfig) + `
+
 resource "newrelic_cloud_azure_integrations" "bar" {
+  provider          = newrelic.cloud-integration-provider
   linked_account_id = newrelic_cloud_azure_link_account.foo.id
+  account_id        = "` + azureIntegrationsTestConfig["account_id"] + `"
 
   api_management {
     metrics_polling_interval = 3600
@@ -222,26 +254,33 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     resource_groups          = ["beyond"]
   }
 
+  monitor {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+    include_tags             = ["env:testing", "env:production"]
+    exclude_tags             = ["env:staging"]
+    enabled                  = true
+    resource_types           = ["microsoft.datashare/accounts"]
+  }
+
   mysql {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
-
   }
+
   postgresql {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
-
   }
+
   power_bi_dedicated {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
-
   }
 
   redis_cache {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
-
   }
 
   service_bus {
@@ -267,13 +306,11 @@ resource "newrelic_cloud_azure_integrations" "bar" {
   virtual_machine {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
-
   }
 
   virtual_networks {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
-
   }
 
   vms {
@@ -285,22 +322,17 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
   }
-}
-  `, applicationID, clientSecretID, subscriptionID, tenantID, name)
+}`)
 }
 
-func testAccNewRelicAzureIntegrationsConfigUpdated(applicationID string, clientSecretID string, subscriptionID string, tenantID string, name string) string {
+func testAccNewRelicAzureIntegrationsConfigUpdated(azureIntegrationsTestConfig map[string]string) string {
 	return fmt.Sprintf(`
-resource "newrelic_cloud_azure_link_account" "foo" {
-  application_id  = "%[1]s"
-  client_secret   = "%[2]s"
-  subscription_id = "%[3]s"
-  tenant_id       = "%[4]s"
-  name            = "%[5]s"
-}
+` + testAccNewRelicAzureIntegrationsCommonConfig(azureIntegrationsTestConfig) + `
 
 resource "newrelic_cloud_azure_integrations" "bar" {
+  provider          = newrelic.cloud-integration-provider
   linked_account_id = newrelic_cloud_azure_link_account.foo.id
+  account_id        = "` + azureIntegrationsTestConfig["account_id"] + `"
 
   api_management {
     metrics_polling_interval = 3600
@@ -384,6 +416,15 @@ resource "newrelic_cloud_azure_integrations" "bar" {
   maria_db {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
+  }
+
+  monitor {
+    metrics_polling_interval = 3600
+    resource_groups          = ["beyond"]
+    include_tags             = ["env:production"]
+    exclude_tags             = ["env:staging"]
+    enabled                  = true
+    resource_types           = ["microsoft.datashare/accounts", "microsoft.eventhub/clusters"]
   }
 
   mysql {
@@ -456,7 +497,5 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
   }
-}
-  `, applicationID, clientSecretID, subscriptionID, tenantID, name)
-
+}`)
 }

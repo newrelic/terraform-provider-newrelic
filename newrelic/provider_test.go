@@ -22,28 +22,37 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/apm"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/config"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
 )
 
 var (
-	testAccExpectedAlertChannelName string
-	testAccExpectedApplicationName  string
-	testAccExpectedAlertPolicyName  string
-	testAccAPIKey                   string
-	testAccProviders                map[string]*schema.Provider
-	testAccProvider                 *schema.Provider
-	testAccountID                   int
-	testSubaccountID                int
-	testAccountName                 string
-	testAccAPMEntityCreated         = false
-	testAccCleanupComplete          = false
+	testAccExpectedAlertChannelName            string
+	testAccExpectedApplicationName             string
+	testAccExpectedSingleQuotedApplicationName string
+	testAccExpectedAlertPolicyName             string
+	testAccAPIKey                              string
+	testAccProviders                           map[string]*schema.Provider
+	testAccProvider                            *schema.Provider
+	testAccountID                              int
+	testSubAccountID                           int
+	testAccountName                            string
+	testAccAPMEntityCreated                    = false
+	testAccAPMSingleQuotedEntityCreated        = false
+	testAccCleanupComplete                     = false
+	testCloudAccCleanupComplete                = map[string]bool{
+		"aws":   false,
+		"azure": false,
+		"gcp":   false,
+	}
 )
 
 func init() {
 	testAccExpectedAlertChannelName = fmt.Sprintf("%s tf-test@example.com", acctest.RandString(5))
 	testAccExpectedApplicationName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	testAccExpectedSingleQuotedApplicationName = fmt.Sprintf("tf_test_quote_%s%s%s", acctest.RandString(5), "'", acctest.RandString(5))
 	testAccExpectedAlertPolicyName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{
@@ -60,9 +69,8 @@ func init() {
 
 	// Used for cross-account scenarios if needed, such as dashboard widgets.
 	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_SUBACCOUNT_ID")); v != 0 {
-		testSubaccountID = v
+		testSubAccountID = v
 	}
-
 	if v := os.Getenv("NEW_RELIC_ACCOUNT_NAME"); v != "" {
 		testAccountName = v
 	} else {
@@ -97,43 +105,64 @@ func testAccPreCheck(t *testing.T) {
 
 	// Create a test application for use in newrelic_alert_condition and other tests
 	if !testAccAPMEntityCreated {
-		// Clean up old instances of the applications
-		testAccApplicationsCleanup(t)
-
-		// Create the application
-		testAccCreateApplication(t)
-
-		// We need to give the entity search engine time to index the app so
-		// we try to get the entity, and retry if it fails for a certain amount
-		// of time
-		client := entities.New(config.Config{
-			PersonalAPIKey: testAccAPIKey,
-		})
-		params := entities.EntitySearchQueryBuilder{
-			Name:   testAccExpectedApplicationName,
-			Type:   "APPLICATION",
-			Domain: "APM",
-		}
-
-		retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
-			entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
-			if err != nil {
-				return resource.RetryableError(err)
-			}
-
-			if entityResults.Count != 1 {
-				return resource.RetryableError(fmt.Errorf("Entity not found, or found more than one"))
-			}
-
-			return nil
-		})
-
-		if retryErr != nil {
-			t.Fatalf("Unable to find application entity: %s", retryErr)
-		}
-
+		testAccCreateEntity(t, testAccExpectedApplicationName)
 		testAccAPMEntityCreated = true
 	}
+}
+
+func testAccSingleQuotedPreCheck(t *testing.T) {
+	testAccPreCheckEnvVars(t)
+
+	// Clean up old data partitions
+	//testAccLogDataPartitionsCleanup(t)
+
+	// Cleaning up the Parsing rules
+	//testAccLogParsingRulesCleanup(t)
+
+	// Create a test application for use in tests in the "entity" data source
+	// comprising an apostrophe "'".
+	if !testAccAPMSingleQuotedEntityCreated {
+		testAccCreateEntity(t, testAccExpectedSingleQuotedApplicationName)
+		testAccAPMSingleQuotedEntityCreated = true
+	}
+}
+
+func testAccCreateEntity(t *testing.T, name string) {
+	// Clean up old instances of the applications
+	testAccApplicationsCleanup(t)
+
+	// Create the application, with the given 'name' in the argument.
+	testAccCreateApplication(t, name)
+
+	// We need to give the entity search engine time to index the app so
+	// we try to get the entity, and retry if it fails for a certain amount
+	// of time
+	client := entities.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
+	params := entities.EntitySearchQueryBuilder{
+		Name:   escapeSingleQuote(name),
+		Type:   "APPLICATION",
+		Domain: "APM",
+	}
+
+	retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
+		entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
+		if err != nil {
+			return resource.RetryableError(err)
+		}
+
+		if entityResults.Count != 1 {
+			return resource.RetryableError(fmt.Errorf("Entity not found, or found more than one"))
+		}
+
+		return nil
+	})
+
+	if retryErr != nil {
+		t.Fatalf("Unable to find application entity: %s", retryErr)
+	}
+
 }
 
 func testAccPreCheckEnvVars(t *testing.T) {
@@ -150,10 +179,10 @@ func testAccPreCheckEnvVars(t *testing.T) {
 	}
 }
 
-func testAccCreateApplication(t *testing.T) {
+func testAccCreateApplication(t *testing.T, name string) {
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigFromEnvironment(),
-		newrelic.ConfigAppName(testAccExpectedApplicationName),
+		newrelic.ConfigAppName(name),
 		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
 	)
 
@@ -217,6 +246,42 @@ func testAccApplicationsCleanup(t *testing.T) {
 // deleting any resources that might be cross-account, such as workloads.
 func generateNameForIntegrationTestResource() string {
 	return fmt.Sprintf("tf-test-%s", acctest.RandString(15))
+}
+
+// testAccCloudLinkedAccountsCleanup handles cleaning up/deleting cloud accounts linked to the
+// specified New Relic account, of the specified provider (aws, azure, gcp).
+// Deleting linked accounts also deletes associated integrations
+func testAccCloudLinkedAccountsCleanup(t *testing.T, provider string) {
+	if testCloudAccCleanupComplete[provider] {
+		return
+	}
+	client := cloud.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
+	t.Logf("***** unlinking '%s' cloud accounts linked to the subaccount ******", provider)
+
+	cloudLinkedAccounts, err := client.GetLinkedAccounts(provider)
+	if err != nil {
+		t.Logf("error fetching '%s' cloud accounts linked to the subaccount: %s", provider, err)
+	}
+
+	if cloudLinkedAccounts == nil {
+		t.Logf("no '%s' cloud accounts linked to the subaccount found to be deleted.", provider)
+	} else {
+		cloudLinkedAccountsToBeDisabled := make([]cloud.CloudUnlinkAccountsInput, 0)
+		for _, cloudLinkedAccount := range *cloudLinkedAccounts {
+			if cloudLinkedAccount.NrAccountId == testSubAccountID {
+				cloudLinkedAccountsToBeDisabled = append(cloudLinkedAccountsToBeDisabled, cloud.CloudUnlinkAccountsInput{LinkedAccountId: cloudLinkedAccount.ID})
+				t.Logf("identified '%s' cloud account '%d' linked to the subaccount '%d'", provider, cloudLinkedAccount.ID, testSubAccountID)
+			}
+		}
+		_, err = client.CloudUnlinkAccount(testSubAccountID, cloudLinkedAccountsToBeDisabled)
+		if err == nil {
+			t.Logf("deleted %d '%s' cloud accounts linked to the subaccount: %v", len(cloudLinkedAccountsToBeDisabled), provider, cloudLinkedAccountsToBeDisabled)
+		}
+	}
+	t.Logf("testacc cleanup of '%s' cloud accounts linked to the subaccount complete", provider)
+	testCloudAccCleanupComplete[provider] = true
 }
 
 // Deleting the data partitions as they start with "Log_Test_"

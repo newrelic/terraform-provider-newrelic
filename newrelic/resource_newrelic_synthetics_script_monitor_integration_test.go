@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
 func TestAccNewRelicSyntheticsScriptAPIMonitor(t *testing.T) {
@@ -108,7 +109,7 @@ func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
 		Steps: []resource.TestStep{
-			//Test: Create
+			// Test: Create
 			{
 				Config: testAccNewRelicSyntheticsScriptBrowserMonitorConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
@@ -134,6 +135,50 @@ func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 					"tag",
 					"script",
 					"enable_screenshot_on_failure_and_script",
+					"device_orientation",
+					"device_type",
+				},
+			},
+		},
+	})
+}
+
+func TestAccNewRelicSyntheticsScriptBrowserMonitor_LegacyRuntime(t *testing.T) {
+	resourceName := "newrelic_synthetics_script_monitor.bar"
+	rName := acctest.RandString(5)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicSyntheticsScriptBrowserMonitorLegacyRuntimeConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicSyntheticsScriptBrowserMonitorLegacyRuntimeConfig(fmt.Sprintf("%s-updated", rName)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsScriptMonitorExists(resourceName),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					// Technical limitations with the API prevent us from setting the following attributes.
+					"locations_public",
+					"location_private",
+					"tag",
+					"script",
+					"enable_screenshot_on_failure_and_script",
+					"device_orientation",
+					"device_type",
 				},
 			},
 		},
@@ -169,11 +214,23 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfigLegacyRuntime(name string, s
 			status	=	"ENABLED"
 			script	=	"console.log('terraform integration test')"
 
-			# Set empty strings below for legacy runtime
-			runtime_type	=	""
-			runtime_type_version	=	""
-			script_language	=	""
+			# Omit runtime values for legacy runtime
 		}`, name, scriptMonitorType)
+}
+
+func testAccNewRelicSyntheticsScriptMonitorConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "newrelic_synthetics_script_monitor" "foo" {
+		    locations_public = [
+				"EU_WEST_1",
+				"EU_WEST_2",
+		  	]
+		    name             = "%s"
+		    period           = "EVERY_DAY"
+		    script           = "console.log('script update works!')"
+		    status           = "ENABLED"
+		    type             = "SCRIPT_BROWSER"
+		}`, name)
 }
 
 func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
@@ -183,16 +240,36 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 			locations_public	=	["AP_SOUTH_1", "US_EAST_1"]
 			name	=	"%[1]s"
 			period	=	"EVERY_HOUR"
+			status	=	"ENABLED"
+			type	=	"SCRIPT_BROWSER"
+
 			runtime_type_version	=	"100"
 			runtime_type	=	"CHROME_BROWSER"
 			script_language	=	"JAVASCRIPT"
-			status	=	"ENABLED"
-			type	=	"SCRIPT_BROWSER"
 			script	=	"$browser.get('https://one.newrelic.com')"
+
+			device_orientation = "PORTRAIT"
+			device_type = "MOBILE"
+
 			tag {
 				key	= "Name"
 				values	= ["scriptedMonitor"]
 			}
+		}`, name)
+}
+
+func testAccNewRelicSyntheticsScriptBrowserMonitorLegacyRuntimeConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "newrelic_synthetics_script_monitor" "bar" {
+			enable_screenshot_on_failure_and_script	=	true
+			locations_public	=	["AP_SOUTH_1", "US_EAST_1"]
+			name	=	"%[1]s"
+			period	=	"EVERY_HOUR"
+			status	=	"ENABLED"
+			type	=	"SCRIPT_BROWSER"
+			script	=	"$browser.get('https://one.newrelic.com')"
+
+			# Omit runtime values for legacy runtime
 		}`, name)
 }
 
@@ -222,6 +299,31 @@ func testAccCheckNewRelicSyntheticsScriptMonitorExists(n string) resource.TestCh
 	}
 }
 
+func testAccCheckNewRelicSyntheticsMonitorScriptUpdate(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no synthetics monitor ID is set")
+		}
+
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+		providerConfig := testAccProvider.Meta().(*ProviderConfig)
+		accountId := providerConfig.AccountID
+
+		result, err := client.Synthetics.GetScript(accountId, synthetics.EntityGUID(rs.Primary.ID))
+		if err != nil {
+			return err
+		}
+		if len(result.Text) == 0 {
+			return fmt.Errorf("Synthetic Monitor Script update not successful !!")
+		}
+		return nil
+	}
+}
+
 func testAccCheckNewRelicSyntheticsScriptMonitorDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
@@ -239,4 +341,24 @@ func testAccCheckNewRelicSyntheticsScriptMonitorDestroy(s *terraform.State) erro
 		}
 	}
 	return nil
+}
+
+func TestAccNewRelicSyntheticsMonitorScriptUpdate(t *testing.T) {
+	resourceName := "newrelic_synthetics_script_monitor.foo"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
+		Steps: []resource.TestStep{
+
+			{
+				Config: testAccNewRelicSyntheticsScriptMonitorConfig(fmt.Sprintf(rName)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsMonitorScriptUpdate(resourceName),
+				),
+			},
+		},
+	})
 }

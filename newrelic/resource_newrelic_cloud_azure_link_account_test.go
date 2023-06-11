@@ -15,8 +15,12 @@ import (
 )
 
 func TestAccNewRelicCloudAzureLinkAccount_Basic(t *testing.T) {
-	randName := acctest.RandString(5)
+	testAzureLinkAccountName := fmt.Sprintf("tf_cloud_link_account_test_azure_%s", acctest.RandString(5))
 	resourceName := "newrelic_cloud_azure_link_account.foo"
+
+	if subAccountIDExists := os.Getenv("NEW_RELIC_SUBACCOUNT_ID"); subAccountIDExists == "" {
+		t.Skipf("Skipping this test, as NEW_RELIC_SUBACCOUNT_ID must be set for this test to run.")
+	}
 
 	testAzureApplicationID := os.Getenv("INTEGRATION_TESTING_AZURE_APPLICATION_ID")
 	if testAzureApplicationID == "" {
@@ -38,15 +42,24 @@ func TestAccNewRelicCloudAzureLinkAccount_Basic(t *testing.T) {
 		t.Skip("INTEGRATION_TESTING_AZURE_TENANT_ID must be set for acceptance test")
 	}
 
+	azureLinkAccountTestConfig := map[string]string{
+		"name":            testAzureLinkAccountName,
+		"account_id":      strconv.Itoa(testSubAccountID),
+		"application_id":  testAzureApplicationID,
+		"client_secret":   testAzureClientSecretID,
+		"subscription_id": testAzureSubscriptionID,
+		"tenant_id":       testAzureTenantID,
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccCloudLinkedAccountsCleanup(t, "azure") },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicCloudAzureLinkAccountDestroy,
 		Steps: []resource.TestStep{
 
 			// Test: Create
 			{
-				Config: testAccNewRelicAzureLinkAccountConfig(testAzureApplicationID, testAzureClientSecretID, testAzureSubscriptionID, testAzureTenantID, randName),
+				Config: testAccNewRelicAzureLinkAccountConfig(azureLinkAccountTestConfig, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAzureLinkAccountExists(resourceName),
 				),
@@ -54,7 +67,7 @@ func TestAccNewRelicCloudAzureLinkAccount_Basic(t *testing.T) {
 
 			// Test: Update
 			{
-				Config: testAccNewRelicAzureLinkAccountConfigUpdated(testAzureApplicationID, testAzureClientSecretID, testAzureSubscriptionID, testAzureSubscriptionID, randName),
+				Config: testAccNewRelicAzureLinkAccountConfig(azureLinkAccountTestConfig, true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAzureLinkAccountExists(resourceName),
 				),
@@ -92,7 +105,7 @@ func testAccCheckNewRelicAzureLinkAccountExists(n string) resource.TestCheckFunc
 			return fmt.Errorf("error converting string id to int")
 		}
 
-		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, resourceId)
 
 		if err != nil && linkedAccount == nil {
 			return err
@@ -120,7 +133,7 @@ func testAccCheckNewRelicCloudAzureLinkAccountDestroy(s *terraform.State) error 
 			return fmt.Errorf("error converting string to int")
 		}
 
-		linkedAccount, err := client.Cloud.GetLinkedAccount(testAccountID, resourceId)
+		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, resourceId)
 
 		if linkedAccount != nil && err == nil {
 			return fmt.Errorf("linked azure account still exists: #{err}")
@@ -129,26 +142,25 @@ func testAccCheckNewRelicCloudAzureLinkAccountDestroy(s *terraform.State) error 
 	return nil
 }
 
-func testAccNewRelicAzureLinkAccountConfig(applicationID string, clientSecretID string, subscriptionID string, tenantID string, name string) string {
+func testAccNewRelicAzureLinkAccountConfig(azureLinkAccountTestConfig map[string]string, updated bool) string {
+	if updated == true {
+		azureLinkAccountTestConfig["name"] += "-updated"
+	}
+
 	return fmt.Sprintf(`
-resource "newrelic_cloud_azure_link_account" "foo"{
-	application_id = "%[1]s"
-	client_secret = "%[2]s"
-	subscription_id = "%[3]s"
-	tenant_id = "%[4]s"
-	name  = "%[5]s"
-}
-	`, applicationID, clientSecretID, subscriptionID, tenantID, name)
+provider "newrelic" {
+  account_id = "` + azureLinkAccountTestConfig["account_id"] + `"
+  alias      = "cloud-integration-provider"
 }
 
-func testAccNewRelicAzureLinkAccountConfigUpdated(applicationID string, clientSecretID string, subscriptionID string, tenantID string, name string) string {
-	return fmt.Sprintf(`
-   resource "newrelic_cloud_azure_link_account" "foo"{
-      application_id = "%[1]s"
-       client_secret = "%[2]s"
-       subscription_id = "%[3]s"
-       tenant_id = "%[4]s"
-       name = "%[5]s-updated"
-   }
-   `, applicationID, clientSecretID, subscriptionID, tenantID, name)
+resource "newrelic_cloud_azure_link_account" "foo" {
+  provider        = newrelic.cloud-integration-provider
+  application_id  = "` + azureLinkAccountTestConfig["application_id"] + `"
+  client_secret   = "` + azureLinkAccountTestConfig["client_secret"] + `"
+  subscription_id = "` + azureLinkAccountTestConfig["subscription_id"] + `"
+  tenant_id       = "` + azureLinkAccountTestConfig["tenant_id"] + `"
+  name            = "` + azureLinkAccountTestConfig["name"] + `"
+  account_id      = "` + azureLinkAccountTestConfig["account_id"] + `"
+}
+`)
 }

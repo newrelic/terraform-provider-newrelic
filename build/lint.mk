@@ -37,11 +37,11 @@ spell-check-fix: deps
 
 gofmt: deps
 	@echo "=== $(PROJECT_NAME) === [ gofmt            ]: Checking file format with $(GOFMT)..."
-	@find . -path "$(EXCLUDEDIR)" -prune -print0 | xargs -0 $(GOFMT) -e -l -s -d ${SRCDIR}
+	@$(GOFMT) -e -l -s -d $(GO_FILES)
 
 gofmt-fix: deps
 	@echo "=== $(PROJECT_NAME) === [ gofmt-fix        ]: Fixing file format with $(GOFMT)..."
-	@find . -path "$(EXCLUDEDIR)" -prune -print0 | xargs -0 $(GOFMT) -e -l -s -w ${SRCDIR}
+	@$(GOFMT) -e -l -s -w $(GO_FILES)
 
 goimports: deps
 	@echo "=== $(PROJECT_NAME) === [ goimports        ]: Checking imports with $(GOIMPORTS)..."

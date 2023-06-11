@@ -73,6 +73,16 @@ func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Sc
 			Optional:    true,
 			Description: "Capture a screenshot during job execution.",
 		},
+		"device_orientation": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The device orientation the user would like to represent. Valid values are LANDSCAPE, PORTRAIT, or NONE.",
+		},
+		"device_type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
+		},
 	}
 }
 
@@ -136,6 +146,8 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		// Set attributes
 		d.SetId(string(resp.Monitor.GUID))
 		_ = d.Set("account_id", accountID)
+		_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
+
 		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
 		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
@@ -144,7 +156,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		monitorInput := buildSyntheticsScriptBrowserMonitorInput(d)
 		resp, err := client.Synthetics.SyntheticsCreateScriptBrowserMonitorWithContext(ctx, accountID, monitorInput)
 		if err != nil {
-			diag.FromErr(err)
+			return diag.FromErr(err)
 		}
 
 		errors := buildCreateSyntheticsMonitorResponseErrors(resp.Errors)
@@ -155,6 +167,8 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		// Set attributes
 		d.SetId(string(resp.Monitor.GUID))
 		_ = d.Set("account_id", accountID)
+		_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
+
 		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
 		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
@@ -177,10 +191,28 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	// This should probably be in go-client so we can use *errors.NotFound
+	// This should probably be in go-client, so we can use *errors.NotFound
 	if *resp == nil {
 		d.SetId("")
 		return nil
+	}
+
+	response, error := client.Synthetics.GetScript(accountID, synthetics.EntityGUID(d.Id()))
+	if error != nil {
+		return diag.FromErr(error)
+	}
+
+	if response == nil {
+		d.SetId("")
+		return nil
+	}
+
+	error = setSyntheticsMonitorAttributes(d, map[string]string{
+		"script": response.Text,
+	})
+
+	if error != nil {
+		return diag.FromErr(error)
 	}
 
 	_ = d.Set("account_id", accountID)
@@ -194,6 +226,8 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 			"period": string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
 			"status": string(e.MonitorSummary.Status),
 		})
+
+		_ = d.Set("period_in_minutes", int(e.GetPeriod()))
 
 		for _, t := range e.Tags {
 			if k, ok := syntheticsMonitorTagKeyToSchemaAttrMap[t.Key]; ok {
@@ -237,6 +271,9 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 			"period": string(resp.Monitor.Period),
 			"status": string(resp.Monitor.Status),
 		})
+
+		_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -259,6 +296,9 @@ func resourceNewRelicSyntheticsScriptMonitorUpdate(ctx context.Context, d *schem
 			"period": string(resp.Monitor.Period),
 			"status": string(resp.Monitor.Status),
 		})
+
+		_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
+
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -80,6 +80,7 @@ resource "newrelic_synthetics_broken_links_monitor" "monitor" {
 The following attributes are exported:
 
 * `id` - The ID (GUID) of the synthetics broken links monitor.
+* `period_in_minutes` - The interval in minutes at which Synthetic monitor should run.
 
 ## Import
 

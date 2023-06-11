@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -129,4 +130,32 @@ func mergeSchemas(schemas ...map[string]*schema.Schema) map[string]*schema.Schem
 		}
 	}
 	return schema
+}
+
+// This method helps identify single quotes in the argument 'name', to
+// prefix the '\' escape character before single quotes, in order to allow
+// NRQL to parse the query without errors caused by the single quote '.
+func escapeSingleQuote(name string) string {
+	unescapedSingleQuoteRegex := regexp.MustCompile(`'`)
+	quoteFormattedName := unescapedSingleQuoteRegex.ReplaceAllString(name, "\\'")
+	if strings.Compare(quoteFormattedName, name) != 0 {
+		log.Printf("Changing the name ( %s ---> %s ) since a single quote has been identified.", name, quoteFormattedName)
+		name = quoteFormattedName
+	}
+
+	return name
+}
+
+// This method helps identify escape characters preceding single quotes (')
+// and eliminates the escape characters to match it with the NRQL expression
+// parsed by the Terraform Provider.
+func revertEscapedSingleQuote(name string) string {
+	escapedSingleQuoteRegex := regexp.MustCompile(`\\'`)
+	quoteFormattedName := escapedSingleQuoteRegex.ReplaceAllString(name, "'")
+	if strings.Compare(quoteFormattedName, name) != 0 {
+		log.Printf("Reverting the name ( %s ---> %s ) since a single quote has been identified.", quoteFormattedName, name)
+		name = quoteFormattedName
+	}
+
+	return name
 }

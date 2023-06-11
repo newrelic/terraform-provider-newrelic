@@ -44,9 +44,9 @@ func TestAccNewRelicCloudAccountDataSource_Error(t *testing.T) {
 func testNewRelicCloudAccountDataSourceBasicConfig() string {
 	return fmt.Sprintf(`
 data "newrelic_cloud_account" "account" {
-	account_id = 3814156
-	name = "NEW-DTK-NAME"
-	cloud_provider = "aws"
+	account_id  	= 3959347
+	name 			= "AWS-Link-For-Acceptance-Test-DO-NOT-DELETE"
+	cloud_provider  = "aws"
 }
 `)
 }
@@ -54,7 +54,7 @@ data "newrelic_cloud_account" "account" {
 func testNewRelicCloudAccountDataSourceErrorConfig() string {
 	return fmt.Sprintf(`
 data "newrelic_cloud_account" "account" {
-	name = "NEW-DTK-NAME"
+	name 		   = "AWS-Link-For-Acceptance-Test-DO-NOT-DELETE"
 	cloud_provider = "aws"
 }
 `)

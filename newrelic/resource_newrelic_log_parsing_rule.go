@@ -3,11 +3,12 @@ package newrelic
 import (
 	"context"
 	"errors"
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
-	"log"
 )
 
 func resourceNewRelicLogParsingRule() *schema.Resource {
@@ -265,6 +266,9 @@ func getLogParsingRuleByID(ctx context.Context, client *newrelic.NewRelic, accou
 
 func getLogParsingRuleByName(ctx context.Context, client *newrelic.NewRelic, accountID int, name string) (*logconfigurations.LogConfigurationsParsingRule, error) {
 	rules, err := client.Logconfigurations.GetParsingRulesWithContext(ctx, accountID)
+	if rules == nil && err.Error() == "resource not found" {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}

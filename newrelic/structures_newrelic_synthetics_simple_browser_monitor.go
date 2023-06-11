@@ -8,12 +8,12 @@ import (
 func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleBrowserMonitorInput {
 	inputBase := expandSyntheticsMonitorBase(d)
 
-	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{}
-
-	simpleBrowserMonitorInput.Name = inputBase.Name
-	simpleBrowserMonitorInput.Period = inputBase.Period
-	simpleBrowserMonitorInput.Status = inputBase.Status
-	simpleBrowserMonitorInput.Tags = inputBase.Tags
+	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{
+		Name:   inputBase.Name,
+		Period: inputBase.Period,
+		Status: inputBase.Status,
+		Tags:   inputBase.Tags,
+	}
 
 	if v, ok := d.GetOk("custom_header"); ok {
 		simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = expandSyntheticsCustomHeaders(v.(*schema.Set).List())
@@ -45,16 +45,24 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 		simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = &vs
 	}
 
-	if v, ok := d.GetOk("script_language"); ok {
-		simpleBrowserMonitorInput.Runtime.ScriptLanguage = v.(string)
-	}
+	sciptLang, scriptLangOk := d.GetOk("script_language")
+	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
+	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
 
-	if v, ok := d.GetOk("runtime_type"); ok {
-		simpleBrowserMonitorInput.Runtime.RuntimeType = v.(string)
-	}
+	if scriptLangOk || runtimeTypeOk || runtimeTypeVersionOk {
+		simpleBrowserMonitorInput.Runtime = &synthetics.SyntheticsRuntimeInput{}
 
-	if v, ok := d.GetOk("runtime_type_version"); ok {
-		simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+		if scriptLangOk {
+			simpleBrowserMonitorInput.Runtime.ScriptLanguage = sciptLang.(string)
+		}
+
+		if runtimeTypeOk {
+			simpleBrowserMonitorInput.Runtime.RuntimeType = runtimeType.(string)
+		}
+
+		if runtimeTypeVersionOk {
+			simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
+		}
 	}
 
 	return simpleBrowserMonitorInput
@@ -63,12 +71,12 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleBrowserMonitorInput {
 	inputBase := expandSyntheticsMonitorBase(d)
 
-	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{}
-
-	simpleBrowserMonitorUpdateInput.Name = inputBase.Name
-	simpleBrowserMonitorUpdateInput.Period = inputBase.Period
-	simpleBrowserMonitorUpdateInput.Status = inputBase.Status
-	simpleBrowserMonitorUpdateInput.Tags = inputBase.Tags
+	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{
+		Name:   inputBase.Name,
+		Period: inputBase.Period,
+		Status: inputBase.Status,
+		Tags:   inputBase.Tags,
+	}
 
 	if v, ok := d.GetOk("custom_header"); ok {
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandSyntheticsCustomHeaders(v.(*schema.Set).List())
@@ -100,16 +108,24 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.UseTlsValidation = &vs
 	}
 
-	if v, ok := d.GetOk("script_language"); ok {
-		simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = v.(string)
-	}
+	sciptLang, scriptLangOk := d.GetOk("script_language")
+	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
+	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
 
-	if v, ok := d.GetOk("runtime_type"); ok {
-		simpleBrowserMonitorUpdateInput.Runtime.RuntimeType = v.(string)
-	}
+	if scriptLangOk || runtimeTypeOk || runtimeTypeVersionOk {
+		simpleBrowserMonitorUpdateInput.Runtime = &synthetics.SyntheticsRuntimeInput{}
 
-	if v, ok := d.GetOk("runtime_type_version"); ok {
-		simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+		if scriptLangOk {
+			simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = sciptLang.(string)
+		}
+
+		if runtimeTypeOk {
+			simpleBrowserMonitorUpdateInput.Runtime.RuntimeType = runtimeType.(string)
+		}
+
+		if runtimeTypeVersionOk {
+			simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
+		}
 	}
 
 	return simpleBrowserMonitorUpdateInput

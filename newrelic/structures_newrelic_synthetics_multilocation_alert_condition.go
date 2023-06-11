@@ -85,13 +85,14 @@ func expandMultiLocationSyntheticsConditionTerm(term map[string]interface{}, pri
 	}, nil
 }
 
-func flattenMultiLocationSyntheticsCondition(condition *alerts.MultiLocationSyntheticsCondition, d *schema.ResourceData) error {
+func flattenMultiLocationSyntheticsCondition(condition *alerts.MultiLocationSyntheticsCondition, accountID int, d *schema.ResourceData) error {
 	ids, err := parseIDs(d.Id(), 2)
 	if err != nil {
 		return err
 	}
 
 	policyID := ids[0]
+	entityGUID := getConditionEntityGUID(condition.ID, accountID)
 
 	_ = d.Set("policy_id", policyID)
 	_ = d.Set("name", condition.Name)
@@ -99,6 +100,7 @@ func flattenMultiLocationSyntheticsCondition(condition *alerts.MultiLocationSynt
 	_ = d.Set("enabled", condition.Enabled)
 	_ = d.Set("violation_time_limit_seconds", condition.ViolationTimeLimitSeconds)
 	_ = d.Set("policy_id", policyID)
+	_ = d.Set("entity_guid", entityGUID)
 
 	for _, term := range condition.Terms {
 		switch term.Priority {

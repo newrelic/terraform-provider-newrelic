@@ -6,10 +6,11 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"testing"
 )
 
 func TestAccNewRelicObfuscationExpressionDataSource_Basic(t *testing.T) {

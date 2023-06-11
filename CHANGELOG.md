@@ -1,3 +1,129 @@
+<a name="v3.24.1"></a>
+## [v3.24.1] - 2023-06-08
+### Bug Fixes
+- **cloud_tests:** adds precheck to cloud tests to delink accounts before test run ([#2384](https://github.com/newrelic/terraform-provider-newrelic/issues/2384))
+- **log_parsing:** fix to error handling in the log parsing resource ([#2390](https://github.com/newrelic/terraform-provider-newrelic/issues/2390))
+- **newrelic_entity:** filtering entites returned based on account_id ([#2389](https://github.com/newrelic/terraform-provider-newrelic/issues/2389))
+
+### Documentation Updates
+- account_id param for newrelic_one_dashboard_json ([#2385](https://github.com/newrelic/terraform-provider-newrelic/issues/2385))
+- **newrelic:** tiny typo corrections ([#2392](https://github.com/newrelic/terraform-provider-newrelic/issues/2392))
+
+<a name="v3.24.0"></a>
+## [v3.24.0] - 2023-05-30
+### Bug Fixes
+- **build:** Updated gofmt and gofmt-fix make rules
+
+### Documentation Updates
+- **script_monitor:** corrections to details on private, public locations ([#2372](https://github.com/newrelic/terraform-provider-newrelic/issues/2372))
+
+### Features
+- **newrelic_cloud_aws_integrations:** Add remaining aws polling integrations. ([#2383](https://github.com/newrelic/terraform-provider-newrelic/issues/2383))
+- **newrelic_cloud_aws_integrations:** Add other polling integrations. ([#2374](https://github.com/newrelic/terraform-provider-newrelic/issues/2374))
+
+<a name="v3.23.0"></a>
+## [v3.23.0] - 2023-05-17
+### Bug Fixes
+- update missing fields, docs etc
+- Missing fields from [#2289](https://github.com/newrelic/terraform-provider-newrelic/issues/2289)
+- lint errors
+
+### Documentation Updates
+- update aws docs
+- **cloud_integrations:** update to broken links ([#2365](https://github.com/newrelic/terraform-provider-newrelic/issues/2365))
+- **examples:** updated aws example to include config stream and moved cloud examples to modules ([#2225](https://github.com/newrelic/terraform-provider-newrelic/issues/2225))
+- **newrelic_cloud_aws_integrations:** update aws docs with new integrations.
+- **newrelic_cloud_aws_integrations:** update aws docs with new integrations.
+- **one_dashboard_json:** addition of a multipage dashboard example and other corrections ([#2347](https://github.com/newrelic/terraform-provider-newrelic/issues/2347))
+
+### Features
+- Add other polling integrations to newrelic_cloud_aws_integrations
+- additional poll integrations (sqs, ebs, alb, elasticache) ([#2289](https://github.com/newrelic/terraform-provider-newrelic/issues/2289))
+
+<a name="v3.22.0"></a>
+## [v3.22.0] - 2023-05-08
+### Documentation Updates
+- **one_dashboard:** added documentation on how to use the CLI to convert dashboards to HCL ([#2339](https://github.com/newrelic/terraform-provider-newrelic/issues/2339))
+- **service_level_alert_helper:** update to documentation ([#2361](https://github.com/newrelic/terraform-provider-newrelic/issues/2361))
+
+### Features
+- **data/account:** Allow reading the provider's `account_id`. ([#2314](https://github.com/newrelic/terraform-provider-newrelic/issues/2314))
+- **newrelic_cloud_azure_integrations:** addition of the integration 'azureMonitor' ([#2338](https://github.com/newrelic/terraform-provider-newrelic/issues/2338))
+
+<a name="v3.21.3"></a>
+## [v3.21.3] - 2023-04-28
+<a name="v3.21.2"></a>
+## [v3.21.2] - 2023-04-28
+<a name="v3.21.1"></a>
+## [v3.21.1] - 2023-04-28
+<a name="v3.21.0"></a>
+## [v3.21.0] - 2023-04-28
+### Bug Fixes
+- **newrelic_synthetics_script_monitor:** Populate script argument changes upon modifications. ([#2335](https://github.com/newrelic/terraform-provider-newrelic/issues/2335))
+- **nrql_alert_condition:** check for nil response on create
+- **one_dashboard:** code changes to support y_axis_left_min=0 ([#2326](https://github.com/newrelic/terraform-provider-newrelic/issues/2326))
+- **synthetics:** handle omitting runtime values for legacy runtime
+
+### Documentation Updates
+- update synthetic monitor default runtime notes. ([#2325](https://github.com/newrelic/terraform-provider-newrelic/issues/2325))
+- **nrql_alert_condition:** Update nrql alert condition docs ([#2341](https://github.com/newrelic/terraform-provider-newrelic/issues/2341))
+
+### Features
+- **one_dashboard:** addition of the attribute zero to widget_line ([#2336](https://github.com/newrelic/terraform-provider-newrelic/issues/2336))
+- **synthetics:** Synthetics monitor additional field to output period in minutes ([#2340](https://github.com/newrelic/terraform-provider-newrelic/issues/2340))
+- **synthetics:** Synthetics monitor additional field to output period in minutes
+- **synthetics:** add device emulation options to newrelic_synthetics_script_browser_monitor resource
+
+<a name="v3.20.2"></a>
+## [v3.20.2] - 2023-04-07
+### Bug Fixes
+- **newrelic_nrql_alert_condition:** add default 'violation_time_limit_seconds' ([#2319](https://github.com/newrelic/terraform-provider-newrelic/issues/2319))
+
+### Documentation Updates
+- add note on 'default_values' to one_dashboard ([#2321](https://github.com/newrelic/terraform-provider-newrelic/issues/2321))
+
+<a name="v3.20.1"></a>
+## [v3.20.1] - 2023-04-05
+### Bug Fixes
+- **newrelic_api_access_key:** add info to TF docs on API Access errors ([#2302](https://github.com/newrelic/terraform-provider-newrelic/issues/2302))
+
+### Documentation Updates
+- correct references to slack webhooks in newrelic_alert_channel ([#2315](https://github.com/newrelic/terraform-provider-newrelic/issues/2315))
+- **guide:** update synthetics migration guide with correct resource reference to remove state ([#2318](https://github.com/newrelic/terraform-provider-newrelic/issues/2318))
+
+<a name="v3.20.0"></a>
+## [v3.20.0] - 2023-03-30
+### Bug Fixes
+- **newrelic_entity:** add helpers to escape single quotes in NRQL que… ([#2295](https://github.com/newrelic/terraform-provider-newrelic/issues/2295))
+
+### Documentation Updates
+- update newrelic_synthetics_cert_check_monitor example to use correct argument. ([#2311](https://github.com/newrelic/terraform-provider-newrelic/issues/2311))
+- update docs with newrelic_account_management resource ([#2308](https://github.com/newrelic/terraform-provider-newrelic/issues/2308))
+
+### Features
+- **service_level:** add data source service_level_alert_helper ([#2298](https://github.com/newrelic/terraform-provider-newrelic/issues/2298))
+
+<a name="v3.19.0"></a>
+## [v3.19.0] - 2023-03-28
+### Documentation Updates
+- add examples to dashboard resource to demonstrate importing dashboards using GUID ([#2300](https://github.com/newrelic/terraform-provider-newrelic/issues/2300))
+
+### Features
+- **Alerts:** Expose entity_guid for legacy alert conditions ([#2301](https://github.com/newrelic/terraform-provider-newrelic/issues/2301))
+
+<a name="v3.18.1"></a>
+## [v3.18.1] - 2023-03-24
+### Bug Fixes
+- **NRQLDropRule:** Handle case where resource in state has been deleted
+
+### Documentation Updates
+- **entity:** update entity data source docs with additional entity types and examples ([#2297](https://github.com/newrelic/terraform-provider-newrelic/issues/2297))
+
+<a name="v3.18.0"></a>
+## [v3.18.0] - 2023-03-22
+### Features
+- Allow creating SL using CDF functions. ([#2293](https://github.com/newrelic/terraform-provider-newrelic/issues/2293))
+
 <a name="v3.17.1"></a>
 ## [v3.17.1] - 2023-03-17
 ### Bug Fixes
@@ -1079,10 +1205,10 @@ new synthetics resources use GraphQL API schema
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="v2.11.1"></a>
-## [v2.11.1] - 2020-10-07
 <a name="2.11.1"></a>
 ## [2.11.1] - 2020-10-07
+<a name="v2.11.1"></a>
+## [v2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -1749,7 +1875,21 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.24.1...HEAD
+[v3.24.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.24.0...v3.24.1
+[v3.24.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.23.0...v3.24.0
+[v3.23.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.22.0...v3.23.0
+[v3.22.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.21.3...v3.22.0
+[v3.21.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.21.2...v3.21.3
+[v3.21.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.21.1...v3.21.2
+[v3.21.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.21.0...v3.21.1
+[v3.21.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.2...v3.21.0
+[v3.20.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.1...v3.20.2
+[v3.20.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.20.0...v3.20.1
+[v3.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.19.0...v3.20.0
+[v3.19.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.18.1...v3.19.0
+[v3.18.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.18.0...v3.18.1
+[v3.18.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.1...v3.18.0
 [v3.17.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.17.0...v3.17.1
 [v3.17.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.16.1...v3.17.0
 [v3.16.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.16.0...v3.16.1
@@ -1862,9 +2002,9 @@ new synthetics resources use GraphQL API schema
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2

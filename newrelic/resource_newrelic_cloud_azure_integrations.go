@@ -153,6 +153,13 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Elem:        cloudAzureIntegrationMariadbElem(),
 				MaxItems:    1,
 			},
+			"monitor": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The Azure Monitor",
+				Elem:        cloudAzureIntegrationMonitorElem(),
+				MaxItems:    1,
+			},
 			"mysql": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -571,6 +578,61 @@ func cloudAzureIntegrationMysqlElem() *schema.Resource {
 
 }
 
+// cloudAzureIntegrationMonitorElem defines the schema of elements in the "monitor" Azure integration.
+func cloudAzureIntegrationMonitorElem() *schema.Resource {
+	s := mergeSchemas(
+		cloudAzureIntegrationSchemaBase(),
+		cloudAzureIntegrationMonitorSchema())
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// cloudAzureIntegrationMonitorSchema defines the schema of elements specific to the "monitor" Azure integration.
+func cloudAzureIntegrationMonitorSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"enabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "A flag that specifies if the integration is active",
+		},
+		"exclude_tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Specify resource tags in 'key:value' form to be excluded from monitoring",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"include_tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Specify resource tags in 'key:value' form to be monitored",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"resource_types": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Specify each Azure resource type that needs to be monitored",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"resource_groups": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+	}
+}
+
 // function to add schema for azure mysql
 func cloudAzureIntegrationMysqlFlexElem() *schema.Resource {
 	s := cloudAzureIntegrationSchemaBase()
@@ -938,6 +1000,12 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 		cloudAzureIntegration.AzureMariadb = expandCloudAzureIntegrationMariadbInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("maria_db"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMariadb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := d.GetOk("monitor"); ok {
+		cloudAzureIntegration.AzureMonitor = expandCloudAzureIntegrationMonitorInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("monitor"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureMonitor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	if v, ok := d.GetOk("mysql"); ok {
@@ -1649,6 +1717,73 @@ func expandCloudAzureIntegrationMariadbInput(b []interface{}, linkedAccountID in
 	return expanded
 }
 
+// Expanding the input for the azureMonitor integration
+func expandCloudAzureIntegrationMonitorInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureMonitorIntegrationInput {
+	expanded := make([]cloud.CloudAzureMonitorIntegrationInput, len(b))
+
+	for i, azureMonitor := range b {
+		var azureMonitorInput cloud.CloudAzureMonitorIntegrationInput
+
+		if azureMonitor == nil {
+			azureMonitorInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureMonitorInput
+			return expanded
+		}
+
+		in := azureMonitor.(map[string]interface{})
+
+		azureMonitorInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureMonitorInput.MetricsPollingInterval = m.(int)
+		}
+		if r, ok := in["resource_groups"]; ok {
+			resourceGroups := r.([]interface{})
+			var groups []string
+
+			for _, group := range resourceGroups {
+				groups = append(groups, group.(string))
+			}
+			azureMonitorInput.ResourceGroups = groups
+		}
+		if rt, ok := in["resource_types"]; ok {
+			resourceTypes := rt.([]interface{})
+			var rTypes []string
+
+			for _, rType := range resourceTypes {
+				rTypes = append(rTypes, rType.(string))
+			}
+			azureMonitorInput.ResourceTypes = rTypes
+		}
+		if et, ok := in["exclude_tags"]; ok {
+			excludeTags := et.([]interface{})
+			var eTags []string
+
+			for _, eTag := range excludeTags {
+				eTags = append(eTags, eTag.(string))
+			}
+			azureMonitorInput.ExcludeTags = eTags
+		}
+
+		if it, ok := in["include_tags"]; ok {
+			includeTags := it.([]interface{})
+			var iTags []string
+
+			for _, iTag := range includeTags {
+				iTags = append(iTags, iTag.(string))
+			}
+			azureMonitorInput.IncludeTags = iTags
+		}
+
+		if enabled, ok := in["enabled"]; ok {
+			azureMonitorInput.Enabled = enabled.(bool)
+		}
+		expanded[i] = azureMonitorInput
+	}
+
+	return expanded
+}
+
 // Expanding the Azure_mysql
 
 func expandCloudAzureIntegrationMysqlInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureMysqlIntegrationInput {
@@ -2220,6 +2355,8 @@ func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudL
 			_ = d.Set("machine_learning", flattenCloudAzureMachineLearningIntegration(t))
 		case *cloud.CloudAzureMariadbIntegration:
 			_ = d.Set("maria_db", flattenCloudAzureMariadbIntegration(t))
+		case *cloud.CloudAzureMonitorIntegration:
+			_ = d.Set("monitor", flattenCloudAzureMonitorIntegration(t))
 		case *cloud.CloudAzureMysqlIntegration:
 			_ = d.Set("mysql", flattenCloudAzureMysqlIntegration(t))
 		case *cloud.CloudAzureMysqlflexibleIntegration:
@@ -2502,6 +2639,24 @@ func flattenCloudAzureMariadbIntegration(in *cloud.CloudAzureMariadbIntegration)
 
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 	out["resource_groups"] = in.ResourceGroups
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// Flatten values for the azureMonitor integration
+func flattenCloudAzureMonitorIntegration(in *cloud.CloudAzureMonitorIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	out["resource_groups"] = in.ResourceGroups
+	out["exclude_tags"] = in.ExcludeTags
+	out["include_tags"] = in.IncludeTags
+	out["resource_types"] = in.ResourceTypes
+	out["enabled"] = in.Enabled
 
 	flattened[0] = out
 
@@ -2842,6 +2997,9 @@ func expandCloudAzureDisableInputs(d *schema.ResourceData) cloud.CloudDisableInt
 	}
 	if _, ok := d.GetOk("maria_db"); ok {
 		cloudAzureDisableInput.AzureMariadb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+	if _, ok := d.GetOk("monitor"); ok {
+		cloudAzureDisableInput.AzureMonitor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 	if _, ok := d.GetOk("mysql"); ok {
 		cloudAzureDisableInput.AzureMysql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}

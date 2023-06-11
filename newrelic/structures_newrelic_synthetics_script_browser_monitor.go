@@ -9,16 +9,12 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	input := synthetics.SyntheticsCreateScriptBrowserMonitorInput{
-		Name:   inputBase.Name,
-		Period: inputBase.Period,
-		Status: inputBase.Status,
-		Tags:   inputBase.Tags,
-		Script: d.Get("script").(string),
-	}
-
-	if v := d.Get("enable_screenshot_on_failure_and_script"); v.(bool) {
-		e := v.(bool)
-		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &e
+		Name:            inputBase.Name,
+		Period:          inputBase.Period,
+		Status:          inputBase.Status,
+		Tags:            inputBase.Tags,
+		Script:          d.Get("script").(string),
+		AdvancedOptions: synthetics.SyntheticsScriptBrowserMonitorAdvancedOptionsInput{},
 	}
 
 	if attr, ok := d.GetOk("location_private"); ok {
@@ -29,16 +25,43 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
 	}
 
-	if v, ok := d.GetOk("script_language"); ok {
-		input.Runtime.ScriptLanguage = v.(string)
+	sciptLang, scriptLangOk := d.GetOk("script_language")
+	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
+	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
+
+	if scriptLangOk || runtimeTypeOk || runtimeTypeVersionOk {
+		input.Runtime = &synthetics.SyntheticsRuntimeInput{}
+
+		if scriptLangOk {
+			input.Runtime.ScriptLanguage = sciptLang.(string)
+		}
+
+		if runtimeTypeOk {
+			input.Runtime.RuntimeType = runtimeType.(string)
+		}
+
+		if runtimeTypeVersionOk {
+			input.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
+		}
 	}
 
-	if v, ok := d.GetOk("runtime_type"); ok {
-		input.Runtime.RuntimeType = v.(string)
+	enableScreenshot := d.Get("enable_screenshot_on_failure_and_script").(bool)
+	if enableScreenshot {
+		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &enableScreenshot
 	}
 
-	if v, ok := d.GetOk("runtime_type_version"); ok {
-		input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	deviceType, deviceTypeOk := d.GetOk("device_type")
+	deviceOrientation, deviceOrientationOk := d.GetOk("device_orientation")
+	if deviceTypeOk || deviceOrientationOk {
+		input.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
+
+		if deviceTypeOk {
+			input.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(deviceType.(string))
+		}
+
+		if deviceOrientationOk {
+			input.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(deviceOrientation.(string))
+		}
 	}
 
 	return input
@@ -48,16 +71,12 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	input := synthetics.SyntheticsUpdateScriptBrowserMonitorInput{
-		Name:   inputBase.Name,
-		Period: inputBase.Period,
-		Status: inputBase.Status,
-		Tags:   inputBase.Tags,
-		Script: d.Get("script").(string),
-	}
-
-	if v := d.Get("enable_screenshot_on_failure_and_script"); v.(bool) {
-		e := v.(bool)
-		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &e
+		Name:            inputBase.Name,
+		Period:          inputBase.Period,
+		Status:          inputBase.Status,
+		Tags:            inputBase.Tags,
+		Script:          d.Get("script").(string),
+		AdvancedOptions: synthetics.SyntheticsScriptBrowserMonitorAdvancedOptionsInput{},
 	}
 
 	if v, ok := d.GetOk("locations_public"); ok {
@@ -68,16 +87,42 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 		input.Locations.Private = expandSyntheticsPrivateLocations(v.(*schema.Set).List())
 	}
 
-	if v, ok := d.GetOk("script_language"); ok {
-		input.Runtime.ScriptLanguage = v.(string)
+	sciptLang, scriptLangOk := d.GetOk("script_language")
+	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
+	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
+	if scriptLangOk || runtimeTypeOk || runtimeTypeVersionOk {
+		input.Runtime = &synthetics.SyntheticsRuntimeInput{}
+
+		if scriptLangOk {
+			input.Runtime.ScriptLanguage = sciptLang.(string)
+		}
+
+		if runtimeTypeOk {
+			input.Runtime.RuntimeType = runtimeType.(string)
+		}
+
+		if runtimeTypeVersionOk {
+			input.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
+		}
 	}
 
-	if v, ok := d.GetOk("runtime_type"); ok {
-		input.Runtime.RuntimeType = v.(string)
+	enableScreenshot := d.Get("enable_screenshot_on_failure_and_script").(bool)
+	if enableScreenshot {
+		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &enableScreenshot
 	}
 
-	if v, ok := d.GetOk("runtime_type_version"); ok {
-		input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
+	deviceType, deviceTypeOk := d.GetOk("device_type")
+	deviceOrientation, deviceOrientationOk := d.GetOk("device_orientation")
+	if deviceTypeOk || deviceOrientationOk {
+		input.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
+
+		if deviceTypeOk {
+			input.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(deviceType.(string))
+		}
+
+		if deviceOrientationOk {
+			input.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(deviceOrientation.(string))
+		}
 	}
 
 	return input

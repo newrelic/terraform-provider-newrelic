@@ -68,8 +68,8 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 * `status` - (Required) The run state of the monitor: `ENABLED` or `DISABLED`
 * `name` - (Required) The name for the monitor.
 * `type` - (Required) The plaintext representing the monitor script. Valid values are SCRIPT_BROWSER or SCRIPT_API
-* `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. You don't need the `AWS_` prefix as the provider uses NerdGraph. At least one of either `locations_public` or `location_private` is required.
-* `location_private` - (Required) The location the monitor will run from. See [Nested location_private blocks](#nested-location-private-blocks) below for details. At least one of either `locations_public` or `location_private` is required.
+* `locations_public` - (Optional) The location the monitor will run from. Check out [this page](https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/) for a list of valid public locations. The `AWS_` prefix is not needed, as the provider uses NerdGraph. **At least one of either** `locations_public` **or** `location_private` **is required**.
+* `location_private` - (Optional) The location the monitor will run from. See [Nested location_private blocks](#nested-location-private-blocks) below for details. **At least one of either** `locations_public` **or** `location_private` **is required**.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `script` - (Required) The script that the monitor runs.
 * `runtime_type` - (Optional) The runtime that the monitor will use to run jobs.
@@ -177,6 +177,7 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
 The following attributes are exported:
 
 * `id` - The ID of the Synthetics script monitor.
+* `period_in_minutes` - The interval in minutes at which Synthetic monitor should run.
 
 ## Import
 

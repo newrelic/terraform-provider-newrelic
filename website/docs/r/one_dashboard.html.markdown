@@ -61,7 +61,7 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       # Must be another dashboard GUID
       filter_current_dashboard = true
-      
+
       # color customization
       colors {
         color = "#722727"
@@ -93,9 +93,10 @@ resource "newrelic_one_dashboard" "exampledash" {
       }
       legend_enabled = true
       ignore_time_range = false
+      y_axis_left_zero = true
       y_axis_left_min = 0
-      y_axis_left_max = 1 
-      
+      y_axis_left_max = 1
+
       units {
         unit = "ms"
         series_overrides {
@@ -103,8 +104,8 @@ resource "newrelic_one_dashboard" "exampledash" {
           series_name = "max duration"
         }
       }
-     
-      
+
+
     }
 
     widget_markdown {
@@ -116,7 +117,7 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       text = "### Helpful Links\n\n* [New Relic One](https://one.newrelic.com)\n* [Developer Portal](https://developer.newrelic.com)"
     }
-    
+
     widget_line {
       title = "Overall CPU % Statistics"
       row = 1
@@ -126,15 +127,15 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       nrql_query {
         query = <<EOT
-SELECT average(cpuSystemPercent), average(cpuUserPercent), average(cpuIdlePercent), average(cpuIOWaitPercent) FROM SystemSample  SINCE 1 hour ago TIMESERIES 
+SELECT average(cpuSystemPercent), average(cpuUserPercent), average(cpuIdlePercent), average(cpuIOWaitPercent) FROM SystemSample  SINCE 1 hour ago TIMESERIES
 EOT
       }
       facet_show_other_series = false
       legend_enabled = true
       ignore_time_range = false
+      y_axis_left_zero = true
       y_axis_left_min = 0
       y_axis_left_max = 0
-
       null_values {
         null_value = "default"
 
@@ -160,7 +161,7 @@ EOT
       }
 
     }
-    
+
   }
 
   variable {
@@ -274,6 +275,7 @@ Each widget type supports an additional set of arguments:
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
   * `widget_line`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `y_axis_left_zero` - (Optional) An attribute that specifies if the values on the graph to be rendered need to be fit to scale, or printed within the specified range from `y_axis_left_min` (or 0 if it is not defined) to `y_axis_left_max`. Use `y_axis_left_zero = true` with a combination of `y_axis_left_min` and `y_axis_left_max` to render values from 0 or the specified minimum to the maximum, and `y_axis_left_zero = false` to fit the graph to scale.
   * `widget_markdown`:
     * `text` - (Required) The markdown source to be rendered in the widget.
   * `widget_stacked_bar`
@@ -321,7 +323,7 @@ widget_line {
 
 The following arguments are supported:
 
-  * `default_values` - (Optional) A list of default values for this variable.
+  * `default_values` - (Optional) A list of default values for this variable. To select **all** default values, the appropriate value to be used with this argument would be `["*"]`.
   * `is_multi_selection` - (Optional) Indicates whether this variable supports multiple selection or not. Only applies to variables of type `nrql` or `enum`.
   * `item` - (Optional) List of possible values for variables of type `enum`. See [Nested item blocks](#nested-item-blocks) below for details.
   * `name` - (Required) The variable identifier.
@@ -359,6 +361,16 @@ The following arguments are supported:
 * `series_overrides` - (Optional) A Nested block which will take two string attributes `color` and `series_name`. This nested block is used to customize colors of individual.
 
 ## Additional Examples
+
+### Use the New Relic CLI to convert an existing dashboard
+
+You can use the New Relic CLI to convert an existing dashboard into HCL code for use in Terraform.
+
+1. [Download and install the New Relic CLI](https://github.com/newrelic/newrelic-cli#installation--upgrades)
+2. [Export the dashboard you want to add to Terraform from the UI](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/dashboards-charts-import-export-data/#dashboards). Copy the JSON from the UI and paste it into a `.json` file.
+3. Convert the `.json` file to HCL using the CLI: `cat dashboard.json | newrelic utils terraform dashboard --label my_dashboard_resource`
+
+If you encounter any issues converting your dashboard, [please create a ticket on the New Relic CLI Github repository](https://github.com/newrelic/newrelic-cli/issues/new/choose).
 
 ### Create a two page dashboard
 
@@ -404,6 +416,7 @@ resource "newrelic_one_dashboard" "multi_page_dashboard" {
         account_id = <Second Account ID>
         query      = "FROM Metric SELECT rate(count(apm.service.transaction.duration), 1 minute) as 'Second Account Throughput' TIMESERIES"
       }
+      y_axis_left_zero = false
     }
   }
 }
@@ -416,5 +429,3 @@ New Relic dashboards can be imported using their GUID, e.g.
 ```bash
 $ terraform import newrelic_one_dashboard.my_dashboard <dashboard GUID>
 ```
-
-In addition you can use the [New Relic CLI](https://github.com/newrelic/newrelic-cli#readme) to convert existing dashboards to HCL. [Copy your dashboards as JSON using the UI](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/dashboards-charts-import-export-data/), save it as a file (for example `terraform.json`), and use the following command to convert it to HCL: `cat terraform.json | newrelic utils terraform dashboard --label my_dashboard_resource`.
