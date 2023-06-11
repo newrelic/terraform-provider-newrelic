@@ -19,16 +19,14 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 		ReadContext: dataSourceNewRelicNotificationDestinationRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"id", "name"},
-				Description:  "The ID of the destination.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ID of the destination.",
 			},
 			"name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"id", "name"},
-				Description:  "The name of the destination.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the destination.",
 			},
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -62,6 +60,13 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 }
 
 func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	id := d.Get("id").(string)
+	name := d.Get("name").(string)
+
+	if (id == "") || (name == "") {
+		return diag.FromErr(fmt.Errorf("missing id or name parameters"))
+	}
+
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic Notification Destination")
@@ -69,10 +74,13 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
-	id := d.Get("id").(string)
-	name := d.Get("name").(string)
 
-	filters := ai.AiNotificationsDestinationFilter{ID: id, Name: name}
+	var filters ai.AiNotificationsDestinationFilter
+	if id != "" {
+		filters = ai.AiNotificationsDestinationFilter{ID: id}
+	} else if name != "" {
+		filters = ai.AiNotificationsDestinationFilter{Name: name}
+	}
 	sorter := notifications.AiNotificationsDestinationSorter{}
 
 	destinationResponse, err := client.Notifications.GetDestinationsWithContext(updatedContext, accountID, "", filters, sorter)

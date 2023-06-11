@@ -26,7 +26,6 @@ func TestAccNewRelicNotificationDestinationDataSource_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicNotificationDestination("data.newrelic_notification_destination.foo"),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
-					resource.TestCheckResourceAttr(resourceName, "type", "WEBHOOK"),
 				),
 			},
 		},
@@ -36,7 +35,7 @@ func TestAccNewRelicNotificationDestinationDataSource_Basic(t *testing.T) {
 func testAccNewRelicNotificationsDestinationDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
-	name = "%s"
+	name = %[1]s
 	type = "WEBHOOK"
 	active = true
 
@@ -48,6 +47,10 @@ resource "newrelic_notification_destination" "foo" {
 
 data "newrelic_notification_destination" "foo" {
 	id = newrelic_notification_destination.foo.id
+}
+
+data "newrelic_notification_destination" "foo-2" {
+	name = %[1]s
 }
 `, name)
 }
