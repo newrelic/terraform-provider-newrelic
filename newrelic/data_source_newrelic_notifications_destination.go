@@ -20,19 +20,19 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "The ID of the destination.",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the destination.",
 			},
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
 				Description: "The account ID under which to put the destination.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name of the destination.",
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -67,9 +67,22 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
-	id := d.Get("id").(string)
-	filters := ai.AiNotificationsDestinationFilter{ID: id}
+	var filters ai.AiNotificationsDestinationFilter
 	sorter := notifications.AiNotificationsDestinationSorter{}
+
+	nameValue, nameOk := d.Get("name").(string)
+	if nameOk {
+		filters = ai.AiNotificationsDestinationFilter{Name: nameValue}
+	}
+
+	idValue, idOk := d.Get("id").(string)
+	if idOk {
+		filters = ai.AiNotificationsDestinationFilter{ID: idValue} // will override name parameter
+	}
+
+	if !nameOk && !idOk {
+		return diag.FromErr(fmt.Errorf("missing 'id' or 'name' parameters"))
+	}
 
 	destinationResponse, err := client.Notifications.GetDestinationsWithContext(updatedContext, accountID, "", filters, sorter)
 	if err != nil {
@@ -83,7 +96,7 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 
 	if len(destinationResponse.Entities) == 0 {
 		d.SetId("")
-		return diag.FromErr(fmt.Errorf("the id '%s' does not match any New Relic notification destination", id))
+		return diag.FromErr(fmt.Errorf("the id or name you provided does not match any New Relic notification destination"))
 	}
 
 	errors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
