@@ -63,7 +63,7 @@ data "newrelic_synthetics_secure_credential" "example" {
 
 check "check_synthetics_secure_credential" {
   assert {
-    condition = timecmp(timestamp(), timeadd(data.newrelic_synthetics_secure_credential.example.last_updated, "-720h")) < 0
+    condition = timecmp(timestamp(), timeadd(data.newrelic_synthetics_secure_credential.example.last_updated, "+720h")) < 0
     error_message = format("Synthetics secure credential (%s) is outdated",
       data.newrelic_synthetics_secure_credential.example.key
     )
