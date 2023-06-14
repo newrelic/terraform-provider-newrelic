@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccNewRelicNotificationDestinationDataSource_Id(t *testing.T) {
+func TestAccNewRelicNotificationDestinationDataSource_ById(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
@@ -33,7 +33,7 @@ func TestAccNewRelicNotificationDestinationDataSource_Id(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicNotificationDestinationDataSource_Name(t *testing.T) {
+func TestAccNewRelicNotificationDestinationDataSource_ByName(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
@@ -76,7 +76,7 @@ data "newrelic_notification_destination" "foo" {
 func testAccNewRelicNotificationsDestinationDataSourceConfigByName(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
-	name = "%[1]s"
+	name = "%s"
 	type = "WEBHOOK"
 	active = true
 
@@ -85,8 +85,9 @@ resource "newrelic_notification_destination" "foo" {
 		value = "https://webhook.site/"
 	}
 }
+
 data "newrelic_notification_destination" "foo" {
-	name = "%[1]s"
+	name = newrelic_notification_destination.foo.name
 }
 `, name)
 }

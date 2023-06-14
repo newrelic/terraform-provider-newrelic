@@ -19,14 +19,16 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 		ReadContext: dataSourceNewRelicNotificationDestinationRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The ID of the destination.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
+				Description:  "The ID of the destination.",
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The name of the destination.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
+				Description:  "The name of the destination.",
 			},
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -71,17 +73,12 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 	sorter := notifications.AiNotificationsDestinationSorter{}
 
 	nameValue, nameOk := d.Get("name").(string)
-	if nameOk {
+	if nameOk && nameValue != "" {
 		filters = ai.AiNotificationsDestinationFilter{Name: nameValue}
 	}
-
 	idValue, idOk := d.Get("id").(string)
-	if idOk {
-		filters = ai.AiNotificationsDestinationFilter{ID: idValue} // will override name parameter
-	}
-
-	if !nameOk && !idOk {
-		return diag.FromErr(fmt.Errorf("missing 'id' or 'name' parameters"))
+	if idOk && idValue != "" {
+		filters = ai.AiNotificationsDestinationFilter{ID: idValue}
 	}
 
 	destinationResponse, err := client.Notifications.GetDestinationsWithContext(updatedContext, accountID, "", filters, sorter)
