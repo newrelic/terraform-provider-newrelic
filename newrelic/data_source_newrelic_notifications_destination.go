@@ -92,11 +92,11 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 	}
 
 	if len(destinationResponse.Entities) == 0 {
-		if !idOk || (idValue != "" && nameValue == "") {
-			d.SetId("")
+		d.SetId("")
+		if idValue != "" && nameValue == "" {
 			return diag.FromErr(fmt.Errorf("the id provided does not match any New Relic notification destination"))
 		}
-		if !nameOk || (nameValue != "" && idValue == "") {
+		if nameValue != "" && idValue == "" {
 			return diag.FromErr(fmt.Errorf("the name provided does not match any New Relic notification destination"))
 		}
 	}
