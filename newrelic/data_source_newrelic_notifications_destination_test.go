@@ -56,39 +56,39 @@ func TestAccNewRelicNotificationDestinationDataSource_ByName(t *testing.T) {
 
 func testAccNewRelicNotificationsDestinationDataSourceConfigById(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_notification_destination" "foo" {
-	name = "%s"
-	type = "WEBHOOK"
-	active = true
-
-	property {
-		key = "url"
+	resource "newrelic_notification_destination" "foo" {
+	  name   = "%s"
+	  type   = "WEBHOOK"
+	  active = true
+	
+	  property {
+		key   = "url"
 		value = "https://webhook.site/"
+	  }
 	}
-}
-
-data "newrelic_notification_destination" "foo" {
-	id = newrelic_notification_destination.foo.id
-}
+	
+	data "newrelic_notification_destination" "foo" {
+	  id = newrelic_notification_destination.foo.id
+	}
 `, name)
 }
 
 func testAccNewRelicNotificationsDestinationDataSourceConfigByName(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_notification_destination" "foo" {
-	name = "%s"
-	type = "WEBHOOK"
-	active = true
-
-	property {
-		key = "url"
+	resource "newrelic_notification_destination" "foo" {
+	  name   = "%s"
+	  type   = "WEBHOOK"
+	  active = true
+	
+	  property {
+		key   = "url"
 		value = "https://webhook.site/"
+	  }
 	}
-}
-
-data "newrelic_notification_destination" "foo" {
-	name = newrelic_notification_destination.foo.name
-}
+	
+	data "newrelic_notification_destination" "foo" {
+	  name = newrelic_notification_destination.foo.name
+	}
 `, name)
 }
 

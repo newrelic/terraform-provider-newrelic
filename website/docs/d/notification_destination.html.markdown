@@ -10,7 +10,7 @@ description: |-
 
 Use this data source to get information about a specific notification destination in New Relic that already exists. More information on Terraform's data sources can be found [here](https://www.terraform.io/language/data-sources).
 
-## Id Example Usage
+## ID Example Usage
 
 ```hcl
 # Data source
@@ -20,13 +20,13 @@ data "newrelic_notification_destination" "foo" {
 
 # Resource
 resource "newrelic_notification_channel" "foo-channel" {
-  name = "webhook-example"
-  type = "WEBHOOK"
+  name           = "webhook-example"
+  type           = "WEBHOOK"
   destination_id = data.newrelic_notification_destination.foo.id
-  product = "IINT"
+  product        = "IINT"
 
   property {
-    key = "payload"
+    key   = "payload"
     value = "{\n\t\"name\": \"foo\"\n}"
     label = "Payload Template"
   }
@@ -43,13 +43,13 @@ data "newrelic_notification_destination" "foo" {
 
 # Resource
 resource "newrelic_notification_channel" "foo-channel" {
-  name = "webhook-example"
-  type = "WEBHOOK"
+  name           = "webhook-example"
+  type           = "WEBHOOK"
   destination_id = data.newrelic_notification_destination.foo.id
-  product = "IINT"
+  product        = "IINT"
 
   property {
-    key = "payload"
+    key   = "payload"
     value = "{\n\t\"name\": \"foo\"\n}"
     label = "Payload Template"
   }
