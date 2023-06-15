@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccNewRelicNotificationDestinationDataSource_Basic(t *testing.T) {
+func TestAccNewRelicNotificationDestinationDataSource_ById(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
@@ -22,7 +22,7 @@ func TestAccNewRelicNotificationDestinationDataSource_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicNotificationsDestinationDataSourceConfig(rName),
+				Config: testAccNewRelicNotificationsDestinationDataSourceConfigById(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicNotificationDestination("data.newrelic_notification_destination.foo"),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
@@ -33,22 +33,62 @@ func TestAccNewRelicNotificationDestinationDataSource_Basic(t *testing.T) {
 	})
 }
 
-func testAccNewRelicNotificationsDestinationDataSourceConfig(name string) string {
+func TestAccNewRelicNotificationDestinationDataSource_ByName(t *testing.T) {
+	resourceName := "newrelic_notification_destination.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicNotificationsDestinationDataSourceConfigByName(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNewRelicNotificationDestination("data.newrelic_notification_destination.foo"),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestCheckResourceAttr(resourceName, "type", "WEBHOOK"),
+				),
+			},
+		},
+	})
+}
+
+func testAccNewRelicNotificationsDestinationDataSourceConfigById(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_notification_destination" "foo" {
-	name = "%s"
-	type = "WEBHOOK"
-	active = true
-
-	property {
-		key = "url"
+	resource "newrelic_notification_destination" "foo" {
+	  name   = "%s"
+	  type   = "WEBHOOK"
+	  active = true
+	
+	  property {
+		key   = "url"
 		value = "https://webhook.site/"
+	  }
 	}
+	
+	data "newrelic_notification_destination" "foo" {
+	  id = newrelic_notification_destination.foo.id
+	}
+`, name)
 }
 
-data "newrelic_notification_destination" "foo" {
-	id = newrelic_notification_destination.foo.id
-}
+func testAccNewRelicNotificationsDestinationDataSourceConfigByName(name string) string {
+	return fmt.Sprintf(`
+	resource "newrelic_notification_destination" "foo" {
+	  name   = "%s"
+	  type   = "WEBHOOK"
+	  active = true
+	
+	  property {
+		key   = "url"
+		value = "https://webhook.site/"
+	  }
+	}
+	
+	data "newrelic_notification_destination" "foo" {
+	  name = newrelic_notification_destination.foo.name
+	}
 `, name)
 }
 

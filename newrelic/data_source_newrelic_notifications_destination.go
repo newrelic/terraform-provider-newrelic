@@ -19,20 +19,22 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 		ReadContext: dataSourceNewRelicNotificationDestinationRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the destination.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
+				Description:  "The ID of the destination.",
+			},
+			"name": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
+				Description:  "The name of the destination.",
 			},
 			"account_id": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
 				Description: "The account ID under which to put the destination.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name of the destination.",
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -67,9 +69,17 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
-	id := d.Get("id").(string)
-	filters := ai.AiNotificationsDestinationFilter{ID: id}
+	var filters ai.AiNotificationsDestinationFilter
 	sorter := notifications.AiNotificationsDestinationSorter{}
+
+	nameValue, nameOk := d.Get("name").(string)
+	if nameOk && nameValue != "" {
+		filters = ai.AiNotificationsDestinationFilter{Name: nameValue}
+	}
+	idValue, idOk := d.Get("id").(string)
+	if idOk && idValue != "" {
+		filters = ai.AiNotificationsDestinationFilter{ID: idValue}
+	}
 
 	destinationResponse, err := client.Notifications.GetDestinationsWithContext(updatedContext, accountID, "", filters, sorter)
 	if err != nil {
@@ -83,7 +93,12 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 
 	if len(destinationResponse.Entities) == 0 {
 		d.SetId("")
-		return diag.FromErr(fmt.Errorf("the id '%s' does not match any New Relic notification destination", id))
+		if idValue != "" && nameValue == "" {
+			return diag.FromErr(fmt.Errorf("the id provided does not match any New Relic notification destination"))
+		}
+		if nameValue != "" && idValue == "" {
+			return diag.FromErr(fmt.Errorf("the name provided does not match any New Relic notification destination"))
+		}
 	}
 
 	errors := buildAiNotificationsResponseErrors(destinationResponse.Errors)

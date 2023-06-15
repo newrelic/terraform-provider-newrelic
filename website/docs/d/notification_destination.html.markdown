@@ -10,7 +10,7 @@ description: |-
 
 Use this data source to get information about a specific notification destination in New Relic that already exists. More information on Terraform's data sources can be found [here](https://www.terraform.io/language/data-sources).
 
-## Example Usage
+## ID Example Usage
 
 ```hcl
 # Data source
@@ -20,13 +20,36 @@ data "newrelic_notification_destination" "foo" {
 
 # Resource
 resource "newrelic_notification_channel" "foo-channel" {
-  name = "webhook-example"
-  type = "WEBHOOK"
+  name           = "webhook-example"
+  type           = "WEBHOOK"
   destination_id = data.newrelic_notification_destination.foo.id
-  product = "IINT"
+  product        = "IINT"
 
   property {
-    key = "payload"
+    key   = "payload"
+    value = "{\n\t\"name\": \"foo\"\n}"
+    label = "Payload Template"
+  }
+}
+```
+
+## Name Example Usage
+
+```hcl
+# Data source
+data "newrelic_notification_destination" "foo" {
+  name = "webhook-destination"
+}
+
+# Resource
+resource "newrelic_notification_channel" "foo-channel" {
+  name           = "webhook-example"
+  type           = "WEBHOOK"
+  destination_id = data.newrelic_notification_destination.foo.id
+  product        = "IINT"
+
+  property {
+    key   = "payload"
     value = "{\n\t\"name\": \"foo\"\n}"
     label = "Payload Template"
   }
@@ -37,7 +60,11 @@ resource "newrelic_notification_channel" "foo-channel" {
 
 The following arguments are supported:
 
-* `id` - (Required) The id of the notification destination in New Relic.
+Either of the following two attributes are required, and not both:
+* `id` - (Optional) The id of the notification destination in New Relic.
+* `name` - (Optional) The name of the notification destination.
+
+Optional:
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows you to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 
 ## Attributes Reference
