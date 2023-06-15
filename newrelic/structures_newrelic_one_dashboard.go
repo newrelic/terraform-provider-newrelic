@@ -169,6 +169,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			page.GUID = common.EntityGUID(guid.(string))
 		}
 
+		page.Widgets = []dashboards.DashboardWidgetInput{}
 		// For each of the widget type, we need to expand them as well
 		if widgets, ok := p["widget_area"]; ok {
 			for _, v := range widgets.([]interface{}) {
