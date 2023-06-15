@@ -60,9 +60,9 @@ resource "newrelic_notification_channel" "foo-channel" {
 
 The following arguments are supported:
 
-Required **one of these two** arguments:
-* `id` - (Required) The id of the notification destination in New Relic.
-* `name` - (Required) The name of the notification destination.
+Either of the following two attributes are required, and not both:
+* `id` - (Optional) The id of the notification destination in New Relic.
+* `name` - (Optional) The name of the notification destination.
 
 Optional:
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows you to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
