@@ -136,76 +136,53 @@ New Relic alerts are great, but they're even better when combined with good noti
 
 ```hcl
 # Notification channel
-resource "newrelic_alert_channel" "alert_notification_email" {
-  name = "username@example.com"
-  type = "email"
-
-  config {
-    recipients              = "username@example.com"
-    include_json_attachment = "1"
+resource "newrelic_notification_destination" "sample_notification_destination" {
+  name = "Sample Notification Destination"
+  type = "EMAIL"
+  
+  property {
+    key   = "email"
+    value = "username@example.com"
   }
 }
 
-# Link the above notification channel to your policy
-resource "newrelic_alert_policy_channel" "alert_policy_email" {
-  policy_id  = newrelic_alert_policy.alert_policy_name.id
-  channel_ids = [
-    newrelic_alert_channel.alert_notification_email.id
-  ]
+resource "newrelic_notification_channel" "sample_notification_channel" {
+  name           = "Sample Notification Channel"
+  type           = "EMAIL"
+  destination_id = newrelic_notification_destination.sample_notification_destination.id
+  product        = "IINT"
+  
+  property {
+    key   = "subject"
+    value = "Sample Email Subject"
+  }
 }
-```
 
-This example will send an email to the specified recipients whenever the associated alert condition is triggered. If you would like to send notifications via different modalities, such as Slack, the [alert channel](/providers/newrelic/newrelic/latest/docs/resources/alert_channel) resource supports multiple types of channels. Refer to the [additional alert channel examples](/providers/newrelic/newrelic/latest/docs/resources/alert_channel#type) for more examples in configuring your different notification channels.
-
-## A Note About Secrets
-
-As part of a `newrelic` resource, there is often some amount of configuration
-that is required in order for a resource to reach its full potential.  In some
-cases, once a given entity is created, API results will obscure the values for
-items that are deemed to be secret.  As a result, Terraform is unable to make
-an accurate detection of a resource state, and so marks a resource as changed
-for every run.
-
-Consider the following example.
-
-```hcl
-resource "newrelic_alert_channel" "slack" {
-  name = "slack"
-  type = "slack"
-
-  config {
-    channel = "test"
-    url     = "https://hooks.slack.com/services/xxxx/xxxxx"
+resource "newrelic_workflow" "sample_workflow" {
+  name                  = "Sample Workflow"
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+  
+  issues_filter {
+    name = "Issue Filter"
+    type = "FILTER"
+    predicate {
+      attribute = "labels.policyIds"
+      operator  = "EXACTLY_MATCHES"
+      values    = [newrelic_alert_policy.alert_policy_name.id]
+    }
+  }
+  
+  destination {
+    channel_id = newrelic_notification_channel.sample_notification_channel.id
   }
 }
 ```
 
-The resource above yields the following Terraform plan.
+This example explains setting up a workflow that is linked to the alert policy (created in the first example) and to an 'email' notification channel, which would enable sending an email to the specified recipients whenever the associated alert condition is triggered. 
 
-    -/+ newrelic_alert_channel.slack (new resource required)
-          id:                    "2344397" => <computed> (forces new resource)
-          config.%:              "1" => "2" (forces new resource)
-          config.channel:        <sensitive> => <sensitive> (attribute changed)
-          config.url:            <sensitive> => <sensitive> (forces new resource)
-          name:                  "slack" => "slack"
-          type:                  "slack" => "slack"
+If you would like to send notifications via different modalities, such as Slack, the [notification destination](/providers/newrelic/newrelic/latest/docs/resources/notification_destination) resource supports multiple types of destinations, and so does the [notification channel](/providers/newrelic/newrelic/latest/docs/resources/notification_channel) resource. 
 
-To avoid the resource being marked as changed every run, the following can be
-implemented for the resource.
-
-```hcl
-resource "newrelic_alert_channel" "slack" {
-  ...
-  lifecycle {
-    ignore_changes = ["config"]
-  }
-}
-  ...
-```
-
-This should avoid any of the configuration items from causing a change to the
-resource.
-
+Please refer to these pages comprising [additional examples on notification destinations](/providers/newrelic/newrelic/latest/docs/resources/notification_destination#additional-examples) and [additional examples on notification channels](/providers/newrelic/newrelic/latest/docs/resources/notification_channel#additional-examples), for more examples on configuring different types of notification channels (via notification destinations).
 
 ## Apply Your Terraform Configuration
 
@@ -219,7 +196,7 @@ $ terraform apply
 
 Follow the prompt, which should involve you answering `yes` to apply the changes. Terraform will then provision the resources.
 
-Once complete, you'll be able to navigate to your Alerts tab in your New Relic account and click on Alert Policies. You should see your newly created alert policy. Clicking on the alert policy should display the associated alert condition that we just configured as well.
+Once complete, you'll be able to navigate to your Alerts tab in your New Relic account and click on Alert Policies. You should see your newly created alert policy. Clicking on the alert policy should display the associated alert condition that we just configured as well. You should also be able to see the workflow and the email notification destination created, upon navigating to **Alerts > Workflows** and **Alerts > Destinations** respectively, in the UI.
 
 If you ever need to make changes to your configuration, you can run `terraform apply` again after saving your latest configuration and Terraform will update the proper resources with your changes.
 
