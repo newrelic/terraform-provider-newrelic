@@ -39,7 +39,45 @@ func TestAccNewRelicOneDashboardRaw_CreateOnePage(t *testing.T) {
 	})
 }
 
-// testAccCheckNewRelicOneDashboardRawConfig contains all the config options for a single page dashboard
+// TestAccNewRelicOneDashboardRaw_EmptyPage tests successful creation of a dashboard comprising a page with no widgets
+func TestAccNewRelicOneDashboardRaw_EmptyPage(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccCheckNewRelicOneDashboardRawConfig_EmptyPage(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard_raw.bar", 0),
+				),
+			},
+			// Import
+			{
+				ResourceName:      "newrelic_one_dashboard_raw.bar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// testAccCheckNewRelicOneDashboardRawConfig_EmptyPage contains the configuration to test the creation of a dashboard
+// with a page comprising no widgets
+func testAccCheckNewRelicOneDashboardRawConfig_EmptyPage(dashboardName string) string {
+	return `
+	resource "newrelic_one_dashboard_raw" "bar" {
+  		name = "` + dashboardName + `"
+  		permissions = "private"
+  		page {
+  			name = "` + dashboardName + `_page_one"
+  		}
+	}`
+}
+
+// testAccCheckNewRelicOneDashboardRawConfig_OnePageFull contains all the config options for a single page dashboard
 func testAccCheckNewRelicOneDashboardRawConfig_OnePageFull(dashboardName string, accountID string) string {
 	return `
 resource "newrelic_one_dashboard_raw" "bar" {

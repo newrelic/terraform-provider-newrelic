@@ -263,6 +263,31 @@ func TestAccNewRelicOneDashboard_ChangeCheck(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboard_EmptyPage tests successful creation of a dashboard comprising a page with no widgets
+func TestAccNewRelicOneDashboard_EmptyPage(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_EmptyPage(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			// Import
+			{
+				ResourceName:      "newrelic_one_dashboard.bar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 // testAccCheckNewRelicOneDashboard_FilterCurrentDashboard fetches the dashboard resource after creation, with an optional sleep time
 // used when we know the async nature of the API will mess with consistent testing. The filter_current_dashboard requires a second call to update
 // the linked_entity_guid to add the page GUID. This also checks to make sure the page GUID matches what has been added.
@@ -488,6 +513,19 @@ resource "newrelic_one_dashboard" "bar" {
 
 ` + testAccCheckNewRelicOneDashboardConfig_PageFull(dashboardName, accountID) + `
 }`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_EmptyPage contains the configuration needed to create a dashboard
+// with a single page comprising no widgets
+func testAccCheckNewRelicOneDashboardConfig_EmptyPage(dashboardName string) string {
+	return `
+		resource "newrelic_one_dashboard" "bar" {
+  			name = "` + dashboardName + `"
+  			permissions = "private"
+  			page {
+    			name = "` + dashboardName + `_page_one"
+  			}
+		}`
 }
 
 func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQL(dashboardName string) string {
