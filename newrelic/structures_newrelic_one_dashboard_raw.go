@@ -65,6 +65,7 @@ func expandDashboardRawPageInput(pages []interface{}, meta interface{}) ([]dashb
 			page.GUID = common.EntityGUID(guid.(string))
 		}
 
+		page.Widgets = []dashboards.DashboardWidgetInput{}
 		if widgets, ok := p["widget"]; ok {
 			for _, v := range widgets.([]interface{}) {
 				// Get generic properties set

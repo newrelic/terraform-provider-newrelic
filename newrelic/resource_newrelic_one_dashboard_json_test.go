@@ -38,12 +38,59 @@ func TestAccNewRelicOneDashboardJson_Create(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboardJson_EmptyPage tests the case in which the dashboard is created with one page with no widgets
+// which helps test the case in which a page with no widgets can be created
+func TestAccNewRelicOneDashboardJson_EmptyPage(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccCheckNewRelicOneDashboardJsonConfig_EmptyPage(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard_json.bar", 0),
+				),
+			},
+			// Import
+			{
+				ResourceName: "newrelic_one_dashboard_json.bar",
+				ImportState:  true,
+			},
+		},
+	})
+}
+
 // testAccCheckNewRelicOneDashboardRawConfig contains all the config options for a single page dashboard
 func testAccCheckNewRelicOneDashboardJsonConfig_OnePageFull(dashboardName string, accountID string) string {
 	return `
 resource "newrelic_one_dashboard_json" "bar" {
   json = <<EOT
   	` + testAccCheckNewRelicOneDashboardJsonConfig_Full(dashboardName, accountID) + `
+  EOT
+}`
+}
+
+// testAccCheckNewRelicOneDashboardJsonConfig_EmptyPage contains the configuration to create a dashboard
+// with a single page comprising no widgets
+func testAccCheckNewRelicOneDashboardJsonConfig_EmptyPage(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard_json" "bar" {
+  json = <<EOT
+  	{
+		"name": "` + dashboardName + `",
+		"description": "Test Dashboard Description",
+		"permissions": "PUBLIC_READ_WRITE",
+		"pages": [
+		  {
+			"name": "` + dashboardName + `_page_one",
+			"description": "Test Page Description",
+			"widgets": []
+		  }
+		]
+	}
   EOT
 }`
 }
