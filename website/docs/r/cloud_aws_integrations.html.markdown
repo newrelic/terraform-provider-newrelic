@@ -302,10 +302,11 @@ resource "newrelic_cloud_aws_integrations" "bar" {
 ```
 ## Argument Reference
 
-<details>
-  <summary> To view the comprehensive list of valid arguments, click here. </summary>
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked AWS account in New Relic.
+
+<details>
+  <summary> All other arguments are dependent on the services to be integrated. To view a comprehensive list of valid arguments, expand this section. </summary>
 * `billing` - (Optional) Billing integration. See [Integration blocks](#integration-blocks) below for details.
 * `cloudtrail` - (Optional) Cloudtrail integration. See [Integration blocks](#integration-blocks) below for details.
 * `health` - (Optional) Health integration. See [Integration blocks](#integration-blocks) below for details.
