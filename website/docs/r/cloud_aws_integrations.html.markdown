@@ -302,62 +302,68 @@ resource "newrelic_cloud_aws_integrations" "bar" {
 ```
 ## Argument Reference
 
-<details>
-  <summary> To view the comprehensive list of valid arguments, click here. </summary>
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked AWS account in New Relic.
-* `billing` - (Optional) Billing integration. See [Integration blocks](#integration-blocks) below for details.
-* `cloudtrail` - (Optional) Cloudtrail integration. See [Integration blocks](#integration-blocks) below for details.
-* `health` - (Optional) Health integration. See [Integration blocks](#integration-blocks) below for details.
-* `trusted_advisor` - (Optional) Trusted Advisor integration. See [Integration blocks](#integration-blocks) below for details.
-* `vpc` - (Optional) VPC integration. See [Integration blocks](#integration-blocks) below for details.
-* `x_ray` - (Optional) X-Ray integration. See [Integration blocks](#integration-blocks) below for details.
-* `s3` - (Optional) S3 integration. See [Integration blocks](#integration-blocks) below for details.
-* `doc_db` - (Optional) Doc_DB integration. See [Integration blocks](#integration-blocks) below for details.
-* `sqs` - (Optional) SQS integration. See [Integration blocks](#integration-blocks) below for details.
-* `ebs` - (Optional) EBS integration. See [Integration blocks](#integration-blocks) below for details.
-* `alb` - (Optional) ALB integration. See [Integration blocks](#integration-blocks) below for details.
-* `elasticache` - (Optional) Elasticache integration. See [Integration blocks](#integration-blocks) below for details.
-* `api_gateway` - (Optional) ApiGateway integration. See [Integration blocks](#integration-blocks) below for details.
-* `auto_scaling` - (Optional) AutoScaling integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_app_sync` - (Optional) AppSync integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_athena` - (Optional) Athena integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_cognito` - (Optional) Cognito integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_connect` - (Optional) Connect integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_direct_connect` - (Optional) DirectConnect integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_fsx` - (Optional) Fsx integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_glue` - (Optional) Glue integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_kinesis_analytics` - (Optional) Kinesis Analytics integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_media_convert` - (Optional) Media Convert integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_media_package_vod` - (Optional) Media Package vod integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_mq` - (Optional) Mq integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_msk` - (Optional) Msk integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_neptune` - (Optional) Neptune integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_qldb` - (Optional) Qldb integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_route53resolver` - (Optional) Route53resolver integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_states` - (Optional) States integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_transit_gateway` - (Optional) TransitGateway integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_waf` - (Optional) Waf integration. See [Integration blocks](#integration-blocks) below for details.
-* `aws_wafv2` - (Optional) Wafv2 integration. See [Integration blocks](#integration-blocks) below for details.
-* `cloudfront` - (Optional) Cloudfront integration. See [Integration blocks](#integration-blocks) below for details.
-* `dynamodb` - (Optional) DynamoDB integration. See [Integration blocks](#integration-blocks) below for details.
-* `ec2` - (Optional) Ec2 integration. See [Integration blocks](#integration-blocks) below for details.
-* `ecs` - (Optional) Ecs integration. See [Integration blocks](#integration-blocks) below for details.
-* `efs` - (Optional) Efs integration. See [Integration blocks](#integration-blocks) below for details.
-* `elasticbeanstalk` - (Optional) Elasticbeanstalk integration. See [Integration blocks](#integration-blocks) below for details.
-* `elasticsearch` - (Optional) Elasticsearch integration. See [Integration blocks](#integration-blocks) below for details.
-* `elb` - (Optional) Elb integration. See [Integration blocks](#integration-blocks) below for details.
-* `emr` - (Optional) Emr integration. See [Integration blocks](#integration-blocks) below for details.
-* `iam` - (Optional) Iam integration. See [Integration blocks](#integration-blocks) below for details.
-* `iot` - (Optional) Iot integration. See [Integration blocks](#integration-blocks) below for details.
-* `kinesis` - (Optional) Kinesis integration. See [Integration blocks](#integration-blocks) below for details.
-* `kinesis_firehose` - (Optional) Kinesis firehose integration. See [Integration blocks](#integration-blocks) below for details.
-* `lambda` - (Optional) Lambda integration. See [Integration blocks](#integration-blocks) below for details.
-* `rds` - (Optional) Rds integration. See [Integration blocks](#integration-blocks) below for details.
-* `redshift` - (Optional) Redshift integration. See [Integration blocks](#integration-blocks) below for details.
-* `route53` - (Optional) Route53 integration. See [Integration blocks](#integration-blocks) below for details.
-* `ses` - (Optional) Ses integration. See [Integration blocks](#integration-blocks) below for details.
-* `sns` - (Optional) Sns integration. See [Integration blocks](#integration-blocks) below for details.
+
+All other arguments are dependent on the services to be integrated, which have been listed in the collapsible section below. All of these are **optional** blocks that can be added in any required combination. **For details on arguments that can be used with each service, check out the [`Integration` blocks](#integration-blocks) section below.**
+<details>
+  <summary>Expand this section to view all supported AWS services supported, that may be integrated via this resource.</summary>
+
+| Block                   | Description                   |
+|-------------------------|-------------------------------|
+| `alb`                   | ALB Integration               |
+| `api_gateway`           | API Gateway Integration       |
+| `auto_scaling`          | Auto Scaling Integration      |
+| `aws_app_sync`          | AppSync Integration           |
+| `aws_athena`            | Athena Integration            |
+| `aws_cognito`           | Cognito Integration           |
+| `aws_connect`           | Connect Integration           |
+| `aws_direct_connect`    | Direct Connect Integration    |
+| `aws_fsx`               | FSx Integration               |
+| `aws_glue`              | Glue Integration              |
+| `aws_kinesis_analytics` | Kinesis Analytics Integration |
+| `aws_media_convert`     | MediaConvert Integration      |
+| `aws_media_package_vod` | Media Package VOD Integration |
+| `aws_mq`                | MQ Integration                |
+| `aws_msk`               | MSK Integration               |
+| `aws_neptune`           | Neptune Integration           |
+| `aws_qldb`              | QLDB Integration              |
+| `aws_route53resolver`   | Route53 Resolver Integration  |
+| `aws_states`            | States Integration            |
+| `aws_transit_gateway`   | Transit Gateway Integration   |
+| `aws_waf`               | WAF Integration               |
+| `aws_wafv2`             | WAFv2 Integration             |
+| `billing`               | Billing Integration           |
+| `cloudfront`            | CloudFront Integration        |
+| `cloudtrail`            | CloudTrail Integration        |
+| `doc_db`                | DocumentDB Integration        |
+| `dynamodb`              | DynamoDB Integration          |
+| `ebs`                   | EBS Integration               |
+| `ec2`                   | EC2 Integration               |
+| `ecs`                   | ECS Integration               |
+| `efs`                   | EFS Integration               |
+| `elasticache`           | ElastiCache Integration       |
+| `elasticbeanstalk`      | Elastic Beanstalk Integration |
+| `elasticsearch`         | Elasticsearch Integration     |
+| `elb`                   | ELB Integration               |
+| `emr`                   | EMR Integration               |
+| `health`                | Health Integration            |
+| `iam`                   | IAM Integration               |
+| `iot`                   | IoT Integration               |
+| `kinesis`               | Kinesis Integration           |
+| `kinesis_firehose`      | Kinesis Firehose Integration  |
+| `lambda`                | Lambda Integration            |
+| `rds`                   | RDS Integration               |
+| `redshift`              | Redshift Integration          |
+| `route53`               | Route53 Integration           |
+| `s3`                    | S3 Integration                |
+| `ses`                   | SES Integration               |
+| `sns`                   | SNS Integration               |
+| `sqs`                   | SQS Integration               |
+| `trusted_advisor`       | Trusted Advisor Integration   |
+| `vpc`                   | VPC Integration               |
+| `x_ray`                 | X-Ray Integration             |
+
 </details>
 
 ### `Integration` blocks
@@ -367,7 +373,7 @@ All `integration` blocks support the following common arguments:
 * `metrics_polling_interval` - (Optional) The data polling interval in seconds.
 
 <details>
-  <summary> Some integration types support an additional set of arguments. To delve deeper into the list of arguments, click here. </summary>
+  <summary> Some integration types support an additional set of arguments. Expand this section to take a look at these supported arguments. </summary>
 * `cloudtrail`
   * `aws_regions` - (Optional) Specify each AWS region that includes the resources that you want to monitor.
 * `vpc`

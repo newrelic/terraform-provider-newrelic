@@ -20,11 +20,38 @@ If you encounter issues or bugs, please [report those on Github repository](http
 
 ### AWS
 
-The New Relic AWS integration relies on two mechanisms to get data in New Relic: [AWS Metric stream](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/aws-metric-stream/) and [AWS Polling integrations](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-new-relic-infrastructure-monitoring). For the majority of AWS services the AWS Metric stream is used as it [has many advantages compared to polling](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/aws-metric-stream#why-it-matters). The AWS Polling integrations are also enabled because AWS does not yet [support all metrics through AWS Metric Stream](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/aws-metric-stream#integrations-not-replaced-streams). We enable `AWS Billing`, `AWS CloudTrail`, `AWS Health`, `AWS Trusted Advisor`, `AWS X-Ray`, `AWS S3`, `AWS Doc DB`, `AWS SQS`, `AWS EBS`, `AWS ALB`, `AWS Elasticache`, `AWS ApiGateway`, `AWS AutoScaling`, `AWS AppSync`, `AWS Athena`, `AWS Cognito`, `AWS Connect`, `AWS DirectConnect`, `AWS Fsx`, `AWS Glue`, `AWS Kinesis Analytics`, `AWS MediaConvert`, `AWS Media Package vod`, `AWS Mq`, `AWS Msk`, `AWS Neptune`, `AWS Qldb`, `AWS Route53resolver`, `AWS States`, `AWS TransitGateway`, `AWS Waf`, `AWS Wafv2`, `Cloudfront`, `DynamoDB`, `Ec2`, `Ecs`, `Efs`, `Elasticbeanstalk`, `Elasticsearch`, `Elb`, `Emr`, `Iam`, `Iot`, `Kinesis`, `Kinesis Firehose`, `Lambda`, `Rds`, `Redshift`, `Route53`, `Ses` and `Sns`.
+The New Relic AWS integration relies on two mechanisms to get data in New Relic: [AWS Metric stream](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/aws-metric-stream/) and [AWS Polling integrations](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-new-relic-infrastructure-monitoring). For the majority of AWS services the AWS Metric stream is used as it [has many advantages compared to polling](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/aws-metric-stream#why-it-matters). AWS Polling integrations are also enabled because AWS does not yet [support all metrics through AWS Metric Stream](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/aws-metric-stream#integrations-not-replaced-streams). 
+
+The following AWS services may be integrated via API Polling, using the New Relic Terraform Provider. A combination of these services may be added to the Terraform Configuration, to set up an AWS Integration comprising these services via API Polling. More [examples](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_aws_integrations#example-usage) and [details](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_aws_integrations#argument-reference) on the arguments needed to set up each service can be found in the documentation of the [`newrelic_cloud_aws_integrations`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_aws_integrations) resource.
+
+|                     |                     |                    |
+|---------------------|---------------------|--------------------|
+| `ALB`               | `API Gateway`       | `AppSync`          |
+| `Athena`            | `Auto Scaling`      | `Billing`          |
+| `CloudFront`        | `CloudTrail`        | `Cognito`          |
+| `Connect`           | `Direct Connect`    | `DocumentDB`       |
+| `DynamoDB`          | `EBS`               | `EC2`              |
+| `ECS`               | `EFS`               | `ElastiCache`      |
+| `Elastic Beanstalk` | `Elasticsearch`     | `ELB`              |
+| `EMR`               | `FSx`               | `Glue`             |
+| `Health`            | `IAM`               | `IoT`              |
+| `Kinesis`           | `Kinesis Analytics` | `Kinesis Firehose` |
+| `Lambda`            | `Media Package VOD` | `MediaConvert`     |
+| `MQ`                | `MSK`               | `Neptune`          |
+| `QLDB`              | `RDS`               | `Redshift`         |
+| `Route53`           | `Route53 Resolver`  | `S3`               |
+| `SES`               | `SNS`               | `SQS`              |
+| `States`            | `Transit Gateway`   | `Trusted Advisor`  |
+| `VPC`               | `WAF`               | `WAFv2`            |
+| `X-Ray`             | 
+
+
 
 Check out our [introduction to AWS integrations](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/get-started/introduction-aws-integrations) and the [requirements](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/get-started/integrations-managed-policies/) documentation before continuing with the steps below.
 
-Add the following module to your Terraform code, and set the variables to your desired values. This module assumes you've already set up the New Relic and AWS provider with the correct credentials. If you haven't done so, you can find the instructions here: [New Relic instructions](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started), [AWS instructions](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication-and-configuration).
+The GitHub repository of the Terraform Provider also has an AWS Cloud Integrations 'module', that can be used to simplify setting up an AWS integration; both, via metric streams, and with API polling (inclusive of a few of the aforementioned services). To use this module, add the following to your Terraform code, and set the variables to your desired values.
+
+-> **NOTE:** This module assumes you've already set up the New Relic and AWS provider with the correct credentials. If you haven't done so, you can find the instructions here: [New Relic instructions](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started), [AWS instructions](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication-and-configuration).
 
 ```
 module "newrelic-aws-cloud-integrations" {
@@ -35,6 +62,7 @@ module "newrelic-aws-cloud-integrations" {
   name                    = "production"
 }
 ```
+
 [*You can find the sourcecode for the module on Github.*](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/aws)
 
 
@@ -49,11 +77,27 @@ Variables:
 
 The Microsoft Azure integrations reports data from various Azure platform services to your New Relic account.
 
-This module will integrate the following resources: `API Management`, `App Gateway`, `App Service`, `Containers`, `Cosmos DB`, `Cost Management`, `Data Factory`, `Eventhub`, `Express Route`, `Firewalls`, `FrontDoor`, `Functions`, `KeyVault`, `Load Balancer`, `Logic apps`, `Machine learning`, `MariaDB`, `Mysql`, `Postgresql`, `PowerBI Dedicated`, `Redis cache`, `Service Bus`, `Sql`, `Sql Managed`, `Storage`, `Virtual Machine`, `Virtual Networks`, `Vms`, and `VPN gateway`.
+The following Azure services may be integrated using the New Relic Terraform Provider. A combination of these services may be added to the Terraform Configuration, to set up an Azure Integration comprising the selected services. More [examples](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_azure_integrations#example-usage) and [details](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_azure_integrations#argument-reference) on the arguments needed to set up each service can be found in the documentation of the [`newrelic_cloud_azure_integrations`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_azure_integrations) resource.
+
+|                    |                       |                      |
+|--------------------|-----------------------|----------------------|
+| `API Management`   | `Application Gateway` | `App Service`        |
+| `Containers`       | `Cosmos DB`           | `Cost Management`    |
+| `Data Factory`     | `Event Hub`           | `Express Route`      |
+| `Firewalls`        | `Front Door`          | `Functions`          |
+| `Key Vault`        | `Load Balancer`       | `Logic Apps`         |
+| `Machine Learning` | `MariaDB`             | `Monitor`            |
+| `MySQL`            | `PostgreSQL`          | `Power BI Dedicated` |
+| `Redis Cache`      | `Service Bus`         | `SQL`                |
+| `SQL Managed`      | `Storage`             | `Virtual Machine`    |
+| `Virtual Network`  | `VMs`                 | `VPN Gateway`        |
 
 Check out our [introduction to Azure integrations](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/get-started/introduction-azure-monitoring-integrations/) and the [requirements](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/get-started/activate-azure-integrations/#reqs) documentation before continuing with the steps below.
 
-Add the following module to your Terraform code, and set the variables to your desired values. This module assumes you've already set up the New Relic and Azure provider with the correct credentials. If you haven't done so, you can find the instructions here: [New Relic instructions](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started), [Azure instructions](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs).
+The GitHub repository of the Terraform Provider also has an Azure Cloud Integrations 'module', comprising all the aforementioned Azure services, that can be used to simplify setting up an Azure Integration. To use this module, add the following to your Terraform code, and set the variables to your desired values. 
+
+-> **NOTE:** This module assumes you've already set up the New Relic and Azure provider with the correct credentials. If you haven't done so, you can find the instructions here: [New Relic instructions](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started), [Azure instructions](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs).
+
 
 ```
 module "newrelic-azure-cloud-integrations" {
@@ -75,11 +119,25 @@ Variables:
 
 The Google Cloud Platform integrations reports data from various GCP services to your New Relic account.
 
-This module will integrate the following resources: `App Engine`, `BigQuery`, `Cloud Functions`, `Cloud Load Balancing`, `Cloud Pub/Sub`, `Cloud Spanner`, `Cloud SQL`, `Cloud Storage`, `Compute Engine`, and `Kubernetes Engine`.
+The following GCP services may be integrated using the New Relic Terraform Provider. A combination of these services may be added to the Terraform Configuration, to set up an GCP Integration comprising the selected services. More [examples](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_gcp_integrations#example-usage) and [details](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_gcp_integrations#argument-reference) on the arguments needed to set up each service can be found in the documentation of the [`newrelic_cloud_gcp_integrations`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_gcp_integrations) resource.
+
+|                      |                           |                       |
+|----------------------|---------------------------|-----------------------|
+| `Alloy DB`           | `App Engine`              | `BigQuery`            |
+| `Cloud Bigtable`     | `Cloud Composer`          | `Cloud Functions`     |
+| `Cloud Interconnect` | `Cloud Load Balancing`    | `Cloud Pub/Sub`       |
+| `Cloud Router`       | `Cloud Run`               | `Cloud SQL`           |
+| `Cloud Spanner`      | `Cloud Storage`           | `Dataflow`            |
+| `Dataproc`           | `Datastore`               | `Firebase Database`   |
+| `Firebase Hosting`   | `Firebase Storage`        | `Firestore`           |
+| `Kubernetes Engine`  | `Memorystore (Memcached)` | `Memorystore (Redis)` |
+| `VPC Access`         | `Virtual Machines`        |
 
 Check out our [introduction to GCP integrations](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/introduction-google-cloud-platform-integrations/) and the [requirements](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic/#reqs) documentation before continuing with the steps below.
 
-Add the following module to your Terraform code, and set the variables to your desired values. This module assumes you've already set up the New Relic and GCP provider with the correct credentials. If you haven't done so, you can find the instructions here: [New Relic instructions](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started), [GCP instructions](https://registry.terraform.io/providers/hashicorp/google/latest/docs).
+The GitHub repository of the Terraform Provider also has an GCP Cloud Integrations 'module', comprising a few of the aforementioned GCP services as a sample, that can be used to simplify setting up an GCP Integration. To use this module, add the following to your Terraform code, and set the variables to your desired values.
+
+-> **NOTE:** This module assumes you've already set up the New Relic and GCP provider with the correct credentials. If you haven't done so, you can find the instructions here: [New Relic instructions](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started), [GCP instructions](https://registry.terraform.io/providers/hashicorp/google/latest/docs).
 
 ```
 module "newrelic-gcp-cloud-integrations" {

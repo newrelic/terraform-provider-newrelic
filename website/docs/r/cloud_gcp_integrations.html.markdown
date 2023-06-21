@@ -130,6 +130,7 @@ The following arguments are supported:
 * `functions` - (Optional) Functions integration. See [Integration blocks](#integration-blocks) below for details.
 * `interconnect` - (Optional) Interconnect integration. See [Integration blocks](#integration-blocks) below for details.
 * `kubernetes` - (Optional) Kubernetes integration. See [Integration blocks](#integration-blocks) below for details.
+* `load_balancing` - (Optional) Load Balancing integration. See [Integration blocks](#integration-blocks) below for details.
 * `mem_cache` - (Optional) Mem cache integration. See [Integration blocks](#integration-blocks) below for details.
 * `pub_sub` - (Optional) Pub/Sub integration. See [Integration blocks](#integration-blocks) below for details.
 * `redis` - (Optional) Redis integration. See [Integration blocks](#integration-blocks) below for details.
