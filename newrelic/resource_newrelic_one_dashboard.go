@@ -557,9 +557,9 @@ func dashboardWidgetMarkdownSchemaElem() *schema.Resource {
 	delete(s, "nrql_query") // No queries for Markdown
 
 	s["text"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Optional: true,
-		Default:  "",
+		Type:         schema.TypeString,
+		Required:     true,
+		ValidateFunc: validation.StringIsNotEmpty,
 	}
 
 	return &schema.Resource{
