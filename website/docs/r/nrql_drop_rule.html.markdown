@@ -54,6 +54,21 @@ In addition to all arguments above, the following attributes are exported:
 
   * `rule_id` - The id, uniquely identifying the rule.
 
+## Using `newrelic-cli` to List Out Drop Rules
+
+All NRQL Drop Rules associated with a New Relic account may be listed out using the following newrelic-cli command:
+```bash
+newrelic nrql droprules
+```
+This would print all drop rules associated with your New Relic account to the terminal.
+The number of rules to be printed can be customized using the `limit` argument of this command.
+For instance, the following command limits the number of drop rules printed to two.
+```bash
+newrelic nrql droprules --limit 2
+```
+More details on the command and its arguments (for instance, the format in which the droprules are to be listed in the terminal, which is JSON by default) can be found in the output of the `newrelic nrql droprules --help` command.
+If you do not have **newrelic-cli** installed on your device already, head over to [this page](https://github.com/newrelic/newrelic-cli#installation--upgrades) for instructions.
+
 ## Import
 
 New Relic NRQL drop rules can be imported using a concatenated string of the format
