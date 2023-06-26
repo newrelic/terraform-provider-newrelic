@@ -30,6 +30,11 @@ The following arguments are supported:
   * `region` - (Required) The region code of the account.  One of: `us01`, `eu01`.
 
 
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the account created.
 
 ## Import
 
