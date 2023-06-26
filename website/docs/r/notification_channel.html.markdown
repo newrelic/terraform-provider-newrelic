@@ -64,15 +64,15 @@ Each notification channel type supports a specific set of arguments for the `pro
   * `project` - (Required) Identifier that specifies jira project id.
   * `issuetype` - (Required) Identifier that specifies the issue type id.
   * `description` - (Required) Free text that represents a description.
-  * `summary` - (Required) Free text that represents the summery.
+  * `summary` - (Required) Free text that represents the summary.
 * `EMAIL`
   * `subject` - (Optional) Free text that represents the email subject title.
   * `customDetailsEmail` - (Optional) Free text that represents the email custom details.
 * `PAGERDUTY_SERVICE_INTEGRATION`
-  * `summary` - (Required) Free text that represents the summery.
+  * `summary` - (Required) Free text that represents the summary.
   * `customDetails` - (Optional) Free text that *replaces* the content of the alert.
 * `PAGERDUTY_ACCOUNT_INTEGRATION`
-  * `summary` - (Required) Free text that represents the summery.
+  * `summary` - (Required) Free text that represents the summary.
   * `service` - (Required) Identifier that specifies the service id to alert to.
   * `email` - (Required) Specifies the user email for integrating with Pagerduty.
   * `customDetails` - (Optional) Free text that *replaces* the content of the alert.
