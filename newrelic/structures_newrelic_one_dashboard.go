@@ -287,6 +287,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_line"]; ok {
+			widgets = widgets.(*schema.Set).List()
 			for _, v := range widgets.([]interface{}) {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.line")

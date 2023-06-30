@@ -221,7 +221,7 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Elem:        dashboardWidgetHistogramSchemaElem(),
 			},
 			"widget_line": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A line widget.",
 				Elem:        dashboardWidgetLineSchemaElem(),
