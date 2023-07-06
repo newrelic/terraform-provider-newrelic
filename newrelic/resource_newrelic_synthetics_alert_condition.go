@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
@@ -33,10 +34,11 @@ func resourceNewRelicSyntheticsAlertCondition() *schema.Resource {
 				Description: "The title of this condition.",
 			},
 			"monitor_id": {
-				Type:        schema.TypeString,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Required:    true,
-				Description: "The ID of the Synthetics monitor to be referenced in the alert condition.",
+				Type:         schema.TypeString,
+				Elem:         &schema.Schema{Type: schema.TypeString},
+				Required:     true,
+				Description:  "The ID of the Synthetics monitor to be referenced in the alert condition.",
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"runbook_url": {
 				Type:        schema.TypeString,

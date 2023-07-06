@@ -5,6 +5,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -174,6 +175,37 @@ resource "newrelic_synthetics_alert_condition" "foo" {
 	monitor_id  = newrelic_synthetics_monitor.bar.id
 	runbook_url = "www.example-updated.com"
 	enabled     = "false"
+}
+`, name)
+}
+
+func TestAccNewRelicSyntheticsAlertConditionCheckMonitorIdEmpty(t *testing.T) {
+	rName := generateNameForIntegrationTestResource()
+	expectedMsg, _ := regexp.Compile("expected \"monitor_id\" to not be an empty string, got")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicSyntheticsAlertConditionConfigCheckMonitorIdEmpty(rName),
+				ExpectError: expectedMsg,
+			},
+		},
+	})
+}
+
+func testAccNewRelicSyntheticsAlertConditionConfigCheckMonitorIdEmpty(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_synthetics_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+	name        = "tf-test-%[1]s"
+	monitor_id  = ""
+	runbook_url = "www.example.com"
+	enabled     = "true"
 }
 `, name)
 }
