@@ -836,6 +836,10 @@ func flattenVariableNRQLQuery(in *entities.DashboardVariableNRQLQuery) []interfa
 	return out
 }
 
+//func hashString(v interface{}) int {
+//	return schema.HashString(v.(map[string]interface{}))
+//}
+
 // return []interface{} because Page is a SetList
 func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
 	out := make([]interface{}, len(*in))
@@ -859,6 +863,9 @@ func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
 				}
 
 				m[widgetType] = append(m[widgetType].([]interface{}), w)
+				//if widgetType == "widget_line" {
+				//	m[widgetType] = schema.NewSet(hashString, m[widgetType].([]interface{}))
+				//}
 			}
 		}
 
