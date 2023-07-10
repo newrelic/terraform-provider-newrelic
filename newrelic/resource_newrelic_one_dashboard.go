@@ -20,6 +20,14 @@ func resourceNewRelicOneDashboard() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    resourceNewRelicOneDashboardV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: migrateStateNewRelicOneDashboardV0toV1,
+				Version: 0,
+			},
+		},
 		Schema: map[string]*schema.Schema{
 			// Required
 			"name": {
@@ -68,6 +76,184 @@ func resourceNewRelicOneDashboard() *schema.Resource {
 				Optional:    true,
 				Description: "Dashboard-local variable definitions.",
 				Elem:        dashboardVariableSchemaElem(),
+			},
+		},
+	}
+}
+
+func migrateStateNewRelicOneDashboardV0toV1(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	log.Println("REACHED HERE")
+	log.Println(rawState)
+	return rawState, nil
+}
+
+func resourceNewRelicOneDashboardV0() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: resourceNewRelicOneDashboardCreate,
+		ReadContext:   resourceNewRelicOneDashboardRead,
+		UpdateContext: resourceNewRelicOneDashboardUpdate,
+		DeleteContext: resourceNewRelicOneDashboardDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		SchemaVersion: 0,
+		Schema: map[string]*schema.Schema{
+			// Required
+			"name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The dashboard's name.",
+			},
+			"page": {
+				Type:        schema.TypeList,
+				Required:    true,
+				Description: "",
+				Elem:        dashboardPageSchemaElemV0(),
+			},
+			// Optional
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The New Relic account ID where you want to create the dashboard.",
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The dashboard's description.",
+			},
+			"permissions": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "public_read_only",
+				ValidateFunc: validation.StringInSlice([]string{"private", "public_read_only", "public_read_write"}, false),
+				Description:  "Determines who can see or edit the dashboard. Valid values are private, public_read_only, public_read_write. Defaults to public_read_only.",
+			},
+			// Computed
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique entity identifier of the dashboard in New Relic.",
+			},
+			"permalink": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the dashboard.",
+			},
+			"variable": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Dashboard-local variable definitions.",
+				Elem:        dashboardVariableSchemaElem(),
+			},
+		},
+	}
+}
+
+// dashboardPageElem returns the schema for a New Relic dashboard Page
+func dashboardPageSchemaElemV0() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The dashboard page's description.",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The dashboard page's name.",
+			},
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique entity identifier of the dashboard page in New Relic.",
+			},
+
+			// All the widget types below
+			"widget_area": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "An area widget.",
+				Elem:        dashboardWidgetAreaSchemaElem(),
+			},
+			"widget_bar": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A bar widget.",
+				Elem:        dashboardWidgetBarSchemaElem(),
+			},
+			"widget_billboard": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A billboard widget.",
+				Elem:        dashboardWidgetBillboardSchemaElem(),
+			},
+			"widget_bullet": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A bullet widget.",
+				Elem:        dashboardWidgetBulletSchemaElem(),
+			},
+			"widget_funnel": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A funnel widget.",
+				Elem:        dashboardWidgetFunnelSchemaElem(),
+			},
+			"widget_heatmap": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A heatmap widget.",
+				Elem:        dashboardWidgetHeatmapSchemaElem(),
+			},
+			"widget_histogram": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A histogram widget.",
+				Elem:        dashboardWidgetHistogramSchemaElem(),
+			},
+			"widget_line": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A line widget.",
+				Elem:        dashboardWidgetLineSchemaElem(),
+			},
+			"widget_markdown": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A markdown widget.",
+				Elem:        dashboardWidgetMarkdownSchemaElem(),
+			},
+			"widget_pie": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A pie widget.",
+				Elem:        dashboardWidgetPieSchemaElem(),
+			},
+			"widget_log_table": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A log table widget.",
+				Elem:        dashboardWidgetLogTableSchemaElem(),
+			},
+			"widget_table": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A table widget.",
+				Elem:        dashboardWidgetTableSchemaElem(),
+			},
+			"widget_json": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A JSON widget.",
+				Elem:        dashboardWidgetJSONSchemaElem(),
+			},
+			"widget_stacked_bar": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A stacked bar widget.",
+				Elem:        dashboardWidgetStackedBarSchemaElem(),
 			},
 		},
 	}
@@ -221,7 +407,7 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Elem:        dashboardWidgetHistogramSchemaElem(),
 			},
 			"widget_line": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A line widget.",
 				Elem:        dashboardWidgetLineSchemaElem(),
