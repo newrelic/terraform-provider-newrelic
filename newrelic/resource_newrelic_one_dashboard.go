@@ -2,7 +2,9 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,6 +22,16 @@ func resourceNewRelicOneDashboard() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		//		CustomizeDiff: sortSampleAttributeList,
+
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+			return ignoreLineWidgetOrderDiff(diff, meta)
+		},
+
+		//CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+		//	return alignWidgetsOrderWithTerraformConfig(diff)
+		//},
+
 		Schema: map[string]*schema.Schema{
 			// Required
 			"name": {
@@ -225,6 +237,11 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Optional:    true,
 				Description: "A line widget.",
 				Elem:        dashboardWidgetLineSchemaElem(),
+				//DiffSuppressFunc: func(_, old, new string, d *schema.ResourceData) bool {
+				//	return widgetOrderSuppressFunc(old, new, d)
+				//},
+				// DiffSuppressFunc: elementOrderDiffSuppressFunc,
+
 			},
 			"widget_markdown": {
 				Type:        schema.TypeList,
@@ -625,6 +642,15 @@ func dashboardWidgetFilterCurrentDashboardSchema() *schema.Schema {
 	}
 }
 
+//func getWidgetsFromTerraformConfig(d *schema.ResourceData) []interface{} {
+//	configWidgets := d.Get("widget_line").([]interface{})
+//	widgets := make([]interface{}, len(configWidgets))
+//	for idx, widget := range configWidgets {
+//		widgets[idx] = widget
+//	}
+//	return widgets
+//}
+
 func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -797,4 +823,397 @@ func resourceNewRelicOneDashboardDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	return nil
+}
+
+//func convertToCanonical(input string) map[string]interface{} {
+//	var data map[string]interface{}
+//	if err := json.Unmarshal([]byte(input), &data); err != nil {
+//		return nil
+//	}
+//
+//	keys := make([]string, 0, len(data))
+//	for key := range data {
+//		keys = append(keys, key)
+//	}
+//	sort.Strings(keys)
+//
+//	canonicalMap := make(map[string]interface{})
+//	for _, key := range keys {
+//		canonicalMap[key] = data[key]
+//	}
+//
+//	log.Println("ENTERED THIS STATEMENT")
+//	log.Println(canonicalMap)
+//	return canonicalMap
+//}
+
+//func widgetLineOrderSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+//	oldList := strings.Split(old, ",")
+//	newList := strings.Split(new, ",")
+//
+//	sort.Strings(oldList)
+//	sort.Strings(newList)
+//
+//	if reflect.DeepEqual(oldList, newList) {
+//		return true
+//	}
+//
+//	return false
+//}
+
+//func widgetOrderSuppressFunc(d *schema.ResourceData) bool {
+//	oldValue, newValue := d.GetChange("widget_line")
+//	oldWidgets, newWidgets := toWidgets(oldValue, newValue)
+//
+//	if len(oldWidgets) != len(newWidgets) {
+//		return false
+//	}
+//
+//	matched := 0
+//	for _, oldWidget := range oldWidgets {
+//		for _, newWidget := range newWidgets {
+//			if reflect.DeepEqual(oldWidget, newWidget) {
+//				matched++
+//				break
+//			}
+//		}
+//	}
+//
+//	return matched == len(oldWidgets)
+//}
+
+//func widgetOrderSuppressFunc(d *schema.ResourceData) bool {
+//	oldValue, newValue := d.GetChange("widget_line")
+//	oldWidgets, newWidgets := toWidgets(oldValue, newValue)
+//
+//	if len(oldWidgets) != len(newWidgets) {
+//		return false
+//	}
+//
+//	matched := 0
+//	for i, oldWidget := range oldWidgets {
+//		if reflect.DeepEqual(oldWidget, newWidgets[i]) {
+//			matched++
+//			continue
+//		}
+//
+//		found := false
+//		for _, newWidget := range newWidgets {
+//			if reflect.DeepEqual(oldWidget, newWidget) {
+//				found = true
+//				break
+//			}
+//		}
+//
+//		if found {
+//			matched++
+//		} else {
+//			return false
+//		}
+//	}
+//
+//	return matched == len(oldWidgets)
+//}
+
+//func widgetOrderSuppressFunc(d *schema.ResourceData) bool {
+//	oldValue, newValue := d.GetChange("widget_line")
+//	oldWidgets, newWidgets := toWidgets(oldValue, newValue)
+//
+//	if len(oldWidgets) != len(newWidgets) {
+//		return false
+//	}
+//
+//	indexMismatches := 0
+//	matchedSet := make(map[int]bool)
+//
+//	for i, oldWidget := range oldWidgets {
+//		if !reflect.DeepEqual(oldWidget, newWidgets[i]) {
+//			// Found a mismatch in index, search for possible matches in newWidgets.
+//			indexMismatches++
+//			matchIndex := -1
+//
+//			for j, newWidget := range newWidgets {
+//				if reflect.DeepEqual(oldWidget, newWidget) && !matchedSet[j] {
+//					// Found a matching widget in a different position.
+//					matchIndex = j
+//					break
+//				}
+//			}
+//
+//			if matchIndex == -1 {
+//				// No matching widget found in newWidgets, actual config change.
+//				return false
+//			} else {
+//				// Matching widget found in a different position.
+//				matchedSet[matchIndex] = true
+//			}
+//		}
+//	}
+//
+//	return indexMismatches == len(oldWidgets) || indexMismatches == 0
+//}
+//
+//func toWidgets(oldInterface, newInterface interface{}) ([]interface{}, []interface{}) {
+//	//oldWidgetLines, newWidgetLines := oldInterface.([]interface{}), newInterface.([]interface{})
+//	var oldWidgetLines, newWidgetLines []interface{}
+//
+//	if oldInterface != nil {
+//		oldWidgetLines = oldInterface.([]interface{})
+//	}
+//
+//	if newInterface != nil {
+//		newWidgetLines = newInterface.([]interface{})
+//	}
+//	oldWidgets := make([]interface{}, len(oldWidgetLines))
+//	newWidgets := make([]interface{}, len(newWidgetLines))
+//
+//	for idx, item := range oldWidgetLines {
+//		widget := item.(map[string]interface{})
+//		oldWidgets[idx] = widget
+//	}
+//
+//	for idx, item := range newWidgetLines {
+//		widget := item.(map[string]interface{})
+//		newWidgets[idx] = widget
+//	}
+//
+//	return oldWidgets, newWidgets
+//}
+
+//func widgetOrderSuppressFunc(old, new string, d *schema.ResourceData) bool {
+//	oldValue, newValue := d.GetChange("widget_line")
+//	var oldWidgets, newWidgets []interface{}
+//	if oldValue != nil {
+//		oldWidgets = oldValue.([]interface{})
+//	}
+//	if newValue != nil {
+//		newWidgets = newValue.([]interface{})
+//	}
+//
+//	if len(oldWidgets) != len(newWidgets) {
+//		return false
+//	}
+//
+//	// Sort lists without considering the order of elements
+//	sort.SliceStable(oldWidgets, func(i, j int) bool {
+//		return widgetComparison(oldWidgets[i], oldWidgets[j]) < 0
+//	})
+//
+//	sort.SliceStable(newWidgets, func(i, j int) bool {
+//		return widgetComparison(newWidgets[i], newWidgets[j]) < 0
+//	})
+//
+//	for i, oldWidget := range oldWidgets {
+//		newWidget := newWidgets[i]
+//
+//		if !reflect.DeepEqual(oldWidget, newWidget) {
+//			return false
+//		}
+//	}
+//
+//	return true
+//}
+//
+//func widgetComparison(a, b interface{}) int {
+//	widgetA := a.(map[string]interface{})
+//	widgetB := b.(map[string]interface{})
+//
+//	param1Comparison := strings.Compare(widgetA["row"].(string), widgetB["row"].(string))
+//	if param1Comparison != 0 {
+//		return param1Comparison
+//	}
+//
+//	param2Comparison := strings.Compare(widgetA["column"].(string), widgetB["column"].(string))
+//	if param2Comparison != 0 {
+//		return param2Comparison
+//	}
+//
+//	return 0
+//}
+
+//func elementOrderDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+//	log.Println("ENTERED HERE")
+//	log.Println("OLD")
+//	log.Println(old)
+//	log.Println("NEW")
+//	log.Println(new)
+//	log.Printf("[DEBUG] Key: %q; Old value: %q; New value: %q", k, old, new) // Log the values of k, old, and new
+//	return true
+//}
+
+//func sortSampleAttributeList(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+//	log.Println("REACHED HERE")
+//	oldList, _ := d.GetChange("widget_line")
+//	var oldListTyped []interface{}
+//	if oldList != nil {
+//		oldListTyped = oldList.([]interface{})
+//	}
+//	log.Println(oldListTyped)
+//	var newList []interface{}
+//	if d.Get("widget_line") != nil {
+//		newList = d.Get("widget_line").([]interface{})
+//	}
+//	log.Println(newList)
+//	// Sort `newList` according to the order of elements in `oldList`.
+//
+//	//sortedNewList := make([]interface{}, len(newList))
+//	//// Implement your sorting logic based on attributes in the old list.
+//	//// ...
+//	//
+//	//if !reflect.DeepEqual(sortedNewList, newList) {
+//	//	err := d.SetNew("sample_attribute", sortedNewList)
+//	//	if err != nil {
+//	//		return fmt.Errorf("failed to set sorted sample_attribute list in the plan: %s", err)
+//	//	}
+//	//}
+//
+//	return nil
+//}
+
+func alignWidgetsOrderWithTerraformConfig(diff *schema.ResourceDiff) error {
+	log.Println("REACHED HERE")
+	if !diff.HasChange("widget_line") {
+		log.Println("DID NOT REACH HERE")
+		oldValue, newValue := diff.GetChange("line_widgets")
+
+		// Sort the widgets values
+		oldWidgets := oldValue.([]interface{})
+		log.Println(oldWidgets)
+		newWidgets := newValue.([]interface{})
+		log.Println(newWidgets)
+
+		x := *diff
+		log.Println(x)
+		attributeNames := diff.GetChangedKeysPrefix("")
+		for _, key := range attributeNames {
+			oldValue, newValue := diff.GetChange(key)
+			log.Println("----------")
+			log.Printf("- %s:\n", key)
+			log.Printf("  Old Value: %v\n", oldValue)
+			log.Printf("  New Value: %v\n", newValue)
+			log.Println("----------")
+		}
+
+		log.Println(diff.Get("widget_line"))
+		return nil
+	}
+	log.Println("ENTERED HERE")
+	log.Println("ENTERED HERE")
+	log.Println(diff.Get("widget_line"))
+
+	//oldValue, newValue := diff.GetChange("widget_line")
+	//oldWidgets := oldValue.([]interface{})
+	//newWidgets := newValue.([]interface{})
+	//
+	//if len(oldWidgets) != len(newWidgets) {
+	//	return nil
+	//}
+	//
+	//sortedNewWidgets := make([]interface{}, len(newWidgets))
+	//for idx, oldWidget := range oldWidgets {
+	//	oldWidgetMap := oldWidget.(map[string]interface{})
+	//
+	//	found := false
+	//	for idxNew, newWidget := range newWidgets {
+	//		newWidgetMap := newWidget.(map[string]interface{})
+	//
+	//		if reflect.DeepEqual(oldWidgetMap, newWidgetMap) {
+	//			sortedNewWidgets[idx] = newWidgets[idxNew]
+	//			found = true
+	//			break
+	//		}
+	//	}
+	//
+	//	if !found {
+	//		return nil
+	//	}
+	//}
+	//
+	//for idx, widget := range sortedNewWidgets {
+	//	prefixedKey := "widget_line." + strconv.Itoa(idx)
+	//	for k, v := range widget.(map[string]interface{}) {
+	//		err := diff.SetNew(prefixedKey+"."+k, v)
+	//		if err != nil {
+	//			return fmt.Errorf("[DEBUG] error setting widget_line attribute: %w", err)
+	//		}
+	//	}
+	//}
+	//
+	return nil
+
+}
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+// lineWidget represents the basic structure for each line_widget
+type lineWidget struct {
+	ID    string `json:"id"`
+	Title string `json:"title"`
+	// Add other attributes from the line_widget schema
+}
+
+func ignoreLineWidgetOrderDiff(d *schema.ResourceDiff, meta interface{}) error {
+	oldValue, newValue := d.GetChange("page")
+
+	oldPages := oldValue.([]interface{})
+	newPages := newValue.([]interface{})
+
+	// Iterate through the 'page' attributes and sort the 'line_widgets'
+	for pageIndex := range oldPages {
+		log.Println("REACHED PAGE BLOCK IN IGNORE")
+		oldWidgets, ok1 := oldPages[pageIndex].(map[string]interface{})["line_widgets"].([]interface{})
+		newWidgets, ok2 := newPages[pageIndex].(map[string]interface{})["line_widgets"].([]interface{})
+
+		if ok1 && ok2 {
+			log.Println("REACHED WIDGET BLOCK IN IGNORE")
+			log.Println(oldWidgets)
+			log.Println(newWidgets)
+			sortLineWidgets(oldWidgets)
+			sortLineWidgets(newWidgets)
+
+			pageKey := fmt.Sprintf("page.%d.line_widgets", pageIndex)
+			if err := d.SetNewComputed(pageKey); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func sortLineWidgets(widgets []interface{}) {
+	// Convert each map element to a lineWidget struct and store them in a slice.
+	var lineWidgets []lineWidget
+	for _, widget := range widgets {
+		widgetMap := widget.(map[string]interface{})
+		lineWidgets = append(lineWidgets, lineWidget{
+			ID:    widgetMap["id"].(string),
+			Title: widgetMap["title"].(string),
+			// Add other attributes from the line_widget schema
+		})
+	}
+
+	// Sort line_widgets slice based on their ID (or any other suitable attribute)
+	sort.Slice(lineWidgets, func(i, j int) bool {
+		return lineWidgets[i].ID < lineWidgets[j].ID
+	})
+
+	// Set the sorted values back to the original widgets slice.
+	for i, widget := range lineWidgets {
+		widgets[i] = map[string]interface{}{
+			"id":    widget.ID,
+			"title": widget.Title,
+			// Add other attributes from the line_widget schema
+		}
+	}
 }
