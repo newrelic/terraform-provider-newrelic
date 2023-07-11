@@ -1,3 +1,12 @@
+<a name="v3.25.1"></a>
+## [v3.25.1] - 2023-07-11
+### Bug Fixes
+- **synthetics:** added error handling for monitor id when it is empty
+
+### Documentation Updates
+- info on CLI command to print NRQL droprules ([#2404](https://github.com/newrelic/terraform-provider-newrelic/issues/2404))
+- updates and typo fixes to resource docs ([#2406](https://github.com/newrelic/terraform-provider-newrelic/issues/2406))
+
 <a name="v3.25.0"></a>
 ## [v3.25.0] - 2023-06-21
 ### Bug Fixes
@@ -1891,7 +1900,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.1...HEAD
+[v3.25.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.0...v3.25.1
 [v3.25.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.24.2...v3.25.0
 [v3.24.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.24.1...v3.24.2
 [v3.24.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.24.0...v3.24.1
