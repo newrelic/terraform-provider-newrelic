@@ -139,16 +139,16 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 
 	}
 
-    var nrql = "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = '"+sliGUID+"'"
+	var nrql = "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = '" + sliGUID + "'"
 
 	if isBadEvents {
-		nrql = "FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '"+sliGUID+"'"
-	} 
+		nrql = "FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '" + sliGUID + "'"
+	}
 
-    err := d.Set("nrql", nrql)
-    if err != nil {
-        return diag.FromErr(err)
-    }
+	err := d.Set("nrql", nrql)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
