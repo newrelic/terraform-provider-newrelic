@@ -2,9 +2,17 @@ package newrelic
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
+	"reflect"
+	"sort"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
@@ -225,7 +233,95 @@ func dashboardPageSchemaElem() *schema.Resource {
 				Optional:    true,
 				Description: "A line widget.",
 				Elem:        dashboardWidgetLineSchemaElem(),
+				DiffSuppressFunc: func(key, oldValue, newValue string, d *schema.ResourceData) bool {
+					println("start looking here")
+					println(key)
+					// key returns the whole path, example `page.0.widget_line.0.title`
+					// but we just need `page.0.widget_line` so stripping last two elements
+					// there's probably a better way :D
+					//lastDotIndex := strings.LastIndex(key, ".")
+					//if lastDotIndex != -1 {
+					//	key = string(key[:lastDotIndex])
+					//}
+					//lastDotIndex = strings.LastIndex(key, ".")
+					//if lastDotIndex != -1 {
+					//	key = string(key[:lastDotIndex])
+					//}
+					x := strings.Split(key, ".")
+					key = strings.Join(x[:3], ".")
+					println("EFFECTIVE KEY", key)
+
+					// fetch the real list data for old and new
+					oldDataInterface, newDataInterface := d.GetChange(key)
+					if oldDataInterface == nil || newDataInterface == nil {
+						return false
+					}
+					oldData := oldDataInterface.([]interface{})
+					newData := newDataInterface.([]interface{})
+					log.Println("OLD DATA INTERFACE")
+					for index, element := range oldData {
+						log.Printf("Element at index %d = %v, Type: %T\n\n", index, element, element)
+						x := element.(map[string]interface{})
+						jsonData, _ := json.MarshalIndent(x, "", "  ")
+						fileName := fmt.Sprintf("files/data_old_%d_interface_%s.json", index, acctest.RandString(10))
+
+						err := ioutil.WriteFile(fileName, jsonData, os.ModePerm)
+
+						if err != nil {
+							fmt.Println("Error writing JSON to file:", err)
+						}
+						for key, value := range x {
+							log.Println(key, ":", value)
+						}
+					}
+					log.Println("NEW DATA INTERFACE")
+					for index, element := range newData {
+						log.Printf("Element at index %d = %v, Type: %T\n", index, element, element)
+						x := element.(map[string]interface{})
+						jsonData, _ := json.MarshalIndent(x, "", "  ")
+						fileName := fmt.Sprintf("files/data_new_%d_interface_%s.json", index, acctest.RandString(10))
+
+						err := ioutil.WriteFile(fileName, jsonData, os.ModePerm)
+
+						if err != nil {
+							fmt.Println("Error writing JSON to file:", err)
+						}
+						for key, value := range x {
+							log.Println(key, ":", value)
+						}
+					}
+					log.Println(newData)
+
+					// sort both lists and compare, if they are exactly the same, suppress diff
+					sort.Slice(oldData, func(i, j int) bool {
+						widgetI := oldData[i].(map[string]interface{})
+						widgetJ := oldData[j].(map[string]interface{})
+						log.Println("REACHED HERE FIRST")
+						log.Println(widgetI)
+						log.Println(widgetJ)
+						log.Println("REACHED HERE")
+						log.Println(widgetI["row"])
+						log.Println(widgetJ["row"])
+						if widgetI["row"].(int) == widgetJ["row"].(int) {
+							return widgetI["column"].(int) < widgetJ["column"].(int)
+						}
+
+						return widgetI["row"].(int) < widgetJ["row"].(int)
+					})
+					sort.Slice(newData, func(i, j int) bool {
+						widgetI := newData[i].(map[string]interface{})
+						widgetJ := newData[j].(map[string]interface{})
+						if widgetI["row"].(int) == widgetJ["row"].(int) {
+							return widgetI["column"].(int) < widgetJ["column"].(int)
+						}
+
+						return widgetI["row"].(int) < widgetJ["row"].(int)
+					})
+
+					return reflect.DeepEqual(oldData, newData)
+				},
 			},
+
 			"widget_markdown": {
 				Type:        schema.TypeList,
 				Optional:    true,
