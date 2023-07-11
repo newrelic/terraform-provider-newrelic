@@ -12,7 +12,7 @@ Use this data source to obtain the necessary fields to set up alerts on your ser
 
 ## Example Usage
 
-Firstly set up your service level objective, we recommend to use local variables for the `target` and `time_window.rolling.count`, as they are also necessary for the helper.
+Firstly set up your service level objective, we recommend using local variables for the `target` and `time_window.rolling.count`, as they are also necessary for the helper.
 
 ```hcl
 locals {
@@ -31,9 +31,9 @@ resource "newrelic_service_level" "foo" {
             from = "Transaction"
             where = "appName = 'Example application' AND (transactionType='Web')"
         }
-        good_events {
+        bad_events {
             from = "Transaction"
-            where = "appName = 'Example application' AND (transactionType= 'Web') AND duration < 0.1"
+            where = "appName = 'Example application' AND (transactionType= 'Web') AND duration > 0.1"
         }
     }
 
@@ -49,6 +49,8 @@ resource "newrelic_service_level" "foo" {
 }
 ```
 Then use the helper to obtain the necessary fields to set up an alert on that Service Level.
+Note that the Service Level was set up using bad events, that's why `is_bad_events` is set to `true`.
+If the Service Level was configured with good events that would be unnecessary as the field defaults to `false`.
 
 ```hcl
 
@@ -59,6 +61,7 @@ data "newrelic_service_level_alert_helper" "foo_custom" {
     slo_period = local.foo_period
     custom_tolerated_budget_consumption = 5
     custom_evaluation_period = 90
+    is_bad_events = true
 }
 
 resource "newrelic_nrql_alert_condition" "your_condition" {
@@ -100,6 +103,7 @@ The following arguments are supported:
   * `slo_period` - (Required) The time window of the Service Level Objective in days. Valid values are `1`, `7` and `28`.
   * `custom_tolerated_budget_consumption` - (Optional) How much budget you tolerate to consume during the custom evaluation period, valid values between `0` and `100`. Mandatory if `alert_type` is `custom`.
   * `custom_evaluation_period` - (Optional) Aggregation window taken into consideration in minutes. Mandatory if `alert_type` is `custom`.
+  * `is_bad_events` - (Optional) If the SLI is defined using bad events. Defaults to `false`
 
 ## Attributes Reference
 

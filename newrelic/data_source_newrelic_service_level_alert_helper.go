@@ -69,6 +69,11 @@ func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"is_bad_events": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -82,6 +87,7 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 	var sloPeriod = d.Get("slo_period").(int)
 	var sloTarget = d.Get("slo_target").(float64)
 	var alertType = d.Get("alert_type").(string)
+	var isBadEvents = d.Get("is_bad_events").(bool)
 
 	_, tOk := d.GetOk("custom_tolerated_budget_consumption")
 	_, eOk := d.GetOk("custom_evaluation_period")
@@ -133,7 +139,13 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 
 	}
 
-	err := d.Set("nrql", "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = '"+sliGUID+"'")
+	var nrql = "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = '" + sliGUID + "'"
+
+	if isBadEvents {
+		nrql = "FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '" + sliGUID + "'"
+	}
+
+	err := d.Set("nrql", nrql)
 	if err != nil {
 		return diag.FromErr(err)
 	}
