@@ -99,7 +99,9 @@ The following arguments are supported:
   * `condition_scope` - (Required for some types) `application` or `instance`.  Choose `application` for most scenarios.  If you are using the JVM plugin in New Relic, the `instance` setting allows your condition to trigger [for specific app instances](https://docs.newrelic.com/docs/alerts/new-relic-alerts/defining-conditions/scope-alert-thresholds-specific-instances).
   * `enabled` - (Optional) Whether the condition is enabled or not. Defaults to true.
   * `gc_metric` - (Optional) A valid Garbage Collection metric e.g. `GC/G1 Young Generation`.
-  * `violation_close_timer` - (Optional) Automatically close instance-based incidents, including JVM health metric incidents, after the number of hours specified. Must be between 1 and 720 hours. Defaults to 72.
+  * `violation_close_timer` - (Optional) Automatically close instance-based incidents, including JVM health metric incidents, after the number of hours specified. Must be between 1 and 720 hours. Must be specified in the following two cases, to prevent drift:
+    * when `type` = `apm_app_metric` and `condition_scope` = `instance`
+    * when `type` = `apm_jvm_metric`
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
   * `term` - (Required) A list of terms for this condition. See [Terms](#terms) below for details.
   * `user_defined_metric` - (Optional) A custom metric to be evaluated.
