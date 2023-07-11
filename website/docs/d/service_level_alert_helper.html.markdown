@@ -12,7 +12,7 @@ Use this data source to obtain the necessary fields to set up alerts on your ser
 
 ## Example Usage
 
-Firstly set up your service level objective, we recommend to use local variables for the `target` and `time_window.rolling.count`, as they are also necessary for the helper.
+Firstly set up your service level objective, we recommend using local variables for the `target` and `time_window.rolling.count`, as they are also necessary for the helper.
 
 ```hcl
 locals {
@@ -49,6 +49,8 @@ resource "newrelic_service_level" "foo" {
 }
 ```
 Then use the helper to obtain the necessary fields to set up an alert on that Service Level.
+Note that the Service Level was set up using bad events, that's why `is_bad_events` is set to `true`.
+If the Service Level was configured with good events that would be unnecessary as the field defaults to `false`.
 
 ```hcl
 
