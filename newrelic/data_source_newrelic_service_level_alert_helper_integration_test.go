@@ -80,6 +80,22 @@ func TestAccNewRelicServiceLevelAlertHelper_CustomError(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicServiceLevelAlertHelper_CustomBadEvents(t *testing.T) {
+	resourceName := "data.newrelic_service_level_alert_helper.custom"
+
+	resource.ParallelTest(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicServiceLevelAlertHelperCustomBadEventsConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicServiceLevelAlertHelper_CustomBadEvents(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func testAccNewRelicServiceLevelAlertHelperFastBurnConfig() string {
 	return fmt.Sprintf(`
 data "newrelic_service_level_alert_helper" "fast" {
@@ -212,6 +228,56 @@ func testAccCheckNewRelicServiceLevelAlertHelper_Custom(n string) resource.TestC
 			"threshold":                           "8.4",
 			"sli_guid":                            "sliGuidCustom",
 			"nrql":                                "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = 'sliGuidCustom'",
+		}
+
+		for attrName, expectedVal := range testCases {
+			if err := runTest(a, attrName, expectedVal); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+func testAccNewRelicServiceLevelAlertHelperCustomBadEventsConfig() string {
+	return fmt.Sprintf(`
+data "newrelic_service_level_alert_helper" "custom" {
+    alert_type = "custom"
+    sli_guid = "sliGuidCustom"
+    slo_target = 98
+    slo_period = 7
+    custom_tolerated_budget_consumption = 5
+    custom_evaluation_period = 120
+    is_bad_events = true
+}
+`)
+}
+
+func testAccCheckNewRelicServiceLevelAlertHelper_CustomBadEvents(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
+		}
+
+		a := rs.Primary.Attributes
+
+		testCases := map[string]string{
+			"slo_period":                          "7",
+			"slo_target":                          "98",
+			"alert_type":                          "custom",
+			"custom_evaluation_period":            "120",
+			"custom_tolerated_budget_consumption": "5",
+			"evaluation_period":                   "120",
+			"tolerated_budget_consumption":        "5",
+			"threshold":                           "8.4",
+			"sli_guid":                            "sliGuidCustom",
+			"nrql":                                "FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = 'sliGuidCustom'",
 		}
 
 		for attrName, expectedVal := range testCases {
