@@ -1,3 +1,9 @@
+<a name="v3.25.2"></a>
+## [v3.25.2] - 2023-07-12
+### Bug Fixes
+- **alert_condition:** reverting default violation_close_timer 72 to prevent failures ([#2420](https://github.com/newrelic/terraform-provider-newrelic/issues/2420))
+- **service_level_alert_helper:** Add bad events support ([#2417](https://github.com/newrelic/terraform-provider-newrelic/issues/2417))
+
 <a name="v3.25.1"></a>
 ## [v3.25.1] - 2023-07-11
 ### Bug Fixes
@@ -1900,7 +1906,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.2...HEAD
+[v3.25.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.1...v3.25.2
 [v3.25.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.0...v3.25.1
 [v3.25.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.24.2...v3.25.0
 [v3.24.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.24.1...v3.24.2
