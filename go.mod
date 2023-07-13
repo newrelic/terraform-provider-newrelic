@@ -2,6 +2,9 @@ module github.com/newrelic/terraform-provider-newrelic/v2
 
 go 1.19
 
+// DISCARD THIS BEFORE MERGE!
+replace github.com/newrelic/newrelic-client-go/v2 => github.com/newrelic/newrelic-client-go/v2 v2.19.5-0.20230713153644-95afcde1f094
+
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/mitchellh/go-homedir v1.1.0
