@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -36,11 +35,7 @@ func resourceNewRelicWorkloadAccountManagement() *schema.Resource {
 				Required:     true,
 			},
 		},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Second),
-		},
 	}
-
 }
 
 func resourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
