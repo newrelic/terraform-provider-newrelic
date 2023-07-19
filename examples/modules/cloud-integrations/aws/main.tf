@@ -1,3 +1,4 @@
+# Updated Configuration with a few AWS resources discarded
 data "aws_iam_policy_document" "newrelic_assume_policy" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -73,6 +74,9 @@ resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_push" {
   metric_collection_mode = "PUSH"
   name                   = "${var.name} metric stream"
   depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
+  timeouts {
+    create = "30s"
+  }
 }
 
 resource "newrelic_api_access_key" "newrelic_aws_access_key" {
@@ -199,6 +203,9 @@ resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_pull" {
   metric_collection_mode = "PULL"
   name                   = "${var.name} pull"
   depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
+  timeouts {
+    create = "30s"
+  }
 }
 
 resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
@@ -258,73 +265,73 @@ resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
   sns {}
 }
 
-resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {
-  bucket        = "newrelic-configuration-recorder-${random_string.s3-bucket-name.id}"
-  force_destroy = true
-}
+#resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {
+#  bucket        = "newrelic-configuration-recorder-${random_string.s3-bucket-name.id}"
+#  force_destroy = true
+#}
+#
+#resource "aws_iam_role" "newrelic_configuration_recorder" {
+#  name               = "newrelic_configuration_recorder-${var.name}"
+#  assume_role_policy = <<EOF
+#{
+#    "Version": "2012-10-17",
+#    "Statement": [
+#        {
+#            "Action": "sts:AssumeRole",
+#            "Principal": {
+#                "Service": "config.amazonaws.com"
+#            },
+#            "Effect": "Allow",
+#            "Sid": ""
+#        }
+#      ]
+#    }
+#EOF
+#}
+#
+#resource "aws_iam_role_policy" "newrelic_configuration_recorder_s3" {
+#  name = "newrelic-configuration-recorder-s3-${var.name}"
+#  role = aws_iam_role.newrelic_configuration_recorder.id
+#
+#  policy = <<POLICY
+#{
+#  "Version": "2012-10-17",
+#  "Statement": [
+#    {
+#      "Action": [
+#        "s3:*"
+#      ],
+#      "Effect": "Allow",
+#      "Resource": [
+#        "${aws_s3_bucket.newrelic_configuration_recorder_s3.arn}",
+#        "${aws_s3_bucket.newrelic_configuration_recorder_s3.arn}/*"
+#      ]
+#    }
+#  ]
+#}
+#POLICY
+#}
 
-resource "aws_iam_role" "newrelic_configuration_recorder" {
-  name               = "newrelic_configuration_recorder-${var.name}"
-  assume_role_policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Action": "sts:AssumeRole",
-            "Principal": {
-                "Service": "config.amazonaws.com"
-            },
-            "Effect": "Allow",
-            "Sid": ""
-        }
-      ]
-    }
-EOF
-}
-
-resource "aws_iam_role_policy" "newrelic_configuration_recorder_s3" {
-  name = "newrelic-configuration-recorder-s3-${var.name}"
-  role = aws_iam_role.newrelic_configuration_recorder.id
-
-  policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "s3:*"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "${aws_s3_bucket.newrelic_configuration_recorder_s3.arn}",
-        "${aws_s3_bucket.newrelic_configuration_recorder_s3.arn}/*"
-      ]
-    }
-  ]
-}
-POLICY
-}
-
-resource "aws_iam_role_policy_attachment" "newrelic_configuration_recorder" {
-  role       = aws_iam_role.newrelic_configuration_recorder.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
-}
-
-resource "aws_config_configuration_recorder" "newrelic_recorder" {
-  name     = "newrelic_configuration_recorder-${var.name}"
-  role_arn = aws_iam_role.newrelic_configuration_recorder.arn
-}
-
-resource "aws_config_configuration_recorder_status" "newrelic_recorder_status" {
-  name       = aws_config_configuration_recorder.newrelic_recorder.name
-  is_enabled = true
-  depends_on = [aws_config_delivery_channel.newrelic_recorder_delivery]
-}
-
-resource "aws_config_delivery_channel" "newrelic_recorder_delivery" {
-  name           = "newrelic_configuration_recorder-${var.name}"
-  s3_bucket_name = aws_s3_bucket.newrelic_configuration_recorder_s3.bucket
-  depends_on = [
-    aws_config_configuration_recorder.newrelic_recorder
-  ]
-}
+#resource "aws_iam_role_policy_attachment" "newrelic_configuration_recorder" {
+#  role       = aws_iam_role.newrelic_configuration_recorder.name
+#  policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
+#}
+#
+#resource "aws_config_configuration_recorder" "newrelic_recorder" {
+#  name     = "newrelic_configuration_recorder-${var.name}"
+#  role_arn = aws_iam_role.newrelic_configuration_recorder.arn
+#}
+#
+#resource "aws_config_configuration_recorder_status" "newrelic_recorder_status" {
+#  name       = aws_config_configuration_recorder.newrelic_recorder.name
+#  is_enabled = true
+#  depends_on = [aws_config_delivery_channel.newrelic_recorder_delivery]
+#}
+#
+#resource "aws_config_delivery_channel" "newrelic_recorder_delivery" {
+#  name           = "newrelic_configuration_recorder-${var.name}"
+#  s3_bucket_name = aws_s3_bucket.newrelic_configuration_recorder_s3.bucket
+#  depends_on = [
+#    aws_config_configuration_recorder.newrelic_recorder
+#  ]
+#}
