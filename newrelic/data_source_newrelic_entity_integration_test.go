@@ -82,6 +82,7 @@ func TestAccNewRelicEntityData_IgnoreCase(t *testing.T) {
 	})
 }
 
+// TODO: @pranav-new-relic promissed to fix this and make it more maintainable ^_^
 func TestAccNewRelicEntityData_EntityInSubAccount(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
@@ -142,15 +143,17 @@ func testAccCheckNewRelicEntityDataExists(t *testing.T, n string, appName string
 func testAccNewRelicEntityDataConfig(name string, accountId int) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "entity" {
-	name = "%s"
-	type = "application"
+	name   = "%s"
+	type   = "application"
 	domain = "apm"
+
 	tag {
-		key = "accountId"
+		key   = "accountId"
 		value = "%d"
 	}
+
 	tag {
-		key = "account"
+		key   = "account"
 		value = "%s"
 	}
 }
@@ -161,10 +164,11 @@ data "newrelic_entity" "entity" {
 func testAccNewRelicEntityDataConfig_IgnoreCase(name string, accountId int) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "entity" {
-	name = "%s"
+	name        = "%s"
 	ignore_case = true
-	type = "application"
-	domain = "apm"
+	type        = "application"
+	domain      = "apm"
+
 	tag {
 		key = "accountId"
 		value = "%d"
@@ -177,15 +181,17 @@ data "newrelic_entity" "entity" {
 func testAccNewRelicEntityDataConfig_InvalidType(name string, accountId int) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "entity" {
-	name = "%s"
-	type = "app"
+	name   = "%s"
+	type   = "app"
 	domain = "apm"
+
 	tag {
-		key = "accountId"
+		key   = "accountId"
 		value = "%d"
 	}
+
 	tag {
-		key = "account"
+		key   = "account"
 		value = "%s"
 	}
 }
@@ -196,15 +202,17 @@ data "newrelic_entity" "entity" {
 func testAccNewRelicEntityDataConfig_InvalidDomain(name string, accountId int) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "entity" {
-	name = "%s"
-	type = "application"
+	name   = "%s"
+	type   = "application"
 	domain = "VIZ"
+
 	tag {
-		key = "accountId"
+		key   = "accountId"
 		value = "%d"
 	}
+
 	tag {
-		key = "account"
+		key   = "account"
 		value = "%s"
 	}
 }
@@ -216,16 +224,16 @@ data "newrelic_entity" "entity" {
 // with an identical name in the main account (NEW_RELIC_ACCOUNT_ID).
 func testAccNewRelicEntityDataConfig_EntityInSubAccount(name string, subAccountID int) string {
 	return fmt.Sprintf(`
-			provider "newrelic" {
-  				account_id = %d
-  				alias      = "entity-data-source-test-provider"
-			}
+provider "newrelic" {
+	account_id = %d
+	alias      = "entity-data-source-test-provider"
+}
 
-			data "newrelic_entity" "entity" {
-				provider = newrelic.entity-data-source-test-provider
-				name = "%s"
-				type = "APPLICATION"
-				domain = "APM"
-			}
+data "newrelic_entity" "entity" {
+	provider = newrelic.entity-data-source-test-provider
+	name     = "%s"
+	type     = "APPLICATION"
+	domain   = "APM"
+}
 `, subAccountID, name)
 }
