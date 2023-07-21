@@ -52,18 +52,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
   }
 }
 
-// Filter by account ID.
-// The `accountId` tag is automatically added to all entities by the platform.
-data "newrelic_entity" "app" {
-  name = "my-app"
-  domain = "APM"
-  type = "APPLICATION"
-  tag {
-    key = "accountID"
-    value = "12345"
-  }
-}
-
 // Ignore name case
 data "newrelic_entity" "app" {
   name = "mY-aPP"
@@ -73,10 +61,51 @@ data "newrelic_entity" "app" {
 }
 ```
 
+### Filter by account ID
+
+```hcl
+# The `accountId` tag is automatically added to all entities by the platform.
+data "newrelic_entity" "app" {
+  name = "my-app"
+  domain = "APM"
+  type = "APPLICATION"
+  tag {
+    key = "accountID"
+    value = "12345"
+  }
+}
+```
+
+By default data source returns entity from the same account as provider's one. This behaviour can be overridden by setting `account_id` attribute, which allows to fetch entity from the different account. For example, if provider has been configured with parent account to deploy a new sub-account it still can fetch sub-account entity in the same configuration:
+
+```hcl
+provider "newrelic" {
+  account_id = "12345" # parent account
+}
+
+resource "newrelic_account_management" "default" { # sub-account
+  name   = "Acme Inc"
+  region = "us01"
+}
+
+data "newrelic_entity" "app" { # sub-account
+  account_id = newrelic_account_management.default.id # without explicit attribute setting this entity won't be found
+  name       = "my-app"
+  domain     = "APM"
+  type       = "APPLICATION"
+
+  tag {
+    key   = "accountID"
+    value = newrelic_account_management.default.id
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
+* `account_id` - The New Relic account ID associated with this entity. This attribute overrides a `provider` block account ID.
 * `name` - (Required) The name of the entity in New Relic One.  The first entity matching this name for the given search parameters will be returned.
 * `ignore_case` - (Optional) Ignore case of the `name` when searching for the entity. Defaults to false.
 * `type` - (Optional) The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, WORKLOAD, AWSLAMBDAFUNCTION, SERVICE_LEVEL, and KEY_TRANSACTION. Note: Other entity types may also be queryable as the list of entity types may fluctuate over time.
@@ -95,7 +124,6 @@ All nested `tag` blocks support the following common arguments:
 In addition to all arguments above, the following attributes are exported:
 
 * `guid` - The unique GUID of the entity.
-* `account_id` - The New Relic account ID associated with this entity.
 * `application_id` - The domain-specific application ID of the entity. Only returned for APM and Browser applications.
 * `serving_apm_application_id` - The browser-specific ID of the backing APM entity. Only returned for Browser applications.
 
