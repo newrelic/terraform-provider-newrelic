@@ -2,8 +2,11 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 
@@ -133,25 +136,45 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 	switch monitorType {
 	case string(SyntheticsMonitorTypes.SCRIPT_API):
 		monitorInput := buildSyntheticsScriptAPIMonitorInput(d)
-		resp, err := client.Synthetics.SyntheticsCreateScriptAPIMonitorWithContext(ctx, accountID, monitorInput)
-		if err != nil {
-			return diag.FromErr(err)
+		var diags diag.Diagnostics
+		retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+			time.Sleep(3 * time.Second)
+			resp, err := client.Synthetics.SyntheticsCreateScriptAPIMonitorWithContext(ctx, accountID, monitorInput)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			errors := buildCreateSyntheticsMonitorResponseErrors(resp.Errors)
+			if len(errors) > 0 {
+				for _, err := range resp.Errors {
+					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Description))
+
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  fmt.Sprintf("%s : %s", err.Type, err.Description),
+					})
+				}
+			}
+			// Set attributes
+			d.SetId(string(resp.Monitor.GUID))
+			_ = d.Set("account_id", accountID)
+			_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
+
+			attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
+			if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+		if retryErr != nil {
+			return diag.FromErr(retryErr)
 		}
 
-		errors := buildCreateSyntheticsMonitorResponseErrors(resp.Errors)
-		if len(errors) > 0 {
-			return errors
+		if len(diags) > 0 {
+			return diags
 		}
 
-		// Set attributes
-		d.SetId(string(resp.Monitor.GUID))
-		_ = d.Set("account_id", accountID)
-		_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
+		return nil
 
-		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
-		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
-			return diag.FromErr(err)
-		}
 	case string(SyntheticsMonitorTypes.SCRIPT_BROWSER):
 		monitorInput := buildSyntheticsScriptBrowserMonitorInput(d)
 		resp, err := client.Synthetics.SyntheticsCreateScriptBrowserMonitorWithContext(ctx, accountID, monitorInput)
