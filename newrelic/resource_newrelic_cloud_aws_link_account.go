@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -47,9 +46,6 @@ func resourceNewRelicCloudAwsAccountLinkAccount() *schema.Resource {
 				Description: "The name of the linked account.",
 				Required:    true,
 			},
-		},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Second),
 		},
 	}
 }
