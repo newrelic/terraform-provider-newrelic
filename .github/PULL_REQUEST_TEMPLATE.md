@@ -22,7 +22,7 @@ Please delete options that are not relevant.
 - [ ] I have performed a self-review of my own code
 - [ ] I have made corresponding changes to the documentation
 - [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes. Go [here](https://github.com/newrelic/terraform-provider-newrelic#testing) for instructions on running tests locally.
+- [ ] New and existing unit tests pass locally with my changes. Go [here](https://github.com/newrelic/terraform-provider-newrelic/blob/main/CONTRIBUTING.md#testing) for instructions on running tests locally.
 
 ## How to test this change?
 
