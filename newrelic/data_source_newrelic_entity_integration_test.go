@@ -151,10 +151,10 @@ data "newrelic_entity" "entity" {
 	}
 	tag {
 		key = "account"
-		value = "New Relic Terraform Provider Acceptance Testing"
+		value = "%s"
 	}
 }
-`, name, accountId)
+`, name, accountId, testAccountName)
 }
 
 // The test entity for this data source is created in provider_test.go
@@ -186,10 +186,10 @@ data "newrelic_entity" "entity" {
 	}
 	tag {
 		key = "account"
-		value = "New Relic Terraform Provider Acceptance Testing"
+		value = "%s"
 	}
 }
-`, name, accountId)
+`, name, accountId, testAccountName)
 }
 
 // The test entity for this data source is created in provider_test.go
@@ -205,10 +205,10 @@ data "newrelic_entity" "entity" {
 	}
 	tag {
 		key = "account"
-		value = "New Relic Terraform Provider Acceptance Testing"
+		value = "%s"
 	}
 }
-`, name, accountId)
+`, name, accountId, testAccountName)
 }
 
 // testAccNewRelicEntityDataConfig_EntityInSubAccount checks if the entity retrieved by applying
