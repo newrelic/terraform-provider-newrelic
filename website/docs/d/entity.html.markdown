@@ -105,8 +105,8 @@ data "newrelic_entity" "app" { # sub-account
 
 The following arguments are supported:
 
-* `account_id` - The New Relic account ID associated with this entity. This attribute overrides a `provider` block account ID.
 * `name` - (Required) The name of the entity in New Relic One.  The first entity matching this name for the given search parameters will be returned.
+* `account_id` - (Optional) The New Relic account ID associated with this entity. This attribute overrides a `provider` block account ID.
 * `ignore_case` - (Optional) Ignore case of the `name` when searching for the entity. Defaults to false.
 * `type` - (Optional) The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, WORKLOAD, AWSLAMBDAFUNCTION, SERVICE_LEVEL, and KEY_TRANSACTION. Note: Other entity types may also be queryable as the list of entity types may fluctuate over time.
 * `domain` - (Optional) The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, SYNTH, and EXT. If not specified, all domains are searched.
