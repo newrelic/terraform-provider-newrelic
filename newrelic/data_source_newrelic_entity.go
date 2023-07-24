@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
 
@@ -20,12 +20,6 @@ func dataSourceNewRelicEntity() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of the entity in New Relic One. The first entity matching this name for the given search parameters will be returned.",
-			},
-			"account_id": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "The New Relic account ID associated with this entity. This attribute overrides a `provider` block account ID.",
 			},
 			"ignore_case": {
 				Type:        schema.TypeBool,
@@ -70,6 +64,13 @@ func dataSourceNewRelicEntity() *schema.Resource {
 					},
 				},
 			},
+			"account_id": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				Description:  "The New Relic account ID associated with this entity. Overrides the account ID configured in the provider, if specified.",
+				ValidateFunc: validation.IntAtLeast(1),
+			},
 			"application_id": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -91,8 +92,10 @@ func dataSourceNewRelicEntity() *schema.Resource {
 
 func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
-	providerAccountID := meta.(*ProviderConfig).AccountID
-	accountID := d.Get("account_id")
+	accountID := meta.(*ProviderConfig).AccountID
+	if acc, ok := d.GetOk("account_id"); ok {
+		accountID = acc.(int)
+	}
 
 	log.Printf("[INFO] Reading New Relic entities")
 
@@ -130,20 +133,13 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 
 		name = revertEscapedSingleQuote(name)
 		if strings.Compare(str, name) == 0 || (ignoreCase && strings.EqualFold(str, name)) {
-			// Skip if resource configuration `account_id` attribute isn't set but entity account and provider account are different
-			if accountID == 0 {
-				if e.GetAccountID() != providerAccountID {
-					continue
-				}
-			// Skip if resource configuration `account_id` attribute is set and different to entity account
+			if e.GetAccountID() != accountID {
+				continue
 			} else {
-				if e.GetAccountID() != accountID {
-					continue
-				}
+				entity = &e
+				break
 			}
 
-			entity = &e
-			break
 		}
 	}
 
