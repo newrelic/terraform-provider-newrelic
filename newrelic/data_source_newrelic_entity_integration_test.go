@@ -82,7 +82,6 @@ func TestAccNewRelicEntityData_IgnoreCase(t *testing.T) {
 	})
 }
 
-// TODO: @pranav-new-relic promissed to fix this and make it more maintainable ^_^
 func TestAccNewRelicEntityData_EntityInSubAccount(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
@@ -109,6 +108,38 @@ func TestAccNewRelicEntityData_EntityAbsentInSubAccount(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicEntityDataConfig_EntityInSubAccount("Dummy App Two", 3814156),
+				ExpectError: regexp.MustCompile(`no entities found`),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicEntityData_RetrieveSubAccountEntity(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicEntityDataConfig_RetrieveSubAccountEntity("Dummy App Two", 3957524),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", "Dummy App Two", 3957524),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicEntityData_RetrieveAbsentSubAccountEntity(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicEntityDataConfig_RetrieveSubAccountEntity("Dummy App Two", 3814156),
 				ExpectError: regexp.MustCompile(`no entities found`),
 			},
 		},
@@ -143,32 +174,29 @@ func testAccCheckNewRelicEntityDataExists(t *testing.T, n string, appName string
 func testAccNewRelicEntityDataConfig(name string, accountId int) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "entity" {
-	name   = "%s"
-	type   = "application"
+	name = "%s"
+	type = "application"
 	domain = "apm"
-
 	tag {
-		key   = "accountId"
+		key = "accountId"
 		value = "%d"
 	}
-
 	tag {
-		key   = "account"
-		value = "%s"
+		key = "account"
+		value = "New Relic Terraform Provider Acceptance Testing"
 	}
 }
-`, name, accountId, testAccountName)
+`, name, accountId)
 }
 
 // The test entity for this data source is created in provider_test.go
 func testAccNewRelicEntityDataConfig_IgnoreCase(name string, accountId int) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "entity" {
-	name        = "%s"
+	name = "%s"
 	ignore_case = true
-	type        = "application"
-	domain      = "apm"
-
+	type = "application"
+	domain = "apm"
 	tag {
 		key = "accountId"
 		value = "%d"
@@ -181,42 +209,38 @@ data "newrelic_entity" "entity" {
 func testAccNewRelicEntityDataConfig_InvalidType(name string, accountId int) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "entity" {
-	name   = "%s"
-	type   = "app"
+	name = "%s"
+	type = "app"
 	domain = "apm"
-
 	tag {
-		key   = "accountId"
+		key = "accountId"
 		value = "%d"
 	}
-
 	tag {
-		key   = "account"
-		value = "%s"
+		key = "account"
+		value = "New Relic Terraform Provider Acceptance Testing"
 	}
 }
-`, name, accountId, testAccountName)
+`, name, accountId)
 }
 
 // The test entity for this data source is created in provider_test.go
 func testAccNewRelicEntityDataConfig_InvalidDomain(name string, accountId int) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "entity" {
-	name   = "%s"
-	type   = "application"
+	name = "%s"
+	type = "application"
 	domain = "VIZ"
-
 	tag {
-		key   = "accountId"
+		key = "accountId"
 		value = "%d"
 	}
-
 	tag {
-		key   = "account"
-		value = "%s"
+		key = "account"
+		value = "New Relic Terraform Provider Acceptance Testing"
 	}
 }
-`, name, accountId, testAccountName)
+`, name, accountId)
 }
 
 // testAccNewRelicEntityDataConfig_EntityInSubAccount checks if the entity retrieved by applying
@@ -224,16 +248,30 @@ data "newrelic_entity" "entity" {
 // with an identical name in the main account (NEW_RELIC_ACCOUNT_ID).
 func testAccNewRelicEntityDataConfig_EntityInSubAccount(name string, subAccountID int) string {
 	return fmt.Sprintf(`
-provider "newrelic" {
-	account_id = %d
-	alias      = "entity-data-source-test-provider"
+			provider "newrelic" {
+  				account_id = %d
+  				alias      = "entity-data-source-test-provider"
+			}
+
+			data "newrelic_entity" "entity" {
+				provider = newrelic.entity-data-source-test-provider
+				name = "%s"
+				type = "APPLICATION"
+				domain = "APM"
+			}
+`, subAccountID, name)
 }
 
-data "newrelic_entity" "entity" {
-	provider = newrelic.entity-data-source-test-provider
-	name     = "%s"
-	type     = "APPLICATION"
-	domain   = "APM"
-}
-`, subAccountID, name)
+// testAccNewRelicEntityDataConfig_RetrieveSubAccountEntity uses the account_id attribute in the configuration
+// to override the account_id to filter the retrieved entities by, when multiple entities are returned
+// owing to the existence of entities with the same name in a parent account and its subaccounts.
+func testAccNewRelicEntityDataConfig_RetrieveSubAccountEntity(name string, subAccountID int) string {
+	return fmt.Sprintf(`
+			data "newrelic_entity" "entity" {
+				name = "%s"
+				account_id = "%d"
+				type = "APPLICATION"
+				domain = "APM"
+			}
+`, name, subAccountID)
 }
