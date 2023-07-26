@@ -68,7 +68,7 @@ func dataSourceNewRelicEntity() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Computed:     true,
-				Description:  "The New Relic account ID associated with this entity. Overrides the account ID configured in the provider, if specified.",
+				Description:  "The New Relic account ID; constrains the data source to return an entity belonging to the account with this ID, of all matching entities retrieved.",
 				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"application_id": {
