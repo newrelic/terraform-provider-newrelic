@@ -3,7 +3,6 @@ package newrelic
 import (
 	"context"
 	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/workflows"
@@ -335,7 +334,7 @@ func flattenWorkflow(workflow *workflows.AiWorkflowsWorkflow, d *schema.Resource
 		return err
 	}
 
-	destinationConfigurations, destinationConfigurationsErr := flattenWorkflowDestinationConfigurations(&workflow.DestinationConfigurations)
+	destinationConfigurations, destinationConfigurationsErr := flattenWorkflowDestinationConfigurations(d, &workflow.DestinationConfigurations)
 	if destinationConfigurationsErr != nil {
 		return destinationConfigurationsErr
 	}
@@ -371,23 +370,33 @@ func flattenWorkflow(workflow *workflows.AiWorkflowsWorkflow, d *schema.Resource
 	return nil
 }
 
-func flattenWorkflowDestinationConfigurations(d *[]workflows.AiWorkflowsDestinationConfiguration) ([]map[string]interface{}, error) {
+func flattenWorkflowDestinationConfigurations(d *schema.ResourceData, configurations *[]workflows.AiWorkflowsDestinationConfiguration) ([]map[string]interface{}, error) {
 	if d == nil {
 		return nil, nil
 	}
 
-	var destinationConfigurations []map[string]interface{}
+	currentStates := d.Get("destination").(*schema.Set).List()
 
-	for _, destinationConfiguration := range *d {
-		if val, err := flattenWorkflowDestinationConfiguration(&destinationConfiguration); err == nil {
-			destinationConfigurations = append(destinationConfigurations, val)
+	var destinationConfigurations []map[string]interface{}
+	for _, config := range *configurations {
+		var currentState map[string]interface{}
+		for _, rawState := range currentStates {
+			state := rawState.(map[string]interface{})
+			if state["channel_id"] == config.ChannelId {
+				currentState = state
+			}
 		}
+		flattened, err := flattenWorkflowDestinationConfiguration(&config, currentState)
+		if err != nil {
+			return nil, err
+		}
+		destinationConfigurations = append(destinationConfigurations, flattened)
 	}
 
 	return destinationConfigurations, nil
 }
 
-func flattenWorkflowDestinationConfiguration(d *workflows.AiWorkflowsDestinationConfiguration) (map[string]interface{}, error) {
+func flattenWorkflowDestinationConfiguration(d *workflows.AiWorkflowsDestinationConfiguration, currentState map[string]interface{}) (map[string]interface{}, error) {
 	if d == nil {
 		return nil, nil
 	}
@@ -397,9 +406,49 @@ func flattenWorkflowDestinationConfiguration(d *workflows.AiWorkflowsDestination
 	destinationConfigurationResult["channel_id"] = d.ChannelId
 	destinationConfigurationResult["name"] = d.Name
 	destinationConfigurationResult["type"] = d.Type
-	destinationConfigurationResult["notification_triggers"] = d.NotificationTriggers
+
+	if currentState == nil || currentState["notification_triggers"] == nil {
+		destinationConfigurationResult["notification_triggers"] = d.NotificationTriggers
+	} else {
+		destinationConfigurationResult["notification_triggers"] = normaliseTriggerList(
+			d.NotificationTriggers,
+			currentState["notification_triggers"].([]interface{}),
+		)
+	}
 
 	return destinationConfigurationResult, nil
+}
+
+// preserve the state order to avoid state drift as trigger order is not preserved
+func normaliseTriggerList(triggers []workflows.AiWorkflowsNotificationTrigger, currentState []interface{}) []workflows.AiWorkflowsNotificationTrigger {
+	var result []workflows.AiWorkflowsNotificationTrigger
+	for _, trigger := range currentState {
+		triggerStillExists := false
+		for _, actualTrigger := range triggers {
+			if string(actualTrigger) == trigger {
+				triggerStillExists = true
+			}
+		}
+
+		if triggerStillExists {
+			result = append(result, workflows.AiWorkflowsNotificationTrigger(trigger.(string)))
+		}
+	}
+
+	for _, actualTrigger := range triggers {
+		triggerExistedBefore := false
+		for _, trigger := range currentState {
+			if string(actualTrigger) == trigger {
+				triggerExistedBefore = true
+			}
+		}
+
+		if !triggerExistedBefore {
+			result = append(result, actualTrigger)
+		}
+	}
+
+	return result
 }
 
 func flattenWorkflowIssuesFilter(f *workflows.AiWorkflowsFilter) (interface{}, error) {
