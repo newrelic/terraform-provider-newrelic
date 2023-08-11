@@ -617,7 +617,7 @@ func testAccCheckNewRelicOneDashboardConfig_FilterCurrentDashboard(dashboardName
 			column = 1
 
 			nrql_query {
-			  account_id = ` + accountID + `
+			  account_ids = [` + accountID + `]
 			  query      = "FROM Transaction SELECT average(duration) FACET appName"
 			}
 
@@ -645,7 +645,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       width = 12
 
       nrql_query {
-        account_id = ` + accountID + `
+        account_ids = [` + accountID + `]
         query      = "FROM Transaction SELECT 51 TIMESERIES"
       }
     }
@@ -715,7 +715,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       row = 10
       column = 1
       nrql_query {
-        account_id = ` + accountID + `
+        account_ids = [` + accountID + `]
         query      = "FROM Transaction SELECT 1 TIMESERIES"
       }
       nrql_query {
@@ -871,7 +871,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFullChanged(pageName string, acc
       width = 12
 
       nrql_query {
-        account_id = ` + accountID + `
+        account_ids = [` + accountID + `]
         query      = "FROM Transaction SELECT 51 TIMESERIES LIMIT 10"
       }
     }
@@ -941,7 +941,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFullChanged(pageName string, acc
       row = 10
       column = 1
       nrql_query {
-        account_id = ` + accountID + `
+        account_ids = [` + accountID + `]
         query      = "FROM Transaction SELECT 1 TIMESERIES LIMIT 10"
       }
 	  nrql_query {
@@ -1280,7 +1280,7 @@ func testAccCheckNewRelicOneDashboardConfig_RawConfig(dashboardName string, acco
       width = 4
 
       nrql_query {
-      account_id = ` + accountID + `
+      account_ids = [` + accountID + `]
         query = <<EOT
 FROM JVMSampleActiveMQ SELECT latest(HeapMemoryUsage.Used) / 1000, latest(HeapMemoryUsage.Max) / 1000, latest(HeapMemoryUsage.Committed) / 1000, latest(HeapMemoryUsage.Init) / 1000 TIMESERIES AUTO SINCE 3 month ago
 EOT

@@ -687,14 +687,17 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 		var query dashboards.DashboardWidgetNRQLQueryInput
 		q := v.(map[string]interface{})
 
-		if acct, ok := q["account_id"]; ok {
-			query.AccountID = acct.(int)
+		if acct, ok := q["account_ids"]; ok {
+			query.AccountID = acct.([]int)
 		}
 
-		if query.AccountID < 1 {
-			defs := meta.(map[string]interface{})
-			if acct, ok := defs["account_id"]; ok {
-				query.AccountID = acct.(int)
+		for _, acctId := range query.AccountID {
+			if acctId < 1 {
+				defs := meta.(map[string]interface{})
+				if acct, ok := defs["account_ids"]; ok {
+					query.AccountID = acct.([]int)
+				}
+				break
 			}
 		}
 
@@ -1012,7 +1015,7 @@ func flattenDashboardWidgetNRQLQuery(in *[]dashboards.DashboardWidgetNRQLQueryIn
 	for i, v := range *in {
 		m := make(map[string]interface{})
 
-		m["account_id"] = v.AccountID
+		m["account_ids"] = v.AccountID
 		m["query"] = v.Query
 
 		out[i] = m
