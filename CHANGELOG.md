@@ -1,3 +1,11 @@
+<a name="v3.26.1"></a>
+## [v3.26.1] - 2023-08-10
+### Bug Fixes
+- **workflows:** ignore notification trigger order when comparing state
+
+### Documentation Updates
+- add documentation for the cdf functionality in Service Levels
+
 <a name="v3.26.0"></a>
 ## [v3.26.0] - 2023-07-26
 ### Bug Fixes
@@ -1916,7 +1924,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.26.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.26.1...HEAD
+[v3.26.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.26.0...v3.26.1
 [v3.26.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.2...v3.26.0
 [v3.25.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.1...v3.25.2
 [v3.25.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.0...v3.25.1
