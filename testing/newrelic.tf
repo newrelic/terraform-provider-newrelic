@@ -9,3 +9,5 @@ terraform {
 provider "newrelic" {
   region = "US" # US or EU
 }
+
+# empty PR comprising no changes
