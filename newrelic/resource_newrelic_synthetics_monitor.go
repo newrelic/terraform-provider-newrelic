@@ -164,6 +164,16 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 					},
 				},
 			},
+			"device_orientation": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The device orientation the user would like to represent. Valid values are LANDSCAPE, PORTRAIT, or NONE.",
+			},
+			"device_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
+			},
 		},
 	}
 }
