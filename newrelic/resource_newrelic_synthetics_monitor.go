@@ -237,6 +237,8 @@ func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreat
 	_ = d.Set("uri", res.Monitor.Uri)
 	_ = d.Set("locations_public", res.Monitor.Locations.Public)
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
+	_ = d.Set("device_orientation", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceOrientation)
+	_ = d.Set("device_type", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceType)
 
 	if res.Monitor.Runtime.RuntimeType != "" {
 		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
@@ -407,6 +409,8 @@ func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowse
 	_ = d.Set("enable_screenshot_on_failure_and_script", res.Monitor.AdvancedOptions.EnableScreenshotOnFailureAndScript)
 	_ = d.Set("locations_public", res.Monitor.Locations.Public)
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
+	_ = d.Set("device_orientation", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceOrientation)
+	_ = d.Set("device_type", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceType)
 
 	if res.Monitor.Runtime.RuntimeType != "" {
 		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
