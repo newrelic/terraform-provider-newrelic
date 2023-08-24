@@ -58,8 +58,6 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 					"tag",
 					"enable_screenshot_on_failure_and_script",
 					"custom_header",
-					"device_orientation",
-					"device_type",
 				},
 			},
 		},
@@ -87,8 +85,6 @@ resource "newrelic_synthetics_monitor" "foo" {
 		values = ["pizza"]
 	}
 	uri = "https://www.one.newrelic.com"
-	device_orientation = "PORTRAIT"
-	device_type = "MOBILE"
 }`, name, monitorType)
 }
 
@@ -113,8 +109,6 @@ resource "newrelic_synthetics_monitor" "foo" {
 		values = ["pizza", "cake"]
 	}
 	uri = "https://www.one.newrelic.com"
-	device_orientation = "LANDSCAPE"
-	device_type = "TABLET"
 }`, name, monitorType)
 }
 
