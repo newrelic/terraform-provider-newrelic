@@ -183,6 +183,8 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 		status	=	"ENABLED"
 		type	=	"%s"
 		uri	=	"https://www.one.newrelic.com"
+		device_orientation = "PORTRAIT"
+		device_type = "MOBILE"
 	}`, name, monitorType)
 }
 
@@ -205,6 +207,8 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, mon
 			status	=	"DISABLED"
 			type	=	"%s"
 			uri	=	"https://www.one.newrelic.com"
+			device_orientation = "LANDSCAPE"
+			device_type = "TABLET"
 		}`, name, monitorType)
 }
 
