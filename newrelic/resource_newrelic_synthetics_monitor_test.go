@@ -213,8 +213,8 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, mon
 			status	=	"DISABLED"
 			type	=	"%s"
 			uri	=	"https://www.one.newrelic.com"
-			device_orientation = "PORTRAIT"
-			device_type = "MOBILE"
+			device_orientation = "LANDSCAPE"
+			device_type = "TABLET"
 		}`, name, monitorType)
 }
 
