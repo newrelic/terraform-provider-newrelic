@@ -116,7 +116,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.bar"
 	rName := generateNameForIntegrationTestResource()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
