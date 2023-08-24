@@ -325,6 +325,18 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 					_ = d.Set("verify_ssl", v)
 				}
 			}
+
+			if t.Key == "deviceOrientation" {
+				if len(t.Values) == 1 {
+					_ = d.Set("device_orientation", t.Values[0])
+				}
+			}
+
+			if t.Key == "deviceType" {
+				if len(t.Values) == 1 {
+					_ = d.Set("device_type", t.Values[0])
+				}
+			}
 		}
 	}
 }
