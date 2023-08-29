@@ -13,6 +13,9 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 		Period: inputBase.Period,
 		Status: inputBase.Status,
 		Tags:   inputBase.Tags,
+		AdvancedOptions: synthetics.SyntheticsSimpleBrowserMonitorAdvancedOptionsInput{
+			DeviceEmulation: &synthetics.SyntheticsDeviceEmulationInput{},
+		},
 	}
 
 	if v, ok := d.GetOk("custom_header"); ok {
@@ -65,6 +68,14 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 		}
 	}
 
+	if v, ok := d.GetOk("device_orientation"); ok {
+		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(v.(string))
+	}
+
+	if v, ok := d.GetOk("device_type"); ok {
+		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(v.(string))
+	}
+
 	return simpleBrowserMonitorInput
 }
 
@@ -76,6 +87,9 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 		Period: inputBase.Period,
 		Status: inputBase.Status,
 		Tags:   inputBase.Tags,
+		AdvancedOptions: synthetics.SyntheticsSimpleBrowserMonitorAdvancedOptionsInput{
+			DeviceEmulation: &synthetics.SyntheticsDeviceEmulationInput{},
+		},
 	}
 
 	if v, ok := d.GetOk("custom_header"); ok {
@@ -126,6 +140,14 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 		if runtimeTypeVersionOk {
 			simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
 		}
+	}
+
+	if v, ok := d.GetOk("device_orientation"); ok {
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(v.(string))
+	}
+
+	if v, ok := d.GetOk("device_type"); ok {
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(v.(string))
 	}
 
 	return simpleBrowserMonitorUpdateInput
