@@ -30,7 +30,7 @@ resource "newrelic_application_settings" "app" {
 The following arguments are supported:
 
 * `name` - (Required) The name of the application in New Relic APM.
-* `app_apdex_threshold` - (Required) The appex threshold for the New Relic application.
+* `app_apdex_threshold` - (Required) The apdex threshold for the New Relic application.
 * `end_user_apdex_threshold` - (Required) The user's apdex threshold for the New Relic application.
 * `enable_real_user_monitoring` - (Required) Enable or disable real user monitoring for the New Relic application.
 

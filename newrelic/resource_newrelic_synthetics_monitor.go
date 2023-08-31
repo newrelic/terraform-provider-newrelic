@@ -164,6 +164,16 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 					},
 				},
 			},
+			"device_orientation": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The device orientation the user would like to represent. Valid values are LANDSCAPE, PORTRAIT, or NONE.",
+			},
+			"device_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
+			},
 		},
 	}
 }
@@ -227,6 +237,8 @@ func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreat
 	_ = d.Set("uri", res.Monitor.Uri)
 	_ = d.Set("locations_public", res.Monitor.Locations.Public)
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
+	_ = d.Set("device_orientation", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceOrientation)
+	_ = d.Set("device_type", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceType)
 
 	if res.Monitor.Runtime.RuntimeType != "" {
 		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
@@ -313,6 +325,18 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 					_ = d.Set("verify_ssl", v)
 				}
 			}
+
+			if t.Key == "deviceOrientation" {
+				if len(t.Values) == 1 {
+					_ = d.Set("device_orientation", t.Values[0])
+				}
+			}
+
+			if t.Key == "deviceType" {
+				if len(t.Values) == 1 {
+					_ = d.Set("device_type", t.Values[0])
+				}
+			}
 		}
 	}
 }
@@ -397,6 +421,8 @@ func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowse
 	_ = d.Set("enable_screenshot_on_failure_and_script", res.Monitor.AdvancedOptions.EnableScreenshotOnFailureAndScript)
 	_ = d.Set("locations_public", res.Monitor.Locations.Public)
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
+	_ = d.Set("device_orientation", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceOrientation)
+	_ = d.Set("device_type", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceType)
 
 	if res.Monitor.Runtime.RuntimeType != "" {
 		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
