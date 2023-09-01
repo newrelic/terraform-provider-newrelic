@@ -43,3 +43,9 @@ The following arguments are supported:
 
 * `account_id` - (Optional) The New Relic account ID of the associated private location. If left empty will default to account ID specified in provider level configuration.
 * `name` - (Required) The name of the Synthetics monitor private location.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `key` - The key of the private location.

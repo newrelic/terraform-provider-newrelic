@@ -25,6 +25,13 @@ func dataSourceNewRelicSyntheticsPrivateLocation() *schema.Resource {
 				Required:    true,
 				Description: "The name of the Synthetics monitor private location.",
 			},
+			"key": {
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
+				Optional:    true,
+				Description: "The key of the queried private location.",
+			},
 		},
 	}
 }
@@ -77,5 +84,28 @@ func dataSourceNewRelicSyntheticsPrivateLocationRead(ctx context.Context, d *sch
 		return diag.FromErr(err)
 	}
 
+	key := fetchPrivateLocationKey(location.Tags)
+	if len(key) == 0 {
+		//logs the absence of a key but does not throw an error to prevent halting execution
+		log.Printf("[INFO] No keys found corresponding to the queried private location.")
+	}
+	err = d.Set("key", key)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
+}
+
+// fetchPrivateLocationKey extracts the 'key' of the private location by iterating through all tags
+// and finding the tag by the name 'key', the 'values' of which would contain the key of the private location
+func fetchPrivateLocationKey(tagList []entities.EntityTag) []string {
+	var key []string
+	for _, tag := range tagList {
+		if tag.Key == "key" {
+			// tag.Values is a list of strings returned by the API, though it is expected to contain only one string
+			key = tag.Values
+		}
+	}
+	return key
 }
