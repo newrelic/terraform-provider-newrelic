@@ -36,6 +36,15 @@ func resourceNewRelicOneDashboardJSON() *schema.Resource {
 				Computed:    true,
 				Description: "The New Relic account ID where you want to create the dashboard.",
 			},
+			// Optional
+			"data_accounts": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The accounts to use for all queries in the dashboard. Will overwrite pre-existing accounts in the json.",
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
+				},
+			},
 			// Computed
 			"updated_at": {
 				Type:        schema.TypeString,

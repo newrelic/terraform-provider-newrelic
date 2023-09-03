@@ -4,6 +4,8 @@
 package newrelic
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"testing"
@@ -12,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
 
 // TestAccNewRelicOneDashboardRaw_Create Ensure that we can create a NR1 Dashboard
@@ -33,6 +36,39 @@ func TestAccNewRelicOneDashboardJson_Create(t *testing.T) {
 			{
 				ResourceName: "newrelic_one_dashboard_json.bar",
 				ImportState:  true,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboardRaw_Create Ensure that we can create a NR1 Dashboard
+func TestAccNewRelicOneDashboardJson_CreateWithDataAccounts(t *testing.T) {
+	dataAccountID := "123456789"
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccCheckNewRelicOneDashboardJsonConfig_OnePageFullWithDataAccount(rName, strconv.Itoa(testAccountID), dataAccountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard_json.bar", 0, func(de *entities.DashboardEntity) error {
+						serialized, err := json.Marshal(de)
+						if err != nil {
+							return fmt.Errorf("failed to serialize: %v", err)
+						}
+						if bytes.Contains(serialized, []byte(strconv.Itoa(testAccountID))) {
+							return fmt.Errorf("dashboard '%s' included original accountID %d", string(serialized), testAccountID)
+						}
+						if !bytes.Contains(serialized, []byte(dataAccountID)) {
+							return fmt.Errorf("dashboard '%s' did not include updated accountID %s", string(serialized), dataAccountID)
+						}
+
+						return nil
+					}),
+				),
 			},
 		},
 	})
@@ -70,6 +106,17 @@ resource "newrelic_one_dashboard_json" "bar" {
   json = <<EOT
   	` + testAccCheckNewRelicOneDashboardJsonConfig_Full(dashboardName, accountID) + `
   EOT
+}`
+}
+
+// testAccCheckNewRelicOneDashboardRawConfig contains all the config options for a single page dashboard
+func testAccCheckNewRelicOneDashboardJsonConfig_OnePageFullWithDataAccount(dashboardName string, accountID string, dataAccountID string) string {
+	return `
+resource "newrelic_one_dashboard_json" "bar" {
+  json = <<EOT
+  	` + testAccCheckNewRelicOneDashboardJsonConfig_Full(dashboardName, accountID) + `
+  EOT
+	data_accounts = ["` + dataAccountID + `"]
 }`
 }
 
