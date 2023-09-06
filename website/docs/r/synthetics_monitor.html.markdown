@@ -92,6 +92,8 @@ The `BROWSER` monitor type supports the following additional arguments:
 * `runtime_type_version` - (Optional) The runtime type that the monitor will run.
 * `runtime_type` - (Optional) The runtime type that the monitor will run.
 * `script_language` - (Optional) The programing language that should execute the script.
+* `device_orientation` - (Optional) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`.
+* `device_type` - (Optional) Device emulation type field. Valid values are `MOBILE` and `TABLET`.
 
 #### Deprecated runtime
 

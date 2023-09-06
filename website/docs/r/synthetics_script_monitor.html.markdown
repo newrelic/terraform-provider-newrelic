@@ -79,7 +79,9 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 
 The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
 
-* `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution
+* `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution.
+* `device_orientation` - (Optional) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`.
+* `device_type` - (Optional) Device emulation type field. Valid values are `MOBILE` and `TABLET`.
 
 #### Deprecated runtime
 
