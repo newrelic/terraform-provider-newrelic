@@ -58,6 +58,8 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 					"tag",
 					"enable_screenshot_on_failure_and_script",
 					"custom_header",
+					"device_orientation",
+					"device_type",
 				},
 			},
 		},
