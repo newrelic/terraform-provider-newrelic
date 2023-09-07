@@ -438,7 +438,7 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 	for key, fun := range awsIntegrationMap {
 		if v, ok := d.GetOk(key); ok {
 			fun.enableFunc(v.([]interface{}), linkedAccountID)
-		} else if o, n := d.GetChange(key); len(n.([]interface{})) > len(o.([]interface{})) {
+		} else if o, n := d.GetChange(key); len(n.([]interface{})) < len(o.([]interface{})) {
 			fun.disableFunc(linkedAccountID)
 		}
 	}
