@@ -405,4 +405,6 @@ var syntheticsMonitorTagKeyToSchemaAttrMap = map[string]string{
 	"runtimeType":        "runtime_type",
 	"runtimeTypeVersion": "runtime_type_version",
 	"scriptLanguage":     "script_language",
+	"deviceOrientation":  "device_orientation",
+	"deviceType":         "device_type",
 }
