@@ -41,7 +41,7 @@ func TestAccNewRelicCloudAwsIntegrations_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Test: Create
 			{
-				Config: testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig),
+				Config: testAccNewRelicAWSIntegrationsConfig_Basic(AWSIntegrationsTestConfig),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
@@ -49,9 +49,23 @@ func TestAccNewRelicCloudAwsIntegrations_Basic(t *testing.T) {
 					time.Sleep(10 * time.Second)
 				},
 			},
-			//Test: Update
+			//Test: Add Additional Integrations To The Configuration
 			{
-				Config: testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig),
+				Config: testAccNewRelicAWSIntegrationsConfig_AdditionalIntegrationsUpdated(AWSIntegrationsTestConfig),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
+				),
+			},
+			//Test: Alter Values of Arguments In The Configuration
+			{
+				Config: testAccNewRelicAWSIntegrationsConfig_ArgumentsUpdated(AWSIntegrationsTestConfig),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
+				),
+			},
+			//Test: Discard a select few integrations from the configuration
+			{
+				Config: testAccNewRelicAWSIntegrationsConfig_AdditionalIntegrationsDiscarded(AWSIntegrationsTestConfig),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudAwsIntegrationsExist(resourceName),
 				),
@@ -121,25 +135,168 @@ func testAccCheckNewRelicCloudAwsIntegrationsDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig map[string]string) string {
+func testAccNewRelicAWSIntegrationsConfig_Basic(AWSIntegrationsTestConfig map[string]string) string {
 	return fmt.Sprintf(`
-	provider "newrelic" {
-  		account_id = "` + AWSIntegrationsTestConfig["account_id"] + `"
-  		alias      = "cloud-integration-provider"
-	}
-
-	resource "newrelic_cloud_aws_link_account" "foo" {
-        provider        	   = newrelic.cloud-integration-provider
-		arn                    = "` + AWSIntegrationsTestConfig["arn"] + `"
-		metric_collection_mode = "PULL"
-		name                   = "` + AWSIntegrationsTestConfig["name"] + `"
-		account_id			   = "` + AWSIntegrationsTestConfig["account_id"] + `"
-	  }
+	` + testAccNewRelicAWSIntegrationsConfigInitializer(AWSIntegrationsTestConfig, false) + `
 
 	  resource "newrelic_cloud_aws_integrations" "bar" {
 		provider        	   = newrelic.cloud-integration-provider
 		linked_account_id 	   = newrelic_cloud_aws_link_account.foo.id
 	    account_id             = "` + AWSIntegrationsTestConfig["account_id"] + `"
+		billing {
+		  metrics_polling_interval = 6000
+		}
+		cloudtrail {
+		  metrics_polling_interval = 6000
+		  aws_regions              = ["us-east-1"]
+		}
+		health {
+		  metrics_polling_interval = 6000
+		}
+		trusted_advisor {
+		  metrics_polling_interval = 6000
+		}
+		vpc {
+		  aws_regions              = ["us-east-1"]
+		  fetch_nat_gateway        = true
+		  fetch_vpn                = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		x_ray {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		s3 {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		doc_db {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		sqs {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  queue_prefixes           = ["test prefix"]
+		  metrics_polling_interval = 6000
+		  aws_regions              = ["us-east-1"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		ebs {
+		  metrics_polling_interval = 6000
+		  fetch_extended_inventory = true
+		  aws_regions              = ["us-east-1"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		alb {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  load_balancer_prefixes   = ["test prefix"]
+		  metrics_polling_interval = 6000
+		  aws_regions              = ["us-east-1"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elasticache {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 6000
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		api_gateway {
+		  metrics_polling_interval = 6000
+		  aws_regions              = ["us-east-1"]
+		  stage_prefixes           = ["test prefix"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		auto_scaling {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_app_sync {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_athena {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_cognito {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_connect {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_direct_connect {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_fsx {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_glue {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_kinesis_analytics {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_media_convert {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_media_package_vod {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_mq {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_msk {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_neptune {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_qldb {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_route53resolver {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+		aws_states {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
+	  }
+`)
+}
+
+func testAccNewRelicAWSIntegrationsConfig_AdditionalIntegrationsUpdated(AWSIntegrationsTestConfig map[string]string) string {
+	return fmt.Sprintf(`
+		` + testAccNewRelicAWSIntegrationsConfigInitializer(AWSIntegrationsTestConfig, false) + `
+		resource "newrelic_cloud_aws_integrations" "bar" {
+        provider        	   = newrelic.cloud-integration-provider
+		linked_account_id      = newrelic_cloud_aws_link_account.foo.id
+		account_id			   = "` + AWSIntegrationsTestConfig["account_id"] + `"
 		billing {
 		  metrics_polling_interval = 6000
 		}
@@ -418,8 +575,489 @@ func testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig map[string]s
 `)
 }
 
-func testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig map[string]string) string {
+func testAccNewRelicAWSIntegrationsConfig_ArgumentsUpdated(AWSIntegrationsTestConfig map[string]string) string {
 	return fmt.Sprintf(`
+		` + testAccNewRelicAWSIntegrationsConfigInitializer(AWSIntegrationsTestConfig, true) + `
+
+		resource "newrelic_cloud_aws_integrations" "bar" {
+        provider        	   = newrelic.cloud-integration-provider
+		linked_account_id      = newrelic_cloud_aws_link_account.foo.id
+		account_id			   = "` + AWSIntegrationsTestConfig["account_id"] + `"
+		billing {
+		  metrics_polling_interval = 3600
+		}
+		cloudtrail {
+		  metrics_polling_interval = 3600
+		  aws_regions              = ["us-east-2"]
+		}
+		health {
+		  metrics_polling_interval = 3600
+		}
+		trusted_advisor {
+		  metrics_polling_interval = 3600
+		}
+		vpc {
+		  aws_regions              = ["us-east-2"]
+		  fetch_nat_gateway        = true
+		  fetch_vpn                = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		x_ray {
+		  aws_regions              = ["us-east-2"]
+		  metrics_polling_interval = 6000
+		}
+		s3 {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		doc_db {
+		  aws_regions              = ["us-east-2"]
+		  metrics_polling_interval = 3600
+		}
+		sqs {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  queue_prefixes           = ["test prefix"]
+		  metrics_polling_interval = 3600
+		  aws_regions              = ["us-east-2"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		ebs {
+		  metrics_polling_interval = 3600
+		  fetch_extended_inventory = true
+		  aws_regions              = ["us-east-1"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		alb {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  load_balancer_prefixes   = ["test prefix"]
+		  metrics_polling_interval = 3600
+		  aws_regions              = ["us-east-1"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elasticache {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		api_gateway {
+		  metrics_polling_interval = 3600
+		  aws_regions              = ["us-east-1"]
+		  stage_prefixes           = ["test prefix"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		auto_scaling {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_app_sync {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_athena {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_cognito {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_connect {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_direct_connect {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_fsx {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_glue {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_kinesis_analytics {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_media_convert {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_media_package_vod {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_mq {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_msk {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_neptune {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_qldb {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_route53resolver {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_states {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_transit_gateway {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_waf {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		aws_wafv2 {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		cloudfront {
+		  fetch_lambdas_at_edge    = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		dynamodb {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		ec2 {
+		  aws_regions              = ["us-east-1"]
+		  duplicate_ec2_tags       = true
+		  fetch_ip_addresses       = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		ecs {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		efs {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elasticbeanstalk {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elasticsearch {
+		  aws_regions              = ["us-east-1"]
+		  fetch_nodes              = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elb {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		}
+		emr {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		iam {
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		iot {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		kinesis {
+		  aws_regions              = ["us-east-1"]
+		  fetch_shards             = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		kinesis_firehose {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		lambda {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		rds {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		redshift {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		route53 {
+		  fetch_extended_inventory = true
+		  metrics_polling_interval = 3600
+		}
+		ses {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		sns {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  metrics_polling_interval = 3600
+		}
+	  }
+`)
+}
+
+func testAccNewRelicAWSIntegrationsConfig_AdditionalIntegrationsDiscarded(AWSIntegrationsTestConfig map[string]string) string {
+	return fmt.Sprintf(`
+	` + testAccNewRelicAWSIntegrationsConfigInitializer(AWSIntegrationsTestConfig, true) + `
+	  resource "newrelic_cloud_aws_integrations" "bar" {
+        provider        	   = newrelic.cloud-integration-provider
+		linked_account_id      = newrelic_cloud_aws_link_account.foo.id
+		account_id			   = "` + AWSIntegrationsTestConfig["account_id"] + `"
+		billing {
+		  metrics_polling_interval = 3600
+		}
+		cloudtrail {
+		  metrics_polling_interval = 3600
+		  aws_regions              = ["us-east-2"]
+		}
+		health {
+		  metrics_polling_interval = 3600
+		}
+		trusted_advisor {
+		  metrics_polling_interval = 3600
+		}
+		vpc {
+		  aws_regions              = ["us-east-2"]
+		  fetch_nat_gateway        = true
+		  fetch_vpn                = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		x_ray {
+		  aws_regions              = ["us-east-2"]
+		  metrics_polling_interval = 6000
+		}
+		s3 {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		doc_db {
+		  aws_regions              = ["us-east-2"]
+		  metrics_polling_interval = 3600
+		}
+		sqs {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  queue_prefixes           = ["test prefix"]
+		  metrics_polling_interval = 3600
+		  aws_regions              = ["us-east-2"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		ebs {
+		  metrics_polling_interval = 3600
+		  fetch_extended_inventory = true
+		  aws_regions              = ["us-east-1"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		alb {
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  load_balancer_prefixes   = ["test prefix"]
+		  metrics_polling_interval = 3600
+		  aws_regions              = ["us-east-1"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elasticache {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		api_gateway {
+		  metrics_polling_interval = 3600
+		  aws_regions              = ["us-east-1"]
+		  stage_prefixes           = ["test prefix"]
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		cloudfront {
+		  fetch_lambdas_at_edge    = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		dynamodb {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		ec2 {
+		  aws_regions              = ["us-east-1"]
+		  duplicate_ec2_tags       = true
+		  fetch_ip_addresses       = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		ecs {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		efs {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elasticbeanstalk {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elasticsearch {
+		  aws_regions              = ["us-east-1"]
+		  fetch_nodes              = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		elb {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		}
+		emr {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		iam {
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		iot {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		kinesis {
+		  aws_regions              = ["us-east-1"]
+		  fetch_shards             = true
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		kinesis_firehose {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 3600
+		}
+		lambda {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		rds {
+		  aws_regions              = ["us-east-1"]
+		  fetch_tags               = true
+		  metrics_polling_interval = 3600
+		  tag_key                  = "test"
+		  tag_value                = "test"
+		}
+		sns {
+		  aws_regions              = ["us-east-1"]
+		  fetch_extended_inventory = true
+		  metrics_polling_interval = 3600
+		}
+	  }
+`)
+}
+
+func testAccNewRelicAWSIntegrationsConfigInitializer(AWSIntegrationsTestConfig map[string]string, isUpdated bool) string {
+	if isUpdated {
+		AWSIntegrationsTestConfig["name"] += "_updated"
+	}
+	return fmt.Sprintf(`
+
 	provider "newrelic" {
   		account_id = "` + AWSIntegrationsTestConfig["account_id"] + `"
   		alias      = "cloud-integration-provider"
@@ -431,285 +1069,7 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig map[s
 		metric_collection_mode = "PULL"
 		name                   = "` + AWSIntegrationsTestConfig["name"] + `_updated"
 		account_id			   = "` + AWSIntegrationsTestConfig["account_id"] + `"
-	  }
-	  resource "newrelic_cloud_aws_integrations" "bar" {
-        provider        	   = newrelic.cloud-integration-provider
-		linked_account_id      = newrelic_cloud_aws_link_account.foo.id
-		account_id			   = "` + AWSIntegrationsTestConfig["account_id"] + `"
-		billing {
-		  metrics_polling_interval = 10000
-		}
-		cloudtrail {
-		  metrics_polling_interval = 6000
-		  aws_regions              = ["us-east-1"]
-		}
-		health {
-		  metrics_polling_interval = 6000
-		}
-		trusted_advisor {
-		  metrics_polling_interval = 6000
-		}
-		vpc {
-		  aws_regions              = ["us-east-1"]
-		  fetch_nat_gateway        = true
-		  fetch_vpn                = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		x_ray {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		s3 {
-		  fetch_extended_inventory = true
-		  fetch_tags               = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		doc_db {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		sqs {
-		  fetch_extended_inventory = true
-		  fetch_tags               = true
-		  queue_prefixes           = ["test prefix"]
-		  metrics_polling_interval = 6000
-		  aws_regions              = ["us-east-1"]
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		ebs {
-		  metrics_polling_interval = 6000
-		  fetch_extended_inventory = true
-		  aws_regions              = ["us-east-1"]
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		alb {
-		  fetch_extended_inventory = true
-		  fetch_tags               = true
-		  load_balancer_prefixes   = ["test prefix"]
-		  metrics_polling_interval = 6000
-		  aws_regions              = ["us-east-1"]
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		elasticache {
-		  aws_regions              = ["us-east-1"]
-		  fetch_tags               = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		api_gateway {
-		  metrics_polling_interval = 6000
-		  aws_regions              = ["us-east-1"]
-		  stage_prefixes           = ["test prefix"]
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		auto_scaling {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_app_sync {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_athena {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_cognito {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_connect {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_direct_connect {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_fsx {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_glue {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_kinesis_analytics {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_media_convert {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_media_package_vod {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_mq {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_msk {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_neptune {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_qldb {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_route53resolver {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_states {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_transit_gateway {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_waf {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		aws_wafv2 {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		cloudfront {
-		  fetch_lambdas_at_edge    = true
-		  fetch_tags               = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		dynamodb {
-		  aws_regions              = ["us-east-1"]
-		  fetch_extended_inventory = true
-		  fetch_tags               = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		ec2 {
-		  aws_regions              = ["us-east-1"]
-		  duplicate_ec2_tags       = true
-		  fetch_ip_addresses       = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		ecs {
-		  aws_regions              = ["us-east-1"]
-		  fetch_tags               = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		efs {
-		  aws_regions              = ["us-east-1"]
-		  fetch_tags               = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		elasticbeanstalk {
-		  aws_regions              = ["us-east-1"]
-		  fetch_extended_inventory = true
-		  fetch_tags               = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		elasticsearch {
-		  aws_regions              = ["us-east-1"]
-		  fetch_nodes              = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		elb {
-		  aws_regions              = ["us-east-1"]
-		  fetch_extended_inventory = true
-		  fetch_tags               = true
-		  metrics_polling_interval = 6000
-		}
-		emr {
-		  aws_regions              = ["us-east-1"]
-		  fetch_tags               = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		iam {
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		iot {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		kinesis {
-		  aws_regions              = ["us-east-1"]
-		  fetch_shards             = true
-		  fetch_tags               = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		kinesis_firehose {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		lambda {
-		  aws_regions              = ["us-east-1"]
-		  fetch_tags               = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		rds {
-		  aws_regions              = ["us-east-1"]
-		  fetch_tags               = true
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		redshift {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		  tag_key                  = "test"
-		  tag_value                = "test"
-		}
-		route53 {
-		  fetch_extended_inventory = true
-		  metrics_polling_interval = 6000
-		}
-		ses {
-		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
-		}
-		sns {
-		  aws_regions              = ["us-east-1"]
-		  fetch_extended_inventory = true
-		  metrics_polling_interval = 6000
-		}
-	  }
+	  }	
+
 `)
 }
