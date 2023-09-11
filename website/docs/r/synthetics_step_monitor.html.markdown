@@ -38,7 +38,6 @@ The following are the common arguments supported for `STEP` monitor:
 
 * `account_id`- (Optional) The account in which the Synthetics monitor will be created.
 * `name` - (Required) The name for the monitor.
-* `uri` - (Required) The uri the monitor runs against.
 * `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. You don't need the `AWS_` prefix as the provider uses NerdGraph. At least one of either `locations_public` or `location_private` is required.
 * `location_private` - (Required) The location the monitor will run from. At least one of `locations_public` or `location_private` is required. See [Nested locations_private blocks](#nested-locations-private-blocks) below for details.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
@@ -59,7 +58,23 @@ All nested `steps` blocks support the following common arguments:
 
 * `ordinal` - (Required) The position of the step within the script ranging from 0-100.
 * `type` - (Required) Name of the tag key. Valid values are ASSERT_ELEMENT, ASSERT_MODAL, ASSERT_TEXT, ASSERT_TITLE, CLICK_ELEMENT, DISMISS_MODAL, DOUBLE_CLICK_ELEMENT, HOVER_ELEMENT, NAVIGATE, SECURE_TEXT_ENTRY, SELECT_ELEMENT, TEXT_ENTRY.
-* `values` - (Optional) The metadata values related to the step.
+* `values` - (Optional) The metadata values related to the step. Below are the possible values associated to each type.
+
+| Type                 | Values[0]                            | Values[1]               | Values[2]       |
+|----------------------|--------------------------------------|-------------------------|-----------------|
+| ASSERT_ELEMENT       | Locate element by ID, CSS, or x-path | present, visible        | True, False     |
+| ASSERT_TEXT          | Locate element by ID, CSS, or x-path | present, visible        | True, False     |
+| ASSERT_TITLE         | ==, !=, >=, <=, >, <, %=, !%=        | element by text         | -               |
+| ASSERT_MODAL         | True, False                          | text                    | accept, dismiss |
+| CLICK_ELEMENT        | Locate element by ID, CSS, or x-path | -                       | -               |
+| DOUBLE_CLICK_ELEMENT | Locate element by ID, CSS, or x-path | -                       | -               |
+| SELECT_ELEMENT       | Locate element by ID, CSS, or x-path | option by value or text | -               |
+| HOVER_ELEMENT        | Locate element by ID, CSS, or x-path | -                       | -               |
+| DISMISS_MODAL        | accept, dismiss                      | Optional modal text     | -               |
+| NAVIGATE             | url                                  | -                       | -               |
+| SECURE_TEXT_ENTRY    | Locate element by ID, CSS, or x-path | Optional modal text     | -               |
+| TEXT_ENTRY           | Locate element by ID, CSS, or x-path | secure key              | -               |
+
 
 ### Nested `tag` blocks
 
@@ -85,7 +100,6 @@ resource "newrelic_synthetics_private_location" "location" {
 
 resource "newrelic_synthetics_step_monitor" "bar" {
   name = "step_monitor"
-  uri  = "https://www.one.example.com"
   location_private {
     guid         = newrelic_synthetics_private_location.location.id
     vse_password = "secret"

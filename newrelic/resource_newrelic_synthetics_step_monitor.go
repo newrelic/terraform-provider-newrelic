@@ -138,7 +138,7 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	// This should probably be in go-client so we can use *errors.NotFound
+	// This should probably be in go-client, so we can use *errors.NotFound
 	if *resp == nil {
 		d.SetId("")
 		return nil
