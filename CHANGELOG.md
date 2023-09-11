@@ -1,5 +1,20 @@
+<a name="v3.27.0"></a>
+## [v3.27.0] - 2023-09-11
+### Bug Fixes
+- **aws_cloud_integrations:** condition change to fix a bug with disabling selected integrations ([#2459](https://github.com/newrelic/terraform-provider-newrelic/issues/2459))
+- **private_location:** addition of key to attributes exported by the data source ([#2453](https://github.com/newrelic/terraform-provider-newrelic/issues/2453))
+- **private_location:** addition of key to attributes exported by the data source ([#2446](https://github.com/newrelic/terraform-provider-newrelic/issues/2446))
+- **tests:** Ignore device emulation attributes in Simple Monitor test ([#2450](https://github.com/newrelic/terraform-provider-newrelic/issues/2450))
+
+### Documentation Updates
+- fix typo ([#2448](https://github.com/newrelic/terraform-provider-newrelic/issues/2448))
+- **synthetics:** Add device emulation fields reference ([#2458](https://github.com/newrelic/terraform-provider-newrelic/issues/2458))
+
+### Features
+- **synthetics:** Enable device emulation for simple browser synthetics ([#2447](https://github.com/newrelic/terraform-provider-newrelic/issues/2447))
+
 <a name="v3.26.1"></a>
-## [v3.26.1] - 2023-08-10
+## [v3.26.1] - 2023-08-14
 ### Bug Fixes
 - **workflows:** ignore notification trigger order when comparing state
 
@@ -1924,7 +1939,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.26.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.0...HEAD
+[v3.27.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.26.1...v3.27.0
 [v3.26.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.26.0...v3.26.1
 [v3.26.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.2...v3.26.0
 [v3.25.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.1...v3.25.2
