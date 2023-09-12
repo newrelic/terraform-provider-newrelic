@@ -1,3 +1,8 @@
+<a name="v3.27.1"></a>
+## [v3.27.1] - 2023-09-12
+### Bug Fixes
+- Remove setting default empty values for device emulation ([#2465](https://github.com/newrelic/terraform-provider-newrelic/issues/2465))
+
 <a name="v3.27.0"></a>
 ## [v3.27.0] - 2023-09-11
 ### Bug Fixes
@@ -1939,7 +1944,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.1...HEAD
+[v3.27.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.0...v3.27.1
 [v3.27.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.26.1...v3.27.0
 [v3.26.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.26.0...v3.26.1
 [v3.26.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.2...v3.26.0
