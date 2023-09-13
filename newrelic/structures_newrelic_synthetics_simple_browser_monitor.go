@@ -1,11 +1,13 @@
 package newrelic
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
-func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleBrowserMonitorInput {
+func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) (synthetics.SyntheticsCreateSimpleBrowserMonitorInput, error) {
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{
@@ -70,21 +72,26 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	dt, dtOk := d.GetOk("device_type")
 
 	if doOk || dtOk {
-		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
+		if doOk && dtOk {
+			simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
 
-		if doOk {
-			simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
-		}
+			if doOk {
+				simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
+			}
 
-		if dtOk {
-			simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+			if dtOk {
+				simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+			}
+		} else {
+			return simpleBrowserMonitorInput, fmt.Errorf(
+				"both 'device_orientation' and 'device_type' are needed to be specified, to use device emulation options")
 		}
 	}
 
-	return simpleBrowserMonitorInput
+	return simpleBrowserMonitorInput, nil
 }
 
-func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleBrowserMonitorInput {
+func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) (synthetics.SyntheticsUpdateSimpleBrowserMonitorInput, error) {
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{
@@ -149,16 +156,21 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	dt, dtOk := d.GetOk("device_type")
 
 	if doOk || dtOk {
-		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
+		if doOk && dtOk {
+			simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
 
-		if doOk {
-			simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
-		}
+			if doOk {
+				simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
+			}
 
-		if dtOk {
-			simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+			if dtOk {
+				simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+			}
+		} else {
+			return simpleBrowserMonitorUpdateInput, fmt.Errorf(
+				"both 'device_orientation' and 'device_type' are needed to be specified, to use device emulation options")
 		}
 	}
 
-	return simpleBrowserMonitorUpdateInput
+	return simpleBrowserMonitorUpdateInput, nil
 }
