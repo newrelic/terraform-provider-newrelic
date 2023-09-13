@@ -1,6 +1,8 @@
 package newrelic
 
 import (
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 )
@@ -438,7 +440,8 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 	for key, fun := range awsIntegrationMap {
 		if v, ok := d.GetOk(key); ok {
 			fun.enableFunc(v.([]interface{}), linkedAccountID)
-		} else if o, n := d.GetChange(key); len(n.([]interface{})) < len(o.([]interface{})) {
+		}
+		if o, n := d.GetChange(key); len(n.([]interface{})) < len(o.([]interface{})) || validateInterfaces(key, n.([]interface{}), o.([]interface{})) {
 			fun.disableFunc(linkedAccountID)
 		}
 	}
@@ -452,6 +455,29 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 	}
 
 	return configureInput, disableInput
+}
+
+func validateInterfaces(key string, n []interface{}, o []interface{}) bool {
+	if (len(n) == 0 || len(o) == 0) || len(n) > len(o) {
+		return false
+	}
+
+	newMap := n[0].(map[string]interface{})
+	oldMap := o[0].(map[string]interface{})
+
+	log.Printf("KEY : %s\n", key)
+	for key, value := range oldMap {
+		if newValue, ok := newMap[key]; ok {
+			log.Println(key)
+			log.Println(newValue)
+			log.Println(value)
+			if newValue != value {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // TODO: Reduce the cyclomatic complexity of this func
