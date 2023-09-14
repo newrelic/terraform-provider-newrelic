@@ -124,9 +124,9 @@ The `term` block supports the following arguments:
 - `duration` - (Optional) **DEPRECATED:** Use `threshold_duration` instead. The duration of time, in _minutes_, that the threshold must violate for in order to create an incident. Must be within 1-120 (inclusive).
 - `time_function` - (Optional) **DEPRECATED:** Use `threshold_occurrences` instead. The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: `all` or `any`.
 
-~> **NOTE:** When specifying a `critical` or `warning` block, using either `duration` or `threshold_duration` (one of the two) is mandatory. Both of these should not be specified.
+~> **NOTE:** When a `critical` or `warning` block is added to this resource, using either `duration` or `threshold_duration` (one of the two) is mandatory. Both of these should not be specified.
 
-~> **NOTE:** When specifying a `critical` or `warning` block, using either `time_function` or `threshold_occurrences` (one of the two) is mandatory. Both of these should not be specified.
+~> **NOTE:** When a `critical` or `warning` block is added to this resource, using either `time_function` or `threshold_occurrences` (one of the two) is mandatory. Both of these should not be specified.
 
 ## Attributes Reference
 
