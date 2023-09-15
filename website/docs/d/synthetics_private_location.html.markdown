@@ -20,7 +20,7 @@ data "newrelic_synthetics_private_location" "example" {
 
 resource "newrelic_synthetics_monitor" "foo" {
   // Reference the private location data source in the monitor resource
-  locations_private = [data.newrelic_synthetics_monitor_location.example.id]
+  locations_private = [data.newrelic_synthetics_private_location.example.id]
 }
 ```
 
