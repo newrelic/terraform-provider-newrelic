@@ -172,7 +172,19 @@ func resourceNewRelicSyntheticsCertCheckMonitorRead(ctx context.Context, d *sche
 
 		d.SetId(string(e.GUID))
 		_ = d.Set("account_id", accountID)
-		_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
+		_ = d.Set("locations_public", processFurther(getPublicLocationsFromEntityTags(entity.GetTags()), d))
+		log.Println("#### REACHED HERE ####")
+		log.Println(getPublicLocationsFromEntityTags(entity.GetTags()))
+		log.Println("#################")
+		c := d.Get("locations_public")
+		log.Println(c)
+		log.Println("#################")
+		x, _ := d.GetOk("locations_public")
+		log.Println(x.(*schema.Set).List())
+		a, b := d.GetChange("locations_public")
+		log.Println(a.(*schema.Set).List())
+		log.Println(b.(*schema.Set).List())
+		log.Println("#################")
 		_ = d.Set("period_in_minutes", int(entity.GetPeriod()))
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{

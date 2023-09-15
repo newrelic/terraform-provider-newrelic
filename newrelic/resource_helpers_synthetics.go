@@ -3,6 +3,7 @@ package newrelic
 import (
 	"encoding/base64"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -373,6 +374,34 @@ var syntheticsPublicLocationsMap = map[string]SyntheticsPublicLocation{
 	"Stockholm, SE":          syntheticsPublicLocations.EU_NORTH_1,
 	"Sydney, AU":             syntheticsPublicLocations.AP_SOUTHEAST_2,
 	"Cape Town, ZA":          syntheticsPublicLocations.AF_SOUTH_1,
+}
+
+func processFurther(publicLocations []string, d *schema.ResourceData) []string {
+	a, _ := d.GetChange("locations_public")
+	x := a.(*schema.Set).List()
+
+	for i := 0; i < len(publicLocations); i++ {
+		for j := 0; j < len(x); j++ {
+			log.Println(publicLocations[i])
+			log.Println(x[j])
+			if publicLocations[i] == x[j].(string) || publicLocations[i] == strings.TrimPrefix(x[j].(string), "AWS_") {
+				log.Println("ENTERED THIS CONDITION!")
+				if strings.HasPrefix(x[j].(string), "AWS_") {
+					log.Println("ENTERED THIS SECOND CONDITION!")
+					publicLocations[i] = x[j].(string)
+					log.Printf("NEW VALUE : \n", publicLocations[i])
+				}
+				log.Println("Breaking loop here")
+				break
+			}
+		}
+	}
+
+	log.Println("DIAZO")
+	log.Println(x)
+	log.Println(publicLocations)
+
+	return publicLocations
 }
 
 func getPublicLocationsFromEntityTags(tags []entities.EntityTag) []string {
