@@ -26,6 +26,7 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 				Description: "accountID of newrelic account",
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -36,6 +37,7 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "project id of the Gcp account",
 				Required:    true,
+				ForceNew:    true,
 			},
 		},
 	}
