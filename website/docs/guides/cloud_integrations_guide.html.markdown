@@ -68,9 +68,9 @@ module "newrelic-aws-cloud-integrations" {
 
 Variables:
 
-* newrelic_account_id: The New Relic account you want to link to AWS. This account will receive all the data observability from your AWS environment.
-* newrelic_account_region: The region of your New Relic account, this can be `US` for United States or `EU` for Europe. (Default `US`)
-* name: A unique name used throughout the module to name the resources.
+* `newrelic_account_id`: The New Relic account you want to link to AWS. This account will receive all the data observability from your AWS environment.
+* `newrelic_account_region`: The region of your New Relic account, this can be `US` for United States or `EU` for Europe. (Default `US`)
+* `name`: A unique name used throughout the module to name the resources.
 
 
 ### Azure
@@ -111,8 +111,8 @@ module "newrelic-azure-cloud-integrations" {
 
 Variables:
 
-* newrelic_account_id: The New Relic account you want to link to Azure. This account will receive all the data observability from your Azure environment.
-* name: A unique name used throughout the module to name the resources.
+* `newrelic_account_id`: The New Relic account you want to link to Azure. This account will receive all the data observability from your Azure environment.
+* `name`: A unique name used throughout the module to name the resources.
 
 
 ### GCP
@@ -153,7 +153,7 @@ module "newrelic-gcp-cloud-integrations" {
 
 Variables:
 
-* newrelic_account_id: The New Relic account you want to link to GCP. This account will receive all the data observability from your Azure environment.
-* name: A unique name used throughout the module to name the resources.
-* service_account_id: The ID of the New Relic GCP [Service Account](https://cloud.google.com/iam/docs/service-accounts) with [Viewer and Service Usage Consumer roles](https://cloud.google.com/iam/docs/understanding-roles). You can find this ID in the New Relic UI by going to `Infrastructure > GCP > Add a GCP project`. For more information [check out the New Relic docs](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic/).
-* project_id: The ID of the project you want to receive data from in GCP.
+* `newrelic_account_id`: The New Relic account you want to link to GCP. This account will receive all the data observability from your Azure environment.
+* `name`: A unique name used throughout the module to name the resources.
+* `service_account_id`: The ID of the New Relic GCP [Service Account](https://cloud.google.com/iam/docs/service-accounts) with [Viewer and Service Usage Consumer roles](https://cloud.google.com/iam/docs/understanding-roles). You can find this ID in the New Relic UI by going to `Infrastructure > GCP > Add a GCP project`. For more information [check out the New Relic docs](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic/).
+* `project_id`: The ID of the project you want to receive data from in GCP.
