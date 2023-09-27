@@ -1,7 +1,12 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/provider"
+	pluginSchema "github.com/hashicorp/terraform-plugin-framework/provider/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"log"
 	"strconv"
 
@@ -120,7 +125,7 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"newrelic_account":                      dataSourceNewRelicAccount(),
+			// "newrelic_account":                      dataSourceNewRelicAccount(),
 			"newrelic_alert_channel":                dataSourceNewRelicAlertChannel(),
 			"newrelic_alert_policy":                 dataSourceNewRelicAlertPolicy(),
 			"newrelic_application":                  dataSourceNewRelicApplication(),
@@ -276,4 +281,40 @@ func getInfraAPIURL(data *schema.ResourceData) string {
 	}
 
 	return ""
+}
+
+type newrelicProvider struct {
+}
+
+func New() provider.Provider {
+	return &newrelicProvider{}
+}
+
+func (p *newrelicProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+	resp.TypeName = "newrelic"
+}
+
+func (p *newrelicProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+	resp.Schema = pluginSchema.Schema{}
+}
+
+func (p *newrelicProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	// How to configure go client?
+
+}
+
+func (p *newrelicProvider) Resources(ctx context.Context) []func() resource.Resource {
+	return []func() resource.Resource{
+		func() resource.Resource {
+			return nil
+		},
+	}
+}
+
+func (p *newrelicProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+	return []func() datasource.DataSource{
+		func() datasource.DataSource {
+			return &dataSourceNewRelicAccount{}
+		},
+	}
 }

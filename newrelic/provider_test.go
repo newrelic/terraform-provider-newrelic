@@ -351,5 +351,43 @@ func testAccLogParsingRulesCleanup(t *testing.T) {
 	t.Logf("testacc cleanup of %d DataPartition complete", deletedCount)
 
 	testAccCleanupComplete = true
+}
 
+func TestMuxServer(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: map[string]func() (tfprotov5.ProviderServer, error){
+			"examplecloud": func() (tfprotov6.ProviderServer, error) {
+				ctx := context.Background()
+
+				upgradedSdkServer, err := tf5to6server.UpgradeServer(
+					ctx,
+					Provider().GRPCProvider, // Example terraform-plugin-sdk provider
+				)
+
+				if err != nil {
+					return nil, err
+				}
+
+				providers := []func() tfprotov6.ProviderServer{
+					providerserver.NewProtocol6(New()), // Example terraform-plugin-framework provider
+					func() tfprotov6.ProviderServer {
+						return upgradedSdkServer
+					},
+				}
+
+				muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
+
+				if err != nil {
+					return nil, err
+				}
+
+				return muxServer.ProviderServer(), nil
+			},
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: "... configuration including simplest data source or managed resource",
+			},
+		},
+	})
 }
