@@ -86,7 +86,7 @@ The following arguments are supported:
 
 - `fill_option` - (Optional) Which strategy to use when filling gaps in the signal. Possible values are `none`, `last_value` or `static`. If `static`, the `fill_value` field will be used for filling gaps in the signal.
 - `fill_value` - (Optional, required when `fill_option` is `static`) This value will be used for filling gaps in the signal.
-- `aggregation_window` - (Optional) The duration of the time window used to evaluate the NRQL query, in seconds. The value must be at least 30 seconds, and no more than 7200 seconds (2 hours). Default is 60 seconds.
+- `aggregation_window` - (Optional) The duration of the time window used to evaluate the NRQL query, in seconds. The value must be at least 30 seconds, and no more than 21600 seconds (6 hours). Default is 60 seconds.
 - `expiration_duration` - (Optional) The amount of time (in seconds) to wait before considering the signal expired. The value must be at least 30 seconds, and no more than 172800 seconds (48 hours).
 - `open_violation_on_expiration` - (Optional) Whether to create a new incident to capture that the signal expired.
 - `close_violations_on_expiration` - (Optional) Whether to close all open incidents when the signal expires.
@@ -94,7 +94,7 @@ The following arguments are supported:
 - `aggregation_delay` - (Optional) How long we wait for data that belongs in each aggregation window. Depending on your data, a longer delay may increase accuracy but delay notifications. Use `aggregation_delay` with the `event_flow` and `cadence` methods. The maximum delay is 1200 seconds (20 minutes) when using `event_flow` and 3600 seconds (60 minutes) when using `cadence`. In both cases, the minimum delay is 0 seconds and the default is 120 seconds. `aggregation_delay` cannot be set with `nrql.evaluation_offset`.
 - `aggregation_timer` - (Optional) How long we wait after each data point arrives to make sure we've processed the whole batch. Use `aggregation_timer` with the `event_timer` method. The timer value can range from 0 seconds to 1200 seconds (20 minutes); the default is 60 seconds. `aggregation_timer` cannot be set with `nrql.evaluation_offset`.
 - `evaluation_delay` - (Optional) How long we wait until the signal starts evaluating. The maximum delay is 7200 seconds (120 minutes).
-- `slide_by` - (Optional) Gathers data in overlapping time windows to smooth the chart line, making it easier to spot trends. The `slide_by` value is specified in seconds and must be smaller than and a factor of the `aggregation_window`. 
+- `slide_by` - (Optional) Gathers data in overlapping time windows to smooth the chart line, making it easier to spot trends. The `slide_by` value is specified in seconds and must be smaller than and a factor of the `aggregation_window`.
 
 ## NRQL
 
