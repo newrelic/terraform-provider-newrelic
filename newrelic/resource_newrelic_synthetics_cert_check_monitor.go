@@ -62,7 +62,7 @@ func resourceNewRelicSyntheticsCertCheckMonitor() *schema.Resource {
 			},
 			"status": {
 				Type:         schema.TypeString,
-				Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED).",
+				Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED). Note: The 'MUTED' status will be deprecated in a future release and is recommended to refrain from using it.",
 				Required:     true,
 				ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorStatuses(), false),
 			},
