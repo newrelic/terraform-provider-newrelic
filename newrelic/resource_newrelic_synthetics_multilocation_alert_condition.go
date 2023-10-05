@@ -83,7 +83,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertCondition() *schema.Resource {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validation.IntBetween(0, 2592000)
-				Description:  "The maximum number of seconds an incident can remain open before being closed by the system.  Must be between 0 and 2,592,000",
+				Description:  "The maximum number of seconds an incident can remain open before being closed by the system.  Must be between 0 and 2592000",
 			},
 			"entity_guid": {
 				Type:        schema.TypeString,
