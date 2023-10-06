@@ -172,15 +172,17 @@ func resourceNewRelicLogParsingRuleUpdate(ctx context.Context, d *schema.Resourc
 	client := meta.(*ProviderConfig).NewClient
 	accountID := selectAccountID(meta.(*ProviderConfig), d)
 	if e, ok := d.GetOk("name"); ok {
-		rule, err := getLogParsingRuleByName(ctx, client, accountID, e.(string))
-		if (rule != nil && err != nil) || (rule == nil && err != nil) {
-			return diag.FromErr(err)
+		if o, n := d.GetChange("name"); o != n {
+			rule, err := getLogParsingRuleByName(ctx, client, accountID, e.(string))
+			if (rule != nil && err != nil) || (rule == nil && err != nil) {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
 	updateInput := expandLogParsingRuleUpdateInput(d)
 
-	log.Printf("[INFO] Updating New Relic logging parsing rule %s", d.Id())
+	log.Printf("[INFO] Updating New Relic log parsing rule %s", d.Id())
 
 	ruleID := d.Id()
 
@@ -231,12 +233,12 @@ func expandLogParsingRuleUpdateInput(d *schema.ResourceData) logconfigurations.L
 	return updateInp
 }
 
-// Delete the logging parsing rule
+// Delete the log parsing rule
 func resourceNewRelicLogParsingRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	log.Printf("[INFO] Deleting New Relic logging parsing rule id %s", d.Id())
+	log.Printf("[INFO] Deleting New Relic log parsing rule id %s", d.Id())
 
 	accountID := selectAccountID(meta.(*ProviderConfig), d)
 	ruleID := d.Id()
