@@ -69,7 +69,9 @@ See additional [examples](#additional-examples).
 The following are the common arguments supported for `SIMPLE` and `BROWSER` monitors:
 
 * `account_id`- (Optional) The account in which the Synthetics monitor will be created.
-* `status` - (Required) The run state of the monitor.
+* `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
+
+-> **NOTE:** The `MUTED` status will be deprecated in a future release, and it is recommended to refrain from using it.
 * `name` - (Required) The human-readable identifier for the monitor.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `uri` - (Required) The URI the monitor runs against.
