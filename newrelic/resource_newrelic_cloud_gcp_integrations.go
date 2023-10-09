@@ -30,6 +30,7 @@ func resourceNewrelicCloudGcpIntegrations() *schema.Resource {
 				Type:        schema.TypeInt,
 				Description: "Id of the linked gcp account in New Relic",
 				Required:    true,
+				ForceNew:    true,
 			},
 			"alloy_db": {
 				Type:        schema.TypeList,

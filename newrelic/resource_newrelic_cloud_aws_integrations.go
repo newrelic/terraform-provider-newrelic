@@ -29,6 +29,7 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 				Description: "The ID of the linked AWS account in New Relic",
+				ForceNew:    true,
 			},
 			"billing": {
 				Type:        schema.TypeList,

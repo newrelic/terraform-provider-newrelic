@@ -30,6 +30,7 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 				Description: "The ID of the linked Azure account in New Relic",
+				ForceNew:    true,
 			},
 
 			// List of Integrations with Azure
