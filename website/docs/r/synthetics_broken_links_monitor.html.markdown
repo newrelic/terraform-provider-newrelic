@@ -39,7 +39,7 @@ The following are the common arguments supported for `BROKEN LINKS` monitor:
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`). 
 
--> **NOTE:** The `MUTED` status will be deprecated in a future release and is recommended to refrain from using it.
+-> **NOTE:** The `MUTED` status will be deprecated in a future release, and it is recommended to refrain from using it.
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details
 
 ### Nested `tag` blocks
