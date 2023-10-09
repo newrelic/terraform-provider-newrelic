@@ -44,6 +44,45 @@ func TestAccNewRelicLogParsingRule_Basic(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicLogParsingRule_UpdateNameAndMore tests the create and update operations of log parsing rules
+// by performing two updates; the first with the name changed and the second, with the name kept the
+// same, and changes made only to all other arguments of the resource.
+func TestAccNewRelicLogParsingRule_UpdateNameAndMore(t *testing.T) {
+	resourceName := "newrelic_log_parsing_rule.foo"
+	rName := generateNameForIntegrationTestResource()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicLogParsingRuleDestroy,
+		Steps: []resource.TestStep{
+			//create
+			{
+				Config: testAccNewRelicLogParsingRuleConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicLogParsingRuleExists(resourceName)),
+			},
+			//update
+			{
+				Config: testAccNewRelicLogParsingRuleUpdate(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicLogParsingRuleExists(resourceName)),
+			},
+			//update attributes but not the name
+			{
+				Config: testAccNewRelicLogParsingRuleUpdateArgumentsOtherThanName(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicLogParsingRuleExists(resourceName)),
+			},
+			//import
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      resourceName,
+			},
+		},
+	})
+}
+
 func TestAccNewRelicLogParsingRule_Unique_Name_Update(t *testing.T) {
 	resourceName := "newrelic_log_parsing_rule.foo"
 	expectedErrorMsg := regexp.MustCompile("name is already in use by another rule")
@@ -329,6 +368,20 @@ resource "newrelic_log_parsing_rule" "foo"{
 	grok        = "sampleattribute='%%%%{NUMBER:test:int}'"
 	lucene      = "logtype:linux_messages"
 	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"                                                
+}
+`, testAccountID, name, testAccExpectedApplicationName)
+}
+
+func testAccNewRelicLogParsingRuleUpdateArgumentsOtherThanName(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_log_parsing_rule" "foo"{
+	account_id  = %[1]d
+	name        = "%[2]s_update"
+	attribute   = "%[3]s"
+	enabled     = false
+	grok        = "customattribute='%%%%{BASE10NUM:test:float}"
+	lucene      = "responseCode:500 AND requestMethod:GET"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'nginx_error'"                                                
 }
 `, testAccountID, name, testAccExpectedApplicationName)
 }
