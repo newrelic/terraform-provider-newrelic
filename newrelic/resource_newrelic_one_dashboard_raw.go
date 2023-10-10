@@ -220,7 +220,6 @@ func resourceNewRelicOneDashboardRawRead(ctx context.Context, d *schema.Resource
 
 		return diag.FromErr(err)
 	}
-
 	return diag.FromErr(flattenDashboardRawEntity(dashboard, d))
 }
 
