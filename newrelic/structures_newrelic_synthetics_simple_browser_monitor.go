@@ -9,10 +9,11 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{
-		Name:   inputBase.Name,
-		Period: inputBase.Period,
-		Status: inputBase.Status,
-		Tags:   inputBase.Tags,
+		Name:            inputBase.Name,
+		Period:          inputBase.Period,
+		Status:          inputBase.Status,
+		Tags:            inputBase.Tags,
+		AdvancedOptions: synthetics.SyntheticsSimpleBrowserMonitorAdvancedOptionsInput{},
 	}
 
 	if v, ok := d.GetOk("custom_header"); ok {
@@ -65,6 +66,21 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 		}
 	}
 
+	do, doOk := d.GetOk("device_orientation")
+	dt, dtOk := d.GetOk("device_type")
+
+	if doOk || dtOk {
+		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
+
+		if doOk {
+			simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
+		}
+
+		if dtOk {
+			simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+		}
+	}
+
 	return simpleBrowserMonitorInput
 }
 
@@ -72,10 +88,11 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{
-		Name:   inputBase.Name,
-		Period: inputBase.Period,
-		Status: inputBase.Status,
-		Tags:   inputBase.Tags,
+		Name:            inputBase.Name,
+		Period:          inputBase.Period,
+		Status:          inputBase.Status,
+		Tags:            inputBase.Tags,
+		AdvancedOptions: synthetics.SyntheticsSimpleBrowserMonitorAdvancedOptionsInput{},
 	}
 
 	if v, ok := d.GetOk("custom_header"); ok {
@@ -125,6 +142,21 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 
 		if runtimeTypeVersionOk {
 			simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
+		}
+	}
+
+	do, doOk := d.GetOk("device_orientation")
+	dt, dtOk := d.GetOk("device_type")
+
+	if doOk || dtOk {
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
+
+		if doOk {
+			simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
+		}
+
+		if dtOk {
+			simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
 		}
 	}
 

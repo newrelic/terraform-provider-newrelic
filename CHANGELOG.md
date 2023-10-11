@@ -1,3 +1,56 @@
+<a name="v3.27.2"></a>
+## [v3.27.2] - 2023-10-09
+### Bug Fixes
+- **cloud_link_account:** addition of ForceNew to attributes other than name ([#2472](https://github.com/newrelic/terraform-provider-newrelic/issues/2472))
+- **docs:** Correct upper limit time for aggregation_window ([#2479](https://github.com/newrelic/terraform-provider-newrelic/issues/2479))
+- **log_parsing:** fix to the update method to discard checking for existing rules with the name ([#2483](https://github.com/newrelic/terraform-provider-newrelic/issues/2483))
+- **tests:** change to expected error message in provider region integration test ([#2473](https://github.com/newrelic/terraform-provider-newrelic/issues/2473))
+
+### Documentation Updates
+- refactor more verbiage
+- refactor verbiage of the notes added
+- added note on duration and time function of nrql alert condition resource
+- **synthetics:** update MUTED status deprecation notice to the synthetic monitors
+- **synthetics:** update typo in private locations data source ([#2471](https://github.com/newrelic/terraform-provider-newrelic/issues/2471))
+
+<a name="v3.27.1"></a>
+## [v3.27.1] - 2023-09-12
+### Bug Fixes
+- Remove setting default empty values for device emulation ([#2465](https://github.com/newrelic/terraform-provider-newrelic/issues/2465))
+
+<a name="v3.27.0"></a>
+## [v3.27.0] - 2023-09-11
+### Bug Fixes
+- **aws_cloud_integrations:** condition change to fix a bug with disabling selected integrations ([#2459](https://github.com/newrelic/terraform-provider-newrelic/issues/2459))
+- **private_location:** addition of key to attributes exported by the data source ([#2453](https://github.com/newrelic/terraform-provider-newrelic/issues/2453))
+- **private_location:** addition of key to attributes exported by the data source ([#2446](https://github.com/newrelic/terraform-provider-newrelic/issues/2446))
+- **tests:** Ignore device emulation attributes in Simple Monitor test ([#2450](https://github.com/newrelic/terraform-provider-newrelic/issues/2450))
+
+### Documentation Updates
+- fix typo ([#2448](https://github.com/newrelic/terraform-provider-newrelic/issues/2448))
+- **synthetics:** Add device emulation fields reference ([#2458](https://github.com/newrelic/terraform-provider-newrelic/issues/2458))
+
+### Features
+- **synthetics:** Enable device emulation for simple browser synthetics ([#2447](https://github.com/newrelic/terraform-provider-newrelic/issues/2447))
+
+<a name="v3.26.1"></a>
+## [v3.26.1] - 2023-08-14
+### Bug Fixes
+- **workflows:** ignore notification trigger order when comparing state
+
+### Documentation Updates
+- add documentation for the cdf functionality in Service Levels
+
+<a name="v3.26.0"></a>
+## [v3.26.0] - 2023-07-26
+### Bug Fixes
+- link in PR template ([#2431](https://github.com/newrelic/terraform-provider-newrelic/issues/2431))
+- **account_management:** refactored timeout to discard limit on create ([#2423](https://github.com/newrelic/terraform-provider-newrelic/issues/2423))
+- **cloud_aws_link_account:** refactored timeout to discard limit on create ([#2429](https://github.com/newrelic/terraform-provider-newrelic/issues/2429))
+
+### Features
+- **newrelic_entity:** fetch entity in different account ([#2432](https://github.com/newrelic/terraform-provider-newrelic/issues/2432))
+
 <a name="v3.25.2"></a>
 ## [v3.25.2] - 2023-07-12
 ### Bug Fixes
@@ -1236,10 +1289,10 @@ new synthetics resources use GraphQL API schema
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="2.11.1"></a>
-## [2.11.1] - 2020-10-07
 <a name="v2.11.1"></a>
 ## [v2.11.1] - 2020-10-07
+<a name="2.11.1"></a>
+## [2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -1906,7 +1959,12 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.2...HEAD
+[v3.27.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.1...v3.27.2
+[v3.27.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.0...v3.27.1
+[v3.27.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.26.1...v3.27.0
+[v3.26.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.26.0...v3.26.1
+[v3.26.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.2...v3.26.0
 [v3.25.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.1...v3.25.2
 [v3.25.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.25.0...v3.25.1
 [v3.25.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.24.2...v3.25.0
@@ -2037,9 +2095,9 @@ new synthetics resources use GraphQL API schema
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2

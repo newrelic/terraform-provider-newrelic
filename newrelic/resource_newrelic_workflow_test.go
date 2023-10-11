@@ -365,6 +365,33 @@ func TestNewRelicWorkflow_BooleanFlags_DisableOnCreation(t *testing.T) {
 	})
 }
 
+func TestNewRelicWorkflow_NotificationTriggerShouldIgnoreOrder(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create workflow with non-standard trigger order
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, rName, `["CLOSED", "ACTIVATED"]`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Update trigger order
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, rName, `["ACKNOWLEDGED", "ACTIVATED", "CLOSED"]`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func testAccNewRelicWorkflowConfigurationMinimal(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {

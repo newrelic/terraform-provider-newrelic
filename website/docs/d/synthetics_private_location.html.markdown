@@ -20,7 +20,7 @@ data "newrelic_synthetics_private_location" "example" {
 
 resource "newrelic_synthetics_monitor" "foo" {
   // Reference the private location data source in the monitor resource
-  locations_private = [data.newrelic_synthetics_monitor_location.example.id]
+  locations_private = [data.newrelic_synthetics_private_location.example.id]
 }
 ```
 
@@ -43,3 +43,9 @@ The following arguments are supported:
 
 * `account_id` - (Optional) The New Relic account ID of the associated private location. If left empty will default to account ID specified in provider level configuration.
 * `name` - (Required) The name of the Synthetics monitor private location.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `key` - The key of the private location.

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -30,26 +29,26 @@ func resourceNewRelicCloudAwsAccountLinkAccount() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "The New Relic account ID where you want to link the AWS account.",
+				ForceNew:    true,
 			},
 			"arn": {
 				Type:        schema.TypeString,
 				Description: "The AWS role ARN.",
 				Required:    true,
+				ForceNew:    true,
 			},
 			"metric_collection_mode": {
 				Type:         schema.TypeString,
 				Description:  "How metrics will be collected. Defaults to `PULL` if empty.",
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"PULL", "PUSH"}, false),
+				ForceNew:     true,
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Description: "The name of the linked account.",
 				Required:    true,
 			},
-		},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Second),
 		},
 	}
 }

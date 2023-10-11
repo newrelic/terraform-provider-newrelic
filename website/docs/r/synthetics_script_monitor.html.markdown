@@ -65,7 +65,9 @@ See additional [examples](#additional-examples).
 The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BROWSER` monitors:
 
 * `account_id`- (Optional) The account in which the Synthetics monitor will be created.
-* `status` - (Required) The run state of the monitor: `ENABLED` or `DISABLED`
+* `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
+
+-> **NOTE:** The `MUTED` status will be deprecated in a future release, and it is recommended to refrain from using it.
 * `name` - (Required) The name for the monitor.
 * `type` - (Required) The plaintext representing the monitor script. Valid values are SCRIPT_BROWSER or SCRIPT_API
 * `locations_public` - (Optional) The location the monitor will run from. Check out [this page](https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/) for a list of valid public locations. The `AWS_` prefix is not needed, as the provider uses NerdGraph. **At least one of either** `locations_public` **or** `location_private` **is required**.
@@ -79,7 +81,9 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 
 The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
 
-* `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution
+* `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution.
+* `device_orientation` - (Optional) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`.
+* `device_type` - (Optional) Device emulation type field. Valid values are `MOBILE` and `TABLET`.
 
 #### Deprecated runtime
 

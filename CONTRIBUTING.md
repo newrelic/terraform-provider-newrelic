@@ -151,7 +151,7 @@ Client][client_go] and the only changes you need to make are in the provider
 code.  In that case, simply building the provider binary with the correct name
 and running the plan will get you there. The following assumes working on MacOS.
 
-To compile a new version of the compiler, run the following command in the root
+To compile a new version of the provider, run the following command in the root
 directory of the repository. You will need to run this command every time you
 make a code change.
 
@@ -161,7 +161,7 @@ make compile
 
 To test your locally compiled plugin you can add your hcl files in the `testing`
 directory. The `testing/dev.tfrc` file contains the local development configuration.
-Before running any Terraform commands don't forgot to change the authentication
+Before running any Terraform commands don't forget to change the authentication
 credentials in `testing/newrelic.tf` or use environment variables as mentioned above.
 Additionally run the following command, or add it to your shell profile: `export TF_CLI_CONFIG_FILE=dev.tfrc`
 

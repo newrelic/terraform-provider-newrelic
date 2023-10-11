@@ -114,6 +114,38 @@ func TestAccNewRelicEntityData_EntityAbsentInSubAccount(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicEntityData_RetrieveSubAccountEntity(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicEntityDataConfig_RetrieveSubAccountEntity("Dummy App Two", 3957524),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", "Dummy App Two", 3957524),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicEntityData_RetrieveAbsentSubAccountEntity(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicEntityDataConfig_RetrieveSubAccountEntity("Dummy App Two", 3814156),
+				ExpectError: regexp.MustCompile(`no entities found`),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicEntityDataExists(t *testing.T, n string, appName string, accountID int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r := s.RootModule().Resources[n]
@@ -228,4 +260,18 @@ func testAccNewRelicEntityDataConfig_EntityInSubAccount(name string, subAccountI
 				domain = "APM"
 			}
 `, subAccountID, name)
+}
+
+// testAccNewRelicEntityDataConfig_RetrieveSubAccountEntity uses the account_id attribute in the configuration
+// to override the account_id to filter the retrieved entities by, when multiple entities are returned
+// owing to the existence of entities with the same name in a parent account and its subaccounts.
+func testAccNewRelicEntityDataConfig_RetrieveSubAccountEntity(name string, subAccountID int) string {
+	return fmt.Sprintf(`
+			data "newrelic_entity" "entity" {
+				name = "%s"
+				account_id = "%d"
+				type = "APPLICATION"
+				domain = "APM"
+			}
+`, name, subAccountID)
 }

@@ -38,6 +38,8 @@ The following arguments are supported:
 * `metric_collection_mode` - (Optional) How metrics will be collected. Use `PUSH` for a metric stream or `PULL` to integrate with individual services.
 * `name` - (Required) - The linked account name
 
+-> **WARNING:** Starting with [v3.27.2](https://registry.terraform.io/providers/newrelic/newrelic/3.27.2) of the New Relic Terraform Provider, updating any of the aforementioned attributes (except `name`) of a `newrelic_cloud_aws_link_account` resource that has been applied would **force a replacement** of the resource (destruction of the resource, followed by the creation of a new resource). Please carefully review the output of `terraform plan`, which would clearly indicate a replacement of this resource, before performing a `terraform apply`.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

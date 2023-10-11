@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
 
@@ -19,7 +19,7 @@ func dataSourceNewRelicEntity() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name of the entity in New Relic One.  The first entity matching this name for the given search parameters will be returned.",
+				Description: "The name of the entity in New Relic One. The first entity matching this name for the given search parameters will be returned.",
 			},
 			"ignore_case": {
 				Type:        schema.TypeBool,
@@ -65,9 +65,11 @@ func dataSourceNewRelicEntity() *schema.Resource {
 				},
 			},
 			"account_id": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The New Relic account ID associated with this entity.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				Description:  "The New Relic account ID; if specified, constrains the data source to return an entity belonging to the account with this ID, of all matching entities retrieved.",
+				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"application_id": {
 				Type:        schema.TypeInt,
@@ -91,6 +93,9 @@ func dataSourceNewRelicEntity() *schema.Resource {
 func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	accountID := meta.(*ProviderConfig).AccountID
+	if acc, ok := d.GetOk("account_id"); ok {
+		accountID = acc.(int)
+	}
 
 	log.Printf("[INFO] Reading New Relic entities")
 

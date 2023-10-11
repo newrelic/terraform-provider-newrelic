@@ -25,17 +25,20 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "The New Relic account ID where you want to link the Azure account.",
+				ForceNew:    true,
 			},
 			"application_id": {
 				Type:        schema.TypeString,
 				Description: "Application ID for Azure account",
 				Required:    true,
+				ForceNew:    true,
 			},
 			"client_secret": {
 				Type:        schema.TypeString,
 				Description: "Value of the client secret from Azure",
 				Required:    true,
 				Sensitive:   true,
+				ForceNew:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -46,11 +49,13 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Subscription ID for the Azure account",
 				Required:    true,
+				ForceNew:    true,
 			},
 			"tenant_id": {
 				Type:        schema.TypeString,
 				Description: "Tenant ID for the Azure account",
 				Required:    true,
+				ForceNew:    true,
 			},
 		},
 	}

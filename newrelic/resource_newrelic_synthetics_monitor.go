@@ -80,7 +80,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 			"status": {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED).",
+				Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED). Note: The 'MUTED' status will be deprecated in a future release and it is recommended to refrain from using it.",
 				ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorStatuses(), false),
 			},
 			"validation_string": {
@@ -164,6 +164,16 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 					},
 				},
 			},
+			"device_orientation": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The device orientation the user would like to represent. Valid values are LANDSCAPE, PORTRAIT, or NONE.",
+			},
+			"device_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
+			},
 		},
 	}
 }
@@ -227,6 +237,8 @@ func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreat
 	_ = d.Set("uri", res.Monitor.Uri)
 	_ = d.Set("locations_public", res.Monitor.Locations.Public)
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
+	_ = d.Set("device_orientation", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceOrientation)
+	_ = d.Set("device_type", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceType)
 
 	if res.Monitor.Runtime.RuntimeType != "" {
 		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
@@ -397,6 +409,8 @@ func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowse
 	_ = d.Set("enable_screenshot_on_failure_and_script", res.Monitor.AdvancedOptions.EnableScreenshotOnFailureAndScript)
 	_ = d.Set("locations_public", res.Monitor.Locations.Public)
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
+	_ = d.Set("device_orientation", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceOrientation)
+	_ = d.Set("device_type", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceType)
 
 	if res.Monitor.Runtime.RuntimeType != "" {
 		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
