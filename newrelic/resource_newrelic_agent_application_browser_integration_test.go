@@ -3,6 +3,7 @@
 package newrelic
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"testing"
@@ -25,7 +26,7 @@ func TestAccNewRelicAgentApplicationBrowser(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		PreCheck:     func() { testAccBrowserApplicationsCleanup(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
 		Steps: []resource.TestStep{
@@ -38,6 +39,8 @@ func TestAccNewRelicAgentApplicationBrowser(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAgentApplicationBrowserExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "js_config"),
+					testAccCheckJsConfigNestedAttributes(resourceName, "js_config", []string{"init", "info", "loader_config"}),
 				),
 			},
 			// Test: Import
@@ -59,7 +62,7 @@ func TestAccNewRelicAgentApplicationBrowser_InvalidLoaderType(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		PreCheck:     func() { testAccBrowserApplicationsCleanup(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
 		Steps: []resource.TestStep{
@@ -97,6 +100,35 @@ func testAccCheckNewRelicAgentApplicationBrowserExists(n string) resource.TestCh
 		if result != nil {
 			if string((*result).GetGUID()) != rs.Primary.ID {
 				return fmt.Errorf("the browser agent application was not found %v - %v", (*result).GetGUID(), rs.Primary.ID)
+			}
+		}
+
+		return nil
+	}
+}
+
+// testAccCheckJsConfigNestedAttributes converts 'js_config' into a JSON and inspects the JSON
+// to find the required nested attributes; i.e, "init", "info" and "loader_config".
+func testAccCheckJsConfigNestedAttributes(resourceName, key string, jsConfigNestedAttributesKeys []string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		r, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+
+		jsConfig, ok := r.Primary.Attributes[key]
+		if !ok {
+			return fmt.Errorf("attribute '%s' not found in resource %s", key, resourceName)
+		}
+
+		var jsConfigAsJSON map[string]interface{}
+		if err := json.Unmarshal([]byte(jsConfig), &jsConfigAsJSON); err != nil {
+			return err
+		}
+
+		for _, jsConfigKey := range jsConfigNestedAttributesKeys {
+			if _, ok := jsConfigAsJSON[jsConfigKey]; !ok {
+				return fmt.Errorf("attribute '%s' not found in the JSON content: %s", jsConfigKey, jsConfig)
 			}
 		}
 

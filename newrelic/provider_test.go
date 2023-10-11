@@ -1,7 +1,6 @@
 //go:build integration || unit
 // +build integration unit
 
-//
 // Test helpers
 //
 
@@ -17,10 +16,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/agentapplications"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/apm"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/config"
@@ -47,6 +48,7 @@ var (
 		"azure": false,
 		"gcp":   false,
 	}
+	testAccBrowserApplicationCleanupComplete = false
 )
 
 func init() {
@@ -282,6 +284,59 @@ func testAccCloudLinkedAccountsCleanup(t *testing.T, provider string) {
 	}
 	t.Logf("testacc cleanup of '%s' cloud accounts linked to the subaccount complete", provider)
 	testCloudAccCleanupComplete[provider] = true
+}
+
+func testAccBrowserApplicationsCleanup(t *testing.T) {
+	testAccPreCheckEnvVars(t)
+
+	if testAccBrowserApplicationCleanupComplete {
+		return
+	}
+	testBrowserApplicationEntitiesCleanedUpCount := 0
+
+	client := entities.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
+
+	browserApplicationClient := agentapplications.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
+
+	t.Logf("***** fetching test browser application entities created by Terraform ******")
+
+	testBrowserApplicationEntities, err := client.GetEntitySearch(entities.EntitySearchOptions{}, "",
+		entities.EntitySearchQueryBuilder{
+			Domain: "BROWSER",
+			Type:   "APPLICATION",
+		},
+		[]entities.EntitySearchSortCriteria{},
+	)
+
+	if err != nil {
+		t.Logf("error fetching browser application entities linked to the account: %s", err)
+	}
+
+	if testBrowserApplicationEntities == nil {
+		t.Logf("***** no browser application entities linked to the subaccount found to be deleted *****")
+	} else {
+		for _, a := range testBrowserApplicationEntities.Results.Entities {
+			// Check if the entity is a Browser Application
+			if a.GetType() == "APPLICATION" && a.GetDomain() == "BROWSER" {
+				// Check if the name of the BrowserApplicationEntity starts with "tf-test-" or "nr-test-"
+				// If yes, these may be deleted via a NerdGraph mutation as these were created by a relevant Terraform acceptance test
+				if strings.Contains(a.GetName(), "tf-test-") || strings.Contains(a.GetName(), "nr-test-") {
+					t.Logf("***** deleting browser application entity (%d) '%s' *****", testBrowserApplicationEntitiesCleanedUpCount+1, a.GetName())
+					_, err := browserApplicationClient.AgentApplicationDelete(common.EntityGUID(a.GetGUID()))
+					if err != nil {
+						t.Logf("error deleting the browser application entity with GUID %s : %s", a.GetGUID(), err)
+					}
+					testBrowserApplicationEntitiesCleanedUpCount += 1
+				}
+			}
+		}
+		t.Logf("testacc cleanup of '%d' browser application entities created by terraform acceptance tests complete", testBrowserApplicationEntitiesCleanedUpCount)
+	}
+	testAccBrowserApplicationCleanupComplete = true
 }
 
 // Deleting the data partitions as they start with "Log_Test_"
