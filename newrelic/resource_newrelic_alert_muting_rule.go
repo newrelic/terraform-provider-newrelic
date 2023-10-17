@@ -3,16 +3,14 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"log"
 	"regexp"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"log"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
 
@@ -204,31 +202,8 @@ func resourceNewRelicAlertMutingRuleCreate(ctx context.Context, d *schema.Resour
 
 	created, err := client.Alerts.CreateMutingRuleWithContext(ctx, accountID, createInput)
 
-	var diags diag.Diagnostics
-
-	if graphQLError, ok := err.(*alerts.GraphQLErrorResponse); ok {
-		for _, e := range graphQLError.Errors {
-			var message string = e.Message
-			var errorClass string = e.Extensions.ErrorClass
-			var validationErrors = e.Extensions.ValidationErrors
-
-			if len(validationErrors) == 0 {
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  message + ": " + errorClass,
-				})
-			} else {
-				for _, validationError := range validationErrors {
-					diags = append(diags, diag.Diagnostic{
-						Severity: diag.Error,
-						Summary:  message + ": " + errorClass,
-						Detail:   validationError.Name + ": " + validationError.Reason,
-					})
-				}
-			}
-		}
-
-		return diags
+	if err != nil {
+		return handleMutingRuleCreateUpdateError(err)
 	}
 
 	d.SetId(serializeIDs([]int{accountID, created.ID}))
@@ -283,31 +258,8 @@ func resourceNewRelicAlertMutingRuleUpdate(ctx context.Context, d *schema.Resour
 
 	_, err = client.Alerts.UpdateMutingRuleWithContext(ctx, accountID, mutingRuleID, updateInput)
 
-	var diags diag.Diagnostics
-
-	if graphQLError, ok := err.(*alerts.GraphQLErrorResponse); ok {
-		for _, e := range graphQLError.Errors {
-			var message string = e.Message
-			var errorClass string = e.Extensions.ErrorClass
-			var validationErrors = e.Extensions.ValidationErrors
-
-			if len(validationErrors) == 0 {
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  message + ": " + errorClass,
-				})
-			} else {
-				for _, validationError := range validationErrors {
-					diags = append(diags, diag.Diagnostic{
-						Severity: diag.Error,
-						Summary:  message + ": " + errorClass,
-						Detail:   validationError.Name + ": " + validationError.Reason,
-					})
-				}
-			}
-		}
-
-		return diags
+	if err != nil {
+		return handleMutingRuleCreateUpdateError(err)
 	}
 
 	return resourceNewRelicAlertMutingRuleRead(ctx, d, meta)

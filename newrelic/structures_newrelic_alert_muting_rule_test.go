@@ -4,12 +4,14 @@
 package newrelic
 
 import (
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
 
@@ -349,4 +351,40 @@ func TestExpandScheduleUpdate_EmptyWeeklyRepeat(t *testing.T) {
 
 	require.Equal(t, expected, result)
 
+}
+
+func TestCreate_ErrorHandlingForGraphQLErrors(t *testing.T) {
+	client := alerts.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
+
+	mutingRuleCreateInput := alerts.MutingRuleCreateInput{
+		Name:        "Some Muting Rule",
+		Description: "Some Description",
+		Enabled:     true,
+		Condition: alerts.MutingRuleConditionGroup{
+			Conditions: []alerts.MutingRuleCondition{
+				{
+					Attribute: "conditionName",
+					Operator:  "INVALID_OPERATOR",
+					Values:    []string{"Some Value"},
+				},
+			},
+			Operator: "AND",
+		},
+	}
+
+	// in the below function, the first return value is not needed as the muting rule would
+	// fail to be created since an invalid operator is specified in one of the conditions
+	_, err := client.CreateMutingRule(testAccountID, mutingRuleCreateInput)
+
+	if err != nil {
+		diags := handleMutingRuleCreateUpdateError(err)
+		require.Equal(t, diags.HasError(), true)
+	}
+}
+
+func TestCreate_ErrorHandlingForNonGraphQLErrors(t *testing.T) {
+	diags := handleMutingRuleCreateUpdateError(errors.New("This is a non-GraphQL custom error"))
+	require.Equal(t, diags.HasError(), true)
 }

@@ -1,10 +1,12 @@
 package newrelic
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
 )
@@ -385,4 +387,38 @@ func flattenWeeklyRepeatDays(daysOfWeek []alerts.DayOfWeek) []string {
 	}
 
 	return out
+}
+
+func handleMutingRuleCreateUpdateError(err error) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	var graphQLError *alerts.GraphQLErrorResponse
+	if errors.As(err, &graphQLError) {
+		for _, e := range graphQLError.Errors {
+			var message string = e.Message
+			var errorClass string = e.Extensions.ErrorClass
+			var validationErrors = e.Extensions.ValidationErrors
+
+			if len(validationErrors) == 0 {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  message + ": " + errorClass,
+				})
+			} else {
+				for _, validationError := range validationErrors {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  message + ": " + errorClass,
+						Detail:   validationError.Name + ": " + validationError.Reason,
+					})
+				}
+			}
+		}
+	} else {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  err.Error(),
+		})
+	}
+	return diags
 }
