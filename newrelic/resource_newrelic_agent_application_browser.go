@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -60,6 +61,11 @@ func resourceNewRelicBrowserApplication() *schema.Resource {
 				Computed:    true,
 				Description: "The account ID.",
 			},
+			"js_config": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "JavaScript configuration of the browser application encoded into a string.",
+			},
 		},
 	}
 }
@@ -95,7 +101,7 @@ func resourceNewRelicBrowserApplicationCreate(ctx context.Context, d *schema.Res
 	_ = d.Set("loader_type", string(resp.Settings.LoaderType))
 	_ = d.Set("guid", string(resp.GUID))
 
-	return nil
+	return resourceNewRelicBrowserApplicationRead(ctx, d, meta)
 }
 
 func resourceNewRelicBrowserApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -125,6 +131,16 @@ func resourceNewRelicBrowserApplicationRead(ctx context.Context, d *schema.Resou
 		_ = d.Set("loader_type", string(entity.BrowserSettings.BrowserMonitoring.Loader))
 		_ = d.Set("guid", string(entity.GUID))
 		_ = d.Set("account_id", entity.AccountID)
+
+		// The following block of code encodes the JavaScript configuration of the browser application into a JSON,
+		// that is then exported as a string, which can be accessed from the Terraform Configuration using jsondecode().
+		jsonOutput, err := json.Marshal(entity.BrowserProperties.JsConfig)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("js_config", string(jsonOutput)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return nil
@@ -164,7 +180,7 @@ func resourceNewRelicBrowserApplicationUpdate(ctx context.Context, d *schema.Res
 	_ = d.Set("loader_type", string(resp.BrowserSettings.BrowserMonitoring.Loader))
 	_ = d.Set("guid", string(resp.GUID))
 
-	return nil
+	return resourceNewRelicBrowserApplicationRead(ctx, d, meta)
 }
 
 func resourceNewRelicBrowserApplicationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
