@@ -1,3 +1,9 @@
+<a name="v3.27.3"></a>
+## [v3.27.3] - 2023-10-17
+### Bug Fixes
+- **browser_application:** addition of browser properties ([#2421](https://github.com/newrelic/terraform-provider-newrelic/issues/2421))
+- **muting_rule:** error handling update to throw non-GraphQL errors too ([#2487](https://github.com/newrelic/terraform-provider-newrelic/issues/2487))
+
 <a name="v3.27.2"></a>
 ## [v3.27.2] - 2023-10-09
 ### Bug Fixes
@@ -1959,7 +1965,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.3...HEAD
+[v3.27.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.2...v3.27.3
 [v3.27.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.1...v3.27.2
 [v3.27.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.0...v3.27.1
 [v3.27.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.26.1...v3.27.0
