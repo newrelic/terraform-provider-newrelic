@@ -34,7 +34,7 @@ resource "newrelic_synthetics_multilocation_alert_condition" "example" {
   name                         = "Example condition"
   runbook_url                  = "https://example.com"
   enabled                      = true
-  violation_time_limit_seconds = "3600"
+  violation_time_limit_seconds = 3600
 
   entities = [
     newrelic_synthetics_monitor.monitor.id
@@ -57,14 +57,14 @@ The following arguments are supported:
   * `policy_id` - (Required) The ID of the policy where this condition will be used.
   * `runbook_url` - (Optional) Runbook URL to display in notifications.
   * `enabled` - (Optional) Set whether to enable the alert condition.  Defaults to true.
-  * `violation_time_limit_seconds` - (Required) The maximum number of seconds a violation can remain open before being closed by the system. Must be one of: 0, 3600, 7200, 14400, 28800, 43200, 86400.
+  * `violation_time_limit_seconds` - (Optional) The maximum number of seconds a violation can remain open before being closed by the system. The value must be between 300 seconds (5 minutes) to 2592000 seconds (30 days), both inclusive. Defaults to 259200 seconds (3 days) if this argument is not specified in the configuration, in accordance with the characteristics of this field in NerdGraph, as specified in the [docs](https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/advanced-alerts/rest-api-alerts/alerts-conditions-api-field-names/#violation_time_limit_seconds).
   * `entities` - (Required) The Monitor GUID's of the Synthetics monitors to alert on.
   * `critical` - (Required) A condition term with the priority set to critical.
   * `warning` - (Optional) A condition term with the priority set to warning.
 
-```
-Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
-```
+
+-> **WARNING:** This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
+
 
 ## Attributes Reference
 
@@ -120,7 +120,7 @@ resource "newrelic_synthetics_multilocation_alert_condition" "foo" {
   name                         = "foo condition"
   runbook_url                  = "https://example.com"
   enabled                      = true
-  violation_time_limit_seconds = "3600"
+  violation_time_limit_seconds = 3600
 
   entities = [
     newrelic_synthetics_monitor.foo.id

@@ -122,3 +122,6 @@ func selectAccountID(providerConfig *ProviderConfig, d *schema.ResourceData) int
 
 	return providerConfig.AccountID
 }
+
+var violationTimeLimitSecondsDefault = 259200
+var violationTimeLimitSecondsMax = 2592000

@@ -11,7 +11,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
 
-// syntheticsMultiLocationConditionTermSchema returns the schema used for a critial or warning term priority.
+// syntheticsMultiLocationConditionTermSchema returns the schema used for a critical or warning term priority.
 func syntheticsMultiLocationConditionTermSchema() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -81,9 +81,18 @@ func resourceNewRelicSyntheticsMultiLocationAlertCondition() *schema.Resource {
 			},
 			"violation_time_limit_seconds": {
 				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validation.IntInSlice([]int{0, 3600, 7200, 14400, 28800, 43200, 86400}),
-				Description:  "The maximum number of seconds an incident can remain open before being closed by the system.  Must be one of: 0, 3600, 7200, 14400, 28800, 43200, 86400",
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(0, violationTimeLimitSecondsMax),
+				Default:      violationTimeLimitSecondsDefault,
+				Description:  "Sets a time limit, in seconds, that will automatically force-close a long-lasting incident after the time limit you select.  Must be in the range of 300 to 2592000 (inclusive)",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					oldInt, _ := strconv.Atoi(old)
+					newInt, _ := strconv.Atoi(new)
+					if oldInt == violationTimeLimitSecondsDefault && newInt == 0 {
+						return true
+					}
+					return false
+				},
 			},
 			"entity_guid": {
 				Type:        schema.TypeString,
