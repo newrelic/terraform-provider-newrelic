@@ -7,7 +7,7 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/git-chglog/git-chglog v0.15.4
 	github.com/golangci/golangci-lint v1.51.2
-	github.com/goreleaser/goreleaser v1.21.2
+	github.com/goreleaser/goreleaser v1.19.2
 	github.com/llorllale/go-gitlint v0.0.0-20210608233938-d6303cc52cc5
 	github.com/psampaz/go-mod-outdated v0.9.0
 	github.com/stretchr/testify v1.8.4
@@ -194,7 +194,7 @@ require (
 	github.com/golangci/unconvert v0.0.0-20180507085042-28b1c447d1f4 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-containerregistry v0.16.1 // indirect
-	github.com/google/go-github/v55 v55.0.0 // indirect
+	github.com/google/go-github/v53 v53.2.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/ko v0.14.1 // indirect
 	github.com/google/rpmpack v0.5.0 // indirect
