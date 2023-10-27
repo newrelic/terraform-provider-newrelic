@@ -63,7 +63,7 @@ data "newrelic_entity" "app" {
 
 ### Example: Filter By Account ID
 
-The default behaviour of this data source is to retrieve entities matching the specified parameters (`name`, `domain`, `type`) from NerdGraph with the credentials specified in the configuration of the provider (account ID and API Key), filter them by the account ID specified in the configuration of the provider, and return the first match. 
+The default behaviour of this data source is to retrieve entities matching the [specified parameters](#argument-reference) (such as `name`, `domain`, `type`) from NerdGraph with the credentials specified in the configuration of the provider (account ID and API Key), filter them by the account ID specified in the configuration of the provider, and return the first match. 
 
 This would mean, if no entity with the specified search parameters is found associated with the account ID in the configuration of the provider, i.e. `NEW_RELIC_ACCOUNT_ID`, an error is thrown, stating that no matching entity has been found.
 
@@ -77,7 +77,7 @@ data "newrelic_entity" "app" {
   type   = "APPLICATION"
 }
 ```
-However, in order to cater to scenarios in which it could be necessary to retrieve an entity belonging to a subaccount using the account ID and API Key of the parent account (for instance, when entities with identical names are present in both the parent account and subaccounts, since matching entities from subaccounts too are returned by NerdGraph), the `account_id` attribute of this data source may be availed. This ensures that the account ID in the configuration of the provider, used to filter entities returned by the API is now overridden by the `account_id` specified in the configuration; i.e., in the below example, the data source would now return an entity matching the specified `name`, belonging to the account with `account_id`.
+However, in order to cater to scenarios in which it could be necessary to retrieve an entity belonging to a subaccount using the account ID and API Key of the parent account (for instance, when entities with identical names are present in both the parent account and subaccounts, since matching entities from subaccounts too are returned by NerdGraph), the `account_id` attribute of this data source may be availed. This ensures that the account ID in the configuration of the provider, used to filter entities returned by the API is now overridden by the `account_id` specified in the configuration; i.e., in the below example, the data source would now return an entity matching the specified `name`, belonging to the account with the ID `account_id`.
 ```hcl
 # The entity returned by this configuration, unlike in 
 # the above example, would have to belong to the account_id 
@@ -166,7 +166,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Additional Examples
 
--> If the entities are not found please try again without providing the `types` field.
+-> If the entities are not found please try again without providing the `type` field.
 
 ### Query for an OTEL entity
 
