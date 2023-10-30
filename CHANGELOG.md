@@ -1,5 +1,13 @@
+<a name="v3.27.4"></a>
+## [v3.27.4] - 2023-10-27
+### Bug Fixes
+- **multilocation_alert_condition:** make violation_time_limit_seconds consistent with nrql_alert_condition
+
+### Documentation Updates
+- **newrelic_entity:** typo correction and refactoring ([#2434](https://github.com/newrelic/terraform-provider-newrelic/issues/2434))
+
 <a name="v3.27.3"></a>
-## [v3.27.3] - 2023-10-17
+## [v3.27.3] - 2023-10-19
 ### Bug Fixes
 - **browser_application:** addition of browser properties ([#2421](https://github.com/newrelic/terraform-provider-newrelic/issues/2421))
 - **muting_rule:** error handling update to throw non-GraphQL errors too ([#2487](https://github.com/newrelic/terraform-provider-newrelic/issues/2487))
@@ -1965,7 +1973,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.3...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.4...HEAD
+[v3.27.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.3...v3.27.4
 [v3.27.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.2...v3.27.3
 [v3.27.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.1...v3.27.2
 [v3.27.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.0...v3.27.1
