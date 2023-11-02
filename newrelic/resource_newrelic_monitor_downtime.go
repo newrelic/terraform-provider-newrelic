@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -88,7 +89,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				Optional:    true,
 				Description: "A list of maintenance days to be included with the created weekly Monitor Downtime.",
 				// TODO: define validation in such a way that this is used only with weekly monitor downtime
-				// TODO: (reqd. only for monthly and not allowed for the rest)
+				// TODO: (reqd. only for weekly and not allowed for the rest)
 				// TODO: in that function, include an "if" to check if it is "MONDAY", "TUESDAY", ... "SUNDAY"
 				// TODO: !! Also check if this works as a list or as a single string; NG is not clear !!
 			},
@@ -149,11 +150,36 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 	}
 }
 
+// getCommonAttributes helps obtain the attributes required, and common to all monitor downtimes
+func getCommonAttributes(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// do something here
+	return diag.FromErr(errors.New("Some dysfunctional error"))
+}
+
 func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// TODO: WRITE THE CREATE METHOD
 
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
+
+	var downtimeMode string
+	if m, ok := d.GetOk("mode"); ok {
+		downtimeMode = m.(string)
+	}
+
+	switch downtimeMode {
+	case "ONCE":
+		break
+	case "DAILY":
+		break
+	case "WEEKLY":
+		break
+	case "MONTHLY":
+		break
+	default:
+		return diag.FromErr(errors.New("invalid mode of operation: 'mode' can be 'ONCE', 'DAILY', 'WEEKLY' or 'MONTHLY'"))
+
+	}
 
 	createAccountInput := accountmanagement.AccountManagementCreateInput{
 		Name:       d.Get("name").(string),
