@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/accountmanagement"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
+	"golang.org/x/exp/maps"
 )
 
 func resourceNewRelicMonitorDowntime() *schema.Resource {
@@ -150,10 +153,153 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 	}
 }
 
-// getCommonAttributes helps obtain the attributes required, and common to all monitor downtimes
-func getCommonAttributes(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// do something here
-	return diag.FromErr(errors.New("Some dysfunctional error"))
+var requiredArgumentsList = []string{
+	"account_id",
+	"name",
+	"mode",
+	"start_time",
+	"end_time",
+	"timezone",
+}
+
+func getValuesOfMonthlyMonitorDowntimeArguments(d *schema.ResourceData) (map[string]interface{}, error) {
+	var monthlyMonitorDowntimeArgumentsMap map[string]interface{}
+
+	dailyMonitorDowntimeArgumentsMap, err := getValuesOfDailyMonitorDowntimeArguments(d)
+	if err != nil {
+		return nil, err
+	}
+
+	maps.Copy(monthlyMonitorDowntimeArgumentsMap, dailyMonitorDowntimeArgumentsMap)
+
+	frequency, ok := d.GetOk("frequency")
+	if !ok {
+		return nil, errors.New("`frequency` is a required argument with monthly monitor downtime")
+	} else {
+		frequencyStruct := frequency.(map[string]interface{})
+		var frequencyInput synthetics.SyntheticsMonitorDowntimeMonthlyFrequency
+		daysOfMonth, daysOfMonthOk := frequencyStruct["days_of_month"]
+		daysOfWeek, daysOfWeekOk := frequencyStruct["days_of_week"]
+		if !daysOfMonthOk && !daysOfWeekOk {
+			return nil, errors.New("the block `frequency` requires one of `days_of_month` or `days_of_week` to be specified")
+		} else if daysOfMonthOk && daysOfWeekOk {
+			return nil, errors.New("the block `frequency` requires one of `days_of_month` or `days_of_week` to be specified but not both")
+		} else if daysOfMonthOk && !daysOfWeekOk {
+			frequencyInput.DaysOfMonth = daysOfMonth.([]int)
+		} else {
+			daysOfWeekStruct := daysOfWeek.(map[string]interface{})
+			var daysOfWeekInput synthetics.SyntheticsDaysOfWeek
+			ordinalDayOfMonth, ordinalDayOfMonthOk := daysOfWeekStruct["ordinal_day_of_month"]
+			weekDay, weekDayOk := daysOfWeekStruct["week_day"]
+			if !ordinalDayOfMonthOk && !weekDayOk {
+				return nil, errors.New("the block `days_of_week` requires specifying both `ordinal_day_of_month` and `week_day`")
+			}
+			daysOfWeekInput.WeekDay = synthetics.SyntheticsMonitorDowntimeWeekDays(weekDay.(string))
+			daysOfWeekInput.OrdinalDayOfMonth = synthetics.SyntheticsMonitorDowntimeDayOfMonthOrdinal(ordinalDayOfMonth.(string))
+			frequencyInput.DaysOfWeek = daysOfWeekInput
+		}
+		monthlyMonitorDowntimeArgumentsMap["frequency"] = frequencyInput
+	}
+
+	return monthlyMonitorDowntimeArgumentsMap, nil
+}
+
+func getValuesOfWeeklyMonitorDowntimeArguments(d *schema.ResourceData) (map[string]interface{}, error) {
+	var weeklyMonitorDowntimeArgumentsMap map[string]interface{}
+
+	dailyMonitorDowntimeArgumentsMap, err := getValuesOfDailyMonitorDowntimeArguments(d)
+	if err != nil {
+		return nil, err
+	}
+
+	maps.Copy(weeklyMonitorDowntimeArgumentsMap, dailyMonitorDowntimeArgumentsMap)
+
+	// mandatory argument
+	maintenanceDays, ok := d.GetOk("maintenance_days")
+	if !ok {
+		return nil, errors.New("`maintenance_days` is a required argument with weekly monitor downtime")
+	} else {
+		weeklyMonitorDowntimeArgumentsMap["maintenance_days"] = maintenanceDays.([]string)
+	}
+	return weeklyMonitorDowntimeArgumentsMap, nil
+}
+
+func getValuesOfDailyMonitorDowntimeArguments(d *schema.ResourceData) (map[string]interface{}, error) {
+	var dailyMonitorDowntimeArgumentsMap map[string]interface{}
+
+	monitorGUIDs, err := getMonitorGUIDs(d)
+	if err != nil {
+		return nil, err
+	}
+
+	dailyMonitorDowntimeArgumentsMap["monitor_guids"] = monitorGUIDs
+
+	endRepeat, ok := d.GetOk("end_repeat")
+	if ok {
+		endRepeatStruct := endRepeat.(map[string]interface{})
+		var endRepeatInput synthetics.SyntheticsDateWindowEndConfig
+		onDate, onDateOk := endRepeatStruct["on_date"]
+		onRepeat, onRepeatOk := endRepeatStruct["on_repeat"]
+
+		if !onDateOk && !onRepeatOk {
+			return nil, errors.New("the block `end_repeat` requires one of `on_date` or `on_repeat` to be specified")
+		} else if onDateOk && onRepeatOk {
+			return nil, errors.New("the block `end_repeat` requires only one of `on_date` or `on_repeat` to be specified, both cannot be specified")
+		}
+
+		endRepeatInput.OnDate = onDate.(synthetics.Date)
+		endRepeatInput.OnRepeat = onRepeat.(int)
+		dailyMonitorDowntimeArgumentsMap["end_repeat"] = endRepeatInput
+
+	} else {
+		dailyMonitorDowntimeArgumentsMap["end_repeat"] = nil
+	}
+
+	return dailyMonitorDowntimeArgumentsMap, nil
+
+}
+
+func getMonitorGUIDs(d *schema.ResourceData) ([]string, error) {
+	val, ok := d.GetOk("monitor_guids")
+	if ok {
+		if val.([]string) == nil || len(val.([]string)) == 0 {
+			return nil, errors.New("invalid specification of monitor GUIDs: empty list received in the argument 'monitor_guids'")
+		} else {
+			return val.([]string), nil
+		}
+	}
+	return nil, nil
+}
+
+func getValuesOfRequiredArguments(d *schema.ResourceData) (map[string]string, error) {
+	var requiredArgumentsMap map[string]string
+	for _, requiredAttribute := range requiredArgumentsList {
+		val, ok := d.GetOk(requiredAttribute)
+		switch requiredAttribute {
+		case "account_id":
+			if ok {
+				if val.(string) == "" {
+					return nil, errors.New(fmt.Sprintf("%s has value \"\"", requiredAttribute))
+				} else {
+					requiredArgumentsMap[requiredAttribute] = val.(string)
+				}
+			} else {
+				requiredArgumentsMap[requiredAttribute] = os.Getenv("NEW_RELIC_ACCOUNT_ID")
+			}
+			break
+		default:
+			if ok {
+				if val.(string) == "" {
+					return nil, errors.New(fmt.Sprintf("%s has value \"\"", requiredAttribute))
+				} else {
+					requiredArgumentsMap[requiredAttribute] = val.(string)
+				}
+			} else {
+				return nil, errors.New(fmt.Sprintf(" value of argument %s not specified", requiredAttribute))
+			}
+		}
+	}
+	return requiredArgumentsMap, nil
 }
 
 func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -161,13 +307,12 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
-
-	var downtimeMode string
-	if m, ok := d.GetOk("mode"); ok {
-		downtimeMode = m.(string)
+	requiredArgumentsMap, err := getValuesOfRequiredArguments(d)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	switch downtimeMode {
+	switch requiredArgumentsMap["mode"] {
 	case "ONCE":
 		break
 	case "DAILY":
