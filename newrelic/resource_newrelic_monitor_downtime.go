@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -259,13 +260,13 @@ func getValuesOfDailyMonitorDowntimeArguments(d *schema.ResourceData) (map[strin
 
 }
 
-func getMonitorGUIDs(d *schema.ResourceData) ([]string, error) {
+func getMonitorGUIDs(d *schema.ResourceData) ([]synthetics.EntityGUID, error) {
 	val, ok := d.GetOk("monitor_guids")
 	if ok {
 		if val.([]string) == nil || len(val.([]string)) == 0 {
 			return nil, errors.New("invalid specification of monitor GUIDs: empty list received in the argument 'monitor_guids'")
 		} else {
-			return val.([]string), nil
+			return val.([]synthetics.EntityGUID), nil
 		}
 	}
 	return nil, nil
@@ -311,19 +312,95 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	accountIdAsInteger, err := strconv.Atoi(requiredArgumentsMap["account_id"])
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	switch requiredArgumentsMap["mode"] {
 	case "ONCE":
+		monitorGUIDs, err := getMonitorGUIDs(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		resp, err := client.Synthetics.SyntheticsCreateOnceMonitorDowntimeWithContext(
+			ctx,
+			accountIdAsInteger,
+			synthetics.NaiveDateTime(requiredArgumentsMap["end_time"]),
+			monitorGUIDs,
+			requiredArgumentsMap["name"],
+			synthetics.NaiveDateTime(requiredArgumentsMap["start_time"]),
+			requiredArgumentsMap["timezone"],
+		)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		log.Println(resp)
 		break
 	case "DAILY":
+		conditionalAttributesMap, err := getValuesOfDailyMonitorDowntimeArguments(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		resp, err := client.Synthetics.SyntheticsCreateDailyMonitorDowntimeWithContext(
+			ctx,
+			accountIdAsInteger,
+			conditionalAttributesMap["end_repeat"].(synthetics.SyntheticsDateWindowEndConfig),
+			synthetics.NaiveDateTime(requiredArgumentsMap["end_time"]),
+			conditionalAttributesMap["monitor_guids"].([]synthetics.EntityGUID),
+			requiredArgumentsMap["name"],
+			synthetics.NaiveDateTime(requiredArgumentsMap["start_time"]),
+			requiredArgumentsMap["time_zone"],
+		)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		log.Println(resp)
 		break
 	case "WEEKLY":
+		conditionalAttributesMap, err := getValuesOfDailyMonitorDowntimeArguments(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		resp, err := client.Synthetics.SyntheticsCreateWeeklyMonitorDowntimeWithContext(
+			ctx,
+			accountIdAsInteger,
+			conditionalAttributesMap["end_repeat"].(synthetics.SyntheticsDateWindowEndConfig),
+			synthetics.NaiveDateTime(requiredArgumentsMap["end_time"]),
+			conditionalAttributesMap["maintenance_days"].([]synthetics.SyntheticsMonitorDowntimeWeekDays),
+			conditionalAttributesMap["monitor_guids"].([]synthetics.EntityGUID),
+			requiredArgumentsMap["name"],
+			synthetics.NaiveDateTime(requiredArgumentsMap["start_time"]),
+			requiredArgumentsMap["timezone"],
+		)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		log.Println(resp)
 		break
 	case "MONTHLY":
+		conditionalAttributesMap, err := getValuesOfDailyMonitorDowntimeArguments(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		resp, err := client.Synthetics.SyntheticsCreateMonthlyMonitorDowntimeWithContext(
+			ctx,
+			accountIdAsInteger,
+			conditionalAttributesMap["end_repeat"].(synthetics.SyntheticsDateWindowEndConfig),
+			synthetics.NaiveDateTime(requiredArgumentsMap["end_time"]),
+			conditionalAttributesMap["frequency"].(synthetics.SyntheticsMonitorDowntimeMonthlyFrequency),
+			conditionalAttributesMap["monitor_guids"].([]synthetics.EntityGUID),
+			requiredArgumentsMap["name"],
+			synthetics.NaiveDateTime(requiredArgumentsMap["start_time"]),
+			requiredArgumentsMap["timezone"],
+		)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		log.Println(resp)
 		break
 	default:
 		return diag.FromErr(errors.New("invalid mode of operation: 'mode' can be 'ONCE', 'DAILY', 'WEEKLY' or 'MONTHLY'"))
-
 	}
 
 	createAccountInput := accountmanagement.AccountManagementCreateInput{
