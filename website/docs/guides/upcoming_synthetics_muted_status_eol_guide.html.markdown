@@ -1,10 +1,13 @@
 ---
 layout: "newrelic"
-page_title: "New Relic Terraform Provider: Details on the Upcoming Synthetic Monitors' MUTED Status End-of-Life and Alternatives to Move to"
+page_title: "Upcoming Synthetic Monitors MUTED Status End-of-Life and Alternatives: A Guide"
 sidebar_current: "docs-newrelic-provider-synthetic-monitors-muted-status-eol-guide"
 description: |-
-Use this guide to find details on the upcoming end-of-life of the MUTED status of Synthetic Monitors, and alternatives to move to, which can replicate the same behaviour.
+  Use this guide to find details on the upcoming end-of-life of the MUTED status of Synthetic Monitors, and alternatives to move to, which can replicate the same behavior.
 ---
+## Upcoming Synthetic Monitors MUTED Status End-of-Life and Alternatives Explained
+
+Use this guide to find details on the upcoming end-of-life of the `MUTED` status of Synthetic Monitors, and alternatives to move to, which can replicate the same behavior.
 
 ### About Synthetic Monitors' 'MUTED' Status and the EOL
 Synthetic Monitors have a `status` field that defines the activity of the monitor, and can currently be either of `ENABLED`, `DISABLED`, or `MUTED`. When a monitor is MUTED, it still functions as usual (runs tests), but is muted; i.e., it does not send out notifications in cases of failure.
@@ -23,18 +26,18 @@ Considering the above, it is highly recommended for users to refrain from using 
 
 ### Alternatives To `MUTED` Status
 
-There are two key alternatives one can opt for, to replicate the behaviour of the `MUTED` status of Synthetic Monitors.
+There are two key alternatives one can opt for, to replicate the behavior of the `MUTED` status of Synthetic Monitors.
 * [**Alert Muting Rules**](https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/alert-notifications/muting-rules-suppress-notifications/)
-    * Alert Muting Rules, by definition, are similar to the `MUTED` status of Synthetic Monitors in terms of behaviour, though these cater to a wider scope; all kinds of alerts. These help mute alerts on the basis of pre-defined schedules and attribute matching (when alerts match the condition(s) prescribed by the user in terms of incident event attributes, operators and values, they can be muted). See [this page](https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/advanced-alerts/understand-technical-concepts/incident-event-attributes/) for a comprehensive list of attributes supported by Muting Rules.
-    * This feature may be availed from the New Relic One UI, NerdGraph, and also via the resource [`newrelic_alert_muting_rule`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_muting_rule) in the New Relic Terraform Provider. Check out the example below, for an example explaining how this resource can _exactly_ be used to substitute the `MUTED` status of a Synthetic Monitor.
+  * Alert Muting Rules, by definition, are similar to the `MUTED` status of Synthetic Monitors in terms of behavior, though these cater to a wider scope; all kinds of alerts. These help mute alerts on the basis of pre-defined schedules and attribute matching (when alerts match the condition(s) prescribed by the user in terms of incident event attributes, operators and values, they can be muted). See [this page](https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/advanced-alerts/understand-technical-concepts/incident-event-attributes/) for a comprehensive list of attributes supported by Muting Rules.
+  * This feature may be availed from the New Relic One UI, NerdGraph, and also via the resource [`newrelic_alert_muting_rule`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_muting_rule) in the New Relic Terraform Provider. Check out the example below, for an example explaining how this resource can _exactly_ be used to substitute the `MUTED` status of a Synthetic Monitor.
 * [**Monitor Downtime**](https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/using-monitors/monitor-downtimes-disable-monitoring-during-scheduled-maintenance-times/)
-    * A 'Monitor Downtime', as the name suggests, helps set up a 'downtime' or a maintenance window for Synthetic Monitors, in which period they do not run, as a result of which alerts are not raised, and no notifications are received.
-    * This feature is currently available via the New Relic One UI. A Terraform resource to facilitate managing Monitor Downtimes is currently undergoing development, and is expected to be out soon.
+  * A 'Monitor Downtime', as the name suggests, helps set up a 'downtime' or a maintenance window for Synthetic Monitors, in which period they do not run, as a result of which alerts are not raised, and no notifications are received.
+  * This feature is currently available via the New Relic One UI. A Terraform resource to facilitate managing Monitor Downtimes is currently undergoing development, and is expected to be out soon.
 
 It is important to note the difference between the functioning of Alert Muting Rules and Monitor Downtimes when these are considered to be used as substitutes to the `MUTED` status of Synthetic Monitors.
 * Since Alert Muting Rules are designed to mute alerts based on conditions they match, alerts generated by checks performed by monitors are muted, but does not affect the checks performed by these monitors, which would continue to function as usual.
-* However, since Monitor Downtimes are dedicated to scheduling "downtime"s of monitors, no alerts would be generated by monitors in this case, as they would stop running checks for the period defined in the downtime. 
-Users may need to choose the right alternative, based on the expected behaviour they desire, when monitors are muted.
+* However, since Monitor Downtimes are dedicated to scheduling "downtime"s of monitors, no alerts would be generated by monitors in this case, as they would stop running checks for the period defined in the downtime.
+  Users may need to choose the right alternative, based on the expected behavior they desire, when monitors are muted.
 
 ### Substituting Synthetic Monitors `MUTED` Status With Alert Muting Rules
 
