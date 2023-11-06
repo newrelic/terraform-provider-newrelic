@@ -1,3 +1,8 @@
+<a name="v3.27.6"></a>
+## [v3.27.6] - 2023-11-06
+### Documentation Updates
+- **synthetics:** refactor title and vocabulary of the muted status EOL guide ([#2506](https://github.com/newrelic/terraform-provider-newrelic/issues/2506))
+
 <a name="v3.27.5"></a>
 ## [v3.27.5] - 2023-11-06
 ### Documentation Updates
@@ -1978,7 +1983,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.5...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.6...HEAD
+[v3.27.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.5...v3.27.6
 [v3.27.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.4...v3.27.5
 [v3.27.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.3...v3.27.4
 [v3.27.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.2...v3.27.3
