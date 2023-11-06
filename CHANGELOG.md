@@ -1,5 +1,10 @@
+<a name="v3.27.5"></a>
+## [v3.27.5] - 2023-11-06
+### Documentation Updates
+- **synthetics:** addition of a guide on monitors muted status EOL ([#2505](https://github.com/newrelic/terraform-provider-newrelic/issues/2505))
+
 <a name="v3.27.4"></a>
-## [v3.27.4] - 2023-10-27
+## [v3.27.4] - 2023-10-30
 ### Bug Fixes
 - **multilocation_alert_condition:** make violation_time_limit_seconds consistent with nrql_alert_condition
 
@@ -1973,7 +1978,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.4...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.5...HEAD
+[v3.27.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.4...v3.27.5
 [v3.27.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.3...v3.27.4
 [v3.27.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.2...v3.27.3
 [v3.27.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.1...v3.27.2
