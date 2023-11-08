@@ -3,7 +3,7 @@ layout: "newrelic"
 page_title: "New Relic: newrelic_synthetics_cert_check_monitor"
 sidebar_current: "docs-newrelic-resource-synthetics-cert-check-monitor"
 description: |-
-Create and manage a Synthetics Cert Check monitor in New Relic.
+    Create and manage a Synthetics Cert Check monitor in New Relic.
 ---
 
 # Resource: newrelic\_synthetics\_cert\_check\_monitor
@@ -41,7 +41,7 @@ The following are the common arguments supported for `CERTIFICATE CHECK` monitor
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`). 
 
--> **NOTE:** The `MUTED` status is now **deprecated**, and support for this value will soon be removed from the Terraform Provider with the next major release (v4). It is highly recommended for users to refrain from using the status `MUTED` and shift to alternatives at the earliest. Please check out [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide) for more details about the EOL of `MUTED` status and alternatives to move to.
+-> **NOTE:** The `MUTED` status is now **deprecated**, and support for this value will soon be removed from the Terraform Provider in an upcoming release. It is highly recommended for users to refrain from using the status `MUTED` and shift to alternatives at the earliest. Please check out [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide) for more details about the EOL of `MUTED` status and alternatives to move to.
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details
 
 ### Nested `tag` blocks
