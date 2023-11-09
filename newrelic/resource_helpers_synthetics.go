@@ -35,7 +35,7 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 		"status": {
 			Type:         schema.TypeString,
 			Required:     true,
-			Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED). Note: The 'MUTED' status is now deprecated, and support for this value will soon be removed from the Terraform Provider in an upcoming release. It is highly recommended for users to refrain from using this value and shift to alternatives.",
+			Description:  "The monitor status ('ENABLED' or 'DISABLED'). Support for 'MUTED' status has ended on February 29, 2024.",
 			ValidateFunc: validateSyntheticMonitorStatus,
 		},
 		"tag": {
@@ -266,9 +266,7 @@ func listValidSyntheticsMonitorStatuses() []string {
 	return []string{
 		string(synthetics.SyntheticsMonitorStatusTypes.DISABLED),
 		string(synthetics.SyntheticsMonitorStatusTypes.ENABLED),
-
-		// "MUTED" to be removed from the provider as this is soon going to reach its EOL, on February 29, 2024
-		string(synthetics.SyntheticsMonitorStatusTypes.MUTED),
+		// support for the status "MUTED" has been discontinued, as it has reached its end-of-life in the API on February 29 2024
 	}
 }
 
@@ -276,21 +274,24 @@ func listValidSyntheticsMonitorStatuses() []string {
 // recent addition: return a warning if 'MUTED' status is used, as this has been deprecated
 func validateSyntheticMonitorStatus(val interface{}, key string) (warns []string, errs []error) {
 	monitorStatusInput := val.(string)
+
+	// "MUTED" is no longer a valid status of Synthetic Monitors, starting 29 February 2024
+	if monitorStatusInput == "MUTED" {
+		errs = append(errs, fmt.Errorf(`
+Support The 'MUTED' status of Synthetic Monitors has been deprecated, and shall reach its end of life in February 2024.
+In accordance with this, the New Relic Terraform Provider would also discontinue support for the status 'MUTED' soon, in an upcoming release.
+To mute Synthetic Monitors, please shift to alternatives such as muting rules. 
+A detailed guide on this can be found here: https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide
+`))
+	}
+
 	listOfValidSyntheticMonitorStatuses := listValidSyntheticsMonitorStatuses()
 	containsValidSyntheticMonitorStatus := slices.Contains(listOfValidSyntheticMonitorStatuses, monitorStatusInput)
+
 	if !containsValidSyntheticMonitorStatus {
 		errs = append(errs, fmt.Errorf("expected status to be one of %v, got %s", listOfValidSyntheticMonitorStatuses, monitorStatusInput))
 	}
 
-	// hard-coding "MUTED" instead of using synthetics.SyntheticsMonitorStatusTypes.MUTED as it could be removed from newrelic-client-go post the EOL
-	if monitorStatusInput == "MUTED" {
-		warns = append(warns, `
-The 'MUTED' status of Synthetic Monitors has been deprecated, and shall reach its end of life in February 2024.
-In accordance with this, the New Relic Terraform Provider would also discontinue support for the status 'MUTED' soon, in an upcoming release.
-To mute Synthetic Monitors, please shift to alternatives such as muting rules. 
-A detailed guide on this can be found here: https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide
-`)
-	}
 	return warns, errs
 }
 

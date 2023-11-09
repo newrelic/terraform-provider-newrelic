@@ -1,16 +1,13 @@
 ---
 layout: "newrelic"
-page_title: "Upcoming Synthetic Monitors MUTED Status End-of-Life and Alternatives: A Guide"
+page_title: "Synthetic Monitors MUTED Status End-of-Life and Alternatives: A Guide"
 sidebar_current: "docs-newrelic-provider-synthetic-monitors-muted-status-eol-guide"
 description: |-
-  Use this guide to find details on the upcoming end-of-life of the MUTED status of Synthetic Monitors, and alternatives to move to, which can replicate the same behavior.
+  Use this guide to find details on the end-of-life of the MUTED status of Synthetic Monitors done on February 29, 2024, and alternatives to move to, which can replicate the same behavior.
 ---
-## Upcoming Synthetic Monitors MUTED Status End-of-Life and Alternatives Explained
+## Synthetic Monitors MUTED Status End-of-Life and Alternatives Explained
 
-Use this guide to find details on the upcoming end-of-life of the `MUTED` status of Synthetic Monitors, and alternatives to move to, which can replicate the same behavior.
-
-### About Synthetic Monitors' 'MUTED' Status and the EOL
-Synthetic Monitors have a `status` field that defines the activity of the monitor, and can currently be either of `ENABLED`, `DISABLED`, or `MUTED`. When a monitor is MUTED, it still functions as usual (runs tests), but is muted; i.e., it does not send out notifications in cases of failure.
+Starting February 29, 2024, -
 
 Since it has been announced that New Relic Synthetics will discontinue support for the `MUTED` status of monitors, slated to hit its end-of-life in February 2024 (see [this community post](https://forum.newrelic.com/s/hubtopic/aAX8W0000015BHc/endoflife-product-updates-july-2023-september-2023)), the `MUTED` value of `status` has been marked **deprecated** in the New Relic Terraform Provider, in late October 2023. The provider will also _soon_ **discontinue support** for the value `MUTED` pertaining to the `status` argument of resources operating on Synthetic Monitors, with the next major release of the provider, tentatively scheduled in December 2023.
 

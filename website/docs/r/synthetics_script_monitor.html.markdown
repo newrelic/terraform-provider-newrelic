@@ -67,7 +67,7 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 * `account_id`- (Optional) The account in which the Synthetics monitor will be created.
 * `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
 
--> **NOTE:** The `MUTED` status is now **deprecated**, and support for this value will soon be removed from the Terraform Provider in an upcoming release. It is highly recommended for users to refrain from using the status `MUTED` and shift to alternatives at the earliest. Please check out [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide) for more details about the EOL of `MUTED` status and alternatives to move to.
+-> **NOTE:** Support for `MUTED` status has ended on February 29, 2024, starting with v[]() of the New Relic Terraform Provider. Please check out [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide) for more details about the EOL of `MUTED` status and alternatives to move to.
 * `name` - (Required) The name for the monitor.
 * `type` - (Required) The plaintext representing the monitor script. Valid values are SCRIPT_BROWSER or SCRIPT_API
 * `locations_public` - (Optional) The location the monitor will run from. Check out [this page](https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/) for a list of valid public locations. The `AWS_` prefix is not needed, as the provider uses NerdGraph. **At least one of either** `locations_public` **or** `location_private` **is required**.

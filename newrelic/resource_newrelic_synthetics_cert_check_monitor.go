@@ -62,7 +62,7 @@ func resourceNewRelicSyntheticsCertCheckMonitor() *schema.Resource {
 			},
 			"status": {
 				Type:         schema.TypeString,
-				Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED). Note: The 'MUTED' status is now deprecated, and support for this value will soon be removed from the Terraform Provider in an upcoming release. It is highly recommended for users to refrain from using this value and shift to alternatives.",
+				Description:  "The monitor status ('ENABLED' or 'DISABLED'). Support for 'MUTED' status has ended on February 29, 2024.",
 				Required:     true,
 				ValidateFunc: validateSyntheticMonitorStatus,
 			},
