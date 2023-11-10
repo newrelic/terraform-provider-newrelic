@@ -73,14 +73,14 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 						"on_date": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							ExactlyOneOf: []string{"on_date", "on_repeat"},
+							ExactlyOneOf: []string{"end_repeat.0.on_date", "end_repeat.0.on_repeat"},
 							Description:  "A date, on which the Monitor Downtime's repeat cycle is expected to end.",
 							// TODO: define date validation here (possibly YYYY-MM-DD), didn't do it yet as the mutation is broken
 						},
 						"on_repeat": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ExactlyOneOf: []string{"on_date", "on_repeat"},
+							ExactlyOneOf: []string{"end_repeat.0.on_date", "end_repeat.0.on_repeat"},
 							Description:  "Number of repetitions after which the Monitor Downtime's repeat cycle is expected to end.",
 						},
 					},
@@ -111,7 +111,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 							Type:         schema.TypeList,
 							Elem:         &schema.Schema{Type: schema.TypeInt},
 							Optional:     true,
-							ExactlyOneOf: []string{"days_of_month", "days_of_week"},
+							ExactlyOneOf: []string{"frequency.0.days_of_month", "frequency.0.days_of_week"},
 							Description:  "A numerical list of days of a month on which the Monitor Downtime is scheduled to run.",
 							// TODO: define validation to have these values between 1 and 31
 						},
@@ -120,22 +120,20 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 							MinItems:     1,
 							MaxItems:     1,
 							Optional:     true,
-							ExactlyOneOf: []string{"days_of_month", "days_of_week"},
+							ExactlyOneOf: []string{"frequency.0.days_of_month", "frequency.0.days_of_week"},
 							Description:  "A list of days of the week on which the Monitor Downtime is scheduled to run.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"ordinal_day_of_month": {
-										Type:         schema.TypeString,
-										Required:     true,
-										ExactlyOneOf: []string{"on_date", "on_repeat"},
-										Description:  "An occurrence of the day selected within the month.",
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "An occurrence of the day selected within the month.",
 										// TODO: define this to belong to ["FIRST", "SECOND", "THIRD", "FOURTH", "LAST"]
 									},
 									"week_day": {
-										Type:         schema.TypeInt,
-										Required:     true,
-										ExactlyOneOf: []string{"on_date", "on_repeat"},
-										Description:  "The day of the week on which the Monitor Downtime would run.",
+										Type:        schema.TypeInt,
+										Required:    true,
+										Description: "The day of the week on which the Monitor Downtime would run.",
 										// TODO: define this to belong to ["MONDAY", "TUESDAY", ... "SUNDAY"]
 									},
 								},
@@ -160,11 +158,11 @@ var requiredArgumentsList = []string{
 	"mode",
 	"start_time",
 	"end_time",
-	"timezone",
+	"time_zone",
 }
 
 func getValuesOfMonthlyMonitorDowntimeArguments(d *schema.ResourceData) (map[string]interface{}, error) {
-	var monthlyMonitorDowntimeArgumentsMap map[string]interface{}
+	monthlyMonitorDowntimeArgumentsMap := make(map[string]interface{})
 
 	dailyMonitorDowntimeArgumentsMap, err := getValuesOfDailyMonitorDowntimeArguments(d)
 	if err != nil {
@@ -206,7 +204,7 @@ func getValuesOfMonthlyMonitorDowntimeArguments(d *schema.ResourceData) (map[str
 }
 
 func getValuesOfWeeklyMonitorDowntimeArguments(d *schema.ResourceData) (map[string]interface{}, error) {
-	var weeklyMonitorDowntimeArgumentsMap map[string]interface{}
+	weeklyMonitorDowntimeArgumentsMap := make(map[string]interface{})
 
 	dailyMonitorDowntimeArgumentsMap, err := getValuesOfDailyMonitorDowntimeArguments(d)
 	if err != nil {
@@ -226,7 +224,7 @@ func getValuesOfWeeklyMonitorDowntimeArguments(d *schema.ResourceData) (map[stri
 }
 
 func getValuesOfDailyMonitorDowntimeArguments(d *schema.ResourceData) (map[string]interface{}, error) {
-	var dailyMonitorDowntimeArgumentsMap map[string]interface{}
+	dailyMonitorDowntimeArgumentsMap := make(map[string]interface{})
 
 	monitorGUIDs, err := getMonitorGUIDs(d)
 	if err != nil {
@@ -263,17 +261,22 @@ func getValuesOfDailyMonitorDowntimeArguments(d *schema.ResourceData) (map[strin
 func getMonitorGUIDs(d *schema.ResourceData) ([]synthetics.EntityGUID, error) {
 	val, ok := d.GetOk("monitor_guids")
 	if ok {
-		if val.([]string) == nil || len(val.([]string)) == 0 {
+		in := val.([]interface{})
+		out := make([]synthetics.EntityGUID, len(in))
+		for i := range out {
+			out[i] = synthetics.EntityGUID(in[i].(string))
+		}
+		if len(out) == 0 {
 			return nil, errors.New("invalid specification of monitor GUIDs: empty list received in the argument 'monitor_guids'")
 		} else {
-			return val.([]synthetics.EntityGUID), nil
+			return out, nil
 		}
 	}
 	return nil, nil
 }
 
 func getValuesOfRequiredArguments(d *schema.ResourceData) (map[string]string, error) {
-	var requiredArgumentsMap map[string]string
+	requiredArgumentsMap := make(map[string]string)
 	for _, requiredAttribute := range requiredArgumentsList {
 		val, ok := d.GetOk(requiredAttribute)
 		switch requiredAttribute {
@@ -304,7 +307,7 @@ func getValuesOfRequiredArguments(d *schema.ResourceData) (map[string]string, er
 }
 
 func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// TODO: WRITE THE CREATE METHOD
+	// TODO: FINISH WRITING THE CREATE METHOD FOR DAILY, WEEKLY, MONTHLY
 
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -330,7 +333,7 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 			monitorGUIDs,
 			requiredArgumentsMap["name"],
 			synthetics.NaiveDateTime(requiredArgumentsMap["start_time"]),
-			requiredArgumentsMap["timezone"],
+			requiredArgumentsMap["time_zone"],
 		)
 		if err != nil {
 			return diag.FromErr(err)
@@ -371,7 +374,7 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 			conditionalAttributesMap["monitor_guids"].([]synthetics.EntityGUID),
 			requiredArgumentsMap["name"],
 			synthetics.NaiveDateTime(requiredArgumentsMap["start_time"]),
-			requiredArgumentsMap["timezone"],
+			requiredArgumentsMap["time_zone"],
 		)
 		if err != nil {
 			return diag.FromErr(err)
@@ -392,7 +395,7 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 			conditionalAttributesMap["monitor_guids"].([]synthetics.EntityGUID),
 			requiredArgumentsMap["name"],
 			synthetics.NaiveDateTime(requiredArgumentsMap["start_time"]),
-			requiredArgumentsMap["timezone"],
+			requiredArgumentsMap["time_zone"],
 		)
 		if err != nil {
 			return diag.FromErr(err)
