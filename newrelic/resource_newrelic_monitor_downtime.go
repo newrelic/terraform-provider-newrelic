@@ -92,10 +92,10 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 				Description: "A list of maintenance days to be included with the created weekly Monitor Downtime.",
+				// note: ValidateFunc doesn't work with lists/sets in the current Terraform SDK, hence, validation needs to be done elsewhere in the code
 				// TODO: define validation in such a way that this is used only with weekly monitor downtime
 				// TODO: (reqd. only for weekly and not allowed for the rest)
 				// TODO: in that function, include an "if" to check if it is "MONDAY", "TUESDAY", ... "SUNDAY"
-				// TODO: !! Also check if this works as a list or as a single string; NG is not clear !!
 			},
 			// used with monthly monitor downtime
 			"frequency": {
@@ -214,12 +214,16 @@ func getValuesOfWeeklyMonitorDowntimeArguments(d *schema.ResourceData) (map[stri
 	maps.Copy(weeklyMonitorDowntimeArgumentsMap, dailyMonitorDowntimeArgumentsMap)
 
 	// mandatory argument
-	maintenanceDays, ok := d.GetOk("maintenance_days")
-	if !ok {
-		return nil, errors.New("`maintenance_days` is a required argument with weekly monitor downtime")
-	} else {
-		weeklyMonitorDowntimeArgumentsMap["maintenance_days"] = maintenanceDays.([]string)
+	listOfMaintenanceDaysInConfiguration, err := getMaintenanceDaysList(d)
+	if err != nil {
+		return nil, err
 	}
+	maintenanceDays, err := convertSyntheticsMonitorDowntimeMaintenanceDays(listOfMaintenanceDaysInConfiguration)
+	if err != nil {
+		return nil, err
+	}
+	weeklyMonitorDowntimeArgumentsMap["maintenance_days"] = maintenanceDays
+
 	return weeklyMonitorDowntimeArgumentsMap, nil
 }
 
@@ -233,12 +237,12 @@ func getValuesOfDailyMonitorDowntimeArguments(d *schema.ResourceData) (map[strin
 
 	dailyMonitorDowntimeArgumentsMap["monitor_guids"] = monitorGUIDs
 
-	endRepeat, ok := d.GetOk("end_repeat")
+	_, ok := d.GetOk("end_repeat")
 	if ok {
-		endRepeatStruct := endRepeat.(map[string]interface{})
+		// endRepeatStruct := endRepeat.(map[string]interface{})
 		var endRepeatInput synthetics.SyntheticsDateWindowEndConfig
-		onDate, onDateOk := endRepeatStruct["on_date"]
-		onRepeat, onRepeatOk := endRepeatStruct["on_repeat"]
+		onDate, onDateOk := d.GetOk("end_repeat.0.on_date")
+		onRepeat, onRepeatOk := d.GetOk("end_repeat.0.on_repeat")
 
 		if !onDateOk && !onRepeatOk {
 			return nil, errors.New("the block `end_repeat` requires one of `on_date` or `on_repeat` to be specified")
@@ -246,7 +250,7 @@ func getValuesOfDailyMonitorDowntimeArguments(d *schema.ResourceData) (map[strin
 			return nil, errors.New("the block `end_repeat` requires only one of `on_date` or `on_repeat` to be specified, both cannot be specified")
 		}
 
-		endRepeatInput.OnDate = onDate.(synthetics.Date)
+		endRepeatInput.OnDate = synthetics.Date(onDate.(string))
 		endRepeatInput.OnRepeat = onRepeat.(int)
 		dailyMonitorDowntimeArgumentsMap["end_repeat"] = endRepeatInput
 
@@ -361,7 +365,12 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 		log.Println(resp)
 		break
 	case "WEEKLY":
-		conditionalAttributesMap, err := getValuesOfDailyMonitorDowntimeArguments(d)
+		err := validateMonitorDowntimeMaintenanceDays(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		conditionalAttributesMap, err := getValuesOfWeeklyMonitorDowntimeArguments(d)
 		if err != nil {
 			return diag.FromErr(err)
 		}

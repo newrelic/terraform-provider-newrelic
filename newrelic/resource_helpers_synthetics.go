@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -432,4 +433,94 @@ var syntheticsMonitorTagKeyToSchemaAttrMap = map[string]string{
 	"scriptLanguage":     "script_language",
 	"deviceOrientation":  "device_orientation",
 	"deviceType":         "device_type",
+}
+
+// Monitor Downtime Resource Helpers - to be refactored later if needed
+
+func getMaintenanceDaysList(d *schema.ResourceData) ([]string, error) {
+	val, ok := d.GetOk("maintenance_days")
+	if !ok {
+		return nil, errors.New("`maintenance_days` not found in the configuration")
+	}
+	if ok {
+		in := val.([]interface{})
+		out := make([]string, len(in))
+		for i := range out {
+			out[i] = in[i].(string)
+		}
+		if len(out) == 0 {
+			return nil, errors.New("invalid specification: empty list received in the argument 'maintenance_days'")
+		} else {
+			return out, nil
+		}
+	}
+	return nil, nil
+}
+
+func validateMonitorDowntimeMaintenanceDays(d *schema.ResourceData) error {
+	listOfMaintenanceDaysInConfiguration, err := getMaintenanceDaysList(d)
+	if err != nil {
+		return err
+	}
+	mode, ok := d.GetOk("mode")
+	if !ok {
+		return errors.New("`mode` not specified in the configuration")
+	}
+	errs := []error{}
+	if mode != "WEEKLY" {
+		errs = append(errs, errors.New("`maintenance_days` can be used only with the mode 'WEEKLY'"))
+	}
+	listOfValidMaintenanceDays := listSyntheticsMonitorDowntimeValidMaintenanceDays()
+	for index, value := range listOfMaintenanceDaysInConfiguration {
+		isValidDay := slices.Contains(listOfValidMaintenanceDays, value)
+		if !isValidDay {
+			errs = append(errs, fmt.Errorf("expected maintenance_days[%d] to be one of %v, got %s", index, listOfValidMaintenanceDays, value))
+		}
+	}
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	customMessage := "The following errors were found when trying to validate the specified `maintenance_days`:\n"
+	for _, err := range errs {
+		customMessage += err.Error() + "\n"
+	}
+	customErr := fmt.Errorf(customMessage)
+	return customErr
+}
+
+var syntheticsMonitorDowntimeMaintenanceDaysMap = map[string]synthetics.SyntheticsMonitorDowntimeWeekDays{
+	"SUNDAY":    synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.SUNDAY,
+	"MONDAY":    synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.MONDAY,
+	"TUESDAY":   synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.TUESDAY,
+	"WEDNESDAY": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.WEDNESDAY,
+	"THURSDAY":  synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.THURSDAY,
+	"FRIDAY":    synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.FRIDAY,
+	"SATURDAY":  synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.SATURDAY,
+}
+
+func listSyntheticsMonitorDowntimeValidMaintenanceDays() []string {
+	keys := make([]string, 0, len(syntheticsMonitorDowntimeMaintenanceDaysMap))
+
+	for k := range syntheticsMonitorDowntimeMaintenanceDaysMap {
+		keys = append(keys, k)
+	}
+
+	return keys
+}
+
+func convertSyntheticsMonitorDowntimeMaintenanceDays(maintenanceDays []string) ([]synthetics.SyntheticsMonitorDowntimeWeekDays, error) {
+	maintenanceDaysTypeCasted := make([]synthetics.SyntheticsMonitorDowntimeWeekDays, 0, len(maintenanceDays))
+	listOfValidMaintenanceDays := listSyntheticsMonitorDowntimeValidMaintenanceDays()
+
+	for index, value := range maintenanceDays {
+		isValidDay := slices.Contains(listOfValidMaintenanceDays, value)
+		if !isValidDay {
+			return nil, errors.New(fmt.Sprintf("expected maintenance_days[%d] to be one of %v, got %s", index, listOfValidMaintenanceDays, value))
+		} else {
+			maintenanceDaysTypeCasted = append(maintenanceDaysTypeCasted, syntheticsMonitorDowntimeMaintenanceDaysMap[value])
+		}
+	}
+	return maintenanceDaysTypeCasted, nil
 }
