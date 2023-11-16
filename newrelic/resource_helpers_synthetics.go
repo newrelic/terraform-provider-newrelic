@@ -457,6 +457,14 @@ func getMaintenanceDaysList(d *schema.ResourceData) ([]string, error) {
 	return nil, nil
 }
 
+func getFrequencyDaysOfMonthList(daysOfMonth []interface{}) []int {
+	out := make([]int, len(daysOfMonth))
+	for i := range out {
+		out[i] = daysOfMonth[i].(int)
+	}
+	return out
+}
+
 func validateMonitorDowntimeMaintenanceDays(d *schema.ResourceData) error {
 	listOfMaintenanceDaysInConfiguration, err := getMaintenanceDaysList(d)
 	if err != nil {

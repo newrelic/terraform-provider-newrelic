@@ -131,7 +131,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 										// TODO: define this to belong to ["FIRST", "SECOND", "THIRD", "FOURTH", "LAST"]
 									},
 									"week_day": {
-										Type:        schema.TypeInt,
+										Type:        schema.TypeString,
 										Required:    true,
 										Description: "The day of the week on which the Monitor Downtime would run.",
 										// TODO: define this to belong to ["MONDAY", "TUESDAY", ... "SUNDAY"]
@@ -171,31 +171,29 @@ func getValuesOfMonthlyMonitorDowntimeArguments(d *schema.ResourceData) (map[str
 
 	maps.Copy(monthlyMonitorDowntimeArgumentsMap, dailyMonitorDowntimeArgumentsMap)
 
-	frequency, ok := d.GetOk("frequency")
+	_, ok := d.GetOk("frequency")
 	if !ok {
 		return nil, errors.New("`frequency` is a required argument with monthly monitor downtime")
 	} else {
-		frequencyStruct := frequency.(map[string]interface{})
 		var frequencyInput synthetics.SyntheticsMonitorDowntimeMonthlyFrequency
-		daysOfMonth, daysOfMonthOk := frequencyStruct["days_of_month"]
-		daysOfWeek, daysOfWeekOk := frequencyStruct["days_of_week"]
+		daysOfMonth, daysOfMonthOk := d.GetOk("frequency.0.days_of_month")
+		_, daysOfWeekOk := d.GetOk("frequency.0.days_of_week")
 		if !daysOfMonthOk && !daysOfWeekOk {
 			return nil, errors.New("the block `frequency` requires one of `days_of_month` or `days_of_week` to be specified")
 		} else if daysOfMonthOk && daysOfWeekOk {
 			return nil, errors.New("the block `frequency` requires one of `days_of_month` or `days_of_week` to be specified but not both")
 		} else if daysOfMonthOk && !daysOfWeekOk {
-			frequencyInput.DaysOfMonth = daysOfMonth.([]int)
+			frequencyInput.DaysOfMonth = getFrequencyDaysOfMonthList(daysOfMonth.([]interface{}))
 		} else {
-			daysOfWeekStruct := daysOfWeek.(map[string]interface{})
 			var daysOfWeekInput synthetics.SyntheticsDaysOfWeek
-			ordinalDayOfMonth, ordinalDayOfMonthOk := daysOfWeekStruct["ordinal_day_of_month"]
-			weekDay, weekDayOk := daysOfWeekStruct["week_day"]
+			ordinalDayOfMonth, ordinalDayOfMonthOk := d.GetOk("frequency.0.days_of_week.0.ordinal_day_of_month")
+			weekDay, weekDayOk := d.GetOk("frequency.0.days_of_week.0.week_day")
 			if !ordinalDayOfMonthOk && !weekDayOk {
 				return nil, errors.New("the block `days_of_week` requires specifying both `ordinal_day_of_month` and `week_day`")
 			}
 			daysOfWeekInput.WeekDay = synthetics.SyntheticsMonitorDowntimeWeekDays(weekDay.(string))
 			daysOfWeekInput.OrdinalDayOfMonth = synthetics.SyntheticsMonitorDowntimeDayOfMonthOrdinal(ordinalDayOfMonth.(string))
-			frequencyInput.DaysOfWeek = daysOfWeekInput
+			frequencyInput.DaysOfWeek = &daysOfWeekInput
 		}
 		monthlyMonitorDowntimeArgumentsMap["frequency"] = frequencyInput
 	}
@@ -369,7 +367,6 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
 		conditionalAttributesMap, err := getValuesOfWeeklyMonitorDowntimeArguments(d)
 		if err != nil {
 			return diag.FromErr(err)
@@ -391,7 +388,7 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 		log.Println(resp)
 		break
 	case "MONTHLY":
-		conditionalAttributesMap, err := getValuesOfDailyMonitorDowntimeArguments(d)
+		conditionalAttributesMap, err := getValuesOfMonthlyMonitorDowntimeArguments(d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
