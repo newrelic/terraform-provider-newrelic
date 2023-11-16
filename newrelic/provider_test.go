@@ -27,6 +27,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/config"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
 var (
@@ -48,7 +49,8 @@ var (
 		"azure": false,
 		"gcp":   false,
 	}
-	testAccBrowserApplicationCleanupComplete = false
+	testAccBrowserApplicationCleanupComplete    = false
+	testAccSyntheticTestEntitiesCleanupComplete = false
 )
 
 func init() {
@@ -104,6 +106,10 @@ func testAccPreCheck(t *testing.T) {
 
 	// Cleaning up the Parsing rules
 	//testAccLogParsingRulesCleanup(t)
+
+	if !testAccSyntheticTestEntitiesCleanupComplete {
+		testAccSyntheticTestEntitiesCleanup(t)
+	}
 
 	// Create a test application for use in newrelic_alert_condition and other tests
 	if !testAccAPMEntityCreated {
@@ -284,6 +290,79 @@ func testAccCloudLinkedAccountsCleanup(t *testing.T, provider string) {
 	}
 	t.Logf("testacc cleanup of '%s' cloud accounts linked to the subaccount complete", provider)
 	testCloudAccCleanupComplete[provider] = true
+}
+
+func testAccSyntheticTestEntitiesCleanup(t *testing.T) {
+	testAccPreCheckEnvVars(t)
+
+	if testAccSyntheticTestEntitiesCleanupComplete {
+		return
+	}
+	testSyntheticEntitiesCleanedUpCount := 0
+
+	client := entities.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
+
+	syntheticsClient := synthetics.New(config.Config{
+		PersonalAPIKey: testAccAPIKey,
+	})
+
+	syntheticEntityNameMatchingSuffixes := []string{"tf-test", "client-go-test"}
+	for _, nameSuffix := range syntheticEntityNameMatchingSuffixes {
+		t.Logf("***** fetching synthetic entities created by Terraform, comprising '%s' in their name ******", nameSuffix)
+		testSynthEntities, err := client.GetEntitySearch(
+			entities.EntitySearchOptions{},
+			"",
+			entities.EntitySearchQueryBuilder{
+				Domain: "SYNTH",
+				Name:   nameSuffix,
+			},
+			[]entities.EntitySearchSortCriteria{},
+		)
+
+		if err != nil {
+			t.Logf("error fetching synthetic entities linked to the account: %s", err)
+		}
+
+		if testSynthEntities == nil {
+			t.Logf("***** no synthetic entities linked to the account with the queried parameters found, to be deleted *****")
+		} else {
+			for _, a := range testSynthEntities.Results.Entities {
+				entityType := a.GetType()
+				entityDomain := a.GetDomain()
+				entityName := a.GetName()
+				entityGUID := a.GetGUID()
+				if entityType == "SECURE_CRED" && entityDomain == "SYNTH" {
+					_, err := syntheticsClient.SyntheticsDeleteSecureCredential(testAccountID, entityName)
+					if err == nil {
+						t.Logf("#%d: deleted %s '%s' with GUID %s", testSyntheticEntitiesCleanedUpCount+1, entityType, entityName, entityGUID)
+						testSyntheticEntitiesCleanedUpCount += 1
+					} else {
+						t.Logf("failed to delete %s '%s' with GUID %s, error: %s", entityType, entityName, entityGUID, err.Error())
+					}
+				} else if entityType == "PRIVATE_LOCATION" && entityDomain == "SYNTH" {
+					_, err := syntheticsClient.SyntheticsDeletePrivateLocation(synthetics.EntityGUID(entityGUID))
+					if err == nil {
+						t.Logf("#%d: deleted %s '%s' with GUID %s", testSyntheticEntitiesCleanedUpCount+1, entityType, entityName, entityGUID)
+						testSyntheticEntitiesCleanedUpCount += 1
+					} else {
+						t.Logf("failed to delete %s '%s' with GUID %s, error: %s", entityType, entityName, entityGUID, err.Error())
+					}
+				} else if entityType == "MONITOR" && entityDomain == "SYNTH" {
+					_, err := syntheticsClient.SyntheticsDeleteMonitor(synthetics.EntityGUID(entityGUID))
+					if err == nil {
+						t.Logf("#%d: deleted %s '%s' with GUID %s", testSyntheticEntitiesCleanedUpCount+1, entityType, entityName, entityGUID)
+						testSyntheticEntitiesCleanedUpCount += 1
+					} else {
+						t.Logf("failed to delete %s '%s' with GUID %s, error: %s", entityType, entityName, entityGUID, err.Error())
+					}
+				}
+			}
+		}
+		t.Logf("testacc cleanup of '%d' synthetic entities created by terraform acceptance tests complete", testSyntheticEntitiesCleanedUpCount)
+	}
+	testAccSyntheticTestEntitiesCleanupComplete = true
 }
 
 func testAccBrowserApplicationsCleanup(t *testing.T) {

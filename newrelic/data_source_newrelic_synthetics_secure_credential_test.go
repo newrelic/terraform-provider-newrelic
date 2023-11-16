@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccNewRelicSyntheticsSecureCredentialDataSource_Basic(t *testing.T) {
-	rName := "TF_ACC_TEST"
+	rName := "INTEGRATION_TEST_SECURE_CREDENTIAL"
 	resourceName := "data.newrelic_synthetics_secure_credential.foo"
 
 	resource.ParallelTest(t, resource.TestCase{
