@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -420,20 +419,170 @@ func getPublicLocationsFromEntityTags(tags []entities.EntityTag) []string {
 }
 
 func getStringEntityTag(tags []entities.EntityTag, attributeName string) string {
-	log.Printf("Querying for attribute %s\n", attributeName)
 	out := []string{}
 	for _, t := range tags {
 		if t.Key == attributeName {
-			log.Printf("REACHED %s\n", attributeName)
-			log.Printf("%v\n", t.Values)
 			for _, v := range t.Values {
 				out = append(out, string(v))
 			}
 		}
 	}
-	log.Println("array out")
-	log.Println(out)
 	return out[0]
+}
+
+//func setMonitorDowntimeEndRepeat(d *schema.ResourceData, tags []entities.EntityTag, timezone string) {
+//	onDateTag := "endRepeat"
+//	onRepeatTag := "onRepeat"
+//
+//	onDateValue := ""
+//
+//	// TODO: is there a better way to do this? (not initialise with -1 but something like nil which I am not able to do)
+//	onRepeatValue := -1
+//
+//	for _, t := range tags {
+//		if t.Key == onDateTag {
+//			for _, v := range t.Values {
+//				onDateValue = v
+//			}
+//		} else if t.Key == onRepeatTag {
+//			for _, v := range t.Values {
+//				onRepeatValue, _ = strconv.Atoi(v)
+//			}
+//		}
+//	}
+//
+//	// if neither onDate or onRepeat is found in the tags, it means endRepeat is absent in the configuration
+//	if onDateValue == "" && onRepeatValue == -1 {
+//		return
+//	}
+//
+//	if onDateValue != "" {
+//		onDateValueParsed, _ := strconv.ParseInt(onDateValue, 10, 64)
+//		dt := time.Unix(onDateValueParsed/1000, 0)
+//		loc, _ := time.LoadLocation(timezone)
+//		_ = d.Set("end_repeat.0.on_date", dt.In(loc).Format("01-02-2006"))
+//	}
+//
+//	if onRepeatValue != -1 {
+//		_ = d.Set("end_repeat.0.on_repeat", onRepeatValue)
+//	}
+//
+//}
+
+func setMonitorDowntimeFrequency(d *schema.ResourceData, tags []entities.EntityTag) {
+	daysOfMonthTag := "monthDay"
+	daysOfWeekTag := "specificWeekDay"
+
+	var daysOfMonthValue []int
+	var daysOfWeekValue string = ""
+
+	// TODO: is there a better way to do this? (not initialise with -1 but something like nil which I am not able to do)
+
+	for _, t := range tags {
+		if t.Key == daysOfMonthTag {
+			for _, v := range t.Values {
+				value, _ := strconv.Atoi(v)
+				daysOfMonthValue = append(daysOfMonthValue, value+100)
+			}
+		} else if t.Key == daysOfWeekTag {
+			for _, v := range t.Values {
+				daysOfWeekValue = v
+			}
+		}
+	}
+
+	// if neither monthDay or specificWeekDay is found in the tags, it means frequency is absent in the configuration
+	if len(daysOfMonthValue) == 0 && daysOfWeekValue == "" {
+		return
+	}
+
+	if len(daysOfMonthValue) != 0 {
+		_ = d.Set("frequency", []map[string]interface{}{
+			{
+				"days_of_month": daysOfMonthValue,
+			},
+		})
+	}
+
+	if daysOfWeekValue != "" {
+		value := strings.Split(daysOfWeekValue, ":")
+		ordinalDayOfMonth := value[0]
+		weekDay := value[1]
+
+		_ = d.Set("frequency", []map[string]interface{}{
+			{
+				"days_of_week": []map[string]interface{}{
+					{
+						"ordinal_day_of_month": ordinalDayOfMonth,
+						"week_day":             weekDay,
+					},
+				},
+			},
+		})
+	}
+}
+
+func setMonitorDowntimeMaintenanceDays(d *schema.ResourceData, tags []entities.EntityTag) {
+	maintenanceDaysTag := "weekDay"
+	var maintenanceDaysValue []string
+	for _, t := range tags {
+		if t.Key == maintenanceDaysTag {
+			for _, v := range t.Values {
+				val, ok := syntheticsMonitorDowntimeMaintenanceDaysAliasesMap[v]
+				if ok {
+					maintenanceDaysValue = append(maintenanceDaysValue, string(val))
+				}
+			}
+		}
+	}
+	_ = d.Set("maintenance_days", maintenanceDaysValue)
+}
+
+func setMonitorDowntimeEndRepeat(d *schema.ResourceData, tags []entities.EntityTag, timezone string) {
+	onDateTag := "endRepeat"
+	onRepeatTag := "occurrences"
+
+	onDateValue := ""
+
+	// TODO: is there a better way to do this? (not initialise with -1 but something like nil which I am not able to do)
+	onRepeatValue := -1
+
+	for _, t := range tags {
+		if t.Key == onDateTag {
+			for _, v := range t.Values {
+				onDateValue = v
+			}
+		} else if t.Key == onRepeatTag {
+			for _, v := range t.Values {
+				onRepeatValue, _ = strconv.Atoi(v)
+			}
+		}
+	}
+
+	// if neither onDate or onRepeat is found in the tags, it means endRepeat is absent in the configuration
+	if onDateValue == "" && onRepeatValue == -1 {
+		return
+	}
+
+	if onDateValue != "" {
+		onDateValueParsed, _ := strconv.ParseInt(onDateValue, 10, 64)
+		dt := time.Unix(onDateValueParsed/1000, 0)
+		loc, _ := time.LoadLocation(timezone)
+		_ = d.Set("end_repeat", []map[string]interface{}{
+			{
+				"on_date": dt.In(loc).Format("2006-01-02"),
+			},
+		})
+	}
+
+	if onRepeatValue != -1 {
+		_ = d.Set("end_repeat", []map[string]interface{}{
+			{
+				"on_repeat": onRepeatValue,
+			},
+		})
+	}
+
 }
 
 var monitorDowntimeAttributeReaderMap = map[string]interface{}{
@@ -523,9 +672,9 @@ func getMaintenanceDaysList(d *schema.ResourceData) ([]string, error) {
 		return nil, errors.New("`maintenance_days` not found in the configuration")
 	}
 	if ok {
-		in := val.([]interface{})
+		in := val.(*schema.Set).List()
 		out := make([]string, len(in))
-		for i := range out {
+		for i := range in {
 			out[i] = in[i].(string)
 		}
 		if len(out) == 0 {
@@ -586,6 +735,16 @@ var syntheticsMonitorDowntimeMaintenanceDaysMap = map[string]synthetics.Syntheti
 	"THURSDAY":  synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.THURSDAY,
 	"FRIDAY":    synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.FRIDAY,
 	"SATURDAY":  synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.SATURDAY,
+}
+
+var syntheticsMonitorDowntimeMaintenanceDaysAliasesMap = map[string]synthetics.SyntheticsMonitorDowntimeWeekDays{
+	"SU": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.SUNDAY,
+	"MO": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.MONDAY,
+	"TU": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.TUESDAY,
+	"WE": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.WEDNESDAY,
+	"TH": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.THURSDAY,
+	"FR": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.FRIDAY,
+	"SA": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.SATURDAY,
 }
 
 func listSyntheticsMonitorDowntimeValidMaintenanceDays() []string {

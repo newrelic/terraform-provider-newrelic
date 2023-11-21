@@ -92,7 +92,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 			},
 			// used with weekly monitor downtime
 			"maintenance_days": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 				Description: "A list of maintenance days to be included with the created weekly Monitor Downtime.",
@@ -112,7 +112,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"days_of_month": {
-							Type:         schema.TypeList,
+							Type:         schema.TypeSet,
 							Elem:         &schema.Schema{Type: schema.TypeInt},
 							Optional:     true,
 							ExactlyOneOf: []string{"frequency.0.days_of_month", "frequency.0.days_of_week"},
@@ -151,6 +151,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				Required:     true,
 				Description:  "An identifier of the type of Monitor Downtime to be created.",
 				ValidateFunc: validation.StringInSlice([]string{"ONE_TIME", "DAILY", "MONTHLY", "WEEKLY"}, false),
+				ForceNew:     true,
 			},
 		},
 	}
@@ -187,7 +188,7 @@ func getValuesOfMonthlyMonitorDowntimeArguments(d *schema.ResourceData) (map[str
 		} else if daysOfMonthOk && daysOfWeekOk {
 			return nil, errors.New("the block `frequency` requires one of `days_of_month` or `days_of_week` to be specified but not both")
 		} else if daysOfMonthOk && !daysOfWeekOk {
-			frequencyInput.DaysOfMonth = getFrequencyDaysOfMonthList(daysOfMonth.([]interface{}))
+			frequencyInput.DaysOfMonth = getFrequencyDaysOfMonthList(daysOfMonth.(*schema.Set).List())
 		} else {
 			var daysOfWeekInput synthetics.SyntheticsDaysOfWeek
 			ordinalDayOfMonth, ordinalDayOfMonthOk := d.GetOk("frequency.0.days_of_week.0.ordinal_day_of_month")
@@ -257,7 +258,7 @@ func getValuesOfDailyMonitorDowntimeArguments(d *schema.ResourceData) (map[strin
 		dailyMonitorDowntimeArgumentsMap["end_repeat"] = endRepeatInput
 
 	} else {
-		dailyMonitorDowntimeArgumentsMap["end_repeat"] = nil
+		dailyMonitorDowntimeArgumentsMap["end_repeat"] = synthetics.SyntheticsDateWindowEndConfig{}
 	}
 
 	return dailyMonitorDowntimeArgumentsMap, nil
@@ -466,6 +467,7 @@ func resourceNewRelicMonitorDowntimeRead(ctx context.Context, d *schema.Resource
 	var tags []entities.EntityTag
 	var entity *entities.GenericEntity
 
+	// retry mechanism since the entity query "immediately" does NOT return all tags, and returns only three
 	retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
 		resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
 		if err != nil {
@@ -483,14 +485,27 @@ func resourceNewRelicMonitorDowntimeRead(ctx context.Context, d *schema.Resource
 		log.Fatalf("Unable to find application entity: %s", retryErr)
 	}
 
+	mode := monitorDowntimeAttributeReaderMap["mode"].(func([]entities.EntityTag) string)(tags)
+	timezone := monitorDowntimeAttributeReaderMap["time_zone"].(func([]entities.EntityTag) string)(tags)
 	_ = d.Set("name", entity.GetName())
 	_ = d.Set("monitor_guids", monitorDowntimeAttributeReaderMap["monitor_guids"].(func([]entities.EntityRelationship, common.EntityGUID) []string)(entity.GetRelationships(), common.EntityGUID(d.Id())))
 	_ = d.Set("account_id", monitorDowntimeAttributeReaderMap["account_id"].(func([]entities.EntityTag) string)(tags))
-	_ = d.Set("mode", monitorDowntimeAttributeReaderMap["mode"].(func([]entities.EntityTag) string)(tags))
+	_ = d.Set("mode", mode)
 	_ = d.Set("start_time", monitorDowntimeAttributeReaderMap["start_time"].(func([]entities.EntityTag) string)(tags))
 	_ = d.Set("end_time", monitorDowntimeAttributeReaderMap["end_time"].(func([]entities.EntityTag) string)(tags))
-	_ = d.Set("time_zone", monitorDowntimeAttributeReaderMap["time_zone"].(func([]entities.EntityTag) string)(tags))
+	_ = d.Set("time_zone", timezone)
 
+	if mode != "ONE_TIME" {
+		setMonitorDowntimeEndRepeat(d, tags, timezone)
+	}
+
+	if mode == "WEEKLY" {
+		setMonitorDowntimeMaintenanceDays(d, tags)
+	}
+
+	if mode == "MONTHLY" {
+		setMonitorDowntimeFrequency(d, tags)
+	}
 	return nil
 
 }
