@@ -7,12 +7,15 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/accountmanagement"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 	"golang.org/x/exp/maps"
 )
@@ -33,7 +36,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				Required:    true,
 			},
 			"monitor_guids": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 				Description: "A list of GUIDs of monitors, to which the created Monitor Downtime shall be applied.",
@@ -42,6 +45,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The ID of the New Relic account in which the Monitor Downtime shall be created. Defaults to NEW_RELIC_ACCOUNT_ID if not specified.",
 				Optional:    true,
+				Default:     os.Getenv("NEW_RELIC_ACCOUNT_ID"),
 			},
 			"start_time": {
 				Type:         schema.TypeString,
@@ -146,7 +150,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "An identifier of the type of Monitor Downtime to be created.",
-				ValidateFunc: validation.StringInSlice([]string{"ONCE", "DAILY", "MONTHLY", "WEEKLY"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"ONE_TIME", "DAILY", "MONTHLY", "WEEKLY"}, false),
 			},
 		},
 	}
@@ -263,9 +267,9 @@ func getValuesOfDailyMonitorDowntimeArguments(d *schema.ResourceData) (map[strin
 func getMonitorGUIDs(d *schema.ResourceData) ([]synthetics.EntityGUID, error) {
 	val, ok := d.GetOk("monitor_guids")
 	if ok {
-		in := val.([]interface{})
+		in := val.(*schema.Set).List()
 		out := make([]synthetics.EntityGUID, len(in))
-		for i := range out {
+		for i := range in {
 			out[i] = synthetics.EntityGUID(in[i].(string))
 		}
 		if len(out) == 0 {
@@ -309,8 +313,6 @@ func getValuesOfRequiredArguments(d *schema.ResourceData) (map[string]string, er
 }
 
 func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// TODO: FINISH WRITING THE CREATE METHOD FOR DAILY, WEEKLY, MONTHLY
-
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	requiredArgumentsMap, err := getValuesOfRequiredArguments(d)
@@ -323,7 +325,7 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 	}
 
 	switch requiredArgumentsMap["mode"] {
-	case "ONCE":
+	case "ONE_TIME":
 		monitorGUIDs, err := getMonitorGUIDs(d)
 		if err != nil {
 			return diag.FromErr(err)
@@ -338,9 +340,14 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 			requiredArgumentsMap["time_zone"],
 		)
 		if err != nil {
+			d.SetId("")
 			return diag.FromErr(err)
 		}
-		log.Println(resp)
+		if resp == nil {
+			d.SetId("")
+			return diag.FromErr(errors.New("encountered an API error while trying to create a monitor downtime: nil response returned"))
+		}
+		d.SetId(string(resp.GUID))
 		break
 	case "DAILY":
 		conditionalAttributesMap, err := getValuesOfDailyMonitorDowntimeArguments(d)
@@ -358,9 +365,14 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 			requiredArgumentsMap["time_zone"],
 		)
 		if err != nil {
+			d.SetId("")
 			return diag.FromErr(err)
 		}
-		log.Println(resp)
+		if resp == nil {
+			d.SetId("")
+			return diag.FromErr(errors.New("encountered an API error while trying to create a monitor downtime: nil response returned"))
+		}
+		d.SetId(string(resp.GUID))
 		break
 	case "WEEKLY":
 		err := validateMonitorDowntimeMaintenanceDays(d)
@@ -383,9 +395,14 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 			requiredArgumentsMap["time_zone"],
 		)
 		if err != nil {
+			d.SetId("")
 			return diag.FromErr(err)
 		}
-		log.Println(resp)
+		if resp == nil {
+			d.SetId("")
+			return diag.FromErr(errors.New("encountered an API error while trying to create a monitor downtime: nil response returned"))
+		}
+		d.SetId(string(resp.GUID))
 		break
 	case "MONTHLY":
 		conditionalAttributesMap, err := getValuesOfMonthlyMonitorDowntimeArguments(d)
@@ -404,59 +421,78 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 			requiredArgumentsMap["time_zone"],
 		)
 		if err != nil {
+			d.SetId("")
 			return diag.FromErr(err)
 		}
-		log.Println(resp)
+		if resp == nil {
+			d.SetId("")
+			return diag.FromErr(errors.New("encountered an API error while trying to create a monitor downtime: nil response returned"))
+		}
+		d.SetId(string(resp.GUID))
 		break
 	default:
-		return diag.FromErr(errors.New("invalid mode of operation: 'mode' can be 'ONCE', 'DAILY', 'WEEKLY' or 'MONTHLY'"))
+		return diag.FromErr(errors.New("invalid mode of operation: 'mode' can be 'ONE_TIME', 'DAILY', 'WEEKLY' or 'MONTHLY'"))
 	}
 
-	createAccountInput := accountmanagement.AccountManagementCreateInput{
-		Name:       d.Get("name").(string),
-		RegionCode: d.Get("region").(string),
-	}
-	created, err := client.AccountManagement.AccountManagementCreateAccount(createAccountInput)
-
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if created == nil {
-		return diag.Errorf("err: Account not created. Please check the input details")
-	}
-	accountID := created.ManagedAccount.ID
-
-	d.SetId(strconv.Itoa(accountID))
-	return resourceNewRelicAccountRead(ctx, d, meta)
+	return resourceNewRelicMonitorDowntimeRead(ctx, d, meta)
 }
 
 func resourceNewRelicMonitorDowntimeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// TODO: WRITE THE READ METHOD
-
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
+	// accountID := selectAccountID(providerConfig, d)
 
-	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		account, err := getCreatedAccountByID(client, d.Id())
-		//		fmt.Println("read", account.ID, err)
+	log.Printf("[INFO] Reading New Relic Synthetics Monitor Downtime %s", d.Id())
+
+	// *** THIS WORKS TOO ***
+	//time.Sleep(5 * time.Second)
+	//resp, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, fmt.Sprintf("id = '%s'", d.Id()), []entities.EntitySearchSortCriteria{})
+	//if err != nil {
+	//	return diag.FromErr(err)
+	//}
+	//
+	//x := resp.Results.Entities
+	//for _, val := range x {
+	//	entity := val.(*entities.GenericEntityOutline)
+	//	tags := entity.GetTags()
+	//	_ = d.Set("name", entity.GetName())
+	//	_ = d.Set("account_id", monitorDowntimeAttributeReaderMap["account_id"].(func([]entities.EntityTag) string)(tags))
+	//	_ = d.Set("mode", monitorDowntimeAttributeReaderMap["mode"].(func([]entities.EntityTag) string)(tags))
+	//	_ = d.Set("start_time", monitorDowntimeAttributeReaderMap["start_time"].(func([]entities.EntityTag) string)(tags))
+	//	_ = d.Set("end_time", monitorDowntimeAttributeReaderMap["end_time"].(func([]entities.EntityTag) string)(tags))
+	//	_ = d.Set("time_zone", monitorDowntimeAttributeReaderMap["time_zone"].(func([]entities.EntityTag) string)(tags))
+	//}
+
+	var tags []entities.EntityTag
+	var entity *entities.GenericEntity
+
+	retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
+		resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return resource.RetryableError(err)
 		}
-
-		if account == nil {
-			return resource.RetryableError(fmt.Errorf("account not found"))
+		entity = (*resp).(*entities.GenericEntity)
+		tags = entity.GetTags()
+		if len(tags) < 4 {
+			return resource.RetryableError(fmt.Errorf("enough tags not found. retrying"))
 		}
-		_ = d.Set("region", account.RegionCode)
-		_ = d.Set("name", account.Name)
-
 		return nil
 	})
 
 	if retryErr != nil {
-		return diag.FromErr(retryErr)
+		log.Fatalf("Unable to find application entity: %s", retryErr)
 	}
+
+	_ = d.Set("name", entity.GetName())
+	_ = d.Set("monitor_guids", monitorDowntimeAttributeReaderMap["monitor_guids"].(func([]entities.EntityRelationship, common.EntityGUID) []string)(entity.GetRelationships(), common.EntityGUID(d.Id())))
+	_ = d.Set("account_id", monitorDowntimeAttributeReaderMap["account_id"].(func([]entities.EntityTag) string)(tags))
+	_ = d.Set("mode", monitorDowntimeAttributeReaderMap["mode"].(func([]entities.EntityTag) string)(tags))
+	_ = d.Set("start_time", monitorDowntimeAttributeReaderMap["start_time"].(func([]entities.EntityTag) string)(tags))
+	_ = d.Set("end_time", monitorDowntimeAttributeReaderMap["end_time"].(func([]entities.EntityTag) string)(tags))
+	_ = d.Set("time_zone", monitorDowntimeAttributeReaderMap["time_zone"].(func([]entities.EntityTag) string)(tags))
+
 	return nil
+
 }
 
 func resourceNewRelicMonitorDowntimeUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -486,12 +522,15 @@ func resourceNewRelicMonitorDowntimeUpdate(ctx context.Context, d *schema.Resour
 }
 
 func resourceNewRelicMonitorDowntimeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// TODO: WRITE THE DELETE METHOD
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
 
-	var diags diag.Diagnostics
-	diags = append(diags, diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Account cannot be deleted via Terraform. https://docs.newrelic.com/docs/apis/nerdgraph/examples/manage-accounts-nerdgraph/#delete",
-	})
-	return diags
+	resp, err := client.Synthetics.SyntheticsDeleteMonitorDowntimeWithContext(ctx, synthetics.EntityGUID(d.Id()))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if resp == nil {
+		return diag.FromErr(errors.New("encountered an API error while trying to delete the monitor downtime: nil response returned"))
+	}
+	return nil
 }

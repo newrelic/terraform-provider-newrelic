@@ -4,11 +4,15 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 	"golang.org/x/exp/slices"
@@ -413,6 +417,82 @@ func getPublicLocationsFromEntityTags(tags []entities.EntityTag) []string {
 	}
 
 	return out
+}
+
+func getStringEntityTag(tags []entities.EntityTag, attributeName string) string {
+	log.Printf("Querying for attribute %s\n", attributeName)
+	out := []string{}
+	for _, t := range tags {
+		if t.Key == attributeName {
+			log.Printf("REACHED %s\n", attributeName)
+			log.Printf("%v\n", t.Values)
+			for _, v := range t.Values {
+				out = append(out, string(v))
+			}
+		}
+	}
+	log.Println("array out")
+	log.Println(out)
+	return out[0]
+}
+
+var monitorDowntimeAttributeReaderMap = map[string]interface{}{
+	"account_id": func(tags []entities.EntityTag) string {
+		return getStringEntityTag(tags, "accountId")
+	},
+
+	"monitor_guids": func(relationships []entities.EntityRelationship, monitorDowntimeID common.EntityGUID) []string {
+		var listOfRelatedMonitorGUIDs []string
+		for _, rel := range relationships {
+			source := rel.Source
+			target := rel.Target
+			if source.GUID == monitorDowntimeID && target.EntityType == "SYNTHETIC_MONITOR_ENTITY" {
+				listOfRelatedMonitorGUIDs = append(listOfRelatedMonitorGUIDs, string(target.GUID))
+			}
+		}
+
+		return listOfRelatedMonitorGUIDs
+	},
+
+	"mode": func(tags []entities.EntityTag) string {
+		return getStringEntityTag(tags, "type")
+	},
+
+	"time_zone": func(tags []entities.EntityTag) string {
+		return getStringEntityTag(tags, "timezone")
+	},
+
+	"start_time": func(tags []entities.EntityTag) string {
+		startTime := getStringEntityTag(tags, "startTime")
+		startTimeIntParsed, _ := strconv.ParseInt(startTime, 10, 64)
+		timezone := getStringEntityTag(tags, "timezone")
+		dt := time.Unix(startTimeIntParsed/1000, 0)
+		loc, _ := time.LoadLocation(timezone)
+		return dt.In(loc).Format("2006-01-02T15:04:05")
+	},
+
+	"end_time": func(tags []entities.EntityTag) string {
+		endTime := getStringEntityTag(tags, "endTime")
+		endTimeIntParsed, _ := strconv.ParseInt(endTime, 10, 64)
+		timezone := getStringEntityTag(tags, "timezone")
+		dt := time.Unix(endTimeIntParsed/1000, 0)
+		loc, _ := time.LoadLocation(timezone)
+		return dt.In(loc).Format("2006-01-02T15:04:05")
+	},
+}
+
+func getMonitorDowntimeAttributeValuesFromEntityTags(tags []entities.EntityTag, attributeName string) string {
+	out := []string{}
+
+	for _, t := range tags {
+		if t.Key == attributeName {
+			for _, v := range t.Values {
+				out = append(out, v)
+			}
+		}
+	}
+
+	return out[0]
 }
 
 func getMonitorID(monitorGUID string) string {
