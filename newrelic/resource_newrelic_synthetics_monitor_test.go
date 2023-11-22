@@ -274,7 +274,7 @@ func TestSyntheticsSimpleBrowserMonitor_PeriodInMinutes(t *testing.T) {
 
 	a := createIntegrationTestClient(t)
 
-	monitorName := mock.RandSeq(5)
+	monitorName := generateNameForIntegrationTestResource()
 
 	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{
 		Locations: synthetics.SyntheticsLocationsInput{
