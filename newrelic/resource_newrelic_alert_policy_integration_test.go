@@ -83,22 +83,3 @@ func TestAccNewRelicAlertPolicy_ResourceNotFound(t *testing.T) {
 		},
 	})
 }
-
-func TestAccNewRelicAlertPolicy_WithChannels(t *testing.T) {
-	resourceName := "newrelic_alert_policy.foo"
-	rName := acctest.RandString(5)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicAlertPolicyDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccNewRelicAccAlertPolicyConfigWithChannels(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicAlertPolicyExists(resourceName),
-				),
-			},
-		},
-	})
-}

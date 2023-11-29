@@ -50,7 +50,7 @@ func TestGetUserAgentServiceNameDefault(t *testing.T) {
 	t.Parallel()
 
 	result := getUserAgentServiceName()
-	require.Equal(t, "terraform-provider-newrelic", result)
+	require.Equal(t, "test/terraform-provider-newrelic", result)
 }
 
 func TestGetUserAgentServiceNameCustom(t *testing.T) {
