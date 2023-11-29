@@ -113,6 +113,16 @@ func resourceNewRelicAlertPolicyCreate(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
+func expandAlertChannelIDs(channelIDs []interface{}) []int {
+	ids := make([]int, len(channelIDs))
+
+	for i := range ids {
+		ids[i] = channelIDs[i].(int)
+	}
+
+	return ids
+}
+
 func resourceNewRelicAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient

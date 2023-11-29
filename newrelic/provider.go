@@ -121,9 +121,7 @@ func Provider() *schema.Provider {
 
 		DataSourcesMap: map[string]*schema.Resource{
 			"newrelic_account":                      dataSourceNewRelicAccount(),
-			"newrelic_alert_channel":                dataSourceNewRelicAlertChannel(),
 			"newrelic_alert_policy":                 dataSourceNewRelicAlertPolicy(),
-			"newrelic_application":                  dataSourceNewRelicApplication(),
 			"newrelic_cloud_account":                dataSourceNewRelicCloudAccount(),
 			"newrelic_entity":                       dataSourceNewRelicEntity(),
 			"newrelic_key_transaction":              dataSourceNewRelicKeyTransaction(),
@@ -136,11 +134,9 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"newrelic_alert_channel":                            resourceNewRelicAlertChannel(),
 			"newrelic_alert_condition":                          resourceNewRelicAlertCondition(),
 			"newrelic_alert_muting_rule":                        resourceNewRelicAlertMutingRule(),
 			"newrelic_alert_policy":                             resourceNewRelicAlertPolicy(),
-			"newrelic_alert_policy_channel":                     resourceNewRelicAlertPolicyChannel(),
 			"newrelic_api_access_key":                           resourceNewRelicAPIAccessKey(),
 			"newrelic_application_settings":                     resourceNewRelicApplicationSettings(),
 			"newrelic_browser_application":                      resourceNewRelicBrowserApplication(),
