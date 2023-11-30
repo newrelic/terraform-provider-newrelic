@@ -68,7 +68,7 @@ resource "newrelic_nrql_alert_condition" "your_condition" {
   account_id = 12345678
   policy_id = 67890
   type = "static"
-  name = "Successs (custom)"
+  name = "Success (custom)"
   enabled = true
   violation_time_limit_seconds = 259200
 

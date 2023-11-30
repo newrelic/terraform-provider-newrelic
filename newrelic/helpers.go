@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
-	"unicode"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/contextkeys"
@@ -80,24 +78,6 @@ func toJSON(data interface{}) string {
 	c, _ := json.MarshalIndent(data, "", "  ")
 
 	return string(c)
-}
-
-func stripWhitespace(str string) string {
-	var b strings.Builder
-	b.Grow(len(str))
-	for _, ch := range str {
-		if !unicode.IsSpace(ch) {
-			b.WriteRune(ch)
-		}
-	}
-	return b.String()
-}
-
-// Mutates original slice
-func sortIntegerSlice(integers []int) {
-	sort.Slice(integers, func(i, j int) bool {
-		return integers[i] < integers[j]
-	})
 }
 
 func stringInSlice(slice []string, str string) bool {

@@ -48,23 +48,6 @@ func TestSerializeIDs_Basic(t *testing.T) {
 	require.Equal(t, "1:2", id)
 }
 
-func TestStripWhitespace(t *testing.T) {
-	json := " { \"key\": \"value\" } "
-	e := "{\"key\":\"value\"}"
-	a := stripWhitespace(json)
-
-	require.Equal(t, e, a)
-}
-
-func TestSortIntegerSlice(t *testing.T) {
-	integers := []int{2, 1, 4, 3}
-	expected := []int{1, 2, 3, 4}
-
-	sortIntegerSlice(integers)
-
-	require.Equal(t, expected, integers)
-}
-
 func TestMergeSchemas(t *testing.T) {
 	schema1 := map[string]*schema.Schema{
 		"string_attribute": {
