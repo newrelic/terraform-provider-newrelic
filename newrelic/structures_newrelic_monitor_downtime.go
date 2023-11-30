@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
@@ -32,6 +35,10 @@ func listValidWeekDayValues() []string {
 		string(synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.SATURDAY),
 	}
 }
+
+// #################
+// Validate functions
+// #################
 
 func validateMonitorDowntimeAttributes(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	var errorsList []string
@@ -176,26 +183,487 @@ var SyntheticsMonitorDowntimeModes = struct {
 	WEEKLY:   "WEEKLY",
 }
 
-type SyntheticsMonitorDowntimeOneTimeCreateInput struct {
+// #################
+// Classes whose objects would be used in create/update requests
+// #################
+
+type SyntheticsMonitorDowntimeCommonArgumentsInput struct {
 	AccountID    int
 	Name         string
+	Mode         string
 	StartTime    synthetics.NaiveDateTime
 	EndTime      synthetics.NaiveDateTime
 	Timezone     string
 	MonitorGUIDs []synthetics.EntityGUID
 }
 
-type SyntheticsMonitorDowntimeDailyCreateInput struct {
-	SyntheticsMonitorDowntimeOneTimeCreateInput
+type SyntheticsMonitorDowntimeOneTimeInput struct {
+	SyntheticsMonitorDowntimeCommonArgumentsInput
+}
+
+type SyntheticsMonitorDowntimeDailyInput struct {
+	SyntheticsMonitorDowntimeCommonArgumentsInput
 	EndRepeat synthetics.SyntheticsDateWindowEndConfig
 }
 
-type SyntheticsMonitorDowntimeWeeklyCreateInput struct {
-	SyntheticsMonitorDowntimeDailyCreateInput
+type SyntheticsMonitorDowntimeWeeklyInput struct {
+	SyntheticsMonitorDowntimeDailyInput
 	MaintenanceDays []synthetics.SyntheticsMonitorDowntimeWeekDays
 }
 
-type SyntheticsMonitorDowntimeMonthlyCreateInput struct {
-	SyntheticsMonitorDowntimeDailyCreateInput
+type SyntheticsMonitorDowntimeMonthlyInput struct {
+	SyntheticsMonitorDowntimeDailyInput
 	Frequency synthetics.SyntheticsMonitorDowntimeMonthlyFrequency
+}
+
+// #################
+// GET functions used to fetch values from the configuration
+// #################
+
+func getMonitorDowntimeValuesOfCommonArguments(d *schema.ResourceData) (*SyntheticsMonitorDowntimeCommonArgumentsInput, error) {
+	commonArgumentsObject := &SyntheticsMonitorDowntimeCommonArgumentsInput{}
+
+	accountID, err := getMonitorDowntimeAccountIDFromConfiguration(d)
+	if err != nil {
+		return nil, err
+	}
+
+	name, err := getMonitorDowntimeNameFromConfiguration(d)
+	if err != nil {
+		return nil, err
+	}
+
+	mode, err := getMonitorDowntimeModeFromConfiguration(d)
+	if err != nil {
+		return nil, err
+	}
+
+	startTime, err := getMonitorDowntimeStartTimeFromConfiguration(d)
+	if err != nil {
+		return nil, err
+	}
+
+	endTime, err := getMonitorDowntimeEndTimeFromConfiguration(d)
+	if err != nil {
+		return nil, err
+	}
+
+	timezone, err := getMonitorDowntimeTimezoneFromConfiguration(d)
+	if err != nil {
+		return nil, err
+	}
+
+	monitorGUIDs, err := getMonitorDowntimeMonitorGUIDsFromConfiguration(d)
+	if err != nil {
+		return nil, err
+	}
+
+	commonArgumentsObject.AccountID = accountID
+	commonArgumentsObject.Name = name
+	commonArgumentsObject.Mode = mode
+	commonArgumentsObject.StartTime = startTime
+	commonArgumentsObject.EndTime = endTime
+	commonArgumentsObject.Timezone = timezone
+	commonArgumentsObject.MonitorGUIDs = monitorGUIDs
+
+	return commonArgumentsObject, nil
+}
+
+func getMonitorDowntimeAccountIDFromConfiguration(d *schema.ResourceData) (int, error) {
+	val, ok := d.GetOk("account_id")
+	if ok {
+		if val.(string) == "" {
+			return 0, errors.New(fmt.Sprintf("%s has value \"\"", `account_id`))
+		} else {
+			accountIdAsInteger, err := strconv.Atoi(val.(string))
+			if err != nil {
+				return 0, err
+			}
+			return accountIdAsInteger, nil
+		}
+	} else {
+		accountIdAsInteger, err := strconv.Atoi(os.Getenv("NEW_RELIC_ACCOUNT_ID"))
+		if err != nil {
+			return 0, err
+		}
+		return accountIdAsInteger, nil
+	}
+}
+
+func getMonitorDowntimeNameFromConfiguration(d *schema.ResourceData) (string, error) {
+	val, ok := d.GetOk("name")
+	if ok {
+		if val.(string) == "" {
+			return "", errors.New(fmt.Sprintf("%s has value \"\"", `name`))
+		} else {
+			return val.(string), nil
+		}
+	} else {
+		return "", errors.New(fmt.Sprintf(" value of argument %s not specified", `name`))
+	}
+}
+
+func getMonitorDowntimeModeFromConfiguration(d *schema.ResourceData) (string, error) {
+	val, ok := d.GetOk("mode")
+	if ok {
+		if val.(string) == "" {
+			return "", errors.New(fmt.Sprintf("%s has value \"\"", `mode`))
+		} else {
+			return val.(string), nil
+		}
+	} else {
+		return "", errors.New(fmt.Sprintf(" value of argument %s not specified", `mode`))
+	}
+}
+
+func getMonitorDowntimeStartTimeFromConfiguration(d *schema.ResourceData) (synthetics.NaiveDateTime, error) {
+	val, ok := d.GetOk("start_time")
+	if ok {
+		if val.(string) == "" {
+			return "", errors.New(fmt.Sprintf("%s has value \"\"", `start_time`))
+		} else {
+			return synthetics.NaiveDateTime(val.(string)), nil
+		}
+	} else {
+		return "", errors.New(fmt.Sprintf(" value of argument %s not specified", `start_time`))
+	}
+}
+
+func getMonitorDowntimeEndTimeFromConfiguration(d *schema.ResourceData) (synthetics.NaiveDateTime, error) {
+	val, ok := d.GetOk("end_time")
+	if ok {
+		if val.(string) == "" {
+			return "", errors.New(fmt.Sprintf("%s has value \"\"", `end_time`))
+		} else {
+			return synthetics.NaiveDateTime(val.(string)), nil
+		}
+	} else {
+		return "", errors.New(fmt.Sprintf(" value of argument %s not specified", `end_time`))
+	}
+}
+
+func getMonitorDowntimeTimezoneFromConfiguration(d *schema.ResourceData) (string, error) {
+	val, ok := d.GetOk("time_zone")
+	if ok {
+		if val.(string) == "" {
+			return "", errors.New(fmt.Sprintf("%s has value \"\"", `time_zone`))
+		} else {
+			return val.(string), nil
+		}
+	} else {
+		return "", errors.New(fmt.Sprintf(" value of argument %s not specified", `time_zone`))
+	}
+}
+
+func getMonitorDowntimeMonitorGUIDsFromConfiguration(d *schema.ResourceData) ([]synthetics.EntityGUID, error) {
+	val, ok := d.GetOk("monitor_guids")
+	if ok {
+		in := val.(*schema.Set).List()
+		out := make([]synthetics.EntityGUID, len(in))
+		for i := range in {
+			out[i] = synthetics.EntityGUID(in[i].(string))
+		}
+		// no condition or error thrown if the array is empty, as monitor GUIDs are not mandatory with monitor downtime
+		return out, nil
+	}
+	return nil, nil
+}
+
+// #################
+// GET functions used by create methods
+// #################
+
+func getMonitorDowntimeOneTimeValues(d *schema.ResourceData, commonArgumentsObject *SyntheticsMonitorDowntimeCommonArgumentsInput) (*SyntheticsMonitorDowntimeOneTimeInput, error) {
+	return &SyntheticsMonitorDowntimeOneTimeInput{
+		SyntheticsMonitorDowntimeCommonArgumentsInput: *commonArgumentsObject,
+	}, nil
+}
+
+func getMonitorDowntimeDailyValues(d *schema.ResourceData, commonArgumentsObject *SyntheticsMonitorDowntimeCommonArgumentsInput) (*SyntheticsMonitorDowntimeDailyInput, error) {
+	monitorDowntimeDailyInput := &SyntheticsMonitorDowntimeDailyInput{
+		SyntheticsMonitorDowntimeCommonArgumentsInput: *commonArgumentsObject,
+	}
+
+	_, ok := d.GetOk("end_repeat")
+	if ok {
+		// endRepeatStruct := endRepeat.(map[string]interface{})
+		var endRepeatInput synthetics.SyntheticsDateWindowEndConfig
+		onDate, onDateOk := d.GetOk("end_repeat.0.on_date")
+		onRepeat, onRepeatOk := d.GetOk("end_repeat.0.on_repeat")
+
+		if !onDateOk && !onRepeatOk {
+			return nil, errors.New("the block `end_repeat` requires one of `on_date` or `on_repeat` to be specified")
+		} else if onDateOk && onRepeatOk {
+			return nil, errors.New("the block `end_repeat` requires only one of `on_date` or `on_repeat` to be specified, both cannot be specified")
+		}
+
+		endRepeatInput.OnDate = synthetics.Date(onDate.(string))
+		endRepeatInput.OnRepeat = onRepeat.(int)
+		monitorDowntimeDailyInput.EndRepeat = endRepeatInput
+
+	} else {
+		monitorDowntimeDailyInput.EndRepeat = synthetics.SyntheticsDateWindowEndConfig{}
+	}
+
+	return monitorDowntimeDailyInput, nil
+}
+
+func getMonitorDowntimeWeeklyValues(d *schema.ResourceData, commonArgumentsObject *SyntheticsMonitorDowntimeCommonArgumentsInput) (*SyntheticsMonitorDowntimeWeeklyInput, error) {
+	monitorDowntimeDailyInput, err := getMonitorDowntimeDailyValues(d, commonArgumentsObject)
+	if err != nil {
+		return nil, err
+	}
+
+	monitorDowntimeWeeklyInput := &SyntheticsMonitorDowntimeWeeklyInput{
+		SyntheticsMonitorDowntimeDailyInput: *monitorDowntimeDailyInput,
+	}
+
+	// mandatory argument
+	listOfMaintenanceDaysInConfiguration, err := getMaintenanceDaysList(d)
+	if err != nil {
+		return nil, err
+	}
+	maintenanceDays, err := convertSyntheticsMonitorDowntimeMaintenanceDays(listOfMaintenanceDaysInConfiguration)
+	if err != nil {
+		return nil, err
+	}
+	monitorDowntimeWeeklyInput.MaintenanceDays = maintenanceDays
+
+	return monitorDowntimeWeeklyInput, nil
+}
+
+func getMonitorDowntimeMonthlyValues(d *schema.ResourceData, commonArgumentsObject *SyntheticsMonitorDowntimeCommonArgumentsInput) (*SyntheticsMonitorDowntimeMonthlyInput, error) {
+	monitorDowntimeDailyInput, err := getMonitorDowntimeDailyValues(d, commonArgumentsObject)
+	if err != nil {
+		return nil, err
+	}
+
+	monitorDowntimeMonthlyInput := &SyntheticsMonitorDowntimeMonthlyInput{
+		SyntheticsMonitorDowntimeDailyInput: *monitorDowntimeDailyInput,
+	}
+
+	_, ok := d.GetOk("frequency")
+	if !ok {
+		return nil, errors.New("`frequency` is a required argument with monthly monitor downtime")
+	} else {
+		var frequencyInput synthetics.SyntheticsMonitorDowntimeMonthlyFrequency
+		daysOfMonth, daysOfMonthOk := d.GetOk("frequency.0.days_of_month")
+		_, daysOfWeekOk := d.GetOk("frequency.0.days_of_week")
+		if !daysOfMonthOk && !daysOfWeekOk {
+			return nil, errors.New("the block `frequency` requires one of `days_of_month` or `days_of_week` to be specified")
+		} else if daysOfMonthOk && daysOfWeekOk {
+			return nil, errors.New("the block `frequency` requires one of `days_of_month` or `days_of_week` to be specified but not both")
+		} else if daysOfMonthOk && !daysOfWeekOk {
+			frequencyInput.DaysOfMonth = getFrequencyDaysOfMonthList(daysOfMonth.(*schema.Set).List())
+		} else {
+			var daysOfWeekInput synthetics.SyntheticsDaysOfWeek
+			ordinalDayOfMonth, ordinalDayOfMonthOk := d.GetOk("frequency.0.days_of_week.0.ordinal_day_of_month")
+			weekDay, weekDayOk := d.GetOk("frequency.0.days_of_week.0.week_day")
+			if !ordinalDayOfMonthOk && !weekDayOk {
+				return nil, errors.New("the block `days_of_week` requires specifying both `ordinal_day_of_month` and `week_day`")
+			}
+			daysOfWeekInput.WeekDay = synthetics.SyntheticsMonitorDowntimeWeekDays(weekDay.(string))
+			daysOfWeekInput.OrdinalDayOfMonth = synthetics.SyntheticsMonitorDowntimeDayOfMonthOrdinal(ordinalDayOfMonth.(string))
+			frequencyInput.DaysOfWeek = &daysOfWeekInput
+		}
+		monitorDowntimeMonthlyInput.Frequency = frequencyInput
+	}
+
+	return monitorDowntimeMonthlyInput, nil
+}
+
+// #################
+// Methods which assist create methods
+// #################
+
+func (obj *SyntheticsMonitorDowntimeOneTimeInput) createMonitorDowntimeOneTime(ctx context.Context, client *newrelic.NewRelic) (string, error) {
+	resp, err := client.Synthetics.SyntheticsCreateOnceMonitorDowntimeWithContext(
+		ctx,
+		obj.AccountID,
+		obj.EndTime,
+		obj.MonitorGUIDs,
+		obj.Name,
+		obj.StartTime,
+		obj.Timezone,
+	)
+	if err != nil {
+		return "", err
+	}
+	if resp == nil {
+		return "", errors.New("encountered an API error while trying to create a monitor downtime: nil response returned")
+	}
+
+	return string(resp.GUID), nil
+}
+
+func (obj *SyntheticsMonitorDowntimeDailyInput) createMonitorDowntimeDaily(ctx context.Context, client *newrelic.NewRelic) (string, error) {
+	resp, err := client.Synthetics.SyntheticsCreateDailyMonitorDowntimeWithContext(
+		ctx,
+		obj.AccountID,
+		obj.EndRepeat,
+		obj.EndTime,
+		obj.MonitorGUIDs,
+		obj.Name,
+		obj.StartTime,
+		obj.Timezone,
+	)
+	if err != nil {
+		return "", err
+	}
+	if resp == nil {
+		return "", errors.New("encountered an API error while trying to create a monitor downtime: nil response returned")
+	}
+
+	return string(resp.GUID), nil
+}
+
+func (obj *SyntheticsMonitorDowntimeWeeklyInput) createMonitorDowntimeWeekly(ctx context.Context, client *newrelic.NewRelic) (string, error) {
+	resp, err := client.Synthetics.SyntheticsCreateWeeklyMonitorDowntimeWithContext(
+		ctx,
+		obj.AccountID,
+		obj.EndRepeat,
+		obj.EndTime,
+		obj.MaintenanceDays,
+		obj.MonitorGUIDs,
+		obj.Name,
+		obj.StartTime,
+		obj.Timezone,
+	)
+	if err != nil {
+		return "", err
+	}
+	if resp == nil {
+		return "", errors.New("encountered an API error while trying to create a monitor downtime: nil response returned")
+	}
+	return string(resp.GUID), nil
+}
+
+func (obj *SyntheticsMonitorDowntimeMonthlyInput) createMonitorDowntimeMonthly(ctx context.Context, client *newrelic.NewRelic) (string, error) {
+	resp, err := client.Synthetics.SyntheticsCreateMonthlyMonitorDowntimeWithContext(
+		ctx,
+		obj.AccountID,
+		obj.EndRepeat,
+		obj.EndTime,
+		obj.Frequency,
+		obj.MonitorGUIDs,
+		obj.Name,
+		obj.StartTime,
+		obj.Timezone,
+	)
+	if err != nil {
+		return "", err
+	}
+	if resp == nil {
+		return "", errors.New("encountered an API error while trying to create a monitor downtime: nil response returned")
+	}
+
+	return string(resp.GUID), nil
+}
+
+// #################
+// Methods which assist update methods
+// #################
+
+func (obj *SyntheticsMonitorDowntimeOneTimeInput) updateMonitorDowntimeOneTime(ctx context.Context, client *newrelic.NewRelic, guid synthetics.EntityGUID) (string, error) {
+	resp, err := client.Synthetics.SyntheticsEditMonitorDowntimeWithContext(
+		ctx,
+		synthetics.SyntheticsMonitorDowntimeDailyConfig{},
+		guid,
+		obj.MonitorGUIDs,
+		synthetics.SyntheticsMonitorDowntimeMonthlyConfig{},
+		obj.Name,
+		synthetics.SyntheticsMonitorDowntimeOnceConfig{
+			EndTime:   obj.EndTime,
+			StartTime: obj.StartTime,
+			Timezone:  obj.Timezone,
+		},
+		synthetics.SyntheticsMonitorDowntimeWeeklyConfig{},
+	)
+	if err != nil {
+		return "", err
+	}
+	if resp == nil {
+		return "", errors.New("encountered an API error while trying to create a monitor downtime: nil response returned")
+	}
+
+	return string(resp.GUID), nil
+}
+
+func (obj *SyntheticsMonitorDowntimeDailyInput) updateMonitorDowntimeDaily(ctx context.Context, client *newrelic.NewRelic, guid synthetics.EntityGUID) (string, error) {
+	resp, err := client.Synthetics.SyntheticsEditMonitorDowntimeWithContext(
+		ctx,
+		synthetics.SyntheticsMonitorDowntimeDailyConfig{
+			EndTime:   obj.EndTime,
+			StartTime: obj.StartTime,
+			Timezone:  obj.Timezone,
+			EndRepeat: obj.EndRepeat,
+		},
+		guid,
+		obj.MonitorGUIDs,
+		synthetics.SyntheticsMonitorDowntimeMonthlyConfig{},
+		obj.Name,
+		synthetics.SyntheticsMonitorDowntimeOnceConfig{},
+		synthetics.SyntheticsMonitorDowntimeWeeklyConfig{},
+	)
+	if err != nil {
+		return "", err
+	}
+	if resp == nil {
+		return "", errors.New("encountered an API error while trying to create a monitor downtime: nil response returned")
+	}
+
+	return string(resp.GUID), nil
+}
+
+func (obj *SyntheticsMonitorDowntimeWeeklyInput) updateMonitorDowntimeWeekly(ctx context.Context, client *newrelic.NewRelic, guid synthetics.EntityGUID) (string, error) {
+	resp, err := client.Synthetics.SyntheticsEditMonitorDowntimeWithContext(
+		ctx,
+		synthetics.SyntheticsMonitorDowntimeDailyConfig{},
+		guid,
+		obj.MonitorGUIDs,
+		synthetics.SyntheticsMonitorDowntimeMonthlyConfig{},
+		obj.Name,
+		synthetics.SyntheticsMonitorDowntimeOnceConfig{},
+		synthetics.SyntheticsMonitorDowntimeWeeklyConfig{
+			EndTime:         obj.EndTime,
+			StartTime:       obj.StartTime,
+			Timezone:        obj.Timezone,
+			EndRepeat:       obj.EndRepeat,
+			MaintenanceDays: obj.MaintenanceDays,
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+	if resp == nil {
+		return "", errors.New("encountered an API error while trying to create a monitor downtime: nil response returned")
+	}
+	return string(resp.GUID), nil
+}
+
+func (obj *SyntheticsMonitorDowntimeMonthlyInput) updateMonitorDowntimeMonthly(ctx context.Context, client *newrelic.NewRelic, guid synthetics.EntityGUID) (string, error) {
+	resp, err := client.Synthetics.SyntheticsEditMonitorDowntimeWithContext(
+		ctx,
+		synthetics.SyntheticsMonitorDowntimeDailyConfig{},
+		guid,
+		obj.MonitorGUIDs,
+		synthetics.SyntheticsMonitorDowntimeMonthlyConfig{
+			EndTime:   obj.EndTime,
+			StartTime: obj.StartTime,
+			Timezone:  obj.Timezone,
+			EndRepeat: obj.EndRepeat,
+			Frequency: obj.Frequency,
+		},
+		obj.Name,
+		synthetics.SyntheticsMonitorDowntimeOnceConfig{},
+		synthetics.SyntheticsMonitorDowntimeWeeklyConfig{},
+	)
+	if err != nil {
+		return "", err
+	}
+	if resp == nil {
+		return "", errors.New("encountered an API error while trying to create a monitor downtime: nil response returned")
+	}
+
+	return string(resp.GUID), nil
 }
