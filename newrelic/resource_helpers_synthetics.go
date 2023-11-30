@@ -482,7 +482,7 @@ func setMonitorDowntimeFrequency(d *schema.ResourceData, tags []entities.EntityT
 		if t.Key == daysOfMonthTag {
 			for _, v := range t.Values {
 				value, _ := strconv.Atoi(v)
-				daysOfMonthValue = append(daysOfMonthValue, value+100)
+				daysOfMonthValue = append(daysOfMonthValue, value)
 			}
 		} else if t.Key == daysOfWeekTag {
 			for _, v := range t.Values {

@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/accountmanagement"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
@@ -40,6 +39,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 				Description: "A list of GUIDs of monitors, to which the created Monitor Downtime shall be applied.",
+				// ValidateFunc: validation included in validateMonitorDowntimeMonitorGUIDs as this is a set and is unsupported by the "validation" package
 			},
 			"account_id": {
 				Type:        schema.TypeString,
@@ -60,9 +60,10 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				ValidateFunc: validateNaiveDateTime,
 			},
 			"time_zone": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The timezone that applies to the Monitor Downtime schedule.",
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "The timezone that applies to the Monitor Downtime schedule.",
+				ValidateFunc: validateMonitorDowntimeTimeZone,
 			},
 			// used with daily, weekly and monthly monitor downtime
 			"end_repeat": {
@@ -71,7 +72,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				MaxItems:    1,
 				Optional:    true,
 				Description: "A specification of when the Monitor Downtime should end its repeat cycle, by number of occurrences or date.",
-				// TODO: define validation to not use this with createOnce monitor downtime and keep this optional with other three types
+				// ValidateFunc: validation included in validateMonitorDowntimeEndRepeatStructure as this is a set; lists and sets are not supported by the "validation" package
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"on_date": {
@@ -79,7 +80,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 							Optional:     true,
 							ExactlyOneOf: []string{"end_repeat.0.on_date", "end_repeat.0.on_repeat"},
 							Description:  "A date, on which the Monitor Downtime's repeat cycle is expected to end.",
-							// TODO: define date validation here (possibly YYYY-MM-DD), didn't do it yet as the mutation is broken
+							ValidateFunc: validateMonitorDowntimeOnDate,
 						},
 						"on_repeat": {
 							Type:         schema.TypeInt,
@@ -96,10 +97,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 				Description: "A list of maintenance days to be included with the created weekly Monitor Downtime.",
-				// note: ValidateFunc doesn't work with lists/sets in the current Terraform SDK, hence, validation needs to be done elsewhere in the code
-				// TODO: define validation in such a way that this is used only with weekly monitor downtime
-				// TODO: (reqd. only for weekly and not allowed for the rest)
-				// TODO: in that function, include an "if" to check if it is "MONDAY", "TUESDAY", ... "SUNDAY"
+				// ValidateFunc: validation included in validateMonitorDowntimeMaintenanceDaysStructure as this is a set; lists and sets are not supported by the "validation" package
 			},
 			// used with monthly monitor downtime
 			"frequency": {
@@ -108,7 +106,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				MaxItems:    1,
 				Optional:    true,
 				Description: "Configuration options for which days of the month a monitor downtime will occur",
-				// TODO: define validation to use this only with monthly monitor downtime
+				// ValidateFunc: validation included in validateMonitorDowntimeFrequencyStructure to use this argument only with "MONTHLY" mode
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"days_of_month": {
@@ -117,7 +115,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 							Optional:     true,
 							ExactlyOneOf: []string{"frequency.0.days_of_month", "frequency.0.days_of_week"},
 							Description:  "A numerical list of days of a month on which the Monitor Downtime is scheduled to run.",
-							// TODO: define validation to have these values between 1 and 31
+							// ValidateFunc: validation included in validateMonitorDowntimeFrequencyStructure as this is a set; lists and sets are not supported by the "validation" package
 						},
 						"days_of_week": {
 							Type:         schema.TypeList,
@@ -129,16 +127,16 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"ordinal_day_of_month": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "An occurrence of the day selected within the month.",
-										// TODO: define this to belong to ["FIRST", "SECOND", "THIRD", "FOURTH", "LAST"]
+										Type:         schema.TypeString,
+										Required:     true,
+										Description:  "An occurrence of the day selected within the month.",
+										ValidateFunc: validation.StringInSlice(listValidOrdinalDayOfMonthValues(), false),
 									},
 									"week_day": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The day of the week on which the Monitor Downtime would run.",
-										// TODO: define this to belong to ["MONDAY", "TUESDAY", ... "SUNDAY"]
+										Type:         schema.TypeString,
+										Required:     true,
+										Description:  "The day of the week on which the Monitor Downtime would run.",
+										ValidateFunc: validation.StringInSlice(listValidWeekDayValues(), false),
 									},
 								},
 							},
@@ -147,13 +145,19 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				},
 			},
 			"mode": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "An identifier of the type of Monitor Downtime to be created.",
-				ValidateFunc: validation.StringInSlice([]string{"ONE_TIME", "DAILY", "MONTHLY", "WEEKLY"}, false),
-				ForceNew:     true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "An identifier of the type of Monitor Downtime to be created.",
+				ValidateFunc: validation.StringInSlice([]string{
+					SyntheticsMonitorDowntimeModes.ONE_TIME,
+					SyntheticsMonitorDowntimeModes.DAILY,
+					SyntheticsMonitorDowntimeModes.MONTHLY,
+					SyntheticsMonitorDowntimeModes.WEEKLY,
+				}, false),
+				ForceNew: true,
 			},
 		},
+		CustomizeDiff: validateMonitorDowntimeAttributes,
 	}
 }
 
@@ -511,29 +515,170 @@ func resourceNewRelicMonitorDowntimeRead(ctx context.Context, d *schema.Resource
 }
 
 func resourceNewRelicMonitorDowntimeUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// TODO: WRITE THE UPDATE METHOD
-
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
-	accountID, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	updateAccountInput := accountmanagement.AccountManagementUpdateInput{
-		Name: d.Get("name").(string),
-		ID:   accountID,
-	}
-	updated, err := client.AccountManagement.AccountManagementUpdateAccount(updateAccountInput)
-
+	requiredArgumentsMap, err := getValuesOfRequiredArguments(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if updated == nil {
-		return diag.Errorf("err: Account not Updated. Please check the input details")
+	switch requiredArgumentsMap["mode"] {
+	case "ONE_TIME":
+		monitorGUIDs, err := getMonitorGUIDs(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
+			resp, err := client.Synthetics.SyntheticsEditMonitorDowntimeWithContext(
+				ctx,
+				synthetics.SyntheticsMonitorDowntimeDailyConfig{},
+				synthetics.EntityGUID(d.Id()),
+				monitorGUIDs,
+				synthetics.SyntheticsMonitorDowntimeMonthlyConfig{},
+				requiredArgumentsMap["name"],
+				synthetics.SyntheticsMonitorDowntimeOnceConfig{
+					EndTime:   synthetics.NaiveDateTime(requiredArgumentsMap["end_time"]),
+					StartTime: synthetics.NaiveDateTime(requiredArgumentsMap["start_time"]),
+					Timezone:  requiredArgumentsMap["time_zone"],
+				},
+				synthetics.SyntheticsMonitorDowntimeWeeklyConfig{},
+			)
+			if err != nil {
+				if err.Error() == "An error occurred resolving this field" {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+
+			}
+
+			if resp == nil {
+				return resource.NonRetryableError(errors.New("encountered an API error while trying to create a monitor downtime: nil response returned"))
+			}
+			return nil
+		})
+
+		if retryErr != nil {
+			log.Fatalf("Unable to find application entity: %s", retryErr)
+		}
+
+		if retryErr != nil {
+			d.SetId("")
+			return diag.FromErr(err)
+		}
+		break
+	case "DAILY":
+		conditionalAttributesMap, err := getValuesOfDailyMonitorDowntimeArguments(d)
+		// TBD
+		x := conditionalAttributesMap["end_repeat"].(synthetics.SyntheticsDateWindowEndConfig)
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		resp, err := client.Synthetics.SyntheticsEditMonitorDowntimeWithContext(
+			ctx,
+			synthetics.SyntheticsMonitorDowntimeDailyConfig{},
+			synthetics.EntityGUID(d.Id()),
+			conditionalAttributesMap["monitor_guids"].([]synthetics.EntityGUID),
+			synthetics.SyntheticsMonitorDowntimeMonthlyConfig{
+				EndTime:   synthetics.NaiveDateTime(requiredArgumentsMap["end_time"]),
+				StartTime: synthetics.NaiveDateTime(requiredArgumentsMap["start_time"]),
+				Timezone:  requiredArgumentsMap["time_zone"],
+				EndRepeat: x,
+			},
+			requiredArgumentsMap["name"],
+			synthetics.SyntheticsMonitorDowntimeOnceConfig{},
+			synthetics.SyntheticsMonitorDowntimeWeeklyConfig{},
+		)
+		if err != nil {
+			d.SetId("")
+			return diag.FromErr(err)
+		}
+		if resp == nil {
+			d.SetId("")
+			return diag.FromErr(errors.New("encountered an API error while trying to create a monitor downtime: nil response returned"))
+		}
+		d.SetId(string(resp.GUID))
+		break
+	case "WEEKLY":
+		err := validateMonitorDowntimeMaintenanceDays(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		conditionalAttributesMap, err := getValuesOfWeeklyMonitorDowntimeArguments(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		x := conditionalAttributesMap["end_repeat"].(synthetics.SyntheticsDateWindowEndConfig)
+		y := conditionalAttributesMap["maintenance_days"].([]synthetics.SyntheticsMonitorDowntimeWeekDays)
+
+		resp, err := client.Synthetics.SyntheticsEditMonitorDowntimeWithContext(
+			ctx,
+			synthetics.SyntheticsMonitorDowntimeDailyConfig{},
+			synthetics.EntityGUID(d.Id()),
+			conditionalAttributesMap["monitor_guids"].([]synthetics.EntityGUID),
+			synthetics.SyntheticsMonitorDowntimeMonthlyConfig{},
+			requiredArgumentsMap["name"],
+			synthetics.SyntheticsMonitorDowntimeOnceConfig{},
+			synthetics.SyntheticsMonitorDowntimeWeeklyConfig{
+				EndTime:         synthetics.NaiveDateTime(requiredArgumentsMap["end_time"]),
+				StartTime:       synthetics.NaiveDateTime(requiredArgumentsMap["start_time"]),
+				Timezone:        requiredArgumentsMap["time_zone"],
+				EndRepeat:       x,
+				MaintenanceDays: y,
+			},
+		)
+
+		if err != nil {
+			d.SetId("")
+			return diag.FromErr(err)
+		}
+		if resp == nil {
+			d.SetId("")
+			return diag.FromErr(errors.New("encountered an API error while trying to create a monitor downtime: nil response returned"))
+		}
+		d.SetId(string(resp.GUID))
+		break
+	case "MONTHLY":
+		conditionalAttributesMap, err := getValuesOfMonthlyMonitorDowntimeArguments(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		x := conditionalAttributesMap["end_repeat"].(synthetics.SyntheticsDateWindowEndConfig)
+		y := conditionalAttributesMap["frequency"].(synthetics.SyntheticsMonitorDowntimeMonthlyFrequency)
+		resp, err := client.Synthetics.SyntheticsEditMonitorDowntimeWithContext(
+			ctx,
+			synthetics.SyntheticsMonitorDowntimeDailyConfig{},
+			synthetics.EntityGUID(d.Id()),
+			conditionalAttributesMap["monitor_guids"].([]synthetics.EntityGUID),
+			synthetics.SyntheticsMonitorDowntimeMonthlyConfig{
+				EndTime:   synthetics.NaiveDateTime(requiredArgumentsMap["end_time"]),
+				StartTime: synthetics.NaiveDateTime(requiredArgumentsMap["start_time"]),
+				Timezone:  requiredArgumentsMap["time_zone"],
+				EndRepeat: x,
+				Frequency: y,
+			},
+			requiredArgumentsMap["name"],
+			synthetics.SyntheticsMonitorDowntimeOnceConfig{},
+			synthetics.SyntheticsMonitorDowntimeWeeklyConfig{},
+		)
+
+		if err != nil {
+			d.SetId("")
+			return diag.FromErr(err)
+		}
+		if resp == nil {
+			d.SetId("")
+			return diag.FromErr(errors.New("encountered an API error while trying to create a monitor downtime: nil response returned"))
+		}
+		d.SetId(string(resp.GUID))
+		break
+	default:
+		return diag.FromErr(errors.New("invalid mode of operation: 'mode' can be 'ONE_TIME', 'DAILY', 'WEEKLY' or 'MONTHLY'"))
 	}
 
-	return resourceNewRelicAccountRead(ctx, d, meta)
+	return resourceNewRelicMonitorDowntimeRead(ctx, d, meta)
 }
 
 func resourceNewRelicMonitorDowntimeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
