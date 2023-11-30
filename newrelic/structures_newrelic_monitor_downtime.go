@@ -363,10 +363,12 @@ func getMonitorDowntimeMonitorGUIDsFromConfiguration(d *schema.ResourceData) ([]
 		for i := range in {
 			out[i] = synthetics.EntityGUID(in[i].(string))
 		}
-		// no condition or error thrown if the array is empty, as monitor GUIDs are not mandatory with monitor downtime
+		if len(out) == 0 {
+			return []synthetics.EntityGUID{}, nil
+		}
 		return out, nil
 	}
-	return nil, nil
+	return []synthetics.EntityGUID{}, nil
 }
 
 // #################
