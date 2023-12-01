@@ -6,11 +6,15 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/newrelic"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
+	"golang.org/x/exp/slices"
 )
 
 // validate functions
@@ -34,6 +38,26 @@ func listValidWeekDayValues() []string {
 		string(synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.FRIDAY),
 		string(synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.SATURDAY),
 	}
+}
+
+var syntheticsMonitorDowntimeMaintenanceDaysMap = map[string]synthetics.SyntheticsMonitorDowntimeWeekDays{
+	"SUNDAY":    synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.SUNDAY,
+	"MONDAY":    synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.MONDAY,
+	"TUESDAY":   synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.TUESDAY,
+	"WEDNESDAY": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.WEDNESDAY,
+	"THURSDAY":  synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.THURSDAY,
+	"FRIDAY":    synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.FRIDAY,
+	"SATURDAY":  synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.SATURDAY,
+}
+
+func listSyntheticsMonitorDowntimeValidMaintenanceDays() []string {
+	keys := make([]string, 0, len(syntheticsMonitorDowntimeMaintenanceDaysMap))
+
+	for k := range syntheticsMonitorDowntimeMaintenanceDaysMap {
+		keys = append(keys, k)
+	}
+
+	return keys
 }
 
 // #################
@@ -668,4 +692,236 @@ func (obj *SyntheticsMonitorDowntimeMonthlyInput) updateMonitorDowntimeMonthly(c
 	}
 
 	return string(resp.GUID), nil
+}
+
+// #################
+// Other Helper Functions
+// #################
+
+func getMaintenanceDaysList(d *schema.ResourceData) ([]string, error) {
+	val, ok := d.GetOk("maintenance_days")
+	if !ok {
+		return nil, errors.New("`maintenance_days` not found in the configuration")
+	}
+	if ok {
+		in := val.(*schema.Set).List()
+		out := make([]string, len(in))
+		for i := range in {
+			out[i] = in[i].(string)
+		}
+		if len(out) == 0 {
+			return nil, errors.New("invalid specification: empty list received in the argument 'maintenance_days'")
+		} else {
+			return out, nil
+		}
+	}
+	return nil, nil
+}
+
+func getFrequencyDaysOfMonthList(daysOfMonth []interface{}) []int {
+	out := make([]int, len(daysOfMonth))
+	for i := range out {
+		out[i] = daysOfMonth[i].(int)
+	}
+	return out
+}
+
+var syntheticsMonitorDowntimeMaintenanceDaysAliasesMap = map[string]synthetics.SyntheticsMonitorDowntimeWeekDays{
+	"SU": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.SUNDAY,
+	"MO": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.MONDAY,
+	"TU": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.TUESDAY,
+	"WE": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.WEDNESDAY,
+	"TH": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.THURSDAY,
+	"FR": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.FRIDAY,
+	"SA": synthetics.SyntheticsMonitorDowntimeWeekDaysTypes.SATURDAY,
+}
+
+func convertSyntheticsMonitorDowntimeMaintenanceDays(maintenanceDays []string) ([]synthetics.SyntheticsMonitorDowntimeWeekDays, error) {
+	maintenanceDaysTypeCasted := make([]synthetics.SyntheticsMonitorDowntimeWeekDays, 0, len(maintenanceDays))
+	listOfValidMaintenanceDays := listSyntheticsMonitorDowntimeValidMaintenanceDays()
+
+	for index, value := range maintenanceDays {
+		isValidDay := slices.Contains(listOfValidMaintenanceDays, value)
+		if !isValidDay {
+			return nil, errors.New(fmt.Sprintf("expected maintenance_days[%d] to be one of %v, got %s", index, listOfValidMaintenanceDays, value))
+		} else {
+			maintenanceDaysTypeCasted = append(maintenanceDaysTypeCasted, syntheticsMonitorDowntimeMaintenanceDaysMap[value])
+		}
+	}
+	return maintenanceDaysTypeCasted, nil
+}
+
+func getStringEntityTag(tags []entities.EntityTag, attributeName string) string {
+	out := []string{}
+	for _, t := range tags {
+		if t.Key == attributeName {
+			for _, v := range t.Values {
+				out = append(out, string(v))
+			}
+		}
+	}
+	return out[0]
+}
+
+// #################
+// Functions which help set values in the state
+// #################
+
+func setMonitorDowntimeFrequency(d *schema.ResourceData, tags []entities.EntityTag) {
+	daysOfMonthTag := "monthDay"
+	daysOfWeekTag := "specificWeekDay"
+
+	var daysOfMonthValue []int
+	var daysOfWeekValue string = ""
+
+	// TODO: is there a better way to do this? (not initialise with -1 but something like nil which I am not able to do)
+
+	for _, t := range tags {
+		if t.Key == daysOfMonthTag {
+			for _, v := range t.Values {
+				value, _ := strconv.Atoi(v)
+				daysOfMonthValue = append(daysOfMonthValue, value)
+			}
+		} else if t.Key == daysOfWeekTag {
+			for _, v := range t.Values {
+				daysOfWeekValue = v
+			}
+		}
+	}
+
+	// if neither monthDay or specificWeekDay is found in the tags, it means frequency is absent in the configuration
+	if len(daysOfMonthValue) == 0 && daysOfWeekValue == "" {
+		return
+	}
+
+	if len(daysOfMonthValue) != 0 {
+		_ = d.Set("frequency", []map[string]interface{}{
+			{
+				"days_of_month": daysOfMonthValue,
+			},
+		})
+	}
+
+	if daysOfWeekValue != "" {
+		value := strings.Split(daysOfWeekValue, ":")
+		ordinalDayOfMonth := value[0]
+		weekDay := value[1]
+
+		_ = d.Set("frequency", []map[string]interface{}{
+			{
+				"days_of_week": []map[string]interface{}{
+					{
+						"ordinal_day_of_month": ordinalDayOfMonth,
+						"week_day":             weekDay,
+					},
+				},
+			},
+		})
+	}
+}
+
+func setMonitorDowntimeMaintenanceDays(d *schema.ResourceData, tags []entities.EntityTag) {
+	maintenanceDaysTag := "weekDay"
+	var maintenanceDaysValue []string
+	for _, t := range tags {
+		if t.Key == maintenanceDaysTag {
+			for _, v := range t.Values {
+				val, ok := syntheticsMonitorDowntimeMaintenanceDaysAliasesMap[v]
+				if ok {
+					maintenanceDaysValue = append(maintenanceDaysValue, string(val))
+				}
+			}
+		}
+	}
+	_ = d.Set("maintenance_days", maintenanceDaysValue)
+}
+
+func setMonitorDowntimeEndRepeat(d *schema.ResourceData, tags []entities.EntityTag, timezone string) {
+	onDateTag := "endRepeat"
+	onRepeatTag := "occurrences"
+
+	onDateValue := ""
+
+	// TODO: is there a better way to do this? (not initialise with -1 but something like nil which I am not able to do)
+	onRepeatValue := -1
+
+	for _, t := range tags {
+		if t.Key == onDateTag {
+			for _, v := range t.Values {
+				onDateValue = v
+			}
+		} else if t.Key == onRepeatTag {
+			for _, v := range t.Values {
+				onRepeatValue, _ = strconv.Atoi(v)
+			}
+		}
+	}
+
+	// if neither onDate or onRepeat is found in the tags, it means endRepeat is absent in the configuration
+	if onDateValue == "" && onRepeatValue == -1 {
+		return
+	}
+
+	if onDateValue != "" {
+		onDateValueParsed, _ := strconv.ParseInt(onDateValue, 10, 64)
+		dt := time.Unix(onDateValueParsed/1000, 0)
+		loc, _ := time.LoadLocation(timezone)
+		_ = d.Set("end_repeat", []map[string]interface{}{
+			{
+				"on_date": dt.In(loc).Format("2006-01-02"),
+			},
+		})
+	}
+
+	if onRepeatValue != -1 {
+		_ = d.Set("end_repeat", []map[string]interface{}{
+			{
+				"on_repeat": onRepeatValue,
+			},
+		})
+	}
+
+}
+
+func setMonitorDowntimeAccountId(tags []entities.EntityTag) string {
+	return getStringEntityTag(tags, "accountId")
+}
+
+func setMonitorDowntimeMode(tags []entities.EntityTag) string {
+	return getStringEntityTag(tags, "type")
+}
+
+func setMonitorDowntimeTimezone(tags []entities.EntityTag) string {
+	return getStringEntityTag(tags, "timezone")
+}
+
+func setMonitorDowntimeStartTime(tags []entities.EntityTag) string {
+	startTime := getStringEntityTag(tags, "startTime")
+	startTimeIntParsed, _ := strconv.ParseInt(startTime, 10, 64)
+	timezone := getStringEntityTag(tags, "timezone")
+	dt := time.Unix(startTimeIntParsed/1000, 0)
+	loc, _ := time.LoadLocation(timezone)
+	return dt.In(loc).Format("2006-01-02T15:04:05")
+}
+
+func setMonitorDowntimeEndTime(tags []entities.EntityTag) string {
+	endTime := getStringEntityTag(tags, "endTime")
+	endTimeIntParsed, _ := strconv.ParseInt(endTime, 10, 64)
+	timezone := getStringEntityTag(tags, "timezone")
+	dt := time.Unix(endTimeIntParsed/1000, 0)
+	loc, _ := time.LoadLocation(timezone)
+	return dt.In(loc).Format("2006-01-02T15:04:05")
+}
+
+func setMonitorDowntimeMonitorGUIDs(relationships []entities.EntityRelationship, monitorDowntimeID common.EntityGUID) []string {
+	var listOfRelatedMonitorGUIDs []string
+	for _, rel := range relationships {
+		source := rel.Source
+		target := rel.Target
+		if source.GUID == monitorDowntimeID && target.EntityType == "SYNTHETIC_MONITOR_ENTITY" {
+			listOfRelatedMonitorGUIDs = append(listOfRelatedMonitorGUIDs, string(target.GUID))
+		}
+	}
+
+	return listOfRelatedMonitorGUIDs
 }

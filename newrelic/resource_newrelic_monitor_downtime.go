@@ -258,14 +258,14 @@ func resourceNewRelicMonitorDowntimeRead(ctx context.Context, d *schema.Resource
 		log.Fatalf("Unable to find application entity: %s", retryErr)
 	}
 
-	mode := monitorDowntimeAttributeReaderMap["mode"].(func([]entities.EntityTag) string)(tags)
-	timezone := monitorDowntimeAttributeReaderMap["time_zone"].(func([]entities.EntityTag) string)(tags)
+	mode := setMonitorDowntimeMode(tags)
+	timezone := setMonitorDowntimeTimezone(tags)
 	_ = d.Set("name", entity.GetName())
-	_ = d.Set("monitor_guids", monitorDowntimeAttributeReaderMap["monitor_guids"].(func([]entities.EntityRelationship, common.EntityGUID) []string)(entity.GetRelationships(), common.EntityGUID(d.Id())))
-	_ = d.Set("account_id", monitorDowntimeAttributeReaderMap["account_id"].(func([]entities.EntityTag) string)(tags))
+	_ = d.Set("monitor_guids", setMonitorDowntimeMonitorGUIDs(entity.GetRelationships(), common.EntityGUID(d.Id())))
+	_ = d.Set("account_id", setMonitorDowntimeAccountId(tags))
 	_ = d.Set("mode", mode)
-	_ = d.Set("start_time", monitorDowntimeAttributeReaderMap["start_time"].(func([]entities.EntityTag) string)(tags))
-	_ = d.Set("end_time", monitorDowntimeAttributeReaderMap["end_time"].(func([]entities.EntityTag) string)(tags))
+	_ = d.Set("start_time", setMonitorDowntimeStartTime(tags))
+	_ = d.Set("end_time", setMonitorDowntimeEndTime(tags))
 	_ = d.Set("time_zone", timezone)
 
 	if mode != "ONE_TIME" {
