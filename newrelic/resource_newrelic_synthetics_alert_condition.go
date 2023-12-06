@@ -14,10 +14,11 @@ import (
 
 func resourceNewRelicSyntheticsAlertCondition() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNewRelicSyntheticsAlertConditionCreate,
-		ReadContext:   resourceNewRelicSyntheticsAlertConditionRead,
-		UpdateContext: resourceNewRelicSyntheticsAlertConditionUpdate,
-		DeleteContext: resourceNewRelicSyntheticsAlertConditionDelete,
+		DeprecationMessage: "The `newrelic_synthetics_alert_condition` resource is deprecated and will be removed in the next major release.",
+		CreateContext:      resourceNewRelicSyntheticsAlertConditionCreate,
+		ReadContext:        resourceNewRelicSyntheticsAlertConditionRead,
+		UpdateContext:      resourceNewRelicSyntheticsAlertConditionUpdate,
+		DeleteContext:      resourceNewRelicSyntheticsAlertConditionDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
