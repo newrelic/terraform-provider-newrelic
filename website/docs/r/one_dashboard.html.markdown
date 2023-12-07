@@ -309,7 +309,7 @@ widget_line {
   height = 3
 
   nrql_query {
-    account_id  = <Another Account ID>
+    account_id  = Another_Account_ID
     query       = "FROM Transaction SELECT average(duration) FACET appName"
   }
 
@@ -409,11 +409,11 @@ resource "newrelic_one_dashboard" "multi_page_dashboard" {
       column = 1
       width  = 12
       nrql_query {
-        account_id = <First Account ID>
+        account_id = First_Account_ID
         query      = "FROM Metric SELECT rate(count(apm.service.transaction.duration), 1 minute) as 'First Account Throughput' TIMESERIES"
       }
       nrql_query {
-        account_id = <Second Account ID>
+        account_id = Second_Account_ID
         query      = "FROM Metric SELECT rate(count(apm.service.transaction.duration), 1 minute) as 'Second Account Throughput' TIMESERIES"
       }
       y_axis_left_zero = false
