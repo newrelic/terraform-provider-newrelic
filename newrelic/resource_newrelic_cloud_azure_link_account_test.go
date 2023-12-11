@@ -18,6 +18,8 @@ func TestAccNewRelicCloudAzureLinkAccount_Basic(t *testing.T) {
 	testAzureLinkAccountName := fmt.Sprintf("tf_cloud_link_account_test_azure_%s", acctest.RandString(5))
 	resourceName := "newrelic_cloud_azure_link_account.foo"
 
+	t.Skipf("Skipping test until we can get a better Azure test account")
+
 	if subAccountIDExists := os.Getenv("NEW_RELIC_SUBACCOUNT_ID"); subAccountIDExists == "" {
 		t.Skipf("Skipping this test, as NEW_RELIC_SUBACCOUNT_ID must be set for this test to run.")
 	}
