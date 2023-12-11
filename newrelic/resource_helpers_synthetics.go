@@ -19,6 +19,7 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 		"account_id": {
 			Type:        schema.TypeInt,
 			Description: "ID of the newrelic account.",
+			ForceNew:    true,
 			Computed:    true,
 			Optional:    true,
 		},
