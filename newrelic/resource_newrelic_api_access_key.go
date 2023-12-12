@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -98,7 +97,7 @@ func resourceNewrelicAPIAccessKeyImport(ctx context.Context, d *schema.ResourceD
 
 	diag := resourceNewRelicAPIAccessKeyRead(ctx, d, meta)
 	if diag.HasError() {
-		return nil, errors.New("error reading after import")
+		return nil, fmt.Errorf("error reading after import")
 	}
 
 	return []*schema.ResourceData{d}, nil
@@ -179,6 +178,10 @@ func resourceNewRelicAPIAccessKeyRead(ctx context.Context, d *schema.ResourceDat
 
 	key, readErr := client.APIAccess.GetAPIAccessKeyWithContext(ctx, d.Id(), apiaccess.APIAccessKeyType(getAPIAccessKeyType(d)))
 	if readErr != nil {
+		if strings.Contains(readErr.Error(), "Key not found") {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(readErr)
 	}
 
