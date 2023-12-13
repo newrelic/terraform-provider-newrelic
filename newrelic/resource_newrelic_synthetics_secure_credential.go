@@ -28,6 +28,7 @@ func resourceNewRelicSyntheticsSecureCredential() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 				Description: "The New Relic account ID where you want to create the secure credential.",
 			},
 			"key": {
