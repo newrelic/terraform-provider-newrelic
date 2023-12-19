@@ -23,7 +23,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  account_id                     = <Your Account ID>
+  account_id                     = 12345678
   policy_id                      = newrelic_alert_policy.foo.id
   type                           = "static"
   name                           = "foo"
@@ -150,7 +150,7 @@ resource "newrelic_alert_policy" "foo" {
 
 resource "newrelic_nrql_alert_condition" "foo" {
   type                         = "baseline"
-  account_id                   = <Your Account ID>
+  account_id                   = 12345678
   name                         = "foo"
   policy_id                    = newrelic_alert_policy.foo.id
   description                  = "Alert when transactions are taking too long"
@@ -213,7 +213,7 @@ resource "newrelic_alert_policy" "foo" {
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  account_id                     = <Your Account ID>
+  account_id                     = 12345678
   policy_id                      = newrelic_alert_policy.foo.id
   type                           = "static"
   name                           = "foo"
