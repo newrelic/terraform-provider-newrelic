@@ -55,7 +55,7 @@ The GitHub repository of the Terraform Provider also has an AWS Cloud Integratio
 
 ```
 module "newrelic-aws-cloud-integrations" {
-  source = "github.com/newrelic/terraform-provider-newrelic/examples/modules/cloud-integrations/aws"
+  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/aws"
 
   newrelic_account_id     = 1234567
   newrelic_account_region = "US"
@@ -101,7 +101,7 @@ The GitHub repository of the Terraform Provider also has an Azure Cloud Integrat
 
 ```
 module "newrelic-azure-cloud-integrations" {
-  source = "github.com/newrelic/terraform-provider-newrelic/examples/modules/cloud-integrations/azure"
+  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/azure"
 
   newrelic_account_id     = 1234567
   name                    = "production"
@@ -141,7 +141,7 @@ The GitHub repository of the Terraform Provider also has an GCP Cloud Integratio
 
 ```
 module "newrelic-gcp-cloud-integrations" {
-  source = "github.com/newrelic/terraform-provider-newrelic/examples/modules/cloud-integrations/gcp"
+  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/gcp"
 
   newrelic_account_id     = 1234567
   name                    = "production"
