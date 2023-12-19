@@ -44,7 +44,7 @@ Monitor Downtimes are of four types; once, daily, weekly and monthly. For more d
 * `monitor_guids` - (Optional) A list of GUIDs of monitors the Monitor Downtime would need to be applied to.
 * `start_time` - (Required) The time at which the Monitor Downtime would begin to operate, a timestamp specified in the ISO 8601 format without the offset - for instance, `2023-12-04T14:27:07`.
 * `end_time` - (Required) The time at which the Monitor Downtime would end operating, a timestamp specified in the ISO 8601 format without the offset - for instance, `2023-12-04T14:27:07`.
-* `timezone` - (Required) The timezone in which `start_time` and `end_time` have been specified.
+* `timezone` - (Required) The timezone in which timestamps `start_time` and `end_time` have been specified. Valid timezones which may be specified with this argument can be found in this [list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List), in the column '**TZ identifier**'. 
 
 ### Arguments Specific Only to Certain Types of Monitor Downtimes
 
