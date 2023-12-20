@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create and manage alert conditions for APM, Browser, and Mobile in New Relic.
 
--> **NOTE:** This is a legacy resource. The [newrelic_nrql_alert_condition](nrql_alert_condition.html) resource is preferred for configuring alerts conditions. In most cases feature parity can be achieved with a NRQL query. This condition type may be deprecated in the future.
+-> **WARNING:** The `newrelic_alert_condition` resource is deprecated and will be removed in the next major release. The resource [newrelic_nrql_alert_condition](nrql_alert_condition.html) would be a preferred alternative to configure alert conditions - in most cases, feature parity can be achieved with a NRQL query.
 
 ## Example Usage
 
