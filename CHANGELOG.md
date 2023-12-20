@@ -1,3 +1,17 @@
+<a name="v3.28.0"></a>
+## [v3.28.0] - 2023-12-19
+### Bug Fixes
+- Recreate Synthetics resources on account ID change ([#2518](https://github.com/newrelic/terraform-provider-newrelic/issues/2518))
+- **docs:** fix URLs in cloud integration modules ([#2523](https://github.com/newrelic/terraform-provider-newrelic/issues/2523))
+- **newrelic_api_access_key:** Fix missing resource newrelic_api_access_key error ([#2520](https://github.com/newrelic/terraform-provider-newrelic/issues/2520))
+
+### Documentation Updates
+- standardize account_id format in a few docs ([#2516](https://github.com/newrelic/terraform-provider-newrelic/issues/2516))
+
+### Features
+- Update docs for slow burn alerts ([#2476](https://github.com/newrelic/terraform-provider-newrelic/issues/2476))
+- **synthetics:** addition of a resource for monitor downtimes ([#2517](https://github.com/newrelic/terraform-provider-newrelic/issues/2517))
+
 <a name="v3.27.7"></a>
 ## [v3.27.7] - 2023-11-08
 <a name="v3.27.6"></a>
@@ -1985,7 +1999,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.7...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.28.0...HEAD
+[v3.28.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.7...v3.28.0
 [v3.27.7]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.6...v3.27.7
 [v3.27.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.5...v3.27.6
 [v3.27.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.4...v3.27.5
