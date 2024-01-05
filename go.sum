@@ -267,8 +267,10 @@ github.com/newrelic/go-agent/v3 v3.27.0 h1:Z3XB49d8FKjRcGzCyViCO9itBxiLPSpwjY1Hl
 github.com/newrelic/go-agent/v3 v3.27.0/go.mod h1:TUzePinDc0BMH4Sui66rl4SBe6yOKJ5X/bRJekwuAtM=
 github.com/newrelic/go-insights v1.0.3 h1:zSNp1CEZnXktzSIEsbHJk8v6ZihdPFP2WsO/fzau3OQ=
 github.com/newrelic/go-insights v1.0.3/go.mod h1:A20BoT8TNkqPGX2nS/Z2fYmKl3Cqa3iKZd4whzedCY4=
-github.com/newrelic/newrelic-client-go/v2 v2.23.0 h1:ULqiPv4Z0QVLjMjX6uP13wSxPDL3uiKTt5U8vFsvpCQ=
-github.com/newrelic/newrelic-client-go/v2 v2.23.0/go.mod h1:VPWTvEfKvnTZLunAC7fiW33y4e0srznNfN5HJH2cOp8=
+github.com/newrelic/newrelic-client-go/v2 v2.23.1-0.20240105192613-7907c0bd50e3 h1:YkAH35QuPwQsaI83F5sYNnW68bWY1k16u3Ouq1/1JeU=
+github.com/newrelic/newrelic-client-go/v2 v2.23.1-0.20240105192613-7907c0bd50e3/go.mod h1:VPWTvEfKvnTZLunAC7fiW33y4e0srznNfN5HJH2cOp8=
+github.com/newrelic/newrelic-client-go/v2 v2.23.1-0.20240106031842-ca20407fc56f h1:EQ0ZEbx+6v8/yjeubhj8qe1F7pjMe+q9ey5B07TUjw0=
+github.com/newrelic/newrelic-client-go/v2 v2.23.1-0.20240106031842-ca20407fc56f/go.mod h1:VPWTvEfKvnTZLunAC7fiW33y4e0srznNfN5HJH2cOp8=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=

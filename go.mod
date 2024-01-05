@@ -7,7 +7,9 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.27.0
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go/v2 v2.23.0
+	// TEMPORARILY POINTING TO THE LATEST COMMIT OF https://github.com/newrelic/newrelic-client-go/pull/981/commits
+	// TO BE DISCARDED BEFORE MERGE
+	github.com/newrelic/newrelic-client-go/v2 v2.23.1-0.20240106031842-ca20407fc56f
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 )

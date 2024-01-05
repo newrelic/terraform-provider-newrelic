@@ -52,7 +52,6 @@ func resourceNewRelicUserGroupCreate(ctx context.Context, d *schema.ResourceData
 		DisplayName:            d.Get("name").(string),
 	}
 	created, err := client.UserManagement.UserManagementCreateGroupWithContext(ctx, createInput)
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -68,13 +67,14 @@ func resourceNewRelicUserGroupCreate(ctx context.Context, d *schema.ResourceData
 	return resourceNewRelicUserGroupRead(ctx, d, meta)
 }
 
+// Read a created group
 func resourceNewRelicUserGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	groupId := d.Id()
-	authenticationDomainId := d.Get("authentication_domain_id").(string)
-	group, err := getUserGroupID(ctx, client, authenticationDomainId, groupId)
+	groupID := d.Id()
+	authenticationDomainID := d.Get("authentication_domain_id").(string)
+	group, err := getUserGroupID(ctx, client, authenticationDomainID, groupID)
 
 	if err != nil && group == nil {
 		d.SetId("")
@@ -92,8 +92,9 @@ func resourceNewRelicUserGroupRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func getUserGroupID(ctx context.Context, client *newrelic.NewRelic, authId string, groupId string) (groups *usermanagement.UserManagementGroup, err error) {
-	id := []string{authId}
+// Iterate through groups associated with the authentication domain
+func getUserGroupID(ctx context.Context, client *newrelic.NewRelic, authID string, groupID string) (groups *usermanagement.UserManagementGroup, err error) {
+	id := []string{authID}
 	resp, err := client.UserManagement.GetAuthenticationDomainsWithContext(ctx, id)
 	if err != nil {
 		return nil, err
@@ -101,16 +102,16 @@ func getUserGroupID(ctx context.Context, client *newrelic.NewRelic, authId strin
 	for i, groupList := range *resp {
 		if i == 0 {
 			for _, group := range groupList.Groups.Groups {
-				if group.ID == groupId {
+				if group.ID == groupID {
 					return &group, nil
 				}
 			}
 		}
 	}
-	return nil, errors.New("err: group is not found")
+	return nil, errors.New("error: group is not found")
 }
 
-// Update the obfuscation expression
+// Update a created group
 func resourceNewRelicUserGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	updateInput := usermanagement.UserManagementUpdateGroup{}
@@ -129,10 +130,10 @@ func resourceNewRelicUserGroupUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicObfuscationExpressionRead(ctx, d, meta)
+	return resourceNewRelicUserGroupRead(ctx, d, meta)
 }
 
-// Delete the UserGroup
+// Delete a created group
 func resourceNewRelicUserGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
