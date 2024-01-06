@@ -136,6 +136,7 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"newrelic_account_management":                       resourceNewRelicAccountManagement(),
 			"newrelic_alert_channel":                            resourceNewRelicAlertChannel(),
 			"newrelic_alert_condition":                          resourceNewRelicAlertCondition(),
 			"newrelic_alert_muting_rule":                        resourceNewRelicAlertMutingRule(),
@@ -180,7 +181,7 @@ func Provider() *schema.Provider {
 			"newrelic_synthetics_step_monitor":                  resourceNewRelicSyntheticsStepMonitor(),
 			"newrelic_workflow":                                 resourceNewRelicWorkflow(),
 			"newrelic_workload":                                 resourceNewRelicWorkload(),
-			"newrelic_account_management":                       resourceNewRelicWorkloadAccountManagement(),
+			"newrelic_user_management":                          resourceNewRelicUser(),
 		},
 	}
 

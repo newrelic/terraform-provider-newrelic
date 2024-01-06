@@ -13,7 +13,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/accountmanagement"
 )
 
-func resourceNewRelicWorkloadAccountManagement() *schema.Resource {
+func resourceNewRelicAccountManagement() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicAccountCreate,
 		ReadContext:   resourceNewRelicAccountRead,
