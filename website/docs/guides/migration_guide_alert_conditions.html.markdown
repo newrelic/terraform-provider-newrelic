@@ -1,16 +1,16 @@
 ---
 layout: "newrelic"
-page_title: "New Relic Terraform Provider v4.x Migration Guide"
-sidebar_current: "docs-newrelic-provider-v4-migration-guide"
+page_title: "New Relic Terraform Provider Alert Conditions Migration Guide"
+sidebar_current: "docs-newrelic-provider-alert-conditions-migration-guide"
 description: |-
-  Use this guide to update the New Relic Terraform Provider from v3.x to v4.x
+  Use this guide to migrate from the deprecated 'newrelic_synthetics_alert_condition' and 'newrelic_infra_alert_condition' onto the 'newrelic_nrql_alert_condition' resource.
 ---
 
-## Upgrade to v4.x of the New Relic Terraform Provider
+## Migrating to NRQL Alert Conditions
 
-Version 4.0 of the provider removes resources that were previously marked for deprecation. Certain subtypes of Alert Conditions (Synthetics Alert Condition and Infra Alert Condition) have been removed in favor of NRQL Alert Conditions.
+Certain subtypes of Alert Conditions (Synthetics Alert Condition and Infra Alert Condition) have been removed in favor of NRQL Alert Conditions.
 
-Users wanting to upgrade from v3.x to v4.x will need to make a few adjustments to their configuration prior to upgrading, by following the examples outlined below.
+Users wanting to migrate alert conditions will need to make a few adjustments to their configuration, by following the examples outlined below.
 
 ### newrelic_synthetics_alert_condition
 
