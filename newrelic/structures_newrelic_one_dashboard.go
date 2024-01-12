@@ -86,21 +86,28 @@ func expandDashboardVariablesInput(variables []interface{}) []dashboards.Dashboa
 			variable.Type = dashboards.DashboardVariableType(strings.ToUpper(ty.(string)))
 		}
 
+		if i, ok := v["options"]; ok {
+			ignoreTimeRange, is := i.(bool)
+			if is {
+				variable.Options = dashboards.DashboardVariableOptionsInput{IgnoreTimeRange: ignoreTimeRange}
+			}
+		}
+
 		expanded[i] = variable
 	}
 	return expanded
 }
 
-func expandVariableDefaultValues(in []interface{}) *[]dashboards.DashboardVariableDefaultItemInput {
-	out := make([]dashboards.DashboardVariableDefaultItemInput, len(in))
+func expandVariableDefaultValues(in []interface{}) []*dashboards.DashboardVariableDefaultItemInput {
+	out := make([]*dashboards.DashboardVariableDefaultItemInput, len(in))
 
 	for i, v := range in {
 		cfg := v.(string)
-		expanded := dashboards.DashboardVariableDefaultItemInput{Value: dashboards.DashboardVariableDefaultValueInput{String: cfg}}
-		out[i] = expanded
+		expanded := dashboards.DashboardVariableDefaultItemInput{Value: &dashboards.DashboardVariableDefaultValueInput{String: cfg}}
+		out[i] = &expanded
 	}
 
-	return &out
+	return out
 }
 
 func expandVariableItems(in []interface{}) []dashboards.DashboardVariableEnumItemInput {
@@ -118,7 +125,7 @@ func expandVariableItems(in []interface{}) []dashboards.DashboardVariableEnumIte
 	return out
 }
 
-func expandVariableNRQLQuery(in []interface{}) *dashboards.DashboardVariableNRQLQueryInput {
+func expandVariableNRQLQuery(in []interface{}) dashboards.DashboardVariableNRQLQueryInput {
 	var out dashboards.DashboardVariableNRQLQueryInput
 
 	for _, v := range in {
@@ -128,7 +135,7 @@ func expandVariableNRQLQuery(in []interface{}) *dashboards.DashboardVariableNRQL
 			Query:      nrdb.NRQL(cfg["query"].(string))}
 	}
 
-	return &out
+	return out
 }
 
 func expandVariableAccountIDs(in []interface{}) []int {
