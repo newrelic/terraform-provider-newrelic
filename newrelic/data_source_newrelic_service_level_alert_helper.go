@@ -89,7 +89,6 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 	var sloPeriod = d.Get("slo_period").(int)
 	var sloTarget = d.Get("slo_target").(float64)
 	var alertType = d.Get("alert_type").(string)
-	var isBadEvents = d.Get("is_bad_events").(bool)
 
 	_, tOk := d.GetOk("custom_tolerated_budget_consumption")
 	_, eOk := d.GetOk("custom_evaluation_period")
@@ -106,15 +105,8 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 			return diag.FromErr(err)
 		}
 
-		err = d.Set("evaluation_period", 60)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+        return setDataWithErrors(d, 60, 2)
 
-		err = d.Set("tolerated_budget_consumption", 2)
-		if err != nil {
-			return diag.FromErr(err)
-		}
 	case serviceLevelAlertTypes.slowBurn:
 		if tOk || eOk {
 			return diag.Errorf("For 'slow_burn' alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption', we use 360 minutes and 5%%.")
@@ -126,15 +118,8 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 			return diag.FromErr(err)
 		}
 
-		err = d.Set("evaluation_period", 360)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+        return setDataWithErrors(d, 360, 5)
 
-		err = d.Set("tolerated_budget_consumption", 5)
-		if err != nil {
-			return diag.FromErr(err)
-		}
 	case serviceLevelAlertTypes.custom:
 		if !tOk || !eOk {
 			return diag.Errorf("For 'custom' alert type the fields 'custom_evaluation_period' and 'custom_tolerated_budget_consumption' are mandatory.")
@@ -142,34 +127,13 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 
 		toleratedBudgetConsumption := d.Get("custom_tolerated_budget_consumption").(float64)
 		evaluationPeriod := d.Get("custom_evaluation_period").(int)
-		var threshold = calculateThreshold(sloTarget, toleratedBudgetConsumption, sloPeriod, evaluationPeriod)
+        threshold := calculateThreshold(sloTarget, toleratedBudgetConsumption, sloPeriod, evaluationPeriod)
 
-		err := d.Set("threshold", threshold)
-		if err != nil {
+		if err := d.Set("threshold", threshold); err != nil {
 			return diag.FromErr(err)
 		}
 
-		err = d.Set("evaluation_period", evaluationPeriod)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		err = d.Set("tolerated_budget_consumption", toleratedBudgetConsumption)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-	}
-
-	var nrql = "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = '" + sliGUID + "'"
-
-	if isBadEvents {
-		nrql = "FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '" + sliGUID + "'"
-	}
-
-	err := d.Set("nrql", nrql)
-	if err != nil {
-		return diag.FromErr(err)
+        return setDataWithErrors(d, evaluationPeriod, toleratedBudgetConsumption)
 	}
 
 	return nil
@@ -178,3 +142,26 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 func calculateThreshold(sloTarget float64, toleratedBudgetConsumption float64, sloPeriod int, evaluationPeriod int) float64 {
 	return (100.0 - sloTarget) * ((toleratedBudgetConsumption / 100 * float64(sloPeriod) * 24) / (float64(evaluationPeriod) / 60.0))
 }
+
+func setDataWithErrors(d *schema.ResourceData, evaluationPeriod int, toleratedBudgetConsumption float64) diag.Diagnostics {
+	if err := d.Set("evaluation_period", evaluationPeriod); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := d.Set("tolerated_budget_consumption", toleratedBudgetConsumption); err != nil {
+		return diag.FromErr(err)
+	}
+
+	var nrql string
+	if d.Get("is_bad_events").(bool) {
+		nrql = "FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '" + d.Get("sli_guid").(string) + "'"
+	} else {
+		nrql = "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '" + d.Get("sli_guid").(string) + "'"
+	}
+	if err := d.Set("nrql", nrql); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
