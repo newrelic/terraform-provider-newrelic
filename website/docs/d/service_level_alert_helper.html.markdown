@@ -8,7 +8,7 @@ description: |-
 
 # Data Source: newrelic\_service\_level\_alert\_helper
 
-Use this data source to obtain the necessary fields to set up alerts on your service levels. It can be used for a `custom` alert_type in order to set up an alert with custom tolerated budget consumption and custom evaluation period or for recommended ones like `fast_burn`. For more information check [the documentation](https://docs.newrelic.com/docs/service-level-management/alerts-slm/).
+Use this data source to obtain the necessary fields to set up alerts on your service levels. It can be used for a `custom` alert_type in order to set up an alert with custom tolerated budget consumption and custom evaluation period or for recommended ones like `fast_burn` or `slow_burn`. For more information check [the documentation](https://docs.newrelic.com/docs/service-level-management/alerts-slm/).
 
 ## Example Usage
 
@@ -98,6 +98,7 @@ The following arguments are supported:
   * `alert_type` - (Required) The type of alert we want to set. Valid values are:
     * `custom` - Tolerated budget consumption and evaluation period have to be specified.
     * `fast_burn` - Tolerated budget consumption is 2% and evaluation period is 60min.
+    * `slow_burn` - Tolerated budget consumption is 5% and evaluation period is 360min.
   * `sli_guid` - (Required) The guid of the sli we want to set the alert on.
   * `slo_target` - (Required) The target of the Service Level Objective, valid values between `0` and `100`.
   * `slo_period` - (Required) The time window of the Service Level Objective in days. Valid values are `1`, `7` and `28`.

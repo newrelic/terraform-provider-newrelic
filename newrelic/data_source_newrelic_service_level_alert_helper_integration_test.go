@@ -28,6 +28,22 @@ func TestAccNewRelicServiceLevelAlertHelper_FastBurn(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicServiceLevelAlertHelper_SlowBurn(t *testing.T) {
+	resourceName := "data.newrelic_service_level_alert_helper.slow"
+
+	resource.ParallelTest(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicServiceLevelAlertHelperSlowBurnConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicServiceLevelAlertHelper_SlowBurn(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicServiceLevelAlertHelper_Custom(t *testing.T) {
 	resourceName := "data.newrelic_service_level_alert_helper.custom"
 
@@ -56,6 +72,24 @@ func TestAccNewRelicServiceLevelAlertHelper_FastBurnError(t *testing.T) {
 			},
 			{
 				Config:      testAccNewRelicServiceLevelAlertHelperFastBurnBudgetErrorConfig(),
+				ExpectError: expectedErrorMessage,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicServiceLevelAlertHelper_SlowBurnError(t *testing.T) {
+	expectedErrorMessage := regexp.MustCompile(`For 'slow_burn' alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption'.`)
+
+	resource.ParallelTest(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicServiceLevelAlertHelperSlowBurnEvaluationErrorConfig(),
+				ExpectError: expectedErrorMessage,
+			},
+			{
+				Config:      testAccNewRelicServiceLevelAlertHelperSlowBurnBudgetErrorConfig(),
 				ExpectError: expectedErrorMessage,
 			},
 		},
@@ -96,6 +130,17 @@ func TestAccNewRelicServiceLevelAlertHelper_CustomBadEvents(t *testing.T) {
 	})
 }
 
+func testAccNewRelicServiceLevelAlertHelperSlowBurnConfig() string {
+	return fmt.Sprintf(`
+data "newrelic_service_level_alert_helper" "slow" {
+    alert_type = "slow_burn"
+    sli_guid = "sliGuid"
+    slo_target = 99.9
+    slo_period = 28
+}
+`)
+}
+
 func testAccNewRelicServiceLevelAlertHelperFastBurnConfig() string {
 	return fmt.Sprintf(`
 data "newrelic_service_level_alert_helper" "fast" {
@@ -119,10 +164,34 @@ data "newrelic_service_level_alert_helper" "fastBad" {
 `)
 }
 
+func testAccNewRelicServiceLevelAlertHelperSlowBurnEvaluationErrorConfig() string {
+	return fmt.Sprintf(`
+data "newrelic_service_level_alert_helper" "slowBad" {
+    alert_type = "slow_burn"
+    sli_guid = "sliGuid"
+    slo_target = 99.9
+    slo_period = 28
+    custom_evaluation_period = 12
+}
+`)
+}
+
 func testAccNewRelicServiceLevelAlertHelperFastBurnBudgetErrorConfig() string {
 	return fmt.Sprintf(`
 data "newrelic_service_level_alert_helper" "fastBad" {
     alert_type = "fast_burn"
+    sli_guid = "sliGuid"
+    slo_target = 99.9
+    slo_period = 28
+    custom_tolerated_budget_consumption = 34
+}
+`)
+}
+
+func testAccNewRelicServiceLevelAlertHelperSlowBurnBudgetErrorConfig() string {
+	return fmt.Sprintf(`
+data "newrelic_service_level_alert_helper" "slowBad" {
+    alert_type = "slow_burn"
     sli_guid = "sliGuid"
     slo_target = 99.9
     slo_period = 28
@@ -177,6 +246,42 @@ func testAccCheckNewRelicServiceLevelAlertHelper_FastBurn(n string) resource.Tes
 			"evaluation_period":                   "60",
 			"tolerated_budget_consumption":        "2",
 			"threshold":                           "1.3439999999999237",
+			"sli_guid":                            "sliGuid",
+			"nrql":                                "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = 'sliGuid'",
+		}
+
+		for attrName, expectedVal := range testCases {
+			if err := runTest(a, attrName, expectedVal); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckNewRelicServiceLevelAlertHelper_SlowBurn(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
+		}
+
+		a := rs.Primary.Attributes
+
+		testCases := map[string]string{
+			"slo_period":                          "28",
+			"slo_target":                          "99.9",
+			"alert_type":                          "slow_burn",
+			"custom_evaluation_period":            "",
+			"custom_tolerated_budget_consumption": "",
+			"evaluation_period":                   "360",
+			"tolerated_budget_consumption":        "5",
+			"threshold":                           "0.5599999999999682",
 			"sli_guid":                            "sliGuid",
 			"nrql":                                "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = 'sliGuid'",
 		}

@@ -15,9 +15,11 @@ type serviceLevelAlertType string
 var serviceLevelAlertTypes = struct {
 	custom   serviceLevelAlertType
 	fastBurn serviceLevelAlertType
+	slowBurn serviceLevelAlertType
 }{
 	custom:   "custom",
 	fastBurn: "fast_burn",
+	slowBurn: "slow_burn",
 }
 
 func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource {
@@ -27,7 +29,7 @@ func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource {
 			"alert_type": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"custom", "fast_burn"}, true),
+				ValidateFunc: validation.StringInSlice([]string{"custom", "fast_burn", "slow_burn"}, true),
 			},
 			"sli_guid": {
 				Type:     schema.TypeString,
@@ -110,6 +112,26 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 		}
 
 		err = d.Set("tolerated_budget_consumption", 2)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	case serviceLevelAlertTypes.slowBurn:
+		if tOk || eOk {
+			return diag.Errorf("For 'slow_burn' alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption', we use 360 minutes and 5%%.")
+		}
+
+		threshold := calculateThreshold(sloTarget, 5, sloPeriod, 360)
+		err := d.Set("threshold", threshold)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		err = d.Set("evaluation_period", 360)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		err = d.Set("tolerated_budget_consumption", 5)
 		if err != nil {
 			return diag.FromErr(err)
 		}
