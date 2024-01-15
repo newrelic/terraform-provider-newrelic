@@ -105,7 +105,7 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 			return diag.FromErr(err)
 		}
 
-        return setDataWithErrors(d, 60, 2)
+		return setDataWithErrors(d, 60, 2)
 
 	case serviceLevelAlertTypes.slowBurn:
 		if tOk || eOk {
@@ -118,7 +118,7 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 			return diag.FromErr(err)
 		}
 
-        return setDataWithErrors(d, 360, 5)
+		return setDataWithErrors(d, 360, 5)
 
 	case serviceLevelAlertTypes.custom:
 		if !tOk || !eOk {
@@ -127,13 +127,13 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 
 		toleratedBudgetConsumption := d.Get("custom_tolerated_budget_consumption").(float64)
 		evaluationPeriod := d.Get("custom_evaluation_period").(int)
-        threshold := calculateThreshold(sloTarget, toleratedBudgetConsumption, sloPeriod, evaluationPeriod)
+		threshold := calculateThreshold(sloTarget, toleratedBudgetConsumption, sloPeriod, evaluationPeriod)
 
 		if err := d.Set("threshold", threshold); err != nil {
 			return diag.FromErr(err)
 		}
 
-        return setDataWithErrors(d, evaluationPeriod, toleratedBudgetConsumption)
+		return setDataWithErrors(d, evaluationPeriod, toleratedBudgetConsumption)
 	}
 
 	return nil
@@ -164,4 +164,3 @@ func setDataWithErrors(d *schema.ResourceData, evaluationPeriod int, toleratedBu
 
 	return nil
 }
-
