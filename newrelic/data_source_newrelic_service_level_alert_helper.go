@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -83,15 +82,14 @@ func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource {
 
 func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	var sliGUID = d.Get("sli_guid").(string)
-	rnd := strconv.Itoa(rand.Int())
-	d.SetId(sliGUID + rnd)
-
-	var alertType = d.Get("alert_type").(string)
+	sliGUID := d.Get("sli_guid")
+	rnd := rand.Int()
+	d.SetId(fmt.Sprintf("%v%v", sliGUID, rnd))
 
 	_, tOk := d.GetOk("custom_tolerated_budget_consumption")
 	_, eOk := d.GetOk("custom_evaluation_period")
 
+	alertType := d.Get("alert_type").(string)
 	switch serviceLevelAlertType(alertType) {
 	case serviceLevelAlertTypes.fastBurn:
 		if tOk || eOk {
@@ -137,17 +135,16 @@ func fillData(d *schema.ResourceData, evaluationPeriod int, toleratedBudgetConsu
 
 	var nrql string
 	if d.Get("is_bad_events").(bool) {
-		nrql = fmt.Sprintf("FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '%s'", d.Get("sli_guid").(string))
+		nrql = fmt.Sprintf("FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '%v'", d.Get("sli_guid"))
 	} else {
-		nrql = fmt.Sprintf("FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '%s'", d.Get("sli_guid").(string))
+		nrql = fmt.Sprintf("FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '%v'", d.Get("sli_guid"))
 	}
 	if err := d.Set("nrql", nrql); err != nil {
 		return err
 	}
 
-	var sloPeriod = d.Get("slo_period").(int)
-	var sloTarget = d.Get("slo_target").(float64)
-
+	sloPeriod := d.Get("slo_period").(int)
+	sloTarget := d.Get("slo_target").(float64)
 	threshold := calculateThreshold(sloTarget, toleratedBudgetConsumption, sloPeriod, evaluationPeriod)
 	if err := d.Set("threshold", threshold); err != nil {
 		return err
