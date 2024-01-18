@@ -1,14 +1,16 @@
 package newrelic
 
 import (
+	"errors"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
-	"errors"
 )
 
-func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) (synthetics.SyntheticsCreateSimpleBrowserMonitorInput,error) {
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint: gocyclo
+func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) (synthetics.SyntheticsCreateSimpleBrowserMonitorInput, error) {
 	inputBase := expandSyntheticsMonitorBase(d)
-
 	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{
 		Name:            inputBase.Name,
 		Period:          inputBase.Period,
@@ -71,26 +73,25 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) (synthetics.Syn
 	dt, dtOk := d.GetOk("device_type")
 
 	if !(scriptLangOk && runtimeTypeOk && runtimeTypeVersionOk) && (doOk && dtOk) {
-		return simpleBrowserMonitorInput,errors.New("Device emulation is not supported by legacy runtime.")
+		return simpleBrowserMonitorInput, errors.New("device emulation is not supported by legacy runtime")
 	}
 
 	if doOk && dtOk {
-		
 		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
-
 		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
-
 		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
-	}else { 
+	} else {
 		if doOk || dtOk {
-			return simpleBrowserMonitorInput,errors.New("Both device_orientation and device_type should be mentioned.")
+			return simpleBrowserMonitorInput, errors.New("both device_orientation and device_type should be specified to enable device emulation")
 		}
 	}
 
-	return simpleBrowserMonitorInput,nil
+	return simpleBrowserMonitorInput, nil
 }
 
-func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) (synthetics.SyntheticsUpdateSimpleBrowserMonitorInput,error) {
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint: gocyclo
+func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) (synthetics.SyntheticsUpdateSimpleBrowserMonitorInput, error) {
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{
@@ -154,18 +155,19 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) (sy
 	do, doOk := d.GetOk("device_orientation")
 	dt, dtOk := d.GetOk("device_type")
 
+	if !(scriptLangOk && runtimeTypeOk && runtimeTypeVersionOk) && (doOk && dtOk) {
+		return simpleBrowserMonitorUpdateInput, errors.New("device emulation is not supported by legacy runtime")
+	}
+
 	if doOk && dtOk {
-		
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
-
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
-
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
-	}else { 
+	} else {
 		if doOk || dtOk {
-			return simpleBrowserMonitorUpdateInput,errors.New("this throws an error")
+			return simpleBrowserMonitorUpdateInput, errors.New("both device_orientation and device_type should be specified to enable device emulation")
 		}
 	}
 
-	return simpleBrowserMonitorUpdateInput,nil
+	return simpleBrowserMonitorUpdateInput, nil
 }
