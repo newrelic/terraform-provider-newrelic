@@ -18,6 +18,79 @@ import (
 
 var tv bool = true
 
+func TestAccNewRelicSyntheticsBrowserMonitor(t *testing.T) {
+	resourceName := "newrelic_synthetics_monitor.monitor"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicSyntheticsBrowserMonitorConfig(rName, string(SyntheticsMonitorTypes.BROWSER)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
+				),
+			},
+
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					// Technical limitations with the API prevent us from setting the following attributes.
+					"locations_public",
+					"locations_private",
+					"bypass_head_request",
+					"treat_redirect_as_failure",
+					"runtime_type",
+					"runtime_type_version",
+					"script_language",
+					"tag",
+					"enable_screenshot_on_failure_and_script",
+					"custom_header",
+					"device_orientation",
+					"device_type",
+				},
+			},
+		},
+	})
+}
+
+func testAccNewRelicSyntheticsBrowserMonitorConfig(name string, monitorType string) string {
+	return fmt.Sprintf(`
+resource "newrelic_synthetics_monitor" "monitor" {
+		status           = "ENABLED"
+		name             = "%s"
+		period           = "EVERY_MINUTE"
+		uri              = "https://www.one.newrelic.com"
+		type             = "%s"
+		locations_public = ["AP_SOUTH_1"]
+	  
+		custom_header {
+		  name  = "Name"
+		  value = "browserMonitor"
+		}
+	  
+		enable_screenshot_on_failure_and_script = true
+		validation_string                       = "success"
+		verify_ssl                              = true
+		runtime_type_version                    = "100"
+		runtime_type                            = "CHROME_BROWSER"
+		script_language                         = "JAVASCRIPT"
+		device_orientation                      = "LANDSCAPE"
+	  
+		tag {
+			key    = "butterscotch"
+			values = ["cake"]
+		}
+		uri = "https://www.one.newrelic.com"
+}`, name, monitorType)
+}
+
 func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.foo"
 	rName := generateNameForIntegrationTestResource()

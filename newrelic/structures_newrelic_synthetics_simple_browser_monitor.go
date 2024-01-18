@@ -3,9 +3,10 @@ package newrelic
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
+	"errors"
 )
 
-func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleBrowserMonitorInput {
+func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) (synthetics.SyntheticsCreateSimpleBrowserMonitorInput,error) {
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{
@@ -69,22 +70,27 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	do, doOk := d.GetOk("device_orientation")
 	dt, dtOk := d.GetOk("device_type")
 
-	if doOk || dtOk {
+	if !(scriptLangOk && runtimeTypeOk && runtimeTypeVersionOk) && (doOk && dtOk) {
+		return simpleBrowserMonitorInput,errors.New("Device emulation is not supported by legacy runtime.")
+	}
+
+	if doOk && dtOk {
+		
 		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
 
-		if doOk {
-			simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
-		}
+		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
 
-		if dtOk {
-			simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+	}else { 
+		if doOk || dtOk {
+			return simpleBrowserMonitorInput,errors.New("Both device_orientation and device_type should be mentioned.")
 		}
 	}
 
-	return simpleBrowserMonitorInput
+	return simpleBrowserMonitorInput,nil
 }
 
-func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleBrowserMonitorInput {
+func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) (synthetics.SyntheticsUpdateSimpleBrowserMonitorInput,error) {
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{
@@ -148,17 +154,18 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	do, doOk := d.GetOk("device_orientation")
 	dt, dtOk := d.GetOk("device_type")
 
-	if doOk || dtOk {
+	if doOk && dtOk {
+		
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
 
-		if doOk {
-			simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
-		}
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
 
-		if dtOk {
-			simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+	}else { 
+		if doOk || dtOk {
+			return simpleBrowserMonitorUpdateInput,errors.New("this throws an error")
 		}
 	}
 
-	return simpleBrowserMonitorUpdateInput
+	return simpleBrowserMonitorUpdateInput,nil
 }
