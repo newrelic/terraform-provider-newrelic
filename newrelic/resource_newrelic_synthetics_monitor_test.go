@@ -5,6 +5,7 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -18,8 +19,7 @@ import (
 
 var tv bool = true
 
-func TestAccNewRelicSyntheticsBrowserMonitor(t *testing.T) {
-	resourceName := "newrelic_synthetics_monitor.monitor"
+func TestAccNewRelicSyntheticsBrowserMonitor_DeviceEmulationError(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -29,40 +29,33 @@ func TestAccNewRelicSyntheticsBrowserMonitor(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicSyntheticsBrowserMonitorConfig(rName, string(SyntheticsMonitorTypes.BROWSER)),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
-				),
-			},
-
-			// Test: Import
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					// Technical limitations with the API prevent us from setting the following attributes.
-					"locations_public",
-					"locations_private",
-					"bypass_head_request",
-					"treat_redirect_as_failure",
-					"runtime_type",
-					"runtime_type_version",
-					"script_language",
-					"tag",
-					"enable_screenshot_on_failure_and_script",
-					"custom_header",
-					"device_orientation",
-					"device_type",
-				},
+				Config:      testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationError(rName, string(SyntheticsMonitorTypes.BROWSER)),
+				ExpectError: regexp.MustCompile(`both device_orientation and device_type should be specified to enable device emulation`),
 			},
 		},
 	})
 }
 
-func testAccNewRelicSyntheticsBrowserMonitorConfig(name string, monitorType string) string {
+func TestAccNewRelicSyntheticsBrowserMonitor_DeviceEmulationLegacyRuntimeError(t *testing.T) {
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config:      testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationLegacyRuntimeError(rName, string(SyntheticsMonitorTypes.BROWSER)),
+				ExpectError: regexp.MustCompile(`device emulation is not supported by legacy runtime`),
+			},
+		},
+	})
+}
+
+func testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationError(name string, monitorType string) string {
 	return fmt.Sprintf(`
-resource "newrelic_synthetics_monitor" "monitor" {
+	resource "newrelic_synthetics_monitor" "foo" {
 		status           = "ENABLED"
 		name             = "%s"
 		period           = "EVERY_MINUTE"
@@ -87,10 +80,36 @@ resource "newrelic_synthetics_monitor" "monitor" {
 			key    = "butterscotch"
 			values = ["cake"]
 		}
-		uri = "https://www.one.newrelic.com"
 }`, name, monitorType)
 }
 
+func testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationLegacyRuntimeError(name string, monitorType string) string {
+	return fmt.Sprintf(`
+	resource "newrelic_synthetics_monitor" "foo" {
+		status           = "ENABLED"
+		name             = "%s"
+		period           = "EVERY_MINUTE"
+		uri              = "https://www.one.newrelic.com"
+		type             = "%s"
+		locations_public = ["AP_SOUTH_1"]
+	  
+		custom_header {
+		  name  = "Name"
+		  value = "browserMonitor"
+		}
+	  
+		enable_screenshot_on_failure_and_script = true
+		validation_string                       = "success"
+		verify_ssl                              = true
+		device_orientation                      = "LANDSCAPE"
+		device_type								= "MOBILE"
+	  
+		tag {
+			key    = "butterscotch"
+			values = ["cake"]
+		}
+}`, name, monitorType)
+}
 func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 	resourceName := "newrelic_synthetics_monitor.foo"
 	rName := generateNameForIntegrationTestResource()

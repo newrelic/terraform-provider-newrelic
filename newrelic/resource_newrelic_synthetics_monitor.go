@@ -199,9 +199,9 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 		simpleMonitorInput := buildSyntheticsSimpleMonitor(d)
 		resp, err = client.Synthetics.SyntheticsCreateSimpleMonitorWithContext(ctx, accountID, simpleMonitorInput)
 	case string(SyntheticsMonitorTypes.BROWSER):
-		simpleBrowserMonitorInput, err := buildSyntheticsSimpleBrowserMonitor(d)
-		if err != nil {
-			return diag.FromErr(err)
+		simpleBrowserMonitorInput, browserMonitorErr := buildSyntheticsSimpleBrowserMonitor(d)
+		if browserMonitorErr != nil {
+			return diag.FromErr(browserMonitorErr)
 		}
 		resp, err = client.Synthetics.SyntheticsCreateSimpleBrowserMonitorWithContext(ctx, accountID, simpleBrowserMonitorInput)
 	}
