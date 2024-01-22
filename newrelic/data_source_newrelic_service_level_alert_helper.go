@@ -2,8 +2,8 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,9 +15,11 @@ type serviceLevelAlertType string
 var serviceLevelAlertTypes = struct {
 	custom   serviceLevelAlertType
 	fastBurn serviceLevelAlertType
+	slowBurn serviceLevelAlertType
 }{
 	custom:   "custom",
 	fastBurn: "fast_burn",
+	slowBurn: "slow_burn",
 }
 
 func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource {
@@ -27,7 +29,7 @@ func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource {
 			"alert_type": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"custom", "fast_burn"}, true),
+				ValidateFunc: validation.StringInSlice([]string{"custom", "fast_burn", "slow_burn"}, true),
 			},
 			"sli_guid": {
 				Type:     schema.TypeString,
@@ -80,39 +82,33 @@ func dataSourceNewRelicServiceLevelAlertHelper() *schema.Resource {
 
 func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	var sliGUID = d.Get("sli_guid").(string)
-	rnd := strconv.Itoa(rand.Int())
-	d.SetId(sliGUID + rnd)
-
-	var sloPeriod = d.Get("slo_period").(int)
-	var sloTarget = d.Get("slo_target").(float64)
-	var alertType = d.Get("alert_type").(string)
-	var isBadEvents = d.Get("is_bad_events").(bool)
+	sliGUID := d.Get("sli_guid")
+	rnd := rand.Int()
+	d.SetId(fmt.Sprintf("%v%v", sliGUID, rnd))
 
 	_, tOk := d.GetOk("custom_tolerated_budget_consumption")
 	_, eOk := d.GetOk("custom_evaluation_period")
 
+	alertType := d.Get("alert_type").(string)
 	switch serviceLevelAlertType(alertType) {
 	case serviceLevelAlertTypes.fastBurn:
 		if tOk || eOk {
 			return diag.Errorf("For 'fast_burn' alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption', we use 60 minutes and 2%%.")
 		}
 
-		threshold := calculateThreshold(sloTarget, 2, sloPeriod, 60)
-		err := d.Set("threshold", threshold)
-		if err != nil {
+		if err := fillData(d, 60, 2); err != nil {
 			return diag.FromErr(err)
 		}
 
-		err = d.Set("evaluation_period", 60)
-		if err != nil {
+	case serviceLevelAlertTypes.slowBurn:
+		if tOk || eOk {
+			return diag.Errorf("For 'slow_burn' alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption', we use 360 minutes and 5%%.")
+		}
+
+		if err := fillData(d, 360, 5); err != nil {
 			return diag.FromErr(err)
 		}
 
-		err = d.Set("tolerated_budget_consumption", 2)
-		if err != nil {
-			return diag.FromErr(err)
-		}
 	case serviceLevelAlertTypes.custom:
 		if !tOk || !eOk {
 			return diag.Errorf("For 'custom' alert type the fields 'custom_evaluation_period' and 'custom_tolerated_budget_consumption' are mandatory.")
@@ -120,34 +116,38 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 
 		toleratedBudgetConsumption := d.Get("custom_tolerated_budget_consumption").(float64)
 		evaluationPeriod := d.Get("custom_evaluation_period").(int)
-		var threshold = calculateThreshold(sloTarget, toleratedBudgetConsumption, sloPeriod, evaluationPeriod)
-
-		err := d.Set("threshold", threshold)
-		if err != nil {
+		if err := fillData(d, evaluationPeriod, toleratedBudgetConsumption); err != nil {
 			return diag.FromErr(err)
 		}
-
-		err = d.Set("evaluation_period", evaluationPeriod)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		err = d.Set("tolerated_budget_consumption", toleratedBudgetConsumption)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
 	}
 
-	var nrql = "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance'  WHERE sli.guid = '" + sliGUID + "'"
+	return nil
+}
 
-	if isBadEvents {
-		nrql = "FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '" + sliGUID + "'"
+func fillData(d *schema.ResourceData, evaluationPeriod int, toleratedBudgetConsumption float64) error {
+	if err := d.Set("evaluation_period", evaluationPeriod); err != nil {
+		return err
 	}
 
-	err := d.Set("nrql", nrql)
-	if err != nil {
-		return diag.FromErr(err)
+	if err := d.Set("tolerated_budget_consumption", toleratedBudgetConsumption); err != nil {
+		return err
+	}
+
+	var nrql string
+	if d.Get("is_bad_events").(bool) {
+		nrql = fmt.Sprintf("FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '%v'", d.Get("sli_guid"))
+	} else {
+		nrql = fmt.Sprintf("FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '%v'", d.Get("sli_guid"))
+	}
+	if err := d.Set("nrql", nrql); err != nil {
+		return err
+	}
+
+	sloPeriod := d.Get("slo_period").(int)
+	sloTarget := d.Get("slo_target").(float64)
+	threshold := calculateThreshold(sloTarget, toleratedBudgetConsumption, sloPeriod, evaluationPeriod)
+	if err := d.Set("threshold", threshold); err != nil {
+		return err
 	}
 
 	return nil
