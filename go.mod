@@ -1,6 +1,6 @@
 module github.com/newrelic/terraform-provider-newrelic/v2
 
-go 1.19
+go 1.21
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
