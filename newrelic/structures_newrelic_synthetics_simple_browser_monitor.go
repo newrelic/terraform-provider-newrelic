@@ -1,14 +1,15 @@
 package newrelic
 
 import (
+	"errors"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
-func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.SyntheticsCreateSimpleBrowserMonitorInput {
+func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) (synthetics.SyntheticsCreateSimpleBrowserMonitorInput, error) {
 	inputBase := expandSyntheticsMonitorBase(d)
-
-	simpleBrowserMonitorInput := synthetics.SyntheticsCreateSimpleBrowserMonitorInput{
+	simpleBrowserMonitorInput := &synthetics.SyntheticsCreateSimpleBrowserMonitorInput{
 		Name:            inputBase.Name,
 		Period:          inputBase.Period,
 		Status:          inputBase.Status,
@@ -46,7 +47,16 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 		simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = &vs
 	}
 
-	sciptLang, scriptLangOk := d.GetOk("script_language")
+	err := buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulation(d, simpleBrowserMonitorInput)
+	if err != nil {
+		return *simpleBrowserMonitorInput, err
+	}
+
+	return *simpleBrowserMonitorInput, nil
+}
+
+func buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulation(d *schema.ResourceData, simpleBrowserMonitorInput *synthetics.SyntheticsCreateSimpleBrowserMonitorInput) error {
+	scriptLang, scriptLangOk := d.GetOk("script_language")
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
 
@@ -54,7 +64,7 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 		simpleBrowserMonitorInput.Runtime = &synthetics.SyntheticsRuntimeInput{}
 
 		if scriptLangOk {
-			simpleBrowserMonitorInput.Runtime.ScriptLanguage = sciptLang.(string)
+			simpleBrowserMonitorInput.Runtime.ScriptLanguage = scriptLang.(string)
 		}
 
 		if runtimeTypeOk {
@@ -69,25 +79,27 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) synthetics.Synt
 	do, doOk := d.GetOk("device_orientation")
 	dt, dtOk := d.GetOk("device_type")
 
-	if doOk || dtOk {
+	if !(runtimeTypeOk && runtimeTypeVersionOk) && (doOk && dtOk) {
+		return errors.New("device emulation is not supported by legacy runtime")
+	}
+
+	if doOk && dtOk {
 		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
-
-		if doOk {
-			simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
-		}
-
-		if dtOk {
-			simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
+		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+	} else {
+		if doOk || dtOk {
+			return errors.New("both device_orientation and device_type should be specified to enable device emulation")
 		}
 	}
 
-	return simpleBrowserMonitorInput
+	return nil
 }
 
-func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) synthetics.SyntheticsUpdateSimpleBrowserMonitorInput {
+func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) (synthetics.SyntheticsUpdateSimpleBrowserMonitorInput, error) {
 	inputBase := expandSyntheticsMonitorBase(d)
 
-	simpleBrowserMonitorUpdateInput := synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{
+	simpleBrowserMonitorUpdateInput := &synthetics.SyntheticsUpdateSimpleBrowserMonitorInput{
 		Name:            inputBase.Name,
 		Period:          inputBase.Period,
 		Status:          inputBase.Status,
@@ -125,7 +137,16 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.UseTlsValidation = &vs
 	}
 
-	sciptLang, scriptLangOk := d.GetOk("script_language")
+	err := buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulationUpdateStruct(d, simpleBrowserMonitorUpdateInput)
+	if err != nil {
+		return *simpleBrowserMonitorUpdateInput, err
+	}
+
+	return *simpleBrowserMonitorUpdateInput, nil
+}
+
+func buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulationUpdateStruct(d *schema.ResourceData, simpleBrowserMonitorUpdateInput *synthetics.SyntheticsUpdateSimpleBrowserMonitorInput) error {
+	scriptLang, scriptLangOk := d.GetOk("script_language")
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
 
@@ -133,7 +154,7 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 		simpleBrowserMonitorUpdateInput.Runtime = &synthetics.SyntheticsRuntimeInput{}
 
 		if scriptLangOk {
-			simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = sciptLang.(string)
+			simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = scriptLang.(string)
 		}
 
 		if runtimeTypeOk {
@@ -148,17 +169,19 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) syn
 	do, doOk := d.GetOk("device_orientation")
 	dt, dtOk := d.GetOk("device_type")
 
-	if doOk || dtOk {
+	if !(runtimeTypeOk && runtimeTypeVersionOk) && (doOk && dtOk) {
+		return errors.New("device emulation is not supported by legacy runtime")
+	}
+
+	if doOk && dtOk {
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
-
-		if doOk {
-			simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
-		}
-
-		if dtOk {
-			simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceOrientation = synthetics.SyntheticsDeviceOrientation(do.(string))
+		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation.DeviceType = synthetics.SyntheticsDeviceType(dt.(string))
+	} else {
+		if doOk || dtOk {
+			return errors.New("both device_orientation and device_type should be specified to enable device emulation")
 		}
 	}
 
-	return simpleBrowserMonitorUpdateInput
+	return nil
 }

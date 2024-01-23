@@ -199,7 +199,10 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 		simpleMonitorInput := buildSyntheticsSimpleMonitor(d)
 		resp, err = client.Synthetics.SyntheticsCreateSimpleMonitorWithContext(ctx, accountID, simpleMonitorInput)
 	case string(SyntheticsMonitorTypes.BROWSER):
-		simpleBrowserMonitorInput := buildSyntheticsSimpleBrowserMonitor(d)
+		simpleBrowserMonitorInput, browserMonitorErr := buildSyntheticsSimpleBrowserMonitor(d)
+		if browserMonitorErr != nil {
+			return diag.FromErr(browserMonitorErr)
+		}
 		resp, err = client.Synthetics.SyntheticsCreateSimpleBrowserMonitorWithContext(ctx, accountID, simpleBrowserMonitorInput)
 	}
 
@@ -362,7 +365,10 @@ func resourceNewRelicSyntheticsMonitorUpdate(ctx context.Context, d *schema.Reso
 		setSimpleMonitorAttributesFromUpdate(resp, d)
 
 	case string(SyntheticsMonitorTypes.BROWSER):
-		simpleBrowserMonitorUpdateInput := buildSyntheticsSimpleBrowserMonitorUpdateStruct(d)
+		simpleBrowserMonitorUpdateInput, err := buildSyntheticsSimpleBrowserMonitorUpdateStruct(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		resp, err := client.Synthetics.SyntheticsUpdateSimpleBrowserMonitorWithContext(ctx, guid, simpleBrowserMonitorUpdateInput)
 		if err != nil {
 			return diag.FromErr(err)
