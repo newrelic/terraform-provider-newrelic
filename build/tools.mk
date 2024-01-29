@@ -11,8 +11,9 @@ BUILD_DIR        ?= ./bin/
 # Go file to track tool deps with go modules
 TOOL_DIR     ?= tools
 TOOL_CONFIG  ?= $(TOOL_DIR)/tools.go
+DEPENDENCIES_FILE ?= dependencies.txt
 
-GOTOOLS ?= $(shell cd $(TOOL_DIR) && go list -f '{{ .Imports }}' -tags tools |tr -d '[]')
+GOTOOLS ?= $(shell cd $(TOOL_DIR) && cat $(DEPENDENCIES_FILE))
 
 tools: check-version
 	@echo "=== $(PROJECT_NAME) === [ tools            ]: Installing tools required by the project..."
