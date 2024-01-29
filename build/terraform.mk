@@ -13,6 +13,7 @@ test-compile: deps
 	go test -c $(TEST) $(TESTARGS)
 
 lint-terraform: deps
+
 	@echo "=== $(PROJECT_NAME) === [ lint-terraform   ]: running terraform linter $(TF_LINTER) ..."
 	@$(TF_LINTER) \
 		-c 1 \
