@@ -18,7 +18,7 @@ GOTOOLS ?= $(shell cd $(TOOL_DIR) && cat $(DEPENDENCIES_FILE))
 tools: check-version
 	@echo "=== $(PROJECT_NAME) === [ tools            ]: Installing tools required by the project..."
 	@cd $(TOOL_DIR) && $(VENDOR_CMD)
-	@cd $(TOOL_DIR) && $(GO) install $(GOTOOLS)
+	@cd $(TOOL_DIR) && $(GO) get $(GOTOOLS)
 
 tools-outdated: check-version
 	@echo "=== $(PROJECT_NAME) === [ tools-outdated   ]: Finding outdated tool deps with $(GO_MOD_OUTDATED)..."
