@@ -101,7 +101,7 @@ func resourceNewRelicUserRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	userID := d.Id()
 	authenticationDomainID := d.Get("authentication_domain_id").(string)
-	user, err := getUserID(ctx, client, authenticationDomainID, userID)
+	user, err := getUserByID(ctx, client, authenticationDomainID, userID)
 
 	if err != nil && user == nil {
 		d.SetId("")
@@ -124,20 +124,22 @@ func resourceNewRelicUserRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 // Iterate through users associated with the authentication domain
-func getUserID(ctx context.Context, client *newrelic.NewRelic, authenticationDomainID string, userID string) (user *usermanagement.UserManagementUser, err error) {
-	id := []string{authenticationDomainID}
-	resp, err := client.UserManagement.GetAuthenticationDomainsWithContext(ctx, id)
+func getUserByID(ctx context.Context, client *newrelic.NewRelic, authenticationDomainID string, userID string) (user *usermanagement.UserManagementUser, err error) {
+	authenticationDomainIDs := []string{authenticationDomainID}
+	userIDs := []string{userID}
+	resp, err := client.UserManagement.GetUsersWithContext(ctx, authenticationDomainIDs, userIDs, "", "")
 	if err != nil {
 		return nil, err
 	}
-	for i, userList := range *resp {
-		if i == 0 {
-			for _, user := range userList.Users.Users {
-				if user.ID == userID {
-					return &user, nil
+	for _, authDomain := range resp.AuthenticationDomains {
+		if authDomain.ID == authenticationDomainID {
+			for _, u := range authDomain.Users.Users {
+				if u.ID == userID {
+					return &u, nil
 				}
 			}
 		}
+
 	}
 	return nil, errors.New("error: user is not found")
 }
@@ -160,7 +162,7 @@ func resourceNewRelicUserUpdate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if created == nil {
-		return diag.Errorf("err: user create result wasn't returned or user was not created.")
+		return diag.Errorf("err: user update result wasn't returned or user was not created.")
 	}
 
 	userID := created.User.ID
