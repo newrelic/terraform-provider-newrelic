@@ -243,7 +243,7 @@ func testAccCheckNewRelicServiceLevelAlertHelper_FastBurn(n string) resource.Tes
 			"alert_type":                          "fast_burn",
 			"custom_evaluation_period":            "",
 			"custom_tolerated_budget_consumption": "",
-			"evaluation_period":                   "60",
+			"evaluation_period":                   "3600",
 			"tolerated_budget_consumption":        "2",
 			"threshold":                           "1.3439999999999237",
 			"sli_guid":                            "sliGuid",
@@ -279,7 +279,7 @@ func testAccCheckNewRelicServiceLevelAlertHelper_SlowBurn(n string) resource.Tes
 			"alert_type":                          "slow_burn",
 			"custom_evaluation_period":            "",
 			"custom_tolerated_budget_consumption": "",
-			"evaluation_period":                   "360",
+			"evaluation_period":                   "21600",
 			"tolerated_budget_consumption":        "5",
 			"threshold":                           "0.5599999999999682",
 			"sli_guid":                            "sliGuid",
@@ -304,7 +304,7 @@ data "newrelic_service_level_alert_helper" "custom" {
     slo_target = 98
     slo_period = 7
     custom_tolerated_budget_consumption = 5
-    custom_evaluation_period = 120
+    custom_evaluation_period = 7200
 }
 `)
 }
@@ -326,9 +326,9 @@ func testAccCheckNewRelicServiceLevelAlertHelper_Custom(n string) resource.TestC
 			"slo_period":                          "7",
 			"slo_target":                          "98",
 			"alert_type":                          "custom",
-			"custom_evaluation_period":            "120",
+			"custom_evaluation_period":            "7200",
 			"custom_tolerated_budget_consumption": "5",
-			"evaluation_period":                   "120",
+			"evaluation_period":                   "7200",
 			"tolerated_budget_consumption":        "5",
 			"threshold":                           "8.4",
 			"sli_guid":                            "sliGuidCustom",
@@ -353,7 +353,7 @@ data "newrelic_service_level_alert_helper" "custom" {
     slo_target = 98
     slo_period = 7
     custom_tolerated_budget_consumption = 5
-    custom_evaluation_period = 120
+    custom_evaluation_period = 7200
     is_bad_events = true
 }
 `)
@@ -376,9 +376,9 @@ func testAccCheckNewRelicServiceLevelAlertHelper_CustomBadEvents(n string) resou
 			"slo_period":                          "7",
 			"slo_target":                          "98",
 			"alert_type":                          "custom",
-			"custom_evaluation_period":            "120",
+			"custom_evaluation_period":            "7200",
 			"custom_tolerated_budget_consumption": "5",
-			"evaluation_period":                   "120",
+			"evaluation_period":                   "7200",
 			"tolerated_budget_consumption":        "5",
 			"threshold":                           "8.4",
 			"sli_guid":                            "sliGuidCustom",

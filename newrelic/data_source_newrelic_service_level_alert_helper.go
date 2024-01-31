@@ -96,7 +96,7 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 			return diag.Errorf("For 'fast_burn' alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption', we use 60 minutes and 2%%.")
 		}
 
-		if err := fillData(d, 60, 2); err != nil {
+		if err := fillData(d, 3600, 2); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -105,7 +105,7 @@ func dataSourceNewRelicServiceLevelAlertHelperRead(ctx context.Context, d *schem
 			return diag.Errorf("For 'slow_burn' alert type do not fill 'custom_evaluation_period' or 'custom_tolerated_budget_consumption', we use 360 minutes and 5%%.")
 		}
 
-		if err := fillData(d, 360, 5); err != nil {
+		if err := fillData(d, 21600, 5); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -154,5 +154,5 @@ func fillData(d *schema.ResourceData, evaluationPeriod int, toleratedBudgetConsu
 }
 
 func calculateThreshold(sloTarget float64, toleratedBudgetConsumption float64, sloPeriod int, evaluationPeriod int) float64 {
-	return (100.0 - sloTarget) * ((toleratedBudgetConsumption / 100 * float64(sloPeriod) * 24) / (float64(evaluationPeriod) / 60.0))
+	return (100.0 - sloTarget) * ((toleratedBudgetConsumption / 100 * float64(sloPeriod) * 24) / (float64(evaluationPeriod) / 3600.0))
 }
