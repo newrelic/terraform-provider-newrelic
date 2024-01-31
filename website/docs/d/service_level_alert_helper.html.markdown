@@ -52,6 +52,8 @@ Then use the helper to obtain the necessary fields to set up an alert on that Se
 Note that the Service Level was set up using bad events, that's why `is_bad_events` is set to `true`.
 If the Service Level was configured with good events that would be unnecessary as the field defaults to `false`.
 
+Here is an example of a `slow_burn` alert.
+
 ```hcl
 
 data "newrelic_service_level_alert_helper" "foo_slow_burn" {
@@ -67,11 +69,6 @@ resource "newrelic_nrql_alert_condition" "your_condition" {
   policy_id = 67890
   type = "static"
   name = "Slow burn alert"
-
-  description = <<-EOT
-  Alerts you when 5% of your SLO error budget is spent in 6 hours.
-  EOT
-
   enabled = true
   violation_time_limit_seconds = 259200
 
@@ -90,6 +87,46 @@ resource "newrelic_nrql_alert_condition" "your_condition" {
   aggregation_method = "event_flow"
   aggregation_delay = 120
   slide_by = 900
+}
+```
+
+Here is an example of a custom alert:
+
+
+```hcl
+data "newrelic_service_level_alert_helper" "foo_custom" {
+    alert_type = "custom"
+    sli_guid = newrelic_service_level.foo.sli_guid
+    slo_target = local.foo_target
+    slo_period = local.foo_period
+    custom_tolerated_budget_consumption = 4
+    custom_evaluation_period = 5400
+    is_bad_events = true
+}
+
+resource "newrelic_nrql_alert_condition" "your_condition" {
+  account_id = 12345678
+  policy_id = 67890
+  type = "static"
+  name = "Custom burn alert"
+  enabled = true
+  violation_time_limit_seconds = 259200
+
+  nrql {
+    query = data.newrelic_service_level_alert_helper.foo_custom.nrql
+  }
+
+  critical {
+    operator = "above_or_equals"
+    threshold = data.newrelic_service_level_alert_helper.foo_custom.threshold
+    threshold_duration = 900
+    threshold_occurrences = "at_least_once"
+  }
+  fill_option = "none"
+  aggregation_window = data.newrelic_service_level_alert_helper.foo_custom.evaluation_period
+  aggregation_method = "event_flow"
+  aggregation_delay = 120
+  slide_by = 60
 }
 ```
 
