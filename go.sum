@@ -46,7 +46,7 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
-github.com/elazarl/goproxy v0.0.0-20230731152917-f99041a5c027 h1:1L0aalTpPz7YlMxETKpmQoWMBkeiuorElZIXoNmgiPE=
+github.com/elazarl/goproxy v0.0.0-20220417044921-416226498f94 h1:VIy7cdK7ufs7ctpTFkXJHm1uP3dJSnCGSPysEICB1so=
 github.com/emirpasic/gods v1.12.0 h1:QAUIPSaCu4G+POclxeqb3F+WPpdKqFGlw36+yOzGlrg=
 github.com/emirpasic/gods v1.12.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
@@ -263,8 +263,8 @@ github.com/newrelic/go-agent/v3 v3.29.1 h1:OINNRev5ImiyRq0IUYwhfTmtqQgQFYyDNQEtb
 github.com/newrelic/go-agent/v3 v3.29.1/go.mod h1:9utrgxlSryNqRrTvII2XBL+0lpofXbqXApvVWPpbzUg=
 github.com/newrelic/go-insights v1.0.3 h1:zSNp1CEZnXktzSIEsbHJk8v6ZihdPFP2WsO/fzau3OQ=
 github.com/newrelic/go-insights v1.0.3/go.mod h1:A20BoT8TNkqPGX2nS/Z2fYmKl3Cqa3iKZd4whzedCY4=
-github.com/newrelic/newrelic-client-go/v2 v2.24.0 h1:L4T0+wQ0P+GvxsbkNGMUW9umpBaQ2BjaTD98eyDeBCY=
-github.com/newrelic/newrelic-client-go/v2 v2.24.0/go.mod h1:SO5KJuFJ/+l3lT8nOdNLTrcE9FoZ4m60kechCVb+1N4=
+github.com/newrelic/newrelic-client-go/v2 v2.23.1-0.20240131094645-d9e3ad7b5328 h1:SnNY3TPKKpL1WGqoCwYS/HcRLsmQM63u8od3lICuAgQ=
+github.com/newrelic/newrelic-client-go/v2 v2.23.1-0.20240131094645-d9e3ad7b5328/go.mod h1:VPWTvEfKvnTZLunAC7fiW33y4e0srznNfN5HJH2cOp8=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
