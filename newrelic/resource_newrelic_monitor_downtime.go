@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -40,10 +39,10 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 				// ValidateFunc: validation included in validateMonitorDowntimeMonitorGUIDs as this is a set and is unsupported by the "validation" package
 			},
 			"account_id": {
-				Type:        schema.TypeString,
-				Description: "The ID of the New Relic account in which the Monitor Downtime shall be created. Defaults to NEW_RELIC_ACCOUNT_ID if not specified.",
+				Type:        schema.TypeInt,
+				Description: "The ID of the New Relic account in which the Monitor Downtime shall be created. Defaults to the `account_id` in the provider{} configuration if not specified.",
 				Optional:    true,
-				Default:     os.Getenv("NEW_RELIC_ACCOUNT_ID"),
+				Computed:    true,
 			},
 			"start_time": {
 				Type:         schema.TypeString,
@@ -162,7 +161,7 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
-	commonArgumentsObject, err := getMonitorDowntimeValuesOfCommonArguments(d)
+	commonArgumentsObject, err := getMonitorDowntimeValuesOfCommonArguments(d, providerConfig)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -177,7 +176,7 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 		guid, err := oneTimeCreateObject.createMonitorDowntimeOneTime(ctx, client)
 		if err != nil {
 			d.SetId("")
-			diag.FromErr(err)
+			return diag.FromErr(err)
 		}
 
 		d.SetId(guid)
@@ -190,7 +189,7 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 		guid, err := dailyCreateObject.createMonitorDowntimeDaily(ctx, client)
 		if err != nil {
 			d.SetId("")
-			diag.FromErr(err)
+			return diag.FromErr(err)
 		}
 
 		d.SetId(guid)
@@ -203,7 +202,7 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 		guid, err := weeklyCreateObject.createMonitorDowntimeWeekly(ctx, client)
 		if err != nil {
 			d.SetId("")
-			diag.FromErr(err)
+			return diag.FromErr(err)
 		}
 
 		d.SetId(guid)
@@ -216,7 +215,7 @@ func resourceNewRelicMonitorDowntimeCreate(ctx context.Context, d *schema.Resour
 		guid, err := monthlyCreateObject.createMonitorDowntimeMonthly(ctx, client)
 		if err != nil {
 			d.SetId("")
-			diag.FromErr(err)
+			return diag.FromErr(err)
 		}
 
 		d.SetId(guid)
@@ -281,7 +280,7 @@ func resourceNewRelicMonitorDowntimeRead(ctx context.Context, d *schema.Resource
 func resourceNewRelicMonitorDowntimeUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
-	commonArgumentsObject, err := getMonitorDowntimeValuesOfCommonArguments(d)
+	commonArgumentsObject, err := getMonitorDowntimeValuesOfCommonArguments(d, providerConfig)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -296,7 +295,7 @@ func resourceNewRelicMonitorDowntimeUpdate(ctx context.Context, d *schema.Resour
 		guid, err := oneTimeUpdateObject.updateMonitorDowntimeOneTime(ctx, client, synthetics.EntityGUID(d.Id()))
 		if err != nil {
 			// d.SetId("")
-			diag.FromErr(err)
+			return diag.FromErr(err)
 		}
 
 		d.SetId(guid)
@@ -309,7 +308,7 @@ func resourceNewRelicMonitorDowntimeUpdate(ctx context.Context, d *schema.Resour
 		guid, err := dailyUpdateObject.updateMonitorDowntimeDaily(ctx, client, synthetics.EntityGUID(d.Id()))
 		if err != nil {
 			// d.SetId("")
-			diag.FromErr(err)
+			return diag.FromErr(err)
 		}
 
 		d.SetId(guid)
@@ -322,7 +321,7 @@ func resourceNewRelicMonitorDowntimeUpdate(ctx context.Context, d *schema.Resour
 		guid, err := weeklyUpdateObject.updateMonitorDowntimeWeekly(ctx, client, synthetics.EntityGUID(d.Id()))
 		if err != nil {
 			// d.SetId("")
-			diag.FromErr(err)
+			return diag.FromErr(err)
 		}
 
 		d.SetId(guid)
@@ -335,7 +334,7 @@ func resourceNewRelicMonitorDowntimeUpdate(ctx context.Context, d *schema.Resour
 		guid, err := monthlyUpdateObject.updateMonitorDowntimeMonthly(ctx, client, synthetics.EntityGUID(d.Id()))
 		if err != nil {
 			// d.SetId("")
-			diag.FromErr(err)
+			return diag.FromErr(err)
 		}
 
 		d.SetId(guid)

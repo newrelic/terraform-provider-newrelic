@@ -14,10 +14,10 @@ TOOL_CONFIG  ?= $(TOOL_DIR)/tools.go
 
 GOTOOLS ?= $(shell cd $(TOOL_DIR) && go list -f '{{ .Imports }}' -tags tools |tr -d '[]')
 
-tools: check-version
-	@echo "=== $(PROJECT_NAME) === [ tools            ]: Installing tools required by the project..."
-	@cd $(TOOL_DIR) && $(VENDOR_CMD)
-	@cd $(TOOL_DIR) && $(GO) install $(GOTOOLS)
+#tools: check-version
+#	@echo "=== $(PROJECT_NAME) === [ tools            ]: Installing tools required by the project..."
+#	@cd $(TOOL_DIR) && $(VENDOR_CMD)
+#	@cd $(TOOL_DIR) && $(GO) install $(GOTOOLS)
 
 tools-outdated: check-version
 	@echo "=== $(PROJECT_NAME) === [ tools-outdated   ]: Finding outdated tool deps with $(GO_MOD_OUTDATED)..."
