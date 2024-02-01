@@ -1,3 +1,11 @@
+<a name="v3.30.0"></a>
+## [v3.30.0] - 2024-02-01
+### Bug Fixes
+- **service_level_alert_helper:** fix value returned by evaluation_period ([#2560](https://github.com/newrelic/terraform-provider-newrelic/issues/2560))
+
+### Features
+- **auth_domains:** add data source to fetch auth domains ([#2553](https://github.com/newrelic/terraform-provider-newrelic/issues/2553))
+
 <a name="v3.29.0"></a>
 ## [v3.29.0] - 2024-01-23
 ### Bug Fixes
@@ -2016,7 +2024,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.29.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.30.0...HEAD
+[v3.30.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.29.0...v3.30.0
 [v3.29.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.28.1...v3.29.0
 [v3.28.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.28.0...v3.28.1
 [v3.28.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.27.7...v3.28.0
