@@ -277,21 +277,6 @@ func getMonitorDowntimeValuesOfCommonArguments(d *schema.ResourceData, providerC
 	return commonArgumentsObject, nil
 }
 
-func getMonitorDowntimeAccountIDFromConfiguration(d *schema.ResourceData, providerConfig *ProviderConfig) (int, error) {
-	val, ok := d.GetOk("account_id")
-	if ok {
-		if val.(string) == "" {
-			return 0, fmt.Errorf("%s has value \"\"", `account_id`)
-		}
-		accountIDAsInteger, err := strconv.Atoi(val.(string))
-		if err != nil {
-			return 0, err
-		}
-		return accountIDAsInteger, nil
-	}
-	return providerConfig.AccountID, nil
-}
-
 func getMonitorDowntimeNameFromConfiguration(d *schema.ResourceData) (string, error) {
 	val, ok := d.GetOk("name")
 	if ok {
