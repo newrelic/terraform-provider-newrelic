@@ -17,7 +17,7 @@ func TestAccNewRelicAuthenticationDomain_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicAuthenticationDomainDataSourceConfiguration("Test-Auth-Domain"),
+				Config: testAccNewRelicAuthenticationDomainDataSourceConfiguration("Test-Auth-Domain DO NOT DELETE"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicCheckAuthenticationDomainExists(t, "data.newrelic_authentication_domain.foo"),
 				),
