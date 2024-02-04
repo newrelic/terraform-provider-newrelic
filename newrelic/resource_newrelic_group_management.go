@@ -30,17 +30,20 @@ func resourceNewRelicGroupManagement() *schema.Resource {
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"authentication_domain_id": {
-				Type:        schema.TypeString,
-				Description: "The ID of the authentication domain the user will belong to.",
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Description:  "The ID of the authentication domain the group will belong to.",
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+				ForceNew:     true,
+				// ForceNew has been added as the authentication_domain_id of a group cannot be updated post creation
+				// This is because the `authenticationDomainId` field does not exist in the userManagementUpdateGroup mutation on NerdGraph
 			},
 			"users": {
 				Type:        schema.TypeSet,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "IDs of users to be added to the group.",
 				Optional:    true,
-				Description: "IDs of users to be added to the group",
 				Default:     nil,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
 	}
@@ -49,7 +52,6 @@ func resourceNewRelicGroupManagement() *schema.Resource {
 func resourceNewRelicGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
-	log.Println("[INFO] creating a group with the specified configuration")
 
 	name := d.Get("name").(string)
 	if name == "" {
@@ -57,7 +59,11 @@ func resourceNewRelicGroupCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	authenticationDomainId := d.Get("authentication_domain_id").(string)
+	if authenticationDomainId == "" {
+		return diag.FromErr(fmt.Errorf("`authentication_domain_id` cannot be an empty string"))
+	}
 
+	log.Println("[INFO] sending request to create a group with the specified configuration")
 	createGroupResponse, err := client.UserManagement.UserManagementCreateGroup(
 		usermanagement.UserManagementCreateGroup{
 			AuthenticationDomainId: authenticationDomainId,
@@ -74,12 +80,11 @@ func resourceNewRelicGroupCreate(ctx context.Context, d *schema.ResourceData, me
 
 	createdGroupID := createGroupResponse.Group.ID
 	d.SetId(createdGroupID)
-	log.Println("[INFO] created the group successfully")
+	log.Printf("[INFO] successfully created a group, ID: %s\n", createdGroupID)
 
 	usersList := d.Get("users")
 	if usersList == nil {
-		log.Println("[INFO] no users specified in the configuration to create the group")
-		//_ = d.Set("users", schema.NewSet(schema.HashString, []interface{}{}))
+		log.Println("[INFO] no users specified in the configuration to add to the group")
 		return nil
 	}
 
@@ -95,25 +100,20 @@ func resourceNewRelicGroupCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if len(usersListCleaned) == 0 {
-		log.Println("[INFO] no users specified in the configuration to create the group")
+		log.Println("[INFO] no users specified in the configuration to add to the group")
 		return nil
 	}
 
-	addUsersToGroupResponse, err := client.UserManagement.UserManagementAddUsersToGroups(
-		usermanagement.UserManagementUsersGroupsInput{
-			GroupIds: []string{createdGroupID},
-			UserIDs:  usersListCleaned,
-		},
-	)
+	log.Printf("[INFO] sending request to add users %v to the created group %s\n", usersListCleaned, createdGroupID)
+	_, err = addUsersToGroup(client, createdGroupID, usersListCleaned)
 
 	if err != nil {
+		// _ = d.Set("users", schema.NewSet(schema.HashString, []interface{}{}))
+		// _ = d.Set("users", nil)
 		return diag.FromErr(err)
 	}
 
-	if addUsersToGroupResponse == nil {
-		return diag.Errorf("error: failed to add users to the created group")
-	}
-
+	log.Printf("[INFO] successfully added the following users to the group %s: %v\n", createdGroupID, usersListCleaned)
 	return nil
 }
 
@@ -171,13 +171,6 @@ func resourceNewRelicGroupRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 	}
 
-	//else {
-	//	err = d.Set("users", nil)
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//}
-
 	if retryErr != nil {
 		return diag.FromErr(retryErr)
 	}
@@ -216,17 +209,13 @@ func resourceNewRelicGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 			return diag.Errorf("error: failed to update group")
 		}
 
-		//_ := updateGroupResponse.Group.ID
 		log.Println("[INFO] updated the group successfully")
 	}
-
-	// usersList := d.Get("users")
 
 	oldUsersList, newUsersList := d.GetChange("users")
 
 	if oldUsersList == nil && newUsersList == nil {
 		log.Println("[INFO] no users specified in the configuration (both previously, and currently) to update the group with")
-		//_ = d.Set("users", schema.NewSet(schema.HashString, []interface{}{}))
 		return nil
 
 	} else {
@@ -254,34 +243,15 @@ func resourceNewRelicGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 			if len(oldUsersListCleaned) == 0 && len(newUsersListCleaned) != 0 {
 				log.Println("[INFO] new users have been added to the group in the update process. ADDING USERS TO THE GROUP")
 				_, err := addUsersToGroup(client, groupID, newUsersListCleaned)
-				//addUsersToGroupResponse, err := client.UserManagement.UserManagementAddUsersToGroups(
-				//	usermanagement.UserManagementUsersGroupsInput{
-				//		GroupIds: []string{groupID},
-				//		UserIDs:  newUsersListCleaned,
-				//	},
-				//)
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				//if addUsersToGroupResponse == nil {
-				//	return diag.Errorf("error: failed to add users to the created group")
-				//}
 			} else if len(oldUsersListCleaned) != 0 && len(newUsersListCleaned) == 0 {
 				log.Println("[INFO] all users in the group have been deleted in the update process. REMOVING USERS FROM THE GROUP")
 				_, err := removeUsersFromGroup(client, groupID, oldUsersListCleaned)
-				//removeUsersFromGroupResponse, err := client.UserManagement.UserManagementRemoveUsersFromGroups(
-				//	usermanagement.UserManagementUsersGroupsInput{
-				//		GroupIds: []string{groupID},
-				//		UserIDs:  oldUsersListCleaned,
-				//	},
-				//)
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				//
-				//if removeUsersFromGroupResponse == nil {
-				//	return diag.Errorf("error: failed to remove users from the created group")
-				//}
 			} else {
 				log.Println("[INFO] find diffs between the two using d.GetChange(), add the right users, remove the right ones")
 				oldUsersMap := make(map[string]bool)
@@ -310,41 +280,21 @@ func resourceNewRelicGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 				}
 
 				_, err := addUsersToGroup(client, groupID, addedUsers)
-				//addUsersToGroupResponse, err := client.UserManagement.UserManagementAddUsersToGroups(
-				//	usermanagement.UserManagementUsersGroupsInput{
-				//		GroupIds: []string{groupID},
-				//		UserIDs:  addedUsers,
-				//	},
-				//)
 
 				if err != nil {
 					return diag.FromErr(err)
 				}
 
-				//if addUsersToGroupResponse == nil {
-				//	return diag.Errorf("error: failed to add users to the created group")
-				//}
+				log.Printf("[INFO] successfully added the following users to the group %s: %v\n", groupID, addedUsers)
 
 				_, err = removeUsersFromGroup(client, groupID, deletedUsers)
-				//removeUsersFromGroupResponse, err := client.UserManagement.UserManagementRemoveUsersFromGroups(
-				//	usermanagement.UserManagementUsersGroupsInput{
-				//		GroupIds: []string{groupID},
-				//		UserIDs:  deletedUsers,
-				//	},
-				//)
 
 				if err != nil {
 					return diag.FromErr(err)
 				}
 
-				//if removeUsersFromGroupResponse == nil {
-				//	return diag.Errorf("error: failed to remove users from the created group")
-				//}
-
-				log.Println("Deleted users:", deletedUsers)
-				log.Println("Added users:", addedUsers)
+				log.Printf("[INFO] successfully removed the following users from the group %s: %v\n", groupID, deletedUsers)
 			}
-
 		}
 		return nil
 	}
@@ -353,8 +303,9 @@ func resourceNewRelicGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 func resourceNewRelicGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
+	groupID := d.Id()
 
-	deleteGroupResponse, err := client.UserManagement.UserManagementDeleteGroup(usermanagement.UserManagementDeleteGroup{ID: d.Id()})
+	deleteGroupResponse, err := client.UserManagement.UserManagementDeleteGroup(usermanagement.UserManagementDeleteGroup{ID: groupID})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -362,11 +313,12 @@ func resourceNewRelicGroupDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(fmt.Errorf("error: failed to delete group, no response returned from NerdGraph"))
 	}
 
+	log.Printf("[INFO] successfully deleted the group with ID: %s\n", groupID)
 	return nil
 }
 
 func addUsersToGroup(client *newrelic.NewRelic, groupID string, userIDs []string) (*usermanagement.UserManagementAddUsersToGroupsPayload, error) {
-	log.Printf("[INFO] processing request to add user IDs %v to group %s\n", userIDs, groupID)
+	log.Printf("[INFO] sending request to add user IDs %v to group %s\n", userIDs, groupID)
 	addUsersToGroupResponse, err := client.UserManagement.UserManagementAddUsersToGroups(
 		usermanagement.UserManagementUsersGroupsInput{
 			GroupIds: []string{groupID},
@@ -386,7 +338,7 @@ func addUsersToGroup(client *newrelic.NewRelic, groupID string, userIDs []string
 }
 
 func removeUsersFromGroup(client *newrelic.NewRelic, groupID string, userIDs []string) (*usermanagement.UserManagementRemoveUsersFromGroupsPayload, error) {
-	log.Printf("[INFO] processing request to remove add user IDs %v from group %s\n", userIDs, groupID)
+	log.Printf("[INFO] sending request to remove user IDs %v from group %s\n", userIDs, groupID)
 	removeUsersFromGroupResponse, err := client.UserManagement.UserManagementRemoveUsersFromGroups(
 		usermanagement.UserManagementUsersGroupsInput{
 			GroupIds: []string{groupID},
