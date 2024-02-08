@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -232,13 +231,10 @@ type SyntheticsMonitorDowntimeMonthlyInput struct {
 }
 
 // GET functions used to fetch values from the configuration
-func getMonitorDowntimeValuesOfCommonArguments(d *schema.ResourceData) (*SyntheticsMonitorDowntimeCommonArgumentsInput, error) {
+func getMonitorDowntimeValuesOfCommonArguments(d *schema.ResourceData, providerConfig *ProviderConfig) (*SyntheticsMonitorDowntimeCommonArgumentsInput, error) {
 	commonArgumentsObject := &SyntheticsMonitorDowntimeCommonArgumentsInput{}
 
-	accountID, err := getMonitorDowntimeAccountIDFromConfiguration(d)
-	if err != nil {
-		return nil, err
-	}
+	accountID := selectAccountID(providerConfig, d)
 
 	name, err := getMonitorDowntimeNameFromConfiguration(d)
 	if err != nil {
@@ -279,25 +275,6 @@ func getMonitorDowntimeValuesOfCommonArguments(d *schema.ResourceData) (*Synthet
 	commonArgumentsObject.MonitorGUIDs = monitorGUIDs
 
 	return commonArgumentsObject, nil
-}
-
-func getMonitorDowntimeAccountIDFromConfiguration(d *schema.ResourceData) (int, error) {
-	val, ok := d.GetOk("account_id")
-	if ok {
-		if val.(string) == "" {
-			return 0, fmt.Errorf("%s has value \"\"", `account_id`)
-		}
-		accountIDAsInteger, err := strconv.Atoi(val.(string))
-		if err != nil {
-			return 0, err
-		}
-		return accountIDAsInteger, nil
-	}
-	accountIDAsInteger, err := strconv.Atoi(os.Getenv("NEW_RELIC_ACCOUNT_ID"))
-	if err != nil {
-		return 0, err
-	}
-	return accountIDAsInteger, nil
 }
 
 func getMonitorDowntimeNameFromConfiguration(d *schema.ResourceData) (string, error) {
@@ -825,8 +802,10 @@ func setMonitorDowntimeEndRepeat(d *schema.ResourceData, tags []entities.EntityT
 
 }
 
-func setMonitorDowntimeAccountID(tags []entities.EntityTag) string {
-	return getStringEntityTag(tags, "accountId")
+func setMonitorDowntimeAccountID(tags []entities.EntityTag) int {
+	fetchedAccountID := getStringEntityTag(tags, "accountId")
+	x, _ := strconv.Atoi(fetchedAccountID)
+	return x
 }
 
 func setMonitorDowntimeMode(tags []entities.EntityTag) string {
