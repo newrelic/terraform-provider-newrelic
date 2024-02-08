@@ -36,6 +36,9 @@ func resourceNewRelicUser() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The ID of the authentication domain the user will belong to.",
 				Required:    true,
+				ForceNew:    true,
+				// ForceNew has been added as the authentication_domain_id of a user cannot be updated post creation
+				// This is because the `authenticationDomainId` field does not exist in the userManagementUpdateUser mutation
 			},
 			"user_type": {
 				Type:        schema.TypeString,
@@ -91,7 +94,7 @@ func resourceNewRelicUserCreate(ctx context.Context, d *schema.ResourceData, met
 
 	d.SetId(userID)
 
-	return resourceNewRelicUserRead(ctx, d, meta)
+	return nil
 }
 
 // Read a created user
@@ -169,7 +172,7 @@ func resourceNewRelicUserUpdate(ctx context.Context, d *schema.ResourceData, met
 
 	d.SetId(userID)
 
-	return resourceNewRelicUserRead(ctx, d, meta)
+	return nil
 }
 
 // Delete a created user
@@ -177,9 +180,8 @@ func resourceNewRelicUserDelete(ctx context.Context, d *schema.ResourceData, met
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	log.Printf("[INFO] Deleting New Relic user user id %s", d.Id())
+	log.Printf("[INFO] Deleting New Relic user with user id %s\n", d.Id())
 
-	//accountID := selectAccountID(meta.(*ProviderConfig), d)
 	deleteConfig := usermanagement.UserManagementDeleteUser{
 		ID: d.Id(),
 	}
