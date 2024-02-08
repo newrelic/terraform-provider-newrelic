@@ -2,7 +2,7 @@ package newrelic
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -74,24 +74,23 @@ func resourceNewRelicUserCreate(ctx context.Context, d *schema.ResourceData, met
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	createInput := usermanagement.UserManagementCreateUser{
+	createUserInput := usermanagement.UserManagementCreateUser{
 		AuthenticationDomainId: d.Get("authentication_domain_id").(string),
 		Email:                  d.Get("email").(string),
 		Name:                   d.Get("name").(string),
 		UserType:               userTypes[d.Get("user_type").(string)],
 	}
 
-	created, err := client.UserManagement.UserManagementCreateUserWithContext(ctx, createInput)
+	createUserResponse, err := client.UserManagement.UserManagementCreateUserWithContext(ctx, createUserInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if created == nil {
+	if createUserResponse == nil {
 		return diag.Errorf("err: user create result wasn't returned or user was not created.")
 	}
 
-	userID := created.CreatedUser.ID
-
+	userID := createUserResponse.CreatedUser.ID
 	d.SetId(userID)
 
 	return nil
@@ -103,15 +102,18 @@ func resourceNewRelicUserRead(ctx context.Context, d *schema.ResourceData, meta 
 	client := providerConfig.NewClient
 
 	userID := d.Id()
-	authenticationDomainID := d.Get("authentication_domain_id").(string)
-	user, err := getUserByID(ctx, client, authenticationDomainID, userID)
+	user, authenticationDomainID, err := getUserByID(ctx, client, userID)
 
 	if err != nil && user == nil {
 		d.SetId("")
-		return nil
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("name", user.Name); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := d.Set("authentication_domain_id", authenticationDomainID); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -126,25 +128,23 @@ func resourceNewRelicUserRead(ctx context.Context, d *schema.ResourceData, meta 
 	return nil
 }
 
-// Iterate through users associated with the authentication domain
-func getUserByID(ctx context.Context, client *newrelic.NewRelic, authenticationDomainID string, userID string) (user *usermanagement.UserManagementUser, err error) {
-	authenticationDomainIDs := []string{authenticationDomainID}
+// iterate through users to spot the user with the specified user id
+func getUserByID(ctx context.Context, client *newrelic.NewRelic, userID string) (user *usermanagement.UserManagementUser, authenticationDomainID string, err error) {
 	userIDs := []string{userID}
-	resp, err := client.UserManagement.GetUsersWithContext(ctx, authenticationDomainIDs, userIDs, "", "")
+	resp, err := client.UserManagement.GetUsersWithContext(ctx, []string{}, userIDs, "", "")
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
+
 	for _, authDomain := range resp.AuthenticationDomains {
-		if authDomain.ID == authenticationDomainID {
-			for _, u := range authDomain.Users.Users {
-				if u.ID == userID {
-					return &u, nil
-				}
+		for _, u := range authDomain.Users.Users {
+			if u.ID == userID {
+				return &u, authDomain.ID, nil
 			}
 		}
-
 	}
-	return nil, errors.New("error: user is not found")
+
+	return nil, "", fmt.Errorf("user with id %s not found", userID)
 }
 
 // Update a created user
@@ -152,24 +152,23 @@ func resourceNewRelicUserUpdate(ctx context.Context, d *schema.ResourceData, met
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	createInput := usermanagement.UserManagementUpdateUser{
+	updateUserInput := usermanagement.UserManagementUpdateUser{
 		Email:    d.Get("email").(string),
 		Name:     d.Get("name").(string),
 		ID:       d.Id(),
 		UserType: userTypes[d.Get("user_type").(string)],
 	}
 
-	created, err := client.UserManagement.UserManagementUpdateUserWithContext(ctx, createInput)
+	updateUserResponse, err := client.UserManagement.UserManagementUpdateUserWithContext(ctx, updateUserInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if created == nil {
+	if updateUserResponse == nil {
 		return diag.Errorf("err: user update result wasn't returned or user was not created.")
 	}
 
-	userID := created.User.ID
-
+	userID := updateUserResponse.User.ID
 	d.SetId(userID)
 
 	return nil
@@ -182,11 +181,11 @@ func resourceNewRelicUserDelete(ctx context.Context, d *schema.ResourceData, met
 
 	log.Printf("[INFO] Deleting New Relic user with user id %s\n", d.Id())
 
-	deleteConfig := usermanagement.UserManagementDeleteUser{
+	deleteUserInput := usermanagement.UserManagementDeleteUser{
 		ID: d.Id(),
 	}
 
-	_, err := client.UserManagement.UserManagementDeleteUserWithContext(ctx, deleteConfig)
+	_, err := client.UserManagement.UserManagementDeleteUserWithContext(ctx, deleteUserInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
