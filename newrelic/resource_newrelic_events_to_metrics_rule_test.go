@@ -58,9 +58,9 @@ func testAccCheckNewRelicEventsToMetricsRuleDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = client.EventsToMetrics.GetRule(accountID, ruleID)
+		res, err := client.EventsToMetrics.GetRulesById(accountID, ruleID)
 
-		if err == nil {
+		if len(res.Rules) > 0 {
 			return fmt.Errorf("events to metrics rule still exists: %s", err)
 		}
 	}
@@ -86,7 +86,7 @@ func testAccCheckNewRelicEventsToMetricsRuleExists(n string) resource.TestCheckF
 			return err
 		}
 
-		_, err = client.EventsToMetrics.GetRule(accountID, ruleID)
+		_, err = client.EventsToMetrics.GetRulesById(accountID, ruleID)
 		if err != nil {
 			return err
 		}

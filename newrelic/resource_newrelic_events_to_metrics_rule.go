@@ -75,12 +75,16 @@ func resourceNewRelicEventsToMetricsRuleCreate(ctx context.Context, d *schema.Re
 		},
 	}
 
-	rules, err := client.EventsToMetrics.CreateRulesWithContext(ctx, createInput)
+	res, err := client.EventsToMetrics.EventsToMetricsCreateRuleWithContext(ctx, createInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	rule := rules[0]
+	if len(res.Failures) > 0 {
+		return diag.FromErr(fmt.Errorf("create failed %s - %s", res.Failures[0].Errors[0].Reason, res.Failures[0].Errors[0].Description))
+	}
+
+	rule := res.Successes[0]
 
 	id := fmt.Sprintf("%d:%s", rule.AccountID, rule.ID)
 
@@ -95,7 +99,7 @@ func resourceNewRelicEventsToMetricsRuleCreate(ctx context.Context, d *schema.Re
 			},
 		}
 
-		_, err := client.EventsToMetrics.UpdateRulesWithContext(ctx, updateInput)
+		_, err := client.EventsToMetrics.EventsToMetricsUpdateRuleWithContext(ctx, updateInput)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -115,7 +119,9 @@ func resourceNewRelicEventsToMetricsRuleRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	rule, err := client.EventsToMetrics.GetRuleWithContext(ctx, accountID, ruleID)
+	res, err := client.EventsToMetrics.GetRulesByIdWithContext(ctx, accountID, ruleID)
+
+	rule := res.Rules[0]
 
 	if err != nil {
 		if _, ok := err.(*nrErrors.NotFound); ok {
@@ -130,7 +136,7 @@ func resourceNewRelicEventsToMetricsRuleRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("rule_id", ruleID); err != nil {
+	if err := d.Set("rule_id", ruleID[0]); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -170,12 +176,12 @@ func resourceNewRelicEventsToMetricsRuleUpdate(ctx context.Context, d *schema.Re
 	updateInput := []eventstometrics.EventsToMetricsUpdateRuleInput{
 		{
 			AccountID: accountID,
-			RuleId:    ruleID,
+			RuleId:    ruleID[0],
 			Enabled:   d.Get("enabled").(bool),
 		},
 	}
 
-	_, err = client.EventsToMetrics.UpdateRulesWithContext(ctx, updateInput)
+	_, err = client.EventsToMetrics.EventsToMetricsUpdateRuleWithContext(ctx, updateInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -197,11 +203,11 @@ func resourceNewRelicEventsToMetricsRuleDelete(ctx context.Context, d *schema.Re
 	deleteInput := []eventstometrics.EventsToMetricsDeleteRuleInput{
 		{
 			AccountID: accountID,
-			RuleId:    ruleID,
+			RuleId:    ruleID[0],
 		},
 	}
 
-	_, err = client.EventsToMetrics.DeleteRulesWithContext(ctx, deleteInput)
+	_, err = client.EventsToMetrics.EventsToMetricsDeleteRuleWithContext(ctx, deleteInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -209,17 +215,17 @@ func resourceNewRelicEventsToMetricsRuleDelete(ctx context.Context, d *schema.Re
 	return nil
 }
 
-func getEventsToMetricsRuleIDs(id string) (int, string, error) {
+func getEventsToMetricsRuleIDs(id string) (int, []string, error) {
 	strIDs := strings.Split(id, ":")
 
 	if len(strIDs) != 2 {
-		return 0, "", errors.New("could not parse events to metrics rule IDs")
+		return 0, []string{}, errors.New("could not parse events to metrics rule IDs")
 	}
 
 	accountID, err := strconv.Atoi(strIDs[0])
 	if err != nil {
-		return 0, "", err
+		return 0, []string{}, err
 	}
 
-	return accountID, strIDs[1], nil
+	return accountID, []string{strIDs[1]}, nil
 }
