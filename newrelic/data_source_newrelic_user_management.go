@@ -69,7 +69,7 @@ func dataSourceNewRelicUserRead(ctx context.Context, d *schema.ResourceData, met
 	authenticationDomainID := authDomainID.(string)
 	userFound := false
 
-	resp, err := client.UserManagement.GetUsersWithContext(
+	resp, err := client.UserManagement.UserManagementGetUsersWithContext(
 		ctx,
 		[]string{authenticationDomainID},
 		[]string{},

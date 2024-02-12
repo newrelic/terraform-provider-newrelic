@@ -131,7 +131,7 @@ func resourceNewRelicUserRead(ctx context.Context, d *schema.ResourceData, meta 
 // iterate through users to spot the user with the specified user id
 func getUserByID(ctx context.Context, client *newrelic.NewRelic, userID string) (user *usermanagement.UserManagementUser, authenticationDomainID string, err error) {
 	userIDs := []string{userID}
-	resp, err := client.UserManagement.GetUsersWithContext(ctx, []string{}, userIDs, "", "")
+	resp, err := client.UserManagement.UserManagementGetUsersWithContext(ctx, []string{}, userIDs, "", "")
 	if err != nil {
 		return nil, "", err
 	}
