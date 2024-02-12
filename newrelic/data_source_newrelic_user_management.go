@@ -67,7 +67,6 @@ func dataSourceNewRelicUserRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	authenticationDomainID := authDomainID.(string)
-	userFound := false
 
 	resp, err := client.UserManagement.UserManagementGetUsersWithContext(
 		ctx,
@@ -91,15 +90,11 @@ func dataSourceNewRelicUserRead(ctx context.Context, d *schema.ResourceData, met
 				d.SetId(u.ID)
 				_ = d.Set("name", u.Name)
 				_ = d.Set("email_id", u.Email)
-				userFound = true
 				return nil
 			}
 		}
 	}
 
-	if !userFound {
-		return diag.FromErr(fmt.Errorf("no user found with the specified parameters"))
-	}
+	return diag.FromErr(fmt.Errorf("no user found with the specified parameters"))
 
-	return nil
 }

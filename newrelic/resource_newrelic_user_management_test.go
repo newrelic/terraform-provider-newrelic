@@ -23,13 +23,13 @@ var userManagementResourceName string = "newrelic_user.foo"
 func TestAccNewRelicUser_Basic(t *testing.T) {
 	createMap := map[string]string{
 		"name":                     fmt.Sprintf("%s-%s", userNamePrefix, testhelpers.RandSeq(10)),
-		"email":                    strings.ReplaceAll(userEmailPrefix, "#", testhelpers.RandSeq(10)),
+		"email_id":                 strings.ReplaceAll(userEmailPrefix, "#", testhelpers.RandSeq(10)),
 		"authentication_domain_id": authenticationDomainId,
 		"user_type":                "CORE_USER_TIER",
 	}
 	updateMap := map[string]string{
 		"name":                     fmt.Sprintf("%s-%s-%s", userNamePrefix, testhelpers.RandSeq(10), "updated"),
-		"email":                    strings.ReplaceAll(userEmailPrefix, "#", testhelpers.RandSeq(5)),
+		"email_id":                 strings.ReplaceAll(userEmailPrefix, "#", testhelpers.RandSeq(5)),
 		"authentication_domain_id": authenticationDomainId,
 		"user_type":                "BASIC_USER_TIER",
 	}
@@ -64,7 +64,7 @@ func TestAccNewRelicUser_Basic(t *testing.T) {
 func TestAccNewRelicUser_InvalidAuthenticationDomainError(t *testing.T) {
 	createMap := map[string]string{
 		"name":                     fmt.Sprintf("%s-%s", userNamePrefix, testhelpers.RandSeq(10)),
-		"email":                    strings.ReplaceAll(userEmailPrefix, "#", testhelpers.RandSeq(10)),
+		"email_id":                 strings.ReplaceAll(userEmailPrefix, "#", testhelpers.RandSeq(10)),
 		"authentication_domain_id": mockAuthenticationDomainId,
 		"user_type":                "CORE_USER_TIER",
 	}
@@ -83,8 +83,8 @@ func TestAccNewRelicUser_InvalidAuthenticationDomainError(t *testing.T) {
 func TestAccNewRelicUser_EmailAlreadyTakenError(t *testing.T) {
 	createMap := map[string]string{
 		"name": fmt.Sprintf("%s-%s", userNamePrefix, testhelpers.RandSeq(10)),
-		// a user with the following email already exists, hence, this test is expected to fail
-		"email":                    strings.ReplaceAll(userEmailPrefix, "#", "integration"),
+		// a user with the following email_id already exists, hence, this test is expected to fail
+		"email_id":                 strings.ReplaceAll(userEmailPrefix, "#", "integration"),
 		"authentication_domain_id": authenticationDomainId,
 		"user_type":                "CORE_USER_TIER",
 	}
@@ -112,7 +112,7 @@ func testAccNewRelicCheckUserExists(resourceName string) resource.TestCheckFunc 
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		resp, err := client.UserManagement.GetUsers([]string{authenticationDomainId}, []string{rs.Primary.ID}, "", "")
+		resp, err := client.UserManagement.UserManagementGetUsers([]string{authenticationDomainId}, []string{rs.Primary.ID}, "", "")
 		if err != nil {
 			return fmt.Errorf(err.Error())
 		}
@@ -136,13 +136,13 @@ func testAccNewRelicUserManagementConfiguration(values map[string]string) string
 	return fmt.Sprintf(`
 	resource "newrelic_user" "foo" {
 	  name  = "%s"
-	  email = "%s"
+	  email_id = "%s"
 	  authentication_domain_id = "%s"
 	  user_type = "%s"
 	}
 `,
 		values["name"],
-		values["email"],
+		values["email_id"],
 		values["authentication_domain_id"],
 		values["user_type"],
 	)

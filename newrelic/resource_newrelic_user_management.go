@@ -27,7 +27,7 @@ func resourceNewRelicUser() *schema.Resource {
 				Description: "The name of the user.",
 				Required:    true,
 			},
-			"email": {
+			"email_id": {
 				Type:        schema.TypeString,
 				Description: "The email ID of the user.",
 				Required:    true,
@@ -76,7 +76,7 @@ func resourceNewRelicUserCreate(ctx context.Context, d *schema.ResourceData, met
 
 	createUserInput := usermanagement.UserManagementCreateUser{
 		AuthenticationDomainId: d.Get("authentication_domain_id").(string),
-		Email:                  d.Get("email").(string),
+		Email:                  d.Get("email_id").(string),
 		Name:                   d.Get("name").(string),
 		UserType:               userTypes[d.Get("user_type").(string)],
 	}
@@ -121,7 +121,7 @@ func resourceNewRelicUserRead(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("email", user.Email); err != nil {
+	if err := d.Set("email_id", user.Email); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -153,7 +153,7 @@ func resourceNewRelicUserUpdate(ctx context.Context, d *schema.ResourceData, met
 	client := providerConfig.NewClient
 
 	updateUserInput := usermanagement.UserManagementUpdateUser{
-		Email:    d.Get("email").(string),
+		Email:    d.Get("email_id").(string),
 		Name:     d.Get("name").(string),
 		ID:       d.Id(),
 		UserType: userTypes[d.Get("user_type").(string)],

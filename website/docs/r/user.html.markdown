@@ -18,7 +18,7 @@ data "newrelic_authentication_domain" "foo" {
 
 resource "newrelic_user_management" "foo" {
   name                     = "Test New User"
-  email                    = "test_user@test.com"
+  email_id                 = "test_user@test.com"
   authentication_domain_id = data.newrelic_authentication_domain.foo.id
   user_type                = "CORE_USER_TIER"
 }
@@ -28,7 +28,7 @@ resource "newrelic_user_management" "foo" {
 The following arguments are supported:
 
 * `name` - (Required) The name of the user to be created.
-* `email` - (Required) The email ID of the user to be created.
+* `email_id` - (Required) The email ID of the user to be created.
 * `authentication_domain_id` - (Required) The ID of the authentication domain to which the user to be created would belong.
 * `user_type` - (Optional) The tier to which the user to be created would belong. Accepted values for this argument are `BASIC_USER_TIER`, `CORE_USER_TIER`, or `FULL_USER_TIER`. If not specified in the configuration, the argument would default to `BASIC_USER_TIER`.
 
