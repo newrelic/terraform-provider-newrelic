@@ -35,6 +35,16 @@ func syntheticsBrokenLinksMonitorSchema() map[string]*schema.Schema {
 			Description: "The URI the monitor runs against.",
 			Required:    true,
 		},
+		"runtime_type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The runtime type that the monitor will run",
+		},
+		"runtime_type_version": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The specific version of the runtime type selected",
+		},
 	}
 }
 

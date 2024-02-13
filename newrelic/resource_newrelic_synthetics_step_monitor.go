@@ -64,6 +64,16 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 			Description:  "The public location(s) that the monitor will run jobs from.",
 			AtLeastOneOf: []string{"location_private", "locations_public"},
 		},
+		"runtime_type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The runtime type that the monitor will run",
+		},
+		"runtime_type_version": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The specific version of the runtime type selected",
+		},
 		"steps": {
 			Type:        schema.TypeList,
 			Required:    true,
