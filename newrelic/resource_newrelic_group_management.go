@@ -64,7 +64,8 @@ func resourceNewRelicGroupCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	log.Println("[INFO] sending request to create a group with the specified configuration")
-	createGroupResponse, err := client.UserManagement.UserManagementCreateGroup(
+	createGroupResponse, err := client.UserManagement.UserManagementCreateGroupWithContext(
+		ctx,
 		usermanagement.UserManagementCreateGroup{
 			AuthenticationDomainId: authenticationDomainId,
 			DisplayName:            name,
@@ -105,7 +106,7 @@ func resourceNewRelicGroupCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	log.Printf("[INFO] sending request to add users %v to the created group %s\n", usersListCleaned, createdGroupID)
-	_, err = addUsersToGroup(client, createdGroupID, usersListCleaned)
+	_, err = addUsersToGroup(ctx, client, createdGroupID, usersListCleaned)
 
 	if err != nil {
 		// _ = d.Set("users", schema.NewSet(schema.HashString, []interface{}{}))
@@ -121,16 +122,21 @@ func resourceNewRelicGroupRead(ctx context.Context, d *schema.ResourceData, meta
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	authDomainID := d.Get("authentication_domain_id").(string)
+	authDomainID := ""
 	groupID := d.Id()
 	var groupName string
 	var userListFetched []string
 
-	authenticationDomainIDs := []string{authDomainID}
+	// authenticationDomainIDs := []string{authDomainID}
 	groupIDs := []string{groupID}
 
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		getUsersInGroupsResponse, err := client.UserManagement.GetUsersInGroups(authenticationDomainIDs, groupIDs)
+		getUsersInGroupsResponse, err := client.UserManagement.UserManagementGetGroupsWithUsersWithContext(
+			ctx,
+			[]string{},
+			groupIDs,
+			"",
+		)
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
@@ -139,13 +145,12 @@ func resourceNewRelicGroupRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 
 		for _, a := range getUsersInGroupsResponse.AuthenticationDomains {
-			if a.ID == authDomainID {
-				for _, g := range a.Groups.Groups {
-					if g.ID == groupID {
-						groupName = g.DisplayName
-						for _, u := range g.Users.Users {
-							userListFetched = append(userListFetched, u.ID)
-						}
+			for _, g := range a.Groups.Groups {
+				if g.ID == groupID {
+					groupName = g.DisplayName
+					for _, u := range g.Users.Users {
+						userListFetched = append(userListFetched, u.ID)
+						authDomainID = a.ID
 					}
 				}
 			}
@@ -195,7 +200,8 @@ func resourceNewRelicGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 	if olN != nlN {
 		name := d.Get("name").(string)
 
-		updateGroupResponse, err := client.UserManagement.UserManagementUpdateGroup(
+		updateGroupResponse, err := client.UserManagement.UserManagementUpdateGroupWithContext(
+			ctx,
 			usermanagement.UserManagementUpdateGroup{
 				DisplayName: name,
 				ID:          d.Id(),
@@ -242,13 +248,13 @@ func resourceNewRelicGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 		} else {
 			if len(oldUsersListCleaned) == 0 && len(newUsersListCleaned) != 0 {
 				log.Println("[INFO] new users have been added to the group in the update process. ADDING USERS TO THE GROUP")
-				_, err := addUsersToGroup(client, groupID, newUsersListCleaned)
+				_, err := addUsersToGroup(ctx, client, groupID, newUsersListCleaned)
 				if err != nil {
 					return diag.FromErr(err)
 				}
 			} else if len(oldUsersListCleaned) != 0 && len(newUsersListCleaned) == 0 {
 				log.Println("[INFO] all users in the group have been deleted in the update process. REMOVING USERS FROM THE GROUP")
-				_, err := removeUsersFromGroup(client, groupID, oldUsersListCleaned)
+				_, err := removeUsersFromGroup(ctx, client, groupID, oldUsersListCleaned)
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -279,7 +285,7 @@ func resourceNewRelicGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 					}
 				}
 
-				_, err := addUsersToGroup(client, groupID, addedUsers)
+				_, err := addUsersToGroup(ctx, client, groupID, addedUsers)
 
 				if err != nil {
 					return diag.FromErr(err)
@@ -287,7 +293,7 @@ func resourceNewRelicGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 
 				log.Printf("[INFO] successfully added the following users to the group %s: %v\n", groupID, addedUsers)
 
-				_, err = removeUsersFromGroup(client, groupID, deletedUsers)
+				_, err = removeUsersFromGroup(ctx, client, groupID, deletedUsers)
 
 				if err != nil {
 					return diag.FromErr(err)
@@ -305,7 +311,7 @@ func resourceNewRelicGroupDelete(ctx context.Context, d *schema.ResourceData, me
 	client := providerConfig.NewClient
 	groupID := d.Id()
 
-	deleteGroupResponse, err := client.UserManagement.UserManagementDeleteGroup(usermanagement.UserManagementDeleteGroup{ID: groupID})
+	deleteGroupResponse, err := client.UserManagement.UserManagementDeleteGroupWithContext(ctx, usermanagement.UserManagementDeleteGroup{ID: groupID})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -317,9 +323,10 @@ func resourceNewRelicGroupDelete(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func addUsersToGroup(client *newrelic.NewRelic, groupID string, userIDs []string) (*usermanagement.UserManagementAddUsersToGroupsPayload, error) {
+func addUsersToGroup(ctx context.Context, client *newrelic.NewRelic, groupID string, userIDs []string) (*usermanagement.UserManagementAddUsersToGroupsPayload, error) {
 	log.Printf("[INFO] sending request to add user IDs %v to group %s\n", userIDs, groupID)
-	addUsersToGroupResponse, err := client.UserManagement.UserManagementAddUsersToGroups(
+	addUsersToGroupResponse, err := client.UserManagement.UserManagementAddUsersToGroupsWithContext(
+		ctx,
 		usermanagement.UserManagementUsersGroupsInput{
 			GroupIds: []string{groupID},
 			UserIDs:  userIDs,
@@ -337,9 +344,10 @@ func addUsersToGroup(client *newrelic.NewRelic, groupID string, userIDs []string
 	return addUsersToGroupResponse, nil
 }
 
-func removeUsersFromGroup(client *newrelic.NewRelic, groupID string, userIDs []string) (*usermanagement.UserManagementRemoveUsersFromGroupsPayload, error) {
+func removeUsersFromGroup(ctx context.Context, client *newrelic.NewRelic, groupID string, userIDs []string) (*usermanagement.UserManagementRemoveUsersFromGroupsPayload, error) {
 	log.Printf("[INFO] sending request to remove user IDs %v from group %s\n", userIDs, groupID)
-	removeUsersFromGroupResponse, err := client.UserManagement.UserManagementRemoveUsersFromGroups(
+	removeUsersFromGroupResponse, err := client.UserManagement.UserManagementRemoveUsersFromGroupsWithContext(
+		ctx,
 		usermanagement.UserManagementUsersGroupsInput{
 			GroupIds: []string{groupID},
 			UserIDs:  userIDs,
