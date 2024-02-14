@@ -7,9 +7,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.29.1
 	github.com/newrelic/go-insights v1.0.3
-	// POINTING TO THE COMMIT WHICH HAS USER MANAGEMENT API CHANGES IN CLIENT GO, https://github.com/newrelic/newrelic-client-go/pull/1090/commits
-	// TO BE DISCARDED BEFORE MERGE
-	github.com/newrelic/newrelic-client-go/v2 v2.24.1-0.20240209071135-56056fb71cf6
+	github.com/newrelic/newrelic-client-go/v2 v2.25.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a
 )
