@@ -42,12 +42,12 @@ func dataSourceNewRelicAuthenticationDomainRead(ctx context.Context, d *schema.R
 
 	resp, err := client.UserManagement.GetAuthenticationDomainsWithContext(ctx, "", []string{})
 
-	if resp == nil {
-		return diag.FromErr(fmt.Errorf("failed to fetch authentication domains"))
-	}
-
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if resp == nil {
+		return diag.FromErr(fmt.Errorf("failed to fetch authentication domains"))
 	}
 
 	for _, authenticationDomain := range resp.AuthenticationDomains {

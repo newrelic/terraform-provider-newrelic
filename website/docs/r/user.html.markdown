@@ -32,6 +32,8 @@ The following arguments are supported:
 * `authentication_domain_id` - (Required) The ID of the authentication domain to which the user to be created would belong.
 * `user_type` - (Optional) The tier to which the user to be created would belong. Accepted values for this argument are `BASIC_USER_TIER`, `CORE_USER_TIER`, or `FULL_USER_TIER`. If not specified in the configuration, the argument would default to `BASIC_USER_TIER`.
 
+-> **NOTE** The ID of an authentication domain can be retrieved using its name, via the data source `newrelic_authentication_domain`, as shown in the example above. Head over to the documentation of this data source for more details and examples.
+
 ## Attributes Reference
 In addition to the attributes listed above, the following attribute is also exported by this resource:
 

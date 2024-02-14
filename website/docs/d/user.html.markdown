@@ -29,8 +29,6 @@ data "newrelic_user" "user_two" {
 }
 ```
 
-The attributes `id`, `name` and `email_id`, along with `authentication_domain_id` are exported by this data source; hence, these may be accessed by specifying `data.newrelic_user.user_one.id` for the `id`, and similarly, for all the other attributes listed. Details on arguments to be used with this data source and attributes exported may be found in the following sections of this document.
-
 ## Argument Reference
 
 The following arguments are supported:
@@ -43,9 +41,11 @@ It should be noted that either `name` or `email_id` must be specified in order t
 
 -> **NOTE** If the specified `name` matches, or is contained in the names of multiple users in the account, the data source will return the first match from the list of all matching users retrieved from the API. However, when using the `email_id` argument as the search criterion, only the user with the specified email ID will be returned, as each user has a unique email ID and multiple users cannot have the same email ID.
 
+-> **NOTE** The ID of an authentication domain can be retrieved using its name, via the data source `newrelic_authentication_domain`, as shown in the example above. Head over to the documentation of this data source for more details and examples.
+
 ## Attributes Reference
 
-In addition to the attributes listed above, the following attribute is also exported by the data source.
+In addition to the attributes listed above, the following attribute is also exported by this resource:
 
 * `id` - The ID of the matching user fetched.
 

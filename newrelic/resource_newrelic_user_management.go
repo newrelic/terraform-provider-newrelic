@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/newrelic"
@@ -57,18 +58,6 @@ func resourceNewRelicUser() *schema.Resource {
 	}
 }
 
-var userTypes = map[string]usermanagement.UserManagementRequestedTierName{
-	"BASIC_USER_TIER": usermanagement.UserManagementRequestedTierNameTypes.BASIC_USER_TIER,
-	"CORE_USER_TIER":  usermanagement.UserManagementRequestedTierNameTypes.CORE_USER_TIER,
-	"FULL_USER_TIER":  usermanagement.UserManagementRequestedTierNameTypes.FULL_USER_TIER,
-}
-
-var userTypesReadCompatible = map[string]usermanagement.UserManagementRequestedTierName{
-	"Basic":         usermanagement.UserManagementRequestedTierNameTypes.BASIC_USER_TIER,
-	"Core":          usermanagement.UserManagementRequestedTierNameTypes.CORE_USER_TIER,
-	"Full platform": usermanagement.UserManagementRequestedTierNameTypes.FULL_USER_TIER,
-}
-
 // Create a user
 func resourceNewRelicUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
@@ -102,49 +91,30 @@ func resourceNewRelicUserRead(ctx context.Context, d *schema.ResourceData, meta 
 	client := providerConfig.NewClient
 
 	userID := d.Id()
-	user, authenticationDomainID, err := getUserByID(ctx, client, userID)
 
-	if err != nil && user == nil {
-		d.SetId("")
-		return diag.FromErr(err)
-	}
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		user, authenticationDomainID, err := getUserByID(ctx, client, userID)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
 
-	if err := d.Set("name", user.Name); err != nil {
-		return diag.FromErr(err)
-	}
+		if user == nil {
+			return resource.RetryableError(fmt.Errorf("user with ID %s not found", userID))
+		}
 
-	if err := d.Set("authentication_domain_id", authenticationDomainID); err != nil {
-		return diag.FromErr(err)
-	}
+		err = setUserToState(user, d, authenticationDomainID)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
 
-	if err := d.Set("user_type", userTypesReadCompatible[user.Type.DisplayName]); err != nil {
-		return diag.FromErr(err)
-	}
+		return nil
+	})
 
-	if err := d.Set("email_id", user.Email); err != nil {
-		return diag.FromErr(err)
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
 	}
 
 	return nil
-}
-
-// iterate through users to spot the user with the specified user id
-func getUserByID(ctx context.Context, client *newrelic.NewRelic, userID string) (user *usermanagement.UserManagementUser, authenticationDomainID string, err error) {
-	userIDs := []string{userID}
-	resp, err := client.UserManagement.UserManagementGetUsersWithContext(ctx, []string{}, userIDs, "", "")
-	if err != nil {
-		return nil, "", err
-	}
-
-	for _, authDomain := range resp.AuthenticationDomains {
-		for _, u := range authDomain.Users.Users {
-			if u.ID == userID {
-				return &u, authDomain.ID, nil
-			}
-		}
-	}
-
-	return nil, "", fmt.Errorf("user with id %s not found", userID)
 }
 
 // Update a created user
@@ -191,4 +161,55 @@ func resourceNewRelicUserDelete(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	return nil
+}
+
+// iterate through users to spot the user with the specified user id
+func getUserByID(ctx context.Context, client *newrelic.NewRelic, userID string) (user *usermanagement.UserManagementUser, authenticationDomainID string, err error) {
+	userIDs := []string{userID}
+	resp, err := client.UserManagement.UserManagementGetUsersWithContext(ctx, []string{}, userIDs, "", "")
+	if err != nil {
+		return nil, "", err
+	}
+
+	for _, authDomain := range resp.AuthenticationDomains {
+		for _, u := range authDomain.Users.Users {
+			if u.ID == userID {
+				return &u, authDomain.ID, nil
+			}
+		}
+	}
+
+	return nil, "", fmt.Errorf("user with id %s not found", userID)
+}
+
+func setUserToState(user *usermanagement.UserManagementUser, d *schema.ResourceData, authenticationDomainID string) error {
+	if err := d.Set("name", user.Name); err != nil {
+		return err
+	}
+
+	if err := d.Set("authentication_domain_id", authenticationDomainID); err != nil {
+		return err
+	}
+
+	if err := d.Set("user_type", userTypesReadCompatible[user.Type.DisplayName]); err != nil {
+		return err
+	}
+
+	if err := d.Set("email_id", user.Email); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var userTypes = map[string]usermanagement.UserManagementRequestedTierName{
+	"BASIC_USER_TIER": usermanagement.UserManagementRequestedTierNameTypes.BASIC_USER_TIER,
+	"CORE_USER_TIER":  usermanagement.UserManagementRequestedTierNameTypes.CORE_USER_TIER,
+	"FULL_USER_TIER":  usermanagement.UserManagementRequestedTierNameTypes.FULL_USER_TIER,
+}
+
+var userTypesReadCompatible = map[string]usermanagement.UserManagementRequestedTierName{
+	"Basic":         usermanagement.UserManagementRequestedTierNameTypes.BASIC_USER_TIER,
+	"Core":          usermanagement.UserManagementRequestedTierNameTypes.CORE_USER_TIER,
+	"Full platform": usermanagement.UserManagementRequestedTierNameTypes.FULL_USER_TIER,
 }
