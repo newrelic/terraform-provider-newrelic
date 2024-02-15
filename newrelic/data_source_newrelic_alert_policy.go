@@ -29,7 +29,7 @@ func dataSourceNewRelicAlertPolicy() *schema.Resource {
 			"incident_preference": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The rollup strategy for the policy. Options include: `PER_POLICY`, `PER_CONDITION`, or `PER_CONDITION_AND_TARGET`. The default is `PER_POLICY`.",
+				Description: "The rollup strategy for the policy, which can be `PER_POLICY`, `PER_CONDITION`, or `PER_CONDITION_AND_TARGET`.",
 			},
 			"created_at": {
 				Type:        schema.TypeString,
