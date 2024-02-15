@@ -1,3 +1,11 @@
+<a name="v3.31.0"></a>
+## [v3.31.0] - 2024-02-15
+### Documentation Updates
+- minor corrections ([#2578](https://github.com/newrelic/terraform-provider-newrelic/issues/2578))
+
+### Features
+- **user_management:** addition of a resource to manage users ([#2575](https://github.com/newrelic/terraform-provider-newrelic/issues/2575))
+
 <a name="v3.30.0"></a>
 ## [v3.30.0] - 2024-02-01
 ### Bug Fixes
@@ -2024,7 +2032,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.30.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.31.0...HEAD
+[v3.31.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.30.0...v3.31.0
 [v3.30.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.29.0...v3.30.0
 [v3.29.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.28.1...v3.29.0
 [v3.28.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.28.0...v3.28.1
