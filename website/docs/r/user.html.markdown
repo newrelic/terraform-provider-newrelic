@@ -16,7 +16,7 @@ data "newrelic_authentication_domain" "foo" {
   name = "Test Authentication Domain"
 }
 
-resource "newrelic_user_management" "foo" {
+resource "newrelic_user" "foo" {
   name                     = "Test New User"
   email_id                 = "test_user@test.com"
   authentication_domain_id = data.newrelic_authentication_domain.foo.id
