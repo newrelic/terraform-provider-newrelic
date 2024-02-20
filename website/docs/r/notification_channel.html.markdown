@@ -181,7 +181,7 @@ resource "newrelic_notification_channel" "foo" {
 
   property {
     key = "service"
-    label = "Service Name" // Label of service tab in channel builder. This will show as blank if left empty.
+    label = "Service Name" // Label of service drop-down value in the channel builder. This will show as blank if left empty.
     value = "PTQK3FM"
   }
 
