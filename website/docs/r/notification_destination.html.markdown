@@ -223,7 +223,9 @@ resource "newrelic_notification_destination" "foo" {
 
 #### [Slack](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#slack)
 
-Slack destinations are created by actively interacting with the UI. This is how OAuth authentication works and there is no way to authenticate otherwise. Because of this, there is no way to create a slack destination via terraform, and must be created in the UI and imported into terraform. More information in the [Import](#import) section below.
+In order to create a Slack destination, you have to grant our application access to your workspace. This process is [based on OAuth](https://api.slack.com/authentication/oauth-v2) and can only be done through a browser.
+As a result, you cannot set up a Slack destination purely with Terraform code.
+You can either create a Slack destination in the interface and [import](#import) it to Terraform, or use destination data source.
 
 
 ## Import

@@ -181,7 +181,7 @@ resource "newrelic_notification_channel" "foo" {
 
   property {
     key = "service"
-    label = "Service Name" // Name of your service. If left out will be blank in UI.
+    label = "Service Name" // Label of service tab in channel builder. This will show as blank if left empty.
     value = "PTQK3FM"
   }
 
