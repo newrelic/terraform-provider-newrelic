@@ -246,65 +246,54 @@ func resourceNewRelicGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 			log.Println("[INFO] no users specified in the configuration to create the group")
 			return nil
 		} else {
-			if len(oldUsersListCleaned) == 0 && len(newUsersListCleaned) != 0 {
-				log.Println("[INFO] new users have been added to the group in the update process. ADDING USERS TO THE GROUP")
-				_, err := addUsersToGroup(ctx, client, groupID, newUsersListCleaned)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-			} else if len(oldUsersListCleaned) != 0 && len(newUsersListCleaned) == 0 {
-				log.Println("[INFO] all users in the group have been deleted in the update process. REMOVING USERS FROM THE GROUP")
-				_, err := removeUsersFromGroup(ctx, client, groupID, oldUsersListCleaned)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-			} else {
-				log.Println("[INFO] find diffs between the two using d.GetChange(), add the right users, remove the right ones")
-				oldUsersMap := make(map[string]bool)
-				newUsersMap := make(map[string]bool)
+			log.Println("[INFO] find diffs between the two using d.GetChange(), add the right users, remove the right ones")
+			oldUsersMap := make(map[string]bool)
+			newUsersMap := make(map[string]bool)
 
-				for _, item := range oldUsersListCleaned {
-					oldUsersMap[item] = true
-				}
+			for _, item := range oldUsersListCleaned {
+				oldUsersMap[item] = true
+			}
 
-				for _, item := range newUsersListCleaned {
-					newUsersMap[item] = true
-				}
+			for _, item := range newUsersListCleaned {
+				newUsersMap[item] = true
+			}
 
-				var deletedUsers []string
-				for _, item := range oldUsersListCleaned {
-					if _, exists := newUsersMap[item]; !exists {
-						deletedUsers = append(deletedUsers, item)
-					}
-				}
-
-				var addedUsers []string
-				for _, item := range newUsersListCleaned {
-					if _, exists := oldUsersMap[item]; !exists {
-						addedUsers = append(addedUsers, item)
-					}
-				}
-
-				if len(addedUsers) != 0 {
-					_, err := addUsersToGroup(ctx, client, groupID, addedUsers)
-
-					if err != nil {
-						return diag.FromErr(err)
-					}
-
-					log.Printf("[INFO] successfully added the following users to the group %s: %v\n", groupID, addedUsers)
-				}
-
-				if len(deletedUsers) != 0 {
-					_, err := removeUsersFromGroup(ctx, client, groupID, deletedUsers)
-
-					if err != nil {
-						return diag.FromErr(err)
-					}
-
-					log.Printf("[INFO] successfully removed the following users from the group %s: %v\n", groupID, deletedUsers)
+			var deletedUsers []string
+			for _, item := range oldUsersListCleaned {
+				if _, exists := newUsersMap[item]; !exists {
+					deletedUsers = append(deletedUsers, item)
 				}
 			}
+
+			var addedUsers []string
+			for _, item := range newUsersListCleaned {
+				if _, exists := oldUsersMap[item]; !exists {
+					addedUsers = append(addedUsers, item)
+				}
+			}
+
+			if len(addedUsers) != 0 {
+				log.Printf("[INFO] adding users %v to group %s\n", groupID, addedUsers)
+				_, err := addUsersToGroup(ctx, client, groupID, addedUsers)
+
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				log.Printf("[INFO] successfully added the following users to the group %s: %v\n", groupID, addedUsers)
+			}
+
+			if len(deletedUsers) != 0 {
+				log.Printf("[INFO] removing users %v from group %s\n", groupID, addedUsers)
+				_, err := removeUsersFromGroup(ctx, client, groupID, deletedUsers)
+
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				log.Printf("[INFO] successfully removed the following users from the group %s: %v\n", groupID, deletedUsers)
+			}
+
 		}
 		return nil
 	}
