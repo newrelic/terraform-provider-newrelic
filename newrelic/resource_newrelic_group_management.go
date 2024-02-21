@@ -147,10 +147,10 @@ func resourceNewRelicGroupRead(ctx context.Context, d *schema.ResourceData, meta
 		for _, a := range getUsersInGroupsResponse.AuthenticationDomains {
 			for _, g := range a.Groups.Groups {
 				if g.ID == groupID {
+					authDomainID = a.ID
 					groupName = g.DisplayName
 					for _, u := range g.Users.Users {
 						userListFetched = append(userListFetched, u.ID)
-						authDomainID = a.ID
 					}
 				}
 			}
@@ -285,21 +285,25 @@ func resourceNewRelicGroupUpdate(ctx context.Context, d *schema.ResourceData, me
 					}
 				}
 
-				_, err := addUsersToGroup(ctx, client, groupID, addedUsers)
+				if len(addedUsers) != 0 {
+					_, err := addUsersToGroup(ctx, client, groupID, addedUsers)
 
-				if err != nil {
-					return diag.FromErr(err)
+					if err != nil {
+						return diag.FromErr(err)
+					}
+
+					log.Printf("[INFO] successfully added the following users to the group %s: %v\n", groupID, addedUsers)
 				}
 
-				log.Printf("[INFO] successfully added the following users to the group %s: %v\n", groupID, addedUsers)
+				if len(deletedUsers) != 0 {
+					_, err := removeUsersFromGroup(ctx, client, groupID, deletedUsers)
 
-				_, err = removeUsersFromGroup(ctx, client, groupID, deletedUsers)
+					if err != nil {
+						return diag.FromErr(err)
+					}
 
-				if err != nil {
-					return diag.FromErr(err)
+					log.Printf("[INFO] successfully removed the following users from the group %s: %v\n", groupID, deletedUsers)
 				}
-
-				log.Printf("[INFO] successfully removed the following users from the group %s: %v\n", groupID, deletedUsers)
 			}
 		}
 		return nil
