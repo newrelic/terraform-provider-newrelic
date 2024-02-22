@@ -69,9 +69,10 @@ See additional [examples](#additional-examples).
 The following are the common arguments supported for `SIMPLE` and `BROWSER` monitors:
 
 * `account_id`- (Optional) The account in which the Synthetics monitor will be created.
-* `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`).
+* `status` - (Required) The run state of the monitor. (`ENABLED` or `DISABLED`).
 
--> **NOTE:** The `MUTED` status is now **deprecated**, and support for this value will soon be removed from the Terraform Provider in an upcoming release. It is highly recommended for users to refrain from using the status `MUTED` and shift to alternatives at the earliest. Please check out [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide) for more details about the EOL of `MUTED` status and alternatives to move to.
+-> **WARNING:** Starting with version **4.0.0** of the New Relic Terraform Provider, support for the `MUTED` status has been discontinued due to the end-of-life of the `MUTED` status for Synthetic Monitors, which took place on February 29, 2024. Consequently, `MUTED` is no longer a valid and functional value for the `status` argument of all types of Synthetic Monitors. The only valid values for `status` are mentioned above. For additional information on alternatives to the `MUTED` status of Synthetic Monitors that can be managed via Terraform, please refer to [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide).
+
 * `name` - (Required) The human-readable identifier for the monitor.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `uri` - (Required) The URI the monitor runs against.

@@ -36,7 +36,7 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 		"status": {
 			Type:         schema.TypeString,
 			Required:     true,
-			Description:  "The monitor status (i.e. ENABLED, MUTED, DISABLED). Note: The 'MUTED' status is now deprecated, and support for this value will soon be removed from the Terraform Provider in an upcoming release. It is highly recommended for users to refrain from using this value and shift to alternatives.",
+			Description:  "The monitor status (ENABLED or DISABLED).",
 			ValidateFunc: validateSyntheticMonitorStatus,
 		},
 		"tag": {
@@ -267,31 +267,28 @@ func listValidSyntheticsMonitorStatuses() []string {
 	return []string{
 		string(synthetics.SyntheticsMonitorStatusTypes.DISABLED),
 		string(synthetics.SyntheticsMonitorStatusTypes.ENABLED),
-
-		// "MUTED" to be removed from the provider as this is soon going to reach its EOL, on February 29, 2024
-		string(synthetics.SyntheticsMonitorStatusTypes.MUTED),
+		// synthetics.SyntheticsMonitorStatusTypes.MUTED removed on February 29, 2024 in accordance with its EOL
 	}
 }
 
 // validate function that validates the status of Synthetic Monitors
-// recent addition: return a warning if 'MUTED' status is used, as this has been deprecated
+// recent addition: return a error if 'MUTED' status is used, as this has reached its EOL
 func validateSyntheticMonitorStatus(val interface{}, key string) (warns []string, errs []error) {
 	monitorStatusInput := val.(string)
 	listOfValidSyntheticMonitorStatuses := listValidSyntheticsMonitorStatuses()
 	containsValidSyntheticMonitorStatus := slices.Contains(listOfValidSyntheticMonitorStatuses, monitorStatusInput)
 	if !containsValidSyntheticMonitorStatus {
-		errs = append(errs, fmt.Errorf("expected status to be one of %v, got %s", listOfValidSyntheticMonitorStatuses, monitorStatusInput))
+		// hard-coding "MUTED" instead of using synthetics.SyntheticsMonitorStatusTypes.MUTED as this has been removed from newrelic-client-go, owing to the EOL
+		if strings.ToUpper(monitorStatusInput) == "MUTED" {
+			errs = append(errs, fmt.Errorf("invalid status 'MUTED'"+
+				"Starting with version **4.0.0** of the New Relic Terraform Provider, support for the `MUTED` status has been discontinued due to the end-of-life of the `MUTED` status for Synthetic Monitors, which took place on February 29, 2024. "+
+				"Consequently, `MUTED` is no longer a valid and functional value for the `status` argument of all types of Synthetic Monitors. The only valid values for `status` are mentioned above. "+
+				"For additional information on alternatives to the `MUTED` status of Synthetic Monitors that can be managed via Terraform, please refer to the Synthetics MUTED Status EOL Guide in the registry of the New Relic Terraform Provider."))
+		} else {
+			errs = append(errs, fmt.Errorf("expected status to be one of %v, got %s", listOfValidSyntheticMonitorStatuses, monitorStatusInput))
+		}
 	}
 
-	// hard-coding "MUTED" instead of using synthetics.SyntheticsMonitorStatusTypes.MUTED as it could be removed from newrelic-client-go post the EOL
-	if monitorStatusInput == "MUTED" {
-		warns = append(warns, `
-The 'MUTED' status of Synthetic Monitors has been deprecated, and shall reach its end of life in February 2024.
-In accordance with this, the New Relic Terraform Provider would also discontinue support for the status 'MUTED' soon, in an upcoming release.
-To mute Synthetic Monitors, please shift to alternatives such as muting rules. 
-A detailed guide on this can be found here: https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide
-`)
-	}
 	return warns, errs
 }
 
