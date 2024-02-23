@@ -54,7 +54,7 @@ func dataSourceNewRelicGroupRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(fmt.Errorf("'name' is required"))
 	}
 
-	var nameQuery string = ""
+	nameQuery := ""
 	var usersInGroup []string
 
 	authenticationDomainID := authDomainID.(string)
@@ -75,20 +75,27 @@ func dataSourceNewRelicGroupRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(fmt.Errorf("failed to fetch groups"))
 	}
 
+	groupFound := false
 	for _, authDomain := range resp.AuthenticationDomains {
-		if authDomain.ID == authenticationDomainID {
+		if !groupFound && (authDomain.ID == authenticationDomainID) {
 			for _, g := range authDomain.Groups.Groups {
-				d.SetId(g.ID)
-				_ = d.Set("name", g.DisplayName)
-				for _, u := range g.Users.Users {
-					usersInGroup = append(usersInGroup, u.ID)
+				if !groupFound {
+					d.SetId(g.ID)
+					_ = d.Set("name", g.DisplayName)
+					for _, u := range g.Users.Users {
+						usersInGroup = append(usersInGroup, u.ID)
+					}
+					_ = d.Set("user_ids", usersInGroup)
+					groupFound = true
 				}
-				_ = d.Set("user_ids", usersInGroup)
-				return nil
 			}
 		}
 	}
 
-	return diag.FromErr(fmt.Errorf("no group found with the specified parameters"))
+	if !groupFound {
+		return diag.FromErr(fmt.Errorf("no group found with the specified parameters"))
+	}
+
+	return nil
 
 }
