@@ -223,16 +223,23 @@ resource "newrelic_notification_destination" "foo" {
 
 #### [Slack](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#slack)
 
-Slack destinations are created by actively interacting with the UI. This is how OAuth authentication works and there is no way to authenticate otherwise. Because of this, there is no way to create a slack destination via terraform, and must be created in the UI and imported into terraform.
+In order to create a Slack destination, you have to grant our application access to your workspace. This process is [based on OAuth](https://api.slack.com/authentication/oauth-v2) and can only be done through a browser.
+As a result, you cannot set up a Slack destination purely with Terraform code.
+You can either create a Slack destination in the interface and [import](#import) it to Terraform, or use destination data source.
 
-##### Import Slack Destination
+
+## Import
+
+Destination id can be found in the Destinations page -> three dots at the right of the chosen destination -> copy destination id to clipboard.
+This example is especially useful for slack destinations which *must* be imported.
+
 1. Add an empty resource to your terraform file: 
 ```terraform
 resource "newrelic_notification_destination" "foo" {
 }
 ```
 2. Run import command: `terraform import newrelic_notification_destination.foo <destination_id>`
-3. Run the following command after the import successfully done and copy the information to your Slack resource:
+3. Run the following command after the import successfully done and copy the information to your resource:
 `terraform state show newrelic_notification_destination.foo`
 4. Add `ignore_changes` attribute on `auth_token` in your imported resource:
 ```terraform
@@ -241,7 +248,7 @@ lifecycle {
   }
 ```
 
-Your imported Slack destination should look like that:
+Your imported destination should look like that:
 ```terraform
 resource "newrelic_notification_destination" "foo" {
   lifecycle {
