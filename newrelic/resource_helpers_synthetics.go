@@ -280,10 +280,11 @@ func validateSyntheticMonitorStatus(val interface{}, key string) (warns []string
 	if !containsValidSyntheticMonitorStatus {
 		// hard-coding "MUTED" instead of using synthetics.SyntheticsMonitorStatusTypes.MUTED as this has been removed from newrelic-client-go, owing to the EOL
 		if strings.ToUpper(monitorStatusInput) == "MUTED" {
-			errs = append(errs, fmt.Errorf("invalid status 'MUTED'"+
-				"Starting with version **4.0.0** of the New Relic Terraform Provider, support for the `MUTED` status has been discontinued due to the end-of-life of the `MUTED` status for Synthetic Monitors, which took place on February 29, 2024. "+
-				"Consequently, `MUTED` is no longer a valid and functional value for the `status` argument of all types of Synthetic Monitors. The only valid values for `status` are mentioned above. "+
-				"For additional information on alternatives to the `MUTED` status of Synthetic Monitors that can be managed via Terraform, please refer to the Synthetics MUTED Status EOL Guide in the registry of the New Relic Terraform Provider."))
+			errs = append(errs, fmt.Errorf("invalid status 'MUTED' \n"+
+				"Starting with v4.0.0 of the New Relic Terraform Provider, support for the `MUTED` status has been discontinued due to the end-of-life of the `MUTED` status for Synthetic Monitors, which took place on February 29, 2024. \n"+
+				"Consequently, `MUTED` is no longer a valid and functional value for the `status` argument of all types of Synthetic Monitors. The only valid values for `status` are `ENABLED` and `DISABLED`. \n"+
+				"If you have a Terraform configuration with Synthetic Monitor resources previously applied with the status `MUTED` and are hence, seeing this error now upon `terraform plan`, please change the status of the monitor to one of the two aforementioned values to plan and apply your configuration, and opt for other alternatives to mute monitors.\n"+
+				"For additional information on alternatives to the `MUTED` status of Synthetic Monitors that can be managed via Terraform, please refer to the Synthetics MUTED Status EOL Guide in the registry of the New Relic Terraform Provider. \n"))
 		} else {
 			errs = append(errs, fmt.Errorf("expected status to be one of %v, got %s", listOfValidSyntheticMonitorStatuses, monitorStatusInput))
 		}
