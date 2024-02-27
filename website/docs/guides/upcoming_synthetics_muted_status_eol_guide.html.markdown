@@ -40,7 +40,9 @@ The following breaking changes/implications would be experienced only by custome
 ##### Usage of the New Relic Terraform Provider >= v3.33.0 Comprising `MUTED` Synthetic Monitors after the EOL
 * The change to invalidate the `MUTED` status of Synthetic Monitors works with **v3.33.0** of the New Relic Terraform Provider and above. As a consequence, running `terraform plan` on Terraform configuration comprising Synthetic Monitors with status `MUTED` would throw an error, as the `MUTED` status is no longer valid, leading to validation failure. This, in turn, would not allow planning or applying your configuration.
 
-The **_solution_** to both of the implications listed above would be to replace all instances of `MUTED` in all Synthetic Monitors across your Terraform configuration to either `ENABLED` or `DISABLED`. This would allow performing a successful `terraform plan` and `terraform apply`. Additionally, please choose an appropriate alternative from the options described in the following section to enforce monitor muting through existing resources provided by the New Relic Terraform Provider.
+The **_solution_** to both of the implications listed above would be to replace all instances of `MUTED` in all Synthetic Monitors across your Terraform configuration to either `ENABLED` or `DISABLED`. This would allow performing a successful `terraform plan` and `terraform apply`. Additionally, please choose an appropriate alternative from the options described in the following section to enforce monitor muting through existing resources provided by the New Relic Terraform Provider. 
+
+It may be noted that Synthetic Monitors need to be in the state `ENABLED` in order to use alert muting rules and monitor downtime with Synthetic Monitors.
 
 ## Alternatives To `MUTED` Status
 
