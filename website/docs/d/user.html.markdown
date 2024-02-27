@@ -3,7 +3,7 @@ layout: "newrelic"
 page_title: "New Relic: newrelic_user"
 sidebar_current: "docs-newrelic-datasource-user"
 description: |-
-  A data source that helps fetch authentication domains seen in the New Relic One UI, matching the name specified.
+  A data source that helps fetch user(s) seen in the New Relic One UI, matching the name specified.
 ---
 
 # Data Source: newrelic\_user
