@@ -1,30 +1,48 @@
 ---
 layout: "newrelic"
-page_title: "Upcoming Synthetic Monitors MUTED Status End-of-Life and Alternatives: A Guide"
+page_title: "New Relic Terraform Provider v4: Major Release Details and More"
 sidebar_current: "docs-newrelic-provider-synthetic-monitors-muted-status-eol-guide"
 description: |-
-  Use this guide to find details on the upcoming end-of-life of the MUTED status of Synthetic Monitors, and alternatives to move to, which can replicate the same behavior.
+  Use this guide to find details on the end-of-life of the MUTED status of Synthetic Monitors, as well as alternatives which can replicate the same behavior.
 ---
-## Upcoming Synthetic Monitors MUTED Status End-of-Life and Alternatives Explained
+## Synthetic Monitors' MUTED Status EOL: Implications, Alternatives and More 📢
 
-Use this guide to find details on the upcoming end-of-life of the `MUTED` status of Synthetic Monitors, and alternatives to move to, which can replicate the same behavior.
+Starting with version **3.33.0** of the New Relic Terraform Provider that was released on February 29, 2024, the `MUTED` status of Synthetic Monitors is no longer supported. The reason for the release is discontinued support for the `MUTED` status for Synthetic Monitors, to match the API change made to remove support for the `MUTED` status of Synthetic Monitors, effective on February 29, 2024.
 
-### About Synthetic Monitors' 'MUTED' Status and the EOL
-Synthetic Monitors have a `status` field that defines the activity of the monitor, and can currently be either of `ENABLED`, `DISABLED`, or `MUTED`. When a monitor is MUTED, it still functions as usual (runs tests), but is muted; i.e., it does not send out notifications in cases of failure.
+The following is a comprehensive guide that lists the implications of this end-of-life, provides additional details, and offers alternatives to the `MUTED` status of Synthetic Monitors in the New Relic Terraform Provider.
 
-Since it has been announced that New Relic Synthetics will discontinue support for the `MUTED` status of monitors, slated to hit its end-of-life in February 2024 (see [this community post](https://forum.newrelic.com/s/hubtopic/aAX8W0000015BHc/endoflife-product-updates-july-2023-september-2023)), the `MUTED` value of `status` has been marked **deprecated** in the New Relic Terraform Provider, in late October 2023. The provider will also _soon_ **discontinue support** for the value `MUTED` pertaining to the `status` argument of resources operating on Synthetic Monitors, with a release of the Terraform Provider in February/March 2024.
+## About: Synthetic Monitors' `MUTED` Status EOL and an Associated Release of the New Relic Terraform Provider
 
-This would affect all resources in the provider used to manage Synthetic Monitors (_only if_ your configuration comprises these resources with a `status = "MUTED"` argument), i.e.
+As mentioned in the initial section of this guide, **v3.33.0** of the New Relic Terraform Provider was released to discontinue support for `MUTED` as a valid `status` value for Synthetic Monitors within the New Relic Terraform Provider. At the EOL, the status of all `MUTED` monitors were changed to `ENABLED`.
+
+For more detailed information regarding the end-of-life of the `MUTED` status of Synthetic Monitors, as well as the associated implications and alternatives, please refer to the subsequent sections of this guide.
+
+### EOL of Synthetic Monitors' 'MUTED' Status
+On February 29, 2024, Synthetics discontinued support for the `MUTED` status, as a result of which `MUTED` is no longer a valid `status` value and any operations performed using the `MUTED` status in any version of the New Relic Terraform Provider will fail, since NerdGraph mutations/queries will no longer recognize `MUTED` as a valid status value for Synthetic Monitors.
+
+You would be affected by this end-of-life only if your Terraform configuration continues to comprise `MUTED` as the value of the argument `status` post the end-of-life too, in any of the following resources:
+
 * [`newrelic_synthetics_monitor`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_monitor)
 * [`newrelic_synthetics_broken_links_monitor`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_broken_links_monitor)
 * [`newrelic_synthetics_cert_check_monitor`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_cert_check_monitor)
 * [`newrelic_synthetics_script_monitor`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_script_monitor)
 * [`newrelic_synthetics_step_monitor`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_step_monitor)
 
-Considering the above, it is highly recommended for users to refrain from using `MUTED` status with Synthetic Monitors at the earliest, and move to alternatives, which have been described in the following sections of this guide.
+As stated earlier, as of **v3.33.0** of the New Relic Terraform Provider, the `status` argument in all types of Synthetic Monitors can no longer be `MUTED`. The following sections of this guide provide alternatives to replicate the behavior of the `MUTED` status for Synthetic Monitors.
 
+### Implications of the EOL, Solutions
+The following breaking changes/implications would be experienced only by customers who have a Terraform configuration that fits into the criteria described above. 
 
-### Alternatives To `MUTED` Status
+##### Usage of the New Relic Terraform Provider < v3.33.0 Comprising `MUTED` Synthetic Monitors after the EOL 
+* Since **v3.33.0** of the New Relic Terraform Provider invalidates the `MUTED` status of Synthetic Monitors, a change that came into effect starting with this version of the provider (which cannot retrospectively be applied to older versions of the provider), if versions prior to **v3.33.0** are used with muted Synthetic Monitors after the end-of-life, validation checks would not obstruct Terraform operations as `MUTED` would be deemed a valid status of Synthetic Monitors in older versions; however, upon performing `terraform apply` to create/update Synthetic Monitors with status `MUTED`, the operation would **fail**, as the API would throw an error, specifying that `MUTED` is not a valid status value anymore.
+* In addition to the above, as communicated previously by New Relic, since all monitors with the status `MUTED` will have their status changed to `ENABLED` on the date of the end-of-life, any monitors in your Terraform configuration with the status `MUTED` (whose status has not been moved out of `MUTED`, prior to the end-of-life) will result in a drift being displayed when attempting to plan or apply the configuration containing monitors with the status `MUTED`. This is because Synthetics has changed the status of these monitors to `ENABLED`. 
+
+##### Usage of the New Relic Terraform Provider >= v3.33.0 Comprising `MUTED` Synthetic Monitors after the EOL
+* The change to invalidate the `MUTED` status of Synthetic Monitors works with **v3.33.0** of the New Relic Terraform Provider and above. As a consequence, running `terraform plan` on Terraform configuration comprising Synthetic Monitors with status `MUTED` would throw an error, as the `MUTED` status is no longer valid, leading to validation failure. This, in turn, would not allow planning or applying your configuration.
+
+The **_solution_** to both of the implications listed above would be to replace all instances of `MUTED` in all Synthetic Monitors across your Terraform configuration to either `ENABLED` or `DISABLED`. This would allow performing a successful `terraform plan` and `terraform apply`. Additionally, please choose an appropriate alternative from the options described in the following section to enforce monitor muting through existing resources provided by the New Relic Terraform Provider.
+
+## Alternatives To `MUTED` Status
 
 There are two key alternatives one can opt for, to replicate the behavior of the `MUTED` status of Synthetic Monitors.
 * [**Alert Muting Rules**](https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/alert-notifications/muting-rules-suppress-notifications/)
