@@ -248,5 +248,9 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 		return err
 	}
 
+	if err := d.Set("guid", destination.GUID); err != nil {
+		return err
+	}
+
 	return nil
 }

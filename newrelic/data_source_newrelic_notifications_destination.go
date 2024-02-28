@@ -24,6 +24,11 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 				ExactlyOneOf: []string{"id", "name"},
 				Description:  "The ID of the destination.",
 			},
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Destination entity GUID",
+			},
 			"name": {
 				Type:         schema.TypeString,
 				Optional:     true,
