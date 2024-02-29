@@ -38,11 +38,17 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 				Description: "The New Relic account ID to operate on.",
 			},
 			"incident_preference": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "PER_POLICY",
-				ValidateFunc: validation.StringInSlice([]string{"PER_POLICY", "PER_CONDITION", "PER_CONDITION_AND_TARGET"}, false),
-				Description:  "The rollup strategy for the policy. Options include: PER_POLICY, PER_CONDITION, or PER_CONDITION_AND_TARGET. The default is PER_POLICY.",
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  string(alerts.AlertsIncidentPreferenceTypes.PER_POLICY),
+				ValidateFunc: validation.StringInSlice([]string{
+					string(alerts.AlertsIncidentPreferenceTypes.PER_POLICY),
+					string(alerts.AlertsIncidentPreferenceTypes.PER_CONDITION),
+					string(alerts.AlertsIncidentPreferenceTypes.PER_CONDITION_AND_TARGET),
+				},
+					false,
+				),
+				Description: "The rollup strategy for the policy. Options include: PER_POLICY, PER_CONDITION, or PER_CONDITION_AND_TARGET. The default is PER_POLICY.",
 			},
 			"channel_ids": {
 				Type: schema.TypeList,

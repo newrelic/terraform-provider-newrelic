@@ -181,6 +181,7 @@ resource "newrelic_notification_channel" "foo" {
 
   property {
     key = "service"
+    label = "Service Name" // Label of service drop-down value in the channel builder. This will show as blank if left empty.
     value = "PTQK3FM"
   }
 
@@ -339,6 +340,12 @@ resource "newrelic_notification_channel" "webhook-channel" {
   }
 }
 ```
+
+## Import
+Channels can only be used by a single workflow, therefore importing them is not particularly useful, because in the UI channels are created upon workflow creation. 
+Additionally, the channel id isn't available via the UI, and you'd need to look it up with the `channels` query in the NerdGraph API.
+That being said, importing is possible using -
+```terraform import newrelic_notification_destination.foo <destination_id>```
 
 ## Additional Information
 More details about the channels API can be found [here](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels).
