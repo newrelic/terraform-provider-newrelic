@@ -113,7 +113,7 @@ func TestExpandNotificationDestination(t *testing.T) {
 
 func TestFlattenNotificationDestination(t *testing.T) {
 	r := resourceNewRelicNotificationDestination()
-	guid := destinations.EntityGUID("testdestinationentityguid")
+	guid := notifications.EntityGUID("testdestinationentityguid")
 
 	cases := map[string]struct {
 		Data         map[string]interface{}
@@ -160,7 +160,7 @@ func TestFlattenNotificationDestination(t *testing.T) {
 
 func TestFlattenNotificationDestinationDataSource(t *testing.T) {
 	r := dataSourceNewRelicNotificationDestination()
-	guid := destinations.EntityGUID("testdestinationentityguid")
+	guid := notifications.EntityGUID("testdestinationentityguid")
 
 	cases := map[string]struct {
 		Data         map[string]interface{}
