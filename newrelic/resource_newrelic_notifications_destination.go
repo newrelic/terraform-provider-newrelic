@@ -108,6 +108,11 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Computed:    true,
 				Description: "The last time a notification was sent.",
 			},
+			"guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Destination entity GUID",
+			},
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
