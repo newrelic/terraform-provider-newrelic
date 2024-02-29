@@ -8,11 +8,11 @@ description: |-
 
 # Data Source: newrelic\_group
 
-The `newrelic_group` data source allows users to search for a group by its name and retrieve the ID of the matching group and other associated attributes.
+The `newrelic_group` data source helps search for a group by its name and retrieve the ID of the matching group and other associated attributes.
 
 ## Example Usage
 
-The below example illustrates fetching a group's ID (and IDs of users who belong to the group, if any) using the required arguments.
+The below example illustrates fetching the ID of a group (and IDs of users who belong to the group, if any) using the required arguments.
     
 ```hcl
 data "newrelic_authentication_domain" "foo" {
@@ -36,7 +36,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to the attributes listed above, the following attribute is also exported by this resource:
+In addition to the attributes listed above, the following attributes are also exported by this data source:
 
 * `id` - The ID of the fetched matching group.
 * `user_ids` - IDs of users who belong to the group. In the absence of any users in the group, the value of this attribute would be an empty list.
