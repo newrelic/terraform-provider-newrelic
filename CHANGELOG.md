@@ -1,3 +1,13 @@
+<a name="v3.32.0"></a>
+## [v3.32.0] - 2024-02-29
+### Documentation Updates
+- minor fixes to group management docs ([#2592](https://github.com/newrelic/terraform-provider-newrelic/issues/2592))
+- add import information to notification channel, destination ([#2580](https://github.com/newrelic/terraform-provider-newrelic/issues/2580))
+- **alert_policy:** make incident_preference types clear ([#2581](https://github.com/newrelic/terraform-provider-newrelic/issues/2581))
+
+### Features
+- **group_management:** addition of resource, data source to manage groups ([#2584](https://github.com/newrelic/terraform-provider-newrelic/issues/2584))
+
 <a name="v3.31.0"></a>
 ## [v3.31.0] - 2024-02-15
 ### Documentation Updates
@@ -2032,7 +2042,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.31.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.32.0...HEAD
+[v3.32.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.31.0...v3.32.0
 [v3.31.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.30.0...v3.31.0
 [v3.30.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.29.0...v3.30.0
 [v3.29.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.28.1...v3.29.0
