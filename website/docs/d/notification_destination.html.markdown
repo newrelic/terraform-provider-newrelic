@@ -76,6 +76,7 @@ In addition to all arguments above, the following attributes are exported:
 * `property` - A nested block that describes a notification destination property.
 * `active` - An indication whether the notification destination is active or not.
 * `status` - The status of the notification destination.
+* `guid` - The Entity GUID of the destination.
 
 
 ```
