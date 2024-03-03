@@ -86,7 +86,7 @@ Each notification destination type supports a specific set of arguments for the 
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the destination.
-* `guid` - The Entity GUID of the destination.
+* `guid` - The unique entity identifier of the destination in New Relic.
 
 ## Additional Examples
 
