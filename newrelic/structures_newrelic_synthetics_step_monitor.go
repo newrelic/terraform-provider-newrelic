@@ -1,11 +1,13 @@
 package newrelic
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
 
-func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) *synthetics.SyntheticsCreateStepMonitorInput {
+func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) (*synthetics.SyntheticsCreateStepMonitorInput, error) {
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	input := synthetics.SyntheticsCreateStepMonitorInput{
@@ -29,10 +31,29 @@ func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) *synthetics.S
 		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &v
 	}
 
-	return &input
+	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
+	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
+
+	if runtimeTypeOk || runtimeTypeVersionOk {
+		if !(runtimeTypeOk && runtimeTypeVersionOk) {
+			return &input, fmt.Errorf("both `runtime_type` and `runtime_type_version` are to be specified")
+		} else {
+			r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{
+				RuntimeType:        runtimeType.(string),
+				RuntimeTypeVersion: synthetics.SemVer(runtimeTypeVersion.(string)),
+			}
+			input.Runtime = &r
+		}
+
+	} else {
+		r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{}
+		input.Runtime = &r
+	}
+
+	return &input, nil
 }
 
-func buildSyntheticsStepMonitorUpdateInput(d *schema.ResourceData) *synthetics.SyntheticsUpdateStepMonitorInput {
+func buildSyntheticsStepMonitorUpdateInput(d *schema.ResourceData) (*synthetics.SyntheticsUpdateStepMonitorInput, error) {
 	inputBase := expandSyntheticsMonitorBase(d)
 
 	input := synthetics.SyntheticsUpdateStepMonitorInput{
@@ -56,7 +77,26 @@ func buildSyntheticsStepMonitorUpdateInput(d *schema.ResourceData) *synthetics.S
 		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &v
 	}
 
-	return &input
+	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
+	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
+
+	if runtimeTypeOk || runtimeTypeVersionOk {
+		if !(runtimeTypeOk && runtimeTypeVersionOk) {
+			return &input, fmt.Errorf("both `runtime_type` and `runtime_type_version` are to be specified")
+		} else {
+			r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{
+				RuntimeType:        runtimeType.(string),
+				RuntimeTypeVersion: synthetics.SemVer(runtimeTypeVersion.(string)),
+			}
+			input.Runtime = &r
+		}
+
+	} else {
+		r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{}
+		input.Runtime = &r
+	}
+
+	return &input, nil
 }
 
 func expandSyntheticsMonitorSteps(steps []interface{}) []synthetics.SyntheticsStepInput {
