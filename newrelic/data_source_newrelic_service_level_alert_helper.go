@@ -135,9 +135,9 @@ func fillData(d *schema.ResourceData, evaluationPeriod int, toleratedBudgetConsu
 
 	var nrql string
 	if d.Get("is_bad_events").(bool) {
-		nrql = fmt.Sprintf("FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '%v'", d.Get("sli_guid"))
+		nrql = fmt.Sprintf("FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) AS 'Error rate' WHERE entity.guid = '%v'", d.Get("sli_guid"))
 	} else {
-		nrql = fmt.Sprintf("FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = '%v'", d.Get("sli_guid"))
+		nrql = fmt.Sprintf("FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) AS 'Error rate' WHERE entity.guid = '%v'", d.Get("sli_guid"))
 	}
 	if err := d.Set("nrql", nrql); err != nil {
 		return err
