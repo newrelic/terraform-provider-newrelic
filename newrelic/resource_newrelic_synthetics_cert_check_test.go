@@ -23,14 +23,28 @@ func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Create
 			{
-				Config: testAccNewRelicSyntheticsCertCheckMonitorConfig(rName, "EVERY_5_MINUTES", "ENABLED", 30),
+				Config: testAccNewRelicSyntheticsCertCheckMonitorConfig(
+					rName,
+					"EVERY_5_MINUTES",
+					"ENABLED",
+					30,
+					"",
+					"",
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicSyntheticsCertCheckMonitorExists(resourceName),
 				),
 			},
 			// Update
 			{
-				Config: testAccNewRelicSyntheticsCertCheckMonitorConfig(fmt.Sprintf("%s-updated", rName), "EVERY_10_MINUTES", "DISABLED", 20),
+				Config: testAccNewRelicSyntheticsCertCheckMonitorConfig(
+					fmt.Sprintf("%s-updated", rName),
+					"EVERY_10_MINUTES",
+					"DISABLED",
+					20,
+					"NODE_API",
+					"16.10",
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicSyntheticsCertCheckMonitorExists(resourceName),
 				),
@@ -51,21 +65,44 @@ func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
 	})
 }
 
-func testAccNewRelicSyntheticsCertCheckMonitorConfig(name string, period string, status string, certExp int) string {
+func testAccNewRelicSyntheticsCertCheckMonitorConfig(
+	name string,
+	period string,
+	status string,
+	certExp int,
+	runtimeType string,
+	runtimeTypeVersion string,
+) string {
 	return fmt.Sprintf(`
-resource "newrelic_synthetics_cert_check_monitor" "foo" {
-	name                   = "%[1]s"
-	domain                 = "newrelic.com"
-	period                 = "%[2]s"
-	status                 = "%[3]s"
-	certificate_expiration = %[4]d
-	locations_public       = ["AP_SOUTH_1"]
-	tag {
-		key    = "cars"
-		values = ["audi"]
-	}
+		resource "newrelic_synthetics_cert_check_monitor" "foo" {
+			name                   = "%[1]s"
+			domain                 = "newrelic.com"
+			period                 = "%[2]s"
+			status                 = "%[3]s"
+			certificate_expiration = %[4]d
+			locations_public       = ["AP_SOUTH_1"]
+			tag {
+				key    = "cars"
+				values = ["audi"]
+			}
+			%[5]s
+			%[6]s
 }
-`, name, period, status, certExp)
+`,
+		name,
+		period,
+		status,
+		certExp,
+		testConfigurationStringBuilder("runtime_type", runtimeType),
+		testConfigurationStringBuilder("runtime_type_version", runtimeTypeVersion),
+	)
+}
+
+func testConfigurationStringBuilder(attributeName string, attributeValue string) string {
+	if attributeValue == "" {
+		return ""
+	}
+	return fmt.Sprintf("%s = \"%s\"", attributeName, attributeValue)
 }
 
 func testAccNewRelicSyntheticsCertCheckMonitorExists(name string) resource.TestCheckFunc {
@@ -90,6 +127,21 @@ func testAccNewRelicSyntheticsCertCheckMonitorExists(name string) resource.TestC
 		if string((*result).GetGUID()) != rs.Primary.ID {
 			return fmt.Errorf("the monitor is not found %v - %v", (*result).GetGUID(), rs.Primary.ID)
 		}
+
+		if rs.Primary.Attributes["runtime_type"] != "" && rs.Primary.Attributes["runtime_type_version"] != "" {
+			runtimeTagsExist := false
+			tags := (*result).GetTags()
+			for _, t := range tags {
+				if t.Key == "runtimeType" || t.Key == "runtimeTypeVersion" {
+					runtimeTagsExist = true
+				}
+			}
+
+			if runtimeTagsExist == false {
+				return fmt.Errorf("runtimeType and runtimeTypeVersion not found in the entity fetched")
+			}
+		}
+
 		return nil
 	}
 }

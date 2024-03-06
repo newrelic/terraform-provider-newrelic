@@ -227,6 +227,8 @@ func testAccCheckNewRelicMonitorDowntimeExists(resourceName string) resource.Tes
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
+		time.Sleep(20 * time.Second)
+
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return fmt.Errorf(err.Error())
