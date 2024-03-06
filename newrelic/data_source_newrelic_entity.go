@@ -86,6 +86,12 @@ func dataSourceNewRelicEntity() *schema.Resource {
 				Computed:    true,
 				Description: "A unique entity identifier.",
 			},
+			"ignore_not_found": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Do not thrown an error when the entity isn't found.",
+			},
 		},
 	}
 }
@@ -144,7 +150,13 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if entity == nil {
-		return diag.FromErr(fmt.Errorf("no entities found for the provided search parameters, please ensure your schema attributes are valid"))
+		if d.Get("ignore_not_found").(bool) {
+			log.Printf("[INFO] Entity not found, ignoring error")
+			d.SetId("")
+			return nil
+		} else {
+			return diag.FromErr(fmt.Errorf("no entities found for the provided search parameters, please ensure your schema attributes are valid"))
+		}
 	}
 
 	return diag.FromErr(flattenEntityData(entity, d))
