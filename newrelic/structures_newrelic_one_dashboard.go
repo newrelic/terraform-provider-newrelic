@@ -86,6 +86,13 @@ func expandDashboardVariablesInput(variables []interface{}) []dashboards.Dashboa
 			variable.Type = dashboards.DashboardVariableType(strings.ToUpper(ty.(string)))
 		}
 
+		if i, ok := v["options"]; ok {
+			ignoreTimeRange, is := i.(bool)
+			if is {
+				variable.Options = dashboards.DashboardVariableOptionsInput{IgnoreTimeRange: ignoreTimeRange}
+			}
+		}
+
 		expanded[i] = variable
 	}
 	return expanded
