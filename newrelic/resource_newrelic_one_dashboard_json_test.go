@@ -161,6 +161,9 @@ func testAccCheckNewRelicOneDashboardJsonConfig_Full(pageName string, accountID 
 					"query": "FROM Transaction SELECT average(duration) FACET appName"
 				},
 				"name": "variableNRQL",
+				"options": {
+					"ignoreTimeRange": true,
+				},
 				"replacementStrategy": "DEFAULT",
 				"title": "title",
 				"type": "NRQL"
