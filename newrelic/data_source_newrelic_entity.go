@@ -90,7 +90,7 @@ func dataSourceNewRelicEntity() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "Do not thrown an error when the entity isn't found.",
+				Description: "Do not throw an error when the entity isn't found.",
 			},
 		},
 	}
