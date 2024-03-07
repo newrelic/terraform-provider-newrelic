@@ -285,7 +285,8 @@ func validateSyntheticMonitorStatus(val interface{}, key string) (warns []string
 				"Version 3.33.0 of the New Relic Terraform Provider is released to coincide with the `MUTED` status end-of-life.\n"+
 				"Consequently, the only valid values for `status` for all types of Synthetic Monitors are `ENABLED` and `DISABLED`.\n"+
 				"If you have a Terraform configuration with Synthetic Monitor resources previously applied with the status `MUTED` and are hence, seeing this error now upon `terraform plan`,\n"+"please change the status of the monitor to one of the two aforementioned values to plan and apply your configuration, and opt for other alternatives to mute monitors.\n"+
-				"For additional information on alternatives to the `MUTED` status of Synthetic Monitors that can be managed via Terraform,\n"+"please refer to the Synthetic Monitors MUTED Status EOL Guide in the documentation of the New Relic Terraform Provider.\n"))
+				"For additional information on alternatives to the `MUTED` status of Synthetic Monitors that can be managed via Terraform,\n"+"please refer to the Synthetic Monitors MUTED Status EOL Guide in the documentation of the New Relic Terraform Provider.\n"+
+				"https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide"))
 		} else {
 			errs = append(errs, fmt.Errorf("expected status to be one of %v, got %s", listOfValidSyntheticMonitorStatuses, monitorStatusInput))
 		}
