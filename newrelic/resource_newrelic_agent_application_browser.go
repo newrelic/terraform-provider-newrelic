@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -54,6 +55,11 @@ func resourceNewRelicBrowserApplication() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The GUID of the browser application.",
+			},
+			"application_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the browser application.",
 			},
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -131,6 +137,7 @@ func resourceNewRelicBrowserApplicationRead(ctx context.Context, d *schema.Resou
 		_ = d.Set("loader_type", string(entity.BrowserSettings.BrowserMonitoring.Loader))
 		_ = d.Set("guid", string(entity.GUID))
 		_ = d.Set("account_id", entity.AccountID)
+		_ = d.Set("application_id", strconv.Itoa(entity.ApplicationID))
 
 		// The following block of code encodes the JavaScript configuration of the browser application into a JSON,
 		// that is then exported as a string, which can be accessed from the Terraform Configuration using jsondecode().

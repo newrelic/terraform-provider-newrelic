@@ -40,6 +40,7 @@ func TestAccNewRelicAgentApplicationBrowser(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAgentApplicationBrowserExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "js_config"),
+					resource.TestCheckResourceAttrSet(resourceName, "application_id"),
 					testAccCheckJsConfigNestedAttributes(resourceName, "js_config", []string{"init", "info", "loader_config"}),
 				),
 			},
@@ -138,12 +139,12 @@ func testAccCheckJsConfigNestedAttributes(resourceName, key string, jsConfigNest
 
 func testAccNewRelicAgentApplicationBrowserConfig(accountID int, name string, loaderType string) string {
 	return fmt.Sprintf(`
-resource newrelic_browser_application foo {
- 	account_id = %[1]d
-	name = "%[2]s"
-	cookies_enabled = true
-	distributed_tracing_enabled = true
-	loader_type = "%[3]s"
-}
+		resource "newrelic_browser_application" "foo" {
+		  account_id                  = %[1]d
+		  name                        = "%[2]s"
+		  cookies_enabled             = true
+		  distributed_tracing_enabled = true
+		  loader_type                 = "%[3]s"
+		}
 `, accountID, name, loaderType)
 }
