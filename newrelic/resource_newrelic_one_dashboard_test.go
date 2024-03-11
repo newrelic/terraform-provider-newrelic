@@ -1097,7 +1097,7 @@ resource "newrelic_one_dashboard" "bar" {
 
 // testAccCheckNewRelicOneDashboardExists fetches the dashboard back, with an optional sleep time
 // used when we know the async nature of the API will mess with consistent testing.
-func testAccCheckNewRelicOneDashboardExists(name string, sleepSeconds int) resource.TestCheckFunc {
+func testAccCheckNewRelicOneDashboardExists(name string, sleepSeconds int, additionalValidations ...func(*entities.DashboardEntity) error) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -1118,6 +1118,13 @@ func testAccCheckNewRelicOneDashboardExists(name string, sleepSeconds int) resou
 
 		if string(found.GUID) != rs.Primary.ID {
 			return fmt.Errorf("dashboard not found: %v - %v", rs.Primary.ID, found)
+		}
+
+		for _, additionalValidation := range additionalValidations {
+			err = additionalValidation(found)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
