@@ -162,7 +162,7 @@ func testAccCheckNewRelicOneDashboardJsonConfig_Full(pageName string, accountID 
 				},
 				"name": "variableNRQL",
 				"options": {
-					"ignoreTimeRange": true,
+					"ignoreTimeRange": true
 				},
 				"replacementStrategy": "DEFAULT",
 				"title": "title",
