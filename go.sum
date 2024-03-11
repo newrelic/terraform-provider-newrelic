@@ -269,6 +269,8 @@ github.com/newrelic/newrelic-client-go/v2 v2.23.1-0.20240307073405-bd421645ffec 
 github.com/newrelic/newrelic-client-go/v2 v2.23.1-0.20240307073405-bd421645ffec/go.mod h1:VPWTvEfKvnTZLunAC7fiW33y4e0srznNfN5HJH2cOp8=
 github.com/newrelic/newrelic-client-go/v2 v2.26.1-0.20240308060404-003db7eb1ec3 h1:/3AD3ESDxKOVgJ/LgVMHLvs+N6adJ5z5tq1YNaNbQBs=
 github.com/newrelic/newrelic-client-go/v2 v2.26.1-0.20240308060404-003db7eb1ec3/go.mod h1:SO5KJuFJ/+l3lT8nOdNLTrcE9FoZ4m60kechCVb+1N4=
+github.com/newrelic/newrelic-client-go/v2 v2.26.1-0.20240311042410-e9c1e640a59c h1:LpxTNTujJRUsIfn4L+Xrm2mlySFv+zhvhYEhhnDXG/s=
+github.com/newrelic/newrelic-client-go/v2 v2.26.1-0.20240311042410-e9c1e640a59c/go.mod h1:SO5KJuFJ/+l3lT8nOdNLTrcE9FoZ4m60kechCVb+1N4=
 github.com/newrelic/newrelic-client-go/v2 v2.26.1 h1:InjKaaCKO+BrYceSWStUDlBCWkyBaYmYdIt6HUtBS4k=
 github.com/newrelic/newrelic-client-go/v2 v2.26.1/go.mod h1:SO5KJuFJ/+l3lT8nOdNLTrcE9FoZ4m60kechCVb+1N4=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
