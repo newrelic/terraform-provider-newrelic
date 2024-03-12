@@ -134,9 +134,9 @@ func resourceNewRelicSyntheticsCertCheckMonitorCreate(ctx context.Context, d *sc
 	if resp == nil {
 		if err != nil {
 			return diag.FromErr(err)
-		} else {
-			return diag.FromErr(fmt.Errorf("no response received from NerdGraph: failed to create cert check monitor"))
 		}
+		return diag.FromErr(fmt.Errorf("no response received from NerdGraph: failed to create cert check monitor"))
+
 	}
 
 	if len(resp.Errors) > 0 {
@@ -329,13 +329,12 @@ func buildSyntheticsCertCheckMonitorCreateInput(d *schema.ResourceData) (result 
 	if runtimeTypeOk || runtimeTypeVersionOk {
 		if !(runtimeTypeOk && runtimeTypeVersionOk) {
 			return input, fmt.Errorf("both `runtime_type` and `runtime_type_version` are to be specified")
-		} else {
-			r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{
-				RuntimeType:        runtimeType.(string),
-				RuntimeTypeVersion: synthetics.SemVer(runtimeTypeVersion.(string)),
-			}
-			input.Runtime = &r
 		}
+		r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{
+			RuntimeType:        runtimeType.(string),
+			RuntimeTypeVersion: synthetics.SemVer(runtimeTypeVersion.(string)),
+		}
+		input.Runtime = &r
 
 	} else {
 		r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{}
@@ -380,13 +379,12 @@ func buildSyntheticsCertCheckMonitorUpdateInput(d *schema.ResourceData) (result 
 	if runtimeTypeOk || runtimeTypeVersionOk {
 		if !(runtimeTypeOk && runtimeTypeVersionOk) {
 			return input, fmt.Errorf("both `runtime_type` and `runtime_type_version` are to be specified")
-		} else {
-			r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{
-				RuntimeType:        runtimeType.(string),
-				RuntimeTypeVersion: synthetics.SemVer(runtimeTypeVersion.(string)),
-			}
-			input.Runtime = &r
 		}
+		r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{
+			RuntimeType:        runtimeType.(string),
+			RuntimeTypeVersion: synthetics.SemVer(runtimeTypeVersion.(string)),
+		}
+		input.Runtime = &r
 
 	} else {
 		r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{}

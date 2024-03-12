@@ -37,13 +37,12 @@ func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) (*synthetics.
 	if runtimeTypeOk || runtimeTypeVersionOk {
 		if !(runtimeTypeOk && runtimeTypeVersionOk) {
 			return &input, fmt.Errorf("both `runtime_type` and `runtime_type_version` are to be specified")
-		} else {
-			r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{
-				RuntimeType:        runtimeType.(string),
-				RuntimeTypeVersion: synthetics.SemVer(runtimeTypeVersion.(string)),
-			}
-			input.Runtime = &r
 		}
+		r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{
+			RuntimeType:        runtimeType.(string),
+			RuntimeTypeVersion: synthetics.SemVer(runtimeTypeVersion.(string)),
+		}
+		input.Runtime = &r
 
 	} else {
 		r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{}
@@ -83,13 +82,12 @@ func buildSyntheticsStepMonitorUpdateInput(d *schema.ResourceData) (*synthetics.
 	if runtimeTypeOk || runtimeTypeVersionOk {
 		if !(runtimeTypeOk && runtimeTypeVersionOk) {
 			return &input, fmt.Errorf("both `runtime_type` and `runtime_type_version` are to be specified")
-		} else {
-			r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{
-				RuntimeType:        runtimeType.(string),
-				RuntimeTypeVersion: synthetics.SemVer(runtimeTypeVersion.(string)),
-			}
-			input.Runtime = &r
 		}
+		r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{
+			RuntimeType:        runtimeType.(string),
+			RuntimeTypeVersion: synthetics.SemVer(runtimeTypeVersion.(string)),
+		}
+		input.Runtime = &r
 
 	} else {
 		r := synthetics.SyntheticsExtendedTypeMonitorRuntimeInput{}
