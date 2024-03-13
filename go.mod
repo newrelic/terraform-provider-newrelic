@@ -7,7 +7,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.29.1
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go/v2 v2.26.1-0.20240311042410-e9c1e640a59c
+	github.com/newrelic/newrelic-client-go/v2 v2.26.1-0.20240313072141-eaba3e9afa15
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a
 )
