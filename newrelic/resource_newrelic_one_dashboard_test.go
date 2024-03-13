@@ -795,9 +795,6 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQL() string {
 		account_ids = [3806526]
 		query = "FROM Transaction SELECT average(duration) FACET appName"
 	}
-	options {
-		ignore_time_range = true
-	}
 	replacement_strategy = "default"
 	title = "title"
 	type = "nrql"
