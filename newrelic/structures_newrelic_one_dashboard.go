@@ -86,6 +86,10 @@ func expandDashboardVariablesInput(variables []interface{}) []dashboards.Dashboa
 			variable.Type = dashboards.DashboardVariableType(strings.ToUpper(ty.(string)))
 		}
 
+		if options, ok := v["options"]; ok && len(options.([]interface{})) > 0 {
+			variable.Options = expandVariableOptions(options.([]interface{}))
+		}
+
 		expanded[i] = variable
 	}
 	return expanded
@@ -708,6 +712,19 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 	return expanded, nil
 }
 
+func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOptionsInput {
+	var out dashboards.DashboardVariableOptionsInput
+
+	for _, v := range in {
+		cfg := v.(map[string]interface{})
+		out = dashboards.DashboardVariableOptionsInput{
+			IgnoreTimeRange: cfg["ignore_time_range"].(bool),
+		}
+	}
+
+	return &out
+}
+
 // Unpack the *dashboards.Dashboard variable and set resource data.
 //
 // Used by the newrelic_one_dashboard Read function (resourceNewRelicOneDashboardRead)
@@ -794,6 +811,9 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable) []interface{} {
 		m["replacement_strategy"] = strings.ToLower(string(v.ReplacementStrategy))
 		m["title"] = v.Title
 		m["type"] = strings.ToLower(string(v.Type))
+		if v.Options != nil {
+			m["options"] = flattenVariableOptions(v.Options)
+		}
 
 		out[i] = m
 	}
@@ -829,6 +849,18 @@ func flattenVariableNRQLQuery(in *entities.DashboardVariableNRQLQuery) []interfa
 
 	n["account_ids"] = in.AccountIDs
 	n["query"] = in.Query
+
+	out[0] = n
+
+	return out
+}
+
+func flattenVariableOptions(in *entities.DashboardVariableOptions) []interface{} {
+	out := make([]interface{}, 1)
+
+	n := make(map[string]interface{})
+
+	n["ignore_time_range"] = in.IgnoreTimeRange
 
 	out[0] = n
 
