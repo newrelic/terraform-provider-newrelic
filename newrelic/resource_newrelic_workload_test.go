@@ -88,6 +88,14 @@ func TestAccNewRelicWorkload_EntitySearchQueriesOnly(t *testing.T) {
 					testAccCheckNewRelicWorkloadExists(resourceName),
 				),
 			},
+			{
+				Config:      testAccNewRelicWorkloadConfigWrongEntitySearchQueriesOnly(rName, ""),
+				ExpectError: regexp.MustCompile("Invalid value for \"query\""),
+			},
+			{
+				Config:      testAccNewRelicWorkloadConfigWrongEntitySearchQueriesOnly(rName, "    "),
+				ExpectError: regexp.MustCompile("Invalid value for \"query\""),
+			},
 		},
 	})
 }
@@ -546,6 +554,19 @@ resource "newrelic_workload" "foo" {
 	}
 }
 `, testAccountID, name)
+}
+
+func testAccNewRelicWorkloadConfigWrongEntitySearchQueriesOnly(name string, esq string) string {
+	return fmt.Sprintf(`
+resource "newrelic_workload" "foo" {
+	name = "%[2]s"
+	account_id = %[1]d
+
+	entity_search_query {
+		query = %[3]s
+	}
+}
+`, testAccountID, name, esq)
 }
 
 func testAccNewRelicWorkloadConfigEntityMultiSearchQueriesOnly(name string) string {

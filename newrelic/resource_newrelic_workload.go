@@ -58,7 +58,12 @@ func resourceNewRelicWorkload() *schema.Resource {
 						"query": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The query.",
+							Description: "A valid entity search query, empty, and null values are considered invalid.",
+							ValidateFunc: validation.All(
+								validation.StringIsNotEmpty,
+								validation.StringIsNotWhiteSpace,
+								validation.NoZeroValues,
+							),
 						},
 					},
 				},
@@ -122,6 +127,11 @@ func resourceNewRelicWorkload() *schema.Resource {
 													Type:        schema.TypeString,
 													Required:    true,
 													Description: "The entity search query that is used to perform the search of a group of entities.",
+													ValidateFunc: validation.All(
+														validation.StringIsNotEmpty,
+														validation.StringIsNotWhiteSpace,
+														validation.NoZeroValues,
+													),
 												},
 											},
 										},
