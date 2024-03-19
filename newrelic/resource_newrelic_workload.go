@@ -58,7 +58,7 @@ func resourceNewRelicWorkload() *schema.Resource {
 						"query": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "A valid entity search query, empty, and null values are considered invalid.",
+							Description: "A valid entity search query; empty, and null values are considered invalid.",
 							ValidateFunc: validation.All(
 								validation.StringIsNotEmpty,
 								validation.StringIsNotWhiteSpace,
