@@ -1,7 +1,9 @@
 package newrelic
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -1216,4 +1218,50 @@ func flattenDashboardWidgetUnits(in *dashboards.DashboardWidgetUnits) interface{
 	k["series_overrides"] = seriesOverrides
 	out[0] = k
 	return out
+}
+
+func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	var errorsList []string
+
+	err := validateDashboardVariableOptions(d)
+	if err != nil {
+		errorsList = append(errorsList, err.Error())
+	}
+
+	// add any other validation functions here
+
+	if len(errorsList) == 0 {
+		return nil
+	}
+
+	errorsString := "the following validation errors have been identified: \n"
+
+	for index, val := range errorsList {
+		errorsString += fmt.Sprintf("(%d): %s\n", index+1, val)
+	}
+
+	return errors.New(errorsString)
+}
+
+func validateDashboardVariableOptions(d *schema.ResourceDiff) error {
+	_, variablesListObtained := d.GetChange("variable")
+	vars := variablesListObtained.([]interface{})
+
+	for _, v := range vars {
+		variableMap := v.(map[string]interface{})
+		options, optionsOk := variableMap["options"]
+		if optionsOk {
+			optionsInterface := options.([]interface{})
+			if len(optionsInterface) > 1 {
+				return errors.New("only one set of `options` may be specified per variable")
+			}
+			for _, o := range optionsInterface {
+				if o == nil {
+					return errors.New("`options` block(s) specified cannot be empty")
+				}
+			}
+		}
+	}
+
+	return nil
 }
