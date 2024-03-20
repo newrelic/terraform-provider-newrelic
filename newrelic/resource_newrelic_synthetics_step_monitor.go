@@ -92,16 +92,14 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 			},
 		},
 		"runtime_type": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Description:  "The runtime type that the monitor will run.",
-			ValidateFunc: validation.StringInSlice([]string{"CHROME_BROWSER"}, false),
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The runtime type that the monitor will run.",
 		},
 		"runtime_type_version": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Description:  "The specific semver version of the runtime type.",
-			ValidateFunc: validation.StringInSlice([]string{"100"}, false),
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The specific semver version of the runtime type.",
 		},
 	}
 }
