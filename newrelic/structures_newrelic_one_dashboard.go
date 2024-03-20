@@ -812,23 +812,45 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable, d *schema.Resour
 		m["title"] = v.Title
 		m["type"] = strings.ToLower(string(v.Type))
 
-		if v.Options != nil {
+		//if v.Options != nil {
+		//	m["options"] = flattenVariableOptions(v.Options)
+		//}
+
+		//if v.Options != nil {
+		x := d.Get(fmt.Sprintf("variable.%d", i))
+		y := x.(map[string]interface{})
+		z := y["options"]
+		log.Println("SOMETHING")
+		a := z.([]interface{})
+
+		// condition to be considered for addition sometime later
+		// _, ok := a[0].(map[string]interface{})["ignore_time_range"]
+		if len(a) > 0 {
+			//o := map[string]bool{
+			//	"ignore_time_range": x.(bool),
+			//}
+			//
+			//l := make([]map[string]bool, 1)
+			//l[0] = o
+
+			//out := make([]interface{}, 1)
+			//n := make(map[string]interface{})
+			//n["ignore_time_range"] = x.(bool)
+			//out[0] = n
+
+			//_ = d.Set(fmt.Sprintf("variable.%d.options.0", i), out[0])
+			log.Println("REACHED HERE")
+			log.Println(x)
+			log.Println(z)
 			m["options"] = flattenVariableOptions(v.Options)
 		}
 
-		//if v.Options != nil {
-		//	x := d.Get(fmt.Sprintf("variable.%d.options", i))
-		//	if x == nil {
-		//		_ = d.Set(fmt.Sprintf("variable.%d.options.0.ignore_time_range", i), true)
-		//	}
-		//
-		//	a, b := d.GetChange(fmt.Sprintf("variable.%d.options.0.ignore_time_range", i))
-		//	log.Println("Point 2")
-		//	log.Println("Point A", a)
-		//	log.Println("Point B", b)
-		//
-		//	m["options"] = flattenVariableOptions(v.Options)
-		//}
+		//a, b := d.GetChange(fmt.Sprintf("variable.%d.options.0.ignore_time_range", i))
+		//log.Println("Point 2")
+		//log.Println("Point A", a)
+		//log.Println("Point B", b)
+
+		//m["options"] = flattenVariableOptions(v.Options)
 
 		//if v.Options != nil {
 		//	// customers who do not have options -> ignore_time_range in their configuration would not have a value

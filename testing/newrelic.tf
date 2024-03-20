@@ -64,19 +64,16 @@ resource "newrelic_one_dashboard" "exampledash" {
     default_values     = ["value"]
     is_multi_selection = true
     item {
-      title = "item"
+      title = "itemdsfs"
       value = "ITEM"
     }
-    name = "variable"
+    name = "new_variable_name"
     nrql_query {
       account_ids = [3806526]
       query       = "FROM Transaction SELECT average(duration) FACET appName"
     }
     replacement_strategy = "default"
-    title                = "title"
+    title                = "titlesdfsdf"
     type                 = "nrql"
-#    options {
-#      ignore_time_range = true
-#    }
   }
 }

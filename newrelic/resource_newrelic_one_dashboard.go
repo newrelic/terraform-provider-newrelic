@@ -71,7 +71,7 @@ func resourceNewRelicOneDashboard() *schema.Resource {
 				Elem:        dashboardVariableSchemaElem(),
 			},
 		},
-		CustomizeDiff: customizeDashboardDiffs,
+		// CustomizeDiff: customizeDashboardDiffs,
 	}
 }
 
