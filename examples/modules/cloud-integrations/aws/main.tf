@@ -242,6 +242,7 @@ resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
   ec2 {}
   ecs {}
   efs {}
+  eks {}
   elasticbeanstalk {}
   elasticsearch {}
   elb {}
