@@ -866,9 +866,11 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 	// fetching the contents of the variable at the specified index (in the list of variables)
 	// and subsequently, finding its options field
 	variableFetched := d.Get(fmt.Sprintf("variable.%d", index)).(map[string]interface{})
-	optionsOfVariableFetched := variableFetched["options"]
+	optionsOfVariableFetched, optionsOfVariableFetchedOk := variableFetched["options"]
+	if !optionsOfVariableFetchedOk {
+		return nil
+	}
 	options := optionsOfVariableFetched.([]interface{})
-
 	if len(options) == 0 {
 		// if nothing exists in the options list in the state (configuration), "do nothing", to avoid drift
 		// this is required to make options -> ignore_time_range backward compatible and show no drift
@@ -1259,6 +1261,13 @@ func validateDashboardVariableOptions(d *schema.ResourceDiff) error {
 				if o == nil {
 					return errors.New("`options` block(s) specified cannot be empty")
 				}
+				optionMap := o.(map[string]interface{})
+				_, ignoreTimeRangeOk := optionMap["ignore_time_range"]
+				variableType, variableTypeOk := variableMap["type"]
+				if ignoreTimeRangeOk && variableTypeOk && variableType != "nrql" {
+					return errors.New("`ignore_time_range` in `options` can only be used with the variable type `nrql`")
+				}
+
 			}
 		}
 	}
