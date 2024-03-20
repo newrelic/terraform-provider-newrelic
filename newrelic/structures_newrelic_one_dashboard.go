@@ -747,7 +747,7 @@ func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.Resou
 	}
 
 	if dashboard.Variables != nil && len(dashboard.Variables) > 0 {
-		variables := flattenDashboardVariable(&dashboard.Variables)
+		variables := flattenDashboardVariable(&dashboard.Variables, d)
 		if err := d.Set("variable", variables); err != nil {
 			return err
 		}
@@ -784,7 +784,7 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 	}
 
 	if dashboard.Variables != nil && len(dashboard.Variables) > 0 {
-		variables := flattenDashboardVariable(&dashboard.Variables)
+		variables := flattenDashboardVariable(&dashboard.Variables, d)
 		if err := d.Set("variable", variables); err != nil {
 			return err
 		}
@@ -793,7 +793,7 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 	return nil
 }
 
-func flattenDashboardVariable(in *[]entities.DashboardVariable) []interface{} {
+func flattenDashboardVariable(in *[]entities.DashboardVariable, d *schema.ResourceData) []interface{} {
 	out := make([]interface{}, len(*in))
 
 	for i, v := range *in {
@@ -811,9 +811,46 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable) []interface{} {
 		m["replacement_strategy"] = strings.ToLower(string(v.ReplacementStrategy))
 		m["title"] = v.Title
 		m["type"] = strings.ToLower(string(v.Type))
+
 		if v.Options != nil {
 			m["options"] = flattenVariableOptions(v.Options)
 		}
+
+		//if v.Options != nil {
+		//	x := d.Get(fmt.Sprintf("variable.%d.options", i))
+		//	if x == nil {
+		//		_ = d.Set(fmt.Sprintf("variable.%d.options.0.ignore_time_range", i), true)
+		//	}
+		//
+		//	a, b := d.GetChange(fmt.Sprintf("variable.%d.options.0.ignore_time_range", i))
+		//	log.Println("Point 2")
+		//	log.Println("Point A", a)
+		//	log.Println("Point B", b)
+		//
+		//	m["options"] = flattenVariableOptions(v.Options)
+		//}
+
+		//if v.Options != nil {
+		//	// customers who do not have options -> ignore_time_range in their configuration would not have a value
+		//	// for ignore_time_range in the state as well; hence, reading this attribute's value and saving it to
+		//	// the state is causing an inevitable drift. The following block of code prevents this drift.
+		//
+		//	x, optionsInVariableConfiguration := d.GetOk(fmt.Sprintf("variable.%d.options.0.ignore_time_range", i))
+		//
+		//	log.Println("REACHED")
+		//	log.Println(x)
+		//	log.Println(optionsInVariableConfiguration)
+		//
+		//	a, b := d.GetChange(fmt.Sprintf("variable.%d.options.0.ignore_time_range", i))
+		//	log.Println("placeholder 2")
+		//	log.Println(a)
+		//	log.Println(b)
+		//
+		//	// get the value of options -> ignore_time_range ONLY if it exists in the configuration
+		//	if optionsInVariableConfiguration {
+		//		m["options"] = flattenVariableOptions(v.Options)
+		//	}
+		//}
 
 		out[i] = m
 	}

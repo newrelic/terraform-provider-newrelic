@@ -331,6 +331,8 @@ The following arguments are supported:
   * `replacement_strategy` - (Optional) Indicates the strategy to apply when replacing a variable in a NRQL query. One of `default`, `identifier`, `number` or `string`.
   * `title` - (Optional) Human-friendly display string for this variable.
   * `type` - (Required) Specifies the data type of the variable and where its possible values may come from. One of `enum`, `nrql` or `string`
+  * `options` - (Optional) Specifies additional options to be added to dashboard variables. Supports the following nested attribute(s) - 
+    * `ignore_time_range` - (Optional) An argument with a boolean value that is supported only by variables of `type` _nrql_ - when true, the time range specified in the query will override the time picker on dashboards and other pages. Defaults to `true`.
 
 ### Nested `item` blocks
 

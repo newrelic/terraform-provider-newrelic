@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -70,6 +71,7 @@ func resourceNewRelicOneDashboard() *schema.Resource {
 				Elem:        dashboardVariableSchemaElem(),
 			},
 		},
+		CustomizeDiff: customizeDashboardDiffs,
 	}
 }
 
@@ -169,6 +171,37 @@ func dashboardVariableSchemaElem() *schema.Resource {
 			},
 		},
 	}
+}
+
+func customizeDashboardDiffs(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	_, newVariablesListObtained := d.GetChange("variable")
+
+	newVariables := newVariablesListObtained.([]interface{})
+
+	for i, x := range newVariables {
+		log.Println("REACHED")
+		y := x.(map[string]interface{})
+		z := y["options"].([]interface{})
+		// n := z[0].(map[string]interface{})
+
+		o := map[string]bool{
+			"ignore_time_range": true,
+		}
+
+		l := make([]map[string]bool, 1)
+		l[0] = o
+
+		// https://github.com/hashicorp/terraform-plugin-sdk/issues/459
+		if len(z) == 0 {
+			err := d.SetNew(fmt.Sprintf("variable.%d.options", i), l)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+
+	return nil
 }
 
 // dashboardPageElem returns the schema for a New Relic dashboard Page
