@@ -247,7 +247,7 @@ func testAccCheckNewRelicServiceLevelAlertHelper_FastBurn(n string) resource.Tes
 			"tolerated_budget_consumption":        "2",
 			"threshold":                           "1.3439999999999237",
 			"sli_guid":                            "sliGuid",
-			"nrql":                                "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = 'sliGuid'",
+			"nrql":                                "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) AS 'Error rate' WHERE entity.guid = 'sliGuid'",
 		}
 
 		for attrName, expectedVal := range testCases {
@@ -283,7 +283,7 @@ func testAccCheckNewRelicServiceLevelAlertHelper_SlowBurn(n string) resource.Tes
 			"tolerated_budget_consumption":        "5",
 			"threshold":                           "0.5599999999999682",
 			"sli_guid":                            "sliGuid",
-			"nrql":                                "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = 'sliGuid'",
+			"nrql":                                "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) AS 'Error rate' WHERE entity.guid = 'sliGuid'",
 		}
 
 		for attrName, expectedVal := range testCases {
@@ -332,7 +332,7 @@ func testAccCheckNewRelicServiceLevelAlertHelper_Custom(n string) resource.TestC
 			"tolerated_budget_consumption":        "5",
 			"threshold":                           "8.4",
 			"sli_guid":                            "sliGuidCustom",
-			"nrql":                                "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = 'sliGuidCustom'",
+			"nrql":                                "FROM Metric SELECT 100 - clamp_max(sum(newrelic.sli.good) / sum(newrelic.sli.valid) * 100, 100) AS 'Error rate' WHERE entity.guid = 'sliGuidCustom'",
 		}
 
 		for attrName, expectedVal := range testCases {
@@ -382,7 +382,7 @@ func testAccCheckNewRelicServiceLevelAlertHelper_CustomBadEvents(n string) resou
 			"tolerated_budget_consumption":        "5",
 			"threshold":                           "8.4",
 			"sli_guid":                            "sliGuidCustom",
-			"nrql":                                "FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) as 'SLO compliance' WHERE sli.guid = 'sliGuidCustom'",
+			"nrql":                                "FROM Metric SELECT 100 - clamp_max((sum(newrelic.sli.valid) - sum(newrelic.sli.bad)) / sum(newrelic.sli.valid) * 100, 100) AS 'Error rate' WHERE entity.guid = 'sliGuidCustom'",
 		}
 
 		for attrName, expectedVal := range testCases {
