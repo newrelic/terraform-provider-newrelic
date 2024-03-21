@@ -154,7 +154,7 @@ The following arguments are supported:
 
 All nested `entity_search_query` blocks support the following common arguments:
 
-  * `query` - (Required) The query.
+  * `query` - (Required) A valid entity search query; empty, and null values are considered invalid.
 
 ### Nested `status_config_automatic` blocks
 
