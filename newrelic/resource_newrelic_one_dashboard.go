@@ -70,6 +70,7 @@ func resourceNewRelicOneDashboard() *schema.Resource {
 				Elem:        dashboardVariableSchemaElem(),
 			},
 		},
+		CustomizeDiff: validateDashboardArguments,
 	}
 }
 
