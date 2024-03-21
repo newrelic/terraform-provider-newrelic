@@ -83,18 +83,22 @@ func TestAccNewRelicWorkload_EntitySearchQueriesOnly(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicWorkloadDestroy,
 		Steps: []resource.TestStep{
 			{
+				Config:      testAccNewRelicWorkloadConfigWrongEntitySearchQueriesOnly(rName, ""),
+				ExpectError: regexp.MustCompile("Invalid expression"),
+			},
+			{
+				Config:      testAccNewRelicWorkloadConfigWrongEntitySearchQueriesOnly(rName, "\"\""),
+				ExpectError: regexp.MustCompile("expected \"entity_search_query.0.query\" to not be an empty string"),
+			},
+			{
+				Config:      testAccNewRelicWorkloadConfigWrongEntitySearchQueriesOnly(rName, "\"     \""),
+				ExpectError: regexp.MustCompile("expected \"entity_search_query.0.query\" to not be an empty string or whitespace"),
+			},
+			{
 				Config: testAccNewRelicWorkloadConfigEntitySearchQueriesOnly(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkloadExists(resourceName),
 				),
-			},
-			{
-				Config:      testAccNewRelicWorkloadConfigWrongEntitySearchQueriesOnly(rName, ""),
-				ExpectError: regexp.MustCompile("Invalid value for \"query\""),
-			},
-			{
-				Config:      testAccNewRelicWorkloadConfigWrongEntitySearchQueriesOnly(rName, "    "),
-				ExpectError: regexp.MustCompile("Invalid value for \"query\""),
 			},
 		},
 	})
