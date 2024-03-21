@@ -70,6 +70,7 @@ func resourceNewRelicOneDashboard() *schema.Resource {
 				Elem:        dashboardVariableSchemaElem(),
 			},
 		},
+		CustomizeDiff: validateDashboardArguments,
 	}
 }
 
@@ -112,6 +113,20 @@ func dashboardVariableSchemaElem() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The variable identifier.",
+			},
+			"options": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Options applied to the variable.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ignore_time_range": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Only applies to variables of type NRQL. With this turned on, the time range for the NRQL query will override the time picker on dashboards and other pages. Turn this off to use the time picker as normal.",
+						},
+					},
+				},
 			},
 			"nrql_query": {
 				Type:        schema.TypeList,
@@ -633,7 +648,7 @@ func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceD
 	defaultInfo := map[string]interface{}{
 		"account_id": accountID,
 	}
-	dashboard, err := expandDashboardInput(d, defaultInfo)
+	dashboard, err := expandDashboardInput(d, defaultInfo, "")
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -676,7 +691,7 @@ func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceD
 			return diag.FromErr(err)
 		}
 
-		dashboard, err := expandDashboardInput(d, defaultInfo)
+		dashboard, err := expandDashboardInput(d, defaultInfo, created.EntityResult.Name)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -733,7 +748,7 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	dashboard, err := expandDashboardInput(d, defaultInfo)
+	dashboard, err := expandDashboardInput(d, defaultInfo, "")
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -768,7 +783,7 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 			return diag.FromErr(err)
 		}
 
-		dashboard, err = expandDashboardInput(d, defaultInfo)
+		dashboard, err = expandDashboardInput(d, defaultInfo, updated.EntityResult.Name)
 		if err != nil {
 			return diag.FromErr(err)
 		}

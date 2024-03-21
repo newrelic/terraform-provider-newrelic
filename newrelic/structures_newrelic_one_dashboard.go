@@ -1,7 +1,9 @@
 package newrelic
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -17,11 +19,15 @@ import (
 
 // Assemble the *dashboards.DashboardInput struct.
 // Used by the newrelic_one_dashboard Create function.
-func expandDashboardInput(d *schema.ResourceData, meta interface{}) (*dashboards.DashboardInput, error) {
+func expandDashboardInput(d *schema.ResourceData, meta interface{}, dashboardNameCustom string) (*dashboards.DashboardInput, error) {
 	var err error
 
-	dash := dashboards.DashboardInput{
-		Name: d.Get("name").(string),
+	dash := dashboards.DashboardInput{}
+
+	if dashboardNameCustom != "" {
+		dash.Name = dashboardNameCustom
+	} else {
+		dash.Name = d.Get("name").(string)
 	}
 
 	dash.Pages, err = expandDashboardPageInput(d, d.Get("page").([]interface{}), meta)
@@ -84,6 +90,10 @@ func expandDashboardVariablesInput(variables []interface{}) []dashboards.Dashboa
 
 		if ty, ok := v["type"]; ok {
 			variable.Type = dashboards.DashboardVariableType(strings.ToUpper(ty.(string)))
+		}
+
+		if options, ok := v["options"]; ok && len(options.([]interface{})) > 0 {
+			variable.Options = expandVariableOptions(options.([]interface{}))
 		}
 
 		expanded[i] = variable
@@ -708,6 +718,19 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 	return expanded, nil
 }
 
+func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOptionsInput {
+	var out dashboards.DashboardVariableOptionsInput
+
+	for _, v := range in {
+		cfg := v.(map[string]interface{})
+		out = dashboards.DashboardVariableOptionsInput{
+			IgnoreTimeRange: cfg["ignore_time_range"].(bool),
+		}
+	}
+
+	return &out
+}
+
 // Unpack the *dashboards.Dashboard variable and set resource data.
 //
 // Used by the newrelic_one_dashboard Read function (resourceNewRelicOneDashboardRead)
@@ -730,7 +753,7 @@ func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.Resou
 	}
 
 	if dashboard.Variables != nil && len(dashboard.Variables) > 0 {
-		variables := flattenDashboardVariable(&dashboard.Variables)
+		variables := flattenDashboardVariable(&dashboard.Variables, d)
 		if err := d.Set("variable", variables); err != nil {
 			return err
 		}
@@ -767,7 +790,7 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 	}
 
 	if dashboard.Variables != nil && len(dashboard.Variables) > 0 {
-		variables := flattenDashboardVariable(&dashboard.Variables)
+		variables := flattenDashboardVariable(&dashboard.Variables, d)
 		if err := d.Set("variable", variables); err != nil {
 			return err
 		}
@@ -776,7 +799,7 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 	return nil
 }
 
-func flattenDashboardVariable(in *[]entities.DashboardVariable) []interface{} {
+func flattenDashboardVariable(in *[]entities.DashboardVariable, d *schema.ResourceData) []interface{} {
 	out := make([]interface{}, len(*in))
 
 	for i, v := range *in {
@@ -794,6 +817,14 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable) []interface{} {
 		m["replacement_strategy"] = strings.ToLower(string(v.ReplacementStrategy))
 		m["title"] = v.Title
 		m["type"] = strings.ToLower(string(v.Type))
+		if v.Options != nil {
+			options := flattenVariableOptions(v.Options, d, i)
+			if options != nil {
+				// set options -> ignore_time_range to the state only if they already exist in the configuration
+				// needed to make this backward compatible with configurations which do not yet have options -> ignore_time_range
+				m["options"] = options
+			}
+		}
 
 		out[i] = m
 	}
@@ -832,6 +863,31 @@ func flattenVariableNRQLQuery(in *entities.DashboardVariableNRQLQuery) []interfa
 
 	out[0] = n
 
+	return out
+}
+
+func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.ResourceData, index int) []interface{} {
+	// fetching the contents of the variable at the specified index (in the list of variables)
+	// and subsequently, finding its options field
+	variableFetched := d.Get(fmt.Sprintf("variable.%d", index)).(map[string]interface{})
+	optionsOfVariableFetched, optionsOfVariableFetchedOk := variableFetched["options"]
+	if !optionsOfVariableFetchedOk {
+		return nil
+	}
+	options := optionsOfVariableFetched.([]interface{})
+	if len(options) == 0 {
+		// if nothing exists in the options list in the state (configuration), "do nothing", to avoid drift
+		// this is required to make options -> ignore_time_range backward compatible and show no drift
+		// when customer configuration does not comprise these attributes
+		return nil
+	}
+
+	// else, only if the options list has something, get the value of ignore_time_range
+	// (set it to the value of ignore_time_range seen in the response returned by the API)
+	out := make([]interface{}, 1)
+	n := make(map[string]interface{})
+	n["ignore_time_range"] = in.IgnoreTimeRange
+	out[0] = n
 	return out
 }
 
@@ -1168,4 +1224,57 @@ func flattenDashboardWidgetUnits(in *dashboards.DashboardWidgetUnits) interface{
 	k["series_overrides"] = seriesOverrides
 	out[0] = k
 	return out
+}
+
+func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	var errorsList []string
+
+	err := validateDashboardVariableOptions(d)
+	if err != nil {
+		errorsList = append(errorsList, err.Error())
+	}
+
+	// add any other validation functions here
+
+	if len(errorsList) == 0 {
+		return nil
+	}
+
+	errorsString := "the following validation errors have been identified: \n"
+
+	for index, val := range errorsList {
+		errorsString += fmt.Sprintf("(%d): %s\n", index+1, val)
+	}
+
+	return errors.New(errorsString)
+}
+
+func validateDashboardVariableOptions(d *schema.ResourceDiff) error {
+	_, variablesListObtained := d.GetChange("variable")
+	vars := variablesListObtained.([]interface{})
+
+	for _, v := range vars {
+		variableMap := v.(map[string]interface{})
+		options, optionsOk := variableMap["options"]
+		if optionsOk {
+			optionsInterface := options.([]interface{})
+			if len(optionsInterface) > 1 {
+				return errors.New("only one set of `options` may be specified per variable")
+			}
+			for _, o := range optionsInterface {
+				if o == nil {
+					return errors.New("`options` block(s) specified cannot be empty")
+				}
+				optionMap := o.(map[string]interface{})
+				_, ignoreTimeRangeOk := optionMap["ignore_time_range"]
+				variableType, variableTypeOk := variableMap["type"]
+				if ignoreTimeRangeOk && variableTypeOk && variableType != "nrql" {
+					return errors.New("`ignore_time_range` in `options` can only be used with the variable type `nrql`")
+				}
+
+			}
+		}
+	}
+
+	return nil
 }

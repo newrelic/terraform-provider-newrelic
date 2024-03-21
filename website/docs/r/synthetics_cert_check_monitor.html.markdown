@@ -39,9 +39,10 @@ The following are the common arguments supported for `CERTIFICATE CHECK` monitor
 * `locations_private` - (Required) The location the monitor will run from. Accepts a list of private location GUIDs. At least one of either `locations_public` or `locations_private` is required.
 * `certificate_expiration` - (Required) The desired number of remaining days until the certificate expires to trigger a monitor failure.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
-* `status` - (Required) The run state of the monitor. (i.e. `ENABLED`, `DISABLED`, `MUTED`). 
+* `status` - (Required) The run state of the monitor. (`ENABLED` or `DISABLED`).
 
--> **NOTE:** The `MUTED` status is now **deprecated**, and support for this value will soon be removed from the Terraform Provider in an upcoming release. It is highly recommended for users to refrain from using the status `MUTED` and shift to alternatives at the earliest. Please check out [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide) for more details about the EOL of `MUTED` status and alternatives to move to.
+-> **WARNING:** As of February 29, 2024, Synthetic Monitors no longer support the `MUTED` status. Version **3.33.0** of the New Relic Terraform Provider is released to coincide with the `MUTED` status end-of-life. Consequently, the only valid values for `status` for all types of Synthetic Monitors are mentioned above. For additional information on alternatives to the `MUTED` status of Synthetic Monitors that can be managed via Terraform, please refer to [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide).
+
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details
 
 ### Nested `tag` blocks

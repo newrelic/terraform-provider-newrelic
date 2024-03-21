@@ -35,6 +35,7 @@ func TestNewRelicNotificationDestination_BasicAuth(t *testing.T) {
 				Config: testNewRelicNotificationDestinationConfig(testAccountID, rName, authAttr),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
 				),
 			},
 			// Update
@@ -42,6 +43,7 @@ func TestNewRelicNotificationDestination_BasicAuth(t *testing.T) {
 				Config: testNewRelicNotificationDestinationConfig(testAccountID, fmt.Sprintf("%s-updated", rName), authAttr),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
 				),
 			},
 			// Import

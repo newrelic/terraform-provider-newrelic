@@ -227,8 +227,7 @@ func testAccCheckNewRelicMonitorDowntimeExists(resourceName string) resource.Tes
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		// discarding this sleep duration, as this seems to be breaking integration tests
-		// time.Sleep(20 * time.Second)
+		time.Sleep(20 * time.Second)
 
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {

@@ -132,6 +132,10 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return err
 	}
 
+	if err := d.Set("guid", destination.GUID); err != nil {
+		return err
+	}
+
 	auth := flattenNotificationDestinationAuth(destination.Auth, d)
 
 	var authAttr string
@@ -245,6 +249,10 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 	}
 
 	if err := d.Set("status", destination.Status); err != nil {
+		return err
+	}
+
+	if err := d.Set("guid", destination.GUID); err != nil {
 		return err
 	}
 

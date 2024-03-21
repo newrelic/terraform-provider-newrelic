@@ -113,6 +113,7 @@ func TestExpandNotificationDestination(t *testing.T) {
 
 func TestFlattenNotificationDestination(t *testing.T) {
 	r := resourceNewRelicNotificationDestination()
+	guid := notifications.EntityGUID("testdestinationentityguid")
 
 	cases := map[string]struct {
 		Data         map[string]interface{}
@@ -124,10 +125,12 @@ func TestFlattenNotificationDestination(t *testing.T) {
 			Data: map[string]interface{}{
 				"name": "testing123",
 				"type": "WEBHOOK",
+				"guid": "testdestinationentityguid",
 			},
 			Flattened: &notifications.AiNotificationsDestination{
 				Name: "testing123",
 				Type: "WEBHOOK",
+				GUID: guid,
 			},
 		},
 	}
@@ -157,6 +160,7 @@ func TestFlattenNotificationDestination(t *testing.T) {
 
 func TestFlattenNotificationDestinationDataSource(t *testing.T) {
 	r := dataSourceNewRelicNotificationDestination()
+	guid := notifications.EntityGUID("testdestinationentityguid")
 
 	cases := map[string]struct {
 		Data         map[string]interface{}
@@ -168,10 +172,12 @@ func TestFlattenNotificationDestinationDataSource(t *testing.T) {
 			Data: map[string]interface{}{
 				"name": "testing123",
 				"type": "WEBHOOK",
+				"guid": "testdestinationentityguid",
 			},
 			Flattened: &notifications.AiNotificationsDestination{
 				Name: "testing123",
 				Type: "WEBHOOK",
+				GUID: guid,
 			},
 		},
 	}
