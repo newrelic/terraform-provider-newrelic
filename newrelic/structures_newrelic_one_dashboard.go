@@ -19,11 +19,15 @@ import (
 
 // Assemble the *dashboards.DashboardInput struct.
 // Used by the newrelic_one_dashboard Create function.
-func expandDashboardInput(d *schema.ResourceData, meta interface{}) (*dashboards.DashboardInput, error) {
+func expandDashboardInput(d *schema.ResourceData, meta interface{}, dashboardNameCustom string) (*dashboards.DashboardInput, error) {
 	var err error
 
-	dash := dashboards.DashboardInput{
-		Name: d.Get("name").(string),
+	dash := dashboards.DashboardInput{}
+
+	if dashboardNameCustom != "" {
+		dash.Name = dashboardNameCustom
+	} else {
+		dash.Name = d.Get("name").(string)
 	}
 
 	dash.Pages, err = expandDashboardPageInput(d, d.Get("page").([]interface{}), meta)

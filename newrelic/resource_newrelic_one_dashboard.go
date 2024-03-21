@@ -648,7 +648,7 @@ func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceD
 	defaultInfo := map[string]interface{}{
 		"account_id": accountID,
 	}
-	dashboard, err := expandDashboardInput(d, defaultInfo)
+	dashboard, err := expandDashboardInput(d, defaultInfo, "")
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -691,7 +691,7 @@ func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceD
 			return diag.FromErr(err)
 		}
 
-		dashboard, err := expandDashboardInput(d, defaultInfo)
+		dashboard, err := expandDashboardInput(d, defaultInfo, created.EntityResult.Name)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -748,7 +748,7 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	dashboard, err := expandDashboardInput(d, defaultInfo)
+	dashboard, err := expandDashboardInput(d, defaultInfo, "")
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -783,7 +783,7 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 			return diag.FromErr(err)
 		}
 
-		dashboard, err = expandDashboardInput(d, defaultInfo)
+		dashboard, err = expandDashboardInput(d, defaultInfo, updated.EntityResult.Name)
 		if err != nil {
 			return diag.FromErr(err)
 		}
