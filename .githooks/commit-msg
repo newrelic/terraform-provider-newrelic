@@ -1,7 +1,26 @@
 #!/bin/sh
 
-echo
-echo "Checking commit message format..."
-echo
+RED="\033[0;31m"
+END_COLOR="\033[0m"
 
-make lint-commit COMMIT_MSG_FILE=$1
+commit_types="(chore|docs|feat|fix|refactor|tests?)"
+conventional_commit_regex="^${commit_types}(\([a-z \-]+\))?!?: .+$"
+
+commit_message=$(cat "$1")
+
+if [[ "$commit_message" =~ $conventional_commit_regex ]]; then
+   echo "Commit message meets Conventional Commit standards..."
+   exit 0
+fi
+    echo
+    echo "${RED}Commit lint failed. Please update your commit message format. ${END_COLOR}"
+    echo "Example commit messages:"
+    echo "  feat(scope): add your feature description here"
+    echo "  fix(scope): add your fix description here"
+    echo "  chore(scope): add your chore description here"
+    echo "  docs(scope): add your docs description here"
+    echo "  refactor(scope): add your refactor description here"
+    echo "  tests(scope): add your tests description here"
+    echo
+
+exit 1
