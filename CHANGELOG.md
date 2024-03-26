@@ -1,3 +1,15 @@
+<a name="v3.34.0"></a>
+## [v3.34.0] - 2024-03-26
+### Bug Fixes
+- **browserapplication:** fixes to [#2577](https://github.com/newrelic/terraform-provider-newrelic/issues/2577), export application_id ([#2617](https://github.com/newrelic/terraform-provider-newrelic/issues/2617))
+- **deps:** remove go-gitlint ([#2614](https://github.com/newrelic/terraform-provider-newrelic/issues/2614))
+
+### Documentation Updates
+- **synthetics:** update and clean cert check, broken links, step monitor(s) docs ([#2618](https://github.com/newrelic/terraform-provider-newrelic/issues/2618))
+
+### Features
+- **synthetics:** add next gen runtime support to step, cert check, broken links monitors ([#2602](https://github.com/newrelic/terraform-provider-newrelic/issues/2602))
+
 <a name="v3.33.0"></a>
 ## [v3.33.0] - 2024-03-21
 ### Bug Fixes
@@ -2055,7 +2067,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.33.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.34.0...HEAD
+[v3.34.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.33.0...v3.34.0
 [v3.33.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.32.0...v3.33.0
 [v3.32.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.31.0...v3.32.0
 [v3.31.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.30.0...v3.31.0
