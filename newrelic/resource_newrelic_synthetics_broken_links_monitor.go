@@ -24,6 +24,7 @@ func resourceNewRelicSyntheticsBrokenLinksMonitor() *schema.Resource {
 			syntheticsBrokenLinksMonitorSchema(),
 			syntheticsMonitorCommonSchema(),
 			syntheticsMonitorLocationsAsStringsSchema(),
+			syntheticsMonitorRuntimeOptions(),
 		),
 	}
 }
@@ -43,7 +44,10 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorCreate(ctx context.Context, d *
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	monitorInput := buildSyntheticsBrokenLinksMonitorCreateInput(d)
+	monitorInput, monitorInputErr := buildSyntheticsBrokenLinksMonitorCreateInput(d)
+	if monitorInputErr != nil {
+		return diag.FromErr(monitorInputErr)
+	}
 	resp, err := client.Synthetics.SyntheticsCreateBrokenLinksMonitorWithContext(ctx, accountID, *monitorInput)
 	if err != nil {
 		return diag.FromErr(err)
@@ -66,6 +70,17 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorCreate(ctx context.Context, d *
 		"status": string(resp.Monitor.Status),
 		"uri":    resp.Monitor.Uri,
 	})
+
+	respRuntimeType := resp.Monitor.Runtime.RuntimeType
+	respRuntimeTypeVersion := resp.Monitor.Runtime.RuntimeTypeVersion
+
+	if respRuntimeType != "" {
+		_ = d.Set("runtime_type", respRuntimeType)
+	}
+
+	if respRuntimeTypeVersion != "" {
+		_ = d.Set("runtime_type_version", respRuntimeTypeVersion)
+	}
 
 	return diag.FromErr(err)
 }
@@ -104,6 +119,12 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorRead(ctx context.Context, d *sc
 			"status": string(entity.MonitorSummary.Status),
 			"uri":    entity.MonitoredURL,
 		})
+
+		runtimeType, runtimeTypeVersion := getRuntimeValuesFromEntityTags(entity.GetTags())
+		if runtimeType != "" && runtimeTypeVersion != "" {
+			_ = d.Set("runtime_type", runtimeType)
+			_ = d.Set("runtime_type_version", runtimeTypeVersion)
+		}
 	}
 
 	return diag.FromErr(err)
@@ -114,7 +135,10 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorUpdate(ctx context.Context, d *
 	client := providerConfig.NewClient
 	guid := synthetics.EntityGUID(d.Id())
 
-	monitorInput := buildSyntheticsBrokenLinksMonitorUpdateInput(d)
+	monitorInput, monitorInputErr := buildSyntheticsBrokenLinksMonitorUpdateInput(d)
+	if monitorInputErr != nil {
+		return diag.FromErr(monitorInputErr)
+	}
 	resp, err := client.Synthetics.SyntheticsUpdateBrokenLinksMonitorWithContext(ctx, guid, *monitorInput)
 	if err != nil {
 		return diag.FromErr(err)
@@ -134,6 +158,17 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorUpdate(ctx context.Context, d *
 	})
 
 	_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
+
+	respRuntimeType := resp.Monitor.Runtime.RuntimeType
+	respRuntimeTypeVersion := resp.Monitor.Runtime.RuntimeTypeVersion
+
+	if respRuntimeType != "" {
+		_ = d.Set("runtime_type", respRuntimeType)
+	}
+
+	if respRuntimeTypeVersion != "" {
+		_ = d.Set("runtime_type_version", respRuntimeTypeVersion)
+	}
 
 	return diag.FromErr(err)
 }

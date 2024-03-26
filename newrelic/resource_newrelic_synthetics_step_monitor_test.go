@@ -25,14 +25,24 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccNewRelicSyntheticsStepMonitorConfig(rName, ""),
+				Config: testAccNewRelicSyntheticsStepMonitorConfig(
+					rName,
+					"",
+					"",
+					"",
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
 				),
 			},
 			// Update
 			{
-				Config: testAccNewRelicSyntheticsStepMonitorConfig(fmt.Sprintf("%s-updated", rName), updateStep),
+				Config: testAccNewRelicSyntheticsStepMonitorConfig(
+					fmt.Sprintf("%s-updated", rName),
+					updateStep,
+					"CHROME_BROWSER",
+					"100",
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
 				),
@@ -52,7 +62,12 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 	})
 }
 
-func testAccNewRelicSyntheticsStepMonitorConfig(name string, step string) string {
+func testAccNewRelicSyntheticsStepMonitorConfig(
+	name string,
+	step string,
+	runtimeType string,
+	runtimeTypeVersion string,
+) string {
 	return fmt.Sprintf(`
 resource "newrelic_synthetics_step_monitor" "foo" {
 	name                                    = "%[1]s"
@@ -60,7 +75,8 @@ resource "newrelic_synthetics_step_monitor" "foo" {
 	status                                  = "ENABLED"
 	locations_public                        = ["US_WEST_2"]
 	enable_screenshot_on_failure_and_script = true
-
+	%[3]s
+	%[4]s
 	steps {
 		ordinal = 0
 		type    = "NAVIGATE"
@@ -69,5 +85,10 @@ resource "newrelic_synthetics_step_monitor" "foo" {
 
 	%[2]s
 }
-`, name, step)
+`,
+		name,
+		step,
+		testConfigurationStringBuilder("runtime_type", runtimeType),
+		testConfigurationStringBuilder("runtime_type_version", runtimeTypeVersion),
+	)
 }

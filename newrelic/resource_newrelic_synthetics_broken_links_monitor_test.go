@@ -23,14 +23,22 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccNewRelicSyntheticsBrokenLinksMonitorConfig(rName),
+				Config: testAccNewRelicSyntheticsBrokenLinksMonitorConfig(
+					rName,
+					"",
+					"",
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
 				),
 			},
 			// Update
 			{
-				Config: testAccNewRelicSyntheticsBrokenLinksMonitorConfig(fmt.Sprintf("%s-updated", rName)),
+				Config: testAccNewRelicSyntheticsBrokenLinksMonitorConfig(
+					fmt.Sprintf("%s-updated", rName),
+					"NODE_API",
+					"16.10",
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
 				),
@@ -49,20 +57,29 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 	})
 }
 
-func testAccNewRelicSyntheticsBrokenLinksMonitorConfig(name string) string {
+func testAccNewRelicSyntheticsBrokenLinksMonitorConfig(
+	name string,
+	runtimeType string,
+	runtimeTypeVersion string,
+) string {
 	return fmt.Sprintf(`
-resource "newrelic_synthetics_broken_links_monitor" "foo" {
-  name	=	"%[1]s"
-  period	=	"EVERY_HOUR"
-  status	=	"ENABLED"
-  locations_public	=	["US_WEST_2"]
-  uri = "https://www.google.com"
-
-  tag {
-    key	= "tf-test"
-    values	= ["tf-acc-test"]
-  }
-}`, name)
+		resource "newrelic_synthetics_broken_links_monitor" "foo" {
+		  name             = "%[1]s"
+		  period           = "EVERY_HOUR"
+		  status           = "ENABLED"
+		  locations_public = ["AP_SOUTH_1"]
+		  uri              = "https://www.google.com"
+		  tag {
+			key    = "tf-test"
+			values = ["tf-acc-test"]
+		  }
+		  %[2]s
+		  %[3]s
+}`,
+		name,
+		testConfigurationStringBuilder("runtime_type", runtimeType),
+		testConfigurationStringBuilder("runtime_type_version", runtimeTypeVersion),
+	)
 }
 
 func testAccCheckNewRelicSyntheticsMonitorEntityExists(n string) resource.TestCheckFunc {
@@ -87,6 +104,21 @@ func testAccCheckNewRelicSyntheticsMonitorEntityExists(n string) resource.TestCh
 		if string((*result).GetGUID()) != rs.Primary.ID {
 			return fmt.Errorf("the monitor is not found %v - %v", (*result).GetGUID(), rs.Primary.ID)
 		}
+
+		if rs.Primary.Attributes["runtime_type"] != "" && rs.Primary.Attributes["runtime_type_version"] != "" {
+			runtimeTagsExist := false
+			tags := (*result).GetTags()
+			for _, t := range tags {
+				if t.Key == "runtimeType" || t.Key == "runtimeTypeVersion" {
+					runtimeTagsExist = true
+				}
+			}
+
+			if runtimeTagsExist == false {
+				return fmt.Errorf("runtimeType and runtimeTypeVersion not found in the entity fetched")
+			}
+		}
+
 		return nil
 	}
 }

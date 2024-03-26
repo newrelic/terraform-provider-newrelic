@@ -74,6 +74,21 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 	}
 }
 
+func syntheticsMonitorRuntimeOptions() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"runtime_type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The runtime type that the monitor will run.",
+		},
+		"runtime_type_version": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The specific semver version of the runtime type.",
+		},
+	}
+}
+
 // NOTE: This can be a shared schema partial for other synthetics monitor resources
 func syntheticsMonitorLocationsAsStringsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -412,6 +427,31 @@ func getPublicLocationsFromEntityTags(tags []entities.EntityTag) []string {
 	}
 
 	return out
+}
+
+func getRuntimeValuesFromEntityTags(tags []entities.EntityTag) (runtimeType string, runtimeTypeVersion string) {
+	runtimeType = ""
+	runtimeTypeVersion = ""
+
+	for _, t := range tags {
+		if t.Key == "legacyRuntime" {
+			for _, v := range t.Values {
+				if v == "true" {
+					return "", ""
+				}
+			}
+		}
+
+		if t.Key == "runtimeType" {
+			runtimeType = t.Values[0]
+		}
+
+		if t.Key == "runtimeTypeVersion" {
+			runtimeTypeVersion = t.Values[0]
+		}
+	}
+
+	return runtimeType, runtimeTypeVersion
 }
 
 func getMonitorID(monitorGUID string) string {

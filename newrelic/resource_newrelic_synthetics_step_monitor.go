@@ -91,6 +91,16 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"runtime_type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The runtime type that the monitor will run.",
+		},
+		"runtime_type_version": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The specific semver version of the runtime type.",
+		},
 	}
 }
 
@@ -99,7 +109,10 @@ func resourceNewRelicSyntheticsStepMonitorCreate(ctx context.Context, d *schema.
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	monitorInput := buildSyntheticsStepMonitorCreateInput(d)
+	monitorInput, monitorInputErr := buildSyntheticsStepMonitorCreateInput(d)
+	if monitorInputErr != nil {
+		return diag.FromErr(monitorInputErr)
+	}
 	resp, err := client.Synthetics.SyntheticsCreateStepMonitorWithContext(ctx, accountID, *monitorInput)
 	if err != nil {
 		return diag.FromErr(err)
@@ -122,6 +135,17 @@ func resourceNewRelicSyntheticsStepMonitorCreate(ctx context.Context, d *schema.
 		"period": string(resp.Monitor.Period),
 		"status": string(resp.Monitor.Status),
 	})
+
+	respRuntimeType := resp.Monitor.Runtime.RuntimeType
+	respRuntimeTypeVersion := resp.Monitor.Runtime.RuntimeTypeVersion
+
+	if respRuntimeType != "" {
+		_ = d.Set("runtime_type", respRuntimeType)
+	}
+
+	if respRuntimeTypeVersion != "" {
+		_ = d.Set("runtime_type_version", respRuntimeTypeVersion)
+	}
 
 	return diag.FromErr(err)
 }
@@ -166,6 +190,13 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 			"period": string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
 			"status": string(entity.MonitorSummary.Status),
 		})
+
+		runtimeType, runtimeTypeVersion := getRuntimeValuesFromEntityTags(entity.GetTags())
+		if runtimeType != "" && runtimeTypeVersion != "" {
+			_ = d.Set("runtime_type", runtimeType)
+			_ = d.Set("runtime_type_version", runtimeTypeVersion)
+		}
+
 	}
 
 	return diag.FromErr(err)
@@ -175,7 +206,10 @@ func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	monitorInput := buildSyntheticsStepMonitorUpdateInput(d)
+	monitorInput, monitorInputErr := buildSyntheticsStepMonitorUpdateInput(d)
+	if monitorInputErr != nil {
+		return diag.FromErr(monitorInputErr)
+	}
 	resp, err := client.Synthetics.SyntheticsUpdateStepMonitorWithContext(ctx, synthetics.EntityGUID(d.Id()), *monitorInput)
 	if err != nil {
 		return diag.FromErr(err)
@@ -196,6 +230,17 @@ func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.
 		"period": string(resp.Monitor.Period),
 		"status": string(resp.Monitor.Status),
 	})
+
+	respRuntimeType := resp.Monitor.Runtime.RuntimeType
+	respRuntimeTypeVersion := resp.Monitor.Runtime.RuntimeTypeVersion
+
+	if respRuntimeType != "" {
+		_ = d.Set("runtime_type", respRuntimeType)
+	}
+
+	if respRuntimeTypeVersion != "" {
+		_ = d.Set("runtime_type_version", respRuntimeTypeVersion)
+	}
 
 	return diag.FromErr(err)
 }
