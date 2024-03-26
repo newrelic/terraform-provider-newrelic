@@ -13,12 +13,14 @@ Use this resource to create, update, and delete a Synthetics Step monitor in New
 ## Example Usage
 
 ```hcl
-resource "newrelic_synthetics_step_monitor" "monitor" {
-  name                                    = "step_monitor"
+resource "newrelic_synthetics_step_monitor" "foo" {
+  name                                    = "Sample Step Monitor"
   enable_screenshot_on_failure_and_script = true
   locations_public                        = ["US_EAST_1", "US_EAST_2"]
   period                                  = "EVERY_6_HOURS"
   status                                  = "ENABLED"
+  runtime_type                            = "CHROME_BROWSER"
+  runtime_type_version                    = "100"
   steps {
     ordinal = 0
     type    = "NAVIGATE"
@@ -38,13 +40,18 @@ The following are the common arguments supported for `STEP` monitor:
 
 * `account_id`- (Optional) The account in which the Synthetics monitor will be created.
 * `name` - (Required) The name for the monitor.
-* `uri` - (Required) The uri the monitor runs against.
 * `locations_public` - (Required) The location the monitor will run from. Valid public locations are https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/. You don't need the `AWS_` prefix as the provider uses NerdGraph. At least one of either `locations_public` or `location_private` is required.
 * `location_private` - (Required) The location the monitor will run from. At least one of `locations_public` or `location_private` is required. See [Nested locations_private blocks](#nested-locations-private-blocks) below for details.
 * `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
 * `status` - (Required) The run state of the monitor. (`ENABLED` or `DISABLED`).
 
 -> **WARNING:** As of February 29, 2024, Synthetic Monitors no longer support the `MUTED` status. Version **3.33.0** of the New Relic Terraform Provider is released to coincide with the `MUTED` status end-of-life. Consequently, the only valid values for `status` for all types of Synthetic Monitors are mentioned above. For additional information on alternatives to the `MUTED` status of Synthetic Monitors that can be managed via Terraform, please refer to [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide).
+
+* `runtime_type` - (Optional) The runtime that the monitor will use to run jobs.
+* `runtime_type_version` - (Optional) The specific version of the runtime type selected.
+
+-> **NOTE:** Currently, the values of `runtime_type` and `runtime_type_version` supported by this resource are `CHROME_BROWSER` and `100` respectively. In order to run the monitor in the new runtime, both `runtime_type` and `runtime_type_version` need to be specified; however, specifying neither of these attributes would set this monitor to use the legacy runtime. It may also be noted that the runtime opted for would only be effective with private locations. For public locations, all traffic has been shifted to the new runtime, irrespective of the selection made.
+
 * `steps` - (Required) The steps that make up the script the monitor will run. See [Nested steps blocks](#nested-steps-blocks) below for details.
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
 
@@ -79,21 +86,20 @@ The below example shows how you can define a private location and attach it to a
 -> **NOTE:** It can take up to 10 minutes for a private location to become available.
 
 ```hcl
-resource "newrelic_synthetics_private_location" "location" {
-  description               = "Test Description"
-  name                      = "private-location"
+resource "newrelic_synthetics_private_location" "foo" {
+  name                      = "Sample Private Location"
+  description               = "Sample Private Location Description"
   verified_script_execution = true
 }
 
-resource "newrelic_synthetics_step_monitor" "bar" {
-  name = "step_monitor"
-  uri  = "https://www.one.example.com"
-  location_private {
-    guid         = newrelic_synthetics_private_location.location.id
-    vse_password = "secret"
-  }
+resource "newrelic_synthetics_step_monitor" "foo" {
+  name   = "Sample Step Monitor"
   period = "EVERY_6_HOURS"
   status = "ENABLED"
+  location_private {
+    guid         = newrelic_synthetics_private_location.foo.id
+    vse_password = "secret"
+  }
   steps {
     ordinal = 0
     type    = "NAVIGATE"
@@ -114,7 +120,7 @@ The following attributes are exported:
 
 ## Import
 
-Synthetics step monitor scripts can be imported using the `guid`, e.g.
+A step monitor can be imported using its GUID, using the following command.
 
 ```bash
 $ terraform import newrelic_synthetics_step_monitor.monitor <guid>

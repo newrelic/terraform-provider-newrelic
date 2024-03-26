@@ -13,13 +13,15 @@ Use this resource to create, update, and delete a Synthetics Certificate Check m
 ## Example Usage
 
 ```hcl
-resource "newrelic_synthetics_cert_check_monitor" "cert-check-monitor" {
-  name                   = "cert-check-monitor"
+resource "newrelic_synthetics_cert_check_monitor" "foo" {
+  name                   = "Sample Cert Check Monitor"
   domain                 = "www.example.com"
   locations_public       = ["AP_SOUTH_1"]
   certificate_expiration = "10"
   period                 = "EVERY_6_HOURS"
   status                 = "ENABLED"
+  runtime_type           = "NODE_API"
+  runtime_type_version   = "16.10"
   tag {
     key    = "some_key"
     values = ["some_value"]
@@ -30,7 +32,7 @@ See additional [examples](#additional-examples).
 
 ## Argument Reference
 
-The following are the common arguments supported for `CERTIFICATE CHECK` monitor:
+The following are the arguments supported by this resource.
 
 * `account_id` - (Optional) The account in which the Synthetics monitor will be created.
 * `name` - (Required) The name for the monitor.
@@ -42,6 +44,11 @@ The following are the common arguments supported for `CERTIFICATE CHECK` monitor
 * `status` - (Required) The run state of the monitor. (`ENABLED` or `DISABLED`).
 
 -> **WARNING:** As of February 29, 2024, Synthetic Monitors no longer support the `MUTED` status. Version **3.33.0** of the New Relic Terraform Provider is released to coincide with the `MUTED` status end-of-life. Consequently, the only valid values for `status` for all types of Synthetic Monitors are mentioned above. For additional information on alternatives to the `MUTED` status of Synthetic Monitors that can be managed via Terraform, please refer to [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide).
+
+* `runtime_type` - (Optional) The runtime that the monitor will use to run jobs.
+* `runtime_type_version` - (Optional) The specific version of the runtime type selected.
+
+-> **NOTE:** Currently, the values of `runtime_type` and `runtime_type_version` supported by this resource are `NODE_API` and `16.10` respectively. In order to run the monitor in the new runtime, both `runtime_type` and `runtime_type_version` need to be specified; however, specifying neither of these attributes would set this monitor to use the legacy runtime. It may also be noted that the runtime opted for would only be effective with private locations. For public locations, all traffic has been shifted to the new runtime, irrespective of the selection made.
 
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details
 
@@ -61,18 +68,19 @@ The below example shows how you can define a private location and attach it to a
 -> **NOTE:** It can take up to 10 minutes for a private location to become available.
 
 ```hcl
-resource "newrelic_synthetics_private_location" "location" {
-  description               = "Test Description"
-  name                      = "private_location"
+resource "newrelic_synthetics_private_location" "foo" {
+  name                      = "Sample Private Location"
+  description               = "Sample Private Location Description"
   verified_script_execution = false
 }
 
-resource "newrelic_synthetics_cert_check_monitor" "monitor" {
-  name              = "cert_check_monitor"
-  domain            = "https://www.one.example.com"
-  locations_private = [newrelic_synthetics_private_location.location.id]
-  period            = "EVERY_6_HOURS"
-  status            = "ENABLED"
+resource "newrelic_synthetics_cert_check_monitor" "foo" {
+  name                   = "Sample Cert Check Monitor"
+  domain                 = "www.one.example.com"
+  locations_private      = [newrelic_synthetics_private_location.foo.id]
+  certificate_expiration = "10"
+  period                 = "EVERY_6_HOURS"
+  status                 = "ENABLED"
   tag {
     key    = "some_key"
     values = ["some_value"]
@@ -89,7 +97,7 @@ The following attributes are exported:
 
 ## Import
 
-Synthetics certificate check monitor scripts can be imported using the `guid`, e.g.
+A cert check monitor can be imported using its GUID, using the following command.
 
 ```bash
 $ terraform import newrelic_synthetics_cert_check_monitor.monitor <guid>
