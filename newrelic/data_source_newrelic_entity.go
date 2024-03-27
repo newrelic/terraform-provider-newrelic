@@ -162,9 +162,9 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 					"used elsewhere, since the value of all exported attributes would be null. Please use this attribute at your own risk.\n",
 			})
 			return diags
-		} else {
-			return diag.FromErr(fmt.Errorf("no entities found for the provided search parameters, please ensure your schema attributes are valid"))
 		}
+		return diag.FromErr(fmt.Errorf("no entities found for the provided search parameters, please ensure your schema attributes are valid"))
+
 	}
 
 	return diag.FromErr(flattenEntityData(entity, d))
