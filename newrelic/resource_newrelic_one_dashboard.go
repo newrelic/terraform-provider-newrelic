@@ -194,85 +194,85 @@ func dashboardPageSchemaElem() *schema.Resource {
 
 			// All the widget types below
 			"widget_area": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "An area widget.",
 				Elem:        dashboardWidgetAreaSchemaElem(),
 			},
 			"widget_bar": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A bar widget.",
 				Elem:        dashboardWidgetBarSchemaElem(),
 			},
 			"widget_billboard": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A billboard widget.",
 				Elem:        dashboardWidgetBillboardSchemaElem(),
 			},
 			"widget_bullet": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A bullet widget.",
 				Elem:        dashboardWidgetBulletSchemaElem(),
 			},
 			"widget_funnel": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A funnel widget.",
 				Elem:        dashboardWidgetFunnelSchemaElem(),
 			},
 			"widget_heatmap": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A heatmap widget.",
 				Elem:        dashboardWidgetHeatmapSchemaElem(),
 			},
 			"widget_histogram": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A histogram widget.",
 				Elem:        dashboardWidgetHistogramSchemaElem(),
 			},
 			"widget_line": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A line widget.",
 				Elem:        dashboardWidgetLineSchemaElem(),
 			},
 			"widget_markdown": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A markdown widget.",
 				Elem:        dashboardWidgetMarkdownSchemaElem(),
 			},
 			"widget_pie": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A pie widget.",
 				Elem:        dashboardWidgetPieSchemaElem(),
 			},
 			"widget_log_table": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A log table widget.",
 				Elem:        dashboardWidgetLogTableSchemaElem(),
 			},
 			"widget_table": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A table widget.",
 				Elem:        dashboardWidgetTableSchemaElem(),
 			},
 			"widget_json": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A JSON widget.",
 				Elem:        dashboardWidgetJSONSchemaElem(),
 			},
 			"widget_stacked_bar": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A stacked bar widget.",
 				Elem:        dashboardWidgetStackedBarSchemaElem(),
@@ -321,10 +321,12 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 		"ignore_time_range": {
 			Type:     schema.TypeBool,
 			Optional: true,
+			Default:  false,
 		},
 		"facet_show_other_series": {
 			Type:     schema.TypeBool,
 			Optional: true,
+			Default:  false,
 		},
 		"legend_enabled": {
 			Type:     schema.TypeBool,
@@ -334,10 +336,12 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 		"y_axis_left_min": {
 			Type:     schema.TypeFloat,
 			Optional: true,
+			Default:  0,
 		},
 		"y_axis_left_max": {
 			Type:     schema.TypeFloat,
 			Optional: true,
+			Default:  0,
 		},
 		"null_values": {
 			Type:     schema.TypeList,
