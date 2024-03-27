@@ -45,6 +45,12 @@ func dataSourceNewRelicEntity() *schema.Resource {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
 			},
+			"ignore_not_found": {
+				Type:        schema.TypeBool,
+				Default:     false,
+				Optional:    true,
+				Description: "A boolean attribute which when set to true, does not throw an error if the queried entity is not found.",
+			},
 			"tag": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -144,7 +150,21 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if entity == nil {
-		return diag.FromErr(fmt.Errorf("no entities found for the provided search parameters, please ensure your schema attributes are valid"))
+		if d.Get("ignore_not_found").(bool) {
+			log.Printf("[INFO] Entity not found, ignoring error")
+			d.SetId("")
+			var diags diag.Diagnostics
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary: "no entities found for the provided search parameters, please ensure your schema attributes are valid.\n" +
+					"This message is being displayed as a warning and not as an error as `ignore_not_found` has been set to true.\n" +
+					"Ignoring the 'not found' error can lead to downstream errors if the values exported by this data source are\n" +
+					"used elsewhere, since the value of all exported attributes would be null. Please use this attribute at your own risk.\n",
+			})
+			return diags
+		} else {
+			return diag.FromErr(fmt.Errorf("no entities found for the provided search parameters, please ensure your schema attributes are valid"))
+		}
 	}
 
 	return diag.FromErr(flattenEntityData(entity, d))
