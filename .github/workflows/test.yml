@@ -20,7 +20,7 @@ jobs:
         shell: bash
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Full git history
         run: |
@@ -59,7 +59,7 @@ jobs:
         shell: bash
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache deps
         uses: actions/cache@v3
@@ -99,7 +99,7 @@ jobs:
         shell: bash
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache deps
         uses: actions/cache@v3
