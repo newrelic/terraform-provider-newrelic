@@ -158,8 +158,8 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 				Severity: diag.Warning,
 				Summary: "no entities found for the provided search parameters, please ensure your schema attributes are valid.\n" +
 					"This message is being displayed as a warning and not as an error as `ignore_not_found` has been set to true.\n" +
-					"Ignoring the 'not found' error can lead to downstream errors if the values exported by this data source are\n" +
-					"used elsewhere, since the value of all exported attributes would be null. Please use this attribute at your own risk.\n",
+					"Ignoring the 'not found' error can lead to downstream errors if the values of attributes exported by this\n" +
+					"data source are used elsewhere, since all of these values would be null. Please use this attribute at your own risk.\n",
 			})
 			return diags
 		}

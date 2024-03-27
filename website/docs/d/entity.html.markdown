@@ -147,6 +147,9 @@ The following arguments are supported:
 * `type` - (Optional) The entity's type. Valid values are APPLICATION, DASHBOARD, HOST, MONITOR, WORKLOAD, AWSLAMBDAFUNCTION, SERVICE_LEVEL, and KEY_TRANSACTION. Note: Other entity types may also be queryable as the list of entity types may fluctuate over time.
 * `domain` - (Optional) The entity's domain. Valid values are APM, BROWSER, INFRA, MOBILE, SYNTH, and EXT. If not specified, all domains are searched.
 * `tag` - (Optional) A tag applied to the entity. See [Nested tag blocks](#nested-`tag`-blocks) below for details.
+* `ignore_not_found`- (Optional) A boolean argument that, when set to true, prevents an error from being thrown when the queried entity is not found. Instead, a warning is displayed. Defaults to `false`.
+
+-> **WARNING:** Setting the `ignore_not_found` argument to `true` will display an 'entity not found' warning instead of throwing an error. This can lead to downstream errors if the values of attributes exported by this data source are used elsewhere, as all of these values would be null. Please use this argument at your own risk. 
 
 ### Nested `tag` blocks
 
