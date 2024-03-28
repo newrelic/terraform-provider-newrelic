@@ -1,3 +1,8 @@
+<a name="v3.34.1"></a>
+## [v3.34.1] - 2024-03-28
+### Bug Fixes
+- **newrelic_entity:** add argument `ignore_not_found` to ignore "not found" errors ([#2628](https://github.com/newrelic/terraform-provider-newrelic/issues/2628))
+
 <a name="v3.34.0"></a>
 ## [v3.34.0] - 2024-03-26
 ### Bug Fixes
@@ -2067,7 +2072,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.34.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.34.1...HEAD
+[v3.34.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.34.0...v3.34.1
 [v3.34.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.33.0...v3.34.0
 [v3.33.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.32.0...v3.33.0
 [v3.32.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.31.0...v3.32.0
