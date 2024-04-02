@@ -200,6 +200,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Description:   "A condition term with priority set to warning.",
 				ConflictsWith: []string{"term"},
 			},
+			"infra_host_clean_shutdown": {
+				Type:	schema.TypeBool,
+				Optional: true,
+				Description: "Indicates whether an alert condition should ignore clean shutdowns of infrastructure hosts when considering whether to create a loss of signal violation. Only for use with conditions monitoring 'host not reporting' signals. Defaults to false.",
+			},
 			"violation_time_limit_seconds": {
 				Type:     schema.TypeInt,
 				Optional: true,

@@ -364,6 +364,7 @@ func expandExpiration(d *schema.ResourceData) (*alerts.AlertsNrqlConditionExpira
 
 	expiration.OpenViolationOnExpiration = d.Get("open_violation_on_expiration").(bool)
 	expiration.CloseViolationsOnExpiration = d.Get("close_violations_on_expiration").(bool)
+	expiration.InfraHostCleanShutdown = d.Get("infra_host_clean_shutdown").(bool)
 
 	// 0 is not a valid expiration duration so don't set it if it's nonexistent
 	if expirationDuration, ok := d.GetOk("expiration_duration"); ok {
@@ -579,6 +580,10 @@ func flattenExpiration(d *schema.ResourceData, expiration *alerts.AlertsNrqlCond
 
 	if err := d.Set("expiration_duration", expiration.ExpirationDuration); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `expiration_duration`: %v", err)
+	}
+
+	if err := d.Set("infra_host_clean_shutdown", expiration.InfraHostCleanShutdown); err != nil {
+		return fmt.Errorf("[DEBUG] Error setting nrql alert conditions `infra_host_clean_shutdown`: %v", err)
 	}
 
 	return nil
