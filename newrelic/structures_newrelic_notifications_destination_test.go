@@ -14,13 +14,25 @@ import (
 
 func TestExpandNotificationDestination(t *testing.T) {
 	user := "test-user"
-	auth := ai.AiNotificationsAuth{
+	basicAuthType := ai.AiNotificationsAuth{
 		AuthType: "BASIC",
 		User:     user,
 	}
 	basicAuth := map[string]interface{}{
 		"user":     user,
 		"password": "123456",
+	}
+	customHeadersAuthType := ai.AiNotificationsAuth{
+		AuthType: "CUSTOM_HEADERS",
+		CustomHeaders: []ai.AiNotificationsCustomHeaders{
+			{
+				Key: "testKey1",
+			},
+		},
+	}
+	customHeadersAuth := map[string]interface{}{
+		"key":   "testKey1",
+		"value": "testValue1",
 	}
 	webhookProperty := map[string]interface{}{
 		"key":   "url",
@@ -63,7 +75,7 @@ func TestExpandNotificationDestination(t *testing.T) {
 			Expanded: &notifications.AiNotificationsDestination{
 				Name: "pd-service-test",
 				Type: notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION,
-				Auth: auth,
+				Auth: basicAuthType,
 			},
 		},
 		"valid email destination (no auth)": {
@@ -81,6 +93,40 @@ func TestExpandNotificationDestination(t *testing.T) {
 						Value: "example@email.com",
 					},
 				},
+			},
+		},
+		"valid secureUrl webhook destination": {
+			Data: map[string]interface{}{
+				"name":     "webhook-test",
+				"type":     "WEBHOOK",
+				"property": []interface{}{webhookProperty},
+			},
+			Expanded: &notifications.AiNotificationsDestination{
+				Name:       "webhook-test",
+				Type:       notifications.AiNotificationsDestinationTypeTypes.WEBHOOK,
+				Properties: []notifications.AiNotificationsProperty{},
+				SecureURL: notifications.AiNotificationsSecureURL{
+					Prefix: "https://webhook.com",
+				},
+			},
+		},
+		"valid webhook destination with custom headers auth": {
+			Data: map[string]interface{}{
+				"name":               "webhook-test",
+				"type":               "WEBHOOK",
+				"property":           []interface{}{webhookProperty},
+				"auth_custom_header": []interface{}{customHeadersAuth},
+			},
+			Expanded: &notifications.AiNotificationsDestination{
+				Name: "webhook-test",
+				Type: notifications.AiNotificationsDestinationTypeTypes.WEBHOOK,
+				Properties: []notifications.AiNotificationsProperty{
+					{
+						Key:   "email",
+						Value: "example@email.com",
+					},
+				},
+				Auth: customHeadersAuthType,
 			},
 		},
 	}
