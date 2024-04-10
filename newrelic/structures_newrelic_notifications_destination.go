@@ -142,8 +142,7 @@ func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications
 	}
 
 	if attr, ok := d.GetOk("auth_custom_header"); ok {
-		customHeadersList := attr.(*schema.Set).List()
-		destination.Auth = expandNotificationDestinationAuthCustomHeaders(customHeadersList)
+		destination.Auth = expandNotificationDestinationAuthCustomHeaders(attr.([]interface{}))
 	}
 
 	secureUrl := d.Get("secure_url")
@@ -269,7 +268,7 @@ func flattenNotificationDestinationAuth(a ai.AiNotificationsAuth, d *schema.Reso
 			"token":  d.Get("auth_token.0.token"),
 		}
 	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.CUSTOM_HEADERS):
-		customHeaders := flattenNotificationDestinationCustomHeaders(a.CustomHeaders)
+		customHeaders := flattenNotificationDestinationCustomHeaders(a.CustomHeaders, d)
 		authConfig = customHeaders
 	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.OAUTH2):
 		// This auth type is not supported
@@ -278,21 +277,22 @@ func flattenNotificationDestinationAuth(a ai.AiNotificationsAuth, d *schema.Reso
 	return authConfig
 }
 
-func flattenNotificationDestinationCustomHeaders(a []ai.AiNotificationsCustomHeaders) []map[string]interface{} {
+func flattenNotificationDestinationCustomHeaders(a []ai.AiNotificationsCustomHeaders, d *schema.ResourceData) []map[string]interface{} {
 	customHeaders := []map[string]interface{}{}
 
-	for _, customHeader := range a {
-		customHeaders = append(customHeaders, flattenNotificationDestinationCustomHeader(customHeader))
+	for i, customHeader := range a {
+		customHeaders = append(customHeaders, flattenNotificationDestinationCustomHeader(customHeader, d, i))
 	}
 
 	return customHeaders
 }
 
-func flattenNotificationDestinationCustomHeader(header ai.AiNotificationsCustomHeaders) map[string]interface{} {
+func flattenNotificationDestinationCustomHeader(header ai.AiNotificationsCustomHeaders, d *schema.ResourceData, i int) map[string]interface{} {
 	customHeaderResult := make(map[string]interface{})
 
 	customHeaderResult["key"] = header.Key
-	customHeaderResult["value"] = "value"
+	valuePath := fmt.Sprintf("auth_custom_header.%d.value", i)
+	customHeaderResult["value"] = d.Get(valuePath)
 
 	return customHeaderResult
 }
