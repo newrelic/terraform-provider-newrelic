@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -454,11 +455,17 @@ func getRuntimeValuesFromEntityTags(tags []entities.EntityTag) (runtimeType stri
 	return runtimeType, runtimeTypeVersion
 }
 
-func getMonitorID(monitorGUID string) string {
-	decodedGUID, _ := base64.RawStdEncoding.DecodeString(monitorGUID)
+func getMonitorID(monitorGUID string) (string, error) {
+	decodedGUID, err := base64.RawStdEncoding.DecodeString(monitorGUID)
+	if err != nil {
+		return "", err
+	}
 	splitGUID := strings.Split(string(decodedGUID), "|")
+	if len(splitGUID) < 4 {
+		return "", errors.New("invalid monitor ID")
+	}
 	monitorID := splitGUID[3]
-	return monitorID
+	return monitorID, nil
 }
 
 // This map facilitates safely setting the schema attributes which
