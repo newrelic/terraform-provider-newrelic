@@ -91,7 +91,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				},
 			},
 			"auth_custom_header": {
-				Type:          schema.TypeSet,
+				Type:          schema.TypeList,
 				Optional:      true,
 				ConflictsWith: []string{"auth_basic", "auth_token"},
 				Description:   "Custom header based authentication",
@@ -133,7 +133,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Description: "Destination entity GUID",
 			},
 			"secure_url": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
 				Description: "URL in secure format",

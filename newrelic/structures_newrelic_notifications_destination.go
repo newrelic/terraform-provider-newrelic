@@ -32,8 +32,8 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 	}
 
 	if attr, ok := d.GetOk("auth_custom_header"); ok {
-		customHeadersList := attr.(*schema.Set).List()
-		destination.Auth = expandNotificationDestinationAuthCustomHeaders(customHeadersList)
+		//customHeadersList := attr.(*schema.Set).List()
+		destination.Auth = expandNotificationDestinationAuthCustomHeaders(attr.([]interface{}))
 	}
 
 	properties := d.Get("property")
@@ -146,9 +146,8 @@ func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications
 		destination.Auth = expandNotificationDestinationAuthCustomHeaders(customHeadersList)
 	}
 
-	if attr, ok := d.GetOk("secure_url"); ok {
-		destination.SecureURL = expandNotificationDestinationSecureUrlUpdate(attr.([]interface{}))
-	}
+	secureUrl := d.Get("secure_url")
+	destination.SecureURL = expandNotificationDestinationSecureUrlUpdate(secureUrl.([]interface{}))
 
 	properties := d.Get("property")
 	props := properties.(*schema.Set).List()
@@ -248,7 +247,7 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return err
 	}
 
-	if err := d.Set("secure_url", flattenNotificationDestinationSecureUrl(destination.SecureURL)); err != nil {
+	if err := d.Set("secure_url", flattenNotificationDestinationSecureUrl(&destination.SecureURL, d)); err != nil {
 		return err
 	}
 
@@ -271,9 +270,7 @@ func flattenNotificationDestinationAuth(a ai.AiNotificationsAuth, d *schema.Reso
 		}
 	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.CUSTOM_HEADERS):
 		customHeaders := flattenNotificationDestinationCustomHeaders(a.CustomHeaders)
-		authConfig[0] = map[string]interface{}{
-			"custom_headers": customHeaders,
-		}
+		authConfig = customHeaders
 	case ai.AiNotificationsAuthType(notifications.AiNotificationsAuthTypeTypes.OAUTH2):
 		// This auth type is not supported
 	}
@@ -281,7 +278,7 @@ func flattenNotificationDestinationAuth(a ai.AiNotificationsAuth, d *schema.Reso
 	return authConfig
 }
 
-func flattenNotificationDestinationCustomHeaders(a []ai.AiNotificationsCustomHeaders) interface{} {
+func flattenNotificationDestinationCustomHeaders(a []ai.AiNotificationsCustomHeaders) []map[string]interface{} {
 	customHeaders := []map[string]interface{}{}
 
 	for _, customHeader := range a {
@@ -321,11 +318,16 @@ func flattenNotificationDestinationProperty(p notifications.AiNotificationsPrope
 	return propertyResult
 }
 
-func flattenNotificationDestinationSecureUrl(url notifications.AiNotificationsSecureURL) []map[string]interface{} {
+func flattenNotificationDestinationSecureUrl(url *notifications.AiNotificationsSecureURL, d *schema.ResourceData) []map[string]interface{} {
+	if url == nil || url.Prefix == "" {
+		return nil
+	}
+
 	secureUrlResult := make([]map[string]interface{}, 1)
 
 	secureUrlResult[0] = map[string]interface{}{
-		"prefix": url.Prefix,
+		"prefix":        url.Prefix,
+		"secure_suffix": d.Get("secure_url.0.secure_suffix"),
 	}
 
 	return secureUrlResult
