@@ -191,7 +191,7 @@ func TestNewRelicNotificationDestination_secureUrl(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"auth_custom_header.0.password",
+					"auth_custom_header.0.value",
 					"auth_token.0.token",
 					"auth_basic.0.password",
 					"secure_url.0.secure_suffix",
@@ -241,7 +241,7 @@ func TestNewRelicNotificationDestination_secureUrl_update(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"auth_custom_header.0.password",
+					"auth_custom_header.0.value",
 					"auth_token.0.token",
 					"auth_basic.0.password",
 					"secure_url.0.secure_suffix",
