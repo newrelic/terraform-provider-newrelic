@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
@@ -280,19 +281,29 @@ func flattenNotificationDestinationAuth(a ai.AiNotificationsAuth, d *schema.Reso
 func flattenNotificationDestinationCustomHeaders(a []ai.AiNotificationsCustomHeaders, d *schema.ResourceData) []map[string]interface{} {
 	customHeaders := []map[string]interface{}{}
 
-	for i, customHeader := range a {
-		customHeaders = append(customHeaders, flattenNotificationDestinationCustomHeader(customHeader, d, i))
+	// Sorts the headers, so the created list will be consistent
+	sort.Slice(a, func(i, j int) bool {
+		return a[i].Key < a[j].Key
+	})
+
+	for _, customHeader := range a {
+		customHeaders = append(customHeaders, flattenNotificationDestinationCustomHeader(customHeader, d, len(a)))
 	}
 
 	return customHeaders
 }
 
-func flattenNotificationDestinationCustomHeader(header ai.AiNotificationsCustomHeaders, d *schema.ResourceData, i int) map[string]interface{} {
+func flattenNotificationDestinationCustomHeader(header ai.AiNotificationsCustomHeaders, d *schema.ResourceData, len int) map[string]interface{} {
 	customHeaderResult := make(map[string]interface{})
 
 	customHeaderResult["key"] = header.Key
-	valuePath := fmt.Sprintf("auth_custom_header.%d.value", i)
-	customHeaderResult["value"] = d.Get(valuePath)
+	for i := 0; i <= len; i++ {
+		keyPath := fmt.Sprintf("auth_custom_header.%d.key", i)
+		if d.Get(keyPath) == header.Key {
+			valuePath := fmt.Sprintf("auth_custom_header.%d.value", i)
+			customHeaderResult["value"] = d.Get(valuePath)
+		}
+	}
 
 	return customHeaderResult
 }

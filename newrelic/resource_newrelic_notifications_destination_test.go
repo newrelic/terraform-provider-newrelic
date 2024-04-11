@@ -101,9 +101,8 @@ auth_custom_header {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"auth_custom_header.0.password",
-					"auth_token.0.token",
-					"auth_basic.0.password",
+					"auth_custom_header.0.value",
+					"auth_custom_header.1.value",
 				},
 			},
 		},
