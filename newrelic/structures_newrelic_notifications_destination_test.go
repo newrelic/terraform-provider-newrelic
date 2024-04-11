@@ -95,7 +95,7 @@ func TestExpandNotificationDestination(t *testing.T) {
 				},
 			},
 		},
-		"valid secureUrl webhook destination": {
+		"valid secureURL webhook destination": {
 			Data: map[string]interface{}{
 				"name":     "webhook-test",
 				"type":     "WEBHOOK",

@@ -41,34 +41,34 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 	destination.Properties = expandNotificationDestinationProperties(props)
 
 	if attr, ok := d.GetOk("secure_url"); ok {
-		destination.SecureURL = expandNotificationDestinationSecureUrlInput(attr.([]interface{}))
+		destination.SecureURL = expandNotificationDestinationSecureURLInput(attr.([]interface{}))
 	}
 
 	return &destination, nil
 }
 
-func expandNotificationDestinationSecureUrlInput(url []interface{}) *notifications.AiNotificationsSecureURLInput {
-	secureUrlInput := notifications.AiNotificationsSecureURLInput{}
+func expandNotificationDestinationSecureURLInput(url []interface{}) *notifications.AiNotificationsSecureURLInput {
+	secureURLInput := notifications.AiNotificationsSecureURLInput{}
 
 	for _, u := range url {
 		uu := u.(map[string]interface{})
-		secureUrlInput.Prefix = uu["prefix"].(string)
-		secureUrlInput.SecureSuffix = notifications.SecureValue(uu["secure_suffix"].(string))
+		secureURLInput.Prefix = uu["prefix"].(string)
+		secureURLInput.SecureSuffix = notifications.SecureValue(uu["secure_suffix"].(string))
 	}
 
-	return &secureUrlInput
+	return &secureURLInput
 }
 
-func expandNotificationDestinationSecureUrlUpdate(url []interface{}) *notifications.AiNotificationsSecureURLUpdate {
-	secureUrlInput := notifications.AiNotificationsSecureURLUpdate{}
+func expandNotificationDestinationSecureURLUpdate(url []interface{}) *notifications.AiNotificationsSecureURLUpdate {
+	secureURLUpdate := notifications.AiNotificationsSecureURLUpdate{}
 
 	for _, u := range url {
 		uu := u.(map[string]interface{})
-		secureUrlInput.Prefix = uu["prefix"].(string)
-		secureUrlInput.SecureSuffix = notifications.SecureValue(uu["secure_suffix"].(string))
+		secureURLUpdate.Prefix = uu["prefix"].(string)
+		secureURLUpdate.SecureSuffix = notifications.SecureValue(uu["secure_suffix"].(string))
 	}
 
-	return &secureUrlInput
+	return &secureURLUpdate
 }
 
 func expandNotificationDestinationAuthBasic(authRaw []interface{}) *notifications.AiNotificationsCredentialsInput {
@@ -145,8 +145,8 @@ func expandNotificationDestinationUpdate(d *schema.ResourceData) (*notifications
 		destination.Auth = expandNotificationDestinationAuthCustomHeaders(attr.([]interface{}))
 	}
 
-	secureUrl := d.Get("secure_url")
-	destination.SecureURL = expandNotificationDestinationSecureUrlUpdate(secureUrl.([]interface{}))
+	secureURL := d.Get("secure_url")
+	destination.SecureURL = expandNotificationDestinationSecureURLUpdate(secureURL.([]interface{}))
 
 	properties := d.Get("property")
 	props := properties.(*schema.Set).List()
@@ -246,7 +246,7 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return err
 	}
 
-	if err := d.Set("secure_url", flattenNotificationDestinationSecureUrl(&destination.SecureURL, d)); err != nil {
+	if err := d.Set("secure_url", flattenNotificationDestinationSecureURL(&destination.SecureURL, d)); err != nil {
 		return err
 	}
 
@@ -328,19 +328,19 @@ func flattenNotificationDestinationProperty(p notifications.AiNotificationsPrope
 	return propertyResult
 }
 
-func flattenNotificationDestinationSecureUrl(url *notifications.AiNotificationsSecureURL, d *schema.ResourceData) []map[string]interface{} {
+func flattenNotificationDestinationSecureURL(url *notifications.AiNotificationsSecureURL, d *schema.ResourceData) []map[string]interface{} {
 	if url == nil || url.Prefix == "" {
 		return nil
 	}
 
-	secureUrlResult := make([]map[string]interface{}, 1)
+	secureURLResult := make([]map[string]interface{}, 1)
 
-	secureUrlResult[0] = map[string]interface{}{
+	secureURLResult[0] = map[string]interface{}{
 		"prefix":        url.Prefix,
 		"secure_suffix": d.Get("secure_url.0.secure_suffix"),
 	}
 
-	return secureUrlResult
+	return secureURLResult
 }
 
 func flattenNotificationDestinationDataSource(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {

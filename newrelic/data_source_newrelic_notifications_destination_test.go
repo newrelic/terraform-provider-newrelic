@@ -54,7 +54,7 @@ func TestAccNewRelicNotificationDestinationDataSource_ByName(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicNotificationDestinationDataSource_WithSecureUrl(t *testing.T) {
+func TestAccNewRelicNotificationDestinationDataSource_WithSecureURL(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
@@ -64,7 +64,7 @@ func TestAccNewRelicNotificationDestinationDataSource_WithSecureUrl(t *testing.T
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureUrl(rName),
+				Config: testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureU(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicNotificationDestination("data.newrelic_notification_destination.foo"),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
@@ -113,7 +113,7 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigByName(name string) 
 `, name)
 }
 
-func testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureUrl(name string) string {
+func testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureURL(name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_notification_destination" "foo" {
 	  name   = "%s"

@@ -151,7 +151,7 @@ func TestNewRelicNotificationDestination_TokenAuth(t *testing.T) {
 	})
 }
 
-func TestNewRelicNotificationDestination_secureUrl(t *testing.T) {
+func TestNewRelicNotificationDestination_secureURL(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
@@ -201,7 +201,7 @@ func TestNewRelicNotificationDestination_secureUrl(t *testing.T) {
 	})
 }
 
-func TestNewRelicNotificationDestination_secureUrl_update(t *testing.T) {
+func TestNewRelicNotificationDestination_secureURL_update(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
