@@ -54,6 +54,27 @@ func TestAccNewRelicNotificationDestinationDataSource_ByName(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNotificationDestinationDataSource_WithSecureUrl(t *testing.T) {
+	resourceName := "newrelic_notification_destination.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureUrl(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNewRelicNotificationDestination("data.newrelic_notification_destination.foo"),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestCheckResourceAttr(resourceName, "secure_url.0.prefix", "https://webhook.site/"),
+				),
+			},
+		},
+	})
+}
+
 func testAccNewRelicNotificationsDestinationDataSourceConfigById(name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_notification_destination" "foo" {
@@ -83,6 +104,30 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigByName(name string) 
 	  property {
 		key   = "url"
 		value = "https://webhook.site/"
+	  }
+	}
+	
+	data "newrelic_notification_destination" "foo" {
+	  name = newrelic_notification_destination.foo.name
+	}
+`, name)
+}
+
+func testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureUrl(name string) string {
+	return fmt.Sprintf(`
+	resource "newrelic_notification_destination" "foo" {
+	  name   = "%s"
+	  type   = "WEBHOOK"
+	  active = true
+	
+		property {
+			key = "source"
+			value = "terraform"
+		}
+
+	  secure_url {
+		prefix = "https://webhook.site/"
+		secure_suffix = "aaaaa"
 	  }
 	}
 	

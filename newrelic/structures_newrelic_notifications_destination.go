@@ -33,7 +33,6 @@ func expandNotificationDestination(d *schema.ResourceData) (*notifications.AiNot
 	}
 
 	if attr, ok := d.GetOk("auth_custom_header"); ok {
-		//customHeadersList := attr.(*schema.Set).List()
 		destination.Auth = expandNotificationDestinationAuthCustomHeaders(attr.([]interface{}))
 	}
 

@@ -30,6 +30,10 @@ resource "newrelic_notification_channel" "foo-channel" {
     value = "{\n\t\"name\": \"foo\"\n}"
     label = "Payload Template"
   }
+
+  secure_url {
+    prefix = "https://webhook.site/"
+  }
 }
 ```
 
@@ -52,6 +56,10 @@ resource "newrelic_notification_channel" "foo-channel" {
     key   = "payload"
     value = "{\n\t\"name\": \"foo\"\n}"
     label = "Payload Template"
+  }
+  
+  secure_url {
+    prefix = "https://webhook.site/"
   }
 }
 ```
@@ -77,6 +85,7 @@ In addition to all arguments above, the following attributes are exported:
 * `active` - An indication whether the notification destination is active or not.
 * `status` - The status of the notification destination.
 * `guid` - The unique entity identifier of the destination in New Relic.
+* `secure_url` - The URL in secure format, showing only the `prefix`, as the `secure_suffix` is a secret. 
 
 
 ```
