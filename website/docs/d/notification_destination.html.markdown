@@ -30,10 +30,6 @@ resource "newrelic_notification_channel" "foo-channel" {
     value = "{\n\t\"name\": \"foo\"\n}"
     label = "Payload Template"
   }
-
-  secure_url {
-    prefix = "https://webhook.site/"
-  }
 }
 ```
 
@@ -56,10 +52,6 @@ resource "newrelic_notification_channel" "foo-channel" {
     key   = "payload"
     value = "{\n\t\"name\": \"foo\"\n}"
     label = "Payload Template"
-  }
-  
-  secure_url {
-    prefix = "https://webhook.site/"
   }
 }
 ```

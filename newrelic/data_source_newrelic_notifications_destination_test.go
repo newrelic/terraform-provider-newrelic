@@ -133,10 +133,6 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureURL(name s
 	
 	data "newrelic_notification_destination" "foo" {
 	  name = newrelic_notification_destination.foo.name
-
-      secure_url {
-		prefix = "https://webhook.site/"
-	  }
 	}
 `, name)
 }
