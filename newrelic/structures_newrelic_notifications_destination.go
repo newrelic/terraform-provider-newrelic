@@ -343,6 +343,20 @@ func flattenNotificationDestinationSecureURL(url *notifications.AiNotificationsS
 	return secureURLResult
 }
 
+func flattenNotificationDestinationSecureURLForDataSource(url *notifications.AiNotificationsSecureURL) []map[string]interface{} {
+	if url == nil || url.Prefix == "" {
+		return nil
+	}
+
+	secureURLResult := make([]map[string]interface{}, 1)
+
+	secureURLResult[0] = map[string]interface{}{
+		"prefix": url.Prefix,
+	}
+
+	return secureURLResult
+}
+
 func flattenNotificationDestinationDataSource(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
 	if destination == nil {
 		return nil
@@ -361,6 +375,10 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 	}
 
 	if err := d.Set("property", flattenNotificationDestinationProperties(destination.Properties)); err != nil {
+		return err
+	}
+
+	if err := d.Set("secure_url", flattenNotificationDestinationSecureURLForDataSource(&destination.SecureURL)); err != nil {
 		return err
 	}
 

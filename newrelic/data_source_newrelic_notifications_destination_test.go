@@ -64,7 +64,7 @@ func TestAccNewRelicNotificationDestinationDataSource_WithSecureURL(t *testing.T
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureU(rName),
+				Config: testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureURL(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicNotificationDestination("data.newrelic_notification_destination.foo"),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
@@ -133,6 +133,10 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureURL(name s
 	
 	data "newrelic_notification_destination" "foo" {
 	  name = newrelic_notification_destination.foo.name
+
+      secure_url {
+		prefix = "https://webhook.site/"
+	  }
 	}
 `, name)
 }
