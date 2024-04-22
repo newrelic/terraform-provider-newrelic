@@ -2,14 +2,12 @@ module github.com/newrelic/terraform-provider-newrelic/v2
 
 go 1.19
 
-replace github.com/newrelic/newrelic-client-go/v2 => github.com/nzur-newrelic/newrelic-client-go/v2 v2.0.0-20240411094816-124acb2eb803
-
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.30.0
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go/v2 v2.28.1-0.20240408154636-0b73c2ff8b0a
+	github.com/newrelic/newrelic-client-go/v2 v2.31.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 )
