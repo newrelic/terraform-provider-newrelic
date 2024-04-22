@@ -19,7 +19,6 @@ func TestNewRelicNotificationDestination_BasicAuth(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
-
 	authAttr := `auth_basic {
 		user = "username"
 		password = "abc123"
@@ -32,7 +31,7 @@ func TestNewRelicNotificationDestination_BasicAuth(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testNewRelicNotificationDestinationConfig(testAccountID, rName, authAttr),
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, rName, authAttr, ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "guid"),
@@ -40,7 +39,7 @@ func TestNewRelicNotificationDestination_BasicAuth(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testNewRelicNotificationDestinationConfig(testAccountID, fmt.Sprintf("%s-updated", rName), authAttr),
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, fmt.Sprintf("%s-updated", rName), authAttr, ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "guid"),
@@ -60,11 +59,60 @@ func TestNewRelicNotificationDestination_BasicAuth(t *testing.T) {
 	})
 }
 
+func TestNewRelicNotificationDestination_CustomHeadersAuth(t *testing.T) {
+	resourceName := "newrelic_notification_destination.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	authAttr := `
+auth_custom_header {
+		key = "testKey1"
+		value = "testValue1"
+	}
+auth_custom_header {
+		key = "testKey2"
+		value = "testValue2"
+	}
+`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationDestinationDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, rName, authAttr, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+				),
+			},
+			// Update
+			{
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, fmt.Sprintf("%s-updated", rName), authAttr, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+				),
+			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"auth_custom_header.0.value",
+					"auth_custom_header.1.value",
+				},
+			},
+		},
+	})
+}
+
 func TestNewRelicNotificationDestination_TokenAuth(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
-
 	authAttr := `auth_token {
 		prefix = "testprefix"
 		token = "abc123"
@@ -77,14 +125,14 @@ func TestNewRelicNotificationDestination_TokenAuth(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testNewRelicNotificationDestinationConfig(testAccountID, rName, authAttr),
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, rName, authAttr, ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
 				),
 			},
 			// Update
 			{
-				Config: testNewRelicNotificationDestinationConfig(testAccountID, fmt.Sprintf("%s-updated", rName), authAttr),
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, fmt.Sprintf("%s-updated", rName), authAttr, ""),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
 				),
@@ -103,18 +151,125 @@ func TestNewRelicNotificationDestination_TokenAuth(t *testing.T) {
 	})
 }
 
-func testNewRelicNotificationDestinationConfig(accountID int, name string, auth string) string {
-	return fmt.Sprintf(`
+func TestNewRelicNotificationDestination_secureURL(t *testing.T) {
+	resourceName := "newrelic_notification_destination.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	urlAttr := `secure_url {
+		prefix = "https://webbhook.site/"
+		secure_suffix = "test"
+	}`
+	authAttr := `auth_basic {
+		user = "username"
+		password = "abc123"
+	}`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationDestinationDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, rName, authAttr, urlAttr),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+				),
+			},
+			// Update
+			{
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, fmt.Sprintf("%s-updated", rName), authAttr, urlAttr),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+				),
+			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"auth_custom_header.0.value",
+					"auth_token.0.token",
+					"auth_basic.0.password",
+					"secure_url.0.secure_suffix",
+				},
+			},
+		},
+	})
+}
+
+func TestNewRelicNotificationDestination_secureURL_update(t *testing.T) {
+	resourceName := "newrelic_notification_destination.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	urlAttr := `secure_url {
+		prefix = "https://webbhook.site/"
+		secure_suffix = "test"
+	}`
+	authAttr := `auth_basic {
+		user = "username"
+		password = "abc123"
+	}`
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationDestinationDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, rName, authAttr, urlAttr),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+				),
+			},
+			// Update
+			{
+				Config: testNewRelicNotificationDestinationConfig(testAccountID, fmt.Sprintf("%s-updated", rName), authAttr, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+				),
+			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"auth_custom_header.0.value",
+					"auth_token.0.token",
+					"auth_basic.0.password",
+					"secure_url.0.secure_suffix",
+				},
+			},
+		},
+	})
+}
+
+func testNewRelicNotificationDestinationConfig(accountID int, name string, auth string, url string) string {
+	var usedUrl string
+	if url == "" {
+		usedUrl = `property {
+		key = "url"
+		value = "https://webhook.site/"
+	}`
+	} else {
+		usedUrl = url
+	}
+
+	sprintf := fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
 	account_id = %[1]d
 	name = "%[2]s"
 	type = "WEBHOOK"
 	active = true
 
-	property {
-		key = "url"
-		value = "https://webhook.site/"
-	}
+	%[4]s
 
 	property {
 		key = "source"
@@ -124,7 +279,8 @@ resource "newrelic_notification_destination" "foo" {
 
 	%[3]s
 }
-`, accountID, name, auth)
+`, accountID, name, auth, usedUrl)
+	return sprintf
 }
 
 func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {

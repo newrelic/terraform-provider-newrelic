@@ -19,14 +19,19 @@ resource "newrelic_notification_destination" "foo" {
   name = "foo"
   type = "WEBHOOK"
 
+  secure_url {
+    prefix = "https://webhook.mywebhook.com/"
+    secure_suffix = "service_id/123456"
+  }  
+  
   property {
-    key = "url"
-    value = "https://webhook.mywebhook.com"
+    key = "source"
+    value = "terraform"
   }
 
-  auth_basic {
-    user = "username"
-    password = "password"
+  auth_custom_header {
+    key = "API_KEY"
+    value = "test-api-key"
   }
 }
 ```
@@ -41,6 +46,8 @@ The following arguments are supported:
 * `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `WEBHOOK`, `JIRA`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`. The types `SLACK` and `SLACK_COLLABORATION` can only be imported, updated and destroyed (cannot be created via terraform).
 * `auth_basic` - (Optional) A nested block that describes a basic username and password authentication credentials. Only one auth_basic block is permitted per notification destination definition.  See [Nested auth_basic blocks](#nested-auth_basic-blocks) below for details.
 * `auth_token` - (Optional) A nested block that describes a token authentication credentials. Only one auth_token block is permitted per notification destination definition.  See [Nested auth_token blocks](#nested-auth_token-blocks) below for details.
+* `auth_custom_header` - (Optional) A nested block that describes a custom header authentication credentials. Multiple blocks are permitted per notification destination definition. [Nested auth_custom_header blocks](#nested-authcustomheader-blocks) below for details.
+* `secure_url` - (Optional) A nested block that describes a URL that contains sensitive data at the path or parameters. Only one secure_url block is permitted per notification destination definition. See [Nested secure_url blocks](#nested-secureurl-blocks) below for details.
 * `property` - (Required) A nested block that describes a notification destination property. See [Nested property blocks](#nested-property-blocks) below for details.
 
 ### Nested `auth_basic` blocks
@@ -53,7 +60,17 @@ The following arguments are supported:
 * `prefix` - (Required) The prefix of the token auth.
 * `token` - (Required) Specifies the token for integrating.
 
+### Nested `auth_custom_header` blocks
+
+* `key` - (Required) The key of the header.
+* `value` - (Required) The secret value of the header.
+
 ~> **NOTE:** OAuth2 authentication type is not available via terraform for notifications destinations.
+
+### Nested `secure_url` blocks
+
+* `prefix` - (Required) The prefix of the URL.
+* `secure_suffix` - (Required) The suffix of the URL, which contains sensitive data. 
 
 ### Nested `property` blocks
 
