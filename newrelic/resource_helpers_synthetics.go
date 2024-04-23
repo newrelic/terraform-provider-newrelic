@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -456,7 +455,6 @@ func getRuntimeValuesFromEntityTags(tags []entities.EntityTag) (runtimeType stri
 }
 
 func getMonitorID(monitorGUID string) (string, error) {
-
 	decodedGUID, err := base64.RawStdEncoding.DecodeString(monitorGUID)
 	if err != nil {
 		return "", err
@@ -464,7 +462,7 @@ func getMonitorID(monitorGUID string) (string, error) {
 	splitGUID := strings.Split(string(decodedGUID), "|")
 
 	if len(splitGUID) < 4 {
-		return "", errors.New("invalid monitor ID")
+		return "", fmt.Errorf("invalid monitor GUID '%s'", monitorGUID)
 	}
 	monitorID := splitGUID[3]
 	return monitorID, nil

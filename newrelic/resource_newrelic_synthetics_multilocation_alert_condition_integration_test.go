@@ -46,6 +46,22 @@ func TestAccNewRelicSyntheticsMultiLocationAlertCondition_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicSyntheticsMultiLocationAlertCondition_InvalidEntities(t *testing.T) {
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicMultiLocationAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicSyntheticsMultiLocationConditionConfigInvalidEntities(rName, "1", "2"),
+				ExpectError: regexp.MustCompile(`invalid monitor GUID`),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicSyntheticsMultiLocationAlertConditionExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		providerConfig := testAccProvider.Meta().(*ProviderConfig)
@@ -80,6 +96,33 @@ func testAccCheckNewRelicSyntheticsMultiLocationAlertConditionExists(n string) r
 
 		return nil
 	}
+}
+
+func testAccCheckNewRelicMultiLocationAlertConditionDestroy(s *terraform.State) error {
+	providerConfig := testAccProvider.Meta().(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	for _, r := range s.RootModule().Resources {
+		if r.Type != "newrelic_nrql_alert_condition" {
+			continue
+		}
+
+		var err error
+
+		ids, err := parseHashedIDs(r.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		conditionID := ids[1]
+		policyID := ids[0]
+
+		if _, err = client.Alerts.GetMultiLocationSyntheticsCondition(policyID, conditionID); err == nil {
+			return fmt.Errorf("Synthetics multi-location condition still exists") //nolint:golint
+		}
+	}
+
+	return nil
 }
 
 func testAccNewRelicSyntheticsMultiLocationConditionConfigBasic(
@@ -127,52 +170,10 @@ resource "newrelic_synthetics_multilocation_alert_condition" "foo" {
 `, name, criticalThreshold, warningThreshold, conditionalAttrs)
 }
 
-func testAccCheckNewRelicMultiLocationAlertConditionDestroy(s *terraform.State) error {
-	providerConfig := testAccProvider.Meta().(*ProviderConfig)
-	client := providerConfig.NewClient
-
-	for _, r := range s.RootModule().Resources {
-		if r.Type != "newrelic_nrql_alert_condition" {
-			continue
-		}
-
-		var err error
-
-		ids, err := parseHashedIDs(r.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		conditionID := ids[1]
-		policyID := ids[0]
-
-		if _, err = client.Alerts.GetMultiLocationSyntheticsCondition(policyID, conditionID); err == nil {
-			return fmt.Errorf("Synthetics multi-location condition still exists") //nolint:golint
-		}
-	}
-
-	return nil
-}
-
-func TestAccNewRelicSyntheticsMultiLocationAlertCondition_InvalidEntities(t *testing.T) {
-	resourceName := "newrelic_synthetics_multilocation_alert_condition.foo"
-	rName := generateNameForIntegrationTestResource()
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicMultiLocationAlertConditionDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccNewRelicSyntheticsMultiLocationConditionConfigInvalidEntities(rName),
-				ExpectError: regexp.MustCompile(`invalid monitor ID`),
-			},
-		},
-	})
-}
-
 func testAccNewRelicSyntheticsMultiLocationConditionConfigInvalidEntities(
 	name string,
+	criticalThreshold string,
+	warningThreshold string,
 ) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "policy" {
@@ -189,22 +190,22 @@ resource "newrelic_synthetics_monitor" "monitor" {
 }
 
 resource "newrelic_synthetics_multilocation_alert_condition" "foo" {
-	policy_id = newrelic_alert_policy.policy.id
-
+  policy_id = newrelic_alert_policy.policy.id
   name                         = "tf-test-%[1]s"
   runbook_url                  = "https://foo.example.com"
   enabled                      = true
   violation_time_limit_seconds = "3600"
 
-	entities = "1234" // Providing an invalid value here
+  entities = ["1234"]
+  // Providing an invalid value here
 
-	critical {
-    threshold = "1.0"
-	}
+  critical {
+    threshold = %[2]s
+  }
 
-	warning {
-    threshold = "0.5"
-	}
+  warning {
+    threshold = %[3]s
+  }
 }
-`, name)
+`, name, criticalThreshold, warningThreshold)
 }
