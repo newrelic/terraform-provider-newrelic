@@ -456,10 +456,7 @@ func getRuntimeValuesFromEntityTags(tags []entities.EntityTag) (runtimeType stri
 }
 
 func getMonitorID(monitorGUID string) (string, error) {
-	// decodedGUID, _ := base64.RawStdEncoding.DecodeString(monitorGUID)
-	// splitGUID := strings.Split(string(decodedGUID), "|")
-	// monitorID := splitGUID[3]
-	// return monitorID
+
 	decodedGUID, err := base64.RawStdEncoding.DecodeString(monitorGUID)
 	if err != nil {
 		return "", err
