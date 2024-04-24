@@ -29,8 +29,9 @@ func expandMultiLocationSyntheticsCondition(d *schema.ResourceData) (*alerts.Mul
 	var entities []string
 	for _, x := range d.Get("entities").([]interface{}) {
 		monitorID, err := getMonitorID(x.(string))
+
 		if err != nil {
-			return &condition, err
+			return nil, err
 		}
 		entities = append(entities, monitorID)
 	}
