@@ -454,11 +454,19 @@ func getRuntimeValuesFromEntityTags(tags []entities.EntityTag) (runtimeType stri
 	return runtimeType, runtimeTypeVersion
 }
 
-func getMonitorID(monitorGUID string) string {
-	decodedGUID, _ := base64.RawStdEncoding.DecodeString(monitorGUID)
-	splitGUID := strings.Split(string(decodedGUID), "|")
-	monitorID := splitGUID[3]
-	return monitorID
+func getMonitorID(monitorGUID string) (string, error) {
+	decodedGUID, err := base64.RawStdEncoding.DecodeString(monitorGUID)
+	if err != nil {
+		return "", err
+	}
+
+	// Check if "|" character is present in decodedGUID or if it has less than 4 characters after splitting
+	if strings.Contains(string(decodedGUID), "|") || len(strings.Split(string(decodedGUID), "|")) < 4 {
+		return "", fmt.Errorf("invalid monitor GUID '%s'", monitorGUID)
+	}
+
+	monitorID := strings.Split(string(decodedGUID), "|")[3]
+	return monitorID, nil
 }
 
 // This map facilitates safely setting the schema attributes which
