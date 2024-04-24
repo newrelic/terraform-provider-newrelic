@@ -461,7 +461,7 @@ func getMonitorID(monitorGUID string) (string, error) {
 	}
 
 	// Check if "|" character is present in decodedGUID or if it has less than 4 characters after splitting
-	if strings.Contains(string(decodedGUID), "|") || len(strings.Split(string(decodedGUID), "|")) < 4 {
+	if !strings.Contains(string(decodedGUID), "|") || len(strings.Split(string(decodedGUID), "|")) < 4 {
 		return "", fmt.Errorf("invalid monitor GUID '%s'", monitorGUID)
 	}
 
