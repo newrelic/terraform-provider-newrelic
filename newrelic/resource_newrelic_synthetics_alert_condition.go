@@ -100,18 +100,23 @@ func resourceNewRelicSyntheticsAlertConditionCreate(ctx context.Context, d *sche
 
 	monitorGUID := d.Get("monitor_id").(string)
 
-	monitorID := getMonitorID(monitorGUID)
+	monitorID, err := getMonitorID(monitorGUID)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	condition := expandSyntheticsCondition(d, monitorID)
 
 	log.Printf("[INFO] Creating New Relic Synthetics alert condition %s", condition.Name)
 
-	condition, err := client.Alerts.CreateSyntheticsConditionWithContext(ctx, policyID, *condition)
+	createSyntheticsConditionResponse, err := client.Alerts.CreateSyntheticsConditionWithContext(ctx, policyID, *condition)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(serializeIDs([]int{policyID, condition.ID}))
+	d.SetId(serializeIDs([]int{policyID, createSyntheticsConditionResponse.ID}))
 
 	return resourceNewRelicSyntheticsAlertConditionRead(ctx, d, meta)
 }
@@ -158,7 +163,11 @@ func resourceNewRelicSyntheticsAlertConditionUpdate(ctx context.Context, d *sche
 
 	monitorGUID := d.Get("monitor_id").(string)
 
-	monitorID := getMonitorID(monitorGUID)
+	monitorID, err := getMonitorID(monitorGUID)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	condition := expandSyntheticsCondition(d, monitorID)
 
