@@ -1,3 +1,9 @@
+<a name="v3.35.1"></a>
+## [v3.35.1] - 2024-04-25
+### Bug Fixes
+- **synthetics:** Add missing tags for newrelic_synthetics_cert_check_monitor ([#2642](https://github.com/newrelic/terraform-provider-newrelic/issues/2642))
+- **synthetics:** add error handling to multilocation alert condition for invalid GUIDs ([#2641](https://github.com/newrelic/terraform-provider-newrelic/issues/2641))
+
 <a name="v3.35.0"></a>
 ## [v3.35.0] - 2024-04-22
 ### Features
@@ -2077,7 +2083,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.1...HEAD
+[v3.35.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.0...v3.35.1
 [v3.35.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.34.1...v3.35.0
 [v3.34.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.34.0...v3.34.1
 [v3.34.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.33.0...v3.34.0
