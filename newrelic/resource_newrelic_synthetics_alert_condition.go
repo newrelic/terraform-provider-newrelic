@@ -110,12 +110,13 @@ func resourceNewRelicSyntheticsAlertConditionCreate(ctx context.Context, d *sche
 
 	log.Printf("[INFO] Creating New Relic Synthetics alert condition %s", condition.Name)
 
-	condition, err = client.Alerts.CreateSyntheticsConditionWithContext(ctx, policyID, *condition)
+	createSyntheticsConditionResponse, err := client.Alerts.CreateSyntheticsConditionWithContext(ctx, policyID, *condition)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(serializeIDs([]int{policyID, condition.ID}))
+	d.SetId(serializeIDs([]int{policyID, createSyntheticsConditionResponse.ID}))
 
 	return resourceNewRelicSyntheticsAlertConditionRead(ctx, d, meta)
 }

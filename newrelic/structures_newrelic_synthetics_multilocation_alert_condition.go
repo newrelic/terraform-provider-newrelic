@@ -28,6 +28,11 @@ func expandMultiLocationSyntheticsCondition(d *schema.ResourceData) (*alerts.Mul
 
 	var entities []string
 	for _, x := range d.Get("entities").([]interface{}) {
+
+		if x == nil {
+			return nil, fmt.Errorf("invalid monitor GUID")
+		}
+
 		monitorID, err := getMonitorID(x.(string))
 
 		if err != nil {
