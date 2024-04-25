@@ -220,6 +220,12 @@ func resourceNewRelicSyntheticsCertCheckMonitorRead(ctx context.Context, d *sche
 			_ = d.Set("runtime_type_version", runtimeTypeVersion)
 		}
 
+		domain, daysUntilExpiration := getCertCheckMonitorValuesFromEntityTags(entity.GetTags())
+		if domain != "" && daysUntilExpiration != 0 {
+			_ = d.Set("domain", domain)
+			_ = d.Set("certificate_expiration", daysUntilExpiration)
+		}
+
 	}
 
 	return diag.FromErr(err)

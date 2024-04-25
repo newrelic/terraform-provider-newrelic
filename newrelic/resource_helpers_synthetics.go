@@ -3,6 +3,7 @@ package newrelic
 import (
 	"encoding/base64"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -487,4 +488,24 @@ var syntheticsMonitorTagKeyToSchemaAttrMap = map[string]string{
 	"scriptLanguage":     "script_language",
 	"deviceOrientation":  "device_orientation",
 	"deviceType":         "device_type",
+}
+
+func getCertCheckMonitorValuesFromEntityTags(tags []entities.EntityTag) (domain string, daysUntilExpiration int) {
+	domain = ""
+	daysUntilExpiration = 0
+
+	for _, tag := range tags {
+
+		if tag.Key == "domain" {
+			domain = tag.Values[0]
+		}
+
+		if tag.Key == "daysUntilExpiration" {
+			// Parse string to integer
+			days := tag.Values[0]
+			daysUntilExpiration, _ = strconv.Atoi(days)
+		}
+	}
+
+	return domain, daysUntilExpiration
 }
