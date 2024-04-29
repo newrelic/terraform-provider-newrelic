@@ -1,0 +1,94 @@
+name: Unit Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.21.x
+
+      - name: Add GOBIN to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache deps
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Unit Tests
+        id: unit-tests
+        run: |
+          make test-unit cover-report
+
+      - name: Create test failure report
+        id: test-failure-report
+        if: ${{ failure() }}
+        run: |
+          go install github.com/mfridman/tparse@latest
+          make test-failure-report
+          tparse -file=coverage/unit.failures -format=markdown > coverage/unit.md
+
+      - name: Prepare multiline test report
+        id: payload
+        shell: bash
+        if: ${{ always() }}
+        run: |
+          cat coverage/unit.md
+          result=$(cat coverage/unit.md)
+
+          echo "Result: $result"
+
+          echo 'UNIT_TEST_FAILURES<<EOF'
+          $result
+          echo EOF
+
+      - name: Failure report
+        id: failure-report
+        if: ${{ always() }}
+        run: |
+          echo "${{ join(steps.test-failure-report.outputs.*, '\n') }}"
+
+      # - name: Report unit test coverage via Codecov
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     files: ./coverage/coverage.out
+
+      - name: Send test failures report to Slack
+        id: slack
+        if: ${{ always() }}
+        uses: slackapi/slack-github-action@v1.26
+        with:
+          # Uses Slack's Block Kit to build the message
+          payload: |
+            {
+              "text": "New Relic Terraform Provider Test Failures",
+              "blocks": [
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "plain_text",
+                      "text": ${{ toJSON(steps.test-failure-report.outputs.UNIT_TEST_FAILURES) }}
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

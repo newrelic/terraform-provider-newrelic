@@ -28,7 +28,7 @@ func TestBuildUserAgentStringWithDefaultServiceName(t *testing.T) {
 	tfUA := "HashiCorp Terraform/1.3.5 (+https://www.terraform.io) Terraform Plugin SDK/2.10.1"
 
 	result := buildUserAgentString(tfUA, getUserAgentServiceName(), ProviderVersion)
-	require.Contains(t, result, " terraform-provider-newrelic/dev")
+	require.Contains(t, result, " terraform-provider-newrelic/dev---fixthisbcitsatest")
 }
 
 func TestBuildUserAgentStringWithCustomServiceName(t *testing.T) {
