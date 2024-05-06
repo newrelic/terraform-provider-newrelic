@@ -150,6 +150,8 @@ All `integration` blocks support the following common arguments:
 
 * `metrics_polling_interval` - (Optional) The data polling interval **in seconds**.
 
+-> **NOTE** For more information kindly refer to [google-cloud-platform-integrations](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/introduction-google-cloud-platform-integrations/) documentaion.
+
 Other integration supports an additional argument:
 
 * `big_query`

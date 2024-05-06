@@ -254,6 +254,9 @@ Below argument supports the minimum metric polling interval of 3600 seconds
 All `integration` blocks support the following common arguments:
 
 * `metrics_polling_interval` - (Optional) The data polling interval **in seconds**.
+
+-> **NOTE** For more information kindly refer to [microsoft-azure-integrations](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/get-started/introduction-azure-monitoring-integrations/) documentaion.
+
 * `resource_groups` - (Optional) Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive
 
 Other integration type support an additional argument:
