@@ -38,27 +38,27 @@ resource "newrelic_cloud_azure_integrations" "foo" {
   account_id = "The New Relic account ID"
 
   api_management {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   app_gateway {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   app_service {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   containers {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   cosmos_db {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
@@ -68,62 +68,62 @@ resource "newrelic_cloud_azure_integrations" "foo" {
   }
 
   data_factory {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   event_hub {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   express_route {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   firewalls {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   front_door {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   functions {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   key_vault {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   load_balancer {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   logic_apps {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   machine_learning {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   maria_db {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 3600
     resource_groups = ["resource_groups"]
   }
 
   monitor {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 60
     resource_groups          = ["resource_groups"]
     include_tags             = ["env:production"]
     exclude_tags             = ["env:staging", "env:testing"]
@@ -132,72 +132,72 @@ resource "newrelic_cloud_azure_integrations" "foo" {
   }
   
   mysql {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 3600
     resource_groups = ["resource_groups"]
   }
 
   mysql_flexible {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 3600
     resource_groups = ["resource_groups"]
   }
 
   postgresql {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 3600
     resource_groups = ["resource_groups"]
   }
 
   postgresql_flexible {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 3600
     resource_groups = ["resource_groups"]
   }
 
   power_bi_dedicated {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   redis_cache {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   service_bus {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   sql {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   sql_managed {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   storage {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 1800
     resource_groups = ["resource_groups"]
   }
 
   virtual_machine {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   virtual_networks {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   vms {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   vpn_gateway {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 }
@@ -253,7 +253,7 @@ Below argument supports the minimum metric polling interval of 3600 seconds
 
 All `integration` blocks support the following common arguments:
 
-* `metrics_polling_interval` - (Optional) The data polling interval in seconds.
+* `metrics_polling_interval` - (Optional) The data polling interval **in seconds**.
 * `resource_groups` - (Optional) Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive
 
 Other integration type support an additional argument:

@@ -31,19 +31,21 @@ resource "newrelic_cloud_aws_link_account" "foo" {
 
 resource "newrelic_cloud_aws_integrations" "bar" {
   linked_account_id = newrelic_cloud_aws_link_account.foo.id
-  billing {}
+  billing {
+    metrics_polling_interval = 3600
+  }
   cloudtrail {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     aws_regions              = ["us-east-1", "us-east-2"]
   }
   health {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   trusted_advisor {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 3600
   }
   vpc {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 900
     aws_regions              = ["us-east-1", "us-east-2"]
     fetch_nat_gateway        = true
     fetch_vpn                = false
@@ -51,26 +53,26 @@ resource "newrelic_cloud_aws_integrations" "bar" {
     tag_value                = "tag value"
   }
   x_ray {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     aws_regions              = ["us-east-1", "us-east-2"]
   }
   s3 {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 3600
   }
   doc_db {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   sqs {
     fetch_extended_inventory = true
     fetch_tags               = true
     queue_prefixes           = ["queue prefix"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     aws_regions              = ["us-east-1"]
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
   ebs {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 900
     fetch_extended_inventory = true
     aws_regions              = ["us-east-1"]
     tag_key                  = "tag key"
@@ -80,7 +82,7 @@ resource "newrelic_cloud_aws_integrations" "bar" {
     fetch_extended_inventory = true
     fetch_tags               = true
     load_balancer_prefixes   = ["load balancer prefix"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     aws_regions              = ["us-east-1"]
     tag_key                  = "tag key"
     tag_value                = "tag value"
@@ -88,12 +90,12 @@ resource "newrelic_cloud_aws_integrations" "bar" {
   elasticache {
     aws_regions              = ["us-east-1"]
     fetch_tags               = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
   api_gateway {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     aws_regions              = ["us-east-1"]
     stage_prefixes           = ["stage prefix"]
     tag_key                  = "tag key"
@@ -101,67 +103,67 @@ resource "newrelic_cloud_aws_integrations" "bar" {
   }
   auto_scaling {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_app_sync {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_athena {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_cognito {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_connect {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_direct_connect {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_fsx {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_glue {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_kinesis_analytics {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_media_convert {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_media_package_vod {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_mq {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_msk {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_neptune {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_qldb {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_route53resolver {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_states {
     aws_regions              = ["us-east-1"]
@@ -169,20 +171,20 @@ resource "newrelic_cloud_aws_integrations" "bar" {
   }
   aws_transit_gateway {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_waf {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_wafv2 {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   cloudfront {
     fetch_lambdas_at_edge    = true
     fetch_tags               = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
@@ -190,7 +192,7 @@ resource "newrelic_cloud_aws_integrations" "bar" {
     aws_regions              = ["us-east-1"]
     fetch_extended_inventory = true
     fetch_tags               = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
@@ -198,21 +200,21 @@ resource "newrelic_cloud_aws_integrations" "bar" {
     aws_regions              = ["us-east-1"]
     duplicate_ec2_tags       = true
     fetch_ip_addresses       = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
   ecs {
     aws_regions              = ["us-east-1"]
     fetch_tags               = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
   efs {
     aws_regions              = ["us-east-1"]
     fetch_tags               = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
@@ -220,14 +222,14 @@ resource "newrelic_cloud_aws_integrations" "bar" {
     aws_regions              = ["us-east-1"]
     fetch_extended_inventory = true
     fetch_tags               = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
   elasticsearch {
     aws_regions              = ["us-east-1"]
     fetch_nodes              = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
@@ -235,68 +237,68 @@ resource "newrelic_cloud_aws_integrations" "bar" {
     aws_regions              = ["us-east-1"]
     fetch_extended_inventory = true
     fetch_tags               = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   emr {
     aws_regions              = ["us-east-1"]
     fetch_tags               = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
   iam {
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
   iot {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   kinesis {
     aws_regions              = ["us-east-1"]
     fetch_shards             = true
     fetch_tags               = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 900
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
   kinesis_firehose {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   lambda {
     aws_regions              = ["us-east-1"]
     fetch_tags               = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
   rds {
     aws_regions              = ["us-east-1"]
     fetch_tags               = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
   redshift {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
     tag_key                  = "tag key"
     tag_value                = "tag value"
   }
   route53 {
     fetch_extended_inventory = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   ses {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   sns {
     aws_regions              = ["us-east-1"]
     fetch_extended_inventory = true
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
 }
 ```
@@ -372,7 +374,7 @@ All other arguments are dependent on the services to be integrated, which have b
 
 All `integration` blocks support the following common arguments:
 
-* `metrics_polling_interval` - (Optional) The data polling interval in seconds.
+* `metrics_polling_interval` - (Optional) The data polling interval **in seconds**.
 
 <details>
   <summary> Some integration types support an additional set of arguments. Expand this section to take a look at these supported arguments. </summary>
