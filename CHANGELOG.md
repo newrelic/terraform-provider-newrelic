@@ -1,7 +1,7 @@
 <a name="v3.35.2"></a>
 ## [v3.35.2] - 2024-05-07
 ### Bug Fixes
-- **build:** upgrade to go1.21 ([#2651](https://github.com/newrelic/terraform-provider-newrelic/issues/2651))
+- **build:** upgrade to go1.21 and newrelic-client-go 2.35.0
 
 <a name="v3.35.1"></a>
 ## [v3.35.1] - 2024-04-25
