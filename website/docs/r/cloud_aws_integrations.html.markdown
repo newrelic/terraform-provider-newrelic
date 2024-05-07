@@ -376,7 +376,8 @@ All `integration` blocks support the following common arguments:
 
 * `metrics_polling_interval` - (Optional) The data polling interval **in seconds**.
 
--> **NOTE** For more information kindly refer to [amazon-integrations](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/get-started/introduction-aws-integrations/) documentaion.
+-> **NOTE** For more information on the ranges of metric polling intervals of each of these integrations, head over to [this page](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/get-started/introduction-aws-integrations/)
+
 
 <details>
   <summary> Some integration types support an additional set of arguments. Expand this section to take a look at these supported arguments. </summary>
