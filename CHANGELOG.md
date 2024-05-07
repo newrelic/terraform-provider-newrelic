@@ -1,3 +1,8 @@
+<a name="v3.35.2"></a>
+## [v3.35.2] - 2024-05-07
+### Bug Fixes
+- **build:** upgrade to go1.21 ([#2651](https://github.com/newrelic/terraform-provider-newrelic/issues/2651))
+
 <a name="v3.35.1"></a>
 ## [v3.35.1] - 2024-04-25
 ### Bug Fixes
@@ -2083,7 +2088,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.2...HEAD
+[v3.35.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.1...v3.35.2
 [v3.35.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.0...v3.35.1
 [v3.35.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.34.1...v3.35.0
 [v3.34.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.34.0...v3.34.1
