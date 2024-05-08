@@ -309,6 +309,67 @@ resource "newrelic_cloud_aws_integrations" "bar" {
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked AWS account in New Relic.
 
+
+The following arguments are supported with minimum metrics polling interval of 300 seconds
+
+* `alb` - (Optional) AWS ALB. See [Integration blocks](#integration-blocks) below for details.
+* `api_gateway` - (Optional) AWS API Gateway. See [Integration blocks](#integration-blocks) below for details.
+* `auto_scaling` - (Optional) AWS Auto Scaling. See [Integration blocks](#integration-blocks) below for details.
+* `aws_app_sync` - (Optional) AWS AppSync. See [Integration blocks](#integration-blocks) below for details.
+* `aws_athena` - (Optional) AWS Athena. See [Integration blocks](#integration-blocks) below for details.
+* `aws_cognito` - (Optional) AWS Cognito. See [Integration blocks](#integration-blocks) below for details.
+* `aws_connect` - (Optional) AWS Connect. See [Integration blocks](#integration-blocks) below for details.
+* `aws_direct_connect` - (Optional) AWS Direct Connect. See [Integration blocks](#integration-blocks) below for details.
+* `aws_fsx` - (Optional) AWS FSx. See [Integration blocks](#integration-blocks) below for details.
+* `aws_glue` - (Optional) AWS Glue. See [Integration blocks](#integration-blocks) below for details.
+* `aws_kinesis_analytics` - (Optional) AWS Kinesis Data Analytics. See [Integration blocks](#integration-blocks) below for details.
+* `aws_media_convert` - (Optional) AWS Media Convert. See [Integration blocks](#integration-blocks) below for details.
+* `aws_media_package_vod` - (Optional) AWS MediaPackage VOD. See [Integration blocks](#integration-blocks) below for details.
+* `aws_mq` - (Optional) AWS MQ. See [Integration blocks](#integration-blocks) below for details.
+* `aws_msk` - (Optional) Amazon Managed Kafka (MSK). See [Integration blocks](#integration-blocks) below for details.
+* `aws_neptune` - (Optional) AWS Neptune. See [Integration blocks](#integration-blocks) below for details.
+* `aws_route53resolver` - (Optional) AWS Route53 Resolver. See [Integration blocks](#integration-blocks) below for details.
+* `aws_qldb` - (Optional) Amazon QLDB. See [Integration blocks](#integration-blocks) below for details.
+* `aws_transit_gateway` - (Optional) Amazon Transit Gateway. See [Integration blocks](#integration-blocks) below for details.
+* `aws_waf` - (Optional) AWS WAF. See [Integration blocks](#integration-blocks) below for details.
+* `aws_wafv2` - (Optional) AWS WAF V2. See [Integration blocks](#integration-blocks) below for details.
+* `cloudfront` - (Optional) AWS CloudFront. See [Integration blocks](#integration-blocks) below for details.
+* `cloudtrail` - (Optional) AWS CloudTrail. See [Integration blocks](#integration-blocks) below for details.
+* `doc_db` - (Optional) AWS DocumentDB. See [Integration blocks](#integration-blocks) below for details.
+* `dynamodb` - (Optional) Amazon DynamoDB. See [Integration blocks](#integration-blocks) below for details.
+* `ec2` - (Optional) Amazon EC2. See [Integration blocks](#integration-blocks) below for details.
+* `ecs` - (Optional) Amazon ECS. See [Integration blocks](#integration-blocks) below for details.
+* `efs` - (Optional) Amazon EFS. See [Integration blocks](#integration-blocks) below for details.
+* `elasticache` - (Optional) AWS ElastiCache. See [Integration blocks](#integration-blocks) below for details.
+* `elasticbeanstalk` - (Optional) AWS Elastic Beanstalk. See [Integration blocks](#integration-blocks) below for details.
+* `elasticsearch` - (Optional) AWS ElasticSearch. See [Integration blocks](#integration-blocks) below for details.
+* `elb` - (Optional) AWS ELB (Classic). See [Integration blocks](#integration-blocks) below for details.
+* `emr` - (Optional) AWS EMR. See [Integration blocks](#integration-blocks) below for details.
+* `health` - (Optional) AWS Health. See [Integration blocks](#integration-blocks) below for details.
+* `iam` - (Optional) AWS IAM. See [Integration blocks](#integration-blocks) below for details.
+* `iot` - (Optional) AWS IoT. See [Integration blocks](#integration-blocks) below for details.
+* `kinesis_firehose` - (Optional) Amazon Kinesis Data Firehose. See [Integration blocks](#integration-blocks) below for details.
+* `lambda` - (Optional) AWS Lambda. See [Integration blocks](#integration-blocks) below for details.
+* `rds` - (Optional) Amazon RDS. See [Integration blocks](#integration-blocks) below for details.
+* `redshift` - (Optional) Amazon Redshift. See [Integration blocks](#integration-blocks) below for details.
+* `route53` - (Optional) Amazon Route 53. See [Integration blocks](#integration-blocks) below for details.
+* `s3` - (Optional) Amazon S3. See [Integration blocks](#integration-blocks) below for details.
+* `ses` - (Optional) Amazon SES. See [Integration blocks](#integration-blocks) below for details.
+* `sns` - (Optional) AWS SNS. See [Integration blocks](#integration-blocks) below for details.
+* `sqs` - (Optional) AWS SQS. See [Integration blocks](#integration-blocks) below for details.
+* `x_ray` - (Optional) AWS X-Ray. See [Integration blocks](#integration-blocks) below for details.
+x
+
+The following arguments are supported with minimum metrics polling interval of 900 seconds
+
+* `ebs` - (Optional) Amazon EBS. See [Integration blocks](#integration-blocks) below for details.
+* `kinesis` - (Optional) AWS Kinesis. See [Integration blocks](#integration-blocks) below for details.
+
+The following arguments are supported with minimum metrics polling interval of 3600 seconds
+
+* `billing` - (Optional) AWS Billing. See [Integration blocks](#integration-blocks) below for details.
+* `trusted_advisor` - (Optional) AWS Trusted Advisor. See [Integration blocks](#integration-blocks) below for details.
+
 All other arguments are dependent on the services to be integrated, which have been listed in the collapsible section below. All of these are **optional** blocks that can be added in any required combination. **For details on arguments that can be used with each service, check out the [`Integration` blocks](#integration-blocks) section below.**
 <details>
   <summary>Expand this section to view all supported AWS services supported, that may be integrated via this resource.</summary>

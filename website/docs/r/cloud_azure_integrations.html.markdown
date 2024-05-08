@@ -206,10 +206,16 @@ resource "newrelic_cloud_azure_integrations" "foo" {
 
 -> **WARNING:** Starting with [v3.27.2](https://registry.terraform.io/providers/newrelic/newrelic/3.27.2) of the New Relic Terraform Provider, updating the `linked_account_id` of a `newrelic_cloud_azure_integrations` resource that has been applied would **force a replacement** of the resource (destruction of the resource, followed by the creation of a new resource). When such an update is performed, please carefully review the output of `terraform plan`, which would clearly indicate a replacement of this resource, before performing a `terraform apply`.
 
-The following arguments are supported with minimum metric polling interval of 300 seconds
-
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked Azure account in New Relic.
+
+
+The following arguments are supported with minimum metrics polling interval of 60 seconds
+
+* `monitor` - (Optional) Azure Monitor. See [Integration blocks](#integration-blocks) below for details.
+
+The following arguments are supported with minimum metrics polling interval of 300 seconds
+
 * `api_management` - (Optional) Azure API Management. See [Integration blocks](#integration-blocks) below for details.
 * `app_gateway` - (Optional) Azure App Gateway. See [Integration blocks](#integration-blocks) below for details. 
 * `app_service` - (Optional) Azure App Service. See [Integration blocks](#integration-blocks) below for details.
@@ -225,29 +231,28 @@ The following arguments are supported with minimum metric polling interval of 30
 * `load_balancer` - (Optional) Azure Load Balancer. See [Integration blocks](#integration-blocks) below for details.
 * `logic_apps` - (Optional) Azure Logic Apps. See [Integration blocks](#integration-blocks) below for details.
 * `machine_learning` - (Optional) Azure Machine Learning. See [Integration blocks](#integration-blocks) below for details.
-* `maria_db` - (Optional) Azure MariaDB. See [Integration blocks](#integration-blocks) below for details.
-* `monitor` - (Optional) Azure Monitor. See [Integration blocks](#integration-blocks) below for details.
-* `mysql` - (Optional) Azure MySQL. See [Integration blocks](#integration-blocks) below for details.
-* `mysql_flexible` - (Optional) Azure MySQL Flexible Server. See [Integration blocks](#integration-blocks) below for details.
-* `postgresql` - (Optional) Azure PostgreSQL. See [Integration blocks](#integration-blocks) below for details.
-* `postgresql_flexible` - (Optional) Azure PostgreSQL Flexible Server. See [Integration blocks](#integration-blocks) below for details.
 * `power_bi_dedicated` - (Optional) Azure Power BI Dedicated. See [Integration blocks](#integration-blocks) below for details.
 * `redis_cache` - (Optional) Azure Redis Cache. See [Integration blocks](#integration-blocks) below for details.
 * `service_bus` - (Optional) Azure Service Bus. See [Integration blocks](#integration-blocks) below for details.
 * `sql` - (Optional) Azure SQL. See [Integration blocks](#integration-blocks) below for details.
 * `sql_managed` - (Optional) Azure SQL Managed. See [Integration blocks](#integration-blocks) below for details.
 * `virtual_machine` - (Optional) Azure Virtual machine. See [Integration blocks](#integration-blocks) below for details.
+* `virtual_networks` - (Optional) for Azure Virtual networks. See [Integration blocks](#integration-blocks) below for details.
 * `vms` - (Optional) Azure VMs. See [Integration blocks](#integration-blocks) below for details.
 * `vpn_gateway` - (Optional) Azure VPN Gateway. See [Integration blocks](#integration-blocks) below for details.
 
-Below arguments supports the minimum metric polling interval of 900 seconds
+The following arguments are supported with minimum metrics polling interval of 1800 seconds
 
 * `storage` - (Optional) for Azure Storage. See [Integration blocks](#integration-blocks) below for details.
-* `virtual_networks` - (Optional) for Azure Virtual networks. See [Integration blocks](#integration-blocks) below for details.
 
-Below argument supports the minimum metric polling interval of 3600 seconds
+The following arguments are supported with minimum metrics polling interval of 3600 seconds
 
 * `cost_management` - (Optional) Azure Cost Management. See [Integration blocks](#integration-blocks) below for details.
+* `maria_db` - (Optional) Azure MariaDB. See [Integration blocks](#integration-blocks) below for details.
+* `mysql` - (Optional) Azure MySQL. See [Integration blocks](#integration-blocks) below for details.
+* `mysql_flexible` - (Optional) Azure MySQL Flexible Server. See [Integration blocks](#integration-blocks) below for details.
+* `postgresql` - (Optional) Azure PostgreSQL. See [Integration blocks](#integration-blocks) below for details.
+* `postgresql_flexible` - (Optional) Azure PostgreSQL Flexible Server. See [Integration blocks](#integration-blocks) below for details.
 
 ### `Integration` blocks
 
