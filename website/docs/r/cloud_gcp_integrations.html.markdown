@@ -116,7 +116,7 @@ resource "newrelic_cloud_gcp_integrations" "foo1" {
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked GCP account in New Relic.
 
-The following supported arguments are with minimum metrics polling interval of 300 seconds
+The following arguments/integration blocks are intended to be used with a minimum metrics polling interval of 300 seconds
 
 * `alloy_db` - (Optional) Alloy DB integration. See [Integration blocks](#integration-blocks) below for details.
 * `app_engine` - (Optional) App Engine integration. See [Integration blocks](#integration-blocks) below for details.
@@ -151,7 +151,7 @@ All `integration` blocks support the following common arguments:
 
 * `metrics_polling_interval` - (Optional) The data polling interval **in seconds**.
 
--> **NOTE** For more information on the ranges of metric polling intervals of each of these integrations, head over to [this page](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/introduction-google-cloud-platform-integrations/)
+-> **NOTE** For more information on the ranges of metric polling intervals of each of these integrations, head over to [this page](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/introduction-google-cloud-platform-integrations/).
 
 Other integration supports an additional argument:
 

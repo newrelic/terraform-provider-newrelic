@@ -210,11 +210,11 @@ resource "newrelic_cloud_azure_integrations" "foo" {
 * `linked_account_id` - (Required) The ID of the linked Azure account in New Relic.
 
 
-The following arguments are supported with minimum metrics polling interval of 60 seconds
+The following arguments/integration blocks are intended to be used with a minimum metrics polling interval of 60 seconds
 
 * `monitor` - (Optional) Azure Monitor. See [Integration blocks](#integration-blocks) below for details.
 
-The following arguments are supported with minimum metrics polling interval of 300 seconds
+The following arguments/integration blocks are intended to be used with a minimum metrics polling interval of 300 seconds
 
 * `api_management` - (Optional) Azure API Management. See [Integration blocks](#integration-blocks) below for details.
 * `app_gateway` - (Optional) Azure App Gateway. See [Integration blocks](#integration-blocks) below for details. 
@@ -241,11 +241,11 @@ The following arguments are supported with minimum metrics polling interval of 3
 * `vms` - (Optional) Azure VMs. See [Integration blocks](#integration-blocks) below for details.
 * `vpn_gateway` - (Optional) Azure VPN Gateway. See [Integration blocks](#integration-blocks) below for details.
 
-The following arguments are supported with minimum metrics polling interval of 1800 seconds
+The following arguments/integration blocks are intended to be used with a minimum metrics polling interval of 1800 seconds
 
 * `storage` - (Optional) for Azure Storage. See [Integration blocks](#integration-blocks) below for details.
 
-The following arguments are supported with minimum metrics polling interval of 3600 seconds
+The following arguments/integration blocks are intended to be used with a minimum metrics polling interval of 3600 seconds
 
 * `cost_management` - (Optional) Azure Cost Management. See [Integration blocks](#integration-blocks) below for details.
 * `maria_db` - (Optional) Azure MariaDB. See [Integration blocks](#integration-blocks) below for details.
@@ -260,7 +260,7 @@ All `integration` blocks support the following common arguments:
 
 * `metrics_polling_interval` - (Optional) The data polling interval **in seconds**.
 
--> **NOTE** For more information on the ranges of metric polling intervals of each of these integrations, head over to [this page](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/get-started/introduction-azure-monitoring-integrations/)
+-> **NOTE** For more information on the ranges of metric polling intervals of each of these integrations, head over to [this page](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/get-started/introduction-azure-monitoring-integrations/).
 
 * `resource_groups` - (Optional) Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive
 
