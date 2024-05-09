@@ -167,7 +167,7 @@ resource "newrelic_cloud_aws_integrations" "bar" {
   }
   aws_states {
     aws_regions              = ["us-east-1"]
-    metrics_polling_interval = 6000
+    metrics_polling_interval = 300
   }
   aws_transit_gateway {
     aws_regions              = ["us-east-1"]
