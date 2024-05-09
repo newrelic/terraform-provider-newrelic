@@ -372,7 +372,7 @@ resource "newrelic_cloud_aws_integrations" "bar" {
 * `linked_account_id` - (Required) The ID of the linked AWS account in New Relic.
 
 
-The following arguments/integration blocks are intended to be used with a minimum metrics polling interval of 300 seconds
+The following arguments/integration blocks are intended to be used with a minimum `metrics_polling_interval` of 300 seconds.
 
 * `alb` - (Optional) AWS ALB. See [Integration blocks](#integration-blocks) below for details.
 * `api_gateway` - (Optional) AWS API Gateway. See [Integration blocks](#integration-blocks) below for details.
@@ -422,12 +422,12 @@ The following arguments/integration blocks are intended to be used with a minimu
 * `x_ray` - (Optional) AWS X-Ray. See [Integration blocks](#integration-blocks) below for details.
 x
 
-The following arguments/integration blocks are intended to be used with a minimum metrics polling interval of 900 seconds
+The following arguments/integration blocks are intended to be used with a minimum `metrics_polling_interval` of 900 seconds.
 
 * `ebs` - (Optional) Amazon EBS. See [Integration blocks](#integration-blocks) below for details.
 * `kinesis` - (Optional) AWS Kinesis. See [Integration blocks](#integration-blocks) below for details.
 
-The following arguments/integration blocks are intended to be used with a minimum metrics polling interval of 3600 seconds
+The following arguments/integration blocks are intended to be used with a minimum `metrics_polling_interval` of 3600 seconds.
 
 * `billing` - (Optional) AWS Billing. See [Integration blocks](#integration-blocks) below for details.
 * `trusted_advisor` - (Optional) AWS Trusted Advisor. See [Integration blocks](#integration-blocks) below for details.
