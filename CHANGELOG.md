@@ -1,7 +1,19 @@
+<a name="v3.36.0"></a>
+## [v3.36.0] - 2024-05-09
+### Bug Fixes
+- **build:** upgrade to go1.21
+- **gcp_integrations:** add missing error handling to the resource newrelic_cloud_gcp_integrations ([#2657](https://github.com/newrelic/terraform-provider-newrelic/issues/2657))
+
+### Documentation Updates
+- **cloud_integrations:** fix documentation defects in cloud integration resources ([#2649](https://github.com/newrelic/terraform-provider-newrelic/issues/2649))
+
+### Features
+- **changelog:** restore changelog deleted by #d71e0648be739679c30e04… ([#2660](https://github.com/newrelic/terraform-provider-newrelic/issues/2660))
+
 <a name="v3.35.2"></a>
 ## [v3.35.2] - 2024-05-07
 ### Bug Fixes
-- **build:** upgrade to go1.21 and newrelic-client-go 2.35.0
+- **build:** upgrade to go1.21 ([#2651](https://github.com/newrelic/terraform-provider-newrelic/issues/2651))
 
 <a name="v3.35.1"></a>
 ## [v3.35.1] - 2024-04-25
@@ -2088,7 +2100,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.36.0...HEAD
+[v3.36.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.2...v3.36.0
 [v3.35.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.1...v3.35.2
 [v3.35.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.0...v3.35.1
 [v3.35.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.34.1...v3.35.0
