@@ -464,7 +464,7 @@ func resourceNewrelicCloudGcpIntegrationsCreate(ctx context.Context, d *schema.R
 	cloudGcpIntegrationinputs, _ := expandCloudGcpIntegrationsinputs(d)
 	gcpIntegrationspayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, cloudGcpIntegrationinputs)
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 	var diags diag.Diagnostics
 	if len(gcpIntegrationspayload.Errors) > 0 {
@@ -1203,7 +1203,7 @@ func resourceNewrelicCloudGcpIntegrationsRead(ctx context.Context, d *schema.Res
 			d.SetId("")
 			return nil
 		}
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 	flattenCloudGcpLinkedAccount(d, linkedAccount)
 	return nil

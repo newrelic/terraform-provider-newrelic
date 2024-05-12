@@ -29,83 +29,83 @@ resource "newrelic_cloud_gcp_link_account" "foo" {
 resource "newrelic_cloud_gcp_integrations" "foo1" {
   linked_account_id = newrelic_cloud_gcp_link_account.foo.id
   app_engine {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   big_query {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
     fetch_tags = true
   }
   big_table {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   composer {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   data_flow {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   data_proc {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   data_store {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   fire_base_database {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   fire_base_hosting {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   fire_base_storage {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   fire_store {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   functions {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   interconnect {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   kubernetes {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   load_balancing {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   mem_cache {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   pub_sub {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
     fetch_tags=true
   }
   redis {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   router {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   run {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   spanner {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
     fetch_tags=true
   }
   sql {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   storage {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
     fetch_tags=true
   }
   virtual_machines {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
   vpc_access {
-    metrics_polling_interval = 400
+    metrics_polling_interval = 300
   }
 }
 ```
@@ -113,10 +113,11 @@ resource "newrelic_cloud_gcp_integrations" "foo1" {
 
 -> **WARNING:** Starting with [v3.27.2](https://registry.terraform.io/providers/newrelic/newrelic/3.27.2) of the New Relic Terraform Provider, updating the `linked_account_id` of a `newrelic_cloud_gcp_integrations` resource that has been applied would **force a replacement** of the resource (destruction of the resource, followed by the creation of a new resource). When such an update is performed, please carefully review the output of `terraform plan`, which would clearly indicate a replacement of this resource, before performing a `terraform apply`.
 
-The following arguments are supported:
-
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked GCP account in New Relic.
+
+The following arguments/integration blocks are intended to be used with a minimum `metrics_polling_interval` of 300 seconds.
+
 * `alloy_db` - (Optional) Alloy DB integration. See [Integration blocks](#integration-blocks) below for details.
 * `app_engine` - (Optional) App Engine integration. See [Integration blocks](#integration-blocks) below for details.
 * `big_query` - (Optional) Biq Query integration. See [Integration blocks](#integration-blocks) below for details.
@@ -148,7 +149,9 @@ The following arguments are supported:
 
 All `integration` blocks support the following common arguments:
 
-* `metrics_polling_interval` - (Optional) The data polling interval in seconds.
+* `metrics_polling_interval` - (Optional) The data polling interval **in seconds**.
+
+-> **NOTE** For more information on the ranges of metric polling intervals of each of these integrations, head over to [this page](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/introduction-google-cloud-platform-integrations/).
 
 Other integration supports an additional argument:
 

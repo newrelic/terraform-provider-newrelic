@@ -27,7 +27,6 @@ linters-settings:
 linters:
   disable-all: true
   enable:
-    - deadcode
     - errcheck
     - gocyclo
     - gofmt
@@ -36,11 +35,8 @@ linters:
     - ineffassign
     - misspell
     - revive
-    - staticcheck
-    - structcheck
     - unconvert
     - unused
-    - varcheck
     - vet
 
 issues:
