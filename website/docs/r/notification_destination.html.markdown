@@ -259,10 +259,10 @@ resource "newrelic_notification_destination" "foo" {
 2. Run import command: `terraform import newrelic_notification_destination.foo <destination_id>`
 3. Run the following command after the import successfully done and copy the information to your resource:
 `terraform state show newrelic_notification_destination.foo`
-4. Add `ignore_changes` attribute on `auth_token` in your imported resource:
+4. Add `ignore_changes` attribute on `all` in your imported resource:
 ```terraform
 lifecycle {
-    ignore_changes = [auth_token]
+    ignore_changes = all
   }
 ```
 
@@ -270,7 +270,7 @@ Your imported destination should look like that:
 ```terraform
 resource "newrelic_notification_destination" "foo" {
   lifecycle {
-    ignore_changes = [auth_token]
+    ignore_changes = all
   }
 
   name = "*********"
