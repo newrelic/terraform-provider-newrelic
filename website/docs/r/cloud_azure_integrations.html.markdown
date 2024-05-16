@@ -38,27 +38,27 @@ resource "newrelic_cloud_azure_integrations" "foo" {
   account_id = "The New Relic account ID"
 
   api_management {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   app_gateway {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   app_service {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   containers {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   cosmos_db {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
@@ -68,62 +68,62 @@ resource "newrelic_cloud_azure_integrations" "foo" {
   }
 
   data_factory {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   event_hub {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   express_route {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   firewalls {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   front_door {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   functions {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   key_vault {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   load_balancer {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   logic_apps {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   machine_learning {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   maria_db {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 3600
     resource_groups = ["resource_groups"]
   }
 
   monitor {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 60
     resource_groups          = ["resource_groups"]
     include_tags             = ["env:production"]
     exclude_tags             = ["env:staging", "env:testing"]
@@ -132,72 +132,72 @@ resource "newrelic_cloud_azure_integrations" "foo" {
   }
   
   mysql {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 3600
     resource_groups = ["resource_groups"]
   }
 
   mysql_flexible {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 3600
     resource_groups = ["resource_groups"]
   }
 
   postgresql {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 3600
     resource_groups = ["resource_groups"]
   }
 
   postgresql_flexible {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 3600
     resource_groups = ["resource_groups"]
   }
 
   power_bi_dedicated {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   redis_cache {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   service_bus {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   sql {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   sql_managed {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   storage {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 1800
     resource_groups = ["resource_groups"]
   }
 
   virtual_machine {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   virtual_networks {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   vms {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 
   vpn_gateway {
-    metrics_polling_interval = 1200
+    metrics_polling_interval = 300
     resource_groups = ["resource_groups"]
   }
 }
@@ -206,10 +206,16 @@ resource "newrelic_cloud_azure_integrations" "foo" {
 
 -> **WARNING:** Starting with [v3.27.2](https://registry.terraform.io/providers/newrelic/newrelic/3.27.2) of the New Relic Terraform Provider, updating the `linked_account_id` of a `newrelic_cloud_azure_integrations` resource that has been applied would **force a replacement** of the resource (destruction of the resource, followed by the creation of a new resource). When such an update is performed, please carefully review the output of `terraform plan`, which would clearly indicate a replacement of this resource, before performing a `terraform apply`.
 
-The following arguments are supported with minimum metric polling interval of 300 seconds
-
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 * `linked_account_id` - (Required) The ID of the linked Azure account in New Relic.
+
+
+The following arguments/integration blocks are intended to be used with a minimum `metrics_polling_interval` of 60 seconds.
+
+* `monitor` - (Optional) Azure Monitor. See [Integration blocks](#integration-blocks) below for details.
+
+The following arguments/integration blocks are intended to be used with a minimum `metrics_polling_interval` of 300 seconds.
+
 * `api_management` - (Optional) Azure API Management. See [Integration blocks](#integration-blocks) below for details.
 * `app_gateway` - (Optional) Azure App Gateway. See [Integration blocks](#integration-blocks) below for details. 
 * `app_service` - (Optional) Azure App Service. See [Integration blocks](#integration-blocks) below for details.
@@ -225,35 +231,37 @@ The following arguments are supported with minimum metric polling interval of 30
 * `load_balancer` - (Optional) Azure Load Balancer. See [Integration blocks](#integration-blocks) below for details.
 * `logic_apps` - (Optional) Azure Logic Apps. See [Integration blocks](#integration-blocks) below for details.
 * `machine_learning` - (Optional) Azure Machine Learning. See [Integration blocks](#integration-blocks) below for details.
-* `maria_db` - (Optional) Azure MariaDB. See [Integration blocks](#integration-blocks) below for details.
-* `monitor` - (Optional) Azure Monitor. See [Integration blocks](#integration-blocks) below for details.
-* `mysql` - (Optional) Azure MySQL. See [Integration blocks](#integration-blocks) below for details.
-* `mysql_flexible` - (Optional) Azure MySQL Flexible Server. See [Integration blocks](#integration-blocks) below for details.
-* `postgresql` - (Optional) Azure PostgreSQL. See [Integration blocks](#integration-blocks) below for details.
-* `postgresql_flexible` - (Optional) Azure PostgreSQL Flexible Server. See [Integration blocks](#integration-blocks) below for details.
 * `power_bi_dedicated` - (Optional) Azure Power BI Dedicated. See [Integration blocks](#integration-blocks) below for details.
 * `redis_cache` - (Optional) Azure Redis Cache. See [Integration blocks](#integration-blocks) below for details.
 * `service_bus` - (Optional) Azure Service Bus. See [Integration blocks](#integration-blocks) below for details.
 * `sql` - (Optional) Azure SQL. See [Integration blocks](#integration-blocks) below for details.
 * `sql_managed` - (Optional) Azure SQL Managed. See [Integration blocks](#integration-blocks) below for details.
 * `virtual_machine` - (Optional) Azure Virtual machine. See [Integration blocks](#integration-blocks) below for details.
+* `virtual_networks` - (Optional) for Azure Virtual networks. See [Integration blocks](#integration-blocks) below for details.
 * `vms` - (Optional) Azure VMs. See [Integration blocks](#integration-blocks) below for details.
 * `vpn_gateway` - (Optional) Azure VPN Gateway. See [Integration blocks](#integration-blocks) below for details.
 
-Below arguments supports the minimum metric polling interval of 900 seconds
+The following arguments/integration blocks are intended to be used with a minimum `metrics_polling_interval` of 1800 seconds.
 
 * `storage` - (Optional) for Azure Storage. See [Integration blocks](#integration-blocks) below for details.
-* `virtual_networks` - (Optional) for Azure Virtual networks. See [Integration blocks](#integration-blocks) below for details.
 
-Below argument supports the minimum metric polling interval of 3600 seconds
+The following arguments/integration blocks are intended to be used with a minimum `metrics_polling_interval` of 3600 seconds.
 
 * `cost_management` - (Optional) Azure Cost Management. See [Integration blocks](#integration-blocks) below for details.
+* `maria_db` - (Optional) Azure MariaDB. See [Integration blocks](#integration-blocks) below for details.
+* `mysql` - (Optional) Azure MySQL. See [Integration blocks](#integration-blocks) below for details.
+* `mysql_flexible` - (Optional) Azure MySQL Flexible Server. See [Integration blocks](#integration-blocks) below for details.
+* `postgresql` - (Optional) Azure PostgreSQL. See [Integration blocks](#integration-blocks) below for details.
+* `postgresql_flexible` - (Optional) Azure PostgreSQL Flexible Server. See [Integration blocks](#integration-blocks) below for details.
 
 ### `Integration` blocks
 
 All `integration` blocks support the following common arguments:
 
-* `metrics_polling_interval` - (Optional) The data polling interval in seconds.
+* `metrics_polling_interval` - (Optional) The data polling interval **in seconds**.
+
+-> **NOTE** For more information on the ranges of metric polling intervals of each of these integrations, head over to [this page](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/get-started/introduction-azure-monitoring-integrations/).
+
 * `resource_groups` - (Optional) Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive
 
 Other integration type support an additional argument:
