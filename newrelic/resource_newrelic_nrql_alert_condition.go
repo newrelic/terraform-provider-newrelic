@@ -222,6 +222,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:    true,
 				Description: "The description of the NRQL alert condition.",
 			},
+			"incident_title_template": {
+				Type: schema.TypeString,
+				Optional: true,
+				Description: "This field allows you to create a custom incident title to be used when incidents are opened by the condition. Setting this field will override the default incident title. Must be Handlebars format.",
+			},
 			"violation_time_limit": {
 				Type:          schema.TypeString,
 				Deprecated:    "use `violation_time_limit_seconds` attribute instead",
