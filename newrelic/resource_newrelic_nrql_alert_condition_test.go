@@ -907,10 +907,10 @@ resource "newrelic_nrql_alert_condition" "foo" {
     violation_time_limit_seconds   = 86400
 
     critical {
-	    operator              = "above"
-	    threshold             = 80
+			operator              = "above"
+			threshold             = 80
 	    threshold_duration    = 5 * 60
-	    threshold_occurrences = "all"
+			threshold_occurrences = "all"
     }
 
     nrql {
@@ -933,33 +933,33 @@ func testAccNewRelicNrqlAlertConditionSinceValue(
 
 	resource "newrelic_nrql_alert_condition" "since_value" {
       policy_id                      = newrelic_alert_policy.foo.id
-	  type                           = "static"
+		type                           = "static"
       name                           = "tf-test-%[1]s"
-	  description                    = "Test desc"
-	  runbook_url                    = "REDACTED"
-	  enabled                        = true
-	  violation_time_limit_seconds   = 86400
-	  expiration_duration            = 120
-	  close_violations_on_expiration = true
+		description                    = "Test desc"
+		runbook_url                    = "REDACTED"
+		enabled                        = true
+		violation_time_limit_seconds   = 86400
+		expiration_duration            = 120
+		close_violations_on_expiration = true
 
-	  nrql {
+		nrql {
 		query       = <<-EOT
 			SELECT count(*) FROM TestEvent
 		EOT
 		since_value = 1
-	  }
-	  critical {
+		}
+		critical {
 		operator           = "above"
 		threshold          = 50
 		threshold_duration = 300
 		time_function      = "any"
-	  }
-	  warning {
+		}
+		warning {
 		operator           = "above"
 		threshold          = 10
 		threshold_duration = 300
 		time_function      = "any"
-	  }
+		}
 	}
 `, name)
 }
@@ -974,34 +974,34 @@ func testAccNewRelicNrqlAlertConditionSinceValueUpdateWithStreamingMethods(
 
 	resource "newrelic_nrql_alert_condition" "since_value" {
       policy_id                      = newrelic_alert_policy.foo.id
-	  type                           = "static"
+		type                           = "static"
       name                           = "tf-test-%[1]s"
-	  description                    = "Test desc"
-	  runbook_url                    = "REDACTED"
-	  enabled                        = true
-	  violation_time_limit_seconds   = 86400
-	  expiration_duration            = 120
-	  close_violations_on_expiration = true
+		description                    = "Test desc"
+		runbook_url                    = "REDACTED"
+		enabled                        = true
+		violation_time_limit_seconds   = 86400
+		expiration_duration            = 120
+		close_violations_on_expiration = true
       aggregation_method             = "event_timer"
       aggregation_timer              = 1200
 
-	  nrql {
+		nrql {
 		query       = <<-EOT
 			SELECT count(*) FROM TestEvent
 		EOT
-	  }
-	  critical {
+		}
+		critical {
 		operator           = "above"
 		threshold          = 50
 		threshold_duration = 300
 		time_function      = "any"
-	  }
-	  warning {
+		}
+		warning {
 		operator           = "above"
 		threshold          = 10
 		threshold_duration = 300
 		time_function      = "any"
-	  }
+		}
 	}
 `, name)
 }
@@ -1114,7 +1114,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	close_violations_on_expiration = true
 	open_violation_on_expiration   = true
 	expiration_duration            = 120
- 	aggregation_delay              = 120
+	aggregation_delay              = 120
 	aggregation_method             = "event_flow"
 	slide_by					   = 30
 
@@ -1152,7 +1152,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	close_violations_on_expiration = true
 	open_violation_on_expiration   = true
 	expiration_duration            = 120
- 	aggregation_delay              = 120
+	aggregation_delay              = 120
 	aggregation_method             = "event_flow"
 	slide_by					   = 30
 	evaluation_delay			   = 60
