@@ -690,45 +690,45 @@ func testAccNewRelicNrqlAlertConditionConfigBasic(
 ) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+	name = "tf-test-%[1]s"
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  policy_id = newrelic_alert_policy.foo.id
+	policy_id = newrelic_alert_policy.foo.id
 
-  name                           = "tf-test-%[1]s"
-  runbook_url                    = "https://foo.example.com"
-  enabled                        = false
-  fill_option                    = "%[4]s"
-  fill_value                     = %[5]s
-  aggregation_window             = %[7]s
-  slide_by                       = %[8]s
-  aggregation_delay              = %[2]s
+	name                           = "tf-test-%[1]s"
+	runbook_url                    = "https://foo.example.com"
+	enabled                        = false
+	fill_option                    = "%[4]s"
+	fill_value                     = %[5]s
+	aggregation_window             = %[7]s
+	slide_by                       = %[8]s
+	aggregation_delay              = %[2]s
 	aggregation_method             = "EVENT_FLOW"
-  close_violations_on_expiration = true
-  open_violation_on_expiration   = true
-  expiration_duration            = 120
-  violation_time_limit_seconds   = %[9]s
+	close_violations_on_expiration = true
+	open_violation_on_expiration   = true
+	expiration_duration            = 120
+	violation_time_limit_seconds   = %[9]s
 
-  nrql {
-    query = "SELECT uniqueCount(hostname) FROM ComputeSample"
-  }
+	nrql {
+		query = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
 
-  critical {
-    operator              = "above"
-    threshold             = 0.75
-    threshold_duration    = %[3]s
-    threshold_occurrences = "all"
-  }
+	critical {
+		operator              = "above"
+		threshold             = 0.75
+		threshold_duration    = %[3]s
+		threshold_occurrences = "all"
+	}
 
-  warning {
-    operator              = "equals"
-    threshold             = 0.5
-    threshold_duration    = 120
-    threshold_occurrences = "AT_LEAST_ONCE"
-  }
+	warning {
+		operator              = "equals"
+		threshold             = 0.5
+		threshold_duration    = 120
+		threshold_occurrences = "AT_LEAST_ONCE"
+	}
 
-  %[6]s
+	%[6]s
 }
 `, name, aggregationDelay, duration, fillOption, fillValue, conditionalAttrs, aggregationWindow, slideBy, violation_time_limit_seconds)
 }
@@ -756,7 +756,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	runbook_url                    = "https://foo.example.com"
 	enabled                        = false
 	description                    = "test description"
-  fill_option                    = "%[5]s"
+	fill_option                    = "%[5]s"
 	fill_value                     = %[6]s
 	close_violations_on_expiration = true
 	open_violation_on_expiration   = true
@@ -829,15 +829,15 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	}
 
 	critical {
-    operator              = "above"
-    threshold             = 1.25666
+		operator              = "above"
+		threshold             = 1.25666
 		threshold_duration    = %[4]d
 		threshold_occurrences = "ALL"
 	}
 
 	warning {
-    operator              = "above"
-    threshold             = 1.1666
+		operator              = "above"
+		threshold             = 1.1666
 		threshold_duration    = %[4]d
 		threshold_occurrences = "AT_LEAST_ONCE"
 	}
@@ -878,8 +878,8 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	}
 
 	critical {
-    operator              = "above"
-    threshold             = 0
+		operator              = "above"
+		threshold             = 0
 		threshold_duration    = 120
 		threshold_occurrences = "ALL"
 	}
@@ -895,26 +895,26 @@ func testAccNewRelicNrqlAlertConditionStreamingMethodsDefaults(
 ) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
-    name = "tf-test-%[1]s"
+		name = "tf-test-%[1]s"
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-    policy_id                      = newrelic_alert_policy.foo.id
-    name                           = "tf-test-%[1]s"
-    description                    = "Test desc"
-    runbook_url                    = "REDACTED"
-    enabled                        = true
-    violation_time_limit_seconds   = 86400
+		policy_id                      = newrelic_alert_policy.foo.id
+		name                           = "tf-test-%[1]s"
+		description                    = "Test desc"
+		runbook_url                    = "REDACTED"
+		enabled                        = true
+		violation_time_limit_seconds   = 86400
 
-    critical {
+		critical {
 			operator              = "above"
 			threshold             = 80
-	    threshold_duration    = 5 * 60
+			threshold_duration    = 5 * 60
 			threshold_occurrences = "all"
-    }
+		}
 
-    nrql {
-        query = <<-EOT
+		nrql {
+				query = <<-EOT
 			SELECT count(*) FROM TestEvent
 		EOT
 	}
@@ -927,14 +927,14 @@ func testAccNewRelicNrqlAlertConditionSinceValue(
 ) string {
 	return fmt.Sprintf(`
 	resource "newrelic_alert_policy" "foo" {
-      name = "tf-test-%[1]s"
+			name = "tf-test-%[1]s"
 	}
 
 
 	resource "newrelic_nrql_alert_condition" "since_value" {
-      policy_id                      = newrelic_alert_policy.foo.id
+			policy_id                      = newrelic_alert_policy.foo.id
 		type                           = "static"
-      name                           = "tf-test-%[1]s"
+			name                           = "tf-test-%[1]s"
 		description                    = "Test desc"
 		runbook_url                    = "REDACTED"
 		enabled                        = true
@@ -969,21 +969,21 @@ func testAccNewRelicNrqlAlertConditionSinceValueUpdateWithStreamingMethods(
 ) string {
 	return fmt.Sprintf(`
 	resource "newrelic_alert_policy" "foo" {
-      name = "tf-test-%[1]s"
+			name = "tf-test-%[1]s"
 	}
 
 	resource "newrelic_nrql_alert_condition" "since_value" {
-      policy_id                      = newrelic_alert_policy.foo.id
+			policy_id                      = newrelic_alert_policy.foo.id
 		type                           = "static"
-      name                           = "tf-test-%[1]s"
+			name                           = "tf-test-%[1]s"
 		description                    = "Test desc"
 		runbook_url                    = "REDACTED"
 		enabled                        = true
 		violation_time_limit_seconds   = 86400
 		expiration_duration            = 120
 		close_violations_on_expiration = true
-      aggregation_method             = "event_timer"
-      aggregation_timer              = 1200
+			aggregation_method             = "event_timer"
+			aggregation_timer              = 1200
 
 		nrql {
 		query       = <<-EOT
@@ -1038,8 +1038,8 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	}
 
 	critical {
-    operator              = "above"
-    threshold             = 0
+		operator              = "above"
+		threshold             = 0
 		threshold_duration    = 120
 		threshold_occurrences = "ALL"
 	}
@@ -1059,28 +1059,28 @@ func testAccNewRelicNrqlAlertStaticNerdGraphConfigInvalid(
 ) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+	name = "tf-test-%[1]s"
 }
 resource "newrelic_nrql_alert_condition" "foo" {
 	policy_id = newrelic_alert_policy.foo.id
-  name                           = "tf-test-%[1]s"
-  runbook_url                    = "https://foo.example.com"
-  enabled                        = false
-  violation_time_limit_seconds   = 28800
-  fill_option                    = "static"
-  aggregation_window             = %[5]s
-  close_violations_on_expiration = true
-  open_violation_on_expiration   = true
-  expiration_duration            = 120
+	name                           = "tf-test-%[1]s"
+	runbook_url                    = "https://foo.example.com"
+	enabled                        = false
+	violation_time_limit_seconds   = 28800
+	fill_option                    = "static"
+	aggregation_window             = %[5]s
+	close_violations_on_expiration = true
+	open_violation_on_expiration   = true
+	expiration_duration            = 120
 	nrql {
-    query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
-    evaluation_offset = "%[2]s"
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+		evaluation_offset = "%[2]s"
 	}
 	critical {
-    operator              = "above"
-    threshold             = 0.75
-    threshold_duration    = %[3]s
-    threshold_occurrences = "all"
+		operator              = "above"
+		threshold             = 0.75
+		threshold_duration    = %[3]s
+		threshold_occurrences = "all"
 	}
 	warning {
 		operator              = "equals"
@@ -1123,8 +1123,8 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	}
 
 	critical {
-    operator              = "above"
-    threshold             = 0
+		operator              = "above"
+		threshold             = 0
 		threshold_duration    = 120
 		threshold_occurrences = "ALL"
 	}
@@ -1162,8 +1162,8 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	}
 
 	critical {
-    operator              = "above"
-    threshold             = 0
+		operator              = "above"
+		threshold             = 0
 		threshold_duration    = 120
 		threshold_occurrences = "ALL"
 	}
@@ -1201,8 +1201,8 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	}
 
 	critical {
-    operator              = "above"
-    threshold             = 0
+		operator              = "above"
+		threshold             = 0
 		threshold_duration    = 120
 		threshold_occurrences = "ALL"
 	}
@@ -1239,8 +1239,8 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	}
 
 	critical {
-    operator              = "above"
-    threshold             = 0
+		operator              = "above"
+		threshold             = 0
 		threshold_duration    = 120
 		threshold_occurrences = "ALL"
 	}
