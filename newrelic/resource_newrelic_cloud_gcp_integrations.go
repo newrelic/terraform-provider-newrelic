@@ -32,6 +32,13 @@ func resourceNewrelicCloudGcpIntegrations() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"ai_platform": {
+				Type:        schema.TypeList,
+				Description: "GCP big table service",
+				Optional:    true,
+				Elem:        cloudGcpIntegrationsAiplatformSchemaElem(),
+				MaxItems:    1,
+			},
 			"alloy_db": {
 				Type:        schema.TypeList,
 				Description: "GCP alloy DB integration",
@@ -226,6 +233,14 @@ func cloudGcpIntegrationSchemaBase() map[string]*schema.Schema {
 			Description: "the data polling interval in seconds",
 			Optional:    true,
 		},
+	}
+}
+
+// function to add schema for gcp ai_platform
+func cloudGcpIntegrationsAiplatformSchemaElem() *schema.Resource {
+	s := cloudGcpIntegrationSchemaBase()
+	return &schema.Resource{
+		Schema: s,
 	}
 }
 
@@ -492,6 +507,13 @@ func expandCloudGcpIntegrationsinputs(d *schema.ResourceData) (cloud.CloudIntegr
 	if lid, ok := d.GetOk("linked_account_id"); ok {
 		linkedAccountID = lid.(int)
 	}
+
+	if v, ok := d.GetOk("ai_platform"); ok {
+		gcpCloudIntegrations.GcpAiplatform = expandCloudGcpAiplatformIntegrationsinputs(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("ai_platform"); len(n.([]interface{})) < len(o.([]interface{})) {
+		gcpDisableIntegrations.GcpSpanner = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
 	if v, ok := d.GetOk("alloy_db"); ok {
 		gcpCloudIntegrations.GcpAlloydb = expandCloudGcpAlloyDBIntegrationsInputs(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("alloy_db"); len(n.([]interface{})) < len(o.([]interface{})) {
@@ -654,6 +676,26 @@ func expandCloudGcpIntegrationsinputs(d *schema.ResourceData) (cloud.CloudIntegr
 		Gcp: gcpDisableIntegrations,
 	}
 	return configureInput, disableInput
+}
+
+// expand function to extract inputs from gcp ai platform schema
+func expandCloudGcpAiplatformIntegrationsinputs(b []interface{}, linkedAccountID int) []cloud.CloudGcpAiplatformIntegrationInput {
+	expanded := make([]cloud.CloudGcpAiplatformIntegrationInput, len(b))
+	for i, expand := range b {
+		var input cloud.CloudGcpAiplatformIntegrationInput
+		if expand == nil {
+			input.LinkedAccountId = linkedAccountID
+			expanded[i] = input
+			return expanded
+		}
+		in := expand.(map[string]interface{})
+		input.LinkedAccountId = linkedAccountID
+		if m, ok := in["metrics_polling_interval"]; ok {
+			input.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = input
+	}
+	return expanded
 }
 
 // expand function to extract inputs from gcp app engine schema
@@ -1217,6 +1259,8 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 	_ = d.Set("linked_account_id", linkedAccount.ID)
 	for _, i := range linkedAccount.Integrations {
 		switch t := i.(type) {
+		case *cloud.CloudGcpAiplatformIntegration:
+			_ = d.Set("ai_platform", flattenCloudGcpAiplatformIntegration(t))
 		case *cloud.CloudGcpAlloydbIntegration:
 			_ = d.Set("alloy_db", flattenCloudGcpAlloyDBIntegration(t))
 		case *cloud.CloudGcpAppengineIntegration:
@@ -1271,6 +1315,14 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 			_ = d.Set("vpc_access", flattenCloudGcpVpcAccessIntegration(t))
 		}
 	}
+}
+
+func flattenCloudGcpAiplatformIntegration(in *cloud.CloudGcpAiplatformIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+	out := make(map[string]interface{})
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+	flattened[0] = out
+	return flattened
 }
 
 // flatten function to set(store) outputs from the terraform apply
@@ -1584,6 +1636,9 @@ func expandCloudGcpDisableinputs(d *schema.ResourceData) cloud.CloudDisableInteg
 	var linkedAccountID int
 	if l, ok := d.GetOk("linked_account_id"); ok {
 		linkedAccountID = l.(int)
+	}
+	if _, ok := d.GetOk("ai_platform"); ok {
+		cloudGcpDisableInput.GcpAiplatform = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 	if _, ok := d.GetOk("alloy_db"); ok {
 		cloudGcpDisableInput.GcpAlloydb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
