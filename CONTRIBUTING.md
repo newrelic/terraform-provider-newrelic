@@ -176,7 +176,7 @@ this case, you can tell Go to use your local copy of the [Go Client][client_go]
 when building.
 
 ```shell
-go mod edit -replace github.com/newrelic/newrelic-client-go=/Users/zleslie/go/src/github.com/newrelic/newrelic-client-go
+go mod edit -replace github.com/newrelic/newrelic-client-go/v2=$HOME/go/src/github.com/newrelic/newrelic-client-go
 ```
 
 This modifies the `go.mod` file to reference a local path on disk rather than
