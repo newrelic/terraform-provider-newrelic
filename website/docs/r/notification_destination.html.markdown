@@ -243,13 +243,12 @@ resource "newrelic_notification_destination" "foo" {
 
 In order to create a Slack destination, you have to grant our application access to your workspace. This process is [based on OAuth](https://api.slack.com/authentication/oauth-v2) and can only be done through a browser.
 As a result, you cannot set up a Slack destination purely with Terraform code.
-You can either use [the destination data source](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/data-sources/notification_destination),
-or reference destination id directly. Destination ID which can be found through [the destination data source](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/data-sources/notification_destination),
-our GraphQL API, or using the user interface.
+However, if you would like to use Slack-based destinations with other resources in the New Relic Terraform Provider, the [data source `newrelic_notification_destination`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/data-sources/notification_destination),
+may be used to fetch the ID of the destination; alternatively, you might want to source the ID of the destination from  NerdGraph, or from the New Relic One UI.
 
 ## Import
 
-~> **WARNING:** Slack-based destinations can only be imported and destroyed; this resource **does not** support updating Slack-based destinations, owing to the reasons stated above, under the **Slack** section.
+~> **WARNING:** Slack-based destinations can only be imported and destroyed; this resource **does not** support creating and updating Slack-based destinations, owing to the reasons stated above, under the **Slack** section.
 
 Destination id can be found in the Destinations page -> three dots at the right of the chosen destination -> copy destination id to clipboard.
 This example is especially useful for slack destinations which *must* be imported.
