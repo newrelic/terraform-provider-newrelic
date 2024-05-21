@@ -249,7 +249,7 @@ our GraphQL API, or using the user interface.
 
 ## Import
 
-~> **WARNING:** Please be aware that while you can import the Slack destination resource, it can only be used to delete it through Terraform.
+~> **WARNING:** Slack-based destinations can only be imported and destroyed; this resource **does not** support updating Slack-based destinations, owing to the reasons stated above, under the **Slack** section.
 
 Destination id can be found in the Destinations page -> three dots at the right of the chosen destination -> copy destination id to clipboard.
 This example is especially useful for slack destinations which *must* be imported.
