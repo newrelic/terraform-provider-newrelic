@@ -247,11 +247,47 @@ You can either use [the destination data source](https://registry.terraform.io/p
 or reference destination id directly. Destination ID which can be found through [the destination data source](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/data-sources/notification_destination),
 our GraphQL API, or using the user interface.
 
-~> **NOTE:** Please be aware that while you can import the Slack destination resource, it can only be used to delete it through Terraform.
-
 ## Import
 
-If you want to import a destination, you can find the destination id can be found in the Destinations page -> three dots at the right of the chosen destination -> copy destination id to clipboard.
+~> **WARNING:** Please be aware that while you can import the Slack destination resource, it can only be used to delete it through Terraform.
+
+Destination id can be found in the Destinations page -> three dots at the right of the chosen destination -> copy destination id to clipboard.
+This example is especially useful for slack destinations which *must* be imported.
+
+1. Add an empty resource to your terraform file:
+```terraform
+resource "newrelic_notification_destination" "foo" {
+}
+```
+2. Run import command: `terraform import newrelic_notification_destination.foo <destination_id>`
+3. Run the following command after the import successfully done and copy the information to your resource:
+   `terraform state show newrelic_notification_destination.foo`
+4. Add `ignore_changes` attribute on `all` in your imported resource:
+```terraform
+lifecycle {
+    ignore_changes = all
+  }
+```
+
+Your imported destination should look like that:
+```terraform
+resource "newrelic_notification_destination" "foo" {
+  lifecycle {
+    ignore_changes = all
+  }
+  name = "*********"
+  type = "SLACK"
+  auth_token {
+    prefix = "Bearer"
+  }
+  
+  property {
+      key   = "teamName"
+      label = "Team Name"
+      value = "******"
+  }
+}
+```
 
 ~> **NOTE:** Sensitive data such as destination API keys, service keys, auth object etc. are not returned from the underlying API for security reasons and may not be set in state when importing.
 
