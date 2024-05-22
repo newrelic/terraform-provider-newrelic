@@ -8,6 +8,8 @@ description: |-
 
 # Resource: newrelic\_synthetics\_script\_monitor
 
+-> **WARNING** Support for legacy Synthetics runtimes **will reach its end-of-life (EOL) on October 22, 2024**. In addition, creating **_new_** monitors using the legacy runtime **will no longer be supported after June 30, 2024**. In light of the above, kindly **upgrade your Synthetic Monitors to the new runtime** at the earliest, if they are still using the legacy runtime. Please check out [this page](https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm) for more details on the EOL, action needed (specific to monitors using public and private locations), relevant resources, and more.
+
 Use this resource to create update, and delete a Script API or Script Browser Synthetics Monitor in New Relic.
 
 ## Example Usage
@@ -89,7 +91,7 @@ The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
 
 If you want to use a legacy runtime (Node 10 or Chrome 72) you can set the `runtime_type`, `runtime_type_version` and `script_language` to empty string `""`. 
 
--> **NOTE:** The old runtime will be deprecated in the future, so use the new version whenever you can.
+-> **WARNING** Support for legacy Synthetics runtimes **will reach its end-of-life (EOL) on October 22, 2024**. In addition, creating **_new_** monitors using the legacy runtime **will no longer be supported after June 30, 2024**. In light of the above, kindly **upgrade your Synthetic Monitors to the new runtime** at the earliest, if they are still using the legacy runtime. Please check out [this page](https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm) for more details on the EOL, action needed (specific to monitors using public and private locations), relevant resources, and more.
 
 ### Nested `tag` blocks
 
