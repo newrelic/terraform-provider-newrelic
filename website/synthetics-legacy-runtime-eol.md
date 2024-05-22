@@ -10,7 +10,7 @@ As already communicated by New Relic, support for legacy Synthetics runtimes **w
 
 In light of the above, kindly **upgrade your Synthetic Monitors to the new runtime** before the EOL date. Check out [this page](https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm) for more details on the EOL, actions needed, relevant resources, and more.
 
-We shall be working with Synthetics to ensure the timelines of any relevant changes in the New Relic Terraform Provider (as a consequence of the EOL) are well aligned with their plans around the EOL. Watch this space for more updates on changes to be introduced in the New Relic Terraform Provider (if any), in order to facilitate the EOL.
+We will synchronize relevant changes in the New Relic Terraform Provider with the Synthetics team. Watch this space for more updates.
 
 The article linked above comprises key details around the EOL and has been published by New Relic Synthetics. We shall also continue to share any useful information around the EOL via this thread, or via the documentation of the New Relic Terraform Provider, if we find such information can be useful to a larger audience.
 
