@@ -182,7 +182,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 		page.Widgets = []dashboards.DashboardWidgetInput{}
 		// For each of the widget type, we need to expand them as well
 		if widgets, ok := p["widget_area"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.area")
 				if err != nil {
@@ -198,7 +198,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_bar"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.bar")
 				if err != nil {
@@ -214,7 +214,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_billboard"]; ok {
-			for widgetIndex, v := range widgets.([]interface{}) {
+			for widgetIndex, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.billboard")
 				if err != nil {
@@ -233,7 +233,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_bullet"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.bullet")
 				if err != nil {
@@ -249,7 +249,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_funnel"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.funnel")
 				if err != nil {
@@ -265,7 +265,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_heatmap"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.heatmap")
 				if err != nil {
@@ -281,7 +281,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_histogram"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.histogram")
 				if err != nil {
@@ -297,7 +297,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_line"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.line")
 				if err != nil {
@@ -313,7 +313,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_markdown"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.markdown")
 				if err != nil {
@@ -329,7 +329,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_pie"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.pie")
 				if err != nil {
@@ -345,7 +345,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_table"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.table")
 				if err != nil {
@@ -361,7 +361,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_log_table"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "logger.log-table-widget")
 				if err != nil {
@@ -377,7 +377,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_json"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.json")
 				if err != nil {
@@ -393,7 +393,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_stacked_bar"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for _, v := range widgets.(*schema.Set).List() {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.stacked-bar")
 				if err != nil {
@@ -1089,7 +1089,7 @@ func findDashboardWidgetFilterCurrentDashboard(d *schema.ResourceData) ([]interf
 		// For each of the widget type, we need to expand them as well
 		for _, widgetType := range selfLinkingWidgets {
 			if widgets, ok := p[widgetType]; ok {
-				for _, widget := range widgets.([]interface{}) {
+				for _, widget := range widgets.(*schema.Set).List() {
 					w := widget.(map[string]interface{})
 					if v, ok := w["filter_current_dashboard"]; ok && v.(bool) {
 
@@ -1139,7 +1139,7 @@ func setDashboardWidgetFilterCurrentDashboardLinkedEntity(d *schema.ResourceData
 		p := v.(map[string]interface{})
 		for _, widgetType := range selfLinkingWidgets {
 			if widgets, ok := p[widgetType]; ok {
-				for _, k := range widgets.([]interface{}) {
+				for _, k := range widgets.(*schema.Set).List() {
 					w := k.(map[string]interface{})
 					if l, ok := w["linked_entity_guids"]; ok && len(l.([]interface{})) == 1 {
 						for _, le := range l.([]interface{}) {
