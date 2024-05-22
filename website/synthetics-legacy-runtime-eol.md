@@ -8,7 +8,7 @@ As already communicated by New Relic, support for legacy Synthetics runtimes **w
 - [newrelic_synthetics_cert_check_monitor](https://registry.terraform.io/providers/newrelic/newrelic/3.36.1/docs/resources/synthetics_cert_check_monitor)
 - [newrelic_synthetics_broken_links_monitor](https://registry.terraform.io/providers/newrelic/newrelic/3.36.1/docs/resources/synthetics_broken_links_monitor)
 
-In light of the above, kindly **upgrade your Synthetic Monitors to the new runtime** at the earliest (before the date of the EOL), if they are still using the legacy runtime. Check out [this page](https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm) for more details on the EOL, action needed (specific to monitors using public and private locations), relevant resources, and more.
+In light of the above, kindly **upgrade your Synthetic Monitors to the new runtime** before the EOL date. Check out [this page](https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm) for more details on the EOL, actions needed, relevant resources, and more.
 
 We shall be working with Synthetics to ensure the timelines of any relevant changes in the New Relic Terraform Provider (as a consequence of the EOL) are well aligned with their plans around the EOL. Watch this space for more updates on changes to be introduced in the New Relic Terraform Provider (if any), in order to facilitate the EOL.
 
