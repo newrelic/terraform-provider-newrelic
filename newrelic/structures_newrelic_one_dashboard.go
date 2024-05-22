@@ -623,26 +623,7 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 		cfg.Facet = &l
 	}
 
-	if visualisation != "viz.line" {
-		if q, ok := w["y_axis_left_min"]; ok {
-			var l dashboards.DashboardWidgetYAxisLeft
-			min := q.(float64)
-			l.Min = &min
-			if q, ok := w["y_axis_left_max"]; ok {
-				l.Max = q.(float64)
-			}
-			cfg.YAxisLeft = &l
-		}
-	} else {
-		lineWidgetYAxisLeft := expandDashboardWidgetYAxisLeft(w)
-		cfg.YAxisLeft = &lineWidgetYAxisLeft
-
-		lineWidgetYAxisRight := expandDashboardWidgetYAxisRight(w)
-		if lineWidgetYAxisRight.Series != nil || lineWidgetYAxisRight.Zero != nil {
-			cfg.YAxisRight = &lineWidgetYAxisRight
-		}
-	}
-
+	cfg = expandDashboardWidgetYAxisAttributesVizClassified(w, cfg, visualisation)
 	cfg = expandDashboardWidgetNullValuesInput(w, cfg)
 	cfg = expandDashboardWidgetColorsInput(w, cfg)
 	cfg = expandDashboardWidgetUnitsInput(w, cfg)
@@ -666,6 +647,29 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	widget.Visualization.ID = visualisation
 
 	return &widget, &cfg, nil
+}
+
+func expandDashboardWidgetYAxisAttributesVizClassified(w map[string]interface{}, cfg dashboards.RawConfiguration, visualisation string) dashboards.RawConfiguration {
+	if visualisation != "viz.line" {
+		if q, ok := w["y_axis_left_min"]; ok {
+			var l dashboards.DashboardWidgetYAxisLeft
+			min := q.(float64)
+			l.Min = &min
+			if q, ok := w["y_axis_left_max"]; ok {
+				l.Max = q.(float64)
+			}
+			cfg.YAxisLeft = &l
+		}
+	} else {
+		lineWidgetYAxisLeft := expandDashboardWidgetYAxisLeft(w)
+		cfg.YAxisLeft = &lineWidgetYAxisLeft
+
+		lineWidgetYAxisRight := expandDashboardWidgetYAxisRight(w)
+		if lineWidgetYAxisRight.Series != nil || lineWidgetYAxisRight.Zero != nil {
+			cfg.YAxisRight = &lineWidgetYAxisRight
+		}
+	}
+	return cfg
 }
 
 func expandDashboardWidgetYAxisLeft(w map[string]interface{}) dashboards.DashboardWidgetYAxisLeft {
@@ -1298,8 +1302,8 @@ func flattenDashboardLineWidgetYAxisRight(yAxisRight *dashboards.DashboardWidget
 }
 
 func flattenDashboardLineWidgetThresholds(thresholds interface{}) (interface{}, []map[string]interface{}) {
-	var thresholdsConsolidated []map[string]interface{} = nil
-	var isLabelVisible interface{} = nil
+	var thresholdsConsolidated []map[string]interface{}
+	var isLabelVisible interface{}
 
 	thresholdsFetched := thresholds.(map[string]interface{})
 	if thresholdsFetched["isLabelVisible"] != nil {
@@ -1336,7 +1340,7 @@ func flattenDashboardLineWidgetThresholds(thresholds interface{}) (interface{}, 
 }
 
 func flattenDashboardTableWidgetThresholds(thresholds interface{}) []map[string]interface{} {
-	var thresholdsConsolidated []map[string]interface{} = nil
+	var thresholdsConsolidated []map[string]interface{}
 	thresholdsFetchedListInterface := thresholds.([]interface{})
 	if len(thresholdsFetchedListInterface) > 0 {
 		for _, item := range thresholdsFetchedListInterface {
