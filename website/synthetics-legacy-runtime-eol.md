@@ -1,6 +1,5 @@
 Hello!
 
-This issue/post has been created to convey details about the upcoming end-of-life (EOL) of the Synthetics Legacy Runtime, which would, post the end-of-life, affect all Synthetic Monitors created using the legacy runtime.
 
 As already communicated by New Relic, support for legacy Synthetics runtimes **will reach its end-of-life (EOL) on October 22, 2024**. In addition, creating **new** monitors using the legacy runtime **will no longer be supported after June 30, 2024**. This would affect Synthetic Monitors running on the legacy runtime, created using any of the following resources used to manage Synthetic Monitors:
 
