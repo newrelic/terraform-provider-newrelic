@@ -464,9 +464,14 @@ func expandDashboardLineWidgetConfigurationThresholdInput(d *schema.ResourceData
 	// check if 'is_label_visible' has been specified in the configuration of the 'widget_line' widget currently referenced
 	// if so, assign the specified value of 'is_label_visible' to IsLabelVisible in the object created above
 
-	if isLabelVisible, isLabelVisibleOk := d.GetOk(fmt.Sprintf("page.%d.widget_line.%d.is_label_visible", pageIndex, widgetIndex)); isLabelVisibleOk {
-		isLabelVisibleBoolean := isLabelVisible.(bool)
-		lineWidgetThresholdsRoot.IsLabelVisible = &isLabelVisibleBoolean
+	lineWidget, lineWidgetOk := d.GetOk(fmt.Sprintf("page.%d.widget_line.%d", pageIndex, widgetIndex))
+	if lineWidgetOk {
+		lineWidgetAttributes := lineWidget.(map[string]interface{})
+		isLabelVisible := lineWidgetAttributes["is_label_visible"]
+		if isLabelVisible != nil {
+			isLabelVisibleBoolean := isLabelVisible.(bool)
+			lineWidgetThresholdsRoot.IsLabelVisible = &isLabelVisibleBoolean
+		}
 	}
 
 	// initialize a list of 'DashboardLineWidgetThresholdThresholdInput', which would be populated with thresholds specified in the configuration
@@ -738,6 +743,29 @@ func expandDashboardWidgetYAxisRight(w map[string]interface{}) dashboards.Dashbo
 			// eventually, assign the marshalled series from the above logic to the attribute "Series" of the 'DashboardWidgetYAxisRight' object
 			dashboardYAxisRightToBeAdded.Series = dashboardYAxisRightSeriesToBeAdded
 		}
+
+		if *dashboardYAxisRightToBeAdded.Zero {
+			if yMin, okMin := dashboardYAxisRightInInput["y_axis_right_min"]; okMin {
+				if yMin.(float64) != 0 {
+					min := yMin.(float64)
+					dashboardYAxisRightToBeAdded.Min = &min
+				}
+			}
+			if yMax, okMax := dashboardYAxisRightInInput["y_axis_right_max"]; okMax {
+				if yMax.(float64) != 0 {
+					dashboardYAxisRightToBeAdded.Max = yMax.(float64)
+				}
+			}
+		} else {
+			if yMin, okMin := dashboardYAxisRightInInput["y_axis_right_min"]; okMin {
+				min := yMin.(float64)
+				dashboardYAxisRightToBeAdded.Min = &min
+				if yMax, okMax := dashboardYAxisRightInInput["y_axis_right_max"]; okMax {
+					dashboardYAxisRightToBeAdded.Max = yMax.(float64)
+				}
+			}
+		}
+
 	}
 
 	// return the 'DashboardWidgetYAxisRight' object into which the contents of "y_axis_right" in the Terraform configuration have been repackaged
@@ -1285,6 +1313,10 @@ func flattenDashboardLineWidgetYAxisRight(yAxisRight *dashboards.DashboardWidget
 	if yAxisRight.Zero != nil {
 		yAxisRightFetched["y_axis_right_zero"] = yAxisRight.Zero
 	}
+
+	// assign 'Min' and 'Max' of obtained to their respective attributes in the Terraform configuration
+	yAxisRightFetched["y_axis_right_min"] = yAxisRight.Min
+	yAxisRightFetched["y_axis_right_max"] = yAxisRight.Max
 
 	// if 'Series' exists yAxisRight 'YAxisRight', assign it to "y_axis_right_series" of the map
 	if yAxisRight.Series != nil {

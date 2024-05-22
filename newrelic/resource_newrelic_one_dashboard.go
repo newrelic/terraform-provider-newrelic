@@ -579,6 +579,16 @@ func dashboardWidgetLineSchemaElem() *schema.Resource {
 					Description: "A set of series that helps specify the Y-Axis on the right of the line widget.",
 					Optional:    true,
 				},
+				"y_axis_right_min": {
+					Type:        schema.TypeFloat,
+					Description: "Minimum value of the range to be specified with the Y-Axis on the right of the line widget.",
+					Optional:    true,
+				},
+				"y_axis_right_max": {
+					Type:        schema.TypeFloat,
+					Description: "Minimum value of the range to be specified with the Y-Axis on the right of the line widget.",
+					Optional:    true,
+				},
 			},
 		},
 	}
