@@ -1,3 +1,11 @@
+<a name="v3.36.1"></a>
+## [v3.36.1] - 2024-05-22
+### Bug Fixes
+- **docs:** Update Synthetic Monitor resources with Legacy Runtime EOL Notice ([#2665](https://github.com/newrelic/terraform-provider-newrelic/issues/2665))
+
+### Documentation Updates
+- Update CONTRIBUTING.md with accurate path to newrelic-client-go ([#2664](https://github.com/newrelic/terraform-provider-newrelic/issues/2664))
+
 <a name="v3.36.0"></a>
 ## [v3.36.0] - 2024-05-09
 ### Bug Fixes
@@ -2100,7 +2108,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.36.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.36.1...HEAD
+[v3.36.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.36.0...v3.36.1
 [v3.36.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.2...v3.36.0
 [v3.35.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.1...v3.35.2
 [v3.35.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.0...v3.35.1
