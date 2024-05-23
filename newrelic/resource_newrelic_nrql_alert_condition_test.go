@@ -565,29 +565,29 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionEvaluationDelay(t *testing
 	})
 }
 
-func TestAccNewRelicNrqlAlertCondition_IncidentTitleTemplate(t *testing.T) {
+func TestAccNewRelicNrqlAlertCondition_TitleTemplate(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
-	incidentTitleTemplate := "Incident Title {{Template}}"
+	titleTemplate := "Title {{template}}"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
-			// Test: Create condition with an incident title template
+			// Test: Create condition with a title template
 			{
-				Config: testAccNewRelicNrqlAlertConditionWithIncidentTitleTemplate(
+				Config: testAccNewRelicNrqlAlertConditionWithTitleTemplate(
 					rName,
-					incidentTitleTemplate,
+					titleTemplate,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
 			},
-			// Test: Incident title template is nullable
+			// Test: Title template is nullable
 			{
-				Config: testAccNewRelicNrqlAlertConditionNullIncidentTitleTemplate(
+				Config: testAccNewRelicNrqlAlertConditionNullTitleTemplate(
 					rName,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -1171,9 +1171,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 `, name)
 }
 
-func testAccNewRelicNrqlAlertConditionWithIncidentTitleTemplate(
+func testAccNewRelicNrqlAlertConditionWithTitleTemplate(
 	name string,
-	incidentTitleTemplate string,
+	titleTemplate string,
 ) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
@@ -1188,7 +1188,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	runbook_url                    = "https://foo.example.com"
 	enabled                        = false
 	description                    = "test description"
-	incident_title_template        = "%[2]s"
+	title_template                 = "%[2]s"
 	violation_time_limit_seconds   = 3600
 	close_violations_on_expiration = true
 	open_violation_on_expiration   = true
@@ -1207,10 +1207,10 @@ resource "newrelic_nrql_alert_condition" "foo" {
 		threshold_occurrences = "ALL"
 	}
 }
-`, name, incidentTitleTemplate)
+`, name, titleTemplate)
 }
 
-func testAccNewRelicNrqlAlertConditionNullIncidentTitleTemplate(
+func testAccNewRelicNrqlAlertConditionNullTitleTemplate(
 	name string,
 ) string {
 	return fmt.Sprintf(`
@@ -1226,7 +1226,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	runbook_url                    = "https://foo.example.com"
 	enabled                        = false
 	description                    = "test description"
-	incident_title_template        = null
+	title_template                 = null
 	violation_time_limit_seconds   = 3600
 	close_violations_on_expiration = true
 	open_violation_on_expiration   = true

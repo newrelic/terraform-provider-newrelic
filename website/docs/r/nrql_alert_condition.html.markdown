@@ -28,7 +28,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   type                           = "static"
   name                           = "foo"
   description                    = "Alert when transactions are taking too long"
-  incident_title_template        = "Incident in environment: {{ json accumulations.tag.environment }}"
+  title_template                 = "Issue in environment: {{ json accumulations.tag.environment }}"
   runbook_url                    = "https://www.example.com"
   enabled                        = true
   violation_time_limit_seconds   = 3600
@@ -70,7 +70,7 @@ The following arguments are supported:
 - `account_id` - (Optional) The New Relic account ID of the account you wish to create the condition. Defaults to the account ID set in your environment variable `NEW_RELIC_ACCOUNT_ID`.
 - `baseline_direction` - (Optional) The baseline direction of a _baseline_ NRQL alert condition. Valid values are: `lower_only`, `upper_and_lower`, `upper_only` (case insensitive).
 - `description` - (Optional) The description of the NRQL alert condition.
-- `incident_title_template` - (Optional) The custom incident title to be used when incidents are opened by the condition. Setting this field will override the default incident title. Must be [Handlebars](https://handlebarsjs.com/) format.
+- `title_template` - (Optional) The custom title to be used when incidents are opened by the condition. Setting this field will override the default title. Must be [Handlebars](https://handlebarsjs.com/) format.
 - `policy_id` - (Required) The ID of the policy where this condition should be used.
 - `name` - (Required) The title of the condition.
 - `type` - (Optional) The type of the condition. Valid values are `static` or `baseline`. Defaults to `static`.

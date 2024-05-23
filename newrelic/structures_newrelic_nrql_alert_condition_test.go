@@ -48,7 +48,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 	evalOffset := nrql["evaluation_offset"].(int)
 	expectedNrql.Nrql.EvaluationOffset = &evalOffset
 
-	incidentTitleTemplate := "Incident title {{template}}"
+	titleTemplate := "Title {{template}}"
 
 	cases := map[string]struct {
 		Data         map[string]interface{}
@@ -358,23 +358,23 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				},
 			},
 		},
-		"incident title template nil": {
+		"title template nil": {
 			Data: map[string]interface{}{
-				"nrql":                    []interface{}{nrql},
-				"incident_title_template": nil,
+				"nrql":           []interface{}{nrql},
+				"title_template": nil,
 			},
 			Expanded: &alerts.NrqlConditionCreateInput{
 				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
 			},
 		},
-		"incident title template not nill": {
+		"title template not nill": {
 			Data: map[string]interface{}{
-				"nrql":                    []interface{}{nrql},
-				"incident_title_template": "Incident title {{template}}",
+				"nrql":           []interface{}{nrql},
+				"title_template": "Title {{template}}",
 			},
 			Expanded: &alerts.NrqlConditionCreateInput{
 				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
-					IncidentTitleTemplate: &incidentTitleTemplate,
+					TitleTemplate: &titleTemplate,
 				},
 			},
 		},
@@ -445,16 +445,16 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 func TestFlattenNrqlAlertCondition(t *testing.T) {
 	r := resourceNewRelicNrqlAlertCondition()
 	evalOffset := 3
-	incidentTitleTemplate := "Incident title {{template}}"
+	titleTemplate := "Title {{template}}"
 
 	nrqlCondition := alerts.NrqlAlertCondition{
 		ID:       "1234567",
 		PolicyID: "7654321",
 		NrqlConditionBase: alerts.NrqlConditionBase{
-			Description:           "description test",
-			IncidentTitleTemplate: &incidentTitleTemplate,
-			Enabled:               true,
-			Name:                  "name-test",
+			Description:   "description test",
+			TitleTemplate: &titleTemplate,
+			Enabled:       true,
+			Name:          "name-test",
 			Nrql: alerts.NrqlConditionQuery{
 				Query:            "SELECT average(duration) from Transaction where appName='Dummy App'",
 				EvaluationOffset: &evalOffset,
@@ -565,8 +565,8 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		assert.Equal(t, 660, warningTerms[0].(map[string]interface{})["threshold_duration"])
 		assert.Equal(t, "below", warningTerms[0].(map[string]interface{})["operator"])
 
-		incidentTitleTemplate := d.Get("incident_title_template").(string)
-		assert.Equal(t, "Incident title {{template}}", incidentTitleTemplate)
+		titleTemplate := d.Get("title_template").(string)
+		assert.Equal(t, "Title {{template}}", titleTemplate)
 
 		switch condition.Type {
 		case alerts.NrqlConditionTypes.Baseline:
