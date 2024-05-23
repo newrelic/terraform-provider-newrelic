@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/dashboards"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
 
@@ -553,6 +554,81 @@ func dashboardWidgetLineSchemaElem() *schema.Resource {
 		Optional:    true,
 		Description: "Specifies if the values on the graph to be rendered need to be fit to scale, or printed within the specified range.",
 	}
+
+	s["is_label_visible"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Description: "Specified if the label should be visible in the graph created when specified with thresholds.",
+	}
+
+	// adding this attribute in the schema of line widgets, since 'y_axis_right' is currently available only to line widgets
+	s["y_axis_right"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"y_axis_right_zero": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Description: "An attribute that helps specify the Y-Axis on the right of the line widget.",
+				},
+				"y_axis_right_series": {
+					Type:        schema.TypeSet,
+					Elem:        &schema.Schema{Type: schema.TypeString},
+					Description: "A set of series that helps specify the Y-Axis on the right of the line widget.",
+					Optional:    true,
+				},
+				"y_axis_right_min": {
+					Type:        schema.TypeFloat,
+					Description: "Minimum value of the range to be specified with the Y-Axis on the right of the line widget.",
+					Optional:    true,
+				},
+				"y_axis_right_max": {
+					Type:        schema.TypeFloat,
+					Description: "Minimum value of the range to be specified with the Y-Axis on the right of the line widget.",
+					Optional:    true,
+				},
+			},
+		},
+	}
+
+	s["threshold"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"from": {
+					Type:        schema.TypeInt,
+					Optional:    true,
+					Description: "The number from which the range starts in thresholds.",
+				},
+				"to": {
+					Type:        schema.TypeInt,
+					Optional:    true,
+					Description: "The number at which the range ends in thresholds.",
+				},
+				"name": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Name of the threshold created.",
+				},
+				"severity": {
+					Type:     schema.TypeString,
+					Optional: true,
+					ValidateFunc: validation.StringInSlice([]string{
+						string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.SUCCESS),
+						string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.WARNING),
+						string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.UNAVAILABLE),
+						string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.SEVERE),
+						string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.CRITICAL),
+					}, false),
+					Description: "Severity of the threshold, which would reflect in the widget, in the range of the threshold specified.",
+				},
+			},
+		},
+	}
+
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -614,6 +690,42 @@ func dashboardWidgetTableSchemaElem() *schema.Resource {
 
 	s["linked_entity_guids"] = dashboardWidgetLinkedEntityGUIDsSchema()
 	s["filter_current_dashboard"] = dashboardWidgetFilterCurrentDashboardSchema()
+
+	s["threshold"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"from": {
+					Type:        schema.TypeInt,
+					Optional:    true,
+					Description: "The number from which the range starts in thresholds.",
+				},
+				"to": {
+					Type:        schema.TypeInt,
+					Optional:    true,
+					Description: "The number at which the range ends in thresholds.",
+				},
+				"column_name": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Name of the column in the table, to which the threshold would be applied.",
+				},
+				"severity": {
+					Type:     schema.TypeString,
+					Optional: true,
+					ValidateFunc: validation.StringInSlice([]string{
+						string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.SUCCESS),
+						string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.WARNING),
+						string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.UNAVAILABLE),
+						string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.SEVERE),
+						string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.CRITICAL),
+					}, false),
+					Description: "Severity of the threshold, which would reflect in the widget, in the range of the threshold specified.",
+				},
+			},
+		},
+	}
 
 	return &schema.Resource{
 		Schema: s,
