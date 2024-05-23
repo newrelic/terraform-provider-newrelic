@@ -34,7 +34,7 @@ func resourceNewrelicCloudGcpIntegrations() *schema.Resource {
 			},
 			"ai_platform": {
 				Type:        schema.TypeList,
-				Description: "GCP big table service",
+				Description: "GCP Vertex AI service",
 				Optional:    true,
 				Elem:        cloudGcpIntegrationsAiplatformSchemaElem(),
 				MaxItems:    1,
