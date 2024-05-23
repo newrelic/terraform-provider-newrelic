@@ -350,6 +350,12 @@ func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
+	destinationType := notifications.AiNotificationsDestinationType(d.Get("type").(string))
+
+	if isOAuth2SlackType(destinationType) {
+		return diag.FromErr(fmt.Errorf("a destination with '%s' type cannot be updated via terraform", destinationType))
+	}
+
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)

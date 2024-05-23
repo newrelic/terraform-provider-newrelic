@@ -22,8 +22,8 @@ resource "newrelic_notification_destination" "foo" {
   secure_url {
     prefix = "https://webhook.mywebhook.com/"
     secure_suffix = "service_id/123456"
-  }  
-  
+  }
+
   property {
     key = "source"
     value = "terraform"
@@ -70,7 +70,7 @@ The following arguments are supported:
 ### Nested `secure_url` blocks
 
 * `prefix` - (Required) The prefix of the URL.
-* `secure_suffix` - (Required) The suffix of the URL, which contains sensitive data. 
+* `secure_suffix` - (Required) The suffix of the URL, which contains sensitive data.
 
 ### Nested `property` blocks
 
@@ -179,7 +179,7 @@ resource "newrelic_notification_destination" "foo" {
     key = ""
     value = ""
   }
-  
+
   auth_token {
     prefix = "Token token="
     token  = "10567a689d984d03c021034b22a789e2"
@@ -243,26 +243,27 @@ resource "newrelic_notification_destination" "foo" {
 
 In order to create a Slack destination, you have to grant our application access to your workspace. This process is [based on OAuth](https://api.slack.com/authentication/oauth-v2) and can only be done through a browser.
 As a result, you cannot set up a Slack destination purely with Terraform code.
-You can either create a Slack destination in the interface and [import](#import) it to Terraform, or use destination data source.
-
+However, if you would like to use Slack-based destinations with other resources in the New Relic Terraform Provider, the [data source `newrelic_notification_destination`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/data-sources/notification_destination) may be used to fetch the ID of the destination; alternatively, you might want to source the ID of the destination from  NerdGraph, or from the New Relic One UI.
 
 ## Import
+
+~> **WARNING:** Slack-based destinations can only be imported and destroyed; this resource **does not** support creating and updating Slack-based destinations, owing to the reasons stated above, under the **Slack** section.
 
 Destination id can be found in the Destinations page -> three dots at the right of the chosen destination -> copy destination id to clipboard.
 This example is especially useful for slack destinations which *must* be imported.
 
-1. Add an empty resource to your terraform file: 
+1. Add an empty resource to your terraform file:
 ```terraform
 resource "newrelic_notification_destination" "foo" {
 }
 ```
 2. Run import command: `terraform import newrelic_notification_destination.foo <destination_id>`
 3. Run the following command after the import successfully done and copy the information to your resource:
-`terraform state show newrelic_notification_destination.foo`
-4. Add `ignore_changes` attribute on `auth_token` in your imported resource:
+   `terraform state show newrelic_notification_destination.foo`
+4. Add `ignore_changes` attribute on `all` in your imported resource:
 ```terraform
 lifecycle {
-    ignore_changes = [auth_token]
+    ignore_changes = all
   }
 ```
 
@@ -270,12 +271,10 @@ Your imported destination should look like that:
 ```terraform
 resource "newrelic_notification_destination" "foo" {
   lifecycle {
-    ignore_changes = [auth_token]
+    ignore_changes = all
   }
-
   name = "*********"
   type = "SLACK"
-
   auth_token {
     prefix = "Bearer"
   }
@@ -287,7 +286,6 @@ resource "newrelic_notification_destination" "foo" {
   }
 }
 ```
-
 
 ~> **NOTE:** Sensitive data such as destination API keys, service keys, auth object etc. are not returned from the underlying API for security reasons and may not be set in state when importing.
 
