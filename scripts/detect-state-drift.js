@@ -4,7 +4,7 @@ module.exports = async ({
   const fs = require('fs');
 
   // Read the text from the file
-  fs.readFile('coverage/unit.report', 'utf8', (err, data) => {
+  fs.readFile('coverage/integration.report', 'utf8', (err, data) => {
     if (err) {
       console.error('Error reading file:', err);
       return;
@@ -23,7 +23,6 @@ module.exports = async ({
       }
     });
 
-    // Print the resulting JSON array
     // console.log(jsonData);
 
     const report = jsonData.filter(data => {
@@ -37,18 +36,6 @@ module.exports = async ({
       msg = `'${report.join('\n')}'`;
     }
 
-    core.setOutput('failed_tests_with_drift', msg);
-
-    // // Convert JSON data to string
-    // const jsonString = JSON.stringify(failedTests, null, 2);
-
-    // // Write the JSON data to a file
-    // fs.writeFile('output.json', jsonString, 'utf8', err => {
-    //   if (err) {
-    //     console.error('Error writing file:', err);
-    //     return;
-    //   }
-    //   console.log('JSON data has been written to output.json');
-    // });
+    core.setOutput('drift_report', msg);
   });
 };

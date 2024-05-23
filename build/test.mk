@@ -35,11 +35,6 @@ test-integration: tools
 		-- -v -parallel 10 -tags=integration $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp \
 		   -timeout 120m -ldflags=$(LDFLAGS_TEST)
 
-test-failure-report: tools
-	@echo "=== $(PROJECT_NAME) === [ test-report-failed ]: generating report..."
-	@mkdir -p $(COVERAGE_DIR)
-	./scripts/test-failure-report.sh
-
 #
 # Coverage
 #
