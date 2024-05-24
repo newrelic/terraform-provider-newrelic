@@ -1,6 +1,6 @@
 Hello!
 
-As already communicated by New Relic, support for legacy Synthetics runtimes **will reach end-of-life (EOL) on October 22, 2024**. In addition, creating **new** monitors using the legacy runtime **will no longer be supported after June 30, 2024**. This affects Synthetic Monitors running on the legacy runtime, created using any of the following resources:
+As already [communicated by New Relic](https://docs.newrelic.com/whats-new/2024/04/whats-new-04-09-eol-synthetics-runtime-cpm/#:~:text=On%20October%2022%2C%202024%2C%20New,version%2010%20(or%20older)%20runtimes), support for legacy Synthetics runtimes **will reach end-of-life (EOL) on October 22, 2024**. In addition, creating **new** monitors using the legacy runtime **will no longer be supported after June 30, 2024**. This affects Synthetic Monitors running on the legacy runtime, created using any of the following resources:
 
 - [newrelic_synthetics_monitor](https://registry.terraform.io/providers/newrelic/newrelic/3.36.1/docs/resources/synthetics_monitor)
 - [newrelic_synthetics_script_monitor](https://registry.terraform.io/providers/newrelic/newrelic/3.36.1/docs/resources/synthetics_script_monitor)
