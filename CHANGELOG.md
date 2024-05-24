@@ -1,3 +1,8 @@
+<a name="v3.37.1"></a>
+## [v3.37.1] - 2024-05-24
+### Bug Fixes
+- **dashboards:** fix broken condition when thresholds are nil with billboard widgets ([#2676](https://github.com/newrelic/terraform-provider-newrelic/issues/2676))
+
 <a name="v3.37.0"></a>
 ## [v3.37.0] - 2024-05-23
 ### Bug Fixes
@@ -2116,7 +2121,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.37.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.37.1...HEAD
+[v3.37.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.37.0...v3.37.1
 [v3.37.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.36.1...v3.37.0
 [v3.36.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.36.0...v3.36.1
 [v3.36.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.35.2...v3.36.0
