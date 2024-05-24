@@ -1203,19 +1203,21 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	case "viz.billboard":
 		widgetType = "widget_billboard"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
-		rawCfgThresholdsFetched := rawCfg.Thresholds.([]interface{})
-		if len(rawCfgThresholdsFetched) > 0 {
-			for _, t := range rawCfgThresholdsFetched {
-				thresholdFetched := t.(map[string]interface{})
-				if thresholdFetched["value"] == nil {
-					continue
-				}
+		if rawCfg.Thresholds != nil {
+			rawCfgThresholdsFetched := rawCfg.Thresholds.([]interface{})
+			if len(rawCfgThresholdsFetched) > 0 {
+				for _, t := range rawCfgThresholdsFetched {
+					thresholdFetched := t.(map[string]interface{})
+					if thresholdFetched["value"] == nil {
+						continue
+					}
 
-				switch thresholdFetched["alertSeverity"].(string) {
-				case string(entities.DashboardAlertSeverityTypes.CRITICAL):
-					out["critical"] = strconv.FormatFloat(thresholdFetched["value"].(float64), 'f', -1, 64)
-				case string(entities.DashboardAlertSeverityTypes.WARNING):
-					out["warning"] = strconv.FormatFloat(thresholdFetched["value"].(float64), 'f', -1, 64)
+					switch thresholdFetched["alertSeverity"].(string) {
+					case string(entities.DashboardAlertSeverityTypes.CRITICAL):
+						out["critical"] = strconv.FormatFloat(thresholdFetched["value"].(float64), 'f', -1, 64)
+					case string(entities.DashboardAlertSeverityTypes.WARNING):
+						out["warning"] = strconv.FormatFloat(thresholdFetched["value"].(float64), 'f', -1, 64)
+					}
 				}
 			}
 		}
