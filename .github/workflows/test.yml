@@ -73,7 +73,7 @@ jobs:
         run: make test-unit cover-report
 
       - name: Report unit test coverage via Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./coverage/coverage.out
 
@@ -131,7 +131,7 @@ jobs:
           INTEGRATION_TESTING_AZURE_TENANT_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_TENANT_ID }}
 
       - name: Report integration test coverage via Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./coverage/coverage.out
 
