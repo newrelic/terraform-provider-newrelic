@@ -12,7 +12,7 @@ In light of the above, kindly **upgrade your Synthetic Monitors to the new runti
 
 We will synchronize relevant changes in the New Relic Terraform Provider with the Synthetics team. Watch this space for more updates.
 
-The article linked above comprises key details around the EOL and has been published by New Relic Synthetics. We shall also continue to share any useful information around the EOL via this thread, or via the documentation of the New Relic Terraform Provider.
+We shall also continue to share any useful information around the EOL via this thread, or via the documentation of the New Relic Terraform Provider.
 
 Should you have any questions/suggestions, please feel free to let us know in this thread.
 
