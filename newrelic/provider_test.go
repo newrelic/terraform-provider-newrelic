@@ -171,6 +171,8 @@ func testAccCreateEntity(t *testing.T, name string) {
 		t.Fatalf("Unable to find application entity: %s", retryErr)
 	}
 
+	// We have to give time for the async nature of the entity creation to complete
+	time.Sleep(1 * time.Second)
 }
 
 func testAccPreCheckEnvVars(t *testing.T) {
@@ -237,7 +239,7 @@ func testAccApplicationsCleanup(t *testing.T) {
 
 			if err == nil {
 				deletedAppCount++
-				t.Logf("deleted application %d (%d/%d)", app.ID, deletedAppCount, len(applications))
+				t.Logf("deleted application %s (%d/%d)", app.Name, deletedAppCount, len(applications))
 			}
 		}
 	}

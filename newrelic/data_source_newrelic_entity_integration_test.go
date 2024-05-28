@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -37,6 +38,8 @@ func TestAccNewRelicSingleQuotedEntityData_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccSingleQuotedPreCheck(t)
+
+			time.Sleep(2 * time.Second)
 		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
