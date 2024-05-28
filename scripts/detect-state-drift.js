@@ -26,15 +26,31 @@ module.exports = async ({
     // console.log(jsonData);
 
     const report = jsonData.filter(data => {
-      return data.Output ? data.Output.includes('error: After applying this test step, the plan was not empty') : false;
+      const driftDetectedSubStrings = [
+        'the plan was not empty',
+        'expected an error but got none',
+      ];
+
+      if (!data.Output) {
+        return false;
+      }
+
+      let driftDetected = false
+      for (let i = 0; i < driftDetectedSubStrings.length; i++) {
+        if (data.Output.includes(driftDetectedSubStrings[i])) {
+          return true;
+        }
+      }
+
+      return driftDetected
     }).map(t => t.Output.trim());
 
-    console.log(report);
-
-    let msg = 'error: After applying this test step, the plan was not empty';
+    let msg = 'No drift detected.';
     if (report.length > 0) {
       msg = `'${report.join('\n')}'`;
     }
+
+    console.log('drift_report:', msg);
 
     core.setOutput('drift_report', msg);
   });

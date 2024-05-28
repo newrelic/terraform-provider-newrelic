@@ -89,10 +89,7 @@ func TestNewRelicNotificationChannel_WebhookPropertyError(t *testing.T) {
 
 	# Test error for missing property key = url
 	`
-	destinationPropsAttr := `property {
-		key = "url"
-		value = "https://webhook.site/"
-	}
+	destinationPropsAttr := `
 	`
 
 	resource.ParallelTest(t, resource.TestCase{
