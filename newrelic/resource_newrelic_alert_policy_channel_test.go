@@ -18,7 +18,6 @@ func TestAccNewRelicAlertPolicyChannel_Basic(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyChannelDestroy,
 		Steps: []resource.TestStep{
@@ -51,7 +50,6 @@ func TestAccNewRelicAlertPolicyChannel_ChannelOrder(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyChannelDestroy,
 		Steps: []resource.TestStep{
@@ -71,7 +69,6 @@ func TestAccNewRelicAlertPolicyChannel_MutipleChannels(t *testing.T) {
 	rName := acctest.RandString(5)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyChannelDestroy,
 		Steps: []resource.TestStep{
@@ -103,7 +100,6 @@ func TestAccNewRelicAlertPolicyChannel_AlertPolicyNotFound(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyChannelDestroy,
 		Steps: []resource.TestStep{
@@ -125,7 +121,6 @@ func TestAccNewRelicAlertPolicyChannel_AlertChannelNotFound(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicAlertPolicyChannelDestroy,
 		Steps: []resource.TestStep{
