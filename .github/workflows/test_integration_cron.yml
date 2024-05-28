@@ -1,38 +1,57 @@
 name: Integration Tests Cron Job
 
 on:
-  workflow_dispatch: # this is just to test the functionality, remove before merging!!!!!!!!!!!!
+  workflow_dispatch:
+  push:
+    branches: [feat/integration-test-cron-job]
   # schedule:
   #   # Cron executes at 0800, 1200 1600 (8am, 12pm, 4pm)
   #   - cron: "0 8,12,16 * * 1-5"
 
 jobs:
   test-integration:
-    # if: github.ref == 'refs/heads/main'
-    uses: newrelic/terraform-provider-newrelic/.github/workflows/test_integration.yml@feat/integration-test-cron-job
-    secrets:
-      NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-      NEW_RELIC_SUBACCOUNT_ID: ${{ secrets.NEW_RELIC_SUBACCOUNT_ID }}
-      NEW_RELIC_ADMIN_API_KEY: ${{ secrets.NEW_RELIC_ADMIN_API_KEY }}
-      NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
-      NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
-      NEW_RELIC_REGION: ${{ secrets.NEW_RELIC_REGION }}
-      NEW_RELIC_INSIGHTS_INSERT_KEY: ${{ secrets.NEW_RELIC_INSIGHTS_INSERT_KEY }}
-      NR_ACC_TESTING: ${{ secrets.NR_ACC_TESTING }}
-      INTEGRATION_TESTING_AWS_ARN: ${{ secrets.INTEGRATION_TESTING_AWS_ARN }}
-      INTEGRATION_TESTING_GCP_ACCOUNT_NAME: ${{ secrets.INTEGRATION_TESTING_GCP_ACCOUNT_NAME }}
-      INTEGRATION_TESTING_GCP_PROJECT_ID: ${{ secrets.INTEGRATION_TESTING_GCP_PROJECT_ID }}
-      INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID: ${{secrets.INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID}}
-      INTEGRATION_TESTING_AZURE_APPLICATION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_APPLICATION_ID }}
-      INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID }}
-      INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID }}
-      INTEGRATION_TESTING_AZURE_TENANT_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_TENANT_ID }}
-
-  detect-drift:
     runs-on: ubuntu-latest
     steps:
-      - name: Check check
-        run: ls
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.21.x
+
+      - name: Add GOBIN to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache deps
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Integration Tests
+        run: make test-integration cover-report
+        continue-on-error: true
+        env:
+          NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+          NEW_RELIC_SUBACCOUNT_ID: ${{ secrets.NEW_RELIC_SUBACCOUNT_ID }}
+          NEW_RELIC_ADMIN_API_KEY: ${{ secrets.NEW_RELIC_ADMIN_API_KEY }}
+          NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
+          NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+          NEW_RELIC_REGION: ${{ secrets.NEW_RELIC_REGION }}
+          NEW_RELIC_INSIGHTS_INSERT_KEY: ${{ secrets.NEW_RELIC_INSIGHTS_INSERT_KEY }}
+          NR_ACC_TESTING: ${{ secrets.NR_ACC_TESTING }}
+          INTEGRATION_TESTING_AWS_ARN: ${{ secrets.INTEGRATION_TESTING_AWS_ARN }}
+          INTEGRATION_TESTING_GCP_ACCOUNT_NAME: ${{ secrets.INTEGRATION_TESTING_GCP_ACCOUNT_NAME }}
+          INTEGRATION_TESTING_GCP_PROJECT_ID: ${{ secrets.INTEGRATION_TESTING_GCP_PROJECT_ID }}
+          INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID: ${{secrets.INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID}}
+          INTEGRATION_TESTING_AZURE_APPLICATION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_APPLICATION_ID }}
+          INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID }}
+          INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID }}
+          INTEGRATION_TESTING_AZURE_TENANT_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_TENANT_ID }}
 
       - name: Detect drift
         if: ${{ always() }}
@@ -45,7 +64,6 @@ jobs:
 
       - name: Send report to Slack
         id: slack
-        if: ${{ steps.detect-state-drift.outputs.drift_report != ''  }}
         uses: slackapi/slack-github-action@v1.26
         with:
           # Uses Slack's Block Kit to build the message
@@ -68,7 +86,7 @@ jobs:
                   "elements": [
                     {
                       "type": "plain_text",
-                      "text": ${{ toJSON(steps.detect-state-drift.outputs.failed_tests_with_drift) }}
+                      "text": "${{ toJSON(steps.detect-state-drift.outputs.failed_tests_with_drift) }}"
                     }
                   ]
                 },
@@ -98,4 +116,3 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
-
