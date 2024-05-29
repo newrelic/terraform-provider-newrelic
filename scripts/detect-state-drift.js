@@ -23,8 +23,6 @@ module.exports = async ({
       }
     });
 
-    // console.log(jsonData);
-
     const report = jsonData.filter(data => {
       const driftDetectedSubStrings = [
         'the plan was not empty',
@@ -47,7 +45,7 @@ module.exports = async ({
 
     let msg = 'No drift detected.';
     if (report.length > 0) {
-      msg = `'${report.join('\n')}'`;
+      msg = `'${report.join('\n\n')}'`;
     }
 
     console.log('drift_report:', msg);

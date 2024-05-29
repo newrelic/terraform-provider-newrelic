@@ -75,7 +75,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": ":warning: *Terraform Provider | Drift Detected*"
+                    "text": ":warning: *Terraform Provider | Potential Drift Detected*"
                   }
                 },
                 {
@@ -86,7 +86,7 @@ jobs:
                   "elements": [
                     {
                       "type": "plain_text",
-                      "text": "${{ toJSON(steps.detect-state-drift.outputs.failed_tests_with_drift) }}"
+                      "text": ${{ toJSON(steps.detect-state-drift.outputs.drift_report) }}
                     }
                   ]
                 },
