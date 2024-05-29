@@ -35,10 +35,10 @@ jobs:
         run: |
           make test-unit cover-report
 
-      # - name: Report unit test coverage via Codecov
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     files: ./coverage/coverage.out
+      - name: Report test coverage via Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/coverage.out
 
 
 
