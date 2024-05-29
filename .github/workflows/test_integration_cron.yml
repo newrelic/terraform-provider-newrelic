@@ -2,11 +2,9 @@ name: Integration Tests Cron Job
 
 on:
   workflow_dispatch:
-  push:
-    branches: [feat/integration-test-cron-job]
-  # schedule:
-  #   # Cron executes at 0800, 1200 1600 (8am, 12pm, 4pm)
-  #   - cron: "0 8,12,16 * * 1-5"
+  schedule:
+    # Cron executes at 0800, 1200 1600 (8am, 12pm, 4pm)
+    - cron: "0 8,12,16 * * 1-5"
 
 jobs:
   test-integration:
