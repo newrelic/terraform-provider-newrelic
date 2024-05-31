@@ -121,7 +121,7 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 		query,
 		[]entities.EntitySearchSortCriteria{},
 	)
-
+	
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -130,10 +130,10 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("GetEntitySearchByQuery response was nil"))
 	}
 
+
 	var entity *entities.EntityOutlineInterface
 	for _, e := range entityResults.Results.Entities {
 		// Conditional on case-sensitive match
-
 		str := e.GetName()
 		str = strings.TrimSpace(str)
 
@@ -167,6 +167,7 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 
 	}
 
+
 	return diag.FromErr(flattenEntityData(entity, d))
 }
 
@@ -192,6 +193,10 @@ func flattenEntityData(entity *entities.EntityOutlineInterface, d *schema.Resour
 	}
 
 	if err = d.Set("account_id", (*entity).GetAccountID()); err != nil {
+		return err
+	}
+
+	if err = d.Set("tags", (*entity).GetTags()); err != nil {
 		return err
 	}
 
