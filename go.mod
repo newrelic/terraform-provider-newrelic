@@ -7,8 +7,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.30.0
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go/v2 v2.36.3-0.20240530135511-f332aa14b7b9
-	github.com/stretchr/testify v1.8.4
+	github.com/newrelic/newrelic-client-go/v2 v2.36.3-0.20240531052621-612d979b4edd
+	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 )
 
@@ -50,7 +50,7 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
 	github.com/valyala/fastjson v1.6.4 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
