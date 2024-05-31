@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -70,6 +71,11 @@ func dataSourceNewRelicEntity() *schema.Resource {
 					},
 				},
 			},
+			"entity_tags": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 			"account_id": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -121,7 +127,7 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 		query,
 		[]entities.EntitySearchSortCriteria{},
 	)
-	
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,7 +135,6 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 	if entityResults == nil {
 		return diag.FromErr(fmt.Errorf("GetEntitySearchByQuery response was nil"))
 	}
-
 
 	var entity *entities.EntityOutlineInterface
 	for _, e := range entityResults.Results.Entities {
@@ -167,7 +172,6 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 
 	}
 
-
 	return diag.FromErr(flattenEntityData(entity, d))
 }
 
@@ -196,8 +200,17 @@ func flattenEntityData(entity *entities.EntityOutlineInterface, d *schema.Resour
 		return err
 	}
 
-	if err = d.Set("tags", (*entity).GetTags()); err != nil {
-		return err
+	entityTags := (*entity).GetTags()
+	if len(entityTags) != 0 {
+		entityTagsJSONMarshalled, err := json.Marshal(entityTags)
+		if err != nil {
+			return err
+		}
+		if entityTagsJSONMarshalled != nil {
+			if err = d.Set("entity_tags", string(entityTagsJSONMarshalled)); err != nil {
+				return err
+			}
+		}
 	}
 
 	// store extra values per Entity Type, have to repeat code here due to
