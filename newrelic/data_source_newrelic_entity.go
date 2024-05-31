@@ -70,6 +70,19 @@ func dataSourceNewRelicEntity() *schema.Resource {
 					},
 				},
 			},
+
+			"entity_tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeList,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+				},
+				Computed: true,
+			},
+
 			"account_id": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -121,7 +134,7 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 		query,
 		[]entities.EntitySearchSortCriteria{},
 	)
-	
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,7 +142,6 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 	if entityResults == nil {
 		return diag.FromErr(fmt.Errorf("GetEntitySearchByQuery response was nil"))
 	}
-
 
 	var entity *entities.EntityOutlineInterface
 	for _, e := range entityResults.Results.Entities {
@@ -167,7 +179,6 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 
 	}
 
-
 	return diag.FromErr(flattenEntityData(entity, d))
 }
 
@@ -196,8 +207,26 @@ func flattenEntityData(entity *entities.EntityOutlineInterface, d *schema.Resour
 		return err
 	}
 
-	if err = d.Set("tags", (*entity).GetTags()); err != nil {
+	m, newErr := flattenEntityDataTags((*entity).GetTags())
+	if newErr != nil {
+		return newErr
+	}
+
+	if m == nil {
+		// do nothing
+	}
+
+	log.Println("SOMETHING")
+	log.Println(m)
+
+	log.Println("Before setting entity_tags")
+	if err = d.Set("entity_tags", map[string][]string{
+		"x": {"a", "b"},
+	}); err != nil {
+		log.Println("Error setting entity_tags:", err)
 		return err
+	} else {
+		log.Println("Successfully set entity_tags")
 	}
 
 	// store extra values per Entity Type, have to repeat code here due to
@@ -227,6 +256,24 @@ func flattenEntityData(entity *entities.EntityOutlineInterface, d *schema.Resour
 	return nil
 }
 
+func flattenEntityDataTags(entityTags []entities.EntityTag) (map[string][]string, error) {
+	x := map[string][]string{}
+
+	log.Println("FLATTEN FUNCTION")
+	log.Println(entityTags)
+
+	if len(entityTags) == 0 {
+		return nil, nil
+	}
+
+	for _, tag := range entityTags {
+		key := tag.Key
+		value := tag.Values
+		x[key] = value
+	}
+
+	return x, nil
+}
 func buildEntitySearchQuery(name string, domain string, entityType string, tags []interface{}) string {
 	var query string
 
