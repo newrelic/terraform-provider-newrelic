@@ -202,13 +202,19 @@ func flattenEntityData(entity *entities.EntityOutlineInterface, d *schema.Resour
 
 	entityTags := (*entity).GetTags()
 	if len(entityTags) != 0 {
-		entityTagsJSONMarshalled, err := json.Marshal(entityTags)
-		if err != nil {
-			return err
+		entityTagsJSONMarshalled, jsonMarshalError := json.Marshal(entityTags)
+		if jsonMarshalError != nil {
+			log.Printf("[WARNING] Error marshalling entity tags: %v", jsonMarshalError)
+			log.Printf("[WARNING] The above error is disallowing setting `entity_tags` in the data source")
+			// do not throw an error, to prevent blocking results being returned by the data source if there is an issue with tag marshalling
+			return nil
 		}
 		if entityTagsJSONMarshalled != nil {
 			if entityTagsSetError := d.Set("entity_tags", string(entityTagsJSONMarshalled)); err != nil {
-				return entityTagsSetError
+				log.Printf("[WARNING] Error setting marshalled entity tags to the state: %v", entityTagsSetError)
+				log.Printf("[WARNING] The above error is disallowing setting `entity_tags` in the data source")
+				// do not throw an error, to prevent blocking results being returned by the data source if there is an issue with string conversion
+				return nil
 			}
 		}
 	}
