@@ -165,11 +165,64 @@ In addition to all arguments above, the following attributes are exported:
 * `guid` - The unique GUID of the entity.
 * `application_id` - The domain-specific application ID of the entity. Only returned for APM and Browser applications.
 * `serving_apm_application_id` - The browser-specific ID of the backing APM entity. Only returned for Browser applications.
+* `entity_tags` - The entity_tags attribute in the New Relic Terraform provider is used to store the tags associated with a New Relic entity in a JSON string format within the Terraform state.
 
 
 ## Additional Examples
 
 -> If the entities are not found please try again without providing the `type` field.
+
+### Entity Tags
+
+* The `entity_tags` attribute allows you to retrieve the tags associated with a New Relic entity. Tags are key-value pairs that help categorize and identify entities based on various criteria such as environment, team, project, etc.
+* Consider a scenario where you want to retrieve an entity and use its tags. Here's how you can access and process the `entity_tags` attribute.
+  
+  `data.newrelic_entity.foo.entity_tags` accesses the `entity_tags` attribute.
+  `!= null` checks if the `entity_tags` attribute is not null.
+  `jsondecode(data.newrelic_entity.foo.entity_tags)` decodes the JSON string into a list of objects.
+  `{ for pair in jsondecode(data.newrelic_entity.foo.entity_tags) : pair.key => pair.values }` iterates over each object in the decoded list and constructs a map where each `pair.key` is mapped to `pair.values`.
+
+Here's an example of how to use this in a Terraform configuration:
+
+```hcl
+data "newrelic_entity" "foo" {
+  name = "Dummy App - Late'ncy"
+  domain = "EXT"
+  type = "SERVICE_LEVEL"
+}
+locals {
+  key_value_map = data.newrelic_entity.foo.entity_tags != null ? { for pair in jsondecode(data.newrelic_entity.foo.entity_tags) : pair.key => pair.values } : null
+}
+
+output "key_value_map" {
+  value = local.key_value_map
+}
+
+```
+Let's consider an example where the entity has the following tags:
+
+```hcl
+env: production
+team: ops
+```
+
+In JSON format, the entity_tags might look like this:
+
+```hcl
+[
+  {"key": "env", "values": ["production"]},
+  {"key": "team", "values": ["ops"]}
+]
+```
+
+The `local.key_value_map` would be:
+
+```hcl
+{
+  env = ["production"]
+  team = ["ops"]
+}
+```
 
 ### Query for an OTEL entity
 

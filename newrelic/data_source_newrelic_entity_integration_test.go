@@ -169,6 +169,11 @@ func testAccCheckNewRelicEntityDataExists(t *testing.T, n string, appName string
 			return fmt.Errorf("expected the entity name to be: %s, but got: %s", appName, a["name"])
 		}
 
+		entityTags := a["entity_tags"]
+		if entityTags == "" || entityTags == "null" {
+			return fmt.Errorf("expected entity tags to be present and not null")
+		}
+
 		return nil
 	}
 }
