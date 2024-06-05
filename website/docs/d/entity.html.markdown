@@ -191,7 +191,7 @@ output "key_value_map" {
   value = local.key_value_map
 }
 ```
-The value of local.key_value_map would look like the following.
+The value of `local.key_value_map` would look like the following.
 
 ```hcl
 {
