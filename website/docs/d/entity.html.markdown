@@ -165,48 +165,12 @@ In addition to all arguments above, the following attributes are exported:
 * `guid` - The unique GUID of the entity.
 * `application_id` - The domain-specific application ID of the entity. Only returned for APM and Browser applications.
 * `serving_apm_application_id` - The browser-specific ID of the backing APM entity. Only returned for Browser applications.
-* `entity_tags` - The `entity_tags` helps retrieve tags associated with the entity fetched by the data source, the tags are returned as a JSON-encoded string and not a conventional list or a map, owing to a couple of design considerations; which is why one would need to use the Terraform function `jsondecode()`, along with the attribute entity_tags in order to convert the JSON-encoded string into a map with key-value pairs.
-
+* `entity_tags` - A JSON-encoded string, comprising tags associated with the entity fetched.
+    * See the [**Additional Examples**](#using-the-entity_tags-attribute-to-fetch-tags-associated-with-the-entity) section below, for an illustration depicting the usage of `jsondecode` with the attribute `entity_tags`, to get the tags associated with the entity fetched.
 
 ## Additional Examples
 
 -> If the entities are not found please try again without providing the `type` field.
-
-### Entity Tags
-
-* The following is an illustration of the aforementioned scenario. It may be observed that a key-value pair version of the JSON-encoded string exported by `entity_tags` is written to the variable `key_value_maps` , using the `jsondecode()` function.
-
-```hcl
-data "newrelic_entity" "foo" {
-  name = "Sample Searchable Entity"
-  domain = "EXT"
-  type = "SERVICE_LEVEL"
-}
-
-locals {
-  key_value_map = { for pair in jsondecode(data.newrelic_entity.foo.entity_tags) : pair.key => pair.values }
-}
-
-output "key_value_map" {
-  value = local.key_value_map
-}
-```
-The value of `local.key_value_map` would look like the following.
-
-```hcl
-{
-  env = ["production"]
-  team = ["ops"]
-}
-```
-
-In order to prevent an error being thrown by the variable added if no tags are associated with the entity (consequently, the value of `entity_tags` is an empty string), the value of the variable may be conditionally defined in order to not throw an error, as shown below.
-
-```hcl
-locals {
-  key_value_map = data.newrelic_entity.foo.entity_tags != null ? { for pair in jsondecode(data.newrelic_entity.foo.entity_tags) : pair.key => pair.values } : null
-}
-```
 
 ### Query for an OTEL entity
 
@@ -231,3 +195,42 @@ data "newrelic_entity" "app" {
   type = "AWSLAMBDAFUNCTION"
 }
 ```
+
+### Using the `entity_tags` Attribute to Fetch Tags Associated with the Entity
+
+As stated above in the [**Attributes Reference**](#attributes-reference) section, while the attribute `entity_tags` helps retrieve tags associated with the entity fetched by the data source, the tags are returned as a JSON-encoded string and not a conventional list or a map, owing to a couple of design considerations; which is why one would need to use the Terraform function `jsondecode()`, along with the attribute `entity_tags` in order to convert the JSON-encoded string into a map with key-value pairs.
+
+The following is an illustration of the aforementioned scenario. It may be observed that a key-value pair version of the JSON-encoded string exported by `entity_tags` is written to the variable `key_value_maps` , using the `jsondecode()` function.
+
+```hcl
+data "newrelic_entity" "foo" {
+  name = "Sample Searchable Entity"
+  domain = "EXT"
+  type = "SERVICE_LEVEL"
+}
+
+locals {
+  key_value_map = { for pair in jsondecode(data.newrelic_entity.foo.entity_tags) : pair.key => pair.values }
+}
+
+output "key_value_map" {
+  value = local.key_value_map
+}
+
+```
+The value of `local.key_value_map`  would look like the following.
+```hcl
+{
+  env = ["production"]
+  team = ["ops"]
+}
+```
+
+In order to prevent an error being thrown by the variable added if no tags are associated with the entity (consequently, the value of `entity_tags` is an empty string), the value of the variable may be conditionally defined in order to not throw an error, as shown below.
+
+```hcl
+locals {
+  key_value_map = data.newrelic_entity.foo.entity_tags != null ? { for pair in jsondecode(data.newrelic_entity.foo.entity_tags) : pair.key => pair.values } : null
+}
+```
+
