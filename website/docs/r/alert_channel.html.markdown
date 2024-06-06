@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create and manage New Relic alert channels.
 
--> **WARNING:** The `newrelic_alert_channel` resource is deprecated and will be removed in the next major release. For managing channel resources in Workflows, use [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel).
+-> **WARNING:** The `newrelic_alert_channel` resource is deprecated and will be removed in the next major release. For managing channel resources in Workflows, use [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel) with [`newrelic_notification_destination`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_destination). This [`guide`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started#add-a-notification-channel) will help you understand how to use the above mentioned new resources together.
 
 ## Example Usage
 

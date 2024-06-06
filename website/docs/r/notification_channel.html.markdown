@@ -347,7 +347,7 @@ Additionally, the channel id isn't available via the UI, and you'd need to look 
 That being said, importing is possible using -
 ```terraform import newrelic_notification_destination.foo <destination_id>```
 
-## Additional Information
+## Moving from Legacy Alert Channels to Notification Channels
 More details about the channels API can be found [here](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels).
 
-~> **NOTE:** [`newrelic_alert_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_channel) and [`newrelic_alert_policy_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_policy_channel) are legacy resources.
+The [`newrelic_alert_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_channel) resource is deprecated and will be removed in the next major release. For managing channel resources in Workflows, use [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel) with [`newrelic_notification_destination`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_destination). This [`guide`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started#add-a-notification-channel) will help you understand how to use the above mentioned new resources together.

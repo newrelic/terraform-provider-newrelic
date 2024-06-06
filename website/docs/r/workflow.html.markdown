@@ -331,8 +331,11 @@ resource "newrelic_workflow" "workflow-example" {
 }
 ```
 
-## Additional Information
+## Moving from Legacy Alert Policy Channels to Workflows
 More details about the workflows can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/applied-intelligence/incident-workflows/incident-workflows/).
+
+The [`newrelic_alert_policy_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_policy_channel) resource is deprecated and will be removed in the next major release. For managing alert policy channel resources in Workflows, use [`newrelic_workflow`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/workflow). This [`guide`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started#add-a-notification-channel) will help you understand how to use the above mentioned new resource.
+
 
 ## v3.3 changes
 In version v3.3 we renamed the following arguments:
