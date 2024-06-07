@@ -289,9 +289,13 @@ resource "newrelic_notification_destination" "foo" {
 
 ~> **NOTE:** Sensitive data such as destination API keys, service keys, auth object etc. are not returned from the underlying API for security reasons and may not be set in state when importing.
 
-
-## Moving from Legacy Alert Channels to Notification Channels
+## Additional Information
 More information about destinations integrations can be found in NewRelic [documentation](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/).
 More details about the destinations API can be found [here](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-destinations).
 
-The [`newrelic_alert_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_channel) resource is deprecated and will be removed in the next major release. For managing channel resources in Workflows, use [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel) with [`newrelic_notification_destination`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_destination). This [`guide`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started#add-a-notification-channel) will help you understand how to use the above mentioned new resources together.
+### Moving from Legacy Alert Channels to Notification Channels
+As stated in the documentation of this resource and [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel), destinations, created using the resource [`newrelic_notification_destination`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_destination) can be paired with [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel) to set up channels. These resources combined, are an alternative to the legacy resource [`newrelic_alert_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_channel), which is **deprecated** and will be **removed in a future major release**, as stated in the documentation of the resource.
+
+If you're currently using `newrelic_alert_channel` to manage channels, we **strongly recommend** migrating to these notifications-based resources at the earliest.
+
+Please refer to the examples in this page, or [this example](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started#add-a-notification-channel) for illustrations on setting up channels with these resources.

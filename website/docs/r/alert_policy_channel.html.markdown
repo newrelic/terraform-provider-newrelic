@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to map alert policies to alert channels in New Relic.
 
--> **WARNING:** The `newrelic_alert_policy_channel` resource is deprecated and will be removed in the next major release. For managing channel resources in Workflows, use [`newrelic_workflow`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/workflow). This [`guide`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started#add-a-notification-channel) will help you understand how to use the above mentioned new resource.
+-> **WARNING:** The `newrelic_alert_policy_channel` resource is **deprecated** and will be **removed in a future major release**. As an alternative, you can map channels to policies using the resource [`newrelic_workflow`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/workflow), with the channels to be mapped created using a combination of the newer resources [`newrelic_notification_destination`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_destination) and [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel). We **strongly recommend** migrating to these new resources at the earliest. Please refer to [this example](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started#add-a-notification-channel) for a detailed illustration on setting up channels and workflows with these resources.
 
 ## Example Usage
 

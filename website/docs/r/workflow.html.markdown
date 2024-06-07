@@ -331,11 +331,15 @@ resource "newrelic_workflow" "workflow-example" {
 }
 ```
 
-## Moving from Legacy Alert Policy Channels to Workflows
+## Additional Information
 More details about the workflows can be found [here](https://docs.newrelic.com/docs/alerts-applied-intelligence/applied-intelligence/incident-workflows/incident-workflows/).
 
-The [`newrelic_alert_policy_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_policy_channel) resource is deprecated and will be removed in the next major release. For managing alert policy channel resources in Workflows, use [`newrelic_workflow`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/workflow). This [`guide`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started#add-a-notification-channel) will help you understand how to use the above mentioned new resource.
+### Moving from Legacy Alert Policy Channels to Workflows
+As described in the documentation of this resource, mapping alert channels (created using [`newrelic_notification_destination`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_destination) and [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel)) to policies can be performed using the `newrelic_workflow` resource, which is an alternative to the legacy resource [`newrelic_alert_policy_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_policy_channel) (which consumes alert channels created using the resource [`newrelic_alert_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_channel)), both of which are **deprecated** and will be **removed in a future major release**, as stated in the documentation of both of these resources.
 
+If you're currently using `newrelic_alert_channel` and `newrelic_alert_policy_channel` to manage alert channels linked to policies, we **strongly recommend** migrating to these workflows and notifications-based resources at the earliest.
+
+Please refer to the examples in this page, or [this example](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started#add-a-notification-channel) for illustrations on setting up channels and workflows with these resources.
 
 ## v3.3 changes
 In version v3.3 we renamed the following arguments:
