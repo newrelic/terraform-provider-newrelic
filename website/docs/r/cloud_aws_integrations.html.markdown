@@ -420,7 +420,6 @@ The following arguments/integration blocks are intended to be used with a minimu
 * `sns` - (Optional) AWS SNS. See [Integration blocks](#integration-blocks) below for details.
 * `sqs` - (Optional) AWS SQS. See [Integration blocks](#integration-blocks) below for details.
 * `x_ray` - (Optional) AWS X-Ray. See [Integration blocks](#integration-blocks) below for details.
-x
 
 The following arguments/integration blocks are intended to be used with a minimum `metrics_polling_interval` of 900 seconds.
 
