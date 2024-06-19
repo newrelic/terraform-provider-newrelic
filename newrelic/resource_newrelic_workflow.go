@@ -64,6 +64,13 @@ func resourceNewRelicWorkflow() *schema.Resource {
 							Computed:    true,
 							Description: fmt.Sprintf("(Required) The type of the destination. One of: (%s).", strings.Join(listValidWorkflowsDestinationTypes(), ", ")),
 						},
+						// Computed
+						"update_original_message": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Update original notification message (Slack channels only)",
+						},
 					},
 				},
 			},

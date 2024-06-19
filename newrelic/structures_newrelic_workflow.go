@@ -194,6 +194,10 @@ func expandWorkflowDestinationConfiguration(cfg map[string]interface{}) workflow
 		destinationConfigurationInput.ChannelId = channelID.(string)
 	}
 
+	if updateOriginalMessage, ok := cfg["update_original_message"]; ok {
+		destinationConfigurationInput.UpdateOriginalMessage = updateOriginalMessage.(bool)
+	}
+
 	if notificationTriggers, ok := cfg["notification_triggers"]; ok {
 		for _, p := range notificationTriggers.([]interface{}) {
 			notificationTriggersInput = append(notificationTriggersInput, workflows.AiWorkflowsNotificationTrigger(p.(string)))
@@ -407,6 +411,7 @@ func flattenWorkflowDestinationConfiguration(d *workflows.AiWorkflowsDestination
 	destinationConfigurationResult["channel_id"] = d.ChannelId
 	destinationConfigurationResult["name"] = d.Name
 	destinationConfigurationResult["type"] = d.Type
+	destinationConfigurationResult["update_original_message"] = d.UpdateOriginalMessage
 
 	if currentState == nil || currentState["notification_triggers"] == nil {
 		destinationConfigurationResult["notification_triggers"] = d.NotificationTriggers
