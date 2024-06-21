@@ -1006,19 +1006,19 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable, d *schema.Resour
 		m := make(map[string]interface{})
 
 		if v.DefaultValues != nil {
-			m["default_values"] = flattenVariableDefaultValues(v.DefaultValues)
+			m["default_values"] = flattenVariableDefaultValues(&v.DefaultValues)
 		}
 		m["is_multi_selection"] = v.IsMultiSelection
 		m["item"] = flattenVariableItems(v.Items)
 		m["name"] = v.Name
-		if v.NRQLQuery != nil {
-			m["nrql_query"] = flattenVariableNRQLQuery(v.NRQLQuery)
+		if &v.NRQLQuery != nil {
+			m["nrql_query"] = flattenVariableNRQLQuery(&v.NRQLQuery)
 		}
 		m["replacement_strategy"] = strings.ToLower(string(v.ReplacementStrategy))
 		m["title"] = v.Title
 		m["type"] = strings.ToLower(string(v.Type))
-		if v.Options != nil {
-			options := flattenVariableOptions(v.Options, d, i)
+		if &v.Options != nil {
+			options := flattenVariableOptions(&v.Options, d, i)
 			if options != nil {
 				// set options -> ignore_time_range to the state only if they already exist in the configuration
 				// needed to make this backward compatible with configurations which do not yet have options -> ignore_time_range
