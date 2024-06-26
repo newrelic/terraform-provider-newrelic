@@ -565,6 +565,7 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionEvaluationDelay(t *testing
 	})
 }
 
+<<<<<<< HEAD
 func TestAccNewRelicNrqlAlertCondition_StaticConditionDataAccountId(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
@@ -572,6 +573,12 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionDataAccountId(t *testing.T
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	dataAccountId := providerConfig.AccountID
 
+=======
+func TestAccNewRelicNrqlAlertCondition_StaticConditionExpectedTermination(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+
+>>>>>>> f70d82fe (feat(nrqlcondition): Add new ignoreOnExpectedTermination field)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
@@ -579,9 +586,15 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionDataAccountId(t *testing.T
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
+<<<<<<< HEAD
 				Config: testAccNewRelicNrqlAlertConditionStaticWithDataAccountId(
 					rName,
 					dataAccountId,
+=======
+				Config: testAccNewRelicNrqlAlertConditionStaticWithLossOfSignalOnly(
+					rName,
+					"true",
+>>>>>>> f70d82fe (feat(nrqlcondition): Add new ignoreOnExpectedTermination field)
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
@@ -1280,30 +1293,66 @@ func testAccNewRelicNrqlAlertConditionStaticWithDataAccountId(
 ) string {
 	return fmt.Sprintf(`
 resource "newrelic_alert_policy" "foo" {
-  name = "tf-test-%[1]s"
+	name = "tf-test-%[1]s"
 }
 
 resource "newrelic_nrql_alert_condition" "foo" {
-  policy_id = newrelic_alert_policy.foo.id
+	policy_id = newrelic_alert_policy.foo.id
 
-  name                         = "tf-test-%[1]s"
-  type                         = "static"
-  enabled                      = false
-  violation_time_limit_seconds = 3600
-  aggregation_delay            = 120
-  aggregation_method           = "event_flow"
+	name                         = "tf-test-%[1]s"
+	type                         = "static"
+	enabled                      = false
+	violation_time_limit_seconds = 3600
+	aggregation_delay            = 120
+	aggregation_method           = "event_flow"
 
-  nrql {
-    query           = "SELECT uniqueCount(hostname) FROM ComputeSample"
-    data_account_id = %[2]d
-  }
+	nrql {
+		query           = "SELECT uniqueCount(hostname) FROM ComputeSample"
+		data_account_id = %[2]d
+	}
 
-  critical {
-    operator              = "below"
-    threshold             = 0
-    threshold_duration    = 120
-    threshold_occurrences = "ALL"
-  }
+	critical {
+		operator              = "below"
+		threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
 }
 `, name, dataAccountId)
+}
+
+func testAccNewRelicNrqlAlertConditionStaticWithLossOfSignalOnly(
+	name string,
+	ignoreOnExpectedTermination string,
+) string {
+	if ignoreOnExpectedTermination == "" {
+		ignoreOnExpectedTermination = "true"
+	}
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                           = "tf-test-%[1]s"
+	type                           = "static"
+	runbook_url                    = "https://foo.example.com"
+	enabled                        = false
+	description                    = "test description"
+	violation_time_limit_seconds   = 3600
+	close_violations_on_expiration = true
+	open_violation_on_expiration   = true
+	expiration_duration            = 120
+	ignore_on_expected_termination = %[2]s
+ 	aggregation_delay              = 120
+	aggregation_method             = "event_flow"
+	slide_by					   = 30
+	evaluation_delay			   = 60
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+}
+`, name, ignoreOnExpectedTermination)
 }
