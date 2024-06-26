@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -70,6 +71,11 @@ func dataSourceNewRelicEntity() *schema.Resource {
 					},
 				},
 			},
+			"entity_tags": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 			"account_id": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -133,7 +139,6 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 	var entity *entities.EntityOutlineInterface
 	for _, e := range entityResults.Results.Entities {
 		// Conditional on case-sensitive match
-
 		str := e.GetName()
 		str = strings.TrimSpace(str)
 
@@ -193,6 +198,25 @@ func flattenEntityData(entity *entities.EntityOutlineInterface, d *schema.Resour
 
 	if err = d.Set("account_id", (*entity).GetAccountID()); err != nil {
 		return err
+	}
+
+	entityTags := (*entity).GetTags()
+	if len(entityTags) != 0 {
+		entityTagsJSONMarshalled, jsonMarshalError := json.Marshal(entityTags)
+		if jsonMarshalError != nil {
+			log.Printf("[WARNING] Error marshalling entity tags: %v", jsonMarshalError)
+			log.Printf("[WARNING] The above error is disallowing setting `entity_tags` in the data source")
+			// do not throw an error, to prevent blocking results being returned by the data source if there is an issue with tag marshalling
+			return nil
+		}
+		if entityTagsJSONMarshalled != nil {
+			if entityTagsSetError := d.Set("entity_tags", string(entityTagsJSONMarshalled)); err != nil {
+				log.Printf("[WARNING] Error setting marshalled entity tags to the state: %v", entityTagsSetError)
+				log.Printf("[WARNING] The above error is disallowing setting `entity_tags` in the data source")
+				// do not throw an error, to prevent blocking results being returned by the data source if there is an issue with string conversion
+				return nil
+			}
+		}
 	}
 
 	// store extra values per Entity Type, have to repeat code here due to

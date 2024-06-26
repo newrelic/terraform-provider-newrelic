@@ -297,13 +297,15 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_line"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for widgetIndex, v := range widgets.([]interface{}) {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.line")
 				if err != nil {
 					return nil, err
 				}
 
+				// Set thresholds
+				rawConfiguration.Thresholds = expandDashboardLineWidgetConfigurationThresholdInput(d, pageIndex, widgetIndex)
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
 					return nil, err
@@ -345,13 +347,15 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_table"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for widgetIndex, v := range widgets.([]interface{}) {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.table")
 				if err != nil {
 					return nil, err
 				}
 
+				// Set thresholds
+				rawConfiguration.Thresholds = expandDashboardTableWidgetConfigurationThresholdInput(d, pageIndex, widgetIndex)
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
 					return nil, err
@@ -453,6 +457,129 @@ func expandDashboardBillboardWidgetConfigurationInput(d *schema.ResourceData, i 
 	return thresholds
 }
 
+func expandDashboardLineWidgetConfigurationThresholdInput(d *schema.ResourceData, pageIndex int, widgetIndex int) dashboards.DashboardLineWidgetThresholdInput {
+	// initialize a root object of the DashboardLineWidgetThresholdInput class, which is expected to include IsLabelVisible and Thresholds
+	var lineWidgetThresholdsRoot dashboards.DashboardLineWidgetThresholdInput
+
+	// check if 'is_label_visible' has been specified in the configuration of the 'widget_line' widget currently referenced
+	// if so, assign the specified value of 'is_label_visible' to IsLabelVisible in the object created above
+
+	lineWidget, lineWidgetOk := d.GetOk(fmt.Sprintf("page.%d.widget_line.%d", pageIndex, widgetIndex))
+	if lineWidgetOk {
+		lineWidgetAttributes := lineWidget.(map[string]interface{})
+		isLabelVisible := lineWidgetAttributes["is_label_visible"]
+		if isLabelVisible != nil {
+			isLabelVisibleBoolean := isLabelVisible.(bool)
+			lineWidgetThresholdsRoot.IsLabelVisible = &isLabelVisibleBoolean
+		}
+	}
+
+	// initialize a list of 'DashboardLineWidgetThresholdThresholdInput', which would be populated with thresholds specified in the configuration
+	// and eventually assigned to the 'Thresholds' attribute of the root object of 'DashboardLineWidgetThresholdInput' specified above
+
+	var lineWidgetThresholdsToBeAdded []dashboards.DashboardLineWidgetThresholdThresholdInput
+
+	// check if 'threshold' has been specified in the configuration of the 'widget_line' widget currently referenced
+	// if so, continue with additional logic specified below to iterate through the configuration to find each
+	// 'threshold' block specified and get values of attributes specified in each threshold to add to the object of DashboardLineWidgetThresholdThresholdInput
+
+	lineWidgetThresholdsInInput, lineWidgetThresholdsInInputOk := d.GetOk(fmt.Sprintf("page.%d.widget_line.%d.threshold", pageIndex, widgetIndex))
+	if lineWidgetThresholdsInInputOk {
+		// convert the thresholds obtained into a list of interfaces, in order to fetch the number of threshold blocks specified
+		// using the length of this list, "threshold" blocks in the 'widget_line' widget shall be iterated through to get values
+		// specified in each threshold
+
+		lineWidgetThresholdsInInputInterface := lineWidgetThresholdsInInput.([]interface{})
+		for i := 0; i < len(lineWidgetThresholdsInInputInterface); i++ {
+			lineWidgetThresholdInInputSingular, lineWidgetInputThresholdSingularOk := d.GetOk(fmt.Sprintf("page.%d.widget_line.%d.threshold.%d", pageIndex, widgetIndex, i))
+			lineWidgetThresholdInInputSingularInterface := lineWidgetThresholdInInputSingular.(map[string]interface{})
+
+			// initialize a DashboardLineWidgetThresholdThresholdInput object to which the values found in the current threshold shall
+			// be assigned to respective attributes. Multiple such objects would land into the 'lineWidgetThresholdsToBeAdded' list specified above,
+			// which shall eventually be assigned to the 'Thresholds' attribute of the root object of 'DashboardLineWidgetThresholdInput' specified above
+			lineWidgetThresholdToBeAdded := dashboards.DashboardLineWidgetThresholdThresholdInput{}
+
+			if lineWidgetInputThresholdSingularOk {
+				// if the specified threshold exists, obtain values of attributes specified in the "threshold" block of line widgets
+				// and assign them to respective attributes of the DashboardLineWidgetThresholdThresholdInput object
+
+				if v, ok := lineWidgetThresholdInInputSingularInterface["from"]; ok {
+					t := v.(int)
+					lineWidgetThresholdToBeAdded.From = &t
+				}
+				if v, ok := lineWidgetThresholdInInputSingularInterface["to"]; ok {
+					t := v.(int)
+					lineWidgetThresholdToBeAdded.To = &t
+				}
+				if v, ok := lineWidgetThresholdInInputSingularInterface["name"]; ok {
+					lineWidgetThresholdToBeAdded.Name = v.(string)
+				}
+				if v, ok := lineWidgetThresholdInInputSingularInterface["severity"]; ok {
+					lineWidgetThresholdToBeAdded.Severity = dashboards.DashboardLineTableWidgetsAlertSeverity(v.(string))
+				}
+
+				// add the threshold to the list of thresholds to be added
+				lineWidgetThresholdsToBeAdded = append(lineWidgetThresholdsToBeAdded, lineWidgetThresholdToBeAdded)
+			}
+		}
+	}
+
+	// assign the specified thresholds to 'Thresholds' in the root object created above
+	lineWidgetThresholdsRoot.Thresholds = lineWidgetThresholdsToBeAdded
+
+	return lineWidgetThresholdsRoot
+}
+
+func expandDashboardTableWidgetConfigurationThresholdInput(d *schema.ResourceData, pageIndex int, widgetIndex int) []dashboards.DashboardTableWidgetThresholdInput {
+	// initialize an object of []DashboardTableWidgetThresholdInput, which would include a list of tableWidgetThresholdsToBeAdded as specified
+	// in the Terraform configuration, with the attribute "threshold" in table widgets
+	var tableWidgetThresholdsToBeAdded []dashboards.DashboardTableWidgetThresholdInput
+
+	// check if 'threshold' has been specified in the configuration of the 'widget_table' widget currently referenced
+	// if so, continue with additional logic specified below to iterate through the configuration to find each
+	// 'threshold' block specified and get values of attributes specified in each threshold to add to the object of DashboardTableWidgetThresholdInput
+
+	tableWidgetThresholdsInInput, tableWidgetThresholdsInInputOk := d.GetOk(fmt.Sprintf("page.%d.widget_table.%d.threshold", pageIndex, widgetIndex))
+	if tableWidgetThresholdsInInputOk {
+		// convert the thresholds obtained into a list of interfaces, in order to fetch the number of threshold blocks specified
+		// using the length of this list, "threshold" blocks in the 'widget_table' widget shall be iterated through to get values
+		// specified in each threshold
+
+		tableWidgetThresholdsInInputInterface := tableWidgetThresholdsInInput.([]interface{})
+		for i := 0; i < len(tableWidgetThresholdsInInputInterface); i++ {
+			tableWidgetThresholdInInputSingular, tableWidgetThresholdInInputSingularOk := d.GetOk(fmt.Sprintf("page.%d.widget_table.%d.threshold.%d", pageIndex, widgetIndex, i))
+			tableWidgetThresholdInInputSingularInterface := tableWidgetThresholdInInputSingular.(map[string]interface{})
+
+			// initialize a DashboardTableWidgetThresholdInput object to which the values found in the current threshold shall
+			// be assigned to respective attributes. Multiple such objects would land into the 'tableWidgetThresholdsToBeAdded' list specified above
+
+			tableWidgetThresholdToBeAdded := dashboards.DashboardTableWidgetThresholdInput{}
+			if tableWidgetThresholdInInputSingularOk {
+				// if the specified threshold exists, obtain values of attributes specified in the "threshold" block of table widgets
+				// and assign them to respective attributes of the DashboardTableWidgetThresholdInput object
+
+				if v, ok := tableWidgetThresholdInInputSingularInterface["from"]; ok {
+					t := v.(int)
+					tableWidgetThresholdToBeAdded.From = &t
+				}
+				if v, ok := tableWidgetThresholdInInputSingularInterface["to"]; ok {
+					t := v.(int)
+					tableWidgetThresholdToBeAdded.To = &t
+				}
+				if v, ok := tableWidgetThresholdInInputSingularInterface["column_name"]; ok {
+					tableWidgetThresholdToBeAdded.ColumnName = v.(string)
+				}
+				if v, ok := tableWidgetThresholdInInputSingularInterface["severity"]; ok {
+					tableWidgetThresholdToBeAdded.Severity = dashboards.DashboardLineTableWidgetsAlertSeverity(v.(string))
+				}
+				tableWidgetThresholdsToBeAdded = append(tableWidgetThresholdsToBeAdded, tableWidgetThresholdToBeAdded)
+			}
+		}
+	}
+
+	return tableWidgetThresholdsToBeAdded
+}
+
 // expandDashboardWidgetInput expands the common items in WidgetInput, but not the configuration
 // which is specific to the widgets
 func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visualisation string) (*dashboards.DashboardWidgetInput, *dashboards.RawConfiguration, error) {
@@ -501,21 +628,7 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 		cfg.Facet = &l
 	}
 
-	if visualisation != "viz.line" {
-		if q, ok := w["y_axis_left_min"]; ok {
-			var l dashboards.DashboardWidgetYAxisLeft
-			min := q.(float64)
-			l.Min = &min
-			if q, ok := w["y_axis_left_max"]; ok {
-				l.Max = q.(float64)
-			}
-			cfg.YAxisLeft = &l
-		}
-	} else {
-		lineWidgetYAxisLeft := expandDashboardWidgetYAxisLeft(w)
-		cfg.YAxisLeft = &lineWidgetYAxisLeft
-	}
-
+	cfg = expandDashboardWidgetYAxisAttributesVizClassified(w, cfg, visualisation)
 	cfg = expandDashboardWidgetNullValuesInput(w, cfg)
 	cfg = expandDashboardWidgetColorsInput(w, cfg)
 	cfg = expandDashboardWidgetUnitsInput(w, cfg)
@@ -539,6 +652,29 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	widget.Visualization.ID = visualisation
 
 	return &widget, &cfg, nil
+}
+
+func expandDashboardWidgetYAxisAttributesVizClassified(w map[string]interface{}, cfg dashboards.RawConfiguration, visualisation string) dashboards.RawConfiguration {
+	if visualisation != "viz.line" {
+		if q, ok := w["y_axis_left_min"]; ok {
+			var l dashboards.DashboardWidgetYAxisLeft
+			min := q.(float64)
+			l.Min = &min
+			if q, ok := w["y_axis_left_max"]; ok {
+				l.Max = q.(float64)
+			}
+			cfg.YAxisLeft = &l
+		}
+	} else {
+		lineWidgetYAxisLeft := expandDashboardWidgetYAxisLeft(w)
+		cfg.YAxisLeft = &lineWidgetYAxisLeft
+
+		lineWidgetYAxisRight := expandDashboardWidgetYAxisRight(w)
+		if lineWidgetYAxisRight.Series != nil || lineWidgetYAxisRight.Zero != nil {
+			cfg.YAxisRight = &lineWidgetYAxisRight
+		}
+	}
+	return cfg
 }
 
 func expandDashboardWidgetYAxisLeft(w map[string]interface{}) dashboards.DashboardWidgetYAxisLeft {
@@ -570,6 +706,70 @@ func expandDashboardWidgetYAxisLeft(w map[string]interface{}) dashboards.Dashboa
 	}
 
 	return l
+}
+
+func expandDashboardWidgetYAxisRight(w map[string]interface{}) dashboards.DashboardWidgetYAxisRight {
+	// create an object of 'DashboardWidgetYAxisRight', to which we would assign values of attributes associated with
+	// 'y_axis_right' in the configuration of the line widget, and return from this function
+	dashboardYAxisRightToBeAdded := dashboards.DashboardWidgetYAxisRight{}
+
+	if q, ok := w["y_axis_right"]; ok && len(q.([]interface{})) > 0 {
+		// if "y_axis_right" exists in the Terraform configuration and is not empty, proceed with the logic needed
+		// to parse "y_axis_right_zero" and "y_axis_right_series", and assign them to respective attributes
+
+		dashboardYAxisRightInInput := q.([]interface{})[0].(map[string]interface{})
+
+		// if "y_axis_right_zero" exists in the map derived from "y_axis_right" (above), fetch the value assigned to
+		// this and assign it to the attribute "Zero" of the 'DashboardWidgetYAxisRight' object
+		if dashboardYAxisRightZeroInInput, dashboardYAxisRightZeroInInputOk := dashboardYAxisRightInInput["y_axis_right_zero"]; dashboardYAxisRightZeroInInputOk {
+			dashboardYAxisRightZeroInInputBoolean := dashboardYAxisRightZeroInInput.(bool)
+			dashboardYAxisRightToBeAdded.Zero = &dashboardYAxisRightZeroInInputBoolean
+		}
+
+		// if "y_axis_right_series" exists in the map derived from "y_axis_right" (above), fetch the value assigned to
+		// this (which is a list of strings) and marshal it accordingly into expected structures within 'DashboardWidgetYAxisRight'
+		if dashboardYAxisRightSeriesInInput, dashboardYAxisRightSeriesInInputOk := dashboardYAxisRightInInput["y_axis_right_series"]; dashboardYAxisRightSeriesInInputOk {
+			var dashboardYAxisRightSeriesToBeAdded []dashboards.DashboardWidgetYAxisRightSeries
+			dashboardYAxisRightSeriesInInputAsList := dashboardYAxisRightSeriesInInput.(*schema.Set).List()
+			for _, item := range dashboardYAxisRightSeriesInInputAsList {
+				dashboardYAxisRightSeriesToBeAdded = append(
+					dashboardYAxisRightSeriesToBeAdded,
+					dashboards.DashboardWidgetYAxisRightSeries{
+						Name: dashboards.DashboardWidgetYAxisRightSeriesName(item.(string)),
+					},
+				)
+			}
+
+			// eventually, assign the marshalled series from the above logic to the attribute "Series" of the 'DashboardWidgetYAxisRight' object
+			dashboardYAxisRightToBeAdded.Series = dashboardYAxisRightSeriesToBeAdded
+		}
+
+		if *dashboardYAxisRightToBeAdded.Zero {
+			if yMin, okMin := dashboardYAxisRightInInput["y_axis_right_min"]; okMin {
+				if yMin.(float64) != 0 {
+					min := yMin.(float64)
+					dashboardYAxisRightToBeAdded.Min = &min
+				}
+			}
+			if yMax, okMax := dashboardYAxisRightInInput["y_axis_right_max"]; okMax {
+				if yMax.(float64) != 0 {
+					dashboardYAxisRightToBeAdded.Max = yMax.(float64)
+				}
+			}
+		} else {
+			if yMin, okMin := dashboardYAxisRightInInput["y_axis_right_min"]; okMin {
+				min := yMin.(float64)
+				dashboardYAxisRightToBeAdded.Min = &min
+				if yMax, okMax := dashboardYAxisRightInInput["y_axis_right_max"]; okMax {
+					dashboardYAxisRightToBeAdded.Max = yMax.(float64)
+				}
+			}
+		}
+
+	}
+
+	// return the 'DashboardWidgetYAxisRight' object into which the contents of "y_axis_right" in the Terraform configuration have been repackaged
+	return dashboardYAxisRightToBeAdded
 }
 func expandDashboardWidgetUnitsInput(w map[string]interface{}, cfg dashboards.RawConfiguration) dashboards.RawConfiguration {
 	if q, ok := w["units"]; ok {
@@ -1003,18 +1203,21 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	case "viz.billboard":
 		widgetType = "widget_billboard"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
-		if len(rawCfg.Thresholds) > 0 {
-			for _, v := range rawCfg.Thresholds {
-				// Double check if we have a value, the API sometimes returns a null
-				if v.Value == nil {
-					continue
-				}
+		if rawCfg.Thresholds != nil {
+			rawCfgThresholdsFetched := rawCfg.Thresholds.([]interface{})
+			if len(rawCfgThresholdsFetched) > 0 {
+				for _, t := range rawCfgThresholdsFetched {
+					thresholdFetched := t.(map[string]interface{})
+					if thresholdFetched["value"] == nil {
+						continue
+					}
 
-				switch v.AlertSeverity {
-				case entities.DashboardAlertSeverityTypes.CRITICAL:
-					out["critical"] = strconv.FormatFloat(*v.Value, 'f', -1, 64)
-				case entities.DashboardAlertSeverityTypes.WARNING:
-					out["warning"] = strconv.FormatFloat(*v.Value, 'f', -1, 64)
+					switch thresholdFetched["alertSeverity"].(string) {
+					case string(entities.DashboardAlertSeverityTypes.CRITICAL):
+						out["critical"] = strconv.FormatFloat(thresholdFetched["value"].(float64), 'f', -1, 64)
+					case string(entities.DashboardAlertSeverityTypes.WARNING):
+						out["warning"] = strconv.FormatFloat(thresholdFetched["value"].(float64), 'f', -1, 64)
+					}
 				}
 			}
 		}
@@ -1040,6 +1243,23 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 		if rawCfg.YAxisLeft != nil {
 			out["y_axis_left_zero"] = rawCfg.YAxisLeft.Zero
 		}
+
+		// check if 'YAxisRight' in the rawConfiguration of the fetched widget is not null. If it isn't, proceed
+		// with extracting values out of the fetched 'YAxisRight' and assigning them to respective attributes in thje configuration
+		if rawCfg.YAxisRight != nil {
+			out["y_axis_right"] = flattenDashboardLineWidgetYAxisRight(rawCfg.YAxisRight)
+		}
+
+		if rawCfg.Thresholds != nil {
+			isLabelVisible, thresholds := flattenDashboardLineWidgetThresholds(rawCfg.Thresholds)
+			if isLabelVisible != nil {
+				out["is_label_visible"] = isLabelVisible.(bool)
+			}
+			if thresholds != nil {
+				out["threshold"] = thresholds
+			}
+		}
+
 	case "viz.markdown":
 		widgetType = "widget_markdown"
 		out["text"] = rawCfg.Text
@@ -1054,6 +1274,13 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 		widgetType = "widget_table"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
 		out["filter_current_dashboard"] = filterCurrentDashboard
+		if rawCfg.Thresholds != nil {
+			thresholds := flattenDashboardTableWidgetThresholds(rawCfg.Thresholds)
+			if thresholds != nil {
+				out["threshold"] = thresholds
+			}
+		}
+
 	case "logger.log-table-widget":
 		widgetType = "widget_log_table"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
@@ -1075,6 +1302,93 @@ func flattenDashboardWidgetNRQLQuery(in *[]dashboards.DashboardWidgetNRQLQueryIn
 	}
 
 	return out
+}
+
+func flattenDashboardLineWidgetYAxisRight(yAxisRight *dashboards.DashboardWidgetYAxisRight) []interface{} {
+	// define a map[string]interface{} which would hold key-value pairs (keys: 'y_axis_right_zero' and 'y_axis_right_series')
+	// define an []interface{} that would hold the map defined above, which can then, be assigned to "y_axis_right" as it
+	// would expect an []interface{}
+	var yAxisRightFetched = make(map[string]interface{})
+	var yAxisRightFetchedInterface []interface{}
+
+	// if 'Zero' exists yAxisRight 'YAxisRight', assign it to "y_axis_right_zero" of the map
+	if yAxisRight.Zero != nil {
+		yAxisRightFetched["y_axis_right_zero"] = yAxisRight.Zero
+	}
+
+	// assign 'Min' and 'Max' of obtained to their respective attributes in the Terraform configuration
+	yAxisRightFetched["y_axis_right_min"] = yAxisRight.Min
+	yAxisRightFetched["y_axis_right_max"] = yAxisRight.Max
+
+	// if 'Series' exists yAxisRight 'YAxisRight', assign it to "y_axis_right_series" of the map
+	if yAxisRight.Series != nil {
+		var yAxisRightSeriesFetched []string
+		for _, item := range yAxisRight.Series {
+			yAxisRightSeriesFetched = append(yAxisRightSeriesFetched, string(item.Name))
+		}
+		yAxisRightFetched["y_axis_right_series"] = yAxisRightSeriesFetched
+	}
+
+	// add the map containing 'Zero' and/or 'Series' to the []interface{}
+	// eventually, assign the []interface{} to "y_axis_right" of the referenced widget
+	yAxisRightFetchedInterface = append(yAxisRightFetchedInterface, yAxisRightFetched)
+	return yAxisRightFetchedInterface
+}
+
+func flattenDashboardLineWidgetThresholds(thresholds interface{}) (interface{}, []map[string]interface{}) {
+	var thresholdsConsolidated []map[string]interface{}
+	var isLabelVisible interface{}
+
+	thresholdsFetched := thresholds.(map[string]interface{})
+	if thresholdsFetched["isLabelVisible"] != nil {
+		isLabelVisible = thresholdsFetched["isLabelVisible"]
+	}
+
+	thresholdsFetchedList := thresholdsFetched["thresholds"]
+	if thresholdsFetchedList != nil {
+		thresholdsFetchedListInterface := thresholdsFetchedList.([]interface{})
+		if len(thresholdsFetchedListInterface) > 0 {
+			for _, item := range thresholdsFetchedListInterface {
+				thresholdSingle := item.(map[string]interface{})
+				thresholdSingleToBeFormatted := map[string]interface{}{}
+
+				//t := reflect.TypeOf(dashboards.DashboardLineWidgetThresholdThresholdInput{})
+				//for i := 0; i < t.NumField(); i++ {
+				//	field := t.Field(i)
+				//	name := strings.Split(field.Tag.Get("json"), ",")[0]
+				//	if val, ok := thresholdSingular[name]; ok {
+				//		newt[name] = val
+				//	}
+				//}
+
+				for key, terraformSchemaKey := range lineWidgetThresholdAttributesJSON {
+					if value, ok := thresholdSingle[key]; ok {
+						thresholdSingleToBeFormatted[terraformSchemaKey] = value
+					}
+				}
+				thresholdsConsolidated = append(thresholdsConsolidated, thresholdSingleToBeFormatted)
+			}
+		}
+	}
+	return isLabelVisible, thresholdsConsolidated
+}
+
+func flattenDashboardTableWidgetThresholds(thresholds interface{}) []map[string]interface{} {
+	var thresholdsConsolidated []map[string]interface{}
+	thresholdsFetchedListInterface := thresholds.([]interface{})
+	if len(thresholdsFetchedListInterface) > 0 {
+		for _, item := range thresholdsFetchedListInterface {
+			thresholdSingle := item.(map[string]interface{})
+			thresholdSingleToBeFormatted := map[string]interface{}{}
+			for key, terraformSchemaKey := range tableWidgetThresholdAttributesJSON {
+				if value, ok := thresholdSingle[key]; ok {
+					thresholdSingleToBeFormatted[terraformSchemaKey] = value
+				}
+			}
+			thresholdsConsolidated = append(thresholdsConsolidated, thresholdSingleToBeFormatted)
+		}
+	}
+	return thresholdsConsolidated
 }
 
 // Function to find all of the widgets that have filter_current_dashboard set and return the title and layout location to identify later.

@@ -25,14 +25,14 @@ test-only: test-unit test-integration
 test-unit: tools
 	@echo "=== $(PROJECT_NAME) === [ test-unit        ]: running unit tests..."
 	@mkdir -p $(COVERAGE_DIR)
-	@$(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/unit.xml --packages "$(GO_PKGS)" \
+	@$(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/unit.xml --packages "$(GO_PKGS)" --jsonfile $(COVERAGE_DIR)/unit.report \
 		-- -v -parallel 10 -tags=unit $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/unit.tmp
 
 test-integration: tools
 	@echo "=== $(PROJECT_NAME) === [ test-integration ]: running integration tests..."
 	@mkdir -p $(COVERAGE_DIR)
-	@TF_ACC=1 $(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/integration.xml --rerun-fails=1 --packages "$(GO_PKGS)" \
-		-- -v -parallel 8 -tags=integration $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp \
+	@TF_ACC=1 $(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/integration.xml --rerun-fails=1 --packages "$(GO_PKGS)" --jsonfile $(COVERAGE_DIR)/integration.report \
+		-- -v -parallel 10 -tags=integration $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp \
 		   -timeout 120m -ldflags=$(LDFLAGS_TEST)
 
 #

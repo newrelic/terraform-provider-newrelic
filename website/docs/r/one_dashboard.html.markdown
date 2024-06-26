@@ -96,7 +96,30 @@ resource "newrelic_one_dashboard" "exampledash" {
       y_axis_left_zero = true
       y_axis_left_min = 0
       y_axis_left_max = 1
+      
+      y_axis_right {
+        y_axis_right_zero   = true
+        y_axis_right_min    = 0
+        y_axis_right_max    = 300
+        y_axis_right_series = ["A", "B"]
+      }
+      
+      is_label_visible = true
+      
+      threshold {
+        name     = "Duration Threshold"
+        from     = 1 
+        to       = 2
+        severity = "critical"
+      }
 
+      threshold {
+        name     = "Duration Threshold Two"
+        from     = 0.5
+        to       = 0.75
+        severity = "warning"
+      }
+      
       units {
         unit = "ms"
         series_overrides {
@@ -276,6 +299,16 @@ Each widget type supports an additional set of arguments:
   * `widget_line`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `y_axis_left_zero` - (Optional) An attribute that specifies if the values on the graph to be rendered need to be fit to scale, or printed within the specified range from `y_axis_left_min` (or 0 if it is not defined) to `y_axis_left_max`. Use `y_axis_left_zero = true` with a combination of `y_axis_left_min` and `y_axis_left_max` to render values from 0 or the specified minimum to the maximum, and `y_axis_left_zero = false` to fit the graph to scale.
+    * `y_axis_right` - (Optional) An attribute which helps specify the configuration of the Y-Axis displayed on the right side of the line widget. This is a nested block, which includes the following attributes:
+      * `y_axis_right_zero` - (Optional) An attribute that specifies if the values on the graph to be rendered need to be fit to scale, or printed within the specified range from `y_axis_right_min` (or 0 if it is not defined) to `y_axis_right_max`. Use `y_axis_right_zero = true` with a combination of `y_axis_right_min` and `y_axis_right_max` to render values from 0 or the specified minimum to the maximum, and `y_axis_right_zero = false` to fit the graph to scale.
+      * `y_axis_right_min`, `y_axis_right_max` - (Optional) Attributes which help specify a range of minimum and maximum values, which adjust the right Y axis to display the data within the specified minimum and maximum value for the axis. 
+      * `y_axis_right_series` - (Optional) An attribute which takes a list of strings, specifying a selection of series' displayed in the line chart to be adjusted against the values of the right Y-axis.
+    * `threshold` - (Optional) An attribute that helps specify multiple thresholds, each inclusive of a range of values between which the threshold would need to function, the name of the threshold and its severity. Multiple thresholds can be defined in a line widget. The `threshold` attribute requires specifying the following attributes in a nested block - 
+      * `name` - The name of the threshold.
+      * `from` - The value 'from' which the threshold would need to be applied.
+      * `to` - The value until which the threshold would need to be applied.
+      * `severity` - The severity of the threshold, which would affect the visual appearance of the threshold (such as its color) accordingly. The value of this attribute would need to be one of the following - `warning`, `severe`, `critical`, `success`, `unavailable` which correspond to the severity labels _Warning_, _Approaching critical_, _Critical_, _Good_, _Neutral_ in the dropdown that helps specify the severity of thresholds in line widgets in the UI, respectively.
+    * `is_label_visible` - (Optional) A boolean value, which when true, sets the label to be visibly displayed within thresholds. In other words, if this attribute is set to true, the _label always visible_ toggle in the _Thresholds_ section in the settings of the widget is enabled.
   * `widget_markdown`:
     * `text` - (Required) The markdown source to be rendered in the widget.
   * `widget_stacked_bar`
@@ -290,6 +323,12 @@ Each widget type supports an additional set of arguments:
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
+    * `threshold` - (Optional) An attribute that helps specify multiple thresholds, each inclusive of a range of values between which the threshold would need to function, the name of the threshold and its severity. Multiple thresholds can be defined in a table widget. The `threshold` attribute requires specifying the following attributes in a nested block - 
+        * `column_name` - The name of the column in the table, to which the threshold would need to be applied.
+        * `from` - The value 'from' which the threshold would need to be applied.
+        * `to` - The value until which the threshold would need to be applied.
+        * `severity` - The severity of the threshold, which would affect the visual appearance of the threshold (such as its color) accordingly. The value of this attribute would need to be one of the following - `warning`, `severe`, `critical`, `success`, `unavailable` which correspond to the severity labels _Warning_, _Approaching critical_, _Critical_, _Good_, _Neutral_ in the dropdown that helps specify the severity of thresholds in table widgets in the UI, respectively.
+
 
 ### Nested `nrql_query` blocks
 

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -37,6 +38,8 @@ func TestAccNewRelicSingleQuotedEntityData_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccSingleQuotedPreCheck(t)
+
+			time.Sleep(2 * time.Second)
 		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -164,6 +167,11 @@ func testAccCheckNewRelicEntityDataExists(t *testing.T, n string, appName string
 
 		if a["name"] != appName {
 			return fmt.Errorf("expected the entity name to be: %s, but got: %s", appName, a["name"])
+		}
+
+		entityTags := a["entity_tags"]
+		if entityTags == "" || entityTags == "null" {
+			return fmt.Errorf("expected entity tags to be present and not null")
 		}
 
 		return nil

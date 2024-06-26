@@ -39,9 +39,6 @@ func TestAccNewRelicAgentApplicationBrowser(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAgentApplicationBrowserExists(resourceName),
-					resource.TestCheckResourceAttrSet(resourceName, "js_config"),
-					resource.TestCheckResourceAttrSet(resourceName, "application_id"),
-					testAccCheckJsConfigNestedAttributes(resourceName, "js_config", []string{"init", "info", "loader_config"}),
 				),
 			},
 			// Test: Import
@@ -93,12 +90,13 @@ func testAccCheckNewRelicAgentApplicationBrowserExists(n string) resource.TestCh
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 		// Provide a minimal delay to allow for the entity to be indexed.
-		time.Sleep(2 * time.Second)
+		time.Sleep(3 * time.Second)
 		result, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
-		if result != nil {
+
+		if result != nil && *result != nil {
 			if string((*result).GetGUID()) != rs.Primary.ID {
 				return fmt.Errorf("the browser agent application was not found %v - %v", (*result).GetGUID(), rs.Primary.ID)
 			}

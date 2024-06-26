@@ -1,0 +1,41 @@
+name: Unit Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.21.x
+
+      - name: Add GOBIN to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache deps
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Unit Tests
+        id: unit-tests
+        run: |
+          make test-unit cover-report
+
+      - name: Report test coverage via Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/coverage.out

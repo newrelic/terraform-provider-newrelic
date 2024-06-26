@@ -349,5 +349,9 @@ That being said, importing is possible using -
 
 ## Additional Information
 More details about the channels API can be found [here](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels).
+### Moving from Legacy Alert Channels to Notification Channels
+As described in the documentation of this resource, channels can be created and managed using [`newrelic_notification_destination`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_destination) and [`newrelic_notification_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/notification_channel). A combination of these resources is an alternative to the legacy resource [`newrelic_alert_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_channel), which is **deprecated** and will be **removed in a future major release**, as stated in the documentation of the resource.
 
-~> **NOTE:** [`newrelic_alert_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_channel) and [`newrelic_alert_policy_channel`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/alert_policy_channel) are legacy resources.
+If you're currently using `newrelic_alert_channel` to manage channels, we **strongly recommend** migrating to these notifications-based resources at the earliest.
+
+Please refer to the examples in this page, or [this example](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started#add-a-notification-channel) for illustrations on setting up channels with these resources.

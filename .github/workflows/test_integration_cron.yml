@@ -1,0 +1,116 @@
+name: Integration Tests Cron Job
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Cron executes at 0800, 1200 1600 (8am, 12pm, 4pm)
+    - cron: "0 8,12,16 * * 1-5"
+
+jobs:
+  test-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.21.x
+
+      - name: Add GOBIN to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache deps
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Integration Tests
+        run: make test-integration cover-report
+        continue-on-error: true
+        env:
+          NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+          NEW_RELIC_SUBACCOUNT_ID: ${{ secrets.NEW_RELIC_SUBACCOUNT_ID }}
+          NEW_RELIC_ADMIN_API_KEY: ${{ secrets.NEW_RELIC_ADMIN_API_KEY }}
+          NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
+          NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+          NEW_RELIC_REGION: ${{ secrets.NEW_RELIC_REGION }}
+          NEW_RELIC_INSIGHTS_INSERT_KEY: ${{ secrets.NEW_RELIC_INSIGHTS_INSERT_KEY }}
+          NR_ACC_TESTING: ${{ secrets.NR_ACC_TESTING }}
+          INTEGRATION_TESTING_AWS_ARN: ${{ secrets.INTEGRATION_TESTING_AWS_ARN }}
+          INTEGRATION_TESTING_GCP_ACCOUNT_NAME: ${{ secrets.INTEGRATION_TESTING_GCP_ACCOUNT_NAME }}
+          INTEGRATION_TESTING_GCP_PROJECT_ID: ${{ secrets.INTEGRATION_TESTING_GCP_PROJECT_ID }}
+          INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID: ${{secrets.INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID}}
+          INTEGRATION_TESTING_AZURE_APPLICATION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_APPLICATION_ID }}
+          INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID }}
+          INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID }}
+          INTEGRATION_TESTING_AZURE_TENANT_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_TENANT_ID }}
+
+      - name: Detect drift
+        if: ${{ always() }}
+        uses: actions/github-script@v7
+        id: detect-state-drift
+        with:
+          script: |
+            const script = require('./scripts/detect-state-drift.js')
+            await script({core})
+
+      - name: Send report to Slack
+        id: slack
+        uses: slackapi/slack-github-action@v1.26
+        with:
+          # Uses Slack's Block Kit to build the message
+          # https://app.slack.com/block-kit-builder
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":warning: *Terraform Provider | Potential Drift Detected*"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "plain_text",
+                      "text": ${{ toJSON(steps.detect-state-drift.outputs.drift_report) }}
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "More information can be viewed in the job summary."
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "Job Summary",
+                      "emoji": true
+                    },
+                    "value": "View Job Summary",
+                    "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                    "action_id": "button-action"
+                  }
+                },
+                {
+                  "type": "divider"
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

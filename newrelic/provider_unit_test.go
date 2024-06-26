@@ -23,8 +23,6 @@ func TestGenerateNameForIntegrationTestResource(t *testing.T) {
 }
 
 func TestBuildUserAgentStringWithDefaultServiceName(t *testing.T) {
-	t.Parallel()
-
 	tfUA := "HashiCorp Terraform/1.3.5 (+https://www.terraform.io) Terraform Plugin SDK/2.10.1"
 
 	result := buildUserAgentString(tfUA, getUserAgentServiceName(), ProviderVersion)
@@ -32,8 +30,6 @@ func TestBuildUserAgentStringWithDefaultServiceName(t *testing.T) {
 }
 
 func TestBuildUserAgentStringWithCustomServiceName(t *testing.T) {
-	t.Parallel()
-
 	// In a real scenario, this is set via -ldflags at compile time.
 	// This would be "pulumi" or some other third-party service in a real scenario.
 	UserAgentServiceName = "test"
@@ -47,15 +43,11 @@ func TestBuildUserAgentStringWithCustomServiceName(t *testing.T) {
 }
 
 func TestGetUserAgentServiceNameDefault(t *testing.T) {
-	t.Parallel()
-
 	result := getUserAgentServiceName()
 	require.Equal(t, "terraform-provider-newrelic", result)
 }
 
 func TestGetUserAgentServiceNameCustom(t *testing.T) {
-	t.Parallel()
-
 	// In a real scenario, this is set via -ldflags at compile time.
 	UserAgentServiceName = "test"
 
