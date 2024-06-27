@@ -186,9 +186,10 @@ func TestFlattenWorkflow(t *testing.T) {
 	}}
 
 	destinationConfigurations := []workflows.AiWorkflowsDestinationConfiguration{{
-		Name:      "destination-test",
-		Type:      workflows.AiWorkflowsDestinationTypeTypes.WEBHOOK,
-		ChannelId: "300848f9-c713-463c-9036-40b45c4c970f",
+		Name:                  "destination-test",
+		Type:                  workflows.AiWorkflowsDestinationTypeTypes.WEBHOOK,
+		ChannelId:             "300848f9-c713-463c-9036-40b45c4c970f",
+		UpdateOriginalMessage: nil,
 	}}
 
 	destinationConfigurationsWithNotificationTriggers := destinationConfigurations
@@ -432,6 +433,8 @@ func testFlattenWorkflowsDestinationConfiguration(t *testing.T, v interface{}, c
 				assert.Equal(t, cv, string(configuration.Type))
 			case "notification_triggers":
 				assert.Equal(t, cv, configuration.NotificationTriggers)
+			case "update_original_message":
+				assert.Equal(t, cv, configuration.UpdateOriginalMessage)
 			}
 		}
 	}

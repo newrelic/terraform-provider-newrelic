@@ -195,7 +195,8 @@ func expandWorkflowDestinationConfiguration(cfg map[string]interface{}) workflow
 	}
 
 	if updateOriginalMessage, ok := cfg["update_original_message"]; ok {
-		destinationConfigurationInput.UpdateOriginalMessage = updateOriginalMessage.(bool)
+		b := updateOriginalMessage.(bool)
+		destinationConfigurationInput.UpdateOriginalMessage = &b
 	}
 
 	if notificationTriggers, ok := cfg["notification_triggers"]; ok {
