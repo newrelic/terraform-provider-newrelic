@@ -565,6 +565,29 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionEvaluationDelay(t *testing
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_StaticConditionExpectedTermination(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicNrqlAlertConditionStaticWithLossOfSignalOnly(
+					rName,
+					"true",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -1136,4 +1159,40 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	}
 }
 `, name)
+}
+
+func testAccNewRelicNrqlAlertConditionStaticWithLossOfSignalOnly(
+	name string,
+	ignoreOnExpectedTermination string,
+) string {
+	if ignoreOnExpectedTermination == "" {
+		ignoreOnExpectedTermination = "true"
+	}
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                           = "tf-test-%[1]s"
+	type                           = "static"
+	runbook_url                    = "https://foo.example.com"
+	enabled                        = false
+	description                    = "test description"
+	violation_time_limit_seconds   = 3600
+	close_violations_on_expiration = true
+	open_violation_on_expiration   = true
+	expiration_duration            = 120
+	ignore_on_expected_termination = %[2]s
+ 	aggregation_delay              = 120
+	aggregation_method             = "event_flow"
+	slide_by					   = 30
+	evaluation_delay			   = 60
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+}
+`, name, ignoreOnExpectedTermination)
 }
