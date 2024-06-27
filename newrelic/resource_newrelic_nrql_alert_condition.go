@@ -275,7 +275,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"ignore_on_expected_termination": {
 				Type:         schema.TypeBool,
 				Optional:     true,
-				Description:  "Do not open a loss of signal on an expected termination.",
+				Description:  "Whether to ignore expected termination of a signal when considering whether to create a loss of signal incident",
 			},
 			"fill_option": {
 				Type:         schema.TypeString,
