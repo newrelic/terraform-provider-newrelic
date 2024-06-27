@@ -166,7 +166,8 @@ workflow.
 Block's arguments:
 * `channel_id` - (Required) Id of a [notification_channel](notification_channel.html) to use for notifications. Please note that you have to use a 
 **notification** channel, not an `alert_channel`.
-* `notification_triggers` - (Optional) Issue events to notify on. The value is a list of possible issue events. See [Notification Triggers](#notification-triggers) below for details. 
+* `notification_triggers` - (Optional) Issue events to notify on. The value is a list of possible issue events. See [Notification Triggers](#notification-triggers) below for details.
+* `update_original_message` - (Optional) Update original notification message (Slack channels only).
 
 ### Notification Triggers
 
