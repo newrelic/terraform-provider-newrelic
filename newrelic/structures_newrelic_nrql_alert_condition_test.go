@@ -439,7 +439,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			Name:        "name-test",
 			Nrql: alerts.NrqlConditionQuery{
 				Query:            "SELECT average(duration) from Transaction where appName='Dummy App'",
-				DataAccountId:    &dataAccountId
+				DataAccountId:    &dataAccountId,
 				EvaluationOffset: &evalOffset,
 			},
 			RunbookURL: "test.com",
