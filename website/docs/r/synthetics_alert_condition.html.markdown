@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create and manage synthetics alert conditions in New Relic.
 
--> **WARNING:** The `newrelic_synthetics_alert_condition` resource is deprecated and will be removed in the next major release. The resource [newrelic_nrql_alert_condition](nrql_alert_condition.html) would be a preferred alternative to configure alert conditions - in most cases, feature parity can be achieved with a NRQL query.
+-> **WARNING:** The `newrelic_synthetics_alert_condition` resource is deprecated and will be removed in the next major release. The resource [newrelic_nrql_alert_condition](nrql_alert_condition.html) would be a preferred alternative to configure alert conditions - in most cases, feature parity can be achieved with a NRQL query.For more details and examples on moving away from Synthetics alert conditions to the NRQL based alternative, please check out [this](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/migration_guide_alert_conditions#migrating-from-synthetics-alert-conditions-to-nrql-alert-conditions) example.
 
 ## Example Usage
 

@@ -12,7 +12,11 @@ Certain subtypes of Alert Conditions (Synthetics Alert Condition and Infra Alert
 
 Users wanting to migrate alert conditions will need to make a few adjustments to their configuration, by following the examples outlined below.
 
-### newrelic_synthetics_alert_condition
+### Migrating from Synthetics Alert Conditions to NRQL Alert Conditions
+
+The following example illustrates changing over to an NRQL-based alert condition using the [newrelic_nrql_alert_condition](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/nrql_alert_condition) resource from a Synthetics alert condition, i.e. [newrelic_synthetics_alert_condition](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/nrql_alert_condition).
+
+Below example also illustrates how argument monitor_id in synthetic alert condition should be inserted in NRQL over syntheticCheck after migration.
 
 Example newrelic_synthetics_alert_condition:
 ```
@@ -58,7 +62,13 @@ resource "newrelic_nrql_alert_condition" "foo" {
 }
 ```
 
-### newrelic_infra_alert_condition: High disk usage
+### Migrating from Infra Alert Conditions to NRQL Alert Conditions
+
+The following examples illustrates changing over to an NRQL-based alert condition using the [newrelic_nrql_alert_condition](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/nrql_alert_condition) resource from a Infra alert condition, i.e. [newrelic_infra_alert_condition](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/infra_alert_condition).
+
+#### newrelic_infra_alert_condition: High disk usage
+
+The following example illustrates changing an Infra alert condition for high disk usage to an NRQL-based alert condition.
 
 Example newrelic_infra_alert_condition:
 ```
@@ -126,7 +136,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 }
 ```
 
-### newrelic_infra_alert_condition: High db connection count
+#### newrelic_infra_alert_condition: High db connection count
+
+The following example illustrates changing an Infra alert condition for high DB connection count to an NRQL-based alert condition.
 
 Example newrelic_infra_alert_condition:
 ```
@@ -182,7 +194,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 }
 ```
 
-### newrelic_infra_alert_condition: Process not running
+#### newrelic_infra_alert_condition: Process not running
+
+The following example illustrates changing an Infra alert condition for process not running to an NRQL-based alert condition.
 
 Example newrelic_infra_alert_condition:
 ```
@@ -235,7 +249,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 }
 ```
 
-### newrelic_infra_alert_condition: Host not reporting
+#### newrelic_infra_alert_condition: Host not reporting
+
+The following example illustrates changing an Infra alert condition for host not reporting to an NRQL-based alert condition.
 
 Example newrelic_infra_alert_condition:
 ```
