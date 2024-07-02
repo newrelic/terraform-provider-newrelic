@@ -171,7 +171,8 @@ func expandCreateNrql(d *schema.ResourceData, condition alerts.NrqlConditionCrea
 	}
 
 	if dataAccountID, ok := d.GetOk("nrql.0.data_account_id"); ok {
-		nrql.DataAccountId = dataAccountID.(*int)
+		v := dataAccountID.(int)
+		nrql.DataAccountId = &v
 	}
 
 	if sinceValue, ok := d.GetOk("nrql.0.since_value"); ok {
@@ -198,7 +199,8 @@ func expandUpdateNrql(d *schema.ResourceData, condition alerts.NrqlConditionUpda
 	}
 
 	if dataAccountID, ok := d.GetOk("nrql.0.data_account_id"); ok {
-		nrql.DataAccountId = dataAccountID.(*int)
+		v := dataAccountID.(int)
+		nrql.DataAccountId = &v
 	}
 
 	if sinceValue, ok := d.GetOk("nrql.0.since_value"); ok {
