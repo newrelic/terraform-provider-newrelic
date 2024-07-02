@@ -14,9 +14,9 @@ Users wanting to migrate alert conditions will need to make a few adjustments to
 
 ### Migrating from Synthetics Alert Conditions to NRQL Alert Conditions
 
-The following example illustrates changing over to an NRQL-based alert condition using the [newrelic_nrql_alert_condition](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/nrql_alert_condition) resource from a Synthetics alert condition, i.e. [newrelic_synthetics_alert_condition](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/nrql_alert_condition).
+The following example illustrates changing over from a synthetics alert condition, i.e. [newrelic_synthetics_alert_condition](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/nrql_alert_condition) to an NRQL-based alert condition using the [newrelic_nrql_alert_condition](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/nrql_alert_condition) resource.
 
-Below example also illustrates how argument monitor_id in synthetic alert condition should be inserted in NRQL over syntheticCheck after migration.
+It may be obtained from the example that the ID of the monitor specified against the argument `monitor_id` in the synthetics alert condition may be used in NRQL with `SyntheticCheck` to convert this into an NRQL-based alert condition.
 
 Example newrelic_synthetics_alert_condition:
 ```
@@ -64,11 +64,11 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 ### Migrating from Infra Alert Conditions to NRQL Alert Conditions
 
-The following examples illustrates changing over to an NRQL-based alert condition using the [newrelic_nrql_alert_condition](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/nrql_alert_condition) resource from a Infra alert condition, i.e. [newrelic_infra_alert_condition](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/infra_alert_condition).
+The following examples illustrate changing over from infra alert conditions, i.e. [newrelic_infra_alert_condition](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/infra_alert_condition) to NRQL-based alert conditions using the resource [newrelic_nrql_alert_condition](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/nrql_alert_condition).
 
-#### newrelic_infra_alert_condition: High disk usage
+#### newrelic_infra_alert_condition: High Disk Usage
 
-The following example illustrates changing an Infra alert condition for high disk usage to an NRQL-based alert condition.
+The following example illustrates changing an infra alert condition for 'High Disk Usage' to an NRQL-based alert condition.
 
 Example newrelic_infra_alert_condition:
 ```
@@ -136,9 +136,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 }
 ```
 
-#### newrelic_infra_alert_condition: High db connection count
+#### newrelic_infra_alert_condition: High DB Connection Count
 
-The following example illustrates changing an Infra alert condition for high DB connection count to an NRQL-based alert condition.
+The following example illustrates changing an infra alert condition for 'High DB Connection Count' to an NRQL-based alert condition.
 
 Example newrelic_infra_alert_condition:
 ```
@@ -194,9 +194,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 }
 ```
 
-#### newrelic_infra_alert_condition: Process not running
+#### newrelic_infra_alert_condition: Process Not Running
 
-The following example illustrates changing an Infra alert condition for process not running to an NRQL-based alert condition.
+The following example illustrates changing an infra alert condition for 'Process Not Running' to an NRQL-based alert condition.
 
 Example newrelic_infra_alert_condition:
 ```
@@ -249,9 +249,9 @@ resource "newrelic_nrql_alert_condition" "foo" {
 }
 ```
 
-#### newrelic_infra_alert_condition: Host not reporting
+#### newrelic_infra_alert_condition: Host Not Reporting
 
-The following example illustrates changing an Infra alert condition for host not reporting to an NRQL-based alert condition.
+The following example illustrates changing an infra alert condition for 'Host Not Reporting' to an NRQL-based alert condition.
 
 Example newrelic_infra_alert_condition:
 ```
