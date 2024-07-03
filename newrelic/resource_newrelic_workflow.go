@@ -68,6 +68,7 @@ func resourceNewRelicWorkflow() *schema.Resource {
 						"update_original_message": {
 							Type:        schema.TypeBool,
 							Optional:    true,
+							DefaultFunc: func() (interface{}, error) { return true, nil },
 							Computed:    true,
 							Description: "Update original notification message (Slack channels only)",
 						},
@@ -455,6 +456,16 @@ func resourceNewRelicWorkflowV0() *schema.Resource {
 			},
 		},
 		SchemaVersion: 0,
+	}
+}
+
+func suppressDefaultBool(defaultValue bool) schema.SchemaDiffSuppressFunc {
+	return func(k, old, new string, d *schema.ResourceData) bool {
+		// Convert old and new values to booleans
+		oldBool, newBool := old == "", new == "true"
+
+		// Suppress the diff if the new value is not set (default) and the old value is the default value
+		return newBool == defaultValue && oldBool == defaultValue
 	}
 }
 

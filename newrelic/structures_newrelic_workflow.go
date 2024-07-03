@@ -412,7 +412,12 @@ func flattenWorkflowDestinationConfiguration(d *workflows.AiWorkflowsDestination
 	destinationConfigurationResult["channel_id"] = d.ChannelId
 	destinationConfigurationResult["name"] = d.Name
 	destinationConfigurationResult["type"] = d.Type
-	destinationConfigurationResult["update_original_message"] = d.UpdateOriginalMessage
+	if currentState == nil || currentState["update_original_message"] == nil {
+		b := true
+		destinationConfigurationResult["update_original_message"] = &b
+	} else {
+		destinationConfigurationResult["update_original_message"] = d.UpdateOriginalMessage
+	}
 
 	if currentState == nil || currentState["notification_triggers"] == nil {
 		destinationConfigurationResult["notification_triggers"] = d.NotificationTriggers

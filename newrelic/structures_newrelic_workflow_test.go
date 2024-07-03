@@ -186,10 +186,9 @@ func TestFlattenWorkflow(t *testing.T) {
 	}}
 
 	destinationConfigurations := []workflows.AiWorkflowsDestinationConfiguration{{
-		Name:                  "destination-test",
-		Type:                  workflows.AiWorkflowsDestinationTypeTypes.WEBHOOK,
-		ChannelId:             "300848f9-c713-463c-9036-40b45c4c970f",
-		UpdateOriginalMessage: nil,
+		Name:      "destination-test",
+		Type:      workflows.AiWorkflowsDestinationTypeTypes.WEBHOOK,
+		ChannelId: "300848f9-c713-463c-9036-40b45c4c970f",
 	}}
 
 	destinationConfigurationsWithNotificationTriggers := destinationConfigurations
