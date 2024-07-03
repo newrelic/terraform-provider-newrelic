@@ -24,6 +24,7 @@ var (
 func TestExpandNrqlAlertConditionInput(t *testing.T) {
 	nrql := map[string]interface{}{
 		"query":             "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'Dummy App'",
+		"data_account_id":   987654,
 		"evaluation_offset": 3,
 	}
 
@@ -400,6 +401,10 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 					require.Equal(t, tc.Expanded.Nrql.Query, expanded.Nrql.Query)
 				}
 
+				if tc.Expanded.Nrql.DataAccountId != nil {
+					require.Equal(t, tc.Expanded.Nrql.DataAccountId, expanded.Nrql.DataAccountId)
+				}
+
 				if tc.Expanded.Nrql.EvaluationOffset != nil {
 					require.Equal(t, tc.Expanded.Nrql.EvaluationOffset, expanded.Nrql.EvaluationOffset)
 				}
@@ -422,6 +427,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 
 func TestFlattenNrqlAlertCondition(t *testing.T) {
 	r := resourceNewRelicNrqlAlertCondition()
+	dataAccountId := 987654
 	evalOffset := 3
 
 	nrqlCondition := alerts.NrqlAlertCondition{
@@ -433,6 +439,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			Name:        "name-test",
 			Nrql: alerts.NrqlConditionQuery{
 				Query:            "SELECT average(duration) from Transaction where appName='Dummy App'",
+				DataAccountId:    &dataAccountId,
 				EvaluationOffset: &evalOffset,
 			},
 			RunbookURL: "test.com",
@@ -526,6 +533,8 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 
 		require.Equal(t, 7654321, d.Get("policy_id").(int))
 		require.Equal(t, testAccountID, d.Get("account_id").(int))
+
+		require.Equal(t, 987654, d.Get("nrql.0.data_account_id").(int))
 
 		criticalTerms := d.Get("critical").([]interface{})
 		assert.Equal(t, 1, len(criticalTerms))
