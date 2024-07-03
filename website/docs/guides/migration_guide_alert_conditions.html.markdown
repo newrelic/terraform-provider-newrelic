@@ -68,7 +68,7 @@ The following examples illustrate changing over from infra alert conditions, i.e
 
 #### newrelic_infra_alert_condition: High Disk Usage
 
-The following example illustrates changing an infra alert condition for 'High Disk Usage' to an NRQL-based alert condition.
+The following example illustrates changing an infra alert condition for `High Disk Usage` to an NRQL-based alert condition.
 
 Example newrelic_infra_alert_condition:
 ```
@@ -138,7 +138,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 #### newrelic_infra_alert_condition: High DB Connection Count
 
-The following example illustrates changing an infra alert condition for 'High DB Connection Count' to an NRQL-based alert condition.
+The following example illustrates changing an infra alert condition for `High DB Connection Count` to an NRQL-based alert condition.
 
 Example newrelic_infra_alert_condition:
 ```
@@ -196,7 +196,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 #### newrelic_infra_alert_condition: Process Not Running
 
-The following example illustrates changing an infra alert condition for 'Process Not Running' to an NRQL-based alert condition.
+The following example illustrates changing an infra alert condition for `Process Not Running` to an NRQL-based alert condition.
 
 Example newrelic_infra_alert_condition:
 ```
@@ -251,7 +251,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 #### newrelic_infra_alert_condition: Host Not Reporting
 
-The following example illustrates changing an infra alert condition for 'Host Not Reporting' to an NRQL-based alert condition.
+The following example illustrates changing an infra alert condition for `Host Not Reporting` to an NRQL-based alert condition.
 
 Example newrelic_infra_alert_condition:
 ```
