@@ -115,8 +115,8 @@ resource "newrelic_one_dashboard" "exampledash" {
 
       threshold {
         name     = "Duration Threshold Two"
-        from     = 0.5
-        to       = 0.75
+        from     = 2
+        to       = 3
         severity = "warning"
       }
       
