@@ -1,3 +1,9 @@
+<a name="v3.39.1"></a>
+## [v3.39.1] - 2024-07-04
+### Documentation Updates
+- update NRQL alert condition migration guide and references in legacy resources ([#2704](https://github.com/newrelic/terraform-provider-newrelic/issues/2704))
+- fix dashboard threshold ([#2709](https://github.com/newrelic/terraform-provider-newrelic/issues/2709))
+
 <a name="v3.39.0"></a>
 ## [v3.39.0] - 2024-07-03
 ### Features
@@ -2138,7 +2144,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.39.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.39.1...HEAD
+[v3.39.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.39.0...v3.39.1
 [v3.39.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.38.1...v3.39.0
 [v3.38.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.38.0...v3.38.1
 [v3.38.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.37.1...v3.38.0
