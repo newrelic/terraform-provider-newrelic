@@ -459,16 +459,6 @@ func resourceNewRelicWorkflowV0() *schema.Resource {
 	}
 }
 
-func suppressDefaultBool(defaultValue bool) schema.SchemaDiffSuppressFunc {
-	return func(k, old, new string, d *schema.ResourceData) bool {
-		// Convert old and new values to booleans
-		oldBool, newBool := old == "", new == "true"
-
-		// Suppress the diff if the new value is not set (default) and the old value is the default value
-		return newBool == defaultValue && oldBool == defaultValue
-	}
-}
-
 func resourceNewRelicWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 	workflowInput, err := expandWorkflow(d)
