@@ -432,6 +432,8 @@ func testFlattenWorkflowsDestinationConfiguration(t *testing.T, v interface{}, c
 				assert.Equal(t, cv, string(configuration.Type))
 			case "notification_triggers":
 				assert.Equal(t, cv, configuration.NotificationTriggers)
+			case "update_original_message":
+				assert.Equal(t, cv, configuration.UpdateOriginalMessage)
 			}
 		}
 	}
