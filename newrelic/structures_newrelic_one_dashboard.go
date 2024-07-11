@@ -504,11 +504,11 @@ func expandDashboardLineWidgetConfigurationThresholdInput(d *schema.ResourceData
 				// and assign them to respective attributes of the DashboardLineWidgetThresholdThresholdInput object
 
 				if v, ok := lineWidgetThresholdInInputSingularInterface["from"]; ok {
-					t := v.(int)
+					t := v.(float64)
 					lineWidgetThresholdToBeAdded.From = &t
 				}
 				if v, ok := lineWidgetThresholdInInputSingularInterface["to"]; ok {
-					t := v.(int)
+					t := v.(float64)
 					lineWidgetThresholdToBeAdded.To = &t
 				}
 				if v, ok := lineWidgetThresholdInInputSingularInterface["name"]; ok {
@@ -559,11 +559,11 @@ func expandDashboardTableWidgetConfigurationThresholdInput(d *schema.ResourceDat
 				// and assign them to respective attributes of the DashboardTableWidgetThresholdInput object
 
 				if v, ok := tableWidgetThresholdInInputSingularInterface["from"]; ok {
-					t := v.(int)
+					t := v.(float64)
 					tableWidgetThresholdToBeAdded.From = &t
 				}
 				if v, ok := tableWidgetThresholdInInputSingularInterface["to"]; ok {
-					t := v.(int)
+					t := v.(float64)
 					tableWidgetThresholdToBeAdded.To = &t
 				}
 				if v, ok := tableWidgetThresholdInInputSingularInterface["column_name"]; ok {
