@@ -74,10 +74,10 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 * `type` - (Required) The plaintext representing the monitor script. Valid values are SCRIPT_BROWSER or SCRIPT_API
 * `locations_public` - (Optional) The location the monitor will run from. Check out [this page](https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/) for a list of valid public locations. The `AWS_` prefix is not needed, as the provider uses NerdGraph. **At least one of either** `locations_public` **or** `location_private` **is required**.
 * `location_private` - (Optional) The location the monitor will run from. See [Nested location_private blocks](#nested-location-private-blocks) below for details. **At least one of either** `locations_public` **or** `location_private` **is required**.
-* `period` - (Required) The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.
+* `period` - (Required) The interval at which this monitor should run. Valid values are `EVERY_MINUTE`, `EVERY_5_MINUTES`, `EVERY_10_MINUTES`, `EVERY_15_MINUTES`, `EVERY_30_MINUTES`, `EVERY_HOUR`, `EVERY_6_HOURS`, `EVERY_12_HOURS`, or `EVERY_DAY`.
 * `script` - (Required) The script that the monitor runs.
-* `runtime_type` - (Optional) The runtime that the monitor will use to run jobs.
-* `runtime_type_version` - (Optional) The specific version of the runtime type selected.
+* `runtime_type` - (Optional) The runtime that the monitor will use to run jobs. For the `SCRIPT_API` monitor type, a valid value is `NODE_API`. For the `SCRIPT_BROWSER` monitor type, a valid value is `CHROME_BROWSER`.
+* `runtime_type_version` - (Optional) The specific version of the runtime type selected. For the `SCRIPT_API` monitor type, a valid value is `16.10`, which corresponds to the version of Node.js. For the `SCRIPT_BROWSER` monitor type, a valid value is `100`, which corresponds to the version of the Chrome browser.
 * `script_language` - (Optional) The programing language that should execute the script.
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
 
@@ -170,6 +170,8 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
   runtime_type_version = "100"
   runtime_type         = "CHROME_BROWSER"
   script_language      = "JAVASCRIPT"
+  device_type          = "MOBILE"
+  device_orientation   = "LANDSCAPE"
 
   tag {
     key    = "some_key"
