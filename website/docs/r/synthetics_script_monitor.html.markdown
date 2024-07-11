@@ -77,7 +77,7 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 * `period` - (Required) The interval at which this monitor should run. Valid values are `EVERY_MINUTE`, `EVERY_5_MINUTES`, `EVERY_10_MINUTES`, `EVERY_15_MINUTES`, `EVERY_30_MINUTES`, `EVERY_HOUR`, `EVERY_6_HOURS`, `EVERY_12_HOURS`, or `EVERY_DAY`.
 * `script` - (Required) The script that the monitor runs.
 * `runtime_type` - (Optional) The runtime that the monitor will use to run jobs. For the `SCRIPT_API` monitor type, a valid value is `NODE_API`. For the `SCRIPT_BROWSER` monitor type, a valid value is `CHROME_BROWSER`.
-* `runtime_type_version` - (Optional) The specific version of the runtime type selected. For `SCRIPT_API` monitor type, valid value is `16.10`, which corresponds to the version of Node.js. For `SCRIPT_BROWSER` monitor type, valid value is `100`, which corresponds to the version of chrome browser.
+* `runtime_type_version` - (Optional) The specific version of the runtime type selected. For the `SCRIPT_API` monitor type, a valid value is `16.10`, which corresponds to the version of Node.js. For the `SCRIPT_BROWSER` monitor type, a valid value is `100`, which corresponds to the version of the Chrome browser.
 * `script_language` - (Optional) The programing language that should execute the script.
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
 
