@@ -82,7 +82,7 @@ func resourceNewRelicEntityTagsCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 	if res != nil && len(res.Errors) > 0 {
-		return CreateErrorDiagnostics(res)
+		return handleEntityTagsMutationEmbeddedErrors(res)
 	}
 	d.SetId(string(guid))
 
@@ -154,7 +154,7 @@ func resourceNewRelicEntityTagsUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 	if res != nil && len(res.Errors) > 0 {
-		return CreateErrorDiagnostics(res)
+		return handleEntityTagsMutationEmbeddedErrors(res)
 	}
 
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
@@ -219,7 +219,7 @@ func resourceNewRelicEntityTagsDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 	if res != nil && len(res.Errors) > 0 {
-		return CreateErrorDiagnostics(res)
+		return handleEntityTagsMutationEmbeddedErrors(res)
 	}
 	return nil
 }
@@ -306,7 +306,7 @@ func getTag(tags []*entities.TaggingTagInput, key string) *entities.TaggingTagIn
 	return nil
 }
 
-func CreateErrorDiagnostics(res *entities.TaggingMutationResult) diag.Diagnostics {
+func handleEntityTagsMutationEmbeddedErrors(res *entities.TaggingMutationResult) diag.Diagnostics {
 	var diags diag.Diagnostics
 	for _, Error := range res.Errors {
 		diags = append(diags, diag.Diagnostic{
