@@ -1,3 +1,11 @@
+<a name="v3.40.0"></a>
+## [v3.40.0] - 2024-07-11
+### Documentation Updates
+- **synthetics:** fixed documentation for synthetic monitor resources ([#2711](https://github.com/newrelic/terraform-provider-newrelic/issues/2711))
+
+### Features
+- **destinations:** add `update_original_message` to destination configurations ([#2701](https://github.com/newrelic/terraform-provider-newrelic/issues/2701))
+
 <a name="v3.39.1"></a>
 ## [v3.39.1] - 2024-07-04
 ### Documentation Updates
@@ -2144,7 +2152,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.39.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.40.0...HEAD
+[v3.40.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.39.1...v3.40.0
 [v3.39.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.39.0...v3.39.1
 [v3.39.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.38.1...v3.39.0
 [v3.38.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.38.0...v3.38.1
