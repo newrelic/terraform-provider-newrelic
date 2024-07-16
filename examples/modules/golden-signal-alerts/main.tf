@@ -1,3 +1,11 @@
+terraform {
+	required_providers {
+		newrelic = {
+			source = "newrelic/newrelic"
+		}
+	}
+}
+
 data "newrelic_entity" "application" {
 	name = var.service.name
 	type = "APPLICATION"
@@ -17,7 +25,7 @@ resource "newrelic_alert_condition" "response_time_web" {
 	metric          = "response_time_web"
 	condition_scope = "application"
 
-	critical {
+	term {
 		duration      = var.service.duration
 		threshold     = var.service.response_time_threshold
 		operator      = "above"
@@ -30,11 +38,11 @@ resource "newrelic_alert_condition" "throughput_web" {
 
 	name            = "Low Throughput (web)"
 	type            = "apm_app_metric"
-	entities        = [data.newrelic_application.application.application_id]
+	entities        = [data.newrelic_entity.application.application_id]
 	metric          = "throughput_web"
 	condition_scope = "application"
 
-	critical {
+	term {
 		duration      = var.service.duration
 		threshold     = var.service.throughput_threshold
 		operator      = "below"
@@ -47,11 +55,11 @@ resource "newrelic_alert_condition" "error_percentage" {
 
 	name            = "High Error Percentage"
 	type            = "apm_app_metric"
-	entities        = [data.newrelic_application.application.application_id]
+	entities        = [data.newrelic_entity.application.application_id]
 	metric          = "error_percentage"
 	condition_scope = "application"
 
-	critical {
+	term {
 		duration      = var.service.duration
 		threshold     = var.service.error_percentage_threshold
 		operator      = "above"
@@ -67,9 +75,9 @@ resource "newrelic_infra_alert_condition" "high_cpu" {
 	event      = "SystemSample"
 	select     = "cpuPercent"
 	comparison = "above"
-	where      = "(`applicationId` = '${data.newrelic_application.application.application_id}')"
+	where      = "(`applicationId` = '${data.newrelic_entity.application.application_id}')"
 
-	critical {
+	term {
 		duration      = var.service.duration
 		value         = var.service.cpu_threshold
 		time_function = "all"
