@@ -85,7 +85,9 @@ The following arguments are supported:
 
 All nested `tag` blocks support the following common arguments:
 
-  * `key` - (Required) The tag key.
+  * `key` - (Required) The key of the tag.
+
+-> **NOTE:** One should not use reserved (immutable) keys with this resource. It is recommended to choose unique and descriptive keys which do not conflict with existing reserved keys.
   * `values` - (Required) The tag values.
 
 ## Import

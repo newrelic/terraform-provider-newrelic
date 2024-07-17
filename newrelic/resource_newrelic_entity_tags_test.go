@@ -6,12 +6,12 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"testing"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"regexp"
+	"testing"
+	"time"
 )
 
 func TestAccNewRelicEntityTags_Basic(t *testing.T) {
@@ -24,19 +24,36 @@ func TestAccNewRelicEntityTags_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicEntityTagsConfig(testAccExpectedApplicationName),
+				Config:      testAccNewRelicEntityTagsConfig(testAccExpectedApplicationName, "account", "test-account"),
+				ExpectError: regexp.MustCompile("reserved"), // Error: Tag Key 'account' is a reserved key
+				PreConfig: func() {
+					time.Sleep(10 * time.Second)
+				},
+			},
+			{
+				Config: testAccNewRelicEntityTagsConfig(testAccExpectedApplicationName, "test_key", "test_value"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicEntityTagsExist(resourceName, []string{"test_key"}),
 					testAccCheckNewRelicEntityUnmutableExists(resourceName, []string{"account", "guid", "language"}),
 				),
+				PreConfig: func() {
+					time.Sleep(10 * time.Second)
+				},
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicEntityTagsConfigUpdated(testAccExpectedApplicationName),
+				Config: testAccNewRelicEntityTagsConfig(testAccExpectedApplicationName, "test_key_2", "test_value_2"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicEntityTagsExist(resourceName, []string{"test_key_2"}),
 					testAccCheckNewRelicEntityUnmutableExists(resourceName, []string{"account", "guid", "language"}),
 				),
+				PreConfig: func() {
+					time.Sleep(10 * time.Second)
+				},
+			},
+			{
+				Config:      testAccNewRelicEntityTagsConfig(testAccExpectedApplicationName, "account", "test-account-2"),
+				ExpectError: regexp.MustCompile("reserved"), // Error: Tag Key 'account' is a reserved key
 			},
 			// Test: Import
 			//{
@@ -140,7 +157,7 @@ func testAccCheckNewRelicEntityUnmutableExists(n string, keysToCheck []string) r
 	}
 }
 
-func testAccNewRelicEntityTagsConfig(appName string) string {
+func testAccNewRelicEntityTagsConfig(appName string, tagKey string, tagValue string) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "foo" {
   name = "%s"
@@ -152,28 +169,9 @@ resource "newrelic_entity_tags" "foo" {
   guid = data.newrelic_entity.foo.guid
 
   tag {
-	key = "test_key"
-	values = ["test_value"]
+	key = "%s"
+	values = ["%s"]
   }
 }
-`, appName)
-}
-
-func testAccNewRelicEntityTagsConfigUpdated(appName string) string {
-	return fmt.Sprintf(`
-data "newrelic_entity" "foo" {
-  name = "%s"
-  type = "APPLICATION"
-  domain = "APM"
-}
-
-resource "newrelic_entity_tags" "foo" {
-  guid = data.newrelic_entity.foo.guid
-
-  tag {
-	key = "test_key_2"
-	values = ["test_value_2"]
-  }
-}
-`, appName)
+`, appName, tagKey, tagValue)
 }
