@@ -726,6 +726,12 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
 		y_axis_right_zero = false
 		y_axis_right_series = ["A", "B"]
       }
+	  threshold {
+        name     = "Duration Threshold"
+        from     = 10.8 
+        to       = 30.7
+        severity = "critical"
+      }	  	
     }
 
     widget_markdown {
@@ -762,8 +768,8 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         query      = "FROM Transaction SELECT average(duration) FACET appName"
       }
 	  threshold {
-		from 		= 100
-		to 			= 200
+		from 		= 100.1
+		to 			= 200.2
 		column_name = "C1"
 		severity 	= "unavailable"
 	  }
@@ -961,8 +967,8 @@ func testAccCheckNewRelicOneDashboardConfig_PageFullChanged(pageName string, acc
       y_axis_left_max = 25
 	  is_label_visible = true
 	  threshold {
-		from     = 100
-		to       = 200
+		from     = 100.1
+		to       = 200.2
 		name     = "T1"
 		severity = "warning"
       }
@@ -1004,6 +1010,12 @@ func testAccCheckNewRelicOneDashboardConfig_PageFullChanged(pageName string, acc
       nrql_query {
         query      = "FROM Transaction SELECT average(duration) FACET appName LIMIT 10"
       }
+	  threshold {
+		from 		= 100.2
+		to 			= 200.4
+		column_name = "C1"
+		severity 	= "unavailable"
+	  }		
       linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 
