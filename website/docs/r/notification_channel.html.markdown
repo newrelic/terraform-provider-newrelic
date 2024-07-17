@@ -39,7 +39,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the notification channel will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the channel.
-* `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `WEBHOOK`, `JIRA_CLASSIC`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `SLACK` and `SLACK_COLLABORATION`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
+* `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA_CLASSIC`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `SLACK` and `SLACK_COLLABORATION`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
 * `destination_id` - (Required) The id of the destination.
 * `product` - (Required) The type of product.  One of: `DISCUSSIONS`, `ERROR_TRACKING` or `IINT` (workflows).
 * `property` - A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
@@ -60,6 +60,7 @@ Each notification channel type supports a specific set of arguments for the `pro
 * `SERVICENOW_INCIDENTS`
   * `description` - (Optional) Free text that represents a description.
   * `short_description` - (Optional) Free text that represents a short description.
+* `SERVICE_NOW_APP` - No Properties.
 * `JIRA_CLASSIC`, `JIRA_NEXTGEN`
   * `project` - (Required) Identifier that specifies jira project id.
   * `issuetype` - (Required) Identifier that specifies the issue type id.
@@ -110,6 +111,17 @@ resource "newrelic_notification_channel" "foo" {
     key = "short_description"
     value = "Short description"
   }
+}
+```
+// TODO: change url + see if its possible to create without properties
+##### [ServiceNowApp](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#servicenow)
+```hcl
+resource "newrelic_notification_channel" "foo" {
+  account_id = 12345678
+  name = "servicenow-app-example"
+  type = "SERVICE_NOW_APP"
+  destination_id = "00b6bd1d-ac06-4d3d-bd72-49551e70f7a8"
+  product = "IINT"
 }
 ```
 
