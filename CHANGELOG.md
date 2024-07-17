@@ -1,5 +1,11 @@
+<a name="v3.40.1"></a>
+## [v3.40.1] - 2024-07-17
+### Bug Fixes
+- **dashboard:** update line and table widget threshold `to` and `from` datatype ([#2713](https://github.com/newrelic/terraform-provider-newrelic/issues/2713))
+- **entity_tags:** fixed improper error handling in the `newrelic_entity_tags` resource ([#2710](https://github.com/newrelic/terraform-provider-newrelic/issues/2710))
+
 <a name="v3.40.0"></a>
-## [v3.40.0] - 2024-07-11
+## [v3.40.0] - 2024-07-15
 ### Documentation Updates
 - **synthetics:** fixed documentation for synthetic monitor resources ([#2711](https://github.com/newrelic/terraform-provider-newrelic/issues/2711))
 
@@ -2152,7 +2158,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.40.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.40.1...HEAD
+[v3.40.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.40.0...v3.40.1
 [v3.40.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.39.1...v3.40.0
 [v3.39.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.39.0...v3.39.1
 [v3.39.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.38.1...v3.39.0
