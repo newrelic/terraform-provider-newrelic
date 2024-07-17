@@ -578,6 +578,7 @@ func listValidWorkflowsDestinationTypes() []string {
 		string(workflows.AiWorkflowsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
 		string(workflows.AiWorkflowsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
 		string(workflows.AiWorkflowsDestinationTypeTypes.SERVICE_NOW),
+		string(workflows.AiWorkflowsDestinationTypeTypes.SERVICE_NOW_APP),
 		string(workflows.AiWorkflowsDestinationTypeTypes.WEBHOOK),
 		string(workflows.AiWorkflowsDestinationTypeTypes.MOBILE_PUSH),
 		string(workflows.AiWorkflowsDestinationTypeTypes.SLACK),
