@@ -85,7 +85,9 @@ The following arguments are supported:
 
 All nested `tag` blocks support the following common arguments:
 
-  * `key` - (Required) The tag key should not use reserved keys (also known as immutable keys), such as account or accountId. It's recommended to choose a unique and descriptive key that does not conflict with existing reserved keys.
+  * `key` - (Required) The key of the tag.
+
+-> **NOTE:** One should not use reserved (immutable) keys with this resource. It is recommended to choose unique and descriptive keys which do not conflict with existing reserved keys.
   * `values` - (Required) The tag values.
 
 ## Import
