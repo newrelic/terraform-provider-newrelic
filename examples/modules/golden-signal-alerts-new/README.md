@@ -1,4 +1,4 @@
-# [Golden Signal Alerts (New)](modules/golden-signal-alerts-new)
+# Module: Golden Signal Alerts [New]:
 This module encapsulates an alerting strategy based on the [Four Golden Signals](https://landing.google.com/sre/sre-book/chapters/monitoring-distributed-systems/#xref_monitoring_golden-signals) introduced in Google’s widely read book on [Site Reliability Engineering](https://landing.google.com/sre/sre-book/toc/index.html).
 
 The signals chosen for this module are:
