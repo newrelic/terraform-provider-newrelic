@@ -15,7 +15,7 @@ Applications making use of this module need to be reporting data into both APM a
 The following input variables are accepted by the module:
 
 * `name`: The APM application name as reported to New Relic
-* `threshold_duration`: The duration that the threshold must violate in order to create an incident, in seconds.
+* `threshold_duration`: The duration, in seconds, that the condition must violate the threshold before creating a violation.
 * `cpu_threshold`: The critical threshold of the CPU utilization condition, as a percentage
 * `error_percentage_threshold`: The critical threshold of the error rate condition, as a percentage
 * `response_time_threshold`: The critical threshold of the response time condition, in seconds

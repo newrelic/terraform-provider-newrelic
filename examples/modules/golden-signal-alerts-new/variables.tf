@@ -11,6 +11,6 @@ variable "service" {
 }
 
 variable "notification_channel_ids" {
-  description = "The notification channel IDs to add to this policy"
+  description = "The IDs of notification channels to add to this policy"
   type        = list(string)
 }

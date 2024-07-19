@@ -1,7 +1,13 @@
-# [Golden Signal Alerts](modules/golden-signal-alerts) [Deprecated]:
-This module encapsulates an alerting strategy based on the [Four Golden Signals](https://landing.google.com/sre/sre-book/chapters/monitoring-distributed-systems/#xref_monitoring_golden-signals) introduced in Google’s widely read book on [Site Reliability Engineering](https://landing.google.com/sre/sre-book/toc/index.html).
+# Module: Golden Signal Alerts [Deprecated]:
 
--> **WARNING:** The [golden-signal-alerts](modules/golden-signal-alerts) module is deprecated and will be removed in the next major release. The module [golden-signal-alerts-new](modules/golden-signal-alerts-new) would be a preferred alternative to `golden-signal-alerts`.
+**⚠ WARNING**:
+
+This module, [golden-signal-alerts](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/golden-signal-alerts), functions using multiple resources in the New Relic Terraform Provider that have been **deprecated** and will be removed in the next major release. These resources include `newrelic_alert_policy_channel`, `newrelic_infra_alert_condition`, and `newrelic_alert_condition`.
+
+To set up golden signal alerts using a similar module with newer alternatives to the legacy resources listed above, **please use the newer alternative to the module linked above, which has recently been added: [golden-signal-alerts-new](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/golden-signal-alerts-new)**.
+______
+
+This module encapsulates an alerting strategy based on the [Four Golden Signals](https://landing.google.com/sre/sre-book/chapters/monitoring-distributed-systems/#xref_monitoring_golden-signals) introduced in Google’s widely read book on [Site Reliability Engineering](https://landing.google.com/sre/sre-book/toc/index.html).
 
 The signals chosen for this module are:
 
