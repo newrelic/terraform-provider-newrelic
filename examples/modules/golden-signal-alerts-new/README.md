@@ -17,7 +17,7 @@ The following input variables are accepted by the module:
 * `name`: The APM application name as reported to New Relic
 * `threshold_duration`: The duration that the threshold must violate in order to create an incident, in seconds.
 * `cpu_threshold`: The critical threshold of the CPU utilization condition, as a percentage
-* `error_percentage_threshold`: The critical threshold of the error rate condition, in errors/second
+* `error_percentage_threshold`: The critical threshold of the error rate condition, as a percentage
 * `response_time_threshold`: The critical threshold of the response time condition, in seconds
 * `throughput_threshold`: The critical threshold of the throughput condition, in requests/second
 
@@ -74,16 +74,18 @@ resource "newrelic_notification_channel" "email_notification_channel" {
 }
 
 module "webportal_alerts" {
-  source = "../examples/modules/new-golden-signal-alerts" // Need to change path according to your tf config file folder level,
-  // here given example source path is from assuming that your td config code in testing folder
+  // Please specify the path of the source of this module according to the location you've placed the module in.
+  // The path specified below assumes you're using this module from a clone of this repo, in the `newrelic.tf` file in the `testing` folder.
+  // However, if you'd like to use a remote version of this module (without a cloned version of this), the right value of the argument source would be "github.com/newrelic/terraform-provider-newrelic//examples/modules/golden-signal-alerts-new".
+  source = "../examples/modules/golden-signal-alerts-new"
   notification_channel_ids = [newrelic_notification_channel.webhook_notification_channel.id, newrelic_notification_channel.email_notification_channel.id]
 
   service = {
     name                       = "Dummy App Pro Max"
     threshold_duration         = 420
     cpu_threshold              = 90
-    response_time_threshold    = 180
-    error_percentage_threshold = 5
+    response_time_threshold    = 5
+    error_percentage_threshold = 10
     throughput_threshold       = 300
   }
 }
