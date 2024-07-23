@@ -31,62 +31,79 @@ func validateSyntheticMonitorRuntimeAttributes(ctx context.Context, d *schema.Re
 
 func validateSyntheticMonitorLegacyRuntimeAttributesUponCreate(d *schema.ResourceDiff) []error {
 	var runtimeAttributesValidationErrors []error
-	runtimeTypeAttributeLabel := "runtime_type"
-	runtimeTypeVersionAttributeLabel := "runtime_type_version"
+
+	const RUNTIME_TYPE_ATTRIBUTE_LABEL string = "runtime_type"
+	const RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL string = "runtime_type_version"
+	const NODE_LEGACY_RUNTIME_TYPE string = "NODE_API"
+	const NODE_LEGACY_RUNTIME_TYPE_VERSION string = "10"
+	const CHROME_BROWSER_LEGACY_RUNTIME_TYPE string = "CHROME_BROWSER"
+	const CHROME_BROWSER_LEGACY_RUNTIME_TYPE_VERSION string = "72"
 
 	isSyntheticMonitorAlreadyCreated := d.Id() != ""
 	rawConfiguration := d.GetRawConfig()
 
-	isRuntimeTypeNotSpecifiedInConfiguration := rawConfiguration.GetAttr(runtimeTypeAttributeLabel).IsNull()
-	_, runtimeTypeInConfig := d.GetChange(runtimeTypeAttributeLabel)
+	isRuntimeTypeNotSpecifiedInConfiguration := rawConfiguration.GetAttr(RUNTIME_TYPE_ATTRIBUTE_LABEL).IsNull()
+	_, runtimeTypeInConfig := d.GetChange(RUNTIME_TYPE_ATTRIBUTE_LABEL)
+
 	isRuntimeTypeNullValue := runtimeTypeInConfig == ""
 
 	// this would return true only if runtime_type_version is not specified in the configuration at all
 	// and false, if runtime_type_version is specified either as an empty string "", or as any other non nil value (non-empty string)
-	isRuntimeTypeVersionNotSpecifiedInConfiguration := rawConfiguration.GetAttr(runtimeTypeVersionAttributeLabel).IsNull()
-	_, runtimeTypeVersionInConfig := d.GetChange(runtimeTypeAttributeLabel)
+	isRuntimeTypeVersionNotSpecifiedInConfiguration := rawConfiguration.GetAttr(RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL).IsNull()
+	_, runtimeTypeVersionInConfig := d.GetChange(RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL)
 
 	// this would return true both when `runtime_type_version` is not specified in the config and when `runtime_type_version` is specified as "" in the config
 	// and false, if `runtime_type_version` has a non nil value (a non-empty string) as its value
 	isRuntimeTypeVersionNullValue := runtimeTypeVersionInConfig == ""
 
-	if !isSyntheticMonitorAlreadyCreated && !isRuntimeTypeNotSpecifiedInConfiguration && isRuntimeTypeNullValue {
+	if !isSyntheticMonitorAlreadyCreated &&
+		!isRuntimeTypeNotSpecifiedInConfiguration &&
+		isRuntimeTypeNullValue {
+
 		runtimeAttributesValidationErrors = append(
 			runtimeAttributesValidationErrors,
-			constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(runtimeTypeAttributeLabel),
+			constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(RUNTIME_TYPE_ATTRIBUTE_LABEL),
 		)
 	}
 
-	if !isSyntheticMonitorAlreadyCreated && !isRuntimeTypeVersionNotSpecifiedInConfiguration && isRuntimeTypeVersionNullValue {
+	if !isSyntheticMonitorAlreadyCreated &&
+		!isRuntimeTypeVersionNotSpecifiedInConfiguration &&
+		isRuntimeTypeVersionNullValue {
+
 		runtimeAttributesValidationErrors = append(
 			runtimeAttributesValidationErrors,
-			constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(runtimeTypeVersionAttributeLabel),
+			constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL),
 		)
 	}
 
-	/////////////////////////////
-	// THIS IS WIP, not working
-	/////////////////////////////
+	if !isSyntheticMonitorAlreadyCreated &&
+		!isRuntimeTypeNotSpecifiedInConfiguration &&
+		!isRuntimeTypeVersionNotSpecifiedInConfiguration &&
+		!isRuntimeTypeNullValue &&
+		!isRuntimeTypeVersionNullValue {
 
-	if !isSyntheticMonitorAlreadyCreated && !isRuntimeTypeNotSpecifiedInConfiguration && !isRuntimeTypeVersionNotSpecifiedInConfiguration && !isRuntimeTypeNullValue && !isRuntimeTypeVersionNullValue {
-		if runtimeTypeInConfig == "NODE_API" && runtimeTypeVersionInConfig == "10" {
+		if runtimeTypeInConfig == NODE_LEGACY_RUNTIME_TYPE &&
+			runtimeTypeVersionInConfig == NODE_LEGACY_RUNTIME_TYPE_VERSION {
+
 			runtimeAttributesValidationErrors = append(
 				runtimeAttributesValidationErrors,
 				constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-					runtimeTypeAttributeLabel,
-					runtimeTypeVersionAttributeLabel,
+					RUNTIME_TYPE_ATTRIBUTE_LABEL,
+					RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL,
 					runtimeTypeInConfig.(string),
 					runtimeTypeVersionInConfig.(string),
 				),
 			)
 		}
 
-		if runtimeTypeInConfig == "CHROME_BROWSER" && runtimeTypeVersionInConfig == "72" {
+		if runtimeTypeInConfig == CHROME_BROWSER_LEGACY_RUNTIME_TYPE &&
+			runtimeTypeVersionInConfig == CHROME_BROWSER_LEGACY_RUNTIME_TYPE_VERSION {
+
 			runtimeAttributesValidationErrors = append(
 				runtimeAttributesValidationErrors,
 				constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-					runtimeTypeAttributeLabel,
-					runtimeTypeVersionAttributeLabel,
+					RUNTIME_TYPE_ATTRIBUTE_LABEL,
+					RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL,
 					runtimeTypeInConfig.(string),
 					runtimeTypeVersionInConfig.(string),
 				),
@@ -104,10 +121,11 @@ func validateSyntheticMonitorLegacyRuntimeAttributesUponCreate(d *schema.Resourc
 }
 
 func constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(attributeName string) error {
-	errorString := `can no longer be specified as an empty string with new monitors starting August 26, 2024; creating new monitors with the legacy runtime is no longer supported.
-This is in relation with the upcoming Synthetics Legacy Runtime EOL on October 22, 2024; see this for more details: 
-https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm`
-	return fmt.Errorf("`%s` %s", attributeName, errorString)
+	return fmt.Errorf(
+		"`%s` can no longer be specified as an empty string \"\" %s",
+		attributeName,
+		constructSyntheticMonitorLegacyRuntimeAttributesValidationErrorUponCreate(),
+	)
 }
 
 func constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
@@ -116,15 +134,20 @@ func constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUpon
 	runtimeTypeInConfig string,
 	runtimeTypeVersionInConfig string,
 ) error {
-	errorString := ` with new monitors starting August 26, 2024; creating new monitors with the legacy runtime is no longer supported.
-This is in relation with the upcoming Synthetics Legacy Runtime EOL on October 22, 2024; see this for more details: 
-https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm`
 	return fmt.Errorf(
 		"legacy runtime version `%s` can no longer be specified as the `%s` corresponding to the `%s` `%s` %s",
 		runtimeTypeVersionInConfig,
 		runtimeTypeVersionAttributeLabel,
 		runtimeTypeAttributeLabel,
 		runtimeTypeInConfig,
-		errorString,
+		constructSyntheticMonitorLegacyRuntimeAttributesValidationErrorUponCreate(),
 	)
+}
+
+func constructSyntheticMonitorLegacyRuntimeAttributesValidationErrorUponCreate() string {
+	return `with new monitors starting August 26, 2024;
+creating new monitors with the legacy runtime is no longer supported.
+This is in relation with the upcoming Synthetics Legacy Runtime EOL on October 22, 2024; see this for more details: 
+https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm
+`
 }
