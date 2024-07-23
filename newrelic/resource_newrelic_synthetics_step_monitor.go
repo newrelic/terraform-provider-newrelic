@@ -25,6 +25,7 @@ func resourceNewRelicSyntheticsStepMonitor() *schema.Resource {
 			syntheticsMonitorCommonSchema(),
 			syntheticsStepMonitorSchema(),
 		),
+		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
 	}
 }
 
