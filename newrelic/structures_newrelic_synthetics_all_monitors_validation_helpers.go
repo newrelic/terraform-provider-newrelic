@@ -29,15 +29,15 @@ func validateSyntheticMonitorRuntimeAttributes(ctx context.Context, d *schema.Re
 	return errors.New(errorsString)
 }
 
+const RUNTIME_TYPE_ATTRIBUTE_LABEL string = "runtime_type"
+const RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL string = "runtime_type_version"
+const NODE_LEGACY_RUNTIME_TYPE string = "NODE_API"
+const NODE_LEGACY_RUNTIME_TYPE_VERSION string = "10"
+const CHROME_BROWSER_LEGACY_RUNTIME_TYPE string = "CHROME_BROWSER"
+const CHROME_BROWSER_LEGACY_RUNTIME_TYPE_VERSION string = "72"
+
 func validateSyntheticMonitorLegacyRuntimeAttributesUponCreate(d *schema.ResourceDiff) []error {
 	var runtimeAttributesValidationErrors []error
-
-	const RUNTIME_TYPE_ATTRIBUTE_LABEL string = "runtime_type"
-	const RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL string = "runtime_type_version"
-	const NODE_LEGACY_RUNTIME_TYPE string = "NODE_API"
-	const NODE_LEGACY_RUNTIME_TYPE_VERSION string = "10"
-	const CHROME_BROWSER_LEGACY_RUNTIME_TYPE string = "CHROME_BROWSER"
-	const CHROME_BROWSER_LEGACY_RUNTIME_TYPE_VERSION string = "72"
 
 	isSyntheticMonitorAlreadyCreated := d.Id() != ""
 	rawConfiguration := d.GetRawConfig()
