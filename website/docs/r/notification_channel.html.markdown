@@ -113,8 +113,7 @@ resource "newrelic_notification_channel" "foo" {
   }
 }
 ```
-// TODO: change url + see if its possible to create without properties
-##### [ServiceNowApp](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#servicenow)
+##### [ServiceNowApp](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-api-notifications-channels/#servicenowapp)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
   account_id = 12345678
