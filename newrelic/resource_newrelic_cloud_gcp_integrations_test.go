@@ -135,6 +135,9 @@ resource "newrelic_cloud_gcp_integrations" "foo1" {
   provider        = newrelic.cloud-integration-provider
   account_id 		= "` + GCPIntegrationTestConfig["account_id"] + `"
   linked_account_id = newrelic_cloud_gcp_link_account.foo.id
+  ai_platform {
+    metrics_polling_interval = 400
+  }
   alloy_db {
     metrics_polling_interval = 400
   }
@@ -238,6 +241,9 @@ func testAccNewRelicCloudGcpIntegrationsConfigUpdated(GCPIntegrationTestConfig m
   		provider        = newrelic.cloud-integration-provider
   		account_id 		= "` + GCPIntegrationTestConfig["account_id"] + `"
   		linked_account_id = newrelic_cloud_gcp_link_account.foo.id
+		  ai_platform {
+			metrics_polling_interval = 1400
+		  }
 		  app_engine {
 			metrics_polling_interval = 1400
 		  }
