@@ -59,7 +59,7 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 			},
 			"property": {
 				Type:        schema.TypeSet,
-				Required:    true,
+				Required:    false,
 				Description: "Notification channel property type.",
 				Elem:        notificationsPropertySchema(),
 			},
