@@ -1364,7 +1364,7 @@ func flattenDashboardLineWidgetThresholds(thresholds interface{}) (interface{}, 
 				for key, terraformSchemaKey := range lineWidgetThresholdAttributesJSON {
 					if value, ok := thresholdSingle[key]; ok {
 						if terraformSchemaKey == "from" || terraformSchemaKey == "to" {
-							thresholdSingleToBeFormatted[terraformSchemaKey] = value.(string)
+							thresholdSingleToBeFormatted[terraformSchemaKey] = fmt.Sprintf("%v", value)
 						} else {
 							thresholdSingleToBeFormatted[terraformSchemaKey] = value
 						}
@@ -1386,7 +1386,11 @@ func flattenDashboardTableWidgetThresholds(thresholds interface{}) []map[string]
 			thresholdSingleToBeFormatted := map[string]interface{}{}
 			for key, terraformSchemaKey := range tableWidgetThresholdAttributesJSON {
 				if value, ok := thresholdSingle[key]; ok {
-					thresholdSingleToBeFormatted[terraformSchemaKey] = value
+					if terraformSchemaKey == "from" || terraformSchemaKey == "to" {
+						thresholdSingleToBeFormatted[terraformSchemaKey] = fmt.Sprintf("%v", value)
+					} else {
+						thresholdSingleToBeFormatted[terraformSchemaKey] = value
+					}
 				}
 			}
 			thresholdsConsolidated = append(thresholdsConsolidated, thresholdSingleToBeFormatted)

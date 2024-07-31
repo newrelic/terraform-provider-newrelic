@@ -11,7 +11,7 @@ provider "newrelic" {
 }
 
 resource "newrelic_one_dashboard" "threashold-to-from-float-type-test-tf1" {
-  name        = "threashold-to-from-float-type-test-tf1"
+  name        = "random-threshold-to-from-float-type-test-tf1"
   permissions = "public_read_only"
 
   page {
@@ -77,9 +77,6 @@ resource "newrelic_one_dashboard" "threashold-to-from-float-type-test-tf1" {
           series_name = "max duration"
         }
       }
-
-
     }
-
   }
 }
