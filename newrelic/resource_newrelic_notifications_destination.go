@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
@@ -159,6 +160,10 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Upgrade: migrateStateNewRelicNotificationDestinationV0toV1,
 				Version: 0,
 			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(16 * time.Second),
+			Update: schema.DefaultTimeout(16 * time.Second),
 		},
 	}
 }

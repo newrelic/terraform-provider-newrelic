@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
@@ -76,6 +77,10 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the channel.",
 			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(16 * time.Second),
+			Update: schema.DefaultTimeout(16 * time.Second),
 		},
 	}
 }
