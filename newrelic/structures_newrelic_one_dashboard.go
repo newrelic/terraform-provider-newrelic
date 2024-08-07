@@ -504,12 +504,12 @@ func expandDashboardLineWidgetConfigurationThresholdInput(d *schema.ResourceData
 				// and assign them to respective attributes of the DashboardLineWidgetThresholdThresholdInput object
 
 				if v, ok := lineWidgetThresholdInInputSingularInterface["from"]; ok {
-					t := v.(float64)
-					lineWidgetThresholdToBeAdded.From = &t
+					t := v.(string)
+					lineWidgetThresholdToBeAdded.From = t
 				}
 				if v, ok := lineWidgetThresholdInInputSingularInterface["to"]; ok {
-					t := v.(float64)
-					lineWidgetThresholdToBeAdded.To = &t
+					t := v.(string)
+					lineWidgetThresholdToBeAdded.To = t
 				}
 				if v, ok := lineWidgetThresholdInInputSingularInterface["name"]; ok {
 					lineWidgetThresholdToBeAdded.Name = v.(string)
@@ -559,12 +559,12 @@ func expandDashboardTableWidgetConfigurationThresholdInput(d *schema.ResourceDat
 				// and assign them to respective attributes of the DashboardTableWidgetThresholdInput object
 
 				if v, ok := tableWidgetThresholdInInputSingularInterface["from"]; ok {
-					t := v.(float64)
-					tableWidgetThresholdToBeAdded.From = &t
+					t := v.(string)
+					tableWidgetThresholdToBeAdded.From = t
 				}
 				if v, ok := tableWidgetThresholdInInputSingularInterface["to"]; ok {
-					t := v.(float64)
-					tableWidgetThresholdToBeAdded.To = &t
+					t := v.(string)
+					tableWidgetThresholdToBeAdded.To = t
 				}
 				if v, ok := tableWidgetThresholdInInputSingularInterface["column_name"]; ok {
 					tableWidgetThresholdToBeAdded.ColumnName = v.(string)
@@ -1363,7 +1363,11 @@ func flattenDashboardLineWidgetThresholds(thresholds interface{}) (interface{}, 
 
 				for key, terraformSchemaKey := range lineWidgetThresholdAttributesJSON {
 					if value, ok := thresholdSingle[key]; ok {
-						thresholdSingleToBeFormatted[terraformSchemaKey] = value
+						if terraformSchemaKey == "from" || terraformSchemaKey == "to" {
+							thresholdSingleToBeFormatted[terraformSchemaKey] = fmt.Sprintf("%v", value)
+						} else {
+							thresholdSingleToBeFormatted[terraformSchemaKey] = value
+						}
 					}
 				}
 				thresholdsConsolidated = append(thresholdsConsolidated, thresholdSingleToBeFormatted)
@@ -1382,7 +1386,11 @@ func flattenDashboardTableWidgetThresholds(thresholds interface{}) []map[string]
 			thresholdSingleToBeFormatted := map[string]interface{}{}
 			for key, terraformSchemaKey := range tableWidgetThresholdAttributesJSON {
 				if value, ok := thresholdSingle[key]; ok {
-					thresholdSingleToBeFormatted[terraformSchemaKey] = value
+					if terraformSchemaKey == "from" || terraformSchemaKey == "to" {
+						thresholdSingleToBeFormatted[terraformSchemaKey] = fmt.Sprintf("%v", value)
+					} else {
+						thresholdSingleToBeFormatted[terraformSchemaKey] = value
+					}
 				}
 			}
 			thresholdsConsolidated = append(thresholdsConsolidated, thresholdSingleToBeFormatted)
@@ -1548,6 +1556,10 @@ func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, met
 		errorsList = append(errorsList, err.Error())
 	}
 
+	//adding a function to validate that the " to and "from" feilds in "threshold" for table & line widget are a floating point number.
+	validateThresholdFields(d, &errorsList, "widget_table")
+	validateThresholdFields(d, &errorsList, "widget_line")
+
 	// add any other validation functions here
 
 	if len(errorsList) == 0 {
@@ -1591,4 +1603,37 @@ func validateDashboardVariableOptions(d *schema.ResourceDiff) error {
 	}
 
 	return nil
+}
+
+func validateThresholdFields(d *schema.ResourceDiff, errorsList *[]string, widgetType string) {
+	_, pagesListObtained := d.GetChange("page")
+	pages := pagesListObtained.([]interface{})
+	for _, p := range pages {
+		page := p.(map[string]interface{})
+		widget, widgetOk := page[widgetType]
+		if widgetOk {
+			for _, w := range widget.([]interface{}) {
+				widget := w.(map[string]interface{})
+				thresholds, thresholdsOk := widget["threshold"]
+				if thresholdsOk {
+					for _, t := range thresholds.([]interface{}) {
+						threshold := t.(map[string]interface{})
+						if threshold["from"] != nil && threshold["from"] != "" {
+							_, err := strconv.ParseFloat(threshold["from"].(string), 64)
+							if err != nil {
+								*errorsList = append(*errorsList, fmt.Sprintf("the 'from' field in the 'threshold' block of a '%v' must be a floating point number, but got '%v'", widgetType, threshold["from"]))
+							}
+						}
+						if threshold["to"] != nil && threshold["to"] != "" {
+							_, err := strconv.ParseFloat(threshold["to"].(string), 64)
+							if err != nil {
+								*errorsList = append(*errorsList, fmt.Sprintf("the 'to' field in the 'threshold' block of a '%v' must be a floating point number, but got '%v'", widgetType, threshold["to"]))
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
 }
