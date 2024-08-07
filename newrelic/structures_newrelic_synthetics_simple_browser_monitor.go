@@ -17,9 +17,9 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) (synthetics.Syn
 		AdvancedOptions: synthetics.SyntheticsSimpleBrowserMonitorAdvancedOptionsInput{},
 	}
 
-	if v, ok := d.GetOk("custom_header"); ok {
-		simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = expandSyntheticsCustomHeaders(v.(*schema.Set).List())
-	}
+	//Initializing an empty slice of CustomHeader if no custom headers block is provided in TF config.
+	t := expandSyntheticsCustomHeaders(d.Get("custom_header").(*schema.Set).List())
+	simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = &t
 
 	if v, ok := d.GetOk("uri"); ok {
 		simpleBrowserMonitorInput.Uri = v.(string)
@@ -107,9 +107,9 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) (sy
 		AdvancedOptions: synthetics.SyntheticsSimpleBrowserMonitorAdvancedOptionsInput{},
 	}
 
-	if v, ok := d.GetOk("custom_header"); ok {
-		simpleBrowserMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandSyntheticsCustomHeaders(v.(*schema.Set).List())
-	}
+	//Initializing an empty slice of CustomHeader if no custom headers block is provided in TF config.
+	t := expandSyntheticsCustomHeaders(d.Get("custom_header").(*schema.Set).List())
+	simpleBrowserMonitorUpdateInput.AdvancedOptions.CustomHeaders = &t
 
 	if v, ok := d.GetOk("uri"); ok {
 		simpleBrowserMonitorUpdateInput.Uri = v.(string)
