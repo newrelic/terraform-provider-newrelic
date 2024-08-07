@@ -207,6 +207,7 @@ func listValidNotificationsChannelTypes() []string {
 		string(notifications.AiNotificationsChannelTypeTypes.WEBHOOK),
 		string(notifications.AiNotificationsChannelTypeTypes.EMAIL),
 		string(notifications.AiNotificationsChannelTypeTypes.SERVICENOW_INCIDENTS),
+		string(notifications.AiNotificationsChannelTypeTypes.SERVICE_NOW_APP),
 		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
 		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
 		string(notifications.AiNotificationsChannelTypeTypes.JIRA_CLASSIC),
