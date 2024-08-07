@@ -1,3 +1,43 @@
+<a name="v3.41.1"></a>
+## [v3.41.1] - 2024-08-07
+### Bug Fixes
+- Add creation/updation of synthetic(simple/browser) monitor with empty custom headers ([#2725](https://github.com/newrelic/terraform-provider-newrelic/issues/2725))
+
+<a name="v3.41.0"></a>
+## [v3.41.0] - 2024-08-07
+### Bug Fixes
+- **dashboard:** change to default value handling of to and from in thresholds of line and table widgets ([#2721](https://github.com/newrelic/terraform-provider-newrelic/issues/2721))
+- **notifications:** added servicenow app channel option to valid notification channels list ([#2716](https://github.com/newrelic/terraform-provider-newrelic/issues/2716))
+
+### Features
+- add support for SERVICE_NOW_APP ([#2693](https://github.com/newrelic/terraform-provider-newrelic/issues/2693))
+- **notifications:** increase timeout on mutations ([#2722](https://github.com/newrelic/terraform-provider-newrelic/issues/2722))
+
+<a name="v3.40.1"></a>
+## [v3.40.1] - 2024-07-17
+### Bug Fixes
+- **dashboard:** update line and table widget threshold `to` and `from` datatype ([#2713](https://github.com/newrelic/terraform-provider-newrelic/issues/2713))
+- **entity_tags:** fixed improper error handling in the `newrelic_entity_tags` resource ([#2710](https://github.com/newrelic/terraform-provider-newrelic/issues/2710))
+
+<a name="v3.40.0"></a>
+## [v3.40.0] - 2024-07-15
+### Documentation Updates
+- **synthetics:** fixed documentation for synthetic monitor resources ([#2711](https://github.com/newrelic/terraform-provider-newrelic/issues/2711))
+
+### Features
+- **destinations:** add `update_original_message` to destination configurations ([#2701](https://github.com/newrelic/terraform-provider-newrelic/issues/2701))
+
+<a name="v3.39.1"></a>
+## [v3.39.1] - 2024-07-04
+### Documentation Updates
+- update NRQL alert condition migration guide and references in legacy resources ([#2704](https://github.com/newrelic/terraform-provider-newrelic/issues/2704))
+- fix dashboard threshold ([#2709](https://github.com/newrelic/terraform-provider-newrelic/issues/2709))
+
+<a name="v3.39.0"></a>
+## [v3.39.0] - 2024-07-03
+### Features
+- **nrql_alert_condition:** Add support for data account ID ([#2706](https://github.com/newrelic/terraform-provider-newrelic/issues/2706))
+
 <a name="v3.38.1"></a>
 ## [v3.38.1] - 2024-06-24
 ### Documentation Updates
@@ -2133,7 +2173,13 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.38.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.41.1...HEAD
+[v3.41.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.41.0...v3.41.1
+[v3.41.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.40.1...v3.41.0
+[v3.40.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.40.0...v3.40.1
+[v3.40.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.39.1...v3.40.0
+[v3.39.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.39.0...v3.39.1
+[v3.39.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.38.1...v3.39.0
 [v3.38.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.38.0...v3.38.1
 [v3.38.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.37.1...v3.38.0
 [v3.37.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.37.0...v3.37.1

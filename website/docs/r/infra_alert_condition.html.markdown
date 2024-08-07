@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create and manage Infrastructure alert conditions in New Relic.
 
--> **WARNING:** The `newrelic_infra_alert_condition` resource is deprecated and will be removed in the next major release. The resource [newrelic_nrql_alert_condition](nrql_alert_condition.html) would be a preferred alternative to configure alert conditions - in most cases, feature parity can be achieved with a NRQL query.
+-> **WARNING:** The `newrelic_infra_alert_condition` resource is deprecated and will be removed in the next major release. The resource [newrelic_nrql_alert_condition](nrql_alert_condition.html) would be a preferred alternative to configure alert conditions - in most cases, feature parity can be achieved with a NRQL query. For more details and examples on moving away from infra alert conditions to the NRQL based alternative, please check out [these](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/migration_guide_alert_conditions#migrating-from-infra-alert-conditions-to-nrql-alert-conditions) examples.
 
 ## Example Usage
 

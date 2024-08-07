@@ -180,6 +180,11 @@ func expandCreateNrql(d *schema.ResourceData, condition alerts.NrqlConditionCrea
 		nrql.Query = nrqlQuery.(string)
 	}
 
+	if dataAccountID, ok := d.GetOk("nrql.0.data_account_id"); ok {
+		v := dataAccountID.(int)
+		nrql.DataAccountId = &v
+	}
+
 	if sinceValue, ok := d.GetOk("nrql.0.since_value"); ok {
 		sv, err := strconv.Atoi(sinceValue.(string))
 		if err != nil {
@@ -201,6 +206,11 @@ func expandUpdateNrql(d *schema.ResourceData, condition alerts.NrqlConditionUpda
 
 	if nrqlQuery, ok := d.GetOk("nrql.0.query"); ok {
 		nrql.Query = nrqlQuery.(string)
+	}
+
+	if dataAccountID, ok := d.GetOk("nrql.0.data_account_id"); ok {
+		v := dataAccountID.(int)
+		nrql.DataAccountId = &v
 	}
 
 	if sinceValue, ok := d.GetOk("nrql.0.since_value"); ok {
@@ -654,6 +664,10 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 func flattenNrql(nrql alerts.NrqlConditionQuery, configNrql map[string]interface{}) []interface{} {
 	out := map[string]interface{}{
 		"query": nrql.Query,
+	}
+
+	if nrql.DataAccountId != nil {
+		out["data_account_id"] = nrql.DataAccountId
 	}
 
 	svRaw := configNrql["since_value"]

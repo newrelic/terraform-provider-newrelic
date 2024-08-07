@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
@@ -159,6 +160,10 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Upgrade: migrateStateNewRelicNotificationDestinationV0toV1,
 				Version: 0,
 			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(16 * time.Second),
+			Update: schema.DefaultTimeout(16 * time.Second),
 		},
 	}
 }
@@ -401,6 +406,7 @@ func listValidNotificationsDestinationTypes() []string {
 		string(notifications.AiNotificationsDestinationTypeTypes.WEBHOOK),
 		string(notifications.AiNotificationsDestinationTypeTypes.EMAIL),
 		string(notifications.AiNotificationsDestinationTypeTypes.SERVICE_NOW),
+		string(notifications.AiNotificationsDestinationTypeTypes.SERVICE_NOW_APP),
 		string(notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
 		string(notifications.AiNotificationsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
 		string(notifications.AiNotificationsDestinationTypeTypes.JIRA),

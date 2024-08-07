@@ -103,6 +103,7 @@ The following arguments are supported:
 The `nrql` block supports the following arguments:
 
 - `query` - (Required) The NRQL query to execute for the condition.
+- `data_account_id` - (Optional) **BETA PREVIEW: the `data_account_id` field is in limited release and only enabled for preview on a per-account basis.** The account ID to use for the alert condition's query as specified in the the `query` field. If `data_account_id` is not specified, then the condition's query will be evaluated against the `account_id`. Note that the `account_id` must have read privileges for the `data_account_id` or else the condition will be invalid.
 - `evaluation_offset` - (Optional) **DEPRECATED:** Use `aggregation_method` instead. Represented in minutes and must be within 1-20 minutes (inclusive). NRQL queries are evaluated based on their `aggregation_window` size. The start time depends on this value. It's recommended to set this to 3 windows. An offset of less than 3 windows will trigger incidents sooner, but you may see more false positives and negatives due to data latency. With `evaluation_offset` set to 3 windows and an `aggregation_window` of 60 seconds, the NRQL time window applied to your query will be: `SINCE 3 minutes ago UNTIL 2 minutes ago`. `evaluation_offset` cannot be set with `aggregation_method`, `aggregation_delay`, or `aggregation_timer`.<br>
 - `since_value` - (Optional)  **DEPRECATED:** Use `aggregation_method` instead. The value to be used in the `SINCE <X> minutes ago` clause for the NRQL query. Must be between 1-20 (inclusive). <br>
 

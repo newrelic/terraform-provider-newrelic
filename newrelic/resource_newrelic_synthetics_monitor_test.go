@@ -461,7 +461,7 @@ func TestSyntheticsSimpleBrowserMonitor_PeriodInMinutes(t *testing.T) {
 		AdvancedOptions: synthetics.SyntheticsSimpleBrowserMonitorAdvancedOptionsInput{
 			EnableScreenshotOnFailureAndScript: &tv,
 			ResponseValidationText:             "SUCCESS",
-			CustomHeaders: []synthetics.SyntheticsCustomHeaderInput{
+			CustomHeaders: &[]synthetics.SyntheticsCustomHeaderInput{
 				{
 					Name:  "Monitor",
 					Value: "Synthetics",

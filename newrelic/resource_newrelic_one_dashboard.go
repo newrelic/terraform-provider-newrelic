@@ -599,12 +599,12 @@ func dashboardWidgetLineSchemaElem() *schema.Resource {
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"from": {
-					Type:        schema.TypeInt,
+					Type:        schema.TypeString,
 					Optional:    true,
 					Description: "The number from which the range starts in thresholds.",
 				},
 				"to": {
-					Type:        schema.TypeInt,
+					Type:        schema.TypeString,
 					Optional:    true,
 					Description: "The number at which the range ends in thresholds.",
 				},
@@ -697,12 +697,12 @@ func dashboardWidgetTableSchemaElem() *schema.Resource {
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"from": {
-					Type:        schema.TypeInt,
+					Type:        schema.TypeString,
 					Optional:    true,
 					Description: "The number from which the range starts in thresholds.",
 				},
 				"to": {
-					Type:        schema.TypeInt,
+					Type:        schema.TypeString,
 					Optional:    true,
 					Description: "The number at which the range ends in thresholds.",
 				},

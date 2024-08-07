@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
@@ -76,6 +77,10 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the channel.",
 			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(16 * time.Second),
+			Update: schema.DefaultTimeout(16 * time.Second),
 		},
 	}
 }
@@ -202,6 +207,7 @@ func listValidNotificationsChannelTypes() []string {
 		string(notifications.AiNotificationsChannelTypeTypes.WEBHOOK),
 		string(notifications.AiNotificationsChannelTypeTypes.EMAIL),
 		string(notifications.AiNotificationsChannelTypeTypes.SERVICENOW_INCIDENTS),
+		string(notifications.AiNotificationsChannelTypeTypes.SERVICE_NOW_APP),
 		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
 		string(notifications.AiNotificationsChannelTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
 		string(notifications.AiNotificationsChannelTypeTypes.JIRA_CLASSIC),

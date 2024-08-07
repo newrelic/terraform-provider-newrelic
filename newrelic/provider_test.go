@@ -155,7 +155,7 @@ func testAccCreateEntity(t *testing.T, name string) {
 	}
 
 	retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
-		entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{})
+		entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{}, []entities.SortCriterionWithDirection{})
 		if err != nil {
 			return resource.RetryableError(err)
 		}
@@ -321,6 +321,7 @@ func testAccSyntheticTestEntitiesCleanup(t *testing.T) {
 				Name:   nameSuffix,
 			},
 			[]entities.EntitySearchSortCriteria{},
+			[]entities.SortCriterionWithDirection{},
 		)
 
 		if err != nil {
@@ -391,6 +392,7 @@ func testAccBrowserApplicationsCleanup(t *testing.T) {
 			Type:   "APPLICATION",
 		},
 		[]entities.EntitySearchSortCriteria{},
+		[]entities.SortCriterionWithDirection{},
 	)
 
 	if err != nil {

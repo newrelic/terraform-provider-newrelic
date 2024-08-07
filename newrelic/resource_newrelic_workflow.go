@@ -64,6 +64,14 @@ func resourceNewRelicWorkflow() *schema.Resource {
 							Computed:    true,
 							Description: fmt.Sprintf("(Required) The type of the destination. One of: (%s).", strings.Join(listValidWorkflowsDestinationTypes(), ", ")),
 						},
+						// Computed
+						"update_original_message": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							DefaultFunc: func() (interface{}, error) { return true, nil },
+							Computed:    true,
+							Description: "Update original notification message (Slack channels only)",
+						},
 					},
 				},
 			},
@@ -570,6 +578,7 @@ func listValidWorkflowsDestinationTypes() []string {
 		string(workflows.AiWorkflowsDestinationTypeTypes.PAGERDUTY_ACCOUNT_INTEGRATION),
 		string(workflows.AiWorkflowsDestinationTypeTypes.PAGERDUTY_SERVICE_INTEGRATION),
 		string(workflows.AiWorkflowsDestinationTypeTypes.SERVICE_NOW),
+		string(workflows.AiWorkflowsDestinationTypeTypes.SERVICE_NOW_APP),
 		string(workflows.AiWorkflowsDestinationTypeTypes.WEBHOOK),
 		string(workflows.AiWorkflowsDestinationTypeTypes.MOBILE_PUSH),
 		string(workflows.AiWorkflowsDestinationTypeTypes.SLACK),

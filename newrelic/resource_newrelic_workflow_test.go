@@ -321,6 +321,60 @@ func TestNewRelicWorkflow_WithUpdatedNotificationTriggers(t *testing.T) {
 	})
 }
 
+func TestNewRelicWorkflow_WithCreatedUpdateOriginalMessage(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithCustomDestination(testAccountID, rName, `update_original_message = true`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Update workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithCustomDestination(testAccountID, fmt.Sprintf("%s-updated", rName), `update_original_message = true`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func TestNewRelicWorkflow_WithNonCreatedUpdateOriginalMessage(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithCustomDestination(testAccountID, rName, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Update workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithCustomDestination(testAccountID, fmt.Sprintf("%s-updated", rName), `update_original_message = true`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func TestNewRelicWorkflow_BooleanFlags_DisableOnUpdate(t *testing.T) {
 	channelResourceName := "foo"
 	workflowName := acctest.RandString(10)
@@ -566,6 +620,10 @@ func testAccNewRelicWorkflowConfigurationWithNotificationTriggers(accountID int,
 	if notificationTriggers != "" {
 		parsedNotificationTriggers = fmt.Sprintf(`notification_triggers = %[1]s`, notificationTriggers)
 	}
+	return testAccNewRelicWorkflowConfigurationWithCustomDestination(accountID, name, parsedNotificationTriggers)
+}
+
+func testAccNewRelicWorkflowConfigurationWithCustomDestination(accountID int, name string, customDestination string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
   account_id = %[1]d
@@ -630,7 +688,7 @@ resource "newrelic_workflow" "foo" {
     %[3]s
   }
 }
-`, accountID, name, parsedNotificationTriggers)
+`, accountID, name, customDestination)
 }
 
 func testAccNewRelicChannelConfigurationEmail(channelResourceName string) string {

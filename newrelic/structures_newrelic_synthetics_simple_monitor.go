@@ -15,9 +15,9 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 	simpleMonitorInput.Status = inputBase.Status
 	simpleMonitorInput.Tags = inputBase.Tags
 
-	if v, ok := d.GetOk("custom_header"); ok {
-		simpleMonitorInput.AdvancedOptions.CustomHeaders = expandSyntheticsCustomHeaders(v.(*schema.Set).List())
-	}
+	//Initializing an empty slice of CustomHeader if no custom headers block is provided in TF config.
+	t := expandSyntheticsCustomHeaders(d.Get("custom_header").(*schema.Set).List())
+	simpleMonitorInput.AdvancedOptions.CustomHeaders = &t
 
 	if v, ok := d.GetOk("uri"); ok {
 		simpleMonitorInput.Uri = v.(string)
@@ -63,9 +63,9 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 	simpleMonitorUpdateInput.Status = inputBase.Status
 	simpleMonitorUpdateInput.Tags = inputBase.Tags
 
-	if v, ok := d.GetOk("custom_header"); ok {
-		simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = expandSyntheticsCustomHeaders(v.(*schema.Set).List())
-	}
+	//Initializing an empty slice of CustomHeader if no custom headers block is provided in TF config.
+	t := expandSyntheticsCustomHeaders(d.Get("custom_header").(*schema.Set).List())
+	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = &t
 
 	if v, ok := d.GetOk("uri"); ok {
 		simpleMonitorUpdateInput.Uri = v.(string)

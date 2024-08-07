@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/workflows"
@@ -191,6 +192,11 @@ func expandWorkflowDestinationConfiguration(cfg map[string]interface{}) workflow
 
 	if channelID, ok := cfg["channel_id"]; ok {
 		destinationConfigurationInput.ChannelId = channelID.(string)
+	}
+
+	if updateOriginalMessage, ok := cfg["update_original_message"]; ok {
+		b := updateOriginalMessage.(bool)
+		destinationConfigurationInput.UpdateOriginalMessage = &b
 	}
 
 	if notificationTriggers, ok := cfg["notification_triggers"]; ok {
@@ -406,6 +412,12 @@ func flattenWorkflowDestinationConfiguration(d *workflows.AiWorkflowsDestination
 	destinationConfigurationResult["channel_id"] = d.ChannelId
 	destinationConfigurationResult["name"] = d.Name
 	destinationConfigurationResult["type"] = d.Type
+	if currentState == nil || currentState["update_original_message"] == nil {
+		b := true
+		destinationConfigurationResult["update_original_message"] = &b
+	} else {
+		destinationConfigurationResult["update_original_message"] = d.UpdateOriginalMessage
+	}
 
 	if currentState == nil || currentState["notification_triggers"] == nil {
 		destinationConfigurationResult["notification_triggers"] = d.NotificationTriggers
