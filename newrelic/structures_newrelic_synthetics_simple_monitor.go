@@ -15,7 +15,7 @@ func buildSyntheticsSimpleMonitor(d *schema.ResourceData) synthetics.SyntheticsC
 	simpleMonitorInput.Status = inputBase.Status
 	simpleMonitorInput.Tags = inputBase.Tags
 
-	//NR-297288 Initializing an empty slice of CustomHeader if no custom headers block is provided in TF config.
+	//Initializing an empty slice of CustomHeader if no custom headers block is provided in TF config.
 	t := expandSyntheticsCustomHeaders(d.Get("custom_header").(*schema.Set).List())
 	simpleMonitorInput.AdvancedOptions.CustomHeaders = &t
 
@@ -63,7 +63,7 @@ func buildSyntheticsSimpleMonitorUpdateStruct(d *schema.ResourceData) synthetics
 	simpleMonitorUpdateInput.Status = inputBase.Status
 	simpleMonitorUpdateInput.Tags = inputBase.Tags
 
-	//NR-297288 Initializing an empty slice of CustomHeader if no custom headers block is provided in TF config.
+	//Initializing an empty slice of CustomHeader if no custom headers block is provided in TF config.
 	t := expandSyntheticsCustomHeaders(d.Get("custom_header").(*schema.Set).List())
 	simpleMonitorUpdateInput.AdvancedOptions.CustomHeaders = &t
 

@@ -17,7 +17,7 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) (synthetics.Syn
 		AdvancedOptions: synthetics.SyntheticsSimpleBrowserMonitorAdvancedOptionsInput{},
 	}
 
-	//NR-296277 Initializing an empty slice of CustomHeader if no custom headers block is provided in TF config.
+	//Initializing an empty slice of CustomHeader if no custom headers block is provided in TF config.
 	t := expandSyntheticsCustomHeaders(d.Get("custom_header").(*schema.Set).List())
 	simpleBrowserMonitorInput.AdvancedOptions.CustomHeaders = &t
 
@@ -107,7 +107,7 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) (sy
 		AdvancedOptions: synthetics.SyntheticsSimpleBrowserMonitorAdvancedOptionsInput{},
 	}
 
-	//NR-296277 Initializing an empty slice of CustomHeader if no custom headers block is provided in TF config.
+	//Initializing an empty slice of CustomHeader if no custom headers block is provided in TF config.
 	t := expandSyntheticsCustomHeaders(d.Get("custom_header").(*schema.Set).List())
 	simpleBrowserMonitorUpdateInput.AdvancedOptions.CustomHeaders = &t
 
