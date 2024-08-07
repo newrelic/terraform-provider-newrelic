@@ -1,3 +1,13 @@
+<a name="v3.41.0"></a>
+## [v3.41.0] - 2024-08-07
+### Bug Fixes
+- **dashboard:** change to default value handling of to and from in thresholds of line and table widgets ([#2721](https://github.com/newrelic/terraform-provider-newrelic/issues/2721))
+- **notifications:** added servicenow app channel option to valid notification channels list ([#2716](https://github.com/newrelic/terraform-provider-newrelic/issues/2716))
+
+### Features
+- add support for SERVICE_NOW_APP ([#2693](https://github.com/newrelic/terraform-provider-newrelic/issues/2693))
+- **notifications:** increase timeout on mutations ([#2722](https://github.com/newrelic/terraform-provider-newrelic/issues/2722))
+
 <a name="v3.40.1"></a>
 ## [v3.40.1] - 2024-07-17
 ### Bug Fixes
@@ -2158,7 +2168,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.40.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.41.0...HEAD
+[v3.41.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.40.1...v3.41.0
 [v3.40.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.40.0...v3.40.1
 [v3.40.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.39.1...v3.40.0
 [v3.39.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.39.0...v3.39.1
