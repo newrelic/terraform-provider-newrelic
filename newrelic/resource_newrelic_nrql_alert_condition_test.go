@@ -565,7 +565,6 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionEvaluationDelay(t *testing
 	})
 }
 
-<<<<<<< HEAD
 func TestAccNewRelicNrqlAlertCondition_StaticConditionDataAccountId(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
@@ -573,12 +572,6 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionDataAccountId(t *testing.T
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	dataAccountId := providerConfig.AccountID
 
-=======
-func TestAccNewRelicNrqlAlertCondition_StaticConditionExpectedTermination(t *testing.T) {
-	resourceName := "newrelic_nrql_alert_condition.foo"
-	rName := acctest.RandString(5)
-
->>>>>>> f70d82fe (feat(nrqlcondition): Add new ignoreOnExpectedTermination field)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
@@ -586,15 +579,32 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionExpectedTermination(t *tes
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-<<<<<<< HEAD
 				Config: testAccNewRelicNrqlAlertConditionStaticWithDataAccountId(
 					rName,
 					dataAccountId,
-=======
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicNrqlAlertCondition_StaticConditionExpectedTermination(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
 				Config: testAccNewRelicNrqlAlertConditionStaticWithLossOfSignalOnly(
 					rName,
 					"true",
->>>>>>> f70d82fe (feat(nrqlcondition): Add new ignoreOnExpectedTermination field)
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
