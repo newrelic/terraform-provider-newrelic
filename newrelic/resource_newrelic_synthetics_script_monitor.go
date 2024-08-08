@@ -65,7 +65,7 @@ func syntheticsScriptMonitorLocationsSchema() map[string]*schema.Schema {
 	}
 }
 
-// Scripted browser monitors have advanced options, but scripted API monitors do not.
+// Scripted browser monitors have advanced options, browsers and devices fields, but scripted API monitors do not.
 func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"enable_screenshot_on_failure_and_script": {
@@ -82,6 +82,22 @@ func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Sc
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
+		},
+		"browsers": {
+			Type:     schema.TypeSet,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+			MinItems: 1,
+			Optional: true,
+			Description: "The browsers that can be used to execute script execution. Valid values are array of CHROME," +
+				" EDGE, FIREFOX, and NONE.",
+		},
+		"devices": {
+			Type:     schema.TypeSet,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+			MinItems: 1,
+			Optional: true,
+			Description: "The devices that can be used to execute script execution. Valid values are array of DESKTOP," +
+				" MOBILE_LANDSCAPE, MOBILE_PORTRAIT, TABLET_LANDSCAPE, TABLET_PORTRAIT and NONE.",
 		},
 	}
 }

@@ -236,6 +236,25 @@ func expandSyntheticsPublicLocations(locations []interface{}) []string {
 	return locationsOut
 }
 
+func expandSyntheticsBrowsers(browsers []interface{}) []synthetics.SyntheticsBrowser {
+	browsersOut := make([]synthetics.SyntheticsBrowser, len(browsers))
+
+	for i, v := range browsers {
+		browsersOut[i] = synthetics.SyntheticsBrowser(v.(string))
+
+	}
+	return browsersOut
+}
+
+func expandSyntheticsDevices(devices []interface{}) []synthetics.SyntheticsDevice {
+	devicesOut := make([]synthetics.SyntheticsDevice, len(devices))
+
+	for i, v := range devices {
+		devicesOut[i] = synthetics.SyntheticsDevice(v.(string))
+	}
+	return devicesOut
+}
+
 func expandSyntheticsPrivateLocations(locations []interface{}) []synthetics.SyntheticsPrivateLocationInput {
 	locationsOut := make([]synthetics.SyntheticsPrivateLocationInput, len(locations))
 
