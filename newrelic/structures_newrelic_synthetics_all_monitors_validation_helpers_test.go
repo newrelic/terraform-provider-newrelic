@@ -26,7 +26,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Empt
 					"",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(RUNTIME_TYPE_ATTRIBUTE_LABEL).Error(),
+					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel).Error(),
 				),
 			},
 		},
@@ -35,8 +35,8 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Empt
 
 func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := CHROME_BROWSER_LEGACY_RUNTIME_TYPE
-	runtimeTypeVersionInConfig := CHROME_BROWSER_LEGACY_RUNTIME_TYPE_VERSION
+	runtimeTypeInConfig := SyntheticsChromeBrowserLegacyRuntimeType
+	runtimeTypeVersionInConfig := SyntheticsChromeBrowserLegacyRuntimeTypeVersion
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -52,8 +52,8 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Lega
 				),
 				ExpectError: regexp.MustCompile(
 					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-						RUNTIME_TYPE_ATTRIBUTE_LABEL,
-						RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL,
+						SyntheticsRuntimeTypeAttributeLabel,
+						SyntheticsRuntimeTypeVersionAttributeLabel,
 						runtimeTypeInConfig,
 						runtimeTypeVersionInConfig,
 					).Error(),
@@ -79,7 +79,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 					"",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(RUNTIME_TYPE_ATTRIBUTE_LABEL).Error(),
+					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel).Error(),
 				),
 			},
 		},
@@ -88,8 +88,8 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 
 func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := CHROME_BROWSER_LEGACY_RUNTIME_TYPE
-	runtimeTypeVersionInConfig := CHROME_BROWSER_LEGACY_RUNTIME_TYPE_VERSION
+	runtimeTypeInConfig := SyntheticsChromeBrowserLegacyRuntimeType
+	runtimeTypeVersionInConfig := SyntheticsChromeBrowserLegacyRuntimeTypeVersion
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -105,8 +105,8 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 				),
 				ExpectError: regexp.MustCompile(
 					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-						RUNTIME_TYPE_ATTRIBUTE_LABEL,
-						RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL,
+						SyntheticsRuntimeTypeAttributeLabel,
+						SyntheticsRuntimeTypeVersionAttributeLabel,
 						runtimeTypeInConfig,
 						runtimeTypeVersionInConfig,
 					).Error(),
@@ -133,7 +133,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 					"SCRIPT_BROWSER",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(RUNTIME_TYPE_ATTRIBUTE_LABEL).Error(),
+					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel).Error(),
 				),
 			},
 		},
@@ -142,8 +142,8 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 
 func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := CHROME_BROWSER_LEGACY_RUNTIME_TYPE
-	runtimeTypeVersionInConfig := CHROME_BROWSER_LEGACY_RUNTIME_TYPE_VERSION
+	runtimeTypeInConfig := SyntheticsChromeBrowserLegacyRuntimeType
+	runtimeTypeVersionInConfig := SyntheticsChromeBrowserLegacyRuntimeTypeVersion
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -160,8 +160,8 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 				),
 				ExpectError: regexp.MustCompile(
 					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-						RUNTIME_TYPE_ATTRIBUTE_LABEL,
-						RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL,
+						SyntheticsRuntimeTypeAttributeLabel,
+						SyntheticsRuntimeTypeVersionAttributeLabel,
 						runtimeTypeInConfig,
 						runtimeTypeVersionInConfig,
 					).Error(),
@@ -188,7 +188,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 					"SCRIPT_API",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(RUNTIME_TYPE_ATTRIBUTE_LABEL).Error(),
+					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel).Error(),
 				),
 			},
 		},
@@ -197,8 +197,8 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 
 func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := NODE_LEGACY_RUNTIME_TYPE
-	runtimeTypeVersionInConfig := NODE_LEGACY_RUNTIME_TYPE_VERSION
+	runtimeTypeInConfig := SyntheticsNodeLegacyRuntimeType
+	runtimeTypeVersionInConfig := SyntheticsNodeLegacyRuntimeTypeVersion
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -215,8 +215,8 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 				),
 				ExpectError: regexp.MustCompile(
 					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-						RUNTIME_TYPE_ATTRIBUTE_LABEL,
-						RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL,
+						SyntheticsRuntimeTypeAttributeLabel,
+						SyntheticsRuntimeTypeVersionAttributeLabel,
 						runtimeTypeInConfig,
 						runtimeTypeVersionInConfig,
 					).Error(),
@@ -228,8 +228,8 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 
 func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := NODE_LEGACY_RUNTIME_TYPE
-	runtimeTypeVersionInConfig := NODE_LEGACY_RUNTIME_TYPE_VERSION
+	runtimeTypeInConfig := SyntheticsNodeLegacyRuntimeType
+	runtimeTypeVersionInConfig := SyntheticsNodeLegacyRuntimeTypeVersion
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -245,8 +245,8 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 				),
 				ExpectError: regexp.MustCompile(
 					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-						RUNTIME_TYPE_ATTRIBUTE_LABEL,
-						RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL,
+						SyntheticsRuntimeTypeAttributeLabel,
+						SyntheticsRuntimeTypeVersionAttributeLabel,
 						runtimeTypeInConfig,
 						runtimeTypeVersionInConfig,
 					).Error(),
@@ -272,7 +272,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 					"",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(RUNTIME_TYPE_ATTRIBUTE_LABEL).Error(),
+					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel).Error(),
 				),
 			},
 		},
@@ -281,8 +281,8 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 
 func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := NODE_LEGACY_RUNTIME_TYPE
-	runtimeTypeVersionInConfig := NODE_LEGACY_RUNTIME_TYPE_VERSION
+	runtimeTypeInConfig := SyntheticsNodeLegacyRuntimeType
+	runtimeTypeVersionInConfig := SyntheticsNodeLegacyRuntimeTypeVersion
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -298,8 +298,8 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 				),
 				ExpectError: regexp.MustCompile(
 					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-						RUNTIME_TYPE_ATTRIBUTE_LABEL,
-						RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL,
+						SyntheticsRuntimeTypeAttributeLabel,
+						SyntheticsRuntimeTypeVersionAttributeLabel,
 						runtimeTypeInConfig,
 						runtimeTypeVersionInConfig,
 					).Error(),
@@ -325,7 +325,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 					"",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(RUNTIME_TYPE_ATTRIBUTE_LABEL).Error(),
+					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel).Error(),
 				),
 			},
 		},

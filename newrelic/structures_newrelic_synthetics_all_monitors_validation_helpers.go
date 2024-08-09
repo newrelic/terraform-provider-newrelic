@@ -29,12 +29,12 @@ func validateSyntheticMonitorRuntimeAttributes(ctx context.Context, d *schema.Re
 	return errors.New(errorsString)
 }
 
-const RUNTIME_TYPE_ATTRIBUTE_LABEL string = "runtime_type"
-const RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL string = "runtime_type_version"
-const NODE_LEGACY_RUNTIME_TYPE string = "NODE_API"
-const NODE_LEGACY_RUNTIME_TYPE_VERSION string = "10"
-const CHROME_BROWSER_LEGACY_RUNTIME_TYPE string = "CHROME_BROWSER"
-const CHROME_BROWSER_LEGACY_RUNTIME_TYPE_VERSION string = "72"
+const SyntheticsRuntimeTypeAttributeLabel string = "runtime_type"
+const SyntheticsRuntimeTypeVersionAttributeLabel string = "runtime_type_version"
+const SyntheticsNodeLegacyRuntimeType string = "NODE_API"
+const SyntheticsNodeLegacyRuntimeTypeVersion string = "10"
+const SyntheticsChromeBrowserLegacyRuntimeType string = "CHROME_BROWSER"
+const SyntheticsChromeBrowserLegacyRuntimeTypeVersion string = "72"
 
 func validateSyntheticMonitorLegacyRuntimeAttributesUponCreate(d *schema.ResourceDiff) []error {
 	var runtimeAttributesValidationErrors []error
@@ -42,15 +42,15 @@ func validateSyntheticMonitorLegacyRuntimeAttributesUponCreate(d *schema.Resourc
 	isSyntheticMonitorAlreadyCreated := d.Id() != ""
 	rawConfiguration := d.GetRawConfig()
 
-	isRuntimeTypeNotSpecifiedInConfiguration := rawConfiguration.GetAttr(RUNTIME_TYPE_ATTRIBUTE_LABEL).IsNull()
-	_, runtimeTypeInConfig := d.GetChange(RUNTIME_TYPE_ATTRIBUTE_LABEL)
+	isRuntimeTypeNotSpecifiedInConfiguration := rawConfiguration.GetAttr(SyntheticsRuntimeTypeAttributeLabel).IsNull()
+	_, runtimeTypeInConfig := d.GetChange(SyntheticsRuntimeTypeAttributeLabel)
 
 	isRuntimeTypeNullValue := runtimeTypeInConfig == ""
 
 	// this would return true only if runtime_type_version is not specified in the configuration at all
 	// and false, if runtime_type_version is specified either as an empty string "", or as any other non nil value (non-empty string)
-	isRuntimeTypeVersionNotSpecifiedInConfiguration := rawConfiguration.GetAttr(RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL).IsNull()
-	_, runtimeTypeVersionInConfig := d.GetChange(RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL)
+	isRuntimeTypeVersionNotSpecifiedInConfiguration := rawConfiguration.GetAttr(SyntheticsRuntimeTypeVersionAttributeLabel).IsNull()
+	_, runtimeTypeVersionInConfig := d.GetChange(SyntheticsRuntimeTypeVersionAttributeLabel)
 
 	// this would return true both when `runtime_type_version` is not specified in the config and when `runtime_type_version` is specified as "" in the config
 	// and false, if `runtime_type_version` has a non nil value (a non-empty string) as its value
@@ -62,7 +62,7 @@ func validateSyntheticMonitorLegacyRuntimeAttributesUponCreate(d *schema.Resourc
 
 		runtimeAttributesValidationErrors = append(
 			runtimeAttributesValidationErrors,
-			constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(RUNTIME_TYPE_ATTRIBUTE_LABEL),
+			constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel),
 		)
 	}
 
@@ -72,7 +72,7 @@ func validateSyntheticMonitorLegacyRuntimeAttributesUponCreate(d *schema.Resourc
 
 		runtimeAttributesValidationErrors = append(
 			runtimeAttributesValidationErrors,
-			constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL),
+			constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeVersionAttributeLabel),
 		)
 	}
 
@@ -82,28 +82,28 @@ func validateSyntheticMonitorLegacyRuntimeAttributesUponCreate(d *schema.Resourc
 		!isRuntimeTypeNullValue &&
 		!isRuntimeTypeVersionNullValue {
 
-		if runtimeTypeInConfig == NODE_LEGACY_RUNTIME_TYPE &&
-			runtimeTypeVersionInConfig == NODE_LEGACY_RUNTIME_TYPE_VERSION {
+		if runtimeTypeInConfig == SyntheticsNodeLegacyRuntimeType &&
+			runtimeTypeVersionInConfig == SyntheticsNodeLegacyRuntimeTypeVersion {
 
 			runtimeAttributesValidationErrors = append(
 				runtimeAttributesValidationErrors,
 				constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-					RUNTIME_TYPE_ATTRIBUTE_LABEL,
-					RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL,
+					SyntheticsRuntimeTypeAttributeLabel,
+					SyntheticsRuntimeTypeVersionAttributeLabel,
 					runtimeTypeInConfig.(string),
 					runtimeTypeVersionInConfig.(string),
 				),
 			)
 		}
 
-		if runtimeTypeInConfig == CHROME_BROWSER_LEGACY_RUNTIME_TYPE &&
-			runtimeTypeVersionInConfig == CHROME_BROWSER_LEGACY_RUNTIME_TYPE_VERSION {
+		if runtimeTypeInConfig == SyntheticsChromeBrowserLegacyRuntimeType &&
+			runtimeTypeVersionInConfig == SyntheticsChromeBrowserLegacyRuntimeTypeVersion {
 
 			runtimeAttributesValidationErrors = append(
 				runtimeAttributesValidationErrors,
 				constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-					RUNTIME_TYPE_ATTRIBUTE_LABEL,
-					RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL,
+					SyntheticsRuntimeTypeAttributeLabel,
+					SyntheticsRuntimeTypeVersionAttributeLabel,
 					runtimeTypeInConfig.(string),
 					runtimeTypeVersionInConfig.(string),
 				),
