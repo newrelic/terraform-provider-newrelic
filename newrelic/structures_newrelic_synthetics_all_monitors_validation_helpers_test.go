@@ -35,8 +35,8 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Empt
 
 func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := "CHROME_BROWSER"
-	runtimeTypeVersionInConfig := "72"
+	runtimeTypeInConfig := CHROME_BROWSER_LEGACY_RUNTIME_TYPE
+	runtimeTypeVersionInConfig := CHROME_BROWSER_LEGACY_RUNTIME_TYPE_VERSION
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -88,8 +88,8 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 
 func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := "CHROME_BROWSER"
-	runtimeTypeVersionInConfig := "72"
+	runtimeTypeInConfig := CHROME_BROWSER_LEGACY_RUNTIME_TYPE
+	runtimeTypeVersionInConfig := CHROME_BROWSER_LEGACY_RUNTIME_TYPE_VERSION
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -142,8 +142,8 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 
 func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := "CHROME_BROWSER"
-	runtimeTypeVersionInConfig := "72"
+	runtimeTypeInConfig := CHROME_BROWSER_LEGACY_RUNTIME_TYPE
+	runtimeTypeVersionInConfig := CHROME_BROWSER_LEGACY_RUNTIME_TYPE_VERSION
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -197,8 +197,8 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 
 func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := "NODE_API"
-	runtimeTypeVersionInConfig := "10"
+	runtimeTypeInConfig := NODE_LEGACY_RUNTIME_TYPE
+	runtimeTypeVersionInConfig := NODE_LEGACY_RUNTIME_TYPE_VERSION
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -226,13 +226,119 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 	})
 }
 
+func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
+	rName := generateNameForIntegrationTestResource()
+	runtimeTypeInConfig := NODE_LEGACY_RUNTIME_TYPE
+	runtimeTypeVersionInConfig := NODE_LEGACY_RUNTIME_TYPE_VERSION
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					runtimeTypeInConfig,
+					runtimeTypeVersionInConfig,
+				),
+				ExpectError: regexp.MustCompile(
+					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
+						RUNTIME_TYPE_ATTRIBUTE_LABEL,
+						RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL,
+						runtimeTypeInConfig,
+						runtimeTypeVersionInConfig,
+					).Error(),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributes_EmptyValuesError(t *testing.T) {
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					"",
+					"",
+				),
+				ExpectError: regexp.MustCompile(
+					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(RUNTIME_TYPE_ATTRIBUTE_LABEL).Error(),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
+	rName := generateNameForIntegrationTestResource()
+	runtimeTypeInConfig := NODE_LEGACY_RUNTIME_TYPE
+	runtimeTypeVersionInConfig := NODE_LEGACY_RUNTIME_TYPE_VERSION
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					runtimeTypeInConfig,
+					runtimeTypeVersionInConfig,
+				),
+				ExpectError: regexp.MustCompile(
+					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
+						RUNTIME_TYPE_ATTRIBUTE_LABEL,
+						RUNTIME_TYPE_VERSION_ATTRIBUTE_LABEL,
+						runtimeTypeInConfig,
+						runtimeTypeVersionInConfig,
+					).Error(),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes_EmptyValuesError(t *testing.T) {
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					"",
+					"",
+				),
+				ExpectError: regexp.MustCompile(
+					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(RUNTIME_TYPE_ATTRIBUTE_LABEL).Error(),
+				),
+			},
+		},
+	})
+}
+
 func testAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributesConfig(
 	name string,
 	runtimeType string,
 	runtimeTypeVersion string,
 ) string {
 	return fmt.Sprintf(`
-		resource "newrelic_synthetics_step_monitor" "legacy_synthetics_step_monitor_runtime_attributes_empty_strings" {
+		resource "newrelic_synthetics_step_monitor" "legacy_synthetics_step_monitor" {
 			name                                    = "%[1]s"
 			period                                  = "EVERY_DAY"
 			status                                  = "ENABLED"
@@ -259,7 +365,7 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 	runtimeTypeVersion string,
 ) string {
 	return fmt.Sprintf(`
-		resource "newrelic_synthetics_monitor" "legacy_synthetics_monitor_runtime_attributes_empty_strings" {
+		resource "newrelic_synthetics_monitor" "legacy_synthetics_monitor" {
 			name                                    = "%[1]s"
 			period                                  = "EVERY_DAY"
 			type									= "BROWSER"
@@ -283,7 +389,7 @@ func testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesC
 	scriptType string,
 ) string {
 	return fmt.Sprintf(`
-		resource "newrelic_synthetics_script_monitor" "legacy_synthetics_script_monitor_runtime_attributes_empty_strings" {
+		resource "newrelic_synthetics_script_monitor" "legacy_synthetics_script_monitor" {
 			name                                    = "%[1]s"
 			period                                  = "EVERY_DAY"
 			type									= "%[4]s"
@@ -299,5 +405,58 @@ func testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesC
 		runtimeType,
 		runtimeTypeVersion,
 		scriptType,
+	)
+}
+
+func testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
+	name string,
+	runtimeType string,
+	runtimeTypeVersion string,
+) string {
+	return fmt.Sprintf(`
+		resource "newrelic_synthetics_broken_links_monitor" "legacy_synthetics_broken_links_monitor" {
+			  name                 = "%[1]s"
+			  uri                  = "https://www.one.example.com"
+			  locations_public     = ["AP_SOUTH_1"]
+			  period               = "EVERY_6_HOURS"
+			  status               = "ENABLED"
+			  runtime_type         = "%[2]s"
+			  runtime_type_version = "%[3]s"
+			  tag {
+				key    = "some_key"
+				values = ["some_value"]
+			  }
+			}
+`,
+		name,
+		runtimeType,
+		runtimeTypeVersion,
+	)
+}
+
+func testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
+	name string,
+	runtimeType string,
+	runtimeTypeVersion string,
+) string {
+	return fmt.Sprintf(`
+		resource "newrelic_synthetics_cert_check_monitor" "legacy_synthetics_cert_check_monitor" {
+			  name                   = "%[1]s"
+			  domain                 = "www.example.com"
+			  locations_public       = ["AP_SOUTH_1"]
+			  certificate_expiration = "10"
+			  period                 = "EVERY_6_HOURS"
+			  status                 = "ENABLED"
+			  runtime_type           = "%[2]s"
+			  runtime_type_version   = "%[3]s"
+			  tag {
+				key    = "some_key"
+				values = ["some_value"]
+			  }
+			}
+`,
+		name,
+		runtimeType,
+		runtimeTypeVersion,
 	)
 }
