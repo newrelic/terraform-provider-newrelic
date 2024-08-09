@@ -109,6 +109,7 @@ func resourceNewRelicSyntheticsCertCheckMonitor() *schema.Resource {
 				Description: "The specific semver version of the runtime type.",
 			},
 		},
+		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
 	}
 }
 

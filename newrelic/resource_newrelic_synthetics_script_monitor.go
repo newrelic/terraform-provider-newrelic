@@ -28,6 +28,7 @@ func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 			syntheticsScriptMonitorLocationsSchema(),
 			syntheticsScriptBrowserMonitorAdvancedOptionsSchema(),
 		),
+		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
 	}
 }
 
