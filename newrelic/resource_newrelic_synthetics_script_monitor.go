@@ -23,7 +23,10 @@ func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: mergeSchemas(
-			syntheticsMonitorCommonSchema(),
+			syntheticsMonitorAttributesCommonToAllTypesSchema(),
+			syntheticsMonitorRuntimeSchema(
+				true,
+			),
 			syntheticsScriptMonitorCommonSchema(),
 			syntheticsScriptMonitorLocationsSchema(),
 			syntheticsScriptBrowserMonitorAdvancedOptionsSchema(),
@@ -102,25 +105,6 @@ func syntheticsScriptMonitorCommonSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The script that the monitor runs.",
 		},
-		"script_language": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Description:      "The programing language that should execute the script.",
-			DiffSuppressFunc: syntheticMonitorsLegacyRuntimeArgumentsDiffSuppressor,
-		},
-		"runtime_type": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Description:      "The runtime type that the monitor will run.",
-			DiffSuppressFunc: syntheticMonitorsLegacyRuntimeArgumentsDiffSuppressor,
-		},
-		"runtime_type_version": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Description:      "The specific semver version of the runtime type.",
-			DiffSuppressFunc: syntheticMonitorsLegacyRuntimeArgumentsDiffSuppressor,
-		},
-		SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
 	}
 }
 

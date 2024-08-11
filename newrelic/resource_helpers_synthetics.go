@@ -15,7 +15,7 @@ import (
 )
 
 // Returns the common schema attributes shared by all Synthetics monitor types.
-func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
+func syntheticsMonitorAttributesCommonToAllTypesSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"account_id": {
 			Type:        schema.TypeInt,
@@ -75,19 +75,35 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 	}
 }
 
-func syntheticsMonitorRuntimeOptions() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"runtime_type": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The runtime type that the monitor will run.",
-		},
-		"runtime_type_version": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The specific semver version of the runtime type.",
-		},
+func syntheticsMonitorRuntimeSchema(includeScriptLanguage bool) map[string]*schema.Schema {
+	var syntheticMonitorsRuntimeAttributesSchema = map[string]*schema.Schema{}
+
+	syntheticMonitorsRuntimeAttributesSchema["runtime_type"] = &schema.Schema{
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The runtime type that the monitor will run.",
+		DiffSuppressFunc: syntheticMonitorsLegacyRuntimeArgumentsDiffSuppressor,
 	}
+
+	syntheticMonitorsRuntimeAttributesSchema["runtime_type_version"] = &schema.Schema{
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "The specific semver version of the runtime type.",
+		DiffSuppressFunc: syntheticMonitorsLegacyRuntimeArgumentsDiffSuppressor,
+	}
+
+	syntheticMonitorsRuntimeAttributesSchema[SyntheticsUseLegacyRuntimeAttrLabel] = SyntheticsUseLegacyRuntimeSchema
+
+	if includeScriptLanguage {
+		syntheticMonitorsRuntimeAttributesSchema["script_language"] = &schema.Schema{
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The programing language that should execute the script.",
+			DiffSuppressFunc: syntheticMonitorsLegacyRuntimeArgumentsDiffSuppressor,
+		}
+	}
+
+	return syntheticMonitorsRuntimeAttributesSchema
 }
 
 // NOTE: This can be a shared schema partial for other synthetics monitor resources

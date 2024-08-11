@@ -25,158 +25,152 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"account_id": {
-				Type:        schema.TypeInt,
-				Description: "ID of the newrelic account",
-				Computed:    true,
-				Optional:    true,
-			},
-			"type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "The monitor type. Valid values are SIMPLE AND BROWSER.",
-				ValidateFunc: validation.StringInSlice([]string{"SIMPLE", "BROWSER"}, false),
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The title of this monitor.",
-			},
-			"period": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.",
-				ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPeriods(), false),
-			},
-			"period_in_minutes": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The interval in minutes at which this monitor should run.",
-			},
-			"uri": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The URI for the monitor to hit.",
-			},
-			"locations_public": {
-				Type:         schema.TypeSet,
-				Elem:         &schema.Schema{Type: schema.TypeString},
-				MinItems:     1,
-				Optional:     true,
-				AtLeastOneOf: []string{"locations_public", "locations_private"},
-				Description:  "The locations in which this monitor should be run.",
-			},
-			"locations_private": {
-				Type:         schema.TypeSet,
-				Elem:         &schema.Schema{Type: schema.TypeString},
-				MinItems:     1,
-				Optional:     true,
-				AtLeastOneOf: []string{"locations_public", "locations_private"},
-				Description:  "The locations in which this monitor should be run.",
-			},
-			"status": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The monitor status (ENABLED or DISABLED).",
-				ValidateFunc: validateSyntheticMonitorStatus,
-			},
-			"validation_string": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The string to validate against in the response.",
-			},
-			"verify_ssl": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Verify SSL.",
-			},
-			"bypass_head_request": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Bypass HEAD request.",
-			},
-			"treat_redirect_as_failure": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Fail the monitor check if redirected.",
-			},
-			"runtime_type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The runtime type that the monitor will run",
-			},
-			"runtime_type_version": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The specific version of the runtime type selected",
-			},
-			"script_language": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The programing language that should execute the script",
-			},
-			SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
-			"tag": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				MinItems:    1,
-				Description: "The tags that will be associated with the monitor",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Name of the tag key",
-						},
-						"values": {
-							Type:        schema.TypeList,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-							Required:    true,
-							Description: "Values associated with the tag key",
-						},
+		Schema: mergeSchemas(
+			syntheticsMonitorSchema(),
+			syntheticsMonitorRuntimeSchema(
+				true,
+			),
+		),
+		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
+	}
+}
+
+func syntheticsMonitorSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"account_id": {
+			Type:        schema.TypeInt,
+			Description: "ID of the newrelic account",
+			Computed:    true,
+			Optional:    true,
+		},
+		"type": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			Description:  "The monitor type. Valid values are SIMPLE AND BROWSER.",
+			ValidateFunc: validation.StringInSlice([]string{"SIMPLE", "BROWSER"}, false),
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The title of this monitor.",
+		},
+		"period": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			Description:  "The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.",
+			ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPeriods(), false),
+		},
+		"period_in_minutes": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The interval in minutes at which this monitor should run.",
+		},
+		"uri": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The URI for the monitor to hit.",
+		},
+		"locations_public": {
+			Type:         schema.TypeSet,
+			Elem:         &schema.Schema{Type: schema.TypeString},
+			MinItems:     1,
+			Optional:     true,
+			AtLeastOneOf: []string{"locations_public", "locations_private"},
+			Description:  "The locations in which this monitor should be run.",
+		},
+		"locations_private": {
+			Type:         schema.TypeSet,
+			Elem:         &schema.Schema{Type: schema.TypeString},
+			MinItems:     1,
+			Optional:     true,
+			AtLeastOneOf: []string{"locations_public", "locations_private"},
+			Description:  "The locations in which this monitor should be run.",
+		},
+		"status": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  "The monitor status (ENABLED or DISABLED).",
+			ValidateFunc: validateSyntheticMonitorStatus,
+		},
+		"validation_string": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The string to validate against in the response.",
+		},
+		"verify_ssl": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Verify SSL.",
+		},
+		"bypass_head_request": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Bypass HEAD request.",
+		},
+		"treat_redirect_as_failure": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Fail the monitor check if redirected.",
+		},
+		"tag": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			MinItems:    1,
+			Description: "The tags that will be associated with the monitor",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Name of the tag key",
+					},
+					"values": {
+						Type:        schema.TypeList,
+						Elem:        &schema.Schema{Type: schema.TypeString},
+						Required:    true,
+						Description: "Values associated with the tag key",
 					},
 				},
-			},
-			"enable_screenshot_on_failure_and_script": {
-				Type:        schema.TypeBool,
-				Description: "Capture a screenshot during job execution",
-				Optional:    true,
-			},
-			"custom_header": {
-				Type:        schema.TypeSet,
-				Description: "Custom headers to use in monitor job",
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Description: "Header name",
-							Optional:    true,
-						},
-						"value": {
-							Type:        schema.TypeString,
-							Description: "Header value",
-							Optional:    true,
-						},
-					},
-				},
-			},
-			"device_orientation": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The device orientation the user would like to represent. Valid values are LANDSCAPE, PORTRAIT, or NONE.",
-			},
-			"device_type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
 			},
 		},
-		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
+		"enable_screenshot_on_failure_and_script": {
+			Type:        schema.TypeBool,
+			Description: "Capture a screenshot during job execution",
+			Optional:    true,
+		},
+		"custom_header": {
+			Type:        schema.TypeSet,
+			Description: "Custom headers to use in monitor job",
+			Optional:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": {
+						Type:        schema.TypeString,
+						Description: "Header name",
+						Optional:    true,
+					},
+					"value": {
+						Type:        schema.TypeString,
+						Description: "Header value",
+						Optional:    true,
+					},
+				},
+			},
+		},
+		"device_orientation": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The device orientation the user would like to represent. Valid values are LANDSCAPE, PORTRAIT, or NONE.",
+		},
+		"device_type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
+		},
+
 	}
 }
 

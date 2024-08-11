@@ -22,95 +22,93 @@ func resourceNewRelicSyntheticsCertCheckMonitor() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"account_id": {
-				Type:        schema.TypeInt,
-				Description: "ID of the newrelic account",
-				Computed:    true,
-				Optional:    true,
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Description: "name of the cert check monitor",
-				Required:    true,
-			},
-			"domain": {
-				Type:        schema.TypeString,
-				Description: "",
-				Required:    true,
-			},
-			"certificate_expiration": {
-				Type:        schema.TypeInt,
-				Description: "",
-				Required:    true,
-			},
-			"locations_public": {
-				Type:         schema.TypeSet,
-				Elem:         &schema.Schema{Type: schema.TypeString},
-				MinItems:     1,
-				Optional:     true,
-				AtLeastOneOf: []string{"locations_public", "locations_private"},
-				Description:  "The locations in which this monitor should be run.",
-			},
-			"locations_private": {
-				Type:         schema.TypeSet,
-				Elem:         &schema.Schema{Type: schema.TypeString},
-				MinItems:     1,
-				Optional:     true,
-				AtLeastOneOf: []string{"locations_public", "locations_private"},
-				Description:  "The locations in which this monitor should be run.",
-			},
-			"status": {
-				Type:         schema.TypeString,
-				Description:  "The monitor status (ENABLED or DISABLED).",
-				Required:     true,
-				ValidateFunc: validateSyntheticMonitorStatus,
-			},
-			"tag": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				MinItems:    1,
-				Description: "The tags that will be associated with the monitor",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Name of the tag key",
-						},
-						"values": {
-							Type:        schema.TypeList,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-							Required:    true,
-							Description: "Values associated with the tag key",
-						},
+		Schema: mergeSchemas(
+			syntheticsCertCheckMonitorSchema(),
+			syntheticsMonitorRuntimeSchema(
+				false,
+			),
+		),
+		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
+	}
+}
+
+func syntheticsCertCheckMonitorSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"account_id": {
+			Type:        schema.TypeInt,
+			Description: "ID of the newrelic account",
+			Computed:    true,
+			Optional:    true,
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Description: "name of the cert check monitor",
+			Required:    true,
+		},
+		"domain": {
+			Type:        schema.TypeString,
+			Description: "",
+			Required:    true,
+		},
+		"certificate_expiration": {
+			Type:        schema.TypeInt,
+			Description: "",
+			Required:    true,
+		},
+		"locations_public": {
+			Type:         schema.TypeSet,
+			Elem:         &schema.Schema{Type: schema.TypeString},
+			MinItems:     1,
+			Optional:     true,
+			AtLeastOneOf: []string{"locations_public", "locations_private"},
+			Description:  "The locations in which this monitor should be run.",
+		},
+		"locations_private": {
+			Type:         schema.TypeSet,
+			Elem:         &schema.Schema{Type: schema.TypeString},
+			MinItems:     1,
+			Optional:     true,
+			AtLeastOneOf: []string{"locations_public", "locations_private"},
+			Description:  "The locations in which this monitor should be run.",
+		},
+		"status": {
+			Type:         schema.TypeString,
+			Description:  "The monitor status (ENABLED or DISABLED).",
+			Required:     true,
+			ValidateFunc: validateSyntheticMonitorStatus,
+		},
+		"tag": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			MinItems:    1,
+			Description: "The tags that will be associated with the monitor",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Name of the tag key",
+					},
+					"values": {
+						Type:        schema.TypeList,
+						Elem:        &schema.Schema{Type: schema.TypeString},
+						Required:    true,
+						Description: "Values associated with the tag key",
 					},
 				},
 			},
-			"period": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.",
-				ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPeriods(), false),
-			},
-			"period_in_minutes": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The interval in minutes at which this monitor should run.",
-			},
-			"runtime_type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The runtime type that the monitor will run.",
-			},
-			"runtime_type_version": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The specific semver version of the runtime type.",
-			},
-			SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
 		},
-		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
+		"period": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  "The interval at which this monitor should run. Valid values are EVERY_MINUTE, EVERY_5_MINUTES, EVERY_10_MINUTES, EVERY_15_MINUTES, EVERY_30_MINUTES, EVERY_HOUR, EVERY_6_HOURS, EVERY_12_HOURS, or EVERY_DAY.",
+			ValidateFunc: validation.StringInSlice(listValidSyntheticsMonitorPeriods(), false),
+		},
+		"period_in_minutes": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The interval in minutes at which this monitor should run.",
+		},
 	}
 }
 

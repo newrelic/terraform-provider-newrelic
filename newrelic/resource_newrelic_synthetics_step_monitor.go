@@ -22,8 +22,11 @@ func resourceNewRelicSyntheticsStepMonitor() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: mergeSchemas(
-			syntheticsMonitorCommonSchema(),
+			syntheticsMonitorAttributesCommonToAllTypesSchema(),
 			syntheticsStepMonitorSchema(),
+			syntheticsMonitorRuntimeSchema(
+				false,
+			),
 		),
 		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
 	}
@@ -92,17 +95,6 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"runtime_type": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The runtime type that the monitor will run.",
-		},
-		"runtime_type_version": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The specific semver version of the runtime type.",
-		},
-		SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
 	}
 }
 

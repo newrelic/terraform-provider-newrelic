@@ -22,9 +22,11 @@ func resourceNewRelicSyntheticsBrokenLinksMonitor() *schema.Resource {
 		},
 		Schema: mergeSchemas(
 			syntheticsBrokenLinksMonitorSchema(),
-			syntheticsMonitorCommonSchema(),
+			syntheticsMonitorAttributesCommonToAllTypesSchema(),
 			syntheticsMonitorLocationsAsStringsSchema(),
-			syntheticsMonitorRuntimeOptions(),
+			syntheticsMonitorRuntimeSchema(
+				false,
+			),
 		),
 		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
 	}
