@@ -47,6 +47,14 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) (synthetics.Syn
 		simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = &vs
 	}
 
+	if v, ok := d.GetOk("devices"); ok {
+		simpleBrowserMonitorInput.Devices = expandSyntheticsDevices(v.(*schema.Set).List())
+	}
+
+	if v, ok := d.GetOk("browsers"); ok {
+		simpleBrowserMonitorInput.Browsers = expandSyntheticsBrowsers(v.(*schema.Set).List())
+	}
+
 	err := buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulation(d, simpleBrowserMonitorInput)
 	if err != nil {
 		return *simpleBrowserMonitorInput, err
@@ -135,6 +143,14 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) (sy
 	if v := d.Get("verify_ssl"); v != nil {
 		vs := v.(bool)
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.UseTlsValidation = &vs
+	}
+
+	if v, ok := d.GetOk("devices"); ok {
+		simpleBrowserMonitorUpdateInput.Devices = expandSyntheticsDevices(v.(*schema.Set).List())
+	}
+
+	if v, ok := d.GetOk("browsers"); ok {
+		simpleBrowserMonitorUpdateInput.Browsers = expandSyntheticsBrowsers(v.(*schema.Set).List())
 	}
 
 	err := buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulationUpdateStruct(d, simpleBrowserMonitorUpdateInput)

@@ -145,6 +145,22 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description: "Capture a screenshot during job execution",
 				Optional:    true,
 			},
+			"browsers": {
+				Type:     schema.TypeSet,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				MinItems: 1,
+				Optional: true,
+				Description: "The browsers that can be used to execute script execution. Valid values are array of CHROME," +
+					" EDGE, FIREFOX, and NONE.",
+			},
+			"devices": {
+				Type:     schema.TypeSet,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				MinItems: 1,
+				Optional: true,
+				Description: "The devices that can be used to execute script execution. Valid values are array of DESKTOP," +
+					" MOBILE_LANDSCAPE, MOBILE_PORTRAIT, TABLET_LANDSCAPE, TABLET_PORTRAIT and NONE.",
+			},
 			"custom_header": {
 				Type:        schema.TypeSet,
 				Description: "Custom headers to use in monitor job",

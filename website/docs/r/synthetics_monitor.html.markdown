@@ -53,7 +53,8 @@ resource "newrelic_synthetics_monitor" "monitor" {
     name  = "some_name"
     value = "some_value"
   }
-
+  devices = ["MOBILE_LANDSCAPE","MOBILE_PORTRAIT"]
+  browsers = ["CHROME","FIREFOX"]
   enable_screenshot_on_failure_and_script = true
   validation_string                       = "success"
   verify_ssl                              = true
@@ -103,6 +104,8 @@ The `BROWSER` monitor type supports the following additional arguments:
 * `script_language` - (Optional) The programing language that should execute the script.
 * `device_orientation` - (Optional) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`.
 * `device_type` - (Optional) Device emulation type field. Valid values are `MOBILE` and `TABLET`.
+* `devices` - (Optional) The devices on which monitor will run. Valid values are `DESKTOP`, `MOBILE_LANDSCAPE`, `MOBILE_PORTRAIT`, `TABLET_LANDSCAPE`, `TABLET_PORTRAIT` and `NONE` .
+* `browsers` - (Optional) The browsers on which monitor will run. Valid values are `CHROME`, `EDGE`, `FIREFOX`, and `NONE` . 
 
 #### Deprecated runtime
 

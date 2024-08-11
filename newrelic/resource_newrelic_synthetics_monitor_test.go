@@ -327,6 +327,8 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 					"script_language",
 					"device_orientation",
 					"device_type",
+					"devices",
+					"browsers",
 				},
 			},
 		},
@@ -344,6 +346,8 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 			name	= "customer-header-2"
 			value	= "header-value-2"
 		}
+		devices = ["MOBILE_LANDSCAPE","MOBILE_PORTRAIT"]
+        browsers = ["CHROME","FIREFOX"]
 		enable_screenshot_on_failure_and_script	=	true
 		validation_string	=	"success"
 		verify_ssl	=	true
@@ -368,6 +372,8 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, mon
 				name  = "name"
 				value = "simple_browser"
 			}
+			devices = ["MOBILE_LANDSCAPE"]
+            browsers = ["CHROME"]	
 			enable_screenshot_on_failure_and_script	=	false
 			validation_string	=	"success"
 			verify_ssl	=	false
