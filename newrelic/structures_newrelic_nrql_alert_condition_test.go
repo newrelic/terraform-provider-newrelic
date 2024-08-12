@@ -376,12 +376,15 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 			Expanded: &alerts.NrqlConditionCreateInput{
 				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
 					TitleTemplate: &titleTemplate,
+				},
+			},
+		},
 		"ignore expected termination not nil": {
 			Data: map[string]interface{}{
-				"nrql":                            []interface{}{nrql},
-				"expiration_duration":             120,
-				"open_violation_on_expiration":    true,
-				"close_violations_on_expiration":  true,
+				"nrql":                           []interface{}{nrql},
+				"expiration_duration":            120,
+				"open_violation_on_expiration":   true,
+				"close_violations_on_expiration": true,
 				"ignore_on_expected_termination": true,
 			},
 			Expanded: &alerts.NrqlConditionCreateInput{
