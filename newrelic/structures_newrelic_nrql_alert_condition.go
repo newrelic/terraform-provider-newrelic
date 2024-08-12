@@ -607,7 +607,6 @@ func flattenExpiration(d *schema.ResourceData, expiration *alerts.AlertsNrqlCond
 		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `ignore_on_expected_termination`: %v", err)
 	}
 
-
 	return nil
 }
 
