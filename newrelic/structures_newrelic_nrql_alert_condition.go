@@ -76,6 +76,11 @@ func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		input.RunbookURL = runbookURL.(string)
 	}
 
+	if titleTemplate, ok := d.GetOk("title_template"); ok {
+		template := titleTemplate.(string)
+		input.TitleTemplate = &template
+	}
+
 	if violationTimeLimitSec, ok := d.GetOk("violation_time_limit_seconds"); ok {
 		input.ViolationTimeLimitSeconds = violationTimeLimitSec.(int)
 	} else if violationTimeLimit, ok := d.GetOk("violation_time_limit"); ok {
@@ -129,6 +134,11 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
 		input.RunbookURL = runbookURL.(string)
+	}
+
+	if titleTemplate, ok := d.GetOk("title_template"); ok {
+		template := titleTemplate.(string)
+		input.TitleTemplate = &template
 	}
 
 	if violationTimeLimitSec, ok := d.GetOk("violation_time_limit_seconds"); ok {
@@ -509,6 +519,7 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	_ = d.Set("policy_id", policyID)
 	_ = d.Set("name", condition.Name)
 	_ = d.Set("runbook_url", condition.RunbookURL)
+	_ = d.Set("title_template", condition.TitleTemplate)
 	_ = d.Set("enabled", condition.Enabled)
 	_ = d.Set("entity_guid", condition.EntityGUID)
 
