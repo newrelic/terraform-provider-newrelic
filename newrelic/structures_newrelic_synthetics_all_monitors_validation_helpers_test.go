@@ -26,7 +26,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Empt
 					"",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel).Error(),
+					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
 				),
 			},
 		},
@@ -51,9 +51,9 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Lega
 					runtimeTypeVersionInConfig,
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-						SyntheticsRuntimeTypeAttributeLabel,
-						SyntheticsRuntimeTypeVersionAttributeLabel,
+					buildSyntheticsLegacyObsoleteRuntimeError(
+						SyntheticsRuntimeTypeAttrLabel,
+						SyntheticsRuntimeTypeVersionAttrLabel,
 						runtimeTypeInConfig,
 						runtimeTypeVersionInConfig,
 					).Error(),
@@ -79,7 +79,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 					"",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel).Error(),
+					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
 				),
 			},
 		},
@@ -104,9 +104,9 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 					runtimeTypeVersionInConfig,
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-						SyntheticsRuntimeTypeAttributeLabel,
-						SyntheticsRuntimeTypeVersionAttributeLabel,
+					buildSyntheticsLegacyObsoleteRuntimeError(
+						SyntheticsRuntimeTypeAttrLabel,
+						SyntheticsRuntimeTypeVersionAttrLabel,
 						runtimeTypeInConfig,
 						runtimeTypeVersionInConfig,
 					).Error(),
@@ -133,7 +133,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 					"SCRIPT_BROWSER",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel).Error(),
+					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
 				),
 			},
 		},
@@ -159,9 +159,9 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 					"SCRIPT_BROWSER",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-						SyntheticsRuntimeTypeAttributeLabel,
-						SyntheticsRuntimeTypeVersionAttributeLabel,
+					buildSyntheticsLegacyObsoleteRuntimeError(
+						SyntheticsRuntimeTypeAttrLabel,
+						SyntheticsRuntimeTypeVersionAttrLabel,
 						runtimeTypeInConfig,
 						runtimeTypeVersionInConfig,
 					).Error(),
@@ -188,7 +188,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 					"SCRIPT_API",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel).Error(),
+					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
 				),
 			},
 		},
@@ -214,9 +214,9 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 					"SCRIPT_API",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-						SyntheticsRuntimeTypeAttributeLabel,
-						SyntheticsRuntimeTypeVersionAttributeLabel,
+					buildSyntheticsLegacyObsoleteRuntimeError(
+						SyntheticsRuntimeTypeAttrLabel,
+						SyntheticsRuntimeTypeVersionAttrLabel,
 						runtimeTypeInConfig,
 						runtimeTypeVersionInConfig,
 					).Error(),
@@ -244,9 +244,9 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 					runtimeTypeVersionInConfig,
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-						SyntheticsRuntimeTypeAttributeLabel,
-						SyntheticsRuntimeTypeVersionAttributeLabel,
+					buildSyntheticsLegacyObsoleteRuntimeError(
+						SyntheticsRuntimeTypeAttrLabel,
+						SyntheticsRuntimeTypeVersionAttrLabel,
 						runtimeTypeInConfig,
 						runtimeTypeVersionInConfig,
 					).Error(),
@@ -272,7 +272,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 					"",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel).Error(),
+					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
 				),
 			},
 		},
@@ -297,9 +297,9 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 					runtimeTypeVersionInConfig,
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-						SyntheticsRuntimeTypeAttributeLabel,
-						SyntheticsRuntimeTypeVersionAttributeLabel,
+					buildSyntheticsLegacyObsoleteRuntimeError(
+						SyntheticsRuntimeTypeAttrLabel,
+						SyntheticsRuntimeTypeVersionAttrLabel,
 						runtimeTypeInConfig,
 						runtimeTypeVersionInConfig,
 					).Error(),
@@ -325,7 +325,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 					"",
 				),
 				ExpectError: regexp.MustCompile(
-					constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel).Error(),
+					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
 				),
 			},
 		},

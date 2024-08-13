@@ -29,8 +29,8 @@ func validateSyntheticMonitorRuntimeAttributes(ctx context.Context, d *schema.Re
 	return errors.New(errorsString)
 }
 
-const SyntheticsRuntimeTypeAttributeLabel string = "runtime_type"
-const SyntheticsRuntimeTypeVersionAttributeLabel string = "runtime_type_version"
+const SyntheticsRuntimeTypeAttrLabel string = "runtime_type"
+const SyntheticsRuntimeTypeVersionAttrLabel string = "runtime_type_version"
 const SyntheticsNodeLegacyRuntimeType string = "NODE_API"
 const SyntheticsNodeLegacyRuntimeTypeVersion string = "10"
 const SyntheticsChromeBrowserLegacyRuntimeType string = "CHROME_BROWSER"
@@ -39,75 +39,52 @@ const SyntheticsChromeBrowserLegacyRuntimeTypeVersion string = "72"
 func validateSyntheticMonitorLegacyRuntimeAttributesUponCreate(d *schema.ResourceDiff) []error {
 	var runtimeAttributesValidationErrors []error
 
-	isSyntheticMonitorAlreadyCreated := d.Id() != ""
+	isSyntheticMonitorCreated := d.Id() != ""
 	rawConfiguration := d.GetRawConfig()
 
-	isRuntimeTypeNotSpecifiedInConfiguration := rawConfiguration.GetAttr(SyntheticsRuntimeTypeAttributeLabel).IsNull()
-	_, runtimeTypeInConfig := d.GetChange(SyntheticsRuntimeTypeAttributeLabel)
+	isRuntimeTypeAbsentInConfig := rawConfiguration.GetAttr(SyntheticsRuntimeTypeAttrLabel).IsNull()
+	_, runtimeTypeInConfig := d.GetChange(SyntheticsRuntimeTypeAttrLabel)
 
-	isRuntimeTypeNullValue := runtimeTypeInConfig == ""
+	isRuntimeTypeNil := runtimeTypeInConfig == ""
 
 	// this would return true only if runtime_type_version is not specified in the configuration at all
 	// and false, if runtime_type_version is specified either as an empty string "", or as any other non nil value (non-empty string)
-	isRuntimeTypeVersionNotSpecifiedInConfiguration := rawConfiguration.GetAttr(SyntheticsRuntimeTypeVersionAttributeLabel).IsNull()
-	_, runtimeTypeVersionInConfig := d.GetChange(SyntheticsRuntimeTypeVersionAttributeLabel)
+	isRuntimeTypeVersionAbsentInConfig := rawConfiguration.GetAttr(SyntheticsRuntimeTypeVersionAttrLabel).IsNull()
+	_, runtimeTypeVersionInConfig := d.GetChange(SyntheticsRuntimeTypeVersionAttrLabel)
 
 	// this would return true both when `runtime_type_version` is not specified in the config and when `runtime_type_version` is specified as "" in the config
 	// and false, if `runtime_type_version` has a non nil value (a non-empty string) as its value
-	isRuntimeTypeVersionNullValue := runtimeTypeVersionInConfig == ""
+	isRuntimeTypeVersionNil := runtimeTypeVersionInConfig == ""
 
-	if !isSyntheticMonitorAlreadyCreated &&
-		!isRuntimeTypeNotSpecifiedInConfiguration &&
-		isRuntimeTypeNullValue {
-
-		runtimeAttributesValidationErrors = append(
-			runtimeAttributesValidationErrors,
-			constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeAttributeLabel),
-		)
-	}
-
-	if !isSyntheticMonitorAlreadyCreated &&
-		!isRuntimeTypeVersionNotSpecifiedInConfiguration &&
-		isRuntimeTypeVersionNullValue {
-
-		runtimeAttributesValidationErrors = append(
-			runtimeAttributesValidationErrors,
-			constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(SyntheticsRuntimeTypeVersionAttributeLabel),
-		)
-	}
-
-	if !isSyntheticMonitorAlreadyCreated &&
-		!isRuntimeTypeNotSpecifiedInConfiguration &&
-		!isRuntimeTypeVersionNotSpecifiedInConfiguration &&
-		!isRuntimeTypeNullValue &&
-		!isRuntimeTypeVersionNullValue {
-
-		if runtimeTypeInConfig == SyntheticsNodeLegacyRuntimeType &&
-			runtimeTypeVersionInConfig == SyntheticsNodeLegacyRuntimeTypeVersion {
-
+	// if !isSyntheticMonitorCreated is a condition that needs to exist only until October 22, 2024 as the first phase of Legacy Runtime EOL changes
+	// aim at restricting new monitors from using the legacy runtime. For the release on October 22, 2024; this condition may be discarded.
+	if !isSyntheticMonitorCreated {
+		if !isRuntimeTypeAbsentInConfig && isRuntimeTypeNil {
 			runtimeAttributesValidationErrors = append(
 				runtimeAttributesValidationErrors,
-				constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-					SyntheticsRuntimeTypeAttributeLabel,
-					SyntheticsRuntimeTypeVersionAttributeLabel,
-					runtimeTypeInConfig.(string),
-					runtimeTypeVersionInConfig.(string),
-				),
+				buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel),
 			)
 		}
 
-		if runtimeTypeInConfig == SyntheticsChromeBrowserLegacyRuntimeType &&
-			runtimeTypeVersionInConfig == SyntheticsChromeBrowserLegacyRuntimeTypeVersion {
-
+		if !isRuntimeTypeVersionAbsentInConfig && isRuntimeTypeVersionNil {
 			runtimeAttributesValidationErrors = append(
 				runtimeAttributesValidationErrors,
-				constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-					SyntheticsRuntimeTypeAttributeLabel,
-					SyntheticsRuntimeTypeVersionAttributeLabel,
-					runtimeTypeInConfig.(string),
-					runtimeTypeVersionInConfig.(string),
-				),
+				buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeVersionAttrLabel),
 			)
+		}
+
+		if !isRuntimeTypeAbsentInConfig && !isRuntimeTypeVersionAbsentInConfig && !isRuntimeTypeNil && !isRuntimeTypeVersionNil {
+			if syntheticMonitorConfigHasObsoleteRuntime(runtimeTypeInConfig, runtimeTypeVersionInConfig) {
+				runtimeAttributesValidationErrors = append(
+					runtimeAttributesValidationErrors,
+					buildSyntheticsLegacyObsoleteRuntimeError(
+						SyntheticsRuntimeTypeAttrLabel,
+						SyntheticsRuntimeTypeVersionAttrLabel,
+						runtimeTypeInConfig.(string),
+						runtimeTypeVersionInConfig.(string),
+					),
+				)
+			}
 		}
 	}
 
@@ -120,31 +97,38 @@ func validateSyntheticMonitorLegacyRuntimeAttributesUponCreate(d *schema.Resourc
 	return nil
 }
 
-func constructSyntheticMonitorLegacyRuntimeAttributesEmptyValidationErrorUponCreate(attributeName string) error {
+func buildSyntheticsLegacyEmptyRuntimeError(attributeName string) error {
 	return fmt.Errorf(
 		"`%s` can no longer be specified as an empty string \"\" %s",
 		attributeName,
-		constructSyntheticMonitorLegacyRuntimeAttributesValidationErrorUponCreate(),
+		buildSyntheticsLegacyRuntimeValidationError(),
 	)
 }
 
-func constructSyntheticMonitorLegacyRuntimeAttributesObsoleteValidationErrorUponCreate(
-	runtimeTypeAttributeLabel string,
-	runtimeTypeVersionAttributeLabel string,
+func buildSyntheticsLegacyObsoleteRuntimeError(
+	runtimeTypeAttrLabel string,
+	runtimeTypeVersionAttrLabel string,
 	runtimeTypeInConfig string,
 	runtimeTypeVersionInConfig string,
 ) error {
 	return fmt.Errorf(
 		"legacy runtime version `%s` can no longer be specified as the `%s` corresponding to the `%s` `%s` %s",
 		runtimeTypeVersionInConfig,
-		runtimeTypeVersionAttributeLabel,
-		runtimeTypeAttributeLabel,
+		runtimeTypeVersionAttrLabel,
+		runtimeTypeAttrLabel,
 		runtimeTypeInConfig,
-		constructSyntheticMonitorLegacyRuntimeAttributesValidationErrorUponCreate(),
+		buildSyntheticsLegacyRuntimeValidationError(),
 	)
 }
 
-func constructSyntheticMonitorLegacyRuntimeAttributesValidationErrorUponCreate() string {
+func syntheticMonitorConfigHasObsoleteRuntime(
+	runtimeTypeInConfig interface{},
+	runtimeTypeVersionInConfig interface{},
+) bool {
+	return (runtimeTypeInConfig == SyntheticsNodeLegacyRuntimeType && runtimeTypeVersionInConfig == SyntheticsNodeLegacyRuntimeTypeVersion) || (runtimeTypeInConfig == SyntheticsChromeBrowserLegacyRuntimeType && runtimeTypeVersionInConfig == SyntheticsChromeBrowserLegacyRuntimeTypeVersion)
+}
+
+func buildSyntheticsLegacyRuntimeValidationError() string {
 	return `with new monitors starting August 26, 2024;
 creating new monitors with the legacy runtime is no longer supported.
 This is in relation with the upcoming Synthetics Legacy Runtime EOL on October 22, 2024; see this for more details: 
