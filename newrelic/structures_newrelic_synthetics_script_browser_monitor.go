@@ -25,13 +25,11 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
 	}
 
-	if v, ok := d.GetOk("browsers"); ok {
-		input.Browsers = expandSyntheticsBrowsers(v.(*schema.Set).List())
-	}
+	typedBrowsers := expandSyntheticsBrowsers(d.Get("browsers").(*schema.Set).List())
+	input.Browsers = &typedBrowsers
 
-	if v, ok := d.GetOk("devices"); ok {
-		input.Devices = expandSyntheticsDevices(v.(*schema.Set).List())
-	}
+	typedDevices := expandSyntheticsDevices(d.Get("devices").(*schema.Set).List())
+	input.Devices = &typedDevices
 
 	sciptLang, scriptLangOk := d.GetOk("script_language")
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
@@ -95,13 +93,11 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 		input.Locations.Private = expandSyntheticsPrivateLocations(v.(*schema.Set).List())
 	}
 
-	if v, ok := d.GetOk("browsers"); ok {
-		input.Browsers = expandSyntheticsBrowsers(v.(*schema.Set).List())
-	}
+	typedBrowsers := expandSyntheticsBrowsers(d.Get("browsers").(*schema.Set).List())
+	input.Browsers = &typedBrowsers
 
-	if v, ok := d.GetOk("devices"); ok {
-		input.Devices = expandSyntheticsDevices(v.(*schema.Set).List())
-	}
+	typedDevices := expandSyntheticsDevices(d.Get("devices").(*schema.Set).List())
+	input.Devices = &typedDevices
 
 	sciptLang, scriptLangOk := d.GetOk("script_language")
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")

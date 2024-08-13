@@ -137,6 +137,8 @@ func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 					"enable_screenshot_on_failure_and_script",
 					"device_orientation",
 					"device_type",
+					"browsers",
+					"devices",
 				},
 			},
 		},
@@ -250,7 +252,8 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 
 			device_orientation = "PORTRAIT"
 			device_type = "MOBILE"
-
+			browsers = ["CHROME"]
+			devices = ["MOBILE_PORTRAIT"]
 			tag {
 				key	= "Name"
 				values	= ["scriptedMonitor"]

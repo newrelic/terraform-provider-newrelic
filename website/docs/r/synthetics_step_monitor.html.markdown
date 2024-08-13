@@ -57,6 +57,8 @@ The following are the common arguments supported for `STEP` monitor:
 -> **WARNING** Support for legacy Synthetics runtimes **will reach its end-of-life (EOL) on October 22, 2024**. In addition, creating **_new_** monitors using the legacy runtime **will no longer be supported after August 26, 2024**. In light of the above, kindly **upgrade your Synthetic Monitors to the new runtime** at the earliest, if they are still using the legacy runtime. Please check out [this page](https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm) for more details on the EOL, action needed (specific to monitors using public and private locations), relevant resources, and more.
 
 * `steps` - (Required) The steps that make up the script the monitor will run. See [Nested steps blocks](#nested-steps-blocks) below for details.
+* `browsers` - (Optional) The multiple browsers list on which synthetic monitors will run. Valid values are `CHROME` and `FIREFOX`.
+* `devices` - (Optional) The multiple devices list on which synthetic monitors will run. Valid values are `DESKTOP`, `TABLET`, `MOBILE_LANDSCAPE`, `MOBILE_PORTRAIT`, `TABLET_LANDSCAPE` and `TABLET_PORTRAIT`.
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
 
 ### Nested `location private` blocks
@@ -97,9 +99,11 @@ resource "newrelic_synthetics_private_location" "foo" {
 }
 
 resource "newrelic_synthetics_step_monitor" "foo" {
-  name   = "Sample Step Monitor"
-  period = "EVERY_6_HOURS"
-  status = "ENABLED"
+  name           = "Sample Step Monitor"
+  period         = "EVERY_6_HOURS"
+  status         = "ENABLED"
+  devices        = ["DESKTOP", "MOBILE_LANDSCAPE", "TABLET_LANDSCAPE"]
+  browsers       = ["CHROME"]
   location_private {
     guid         = newrelic_synthetics_private_location.foo.id
     vse_password = "secret"

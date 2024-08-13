@@ -28,8 +28,8 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 				Config: testAccNewRelicSyntheticsStepMonitorConfig(
 					rName,
 					"",
-					"",
-					"",
+					"CHROME_BROWSER",
+					"100",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
@@ -56,6 +56,8 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 					"location_private",
 					"tag",
 					"enable_screenshot_on_failure_and_script",
+					"browsers",
+					"devices",
 				},
 			},
 		},
@@ -82,7 +84,9 @@ resource "newrelic_synthetics_step_monitor" "foo" {
 		type    = "NAVIGATE"
 		values  = ["https://google.com"]
 	}
-
+	browsers = ["CHROME"]
+	devices = ["DESKTOP"]
+	
 	%[2]s
 }
 `,

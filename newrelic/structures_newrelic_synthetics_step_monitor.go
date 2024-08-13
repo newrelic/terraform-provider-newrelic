@@ -31,13 +31,11 @@ func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) (*synthetics.
 		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &v
 	}
 
-	if v, ok := d.GetOk("browsers"); ok {
-		input.Browsers = expandSyntheticsBrowsers(v.(*schema.Set).List())
-	}
+	typedBrowsers := expandSyntheticsBrowsers(d.Get("browsers").(*schema.Set).List())
+	input.Browsers = &typedBrowsers
 
-	if v, ok := d.GetOk("devices"); ok {
-		input.Devices = expandSyntheticsDevices(v.(*schema.Set).List())
-	}
+	typedDevices := expandSyntheticsDevices(d.Get("devices").(*schema.Set).List())
+	input.Devices = &typedDevices
 
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
@@ -84,13 +82,11 @@ func buildSyntheticsStepMonitorUpdateInput(d *schema.ResourceData) (*synthetics.
 		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &v
 	}
 
-	if v, ok := d.GetOk("browsers"); ok {
-		input.Browsers = expandSyntheticsBrowsers(v.(*schema.Set).List())
-	}
+	typedBrowsers := expandSyntheticsBrowsers(d.Get("browsers").(*schema.Set).List())
+	input.Browsers = &typedBrowsers
 
-	if v, ok := d.GetOk("devices"); ok {
-		input.Devices = expandSyntheticsDevices(v.(*schema.Set).List())
-	}
+	typedDevices := expandSyntheticsDevices(d.Get("devices").(*schema.Set).List())
+	input.Devices = &typedDevices
 
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")

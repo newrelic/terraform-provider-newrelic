@@ -53,7 +53,9 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
   runtime_type_version = "100"
   runtime_type         = "CHROME_BROWSER"
   script_language      = "JAVASCRIPT"
-
+  devices              = ["DESKTOP", "MOBILE_LANDSCAPE", "TABLET_LANDSCAPE"]
+  browsers             = ["CHROME"]
+  
   tag {
     key    = "some_key"
     values = ["some_value"]
@@ -84,8 +86,10 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
 
 * `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution.
-* `device_orientation` - (Optional) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`.
-* `device_type` - (Optional) Device emulation type field. Valid values are `MOBILE` and `TABLET`.
+* `browsers` - (Optional) The multiple browsers list on which synthetic monitors will run. Valid values are `CHROME` and `FIREFOX`.
+* `devices` - (Optional) The multiple devices list on which synthetic monitors will run. Valid values are `DESKTOP`, `TABLET`, `MOBILE_LANDSCAPE`, `MOBILE_PORTRAIT`, `TABLET_LANDSCAPE` and `TABLET_PORTRAIT`.
+* `device_orientation` - (Optional - *Deprecating soon. So, we recommend you to use `devices` attribute instead of `device_orientation`*) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`.
+* `device_type` - (Optional - *Deprecating soon. So, we recommend you to use `devices` attribute instead of `device_type`*) Device emulation type field. Valid values are `MOBILE` and `TABLET`.
 
 #### Deprecated runtime
 
@@ -170,8 +174,8 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
   runtime_type_version = "100"
   runtime_type         = "CHROME_BROWSER"
   script_language      = "JAVASCRIPT"
-  device_type          = "MOBILE"
-  device_orientation   = "LANDSCAPE"
+  devices              = ["DESKTOP", "MOBILE_LANDSCAPE", "TABLET_LANDSCAPE"]
+  browsers             = ["CHROME"]
 
   tag {
     key    = "some_key"
