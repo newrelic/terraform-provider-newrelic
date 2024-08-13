@@ -11,7 +11,7 @@ import (
 func validateSyntheticMonitorRuntimeAttributes(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	var errorsList []error
 
-	err := validateSyntheticMonitorLegacyRuntimeAttributesUponCreate(d)
+	err := validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d)
 	if err != nil {
 		errorsList = append(errorsList, err...)
 	}
@@ -36,7 +36,7 @@ const SyntheticsNodeLegacyRuntimeTypeVersion string = "10"
 const SyntheticsChromeBrowserLegacyRuntimeType string = "CHROME_BROWSER"
 const SyntheticsChromeBrowserLegacyRuntimeTypeVersion string = "72"
 
-func validateSyntheticMonitorLegacyRuntimeAttributesUponCreate(d *schema.ResourceDiff) []error {
+func validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d *schema.ResourceDiff) []error {
 	var runtimeAttributesValidationErrors []error
 
 	isSyntheticMonitorCreated := d.Id() != ""
