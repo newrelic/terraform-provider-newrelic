@@ -1,3 +1,8 @@
+<a name="v3.42.1"></a>
+## [v3.42.1] - 2024-08-14
+### Bug Fixes
+- **browseragent:** changing cookiesEnabled field to pointer type ([#2726](https://github.com/newrelic/terraform-provider-newrelic/issues/2726))
+
 <a name="v3.42.0"></a>
 ## [v3.42.0] - 2024-08-12
 ### Features
@@ -2179,7 +2184,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.1...HEAD
+[v3.42.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.0...v3.42.1
 [v3.42.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.41.1...v3.42.0
 [v3.41.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.41.0...v3.41.1
 [v3.41.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.40.1...v3.41.0
