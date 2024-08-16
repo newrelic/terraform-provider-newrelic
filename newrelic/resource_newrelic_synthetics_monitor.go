@@ -326,7 +326,7 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 		if e.MonitorType == entities.SyntheticMonitorTypeTypes.BROWSER {
 			for _, t := range e.Tags {
 				if k, ok := syntheticsMonitorTagKeyToSchemaAttrMap[t.Key]; ok {
-					if t.Key == "devices" || t.Key == "browsers" {
+					if t.Key == "browsers" || t.Key == "devices" {
 						_ = d.Set(k, t.Values)
 					} else if len(t.Values) == 1 {
 						_ = d.Set(k, t.Values[0])
