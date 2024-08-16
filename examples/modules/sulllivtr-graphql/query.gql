@@ -1,0 +1,13 @@
+
+query getUser($id: ID!,$key_type: ApiAccessKeyType!){actor {
+		apiAccess {
+		key(id: $id,
+			keyType: $key_type
+		) {
+			key
+			name
+			type
+		}
+		}
+	}
+  }
