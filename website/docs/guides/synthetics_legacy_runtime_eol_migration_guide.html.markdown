@@ -1,0 +1,102 @@
+---
+layout: "newrelic"
+page_title: "Synthetic Legacy Runtime EOL (Upcoming): Implications and Actions Needed 📢"
+sidebar_current: "synthetics-legacy-runtime-eol-migration-guide"
+description: |-
+  Use this guide to find details on the end-of-life of the Legacy Runtime of Synthetic Monitors, implications seen by customers maintaining Synthetic Monitor resources via the New Relic Terraform Provider (running on the legacy runtime), and actions to be taken prior to the EOL to avoid consequences.
+---
+## Synthetic Legacy Runtime EOL (Upcoming): Implications and Actions Needed 📢
+
+New Relic Synthetics announced earlier this year the end of life (EOL) of the Synthetics Legacy Runtime (along with Containerized Private Minions - CPMs), which is scheduled to occur on **October 22, 2024**. After this date, **all monitors running on the legacy runtime will be transitioned to the new runtime**, potentially resulting in interruptions of Synthetic checks from those monitors if their configurations are not compatible with the new runtime. Additionally, starting **August 26, 2024**, **new Synthetic Monitors will no longer be permitted to use the legacy runtime**. These timelines and implications [have been communicated](https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm) by New Relic Synthetics (also via customer communications) and via the New Relic Terraform Provider, including [the GitHub repository of the provider](https://github.com/newrelic/terraform-provider-newrelic/issues/2673) and the documentation for all Synthetic Monitor resources starting with [v3.36.1](https://registry.terraform.io/providers/newrelic/newrelic/3.36.1/docs/resources/synthetics_script_monitor) of the provider. In light of this, customers are required to update any monitors running on the legacy runtime to the new runtime as soon as possible (prior to the EOL) to avoid any potential interruptions of Synthetic checks.
+
+From the perspective of a customer who has configured Synthetic monitors running on the legacy runtime via the New Relic Terraform Provider, the actions needed to prevent the aforementioned implications are somewhat more specific to the provider. This specificity arises from the fact that any monitors maintained via Terraform that continue to run on the legacy runtime after the EOL will experience a drift at the EOL, indicating that runtime attributes with values corresponding to the new runtime are absent from the monitor's configuration (or are present with legacy runtime values), as Synthetics will have migrated all legacy runtime monitors to the new runtime. In addition to this, at the EOL, if a `terraform apply` is performed on such monitors (which do not include runtime attributes with values corresponding to the new runtime), an error would be thrown by the API, disallowing the operation performed on the monitor.
+
+To ensure a smooth transition, the following guide outlines the actions to be taken by customers who continue to maintain monitors running on the legacy runtime via Terraform, in order to avoid such drift, errors and similar unforeseen repercussions after the EOL.
+
+A quick summary to help you navigate through this document is as follows -
+
+- After the EOL, monitors running on the legacy runtime would be moved to the new runtime and would experience consequences briefly stated in the paragraph above - interruption of Synthetic checks, drift in Terraform and errors upon trying to use monitors without the new runtime, if these monitors are Terraform-maintained. See **Implications, Action Needed** below for more details on the exact implications.
+- In order to prevent this, one would need to move all monitors running on the the legacy runtime to the new runtime, prior to the EOL. How does one confirm which of their monitors are still running on the legacy runtime? See the **How do I Identify the Runtime of My Monitor?** section below.
+- Given these monitors are Terraform maintained, how does one move their monitors to the new runtime while also making use of the Runtime Upgrades UI in New Relic to validate if their legacy runtime monitors are fit to run in the new runtime? See the **Syncing Updates made to Monitors in the Legacy Runtime made via the Runtime Upgrades UI with Terraform Configuration** section below.
+
+## Implications, Action Needed
+
+- If your monitor continues to use the legacy runtime and is not upgraded to the new runtime prior to the end of life (EOL) on October 22, 2024, your monitor will not be able to run checks after the EOL if the configuration of your monitors is not compatible with the new runtime. For example, with scripted monitors, if the script is not compatible with the new runtime, Synthetic checks on your monitor will no longer function. Additionally, new monitors will not be able to use the legacy runtime starting August 26, 2024.
+- As New Relic Synthetics will move all monitors running on the legacy runtime to the new runtime at the EOL, with the API consequently updating parameters of the monitors to signify the new runtime, if your monitor is maintained via Terraform and its Terraform configuration does not include runtime attributes with values corresponding to the new runtime (i.e., continues to use the legacy runtime) at the EOL,
+  - Upon trying to perform a `terraform plan`, you will see a drift, indicating that your monitor has been moved to the new runtime.
+  - Upon trying to perform a `terraform apply` on this monitor without updates to include runtime attributes with new runtime values, an error will be thrown by the Synthetics API, disallowing customers from using the legacy runtime.
+- In addition to the above, two releases of the New Relic Terraform Provider will be made, coinciding with the two phases of the EOL (stated in the first section of this page), to reflect runtime attribute validation to be performed by the API. Specifically,
+  - There will be a release on August 26, 2024, which will include changes to display an error (only for new monitors, and not existing ones) if the Terraform configuration of the monitor to be created does not include runtime attributes with new runtime values, as new monitors will no longer be allowed to use the legacy runtime starting August 26, 2024.
+  - A similar release will occur on October 22, 2024 (at the EOL) to include similar changes for all types of monitors (new and existing), as all monitors will not be allowed to use the legacy runtime after the EOL.
+  - As customers upgrade to these versions of the provider (and subsequent versions), the changes stated above will apply to the configuration of their Synthetic monitors. For all other preceding versions of the provider, using monitors without runtime attributes would lead to an error thrown by the API instead, as stated in the second point above.
+
+In order to prevent these consequences, kindly upgrade your monitors to the new runtime as soon as possible, before the EOL.
+
+As required by the changes leading up to the Legacy Runtime EOL, in order to upgrade a monitor to the new runtime, one would need to ensure any private locations running jobs of the monitor operate on Synthetic Job Managers (SJMs) and not Containerized Private Minions (CPMs), as the EOL of the Legacy Runtime of Synthetic Monitors is also paired with the EOL of CPMs. Additionally, regardless of the locations monitors run in, with all kinds of scripted monitors in the legacy runtime, one would need to confirm that the script/other configuration of the monitor (which has been working in the legacy runtime) can also work in the new runtime with no changes needed. With these steps requiring manual intervention, i.e., customers needing to ensure from the Runtime Upgrades UI that these monitors are fit to run in the new runtime, if these monitors are managed via Terraform, changes are needed to the Terraform configuration as well, as a follow-up action. These changes include adding runtime attributes with values corresponding to the new runtime, or updating values of any existing runtime attributes to the new runtime.
+
+## How do I Identify the Runtime of My Monitor?
+The following methods may be adopted to identify if your monitor(s) is/are running on the legacy runtime -
+
+### Terraform
+- If the configuration of the Synthetic Monitor resource contains attributes `runtime_type` and `runtime_type_version`, and the values of these runtime attributes correspond to the new runtimes (see the table below), the monitor was created in the new runtime.
+- If the configuration of the Synthetic Monitor resource does not contain attributes `runtime_type` and `runtime_type_version` (or, if both of these attributes are specified with empty strings "" as their values), the monitor was created in the legacy runtime.
+- If the configuration of the Synthetic Monitor resource contains the attributes `runtime_type` and `runtime_type_version` and the values of these attributes correspond to the legacy runtime (i.e. `NODE_API` `10` or `CHROME_BROWSER` `72`), the monitor was created in the legacy runtime.
+
+Based on the criteria stated above, monitors running on the legacy runtime need to be upgraded to the new runtime in order to avoid interruptions of Synthetic checks and other consequences explained in the previous section.
+
+### Runtime Upgrades UI
+If you're managing a huge set of monitors, an easier solution to viewing and/or managing the runtime of all of your monitors running on the legacy runtime would be to use the "Runtime Upgrades" feature in the New Relic One UI, which may be found in the “Synthetic Monitoring” page.
+
+The Runtime Upgrades UI displays all monitors in your account/across your organization which are currently running on the legacy runtime, and shows the state of your monitors in view of the Legacy Runtime EOL; i.e.
+
+- monitors which have passed validation checks and can be updated to use the new runtime,
+- monitors which have failed validation checks and need updates to work with the new runtime, and
+- other monitors which need the private locations they run on to operate on SJMs and not CPMs, so their ability to work with the new runtime may be ascertained via validation checks.
+
+![](media/lreol_guide_runtime_upgrades_ui_glance.png)
+
+Using this feature, one may identify all monitors running on the legacy runtime. For all the monitors which have passed the new runtime validation check, the UI also provides an option to update a selection of monitors, or a specific monitor to the new runtime.
+
+The Runtime Upgrades UI simplifies bulk-upgrading monitors from the legacy runtime to the new runtime and lends visibility into actions to be taken if legacy monitors fail validation checks or use CPMs instead of SJMs; which is why we recommend using the Runtime Upgrades UI to identify runtime upgrades to be performed. However, if the runtime of monitors is upgraded via the UI, the Terraform configuration of these monitors would need to be updated accordingly too, in light of the implications stated above. See the following section for more details on this.
+
+## Syncing Updates made to Monitors in the Legacy Runtime made via the Runtime Upgrades UI with Terraform Configuration
+
+As it has been mentioned above that one would certainly need to use the Runtime Upgrades UI to ascertain the feasibility of upgrading any monitors running on the legacy runtime to the new runtime, if these monitors have originally been configured via Terraform, having them upgraded via the UI and not reflecting these changes in the Terraform configuration of the monitors would result in a drift the next time you run a `terraform plan` on the Terraform configuration of these monitors (why? This has been explained in the sections above). The following methods elaborate on effectively synchronizing such changes made in the UI with Terraform in order to avoid such a drift.
+
+### 1. Identifying the Change via the Runtime Upgrades UI, Making the Change via the Terraform Configuration of the Monitor
+
+Let’s say you’ve identified a set of monitors running on the legacy runtime from the Runtime Upgrades UI which have passed validation checks, i.e. they’re all set to be upgraded to the new runtime.
+
+If you would like to perform the upgrade of these monitors to the new runtime via Terraform and not from the UI, you would need to perform the following -
+
+- Identify the monitor(s) running on the legacy runtime and found in the Runtime Upgrades UI, in your Terraform configuration.
+- **Add the following runtime attributes with the values specified below to your configuration** (`runtime_type` and `runtime_type_version`, along with `script_language` wherever applicable) **if they do not already exist, or change the values of any runtime attributes which exist in your resource’s configuration to the following values**; for each of the legacy runtime monitors identified. The right values of these runtime attributes are **based on the type of monitor you’re planning to upgrade**, and may be found in the table below. After the necessary edits are made to the configuration, run a `terraform plan` to see the changes which would be made to these monitors.
+
+| **Monitor Type**             | **In Terraform, what is the Resource Configuration Corresponding to this Type?**                                                                                                                                   | **Runtime Attributes which Signify the New Runtime** (add these attributes with values if they don't exist in your monitor's configuration, or modify your monitor's runtime attributes to have these values) |
+|------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Simple Browser Monitor**   | Resource `newrelic_synthetics_monitor` with `type = "BROWSER"` (see [this page](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_monitor#type))                          | `runtime_type = "CHROME_BROWSER"`, `runtime_type_version = "100"`, `script_language = "JAVASCRIPT"` (see examples in the attached resource documentation)                                                     |
+| **Scripted Browser Monitor** | Resource `newrelic_synthetics_script_monitor` used with `type = "SCRIPT_BROWSER"`(see [this page](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_script_monitor#type)) | `runtime_type = "CHROME_BROWSER"`, `runtime_type_version = "100"`, `script_language = "JAVASCRIPT"` (see examples in the attached resource documentation)                                                     |
+| **Step Monitor**             | Resource `newrelic_synthetics_step_monitor` (see [this page](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_step_monitor))                                             | `runtime_type = "CHROME_BROWSER"`, `runtime_type_version = "100"` (see examples in the attached resource documentation)                                                                                       |
+| **Scripted API Monitor**     | Resource `newrelic_synthetics_script_monitor` used with type = `"SCRIPT_API"` (see [this page](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_script_monitor#type))    | `runtime_type = "NODE_API"`, `runtime_type_version = "16.10"`, `script_language = "JAVASCRIPT"` (see examples in the attached resource documentation)                                                         |
+| **Broken Links Monitor**     | Resource `newrelic_synthetics_broken_links_monitor` (see [this page](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_cert_check_monitor))                               | `runtime_type = "NODE_API"`, `runtime_type_version = "16.10"` (see examples in the attached resource documentation)                                                                                           |
+| **Cert Check Monitor**       | Resource `newrelic_synthetics_cert_check_monitor` (see [this page](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_cert_check_monitor))                                 | `runtime_type = "NODE_API"`, `runtime_type_version = "16.10"` (see examples in the attached resource documentation)                                                                                           |
+
+- Perform a `terraform apply`. This would successfully upgrade all monitors you’ve edited to the new runtime!
+
+This method is preferred if you do not have a large number of monitors to upgrade to the new runtime and the manual effort involved in altering the configuration of monitors is not significantly large; and/or if you would prefer/require to entirely perform the upgrade to the new runtime from Terraform and not from the Runtime Upgrades UI. You might also want to do this if you would need to upgrade a relatively larger set of monitors, and the Terraform configuration of all of these monitors is modularized in a way which can allow one change in the configuration to propagate across the configuration of all monitors and upgrade all of them with a `terraform apply` (though the verification of the abililty of all of these monitors to run in the new runtime would still need to be done from the Runtime Upgrades UI).
+
+However, as an alternative, if you prefer using the Runtime Upgrades UI to bulk upgrade all monitors running on the legacy runtime which have all passed validation checks to run in the new runtime, you may resort to the second method described below; though this method would require adding changes to the Terraform configuration too, after the upgrade is performed from the UI.
+
+### 2. Identifying the Change via the Runtime Upgrades UI, Making the Change in the Runtime Upgrades UI and Syncing Terraform Configuration with the Change
+
+Let’s say you’ve identified a set of monitors running on the legacy runtime in the Runtime Upgrades UI which have passed validation checks.
+
+If you would like to perform the upgrade of these monitors to the new runtime directly via the UI and not via Terraform configuration, you can do so with all monitors which have passed validation checks - all of them, or a select few.
+
+Doing the above should help you upgrade the runtime of the selected monitors running on the legacy runtime; however, since your Terraform configuration would not be up to date with this change made to the monitor from the UI, upon running the next `terraform plan` on the configuration, a **drift** would be seen, suggesting that you would need to alter the Terraform configuration of these monitors to comprise runtime attributes with values corresponding to the new runtime, in order to curb this drift.
+
+![](media/lreol_guide_drift.png)
+
+These would, hence, need to be updated accordingly; values of runtime attributes corresponding to the new runtime are dependent on the resource they’re used with, and may be found in the table above.
+
+You might want to adopt this method if; similar to one of the use cases listed in the first method above, you’d like to upgrade a relatively larger set of monitors, and the Terraform configuration of all of these monitors is modularized in a way which can allow one change in the configuration to propagate across the configuration of all monitors and upgrade all of them with a terraform apply (though the verification of the abililty of all of these monitors to run in the new runtime would still need to be done from the Runtime Upgrades UI).
