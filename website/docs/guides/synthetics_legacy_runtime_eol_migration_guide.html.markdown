@@ -53,6 +53,8 @@ The Runtime Upgrades UI displays all monitors in your account/across your organi
 - monitors which have failed validation checks and need updates to work with the new runtime, and
 - other monitors which need the private locations they run on to operate on SJMs and not CPMs, so their ability to work with the new runtime may be ascertained via validation checks.
 
+![](media/lreol_guide_runtime_upgrades_ui_glance.png)
+
 Using this feature, one may identify all monitors running on the legacy runtime. For all the monitors which have passed the new runtime validation check, the UI also provides an option to update a selection of monitors, or a specific monitor to the new runtime.
 
 The Runtime Upgrades UI simplifies bulk-upgrading monitors from the legacy runtime to the new runtime and lends visibility into actions to be taken if legacy monitors fail validation checks or use CPMs instead of SJMs; which is why we recommend using the Runtime Upgrades UI to identify runtime upgrades to be performed. However, if the runtime of monitors is upgraded via the UI, the Terraform configuration of these monitors would need to be updated accordingly too, in light of the implications stated above. See the following section for more details on this.
