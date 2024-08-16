@@ -2,15 +2,13 @@ package newrelic
 
 import (
 	"context"
-	"log"
-
-	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
+	"log"
 )
 
 func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
@@ -244,10 +242,11 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 		})
 
 		_ = d.Set("period_in_minutes", int(e.GetPeriod()))
-
 		for _, t := range e.Tags {
 			if k, ok := syntheticsMonitorTagKeyToSchemaAttrMap[t.Key]; ok {
-				if len(t.Values) == 1 {
+				if t.Key == "devices" || t.Key == "browsers" {
+					_ = d.Set(k, t.Values)
+				} else if len(t.Values) == 1 {
 					_ = d.Set(k, t.Values[0])
 				}
 			}
