@@ -15,6 +15,7 @@ To ensure a smooth transition, the following guide outlines the actions to be ta
 
 A quick summary to help you navigate through this document is as follows -
 
+- TL;DR - if you're already aware of the consequences of the EOL and would like to find values of runtime attributes to add/replace in your configuration to upgrade your monitors to the new runtime, see the table in the following section.
 - After the EOL, monitors running on the legacy runtime would be moved to the new runtime and would experience consequences briefly stated in the paragraph above - interruption of Synthetic checks, drift in Terraform and errors upon trying to use monitors without the new runtime, if these monitors are Terraform-maintained. See **Implications, Action Needed** below for more details on the exact implications.
 - In order to prevent this, one would need to move all monitors running on the the legacy runtime to the new runtime, prior to the EOL. How does one confirm which of their monitors are still running on the legacy runtime? See the **How do I Identify the Runtime of My Monitor?** section below.
 - Given these monitors are Terraform maintained, how does one move their monitors to the new runtime while also making use of the Runtime Upgrades UI in New Relic to validate if their legacy runtime monitors are fit to run in the new runtime? See the **Syncing Updates made to Monitors in the Legacy Runtime made via the Runtime Upgrades UI with Terraform Configuration** section below.
@@ -52,8 +53,6 @@ The Runtime Upgrades UI displays all monitors in your account/across your organi
 - monitors which have passed validation checks and can be updated to use the new runtime,
 - monitors which have failed validation checks and need updates to work with the new runtime, and
 - other monitors which need the private locations they run on to operate on SJMs and not CPMs, so their ability to work with the new runtime may be ascertained via validation checks.
-
-![](media/lreol_guide_runtime_upgrades_ui_glance.png)
 
 Using this feature, one may identify all monitors running on the legacy runtime. For all the monitors which have passed the new runtime validation check, the UI also provides an option to update a selection of monitors, or a specific monitor to the new runtime.
 
@@ -94,8 +93,6 @@ Let’s say you’ve identified a set of monitors running on the legacy runtime 
 If you would like to perform the upgrade of these monitors to the new runtime directly via the UI and not via Terraform configuration, you can do so with all monitors which have passed validation checks - all of them, or a select few.
 
 Doing the above should help you upgrade the runtime of the selected monitors running on the legacy runtime; however, since your Terraform configuration would not be up to date with this change made to the monitor from the UI, upon running the next `terraform plan` on the configuration, a **drift** would be seen, suggesting that you would need to alter the Terraform configuration of these monitors to comprise runtime attributes with values corresponding to the new runtime, in order to curb this drift.
-
-![](media/lreol_guide_drift.png)
 
 These would, hence, need to be updated accordingly; values of runtime attributes corresponding to the new runtime are dependent on the resource they’re used with, and may be found in the table above.
 
