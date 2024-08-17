@@ -37,6 +37,12 @@ func syntheticsBrokenLinksMonitorSchema() map[string]*schema.Schema {
 			Description: "The URI the monitor runs against.",
 			Required:    true,
 		},
+		SyntheticsUseLegacyRuntimeAttrLabel: {
+			Type:        schema.TypeBool,
+			Description: "TBD",
+			Default:     false,
+			Optional:    true,
+		},
 	}
 }
 

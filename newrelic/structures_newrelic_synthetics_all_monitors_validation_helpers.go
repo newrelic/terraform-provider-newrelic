@@ -31,6 +31,7 @@ func validateSyntheticMonitorRuntimeAttributes(ctx context.Context, d *schema.Re
 
 const SyntheticsRuntimeTypeAttrLabel string = "runtime_type"
 const SyntheticsRuntimeTypeVersionAttrLabel string = "runtime_type_version"
+const SyntheticsUseLegacyRuntimeAttrLabel string = "use_legacy_runtime_unsupported"
 const SyntheticsNodeLegacyRuntimeType string = "NODE_API"
 const SyntheticsNodeLegacyRuntimeTypeVersion string = "10"
 const SyntheticsChromeBrowserLegacyRuntimeType string = "CHROME_BROWSER"
@@ -40,40 +41,34 @@ func validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d *schema.ResourceD
 	var runtimeAttributesValidationErrors []error
 
 	isSyntheticMonitorCreated := d.Id() != ""
-	rawConfiguration := d.GetRawConfig()
 
-	isRuntimeTypeAbsentInConfig := rawConfiguration.GetAttr(SyntheticsRuntimeTypeAttrLabel).IsNull()
 	_, runtimeTypeInConfig := d.GetChange(SyntheticsRuntimeTypeAttrLabel)
-
 	isRuntimeTypeNil := runtimeTypeInConfig == ""
 
-	// this would return true only if runtime_type_version is not specified in the configuration at all
-	// and false, if runtime_type_version is specified either as an empty string "", or as any other non nil value (non-empty string)
-	isRuntimeTypeVersionAbsentInConfig := rawConfiguration.GetAttr(SyntheticsRuntimeTypeVersionAttrLabel).IsNull()
 	_, runtimeTypeVersionInConfig := d.GetChange(SyntheticsRuntimeTypeVersionAttrLabel)
-
-	// this would return true both when `runtime_type_version` is not specified in the config and when `runtime_type_version` is specified as "" in the config
-	// and false, if `runtime_type_version` has a non nil value (a non-empty string) as its value
 	isRuntimeTypeVersionNil := runtimeTypeVersionInConfig == ""
+
+	_, useLegacyRuntimeInConfig := d.GetChange(SyntheticsUseLegacyRuntimeAttrLabel)
+	useLegacyRuntime := useLegacyRuntimeInConfig == true
 
 	// if !isSyntheticMonitorCreated is a condition that needs to exist only until October 22, 2024 as the first phase of Legacy Runtime EOL changes
 	// aim at restricting new monitors from using the legacy runtime. For the release on October 22, 2024; this condition may be discarded.
-	if !isSyntheticMonitorCreated {
-		if !isRuntimeTypeAbsentInConfig && isRuntimeTypeNil {
+	if !isSyntheticMonitorCreated && !useLegacyRuntime {
+		if isRuntimeTypeNil {
 			runtimeAttributesValidationErrors = append(
 				runtimeAttributesValidationErrors,
 				buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel),
 			)
 		}
 
-		if !isRuntimeTypeVersionAbsentInConfig && isRuntimeTypeVersionNil {
+		if isRuntimeTypeVersionNil {
 			runtimeAttributesValidationErrors = append(
 				runtimeAttributesValidationErrors,
 				buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeVersionAttrLabel),
 			)
 		}
 
-		if !isRuntimeTypeAbsentInConfig && !isRuntimeTypeVersionAbsentInConfig && !isRuntimeTypeNil && !isRuntimeTypeVersionNil {
+		if !isRuntimeTypeNil && !isRuntimeTypeVersionNil {
 			if syntheticMonitorConfigHasObsoleteRuntime(runtimeTypeInConfig, runtimeTypeVersionInConfig) {
 				runtimeAttributesValidationErrors = append(
 					runtimeAttributesValidationErrors,
@@ -99,7 +94,7 @@ func validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d *schema.ResourceD
 
 func buildSyntheticsLegacyEmptyRuntimeError(attributeName string) error {
 	return fmt.Errorf(
-		"`%s` can no longer be specified as an empty string \"\" %s",
+		"attribute `%s` is required to be specified with new runtime values, \"\" %s",
 		attributeName,
 		buildSyntheticsLegacyRuntimeValidationError(),
 	)
@@ -130,8 +125,9 @@ func syntheticMonitorConfigHasObsoleteRuntime(
 
 func buildSyntheticsLegacyRuntimeValidationError() string {
 	return `with new monitors starting August 26, 2024;
-creating new monitors with the legacy runtime is no longer supported.
+creating new monitors with the legacy runtime/without the new runtime is no longer supported.
 This is in relation with the upcoming Synthetics Legacy Runtime EOL on October 22, 2024; see this for more details: 
 https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm
+https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/synthetics_legacy_runtime_eol_migration_guide
 `
 }
