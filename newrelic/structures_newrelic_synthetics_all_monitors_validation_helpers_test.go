@@ -147,37 +147,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Erro
 	})
 }
 
-//func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
-//	rName := generateNameForIntegrationTestResource()
-//	runtimeTypeInConfig := SyntheticsChromeBrowserLegacyRuntimeType
-//	runtimeTypeVersionInConfig := SyntheticsChromeBrowserLegacyRuntimeTypeVersion
-//
-//	resource.ParallelTest(t, resource.TestCase{
-//		PreCheck:     func() { testAccPreCheckEnvVars(t) },
-//		Providers:    testAccProviders,
-//		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
-//		Steps: []resource.TestStep{
-//			// Create
-//			{
-//				Config: testAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributesConfig(
-//					rName,
-//					runtimeTypeInConfig,
-//					runtimeTypeVersionInConfig,
-//				),
-//				ExpectError: regexp.MustCompile(
-//					buildSyntheticsLegacyObsoleteRuntimeError(
-//						SyntheticsRuntimeTypeAttrLabel,
-//						SyntheticsRuntimeTypeVersionAttrLabel,
-//						runtimeTypeInConfig,
-//						runtimeTypeVersionInConfig,
-//					).Error(),
-//				),
-//			},
-//		},
-//	})
-//}
-
-func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributes_EmptyValuesError(t *testing.T) {
+func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributes_Errors(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -185,45 +155,129 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
 		Steps: []resource.TestStep{
-			// Create
+
+			// create a Simple Browser Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
+			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
 			{
 				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
 					"",
 					"",
+					true,
+					false,
 				),
 				ExpectError: regexp.MustCompile(
 					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
+				),
+			},
+
+			// create a Simple Browser Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
+			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			{
+				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					"",
+					"",
+					false,
+					false,
+				),
+				ExpectError: regexp.MustCompile(
+					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
+				),
+			},
+
+			// create a Simple Browser Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
+			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			{
+				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
+					true,
+					false,
+				),
+				ExpectError: regexp.MustCompile(
+					buildSyntheticsLegacyObsoleteRuntimeError(
+						SyntheticsRuntimeTypeAttrLabel,
+						SyntheticsRuntimeTypeVersionAttrLabel,
+						SyntheticsChromeBrowserLegacyRuntimeType,
+						SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
+					).Error(),
 				),
 			},
 		},
 	})
 }
 
-func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
+func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributes_ErrorsSkippedByUseLegacyRuntime(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := SyntheticsChromeBrowserLegacyRuntimeType
-	runtimeTypeVersionInConfig := SyntheticsChromeBrowserLegacyRuntimeTypeVersion
+	newRuntimeVersion := "100"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
 		Steps: []resource.TestStep{
-			// Create
+
+			// create a Simple Browser Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
+			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					runtimeTypeInConfig,
-					runtimeTypeVersionInConfig,
+					"",
+					"",
+					true,
+					true,
+				),
+				ExpectError:        nil,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+
+			// create a Simple Browser Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
+			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			{
+				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					"",
+					"",
+					false,
+					true,
+				),
+				ExpectError:        nil,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+
+			// create a Simple Browser Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
+			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			{
+				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
+					true,
+					true,
+				),
+				ExpectError:        nil,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+
+			// create a Simple Browser Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime (the version though, is not of the legacy runtime)
+			// the expected outcome is to see an error as use_legacy_runtime_unsupported is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
+			{
+				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					SyntheticsChromeBrowserLegacyRuntimeType,
+					newRuntimeVersion,
+					true,
+					true,
 				),
 				ExpectError: regexp.MustCompile(
-					buildSyntheticsLegacyObsoleteRuntimeError(
-						SyntheticsRuntimeTypeAttrLabel,
-						SyntheticsRuntimeTypeVersionAttrLabel,
-						runtimeTypeInConfig,
-						runtimeTypeVersionInConfig,
-					).Error(),
+					fmt.Sprintf(`Please use '%s' only with runtime attributes with values corresponding to the legacy runtime.`,
+						SyntheticsUseLegacyRuntimeAttrLabel,
+					),
 				),
 			},
 		},
@@ -340,29 +394,61 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 	})
 }
 
-func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
+func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributes_Errors(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := SyntheticsNodeLegacyRuntimeType
-	runtimeTypeVersionInConfig := SyntheticsNodeLegacyRuntimeTypeVersion
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
 		Steps: []resource.TestStep{
-			// Create
+
+			// create a Broken Links Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
+			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					runtimeTypeInConfig,
-					runtimeTypeVersionInConfig,
+					"",
+					"",
+					true,
+					false,
+				),
+				ExpectError: regexp.MustCompile(
+					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
+				),
+			},
+
+			// create a Broken Links Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
+			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			{
+				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					"",
+					"",
+					false,
+					false,
+				),
+				ExpectError: regexp.MustCompile(
+					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
+				),
+			},
+
+			// create a Broken Links Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
+			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			{
+				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
+					true,
+					false,
 				),
 				ExpectError: regexp.MustCompile(
 					buildSyntheticsLegacyObsoleteRuntimeError(
 						SyntheticsRuntimeTypeAttrLabel,
 						SyntheticsRuntimeTypeVersionAttrLabel,
-						runtimeTypeInConfig,
-						runtimeTypeVersionInConfig,
+						SyntheticsChromeBrowserLegacyRuntimeType,
+						SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					).Error(),
 				),
 			},
@@ -370,52 +456,136 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 	})
 }
 
-func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributes_EmptyValuesError(t *testing.T) {
+func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributes_ErrorsSkippedByUseLegacyRuntime(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
+	newRuntimeVersion := "10"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
 		Steps: []resource.TestStep{
-			// Create
+
+			// create a Broken Links Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
+			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
 					"",
 					"",
+					true,
+					true,
+				),
+				ExpectError:        nil,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+
+			// create a Broken Links Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
+			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			{
+				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					"",
+					"",
+					false,
+					true,
+				),
+				ExpectError:        nil,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+
+			// create a Broken Links Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
+			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			{
+				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
+					true,
+					true,
+				),
+				ExpectError:        nil,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+
+			// create a Broken Links Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime (the version though, is not of the legacy runtime)
+			// the expected outcome is to see an error as use_legacy_runtime_unsupported is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
+			{
+				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					SyntheticsChromeBrowserLegacyRuntimeType,
+					newRuntimeVersion,
+					true,
+					true,
 				),
 				ExpectError: regexp.MustCompile(
-					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
+					fmt.Sprintf(`Please use '%s' only with runtime attributes with values corresponding to the legacy runtime.`,
+						SyntheticsUseLegacyRuntimeAttrLabel,
+					),
 				),
 			},
 		},
 	})
 }
 
-func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes_LegacyValuesError(t *testing.T) {
+func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes_Errors(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
-	runtimeTypeInConfig := SyntheticsNodeLegacyRuntimeType
-	runtimeTypeVersionInConfig := SyntheticsNodeLegacyRuntimeTypeVersion
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
 		Steps: []resource.TestStep{
-			// Create
+
+			// create a Cert Check Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
+			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
 			{
 				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					runtimeTypeInConfig,
-					runtimeTypeVersionInConfig,
+					"",
+					"",
+					true,
+					false,
+				),
+				ExpectError: regexp.MustCompile(
+					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
+				),
+			},
+
+			// create a Cert Check Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
+			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			{
+				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					"",
+					"",
+					false,
+					false,
+				),
+				ExpectError: regexp.MustCompile(
+					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
+				),
+			},
+
+			// create a Cert Check Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
+			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			{
+				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
+					true,
+					false,
 				),
 				ExpectError: regexp.MustCompile(
 					buildSyntheticsLegacyObsoleteRuntimeError(
 						SyntheticsRuntimeTypeAttrLabel,
 						SyntheticsRuntimeTypeVersionAttrLabel,
-						runtimeTypeInConfig,
-						runtimeTypeVersionInConfig,
+						SyntheticsChromeBrowserLegacyRuntimeType,
+						SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					).Error(),
 				),
 			},
@@ -423,23 +593,75 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 	})
 }
 
-func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes_EmptyValuesError(t *testing.T) {
+func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes_ErrorsSkippedByUseLegacyRuntime(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
+	newRuntimeVersion := "10"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
 		Steps: []resource.TestStep{
-			// Create
+
+			// create a Cert Check Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
+			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
 					"",
 					"",
+					true,
+					true,
+				),
+				ExpectError:        nil,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+
+			// create a Cert Check Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
+			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			{
+				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					"",
+					"",
+					false,
+					true,
+				),
+				ExpectError:        nil,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+
+			// create a Cert Check Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
+			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			{
+				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
+					true,
+					true,
+				),
+				ExpectError:        nil,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+
+			// create a Cert Check Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime (the version though, is not of the legacy runtime)
+			// the expected outcome is to see an error as use_legacy_runtime_unsupported is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
+			{
+				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
+					rName,
+					SyntheticsChromeBrowserLegacyRuntimeType,
+					newRuntimeVersion,
+					true,
+					true,
 				),
 				ExpectError: regexp.MustCompile(
-					buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel).Error(),
+					fmt.Sprintf(`Please use '%s' only with runtime attributes with values corresponding to the legacy runtime.`,
+						SyntheticsUseLegacyRuntimeAttrLabel,
+					),
 				),
 			},
 		},
@@ -482,6 +704,8 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 	name string,
 	runtimeType string,
 	runtimeTypeVersion string,
+	runtimeAttributesExistInConfig bool,
+	useLegacyRuntimeUnsupportedInConfig bool,
 ) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_monitor" "legacy_synthetics_monitor" {
@@ -491,13 +715,16 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 			status                                  = "ENABLED"
 			locations_public                        = ["US_WEST_2"]
 			enable_screenshot_on_failure_and_script = true
-			runtime_type							= "%[2]s"
-			runtime_type_version					= "%[3]s"
+			`+testAccNewRelicSyntheticsAllMonitors_ConfigureRuntimeAttributesInConfig(
+		runtimeType,
+		runtimeTypeVersion,
+		runtimeAttributesExistInConfig,
+		useLegacyRuntimeUnsupportedInConfig,
+	)+
+		`
 		}
 `,
 		name,
-		runtimeType,
-		runtimeTypeVersion,
 	)
 }
 
@@ -531,6 +758,8 @@ func testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 	name string,
 	runtimeType string,
 	runtimeTypeVersion string,
+	runtimeAttributesExistInConfig bool,
+	useLegacyRuntimeUnsupportedInConfig bool,
 ) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_broken_links_monitor" "legacy_synthetics_broken_links_monitor" {
@@ -539,17 +768,20 @@ func testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 			  locations_public     = ["AP_SOUTH_1"]
 			  period               = "EVERY_6_HOURS"
 			  status               = "ENABLED"
-			  runtime_type         = "%[2]s"
-			  runtime_type_version = "%[3]s"
 			  tag {
 				key    = "some_key"
 				values = ["some_value"]
 			  }
+			`+testAccNewRelicSyntheticsAllMonitors_ConfigureRuntimeAttributesInConfig(
+		runtimeType,
+		runtimeTypeVersion,
+		runtimeAttributesExistInConfig,
+		useLegacyRuntimeUnsupportedInConfig,
+	)+
+		`
 			}
 `,
 		name,
-		runtimeType,
-		runtimeTypeVersion,
 	)
 }
 
@@ -557,6 +789,8 @@ func testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 	name string,
 	runtimeType string,
 	runtimeTypeVersion string,
+	runtimeAttributesExistInConfig bool,
+	useLegacyRuntimeUnsupportedInConfig bool,
 ) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_cert_check_monitor" "legacy_synthetics_cert_check_monitor" {
@@ -566,17 +800,20 @@ func testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 			  certificate_expiration = "10"
 			  period                 = "EVERY_6_HOURS"
 			  status                 = "ENABLED"
-			  runtime_type           = "%[2]s"
-			  runtime_type_version   = "%[3]s"
 			  tag {
 				key    = "some_key"
 				values = ["some_value"]
 			  }
+			`+testAccNewRelicSyntheticsAllMonitors_ConfigureRuntimeAttributesInConfig(
+		runtimeType,
+		runtimeTypeVersion,
+		runtimeAttributesExistInConfig,
+		useLegacyRuntimeUnsupportedInConfig,
+	)+
+		`
 			}
 `,
 		name,
-		runtimeType,
-		runtimeTypeVersion,
 	)
 }
 
