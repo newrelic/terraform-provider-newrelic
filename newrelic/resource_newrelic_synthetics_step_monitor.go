@@ -102,6 +102,7 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The specific semver version of the runtime type.",
 		},
+		SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
 	}
 }
 

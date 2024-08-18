@@ -110,6 +110,13 @@ func syntheticsMonitorLocationsAsStringsSchema() map[string]*schema.Schema {
 	}
 }
 
+var SyntheticsUseLegacyRuntimeSchema = &schema.Schema{
+	Type:        schema.TypeBool,
+	Description: "TBD",
+	Default:     false,
+	Optional:    true,
+}
+
 var syntheticsMonitorPeriodValueMap = map[int]synthetics.SyntheticsMonitorPeriod{
 	1:    synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE,
 	5:    synthetics.SyntheticsMonitorPeriodTypes.EVERY_5_MINUTES,
@@ -508,4 +515,11 @@ func getCertCheckMonitorValuesFromEntityTags(tags []entities.EntityTag) (domain 
 	}
 
 	return domain, daysUntilExpiration
+}
+
+func syntheticMonitorConfigHasObsoleteRuntime(
+	runtimeTypeInConfig interface{},
+	runtimeTypeVersionInConfig interface{},
+) bool {
+	return (runtimeTypeInConfig == SyntheticsNodeLegacyRuntimeType && runtimeTypeVersionInConfig == SyntheticsNodeLegacyRuntimeTypeVersion) || (runtimeTypeInConfig == SyntheticsChromeBrowserLegacyRuntimeType && runtimeTypeVersionInConfig == SyntheticsChromeBrowserLegacyRuntimeTypeVersion)
 }
