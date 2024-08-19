@@ -54,7 +54,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Erro
 			{
 				Config: testAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					true,
 					false,
@@ -63,7 +63,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Erro
 					buildSyntheticsLegacyObsoleteRuntimeError(
 						SyntheticsRuntimeTypeAttrLabel,
 						SyntheticsRuntimeTypeVersionAttrLabel,
-						SyntheticsChromeBrowserLegacyRuntimeType,
+						SyntheticsChromeBrowserRuntimeType,
 						SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					).Error(),
 				),
@@ -117,7 +117,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Erro
 			{
 				Config: testAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					true,
 					true,
@@ -132,7 +132,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Erro
 			{
 				Config: testAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					newRuntimeVersion,
 					true,
 					true,
@@ -191,7 +191,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 			{
 				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					true,
 					false,
@@ -200,7 +200,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 					buildSyntheticsLegacyObsoleteRuntimeError(
 						SyntheticsRuntimeTypeAttrLabel,
 						SyntheticsRuntimeTypeVersionAttrLabel,
-						SyntheticsChromeBrowserLegacyRuntimeType,
+						SyntheticsChromeBrowserRuntimeType,
 						SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					).Error(),
 				),
@@ -254,7 +254,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 			{
 				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					true,
 					true,
@@ -269,7 +269,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 			{
 				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					newRuntimeVersion,
 					true,
 					true,
@@ -330,7 +330,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					true,
 					false,
@@ -340,7 +340,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 					buildSyntheticsLegacyObsoleteRuntimeError(
 						SyntheticsRuntimeTypeAttrLabel,
 						SyntheticsRuntimeTypeVersionAttrLabel,
-						SyntheticsChromeBrowserLegacyRuntimeType,
+						SyntheticsChromeBrowserRuntimeType,
 						SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					).Error(),
 				),
@@ -396,7 +396,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					true,
 					true,
@@ -412,7 +412,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					newRuntimeVersion,
 					true,
 					true,
@@ -474,7 +474,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					true,
 					false,
@@ -484,7 +484,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 					buildSyntheticsLegacyObsoleteRuntimeError(
 						SyntheticsRuntimeTypeAttrLabel,
 						SyntheticsRuntimeTypeVersionAttrLabel,
-						SyntheticsChromeBrowserLegacyRuntimeType,
+						SyntheticsChromeBrowserRuntimeType,
 						SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					).Error(),
 				),
@@ -540,7 +540,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					true,
 					true,
@@ -556,7 +556,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					newRuntimeVersion,
 					true,
 					true,
@@ -616,7 +616,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					true,
 					false,
@@ -625,7 +625,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 					buildSyntheticsLegacyObsoleteRuntimeError(
 						SyntheticsRuntimeTypeAttrLabel,
 						SyntheticsRuntimeTypeVersionAttrLabel,
-						SyntheticsChromeBrowserLegacyRuntimeType,
+						SyntheticsChromeBrowserRuntimeType,
 						SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					).Error(),
 				),
@@ -679,7 +679,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					true,
 					true,
@@ -694,7 +694,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					newRuntimeVersion,
 					true,
 					true,
@@ -753,7 +753,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 			{
 				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					true,
 					false,
@@ -762,7 +762,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 					buildSyntheticsLegacyObsoleteRuntimeError(
 						SyntheticsRuntimeTypeAttrLabel,
 						SyntheticsRuntimeTypeVersionAttrLabel,
-						SyntheticsChromeBrowserLegacyRuntimeType,
+						SyntheticsChromeBrowserRuntimeType,
 						SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					).Error(),
 				),
@@ -816,7 +816,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 			{
 				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					SyntheticsChromeBrowserLegacyRuntimeTypeVersion,
 					true,
 					true,
@@ -831,7 +831,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 			{
 				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
-					SyntheticsChromeBrowserLegacyRuntimeType,
+					SyntheticsChromeBrowserRuntimeType,
 					newRuntimeVersion,
 					true,
 					true,

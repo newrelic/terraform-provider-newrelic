@@ -521,5 +521,5 @@ func syntheticMonitorConfigHasObsoleteRuntime(
 	runtimeTypeInConfig interface{},
 	runtimeTypeVersionInConfig interface{},
 ) bool {
-	return (runtimeTypeInConfig == SyntheticsNodeLegacyRuntimeType && runtimeTypeVersionInConfig == SyntheticsNodeLegacyRuntimeTypeVersion) || (runtimeTypeInConfig == SyntheticsChromeBrowserLegacyRuntimeType && runtimeTypeVersionInConfig == SyntheticsChromeBrowserLegacyRuntimeTypeVersion)
+	return (runtimeTypeInConfig == SyntheticsNodeRuntimeType && runtimeTypeVersionInConfig == SyntheticsNodeLegacyRuntimeTypeVersion) || (runtimeTypeInConfig == SyntheticsChromeBrowserRuntimeType && runtimeTypeVersionInConfig == SyntheticsChromeBrowserLegacyRuntimeTypeVersion)
 }

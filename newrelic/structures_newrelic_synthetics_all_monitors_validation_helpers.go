@@ -32,10 +32,12 @@ func validateSyntheticMonitorRuntimeAttributes(ctx context.Context, d *schema.Re
 const SyntheticsRuntimeTypeAttrLabel string = "runtime_type"
 const SyntheticsRuntimeTypeVersionAttrLabel string = "runtime_type_version"
 const SyntheticsUseLegacyRuntimeAttrLabel string = "use_unsupported_legacy_runtime"
-const SyntheticsNodeLegacyRuntimeType string = "NODE_API"
+const SyntheticsNodeRuntimeType string = "NODE_API"
 const SyntheticsNodeLegacyRuntimeTypeVersion string = "10"
-const SyntheticsChromeBrowserLegacyRuntimeType string = "CHROME_BROWSER"
+const SyntheticsNodeNewRuntimeTypeVersion string = "16.10"
+const SyntheticsChromeBrowserRuntimeType string = "CHROME_BROWSER"
 const SyntheticsChromeBrowserLegacyRuntimeTypeVersion string = "72"
+const SyntheticsChromeBrowserNewRuntimeTypeVersion string = "100"
 
 func validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d *schema.ResourceDiff) []error {
 	var runtimeAttributesValidationErrors []error
@@ -50,6 +52,9 @@ func validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d *schema.ResourceD
 
 	_, useLegacyRuntimeInConfig := d.GetChange(SyntheticsUseLegacyRuntimeAttrLabel)
 	useLegacyRuntime := useLegacyRuntimeInConfig == true
+
+	_, monitorType := d.GetChange("type")
+	isSimpleMonitor := monitorType == "SIMPLE"
 
 	// in this first condition, we're trying to make sure 'use_unsupported_legacy_runtime' is only being used with the legacy runtime
 	// and not with any sort of runtime values which signify the new runtime (since the intent of using this attribute
@@ -78,7 +83,8 @@ Please use '%s' only with runtime attributes with values corresponding to the le
 	// Legacy Runtime EOL (the first phase) only applies to new monitors. Validation would include checking if runtime attribute are nil or if they
 	// are not nil and comprise values corresponding to the legacy runtime; as they would lead to creating monitors in the legacy runtime either way,
 	// and both of these cases in create requests of monitors would be blocked by the API via an error; which we're trying to reflect in Terraform.
-	if !isSyntheticMonitorCreated && !useLegacyRuntime {
+	// also, this error scenario should not apply to SIMPLE Synthetic Monitors, as they do not support using runtime attributes.
+	if !isSyntheticMonitorCreated && !useLegacyRuntime && !isSimpleMonitor {
 
 		// if 'use_unsupported_legacy_runtime' is false (which it is, by default), check if 'runtime_type' and 'runtime_type_version' are nil
 		// if either of these two runtime attributes are nil, throw a relevant error to explain that this is no longer allowed
