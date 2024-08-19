@@ -212,9 +212,12 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 			_ = d.Set("runtime_type", runtimeType)
 			_ = d.Set("runtime_type_version", runtimeTypeVersion)
 		}
-
+		for _, t := range e.Tags {
+			if t.Key == "devices" || t.Key == "browsers" {
+				_ = d.Set(t.Key, t.Values)
+			}
+		}
 	}
-
 	return diag.FromErr(err)
 }
 
@@ -239,8 +242,6 @@ func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.
 	_ = d.Set("locations_public", resp.Monitor.Locations.Public)
 	_ = d.Set("steps", flattenSyntheticsMonitorSteps(resp.Monitor.Steps))
 	_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
-	_ = d.Set("browsers", resp.Monitor.Browsers)
-	_ = d.Set("devices", resp.Monitor.Devices)
 
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
 		"guid":   string(resp.Monitor.GUID),
