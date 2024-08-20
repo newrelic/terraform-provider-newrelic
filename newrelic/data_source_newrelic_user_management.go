@@ -18,19 +18,25 @@ func dataSourceNewRelicUser() *schema.Resource {
 				Required:    true,
 				Description: "The ID of the Authentication Domain the user being queried would belong to.",
 			},
-			"name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The name of the user to be queried.",
-				AtLeastOneOf: []string{"name", "email_id"},
+			UserDataSourceUserNameAttrLabel: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The name of the user to be queried.",
+				AtLeastOneOf: []string{
+					UserDataSourceUserNameAttrLabel,
+					UserDataSourceUserEmailAttrLabel,
+				},
 			},
-			"email_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The email ID of the user to be queried.",
-				AtLeastOneOf: []string{"name", "email_id"},
+			UserDataSourceUserEmailAttrLabel: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The email ID of the user to be queried.",
+				AtLeastOneOf: []string{
+					UserDataSourceUserNameAttrLabel,
+					UserDataSourceUserEmailAttrLabel,
+				},
 			},
 			"id": {
 				Type:        schema.TypeString,
@@ -47,8 +53,8 @@ func dataSourceNewRelicUserRead(ctx context.Context, d *schema.ResourceData, met
 
 	log.Printf("[INFO] Fetching Users")
 
-	name, nameOk := d.GetOk("name")
-	email, emailOk := d.GetOk("email_id")
+	name, nameOk := d.GetOk(UserDataSourceUserNameAttrLabel)
+	email, emailOk := d.GetOk(UserDataSourceUserEmailAttrLabel)
 	authDomainID, authDomainIDOk := d.GetOk("authentication_domain_id")
 
 	nameQuery := ""
@@ -88,8 +94,8 @@ func dataSourceNewRelicUserRead(ctx context.Context, d *schema.ResourceData, met
 		if authDomain.ID == authenticationDomainID {
 			for _, u := range authDomain.Users.Users {
 				d.SetId(u.ID)
-				_ = d.Set("name", u.Name)
-				_ = d.Set("email_id", u.Email)
+				_ = d.Set(UserDataSourceUserNameAttrLabel, u.Name)
+				_ = d.Set(UserDataSourceUserEmailAttrLabel, u.Email)
 				return nil
 			}
 		}

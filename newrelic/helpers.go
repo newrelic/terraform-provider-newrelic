@@ -159,3 +159,6 @@ func revertEscapedSingleQuote(name string) string {
 
 	return name
 }
+
+const UserDataSourceUserNameAttrLabel = "name"
+const UserDataSourceUserEmailAttrLabel = "email_id"

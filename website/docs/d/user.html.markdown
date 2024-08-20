@@ -10,6 +10,8 @@ description: |-
 
 The `newrelic_user` data source helps search for a user by their name and/or email ID, and accordingly, fetch the ID of the matching user.
 
+-> **NOTE:** If you would only like to fetch the details of the current user (the user owning the API key which has been used to initialize the New Relic Terraform Provider to run operations) and **not** search for a specific user within an authentication domain, please head over to the documentation of the [`newrelic_current_user`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/data-sources/user_current) data source for more details and examples to do so.
+
 ## Example Usage
 
 The below example illustrates fetching a the ID of a user (and other arguments) using the ID of the authentication domain the user belongs to, as well as a name and/or email ID, which can be used as criteria to search for a user who matches these specified parameters.
