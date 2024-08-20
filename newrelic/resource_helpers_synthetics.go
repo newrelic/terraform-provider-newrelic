@@ -110,9 +110,21 @@ func syntheticsMonitorLocationsAsStringsSchema() map[string]*schema.Schema {
 	}
 }
 
+const SyntheticsRuntimeTypeAttrLabel string = "runtime_type"
+const SyntheticsRuntimeTypeVersionAttrLabel string = "runtime_type_version"
+const SyntheticsUseLegacyRuntimeAttrLabel string = "use_unsupported_legacy_runtime"
+
+const SyntheticsNodeRuntimeType string = "NODE_API"
+const SyntheticsNodeLegacyRuntimeTypeVersion string = "10"
+const SyntheticsNodeNewRuntimeTypeVersion string = "16.10"
+
+const SyntheticsChromeBrowserRuntimeType string = "CHROME_BROWSER"
+const SyntheticsChromeBrowserLegacyRuntimeTypeVersion string = "72"
+const SyntheticsChromeBrowserNewRuntimeTypeVersion string = "100"
+
 var SyntheticsUseLegacyRuntimeSchema = &schema.Schema{
 	Type:        schema.TypeBool,
-	Description: "A boolean attribute to be set true by the customer, if they would like to use the unsupported legacy runtime of Synthetic Monitors by means of an exemption given until the October 22, 2024 Legacy Runtime EOL. Setting this attribute to true would allow skipping validation performed by the the New Relic Terraform Provider starting version 3.x.x to disallow using the legacy runtime with new monitors. This would, hence, allow creation of monitors in the legacy runtime until the October 22, 2024 Legacy Runtime EOL, if exempt by the API.",
+	Description: "A boolean attribute to be set true by the customer, if they would like to use the unsupported legacy runtime of Synthetic Monitors by means of an exemption given until the October 22, 2024 Legacy Runtime EOL. Setting this attribute to true would allow skipping validation performed by the the New Relic Terraform Provider starting v3.43.0 to disallow using the legacy runtime with new monitors. This would, hence, allow creation of monitors in the legacy runtime until the October 22, 2024 Legacy Runtime EOL, if exempt by the API.",
 	Default:     false,
 	Optional:    true,
 }

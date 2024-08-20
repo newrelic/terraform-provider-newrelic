@@ -29,16 +29,6 @@ func validateSyntheticMonitorRuntimeAttributes(ctx context.Context, d *schema.Re
 	return errors.New(errorsString)
 }
 
-const SyntheticsRuntimeTypeAttrLabel string = "runtime_type"
-const SyntheticsRuntimeTypeVersionAttrLabel string = "runtime_type_version"
-const SyntheticsUseLegacyRuntimeAttrLabel string = "use_unsupported_legacy_runtime"
-const SyntheticsNodeRuntimeType string = "NODE_API"
-const SyntheticsNodeLegacyRuntimeTypeVersion string = "10"
-const SyntheticsNodeNewRuntimeTypeVersion string = "16.10"
-const SyntheticsChromeBrowserRuntimeType string = "CHROME_BROWSER"
-const SyntheticsChromeBrowserLegacyRuntimeTypeVersion string = "72"
-const SyntheticsChromeBrowserNewRuntimeTypeVersion string = "100"
-
 func validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d *schema.ResourceDiff) []error {
 	var runtimeAttributesValidationErrors []error
 
