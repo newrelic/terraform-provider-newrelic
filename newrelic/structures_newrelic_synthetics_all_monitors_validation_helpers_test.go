@@ -20,7 +20,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Erro
 		Steps: []resource.TestStep{
 
 			// create a Step Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -35,7 +35,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Erro
 			},
 
 			// create a Step Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -50,7 +50,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Erro
 			},
 
 			// create a Step Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -83,7 +83,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Erro
 		Steps: []resource.TestStep{
 
 			// create a Step Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -98,7 +98,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Erro
 			},
 
 			// create a Step Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -113,7 +113,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Erro
 			},
 
 			// create a Step Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -128,7 +128,7 @@ func TestAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributes_Erro
 			},
 
 			// create a Step Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime (the version though, is not of the legacy runtime)
-			// the expected outcome is to see an error as use_legacy_runtime_unsupported is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
+			// the expected outcome is to see an error as use_unsupported_legacy_runtime is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
 			{
 				Config: testAccNewRelicSyntheticsStepMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -157,7 +157,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 		Steps: []resource.TestStep{
 
 			// create a Simple Browser Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -172,7 +172,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 			},
 
 			// create a Simple Browser Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -187,7 +187,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 			},
 
 			// create a Simple Browser Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -220,7 +220,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 		Steps: []resource.TestStep{
 
 			// create a Simple Browser Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -235,7 +235,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 			},
 
 			// create a Simple Browser Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -250,7 +250,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 			},
 
 			// create a Simple Browser Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -265,7 +265,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttrib
 			},
 
 			// create a Simple Browser Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime (the version though, is not of the legacy runtime)
-			// the expected outcome is to see an error as use_legacy_runtime_unsupported is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
+			// the expected outcome is to see an error as use_unsupported_legacy_runtime is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
 			{
 				Config: testAccNewRelicSyntheticsSimpleBrowserMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -294,7 +294,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 		Steps: []resource.TestStep{
 
 			// create a Scripted Browser Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -310,7 +310,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 			},
 
 			// create a Scripted Browser Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -326,7 +326,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 			},
 
 			// create a Scripted Browser Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -360,7 +360,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 		Steps: []resource.TestStep{
 
 			// create a Scripted Browser Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -376,7 +376,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 			},
 
 			// create a Scripted Browser Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -392,7 +392,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 			},
 
 			// create a Scripted Browser Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -408,7 +408,7 @@ func TestAccNewRelicSyntheticsScriptedBrowserMonitor_CreateWithLegacyRuntimeAttr
 			},
 
 			// create a Scripted Browser Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime (the version though, is not of the legacy runtime)
-			// the expected outcome is to see an error as use_legacy_runtime_unsupported is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
+			// the expected outcome is to see an error as use_unsupported_legacy_runtime is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -438,7 +438,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 		Steps: []resource.TestStep{
 
 			// create a Scripted API Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -454,7 +454,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 			},
 
 			// create a Scripted API Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -470,7 +470,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 			},
 
 			// create a Scripted API Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -504,7 +504,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 		Steps: []resource.TestStep{
 
 			// create a Scripted API Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -520,7 +520,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 			},
 
 			// create a Scripted API Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -536,7 +536,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 			},
 
 			// create a Scripted API Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -552,7 +552,7 @@ func TestAccNewRelicSyntheticsScriptedAPIMonitor_CreateWithLegacyRuntimeAttribut
 			},
 
 			// create a Scripted API Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime (the version though, is not of the legacy runtime)
-			// the expected outcome is to see an error as use_legacy_runtime_unsupported is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
+			// the expected outcome is to see an error as use_unsupported_legacy_runtime is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
 			{
 				Config: testAccNewRelicSyntheticsScriptedMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -582,7 +582,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 		Steps: []resource.TestStep{
 
 			// create a Broken Links Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -597,7 +597,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 			},
 
 			// create a Broken Links Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -612,7 +612,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 			},
 
 			// create a Broken Links Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -645,7 +645,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 		Steps: []resource.TestStep{
 
 			// create a Broken Links Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -660,7 +660,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 			},
 
 			// create a Broken Links Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -675,7 +675,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 			},
 
 			// create a Broken Links Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -690,7 +690,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttribut
 			},
 
 			// create a Broken Links Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime (the version though, is not of the legacy runtime)
-			// the expected outcome is to see an error as use_legacy_runtime_unsupported is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
+			// the expected outcome is to see an error as use_unsupported_legacy_runtime is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -719,7 +719,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 		Steps: []resource.TestStep{
 
 			// create a Cert Check Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -734,7 +734,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 			},
 
 			// create a Cert Check Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -749,7 +749,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 			},
 
 			// create a Cert Check Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
-			// the expected outcome is to see an error as there exists no use_legacy_runtime_unsupported in the configuration
+			// the expected outcome is to see an error as there exists no use_unsupported_legacy_runtime in the configuration
 			{
 				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -782,7 +782,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 		Steps: []resource.TestStep{
 
 			// create a Cert Check Monitor with runtime attributes in the configuration as empty strings (i.e. Legacy Runtime)
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -797,7 +797,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 			},
 
 			// create a Cert Check Monitor with no runtime attributes in the configuration at all (i.e. Legacy Runtime)
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -812,7 +812,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 			},
 
 			// create a Cert Check Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime
-			// the expected outcome is to see NO error as use_legacy_runtime_unsupported is now added to the config with the value 'true'
+			// the expected outcome is to see NO error as use_unsupported_legacy_runtime is now added to the config with the value 'true'
 			{
 				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
@@ -827,7 +827,7 @@ func TestAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributes
 			},
 
 			// create a Cert Check Monitor with runtime attributes comprising non nil values, but corresponding to the legacy runtime (the version though, is not of the legacy runtime)
-			// the expected outcome is to see an error as use_legacy_runtime_unsupported is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
+			// the expected outcome is to see an error as use_unsupported_legacy_runtime is now added to the config with the value 'true' and we're trying to use runtime_type_version with the new runtime
 			{
 				Config: testAccNewRelicSyntheticsCertCheckMonitor_CreateWithLegacyRuntimeAttributesConfig(
 					rName,
