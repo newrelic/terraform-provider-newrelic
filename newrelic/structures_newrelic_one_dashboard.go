@@ -356,6 +356,9 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 
 				// Set thresholds
 				rawConfiguration.Thresholds = expandDashboardTableWidgetConfigurationThresholdInput(d, pageIndex, widgetIndex)
+				// Set initalSorting
+				rawConfiguration.InitialSorting = expandDashboardTableWidgetConfigInitialSortingInput(v.(map[string]interface{}))
+
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
 					return nil, err
@@ -530,6 +533,24 @@ func expandDashboardLineWidgetConfigurationThresholdInput(d *schema.ResourceData
 	return lineWidgetThresholdsRoot
 }
 
+func expandDashboardTableWidgetConfigInitialSortingInput(w map[string]interface{}) *dashboards.DashboardWidgetInitialSorting {
+	var tableWidgetInitialSorting dashboards.DashboardWidgetInitialSorting
+
+	if q, ok := w["initial_sorting"]; ok && len(q.([]interface{})) > 0 {
+		dashboardInitialSortingMap := q.([]interface{})[0].(map[string]interface{})
+
+		if i, ok := dashboardInitialSortingMap["direction"]; ok {
+			tableWidgetInitialSorting.Direction = i.(string)
+		}
+
+		if i, ok := dashboardInitialSortingMap["name"]; ok {
+			tableWidgetInitialSorting.Name = i.(string)
+		}
+	}
+
+	return &tableWidgetInitialSorting
+}
+
 func expandDashboardTableWidgetConfigurationThresholdInput(d *schema.ResourceData, pageIndex int, widgetIndex int) []dashboards.DashboardTableWidgetThresholdInput {
 	// initialize an object of []DashboardTableWidgetThresholdInput, which would include a list of tableWidgetThresholdsToBeAdded as specified
 	// in the Terraform configuration, with the attribute "threshold" in table widgets
@@ -626,6 +647,11 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 		var l dashboards.DashboardWidgetFacet
 		l.ShowOtherSeries = q.(bool)
 		cfg.Facet = &l
+	}
+	if q, ok := w["refresh_rate"]; ok {
+		var l dashboards.DashboardWidgetRefreshRate
+		l.Frequency = q.(int)
+		cfg.RefreshRate = &l
 	}
 
 	cfg = expandDashboardWidgetYAxisAttributesVizClassified(w, cfg, visualisation)

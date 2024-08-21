@@ -270,6 +270,7 @@ All nested `widget` blocks support the following common arguments:
   * `null_values` - (Optional) A nested block that describes a Null Values. See [Nested Null Values blocks](#nested-null-values-blocks) below for details.
   * `units` - (Optional) A nested block that describes units on your Y axis. See [Nested Units blocks](#nested-units-blocks) below for details.
   * `colors` - (Optional) A nested block that describes colors of your charts per series. See [Nested Colors blocks](#nested-colors-blocks) below for details.
+  *  `refresh_rate` - (Optional) This attribute determines the frequency for data refresh specified in milliseconds. Accepted values are `auto` for default value, `0` for no refresh, `5000` for 5 seconds, `30000` for 30 seconds, `60000` for 60 seconds, `300000` for 5 minutes, `1800000` for 30 minutes, `3600000` for 60 minute, `10800000` for 3 hours, `43200000` for 12 hours and `86400000` for 24 hours.
 
 Each widget type supports an additional set of arguments:
 
@@ -328,6 +329,9 @@ Each widget type supports an additional set of arguments:
         * `from` - The value 'from' which the threshold would need to be applied.
         * `to` - The value until which the threshold would need to be applied.
         * `severity` - The severity of the threshold, which would affect the visual appearance of the threshold (such as its color) accordingly. The value of this attribute would need to be one of the following - `warning`, `severe`, `critical`, `success`, `unavailable` which correspond to the severity labels _Warning_, _Approaching critical_, _Critical_, _Good_, _Neutral_ in the dropdown that helps specify the severity of thresholds in table widgets in the UI, respectively.
+    * `initial_sorting` - (Optional) An attribute that describes the sorting mechanism for the table. This attribute requires specifying the following attributes in a nested block -
+        * `name` - (Required) The name of column to be sorted. Examples of few valid values are `timestamp`, `appId`, `appName`, etc.
+        * `direction` - (Required) Defines the sort order. Accepted values are `asc` for ascending or `desc` for descending.
 
 
 ### Nested `nrql_query` blocks
