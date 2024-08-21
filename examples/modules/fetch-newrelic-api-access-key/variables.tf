@@ -1,6 +1,6 @@
 locals {
   response = local.is_resource_created ? jsondecode(data.graphql_query.query_with_id[0].query_response): jsondecode(data.graphql_query.basic_query[0].query_response)
-  key_name = local.response["data"]["actor"]["apiAccess"]["key"]["key"]
+  key = local.response["data"]["actor"]["apiAccess"]["key"]["key"]
   name = local.response["data"]["actor"]["apiAccess"]["key"]["name"]
   type = local.response["data"]["actor"]["apiAccess"]["key"]["type"]
   is_resource_created = var.create_access_keys_service.newrelic_account_id != ""
@@ -26,13 +26,14 @@ variable "create_access_keys_service" {
   type = object({
     api_key                    = string
     newrelic_account_id        = string
-    name                       = string
+    name                       = optional(string,"production")
     key_type                   = string
+    ingest_type                = optional(string,"LICENSE")
+    notes                      = optional(string,"To be used with service XXXX")
   })
   default = {
     api_key  = ""
     newrelic_account_id  = ""
-    name                 = "production"
     key_type             = "INGEST"
   }
 }

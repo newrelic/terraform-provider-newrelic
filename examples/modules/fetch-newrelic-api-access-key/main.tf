@@ -20,9 +20,9 @@ resource "newrelic_api_access_key" "api_access_key" {
   count  = var.create_access_keys_service.newrelic_account_id != "" ? 1 : 0
   account_id  = var.create_access_keys_service.newrelic_account_id
   key_type    = var.create_access_keys_service.key_type
-  ingest_type = "LICENSE"
+  ingest_type = var.create_access_keys_service.ingest_type
   name        = "APM ${var.create_access_keys_service.key_type} License Key for ${var.create_access_keys_service.name}"
-  notes       = "To be used with service XXXX"
+  notes       = var.create_access_keys_service.notes
 }
 
 data "graphql_query" "query_with_id" {
