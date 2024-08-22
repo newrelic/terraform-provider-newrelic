@@ -68,9 +68,9 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 
 	if len(cloudLinkAccountPayload.Errors) > 0 {
 		for _, err := range cloudLinkAccountPayload.Errors {
-			if(string(err.Type) == "ERR_INVALID_DATA" && err.LinkedAccountId == 0) {
+			if string(err.Type) == "ERR_INVALID_DATA" && err.LinkedAccountId == 0 {
 				accounts, getLinkedAccountsErr := client.Cloud.GetLinkedAccounts(provider)
-				if(getLinkedAccountsErr != nil){
+				if getLinkedAccountsErr != nil {
 					diags = append(diags, diag.Diagnostic{
 						Severity: diag.Error,
 						Summary:  err.Type + " " + err.Message + " " + getLinkedAccountsErr.Error(),
@@ -85,13 +85,13 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 						break
 					}
 				}
-			
+
 				if account == nil {
 					return diag.FromErr(fmt.Errorf("the name '%s' does not match any account for provider '%s", name, provider))
 				}
 
 				d.SetId(strconv.Itoa(account.ID))
-			} else if(err.LinkedAccountId != 0) {
+			} else if err.LinkedAccountId != 0 {
 				d.SetId(strconv.Itoa(err.LinkedAccountId))
 			} else {
 				diags = append(diags, diag.Diagnostic{
