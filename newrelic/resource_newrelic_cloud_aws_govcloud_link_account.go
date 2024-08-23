@@ -74,7 +74,7 @@ func resourceNewRelicAwsGovCloudLinkAccountCreate(ctx context.Context, d *schema
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	
+
 	if cloudLinkAccountPayload == nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] cloudLinkAccountPayload was nil"))
 	}
