@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -60,30 +61,65 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 func resourceNewRelicAwsGovCloudLinkAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
-
 	accountID := selectAccountID(providerConfig, d)
+	provider := d.Get("cloud_provider").(string)
+	name := d.Get("name").(string)
 
 	linkAccountInput := expandAwsGovCloudLinkAccountInput(d)
 
 	cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
+
+	var diags diag.Diagnostics
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	var diags diag.Diagnostics
+	
+	if cloudLinkAccountPayload == nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] cloudLinkAccountPayload was nil"))
+	}
+
 	if len(cloudLinkAccountPayload.Errors) > 0 {
 		for _, err := range cloudLinkAccountPayload.Errors {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  err.Type + " " + err.Message,
-			})
+			if string(err.Type) == "ERR_INVALID_DATA" && err.LinkedAccountId == 0 {
+				accounts, getLinkedAccountsErr := client.Cloud.GetLinkedAccounts(provider)
+				if getLinkedAccountsErr != nil {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  err.Type + " " + err.Message + " " + getLinkedAccountsErr.Error(),
+					})
+				}
+
+				var account *cloud.CloudLinkedAccount
+
+				for _, a := range *accounts {
+					if a.NrAccountId == accountID && strings.EqualFold(a.Name, name) {
+						account = &a
+						break
+					}
+				}
+
+				if account == nil {
+					return diag.FromErr(fmt.Errorf("the name '%s' does not match any account for provider '%s", name, provider))
+				}
+
+				d.SetId(strconv.Itoa(account.ID))
+			} else if err.LinkedAccountId != 0 {
+				d.SetId(strconv.Itoa(err.LinkedAccountId))
+			} else {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  err.Type + " " + err.Message,
+				})
+			}
 		}
-		return diags
 	}
 
 	if len(cloudLinkAccountPayload.LinkedAccounts) > 0 {
 		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
 	}
-	return nil
+
+	return diags
 }
 
 // Extracting the AWSGovCloud account  credentials from Schema using expandAzureCloudLinkAccountInput
