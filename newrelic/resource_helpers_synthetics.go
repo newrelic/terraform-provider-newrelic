@@ -123,10 +123,11 @@ const SyntheticsChromeBrowserLegacyRuntimeTypeVersion string = "72"
 const SyntheticsChromeBrowserNewRuntimeTypeVersion string = "100"
 
 var SyntheticsUseLegacyRuntimeSchema = &schema.Schema{
-	Type:        schema.TypeBool,
-	Description: "A boolean attribute to be set true by the customer, if they would like to use the unsupported legacy runtime of Synthetic Monitors by means of an exemption given until the October 22, 2024 Legacy Runtime EOL. Setting this attribute to true would allow skipping validation performed by the the New Relic Terraform Provider starting v3.43.0 to disallow using the legacy runtime with new monitors. This would, hence, allow creation of monitors in the legacy runtime until the October 22, 2024 Legacy Runtime EOL, if exempt by the API.",
-	Default:     false,
-	Optional:    true,
+	Type:             schema.TypeBool,
+	Description:      "A boolean attribute to be set true by the customer, if they would like to use the unsupported legacy runtime of Synthetic Monitors by means of an exemption given until the October 22, 2024 Legacy Runtime EOL. Setting this attribute to true would allow skipping validation performed by the the New Relic Terraform Provider starting v3.43.0 to disallow using the legacy runtime with new monitors. This would, hence, allow creation of monitors in the legacy runtime until the October 22, 2024 Legacy Runtime EOL, if exempt by the API.",
+	Default:          false,
+	Optional:         true,
+	DiffSuppressFunc: syntheticMonitorsUseUnsupportedLegacyRuntimeDiffSuppressor,
 }
 
 var syntheticsMonitorPeriodValueMap = map[int]synthetics.SyntheticsMonitorPeriod{
@@ -534,4 +535,16 @@ func syntheticMonitorConfigHasObsoleteRuntime(
 	runtimeTypeVersionInConfig interface{},
 ) bool {
 	return (runtimeTypeInConfig == SyntheticsNodeRuntimeType && runtimeTypeVersionInConfig == SyntheticsNodeLegacyRuntimeTypeVersion) || (runtimeTypeInConfig == SyntheticsChromeBrowserRuntimeType && runtimeTypeVersionInConfig == SyntheticsChromeBrowserLegacyRuntimeTypeVersion)
+}
+
+func syntheticMonitorsUseUnsupportedLegacyRuntimeDiffSuppressor(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	rawConfiguration := d.GetRawConfig()
+	isUseUnsupportedLegacyRuntimeNotSpecifiedInConfiguration := rawConfiguration.GetAttr(k).IsNull()
+	isUseUnsupportedLegacyRuntimeFalse := newValue == "false"
+
+	if isUseUnsupportedLegacyRuntimeNotSpecifiedInConfiguration && isUseUnsupportedLegacyRuntimeFalse {
+		return true
+	}
+
+	return false
 }
