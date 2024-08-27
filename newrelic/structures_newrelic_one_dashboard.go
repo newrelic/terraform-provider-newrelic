@@ -536,7 +536,7 @@ func expandDashboardLineWidgetConfigurationThresholdInput(d *schema.ResourceData
 func expandDashboardTableWidgetConfigInitialSortingInput(w map[string]interface{}) *dashboards.DashboardWidgetInitialSorting {
 	var tableWidgetInitialSorting dashboards.DashboardWidgetInitialSorting
 
-	if q, ok := w["initial_sorting"]; ok && len(q.([]interface{})) > 0 {
+	if q, ok := w["initial_sorting"]; ok && len(q.([]interface{})) == 0 && q.([]interface{})[0] != nil {
 		dashboardInitialSortingMap := q.([]interface{})[0].(map[string]interface{})
 
 		if i, ok := dashboardInitialSortingMap["direction"]; ok {
@@ -1216,6 +1216,9 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	if rawCfg.Colors != nil {
 		out["colors"] = flattenDashboardWidgetColors(rawCfg.Colors)
 	}
+	if rawCfg.RefreshRate != nil {
+		out["refresh_rate"] = rawCfg.RefreshRate.Frequency
+	}
 
 	// Set widget type and arguments
 	switch in.Visualization.ID {
@@ -1300,6 +1303,7 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 		widgetType = "widget_table"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
 		out["filter_current_dashboard"] = filterCurrentDashboard
+		out["initial_sorting"] = flattenDashboardWidgetInitialSorting(rawCfg.InitialSorting)
 		if rawCfg.Thresholds != nil {
 			thresholds := flattenDashboardTableWidgetThresholds(rawCfg.Thresholds)
 			if thresholds != nil {
@@ -1313,6 +1317,18 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	}
 
 	return widgetType, out
+}
+
+func flattenDashboardWidgetInitialSorting(in *dashboards.DashboardWidgetInitialSorting) []interface{} {
+	fmt.Println("inside flattenDashboardWidgetInitialSorting")
+	out := make([]interface{}, 1)
+	k := make(map[string]interface{})
+
+	k["direction"] = in.Direction
+	k["name"] = in.Name
+
+	out[0] = k
+	return out
 }
 
 func flattenDashboardWidgetNRQLQuery(in *[]dashboards.DashboardWidgetNRQLQueryInput) []interface{} {

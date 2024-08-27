@@ -326,6 +326,7 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 		"initial_sorting": {
 			Type:     schema.TypeList,
 			Optional: true,
+			MaxItems: 1,
 			Elem:     dashboardWidgetInitialSortingSchemaElem(),
 		},
 		"ignore_time_range": {

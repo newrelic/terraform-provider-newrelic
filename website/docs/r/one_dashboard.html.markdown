@@ -19,6 +19,25 @@ resource "newrelic_one_dashboard" "exampledash" {
   page {
     name = "New Relic Terraform Example"
 
+    widget_table {
+      title  = "List of Transactions"
+      row    = 1
+      column = 4
+      width  = 6
+      height = 3
+
+      refresh_rate = 60000 // data refreshes every 60 seconds
+
+      nrql_query {
+        query = "FROM Transaction SELECT *"
+      }
+
+      initial_sorting {
+        direction = "desc"
+        name      = "timestamp"
+      }
+    }
+
     widget_billboard {
       title  = "Requests per minute"
       row    = 1
@@ -26,6 +45,8 @@ resource "newrelic_one_dashboard" "exampledash" {
       width  = 6
       height = 3
 
+      refresh_rate = 60000 // 60 seconds
+      
       nrql_query {
         query = "FROM Transaction SELECT rate(count(*), 1 minute)"
       }
@@ -53,6 +74,8 @@ resource "newrelic_one_dashboard" "exampledash" {
       column = 1
       width  = 6
       height = 3
+
+      refresh_rate = 300000 // 5 minutes
 
       nrql_query {
         account_id = 12345
@@ -82,6 +105,8 @@ resource "newrelic_one_dashboard" "exampledash" {
       column = 7
       width  = 6
       height = 3
+
+      refresh_rate = 30000 // 30 seconds
 
       nrql_query {
         account_id = 12345
