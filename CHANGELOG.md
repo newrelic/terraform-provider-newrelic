@@ -1,3 +1,8 @@
+<a name="v3.43.0"></a>
+## [v3.43.0] - 2024-08-26
+### Features
+- **synthetics:** changes to disallow usage legacy runtime usage Aug 26 2024 EOL
+
 <a name="v3.42.3"></a>
 ## [v3.42.3] - 2024-08-16
 ### Documentation Updates
@@ -2194,7 +2199,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.3...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.43.0...HEAD
+[v3.43.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.3...v3.43.0
 [v3.42.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.2...v3.42.3
 [v3.42.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.1...v3.42.2
 [v3.42.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.0...v3.42.1

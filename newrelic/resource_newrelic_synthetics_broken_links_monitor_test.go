@@ -25,8 +25,8 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitorConfig(
 					rName,
-					"",
-					"",
+					SyntheticsNodeRuntimeType,
+					SyntheticsNodeNewRuntimeTypeVersion,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
@@ -36,8 +36,8 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 			{
 				Config: testAccNewRelicSyntheticsBrokenLinksMonitorConfig(
 					fmt.Sprintf("%s-updated", rName),
-					"NODE_API",
-					"16.10",
+					SyntheticsNodeRuntimeType,
+					SyntheticsNodeNewRuntimeTypeVersion,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
@@ -51,6 +51,7 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"locations_private",
 					"tag",
+					SyntheticsUseLegacyRuntimeAttrLabel,
 				},
 			},
 		},
