@@ -7,7 +7,7 @@ locals {
   is_resource_created = var.create_access_keys_service.newrelic_account_id != ""
 }
 
-variable "fetch_access_keys_service" {
+variable "newrelic_api_access_key_extended" {
   description = "The service is to get api keys"
   type = object({
     api_key                    = string

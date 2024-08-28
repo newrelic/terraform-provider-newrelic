@@ -1,16 +1,16 @@
 
 provider "graphql" {
-  url = var.fetch_access_keys_service.graphiql_url
+  url = var.newrelic_api_access_key_extended.graphiql_url
   headers = {
     "Content-Type" = "application/json"
-    "API-Key" = var.fetch_access_keys_service.api_key != "" ? var.fetch_access_keys_service.api_key : var.create_access_keys_service.api_key
+    "API-Key" = var.newrelic_api_access_key_extended.api_key != "" ? var.newrelic_api_access_key_extended.api_key : var.create_access_keys_service.api_key
   }
 }
 
 data "graphql_query" "basic_query" {
   query_variables = {
-    "id"        = var.fetch_access_keys_service.key_id
-    "key_type"  = var.fetch_access_keys_service.key_type
+    "id"        = var.newrelic_api_access_key_extended.key_id
+    "key_type"  = var.newrelic_api_access_key_extended.key_type
   }
   query = <<EOF
     query getUser($id: ID!, $key_type: ApiAccessKeyType!) {
