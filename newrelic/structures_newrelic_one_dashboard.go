@@ -546,9 +546,10 @@ func expandDashboardTableWidgetConfigInitialSortingInput(w map[string]interface{
 		if i, ok := dashboardInitialSortingMap["name"]; ok {
 			tableWidgetInitialSorting.Name = i.(string)
 		}
+		return &tableWidgetInitialSorting
 	}
 
-	return &tableWidgetInitialSorting
+	return nil
 }
 
 func expandDashboardTableWidgetConfigurationThresholdInput(d *schema.ResourceData, pageIndex int, widgetIndex int) []dashboards.DashboardTableWidgetThresholdInput {
@@ -1303,7 +1304,14 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 		widgetType = "widget_table"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
 		out["filter_current_dashboard"] = filterCurrentDashboard
-		out["initial_sorting"] = flattenDashboardWidgetInitialSorting(rawCfg.InitialSorting)
+
+		if rawCfg.InitialSorting != nil {
+			initialSorting := flattenDashboardWidgetInitialSorting(rawCfg.InitialSorting)
+			if initialSorting != nil {
+				out["initial_sorting"] = initialSorting
+			}
+		}
+
 		if rawCfg.Thresholds != nil {
 			thresholds := flattenDashboardTableWidgetThresholds(rawCfg.Thresholds)
 			if thresholds != nil {
