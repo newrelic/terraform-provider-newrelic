@@ -3,6 +3,7 @@ locals {
   key = local.response["data"]["actor"]["apiAccess"]["key"]["key"]
   name = local.response["data"]["actor"]["apiAccess"]["key"]["name"]
   type = local.response["data"]["actor"]["apiAccess"]["key"]["type"]
+  ingestType = lookup(local.response["data"]["actor"]["apiAccess"]["key"],"ingestType",null)
   is_resource_created = var.create_access_keys_service.newrelic_account_id != ""
 }
 
@@ -26,10 +27,11 @@ variable "create_access_keys_service" {
   type = object({
     api_key                    = string
     newrelic_account_id        = string
-    name                       = optional(string,"production")
+    name                       = optional(string,"New API Key")
     key_type                   = string
-    ingest_type                = optional(string,"LICENSE")
-    notes                      = optional(string,"To be used with service XXXX")
+    ingest_type                = optional(string,"")
+    notes                      = optional(string,"API Key created using the newrelic_api_access_key Terraform resource")
+    user_id                    = optional(string,null)
   })
   default = {
     api_key  = ""

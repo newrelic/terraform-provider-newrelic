@@ -5,7 +5,6 @@ terraform {
     }
     graphql = {
       source = "sullivtr/graphql"
-       version = "2.5.4"
     }
   }
 }

@@ -3,7 +3,8 @@ output "required_attributes" {
   value = {
     "key": local.key,
     "name": local.name,
-    "type": local.type
+    "key_type": local.type,
+    "ingest_type": local.ingestType
   }
 }
 

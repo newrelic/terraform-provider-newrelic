@@ -12,7 +12,22 @@ data "graphql_query" "basic_query" {
     "id"        = var.fetch_access_keys_service.key_id
     "key_type"  = var.fetch_access_keys_service.key_type
   }
-  query  = file("query.gql")
+  query = <<EOF
+    query getUser($id: ID!, $key_type: ApiAccessKeyType!) {
+      actor {
+      apiAccess {
+        key(id: $id, keyType: $key_type) {
+        key
+        name
+        type
+        ... on ApiAccessIngestKey {
+          ingestType
+        }
+        }
+      }
+      }
+    }
+    EOF
   count = local.is_resource_created ? 0 : 1
 }
 
@@ -20,9 +35,10 @@ resource "newrelic_api_access_key" "api_access_key" {
   count  = var.create_access_keys_service.newrelic_account_id != "" ? 1 : 0
   account_id  = var.create_access_keys_service.newrelic_account_id
   key_type    = var.create_access_keys_service.key_type
-  ingest_type = var.create_access_keys_service.ingest_type
-  name        = "APM ${var.create_access_keys_service.key_type} License Key for ${var.create_access_keys_service.name}"
+  name        = "${var.create_access_keys_service.key_type != "USER" ? "APM " : "" }${var.create_access_keys_service.key_type}${var.create_access_keys_service.key_type != "USER" ? "-" : "" }${var.create_access_keys_service.ingest_type} Key for ${var.create_access_keys_service.name}"
   notes       = var.create_access_keys_service.notes
+  user_id     = var.create_access_keys_service.key_type == "USER" ? var.create_access_keys_service.user_id : null
+  ingest_type = var.create_access_keys_service.key_type == "INGEST" ? var.create_access_keys_service.ingest_type : null
 }
 
 data "graphql_query" "query_with_id" {
@@ -30,7 +46,22 @@ data "graphql_query" "query_with_id" {
     "id"        = newrelic_api_access_key.api_access_key[0].id
     "key_type"  = var.create_access_keys_service.key_type
   }
-  query = file("query.gql")
+  query = <<EOF
+    query getUser($id: ID!, $key_type: ApiAccessKeyType!) {
+      actor {
+      apiAccess {
+        key(id: $id, keyType: $key_type) {
+        key
+        name
+        type
+        ... on ApiAccessIngestKey {
+          ingestType
+        }
+        }
+      }
+      }
+    }
+    EOF
   depends_on = [newrelic_api_access_key.api_access_key]
   count = local.is_resource_created ? 1 : 0
 }
