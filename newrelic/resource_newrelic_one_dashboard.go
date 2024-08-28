@@ -322,7 +322,6 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 		"refresh_rate": {
 			Type:     schema.TypeInt,
 			Optional: true,
-			MaxItems: 1,
 		},
 		"initial_sorting": {
 			Type:     schema.TypeList,
