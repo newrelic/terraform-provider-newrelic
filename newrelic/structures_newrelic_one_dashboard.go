@@ -536,7 +536,7 @@ func expandDashboardLineWidgetConfigurationThresholdInput(d *schema.ResourceData
 func expandDashboardTableWidgetConfigInitialSortingInput(w map[string]interface{}) *dashboards.DashboardWidgetInitialSorting {
 	var tableWidgetInitialSorting dashboards.DashboardWidgetInitialSorting
 
-	if q, ok := w["initial_sorting"]; ok && len(q.([]interface{})) == 0 && q.([]interface{})[0] != nil {
+	if q, ok := w["initial_sorting"]; ok && len(q.([]interface{})) == 1 && q.([]interface{})[0] != nil {
 		dashboardInitialSortingMap := q.([]interface{})[0].(map[string]interface{})
 
 		if i, ok := dashboardInitialSortingMap["direction"]; ok {
@@ -1320,7 +1320,6 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 }
 
 func flattenDashboardWidgetInitialSorting(in *dashboards.DashboardWidgetInitialSorting) []interface{} {
-	fmt.Println("inside flattenDashboardWidgetInitialSorting")
 	out := make([]interface{}, 1)
 	k := make(map[string]interface{})
 

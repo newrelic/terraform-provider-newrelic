@@ -780,7 +780,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       refresh_rate = 30000
       initial_sorting {
         direction = "desc"
-        name      = "timestamp"
+        name      = "appName"
       }
     }
 
