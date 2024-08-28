@@ -63,22 +63,20 @@ func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.Dashbo
 		var variable dashboards.DashboardVariableInput
 		v := val.(map[string]interface{})
 
-		if d, ok := v["default_values"].([]interface{}); ok && d != nil {
+		if d, ok := v["default_values"].([]interface{}); ok && d != nil && len(d) > 0 {
 			// Check if the slice is empty or contains only nil elements as we are receiving d as [<nil>] when an empty string is given
-			hasNonNil := false
+			hasNil := false
 			for _, item := range d {
-				if item != nil {
-					hasNonNil = true
+				if item == nil {
+					hasNil = true
 					break
 				}
 			}
-			if len(d) > 0 && hasNonNil {
+			if len(d) > 0 && !hasNil {
 				variable.DefaultValues = expandVariableDefaultValues(d)
 			} else {
 				return []dashboards.DashboardVariableInput{}, fmt.Errorf("default_values is an empty slice or contains only nil values")
 			}
-		} else {
-			return []dashboards.DashboardVariableInput{}, fmt.Errorf("default_values is either nil, not a slice, or an empty slice")
 		}
 
 		if m, ok := v["is_multi_selection"]; ok {
