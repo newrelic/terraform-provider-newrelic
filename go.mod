@@ -2,7 +2,7 @@ module github.com/newrelic/terraform-provider-newrelic/v2
 
 go 1.21
 
-replace github.com/newrelic/newrelic-client-go/v2 => github.com/newrelic/newrelic-client-go/v2 v2.43.2-0.20240821120904-1c89c87596a1
+replace github.com/newrelic/newrelic-client-go/v2 => github.com/newrelic/newrelic-client-go/v2 v2.43.2-0.20240829121452-a90fc7afafe9
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
