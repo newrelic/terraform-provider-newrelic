@@ -63,7 +63,7 @@ func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.Dashbo
 		var variable dashboards.DashboardVariableInput
 		v := val.(map[string]interface{})
 
-		if d, ok := v["default_values"].([]interface{}); ok && d != nil && len(d) > 0 {
+		if d, ok := v["default_values"].([]interface{}); ok && d != nil && len(d) >= 0 {
 			// Check if the slice is empty or contains only nil elements as we are receiving d as [<nil>] when an empty string is given
 			hasNil := false
 			for _, item := range d {
