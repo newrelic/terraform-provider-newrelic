@@ -52,6 +52,15 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}, dashboardNam
 	return &dash, nil
 }
 
+func checkForNilElements(d []interface{}) bool {
+	for _, item := range d {
+		if item == nil {
+			return true
+		}
+	}
+	return false
+}
+
 func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
 	if len(variables) < 1 {
 		return []dashboards.DashboardVariableInput{}, nil
@@ -65,13 +74,7 @@ func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.Dashbo
 
 		if d, ok := v["default_values"].([]interface{}); ok && d != nil && len(d) >= 0 {
 			// Check if the slice is empty or contains only nil elements as we are receiving d as [<nil>] when an empty string is given
-			hasNil := false
-			for _, item := range d {
-				if item == nil {
-					hasNil = true
-					break
-				}
-			}
+			hasNil := checkForNilElements(d)
 			if len(d) > 0 && !hasNil {
 				variable.DefaultValues = expandVariableDefaultValues(d)
 			} else {
