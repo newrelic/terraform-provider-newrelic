@@ -653,6 +653,9 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	if q, ok := w["refresh_rate"]; ok {
 		var l dashboards.DashboardWidgetRefreshRate
 
+		// Acceptable values for refresh rate could be string such as "auto", or number such as 5000
+		// If we try to send numerical values as string to NerdGraph eg: "5000", the refresh rate isn't reflected in the UI
+		// Hence we need to convert numerical values from string type to int type
 		if v, err := strconv.Atoi(q.(string)); err == nil {
 			l.Frequency = v
 		} else {
@@ -1224,6 +1227,8 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 		out["colors"] = flattenDashboardWidgetColors(rawCfg.Colors)
 	}
 	if rawCfg.RefreshRate != nil {
+		// Since schema for refresh_rate is defined as string
+		// If we get integer values in graphQL response, we need to convert to string
 		if reflect.TypeOf(rawCfg.RefreshRate.Frequency).Kind() == reflect.String {
 			out["refresh_rate"] = rawCfg.RefreshRate.Frequency
 		} else {
