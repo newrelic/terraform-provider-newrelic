@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/testhelpers"
 )
 
 func TestAccNewRelicNrqlAlertCondition_Basic(t *testing.T) {
@@ -569,9 +570,6 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionDataAccountId(t *testing.T
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
 
-	providerConfig := testAccProvider.Meta().(*ProviderConfig)
-	dataAccountId := providerConfig.AccountID
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
 		Providers:    testAccProviders,
@@ -581,7 +579,7 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionDataAccountId(t *testing.T
 			{
 				Config: testAccNewRelicNrqlAlertConditionStaticWithDataAccountId(
 					rName,
-					dataAccountId,
+					testhelpers.IntegrationTestAccountID,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
