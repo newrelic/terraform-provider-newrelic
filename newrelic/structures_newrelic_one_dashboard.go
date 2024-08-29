@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -651,7 +652,12 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	}
 	if q, ok := w["refresh_rate"]; ok {
 		var l dashboards.DashboardWidgetRefreshRate
-		l.Frequency = q.(int)
+
+		if v, err := strconv.Atoi(q.(string)); err == nil {
+			l.Frequency = v
+		} else {
+			l.Frequency = q.(string)
+		}
 		cfg.RefreshRate = &l
 	}
 
@@ -1218,7 +1224,12 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 		out["colors"] = flattenDashboardWidgetColors(rawCfg.Colors)
 	}
 	if rawCfg.RefreshRate != nil {
-		out["refresh_rate"] = rawCfg.RefreshRate.Frequency
+		if reflect.TypeOf(rawCfg.RefreshRate.Frequency).Kind() == reflect.String {
+			out["refresh_rate"] = rawCfg.RefreshRate.Frequency
+		} else {
+			s := strconv.FormatFloat(rawCfg.RefreshRate.Frequency.(float64), 'f', -1, 64)
+			out["refresh_rate"] = s
+		}
 	}
 
 	// Set widget type and arguments

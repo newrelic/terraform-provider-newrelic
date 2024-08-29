@@ -320,7 +320,7 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 			Elem:     dashboardWidgetNRQLQuerySchemaElem(),
 		},
 		"refresh_rate": {
-			Type:     schema.TypeInt,
+			Type:     schema.TypeString,
 			Optional: true,
 		},
 		"initial_sorting": {
