@@ -28,8 +28,8 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 				Config: testAccNewRelicSyntheticsStepMonitorConfig(
 					rName,
 					"",
-					"",
-					"",
+					SyntheticsChromeBrowserRuntimeType,
+					SyntheticsChromeBrowserNewRuntimeTypeVersion,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
@@ -40,8 +40,8 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 				Config: testAccNewRelicSyntheticsStepMonitorConfig(
 					fmt.Sprintf("%s-updated", rName),
 					updateStep,
-					"CHROME_BROWSER",
-					"100",
+					SyntheticsChromeBrowserRuntimeType,
+					SyntheticsChromeBrowserNewRuntimeTypeVersion,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicSyntheticsMonitorEntityExists(resourceName),
@@ -56,6 +56,7 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 					"location_private",
 					"tag",
 					"enable_screenshot_on_failure_and_script",
+					SyntheticsUseLegacyRuntimeAttrLabel,
 				},
 			},
 		},
