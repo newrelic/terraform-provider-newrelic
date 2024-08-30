@@ -154,6 +154,7 @@ func buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulationUpdateStruct(d 
 
 	if scriptLangOk || runtimeTypeOk || runtimeTypeVersionOk {
 		simpleBrowserMonitorUpdateInput.Runtime = &synthetics.SyntheticsRuntimeInput{}
+
 		if scriptLangOk {
 			simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = scriptLang.(string)
 		}
