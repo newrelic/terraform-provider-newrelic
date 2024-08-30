@@ -117,6 +117,11 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_API_CACERT", ""),
 			},
+			"max_requests_per_second": {
+				Type: schema.TypeInt,
+				Optional: true,
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_MAX_REQUESTS_PER_SECOND", 600),
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -245,6 +250,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		InsecureSkipVerify:   data.Get("insecure_skip_verify").(bool),
 		CACertFile:           data.Get("cacert_file").(string),
 		serviceName:          userAgentServiceName,
+		MaxRequestsPerSecond: data.Get("max_requests_per_second").(int),
 	}
 	log.Println("[INFO] Initializing newrelic-client-go")
 

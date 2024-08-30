@@ -13,6 +13,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/mitchellh/go-homedir"
+	"golang.org/x/time/rate"
 
 	insights "github.com/newrelic/go-insights/client"
 	nr "github.com/newrelic/newrelic-client-go/v2/newrelic"
@@ -36,7 +37,26 @@ type Config struct {
 	SyntheticsAPIURL     string
 	userAgent            string
 	serviceName          string
+	MaxRequestsPerSecond int
 }
+
+type ThrottledRoundTripper struct{
+	original http.RoundTripper
+	ratelimiter *rate.Limiter
+}
+
+func NewThrottledRoundTripper(rt http.RoundTripper, limiter *rate.Limiter) *ThrottledRoundTripper {
+	return &ThrottledRoundTripper{
+		original: rt,
+		ratelimiter: limiter,
+	}
+}
+
+func (t *ThrottledRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	t.ratelimiter.Wait(req.Context())
+	return t.original.RoundTrip(req)
+}
+
 
 // Client returns a new client for accessing New Relic
 func (c *Config) Client() (*nr.NewRelic, error) {
@@ -75,7 +95,9 @@ func (c *Config) Client() (*nr.NewRelic, error) {
 		t = logging.NewTransport("newrelic", t)
 	}
 
-	options = append(options, nr.ConfigHTTPTransport(t))
+	rateLimiter := rate.NewLimiter(rate.Limit(c.MaxRequestsPerSecond), c.MaxRequestsPerSecond)
+	throttledTransport := NewThrottledRoundTripper(t, rateLimiter)
+	options = append(options, nr.ConfigHTTPTransport(throttledTransport))
 
 	if c.APIURL != "" {
 		options = append(options, nr.ConfigBaseURL(c.APIURL))
