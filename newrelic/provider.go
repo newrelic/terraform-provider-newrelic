@@ -118,9 +118,14 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_API_CACERT", ""),
 			},
 			"max_requests_per_second": {
-				Type: schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_MAX_REQUESTS_PER_SECOND", 600),
+			},
+			"max_concurrent_requests": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NEW_RELIC_MAX_CONCURRENT_REQUESTS", 25),
 			},
 		},
 
@@ -239,18 +244,19 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 	log.Printf("[INFO] UserAgent: %s", userAgent)
 
 	cfg := Config{
-		AdminAPIKey:          adminAPIKey,
-		PersonalAPIKey:       personalAPIKey,
-		Region:               data.Get("region").(string),
-		APIURL:               data.Get("api_url").(string),
-		SyntheticsAPIURL:     data.Get("synthetics_api_url").(string),
-		NerdGraphAPIURL:      data.Get("nerdgraph_api_url").(string),
-		InfrastructureAPIURL: getInfraAPIURL(data),
-		userAgent:            userAgent,
-		InsecureSkipVerify:   data.Get("insecure_skip_verify").(bool),
-		CACertFile:           data.Get("cacert_file").(string),
-		serviceName:          userAgentServiceName,
-		MaxRequestsPerSecond: data.Get("max_requests_per_second").(int),
+		AdminAPIKey:           adminAPIKey,
+		PersonalAPIKey:        personalAPIKey,
+		Region:                data.Get("region").(string),
+		APIURL:                data.Get("api_url").(string),
+		SyntheticsAPIURL:      data.Get("synthetics_api_url").(string),
+		NerdGraphAPIURL:       data.Get("nerdgraph_api_url").(string),
+		InfrastructureAPIURL:  getInfraAPIURL(data),
+		userAgent:             userAgent,
+		InsecureSkipVerify:    data.Get("insecure_skip_verify").(bool),
+		CACertFile:            data.Get("cacert_file").(string),
+		serviceName:           userAgentServiceName,
+		MaxRequestsPerSecond:  data.Get("max_requests_per_second").(int),
+		MaxConcurrentRequests: data.Get("max_concurrent_requests").(int),
 	}
 	log.Println("[INFO] Initializing newrelic-client-go")
 
