@@ -642,7 +642,8 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 
 	if q, ok := w["legend_enabled"]; ok {
 		var l dashboards.DashboardWidgetLegend
-		l.Enabled = q.(bool)
+		qBool, _ := q.(bool)
+		l.Enabled = &qBool
 		cfg.Legend = &l
 	}
 	if q, ok := w["facet_show_other_series"]; ok {
