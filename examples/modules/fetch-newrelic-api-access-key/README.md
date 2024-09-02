@@ -17,7 +17,7 @@ The following output values are provided by the module:
 module "create_access_keys" {
   source = "../examples/modules/fetch-newrelic-api-access-key"
 
-  create_access_keys_service = {
+  newrelic_api_access_key_extended = {
     api_key             = "NRAK-XXXXXXXXXX"
     newrelic_account_id = "12345678"
     name                = "Access key for DemoApp"
@@ -35,7 +35,7 @@ output "required_attributes" {
 module "create_access_keys" {
   source = "../examples/modules/fetch-newrelic-api-access-key"
 
-  create_access_keys_service = {
+  newrelic_api_access_key_extended = {
     api_key             = "NRAK-XXXXXXXXXX"
     newrelic_account_id = "12345678"
     name                = "DemoApp"
@@ -53,7 +53,7 @@ output "required_attributes" {
 module "create_access_keys" {
   source = "../examples/modules/fetch-newrelic-api-access-key"
 
-  create_access_keys_service = {
+  newrelic_api_access_key_extended = {
     api_key             = "NRAK-XXXXXXXXXX"
     newrelic_account_id = "12345678"
     name                = "DemoApp"
@@ -84,7 +84,7 @@ The following output values are provided by the module:
 module "fetch_access_keys" {
   source = "../examples/modules/fetch-newrelic-api-access-key"
 
-  newrelic_api_access_key_extended = {
+  fetch_access_keys_service = {
         api_key = "NRAK-XXXXXXXXXXXXXXXX"
         key_id = "DWEGHFF327532576931786356532327538273"
         key_type = "INGEST"
