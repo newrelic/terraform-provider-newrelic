@@ -26,6 +26,7 @@ func resourceNewRelicSyntheticsBrokenLinksMonitor() *schema.Resource {
 			syntheticsMonitorLocationsAsStringsSchema(),
 			syntheticsMonitorRuntimeOptions(),
 		),
+		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
 	}
 }
 
@@ -36,6 +37,7 @@ func syntheticsBrokenLinksMonitorSchema() map[string]*schema.Schema {
 			Description: "The URI the monitor runs against.",
 			Required:    true,
 		},
+		SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
 	}
 }
 

@@ -60,47 +60,6 @@ func TestAccNewRelicSyntheticsBrowserMonitor_DeviceEmulationErrorUpdate(t *testi
 	})
 }
 
-func TestAccNewRelicSyntheticsBrowserMonitor_DeviceEmulationLegacyRuntimeError(t *testing.T) {
-	rName := generateNameForIntegrationTestResource()
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
-		Steps: []resource.TestStep{
-			// Test: Create
-			{
-				Config:      testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationLegacyRuntimeError(rName, string(SyntheticsMonitorTypes.BROWSER)),
-				ExpectError: regexp.MustCompile(`device emulation is not supported by legacy runtime`),
-			},
-		},
-	})
-}
-
-func TestAccNewRelicSyntheticsBrowserMonitor_DeviceEmulationLegacyRuntimeErrorUpdate(t *testing.T) {
-	rName := generateNameForIntegrationTestResource()
-	resourceName := "newrelic_synthetics_monitor.foo"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorDestroy,
-		Steps: []resource.TestStep{
-			// Test: Create
-			{
-				Config: testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulation(rName, string(SyntheticsMonitorTypes.BROWSER)),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
-				),
-			},
-			// Test: Update
-			{
-				Config:      testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationLegacyRuntimeError(rName, string(SyntheticsMonitorTypes.BROWSER)),
-				ExpectError: regexp.MustCompile(`device emulation is not supported by legacy runtime`),
-			},
-		},
-	})
-}
 func testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationError(name string, monitorType string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_monitor" "foo" {
@@ -231,6 +190,7 @@ func TestAccNewRelicSyntheticsSimpleMonitor(t *testing.T) {
 					"custom_header",
 					"device_orientation",
 					"device_type",
+					SyntheticsUseLegacyRuntimeAttrLabel,
 				},
 			},
 		},
@@ -327,6 +287,7 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 					"script_language",
 					"device_orientation",
 					"device_type",
+					SyntheticsUseLegacyRuntimeAttrLabel,
 					"devices",
 					"browsers",
 				},

@@ -49,6 +49,8 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 	evalOffset := nrql["evaluation_offset"].(int)
 	expectedNrql.Nrql.EvaluationOffset = &evalOffset
 
+	titleTemplate := "Title {{template}}"
+
 	cases := map[string]struct {
 		Data         map[string]interface{}
 		ExpectErr    bool
@@ -357,6 +359,45 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				},
 			},
 		},
+		"title template nil": {
+			Data: map[string]interface{}{
+				"nrql":           []interface{}{nrql},
+				"title_template": nil,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
+			},
+		},
+		"title template not nill": {
+			Data: map[string]interface{}{
+				"nrql":           []interface{}{nrql},
+				"title_template": "Title {{template}}",
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					TitleTemplate: &titleTemplate,
+				},
+			},
+		},
+		"ignore expected termination not nil": {
+			Data: map[string]interface{}{
+				"nrql":                           []interface{}{nrql},
+				"expiration_duration":            120,
+				"open_violation_on_expiration":   true,
+				"close_violations_on_expiration": true,
+				"ignore_on_expected_termination": true,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Expiration: &alerts.AlertsNrqlConditionExpiration{
+						ExpirationDuration:          &[]int{120}[0],
+						CloseViolationsOnExpiration: true,
+						OpenViolationOnExpiration:   true,
+						IgnoreOnExpectedTermination: true,
+					},
+				},
+			},
+		},
 	}
 
 	r := resourceNewRelicNrqlAlertCondition()
@@ -429,14 +470,16 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	r := resourceNewRelicNrqlAlertCondition()
 	dataAccountId := 987654
 	evalOffset := 3
+	titleTemplate := "Title {{template}}"
 
 	nrqlCondition := alerts.NrqlAlertCondition{
 		ID:       "1234567",
 		PolicyID: "7654321",
 		NrqlConditionBase: alerts.NrqlConditionBase{
-			Description: "description test",
-			Enabled:     true,
-			Name:        "name-test",
+			Description:   "description test",
+			TitleTemplate: &titleTemplate,
+			Enabled:       true,
+			Name:          "name-test",
 			Nrql: alerts.NrqlConditionQuery{
 				Query:            "SELECT average(duration) from Transaction where appName='Dummy App'",
 				DataAccountId:    &dataAccountId,
@@ -549,6 +592,9 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		assert.Equal(t, "at_least_once", warningTerms[0].(map[string]interface{})["threshold_occurrences"])
 		assert.Equal(t, 660, warningTerms[0].(map[string]interface{})["threshold_duration"])
 		assert.Equal(t, "below", warningTerms[0].(map[string]interface{})["operator"])
+
+		titleTemplate := d.Get("title_template").(string)
+		assert.Equal(t, "Title {{template}}", titleTemplate)
 
 		switch condition.Type {
 		case alerts.NrqlConditionTypes.Baseline:

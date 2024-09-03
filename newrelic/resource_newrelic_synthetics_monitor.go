@@ -119,6 +119,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Optional:    true,
 				Description: "The programing language that should execute the script",
 			},
+			SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
 			"tag": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -191,6 +192,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description: "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
 			},
 		},
+		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
 	}
 }
 

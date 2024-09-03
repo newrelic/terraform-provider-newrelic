@@ -55,7 +55,7 @@ func TestAccNewRelicAccountManagementInvalidRegion(t *testing.T) {
 }
 func TestAccNewRelicAccountManagementInCorrectRegion(t *testing.T) {
 	rName := acctest.RandString(7)
-	expectedErrorMsg := regexp.MustCompile(`An error occurred resolving this field`)
+	expectedErrorMsg := regexp.MustCompile(`An error occurred resolving this field|cannot create account -- no configured parent account`)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

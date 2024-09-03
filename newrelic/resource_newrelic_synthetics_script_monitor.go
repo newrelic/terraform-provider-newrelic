@@ -26,6 +26,7 @@ func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 			syntheticsScriptMonitorLocationsSchema(),
 			syntheticsScriptBrowserMonitorAdvancedOptionsSchema(),
 		),
+		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
 	}
 }
 
@@ -130,6 +131,7 @@ func syntheticsScriptMonitorCommonSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The specific semver version of the runtime type.",
 		},
+		SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
 	}
 }
 
