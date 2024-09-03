@@ -156,12 +156,14 @@ resource "newrelic_notification_channel" "foo" {
 
   property {
     key = "project"
-    value = "10000"
+    value = "10000" // id of the project, can be found using https://confluence.atlassian.com/jirakb/how-to-get-project-id-from-the-jira-user-interface-827341414.html
+    label = "Project-Name"
   }
 
   property {
     key = "issuetype"
-    value = "10004"
+    value = "10004" // id of the issuetype, can be found using https://confluence.atlassian.com/jirakb/finding-the-id-for-issue-types-646186508.html
+    label = "Bug"
   }
 
   property {

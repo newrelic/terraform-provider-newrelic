@@ -228,6 +228,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:    true,
 				Description: "The description of the NRQL alert condition.",
 			},
+			"title_template": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "This field allows you to create a custom title to be used when incidents are opened by the condition. Setting this field will override the default title. Must be Handlebars format.",
+			},
 			"violation_time_limit": {
 				Type:          schema.TypeString,
 				Deprecated:    "use `violation_time_limit_seconds` attribute instead",
@@ -266,6 +271,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:     true,
 				Description:  "The amount of time (in seconds) to wait before considering the signal expired.  Must be in the range of 30 to 172800 (inclusive)",
 				ValidateFunc: validation.IntBetween(30, 172800),
+			},
+			"ignore_on_expected_termination": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to ignore expected termination of a signal when considering whether to create a loss of signal incident",
 			},
 			"fill_option": {
 				Type:         schema.TypeString,
