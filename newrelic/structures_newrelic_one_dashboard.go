@@ -36,7 +36,10 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}, dashboardNam
 		return nil, err
 	}
 
-	dash.Variables = expandDashboardVariablesInput(d.Get("variable").([]interface{}))
+	dash.Variables, err = expandDashboardVariablesInput(d.Get("variable").([]interface{}))
+	if err != nil {
+		return nil, err
+	}
 
 	// Optional, with default
 	perm := d.Get("permissions").(string)
@@ -50,9 +53,18 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}, dashboardNam
 	return &dash, nil
 }
 
-func expandDashboardVariablesInput(variables []interface{}) []dashboards.DashboardVariableInput {
+func checkForNilElements(d []interface{}) bool {
+	for _, item := range d {
+		if item == nil {
+			return true
+		}
+	}
+	return false
+}
+
+func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
 	if len(variables) < 1 {
-		return []dashboards.DashboardVariableInput{}
+		return []dashboards.DashboardVariableInput{}, nil
 	}
 
 	expanded := make([]dashboards.DashboardVariableInput, len(variables))
@@ -61,8 +73,14 @@ func expandDashboardVariablesInput(variables []interface{}) []dashboards.Dashboa
 		var variable dashboards.DashboardVariableInput
 		v := val.(map[string]interface{})
 
-		if d, ok := v["default_values"]; ok && len(d.([]interface{})) > 0 {
-			variable.DefaultValues = expandVariableDefaultValues(d.([]interface{}))
+		if d, ok := v["default_values"].([]interface{}); ok && d != nil && len(d) > 0 {
+			// Check if the slice is empty or contains only nil elements as we are receiving d as [<nil>] when an empty string is given
+			hasNil := checkForNilElements(d)
+			if len(d) > 0 && !hasNil {
+				variable.DefaultValues = expandVariableDefaultValues(d)
+			} else {
+				return []dashboards.DashboardVariableInput{}, fmt.Errorf("default_values is an empty slice or contains only nil values")
+			}
 		}
 
 		if m, ok := v["is_multi_selection"]; ok {
@@ -99,7 +117,7 @@ func expandDashboardVariablesInput(variables []interface{}) []dashboards.Dashboa
 
 		expanded[i] = variable
 	}
-	return expanded
+	return expanded, nil
 }
 
 func expandVariableDefaultValues(in []interface{}) *[]dashboards.DashboardVariableDefaultItemInput {
