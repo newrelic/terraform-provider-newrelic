@@ -64,3 +64,7 @@ For example:
 ```
 $ terraform import newrelic_api_access_key.foobar "1234567:INGEST"
 ```
+## Extended Usage
+This module may be used to create a user or ingest key using the `create_access_keys_service` resource, and fetch the created key using `fetch_access_keys_service`, by performing a NerdGraph query under the hood, using the ID of the key created via the resource to fetch the created key.
+Please refer  
+[create access keys and fetch access keys](https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/modules/golden-signal-alerts-new/README.md) for more info.
