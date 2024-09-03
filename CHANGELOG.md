@@ -1,3 +1,14 @@
+<a name="v3.44.0"></a>
+## [v3.44.0] - 2024-09-03
+### Bug Fixes
+- **dashboard:**  changes to `legend_enabled` to use a pointer based datatype ([#2739](https://github.com/newrelic/terraform-provider-newrelic/issues/2739))
+
+### Documentation Updates
+- **notifications:** changed jira example comment ([#2691](https://github.com/newrelic/terraform-provider-newrelic/issues/2691))
+
+### Features
+- **dashboards:** adds support for initial sorting and refresh rate ([#2732](https://github.com/newrelic/terraform-provider-newrelic/issues/2732))
+
 <a name="v3.43.0"></a>
 ## [v3.43.0] - 2024-08-26
 ### Features
@@ -2199,7 +2210,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.43.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.44.0...HEAD
+[v3.44.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.43.0...v3.44.0
 [v3.43.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.3...v3.43.0
 [v3.42.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.2...v3.42.3
 [v3.42.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.1...v3.42.2
