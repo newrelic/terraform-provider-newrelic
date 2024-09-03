@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -374,6 +375,9 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 
 				// Set thresholds
 				rawConfiguration.Thresholds = expandDashboardTableWidgetConfigurationThresholdInput(d, pageIndex, widgetIndex)
+				// Set initalSorting
+				rawConfiguration.InitialSorting = expandDashboardTableWidgetConfigInitialSortingInput(v.(map[string]interface{}))
+
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
 					return nil, err
@@ -548,6 +552,25 @@ func expandDashboardLineWidgetConfigurationThresholdInput(d *schema.ResourceData
 	return lineWidgetThresholdsRoot
 }
 
+func expandDashboardTableWidgetConfigInitialSortingInput(w map[string]interface{}) *dashboards.DashboardWidgetInitialSorting {
+	var tableWidgetInitialSorting dashboards.DashboardWidgetInitialSorting
+
+	if q, ok := w["initial_sorting"]; ok && len(q.([]interface{})) == 1 && q.([]interface{})[0] != nil {
+		dashboardInitialSortingMap := q.([]interface{})[0].(map[string]interface{})
+
+		if i, ok := dashboardInitialSortingMap["direction"]; ok {
+			tableWidgetInitialSorting.Direction = i.(string)
+		}
+
+		if i, ok := dashboardInitialSortingMap["name"]; ok {
+			tableWidgetInitialSorting.Name = i.(string)
+		}
+		return &tableWidgetInitialSorting
+	}
+
+	return nil
+}
+
 func expandDashboardTableWidgetConfigurationThresholdInput(d *schema.ResourceData, pageIndex int, widgetIndex int) []dashboards.DashboardTableWidgetThresholdInput {
 	// initialize an object of []DashboardTableWidgetThresholdInput, which would include a list of tableWidgetThresholdsToBeAdded as specified
 	// in the Terraform configuration, with the attribute "threshold" in table widgets
@@ -637,13 +660,27 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 
 	if q, ok := w["legend_enabled"]; ok {
 		var l dashboards.DashboardWidgetLegend
-		l.Enabled = q.(bool)
+		qBool, _ := q.(bool)
+		l.Enabled = &qBool
 		cfg.Legend = &l
 	}
 	if q, ok := w["facet_show_other_series"]; ok {
 		var l dashboards.DashboardWidgetFacet
 		l.ShowOtherSeries = q.(bool)
 		cfg.Facet = &l
+	}
+	if q, ok := w["refresh_rate"]; ok {
+		var l dashboards.DashboardWidgetRefreshRate
+
+		// Acceptable values for refresh rate could be string such as "auto", or number such as 5000
+		// If we try to send numerical values as string to NerdGraph eg: "5000", the refresh rate isn't reflected in the UI
+		// Hence we need to convert numerical values from string type to int type
+		if v, err := strconv.Atoi(q.(string)); err == nil {
+			l.Frequency = v
+		} else {
+			l.Frequency = q.(string)
+		}
+		cfg.RefreshRate = &l
 	}
 
 	cfg = expandDashboardWidgetYAxisAttributesVizClassified(w, cfg, visualisation)
@@ -1208,6 +1245,16 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	if rawCfg.Colors != nil {
 		out["colors"] = flattenDashboardWidgetColors(rawCfg.Colors)
 	}
+	if rawCfg.RefreshRate != nil {
+		// Since schema for refresh_rate is defined as string
+		// If we get integer values in graphQL response, we need to convert to string
+		if reflect.TypeOf(rawCfg.RefreshRate.Frequency).Kind() == reflect.String {
+			out["refresh_rate"] = rawCfg.RefreshRate.Frequency
+		} else {
+			s := strconv.FormatFloat(rawCfg.RefreshRate.Frequency.(float64), 'f', -1, 64)
+			out["refresh_rate"] = s
+		}
+	}
 
 	// Set widget type and arguments
 	switch in.Visualization.ID {
@@ -1292,6 +1339,14 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 		widgetType = "widget_table"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
 		out["filter_current_dashboard"] = filterCurrentDashboard
+
+		if rawCfg.InitialSorting != nil {
+			initialSorting := flattenDashboardWidgetInitialSorting(rawCfg.InitialSorting)
+			if initialSorting != nil {
+				out["initial_sorting"] = initialSorting
+			}
+		}
+
 		if rawCfg.Thresholds != nil {
 			thresholds := flattenDashboardTableWidgetThresholds(rawCfg.Thresholds)
 			if thresholds != nil {
@@ -1305,6 +1360,17 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	}
 
 	return widgetType, out
+}
+
+func flattenDashboardWidgetInitialSorting(in *dashboards.DashboardWidgetInitialSorting) []interface{} {
+	out := make([]interface{}, 1)
+	k := make(map[string]interface{})
+
+	k["direction"] = in.Direction
+	k["name"] = in.Name
+
+	out[0] = k
+	return out
 }
 
 func flattenDashboardWidgetNRQLQuery(in *[]dashboards.DashboardWidgetNRQLQueryInput) []interface{} {

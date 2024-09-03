@@ -320,6 +320,17 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 			Required: true,
 			Elem:     dashboardWidgetNRQLQuerySchemaElem(),
 		},
+		"refresh_rate": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"initial_sorting": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MaxItems: 1,
+			MinItems: 1,
+			Elem:     dashboardWidgetInitialSortingSchemaElem(),
+		},
 		"ignore_time_range": {
 			Type:     schema.TypeBool,
 			Optional: true,
@@ -441,6 +452,22 @@ func dashboardWidgetNullValuesSchemaElem() *schema.Resource {
 						},
 					},
 				},
+			},
+		},
+	}
+}
+func dashboardWidgetInitialSortingSchemaElem() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"direction": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Defines the sort order. Either ascending or descending.",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The column name to be sorted",
 			},
 		},
 	}

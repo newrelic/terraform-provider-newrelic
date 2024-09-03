@@ -594,6 +594,7 @@ func testAccCheckNewRelicOneDashboardConfig_PageSimple(pageName string) string {
       title = "foo"
       row = 4
       column = 1
+      refresh_rate = 30000
       nrql_query {
         query      = "FROM Transaction SELECT count(*) FACET name"
       }
@@ -643,6 +644,8 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       column = 1
       height = 3
       width = 12
+
+      refresh_rate = 30000
 
       nrql_query {
         account_id = ` + accountID + `
@@ -774,6 +777,11 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
 		severity 	= "unavailable"
 	  }
       linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+      refresh_rate = 30000
+      initial_sorting {
+        direction = "desc"
+        name      = "appName"
+      }
     }
 
     widget_json {
