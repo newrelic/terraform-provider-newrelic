@@ -1,3 +1,11 @@
+<a name="v3.45.0"></a>
+## [v3.45.0] - 2024-09-03
+### Bug Fixes
+- **dashboard:** fix error handling around `default_values` to disallow empty values ([#2734](https://github.com/newrelic/terraform-provider-newrelic/issues/2734))
+
+### Features
+- **modules:** adding module to retrieve api keys using a external graphql provider ([#2728](https://github.com/newrelic/terraform-provider-newrelic/issues/2728))
+
 <a name="v3.44.0"></a>
 ## [v3.44.0] - 2024-09-03
 ### Bug Fixes
@@ -2210,7 +2218,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.44.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.0...HEAD
+[v3.45.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.44.0...v3.45.0
 [v3.44.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.43.0...v3.44.0
 [v3.43.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.3...v3.43.0
 [v3.42.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.2...v3.42.3
