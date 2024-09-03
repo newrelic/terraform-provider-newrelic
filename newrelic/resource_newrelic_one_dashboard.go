@@ -81,6 +81,7 @@ func dashboardVariableSchemaElem() *schema.Resource {
 			"default_values": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				MinItems:    1,
 				Description: "Default values for this variable.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
