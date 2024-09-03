@@ -4,7 +4,7 @@ locals {
   name = local.response["data"]["actor"]["apiAccess"]["key"]["name"]
   type = local.response["data"]["actor"]["apiAccess"]["key"]["type"]
   ingestType = lookup(local.response["data"]["actor"]["apiAccess"]["key"],"ingestType",null)
-  is_resource_created = var.newrelic_api_access_key_extended.newrelic_account_id != ""
+  is_resource_created = var.create_access_keys_service.newrelic_account_id != ""
 }
 
 variable "fetch_access_keys_service" {
@@ -22,7 +22,7 @@ variable "fetch_access_keys_service" {
   }
 }
 
-variable "newrelic_api_access_key_extended" {
+variable "create_access_keys_service" {
   description = "The service is to create api keys"
   type = object({
     api_key                    = string

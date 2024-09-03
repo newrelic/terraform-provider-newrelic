@@ -3,7 +3,7 @@ provider "graphql" {
   url = var.fetch_access_keys_service.graphiql_url
   headers = {
     "Content-Type" = "application/json"
-    "API-Key" = var.fetch_access_keys_service.api_key != "" ? var.fetch_access_keys_service.api_key : var.newrelic_api_access_key_extended.api_key
+    "API-Key" = var.fetch_access_keys_service.api_key != "" ? var.fetch_access_keys_service.api_key : var.create_access_keys_service.api_key
   }
 }
 
@@ -32,19 +32,19 @@ data "graphql_query" "basic_query" {
 }
 
 resource "newrelic_api_access_key" "api_access_key" {
-  count  = var.newrelic_api_access_key_extended.newrelic_account_id != "" ? 1 : 0
-  account_id  = var.newrelic_api_access_key_extended.newrelic_account_id
-  key_type    = var.newrelic_api_access_key_extended.key_type
-  name        = "${var.newrelic_api_access_key_extended.key_type != "USER" ? "APM " : "" }${var.newrelic_api_access_key_extended.key_type}${var.newrelic_api_access_key_extended.key_type != "USER" ? "-" : "" }${var.newrelic_api_access_key_extended.ingest_type} Key for ${var.newrelic_api_access_key_extended.name}"
-  notes       = var.newrelic_api_access_key_extended.notes
-  user_id     = var.newrelic_api_access_key_extended.key_type == "USER" ? var.newrelic_api_access_key_extended.user_id : null
-  ingest_type = var.newrelic_api_access_key_extended.key_type == "INGEST" ? var.newrelic_api_access_key_extended.ingest_type : null
+  count  = var.create_access_keys_service.newrelic_account_id != "" ? 1 : 0
+  account_id  = var.create_access_keys_service.newrelic_account_id
+  key_type    = var.create_access_keys_service.key_type
+  name        = "${var.create_access_keys_service.key_type != "USER" ? "APM " : "" }${var.create_access_keys_service.key_type}${var.create_access_keys_service.key_type != "USER" ? "-" : "" }${var.create_access_keys_service.ingest_type} Key for ${var.create_access_keys_service.name}"
+  notes       = var.create_access_keys_service.notes
+  user_id     = var.create_access_keys_service.key_type == "USER" ? var.create_access_keys_service.user_id : null
+  ingest_type = var.create_access_keys_service.key_type == "INGEST" ? var.create_access_keys_service.ingest_type : null
 }
 
 data "graphql_query" "query_with_id" {
   query_variables = {
     "id"        = newrelic_api_access_key.api_access_key[0].id
-    "key_type"  = var.newrelic_api_access_key_extended.key_type
+    "key_type"  = var.create_access_keys_service.key_type
   }
   query = <<EOF
     query getUser($id: ID!, $key_type: ApiAccessKeyType!) {

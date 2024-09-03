@@ -15,9 +15,9 @@ The following output values are provided by the module:
 ### Example usage #1 (USER)
 ```terraform
 module "create_access_keys" {
-  source = "../examples/modules/fetch-newrelic-api-access-key"
+  source = "../examples/modules/newrelic_api_access_key_extended"
 
-  newrelic_api_access_key_extended = {
+  create_access_keys_service = {
     api_key             = "NRAK-XXXXXXXXXX"
     newrelic_account_id = "12345678"
     name                = "Access key for DemoApp"
@@ -33,9 +33,9 @@ output "required_attributes" {
 ### Example usage #2 (INGEST-LICENSE)
 ```terraform
 module "create_access_keys" {
-  source = "../examples/modules/fetch-newrelic-api-access-key"
+  source = "../examples/modules/newrelic_api_access_key_extended"
 
-  newrelic_api_access_key_extended = {
+  create_access_keys_service = {
     api_key             = "NRAK-XXXXXXXXXX"
     newrelic_account_id = "12345678"
     name                = "DemoApp"
@@ -51,9 +51,9 @@ output "required_attributes" {
 ### Example usage #3 (INGEST-BROWSER)
 ```terraform
 module "create_access_keys" {
-  source = "../examples/modules/fetch-newrelic-api-access-key"
+  source = "../examples/modules/newrelic_api_access_key_extended"
 
-  newrelic_api_access_key_extended = {
+  create_access_keys_service = {
     api_key             = "NRAK-XXXXXXXXXX"
     newrelic_account_id = "12345678"
     name                = "DemoApp"
@@ -82,7 +82,7 @@ The following output values are provided by the module:
 ### Example usage
 ```terraform
 module "fetch_access_keys" {
-  source = "../examples/modules/fetch-newrelic-api-access-key"
+  source = "../examples/modules/newrelic_api_access_key_extended"
 
   fetch_access_keys_service = {
         api_key = "NRAK-XXXXXXXXXXXXXXXX"
