@@ -61,8 +61,6 @@ resource "newrelic_synthetics_monitor" "monitor" {
   runtime_type                            = "CHROME_BROWSER"
   runtime_type_version                    = "100"
   script_language                         = "JAVASCRIPT"
-  device_type                             = "MOBILE"
-  device_orientation                      = "LANDSCAPE"
 
   tag {
     key    = "some_key"
