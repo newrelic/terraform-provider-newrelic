@@ -569,3 +569,9 @@ func syntheticMonitorsUseUnsupportedLegacyRuntimeDiffSuppressor(k, oldValue, new
 
 	return false
 }
+
+func multiBrowsersDevicesDiffSuppressor(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	attributeName := strings.Split(k, ".")[0]
+	isFieldPresent := d.GetRawConfig().GetAttr(attributeName).IsNull()
+	return isFieldPresent
+}

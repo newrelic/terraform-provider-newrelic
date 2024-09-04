@@ -89,6 +89,7 @@ func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Sc
 			Optional: true,
 			Description: "The browsers that can be used to execute script execution. Valid values are array of CHROME," +
 				" EDGE, FIREFOX, and NONE.",
+			DiffSuppressFunc: multiBrowsersDevicesDiffSuppressor,
 		},
 		"devices": {
 			Type:     schema.TypeSet,
@@ -97,6 +98,7 @@ func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Sc
 			Optional: true,
 			Description: "The devices that can be used to execute script execution. Valid values are array of DESKTOP," +
 				" MOBILE_LANDSCAPE, MOBILE_PORTRAIT, TABLET_LANDSCAPE, TABLET_PORTRAIT and NONE.",
+			DiffSuppressFunc: multiBrowsersDevicesDiffSuppressor,
 		},
 	}
 }
@@ -247,7 +249,9 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 		for _, t := range e.Tags {
 			if k, ok := syntheticsMonitorTagKeyToSchemaAttrMap[t.Key]; ok {
 				if t.Key == "devices" || t.Key == "browsers" {
-					_ = d.Set(k, t.Values)
+					if len(d.Get(t.Key).(*schema.Set).List()) > 0 {
+						_ = d.Set(k, t.Values)
+					}
 				} else if len(t.Values) == 1 {
 					_ = d.Set(k, t.Values[0])
 				}
