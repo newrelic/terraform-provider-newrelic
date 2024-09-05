@@ -47,4 +47,5 @@ resource "newrelic_cloud_gcp_integrations" "gcp_integrations" {
   storage {}
   virtual_machines {}
   vpc_access {}
+  ai_platform {}
 }

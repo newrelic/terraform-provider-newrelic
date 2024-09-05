@@ -28,6 +28,9 @@ resource "newrelic_cloud_gcp_link_account" "foo" {
 
 resource "newrelic_cloud_gcp_integrations" "foo1" {
   linked_account_id = newrelic_cloud_gcp_link_account.foo.id
+  ai_platform {
+    metrics_polling_interval = 300
+  }
   app_engine {
     metrics_polling_interval = 300
   }
@@ -109,15 +112,17 @@ resource "newrelic_cloud_gcp_integrations" "foo1" {
   }
 }
 ```
+
 ## Argument Reference
 
 -> **WARNING:** Starting with [v3.27.2](https://registry.terraform.io/providers/newrelic/newrelic/3.27.2) of the New Relic Terraform Provider, updating the `linked_account_id` of a `newrelic_cloud_gcp_integrations` resource that has been applied would **force a replacement** of the resource (destruction of the resource, followed by the creation of a new resource). When such an update is performed, please carefully review the output of `terraform plan`, which would clearly indicate a replacement of this resource, before performing a `terraform apply`.
 
-* `account_id` - (Optional) The New Relic account ID to operate on.  This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
-* `linked_account_id` - (Required) The ID of the linked GCP account in New Relic.
+- `account_id` - (Optional) The New Relic account ID to operate on. This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
+- `linked_account_id` - (Required) The ID of the linked GCP account in New Relic.
 
 The following arguments/integration blocks are intended to be used with a minimum `metrics_polling_interval` of 300 seconds.
 
+* `ai_platform` - (Optional) Vertex AI integration. See [Integration blocks](#integration-blocks) below for details.
 * `alloy_db` - (Optional) Alloy DB integration. See [Integration blocks](#integration-blocks) below for details.
 * `app_engine` - (Optional) App Engine integration. See [Integration blocks](#integration-blocks) below for details.
 * `big_query` - (Optional) Biq Query integration. See [Integration blocks](#integration-blocks) below for details.
@@ -159,7 +164,7 @@ Other integration supports an additional argument:
 * `pub_sub`
 * `spanner`
 * `storage`
-    * `fetch_tags` - (Optional) Specify if labels and the extended inventory should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
+  * `fetch_tags` - (Optional) Specify if labels and the extended inventory should be collected. May affect total data collection time and contribute to the Cloud provider API rate limit.
 
 ## Attributes Reference
 
