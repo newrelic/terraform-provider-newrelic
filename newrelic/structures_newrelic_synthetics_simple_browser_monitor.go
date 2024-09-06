@@ -66,9 +66,8 @@ func buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulation(d *schema.Reso
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
 
+	simpleBrowserMonitorInput.Runtime = &synthetics.SyntheticsRuntimeInput{}
 	if scriptLangOk || runtimeTypeOk || runtimeTypeVersionOk {
-		simpleBrowserMonitorInput.Runtime = &synthetics.SyntheticsRuntimeInput{}
-
 		if scriptLangOk {
 			simpleBrowserMonitorInput.Runtime.ScriptLanguage = scriptLang.(string)
 		}
@@ -80,6 +79,9 @@ func buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulation(d *schema.Reso
 		if runtimeTypeVersionOk {
 			simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
 		}
+	} else {
+		simpleBrowserMonitorInput.Runtime.RuntimeType = ""
+		simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = ""
 	}
 
 	do, doOk := d.GetOk("device_orientation")

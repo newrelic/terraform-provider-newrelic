@@ -27,9 +27,8 @@ func buildSyntheticsScriptAPIMonitorInput(d *schema.ResourceData) synthetics.Syn
 	_, runtimeTypeOk := d.GetOk("runtime_type")
 	_, runtimeVersionOk := d.GetOk("runtime_type_version")
 
+	input.Runtime = &synthetics.SyntheticsRuntimeInput{}
 	if scriptLangOk || runtimeTypeOk || runtimeVersionOk {
-		input.Runtime = &synthetics.SyntheticsRuntimeInput{}
-
 		if v, ok := d.GetOk("script_language"); ok {
 			input.Runtime.ScriptLanguage = v.(string)
 		}
@@ -39,6 +38,9 @@ func buildSyntheticsScriptAPIMonitorInput(d *schema.ResourceData) synthetics.Syn
 		if v, ok := d.GetOk("runtime_type_version"); ok {
 			input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
 		}
+	} else {
+		input.Runtime.RuntimeType = ""
+		input.Runtime.RuntimeTypeVersion = ""
 	}
 
 	return input
@@ -66,9 +68,8 @@ func buildSyntheticsScriptAPIMonitorUpdateInput(d *schema.ResourceData) syntheti
 	_, runtimeTypeOk := d.GetOk("runtime_type")
 	_, runtimeVersionOk := d.GetOk("runtime_type_version")
 
+	input.Runtime = &synthetics.SyntheticsRuntimeInput{}
 	if scriptLangOk || runtimeTypeOk || runtimeVersionOk {
-		input.Runtime = &synthetics.SyntheticsRuntimeInput{}
-
 		if v, ok := d.GetOk("script_language"); ok {
 			input.Runtime.ScriptLanguage = v.(string)
 		}
@@ -78,6 +79,9 @@ func buildSyntheticsScriptAPIMonitorUpdateInput(d *schema.ResourceData) syntheti
 		if v, ok := d.GetOk("runtime_type_version"); ok {
 			input.Runtime.RuntimeTypeVersion = synthetics.SemVer(v.(string))
 		}
+	} else {
+		input.Runtime.RuntimeType = ""
+		input.Runtime.RuntimeTypeVersion = ""
 	}
 
 	return input
