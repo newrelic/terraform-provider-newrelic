@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -12,6 +11,11 @@ func validateSyntheticMonitorRuntimeAttributes(ctx context.Context, d *schema.Re
 	var errorsList []error
 
 	err := validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d)
+	if err != nil {
+		errorsList = append(errorsList, err...)
+	}
+
+	err = validateDevicesFields(d)
 	if err != nil {
 		errorsList = append(errorsList, err...)
 	}
@@ -151,4 +155,32 @@ This is in relation with the upcoming Synthetics Legacy Runtime EOL on October 2
 https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm
 https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/synthetics_legacy_runtime_eol_migration_guide
 `
+}
+
+// The following function will validate the device fields at the Terraform plan, ensuring that the user specifies
+// either the devices field alone or both the device_type and device_orientation fields
+func validateDevicesFields(d *schema.ResourceDiff) []error {
+	rawConfiguration := d.GetRawConfig()
+
+	// GetAttr func will get below fields corresponding values from raw configuration that is from terraform configuration file
+	devicesValue := rawConfiguration.GetAttr("devices").IsNull()
+	deviceTypeValue := rawConfiguration.GetAttr("device_type").IsNull()
+	deviceOrientationValue := rawConfiguration.GetAttr("device_orientation").IsNull()
+
+	if !devicesValue && !(deviceTypeValue && deviceOrientationValue) {
+		return []error{
+			fmt.Errorf(`Cannot use 'devices', 'device_type', and 'device_orientation' simultaneously. 
+	Use either 'devices' alone or both 'device_type' and 'device_orientation' fields together. 
+	We recommend using the 'devices' field, as it allows you to select multiple combinations of device types and orientations.`),
+		}
+	}
+
+	if deviceTypeValue != deviceOrientationValue {
+		return []error{
+			fmt.Errorf("you need to specify both 'device_type' and 'device_orientation' fields; you can't use just one of them"),
+		}
+	}
+
+	return nil
+
 }

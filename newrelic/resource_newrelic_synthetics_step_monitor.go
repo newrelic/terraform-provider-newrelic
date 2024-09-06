@@ -103,22 +103,8 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 			Description: "The specific semver version of the runtime type.",
 		},
 		SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
-		"browsers": {
-			Type:     schema.TypeSet,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-			MinItems: 1,
-			Optional: true,
-			Description: "The browsers that can be used to execute script execution. Valid values are array of CHROME," +
-				" EDGE, FIREFOX, and NONE.",
-		},
-		"devices": {
-			Type:     schema.TypeSet,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-			MinItems: 1,
-			Optional: true,
-			Description: "The devices that can be used to execute script execution. Valid values are array of DESKTOP," +
-				" MOBILE_LANDSCAPE, MOBILE_PORTRAIT, TABLET_LANDSCAPE, TABLET_PORTRAIT and NONE.",
-		},
+		"browsers":                          browsersSchema,
+		"devices":                           devicesSchema,
 	}
 }
 
@@ -164,7 +150,8 @@ func resourceNewRelicSyntheticsStepMonitorCreate(ctx context.Context, d *schema.
 	if respRuntimeTypeVersion != "" {
 		_ = d.Set("runtime_type_version", respRuntimeTypeVersion)
 	}
-
+	_ = d.Set("browsers", resp.Monitor.Browsers)
+	_ = d.Set("devices", resp.Monitor.Devices)
 	return diag.FromErr(err)
 }
 
@@ -219,6 +206,9 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 				_ = d.Set(t.Key, t.Values)
 			}
 		}
+
+		// Ensure Browsers, Devices fields are set to empty if not set, as they are computed type attributes
+		setBrowsersDevicesIfNotPresent(d)
 	}
 	return diag.FromErr(err)
 }
@@ -262,7 +252,8 @@ func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.
 	if respRuntimeTypeVersion != "" {
 		_ = d.Set("runtime_type_version", respRuntimeTypeVersion)
 	}
-
+	_ = d.Set("browsers", resp.Monitor.Browsers)
+	_ = d.Set("devices", resp.Monitor.Devices)
 	return diag.FromErr(err)
 }
 

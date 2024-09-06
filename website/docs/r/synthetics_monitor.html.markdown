@@ -100,10 +100,10 @@ The `BROWSER` monitor type supports the following additional arguments:
 * `runtime_type_version` - (Optional) The runtime type that the monitor will run. Valid value is `100`.
 * `runtime_type` - (Optional) The runtime type that the monitor will run. Valid value is `CHROME_BROWSER`
 * `script_language` - (Optional) The programing language that should execute the script.
-* `device_orientation` - (Optional - *Deprecating soon. So, we recommend you to use `devices` attribute instead of `device_orientation`*) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`.
-* `device_type` - (Optional - *Deprecating soon. So, we recommend you to use `devices` attribute instead of `device_type`*) Device emulation type field. Valid values are `MOBILE` and `TABLET`.
-* `devices` - (Optional) The devices on which monitor will run. Valid values are `DESKTOP`, `MOBILE_LANDSCAPE`, `MOBILE_PORTRAIT`, `TABLET_LANDSCAPE`, `TABLET_PORTRAIT` and `NONE` .
-* `browsers` - (Optional) The browsers on which monitor will run. Valid values are `CHROME`, `EDGE`, `FIREFOX`, and `NONE` . 
+* `browsers` - (Optional) The multiple browsers list on which synthetic monitors will run. Valid values are `CHROME` and `FIREFOX`.
+* `devices` - (Optional) The multiple devices list on which synthetic monitors will run. Valid values are `DESKTOP`, `MOBILE_LANDSCAPE`, `MOBILE_PORTRAIT`, `TABLET_LANDSCAPE` and `TABLET_PORTRAIT`.
+* `device_orientation` - (Optional) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`. We recommend you to use `devices` field instead of `device_type`,`device_orientation` fields, as it allows you to select multiple combinations of device types and orientations.
+* `device_type` - (Optional) Device emulation type field. Valid values are `MOBILE` and `TABLET`. We recommend you to use `devices` field instead of `device_type`,`device_orientation` fields, as it allows you to select multiple combinations of device types and orientations.
 
 #### Deprecated Runtime
 

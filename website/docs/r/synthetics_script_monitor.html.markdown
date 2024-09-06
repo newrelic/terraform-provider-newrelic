@@ -87,9 +87,9 @@ The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
 
 * `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution.
 * `browsers` - (Optional) The multiple browsers list on which synthetic monitors will run. Valid values are `CHROME` and `FIREFOX`.
-* `devices` - (Optional) The multiple devices list on which synthetic monitors will run. Valid values are `DESKTOP`, `TABLET`, `MOBILE_LANDSCAPE`, `MOBILE_PORTRAIT`, `TABLET_LANDSCAPE` and `TABLET_PORTRAIT`.
-* `device_orientation` - (Optional - *Deprecating soon. So, we recommend you to use `devices` attribute instead of `device_orientation`*) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`.
-* `device_type` - (Optional - *Deprecating soon. So, we recommend you to use `devices` attribute instead of `device_type`*) Device emulation type field. Valid values are `MOBILE` and `TABLET`.
+* `devices` - (Optional) The multiple devices list on which synthetic monitors will run. Valid values are `DESKTOP`, `MOBILE_LANDSCAPE`, `MOBILE_PORTRAIT`, `TABLET_LANDSCAPE` and `TABLET_PORTRAIT`.
+* `device_orientation` - (Optional) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`. We recommend you to use `devices` field instead of `device_type`,`device_orientation` fields, as it allows you to select multiple combinations of device types and orientations.
+* `device_type` - (Optional) Device emulation type field. Valid values are `MOBILE` and `TABLET`. We recommend you to use `devices` field instead of `device_type`,`device_orientation` fields, as it allows you to select multiple combinations of device types and orientations.
 
 #### Deprecated runtime
 

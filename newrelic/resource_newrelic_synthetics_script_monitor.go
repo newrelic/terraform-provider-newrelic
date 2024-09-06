@@ -72,6 +72,8 @@ func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Sc
 			Optional:    true,
 			Description: "Capture a screenshot during job execution.",
 		},
+		"browsers": browsersSchema,
+		"devices":  devicesSchema,
 		"device_orientation": {
 			Type:        schema.TypeString,
 			Optional:    true,
@@ -81,24 +83,6 @@ func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Sc
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
-		},
-		"browsers": {
-			Type:     schema.TypeSet,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-			MinItems: 1,
-			Optional: true,
-			Description: "The browsers that can be used to execute script execution. Valid values are array of CHROME," +
-				" EDGE, FIREFOX, and NONE.",
-			DiffSuppressFunc: multiBrowsersDevicesDiffSuppressor,
-		},
-		"devices": {
-			Type:     schema.TypeSet,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-			MinItems: 1,
-			Optional: true,
-			Description: "The devices that can be used to execute script execution. Valid values are array of DESKTOP," +
-				" MOBILE_LANDSCAPE, MOBILE_PORTRAIT, TABLET_LANDSCAPE, TABLET_PORTRAIT and NONE.",
-			DiffSuppressFunc: multiBrowsersDevicesDiffSuppressor,
 		},
 	}
 }
@@ -186,7 +170,8 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		d.SetId(string(resp.Monitor.GUID))
 		_ = d.Set("account_id", accountID)
 		_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
-
+		_ = d.Set("browsers", resp.Monitor.Browsers)
+		_ = d.Set("devices", resp.Monitor.Devices)
 		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
 		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
@@ -244,20 +229,20 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 			"period": string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
 			"status": string(e.MonitorSummary.Status),
 		})
-
 		_ = d.Set("period_in_minutes", int(e.GetPeriod()))
 		for _, t := range e.Tags {
 			if k, ok := syntheticsMonitorTagKeyToSchemaAttrMap[t.Key]; ok {
 				if t.Key == "devices" || t.Key == "browsers" {
-					if len(d.Get(t.Key).(*schema.Set).List()) > 0 {
-						_ = d.Set(k, t.Values)
-					}
+					_ = d.Set(k, t.Values)
 				} else if len(t.Values) == 1 {
 					_ = d.Set(k, t.Values[0])
 				}
 			}
 		}
 	}
+
+	// Ensure Browsers, Devices fields are set to empty if not set, as they are computed type attributes
+	setBrowsersDevicesIfNotPresent(d)
 
 	return diag.FromErr(err)
 }

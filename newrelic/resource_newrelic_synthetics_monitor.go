@@ -146,22 +146,8 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description: "Capture a screenshot during job execution",
 				Optional:    true,
 			},
-			"browsers": {
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				MinItems: 1,
-				Optional: true,
-				Description: "The browsers that can be used to execute script execution. Valid values are array of CHROME," +
-					" EDGE, FIREFOX, and NONE.",
-			},
-			"devices": {
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				MinItems: 1,
-				Optional: true,
-				Description: "The devices that can be used to execute script execution. Valid values are array of DESKTOP," +
-					" MOBILE_LANDSCAPE, MOBILE_PORTRAIT, TABLET_LANDSCAPE, TABLET_PORTRAIT and NONE.",
-			},
+			"browsers": browsersSchema,
+			"devices":  devicesSchema,
 			"custom_header": {
 				Type:        schema.TypeSet,
 				Description: "Custom headers to use in monitor job",
@@ -260,7 +246,8 @@ func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreat
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
 	_ = d.Set("device_orientation", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceOrientation)
 	_ = d.Set("device_type", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceType)
-
+	_ = d.Set("browsers", res.Monitor.Browsers)
+	_ = d.Set("devices", res.Monitor.Devices)
 	if res.Monitor.Runtime.RuntimeType != "" {
 		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
 	}
@@ -334,6 +321,9 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 				}
 			}
 		}
+
+		// Ensure Browsers, Devices fields are set to empty if not set, as they are computed type attributes
+		setBrowsersDevicesIfNotPresent(d)
 
 		for _, t := range e.Tags {
 			if t.Key == "responseValidationText" {
@@ -437,7 +427,8 @@ func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowse
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
 	_ = d.Set("device_orientation", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceOrientation)
 	_ = d.Set("device_type", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceType)
-
+	_ = d.Set("browsers", res.Monitor.Browsers)
+	_ = d.Set("devices", res.Monitor.Devices)
 	if res.Monitor.Runtime.RuntimeType != "" {
 		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
 	}

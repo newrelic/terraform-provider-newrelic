@@ -130,6 +130,25 @@ var SyntheticsUseLegacyRuntimeSchema = &schema.Schema{
 	DiffSuppressFunc: syntheticMonitorsUseUnsupportedLegacyRuntimeDiffSuppressor,
 }
 
+var browsersSchema = &schema.Schema{
+	Type:     schema.TypeSet,
+	Elem:     &schema.Schema{Type: schema.TypeString},
+	MinItems: 1,
+	Optional: true,
+	Computed: true,
+	Description: "The multiple browsers list on which synthetic monitors will run. Valid values are array of CHROME," +
+		"and FIREFOX",
+}
+var devicesSchema = &schema.Schema{
+	Type:     schema.TypeSet,
+	Elem:     &schema.Schema{Type: schema.TypeString},
+	MinItems: 1,
+	Optional: true,
+	Computed: true,
+	Description: "The multiple devices list on which synthetic monitors will run. Valid values are array of DESKTOP," +
+		" MOBILE_LANDSCAPE, MOBILE_PORTRAIT, TABLET_LANDSCAPE and TABLET_PORTRAIT",
+}
+
 var syntheticsMonitorPeriodValueMap = map[int]synthetics.SyntheticsMonitorPeriod{
 	1:    synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE,
 	5:    synthetics.SyntheticsMonitorPeriodTypes.EVERY_5_MINUTES,
@@ -570,8 +589,12 @@ func syntheticMonitorsUseUnsupportedLegacyRuntimeDiffSuppressor(k, oldValue, new
 	return false
 }
 
-func multiBrowsersDevicesDiffSuppressor(k, oldValue, newValue string, d *schema.ResourceData) bool {
-	attributeName := strings.Split(k, ".")[0]
-	isFieldPresent := d.GetRawConfig().GetAttr(attributeName).IsNull()
-	return isFieldPresent
+func setBrowsersDevicesIfNotPresent(d *schema.ResourceData) {
+	// Ensure Browsers, Devices fields are set to empty if not set, as they are computed type attributes to avoid Drift
+	if _, ok := d.GetOk("browsers"); !ok {
+		_ = d.Set("browsers", []string{})
+	}
+	if _, ok := d.GetOk("devices"); !ok {
+		_ = d.Set("devices", []string{})
+	}
 }
