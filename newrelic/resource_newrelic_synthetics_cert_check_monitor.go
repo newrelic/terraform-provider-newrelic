@@ -110,7 +110,7 @@ func resourceNewRelicSyntheticsCertCheckMonitor() *schema.Resource {
 			},
 			SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
 		},
-		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
+		CustomizeDiff: validateSyntheticMonitorAttributes,
 	}
 }
 

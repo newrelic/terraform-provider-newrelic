@@ -26,7 +26,7 @@ func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 			syntheticsScriptMonitorLocationsSchema(),
 			syntheticsScriptBrowserMonitorAdvancedOptionsSchema(),
 		),
-		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
+		CustomizeDiff: validateSyntheticMonitorAttributes,
 	}
 }
 
@@ -242,7 +242,7 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 	}
 
 	// Ensure Browsers, Devices fields are set to empty if not set, as they are computed type attributes
-	setBrowsersDevicesIfNotPresent(d)
+	//setBrowsersDevicesIfNotPresent(d)
 
 	return diag.FromErr(err)
 }

@@ -135,18 +135,18 @@ var browsersSchema = &schema.Schema{
 	Elem:     &schema.Schema{Type: schema.TypeString},
 	MinItems: 1,
 	Optional: true,
-	Computed: true,
 	Description: "The multiple browsers list on which synthetic monitors will run. Valid values are array of CHROME," +
 		"and FIREFOX",
+	DiffSuppressFunc: multiBrowsersDevicesDiffSuppressor,
 }
 var devicesSchema = &schema.Schema{
 	Type:     schema.TypeSet,
 	Elem:     &schema.Schema{Type: schema.TypeString},
 	MinItems: 1,
 	Optional: true,
-	Computed: true,
 	Description: "The multiple devices list on which synthetic monitors will run. Valid values are array of DESKTOP," +
 		" MOBILE_LANDSCAPE, MOBILE_PORTRAIT, TABLET_LANDSCAPE and TABLET_PORTRAIT",
+	DiffSuppressFunc: multiBrowsersDevicesDiffSuppressor,
 }
 
 var syntheticsMonitorPeriodValueMap = map[int]synthetics.SyntheticsMonitorPeriod{
@@ -597,4 +597,32 @@ func setBrowsersDevicesIfNotPresent(d *schema.ResourceData) {
 	if _, ok := d.GetOk("devices"); !ok {
 		_ = d.Set("devices", []string{})
 	}
+}
+
+func multiBrowsersDevicesDiffSuppressor(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	rawConfiguration := d.GetRawConfig()
+	runtimeTypeInConfig := rawConfiguration.GetAttr(SyntheticsRuntimeTypeAttrLabel)
+	isRuntimeTypeNil := runtimeTypeInConfig.IsNull() || runtimeTypeInConfig.AsString() == ""
+
+	runtimeTypeVersionInConfig := rawConfiguration.GetAttr(SyntheticsRuntimeTypeVersionAttrLabel)
+	isRuntimeTypeVersionNil := runtimeTypeVersionInConfig.IsNull() || runtimeTypeVersionInConfig.AsString() == ""
+
+	if isRuntimeTypeNil || isRuntimeTypeVersionNil {
+		return false
+	}
+
+	_, monitorType := d.GetChange("type")
+	isBrowserMonitor := strings.Contains(monitorType.(string), "BROWSER")
+	attributeName := strings.Split(k, ".")[0]
+	if attributeName == "devices" && isBrowserMonitor {
+		deviceTypeIsNil := rawConfiguration.GetAttr("device_type").IsNull()
+		deviceOrientationIsNil := rawConfiguration.GetAttr("device_orientation").IsNull()
+		if !deviceTypeIsNil && !deviceOrientationIsNil {
+			return false
+		}
+	}
+
+	isFieldPresent := rawConfiguration.GetAttr(attributeName).IsNull()
+
+	return isFieldPresent
 }

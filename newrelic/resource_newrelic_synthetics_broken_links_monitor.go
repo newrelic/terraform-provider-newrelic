@@ -26,7 +26,7 @@ func resourceNewRelicSyntheticsBrokenLinksMonitor() *schema.Resource {
 			syntheticsMonitorLocationsAsStringsSchema(),
 			syntheticsMonitorRuntimeOptions(),
 		),
-		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
+		CustomizeDiff: validateSyntheticMonitorAttributes,
 	}
 }
 

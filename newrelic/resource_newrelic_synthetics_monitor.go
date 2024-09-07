@@ -178,7 +178,7 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description: "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
 			},
 		},
-		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
+		CustomizeDiff: validateSyntheticMonitorAttributes,
 	}
 }
 

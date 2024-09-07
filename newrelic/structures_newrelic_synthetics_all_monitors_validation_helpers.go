@@ -5,17 +5,21 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"strings"
 )
 
-func validateSyntheticMonitorRuntimeAttributes(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func validateSyntheticMonitorAttributes(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	var errorsList []error
 
 	err := validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d)
 	if err != nil {
 		errorsList = append(errorsList, err...)
 	}
-
-	err = validateDevicesFields(d)
+	_, monitorType := d.GetChange("type")
+	isBrowserMonitor := strings.Contains(monitorType.(string), "BROWSER")
+	if isBrowserMonitor {
+		err = validateDevicesFields(d)
+	}
 	if err != nil {
 		errorsList = append(errorsList, err...)
 	}
@@ -163,11 +167,11 @@ func validateDevicesFields(d *schema.ResourceDiff) []error {
 	rawConfiguration := d.GetRawConfig()
 
 	// GetAttr func will get below fields corresponding values from raw configuration that is from terraform configuration file
-	devicesValue := rawConfiguration.GetAttr("devices").IsNull()
-	deviceTypeValue := rawConfiguration.GetAttr("device_type").IsNull()
-	deviceOrientationValue := rawConfiguration.GetAttr("device_orientation").IsNull()
+	devicesIsNil := rawConfiguration.GetAttr("devices").IsNull()
+	deviceTypeIsNil := rawConfiguration.GetAttr("device_type").IsNull()
+	deviceOrientationIsNil := rawConfiguration.GetAttr("device_orientation").IsNull()
 
-	if !devicesValue && !(deviceTypeValue && deviceOrientationValue) {
+	if !devicesIsNil && !(deviceTypeIsNil && deviceOrientationIsNil) {
 		return []error{
 			fmt.Errorf(`Cannot use 'devices', 'device_type', and 'device_orientation' simultaneously. 
 	Use either 'devices' alone or both 'device_type' and 'device_orientation' fields together. 
@@ -175,12 +179,10 @@ func validateDevicesFields(d *schema.ResourceDiff) []error {
 		}
 	}
 
-	if deviceTypeValue != deviceOrientationValue {
+	if deviceTypeIsNil != deviceOrientationIsNil {
 		return []error{
 			fmt.Errorf("you need to specify both 'device_type' and 'device_orientation' fields; you can't use just one of them"),
 		}
 	}
-
 	return nil
-
 }
