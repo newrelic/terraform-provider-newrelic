@@ -35,8 +35,9 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
 
-	input.Runtime = &synthetics.SyntheticsRuntimeInput{}
 	if scriptLangOk || runtimeTypeOk || runtimeTypeVersionOk {
+		input.Runtime = &synthetics.SyntheticsRuntimeInput{}
+
 		if scriptLangOk {
 			input.Runtime.ScriptLanguage = sciptLang.(string)
 		}
@@ -48,9 +49,6 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 		if runtimeTypeVersionOk {
 			input.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
 		}
-	} else {
-		input.Runtime.RuntimeType = ""
-		input.Runtime.RuntimeTypeVersion = ""
 	}
 
 	enableScreenshot := d.Get("enable_screenshot_on_failure_and_script").(bool)
@@ -104,8 +102,9 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 	sciptLang, scriptLangOk := d.GetOk("script_language")
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
-	input.Runtime = &synthetics.SyntheticsRuntimeInput{}
 	if scriptLangOk || runtimeTypeOk || runtimeTypeVersionOk {
+		input.Runtime = &synthetics.SyntheticsRuntimeInput{}
+
 		if scriptLangOk {
 			input.Runtime.ScriptLanguage = sciptLang.(string)
 		}
@@ -117,9 +116,6 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 		if runtimeTypeVersionOk {
 			input.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
 		}
-	} else {
-		input.Runtime.RuntimeType = ""
-		input.Runtime.RuntimeTypeVersion = ""
 	}
 
 	enableScreenshot := d.Get("enable_screenshot_on_failure_and_script").(bool)
