@@ -150,8 +150,6 @@ func resourceNewRelicSyntheticsStepMonitorCreate(ctx context.Context, d *schema.
 	if respRuntimeTypeVersion != "" {
 		_ = d.Set("runtime_type_version", respRuntimeTypeVersion)
 	}
-	_ = d.Set("browsers", resp.Monitor.Browsers)
-	_ = d.Set("devices", resp.Monitor.Devices)
 	return diag.FromErr(err)
 }
 
@@ -202,13 +200,10 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 			_ = d.Set("runtime_type_version", runtimeTypeVersion)
 		}
 		for _, t := range e.Tags {
-			if t.Key == "devices" || t.Key == "browsers" {
+			if (t.Key == "devices" || t.Key == "browsers") && len(d.Get(t.Key).(*schema.Set).List()) > 0 {
 				_ = d.Set(t.Key, t.Values)
 			}
 		}
-
-		// Ensure Browsers, Devices fields are set to empty if not set, as they are computed type attributes
-		setBrowsersDevicesIfNotPresent(d)
 	}
 	return diag.FromErr(err)
 }
@@ -252,8 +247,6 @@ func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.
 	if respRuntimeTypeVersion != "" {
 		_ = d.Set("runtime_type_version", respRuntimeTypeVersion)
 	}
-	_ = d.Set("browsers", resp.Monitor.Browsers)
-	_ = d.Set("devices", resp.Monitor.Devices)
 	return diag.FromErr(err)
 }
 

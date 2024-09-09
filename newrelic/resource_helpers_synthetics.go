@@ -589,16 +589,6 @@ func syntheticMonitorsUseUnsupportedLegacyRuntimeDiffSuppressor(k, oldValue, new
 	return false
 }
 
-func setBrowsersDevicesIfNotPresent(d *schema.ResourceData) {
-	// Ensure Browsers, Devices fields are set to empty if not set, as they are computed type attributes to avoid Drift
-	if _, ok := d.GetOk("browsers"); !ok {
-		_ = d.Set("browsers", []string{})
-	}
-	if _, ok := d.GetOk("devices"); !ok {
-		_ = d.Set("devices", []string{})
-	}
-}
-
 func multiBrowsersDevicesDiffSuppressor(k, oldValue, newValue string, d *schema.ResourceData) bool {
 	rawConfiguration := d.GetRawConfig()
 	runtimeTypeInConfig := rawConfiguration.GetAttr(SyntheticsRuntimeTypeAttrLabel)
@@ -623,6 +613,5 @@ func multiBrowsersDevicesDiffSuppressor(k, oldValue, newValue string, d *schema.
 	}
 
 	isFieldPresent := rawConfiguration.GetAttr(attributeName).IsNull()
-
 	return isFieldPresent
 }

@@ -18,10 +18,10 @@ func validateSyntheticMonitorAttributes(ctx context.Context, d *schema.ResourceD
 	_, monitorType := d.GetChange("type")
 	isBrowserMonitor := strings.Contains(monitorType.(string), "BROWSER")
 	if isBrowserMonitor {
-		err = validateDevicesFields(d)
-	}
-	if err != nil {
-		errorsList = append(errorsList, err...)
+		err := validateDevicesFields(d)
+		if err != nil {
+			errorsList = append(errorsList, err)
+		}
 	}
 
 	if len(errorsList) == 0 {
@@ -163,7 +163,7 @@ https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/syn
 
 // The following function will validate the device fields at the Terraform plan, ensuring that the user specifies
 // either the devices field alone or both the device_type and device_orientation fields
-func validateDevicesFields(d *schema.ResourceDiff) []error {
+func validateDevicesFields(d *schema.ResourceDiff) error {
 	rawConfiguration := d.GetRawConfig()
 
 	// GetAttr func will get below fields corresponding values from raw configuration that is from terraform configuration file
@@ -172,17 +172,13 @@ func validateDevicesFields(d *schema.ResourceDiff) []error {
 	deviceOrientationIsNil := rawConfiguration.GetAttr("device_orientation").IsNull()
 
 	if !devicesIsNil && !(deviceTypeIsNil && deviceOrientationIsNil) {
-		return []error{
-			fmt.Errorf(`Cannot use 'devices', 'device_type', and 'device_orientation' simultaneously. 
+		return fmt.Errorf(`Cannot use 'devices', 'device_type', and 'device_orientation' simultaneously. 
 	Use either 'devices' alone or both 'device_type' and 'device_orientation' fields together. 
-	We recommend using the 'devices' field, as it allows you to select multiple combinations of device types and orientations.`),
-		}
+	We recommend using the 'devices' field, as it allows you to select multiple combinations of device types and orientations.`)
 	}
 
 	if deviceTypeIsNil != deviceOrientationIsNil {
-		return []error{
-			fmt.Errorf("you need to specify both 'device_type' and 'device_orientation' fields; you can't use just one of them"),
-		}
+		return fmt.Errorf("you need to specify both 'device_type' and 'device_orientation' fields; you can't use just one of them")
 	}
 	return nil
 }

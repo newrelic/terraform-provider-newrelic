@@ -246,8 +246,6 @@ func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreat
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
 	_ = d.Set("device_orientation", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceOrientation)
 	_ = d.Set("device_type", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceType)
-	_ = d.Set("browsers", res.Monitor.Browsers)
-	_ = d.Set("devices", res.Monitor.Devices)
 	if res.Monitor.Runtime.RuntimeType != "" {
 		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
 	}
@@ -314,16 +312,15 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 			for _, t := range e.Tags {
 				if k, ok := syntheticsMonitorTagKeyToSchemaAttrMap[t.Key]; ok {
 					if t.Key == "browsers" || t.Key == "devices" {
-						_ = d.Set(k, t.Values)
+						if len(d.Get(t.Key).(*schema.Set).List()) > 0 {
+							_ = d.Set(k, t.Values)
+						}
 					} else if len(t.Values) == 1 {
 						_ = d.Set(k, t.Values[0])
 					}
 				}
 			}
 		}
-
-		// Ensure Browsers, Devices fields are set to empty if not set, as they are computed type attributes
-		setBrowsersDevicesIfNotPresent(d)
 
 		for _, t := range e.Tags {
 			if t.Key == "responseValidationText" {
@@ -427,8 +424,6 @@ func setSimpleBrowserAttributesFromUpdate(res *synthetics.SyntheticsSimpleBrowse
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
 	_ = d.Set("device_orientation", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceOrientation)
 	_ = d.Set("device_type", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceType)
-	_ = d.Set("browsers", res.Monitor.Browsers)
-	_ = d.Set("devices", res.Monitor.Devices)
 	if res.Monitor.Runtime.RuntimeType != "" {
 		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
 	}

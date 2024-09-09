@@ -233,16 +233,15 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 		for _, t := range e.Tags {
 			if k, ok := syntheticsMonitorTagKeyToSchemaAttrMap[t.Key]; ok {
 				if t.Key == "devices" || t.Key == "browsers" {
-					_ = d.Set(k, t.Values)
+					if len(d.Get(t.Key).(*schema.Set).List()) > 0 {
+						_ = d.Set(k, t.Values)
+					}
 				} else if len(t.Values) == 1 {
 					_ = d.Set(k, t.Values[0])
 				}
 			}
 		}
 	}
-
-	// Ensure Browsers, Devices fields are set to empty if not set, as they are computed type attributes
-	//setBrowsersDevicesIfNotPresent(d)
 
 	return diag.FromErr(err)
 }
