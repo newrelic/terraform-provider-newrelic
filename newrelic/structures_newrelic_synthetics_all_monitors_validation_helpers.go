@@ -179,9 +179,5 @@ func validateDevicesFields(d *schema.ResourceDiff) error {
 	use either 'devices' alone or both 'device_type' and 'device_orientation' fields together 
 	we recommend using the 'devices' field, as it allows you to select multiple combinations of device types and orientations`)
 	}
-
-	if deviceTypeIsNil != deviceOrientationIsNil {
-		return fmt.Errorf("you need to specify both 'device_type' and 'device_orientation' fields; you can't use just one of them")
-	}
 	return nil
 }

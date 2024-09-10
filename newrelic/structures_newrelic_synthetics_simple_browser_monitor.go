@@ -47,11 +47,15 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) (synthetics.Syn
 		simpleBrowserMonitorInput.AdvancedOptions.UseTlsValidation = &vs
 	}
 
-	typedBrowsers := expandSyntheticsBrowsers(d.Get("browsers").(*schema.Set).List())
-	simpleBrowserMonitorInput.Browsers = typedBrowsers
+	if v, ok := d.GetOk("browsers"); ok {
+		typedBrowsers := expandSyntheticsBrowsers(v.(*schema.Set).List())
+		simpleBrowserMonitorInput.Browsers = typedBrowsers
+	}
 
-	typedDevices := expandSyntheticsDevices(d.Get("devices").(*schema.Set).List())
-	simpleBrowserMonitorInput.Devices = typedDevices
+	if v, ok := d.GetOk("devices"); ok {
+		typedDevices := expandSyntheticsDevices(v.(*schema.Set).List())
+		simpleBrowserMonitorInput.Devices = typedDevices
+	}
 
 	err := buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulation(d, simpleBrowserMonitorInput)
 	if err != nil {
@@ -143,11 +147,15 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) (sy
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.UseTlsValidation = &vs
 	}
 
-	typedBrowsers := expandSyntheticsBrowsers(d.Get("browsers").(*schema.Set).List())
-	simpleBrowserMonitorUpdateInput.Browsers = typedBrowsers
+	if v, ok := d.GetOk("browsers"); ok {
+		typedBrowsers := expandSyntheticsBrowsers(v.(*schema.Set).List())
+		simpleBrowserMonitorUpdateInput.Browsers = typedBrowsers
+	}
 
-	typedDevices := expandSyntheticsDevices(d.Get("devices").(*schema.Set).List())
-	simpleBrowserMonitorUpdateInput.Devices = typedDevices
+	if v, ok := d.GetOk("devices"); ok {
+		typedDevices := expandSyntheticsDevices(v.(*schema.Set).List())
+		simpleBrowserMonitorUpdateInput.Devices = typedDevices
+	}
 
 	err := buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulationUpdateStruct(d, simpleBrowserMonitorUpdateInput)
 	if err != nil {

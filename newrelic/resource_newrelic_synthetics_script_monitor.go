@@ -75,14 +75,16 @@ func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Sc
 		"browsers": browsersSchema,
 		"devices":  devicesSchema,
 		"device_orientation": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The device orientation the user would like to represent. Valid values are LANDSCAPE, PORTRAIT, or NONE.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			RequiredWith: []string{"device_type"},
+			Description:  "The device orientation the user would like to represent. Valid values are LANDSCAPE, PORTRAIT, or NONE.",
 		},
 		"device_type": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			RequiredWith: []string{"device_orientation"},
+			Description:  "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
 		},
 	}
 }
