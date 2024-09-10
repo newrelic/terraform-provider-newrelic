@@ -202,6 +202,7 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 		}
 
 	}
+
 	return diag.FromErr(err)
 }
 
@@ -244,6 +245,7 @@ func resourceNewRelicSyntheticsStepMonitorUpdate(ctx context.Context, d *schema.
 	if respRuntimeTypeVersion != "" {
 		_ = d.Set("runtime_type_version", respRuntimeTypeVersion)
 	}
+
 	return diag.FromErr(err)
 }
 
