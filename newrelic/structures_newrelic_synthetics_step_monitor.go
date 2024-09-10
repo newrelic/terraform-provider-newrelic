@@ -32,10 +32,10 @@ func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) (*synthetics.
 	}
 
 	typedBrowsers := expandSyntheticsBrowsers(d.Get("browsers").(*schema.Set).List())
-	input.Browsers = &typedBrowsers
+	input.Browsers = typedBrowsers
 
 	typedDevices := expandSyntheticsDevices(d.Get("devices").(*schema.Set).List())
-	input.Devices = &typedDevices
+	input.Devices = typedDevices
 
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
@@ -83,10 +83,10 @@ func buildSyntheticsStepMonitorUpdateInput(d *schema.ResourceData) (*synthetics.
 	}
 
 	typedBrowsers := expandSyntheticsBrowsers(d.Get("browsers").(*schema.Set).List())
-	input.Browsers = &typedBrowsers
+	input.Browsers = typedBrowsers
 
 	typedDevices := expandSyntheticsDevices(d.Get("devices").(*schema.Set).List())
-	input.Devices = &typedDevices
+	input.Devices = typedDevices
 
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")

@@ -48,10 +48,10 @@ func buildSyntheticsSimpleBrowserMonitor(d *schema.ResourceData) (synthetics.Syn
 	}
 
 	typedBrowsers := expandSyntheticsBrowsers(d.Get("browsers").(*schema.Set).List())
-	simpleBrowserMonitorInput.Browsers = &typedBrowsers
+	simpleBrowserMonitorInput.Browsers = typedBrowsers
 
 	typedDevices := expandSyntheticsDevices(d.Get("devices").(*schema.Set).List())
-	simpleBrowserMonitorInput.Devices = &typedDevices
+	simpleBrowserMonitorInput.Devices = typedDevices
 
 	err := buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulation(d, simpleBrowserMonitorInput)
 	if err != nil {
@@ -144,10 +144,10 @@ func buildSyntheticsSimpleBrowserMonitorUpdateStruct(d *schema.ResourceData) (sy
 	}
 
 	typedBrowsers := expandSyntheticsBrowsers(d.Get("browsers").(*schema.Set).List())
-	simpleBrowserMonitorUpdateInput.Browsers = &typedBrowsers
+	simpleBrowserMonitorUpdateInput.Browsers = typedBrowsers
 
 	typedDevices := expandSyntheticsDevices(d.Get("devices").(*schema.Set).List())
-	simpleBrowserMonitorUpdateInput.Devices = &typedDevices
+	simpleBrowserMonitorUpdateInput.Devices = typedDevices
 
 	err := buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulationUpdateStruct(d, simpleBrowserMonitorUpdateInput)
 	if err != nil {

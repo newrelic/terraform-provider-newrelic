@@ -26,10 +26,10 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 	}
 
 	typedBrowsers := expandSyntheticsBrowsers(d.Get("browsers").(*schema.Set).List())
-	input.Browsers = &typedBrowsers
+	input.Browsers = typedBrowsers
 
 	typedDevices := expandSyntheticsDevices(d.Get("devices").(*schema.Set).List())
-	input.Devices = &typedDevices
+	input.Devices = typedDevices
 
 	sciptLang, scriptLangOk := d.GetOk("script_language")
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
@@ -94,10 +94,10 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 	}
 
 	typedBrowsers := expandSyntheticsBrowsers(d.Get("browsers").(*schema.Set).List())
-	input.Browsers = &typedBrowsers
+	input.Browsers = typedBrowsers
 
 	typedDevices := expandSyntheticsDevices(d.Get("devices").(*schema.Set).List())
-	input.Devices = &typedDevices
+	input.Devices = typedDevices
 
 	sciptLang, scriptLangOk := d.GetOk("script_language")
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
