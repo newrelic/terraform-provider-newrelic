@@ -1,3 +1,8 @@
+<a name="v3.45.2"></a>
+## [v3.45.2] - 2024-09-10
+### Bug Fixes
+- **synthetics:** allow new -> legacy runtime downgrade until Oct 22 for simple browser, scripted monitors ([#2740](https://github.com/newrelic/terraform-provider-newrelic/issues/2740))
+
 <a name="v3.45.1"></a>
 ## [v3.45.1] - 2024-09-10
 ### Documentation Updates
@@ -2223,7 +2228,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.2...HEAD
+[v3.45.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.1...v3.45.2
 [v3.45.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.0...v3.45.1
 [v3.45.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.44.0...v3.45.0
 [v3.44.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.43.0...v3.44.0
