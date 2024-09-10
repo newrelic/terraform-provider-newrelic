@@ -15,12 +15,15 @@ func validateSyntheticMonitorAttributes(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		errorsList = append(errorsList, err...)
 	}
+
 	_, monitorType := d.GetChange("type")
-	isBrowserMonitor := strings.Contains(monitorType.(string), "BROWSER")
-	if isBrowserMonitor {
-		err := validateDevicesFields(d)
-		if err != nil {
-			errorsList = append(errorsList, err)
+	if monitorType != nil {
+		isBrowserMonitor := strings.Contains(monitorType.(string), "BROWSER")
+		if isBrowserMonitor {
+			err := validateDevicesFields(d)
+			if err != nil {
+				errorsList = append(errorsList, err)
+			}
 		}
 	}
 

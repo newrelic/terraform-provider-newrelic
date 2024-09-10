@@ -53,8 +53,8 @@ resource "newrelic_synthetics_monitor" "monitor" {
     name  = "some_name"
     value = "some_value"
   }
-  devices = ["MOBILE_LANDSCAPE","MOBILE_PORTRAIT"]
-  browsers = ["CHROME","FIREFOX"]
+  devices = ["DESKTOP","TABLET_LANDSCAPE","MOBILE_PORTRAIT"]
+  browsers = ["CHROME"]
   enable_screenshot_on_failure_and_script = true
   validation_string                       = "success"
   verify_ssl                              = true

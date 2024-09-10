@@ -30,7 +30,7 @@ func TestAccNewRelicSyntheticsBrowserMonitor_DeviceEmulationError(t *testing.T) 
 			// Test: Create
 			{
 				Config:      testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationError(rName, string(SyntheticsMonitorTypes.BROWSER)),
-				ExpectError: regexp.MustCompile(`both device_orientation and device_type should be specified to enable device emulation`),
+				ExpectError: regexp.MustCompile(`you need to specify both 'device_type' and 'device_orientation' fields`),
 			},
 		},
 	})
@@ -54,7 +54,7 @@ func TestAccNewRelicSyntheticsBrowserMonitor_DeviceEmulationErrorUpdate(t *testi
 			// Test: Update
 			{
 				Config:      testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationError(rName, string(SyntheticsMonitorTypes.BROWSER)),
-				ExpectError: regexp.MustCompile(`both device_orientation and device_type should be specified to enable device emulation`),
+				ExpectError: regexp.MustCompile(`you need to specify both 'device_type' and 'device_orientation'`),
 			},
 		},
 	})
@@ -288,8 +288,8 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 					"device_orientation",
 					"device_type",
 					SyntheticsUseLegacyRuntimeAttrLabel,
-					"devices",
 					"browsers",
+					"devices",
 				},
 			},
 		},
@@ -307,8 +307,8 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 			name	= "customer-header-2"
 			value	= "header-value-2"
 		}
-		devices = ["MOBILE_LANDSCAPE","MOBILE_PORTRAIT"]
-        browsers = ["CHROME","FIREFOX"]
+		browsers = ["CHROME", "FIREFOX"]
+		devices = ["DESKTOP","MOBILE_PORTRAIT", "TABLET_LANDSCAPE", "MOBILE_LANDSCAPE", "TABLET_PORTRAIT"]
 		enable_screenshot_on_failure_and_script	=	true
 		validation_string	=	"success"
 		verify_ssl	=	true
@@ -321,8 +321,6 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 		status	=	"ENABLED"
 		type	=	"%s"
 		uri	=	"https://www.one.newrelic.com"
-		device_orientation = "PORTRAIT"
-		device_type = "MOBILE"
 	}`, name, monitorType)
 }
 
@@ -333,8 +331,8 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, mon
 				name  = "name"
 				value = "simple_browser"
 			}
-			devices = ["MOBILE_LANDSCAPE"]
-            browsers = ["CHROME"]	
+			browsers = ["CHROME"]
+			devices = ["DESKTOP","MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
 			enable_screenshot_on_failure_and_script	=	false
 			validation_string	=	"success"
 			verify_ssl	=	false
@@ -347,8 +345,6 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, mon
 			status	=	"DISABLED"
 			type	=	"%s"
 			uri	=	"https://www.one.newrelic.com"
-			device_orientation = "LANDSCAPE"
-			device_type = "TABLET"
 		}`, name, monitorType)
 }
 

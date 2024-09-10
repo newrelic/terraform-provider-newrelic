@@ -53,7 +53,7 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
   runtime_type_version = "100"
   runtime_type         = "CHROME_BROWSER"
   script_language      = "JAVASCRIPT"
-  devices              = ["DESKTOP", "MOBILE_LANDSCAPE", "TABLET_LANDSCAPE"]
+  devices              = ["DESKTOP", "MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
   browsers             = ["CHROME"]
   
   tag {
@@ -174,7 +174,7 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
   runtime_type_version = "100"
   runtime_type         = "CHROME_BROWSER"
   script_language      = "JAVASCRIPT"
-  devices              = ["DESKTOP", "MOBILE_LANDSCAPE", "TABLET_LANDSCAPE"]
+  devices              = ["DESKTOP", "MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
   browsers             = ["CHROME"]
 
   tag {

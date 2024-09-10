@@ -150,6 +150,7 @@ func resourceNewRelicSyntheticsStepMonitorCreate(ctx context.Context, d *schema.
 	if respRuntimeTypeVersion != "" {
 		_ = d.Set("runtime_type_version", respRuntimeTypeVersion)
 	}
+
 	return diag.FromErr(err)
 }
 
@@ -199,11 +200,7 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 			_ = d.Set("runtime_type", runtimeType)
 			_ = d.Set("runtime_type_version", runtimeTypeVersion)
 		}
-		for _, t := range e.Tags {
-			if (t.Key == "devices" || t.Key == "browsers") && len(d.Get(t.Key).(*schema.Set).List()) > 0 {
-				_ = d.Set(t.Key, t.Values)
-			}
-		}
+
 	}
 	return diag.FromErr(err)
 }

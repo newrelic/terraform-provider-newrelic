@@ -170,8 +170,7 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		d.SetId(string(resp.Monitor.GUID))
 		_ = d.Set("account_id", accountID)
 		_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
-		_ = d.Set("browsers", resp.Monitor.Browsers)
-		_ = d.Set("devices", resp.Monitor.Devices)
+
 		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
 		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
@@ -229,14 +228,12 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 			"period": string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
 			"status": string(e.MonitorSummary.Status),
 		})
+
 		_ = d.Set("period_in_minutes", int(e.GetPeriod()))
+
 		for _, t := range e.Tags {
 			if k, ok := syntheticsMonitorTagKeyToSchemaAttrMap[t.Key]; ok {
-				if t.Key == "devices" || t.Key == "browsers" {
-					if len(d.Get(t.Key).(*schema.Set).List()) > 0 {
-						_ = d.Set(k, t.Values)
-					}
-				} else if len(t.Values) == 1 {
+				if len(t.Values) == 1 {
 					_ = d.Set(k, t.Values[0])
 				}
 			}

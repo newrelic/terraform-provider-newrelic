@@ -21,6 +21,8 @@ resource "newrelic_synthetics_step_monitor" "foo" {
   locations_public                        = ["US_EAST_1", "US_EAST_2"]
   period                                  = "EVERY_6_HOURS"
   status                                  = "ENABLED"
+  devices                                 = ["DESKTOP", "MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
+  browsers                                = ["CHROME"]
   runtime_type                            = "CHROME_BROWSER"
   runtime_type_version                    = "100"
   steps {
@@ -51,14 +53,14 @@ The following are the common arguments supported for `STEP` monitor:
 
 * `runtime_type` - (Optional) The runtime that the monitor will use to run jobs.
 * `runtime_type_version` - (Optional) The specific version of the runtime type selected.
+* `browsers` - (Optional) The multiple browsers list on which synthetic monitors will run. Valid values are `CHROME` and `FIREFOX`.
+* `devices` - (Optional) The multiple devices list on which synthetic monitors will run. Valid values are `DESKTOP`, `MOBILE_LANDSCAPE`, `MOBILE_PORTRAIT`, `TABLET_LANDSCAPE` and `TABLET_PORTRAIT`.
 
 -> **NOTE:** Currently, the values of `runtime_type` and `runtime_type_version` supported by this resource are `CHROME_BROWSER` and `100` respectively. In order to run the monitor in the new runtime, both `runtime_type` and `runtime_type_version` need to be specified; however, specifying neither of these attributes would set this monitor to use the legacy runtime. It may also be noted that the runtime opted for would only be effective with private locations. For public locations, all traffic has been shifted to the new runtime, irrespective of the selection made.
 
 -> **WARNING:** Support for using the Synthetics Legacy Runtime (deprecated) with **new** Synthetic monitors **has officially ended as of August 26, 2024**. As a consequence, starting with v3.43.0 of the New Relic Terraform Provider, **new** Synthetic monitors **will no longer be allowed to use the legacy runtime** (this applies to all Synthetic monitor resources). Additionally, as previously communicated by New Relic, the Synthetics Legacy Runtime **will reach its end-of-life (EOL) on October 22, 2024**. In light of the above, we kindly recommend that you upgrade your Synthetic Monitors to the new runtime at the earliest, if they are still using the legacy runtime. Please check out [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/synthetics_legacy_runtime_eol_migration_guide) in the documentation of the Terraform Provider and [this announcement](https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm) for more details on the EOL, action needed, relevant resources, and more.
 
 * `steps` - (Required) The steps that make up the script the monitor will run. See [Nested steps blocks](#nested-steps-blocks) below for details.
-* `browsers` - (Optional) The multiple browsers list on which synthetic monitors will run. Valid values are `CHROME` and `FIREFOX`.
-* `devices` - (Optional) The multiple devices list on which synthetic monitors will run. Valid values are `DESKTOP`, `MOBILE_LANDSCAPE`, `MOBILE_PORTRAIT`, `TABLET_LANDSCAPE` and `TABLET_PORTRAIT`.
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
 
 ### Nested `location private` blocks
@@ -102,7 +104,7 @@ resource "newrelic_synthetics_step_monitor" "foo" {
   name           = "Sample Step Monitor"
   period         = "EVERY_6_HOURS"
   status         = "ENABLED"
-  devices        = ["DESKTOP", "MOBILE_LANDSCAPE", "TABLET_LANDSCAPE"]
+  devices        = ["DESKTOP", "MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
   browsers       = ["CHROME"]
   location_private {
     guid         = newrelic_synthetics_private_location.foo.id

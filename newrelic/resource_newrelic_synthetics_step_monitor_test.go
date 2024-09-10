@@ -85,8 +85,8 @@ resource "newrelic_synthetics_step_monitor" "foo" {
 		type    = "NAVIGATE"
 		values  = ["https://google.com"]
 	}
-	browsers = ["CHROME"]
-	devices = ["DESKTOP"]
+	browsers = ["CHROME", "FIREFOX"]
+	devices = ["DESKTOP","MOBILE_PORTRAIT", "TABLET_LANDSCAPE", "MOBILE_LANDSCAPE", "TABLET_PORTRAIT"]
 	
 	%[2]s
 }
