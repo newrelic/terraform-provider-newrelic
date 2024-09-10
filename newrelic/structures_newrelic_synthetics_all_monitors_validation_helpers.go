@@ -175,9 +175,9 @@ func validateDevicesFields(d *schema.ResourceDiff) error {
 	deviceOrientationIsNil := rawConfiguration.GetAttr("device_orientation").IsNull()
 
 	if !devicesIsNil && !(deviceTypeIsNil && deviceOrientationIsNil) {
-		return fmt.Errorf(`Cannot use 'devices', 'device_type', and 'device_orientation' simultaneously. 
-	Use either 'devices' alone or both 'device_type' and 'device_orientation' fields together. 
-	We recommend using the 'devices' field, as it allows you to select multiple combinations of device types and orientations.`)
+		return fmt.Errorf(`cannot use 'devices', 'device_type', and 'device_orientation' simultaneously 
+	use either 'devices' alone or both 'device_type' and 'device_orientation' fields together 
+	we recommend using the 'devices' field, as it allows you to select multiple combinations of device types and orientations`)
 	}
 
 	if deviceTypeIsNil != deviceOrientationIsNil {
