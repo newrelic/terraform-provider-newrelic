@@ -1,3 +1,8 @@
+<a name="v3.45.1"></a>
+## [v3.45.1] - 2024-09-10
+### Documentation Updates
+- **aws_cloud_integration:** Refactor of the AWS Cloud Integrations Resource Documentation ([#2744](https://github.com/newrelic/terraform-provider-newrelic/issues/2744))
+
 <a name="v3.45.0"></a>
 ## [v3.45.0] - 2024-09-03
 ### Bug Fixes
@@ -2218,7 +2223,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.1...HEAD
+[v3.45.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.0...v3.45.1
 [v3.45.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.44.0...v3.45.0
 [v3.44.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.43.0...v3.44.0
 [v3.43.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.42.3...v3.43.0
