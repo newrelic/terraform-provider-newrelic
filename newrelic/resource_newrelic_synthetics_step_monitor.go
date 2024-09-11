@@ -25,7 +25,7 @@ func resourceNewRelicSyntheticsStepMonitor() *schema.Resource {
 			syntheticsMonitorCommonSchema(),
 			syntheticsStepMonitorSchema(),
 		),
-		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
+		CustomizeDiff: validateSyntheticMonitorAttributes,
 	}
 }
 
@@ -103,6 +103,8 @@ func syntheticsStepMonitorSchema() map[string]*schema.Schema {
 			Description: "The specific semver version of the runtime type.",
 		},
 		SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
+		"browsers":                          browsersSchema,
+		"devices":                           devicesSchema,
 	}
 }
 

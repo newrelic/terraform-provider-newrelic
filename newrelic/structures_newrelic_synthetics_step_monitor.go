@@ -31,6 +31,16 @@ func buildSyntheticsStepMonitorCreateInput(d *schema.ResourceData) (*synthetics.
 		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &v
 	}
 
+	if v, ok := d.GetOk("browsers"); ok {
+		typedBrowsers := expandSyntheticsBrowsers(v.(*schema.Set).List())
+		input.Browsers = typedBrowsers
+	}
+
+	if v, ok := d.GetOk("devices"); ok {
+		typedDevices := expandSyntheticsDevices(v.(*schema.Set).List())
+		input.Devices = typedDevices
+	}
+
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
 
@@ -74,6 +84,16 @@ func buildSyntheticsStepMonitorUpdateInput(d *schema.ResourceData) (*synthetics.
 	if attr, ok := d.GetOk("enable_screenshot_on_failure_and_script"); ok {
 		v := attr.(bool)
 		input.AdvancedOptions.EnableScreenshotOnFailureAndScript = &v
+	}
+
+	if v, ok := d.GetOk("browsers"); ok {
+		typedBrowsers := expandSyntheticsBrowsers(v.(*schema.Set).List())
+		input.Browsers = typedBrowsers
+	}
+
+	if v, ok := d.GetOk("devices"); ok {
+		typedDevices := expandSyntheticsDevices(v.(*schema.Set).List())
+		input.Devices = typedDevices
 	}
 
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")

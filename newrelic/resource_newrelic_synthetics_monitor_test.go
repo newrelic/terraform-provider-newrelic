@@ -30,7 +30,7 @@ func TestAccNewRelicSyntheticsBrowserMonitor_DeviceEmulationError(t *testing.T) 
 			// Test: Create
 			{
 				Config:      testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationError(rName, string(SyntheticsMonitorTypes.BROWSER)),
-				ExpectError: regexp.MustCompile(`both device_orientation and device_type should be specified to enable device emulation`),
+				ExpectError: regexp.MustCompile("all of `device_orientation,device_type` must be\nspecified"),
 			},
 		},
 	})
@@ -51,10 +51,17 @@ func TestAccNewRelicSyntheticsBrowserMonitor_DeviceEmulationErrorUpdate(t *testi
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
 			},
-			// Test: Update
+			// Test: Update ; By removing device_type field
 			{
 				Config:      testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationError(rName, string(SyntheticsMonitorTypes.BROWSER)),
-				ExpectError: regexp.MustCompile(`both device_orientation and device_type should be specified to enable device emulation`),
+				ExpectError: regexp.MustCompile("all of `device_orientation,device_type` must be\nspecified"),
+			},
+			// Test: Update ; Added back removed device_type field
+			{
+				Config: testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulation(rName, string(SyntheticsMonitorTypes.BROWSER)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
+				),
 			},
 		},
 	})
@@ -288,6 +295,8 @@ func TestAccNewRelicSyntheticsSimpleBrowserMonitor(t *testing.T) {
 					"device_orientation",
 					"device_type",
 					SyntheticsUseLegacyRuntimeAttrLabel,
+					"browsers",
+					"devices",
 				},
 			},
 		},
@@ -305,6 +314,8 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 			name	= "customer-header-2"
 			value	= "header-value-2"
 		}
+		browsers = ["CHROME", "FIREFOX"]
+		devices = ["DESKTOP","MOBILE_PORTRAIT", "TABLET_LANDSCAPE", "MOBILE_LANDSCAPE", "TABLET_PORTRAIT"]
 		enable_screenshot_on_failure_and_script	=	true
 		validation_string	=	"success"
 		verify_ssl	=	true
@@ -317,8 +328,6 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 		status	=	"ENABLED"
 		type	=	"%s"
 		uri	=	"https://www.one.newrelic.com"
-		device_orientation = "PORTRAIT"
-		device_type = "MOBILE"
 	}`, name, monitorType)
 }
 
@@ -329,6 +338,8 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, mon
 				name  = "name"
 				value = "simple_browser"
 			}
+			browsers = ["CHROME"]
+			devices = ["DESKTOP","MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
 			enable_screenshot_on_failure_and_script	=	false
 			validation_string	=	"success"
 			verify_ssl	=	false
@@ -341,8 +352,6 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, mon
 			status	=	"DISABLED"
 			type	=	"%s"
 			uri	=	"https://www.one.newrelic.com"
-			device_orientation = "LANDSCAPE"
-			device_type = "TABLET"
 		}`, name, monitorType)
 }
 

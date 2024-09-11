@@ -25,6 +25,16 @@ func buildSyntheticsScriptBrowserMonitorInput(d *schema.ResourceData) synthetics
 		input.Locations.Public = expandSyntheticsPublicLocations(v.(*schema.Set).List())
 	}
 
+	if v, ok := d.GetOk("browsers"); ok {
+		typedBrowsers := expandSyntheticsBrowsers(v.(*schema.Set).List())
+		input.Browsers = typedBrowsers
+	}
+
+	if v, ok := d.GetOk("devices"); ok {
+		typedDevices := expandSyntheticsDevices(v.(*schema.Set).List())
+		input.Devices = typedDevices
+	}
+
 	sciptLang, scriptLangOk := d.GetOk("script_language")
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
@@ -87,6 +97,16 @@ func buildSyntheticsScriptBrowserUpdateInput(d *schema.ResourceData) synthetics.
 
 	if v, ok := d.GetOk("location_private"); ok {
 		input.Locations.Private = expandSyntheticsPrivateLocations(v.(*schema.Set).List())
+	}
+
+	if v, ok := d.GetOk("browsers"); ok {
+		typedBrowsers := expandSyntheticsBrowsers(v.(*schema.Set).List())
+		input.Browsers = typedBrowsers
+	}
+
+	if v, ok := d.GetOk("devices"); ok {
+		typedDevices := expandSyntheticsDevices(v.(*schema.Set).List())
+		input.Devices = typedDevices
 	}
 
 	sciptLang, scriptLangOk := d.GetOk("script_language")

@@ -95,6 +95,8 @@ func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 					"device_orientation",
 					"device_type",
 					SyntheticsUseLegacyRuntimeAttrLabel,
+					"browsers",
+					"devices",
 				},
 			},
 		},
@@ -120,24 +122,6 @@ func testAccNewRelicSyntheticsScriptAPIMonitorConfig(name string, scriptMonitorT
 		}`, name, scriptMonitorType)
 }
 
-func testAccNewRelicSyntheticsScriptMonitorConfig(name string) string {
-	return fmt.Sprintf(`
-		resource "newrelic_synthetics_script_monitor" "foo" {
-		    locations_public = [
-				"EU_WEST_1",
-				"EU_WEST_2",
-		  	]
-		    name             		= "%s"
-		    period           		= "EVERY_DAY"
-		    script           		= "console.log('script update works!')"
-		    status           		= "ENABLED"
-		    type             		= "SCRIPT_BROWSER"
-			script_language			= "JAVASCRIPT"
-			runtime_type			= "`+SyntheticsChromeBrowserRuntimeType+`"
-			runtime_type_version	= "`+SyntheticsChromeBrowserNewRuntimeTypeVersion+`"
-		}`, name)
-}
-
 func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "bar" {
@@ -153,9 +137,8 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 			script_language	=	"JAVASCRIPT"
 			script	=	"$browser.get('https://one.newrelic.com')"
 
-			device_orientation = "PORTRAIT"
-			device_type = "MOBILE"
-
+			browsers = ["CHROME", "FIREFOX"]
+			devices = ["DESKTOP", "TABLET_LANDSCAPE", "MOBILE_PORTRAIT", "MOBILE_LANDSCAPE", "TABLET_PORTRAIT"]
 			tag {
 				key	= "Name"
 				values	= ["scriptedMonitor"]
@@ -231,24 +214,4 @@ func testAccCheckNewRelicSyntheticsScriptMonitorDestroy(s *terraform.State) erro
 		}
 	}
 	return nil
-}
-
-func TestAccNewRelicSyntheticsMonitorScriptUpdate(t *testing.T) {
-	resourceName := "newrelic_synthetics_script_monitor.foo"
-	rName := generateNameForIntegrationTestResource()
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicSyntheticsScriptMonitorDestroy,
-		Steps: []resource.TestStep{
-
-			{
-				Config: testAccNewRelicSyntheticsScriptMonitorConfig(fmt.Sprintf(rName)),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicSyntheticsMonitorScriptUpdate(resourceName),
-				),
-			},
-		},
-	})
 }

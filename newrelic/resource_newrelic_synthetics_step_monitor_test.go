@@ -57,6 +57,8 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 					"tag",
 					"enable_screenshot_on_failure_and_script",
 					SyntheticsUseLegacyRuntimeAttrLabel,
+					"browsers",
+					"devices",
 				},
 			},
 		},
@@ -83,7 +85,9 @@ resource "newrelic_synthetics_step_monitor" "foo" {
 		type    = "NAVIGATE"
 		values  = ["https://google.com"]
 	}
-
+	browsers = ["CHROME", "FIREFOX"]
+	devices = ["DESKTOP","MOBILE_PORTRAIT", "TABLET_LANDSCAPE", "MOBILE_LANDSCAPE", "TABLET_PORTRAIT"]
+	
 	%[2]s
 }
 `,

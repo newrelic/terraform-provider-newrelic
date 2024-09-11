@@ -2,15 +2,13 @@ package newrelic
 
 import (
 	"context"
-	"log"
-
-	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
+	"log"
 )
 
 func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
@@ -28,7 +26,7 @@ func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
 			syntheticsScriptMonitorLocationsSchema(),
 			syntheticsScriptBrowserMonitorAdvancedOptionsSchema(),
 		),
-		CustomizeDiff: validateSyntheticMonitorRuntimeAttributes,
+		CustomizeDiff: validateSyntheticMonitorAttributes,
 	}
 }
 
@@ -66,7 +64,7 @@ func syntheticsScriptMonitorLocationsSchema() map[string]*schema.Schema {
 	}
 }
 
-// Scripted browser monitors have advanced options, but scripted API monitors do not.
+// Scripted browser monitors have advanced options, browsers and devices fields, but scripted API monitors do not.
 func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"enable_screenshot_on_failure_and_script": {
@@ -74,15 +72,19 @@ func syntheticsScriptBrowserMonitorAdvancedOptionsSchema() map[string]*schema.Sc
 			Optional:    true,
 			Description: "Capture a screenshot during job execution.",
 		},
+		"browsers": browsersSchema,
+		"devices":  devicesSchema,
 		"device_orientation": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The device orientation the user would like to represent. Valid values are LANDSCAPE, PORTRAIT, or NONE.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			RequiredWith: []string{"device_type"},
+			Description:  "The device orientation the user would like to represent. Valid values are LANDSCAPE, PORTRAIT, or NONE.",
 		},
 		"device_type": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			RequiredWith: []string{"device_orientation"},
+			Description:  "The device type that a user can select. Valid values are MOBILE, TABLET, or NONE.",
 		},
 	}
 }

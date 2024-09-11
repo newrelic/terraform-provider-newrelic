@@ -23,6 +23,8 @@ resource "newrelic_synthetics_step_monitor" "foo" {
   status                                  = "ENABLED"
   runtime_type                            = "CHROME_BROWSER"
   runtime_type_version                    = "100"
+  devices                                 = ["DESKTOP", "MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
+  browsers                                = ["CHROME"]
   steps {
     ordinal = 0
     type    = "NAVIGATE"
@@ -51,6 +53,8 @@ The following are the common arguments supported for `STEP` monitor:
 
 * `runtime_type` - (Optional) The runtime that the monitor will use to run jobs.
 * `runtime_type_version` - (Optional) The specific version of the runtime type selected.
+* `browsers` - (Optional) The multiple browsers list on which synthetic monitors will run. Valid values are `CHROME` and `FIREFOX`.
+* `devices` - (Optional) The multiple devices list on which synthetic monitors will run. Valid values are `DESKTOP`, `MOBILE_LANDSCAPE`, `MOBILE_PORTRAIT`, `TABLET_LANDSCAPE` and `TABLET_PORTRAIT`.
 
 -> **NOTE:** Currently, the values of `runtime_type` and `runtime_type_version` supported by this resource are `CHROME_BROWSER` and `100` respectively. In order to run the monitor in the new runtime, both `runtime_type` and `runtime_type_version` need to be specified; however, specifying neither of these attributes would set this monitor to use the legacy runtime. It may also be noted that the runtime opted for would only be effective with private locations. For public locations, all traffic has been shifted to the new runtime, irrespective of the selection made.
 
@@ -97,9 +101,13 @@ resource "newrelic_synthetics_private_location" "foo" {
 }
 
 resource "newrelic_synthetics_step_monitor" "foo" {
-  name   = "Sample Step Monitor"
-  period = "EVERY_6_HOURS"
-  status = "ENABLED"
+  name                 = "Sample Step Monitor"
+  period               = "EVERY_6_HOURS"
+  status               = "ENABLED"
+  runtime_type         = "CHROME_BROWSER"
+  runtime_type_version = "100"
+  devices              = ["DESKTOP", "MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
+  browsers             = ["CHROME"]
   location_private {
     guid         = newrelic_synthetics_private_location.foo.id
     vse_password = "secret"

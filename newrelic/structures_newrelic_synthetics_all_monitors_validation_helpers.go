@@ -4,16 +4,27 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"strings"
 )
 
-func validateSyntheticMonitorRuntimeAttributes(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func validateSyntheticMonitorAttributes(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	var errorsList []error
 
 	err := validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d)
 	if err != nil {
 		errorsList = append(errorsList, err...)
+	}
+
+	_, monitorType := d.GetChange("type")
+	if monitorType != nil {
+		isBrowserMonitor := strings.Contains(monitorType.(string), "BROWSER")
+		if isBrowserMonitor {
+			err := validateDevicesFields(d)
+			if err != nil {
+				errorsList = append(errorsList, err)
+			}
+		}
 	}
 
 	if len(errorsList) == 0 {
@@ -151,4 +162,22 @@ This is in relation with the upcoming Synthetics Legacy Runtime EOL on October 2
 https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm
 https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/synthetics_legacy_runtime_eol_migration_guide
 `
+}
+
+// The following function will validate the device fields at the Terraform plan, ensuring that the user specifies
+// either the devices field alone or both the device_type and device_orientation fields
+func validateDevicesFields(d *schema.ResourceDiff) error {
+	rawConfiguration := d.GetRawConfig()
+
+	// GetAttr func will get below fields corresponding values from raw configuration that is from terraform configuration file
+	devicesIsNil := rawConfiguration.GetAttr("devices").IsNull()
+	deviceTypeIsNil := rawConfiguration.GetAttr("device_type").IsNull()
+	deviceOrientationIsNil := rawConfiguration.GetAttr("device_orientation").IsNull()
+
+	if !devicesIsNil && !(deviceTypeIsNil && deviceOrientationIsNil) {
+		return fmt.Errorf(`cannot use 'devices', 'device_type', and 'device_orientation' simultaneously 
+	use either 'devices' alone or both 'device_type' and 'device_orientation' fields together 
+	we recommend using the 'devices' field, as it allows you to select multiple combinations of device types and orientations`)
+	}
+	return nil
 }

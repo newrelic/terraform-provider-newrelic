@@ -130,6 +130,23 @@ var SyntheticsUseLegacyRuntimeSchema = &schema.Schema{
 	DiffSuppressFunc: syntheticMonitorsUseUnsupportedLegacyRuntimeDiffSuppressor,
 }
 
+var browsersSchema = &schema.Schema{
+	Type:     schema.TypeSet,
+	Elem:     &schema.Schema{Type: schema.TypeString},
+	MinItems: 1,
+	Optional: true,
+	Description: "The multiple browsers list on which synthetic monitors will run. Valid values are array of CHROME," +
+		"and FIREFOX",
+}
+var devicesSchema = &schema.Schema{
+	Type:     schema.TypeSet,
+	Elem:     &schema.Schema{Type: schema.TypeString},
+	MinItems: 1,
+	Optional: true,
+	Description: "The multiple devices list on which synthetic monitors will run. Valid values are array of DESKTOP," +
+		" MOBILE_LANDSCAPE, MOBILE_PORTRAIT, TABLET_LANDSCAPE and TABLET_PORTRAIT",
+}
+
 var syntheticsMonitorPeriodValueMap = map[int]synthetics.SyntheticsMonitorPeriod{
 	1:    synthetics.SyntheticsMonitorPeriodTypes.EVERY_MINUTE,
 	5:    synthetics.SyntheticsMonitorPeriodTypes.EVERY_5_MINUTES,
@@ -254,6 +271,25 @@ func expandSyntheticsPublicLocations(locations []interface{}) []string {
 		locationsOut[i] = v.(string)
 	}
 	return locationsOut
+}
+
+func expandSyntheticsBrowsers(browsers []interface{}) []synthetics.SyntheticsBrowser {
+	browsersOut := make([]synthetics.SyntheticsBrowser, len(browsers))
+
+	for i, v := range browsers {
+		browsersOut[i] = synthetics.SyntheticsBrowser(v.(string))
+
+	}
+	return browsersOut
+}
+
+func expandSyntheticsDevices(devices []interface{}) []synthetics.SyntheticsDevice {
+	devicesOut := make([]synthetics.SyntheticsDevice, len(devices))
+
+	for i, v := range devices {
+		devicesOut[i] = synthetics.SyntheticsDevice(v.(string))
+	}
+	return devicesOut
 }
 
 func expandSyntheticsPrivateLocations(locations []interface{}) []synthetics.SyntheticsPrivateLocationInput {

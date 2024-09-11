@@ -40,20 +40,18 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
 
 ```hcl
 resource "newrelic_synthetics_script_monitor" "monitor" {
-  status           = "ENABLED"
-  name             = "script_monitor"
-  type             = "SCRIPT_BROWSER"
-  locations_public = ["AP_SOUTH_1", "AP_EAST_1"]
-  period           = "EVERY_HOUR"
-
+  status                                  = "ENABLED"
+  name                                    = "script_monitor"
+  type                                    = "SCRIPT_BROWSER"
+  locations_public                        = ["AP_SOUTH_1", "AP_EAST_1"]
+  period                                  = "EVERY_HOUR"
+  script                                  = "$browser.get('https://one.newrelic.com')"
+  runtime_type_version                    = "100"
+  runtime_type                            = "CHROME_BROWSER"
+  script_language                         = "JAVASCRIPT"
+  devices                                 = ["DESKTOP", "MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
+  browsers                                = ["CHROME"]
   enable_screenshot_on_failure_and_script = false
-
-  script = "$browser.get('https://one.newrelic.com')"
-
-  runtime_type_version = "100"
-  runtime_type         = "CHROME_BROWSER"
-  script_language      = "JAVASCRIPT"
-
   tag {
     key    = "some_key"
     values = ["some_value"]
@@ -84,8 +82,10 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
 
 * `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution.
-* `device_orientation` - (Optional) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`.
-* `device_type` - (Optional) Device emulation type field. Valid values are `MOBILE` and `TABLET`.
+* `browsers` - (Optional) The multiple browsers list on which synthetic monitors will run. Valid values are `CHROME` and `FIREFOX`.
+* `devices` - (Optional) The multiple devices list on which synthetic monitors will run. Valid values are `DESKTOP`, `MOBILE_LANDSCAPE`, `MOBILE_PORTRAIT`, `TABLET_LANDSCAPE` and `TABLET_PORTRAIT`.
+* `device_orientation` - (Optional) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`. We recommend you to use `devices` field instead of `device_type`,`device_orientation` fields, as it allows you to select multiple combinations of device types and orientations.
+* `device_type` - (Optional) Device emulation type field. Valid values are `MOBILE` and `TABLET`. We recommend you to use `devices` field instead of `device_type`,`device_orientation` fields, as it allows you to select multiple combinations of device types and orientations.
 
 #### Deprecated runtime
 
@@ -155,24 +155,21 @@ resource "newrelic_synthetics_private_location" "location" {
 }
 
 resource "newrelic_synthetics_script_monitor" "monitor" {
-  status = "ENABLED"
-  name   = "script_monitor"
-  type   = "SCRIPT_BROWSER"
-  period = "EVERY_HOUR"
-  script = "$browser.get('https://one.newrelic.com')"
-
+  status                                  = "ENABLED"
+  name                                    = "script_monitor"
+  type                                    = "SCRIPT_BROWSER"
+  period                                  = "EVERY_HOUR"
+  script                                  = "$browser.get('https://one.newrelic.com')"
+  runtime_type_version                    = "100"
+  runtime_type                            = "CHROME_BROWSER"
+  script_language                         = "JAVASCRIPT"
+  devices                                 = ["DESKTOP", "MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
+  browsers                                = ["CHROME"]
   enable_screenshot_on_failure_and_script = false
   location_private {
     guid         = newrelic_synthetics_private_location.location.id
     vse_password = "secret"
   }
-
-  runtime_type_version = "100"
-  runtime_type         = "CHROME_BROWSER"
-  script_language      = "JAVASCRIPT"
-  device_type          = "MOBILE"
-  device_orientation   = "LANDSCAPE"
-
   tag {
     key    = "some_key"
     values = ["some_value"]
