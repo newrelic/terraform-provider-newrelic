@@ -30,7 +30,7 @@ func TestAccNewRelicSyntheticsBrowserMonitor_DeviceEmulationError(t *testing.T) 
 			// Test: Create
 			{
 				Config:      testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationError(rName, string(SyntheticsMonitorTypes.BROWSER)),
-				ExpectError: regexp.MustCompile(`you need to specify both 'device_type' and 'device_orientation' fields`),
+				ExpectError: regexp.MustCompile("all of `device_orientation,device_type` must be\nspecified"),
 			},
 		},
 	})
@@ -51,10 +51,17 @@ func TestAccNewRelicSyntheticsBrowserMonitor_DeviceEmulationErrorUpdate(t *testi
 					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
 				),
 			},
-			// Test: Update
+			// Test: Update ; By removing device_type field
 			{
 				Config:      testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationError(rName, string(SyntheticsMonitorTypes.BROWSER)),
-				ExpectError: regexp.MustCompile(`you need to specify both 'device_type' and 'device_orientation'`),
+				ExpectError: regexp.MustCompile("all of `device_orientation,device_type` must be\nspecified"),
+			},
+			// Test: Update ; Added back removed device_type field
+			{
+				Config: testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulation(rName, string(SyntheticsMonitorTypes.BROWSER)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsMonitorExists(resourceName),
+				),
 			},
 		},
 	})

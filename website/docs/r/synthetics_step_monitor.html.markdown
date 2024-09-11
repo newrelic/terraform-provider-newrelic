@@ -21,10 +21,10 @@ resource "newrelic_synthetics_step_monitor" "foo" {
   locations_public                        = ["US_EAST_1", "US_EAST_2"]
   period                                  = "EVERY_6_HOURS"
   status                                  = "ENABLED"
-  devices                                 = ["DESKTOP", "MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
-  browsers                                = ["CHROME"]
   runtime_type                            = "CHROME_BROWSER"
   runtime_type_version                    = "100"
+  devices                                 = ["DESKTOP", "MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
+  browsers                                = ["CHROME"]
   steps {
     ordinal = 0
     type    = "NAVIGATE"
@@ -101,11 +101,13 @@ resource "newrelic_synthetics_private_location" "foo" {
 }
 
 resource "newrelic_synthetics_step_monitor" "foo" {
-  name           = "Sample Step Monitor"
-  period         = "EVERY_6_HOURS"
-  status         = "ENABLED"
-  devices        = ["DESKTOP", "MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
-  browsers       = ["CHROME"]
+  name                 = "Sample Step Monitor"
+  period               = "EVERY_6_HOURS"
+  status               = "ENABLED"
+  runtime_type         = "CHROME_BROWSER"
+  runtime_type_version = "100"
+  devices              = ["DESKTOP", "MOBILE_PORTRAIT", "TABLET_LANDSCAPE"]
+  browsers             = ["CHROME"]
   location_private {
     guid         = newrelic_synthetics_private_location.foo.id
     vse_password = "secret"

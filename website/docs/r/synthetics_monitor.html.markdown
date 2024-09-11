@@ -42,26 +42,24 @@ resource "newrelic_synthetics_monitor" "monitor" {
 
 ```hcl
 resource "newrelic_synthetics_monitor" "monitor" {
-  status           = "ENABLED"
-  name             = "monitor"
-  period           = "EVERY_MINUTE"
-  uri              = "https://www.one.newrelic.com"
-  type             = "BROWSER"
-  locations_public = ["AP_SOUTH_1"]
-
-  custom_header {
-    name  = "some_name"
-    value = "some_value"
-  }
-  devices = ["DESKTOP","TABLET_LANDSCAPE","MOBILE_PORTRAIT"]
-  browsers = ["CHROME"]
+  status                                  = "ENABLED"
+  name                                    = "monitor"
+  period                                  = "EVERY_MINUTE"
+  uri                                     = "https://www.one.newrelic.com"
+  type                                    = "BROWSER"
+  locations_public                        = ["AP_SOUTH_1"]
   enable_screenshot_on_failure_and_script = true
   validation_string                       = "success"
   verify_ssl                              = true
   runtime_type                            = "CHROME_BROWSER"
   runtime_type_version                    = "100"
   script_language                         = "JAVASCRIPT"
-
+  devices                                 = ["DESKTOP", "TABLET_LANDSCAPE", "MOBILE_PORTRAIT"]
+  browsers                                = ["CHROME"]
+  custom_header {
+    name  = "some_name"
+    value = "some_value"
+  }
   tag {
     key    = "some_key"
     values = ["some_value"]
@@ -195,25 +193,24 @@ resource "newrelic_synthetics_private_location" "location" {
 }
 
 resource "newrelic_synthetics_monitor" "monitor" {
-  status            = "ENABLED"
-  type              = "BROWSER"
-  uri               = "https://www.one.newrelic.com"
-  name              = "monitor"
-  period            = "EVERY_MINUTE"
-  locations_private = [newrelic_synthetics_private_location.location.id]
-
-  custom_header {
-    name  = "some_name"
-    value = "some_value"
-  }
-
+  status                                  = "ENABLED"
+  type                                    = "BROWSER"
+  uri                                     = "https://www.one.newrelic.com"
+  name                                    = "monitor"
+  period                                  = "EVERY_MINUTE"
+  locations_private                       = [newrelic_synthetics_private_location.location.id]
   enable_screenshot_on_failure_and_script = true
   validation_string                       = "success"
   verify_ssl                              = true
   runtime_type_version                    = "100"
   runtime_type                            = "CHROME_BROWSER"
   script_language                         = "JAVASCRIPT"
-
+  devices                                 = ["DESKTOP", "TABLET_LANDSCAPE", "MOBILE_PORTRAIT"]
+  browsers                                = ["CHROME"]
+  custom_header {
+    name  = "some_name"
+    value = "some_value"
+  }
   tag {
     key    = "some_key"
     values = ["some_value"]
