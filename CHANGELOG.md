@@ -1,3 +1,8 @@
+<a name="v3.46.0"></a>
+## [v3.46.0] - 2024-09-11
+### Features
+- **synthetics:** adds support for multiple browsers and devices with synthetic monitors ([#2743](https://github.com/newrelic/terraform-provider-newrelic/issues/2743))
+
 <a name="v3.45.2"></a>
 ## [v3.45.2] - 2024-09-10
 ### Bug Fixes
@@ -2228,7 +2233,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.46.0...HEAD
+[v3.46.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.2...v3.46.0
 [v3.45.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.1...v3.45.2
 [v3.45.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.0...v3.45.1
 [v3.45.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.44.0...v3.45.0
