@@ -36,6 +36,11 @@ resource "newrelic_one_dashboard" "exampledash" {
         direction = "desc"
         name      = "timestamp"
       }
+
+      data_format {
+        name = "duration"
+        type = "decimal"
+      }
     }
 
     widget_billboard {
@@ -46,6 +51,11 @@ resource "newrelic_one_dashboard" "exampledash" {
       height = 3
 
       refresh_rate = 60000 // 60 seconds
+
+      data_format {
+        name = "rate"
+        type = "recent-relative"
+      }
       
       nrql_query {
         query = "FROM Transaction SELECT rate(count(*), 1 minute)"
@@ -300,30 +310,31 @@ All nested `widget` blocks support the following common arguments:
 Each widget type supports an additional set of arguments:
 
   * `widget_area`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
   * `widget_bar`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
   * `widget_billboard`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
     * `critical` - (Optional) Threshold above which the displayed value will be styled with a red color.
     * `warning` - (Optional) Threshold above which the displayed value will be styled with a yellow color.
+    * `data_format` - (Optional) A nested block that describes data format. See [Nested data_format blocks](#nested-data_format-blocks) below for details.
   * `widget_bullet`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
     * `limit` - (Required) Visualization limit for the widget.
   * `widget_funnel`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
   * `widget_json`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
   * `widget_heatmap`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
   * `widget_histogram`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
   * `widget_line`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
     * `y_axis_left_zero` - (Optional) An attribute that specifies if the values on the graph to be rendered need to be fit to scale, or printed within the specified range from `y_axis_left_min` (or 0 if it is not defined) to `y_axis_left_max`. Use `y_axis_left_zero = true` with a combination of `y_axis_left_min` and `y_axis_left_max` to render values from 0 or the specified minimum to the maximum, and `y_axis_left_zero = false` to fit the graph to scale.
     * `y_axis_right` - (Optional) An attribute which helps specify the configuration of the Y-Axis displayed on the right side of the line widget. This is a nested block, which includes the following attributes:
       * `y_axis_right_zero` - (Optional) An attribute that specifies if the values on the graph to be rendered need to be fit to scale, or printed within the specified range from `y_axis_right_min` (or 0 if it is not defined) to `y_axis_right_max`. Use `y_axis_right_zero = true` with a combination of `y_axis_right_min` and `y_axis_right_max` to render values from 0 or the specified minimum to the maximum, and `y_axis_right_zero = false` to fit the graph to scale.
@@ -338,15 +349,15 @@ Each widget type supports an additional set of arguments:
   * `widget_markdown`:
     * `text` - (Required) The markdown source to be rendered in the widget.
   * `widget_stacked_bar`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
   * `widget_pie`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
   * `widget_log_table`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
   * `widget_table`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
     * `threshold` - (Optional) An attribute that helps specify multiple thresholds, each inclusive of a range of values between which the threshold would need to function, the name of the threshold and its severity. Multiple thresholds can be defined in a table widget. The `threshold` attribute requires specifying the following attributes in a nested block - 
@@ -357,7 +368,62 @@ Each widget type supports an additional set of arguments:
     * `initial_sorting` - (Optional) An attribute that describes the sorting mechanism for the table. This attribute requires specifying the following attributes in a nested block -
         * `name` - (Required) The name of column to be sorted. Examples of few valid values are `timestamp`, `appId`, `appName`, etc.
         * `direction` - (Required) Defines the sort order. Accepted values are `asc` for ascending or `desc` for descending.
+    * `data_format` - (Optional) A nested block that describes data format. See [Nested data_format blocks](#nested-data_format-blocks) below for details.
+        
 
+### Nested `data_format` blocks
+
+Nested `data_format` specifies the data structure format in the table. It defines how the data is organized and interpreted.This attribute requires specifying the following attributes in a nested block -
+
+  * `name` - (Required) This attribute mandates the specification of the column name to be formatted. It identifies which column the data format should be applied to.
+  * `type` - (Required) This attribute sets the format category for your data. Accepted values include `decimal` for numeric values, `date` for date/time values, `duration` for length of time, `recent-relative` for values referencing a relative point in time, `custom` for specific date/time formats and `humanized` to set autoformat as true.
+  * `format` - (Optional) This attribute is provided when the `type` attribute is set to `date`, defining the specific date format to be applied to your data.
+
+  |     Accepted value  |        Format           |                     
+  |---------------------|-------------------------| 
+  | `%b %d, %Y`         | `MMM DD,YYYY`           | 
+  | `%d/%m/%Y`          | `DD/MM/YYYY(EU)`        | 
+  | `%x`                | `DD/MM/YYYY(USA)`       | 
+  | `%I:%M%p`           | `12-hour format`        | 
+  | `%H:%Mh`            | `24-hour format`        | 
+  | `%H:%Mh UTC (%Z)`   | `24-hour with timezone` | 
+  | `%Y-%m-%dT%X.%L%Z`  | `ISO with timezone`     | 
+  | `%b %d, %Y, %X`     | `MMM DD, YYYY,hh:mm:ss` | 
+  | `%X`                | `hh:mm:ss`              | 
+
+-> **IMPORTANT!**
+    `type` should be set to `custom` inorder to use the formats listed above.
+* `precision` - (Optional) This attribute is utilized when the `type` attribute is set to `decimal`, stipulating the precise number of digits after the decimal point for your data.
+
+```hcl
+ widget_table {
+  title  = "List of Transactions"
+  row    = 1
+  column = 4
+  width  = 6
+  height = 3
+
+  nrql_query {
+    account_id = Account_ID
+    query = "SELECT average(duration), max(duration), min(duration) FROM Transaction FACET name SINCE 1 day ago"
+  }
+
+  data_format {
+    name = "Avg duration"
+    type = "date"
+  }
+
+  data_format {
+    name = "Max duration"
+    type = "recent-relative"
+  }
+
+  initial_sorting {
+    direction = "desc"
+    name      = "timestamp"
+  }
+}
+```
 
 ### Nested `nrql_query` blocks
 
@@ -395,7 +461,7 @@ The following arguments are supported:
   * `is_multi_selection` - (Optional) Indicates whether this variable supports multiple selection or not. Only applies to variables of type `nrql` or `enum`.
   * `item` - (Optional) List of possible values for variables of type `enum`. See [Nested item blocks](#nested-item-blocks) below for details.
   * `name` - (Required) The variable identifier.
-  * `nrql_query` - (Optional) Configuration for variables of type `nrql`. See [Nested nrql\_query blocks](#nested-nrql-query-blocks) for details.
+  * `nrql_query` - (Optional) Configuration for variables of type `nrql`. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) for details.
   * `replacement_strategy` - (Optional) Indicates the strategy to apply when replacing a variable in a NRQL query. One of `default`, `identifier`, `number` or `string`.
   * `title` - (Optional) Human-friendly display string for this variable.
   * `type` - (Required) Specifies the data type of the variable and where its possible values may come from. One of `enum`, `nrql` or `string`
