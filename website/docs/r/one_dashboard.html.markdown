@@ -373,11 +373,18 @@ Each widget type supports an additional set of arguments:
 
 ### Nested `data_format` blocks
 
-Nested `data_format` specifies the data structure format in the table. It defines how the data is organized and interpreted.This attribute requires specifying the following attributes in a nested block -
+Nested `data_format` blocks help specify the format of data displayed by a widget per attribute in the data returned by the NRQL query rendering the widget; thereby defining how the data fetched is best interpreted. This is supported for **billboards** and **tables**, as these are the only widgets in dashboards which return single or multi-faceted data that may be formatted based on the type of data returned.
+This attribute requires specifying the following attributes in a nested block -
 
   * `name` - (Required) This attribute mandates the specification of the column name to be formatted. It identifies which column the data format should be applied to.
-  * `type` - (Required) This attribute sets the format category for your data. Accepted values include `decimal` for numeric values, `date` for date/time values, `duration` for length of time, `recent-relative` for values referencing a relative point in time, `custom` for specific date/time formats and `humanized` to set autoformat as true.
-  * `format` - (Optional) This attribute is provided when the `type` attribute is set to `date`, defining the specific date format to be applied to your data.
+  * `type` - (Required) This attribute sets the format category for your data. Accepted values include - 
+    - `decimal` for numeric values
+    - `date` for date/time values
+    - `duration` for length of time
+    - `recent-relative` for values referencing a relative point in time
+    - `custom` to be used with date/time values, in order to select a specific format the date/time value would need to be rendered as
+    - `humanized` to be used with numeric values, in order to enable Autoformat
+  * `format` - (Optional) This attribute is provided when the `name` is that of a column comprising date/time values and the `type` attribute is set to `custom` defining the specific date format to be applied to your data.
 
   |     Accepted value  |        Format           |                     
   |---------------------|-------------------------| 
@@ -391,9 +398,10 @@ Nested `data_format` specifies the data structure format in the table. It define
   | `%b %d, %Y, %X`     | `MMM DD, YYYY,hh:mm:ss` | 
   | `%X`                | `hh:mm:ss`              | 
 
--> **IMPORTANT!**
-    `type` should be set to `custom` inorder to use the formats listed above.
 * `precision` - (Optional) This attribute is utilized when the `type` attribute is set to `decimal`, stipulating the precise number of digits after the decimal point for your data.
+
+-> **IMPORTANT!**
+  Refer below code snippets to identify the correct set of combinations.
 
 ```hcl
  widget_table {
@@ -409,8 +417,8 @@ Nested `data_format` specifies the data structure format in the table. It define
   }
 
   data_format {
-    name = "Avg duration"
-    type = "date"
+    name = "Max duration"
+    Type = "duration"
   }
 
   data_format {
@@ -423,6 +431,31 @@ Nested `data_format` specifies the data structure format in the table. It define
     name      = "timestamp"
   }
 }
+```
+* `type` should be set to `date` for default date/time values and `custom` inorder to use the formats listed above.
+```hcl
+  data_format {
+    name = "timestamp"
+    Type = "date"
+  }
+
+  data_format {
+    name = "timestamp"
+    Type = "custom"
+    Format = "%Y-%m-%dT%X.%L%Z"
+  }
+```
+* `type` should be set to `decimal` for numeric values and `humanized` in order to enable Autoformat for numeric values.
+```hcl
+  data_format {
+    name = "count"
+    type = "decimal"
+    Precision = 4
+  }
+  data_format {
+    name = "count"
+    type = "humanized"
+  }
 ```
 
 ### Nested `nrql_query` blocks

@@ -489,10 +489,9 @@ func dashboardWidgetDataFormatSchemaElem() *schema.Resource {
 				Description: "The column name to be sorted",
 			},
 			"type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "Defines the type of the mentioned column",
-				ValidateFunc: validation.StringInSlice([]string{"decimal", "date", "duration", "recent-relative", "custom", "humanized"}, true),
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Defines the type of the mentioned column",
 			},
 			"format": {
 				Type:        schema.TypeString,

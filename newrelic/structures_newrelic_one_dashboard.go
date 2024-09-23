@@ -1812,7 +1812,6 @@ func validateWidgetDataFormatterStructure(d *schema.ResourceDiff, errorsList *[]
 								*errorsList = append(*errorsList, fmt.Sprintf("'format' should not be provided if 'type' has the value %s", dataFormat["type"]))
 							}
 						}
-						fmt.Printf("i am inside dataFormatsOk %v\n", dataFormat["precision"])
 						if dataFormat["type"] != nil && dataFormat["precision"] != 0 {
 							if dataFormat["precision"] != "" && slices.Contains(acceptedTypes, dataFormat["type"].(string)) {
 								*errorsList = append(*errorsList, fmt.Sprintf("'precision' should not be provided if 'type' has the value %s", dataFormat["type"]))
