@@ -386,23 +386,25 @@ This attribute requires specifying the following attributes in a nested block -
     - `humanized` to be used with numeric values, in order to enable Autoformat
   * `format` - (Optional) This attribute is provided when the `name` is that of a column comprising date/time values and the `type` attribute is set to `custom` defining the specific date format to be applied to your data.
 
-  |     Accepted value  |        Format           |                     
-  |---------------------|-------------------------| 
-  | `%b %d, %Y`         | `MMM DD,YYYY`           | 
-  | `%d/%m/%Y`          | `DD/MM/YYYY(EU)`        | 
-  | `%x`                | `DD/MM/YYYY(USA)`       | 
-  | `%I:%M%p`           | `12-hour format`        | 
-  | `%H:%Mh`            | `24-hour format`        | 
-  | `%H:%Mh UTC (%Z)`   | `24-hour with timezone` | 
-  | `%Y-%m-%dT%X.%L%Z`  | `ISO with timezone`     | 
-  | `%b %d, %Y, %X`     | `MMM DD, YYYY,hh:mm:ss` | 
-  | `%X`                | `hh:mm:ss`              | 
+      |     Accepted value  |        Format           |                     
+      |---------------------|-------------------------| 
+      | `%b %d, %Y`         | `MMM DD,YYYY`           | 
+      | `%d/%m/%Y`          | `DD/MM/YYYY(EU)`        | 
+      | `%x`                | `DD/MM/YYYY(USA)`       | 
+      | `%I:%M%p`           | `12-hour format`        | 
+      | `%H:%Mh`            | `24-hour format`        | 
+      | `%H:%Mh UTC (%Z)`   | `24-hour with timezone` | 
+      | `%Y-%m-%dT%X.%L%Z`  | `ISO with timezone`     | 
+      | `%b %d, %Y, %X`     | `MMM DD, YYYY,hh:mm:ss` | 
+      | `%X`                | `hh:mm:ss`              | 
 
-* `precision` - (Optional) This attribute is utilized when the `type` attribute is set to `decimal`, stipulating the precise number of digits after the decimal point for your data.
+
+  * `precision` - (Optional) This attribute is utilized when the `type` attribute is set to `decimal`, stipulating the precise number of digits after the decimal point for your data.
 
 -> **IMPORTANT!**
-  Refer below code snippets to identify the correct set of combinations.
-
+  As specified in the description of arguments of `data_format` above, using certain arguments requires using a specific `type` with the arguments, on a case-to-case basis. Please see the examples below for more details on such argument combinations.
+  
+* The following example illustrates using `data_format{}` with values of type `duration`, `recent-relative` and `timestamp` with no additional arguments specified.
 ```hcl
  widget_table {
   title  = "List of Transactions"
@@ -432,7 +434,7 @@ This attribute requires specifying the following attributes in a nested block -
   }
 }
 ```
-* `type` should be set to `date` for default date/time values and `custom` inorder to use the formats listed above.
+* In order to add a `data_format` block for date/time values, the `type` would need to be set to `date`. However, if you would also like to specify a format of the date/time value (with the `format` argument), the type would need to be set to `custom`.
 ```hcl
   data_format {
     name = "timestamp"
@@ -445,12 +447,12 @@ This attribute requires specifying the following attributes in a nested block -
     Format = "%Y-%m-%dT%X.%L%Z"
   }
 ```
-* `type` should be set to `decimal` for numeric values and `humanized` in order to enable Autoformat for numeric values.
+* Similarly, in order to use `data_format{}` with numeric values, the `type` would be need to set to `decimal`. The `precision` of the value may also be specified with type `decimal`. However, in order to have "Autoformat" enabled on the numeric value, specify the type as `humanized`.
 ```hcl
   data_format {
     name = "count"
     type = "decimal"
-    Precision = 4
+    precision = 4
   }
   data_format {
     name = "count"

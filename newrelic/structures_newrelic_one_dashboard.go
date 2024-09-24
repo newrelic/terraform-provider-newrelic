@@ -578,7 +578,7 @@ func expandDashboardTableWidgetConfigInitialSortingInput(w map[string]interface{
 
 func expandDashboardTableWidgetConfigDataFormatInput(w map[string]interface{}) []*dashboards.DashboardWidgetDataFormat {
 	var tableWidgetDataFormat []*dashboards.DashboardWidgetDataFormat
-	if q, ok := w["data_format"]; ok && len(q.([]interface{})) >= 1 && q.([]interface{})[0] != nil {
+	if q, ok := w["data_format"]; ok {
 		for _, v := range q.([]interface{}) {
 			dashboardDatFormatMap := v.(map[string]interface{})
 
@@ -1712,9 +1712,9 @@ func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, met
 	validateThresholdFields(d, &errorsList, "widget_table")
 	validateThresholdFields(d, &errorsList, "widget_line")
 
-	// add any other validation functions here
 	validateWidgetDataFormatterStructure(d, &errorsList, "widget_table")
 	validateWidgetDataFormatterStructure(d, &errorsList, "widget_billboard")
+	// add any other validation functions here
 
 	if len(errorsList) == 0 {
 		return nil
