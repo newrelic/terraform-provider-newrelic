@@ -162,6 +162,7 @@ func Provider() *schema.Provider {
 			"newrelic_group":                                    resourceNewRelicGroup(),
 			"newrelic_infra_alert_condition":                    resourceNewRelicInfraAlertCondition(),
 			"newrelic_insights_event":                           resourceNewRelicInsightsEvent(),
+			"newrelic_key_transaction":                          resourceNewRelicKeyTransaction(),
 			"newrelic_log_parsing_rule":                         resourceNewRelicLogParsingRule(),
 			"newrelic_monitor_downtime":                         resourceNewRelicMonitorDowntime(),
 			"newrelic_notification_channel":                     resourceNewRelicNotificationChannel(),
