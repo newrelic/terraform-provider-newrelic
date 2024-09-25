@@ -331,6 +331,12 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 			MinItems: 1,
 			Elem:     dashboardWidgetInitialSortingSchemaElem(),
 		},
+		"data_format": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MinItems: 1,
+			Elem:     dashboardWidgetDataFormatSchemaElem(),
+		},
 		"ignore_time_range": {
 			Type:     schema.TypeBool,
 			Optional: true,
@@ -456,6 +462,7 @@ func dashboardWidgetNullValuesSchemaElem() *schema.Resource {
 		},
 	}
 }
+
 func dashboardWidgetInitialSortingSchemaElem() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -468,6 +475,33 @@ func dashboardWidgetInitialSortingSchemaElem() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The column name to be sorted",
+			},
+		},
+	}
+}
+
+func dashboardWidgetDataFormatSchemaElem() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The column name to be sorted",
+			},
+			"type": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Defines the type of the mentioned column",
+			},
+			"format": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Defines the format of the mentioned type",
+			},
+			"precision": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The precision of the type",
 			},
 		},
 	}

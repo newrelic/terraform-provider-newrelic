@@ -670,7 +670,10 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       nrql_query {
         query      = "FROM Transaction SELECT count(*)"
       }
-
+      data_format {
+		name = "count"
+		type = "decimal"
+      }
       warning = 0
       critical = 2
     }
@@ -781,6 +784,10 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       initial_sorting {
         direction = "desc"
         name      = "appName"
+      }
+      data_format {
+		name = "Avg duration"
+		type = "decimal"
       }
     }
 

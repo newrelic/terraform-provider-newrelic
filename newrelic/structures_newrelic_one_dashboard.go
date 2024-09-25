@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -242,6 +243,8 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 
 				// Set thresholds
 				rawConfiguration.Thresholds = expandDashboardBillboardWidgetConfigurationInput(d, v.(map[string]interface{}), meta, pageIndex, widgetIndex)
+				// Set data formatting
+				rawConfiguration.DataFormat = expandDashboardTableWidgetConfigDataFormatInput(v.(map[string]interface{}))
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -377,6 +380,8 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				rawConfiguration.Thresholds = expandDashboardTableWidgetConfigurationThresholdInput(d, pageIndex, widgetIndex)
 				// Set initalSorting
 				rawConfiguration.InitialSorting = expandDashboardTableWidgetConfigInitialSortingInput(v.(map[string]interface{}))
+				// Set data formatting
+				rawConfiguration.DataFormat = expandDashboardTableWidgetConfigDataFormatInput(v.(map[string]interface{}))
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -566,6 +571,38 @@ func expandDashboardTableWidgetConfigInitialSortingInput(w map[string]interface{
 			tableWidgetInitialSorting.Name = i.(string)
 		}
 		return &tableWidgetInitialSorting
+	}
+
+	return nil
+}
+
+func expandDashboardTableWidgetConfigDataFormatInput(w map[string]interface{}) []*dashboards.DashboardWidgetDataFormat {
+	var tableWidgetDataFormat []*dashboards.DashboardWidgetDataFormat
+	if q, ok := w["data_format"]; ok {
+		for _, v := range q.([]interface{}) {
+			dashboardDatFormatMap := v.(map[string]interface{})
+
+			var dataFormat dashboards.DashboardWidgetDataFormat
+
+			if t, ok := dashboardDatFormatMap["type"]; ok {
+				dataFormat.Type = t.(string)
+			}
+
+			if n, ok := dashboardDatFormatMap["name"]; ok {
+				dataFormat.Name = n.(string)
+			}
+
+			if f, ok := dashboardDatFormatMap["format"]; ok {
+				dataFormat.Format = f.(string)
+			}
+
+			if p, ok := dashboardDatFormatMap["precision"]; ok {
+				dataFormat.Precision = p.(int)
+			}
+
+			tableWidgetDataFormat = append(tableWidgetDataFormat, &dataFormat)
+		}
+		return tableWidgetDataFormat
 	}
 
 	return nil
@@ -1286,6 +1323,14 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 				}
 			}
 		}
+
+		if rawCfg.DataFormat != nil {
+			dataformat := flattenDashboardWidgetDataFormat(rawCfg.DataFormat)
+			if len(dataformat) > 0 {
+				out["data_format"] = dataformat
+			}
+		}
+
 	case "viz.bullet":
 		widgetType = "widget_bullet"
 		out["limit"] = rawCfg.Limit
@@ -1347,6 +1392,13 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 			}
 		}
 
+		if rawCfg.DataFormat != nil {
+			dataformat := flattenDashboardWidgetDataFormat(rawCfg.DataFormat)
+			if len(dataformat) > 0 {
+				out["data_format"] = dataformat
+			}
+		}
+
 		if rawCfg.Thresholds != nil {
 			thresholds := flattenDashboardTableWidgetThresholds(rawCfg.Thresholds)
 			if thresholds != nil {
@@ -1370,6 +1422,22 @@ func flattenDashboardWidgetInitialSorting(in *dashboards.DashboardWidgetInitialS
 	k["name"] = in.Name
 
 	out[0] = k
+	return out
+}
+
+func flattenDashboardWidgetDataFormat(in []*dashboards.DashboardWidgetDataFormat) []interface{} {
+	out := make([]interface{}, len(in))
+
+	for i, v := range in {
+		k := make(map[string]interface{})
+
+		k["name"] = v.Name
+		k["type"] = v.Type
+		k["format"] = v.Format
+		k["precision"] = v.Precision
+		out[i] = k
+	}
+
 	return out
 }
 
@@ -1644,6 +1712,8 @@ func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, met
 	validateThresholdFields(d, &errorsList, "widget_table")
 	validateThresholdFields(d, &errorsList, "widget_line")
 
+	validateWidgetDataFormatterStructure(d, &errorsList, "widget_table")
+	validateWidgetDataFormatterStructure(d, &errorsList, "widget_billboard")
 	// add any other validation functions here
 
 	if len(errorsList) == 0 {
@@ -1712,6 +1782,45 @@ func validateThresholdFields(d *schema.ResourceDiff, errorsList *[]string, widge
 							_, err := strconv.ParseFloat(threshold["to"].(string), 64)
 							if err != nil {
 								*errorsList = append(*errorsList, fmt.Sprintf("the 'to' field in the 'threshold' block of a '%v' must be a floating point number, but got '%v'", widgetType, threshold["to"]))
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
+}
+
+func validateWidgetDataFormatterStructure(d *schema.ResourceDiff, errorsList *[]string, widgetType string) {
+	_, pagesListObtained := d.GetChange("page")
+	pages := pagesListObtained.([]interface{})
+	for _, p := range pages {
+		page := p.(map[string]interface{})
+		widget, widgetOk := page[widgetType]
+		if widgetOk {
+			for _, w := range widget.([]interface{}) {
+				widget := w.(map[string]interface{})
+				dataFormats, dataFormatsOk := widget["data_format"]
+				if dataFormatsOk {
+
+					for _, t := range dataFormats.([]interface{}) {
+						dataFormat := t.(map[string]interface{})
+						acceptedTypes := []string{"duration", "recent-relative"}
+						if dataFormat["type"] != nil && (dataFormat["format"] != nil || dataFormat["format"] != "") {
+							if dataFormat["format"] != "" && slices.Contains(acceptedTypes, dataFormat["type"].(string)) {
+								*errorsList = append(*errorsList, fmt.Sprintf("'format' should not be provided if 'type' has the value %s", dataFormat["type"]))
+							}
+						}
+						if dataFormat["type"] != nil && dataFormat["precision"] != 0 {
+							if dataFormat["precision"] != "" && slices.Contains(acceptedTypes, dataFormat["type"].(string)) {
+								*errorsList = append(*errorsList, fmt.Sprintf("'precision' should not be provided if 'type' has the value %s", dataFormat["type"]))
+							}
+						}
+
+						if dataFormat["type"] != nil && dataFormat["format"] != 0 {
+							if dataFormat["type"].(string) == "date" && dataFormat["format"] != "" {
+								log.Printf("[WARN] 'type' should be set as 'custom' if format needs to be applied.")
 							}
 						}
 					}
