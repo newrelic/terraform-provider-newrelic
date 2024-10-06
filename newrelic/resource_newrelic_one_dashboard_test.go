@@ -829,6 +829,10 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQL() string {
 	replacement_strategy = "default"
 	title = "title"
 	type = "nrql"
+	options {
+		excluded = true
+		ignore_time_range = true
+	}
   }
 `
 }
@@ -850,6 +854,10 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQLUpdated() string {
 	replacement_strategy = "default"
 	title = "title"
 	type = "nrql"
+	options {
+		excluded = false
+		ignore_time_range = false
+	}
   }
 `
 }

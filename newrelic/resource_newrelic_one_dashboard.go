@@ -127,6 +127,11 @@ func dashboardVariableSchemaElem() *schema.Resource {
 							Optional:    true,
 							Description: "Only applies to variables of type NRQL. With this turned on, the time range for the NRQL query will override the time picker on dashboards and other pages. Turn this off to use the time picker as normal.",
 						},
+						"excluded": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Only applies to variables of type NRQL. With this turned on, the time range for the NRQL query will override the time picker on dashboards and other pages. Turn this off to use the time picker as normal.",
+						},
 					},
 				},
 			},
