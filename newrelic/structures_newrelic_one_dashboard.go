@@ -1017,6 +1017,7 @@ func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOption
 		cfg := v.(map[string]interface{})
 		out = dashboards.DashboardVariableOptionsInput{
 			IgnoreTimeRange: cfg["ignore_time_range"].(bool),
+			Excluded:        cfg["excluded"].(bool),
 		}
 	}
 
@@ -1179,6 +1180,7 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 	out := make([]interface{}, 1)
 	n := make(map[string]interface{})
 	n["ignore_time_range"] = in.IgnoreTimeRange
+	n["excluded"] = in.Excluded
 	out[0] = n
 	return out
 }
