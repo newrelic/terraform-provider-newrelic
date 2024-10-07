@@ -2,14 +2,15 @@ package newrelic
 
 import (
 	"context"
-	"log"
-
+	"encoding/json"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/dashboards"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
+	"log"
 )
 
 func resourceNewRelicOneDashboard() *schema.Resource {
@@ -895,6 +896,14 @@ func resourceNewRelicOneDashboardRead(ctx context.Context, d *schema.ResourceDat
 	log.Printf("[INFO] Reading New Relic One dashboard %s", d.Id())
 
 	dashboard, err := client.Dashboards.GetDashboardEntityWithContext(ctx, common.EntityGUID(d.Id()))
+	// Convert the dashboard object to a pretty-printed JSON string
+	dashboardJSON, err := json.MarshalIndent(dashboard, "", "  ")
+	if err != nil {
+		fmt.Println("Error marshalling dashboard:", err)
+	}
+
+	// Print the pretty-printed JSON string
+	fmt.Println("came to read function line 899", string(dashboardJSON))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")

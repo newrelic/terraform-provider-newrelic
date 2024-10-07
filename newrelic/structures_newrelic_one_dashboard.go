@@ -1012,15 +1012,19 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 
 func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOptionsInput {
 	var out dashboards.DashboardVariableOptionsInput
-
+	fmt.Println("the cfg in expand variable options is:", in)
 	for _, v := range in {
 		cfg := v.(map[string]interface{})
-		out = dashboards.DashboardVariableOptionsInput{
-			IgnoreTimeRange: cfg["ignore_time_range"].(bool),
-			Excluded:        cfg["excluded"].(bool),
+		if value, ok := cfg["excluded"]; ok {
+			excludedInput := value.(bool)
+			out.IgnoreTimeRange = &excludedInput
+		}
+		if value, ok := cfg["ignore_time_range"]; ok {
+			ignoreTimeRangeInput := value.(bool)
+			out.IgnoreTimeRange = &ignoreTimeRangeInput
 		}
 	}
-
+	fmt.Println("the expanded options are", out)
 	return &out
 }
 
@@ -1051,7 +1055,7 @@ func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.Resou
 			return err
 		}
 	}
-
+	fmt.Println("came to 1054 and d.Get() is", d.Get("variable"))
 	return nil
 }
 
@@ -1081,14 +1085,14 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 			return err
 		}
 	}
-
+	fmt.Println("came to update result function")
 	if dashboard.Variables != nil && len(dashboard.Variables) > 0 {
 		variables := flattenDashboardVariable(&dashboard.Variables, d)
 		if err := d.Set("variable", variables); err != nil {
 			return err
 		}
 	}
-
+	fmt.Println("came to 1094 and d.Get() is", d.Get("variable"))
 	return nil
 }
 
@@ -1110,12 +1114,14 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable, d *schema.Resour
 		m["replacement_strategy"] = strings.ToLower(string(v.ReplacementStrategy))
 		m["title"] = v.Title
 		m["type"] = strings.ToLower(string(v.Type))
+		fmt.Println("came to line 1113")
 		if v.Options != nil {
 			options := flattenVariableOptions(v.Options, d, i)
 			if options != nil {
 				// set options -> ignore_time_range to the state only if they already exist in the configuration
 				// needed to make this backward compatible with configurations which do not yet have options -> ignore_time_range
 				m["options"] = options
+				fmt.Println("came to line 1120", m["options"])
 			}
 		}
 
@@ -1168,6 +1174,7 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 		return nil
 	}
 	options := optionsOfVariableFetched.([]interface{})
+	fmt.Println("came to line 1173 options are", options)
 	if len(options) == 0 {
 		// if nothing exists in the options list in the state (configuration), "do nothing", to avoid drift
 		// this is required to make options -> ignore_time_range backward compatible and show no drift
@@ -1179,9 +1186,15 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 	// (set it to the value of ignore_time_range seen in the response returned by the API)
 	out := make([]interface{}, 1)
 	n := make(map[string]interface{})
-	n["ignore_time_range"] = in.IgnoreTimeRange
-	n["excluded"] = in.Excluded
+	option := options[0].(map[string]interface{})
+	if _, excludedFetchedOk := option["excluded"]; excludedFetchedOk {
+		n["excluded"] = in.Excluded
+	}
+	if _, ignoreTimeRangeFetchedOk := option["ignore_time_range"]; ignoreTimeRangeFetchedOk {
+		n["ignore_time_range"] = in.IgnoreTimeRange
+	}
 	out[0] = n
+	fmt.Println("came to line 1193 options are", out)
 	return out
 }
 
