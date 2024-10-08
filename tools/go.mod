@@ -2,8 +2,6 @@ module github.com/newrelic/terraform-provider-newrelic/v2/tools
 
 go 1.22
 
-toolchain go1.22.5
-
 require (
 	github.com/bflad/tfproviderlint v0.29.0
 	github.com/client9/misspell v0.3.4
