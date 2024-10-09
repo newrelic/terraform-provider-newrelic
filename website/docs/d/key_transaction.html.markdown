@@ -47,8 +47,7 @@ The following arguments are supported:
 * `name` - (Required) The name of the key transaction in New Relic.
 * `guid` - (Optional) GUID of the key transaction in New Relic.
 
-## Note
-If two or more key transactions have the same name, the datasource fetch only one key transaction. To differentiate between them, use the GUID of the key transaction.
+-> **NOTE** If the `name` specified in the configuration matches the names of multiple key transaction in the account, the data source will return the first match from the list of all matching key transaction retrieved from the API. However, when using the `guid` argument as the search criterion, only the key transaction with that particular guid is returned, as each key transaction has a unique guid.
 
 ## Attributes Reference
 
