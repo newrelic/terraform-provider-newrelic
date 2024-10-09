@@ -65,7 +65,7 @@ func dataSourceNewRelicKeyTransactionRead(ctx context.Context, d *schema.Resourc
 	}
 
 	if transaction == nil || len(transaction.Results.Entities) == 0 {
-		return diag.FromErr(fmt.Errorf("the name '%s' does not match any New Relic key transaction", name))
+		return diag.FromErr(fmt.Errorf("no key transaction that matches the specified parameters is found in New Relic"))
 	}
 
 	flattenKeyTransaction(transaction, d)
