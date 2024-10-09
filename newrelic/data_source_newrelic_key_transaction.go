@@ -2,13 +2,13 @@ package newrelic
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/apm"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
 
 func dataSourceNewRelicKeyTransaction() *schema.Resource {
@@ -20,6 +20,24 @@ func dataSourceNewRelicKeyTransaction() *schema.Resource {
 				Required:    true,
 				Description: "The name of the key transaction in New Relic.",
 			},
+			"guid": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "guid of the key transaction in New Relic.",
+			},
+			"domain": {
+				Type:        schema.TypeString,
+				Required:    false,
+				Computed:    true,
+				Description: "The Domain of the key transaction in New Relic.",
+			},
+			"type": {
+				Type:        schema.TypeString,
+				Required:    false,
+				Computed:    true,
+				Description: "The Entity type of the key transaction in New Relic.",
+			},
 		},
 	}
 }
@@ -28,28 +46,25 @@ func dataSourceNewRelicKeyTransactionRead(ctx context.Context, d *schema.Resourc
 	client := meta.(*ProviderConfig).NewClient
 
 	log.Printf("[INFO] Reading New Relic key transactions")
-
-	name := d.Get("name").(string)
-
-	params := apm.ListKeyTransactionsParams{
-		Name: name,
+	// fetch name from TF config
+	name, nameOk := d.GetOk("name")
+	if !nameOk {
+		return diag.FromErr(errors.New("`name` is required"))
+	}
+	// fetch guid from TF config
+	guid := d.Get("guid")
+	query := fmt.Sprintf("type = 'KEY_TRANSACTION' AND name = '%s'", name)
+	if guid != "" {
+		// if guid is provided, add it to the query to filter the results
+		query = fmt.Sprintf("%s AND id = '%s'", query, guid)
 	}
 
-	transactions, err := client.APM.ListKeyTransactionsWithContext(ctx, &params)
+	transaction, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, query, []entities.EntitySearchSortCriteria{})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	var transaction *apm.KeyTransaction
-
-	for _, t := range transactions {
-		if t.Name == name {
-			transaction = t
-			break
-		}
-	}
-
-	if transaction == nil {
+	if transaction == nil || len(transaction.Results.Entities) == 0 {
 		return diag.FromErr(fmt.Errorf("the name '%s' does not match any New Relic key transaction", name))
 	}
 
@@ -58,7 +73,16 @@ func dataSourceNewRelicKeyTransactionRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func flattenKeyTransaction(t *apm.KeyTransaction, d *schema.ResourceData) {
-	d.SetId(strconv.Itoa(t.ID))
-	_ = d.Set("name", t.Name)
+func flattenKeyTransaction(t *entities.EntitySearch, d *schema.ResourceData) {
+	// iterate over the tags to get the key transaction id
+	for _, tag := range t.Results.Entities[0].GetTags() {
+		if tag.Key == "keyTransactionId" {
+			d.SetId(tag.Values[0])
+			break
+		}
+	}
+	_ = d.Set("guid", t.Results.Entities[0].GetGUID())
+	_ = d.Set("name", t.Results.Entities[0].GetName())
+	_ = d.Set("domain", t.Results.Entities[0].GetDomain())
+	_ = d.Set("type", t.Results.Entities[0].GetType())
 }
