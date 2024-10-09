@@ -24,7 +24,7 @@ func dataSourceNewRelicKeyTransaction() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "guid of the key transaction in New Relic.",
+				Description: "GUID of the key transaction in New Relic.",
 			},
 			"domain": {
 				Type:        schema.TypeString,
@@ -59,16 +59,16 @@ func dataSourceNewRelicKeyTransactionRead(ctx context.Context, d *schema.Resourc
 		query = fmt.Sprintf("%s AND id = '%s'", query, guid)
 	}
 
-	transaction, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, query, []entities.EntitySearchSortCriteria{})
+	keyTransactionsFound, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, query, []entities.EntitySearchSortCriteria{})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if transaction == nil || len(transaction.Results.Entities) == 0 {
+	if keyTransactionsFound == nil || len(keyTransactionsFound.Results.Entities) == 0 {
 		return diag.FromErr(fmt.Errorf("no key transaction that matches the specified parameters is found in New Relic"))
 	}
 
-	flattenKeyTransaction(transaction, d)
+	flattenKeyTransaction(keyTransactionsFound, d)
 
 	return nil
 }
