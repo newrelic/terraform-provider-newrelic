@@ -1,5 +1,10 @@
+<a name="v3.49.0"></a>
+## [v3.49.0] - 2024-10-10
+### Features
+- **key_transaction:** migrate the key transaction resource from using RESTv2 to NerdGraph ([#2753](https://github.com/newrelic/terraform-provider-newrelic/issues/2753))
+
 <a name="v3.48.0"></a>
-## [v3.48.0] - 2024-09-25
+## [v3.48.0] - 2024-09-26
 ### Features
 - **key_transaction:** add new resource to manage key transactions ([#2748](https://github.com/newrelic/terraform-provider-newrelic/issues/2748))
 
@@ -2243,7 +2248,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.48.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.49.0...HEAD
+[v3.49.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.48.0...v3.49.0
 [v3.48.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.47.0...v3.48.0
 [v3.47.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.46.0...v3.47.0
 [v3.46.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.45.2...v3.46.0
