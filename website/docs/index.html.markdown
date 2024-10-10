@@ -22,6 +22,12 @@ Use the navigation to the left to read about the available resources.
 - [**Configure the Provider**](guides/provider_configuration.html)
 - [**Getting Started Guide**](guides/getting_started.html)
 
+### Additional Tooling
+
+Use the **New Relic CodeStream** IDE extension to simplify your workflow. Access the official docs right inside your IDE and add resource templates via auto-complete.
+
+Install New Relic CodeStream for [VS Code][codestream_vscode], [JetBrains][codestream_jetbrains], or [Visual Studio][codestream_visualstudio], and then look for the wrench icon at the top of the CodeStream pane.
+
 ### Data sources
 
 - [**New Relic Cloud integrations example for AWS, GCP, Azure**](guides/cloud_integrations_guide.html)
@@ -249,3 +255,6 @@ Keep in mind that when you submit your pull request, you'll need to sign the CLA
 New Relic has open-sourced this project. This project is provided AS-IS WITHOUT WARRANTY OR SUPPORT, although you can report issues and contribute to the project here on GitHub.
 
 [provider_version_configuration]: https://www.terraform.io/language/providers/requirements#requiring-providers
+[codestream_vscode]: https://marketplace.visualstudio.com/items?itemName=CodeStream.codestream
+[codestream_jetbrains]: https://plugins.jetbrains.com/plugin/12206-new-relic-codestream
+[codestream_visualstudio]: https://marketplace.visualstudio.com/items?itemName=CodeStream.codestream-vs-22
