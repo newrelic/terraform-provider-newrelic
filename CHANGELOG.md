@@ -1,3 +1,8 @@
+<a name="v3.50.0"></a>
+## [v3.50.0] - 2024-10-10
+### Features
+- **docs:** mention New Relic Codestream's IDE extension for Terraform
+
 <a name="v3.49.0"></a>
 ## [v3.49.0] - 2024-10-10
 ### Features
@@ -2248,7 +2253,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.49.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.50.0...HEAD
+[v3.50.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.49.0...v3.50.0
 [v3.49.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.48.0...v3.49.0
 [v3.48.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.47.0...v3.48.0
 [v3.47.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.46.0...v3.47.0
