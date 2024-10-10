@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -88,12 +89,16 @@ func testAccNewRelicCheckKeyTransactionExists(resourceName string) resource.Test
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
+		time.Sleep(5 * time.Second)
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return fmt.Errorf(err.Error())
 		}
 
-		x := (*found).(*entities.KeyTransactionEntity)
+		x, foundOk := (*found).(*entities.KeyTransactionEntity)
+		if !foundOk {
+			return fmt.Errorf("no key transaction found")
+		}
 		if x.GUID != common.EntityGUID(rs.Primary.ID) {
 			return fmt.Errorf("key transaction not found")
 		}

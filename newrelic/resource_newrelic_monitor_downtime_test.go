@@ -358,12 +358,12 @@ var fewValidTimeZones = []string{
 
 // monitors with the below GUIDs belong to the v2 Integration Tests Account
 var monitorGUIDsAsString = convertStringListToString([]string{
-	"MzgwNjUyNnxTWU5USHxNT05JVE9SfGFmZmM0MTRiLTVhNmMtNGI5NS1iMzYwLThhNmQ2ZTkzOTM3Yw",
+	"MzgwNjUyNnxTWU5USHxNT05JVE9SfDQ3ZWI5YmYzLWRiOTEtNDljYy04MzM2LTBhZWJhNTE5MzhiOQ",
 })
 var monitorGUIDsUpdatedAsString = convertStringListToString([]string{
-	"MzgwNjUyNnxTWU5USHxNT05JVE9SfDhkYmMyYmIwLTQwZjgtNDA5NC05OTA1LTdhZGE2ZGViMmEwNg",
-	"MzgwNjUyNnxTWU5USHxNT05JVE9SfDViZDNmYTk4LTA2NjgtNGQ1Yy05ODU2LTk3MzlmNWViY2JlNg",
-	"MzgwNjUyNnxTWU5USHxNT05JVE9SfGFmZmM0MTRiLTVhNmMtNGI5NS1iMzYwLThhNmQ2ZTkzOTM3Yw",
+	"MzgwNjUyNnxTWU5USHxNT05JVE9SfDkwODEwNTRhLWRhYTAtNGI0Mi05YmIwLTY3M2M1MDI2ZWYyOA",
+	"MzgwNjUyNnxTWU5USHxNT05JVE9SfGEyNWRmOTIwLTcxYjUtNDlmYy1iZTgzLTBhOGE0NjdiYWNhMg",
+	"MzgwNjUyNnxTWU5USHxNT05JVE9SfDAzNjQ0ZDNlLTg0YzMtNDQyMC1hYjM4LTc0ZjBjODI4NTk3ZA",
 })
 
 func convertStringListToString(list []string) string {
