@@ -897,9 +897,9 @@ func resourceNewRelicOneDashboardRead(ctx context.Context, d *schema.ResourceDat
 
 	dashboard, err := client.Dashboards.GetDashboardEntityWithContext(ctx, common.EntityGUID(d.Id()))
 	// Convert the dashboard object to a pretty-printed JSON string
-	dashboardJSON, err := json.MarshalIndent(dashboard, "", "  ")
-	if err != nil {
-		fmt.Println("Error marshalling dashboard:", err)
+	dashboardJSON, er := json.MarshalIndent(dashboard, "", "  ")
+	if er != nil {
+		fmt.Println("Error marshalling dashboard:", er)
 	}
 
 	// Print the pretty-printed JSON string

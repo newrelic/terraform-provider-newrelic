@@ -37,7 +37,7 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}, dashboardNam
 		return nil, err
 	}
 
-	dash.Variables, err = expandDashboardVariablesInput(d.Get("variable").([]interface{}))
+	dash.Variables, err = expandDashboardVariablesInput(d, d.Get("variable").([]interface{}))
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func checkForNilElements(d []interface{}) bool {
 	return false
 }
 
-func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
+func expandDashboardVariablesInput(d *schema.ResourceData, variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
 	if len(variables) < 1 {
 		return []dashboards.DashboardVariableInput{}, nil
 	}
@@ -113,7 +113,7 @@ func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.Dashbo
 		}
 
 		if options, ok := v["options"]; ok && len(options.([]interface{})) > 0 {
-			variable.Options = expandVariableOptions(options.([]interface{}))
+			variable.Options = expandVariableOptions(d, options.([]interface{}))
 		}
 
 		expanded[i] = variable
@@ -1010,19 +1010,23 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 	return expanded, nil
 }
 
-func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOptionsInput {
+func expandVariableOptions(d *schema.ResourceData, in []interface{}) *dashboards.DashboardVariableOptionsInput {
 	var out dashboards.DashboardVariableOptionsInput
 	fmt.Println("the cfg in expand variable options is:", in)
 	for _, v := range in {
 		cfg := v.(map[string]interface{})
-		if value, ok := cfg["excluded"]; ok {
-			excludedInput := value.(bool)
-			out.IgnoreTimeRange = &excludedInput
+		if val, ok := d.GetOkExists("variable.0.options.0.excluded"); ok {
+			excludedInput := val.(bool)
+			out.Excluded = &excludedInput
+			fmt.Println("came to if condition excluded:", excludedInput)
 		}
-		if value, ok := cfg["ignore_time_range"]; ok {
-			ignoreTimeRangeInput := value.(bool)
+		if val, ok := d.GetOkExists("variable.0.options.0.ignore_time_range"); ok {
+			ignoreTimeRangeInput := val.(bool)
 			out.IgnoreTimeRange = &ignoreTimeRangeInput
+			fmt.Println("came to if condition ignoreTimeRangeInput:", ignoreTimeRangeInput)
 		}
+
+		fmt.Println("the cfg in expand variable options is:", cfg)
 	}
 	fmt.Println("the expanded options are", out)
 	return &out
@@ -1117,6 +1121,7 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable, d *schema.Resour
 		fmt.Println("came to line 1113")
 		if v.Options != nil {
 			options := flattenVariableOptions(v.Options, d, i)
+			fmt.Println("came to line 1119")
 			if options != nil {
 				// set options -> ignore_time_range to the state only if they already exist in the configuration
 				// needed to make this backward compatible with configurations which do not yet have options -> ignore_time_range
@@ -1124,7 +1129,7 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable, d *schema.Resour
 				fmt.Println("came to line 1120", m["options"])
 			}
 		}
-
+		fmt.Println("came to line 1127 v.Options", v.Options)
 		out[i] = m
 	}
 	return out
@@ -1169,12 +1174,14 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 	// fetching the contents of the variable at the specified index (in the list of variables)
 	// and subsequently, finding its options field
 	variableFetched := d.Get(fmt.Sprintf("variable.%d", index)).(map[string]interface{})
+	fmt.Println("came to line 1171 fetched variables are", d.Get("variable"))
 	optionsOfVariableFetched, optionsOfVariableFetchedOk := variableFetched["options"]
+	fmt.Println("came to line 1173 fetchedOptions are", variableFetched)
 	if !optionsOfVariableFetchedOk {
 		return nil
 	}
 	options := optionsOfVariableFetched.([]interface{})
-	fmt.Println("came to line 1173 options are", options)
+	fmt.Println("came to line 1178 options are", options)
 	if len(options) == 0 {
 		// if nothing exists in the options list in the state (configuration), "do nothing", to avoid drift
 		// this is required to make options -> ignore_time_range backward compatible and show no drift

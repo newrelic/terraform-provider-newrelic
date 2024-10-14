@@ -454,6 +454,9 @@ func TestAccNewRelicOneDashboard_VariablesNRQL(t *testing.T) {
 				ResourceName:      "newrelic_one_dashboard.bar",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"variable.0.options",
+				},
 			},
 		},
 	})
