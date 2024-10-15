@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create, update, and delete a Synthetics Step monitor in New Relic.
 
--> **IMPORTANT:**  The **Synthetics Legacy Runtime** reached <b style="color:red;">end-of-life</b> on <b style="color:red;">October 22, 2024</b>. Using the legacy runtime or blank runtime values with requests from the New Relic Terraform Provider will result in API errors. Starting with **v3.51.0** of the New Relic Terraform Provider, configurations without runtime attributes or comprising legacy runtime values <span style="color:red;">will be deemed invalid</span>. If your Synthetic monitors' configuration is not updated already with new runtime values, these consequences would be seen; upgrade as soon as possible to avoid consequences. For more details and instructions, please see detailed warning against `runtime_type` and `runtime_type_version` in the **Argument Reference** section.
+-> **IMPORTANT:**  The **Synthetics Legacy Runtime** reached <b style="color:red;">end-of-life</b> on <b style="color:red;">October 22, 2024</b>. Using the legacy runtime or blank runtime values with requests from the New Relic Terraform Provider will result in API errors. Starting with **v3.51.0** of the New Relic Terraform Provider, configurations without runtime attributes or comprising legacy runtime values <span style="color:red;">will be deemed invalid</span>. If your Synthetic monitors' configuration is not updated already with new runtime values, these consequences would be seen; upgrade as soon as possible to avoid consequences. For more details and instructions, please see detailed warning against `runtime_type` and `runtime_type_version` in the [**Argument Reference**](#runtime_type) section.
 
 ## Example Usage
 
@@ -48,13 +48,12 @@ The following are the common arguments supported for `STEP` monitor:
 * `location_private` - (Required) The location the monitor will run from. At least one of `locations_public` or `location_private` is required. See [Nested locations_private blocks](#nested-locations-private-blocks) below for details.
 * `period` - (Required) The interval at which this monitor should run. Valid values are `EVERY_MINUTE`, `EVERY_5_MINUTES`, `EVERY_10_MINUTES`, `EVERY_15_MINUTES`, `EVERY_30_MINUTES`, `EVERY_HOUR`, `EVERY_6_HOURS`, `EVERY_12_HOURS`, or `EVERY_DAY`.
 * `status` - (Required) The run state of the monitor. (`ENABLED` or `DISABLED`).
-
--> **WARNING:** As of February 29, 2024, Synthetic Monitors no longer support the `MUTED` status. Version **3.33.0** of the New Relic Terraform Provider is released to coincide with the `MUTED` status end-of-life. Consequently, the only valid values for `status` for all types of Synthetic Monitors are mentioned above. For additional information on alternatives to the `MUTED` status of Synthetic Monitors that can be managed via Terraform, please refer to [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide).
-
-* `runtime_type` - (Optional) The runtime that the monitor will use to run jobs.
-* `runtime_type_version` - (Optional) The specific version of the runtime type selected.
 * `browsers` - (Optional) The multiple browsers list on which synthetic monitors will run. Valid values are `CHROME` and `FIREFOX`.
 * `devices` - (Optional) The multiple devices list on which synthetic monitors will run. Valid values are `DESKTOP`, `MOBILE_LANDSCAPE`, `MOBILE_PORTRAIT`, `TABLET_LANDSCAPE` and `TABLET_PORTRAIT`.
+* `steps` - (Required) The steps that make up the script the monitor will run. See [Nested steps blocks](#nested-steps-blocks) below for details.
+* `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
+* `runtime_type` - (Optional) The runtime that the monitor will use to run jobs.
+* `runtime_type_version` - (Optional) The specific version of the runtime type selected.
 
 -> **NOTE:** Currently, the values of `runtime_type` and `runtime_type_version` supported by this resource are `CHROME_BROWSER` and `100` respectively. In order to run the monitor in the new runtime, both `runtime_type` and `runtime_type_version` need to be specified; however, specifying neither of these attributes would set this monitor to use the legacy runtime. It may also be noted that the runtime opted for would only be effective with private locations. For public locations, all traffic has been shifted to the new runtime, irrespective of the selection made.
 
@@ -65,9 +64,6 @@ Following these changes, starting with <b style="color:red;">v3.51.0</b> of the 
 We kindly recommend that you upgrade your Synthetic Monitors to the new runtime as soon as possible <span style="color:red;">if they are still using the legacy runtime</span>, to avoid seeing the aforementioned consequences. Please check out [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/synthetics_legacy_runtime_eol_migration_guide) in the documentation of the Terraform Provider (specifically, the table at the bottom of the guide, if you're looking for updates to be made to the configuration of Synthetic monitors) and [this announcement](https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm) for more details on the EOL, actions needed, relevant resources, and more.
 <br><br>
 You would not be affected by the EOL if your Synthetic monitors' Terraform configuration comprises new runtime values.
-
-* `steps` - (Required) The steps that make up the script the monitor will run. See [Nested steps blocks](#nested-steps-blocks) below for details.
-* `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
 
 ### Nested `location private` blocks
 
