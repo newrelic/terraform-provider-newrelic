@@ -10,7 +10,9 @@ description: |-
 
 Use this resource to create, update, and delete a Synthetics Step monitor in New Relic.
 
--> **IMPORTANT:**  The **Synthetics Legacy Runtime** reached <b style="color:red;">end-of-life</b> on <b style="color:red;">October 22, 2024</b>. Using the legacy runtime or blank runtime values with requests from the New Relic Terraform Provider will result in API errors. Starting with **v3.51.0** of the New Relic Terraform Provider, configurations without runtime attributes or comprising legacy runtime values <span style="color:red;">will be deemed invalid</span>. If your Synthetic monitors' configuration is not updated already with new runtime values, these consequences would be seen; upgrade as soon as possible to avoid consequences. For more details and instructions, please see detailed warning against `runtime_type` and `runtime_type_version` in the [**Argument Reference**](#runtime_type) section.
+-> **IMPORTANT:**  The **Synthetics Legacy Runtime** has reached its <b style="color:red;">end-of-life</b> on <b style="color:red;">October 22, 2024</b>. As a consequence, using the legacy runtime or blank runtime values with Synthetic monitor requests from the New Relic Terraform Provider will result in API errors. Starting with **v3.51.0** of the New Relic Terraform Provider, configurations of Synthetic monitors without runtime attributes or comprising legacy runtime values <span style="color:red;">will be deemed invalid</span>. 
+<br><br>
+If your Synthetic monitors' configuration is not updated already with new runtime values, upgrade as soon as possible to avoid these consequences. For more details and instructions, please see the detailed warning against `runtime_type` and `runtime_type_version` in the [**Argument Reference**](#runtime_type) section.
 
 ## Example Usage
 
