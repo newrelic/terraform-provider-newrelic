@@ -8,9 +8,12 @@ description: |-
 
 # Resource: newrelic\_synthetics\_script\_monitor
 
--> **WARNING:** Support for using the Synthetics Legacy Runtime (deprecated) with **new** Synthetic monitors **has officially ended as of August 26, 2024**. As a consequence, starting with v3.43.0 of the New Relic Terraform Provider, **new** Synthetic monitors **will no longer be allowed to use the legacy runtime** (this applies to all Synthetic monitor resources). Additionally, as previously communicated by New Relic, the Synthetics Legacy Runtime **will reach its end-of-life (EOL) on October 22, 2024**. In light of the above, we kindly recommend that you upgrade your Synthetic Monitors to the new runtime at the earliest, if they are still using the legacy runtime. Please check out [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/synthetics_legacy_runtime_eol_migration_guide) in the documentation of the Terraform Provider and [this announcement](https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm) for more details on the EOL, action needed, relevant resources, and more.
-
 Use this resource to create update, and delete a Script API or Script Browser Synthetics Monitor in New Relic.
+
+-> **IMPORTANT:**  The **Synthetics Legacy Runtime** has reached its <b style="color:red;">end-of-life</b> on <b style="color:red;">October 22, 2024</b>. As a consequence, using the legacy runtime or blank runtime values with Synthetic monitor requests from the New Relic Terraform Provider will result in API errors. Starting with **v3.51.0** of the New Relic Terraform Provider, configurations of Synthetic monitors without runtime attributes or comprising legacy runtime values <span style="color:red;">will be deemed invalid</span>.
+<br><br>
+If your Synthetic monitors' configuration is not updated already with new runtime values, upgrade as soon as possible to avoid these consequences. For more details and instructions, please see the detailed warning in the [**Deprecated Runtime**](#deprecated-runtime) section.
+
 
 ## Example Usage
 
@@ -66,8 +69,6 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 
 * `account_id`- (Optional) The account in which the Synthetics monitor will be created.
 * `status` - (Required) The run state of the monitor. (`ENABLED` or `DISABLED`).
-
--> **WARNING:** As of February 29, 2024, Synthetic Monitors no longer support the `MUTED` status. Version **3.33.0** of the New Relic Terraform Provider is released to coincide with the `MUTED` status end-of-life. Consequently, the only valid values for `status` for all types of Synthetic Monitors are mentioned above. For additional information on alternatives to the `MUTED` status of Synthetic Monitors that can be managed via Terraform, please refer to [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/upcoming_synthetics_muted_status_eol_guide).
 * `name` - (Required) The name for the monitor.
 * `type` - (Required) The plaintext representing the monitor script. Valid values are SCRIPT_BROWSER or SCRIPT_API
 * `locations_public` - (Optional) The location the monitor will run from. Check out [this page](https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/) for a list of valid public locations. The `AWS_` prefix is not needed, as the provider uses NerdGraph. **At least one of either** `locations_public` **or** `location_private` **is required**.
@@ -79,7 +80,7 @@ The following are the common arguments supported for `SCRIPT_API` and `SCRIPT_BR
 * `script_language` - (Optional) The programing language that should execute the script.
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details.
 
-The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
+The `SCRIPTED_BROWSER` monitor type supports the following additional arguments:
 
 * `enable_screenshot_on_failure_and_script` - (Optional) Capture a screenshot during job execution.
 * `browsers` - (Optional) The multiple browsers list on which synthetic monitors will run. Valid values are `CHROME` and `FIREFOX`.
@@ -87,11 +88,17 @@ The `SCRIPTED_BROWSER` monitor type supports the following additional argument:
 * `device_orientation` - (Optional) Device emulation orientation field. Valid values are `LANDSCAPE` and `PORTRAIT`. We recommend you to use `devices` field instead of `device_type`,`device_orientation` fields, as it allows you to select multiple combinations of device types and orientations.
 * `device_type` - (Optional) Device emulation type field. Valid values are `MOBILE` and `TABLET`. We recommend you to use `devices` field instead of `device_type`,`device_orientation` fields, as it allows you to select multiple combinations of device types and orientations.
 
-#### Deprecated runtime
+#### Deprecated Runtime
 
-If you want to use a legacy runtime (Node 10 or Chrome 72) you can set the `runtime_type`, `runtime_type_version` and `script_language` to empty string `""`. 
+~~If you want to use a legacy runtime (Node 10 or Chrome 72) you can set the `runtime_type`, `runtime_type_version` and `script_language` to empty string `""`.~~ 
 
--> **WARNING:** Support for using the Synthetics Legacy Runtime (deprecated) with **new** Synthetic monitors **has officially ended as of August 26, 2024**. As a consequence, starting with v3.43.0 of the New Relic Terraform Provider, **new** Synthetic monitors **will no longer be allowed to use the legacy runtime** (this applies to all Synthetic monitor resources). Additionally, as previously communicated by New Relic, the Synthetics Legacy Runtime **will reach its end-of-life (EOL) on October 22, 2024**. In light of the above, we kindly recommend that you upgrade your Synthetic Monitors to the new runtime at the earliest, if they are still using the legacy runtime. Please check out [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/synthetics_legacy_runtime_eol_migration_guide) in the documentation of the Terraform Provider and [this announcement](https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm) for more details on the EOL, action needed, relevant resources, and more.
+-> **WARNING:**  The <b style="color:red;">end-of-life</b> of the **Synthetics Legacy Runtime** took effect on <b style="color:red;">October 22, 2024</b>, implying that support for using the deprecated Synthetics Legacy Runtime with **new and existing** Synthetic monitors <b style="color:maroon;">officially ended as of October 22, 2024</b>. As a consequence of this API change, all requests associated with Synthetic Monitors (except Ping Monitors) going out of the New Relic Terraform Provider <span style="color:maroon;">will be blocked by an API error</span> if they include values corresponding to the legacy runtime or blank runtime values.
+<br><br>
+Following these changes, starting with <b style="color:red;">v3.51.0</b> of the New Relic Terraform Provider, configuration of **new and existing** Synthetic monitors without runtime attributes (or) comprising runtime attributes signifying the legacy runtime <span style="color:red;">will be deemed invalid</span> (this applies to all Synthetic monitor resources, except `newrelic_synthetics_monitor` with type `SIMPLE`). If your monitors' configuration <span style="color:red;">is not updated with new runtime values</span>, you will see the consequences stated here. New Synthetic monitors created after August 26, 2024 already adhere to these restrictions, as part of the first phase of the EOL.
+<br><br>
+We kindly recommend that you upgrade your Synthetic Monitors to the new runtime as soon as possible <span style="color:red;">if they are still using the legacy runtime</span>, to avoid seeing the aforementioned consequences. Please check out [this guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/synthetics_legacy_runtime_eol_migration_guide) in the documentation of the Terraform Provider (specifically, the table at the bottom of the guide, if you're looking for updates to be made to the configuration of Synthetic monitors) and [this announcement](https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm) for more details on the EOL, actions needed, relevant resources, and more.
+<br><br>
+You would not be affected by the EOL if your Synthetic monitors' Terraform configuration comprises new runtime values.
 
 ### Nested `tag` blocks
 
