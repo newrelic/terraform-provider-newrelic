@@ -98,9 +98,9 @@ resource "newrelic_synthetics_script_monitor" "monitor" {
   }
   name                 = "test-monitor"
   period               = "EVERY_HOUR"
-  runtime_type_version = ""
-  runtime_type         = ""
-  script_language      = ""
+  runtime_type         = "CHROME_BROWSER"
+  runtime_type_version = "100"
+  script_language      = "JAVASCRIPT"
   status               = "ENABLED"
   type                 = "SCRIPT_BROWSER"
   script               = "console.log('hello, world')"

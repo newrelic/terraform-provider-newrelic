@@ -85,8 +85,10 @@ resources compared to which endpoint is in use.
 | `newrelic_data_partition_rule`                      | NerdGraph               | `api_key`             |
 | `newrelic_entity_tags`                              | NerdGraph               | `api_key`             |
 | `newrelic_events_to_metrics_rule`                   | NerdGraph               | `api_key`             |
+| `newrelic_group`                                    | NerdGraph               | `api_key`             |
 | `newrelic_infra_alert_condition`                    | Infrastructure REST API | `api_key`             |
 | `newrelic_insights_event`                           | Insights API            | `insights_insert_key` |
+| `newrelic_key_transaction`                          | NerdGraph               | `api_key`             |
 | `newrelic_log_parsing_rule`                         | NerdGraph               | `api_key`             |
 | `newrelic_notification_channel`                     | NerdGraph               | `api_key`             |
 | `newrelic_notification_destination`                 | NerdGraph               | `api_key`             |
@@ -107,6 +109,7 @@ resources compared to which endpoint is in use.
 | `newrelic_synthetics_script_monitor`                | NerdGraph               | `api_key`             |
 | `newrelic_synthetics_secure_credential`             | NerdGraph               | `api_key`             |
 | `newrelic_synthetics_step_monitor`                  | NerdGraph               | `api_key`             |
+| `newrelic_user`                                     | NerdGraph               | `api_key`             |
 | `newrelic_workflow`                                 | NerdGraph               | `api_key`             |
 | `newrelic_workload`                                 | NerdGraph               | `api_key`             |
 
@@ -120,7 +123,7 @@ resources compared to which endpoint is in use.
 | `newrelic_application`                  | RESTv2    | `api_key`      |
 | `newrelic_cloud_account`                | NerdGraph | `api_key`      |
 | `newrelic_entity`                       | NerdGraph | `api_key`      |
-| `newrelic_key_transaction`              | RESTv2    | `api_key`      |
+| `newrelic_key_transaction`              | NerdGraph | `api_key`      |
 | `newrelic_notification_destination`     | NerdGraph | `api_key`      |
 | `newrelic_obfuscation_expression`       | NerdGraph | `api_key`      |
 | `newrelic_synthetics_private_location`  | NerdGraph | `api_key`      |

@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func validateSyntheticMonitorAttributes(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
@@ -43,8 +44,6 @@ func validateSyntheticMonitorAttributes(ctx context.Context, d *schema.ResourceD
 func validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d *schema.ResourceDiff) []error {
 	var runtimeAttributesValidationErrors []error
 
-	isSyntheticMonitorCreated := d.Id() != ""
-
 	_, runtimeTypeInConfig := d.GetChange(SyntheticsRuntimeTypeAttrLabel)
 	isRuntimeTypeNil := runtimeTypeInConfig == ""
 
@@ -59,7 +58,7 @@ func validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d *schema.ResourceD
 
 	// in this first condition, we're trying to make sure 'use_unsupported_legacy_runtime' is only being used with the legacy runtime
 	// and not with any sort of runtime values which signify the new runtime (since the intent of using this attribute
-	// is to skip Terraform validation to create monitors in the legacy runtime after the August 26 EOL if exempt by the API)
+	// is to skip Terraform validation to use new/existing monitors in the legacy runtime after the October 22 '24 EOL if exempt by the API)
 	if useLegacyRuntime {
 		if !syntheticMonitorConfigHasObsoleteRuntime(runtimeTypeInConfig, runtimeTypeVersionInConfig) &&
 			(!isRuntimeTypeNil || !isRuntimeTypeVersionNil) {
@@ -80,12 +79,14 @@ Please use '%s' only with runtime attributes with values corresponding to the le
 	}
 
 	// apply further validation to block usage of the legacy runtime with monitors owing to the EOL, ONLY if 'use_unsupported_legacy_runtime' is false
-	// (which it is, by default, unless made true by the customer) AND ONLY for a new monitor and not an existing one, as the August 26
-	// Legacy Runtime EOL (the first phase) only applies to new monitors. Validation would include checking if runtime attribute are nil or if they
-	// are not nil and comprise values corresponding to the legacy runtime; as they would lead to creating monitors in the legacy runtime either way,
-	// and both of these cases in create requests of monitors would be blocked by the API via an error; which we're trying to reflect in Terraform.
+	// (which it is, by default, unless made true by the customer) and for both new and existing monitors, as the October 22 '24 EOL disallows usage
+	// of the Legacy Runtime by all kinds of monitors.
+
+	// Validation would include checking if runtime attribute values are nil or if they are not nil and comprise values corresponding to the legacy runtime;
+	// as they would lead to creating/updating monitors in the legacy runtime either way, and in both of these cases, create/update requests of monitors
+	// would be blocked by the API via an error; which we're trying to reflect in Terraform.
 	// also, this error scenario should not apply to SIMPLE Synthetic Monitors, as they do not support using runtime attributes.
-	if !isSyntheticMonitorCreated && !useLegacyRuntime && !isSimpleMonitor {
+	if !useLegacyRuntime && !isSimpleMonitor {
 
 		// if 'use_unsupported_legacy_runtime' is false (which it is, by default), check if 'runtime_type' and 'runtime_type_version' are nil
 		// if either of these two runtime attributes are nil, throw a relevant error to explain that this is no longer allowed
@@ -156,9 +157,9 @@ func buildSyntheticsLegacyObsoleteRuntimeError(
 }
 
 func buildSyntheticsLegacyRuntimeValidationError() string {
-	return `with new monitors starting August 26, 2024;
-creating new monitors with the legacy runtime/without the new runtime is no longer supported.
-This is in relation with the upcoming Synthetics Legacy Runtime EOL on October 22, 2024; see this for more details: 
+	return `with new and existing monitors starting October 22, 2024;
+creating and updating monitors comprising legacy runtime values/without the new runtime is *no longer supported*.
+This is in relation with the Synthetics Legacy Runtime EOL which has taken effect on October 22, 2024; see the following for more details: 
 https://forum.newrelic.com/s/hubtopic/aAXPh0000001brxOAA/upcoming-endoflife-legacy-synthetics-runtimes-and-cpm
 https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/synthetics_legacy_runtime_eol_migration_guide
 `
