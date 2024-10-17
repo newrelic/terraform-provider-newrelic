@@ -729,9 +729,15 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 		cfg.Limit = l.(float64)
 	}
 
+	var platformOptions = dashboards.RawConfigurationPlatformOptions{}
+
 	if l, ok := w["ignore_time_range"]; ok {
-		var platformOptions = dashboards.RawConfigurationPlatformOptions{}
 		platformOptions.IgnoreTimeRange = l.(bool)
+		cfg.PlatformOptions = &platformOptions
+	}
+
+	if l, ok := w["excluded"]; ok {
+		platformOptions.Excluded = l.(bool)
 		cfg.PlatformOptions = &platformOptions
 	}
 
