@@ -37,7 +37,7 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}, dashboardNam
 		return nil, err
 	}
 
-	dash.Variables, err = expandDashboardVariablesInput(d.Get("variable").([]interface{}))
+	dash.Variables, err = expandDashboardVariablesInput(d, d.Get("variable").([]interface{}))
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func checkForNilElements(d []interface{}) bool {
 	return false
 }
 
-func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
+func expandDashboardVariablesInput(d *schema.ResourceData, variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
 	if len(variables) < 1 {
 		return []dashboards.DashboardVariableInput{}, nil
 	}
@@ -113,7 +113,7 @@ func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.Dashbo
 		}
 
 		if options, ok := v["options"]; ok && len(options.([]interface{})) > 0 {
-			variable.Options = expandVariableOptions(options.([]interface{}))
+			variable.Options = expandVariableOptions(d, options.([]interface{}))
 		}
 
 		expanded[i] = variable
@@ -729,9 +729,15 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 		cfg.Limit = l.(float64)
 	}
 
+	var platformOptions = dashboards.RawConfigurationPlatformOptions{}
+
 	if l, ok := w["ignore_time_range"]; ok {
-		var platformOptions = dashboards.RawConfigurationPlatformOptions{}
 		platformOptions.IgnoreTimeRange = l.(bool)
+		cfg.PlatformOptions = &platformOptions
+	}
+
+	if l, ok := w["excluded"]; ok {
+		platformOptions.Excluded = l.(bool)
 		cfg.PlatformOptions = &platformOptions
 	}
 
@@ -1010,13 +1016,24 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 	return expanded, nil
 }
 
-func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOptionsInput {
+func expandVariableOptions(d *schema.ResourceData, in []interface{}) *dashboards.DashboardVariableOptionsInput {
 	var out dashboards.DashboardVariableOptionsInput
 
 	for _, v := range in {
+
 		cfg := v.(map[string]interface{})
+		var ignoreTimeRangePtr, excludedPtr *bool
+
+		if ignoreTimeRange, ok := cfg["ignore_time_range"].(bool); ok {
+			ignoreTimeRangePtr = &ignoreTimeRange
+		}
+
+		if excluded, ok := cfg["excluded"].(bool); ok {
+			excludedPtr = &excluded
+		}
 		out = dashboards.DashboardVariableOptionsInput{
-			IgnoreTimeRange: cfg["ignore_time_range"].(bool),
+			IgnoreTimeRange: ignoreTimeRangePtr,
+			Excluded:        excludedPtr,
 		}
 	}
 
@@ -1050,7 +1067,6 @@ func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.Resou
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -1080,14 +1096,12 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 			return err
 		}
 	}
-
 	if dashboard.Variables != nil && len(dashboard.Variables) > 0 {
 		variables := flattenDashboardVariable(&dashboard.Variables, d)
 		if err := d.Set("variable", variables); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -1117,7 +1131,6 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable, d *schema.Resour
 				m["options"] = options
 			}
 		}
-
 		out[i] = m
 	}
 	return out
@@ -1178,7 +1191,13 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 	// (set it to the value of ignore_time_range seen in the response returned by the API)
 	out := make([]interface{}, 1)
 	n := make(map[string]interface{})
-	n["ignore_time_range"] = in.IgnoreTimeRange
+	option := options[0].(map[string]interface{})
+	if _, excludedFetchedOk := option["excluded"]; excludedFetchedOk {
+		n["excluded"] = in.Excluded
+	}
+	if _, ignoreTimeRangeFetchedOk := option["ignore_time_range"]; ignoreTimeRangeFetchedOk {
+		n["ignore_time_range"] = in.IgnoreTimeRange
+	}
 	out[0] = n
 	return out
 }
@@ -1708,7 +1727,7 @@ func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, met
 		errorsList = append(errorsList, err.Error())
 	}
 
-	//adding a function to validate that the " to and "from" feilds in "threshold" for table & line widget are a floating point number.
+	//adding a function to validate that the " to and "from" fields in "threshold" for table & line widget are a floating point number.
 	validateThresholdFields(d, &errorsList, "widget_table")
 	validateThresholdFields(d, &errorsList, "widget_line")
 
