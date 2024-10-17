@@ -1012,23 +1012,25 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 
 func expandVariableOptions(d *schema.ResourceData, in []interface{}) *dashboards.DashboardVariableOptionsInput {
 	var out dashboards.DashboardVariableOptionsInput
-	fmt.Println("the cfg in expand variable options is:", in)
+
 	for _, v := range in {
+
 		cfg := v.(map[string]interface{})
-		if val, ok := d.GetOkExists("variable.0.options.0.excluded"); ok {
-			excludedInput := val.(bool)
-			out.Excluded = &excludedInput
-			fmt.Println("came to if condition excluded:", excludedInput)
-		}
-		if val, ok := d.GetOkExists("variable.0.options.0.ignore_time_range"); ok {
-			ignoreTimeRangeInput := val.(bool)
-			out.IgnoreTimeRange = &ignoreTimeRangeInput
-			fmt.Println("came to if condition ignoreTimeRangeInput:", ignoreTimeRangeInput)
+		var ignoreTimeRangePtr, excludedPtr *bool
+
+		if ignoreTimeRange, ok := cfg["ignore_time_range"].(bool); ok {
+			ignoreTimeRangePtr = &ignoreTimeRange
 		}
 
-		fmt.Println("the cfg in expand variable options is:", cfg)
+		if excluded, ok := cfg["excluded"].(bool); ok {
+			excludedPtr = &excluded
+		}
+		out = dashboards.DashboardVariableOptionsInput{
+			IgnoreTimeRange: ignoreTimeRangePtr,
+			Excluded:        excludedPtr,
+		}
 	}
-	fmt.Println("the expanded options are", out)
+
 	return &out
 }
 
@@ -1059,7 +1061,6 @@ func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.Resou
 			return err
 		}
 	}
-	fmt.Println("came to 1054 and d.Get() is", d.Get("variable"))
 	return nil
 }
 
@@ -1089,14 +1090,12 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 			return err
 		}
 	}
-	fmt.Println("came to update result function")
 	if dashboard.Variables != nil && len(dashboard.Variables) > 0 {
 		variables := flattenDashboardVariable(&dashboard.Variables, d)
 		if err := d.Set("variable", variables); err != nil {
 			return err
 		}
 	}
-	fmt.Println("came to 1094 and d.Get() is", d.Get("variable"))
 	return nil
 }
 
@@ -1118,18 +1117,14 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable, d *schema.Resour
 		m["replacement_strategy"] = strings.ToLower(string(v.ReplacementStrategy))
 		m["title"] = v.Title
 		m["type"] = strings.ToLower(string(v.Type))
-		fmt.Println("came to line 1113")
 		if v.Options != nil {
 			options := flattenVariableOptions(v.Options, d, i)
-			fmt.Println("came to line 1119")
 			if options != nil {
 				// set options -> ignore_time_range to the state only if they already exist in the configuration
 				// needed to make this backward compatible with configurations which do not yet have options -> ignore_time_range
 				m["options"] = options
-				fmt.Println("came to line 1120", m["options"])
 			}
 		}
-		fmt.Println("came to line 1127 v.Options", v.Options)
 		out[i] = m
 	}
 	return out
@@ -1174,14 +1169,11 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 	// fetching the contents of the variable at the specified index (in the list of variables)
 	// and subsequently, finding its options field
 	variableFetched := d.Get(fmt.Sprintf("variable.%d", index)).(map[string]interface{})
-	fmt.Println("came to line 1171 fetched variables are", d.Get("variable"))
 	optionsOfVariableFetched, optionsOfVariableFetchedOk := variableFetched["options"]
-	fmt.Println("came to line 1173 fetchedOptions are", variableFetched)
 	if !optionsOfVariableFetchedOk {
 		return nil
 	}
 	options := optionsOfVariableFetched.([]interface{})
-	fmt.Println("came to line 1178 options are", options)
 	if len(options) == 0 {
 		// if nothing exists in the options list in the state (configuration), "do nothing", to avoid drift
 		// this is required to make options -> ignore_time_range backward compatible and show no drift
@@ -1201,7 +1193,6 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 		n["ignore_time_range"] = in.IgnoreTimeRange
 	}
 	out[0] = n
-	fmt.Println("came to line 1193 options are", out)
 	return out
 }
 
@@ -1730,7 +1721,7 @@ func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, met
 		errorsList = append(errorsList, err.Error())
 	}
 
-	//adding a function to validate that the " to and "from" feilds in "threshold" for table & line widget are a floating point number.
+	//adding a function to validate that the " to and "from" fields in "threshold" for table & line widget are a floating point number.
 	validateThresholdFields(d, &errorsList, "widget_table")
 	validateThresholdFields(d, &errorsList, "widget_line")
 
