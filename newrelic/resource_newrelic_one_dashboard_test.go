@@ -454,6 +454,9 @@ func TestAccNewRelicOneDashboard_VariablesNRQL(t *testing.T) {
 				ResourceName:      "newrelic_one_dashboard.bar",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"variable.0.options",
+				},
 			},
 		},
 	})
@@ -829,6 +832,10 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQL() string {
 	replacement_strategy = "default"
 	title = "title"
 	type = "nrql"
+	options {
+		excluded = true
+		ignore_time_range = true
+	}
   }
 `
 }
@@ -850,6 +857,10 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQLUpdated() string {
 	replacement_strategy = "default"
 	title = "title"
 	type = "nrql"
+	options {
+		excluded = false
+		ignore_time_range = false
+	}
   }
 `
 }

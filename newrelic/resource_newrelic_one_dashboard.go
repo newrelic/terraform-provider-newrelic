@@ -2,6 +2,8 @@ package newrelic
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -126,6 +128,11 @@ func dashboardVariableSchemaElem() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "Only applies to variables of type NRQL. With this turned on, the time range for the NRQL query will override the time picker on dashboards and other pages. Turn this off to use the time picker as normal.",
+						},
+						"excluded": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Only applies to variables of type NRQL. With this turned on, query condition defined with the variable will not be included in the query.",
 						},
 					},
 				},
@@ -890,6 +897,12 @@ func resourceNewRelicOneDashboardRead(ctx context.Context, d *schema.ResourceDat
 	log.Printf("[INFO] Reading New Relic One dashboard %s", d.Id())
 
 	dashboard, err := client.Dashboards.GetDashboardEntityWithContext(ctx, common.EntityGUID(d.Id()))
+	// Convert the dashboard object to a pretty-printed JSON string
+	_, er := json.MarshalIndent(dashboard, "", "  ")
+	if er != nil {
+		fmt.Println("Error marshalling dashboard:", er)
+	}
+
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
