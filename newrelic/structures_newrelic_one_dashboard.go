@@ -37,7 +37,7 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}, dashboardNam
 		return nil, err
 	}
 
-	dash.Variables, err = expandDashboardVariablesInput(d, d.Get("variable").([]interface{}))
+	dash.Variables, err = expandDashboardVariablesInput(d.Get("variable").([]interface{}))
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func checkForNilElements(d []interface{}) bool {
 	return false
 }
 
-func expandDashboardVariablesInput(d *schema.ResourceData, variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
+func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
 	if len(variables) < 1 {
 		return []dashboards.DashboardVariableInput{}, nil
 	}
@@ -113,7 +113,7 @@ func expandDashboardVariablesInput(d *schema.ResourceData, variables []interface
 		}
 
 		if options, ok := v["options"]; ok && len(options.([]interface{})) > 0 {
-			variable.Options = expandVariableOptions(d, options.([]interface{}))
+			variable.Options = expandVariableOptions(options.([]interface{}))
 		}
 
 		expanded[i] = variable
@@ -736,11 +736,6 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 		cfg.PlatformOptions = &platformOptions
 	}
 
-	if l, ok := w["excluded"]; ok {
-		platformOptions.Excluded = l.(bool)
-		cfg.PlatformOptions = &platformOptions
-	}
-
 	if t, ok := w["text"]; ok {
 		if t.(string) != "" {
 			cfg.Text = t.(string)
@@ -1016,7 +1011,7 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 	return expanded, nil
 }
 
-func expandVariableOptions(d *schema.ResourceData, in []interface{}) *dashboards.DashboardVariableOptionsInput {
+func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOptionsInput {
 	var out dashboards.DashboardVariableOptionsInput
 
 	for _, v := range in {
