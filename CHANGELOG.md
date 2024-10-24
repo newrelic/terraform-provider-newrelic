@@ -1,3 +1,11 @@
+<a name="v3.51.0"></a>
+## [v3.51.0] - 2024-10-24
+### Bug Fixes
+- **keytransaction:** allow filtering key transactions fetched by accountId ([#2763](https://github.com/newrelic/terraform-provider-newrelic/issues/2763))
+
+### Features
+- **synthetics:** Synthetics Legacy Runtime EOL final phase ([#2758](https://github.com/newrelic/terraform-provider-newrelic/issues/2758))
+
 <a name="v3.50.0"></a>
 ## [v3.50.0] - 2024-10-10
 ### Features
@@ -2253,7 +2261,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.50.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.51.0...HEAD
+[v3.51.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.50.0...v3.51.0
 [v3.50.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.49.0...v3.50.0
 [v3.49.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.48.0...v3.49.0
 [v3.48.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.47.0...v3.48.0
