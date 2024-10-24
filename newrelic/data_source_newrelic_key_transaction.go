@@ -26,6 +26,12 @@ func dataSourceNewRelicKeyTransaction() *schema.Resource {
 				Computed:    true,
 				Description: "GUID of the key transaction in New Relic.",
 			},
+			"account_id": {
+				Type:        schema.TypeInt,
+				Description: "The ID of the New Relic account the key transaction would need to belong to. Uses the account_id in the provider{} block by default, if not specified.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"domain": {
 				Type:        schema.TypeString,
 				Required:    false,
@@ -44,6 +50,8 @@ func dataSourceNewRelicKeyTransaction() *schema.Resource {
 
 func dataSourceNewRelicKeyTransactionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading New Relic key transactions")
 	// fetch name from TF config
@@ -53,10 +61,16 @@ func dataSourceNewRelicKeyTransactionRead(ctx context.Context, d *schema.Resourc
 	}
 	// fetch guid from TF config
 	guid := d.Get("guid")
-	query := fmt.Sprintf("type = 'KEY_TRANSACTION' AND name = '%s'", name)
+	query := ""
+
 	if guid != "" {
-		// if guid is provided, add it to the query to filter the results
-		query = fmt.Sprintf("%s AND id = '%s'", query, guid)
+		// if guid is provided, irrespective of other arguments added, add it to the query to filter the results, while also adding
+		// the KEY_TRANSACTION type filter to make sure the provided GUID is that of a real key transaction
+		query = fmt.Sprintf("type = 'KEY_TRANSACTION' AND id = '%s'", guid)
+	} else {
+		// if the GUID is not given, use all the other arguments specified, i.e. name, which is required, and accountId, though optional,
+		// shall be picked from account_id in the configuration, or the account_id in the provider's configuration if not specified
+		query = fmt.Sprintf("type = 'KEY_TRANSACTION' AND name = '%s' AND accountId = %d", name, accountID)
 	}
 
 	keyTransactionsFound, err := client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, query, []entities.EntitySearchSortCriteria{})
@@ -83,6 +97,7 @@ func flattenKeyTransaction(t *entities.EntitySearch, d *schema.ResourceData) {
 	}
 	_ = d.Set("guid", t.Results.Entities[0].GetGUID())
 	_ = d.Set("name", t.Results.Entities[0].GetName())
+	_ = d.Set("account_id", t.Results.Entities[0].GetAccountID())
 	_ = d.Set("domain", t.Results.Entities[0].GetDomain())
 	_ = d.Set("type", t.Results.Entities[0].GetType())
 }
