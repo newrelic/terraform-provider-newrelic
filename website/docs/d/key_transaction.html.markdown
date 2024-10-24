@@ -46,6 +46,7 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the key transaction in New Relic.
 * `guid` - (Optional) GUID of the key transaction in New Relic.
+* `account_id` - (Optional) The account ID you would like to search for key transactions in. Defaults to `account_id` in the `provider{}` (or `NEW_RELIC_ACCOUNT_ID` in your environment) if not specified.
 
 -> **NOTE** If the `name` specified in the configuration matches the names of multiple key transactions in the account, the data source will return the first match from the list of all matching key transactions retrieved from the API. However, when using the `guid` argument as the search criterion, only the key transaction with that particular GUID is returned, as each key transaction has a unique GUID.
 
