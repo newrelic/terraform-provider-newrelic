@@ -58,7 +58,6 @@ In addition to all arguments above, the following attributes are exported:
 * `guid` - GUID of the key transaction in New Relic.
 * `domain` - Domain of the key transaction in New Relic.
 * `type` - Type of the key transaction in New Relic.
-* `name` - Name of the key Transation in New Relic.
 
 ```
 Warning: This data source will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
