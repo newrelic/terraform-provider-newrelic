@@ -43,8 +43,7 @@ The following arguments are supported:
 - `subscription_id` - (Required) - Subscription ID of the Azure cloud account.
 - `tenant_id` - (Required) - Tenant ID of the Azure cloud account.
 - `name` - (Required) - The name of the application in New Relic APM.
-
--> **WARNING:** Starting with [v3.27.2](https://registry.terraform.io/providers/newrelic/newrelic/3.27.2) of the New Relic Terraform Provider, updating any of the aforementioned attributes (except `name`) of a `newrelic_cloud_azure_link_account` resource that has been applied would **force a replacement** of the resource (destruction of the resource, followed by the creation of a new resource). Please carefully review the output of `terraform plan`, which would clearly indicate a replacement of this resource, before performing a `terraform apply`.
+- `disabled` - (Optional) - Enable/Disable Azure link account.Supported values are true/false. This argument upon create is not supported. It will be available only upon update. If you provoide, it will not be taken into consideration upon first apply.
 
 ## Attributes Reference
 
