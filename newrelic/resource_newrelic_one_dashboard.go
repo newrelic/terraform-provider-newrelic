@@ -2,8 +2,6 @@ package newrelic
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -897,11 +895,6 @@ func resourceNewRelicOneDashboardRead(ctx context.Context, d *schema.ResourceDat
 	log.Printf("[INFO] Reading New Relic One dashboard %s", d.Id())
 
 	dashboard, err := client.Dashboards.GetDashboardEntityWithContext(ctx, common.EntityGUID(d.Id()))
-	// Convert the dashboard object to a pretty-printed JSON string
-	_, er := json.MarshalIndent(dashboard, "", "  ")
-	if er != nil {
-		fmt.Println("Error marshalling dashboard:", er)
-	}
 
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
