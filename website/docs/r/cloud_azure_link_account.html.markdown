@@ -43,7 +43,6 @@ The following arguments are supported:
 - `subscription_id` - (Required) - Subscription ID of the Azure cloud account.
 - `tenant_id` - (Required) - Tenant ID of the Azure cloud account.
 - `name` - (Required) - The name of the application in New Relic APM.
-- `disabled` - (Optional) - Enable/Disable Azure link account.Supported values are true/false. This argument upon create is not supported. It will be available only upon update. If you provoide, it will not be taken into consideration upon first apply.
 
 ## Attributes Reference
 
