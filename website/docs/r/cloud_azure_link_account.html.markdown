@@ -44,8 +44,6 @@ The following arguments are supported:
 - `tenant_id` - (Required) - Tenant ID of the Azure cloud account.
 - `name` - (Required) - The name of the application in New Relic APM.
 
--> **WARNING:** Starting with [v3.27.2](https://registry.terraform.io/providers/newrelic/newrelic/3.27.2) of the New Relic Terraform Provider, updating any of the aforementioned attributes (except `name`) of a `newrelic_cloud_azure_link_account` resource that has been applied would **force a replacement** of the resource (destruction of the resource, followed by the creation of a new resource). Please carefully review the output of `terraform plan`, which would clearly indicate a replacement of this resource, before performing a `terraform apply`.
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

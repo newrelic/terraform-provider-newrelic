@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -31,14 +32,13 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Application ID for Azure account",
 				Required:    true,
-				ForceNew:    true,
+				Sensitive:   true,
 			},
 			"client_secret": {
 				Type:        schema.TypeString,
 				Description: "Value of the client secret from Azure",
 				Required:    true,
 				Sensitive:   true,
-				ForceNew:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -49,13 +49,13 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Subscription ID for the Azure account",
 				Required:    true,
-				ForceNew:    true,
+				Sensitive:   true,
 			},
 			"tenant_id": {
 				Type:        schema.TypeString,
 				Description: "Tenant ID for the Azure account",
 				Required:    true,
-				ForceNew:    true,
+				Sensitive:   true,
 			},
 		},
 	}
@@ -147,38 +147,37 @@ func resourceNewRelicCloudAzureLinkAccountRead(ctx context.Context, d *schema.Re
 func readAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
 	_ = d.Set("account_id", result.NrAccountId)
 	_ = d.Set("name", result.Name)
+	_ = d.Set("application_id", result.AuthLabel)
+	_ = d.Set("subscription_id", result.ExternalId)
 }
 
 func resourceNewRelicCloudAzureLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
-	id, _ := strconv.Atoi(d.Id())
-	input := []cloud.CloudRenameAccountsInput{
-		{
-			Name:            d.Get("name").(string),
-			LinkedAccountId: id,
+	linkedAccountID, _ := strconv.Atoi(d.Id())
+
+	input := cloud.CloudUpdateCloudAccountsInput{
+		Azure: []cloud.CloudAzureUpdateAccountInput{
+			{
+				ApplicationID:   d.Get("application_id").(string),
+				ClientSecret:    cloud.SecureValue(d.Get("client_secret").(string)),
+				LinkedAccountId: linkedAccountID,
+				Name:            d.Get("name").(string),
+				SubscriptionId:  d.Get("subscription_id").(string),
+				TenantId:        d.Get("tenant_id").(string),
+			},
 		},
 	}
-	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccountWithContext(ctx, accountID, input)
+
+	cloudUpdateAccountPayload, err := client.Cloud.CloudUpdateAccountWithContext(ctx, accountID, input)
 
 	if err != nil {
 
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
-
-	var diags diag.Diagnostics
-
-	if len(cloudRenameAccountPayload.Errors) > 0 {
-		for _, err := range cloudRenameAccountPayload.Errors {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  err.Type + " " + err.Message,
-			})
-
-		}
-
-		return diags
+	if len(cloudUpdateAccountPayload.LinkedAccounts) == 0 {
+		return diag.FromErr(fmt.Errorf("no linked account with 'linked_account_id': %d found", linkedAccountID))
 	}
 	return nil
 }
