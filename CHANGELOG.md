@@ -1,3 +1,12 @@
+<a name="v3.52.0"></a>
+## [v3.52.0] - 2024-10-28
+### Documentation Updates
+- **group:** documentation of solution to handle race condition upon user group deletion ([#2761](https://github.com/newrelic/terraform-provider-newrelic/issues/2761))
+
+### Features
+- **azure_link_account:** adds ability to update credentials of azure link accounts ([#2764](https://github.com/newrelic/terraform-provider-newrelic/issues/2764))
+- **dashboards:** Adds `excluded` to `options` in `variable` in `newrelic_one_dashboard` ([#2756](https://github.com/newrelic/terraform-provider-newrelic/issues/2756))
+
 <a name="v3.51.0"></a>
 ## [v3.51.0] - 2024-10-24
 ### Bug Fixes
@@ -2261,7 +2270,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.51.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.52.0...HEAD
+[v3.52.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.51.0...v3.52.0
 [v3.51.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.50.0...v3.51.0
 [v3.50.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.49.0...v3.50.0
 [v3.49.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.48.0...v3.49.0
