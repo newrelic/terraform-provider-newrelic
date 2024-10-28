@@ -44,6 +44,28 @@ In addition to the attributes listed above, the following attribute is also expo
 
 ## Additional Examples
 
+### Updating User Group Membership Management in Terraform
+
+### Overview
+There is a potential race condition within Terraform when managing user accounts and their respective group memberships. A user might be deleted before Terraform disassociates them from a user group. This can lead to an error during `terraform apply` because the user ID no longer exists when the group resource is being updated.
+
+### Recommended Solution
+To address this and ensure proper sequential execution of resource updates, it is recommended to utilize the `create_before_destroy` lifecycle directive within your user group resource definition.
+
+### Implementing Lifecycle Changes
+To implement the change, modify the user group resource in your Terraform configuration as follows:
+
+```hcl
+resource "newrelic_group" "viewer" {
+#  Existing configuration ...
+
+  lifecycle {
+     create_before_destroy = true
+  }
+}
+```
+The `create_before_destroy = true` statement will ensure that Terraform updates the user group (e.g., removes the user) before attempting to destroy the user resource, thus preventing the error.
+
 ### Addition of New Users to a New Group
 
 The following example illustrates the creation of a group using the `newrelic_group` resource, to which users created using the `newrelic_user` resource are added.
