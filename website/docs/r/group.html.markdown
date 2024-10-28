@@ -47,7 +47,7 @@ In addition to the attributes listed above, the following attribute is also expo
 ### Updating User Group Membership Management in Terraform
 
 ### Overview
-There is a potential race condition within Terraform when managing user accounts and their respective group memberships. A user might be deleted before Terraform disassociates them from a user group. This can lead to an error during terraform apply because the user ID no longer exists when the group resource is being updated.
+There is a potential race condition within Terraform when managing user accounts and their respective group memberships. A user might be deleted before Terraform disassociates them from a user group. This can lead to an error during `terraform apply` because the user ID no longer exists when the group resource is being updated.
 
 ### Recommended Solution
 To address this and ensure proper sequential execution of resource updates, it is recommended to utilize the `create_before_destroy` lifecycle directive within your user group resource definition.
