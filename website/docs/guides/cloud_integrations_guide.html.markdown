@@ -60,6 +60,11 @@ module "newrelic-aws-cloud-integrations" {
   newrelic_account_id     = 1234567
   newrelic_account_region = "US"
   name                    = "production"
+
+  include_metric_filters = {
+    "AWS/EC2" = [], # include ALL metrics from the EC2 namespace
+    "AWS/S3" = ["NumberOfObjects"]. # include just a specific metric from the S3 namespace
+  }
 }
 ```
 
@@ -68,10 +73,11 @@ module "newrelic-aws-cloud-integrations" {
 
 Variables:
 
-* newrelic_account_id: The New Relic account you want to link to AWS. This account will receive all the data observability from your AWS environment.
-* newrelic_account_region: The region of your New Relic account, this can be `US` for United States or `EU` for Europe. (Default `US`)
-* name: A unique name used throughout the module to name the resources.
-
+* `newrelic_account_id`: The New Relic account you want to link to AWS. This account will receive all the data observability from your AWS environment.
+* `newrelic_account_region` (Optional): The region of your New Relic account, this can be `US` for United States or `EU` for Europe. (Default `US`)
+* `name` (Optional): A unique name used throughout the module to name the resources. (Default `production`)
+* `exclude_metric_filters` (Optional): a map of namespaces and metric names to exclude from the Cloudwatch metric stream. `Conflicts with include_metric_filters`.
+* `include_metric_filters` (Optional): a map of namespaces and metric names to include in the Cloudwatch metric stream. `Conflicts with exclude_metric_filters`.
 
 ### Azure
 
