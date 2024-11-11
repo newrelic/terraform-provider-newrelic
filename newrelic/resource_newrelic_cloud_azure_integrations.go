@@ -39,119 +39,119 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure api management integration",
-				Elem:        cloudAzureIntegrationAPIManagementElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"app_gateway": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure app gateway integration",
-				Elem:        cloudAzureIntegrationAppGatewayElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"app_service": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure app services",
-				Elem:        cloudAzureIntegrationAppServiceElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"containers": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure containers",
-				Elem:        cloudAzureIntegrationContainersElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"cosmos_db": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure cosmoDB",
-				Elem:        cloudAzureIntegrationCosmosDBElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"cost_management": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure cost management",
-				Elem:        cloudAzureIntegrationCostManagementElem(),
+				Elem:        cloudAzureIntegrationMergeTagKeysElem(),
 				MaxItems:    1,
 			},
 			"data_factory": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure data factory",
-				Elem:        cloudAzureIntegrationDataFactoryElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"event_hub": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure event hub",
-				Elem:        cloudAzureIntegrationEventHubElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"express_route": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure express route",
-				Elem:        cloudAzureIntegrationExpressRouteElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"firewalls": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure firewalls",
-				Elem:        cloudAzureIntegrationFirewallsElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"front_door": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure front door",
-				Elem:        cloudAzureIntegrationFrontDoorElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"functions": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure functions",
-				Elem:        cloudAzureIntegrationFunctionsElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"key_vault": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure key vault",
-				Elem:        cloudAzureIntegrationKeyVaultElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"load_balancer": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure load balancer",
-				Elem:        cloudAzureIntegrationLoadBalancerElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"logic_apps": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure logic apps",
-				Elem:        cloudAzureIntegrationLogicAppsElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"machine_learning": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure machine learning",
-				Elem:        cloudAzureIntegrationMachineLearningElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"maria_db": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure Maria DB",
-				Elem:        cloudAzureIntegrationMariadbElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"monitor": {
@@ -165,98 +165,98 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure mysql",
-				Elem:        cloudAzureIntegrationMysqlElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"mysql_flexible": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure mysql flexible service integration",
-				Elem:        cloudAzureIntegrationMysqlFlexElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"postgresql": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure postgresql",
-				Elem:        cloudAzureIntegrationPostgresqlElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"postgresql_flexible": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure postgresql flexible service integration",
-				Elem:        cloudAzureIntegrationPostgresqlFlexElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"power_bi_dedicated": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure powerBI dedicated",
-				Elem:        cloudAzureIntegrationPowerBiDedicatedElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"redis_cache": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure redis cache",
-				Elem:        cloudAzureIntegrationRedisCacheElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"service_bus": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure service bus",
-				Elem:        cloudAzureIntegrationServiceBusElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"sql": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure sql",
-				Elem:        cloudAzureIntegrationSQLElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"sql_managed": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure sql managed",
-				Elem:        cloudAzureIntegrationSQLManagedElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"storage": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure storage",
-				Elem:        cloudAzureIntegrationStorageElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"virtual_machine": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure virtual machine",
-				Elem:        cloudAzureIntegrationVirtualMachineElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"virtual_networks": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure virtual networks",
-				Elem:        cloudAzureIntegrationVirtualNetworksElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"vms": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure Vms",
-				Elem:        cloudAzureIntegrationVmsElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 			"vpn_gateway": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The Azure vpn gateway",
-				Elem:        cloudAzureIntegrationVPNGatewayElem(),
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
 		},
@@ -273,311 +273,145 @@ func cloudAzureIntegrationSchemaBase() map[string]*schema.Schema {
 	}
 }
 
-// function to add schema for azure API management
-func cloudAzureIntegrationAPIManagementElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
+func cloudAzureIntegrationMergeResourceGroupsElem() *schema.Resource {
+	s := mergeSchemas(
+		cloudAzureIntegrationSchemaBase(),
+		cloudAzureIntegrationResourceGroupsSchema())
+
 	return &schema.Resource{
 		Schema: s,
 	}
 }
+
+func cloudAzureIntegrationMergeTagKeysElem() *schema.Resource {
+	s := mergeSchemas(
+		cloudAzureIntegrationSchemaBase(),
+		cloudAzureIntegrationTagKeysSchema())
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+func cloudAzureIntegrationResourceGroupsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"resource_groups": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+	}
+}
+
+func cloudAzureIntegrationTagKeysSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"tag_keys": {
+			Type:        schema.TypeList,
+			Description: "Specify if additional cost data per tag should be collected. This field is case sensitive.\n\n",
+			Optional:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+	}
+}
+
+// function to add schema for azure API management
+// func cloudAzureIntegrationAPIManagementElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 //function to add schema for azure Gateway
 
-func cloudAzureIntegrationAppGatewayElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-}
+// func cloudAzureIntegrationAppGatewayElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure app service
-func cloudAzureIntegrationAppServiceElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationAppServiceElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure containers
-func cloudAzureIntegrationContainersElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationContainersElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure cosmo database
-func cloudAzureIntegrationCosmosDBElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationCosmosDBElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure cost management
 
-func cloudAzureIntegrationCostManagementElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["tag_keys"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Description: "Specify if additional cost data per tag should be collected. This field is case sensitive.\n\n",
-		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-}
+// func cloudAzureIntegrationCostManagementElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeTagKeysElem()
+// }
 
 // function to add schema for azure data factory
 
-func cloudAzureIntegrationDataFactoryElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationDataFactoryElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure event hub
 
-func cloudAzureIntegrationEventHubElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationEventHubElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure express route
-func cloudAzureIntegrationExpressRouteElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationExpressRouteElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure firewalls
-func cloudAzureIntegrationFirewallsElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationFirewallsElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure front door
-func cloudAzureIntegrationFrontDoorElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationFrontDoorElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure functions
-func cloudAzureIntegrationFunctionsElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationFunctionsElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure key vault
-func cloudAzureIntegrationKeyVaultElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationKeyVaultElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure load balancer
-func cloudAzureIntegrationLoadBalancerElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationLoadBalancerElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure logic apps
-func cloudAzureIntegrationLogicAppsElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-}
+// func cloudAzureIntegrationLogicAppsElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure machine learning
-func cloudAzureIntegrationMachineLearningElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationMachineLearningElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure maria database
-func cloudAzureIntegrationMariadbElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationMariadbElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure mysql
-func cloudAzureIntegrationMysqlElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationMysqlElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // cloudAzureIntegrationMonitorElem defines the schema of elements in the "monitor" Azure integration.
 func cloudAzureIntegrationMonitorElem() *schema.Resource {
@@ -635,225 +469,69 @@ func cloudAzureIntegrationMonitorSchema() map[string]*schema.Schema {
 }
 
 // function to add schema for azure mysql
-func cloudAzureIntegrationMysqlFlexElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationMysqlFlexElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure postgresql
-func cloudAzureIntegrationPostgresqlElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationPostgresqlElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure postgresql
-func cloudAzureIntegrationPostgresqlFlexElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationPostgresqlFlexElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure power bi dedicated
-func cloudAzureIntegrationPowerBiDedicatedElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationPowerBiDedicatedElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure redis cache
-func cloudAzureIntegrationRedisCacheElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationRedisCacheElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure service bus
-func cloudAzureIntegrationServiceBusElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationServiceBusElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure sql
-func cloudAzureIntegrationSQLElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationSQLElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure sql managed
-func cloudAzureIntegrationSQLManagedElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationSQLManagedElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure storage
-func cloudAzureIntegrationStorageElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationStorageElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure virtual machine
-func cloudAzureIntegrationVirtualMachineElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationVirtualMachineElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure virtual networks
-func cloudAzureIntegrationVirtualNetworksElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationVirtualNetworksElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure vms
-func cloudAzureIntegrationVmsElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationVmsElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 // function to add schema for azure VPN gateway
-func cloudAzureIntegrationVPNGatewayElem() *schema.Resource {
-	s := cloudAzureIntegrationSchemaBase()
-	s["resource_groups"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specify each Resource group associated with the resources that you want to monitor. Filter values are case-sensitive",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-
-}
+// func cloudAzureIntegrationVPNGatewayElem() *schema.Resource {
+// 	return cloudAzureIntegrationMergeResourceGroupsElem()
+// }
 
 func resourceNewRelicCloudAzureIntegrationsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
@@ -900,194 +578,194 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 
 	var linkedAccountID int
 
-	if l, ok := d.GetOk("linked_account_id"); ok {
+	if l, ok := resourceDataWrapper(d, "linked_account_id"); ok {
 		linkedAccountID = l.(int)
 	}
-	if v, ok := d.GetOk("api_management"); ok {
+	if v, ok := resourceDataWrapper(d, "api_management"); ok {
 		cloudAzureIntegration.AzureAPImanagement = expandCloudAzureIntegrationAPIManagementInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("api_management"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureAPImanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("app_gateway"); ok {
+	if v, ok := resourceDataWrapper(d, "app_gateway"); ok {
 		cloudAzureIntegration.AzureAppgateway = expandCloudAzureIntegrationAppGatewayInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("app_gateway"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureAppgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if v, ok := d.GetOk("app_service"); ok {
+	if v, ok := resourceDataWrapper(d, "app_service"); ok {
 		cloudAzureIntegration.AzureAppservice = expandCloudAzureIntegrationAppServiceInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("app_service"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureAppservice = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("containers"); ok {
+	if v, ok := resourceDataWrapper(d, "containers"); ok {
 		cloudAzureIntegration.AzureContainers = expandCloudAzureIntegrationContainersInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("containers"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureContainers = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("cosmos_db"); ok {
+	if v, ok := resourceDataWrapper(d, "cosmos_db"); ok {
 		cloudAzureIntegration.AzureCosmosdb = expandCloudAzureIntegrationCosmosdbInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("cosmos_db"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureCosmosdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("cost_management"); ok {
+	if v, ok := resourceDataWrapper(d, "cost_management"); ok {
 		cloudAzureIntegration.AzureCostmanagement = expandCloudAzureIntegrationCostManagementInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("cost_management"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureCostmanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if v, ok := d.GetOk("data_factory"); ok {
+	if v, ok := resourceDataWrapper(d, "data_factory"); ok {
 		cloudAzureIntegration.AzureDatafactory = expandCloudAzureIntegrationDataFactoryInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("data_factory"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureDatafactory = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("event_hub"); ok {
+	if v, ok := resourceDataWrapper(d, "event_hub"); ok {
 		cloudAzureIntegration.AzureEventhub = expandCloudAzureIntegrationCloudEventHubInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("event_hub"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureEventhub = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("express_route"); ok {
+	if v, ok := resourceDataWrapper(d, "express_route"); ok {
 		cloudAzureIntegration.AzureExpressroute = expandCloudAzureIntegrationExpressRouteInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("express_route"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureExpressroute = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("firewalls"); ok {
+	if v, ok := resourceDataWrapper(d, "firewalls"); ok {
 		cloudAzureIntegration.AzureFirewalls = expandCloudAzureIntegrationFirewallsInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("firewalls"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureFirewalls = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("front_door"); ok {
+	if v, ok := resourceDataWrapper(d, "front_door"); ok {
 		cloudAzureIntegration.AzureFrontdoor = expandCloudAzureIntegrationFrontDoorInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("front_door"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureFrontdoor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("functions"); ok {
+	if v, ok := resourceDataWrapper(d, "functions"); ok {
 		cloudAzureIntegration.AzureFunctions = expandCloudAzureIntegrationFunctionsInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("functions"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureFunctions = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("key_vault"); ok {
+	if v, ok := resourceDataWrapper(d, "key_vault"); ok {
 		cloudAzureIntegration.AzureKeyvault = expandCloudAzureIntegrationKeyVaultInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("key_vault"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureKeyvault = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("load_balancer"); ok {
+	if v, ok := resourceDataWrapper(d, "load_balancer"); ok {
 		cloudAzureIntegration.AzureLoadbalancer = expandCloudAzureIntegrationLoadBalancerInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("load_balancer"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureLoadbalancer = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("logic_apps"); ok {
+	if v, ok := resourceDataWrapper(d, "logic_apps"); ok {
 		cloudAzureIntegration.AzureLogicapps = expandCloudAzureIntegrationLogicAppsInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("logic_apps"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureLogicapps = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 	//
-	if v, ok := d.GetOk("machine_learning"); ok {
+	if v, ok := resourceDataWrapper(d, "machine_learning"); ok {
 		cloudAzureIntegration.AzureMachinelearning = expandCloudAzureIntegrationMachineLearningInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("machine_learning"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMachinelearning = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("maria_db"); ok {
+	if v, ok := resourceDataWrapper(d, "maria_db"); ok {
 		cloudAzureIntegration.AzureMariadb = expandCloudAzureIntegrationMariadbInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("maria_db"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMariadb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("monitor"); ok {
+	if v, ok := resourceDataWrapper(d, "monitor"); ok {
 		cloudAzureIntegration.AzureMonitor = expandCloudAzureIntegrationMonitorInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("monitor"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMonitor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("mysql"); ok {
+	if v, ok := resourceDataWrapper(d, "mysql"); ok {
 		cloudAzureIntegration.AzureMysql = expandCloudAzureIntegrationMysqlInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("mysql"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMysql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("mysql_flexible"); ok {
+	if v, ok := resourceDataWrapper(d, "mysql_flexible"); ok {
 		cloudAzureIntegration.AzureMysqlflexible = expandCloudAzureIntegrationMysqlFlexibleInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("mysql_flexible"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMysqlflexible = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("postgresql"); ok {
+	if v, ok := resourceDataWrapper(d, "postgresql"); ok {
 		cloudAzureIntegration.AzurePostgresql = expandCloudAzureIntegrationPostgresqlInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("postgresql"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzurePostgresql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("postgresql_flexible"); ok {
+	if v, ok := resourceDataWrapper(d, "postgresql_flexible"); ok {
 		cloudAzureIntegration.AzurePostgresqlflexible = expandCloudAzureIntegrationPostgresqlFlexibleInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("postgresql_flexible"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzurePostgresqlflexible = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("power_bi_dedicated"); ok {
+	if v, ok := resourceDataWrapper(d, "power_bi_dedicated"); ok {
 		cloudAzureIntegration.AzurePowerbidedicated = expandCloudAzureIntegrationPowerBiDedicatedInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("power_bi_dedicated"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzurePowerbidedicated = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("redis_cache"); ok {
+	if v, ok := resourceDataWrapper(d, "redis_cache"); ok {
 		cloudAzureIntegration.AzureRediscache = expandCloudAzureIntegrationRedisCacheInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("redis_cache"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureRediscache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("service_bus"); ok {
+	if v, ok := resourceDataWrapper(d, "service_bus"); ok {
 		cloudAzureIntegration.AzureServicebus = expandCloudAzureIntegrationServiceBusInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("service_bus"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureServicebus = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("sql"); ok {
+	if v, ok := resourceDataWrapper(d, "sql"); ok {
 		cloudAzureIntegration.AzureSql = expandCloudAzureIntegrationSQLInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("sql"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureSql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("sql_managed"); ok {
+	if v, ok := resourceDataWrapper(d, "sql_managed"); ok {
 		cloudAzureIntegration.AzureSqlmanaged = expandCloudAzureIntegrationSQLManagedInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("sql_managed"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureSqlmanaged = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("storage"); ok {
+	if v, ok := resourceDataWrapper(d, "storage"); ok {
 		cloudAzureIntegration.AzureStorage = expandCloudAzureIntegrationStorageInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("storage"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureStorage = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("virtual_machine"); ok {
+	if v, ok := resourceDataWrapper(d, "virtual_machine"); ok {
 		cloudAzureIntegration.AzureVirtualmachine = expandCloudAzureIntegrationVirtualMachineInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("virtual_machine"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureVirtualmachine = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("virtual_networks"); ok {
+	if v, ok := resourceDataWrapper(d, "virtual_networks"); ok {
 		cloudAzureIntegration.AzureVirtualnetworks = expandCloudAzureIntegrationVirtualNetworksInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("virtual_networks"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureVirtualnetworks = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("vms"); ok {
+	if v, ok := resourceDataWrapper(d, "vms"); ok {
 		cloudAzureIntegration.AzureVms = expandCloudAzureIntegrationVmsInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("vms"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureVms = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := d.GetOk("vpn_gateway"); ok {
+	if v, ok := resourceDataWrapper(d, "vpn_gateway"); ok {
 		cloudAzureIntegration.AzureVpngateways = expandCloudAzureIntegrationVpnGatewayInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("vpn_gateway"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureVpngateways = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
@@ -2945,103 +2623,103 @@ func expandCloudAzureDisableInputs(d *schema.ResourceData) cloud.CloudDisableInt
 	cloudAzureDisableInput := cloud.CloudAzureDisableIntegrationsInput{}
 	var linkedAccountID int
 
-	if l, ok := d.GetOk("linked_account_id"); ok {
+	if l, ok := resourceDataWrapper(d, "linked_account_id"); ok {
 		linkedAccountID = l.(int)
 	}
-	if _, ok := d.GetOk("api_management"); ok {
+	if _, ok := resourceDataWrapper(d, "api_management"); ok {
 		cloudAzureDisableInput.AzureAPImanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("app_gateway"); ok {
+	if _, ok := resourceDataWrapper(d, "app_gateway"); ok {
 		cloudAzureDisableInput.AzureAppgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("app_service"); ok {
+	if _, ok := resourceDataWrapper(d, "app_service"); ok {
 		cloudAzureDisableInput.AzureAppservice = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("containers"); ok {
+	if _, ok := resourceDataWrapper(d, "containers"); ok {
 		cloudAzureDisableInput.AzureContainers = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("cosmos_db"); ok {
+	if _, ok := resourceDataWrapper(d, "cosmos_db"); ok {
 		cloudAzureDisableInput.AzureCosmosdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("cost_management"); ok {
+	if _, ok := resourceDataWrapper(d, "cost_management"); ok {
 		cloudAzureDisableInput.AzureCostmanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("data_factory"); ok {
+	if _, ok := resourceDataWrapper(d, "data_factory"); ok {
 		cloudAzureDisableInput.AzureDatafactory = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("event_hub"); ok {
+	if _, ok := resourceDataWrapper(d, "event_hub"); ok {
 		cloudAzureDisableInput.AzureEventhub = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("express_route"); ok {
+	if _, ok := resourceDataWrapper(d, "express_route"); ok {
 		cloudAzureDisableInput.AzureExpressroute = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("firewalls"); ok {
+	if _, ok := resourceDataWrapper(d, "firewalls"); ok {
 		cloudAzureDisableInput.AzureFirewalls = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("front_door"); ok {
+	if _, ok := resourceDataWrapper(d, "front_door"); ok {
 		cloudAzureDisableInput.AzureFrontdoor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("functions"); ok {
+	if _, ok := resourceDataWrapper(d, "functions"); ok {
 		cloudAzureDisableInput.AzureFunctions = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("key_vault"); ok {
+	if _, ok := resourceDataWrapper(d, "key_vault"); ok {
 		cloudAzureDisableInput.AzureKeyvault = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("load_balancer"); ok {
+	if _, ok := resourceDataWrapper(d, "load_balancer"); ok {
 		cloudAzureDisableInput.AzureLoadbalancer = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("logic_apps"); ok {
+	if _, ok := resourceDataWrapper(d, "logic_apps"); ok {
 		cloudAzureDisableInput.AzureLogicapps = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("machine_learning"); ok {
+	if _, ok := resourceDataWrapper(d, "machine_learning"); ok {
 		cloudAzureDisableInput.AzureMachinelearning = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("maria_db"); ok {
+	if _, ok := resourceDataWrapper(d, "maria_db"); ok {
 		cloudAzureDisableInput.AzureMariadb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("monitor"); ok {
+	if _, ok := resourceDataWrapper(d, "monitor"); ok {
 		cloudAzureDisableInput.AzureMonitor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("mysql"); ok {
+	if _, ok := resourceDataWrapper(d, "mysql"); ok {
 		cloudAzureDisableInput.AzureMysql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("mysql_flexible"); ok {
+	if _, ok := resourceDataWrapper(d, "mysql_flexible"); ok {
 		cloudAzureDisableInput.AzureMysqlflexible = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("postgresql"); ok {
+	if _, ok := resourceDataWrapper(d, "postgresql"); ok {
 		cloudAzureDisableInput.AzurePostgresql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("postgresql_flexible"); ok {
+	if _, ok := resourceDataWrapper(d, "postgresql_flexible"); ok {
 		cloudAzureDisableInput.AzurePostgresqlflexible = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("power_bi_dedicated"); ok {
+	if _, ok := resourceDataWrapper(d, "power_bi_dedicated"); ok {
 		cloudAzureDisableInput.AzurePowerbidedicated = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("redis_cache"); ok {
+	if _, ok := resourceDataWrapper(d, "redis_cache"); ok {
 		cloudAzureDisableInput.AzureRediscache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("service_bus"); ok {
+	if _, ok := resourceDataWrapper(d, "service_bus"); ok {
 		cloudAzureDisableInput.AzureServicebus = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("sql"); ok {
+	if _, ok := resourceDataWrapper(d, "sql"); ok {
 		cloudAzureDisableInput.AzureSql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("sql_managed"); ok {
+	if _, ok := resourceDataWrapper(d, "sql_managed"); ok {
 		cloudAzureDisableInput.AzureSqlmanaged = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("storage"); ok {
+	if _, ok := resourceDataWrapper(d, "storage"); ok {
 		cloudAzureDisableInput.AzureStorage = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("virtual_machine"); ok {
+	if _, ok := resourceDataWrapper(d, "virtual_machine"); ok {
 		cloudAzureDisableInput.AzureVirtualmachine = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("virtual_networks"); ok {
+	if _, ok := resourceDataWrapper(d, "virtual_networks"); ok {
 		cloudAzureDisableInput.AzureVirtualnetworks = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("vms"); ok {
+	if _, ok := resourceDataWrapper(d, "vms"); ok {
 		cloudAzureDisableInput.AzureVms = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := d.GetOk("vpn_gateway"); ok {
+	if _, ok := resourceDataWrapper(d, "vpn_gateway"); ok {
 		cloudAzureDisableInput.AzureVpngateways = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 

@@ -159,3 +159,7 @@ func revertEscapedSingleQuote(name string) string {
 
 	return name
 }
+
+func resourceDataWrapper(d *schema.ResourceData, key string) (interface{}, bool) {
+	return d.GetOk(key)
+}
