@@ -160,6 +160,7 @@ func revertEscapedSingleQuote(name string) string {
 	return name
 }
 
-func resourceDataWrapper(d *schema.ResourceData, key string) (interface{}, bool) {
+// This methods is a wrapper for Resource Data getter function
+func fetchAttributeValueFromResourceConfig(d *schema.ResourceData, key string) (interface{}, bool) {
 	return d.GetOk(key)
 }

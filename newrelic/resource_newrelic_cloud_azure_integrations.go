@@ -273,6 +273,7 @@ func cloudAzureIntegrationSchemaBase() map[string]*schema.Schema {
 	}
 }
 
+// cloudAzureIntegrationMergeResourceGroupsElem defines the schema of elements in the "resource_groups" Azure integration.
 func cloudAzureIntegrationMergeResourceGroupsElem() *schema.Resource {
 	s := mergeSchemas(
 		cloudAzureIntegrationSchemaBase(),
@@ -283,6 +284,7 @@ func cloudAzureIntegrationMergeResourceGroupsElem() *schema.Resource {
 	}
 }
 
+// cloudAzureIntegrationMergeTagKeysElem defines the schema of elements in the "tag_keys" Azure integration.
 func cloudAzureIntegrationMergeTagKeysElem() *schema.Resource {
 	s := mergeSchemas(
 		cloudAzureIntegrationSchemaBase(),
@@ -293,6 +295,7 @@ func cloudAzureIntegrationMergeTagKeysElem() *schema.Resource {
 	}
 }
 
+// cloudAzureIntegrationResourceGroupsSchema defines the schema of elements specific to the "resource_groups" Azure integration.
 func cloudAzureIntegrationResourceGroupsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"resource_groups": {
@@ -306,6 +309,7 @@ func cloudAzureIntegrationResourceGroupsSchema() map[string]*schema.Schema {
 	}
 }
 
+// cloudAzureIntegrationTagKeysSchema defines the schema of elements specific to the "tag_keys" Azure integration.
 func cloudAzureIntegrationTagKeysSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"tag_keys": {
@@ -318,100 +322,6 @@ func cloudAzureIntegrationTagKeysSchema() map[string]*schema.Schema {
 		},
 	}
 }
-
-// function to add schema for azure API management
-// func cloudAzureIntegrationAPIManagementElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-//function to add schema for azure Gateway
-
-// func cloudAzureIntegrationAppGatewayElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure app service
-// func cloudAzureIntegrationAppServiceElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure containers
-// func cloudAzureIntegrationContainersElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure cosmo database
-// func cloudAzureIntegrationCosmosDBElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure cost management
-
-// func cloudAzureIntegrationCostManagementElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeTagKeysElem()
-// }
-
-// function to add schema for azure data factory
-
-// func cloudAzureIntegrationDataFactoryElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure event hub
-
-// func cloudAzureIntegrationEventHubElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure express route
-// func cloudAzureIntegrationExpressRouteElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure firewalls
-// func cloudAzureIntegrationFirewallsElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure front door
-// func cloudAzureIntegrationFrontDoorElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure functions
-// func cloudAzureIntegrationFunctionsElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure key vault
-// func cloudAzureIntegrationKeyVaultElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure load balancer
-// func cloudAzureIntegrationLoadBalancerElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure logic apps
-// func cloudAzureIntegrationLogicAppsElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure machine learning
-// func cloudAzureIntegrationMachineLearningElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure maria database
-// func cloudAzureIntegrationMariadbElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure mysql
-// func cloudAzureIntegrationMysqlElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
 
 // cloudAzureIntegrationMonitorElem defines the schema of elements in the "monitor" Azure integration.
 func cloudAzureIntegrationMonitorElem() *schema.Resource {
@@ -468,71 +378,6 @@ func cloudAzureIntegrationMonitorSchema() map[string]*schema.Schema {
 	}
 }
 
-// function to add schema for azure mysql
-// func cloudAzureIntegrationMysqlFlexElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure postgresql
-// func cloudAzureIntegrationPostgresqlElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure postgresql
-// func cloudAzureIntegrationPostgresqlFlexElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure power bi dedicated
-// func cloudAzureIntegrationPowerBiDedicatedElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure redis cache
-// func cloudAzureIntegrationRedisCacheElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure service bus
-// func cloudAzureIntegrationServiceBusElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure sql
-// func cloudAzureIntegrationSQLElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure sql managed
-// func cloudAzureIntegrationSQLManagedElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure storage
-// func cloudAzureIntegrationStorageElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure virtual machine
-// func cloudAzureIntegrationVirtualMachineElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure virtual networks
-// func cloudAzureIntegrationVirtualNetworksElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure vms
-// func cloudAzureIntegrationVmsElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
-// function to add schema for azure VPN gateway
-// func cloudAzureIntegrationVPNGatewayElem() *schema.Resource {
-// 	return cloudAzureIntegrationMergeResourceGroupsElem()
-// }
-
 func resourceNewRelicCloudAzureIntegrationsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
@@ -578,194 +423,194 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 
 	var linkedAccountID int
 
-	if l, ok := resourceDataWrapper(d, "linked_account_id"); ok {
+	if l, ok := fetchAttributeValueFromResourceConfig(d, "linked_account_id"); ok {
 		linkedAccountID = l.(int)
 	}
-	if v, ok := resourceDataWrapper(d, "api_management"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "api_management"); ok {
 		cloudAzureIntegration.AzureAPImanagement = expandCloudAzureIntegrationAPIManagementInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("api_management"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureAPImanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "app_gateway"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "app_gateway"); ok {
 		cloudAzureIntegration.AzureAppgateway = expandCloudAzureIntegrationAppGatewayInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("app_gateway"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureAppgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if v, ok := resourceDataWrapper(d, "app_service"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "app_service"); ok {
 		cloudAzureIntegration.AzureAppservice = expandCloudAzureIntegrationAppServiceInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("app_service"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureAppservice = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "containers"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "containers"); ok {
 		cloudAzureIntegration.AzureContainers = expandCloudAzureIntegrationContainersInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("containers"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureContainers = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "cosmos_db"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "cosmos_db"); ok {
 		cloudAzureIntegration.AzureCosmosdb = expandCloudAzureIntegrationCosmosdbInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("cosmos_db"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureCosmosdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "cost_management"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "cost_management"); ok {
 		cloudAzureIntegration.AzureCostmanagement = expandCloudAzureIntegrationCostManagementInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("cost_management"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureCostmanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if v, ok := resourceDataWrapper(d, "data_factory"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "data_factory"); ok {
 		cloudAzureIntegration.AzureDatafactory = expandCloudAzureIntegrationDataFactoryInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("data_factory"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureDatafactory = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "event_hub"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "event_hub"); ok {
 		cloudAzureIntegration.AzureEventhub = expandCloudAzureIntegrationCloudEventHubInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("event_hub"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureEventhub = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "express_route"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "express_route"); ok {
 		cloudAzureIntegration.AzureExpressroute = expandCloudAzureIntegrationExpressRouteInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("express_route"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureExpressroute = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "firewalls"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "firewalls"); ok {
 		cloudAzureIntegration.AzureFirewalls = expandCloudAzureIntegrationFirewallsInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("firewalls"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureFirewalls = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "front_door"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "front_door"); ok {
 		cloudAzureIntegration.AzureFrontdoor = expandCloudAzureIntegrationFrontDoorInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("front_door"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureFrontdoor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "functions"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "functions"); ok {
 		cloudAzureIntegration.AzureFunctions = expandCloudAzureIntegrationFunctionsInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("functions"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureFunctions = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "key_vault"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "key_vault"); ok {
 		cloudAzureIntegration.AzureKeyvault = expandCloudAzureIntegrationKeyVaultInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("key_vault"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureKeyvault = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "load_balancer"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "load_balancer"); ok {
 		cloudAzureIntegration.AzureLoadbalancer = expandCloudAzureIntegrationLoadBalancerInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("load_balancer"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureLoadbalancer = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "logic_apps"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "logic_apps"); ok {
 		cloudAzureIntegration.AzureLogicapps = expandCloudAzureIntegrationLogicAppsInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("logic_apps"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureLogicapps = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 	//
-	if v, ok := resourceDataWrapper(d, "machine_learning"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "machine_learning"); ok {
 		cloudAzureIntegration.AzureMachinelearning = expandCloudAzureIntegrationMachineLearningInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("machine_learning"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMachinelearning = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "maria_db"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "maria_db"); ok {
 		cloudAzureIntegration.AzureMariadb = expandCloudAzureIntegrationMariadbInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("maria_db"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMariadb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "monitor"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "monitor"); ok {
 		cloudAzureIntegration.AzureMonitor = expandCloudAzureIntegrationMonitorInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("monitor"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMonitor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "mysql"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "mysql"); ok {
 		cloudAzureIntegration.AzureMysql = expandCloudAzureIntegrationMysqlInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("mysql"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMysql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "mysql_flexible"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "mysql_flexible"); ok {
 		cloudAzureIntegration.AzureMysqlflexible = expandCloudAzureIntegrationMysqlFlexibleInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("mysql_flexible"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMysqlflexible = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "postgresql"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "postgresql"); ok {
 		cloudAzureIntegration.AzurePostgresql = expandCloudAzureIntegrationPostgresqlInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("postgresql"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzurePostgresql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "postgresql_flexible"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "postgresql_flexible"); ok {
 		cloudAzureIntegration.AzurePostgresqlflexible = expandCloudAzureIntegrationPostgresqlFlexibleInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("postgresql_flexible"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzurePostgresqlflexible = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "power_bi_dedicated"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "power_bi_dedicated"); ok {
 		cloudAzureIntegration.AzurePowerbidedicated = expandCloudAzureIntegrationPowerBiDedicatedInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("power_bi_dedicated"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzurePowerbidedicated = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "redis_cache"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "redis_cache"); ok {
 		cloudAzureIntegration.AzureRediscache = expandCloudAzureIntegrationRedisCacheInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("redis_cache"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureRediscache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "service_bus"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "service_bus"); ok {
 		cloudAzureIntegration.AzureServicebus = expandCloudAzureIntegrationServiceBusInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("service_bus"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureServicebus = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "sql"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "sql"); ok {
 		cloudAzureIntegration.AzureSql = expandCloudAzureIntegrationSQLInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("sql"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureSql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "sql_managed"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "sql_managed"); ok {
 		cloudAzureIntegration.AzureSqlmanaged = expandCloudAzureIntegrationSQLManagedInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("sql_managed"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureSqlmanaged = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "storage"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "storage"); ok {
 		cloudAzureIntegration.AzureStorage = expandCloudAzureIntegrationStorageInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("storage"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureStorage = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "virtual_machine"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "virtual_machine"); ok {
 		cloudAzureIntegration.AzureVirtualmachine = expandCloudAzureIntegrationVirtualMachineInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("virtual_machine"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureVirtualmachine = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "virtual_networks"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "virtual_networks"); ok {
 		cloudAzureIntegration.AzureVirtualnetworks = expandCloudAzureIntegrationVirtualNetworksInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("virtual_networks"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureVirtualnetworks = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "vms"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "vms"); ok {
 		cloudAzureIntegration.AzureVms = expandCloudAzureIntegrationVmsInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("vms"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureVms = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v, ok := resourceDataWrapper(d, "vpn_gateway"); ok {
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "vpn_gateway"); ok {
 		cloudAzureIntegration.AzureVpngateways = expandCloudAzureIntegrationVpnGatewayInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("vpn_gateway"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureVpngateways = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
@@ -2623,103 +2468,103 @@ func expandCloudAzureDisableInputs(d *schema.ResourceData) cloud.CloudDisableInt
 	cloudAzureDisableInput := cloud.CloudAzureDisableIntegrationsInput{}
 	var linkedAccountID int
 
-	if l, ok := resourceDataWrapper(d, "linked_account_id"); ok {
+	if l, ok := fetchAttributeValueFromResourceConfig(d, "linked_account_id"); ok {
 		linkedAccountID = l.(int)
 	}
-	if _, ok := resourceDataWrapper(d, "api_management"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "api_management"); ok {
 		cloudAzureDisableInput.AzureAPImanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "app_gateway"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "app_gateway"); ok {
 		cloudAzureDisableInput.AzureAppgateway = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "app_service"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "app_service"); ok {
 		cloudAzureDisableInput.AzureAppservice = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "containers"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "containers"); ok {
 		cloudAzureDisableInput.AzureContainers = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "cosmos_db"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "cosmos_db"); ok {
 		cloudAzureDisableInput.AzureCosmosdb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "cost_management"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "cost_management"); ok {
 		cloudAzureDisableInput.AzureCostmanagement = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "data_factory"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "data_factory"); ok {
 		cloudAzureDisableInput.AzureDatafactory = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "event_hub"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "event_hub"); ok {
 		cloudAzureDisableInput.AzureEventhub = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "express_route"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "express_route"); ok {
 		cloudAzureDisableInput.AzureExpressroute = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "firewalls"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "firewalls"); ok {
 		cloudAzureDisableInput.AzureFirewalls = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "front_door"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "front_door"); ok {
 		cloudAzureDisableInput.AzureFrontdoor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "functions"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "functions"); ok {
 		cloudAzureDisableInput.AzureFunctions = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "key_vault"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "key_vault"); ok {
 		cloudAzureDisableInput.AzureKeyvault = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "load_balancer"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "load_balancer"); ok {
 		cloudAzureDisableInput.AzureLoadbalancer = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "logic_apps"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "logic_apps"); ok {
 		cloudAzureDisableInput.AzureLogicapps = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "machine_learning"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "machine_learning"); ok {
 		cloudAzureDisableInput.AzureMachinelearning = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "maria_db"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "maria_db"); ok {
 		cloudAzureDisableInput.AzureMariadb = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "monitor"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "monitor"); ok {
 		cloudAzureDisableInput.AzureMonitor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "mysql"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "mysql"); ok {
 		cloudAzureDisableInput.AzureMysql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "mysql_flexible"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "mysql_flexible"); ok {
 		cloudAzureDisableInput.AzureMysqlflexible = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "postgresql"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "postgresql"); ok {
 		cloudAzureDisableInput.AzurePostgresql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "postgresql_flexible"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "postgresql_flexible"); ok {
 		cloudAzureDisableInput.AzurePostgresqlflexible = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "power_bi_dedicated"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "power_bi_dedicated"); ok {
 		cloudAzureDisableInput.AzurePowerbidedicated = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "redis_cache"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "redis_cache"); ok {
 		cloudAzureDisableInput.AzureRediscache = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "service_bus"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "service_bus"); ok {
 		cloudAzureDisableInput.AzureServicebus = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "sql"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "sql"); ok {
 		cloudAzureDisableInput.AzureSql = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "sql_managed"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "sql_managed"); ok {
 		cloudAzureDisableInput.AzureSqlmanaged = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "storage"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "storage"); ok {
 		cloudAzureDisableInput.AzureStorage = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "virtual_machine"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "virtual_machine"); ok {
 		cloudAzureDisableInput.AzureVirtualmachine = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "virtual_networks"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "virtual_networks"); ok {
 		cloudAzureDisableInput.AzureVirtualnetworks = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "vms"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "vms"); ok {
 		cloudAzureDisableInput.AzureVms = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
-	if _, ok := resourceDataWrapper(d, "vpn_gateway"); ok {
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "vpn_gateway"); ok {
 		cloudAzureDisableInput.AzureVpngateways = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
