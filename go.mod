@@ -6,6 +6,7 @@ toolchain go1.22.6
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
+	github.com/machinebox/graphql v0.2.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.30.0
 	github.com/newrelic/go-insights v1.0.3
@@ -43,7 +44,6 @@ require (
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 // indirect
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
-	github.com/machinebox/graphql v0.2.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
