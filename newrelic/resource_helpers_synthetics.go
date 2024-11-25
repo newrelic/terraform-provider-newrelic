@@ -544,7 +544,6 @@ var syntheticsMonitorTagKeyToSchemaAttrMap = map[string]string{
 	"scriptLanguage":     "script_language",
 	"deviceOrientation":  "device_orientation",
 	"deviceType":         "device_type",
-	"publicLocation":     "locations_public",
 }
 
 func getCertCheckMonitorValuesFromEntityTags(tags []entities.EntityTag) (domain string, daysUntilExpiration int) {
