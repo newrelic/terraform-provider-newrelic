@@ -13,7 +13,9 @@ This is specifically useful in cases where a huge number of users were created i
 
 #### Arguments
 --groupId <groupId>: The ID of the group to which the users will be imported. This is a required flag.
+
 --apiKey <apiKey>: The User API key used for authentication. This is an optional flag, and can only be skipped if your environment has a `NEW_RELIC_API_KEY` that can be defaulted to.
+
 --filePath <filePath>: The path to the file containing the user data to be imported. This is a required flag.
 
 #### Example Usage
