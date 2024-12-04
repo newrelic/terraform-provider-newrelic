@@ -2,13 +2,14 @@ package newrelic
 
 import (
 	"context"
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
-	"log"
 )
 
 func resourceNewRelicSyntheticsScriptMonitor() *schema.Resource {
@@ -223,6 +224,9 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 
 	switch e := (*resp).(type) {
 	case *entities.SyntheticMonitorEntity:
+		entity := (*resp).(*entities.SyntheticMonitorEntity)
+		_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
+
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
 			"name":   e.Name,
 			"type":   string(e.MonitorType),
