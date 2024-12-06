@@ -991,15 +991,15 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 		q := v.(map[string]interface{})
 
 		if acct, ok := q["account_id"]; ok {
-			query.AccountID = acct.(int)
+			query.AccountID = expandVariableAccountIDs(acct.([]interface{}))
 		}
 
-		if query.AccountID < 1 {
-			defs := meta.(map[string]interface{})
-			if acct, ok := defs["account_id"]; ok {
-				query.AccountID = acct.(int)
-			}
-		}
+		//if query.AccountID < 1 {
+		//	defs := meta.(map[string]interface{})
+		//	if acct, ok := defs["account_id"]; ok {
+		//		query.AccountID = acct.(int)
+		//	}
+		//}
 
 		if nrql, ok := q["query"]; ok {
 			query.Query = nrdb.NRQL(nrql.(string))
