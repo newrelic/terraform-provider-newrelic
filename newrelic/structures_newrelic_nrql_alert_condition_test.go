@@ -466,6 +466,80 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 	}
 }
 
+func TestExpandNrqlAlertConditionInputWithPrediction(t *testing.T) {
+	nrql := map[string]interface{}{
+		"query": "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'Dummy App'",
+	}
+
+	var criticalTerms []map[string]interface{}
+	criticalTerms = append(criticalTerms, map[string]interface{}{
+		"threshold":             1,
+		"threshold_occurrences": "AT_LEAST_ONCE",
+		"threshold_duration":    600,
+		"operator":              "ABOVE",
+		"prediction": []interface{}{
+			map[string]interface{}{
+				"predict_by":               7200,
+				"prefer_prediction_violation": true,
+			},
+		},
+	})
+
+	expectedNrql := &alerts.NrqlConditionCreateInput{
+		NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+			Terms: []alerts.NrqlConditionTerm{
+				{
+					Threshold:            &testThresholdLow,
+					ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
+					ThresholdDuration:    600,
+					Operator:             alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE,
+					Priority:             alerts.NrqlConditionPriorities.Critical,
+					Prediction: &alerts.NrqlConditionThresholdPrediction{
+						PredictBy:                 7200,
+						PreferpredictionViolation: true,
+					},
+				},
+			},
+		},
+	}
+	expectedNrql.Nrql.Query = nrql["query"].(string)
+
+	r := resourceNewRelicNrqlAlertCondition()
+	d := r.TestResourceData()
+
+	data := map[string]interface{}{
+		"nrql":     []interface{}{nrql},
+		"type":     "static",
+		"critical": criticalTerms,
+	}
+
+	for k, v := range data {
+		if k == "critical" {
+			var terms []map[string]interface{}
+			terms = append(terms, v.([]map[string]interface{})...)
+			if err := d.Set(k, terms); err != nil {
+				t.Fatalf("err: %s", err)
+			}
+		} else {
+			if err := d.Set(k, v); err != nil {
+				t.Fatalf("err: %s", err)
+			}
+		}
+	}
+
+	expanded, err := expandNrqlAlertConditionCreateInput(d)
+	require.Nil(t, err)
+
+	require.Equal(t, expectedNrql.Nrql.Query, expanded.Nrql.Query)
+	require.Equal(t, expectedNrql.Terms[0].Threshold, expanded.Terms[0].Threshold)
+	require.Equal(t, expectedNrql.Terms[0].ThresholdOccurrences, expanded.Terms[0].ThresholdOccurrences)
+	require.Equal(t, expectedNrql.Terms[0].ThresholdDuration, expanded.Terms[0].ThresholdDuration)
+	require.Equal(t, expectedNrql.Terms[0].Operator, expanded.Terms[0].Operator)
+	require.Equal(t, expectedNrql.Terms[0].Priority, expanded.Terms[0].Priority)
+	require.Equal(t, expectedNrql.Terms[0].Prediction.PredictBy, expanded.Terms[0].Prediction.PredictBy)
+	require.Equal(t, expectedNrql.Terms[0].Prediction.PreferPredictionViolation, expanded.Terms[0].Prediction.PreferPredictionViolation)
+}
+
 func TestFlattenNrqlAlertCondition(t *testing.T) {
 	r := resourceNewRelicNrqlAlertCondition()
 	dataAccountId := 987654

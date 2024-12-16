@@ -74,6 +74,30 @@ func termSchema() *schema.Resource {
 				Optional:    true,
 				Description: "The duration, in seconds, that the threshold must violate in order to create an incident. Value must be a multiple of the 'aggregation_window' (which has a default of 60 seconds). Value must be within 120-86400 seconds for baseline conditions, and within 60-86400 seconds for static conditions",
 			},
+			"prediction": {
+				Type:        schema.TypeSet,
+				MinItems:    0,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "BETA PREVIEW: the `prediction` field is in limited release and only enabled for preview on a per-account basis. - Use `prediction` to open alerts when your static threshold is predicted to be reached in the future. The `prediction` field is only available for static conditions.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"predict_by": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							// API default 3600 seconds = 1 hour
+							Default:     3600,
+							Description: "BETA PREVIEW: the `predict_by` field is in limited release and only enabled for preview on a per-account basis. - The duration, in seconds, that the prediction should look into the future.",
+						},
+						"prefer_prediction_violation": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "BETA PREVIEW: the `prefer_prediction_violation` field is in limited release and only enabled for preview on a per-account basis. - If a prediction incident is open when a term's static threshold is breached by the actual signal, default behavior is to close the prediction incident and open a static incident. Setting `prefer_prediction_violation` to `true` overrides this behavior leaving the prediction incident open and preventing a static incident from opening.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
