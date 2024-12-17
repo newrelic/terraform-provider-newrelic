@@ -18,6 +18,10 @@ func expandMutingRuleCreateInput(d *schema.ResourceData) (alerts.MutingRuleCreat
 		Description: d.Get("description").(string),
 	}
 
+	if endBehaviour, ok := d.GetOk("end_behaviour"); ok {
+		createInput.ActionOnMutingRuleWindowEnded = expandMutingRuleEndBehaviour(endBehaviour.(string))
+	}
+
 	if e, ok := d.GetOk("condition"); ok {
 		createInput.Condition = expandMutingRuleConditionGroup(e.([]interface{})[0].(map[string]interface{}))
 	}
@@ -31,6 +35,17 @@ func expandMutingRuleCreateInput(d *schema.ResourceData) (alerts.MutingRuleCreat
 	}
 
 	return createInput, nil
+}
+
+func expandMutingRuleEndBehaviour(endBehaviour string) alerts.AlertsActionOnMutingRuleWindowEnded {
+	switch endBehaviour {
+	case string(alerts.AlertsActionOnMutingRuleWindowEndedTypes.CLOSE_ISSUES_ON_INACTIVE):
+		return alerts.AlertsActionOnMutingRuleWindowEndedTypes.CLOSE_ISSUES_ON_INACTIVE
+	case string(alerts.AlertsActionOnMutingRuleWindowEndedTypes.DO_NOTHING):
+		return alerts.AlertsActionOnMutingRuleWindowEndedTypes.DO_NOTHING
+	default:
+		return alerts.AlertsActionOnMutingRuleWindowEndedTypes.CLOSE_ISSUES_ON_INACTIVE
+	}
 }
 
 func expandMutingRuleCreateSchedule(cfg map[string]interface{}) (alerts.MutingRuleScheduleCreateInput, error) {
@@ -199,6 +214,10 @@ func expandMutingRuleUpdateInput(d *schema.ResourceData) (alerts.MutingRuleUpdat
 		Description: d.Get("description").(string),
 	}
 
+	if endBehaviour, ok := d.GetOk("end_behaviour"); ok {
+		updateInput.ActionOnMutingRuleWindowEnded = expandMutingRuleEndBehaviour(endBehaviour.(string))
+	}
+
 	if e, ok := d.GetOk("condition"); ok {
 		x := expandMutingRuleConditionGroup(e.([]interface{})[0].(map[string]interface{}))
 
@@ -270,6 +289,7 @@ func flattenMutingRule(mutingRule *alerts.MutingRule, d *schema.ResourceData) er
 	configuredCondition := x.([]interface{})
 
 	_ = d.Set("enabled", mutingRule.Enabled)
+	_ = d.Set("end_behaviour", mutingRule.ActionOnMutingRuleWindowEnded)
 	err := d.Set("condition", flattenMutingRuleConditionGroup(mutingRule.Condition, configuredCondition))
 	if err != nil {
 		return nil
