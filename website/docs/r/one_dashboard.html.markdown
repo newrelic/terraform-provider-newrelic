@@ -70,7 +70,7 @@ resource "newrelic_one_dashboard" "exampledash" {
       height = 3
 
       nrql_query {
-        account_id = 12345
+        account_ids = [12345]
         query      = "FROM Transaction SELECT average(duration) FACET appName"
       }
 
@@ -88,7 +88,7 @@ resource "newrelic_one_dashboard" "exampledash" {
       refresh_rate = 300000 // 5 minutes
 
       nrql_query {
-        account_id = 12345
+        account_ids = [12345,896756]
         query      = "FROM Transaction SELECT average(duration) FACET appName"
       }
 
@@ -119,7 +119,7 @@ resource "newrelic_one_dashboard" "exampledash" {
       refresh_rate = 30000 // 30 seconds
 
       nrql_query {
-        account_id = 12345
+        account_ids = [12345]
         query      = "FROM Transaction select max(duration) as 'max duration' where httpResponseCode = '504' timeseries since 5 minutes ago"
       }
 
@@ -414,7 +414,7 @@ This attribute requires specifying the following attributes in a nested block -
   height = 3
 
   nrql_query {
-    account_id = Account_ID
+    account_ids = [Account_ID]
     query = "SELECT average(duration), max(duration), min(duration) FROM Transaction FACET name SINCE 1 day ago"
   }
 
@@ -466,7 +466,7 @@ Nested `nrql_query` blocks allow you to make one or more NRQL queries within a w
 
 The following arguments are supported:
 
-  * `account_id` - (Optional) The New Relic account ID to issue the query against. Defaults to the Account ID where the dashboard was created. When using an account ID you don't have permissions for the widget will be replaced with a widget showing the data is inaccessible. Terraform will not throw an error, so this widget will only be visible in the UI.
+  * `account_ids` - (Optional) List of New Relic account IDs to issue the query against. Defaults to the Account ID where the dashboard was created. When using an account ID you don't have permissions for the widget will be replaced with a widget showing the data is inaccessible. Terraform will not throw an error, so this widget will only be visible in the UI.
   * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
 
 ```hcl
@@ -478,7 +478,7 @@ widget_line {
   height = 3
 
   nrql_query {
-    account_id  = Another_Account_ID
+    account_ids  = [Another_Account_ID]
     query       = "FROM Transaction SELECT average(duration) FACET appName"
   }
 
@@ -580,11 +580,11 @@ resource "newrelic_one_dashboard" "multi_page_dashboard" {
       column = 1
       width  = 12
       nrql_query {
-        account_id = First_Account_ID
+        account_ids = [First_Account_ID]
         query      = "FROM Metric SELECT rate(count(apm.service.transaction.duration), 1 minute) as 'First Account Throughput' TIMESERIES"
       }
       nrql_query {
-        account_id = Second_Account_ID
+        account_ids = [Second_Account_ID]
         query      = "FROM Metric SELECT rate(count(apm.service.transaction.duration), 1 minute) as 'Second Account Throughput' TIMESERIES"
       }
       y_axis_left_zero = false

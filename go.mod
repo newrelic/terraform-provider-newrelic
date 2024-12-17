@@ -2,6 +2,8 @@ module github.com/newrelic/terraform-provider-newrelic/v2
 
 go 1.22
 
+replace github.com/newrelic/newrelic-client-go/v2 => github.com/newrelic/newrelic-client-go/v2 v2.51.4-0.20241217072802-15dfd8382ed7
+
 toolchain go1.22.6
 
 require (

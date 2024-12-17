@@ -154,14 +154,14 @@ func expandVariableNRQLQuery(in []interface{}) *dashboards.DashboardVariableNRQL
 	for _, v := range in {
 		cfg := v.(map[string]interface{})
 		out = dashboards.DashboardVariableNRQLQueryInput{
-			AccountIDs: expandVariableAccountIDs(cfg["account_ids"].([]interface{})),
+			AccountIDs: expandAccountIDs(cfg["account_ids"].([]interface{})),
 			Query:      nrdb.NRQL(cfg["query"].(string))}
 	}
 
 	return &out
 }
 
-func expandVariableAccountIDs(in []interface{}) []int {
+func expandAccountIDs(in []interface{}) []int {
 	out := make([]int, len(in))
 
 	for i := range out {
@@ -990,17 +990,16 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 		var query dashboards.DashboardWidgetNRQLQueryInput
 		q := v.(map[string]interface{})
 
-		if acct, ok := q["account_id"]; ok {
-			query.AccountID = acct.(int)
+		if acct, ok := q["account_ids"]; ok {
+			query.AccountIDS = expandAccountIDs(acct.([]interface{}))
 		}
 
-		if query.AccountID < 1 {
+		if len(query.AccountIDS) < 1 {
 			defs := meta.(map[string]interface{})
 			if acct, ok := defs["account_id"]; ok {
-				query.AccountID = acct.(int)
+				query.AccountIDS = expandAccountIDs([]interface{}{acct})
 			}
 		}
-
 		if nrql, ok := q["query"]; ok {
 			query.Query = nrdb.NRQL(nrql.(string))
 		}
@@ -1461,7 +1460,7 @@ func flattenDashboardWidgetNRQLQuery(in *[]dashboards.DashboardWidgetNRQLQueryIn
 	for i, v := range *in {
 		m := make(map[string]interface{})
 
-		m["account_id"] = v.AccountID
+		m["account_ids"] = v.AccountIDS
 		m["query"] = v.Query
 
 		out[i] = m
