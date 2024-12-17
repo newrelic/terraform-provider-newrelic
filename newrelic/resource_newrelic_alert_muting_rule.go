@@ -183,6 +183,12 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 				Elem:        scheduleSchema(),
 				Description: "The time window when the MutingRule should actively mute incidents.",
 			},
+			"end_behaviour": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "The action when the muting rule window is ended or disabled.",
+				ValidateFunc: validation.StringInSlice([]string{"CLOSE_ISSUES_ON_INACTIVE", "DO_NOTHING"}, false),
+			},
 		},
 	}
 }
