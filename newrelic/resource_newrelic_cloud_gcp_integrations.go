@@ -989,9 +989,9 @@ func resourceNewrelicCloudGcpIntegrationsRead(ctx context.Context, d *schema.Res
 }
 
 func cloudGcpIntegrationSchema() map[string]*schema.Schema {
-    return map[string]*schema.Schema{
-        "app_engine": cloud.CloudGcpAppengineIntegration
-    }
+	return map[string]*schema.Schema{
+		"app_engine": cloud.CloudGcpAppengineIntegration,
+	}
 }
 
 // flatten function to set(store) outputs from the terraform apply
@@ -1061,7 +1061,7 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 func flattenCloudGcpCommonIntegration(in interface{}) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
-	
+
 	switch t := in.(type) {
 	case *cloud.CloudGcpBigqueryIntegration, *cloud.CloudGcpPubsubIntegration, *cloud.CloudGcpSpannerIntegration, *cloud.CloudGcpStorageIntegration:
 		out["fetch_tags"] = t.FetchTags
