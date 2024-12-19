@@ -24,7 +24,13 @@ func resourceNewrelicCloudGcpIntegrations() *schema.Resource {
 }
 
 func generateGcpIntegrationSchema() map[string]*schema.Schema {
-	baseSchema := cloudGcpIntegrationSchemaBase()
+	baseSchema := map[string]*schema.Schema{
+		"metrics_polling_interval": {
+			Type:        schema.TypeInt,
+			Description: "Polling interval for metrics",
+			Optional:    true,
+		},
+	}
 	return map[string]*schema.Schema{
 		"account_id": {
 			Type:        schema.TypeInt,
@@ -984,7 +990,13 @@ func resourceNewrelicCloudGcpIntegrationsRead(ctx context.Context, d *schema.Res
 		}
 		return diag.FromErr(err)
 	}
-	flattenCloudGcpLinkedAccount(d, linkedAccount)
+		"app_engine": {
+			Type:        schema.TypeList,
+			Description: "GCP app engine service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: baseSchema},
+			MaxItems:    1,
+		},
 	return nil
 }
 
@@ -995,7 +1007,7 @@ func cloudGcpIntegrationSchema() map[string]*schema.Schema {
 }
 
 // flatten function to set(store) outputs from the terraform apply
-// TODO: Reduce the cyclomatic complexity of this func
+			_ = d.Set("big_query", flattenCloudGcpCommonIntegration(t))
 // nolint:gocyclo
 func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.CloudLinkedAccount) {
 	_ = d.Set("account_id", linkedAccount.NrAccountId)
@@ -1025,7 +1037,7 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 		case *cloud.CloudGcpFirebasestorageIntegration:
 			_ = d.Set("fire_base_storage", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpFirestoreIntegration:
-			_ = d.Set("fire_store", flattenCloudGcpCommonIntegration(t))
+			_ = d.Set("pub_sub", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpFunctionsIntegration:
 			_ = d.Set("functions", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpInterconnectIntegration:
@@ -1033,11 +1045,11 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 		case *cloud.CloudGcpKubernetesIntegration:
 			_ = d.Set("kubernetes", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpLoadbalancingIntegration:
-			_ = d.Set("load_balancing", flattenCloudGcpCommonIntegration(t))
+			_ = d.Set("spanner", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpMemcacheIntegration:
 			_ = d.Set("mem_cache", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpPubsubIntegration:
-			_ = d.Set("pub_sub", flattenCloudGcpBigQueryIntegration(t))
+			_ = d.Set("storage", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpRedisIntegration:
 			_ = d.Set("redis", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpRouterIntegration:
@@ -1052,7 +1064,11 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 			_ = d.Set("storage", flattenCloudGcpBigQueryIntegration(t))
 		case *cloud.CloudGcpVmsIntegration:
 			_ = d.Set("virtual_machines", flattenCloudGcpCommonIntegration(t))
-		case *cloud.CloudGcpVpcaccessIntegration:
+		if v, ok := t.(interface{GetFetchTags() bool }); ok {
+			out["fetch_tags"] = v.GetFetchTags()
+	if v, ok := in.(interface{ GetMetricsPollingInterval() int }); ok {
+		out["metrics_polling_interval"] = v.GetMetricsPollingInterval()
+	}
 			_ = d.Set("vpc_access", flattenCloudGcpCommonIntegration(t))
 		}
 	}
