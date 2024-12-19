@@ -24,13 +24,7 @@ func resourceNewrelicCloudGcpIntegrations() *schema.Resource {
 }
 
 func generateGcpIntegrationSchema() map[string]*schema.Schema {
-	baseSchema := map[string]*schema.Schema{
-		"metrics_polling_interval": {
-			Type:        schema.TypeInt,
-			Description: "Polling interval for metrics",
-			Optional:    true,
-		},
-	}
+	baseSchema := cloudGcpIntegrationSchemaBase()
 	return map[string]*schema.Schema{
 		"account_id": {
 			Type:        schema.TypeInt,
@@ -225,6 +219,17 @@ func generateGcpIntegrationSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Elem:        &schema.Resource{Schema: baseSchema},
 			MaxItems:    1,
+		},
+	}
+}
+
+// function to add common schema for gcp all resources
+func cloudGcpIntegrationSchemaBase() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"metrics_polling_interval": {
+			Type:        schema.TypeInt,
+			Description: "the data polling interval in seconds",
+			Optional:    true,
 		},
 	}
 }
@@ -990,24 +995,12 @@ func resourceNewrelicCloudGcpIntegrationsRead(ctx context.Context, d *schema.Res
 		}
 		return diag.FromErr(err)
 	}
-		"app_engine": {
-			Type:        schema.TypeList,
-			Description: "GCP app engine service",
-			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
-			MaxItems:    1,
-		},
+	flattenCloudGcpLinkedAccount(d, linkedAccount)
 	return nil
 }
 
-func cloudGcpIntegrationSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"app_engine": cloud.CloudGcpAppengineIntegration,
-	}
-}
-
 // flatten function to set(store) outputs from the terraform apply
-			_ = d.Set("big_query", flattenCloudGcpCommonIntegration(t))
+// TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
 func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.CloudLinkedAccount) {
 	_ = d.Set("account_id", linkedAccount.NrAccountId)
@@ -1019,7 +1012,7 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 		case *cloud.CloudGcpAppengineIntegration:
 			_ = d.Set("app_engine", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpBigqueryIntegration:
-			_ = d.Set("big_query", flattenCloudGcpBigQueryIntegration(t))
+			_ = d.Set("big_query", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpBigtableIntegration:
 			_ = d.Set("big_table", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpComposerIntegration:
@@ -1037,7 +1030,7 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 		case *cloud.CloudGcpFirebasestorageIntegration:
 			_ = d.Set("fire_base_storage", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpFirestoreIntegration:
-			_ = d.Set("pub_sub", flattenCloudGcpCommonIntegration(t))
+			_ = d.Set("fire_store", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpFunctionsIntegration:
 			_ = d.Set("functions", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpInterconnectIntegration:
@@ -1045,11 +1038,11 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 		case *cloud.CloudGcpKubernetesIntegration:
 			_ = d.Set("kubernetes", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpLoadbalancingIntegration:
-			_ = d.Set("spanner", flattenCloudGcpCommonIntegration(t))
+			_ = d.Set("load_balancing", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpMemcacheIntegration:
 			_ = d.Set("mem_cache", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpPubsubIntegration:
-			_ = d.Set("storage", flattenCloudGcpCommonIntegration(t))
+			_ = d.Set("pub_sub", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpRedisIntegration:
 			_ = d.Set("redis", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpRouterIntegration:
@@ -1057,18 +1050,14 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 		case *cloud.CloudGcpRunIntegration:
 			_ = d.Set("run", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpSpannerIntegration:
-			_ = d.Set("spanner", flattenCloudGcpBigQueryIntegration(t))
+			_ = d.Set("spanner", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpSqlIntegration:
 			_ = d.Set("sql", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpStorageIntegration:
-			_ = d.Set("storage", flattenCloudGcpBigQueryIntegration(t))
+			_ = d.Set("storage", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpVmsIntegration:
 			_ = d.Set("virtual_machines", flattenCloudGcpCommonIntegration(t))
-		if v, ok := t.(interface{GetFetchTags() bool }); ok {
-			out["fetch_tags"] = v.GetFetchTags()
-	if v, ok := in.(interface{ GetMetricsPollingInterval() int }); ok {
-		out["metrics_polling_interval"] = v.GetMetricsPollingInterval()
-	}
+		case *cloud.CloudGcpVpcaccessIntegration:
 			_ = d.Set("vpc_access", flattenCloudGcpCommonIntegration(t))
 		}
 	}
@@ -1079,10 +1068,64 @@ func flattenCloudGcpCommonIntegration(in interface{}) []interface{} {
 	out := make(map[string]interface{})
 
 	switch t := in.(type) {
-	case *cloud.CloudGcpBigqueryIntegration, *cloud.CloudGcpPubsubIntegration, *cloud.CloudGcpSpannerIntegration, *cloud.CloudGcpStorageIntegration:
+	case *cloud.CloudGcpBigqueryIntegration:
 		out["fetch_tags"] = t.FetchTags
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpPubsubIntegration:
+		out["fetch_tags"] = t.FetchTags
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpSpannerIntegration:
+		out["fetch_tags"] = t.FetchTags
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpStorageIntegration:
+		out["fetch_tags"] = t.FetchTags
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpAlloydbIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpAppengineIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpBigtableIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpComposerIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpDataflowIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpDataprocIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpDatastoreIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpFirebasedatabaseIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpFirebasehostingIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpFirebasestorageIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpFirestoreIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpFunctionsIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpInterconnectIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpKubernetesIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpLoadbalancingIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpMemcacheIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpRedisIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpRouterIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpRunIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpSqlIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpVmsIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpVpcaccessIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
 	}
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
 	flattened[0] = out
 	return flattened
 }
