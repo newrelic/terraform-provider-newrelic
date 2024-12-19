@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
 	"log"
 	"regexp"
 	"time"
@@ -183,11 +184,17 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 				Elem:        scheduleSchema(),
 				Description: "The time window when the MutingRule should actively mute incidents.",
 			},
-			"end_behaviour": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "The action when the muting rule window is ended or disabled.",
-				ValidateFunc: validation.StringInSlice([]string{"CLOSE_ISSUES_ON_INACTIVE", "DO_NOTHING"}, false),
+			"action_on_muting_rule_window_ended": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The action when the muting rule window is ended or disabled.",
+				ValidateFunc: validation.StringInSlice(
+					[]string{
+						string(alerts.AlertsActionOnMutingRuleWindowEndedTypes.CLOSE_ISSUES_ON_INACTIVE),
+						string(alerts.AlertsActionOnMutingRuleWindowEndedTypes.DO_NOTHING),
+					},
+					false,
+				),
 			},
 		},
 	}
