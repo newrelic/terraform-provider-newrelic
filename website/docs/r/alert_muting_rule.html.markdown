@@ -42,6 +42,7 @@ resource "newrelic_alert_muting_rule" "foo" {
       weekly_repeat_days = ["MONDAY", "WEDNESDAY", "FRIDAY"]
       repeat_count = 42
     }
+    action_on_muting_rule_window_ended = "CLOSE_ISSUES_ON_INACTIVE"
 }
 ```
 
