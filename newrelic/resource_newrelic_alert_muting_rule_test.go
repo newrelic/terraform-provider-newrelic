@@ -237,9 +237,9 @@ resource "newrelic_alert_muting_rule" "foo" {
 		}
 		operator = "AND"
 	}
-	action_on_muting_rule_window_ended = "%[6]%"
+	action_on_muting_rule_window_ended = "%[6]s"
 }
-`, name, description, attribute, operator, values)
+`, name, description, attribute, operator, values, actionOnMutingRuleWindowEnded)
 }
 
 func testAccNewRelicAlertMutingRuleBadInput(
