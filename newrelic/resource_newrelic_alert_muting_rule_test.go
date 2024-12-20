@@ -78,14 +78,46 @@ func TestAccNewRelicAlertMutingRule_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccNewRelicAlertMutingRuleBasic(rName, "new muting rule", "product", "EQUALS", "APM", "CLOSE_ISSUES_ON_INACTIVE"),
+				Config: testAccNewRelicAlertMutingRuleBasic(rName, "new muting rule", "product", "EQUALS", "APM"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertMutingRuleExists(resourceName),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicAlertMutingRuleBasic(rName, "second muting rule", "conditionType", "NOT_EQUALS", "baseline", "CLOSE_ISSUES_ON_INACTIVE"),
+				Config: testAccNewRelicAlertMutingRuleBasic(rName, "second muting rule", "conditionType", "NOT_EQUALS", "baseline"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertMutingRuleExists(resourceName),
+				),
+			},
+			// // Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true},
+		},
+	})
+}
+
+func TestAccNewRelicAlertMutingRule_EndBehaviourInput(t *testing.T) {
+	resourceName := "newrelic_alert_muting_rule.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertMutingRuleDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicAlertMutingRuleEndBehaviourInput(rName, "new muting rule", "product", "EQUALS", "APM", "CLOSE_ISSUES_ON_INACTIVE"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertMutingRuleExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicAlertMutingRuleEndBehaviourInput(rName, "second muting rule", "conditionType", "NOT_EQUALS", "baseline", "CLOSE_ISSUES_ON_INACTIVE"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertMutingRuleExists(resourceName),
 				),
@@ -154,7 +186,6 @@ func TestAccNewRelicAlertMutingRule_WithSchedule(t *testing.T) {
 					"conditionName",
 					"EQUALS",
 					"My cool condition",
-					"CLOSE_ISSUES_ON_INACTIVE",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertMutingRuleExists(resourceName),
@@ -211,6 +242,36 @@ func TestAccNewRelicAlertMutingRule_WithSchedule(t *testing.T) {
 }
 
 func testAccNewRelicAlertMutingRuleBasic(
+	name string,
+	description string,
+	attribute string,
+	operator string,
+	values string,
+) string {
+	return fmt.Sprintf(`
+
+resource "newrelic_alert_muting_rule" "foo" {
+	name = "tf-test-%[1]s"
+	enabled = true
+	description = "%[2]s"
+	condition {
+		conditions {
+			attribute 	= "%[3]s"
+			operator 	= "EQUALS"
+			values 		= ["%[5]s"]
+		}
+		conditions {
+			attribute 	= "conditionType"
+			operator 	= "%[4]s"
+			values 		= ["static"]
+		}
+		operator = "AND"
+	}
+}
+`, name, description, attribute, operator, values)
+}
+
+func testAccNewRelicAlertMutingRuleEndBehaviourInput(
 	name string,
 	description string,
 	attribute string,
