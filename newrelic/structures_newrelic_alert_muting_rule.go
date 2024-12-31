@@ -278,10 +278,7 @@ func flattenMutingRule(mutingRule *alerts.MutingRule, d *schema.ResourceData) er
 	configuredCondition := x.([]interface{})
 
 	_ = d.Set("enabled", mutingRule.Enabled)
-
-	if _, ok := d.GetOk("action_on_muting_rule_window_ended"); ok {
-		_ = d.Set("action_on_muting_rule_window_ended", mutingRule.ActionOnMutingRuleWindowEnded)
-	}
+	_ = d.Set("action_on_muting_rule_window_ended", mutingRule.ActionOnMutingRuleWindowEnded)
 
 	err := d.Set("condition", flattenMutingRuleConditionGroup(mutingRule.Condition, configuredCondition))
 	if err != nil {

@@ -187,6 +187,7 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 			"action_on_muting_rule_window_ended": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The action when the muting rule window is ended or disabled.",
 				ValidateFunc: validation.StringInSlice(
 					[]string{
