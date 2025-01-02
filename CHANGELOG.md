@@ -1,3 +1,11 @@
+<a name="v3.53.0"></a>
+## [v3.53.0] - 2024-12-04
+### Bug Fixes
+- **synthetics:** Fix to detect differences in locations_public of sythetics script monitor ([#2775](https://github.com/newrelic/terraform-provider-newrelic/issues/2775))
+
+### Features
+- **bulk_user_import:** automates import of existing users, groups as terraform resources ([#2778](https://github.com/newrelic/terraform-provider-newrelic/issues/2778))
+
 <a name="v3.52.1"></a>
 ## [v3.52.1] - 2024-11-11
 <a name="v3.52.0"></a>
@@ -2272,7 +2280,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.52.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.53.0...HEAD
+[v3.53.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.52.1...v3.53.0
 [v3.52.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.52.0...v3.52.1
 [v3.52.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.51.0...v3.52.0
 [v3.51.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.50.0...v3.51.0
