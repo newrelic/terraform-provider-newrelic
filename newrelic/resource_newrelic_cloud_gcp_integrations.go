@@ -24,7 +24,7 @@ func resourceNewrelicCloudGcpIntegrations() *schema.Resource {
 }
 
 func generateGcpIntegrationSchema() map[string]*schema.Schema {
-	baseSchema := cloudGcpIntegrationSchemaBase()
+	gcp_integrations_base_schema := cloudGcpIntegrationSchemaBase()
 	return map[string]*schema.Schema{
 		"account_id": {
 			Type:        schema.TypeInt,
@@ -42,182 +42,182 @@ func generateGcpIntegrationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Description: "GCP alloy DB integration",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"app_engine": {
 			Type:        schema.TypeList,
 			Description: "GCP app engine service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"big_query": {
 			Type:        schema.TypeList,
 			Description: "GCP big query service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: addFetchTagsToSchema(baseSchema)},
+			Elem:        cloudGCPIntegrationMergeSchema(),
 			MaxItems:    1,
 		},
 		"big_table": {
 			Type:        schema.TypeList,
 			Description: "GCP big table service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"composer": {
 			Type:        schema.TypeList,
 			Description: "GCP composer service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"data_flow": {
 			Type:        schema.TypeList,
 			Description: "GCP data flow service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"data_proc": {
 			Type:        schema.TypeList,
 			Description: "GCP data proc service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"data_store": {
 			Type:        schema.TypeList,
 			Description: "GCP data store service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"fire_base_database": {
 			Type:        schema.TypeList,
 			Description: "GCP firebase database service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"fire_base_hosting": {
 			Type:        schema.TypeList,
 			Description: "GCP firebase hosting service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"fire_base_storage": {
 			Type:        schema.TypeList,
 			Description: "GCP firebase storage service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"fire_store": {
 			Type:        schema.TypeList,
 			Description: "GCP firestore service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"functions": {
 			Type:        schema.TypeList,
 			Description: "GCP functions service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"interconnect": {
 			Type:        schema.TypeList,
 			Description: "GCP interconnect service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"kubernetes": {
 			Type:        schema.TypeList,
 			Description: "GCP kubernetes service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"load_balancing": {
 			Type:        schema.TypeList,
 			Description: "GCP load balancing service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"mem_cache": {
 			Type:        schema.TypeList,
 			Description: "GCP mem cache service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"pub_sub": {
 			Type:        schema.TypeList,
 			Description: "GCP pub sub service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: addFetchTagsToSchema(baseSchema)},
+			Elem:        cloudGCPIntegrationMergeSchema(),
 			MaxItems:    1,
 		},
 		"redis": {
 			Type:        schema.TypeList,
 			Description: "GCP redis service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"router": {
 			Type:        schema.TypeList,
 			Description: "GCP router service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"run": {
 			Type:        schema.TypeList,
 			Description: "GCP run service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"spanner": {
 			Type:        schema.TypeList,
 			Description: "GCP spanner service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: addFetchTagsToSchema(baseSchema)},
+			Elem:        cloudGCPIntegrationMergeSchema(),
 			MaxItems:    1,
 		},
 		"sql": {
 			Type:        schema.TypeList,
 			Description: "GCP SQL service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"storage": {
 			Type:        schema.TypeList,
 			Description: "GCP storage service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: addFetchTagsToSchema(baseSchema)},
+			Elem:        cloudGCPIntegrationMergeSchema(),
 			MaxItems:    1,
 		},
 		"virtual_machines": {
 			Type:        schema.TypeList,
 			Description: "GCP virtual machines service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 		"vpc_access": {
 			Type:        schema.TypeList,
 			Description: "GCP VPC access service",
 			Optional:    true,
-			Elem:        &schema.Resource{Schema: baseSchema},
+			Elem:        &schema.Resource{Schema: gcp_integrations_base_schema},
 			MaxItems:    1,
 		},
 	}
@@ -234,17 +234,26 @@ func cloudGcpIntegrationSchemaBase() map[string]*schema.Schema {
 	}
 }
 
-func addFetchTagsToSchema(baseSchema map[string]*schema.Schema) map[string]*schema.Schema {
-	schemaWithTags := make(map[string]*schema.Schema)
-	for k, v := range baseSchema {
-		schemaWithTags[k] = v
+// function to add custom schema to the base schema for gcp all resources
+func cloudGcpIntegrationsAddCustomSchemaToBase() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"fetch_tags": {
+			Type:        schema.TypeBool,
+			Description: "to fetch tags of the resource",
+			Optional:    true,
+		},
 	}
-	schemaWithTags["fetch_tags"] = &schema.Schema{
-		Type:        schema.TypeBool,
-		Description: "to fetch tags of the resource",
-		Optional:    true,
+}
+
+// function to merge the base schema with custom schema for few gcp resources
+func cloudGCPIntegrationMergeSchema() *schema.Resource {
+	s := mergeSchemas(
+		cloudGcpIntegrationSchemaBase(),
+		cloudGcpIntegrationsAddCustomSchemaToBase())
+
+	return &schema.Resource{
+		Schema: s,
 	}
-	return schemaWithTags
 }
 
 func resourceNewrelicCloudGcpIntegrationsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1063,6 +1072,8 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 	}
 }
 
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint:gocyclo
 func flattenCloudGcpCommonIntegration(in interface{}) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
