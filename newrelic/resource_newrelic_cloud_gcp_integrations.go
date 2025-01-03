@@ -19,201 +19,206 @@ func resourceNewrelicCloudGcpIntegrations() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"account_id": {
-				Type:        schema.TypeInt,
-				Description: "ID of the newrelic account",
-				Computed:    true,
-				Optional:    true,
-			},
-			"linked_account_id": {
-				Type:        schema.TypeInt,
-				Description: "Id of the linked gcp account in New Relic",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"alloy_db": {
-				Type:        schema.TypeList,
-				Description: "GCP alloy DB integration",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsAlloyDBSchemaElem(),
-				MaxItems:    1,
-			},
-			"app_engine": {
-				Type:        schema.TypeList,
-				Description: "GCP app engine service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsAppEngineSchemaElem(),
-				MaxItems:    1,
-			},
-			"big_query": {
-				Type:        schema.TypeList,
-				Description: "GCP biq query service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsBigQuerySchemaElem(),
-				MaxItems:    1,
-			},
-			"big_table": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsBigTableSchemaElem(),
-				MaxItems:    1,
-			},
-			"composer": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsComposerSchemaElem(),
-				MaxItems:    1,
-			},
-			"data_flow": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsDataFlowSchemaElem(),
-				MaxItems:    1,
-			},
-			"data_proc": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsDataProcSchemaElem(),
-				MaxItems:    1,
-			},
-			"data_store": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsDataStoreSchemaElem(),
-				MaxItems:    1,
-			},
-			"fire_base_database": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsFireBaseDatabaseSchemaElem(),
-				MaxItems:    1,
-			},
-			"fire_base_hosting": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsFireBaseHostingSchemaElem(),
-				MaxItems:    1,
-			},
-			"fire_base_storage": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsFireBaseStorageSchemaElem(),
-				MaxItems:    1,
-			},
-			"fire_store": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsFireStoreSchemaElem(),
-				MaxItems:    1,
-			},
-			"functions": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsFunctionsSchemaElem(),
-				MaxItems:    1,
-			},
-			"interconnect": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsInterconnectSchemaElem(),
-				MaxItems:    1,
-			},
-			"kubernetes": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsKubernetesSchemaElem(),
-				MaxItems:    1,
-			},
-			"load_balancing": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsLoadBalancingSchemaElem(),
-				MaxItems:    1,
-			},
-			"mem_cache": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsMemCacheSchemaElem(),
-				MaxItems:    1,
-			},
-			"pub_sub": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsPubSubSchemaElem(),
-				MaxItems:    1,
-			},
-			"redis": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsRedisSchemaElem(),
-				MaxItems:    1,
-			},
-			"router": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsRouterSchemaElem(),
-				MaxItems:    1,
-			},
-			"run": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsRunSchemaElem(),
-				MaxItems:    1,
-			},
-			"spanner": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsSpannerSchemaElem(),
-				MaxItems:    1,
-			},
-			"sql": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsSQLSchemaElem(),
-				MaxItems:    1,
-			},
-			"storage": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsStorageSchemaElem(),
-				MaxItems:    1,
-			},
-			"virtual_machines": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsVirtualMachinesSchemaElem(),
-				MaxItems:    1,
-			},
-			"vpc_access": {
-				Type:        schema.TypeList,
-				Description: "GCP big table service",
-				Optional:    true,
-				Elem:        cloudGcpIntegrationsVpcAccessSchemaElem(),
-				MaxItems:    1,
-			},
+		Schema: generateGcpIntegrationSchema(),
+	}
+}
+
+func generateGcpIntegrationSchema() map[string]*schema.Schema {
+	gcpIntegrationsBaseSchema := cloudGcpIntegrationSchemaBase()
+	return map[string]*schema.Schema{
+		"account_id": {
+			Type:        schema.TypeInt,
+			Description: "ID of the newrelic account",
+			Computed:    true,
+			Optional:    true,
+		},
+		"linked_account_id": {
+			Type:        schema.TypeInt,
+			Description: "Id of the linked gcp account in New Relic",
+			Required:    true,
+			ForceNew:    true,
+		},
+		"alloy_db": {
+			Type:        schema.TypeList,
+			Description: "GCP alloy DB integration",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"app_engine": {
+			Type:        schema.TypeList,
+			Description: "GCP app engine service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"big_query": {
+			Type:        schema.TypeList,
+			Description: "GCP big query service",
+			Optional:    true,
+			Elem:        cloudGCPIntegrationMergeSchema(),
+			MaxItems:    1,
+		},
+		"big_table": {
+			Type:        schema.TypeList,
+			Description: "GCP big table service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"composer": {
+			Type:        schema.TypeList,
+			Description: "GCP composer service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"data_flow": {
+			Type:        schema.TypeList,
+			Description: "GCP data flow service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"data_proc": {
+			Type:        schema.TypeList,
+			Description: "GCP data proc service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"data_store": {
+			Type:        schema.TypeList,
+			Description: "GCP data store service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"fire_base_database": {
+			Type:        schema.TypeList,
+			Description: "GCP firebase database service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"fire_base_hosting": {
+			Type:        schema.TypeList,
+			Description: "GCP firebase hosting service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"fire_base_storage": {
+			Type:        schema.TypeList,
+			Description: "GCP firebase storage service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"fire_store": {
+			Type:        schema.TypeList,
+			Description: "GCP firestore service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"functions": {
+			Type:        schema.TypeList,
+			Description: "GCP functions service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"interconnect": {
+			Type:        schema.TypeList,
+			Description: "GCP interconnect service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"kubernetes": {
+			Type:        schema.TypeList,
+			Description: "GCP kubernetes service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"load_balancing": {
+			Type:        schema.TypeList,
+			Description: "GCP load balancing service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"mem_cache": {
+			Type:        schema.TypeList,
+			Description: "GCP mem cache service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"pub_sub": {
+			Type:        schema.TypeList,
+			Description: "GCP pub sub service",
+			Optional:    true,
+			Elem:        cloudGCPIntegrationMergeSchema(),
+			MaxItems:    1,
+		},
+		"redis": {
+			Type:        schema.TypeList,
+			Description: "GCP redis service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"router": {
+			Type:        schema.TypeList,
+			Description: "GCP router service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"run": {
+			Type:        schema.TypeList,
+			Description: "GCP run service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"spanner": {
+			Type:        schema.TypeList,
+			Description: "GCP spanner service",
+			Optional:    true,
+			Elem:        cloudGCPIntegrationMergeSchema(),
+			MaxItems:    1,
+		},
+		"sql": {
+			Type:        schema.TypeList,
+			Description: "GCP SQL service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"storage": {
+			Type:        schema.TypeList,
+			Description: "GCP storage service",
+			Optional:    true,
+			Elem:        cloudGCPIntegrationMergeSchema(),
+			MaxItems:    1,
+		},
+		"virtual_machines": {
+			Type:        schema.TypeList,
+			Description: "GCP virtual machines service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
+		},
+		"vpc_access": {
+			Type:        schema.TypeList,
+			Description: "GCP VPC access service",
+			Optional:    true,
+			Elem:        &schema.Resource{Schema: gcpIntegrationsBaseSchema},
+			MaxItems:    1,
 		},
 	}
 }
@@ -229,229 +234,23 @@ func cloudGcpIntegrationSchemaBase() map[string]*schema.Schema {
 	}
 }
 
-// function to add schema for gcp AppEngine
-func cloudGcpIntegrationsAlloyDBSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
+// function to add custom schema to the base schema for gcp all resources
+func cloudGcpIntegrationsAddCustomSchemaToBase() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"fetch_tags": {
+			Type:        schema.TypeBool,
+			Description: "to fetch tags of the resource",
+			Optional:    true,
+		},
 	}
 }
 
-// function to add schema for gcp AppEngine
-func cloudGcpIntegrationsAppEngineSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
+// function to merge the base schema with custom schema for few gcp resources
+func cloudGCPIntegrationMergeSchema() *schema.Resource {
+	s := mergeSchemas(
+		cloudGcpIntegrationSchemaBase(),
+		cloudGcpIntegrationsAddCustomSchemaToBase())
 
-// function to add schema for gcp bigquery
-func cloudGcpIntegrationsBigQuerySchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	s["fetch_tags"] = &schema.Schema{
-		Type:        schema.TypeBool,
-		Description: "to fetch tags of the resource",
-		Optional:    true,
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp bigtable
-func cloudGcpIntegrationsBigTableSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp composer
-func cloudGcpIntegrationsComposerSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp dataflow
-func cloudGcpIntegrationsDataFlowSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp dataproc
-func cloudGcpIntegrationsDataProcSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp datastore
-func cloudGcpIntegrationsDataStoreSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp firebasedatabase
-func cloudGcpIntegrationsFireBaseDatabaseSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp firebasehosting
-func cloudGcpIntegrationsFireBaseHostingSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp firebasestorage
-func cloudGcpIntegrationsFireBaseStorageSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp firestore
-func cloudGcpIntegrationsFireStoreSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp functions
-func cloudGcpIntegrationsFunctionsSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp interconnect
-func cloudGcpIntegrationsInterconnectSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp k8's
-func cloudGcpIntegrationsKubernetesSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp load balancing
-func cloudGcpIntegrationsLoadBalancingSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp mem-cache
-func cloudGcpIntegrationsMemCacheSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp pubsub
-func cloudGcpIntegrationsPubSubSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	s["fetch_tags"] = &schema.Schema{
-		Type:        schema.TypeBool,
-		Description: "to fetch tags of the resource",
-		Optional:    true,
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp redis
-func cloudGcpIntegrationsRedisSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp router
-func cloudGcpIntegrationsRouterSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp run schema
-func cloudGcpIntegrationsRunSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp spanner
-func cloudGcpIntegrationsSpannerSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	s["fetch_tags"] = &schema.Schema{
-		Type:        schema.TypeBool,
-		Description: "to fetch tags of the resource",
-		Optional:    true,
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp SQL
-func cloudGcpIntegrationsSQLSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp storage
-func cloudGcpIntegrationsStorageSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	s["fetch_tags"] = &schema.Schema{
-		Type:        schema.TypeBool,
-		Description: "to fetch tags of the resource",
-		Optional:    true,
-	}
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp vm's
-func cloudGcpIntegrationsVirtualMachinesSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
-	return &schema.Resource{
-		Schema: s,
-	}
-}
-
-// function to add schema for gcp vpc access
-func cloudGcpIntegrationsVpcAccessSchemaElem() *schema.Resource {
-	s := cloudGcpIntegrationSchemaBase()
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -1218,294 +1017,126 @@ func flattenCloudGcpLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 	for _, i := range linkedAccount.Integrations {
 		switch t := i.(type) {
 		case *cloud.CloudGcpAlloydbIntegration:
-			_ = d.Set("alloy_db", flattenCloudGcpAlloyDBIntegration(t))
+			_ = d.Set("alloy_db", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpAppengineIntegration:
-			_ = d.Set("app_engine", flattenCloudGcpAppEngineIntegration(t))
+			_ = d.Set("app_engine", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpBigqueryIntegration:
-			_ = d.Set("big_query", flattenCloudGcpBigQueryIntegration(t))
+			_ = d.Set("big_query", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpBigtableIntegration:
-			_ = d.Set("big_table", flattenCloudGcpBigTableIntegration(t))
+			_ = d.Set("big_table", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpComposerIntegration:
-			_ = d.Set("composer", flattenCloudGcpComposerIntegration(t))
+			_ = d.Set("composer", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpDataflowIntegration:
-			_ = d.Set("data_flow", flattenCloudGcpDataFlowIntegration(t))
+			_ = d.Set("data_flow", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpDataprocIntegration:
-			_ = d.Set("data_proc", flattenCloudGcpDataProcIntegration(t))
+			_ = d.Set("data_proc", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpDatastoreIntegration:
-			_ = d.Set("data_store", flattenCloudGcpDataStoreIntegration(t))
+			_ = d.Set("data_store", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpFirebasedatabaseIntegration:
-			_ = d.Set("fire_base_database", flattenCloudGcpFireBaseDatabaseIntegration(t))
+			_ = d.Set("fire_base_database", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpFirebasehostingIntegration:
-			_ = d.Set("fire_base_hosting", flattenCloudGcpFireBaseHostingIntegration(t))
+			_ = d.Set("fire_base_hosting", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpFirebasestorageIntegration:
-			_ = d.Set("fire_base_storage", flattenCloudGcpFireBaseStorageIntegration(t))
+			_ = d.Set("fire_base_storage", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpFirestoreIntegration:
-			_ = d.Set("fire_store", flattenCloudGcpFireStoreIntegration(t))
+			_ = d.Set("fire_store", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpFunctionsIntegration:
-			_ = d.Set("functions", flattenCloudGcpFunctionsIntegration(t))
+			_ = d.Set("functions", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpInterconnectIntegration:
-			_ = d.Set("interconnect", flattenCloudGcpInterconnectIntegration(t))
+			_ = d.Set("interconnect", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpKubernetesIntegration:
-			_ = d.Set("kubernetes", flattenCloudGcpKubernetesIntegration(t))
+			_ = d.Set("kubernetes", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpLoadbalancingIntegration:
-			_ = d.Set("load_balancing", flattenCloudGcpLoadBalancingIntegration(t))
+			_ = d.Set("load_balancing", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpMemcacheIntegration:
-			_ = d.Set("mem_cache", flattenCloudGcpMemCacheIntegration(t))
+			_ = d.Set("mem_cache", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpPubsubIntegration:
-			_ = d.Set("pub_sub", flattenCloudGcpPubSubIntegration(t))
+			_ = d.Set("pub_sub", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpRedisIntegration:
-			_ = d.Set("redis", flattenCloudGcpRedisIntegration(t))
+			_ = d.Set("redis", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpRouterIntegration:
-			_ = d.Set("router", flattenCloudGcpRouterIntegration(t))
+			_ = d.Set("router", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpRunIntegration:
-			_ = d.Set("run", flattenCloudGcpRunIntegration(t))
+			_ = d.Set("run", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpSpannerIntegration:
-			_ = d.Set("spanner", flattenCloudGcpSpannerIntegration(t))
+			_ = d.Set("spanner", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpSqlIntegration:
-			_ = d.Set("sql", flattenCloudGcpSQLIntegration(t))
+			_ = d.Set("sql", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpStorageIntegration:
-			_ = d.Set("storage", flattenCloudGcpStorageIntegration(t))
+			_ = d.Set("storage", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpVmsIntegration:
-			_ = d.Set("virtual_machines", flattenCloudGcpVirtualMachineIntegration(t))
+			_ = d.Set("virtual_machines", flattenCloudGcpCommonIntegration(t))
 		case *cloud.CloudGcpVpcaccessIntegration:
-			_ = d.Set("vpc_access", flattenCloudGcpVpcAccessIntegration(t))
+			_ = d.Set("vpc_access", flattenCloudGcpCommonIntegration(t))
 		}
 	}
 }
 
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpAppEngineIntegration(in *cloud.CloudGcpAppengineIntegration) []interface{} {
+// TODO: Reduce the cyclomatic complexity of this func
+// nolint:gocyclo
+func flattenCloudGcpCommonIntegration(in interface{}) []interface{} {
 	flattened := make([]interface{}, 1)
 	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
 
-func flattenCloudGcpAlloyDBIntegration(in *cloud.CloudGcpAlloydbIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
+	switch t := in.(type) {
+	case *cloud.CloudGcpBigqueryIntegration:
+		out["fetch_tags"] = t.FetchTags
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpPubsubIntegration:
+		out["fetch_tags"] = t.FetchTags
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpSpannerIntegration:
+		out["fetch_tags"] = t.FetchTags
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpStorageIntegration:
+		out["fetch_tags"] = t.FetchTags
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpAlloydbIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpAppengineIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpBigtableIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpComposerIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpDataflowIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpDataprocIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpDatastoreIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case cloud.CloudGcpFirebasedatabaseIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpFirebasehostingIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpFirebasestorageIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpFirestoreIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpFunctionsIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpInterconnectIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpKubernetesIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpLoadbalancingIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpMemcacheIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpRedisIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpRouterIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpRunIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpSqlIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpVmsIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	case *cloud.CloudGcpVpcaccessIntegration:
+		out["metrics_polling_interval"] = t.MetricsPollingInterval
+	}
 
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpBigQueryIntegration(in *cloud.CloudGcpBigqueryIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	out["fetch_tags"] = in.FetchTags
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpBigTableIntegration(in *cloud.CloudGcpBigtableIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpComposerIntegration(in *cloud.CloudGcpComposerIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpDataFlowIntegration(in *cloud.CloudGcpDataflowIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpDataProcIntegration(in *cloud.CloudGcpDataprocIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpDataStoreIntegration(in *cloud.CloudGcpDatastoreIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpFireBaseDatabaseIntegration(in *cloud.CloudGcpFirebasedatabaseIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpFireBaseHostingIntegration(in *cloud.CloudGcpFirebasehostingIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpFireBaseStorageIntegration(in *cloud.CloudGcpFirebasestorageIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpFireStoreIntegration(in *cloud.CloudGcpFirestoreIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpFunctionsIntegration(in *cloud.CloudGcpFunctionsIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpInterconnectIntegration(in *cloud.CloudGcpInterconnectIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpKubernetesIntegration(in *cloud.CloudGcpKubernetesIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpLoadBalancingIntegration(in *cloud.CloudGcpLoadbalancingIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpMemCacheIntegration(in *cloud.CloudGcpMemcacheIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpPubSubIntegration(in *cloud.CloudGcpPubsubIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	out["fetch_tags"] = in.FetchTags
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpRedisIntegration(in *cloud.CloudGcpRedisIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpRouterIntegration(in *cloud.CloudGcpRouterIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpRunIntegration(in *cloud.CloudGcpRunIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpSpannerIntegration(in *cloud.CloudGcpSpannerIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	out["fetch_tags"] = in.FetchTags
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpSQLIntegration(in *cloud.CloudGcpSqlIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpStorageIntegration(in *cloud.CloudGcpStorageIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	out["fetch_tags"] = in.FetchTags
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpVirtualMachineIntegration(in *cloud.CloudGcpVmsIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
-	flattened[0] = out
-	return flattened
-}
-
-// flatten function to set(store) outputs from the terraform apply
-func flattenCloudGcpVpcAccessIntegration(in *cloud.CloudGcpVpcaccessIntegration) []interface{} {
-	flattened := make([]interface{}, 1)
-	out := make(map[string]interface{})
-	out["metrics_polling_interval"] = in.MetricsPollingInterval
 	flattened[0] = out
 	return flattened
 }
