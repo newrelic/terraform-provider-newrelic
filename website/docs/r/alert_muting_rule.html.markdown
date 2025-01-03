@@ -79,7 +79,7 @@ All nested `condition` blocks support the following arguments:
 * `weekly_repeat_days` (Optional) The day(s) of the week that a muting rule should repeat when the repeat field is set to 'WEEKLY'. Example: ['MONDAY', 'WEDNESDAY']
 
 ## Import
-Alert conditions can be imported using a composite ID of `<account_id>:<muting_rule_id>`, e.g.
+Alert Muting Rules can be imported using a composite ID of `<account_id>:<muting_rule_id>`, e.g.
 
 ```
 $ terraform import newrelic_alert_muting_rule.foo 538291:6789035
