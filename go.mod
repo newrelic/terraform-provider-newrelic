@@ -4,7 +4,6 @@ go 1.22
 
 toolchain go1.22.6
 
-
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/mitchellh/go-homedir v1.1.0
