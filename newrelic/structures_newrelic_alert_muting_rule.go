@@ -18,6 +18,10 @@ func expandMutingRuleCreateInput(d *schema.ResourceData) (alerts.MutingRuleCreat
 		Description: d.Get("description").(string),
 	}
 
+	if actionOnMutingRuleWindowEnded, ok := d.GetOk("action_on_muting_rule_window_ended"); ok {
+		createInput.ActionOnMutingRuleWindowEnded = alerts.AlertsActionOnMutingRuleWindowEnded(actionOnMutingRuleWindowEnded.(string))
+	}
+
 	if e, ok := d.GetOk("condition"); ok {
 		createInput.Condition = expandMutingRuleConditionGroup(e.([]interface{})[0].(map[string]interface{}))
 	}
@@ -199,6 +203,10 @@ func expandMutingRuleUpdateInput(d *schema.ResourceData) (alerts.MutingRuleUpdat
 		Description: d.Get("description").(string),
 	}
 
+	if actionOnMutingRuleWindowEnded, ok := d.GetOk("action_on_muting_rule_window_ended"); ok {
+		updateInput.ActionOnMutingRuleWindowEnded = alerts.AlertsActionOnMutingRuleWindowEnded(actionOnMutingRuleWindowEnded.(string))
+	}
+
 	if e, ok := d.GetOk("condition"); ok {
 		x := expandMutingRuleConditionGroup(e.([]interface{})[0].(map[string]interface{}))
 
@@ -270,6 +278,8 @@ func flattenMutingRule(mutingRule *alerts.MutingRule, d *schema.ResourceData) er
 	configuredCondition := x.([]interface{})
 
 	_ = d.Set("enabled", mutingRule.Enabled)
+	_ = d.Set("action_on_muting_rule_window_ended", mutingRule.ActionOnMutingRuleWindowEnded)
+
 	err := d.Set("condition", flattenMutingRuleConditionGroup(mutingRule.Condition, configuredCondition))
 	if err != nil {
 		return nil
