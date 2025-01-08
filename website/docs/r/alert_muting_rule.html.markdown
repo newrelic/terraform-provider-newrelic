@@ -55,7 +55,7 @@ The following arguments are supported:
   * `name` - The name of the MutingRule.
   * `description` - The description of the MutingRule.
   * `schedule` - (Optional) Specify a schedule for enabling the MutingRule. See [Schedule](#schedule) below for details
-  * `action_on_muting_rule_window_ended` - (Optional) The action when the muting rule window is ended or disabled. Valid values are `CLOSE_ISSUES_ON_INACTIVE`, `DO_NOTHING`
+  * `action_on_muting_rule_window_ended` - (Optional) The action when the muting rule window is ended or disabled. Valid values are `CLOSE_ISSUES_ON_INACTIVE`, `DO_NOTHING`.
 
 ### Nested `condition` blocks
 
