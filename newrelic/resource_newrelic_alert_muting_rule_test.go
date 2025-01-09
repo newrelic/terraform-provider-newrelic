@@ -99,6 +99,38 @@ func TestAccNewRelicAlertMutingRule_Basic(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicAlertMutingRule_EndBehaviourInput(t *testing.T) {
+	resourceName := "newrelic_alert_muting_rule.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertMutingRuleDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicAlertMutingRuleEndBehaviourInput(rName, "new muting rule", "product", "EQUALS", "APM", "CLOSE_ISSUES_ON_INACTIVE"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertMutingRuleExists(resourceName),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicAlertMutingRuleEndBehaviourInput(rName, "second muting rule", "conditionType", "NOT_EQUALS", "baseline", "CLOSE_ISSUES_ON_INACTIVE"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertMutingRuleExists(resourceName),
+				),
+			},
+			// // Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true},
+		},
+	})
+}
+
 func TestAccNewRelicAlertMutingRule_BadInput(t *testing.T) {
 	rName := acctest.RandString(5)
 
@@ -237,6 +269,38 @@ resource "newrelic_alert_muting_rule" "foo" {
 	}
 }
 `, name, description, attribute, operator, values)
+}
+
+func testAccNewRelicAlertMutingRuleEndBehaviourInput(
+	name string,
+	description string,
+	attribute string,
+	operator string,
+	values string,
+	actionOnMutingRuleWindowEnded string,
+) string {
+	return fmt.Sprintf(`
+
+resource "newrelic_alert_muting_rule" "foo" {
+	name = "tf-test-%[1]s"
+	enabled = true
+	description = "%[2]s"
+	condition {
+		conditions {
+			attribute 	= "%[3]s"
+			operator 	= "EQUALS"
+			values 		= ["%[5]s"]
+		}
+		conditions {
+			attribute 	= "conditionType"
+			operator 	= "%[4]s"
+			values 		= ["static"]
+		}
+		operator = "AND"
+	}
+	action_on_muting_rule_window_ended = "%[6]s"
+}
+`, name, description, attribute, operator, values, actionOnMutingRuleWindowEnded)
 }
 
 func testAccNewRelicAlertMutingRuleBadInput(
