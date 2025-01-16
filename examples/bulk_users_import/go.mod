@@ -4,7 +4,7 @@ go 1.22.6
 
 require (
 	github.com/machinebox/graphql v0.2.2
-	github.com/newrelic/newrelic-client-go/v2 v2.51.3
+	github.com/newrelic/newrelic-client-go/v2 v2.52.0
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
 )
 
