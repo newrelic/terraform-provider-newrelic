@@ -5,58 +5,102 @@ package newrelic
 
 import (
 	"fmt"
-	"strings"
+	"regexp"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
 
-var (
-	testAccExpectedKeyTransactionName = "get /"
-)
-
-func TestAccNewRelicKeyTransactionDataSource_Basic(t *testing.T) {
-	if !nrInternalAccount {
-		t.Skipf("New Relic internal testing account required")
-	}
-
-	resourceName := "data.newrelic_key_transaction.foo"
-
+func TestAccNewRelicKeyTransaction_Basic(t *testing.T) {
+	randomName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resourceName := "newrelic_key_transaction.foo"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
+			// Create
 			{
-				Config: testAccNewRelicKeyTransactionDataSourceConfig(testAccExpectedKeyTransactionName),
+				Config: testAccNewRelicKeyTransactionBasicConfiguration(fmt.Sprintf("%s", randomName)),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicKeyTransactionDataSourceExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", testAccExpectedKeyTransactionName),
+					testAccNewRelicCheckKeyTransactionExists(resourceName),
 				),
+			},
+			// Update
+			{
+				Config: testAccNewRelicKeyTransactionBasicConfiguration(fmt.Sprintf("%s-updated", randomName)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNewRelicCheckKeyTransactionExists(resourceName),
+				),
+			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"domain",
+					"type",
+				},
 			},
 		},
 	})
 }
 
-func testAccNewRelicKeyTransactionDataSourceConfig(rName string) string {
+func TestAccNewRelicKeyTransaction_DuplicateNameError(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			// create a key transaction with a name that already exists in the UI
+			// this is expected to throw an error, as only one key transaction may be created per metric name
+			{
+				Config:      testAccNewRelicKeyTransactionBasicConfiguration(fmt.Sprintf("%s", "terraform_acceptance_test_key_transaction_donot_delete")),
+				ExpectError: regexp.MustCompile("\\s*"),
+			},
+		},
+	})
+}
+
+func testAccNewRelicKeyTransactionBasicConfiguration(name string) string {
 	return fmt.Sprintf(`
-data "newrelic_key_transaction" "foo" {
-	name = "%s"
-}
-`, testAccExpectedKeyTransactionName)
+    resource "newrelic_key_transaction" "foo" {
+        apdex_index 	     = 0.5
+        application_guid     = "MzgwNjUyNnxBUE18QVBQTElDQVRJT058NTUzNDQ4MjAy"
+        browser_apdex_target = 0.5
+        metric_name          = "test"
+        name                 = "%[1]s"
+    }
+    `, name)
 }
 
-func testAccCheckNewRelicKeyTransactionDataSourceExists(n string) resource.TestCheckFunc {
+func testAccNewRelicCheckKeyTransactionExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		r := s.RootModule().Resources[n]
-		a := r.Primary.Attributes
+		rs, ok := s.RootModule().Resources[resourceName]
 
-		if a["id"] == "" {
-			return fmt.Errorf("expected to get a key transaction from New Relic")
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceName)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no key transaction ID is set")
 		}
 
-		if !strings.EqualFold(testAccExpectedKeyTransactionName, a["name"]) {
-			return fmt.Errorf("expected the key transaction name to be: %s, but got: %s", testAccExpectedKeyTransactionName, a["name"])
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+		time.Sleep(5 * time.Second)
+		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
+		if err != nil {
+			return fmt.Errorf(err.Error())
+		}
+
+		x, foundOk := (*found).(*entities.KeyTransactionEntity)
+		if !foundOk {
+			return fmt.Errorf("no key transaction found")
+		}
+		if x.GUID != common.EntityGUID(rs.Primary.ID) {
+			return fmt.Errorf("key transaction not found")
 		}
 
 		return nil
