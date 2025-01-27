@@ -13,6 +13,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/mitchellh/go-homedir"
+	"golang.org/x/sync/semaphore"
+	"golang.org/x/time/rate"
 
 	insights "github.com/newrelic/go-insights/client"
 	nr "github.com/newrelic/newrelic-client-go/v2/newrelic"
@@ -20,22 +22,49 @@ import (
 
 // Config contains New Relic provider settings
 type Config struct {
-	AdminAPIKey          string
-	PersonalAPIKey       string
-	Region               string
-	APIURL               string
-	CACertFile           string
-	InfrastructureAPIURL string
-	InsecureSkipVerify   bool
-	InsightsAccountID    string
-	InsightsInsertKey    string
-	InsightsInsertURL    string
-	InsightsQueryKey     string
-	InsightsQueryURL     string
-	NerdGraphAPIURL      string
-	SyntheticsAPIURL     string
-	userAgent            string
-	serviceName          string
+	AdminAPIKey           string
+	PersonalAPIKey        string
+	Region                string
+	APIURL                string
+	CACertFile            string
+	InfrastructureAPIURL  string
+	InsecureSkipVerify    bool
+	InsightsAccountID     string
+	InsightsInsertKey     string
+	InsightsInsertURL     string
+	InsightsQueryKey      string
+	InsightsQueryURL      string
+	NerdGraphAPIURL       string
+	SyntheticsAPIURL      string
+	userAgent             string
+	serviceName           string
+	MaxRequestsPerSecond  int
+	MaxConcurrentRequests int
+}
+
+type ThrottledRoundTripper struct {
+	original    http.RoundTripper
+	ratelimiter *rate.Limiter
+	concurrency *semaphore.Weighted
+}
+
+func NewThrottledRoundTripper(rt http.RoundTripper, maxRequestsPerSecond int, maxConcurrentRequests int) *ThrottledRoundTripper {
+	return &ThrottledRoundTripper{
+		original:    rt,
+		ratelimiter: rate.NewLimiter(rate.Limit(maxRequestsPerSecond), maxRequestsPerSecond),
+		concurrency: semaphore.NewWeighted(int64(maxConcurrentRequests)),
+	}
+}
+
+func (t *ThrottledRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	ctx := req.Context()
+
+	if err := t.concurrency.Acquire(ctx, 1); err != nil {
+		return nil, err
+	}
+	defer t.concurrency.Release(1)
+	t.ratelimiter.Wait(ctx)
+	return t.original.RoundTrip(req)
 }
 
 // Client returns a new client for accessing New Relic
@@ -75,7 +104,8 @@ func (c *Config) Client() (*nr.NewRelic, error) {
 		t = logging.NewTransport("newrelic", t)
 	}
 
-	options = append(options, nr.ConfigHTTPTransport(t))
+	throttledTransport := NewThrottledRoundTripper(t, c.MaxRequestsPerSecond, c.MaxConcurrentRequests)
+	options = append(options, nr.ConfigHTTPTransport(throttledTransport))
 
 	if c.APIURL != "" {
 		options = append(options, nr.ConfigBaseURL(c.APIURL))
