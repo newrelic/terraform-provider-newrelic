@@ -5,7 +5,7 @@ data "aws_iam_policy_document" "newrelic_assume_policy" {
     principals {
       type = "AWS"
       // This is the unique identifier for New Relic account on AWS, there is no need to change this
-      identifiers = [754728514883]
+      identifiers = var.newrelic_account_region == "US_GOV" ? [266471868085] : [754728514883]
     }
 
     condition {
@@ -121,11 +121,19 @@ resource "aws_s3_bucket_ownership_controls" "newrelic_ownership_controls" {
   }
 }
 
+locals {
+  newrelic_urls = {
+    US      = "https://aws-api.newrelic.com/cloudwatch-metrics/v1"
+    EU      = "https://aws-api.eu01.nr-data.net/cloudwatch-metrics/v1"
+    US_GOV  = "https://gov-aws-api.newrelic.com/cloudwatch-metrics/v1"
+  }
+}
+
 resource "aws_kinesis_firehose_delivery_stream" "newrelic_firehose_stream" {
   name        = "newrelic_firehose_stream_${var.name}"
   destination = "http_endpoint"
   http_endpoint_configuration {
-    url                = var.newrelic_account_region == "US" ? "https://aws-api.newrelic.com/cloudwatch-metrics/v1" : "https://aws-api.eu01.nr-data.net/cloudwatch-metrics/v1"
+    url                = local.newrelic_urls[var.newrelic_account_region]
     name               = "New Relic ${var.name}"
     access_key         = newrelic_api_access_key.newrelic_aws_access_key.key
     buffering_size     = 1
