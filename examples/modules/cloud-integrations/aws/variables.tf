@@ -7,7 +7,7 @@ variable "newrelic_account_region" {
   default = "US"
 
   validation {
-    condition     = contains(["US", "EU", "US_GOV"], var.newrelic_account_region)
+    condition     = contains(["US", "EU"], var.newrelic_account_region)
     error_message = "Valid values for region are 'US' or 'EU'."
   }
 }
