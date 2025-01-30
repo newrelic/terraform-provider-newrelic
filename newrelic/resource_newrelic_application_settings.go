@@ -96,7 +96,6 @@ func resourceNewRelicApplicationSettingsUpdate(ctx context.Context, d *schema.Re
 	userApp := expandApplication(d)
 
 	updateParams := apm.UpdateApplicationParams{
-		Name:     userApp.Name,
 		Settings: userApp.Settings,
 	}
 

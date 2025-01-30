@@ -147,6 +147,7 @@ func Provider() *schema.Provider {
 			"newrelic_alert_policy_channel":                     resourceNewRelicAlertPolicyChannel(),
 			"newrelic_api_access_key":                           resourceNewRelicAPIAccessKey(),
 			"newrelic_application_settings":                     resourceNewRelicApplicationSettings(),
+			"newrelic_application_settings_copy":                resourceNewRelicApplicationSettingsCopy(),
 			"newrelic_browser_application":                      resourceNewRelicBrowserApplication(),
 			"newrelic_cloud_aws_govcloud_link_account":          resourceNewRelicAwsGovCloudLinkAccount(),
 			"newrelic_cloud_aws_govcloud_integrations":          resourceNewRelicAwsGovCloudIntegrations(),
