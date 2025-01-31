@@ -297,7 +297,7 @@ POLICY
 
 resource "aws_iam_role_policy_attachment" "newrelic_configuration_recorder" {
   role       = aws_iam_role.newrelic_configuration_recorder.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
+  policy_arn = "arn:aws-us-gov:iam::aws:policy/service-role/AWS_ConfigRole"
 }
 
 resource "aws_config_configuration_recorder" "newrelic_recorder" {
