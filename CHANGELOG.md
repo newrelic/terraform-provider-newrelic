@@ -1,3 +1,13 @@
+<a name="v3.54.1"></a>
+## [v3.54.1] - 2025-01-31
+### Bug Fixes
+- **aws_govcloud_link_account:** Fixes to resource functionality ([#2804](https://github.com/newrelic/terraform-provider-newrelic/issues/2804))
+- **dependabot_alerts:** Updated dependencies to fix dependabot alerts ([#2796](https://github.com/newrelic/terraform-provider-newrelic/issues/2796))
+- **key-transaction-integrations:** Fixed key transaction integration test ([#2795](https://github.com/newrelic/terraform-provider-newrelic/issues/2795))
+
+### Documentation Updates
+- **nrql_alert_condition:** Remove beta notice about data_account_id ([#2797](https://github.com/newrelic/terraform-provider-newrelic/issues/2797))
+
 <a name="v3.54.0"></a>
 ## [v3.54.0] - 2025-01-08
 ### Features
@@ -2285,7 +2295,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.1...HEAD
+[v3.54.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.0...v3.54.1
 [v3.54.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.53.0...v3.54.0
 [v3.53.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.52.1...v3.53.0
 [v3.52.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.52.0...v3.52.1
