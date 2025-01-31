@@ -41,9 +41,9 @@ func expandAwsGovCloudLinkAccountInputForRead(d *schema.ResourceData, result *cl
 	_ = d.Set("account_id", result.NrAccountId)
 }
 
-func expandAwsGovCloudLinkAccountInputForUpdate(d *schema.ResourceData, linkedAccountId int) cloud.CloudUpdateCloudAccountsInput {
+func expandAwsGovCloudLinkAccountInputForUpdate(d *schema.ResourceData, linkedAccountID int) cloud.CloudUpdateCloudAccountsInput {
 	awsGovCloud := cloud.CloudAwsGovCloudUpdateAccountInput{}
-	awsGovCloud.LinkedAccountId = linkedAccountId
+	awsGovCloud.LinkedAccountId = linkedAccountID
 	if accessKeyID, ok := d.GetOk("access_key_id"); ok {
 		awsGovCloud.AccessKeyId = accessKeyID.(string)
 	}
