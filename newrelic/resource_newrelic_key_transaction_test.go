@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccNewRelicKeyTransaction_Basic(t *testing.T) {
-	randomName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	randomName := fmt.Sprintf("terraform-key-transaction-from-integration-test-%s", acctest.RandString(5))
 	resourceName := "newrelic_key_transaction.foo"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -60,7 +60,7 @@ func TestAccNewRelicKeyTransaction_DuplicateNameError(t *testing.T) {
 			// create a key transaction with a name that already exists in the UI
 			// this is expected to throw an error, as only one key transaction may be created per metric name
 			{
-				Config:      testAccNewRelicKeyTransactionBasicConfiguration(fmt.Sprintf("%s", "terraform_acceptance_test_key_transaction_donot_delete")),
+				Config:      testAccNewRelicKeyTransactionBasicConfiguration(fmt.Sprintf("%s", "terraform-key-transaction-from-integration-test-STATIC-DO-NOT-DELETE")),
 				ExpectError: regexp.MustCompile("\\s*"),
 			},
 		},
