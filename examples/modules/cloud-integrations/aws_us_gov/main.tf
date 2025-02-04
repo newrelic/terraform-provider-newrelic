@@ -67,6 +67,11 @@ resource "aws_iam_role_policy_attachment" "newrelic_aws_policy_attach" {
   policy_arn = aws_iam_policy.newrelic_aws_permissions.arn
 }
 
+resource "aws_iam_role_policy_attachment" "readonly_access_policy_attach" {
+  role       = aws_iam_role.newrelic_aws_role.name
+  policy_arn = "arn:aws-us-gov:iam::aws:policy/ReadOnlyAccess"
+}
+
 resource "newrelic_cloud_aws_govcloud_link_account" "newrelic_cloud_integration_push" {
   account_id             = var.newrelic_account_id
   metric_collection_mode = "PUSH"
