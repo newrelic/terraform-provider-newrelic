@@ -1,14 +1,9 @@
 package newrelic
 
 import (
-	
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -29,26 +24,37 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "The New Relic account ID where you want to link the AWS account.",
-				ForceNew:    true,
-			},
-			"arn": {
-				Type:        schema.TypeString,
-				Description: "The AWS role ARN.",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"metric_collection_mode": {
-				Type:         schema.TypeString,
-				Description:  "How metrics will be collected. Defaults to `PULL` if empty.",
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"PULL", "PUSH"}, false),
-				ForceNew:     true,
+				Description: "The ID of the account in New Relic.",
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "The name of the linked account.",
+				Description: "Name of the AWS GovCloud 'Linked Account' to identify in New Relic.",
 				Required:    true,
+			},
+			"metric_collection_mode": {
+				Type:        schema.TypeString,
+				Description: "The mode by which metric data is to be collected from the linked AWS GovCloud account. Use 'PUSH' for Metric Streams and 'PULL' for API Polling based metric collection respectively.",
+				Optional:    true,
+				// since the mutation to update cloud linked accounts does not support updating metric collection mode,
+				// we shall force re-creation of the resource if the metric_collection_mode is changed after the first apply.
+				ForceNew: true,
+			},
+			"aws_account_id": {
+				Type:        schema.TypeString,
+				Description: "The ID of the AWS GovCloud account.",
+				Required:    true,
+			},
+			"access_key_id": {
+				Type:        schema.TypeString,
+				Description: "The Access Key used to programmatically access the AWS GovCloud account.",
+				Required:    true,
+				Sensitive:   true,
+			},
+			"secret_access_key": {
+				Type:        schema.TypeString,
+				Description: "The Secret Access Key used to programmatically access the AWS GovCloud account.",
+				Required:    true,
+				Sensitive:   true,
 			},
 		},
 	}
@@ -57,129 +63,70 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 func resourceNewRelicAwsGovCloudLinkAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
-
 	accountID := selectAccountID(providerConfig, d)
+	createAwsGovCloudLinkAccountInput := expandAwsGovCloudLinkAccountInputForCreate(d)
 
-	linkAccountInput := expandAwsGovCloudLinkAccountInput(d)
-
-	var diags diag.Diagnostics
-
-	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, linkAccountInput)
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
-
-		if len(cloudLinkAccountPayload.Errors) > 0 {
-			for _, err := range cloudLinkAccountPayload.Errors {
-				if strings.Contains(err.Message, "The ARN you entered does not permit the correct access to your AWS account") {
-					return resource.RetryableError(fmt.Errorf("%s : %s", err.Type, err.Message))
-				}
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  err.Type + " " + err.Message,
-				})
-			}
-		}
-
-		if len(cloudLinkAccountPayload.LinkedAccounts) > 0 {
-			d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
-		}
-
-		return nil
-	})
-
-	if retryErr != nil {
-		return diag.FromErr(retryErr)
-	}
-
-	if len(diags) > 0 {
-		return diags
-	}
-
-	return nil
-}
-
-// Extracting the AWSGovCloud account  credentials from Schema using expandAzureCloudLinkAccountInput
-func expandAwsGovCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
-	awsAccount := cloud.CloudAwsLinkAccountInput{}
-
-	if arn, ok := d.GetOk("arn"); ok {
-		awsAccount.Arn = arn.(string)
-	}
-
-	if m, ok := d.GetOk("metric_collection_mode"); ok {
-		awsAccount.MetricCollectionMode = cloud.CloudMetricCollectionMode(strings.ToUpper(m.(string)))
-	}
-
-	if name, ok := d.GetOk("name"); ok {
-		awsAccount.Name = name.(string)
-	}
-
-	input := cloud.CloudLinkCloudAccountsInput{
-		Aws: []cloud.CloudAwsLinkAccountInput{awsAccount},
-	}
-	return input
-}
-
-func resourceNewRelicAwsGovCloudLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	providerConfig := meta.(*ProviderConfig)
-	client := providerConfig.NewClient
-
-	accountID := selectAccountID(providerConfig, d)
-
-	linkedAccountID, convErr := strconv.Atoi(d.Id())
-
-	if convErr != nil {
-		return diag.FromErr(convErr)
-	}
-
-	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
-
+	cloudLinkAccountPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, createAwsGovCloudLinkAccountInput)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			d.SetId("")
-			return nil
-		}
 		return diag.FromErr(err)
 	}
-	readAwsGovCloudLinkAccount(d, linkedAccount)
-	return nil
-}
-
-func readAwsGovCloudLinkAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
-	_ = d.Set("account_id", result.NrAccountId)
-	_ = d.Set("arn", result.AuthLabel)
-	_ = d.Set("metric_collection_mode", result.MetricCollectionMode)
-	_ = d.Set("name", result.Name)
-}
-
-func resourceNewRelicAwsGovCloudLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	providerConfig := meta.(*ProviderConfig)
-	client := providerConfig.NewClient
-	accountID := selectAccountID(providerConfig, d)
-	id, _ := strconv.Atoi(d.Id())
-	input := []cloud.CloudRenameAccountsInput{
-		{
-			Name:            d.Get("name").(string),
-			LinkedAccountId: id,
-		},
-	}
-	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccountWithContext(ctx, accountID, input)
-	if err != nil {
-		diag.FromErr(err)
-	}
-
 	var diags diag.Diagnostics
-
-	if len(cloudRenameAccountPayload.Errors) > 0 {
-		for _, err := range cloudRenameAccountPayload.Errors {
+	if len(cloudLinkAccountPayload.Errors) > 0 {
+		for _, err := range cloudLinkAccountPayload.Errors {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  err.Type + " " + err.Message,
 			})
 		}
 		return diags
+	}
+
+	if len(cloudLinkAccountPayload.LinkedAccounts) > 0 {
+		d.SetId(strconv.Itoa(cloudLinkAccountPayload.LinkedAccounts[0].ID))
+	}
+	return nil
+}
+
+func resourceNewRelicAwsGovCloudLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+
+	linkedAccountID, convErr := getLinkedAccountIDFromState(d)
+	if convErr != nil {
+		return diag.FromErr(convErr)
+	}
+
+	result, err := client.Cloud.GetLinkedAccount(accountID, linkedAccountID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	expandAwsGovCloudLinkAccountInputForRead(d, result)
+
+	return nil
+}
+
+func resourceNewRelicAwsGovCloudLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
+
+	linkedAccountID, convErr := getLinkedAccountIDFromState(d)
+	if convErr != nil {
+		return diag.FromErr(convErr)
+	}
+
+	updateAwsGovCloudLinkAccountInput := expandAwsGovCloudLinkAccountInputForUpdate(d, linkedAccountID)
+
+	cloudUpdateAwsGovCloudAccountPayload, err := client.Cloud.CloudUpdateAccountWithContext(ctx, accountID, updateAwsGovCloudLinkAccountInput)
+	if err != nil {
+
+		return diag.FromErr(err)
+	}
+
+	if len(cloudUpdateAwsGovCloudAccountPayload.LinkedAccounts) == 0 {
+		return diag.FromErr(fmt.Errorf("no linked account with 'linked_account_id': %d found", linkedAccountID))
 	}
 
 	return nil
@@ -216,7 +163,7 @@ func resourceNewRelicAwsGovCloudLinkAccountDelete(ctx context.Context, d *schema
 		}
 		return diags
 	}
-	//Setting up the linked account id to null after destroying the resource.
+
 	d.SetId("")
 
 	return nil
