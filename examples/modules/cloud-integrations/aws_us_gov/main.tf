@@ -77,7 +77,7 @@ resource "newrelic_cloud_aws_govcloud_link_account" "newrelic_cloud_integration_
   arn                    = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PUSH"
   name                   = "${var.name} metric stream"
-  depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
+  depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach, aws_iam_role_policy_attachment.readonly_access_policy_attach]
 }
 
 resource "newrelic_api_access_key" "newrelic_aws_access_key" {
@@ -106,6 +106,11 @@ resource "aws_iam_role" "firehose_newrelic_role" {
   ]
 }
 EOF
+}
+
+resource "aws_iam_role_policy_attachment" "readonly_access_policy_attach_2" {
+  role       = aws_iam_role.firehose_newrelic_role.name
+  policy_arn = "arn:aws-us-gov:iam::aws:policy/ReadOnlyAccess"
 }
 
 resource "random_string" "s3-bucket-name" {
@@ -221,7 +226,7 @@ resource "newrelic_cloud_aws_govcloud_link_account" "newrelic_cloud_integration_
   arn                    = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PULL"
   name                   = "${var.name} pull"
-  depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
+  depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach, aws_iam_role_policy_attachment.readonly_access_policy_attach]
 }
 
 resource "newrelic_cloud_aws_govcloud_integrations" "newrelic_cloud_integration_pull" {
