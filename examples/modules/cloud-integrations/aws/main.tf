@@ -68,7 +68,7 @@ resource "aws_iam_role_policy_attachment" "newrelic_aws_policy_attach" {
   policy_arn = aws_iam_policy.newrelic_aws_permissions.arn
 }
 
-resource "aws_iam_role_policy_attachment" "readonly_access_policy_attach_2" {
+resource "aws_iam_role_policy_attachment" "readonly_access_policy_attach" {
   role       = aws_iam_role.newrelic_aws_role.name
   policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
 }
@@ -109,7 +109,7 @@ resource "aws_iam_role" "firehose_newrelic_role" {
 EOF
 }
 
-resource "aws_iam_role_policy_attachment" "readonly_access_policy_attach" {
+resource "aws_iam_role_policy_attachment" "readonly_access_policy_attach_2" {
   role       = aws_iam_role.firehose_newrelic_role.name
   policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
 }
