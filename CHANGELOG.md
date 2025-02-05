@@ -1,3 +1,8 @@
+<a name="v3.55.0"></a>
+## [v3.55.0] - 2025-02-03
+### Features
+- **workflows:** adds new `notification_trigger` type `INVESTIGATING` ([#2805](https://github.com/newrelic/terraform-provider-newrelic/issues/2805))
+
 <a name="v3.54.1"></a>
 ## [v3.54.1] - 2025-01-31
 ### Bug Fixes
@@ -2295,7 +2300,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.55.0...HEAD
+[v3.55.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.1...v3.55.0
 [v3.54.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.0...v3.54.1
 [v3.54.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.53.0...v3.54.0
 [v3.53.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.52.1...v3.53.0
