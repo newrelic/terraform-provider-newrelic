@@ -72,7 +72,7 @@ resource "aws_iam_role_policy_attachment" "readonly_access_policy_attach" {
   policy_arn = "arn:aws-us-gov:iam::aws:policy/ReadOnlyAccess"
 }
 
-resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_push" {
+resource "newrelic_cloud_aws_govcloud_link_account" "newrelic_cloud_integration_push" {
   account_id             = var.newrelic_account_id
   arn                    = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PUSH"
@@ -218,12 +218,10 @@ resource "aws_cloudwatch_metric_stream" "newrelic_metric_stream" {
 
 resource "newrelic_cloud_aws_govcloud_link_account" "newrelic_cloud_integration_pull" {
   account_id             = var.newrelic_account_id
+  arn                    = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PULL"
   name                   = "${var.name} pull"
   depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
-  access_key_id          = newrelic_api_access_key.newrelic_aws_access_key.key
-  secret_access_key      = newrelic_api_access_key.newrelic_aws_access_key.key
-  aws_account_id         = "266471868085"
 }
 
 resource "newrelic_cloud_aws_govcloud_integrations" "newrelic_cloud_integration_pull" {
