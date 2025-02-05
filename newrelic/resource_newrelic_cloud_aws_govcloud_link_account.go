@@ -27,7 +27,7 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 				Computed:    true,
 				Description: "The ID of the account in New Relic.",
 				// since the mutation to update cloud linked accounts does not support "changing" the account ID of a linked account,
-				// we shall force re-creation of the resource if the metric_collection_mode is changed after the first apply.
+				// we shall force re-creation of the resource if the account_id is changed after the first apply.
 				ForceNew: true,
 			},
 			"name": {
