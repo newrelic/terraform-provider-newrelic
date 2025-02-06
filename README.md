@@ -19,6 +19,10 @@ New Relic and the Terraform team will support Terraform versions up to 2 years a
 
 To use the latest version of the provider in your Terraform environment, run `terraform init` and Terraform will automatically install the provider.
 
+Run the following commands to execute the terraform
+- `terraform plan` to see the changes that will be done on AWS
+- `terraform apply --auto-approve --parallelism=1` to execute the plan and make the AWS changes. Please ensure `parallelism=1`to avoid any thread failures due to multiple resources being created at the same time.
+
 If you wish to pin your environment to a specific release of the provider, you can do so with a `required_providers` statement in your Terraform manifest. The `terraform` [configuration block](https://www.terraform.io/docs/configuration/provider-requirements.html) varies slightly depending on which Terraform version you're using. See below for more examples of configuring the provider version for the different versions of Terraform.
 
 For Terraform version 1.x and above
