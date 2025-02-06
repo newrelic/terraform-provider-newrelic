@@ -1,5 +1,10 @@
+<a name="v3.56.0"></a>
+## [v3.56.0] - 2025-02-06
+### Features
+- **aws_govcloud:** revamp of the resource to support ARN based authentication ([#2809](https://github.com/newrelic/terraform-provider-newrelic/issues/2809))
+
 <a name="v3.55.0"></a>
-## [v3.55.0] - 2025-02-03
+## [v3.55.0] - 2025-02-05
 ### Features
 - **workflows:** adds new `notification_trigger` type `INVESTIGATING` ([#2805](https://github.com/newrelic/terraform-provider-newrelic/issues/2805))
 
@@ -2300,7 +2305,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.55.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.56.0...HEAD
+[v3.56.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.55.0...v3.56.0
 [v3.55.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.1...v3.55.0
 [v3.54.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.0...v3.54.1
 [v3.54.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.53.0...v3.54.0

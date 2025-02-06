@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 )
 
@@ -25,6 +26,9 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "The ID of the account in New Relic.",
+				// since the mutation to update cloud linked accounts does not support "changing" the account ID of a linked account,
+				// we shall force re-creation of the resource if the account_id is changed after the first apply.
+				ForceNew: true,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -32,30 +36,42 @@ func resourceNewRelicAwsGovCloudLinkAccount() *schema.Resource {
 				Required:    true,
 			},
 			"metric_collection_mode": {
-				Type:        schema.TypeString,
-				Description: "The mode by which metric data is to be collected from the linked AWS GovCloud account. Use 'PUSH' for Metric Streams and 'PULL' for API Polling based metric collection respectively.",
-				Optional:    true,
+				Type:         schema.TypeString,
+				Description:  "The mode by which metric data is to be collected from the linked AWS GovCloud account. Use 'PUSH' for Metric Streams and 'PULL' for API Polling based metric collection respectively.",
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"PULL", "PUSH"}, false),
+				Default:      "PULL",
 				// since the mutation to update cloud linked accounts does not support updating metric collection mode,
 				// we shall force re-creation of the resource if the metric_collection_mode is changed after the first apply.
 				ForceNew: true,
 			},
-			"aws_account_id": {
+			"arn": {
 				Type:        schema.TypeString,
-				Description: "The ID of the AWS GovCloud account.",
+				Description: "The ARN of the identifying AWS GovCloud account.",
 				Required:    true,
 			},
-			"access_key_id": {
-				Type:        schema.TypeString,
-				Description: "The Access Key used to programmatically access the AWS GovCloud account.",
-				Required:    true,
-				Sensitive:   true,
-			},
-			"secret_access_key": {
-				Type:        schema.TypeString,
-				Description: "The Secret Access Key used to programmatically access the AWS GovCloud account.",
-				Required:    true,
-				Sensitive:   true,
-			},
+
+			// NOTE: The following arguments are no longer supported, as the establishment of a connection
+			// with New Relic from AWS GovCloud is no longer supported with these credentials (an ARN is needed
+			// to facilitate a working connection.
+
+			//"aws_account_id": {
+			//	Type:        schema.TypeString,
+			//	Description: "The ID of the AWS GovCloud account.",
+			//	Required:    true,
+			//},
+			//"access_key_id": {
+			//	Type:        schema.TypeString,
+			//	Description: "The Access Key used to programmatically access the AWS GovCloud account.",
+			//	Required:    true,
+			//	Sensitive:   true,
+			//},
+			//"secret_access_key": {
+			//	Type:        schema.TypeString,
+			//	Description: "The Secret Access Key used to programmatically access the AWS GovCloud account.",
+			//	Required:    true,
+			//	Sensitive:   true,
+			//},
 		},
 	}
 }
