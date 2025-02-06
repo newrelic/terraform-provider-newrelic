@@ -4,8 +4,8 @@ data "aws_iam_policy_document" "newrelic_assume_policy" {
 
     principals {
       type = "AWS"
-      // This is the unique identifier for New Relic account on AWS, there is no need to change this
-      identifiers = [var.new_relic_aws_govcloud_account_id]
+      // This is the unique identifier for New Relic account on AWS GovCloud, there is no need to change this
+      identifiers = [266471868085]
     }
 
     condition {
@@ -67,14 +67,17 @@ resource "aws_iam_role_policy_attachment" "newrelic_aws_policy_attach" {
   policy_arn = aws_iam_policy.newrelic_aws_permissions.arn
 }
 
+resource "aws_iam_role_policy_attachment" "readonly_access_policy_attach" {
+  role       = aws_iam_role.newrelic_aws_role.name
+  policy_arn = "arn:aws-us-gov:iam::aws:policy/ReadOnlyAccess"
+}
+
 resource "newrelic_cloud_aws_govcloud_link_account" "newrelic_cloud_integration_push" {
   account_id             = var.newrelic_account_id
+  arn                    = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PUSH"
   name                   = "${var.name} metric stream"
-  depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
-  access_key_id          = newrelic_api_access_key.newrelic_aws_access_key.key
-  secret_access_key      = newrelic_api_access_key.newrelic_aws_access_key.key
-  aws_account_id         = var.new_relic_aws_govcloud_account_id
+  depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach, aws_iam_role_policy_attachment.readonly_access_policy_attach]
 }
 
 resource "newrelic_api_access_key" "newrelic_aws_access_key" {
@@ -103,6 +106,11 @@ resource "aws_iam_role" "firehose_newrelic_role" {
   ]
 }
 EOF
+}
+
+resource "aws_iam_role_policy_attachment" "readonly_access_policy_attach_2" {
+  role       = aws_iam_role.firehose_newrelic_role.name
+  policy_arn = "arn:aws-us-gov:iam::aws:policy/ReadOnlyAccess"
 }
 
 resource "random_string" "s3-bucket-name" {
@@ -215,12 +223,10 @@ resource "aws_cloudwatch_metric_stream" "newrelic_metric_stream" {
 
 resource "newrelic_cloud_aws_govcloud_link_account" "newrelic_cloud_integration_pull" {
   account_id             = var.newrelic_account_id
+  arn                    = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PULL"
   name                   = "${var.name} pull"
-  depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
-  access_key_id          = newrelic_api_access_key.newrelic_aws_access_key.key
-  secret_access_key      = newrelic_api_access_key.newrelic_aws_access_key.key
-  aws_account_id         = var.new_relic_aws_govcloud_account_id
+  depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach, aws_iam_role_policy_attachment.readonly_access_policy_attach]
 }
 
 resource "newrelic_cloud_aws_govcloud_integrations" "newrelic_cloud_integration_pull" {
@@ -297,7 +303,7 @@ POLICY
 
 resource "aws_iam_role_policy_attachment" "newrelic_configuration_recorder" {
   role       = aws_iam_role.newrelic_configuration_recorder.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
+  policy_arn = "arn:aws-us-gov:iam::aws:policy/service-role/AWS_ConfigRole"
 }
 
 resource "aws_config_configuration_recorder" "newrelic_recorder" {
