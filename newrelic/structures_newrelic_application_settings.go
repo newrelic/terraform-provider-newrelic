@@ -11,20 +11,13 @@ import (
 func expandApmConfigValues(d *schema.ResourceData) *apm.AgentApplicationSettingsApmConfigInput {
 
 	apmConfig := apm.AgentApplicationSettingsApmConfigInput{}
-
 	if v, ok := d.GetOk("app_apdex_threshold"); ok {
 		apmConfig.ApdexTarget = v.(float64)
 	}
-
-	// This ensures that the value is explicitly provided in the configuration before setting it in the APM config which GetOk and Get fails to do so.
-	if configValue := d.GetRawConfig().AsValueMap()["enable_real_user_monitoring"]; !configValue.IsNull() {
-		apmConfig.UseServerSideConfig = getBoolPointer(configValue.True())
-	}
-
+	apmConfig.UseServerSideConfig = getBoolPointer(d.Get("enable_real_user_monitoring").(bool))
 	if apmConfig == (apm.AgentApplicationSettingsApmConfigInput{}) {
 		return nil
 	}
-
 	return &apmConfig
 }
 
@@ -318,11 +311,9 @@ func expandApplication(d *schema.ResourceData) *apm.AgentApplicationSettingsUpda
 		a.TracerType = TracerType
 	}
 
-	if threadProfilerValue := d.GetRawConfig().AsValueMap()["enable_thread_profiler"]; !threadProfilerValue.IsNull() {
-		ThreadProfiler := &apm.AgentApplicationSettingsThreadProfilerInput{}
-		ThreadProfiler.Enabled = getBoolPointer(threadProfilerValue.True())
-		a.ThreadProfiler = ThreadProfiler
-	}
+	ThreadProfiler := &apm.AgentApplicationSettingsThreadProfilerInput{}
+	ThreadProfiler.Enabled = getBoolPointer(d.Get("enable_thread_profiler").(bool))
+	a.ThreadProfiler = ThreadProfiler
 
 	// apm settings
 	a.ApmConfig = expandApmConfigValues(d) // APM config
@@ -351,46 +342,41 @@ func expandApplication(d *schema.ResourceData) *apm.AgentApplicationSettingsUpda
 // setting APM values
 func setAPMApplicationValues(d *schema.ResourceData, ApmSettings entities.AgentApplicationSettingsApmBase) error {
 	var err error
+	isImported := d.Get("is_imported").(bool)
 
-	if _, ok := d.GetOk("name"); ok {
+	if _, ok := d.GetOk("name"); ok || !isImported {
 		if err = d.Set("name", ApmSettings.Alias); err != nil {
 			return err
 		}
 	}
-
-	if _, ok := d.GetOk("app_apdex_threshold"); ok {
+	if _, ok := d.GetOk("app_apdex_threshold"); ok || !isImported {
 		if err := d.Set("app_apdex_threshold", ApmSettings.ApmConfig.ApdexTarget); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting app_apdex_threshold value: %#v", err)
+			return fmt.Errorf("[DEBUG] Error setting app_apdex_threshold value : %#v", err)
 		}
 	}
-
-	if _, ok := d.GetOk("enable_real_user_monitoring"); ok {
+	if _, ok := d.GetOk("enable_real_user_monitoring"); ok || !isImported {
 		if err := d.Set("enable_real_user_monitoring", ApmSettings.ApmConfig.UseServerSideConfig); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting enable_real_user_monitoring value : %#v", err)
 		}
 	}
-
-	if _, ok := d.GetOk("enable_thread_profiler"); ok {
+	if _, ok := d.GetOk("enable_thread_profiler"); ok || !isImported {
 		if err = d.Set("enable_thread_profiler", ApmSettings.ThreadProfiler.Enabled); err != nil {
-			return err
+			return fmt.Errorf("[DEBUG] Error setting thread profiler value : %#v", err)
 		}
 	}
-
-	if _, ok := d.GetOk("tracer_type"); ok {
+	if _, ok := d.GetOk("tracer_type"); ok || !isImported {
 		if err = d.Set("tracer_type", ApmSettings.TracerType); err != nil {
-			return err
+			return fmt.Errorf("[DEBUG] Error setting tracer type value : %#v", err)
 		}
 	}
-
-	if _, ok := d.GetOk("transaction_tracer"); ok {
+	if _, ok := d.GetOk("transaction_tracer"); ok || !isImported {
 		if err := flattenTransactionTracingValues(d, ApmSettings.TransactionTracer); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting transaction tracer values: %#v", err)
+			return fmt.Errorf("[DEBUG] Error setting transaction tracer values : %#v", err)
 		}
 	}
-
-	if _, ok := d.GetOk("error_collector"); ok {
+	if _, ok := d.GetOk("error_collector"); ok || !isImported {
 		if err := flattenErrorCollectorValues(d, ApmSettings.ErrorCollector); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting error collector values: %#v", err)
+			return fmt.Errorf("[DEBUG] Error setting error collector values : %#v", err)
 		}
 	}
 
@@ -398,6 +384,7 @@ func setAPMApplicationValues(d *schema.ResourceData, ApmSettings entities.AgentA
 }
 
 func flattenTransactionTracingValues(d *schema.ResourceData, in entities.AgentApplicationSettingsTransactionTracer) error {
+	isImported := d.Get("is_imported").(bool)
 	var err error
 	transactionTracingValues := map[string]interface{}{
 		"stack_trace_threshold_value": 0,
@@ -407,19 +394,19 @@ func flattenTransactionTracingValues(d *schema.ResourceData, in entities.AgentAp
 	}
 
 	_, ok := d.GetOk("transaction_tracer")
-	if in.Enabled && ok {
+	if (in.Enabled && ok) || !isImported {
 		transactionTracingValues["stack_trace_threshold_value"] = in.StackTraceThreshold
 		transactionTracingValues["transaction_threshold_type"] = in.TransactionThresholdType
 		transactionTracingValues["transaction_threshold_value"] = in.TransactionThresholdValue
 
-		if in.ExplainEnabled {
+		if in.ExplainEnabled || !isImported {
 			explainQueryPlans := map[string]interface{}{}
 			explainQueryPlans["query_plan_threshold_value"] = in.ExplainThresholdValue
 			explainQueryPlans["query_plan_threshold_type"] = in.ExplainThresholdType
 			transactionTracingValues["explain_query_plans"] = []interface{}{explainQueryPlans}
 		}
 
-		if in.LogSql {
+		if in.LogSql || !isImported {
 			logSqlValues := map[string]interface{}{}
 			logSqlValues["record_sql"] = in.RecordSql
 			transactionTracingValues["sql"] = []interface{}{logSqlValues}
@@ -432,6 +419,7 @@ func flattenTransactionTracingValues(d *schema.ResourceData, in entities.AgentAp
 }
 
 func flattenErrorCollectorValues(d *schema.ResourceData, in entities.AgentApplicationSettingsErrorCollector) error {
+	isImported := d.Get("is_imported").(bool)
 	var expectedErrorCodes []string
 	var ignoredErrorCodes []string
 	errorCollectorValues := map[string]interface{}{
@@ -441,14 +429,13 @@ func flattenErrorCollectorValues(d *schema.ResourceData, in entities.AgentApplic
 		"ignored_error_codes":    in.IgnoredErrorCodes,
 	}
 
-	if _, ok := d.GetOk("expected_error_codes"); ok {
+	if _, ok := d.GetOk("expected_error_codes"); ok || !isImported {
 		for _, code := range in.ExpectedErrorCodes {
 			expectedErrorCodes = append(expectedErrorCodes, string(code))
 		}
 		errorCollectorValues["expected_error_codes"] = expectedErrorCodes
 	}
-
-	if _, ok := d.GetOk("ignored_error_codes"); ok {
+	if _, ok := d.GetOk("ignored_error_codes"); ok || !isImported {
 		for _, code := range in.IgnoredErrorCodes {
 			ignoredErrorCodes = append(ignoredErrorCodes, string(code))
 		}

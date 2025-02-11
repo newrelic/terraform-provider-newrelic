@@ -86,7 +86,7 @@ func validateRealUserMonitoring(d *schema.ResourceDiff) error {
 	return nil
 }
 
-// Custom validator that ensures fields are related
+// Custom validator that ensures fields are validated correctly
 func validateApplicationSettingsInput(ctx context.Context, d *schema.ResourceDiff, v interface{}) error {
 	var errorsList []string
 
@@ -109,8 +109,15 @@ func validateApplicationSettingsInput(ctx context.Context, d *schema.ResourceDif
 func applicationSettingCommonSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"guid": {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The GUID of the application in New Relic.",
+		},
+		"is_imported": {
+			Type:     schema.TypeBool,
+			Computed: true,
+			Default:  nil,
 		},
 	}
 }
@@ -120,48 +127,48 @@ func apmApplicationSettingsSchema() map[string]*schema.Schema {
 		"name": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "A name for this application in new relic",
+			Description: "The name of the application in New Relic.",
 		},
 		"app_apdex_threshold": {
 			Type:        schema.TypeFloat,
 			Optional:    true,
-			Description: "Response time threshold value for apdex",
+			Description: "The response time threshold value for Apdex score calculation.",
 		},
 		"enable_real_user_monitoring": {
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Description: "Enable server side configuration",
+			Description: "Enable or disable real user monitoring.",
 		},
 		"transaction_tracer": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: "A specification of when the Monitor Downtime should end its repeat cycle, by number of occurrences or date.",
+			Description: "Configuration for transaction tracing.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"transaction_threshold_type": {
 						Type:         schema.TypeString,
 						Optional:     true,
 						ValidateFunc: validation.StringInSlice([]string{"APDEX_F", "VALUE"}, false),
-						Description:  "Response time threshold value for apdex",
+						Description:  "The type of threshold for transaction tracing, either 'APDEX_F' or 'VALUE'.",
 					},
 					"transaction_threshold_value": {
 						Type:        schema.TypeFloat,
 						Optional:    true,
-						Description: "Response time threshold value for apdex",
+						Description: "The threshold value for transaction tracing when 'transaction_threshold_type' is 'VALUE'.",
 					},
 					"sql": {
 						Type:        schema.TypeList,
 						Optional:    true,
 						MinItems:    1,
 						MaxItems:    1,
-						Description: "A specification of when the Monitor Downtime should end its repeat cycle, by number of occurrences or date.",
+						Description: "Configuration for SQL tracing.",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"record_sql": {
 									Type:         schema.TypeString,
 									Required:     true,
 									ValidateFunc: validation.StringInSlice([]string{"OBFUSCATED", "OFF", "RAW"}, true),
-									Description:  "A Boolean to enable SQL tracing",
+									Description:  "The level of SQL recording, either 'OBFUSCATED', 'OFF', or 'RAW'.",
 								},
 							},
 						},
@@ -169,25 +176,25 @@ func apmApplicationSettingsSchema() map[string]*schema.Schema {
 					"stack_trace_threshold_value": {
 						Type:        schema.TypeFloat,
 						Optional:    true,
-						Description: "Response time threshold value for stack trace of SQL",
+						Description: "The response time threshold value for capturing stack traces of SQL queries.",
 					},
 					"explain_query_plans": {
 						Type:        schema.TypeList,
 						Optional:    true,
-						Description: "Enable or disable the explain plan feature for slow SQL queries.",
+						Description: "Configuration for explain plans of slow SQL queries.",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"query_plan_threshold_type": {
 									Type:         schema.TypeString,
 									Optional:     true,
 									ValidateFunc: validation.StringInSlice([]string{"APDEX_F", "VALUE"}, false),
-									Description:  "The type of threshold to apply.",
+									Description:  "The type of threshold for explain plans, either 'APDEX_F' or 'VALUE'.",
 								},
 								"query_plan_threshold_value": {
 									Type:         schema.TypeFloat,
 									Optional:     true,
 									ValidateFunc: validation.FloatAtLeast(0),
-									Description:  "The threshold value when `explain_threshold_type` is 'VALUE'.",
+									Description:  "The threshold value for explain plans when 'query_plan_threshold_type' is 'VALUE'.",
 								},
 							},
 						},
@@ -198,32 +205,32 @@ func apmApplicationSettingsSchema() map[string]*schema.Schema {
 		"error_collector": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: "TBD",
+			Description: "Configuration for error collection.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"expected_error_classes": {
 						Type:        schema.TypeList,
 						Elem:        &schema.Schema{Type: schema.TypeString},
 						Optional:    true,
-						Description: "TBD",
+						Description: "A list of error classes that are expected and should not trigger alerts.",
 					},
 					"expected_error_codes": {
 						Type:        schema.TypeList,
 						Elem:        &schema.Schema{Type: schema.TypeString},
 						Optional:    true,
-						Description: "TBD",
+						Description: "A list of error codes that are expected and should not trigger alerts.",
 					},
 					"ignored_error_classes": {
 						Type:        schema.TypeList,
 						Elem:        &schema.Schema{Type: schema.TypeString},
 						Optional:    true,
-						Description: "TBD",
+						Description: "A list of error classes that should be ignored.",
 					},
 					"ignored_error_codes": {
 						Type:        schema.TypeList,
 						Elem:        &schema.Schema{Type: schema.TypeString},
 						Optional:    true,
-						Description: "TBD",
+						Description: "A list of error codes that should be ignored.",
 					},
 				},
 			},
@@ -232,12 +239,12 @@ func apmApplicationSettingsSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringInSlice([]string{"CROSS_APPLICATION_TRACER", "DISTRIBUTED_TRACING", "NONE", "OPT_OUT"}, true),
-			Description:  "TBD",
+			Description:  "The type of tracer to use, either 'CROSS_APPLICATION_TRACER', 'DISTRIBUTED_TRACING', 'NONE', or 'OPT_OUT'.",
 		},
 		"enable_thread_profiler": {
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Description: "TBD",
+			Description: "Enable or disable the thread profiler.",
 		},
 	}
 }
@@ -488,18 +495,16 @@ func resourceNewRelicApplicationSettingsRead(ctx context.Context, d *schema.Reso
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	guid := d.Get("guid").(string)
+	log.Printf("[INFO] Reading New Relic application %+v", d.Id())
 
-	log.Printf("[INFO] Reading New Relic application %+v", guid)
-
-	resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(guid))
+	resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	if resp == nil {
 		d.SetId("")
-		return diag.FromErr(fmt.Errorf("no New Relic application found with given guid %s", guid))
+		return diag.FromErr(fmt.Errorf("no New Relic application found with given guid %s", d.Id()))
 	}
 
 	var dig diag.Diagnostics
@@ -520,7 +525,7 @@ func resourceNewRelicApplicationSettingsRead(ctx context.Context, d *schema.Reso
 		_ = d.Set("guid", string(entity.GUID))
 		dig = diag.FromErr(setBrowserApplicationValues(d, entity.BrowserSettings))
 	default:
-		dig = diag.FromErr(fmt.Errorf("problem in retrieving application with GUID %s", guid))
+		dig = diag.FromErr(fmt.Errorf("problem in retrieving application with GUID %s", d.Id()))
 	}
 	return dig
 }
@@ -531,7 +536,6 @@ func resourceNewRelicApplicationSettingsUpdate(ctx context.Context, d *schema.Re
 	updateApplicationParams := expandApplication(d)
 
 	guid := d.Get("guid").(string)
-
 	log.Printf("[INFO] Updating New Relic application %+v with params: %+v", guid, updateApplicationParams)
 
 	agentApplicationSettingResult, err := client.APM.AgentApplicationSettingsUpdate(apm.EntityGUID(guid), *updateApplicationParams)
@@ -546,6 +550,10 @@ func resourceNewRelicApplicationSettingsUpdate(ctx context.Context, d *schema.Re
 	time.Sleep(2 * time.Second)
 
 	d.SetId(string(agentApplicationSettingResult.GUID))
+	err = d.Set("is_imported", true)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceNewRelicApplicationSettingsRead(ctx, d, meta)
 }

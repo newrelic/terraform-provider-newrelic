@@ -5,10 +5,11 @@ package newrelic
 
 import (
 	"fmt"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -24,7 +25,6 @@ var (
 func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
 	resourceName := "newrelic_application_settings.app"
 	testExpectedApplicationName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testPreCheck(t) },
 		Providers:    testAccProviders,
@@ -45,9 +45,11 @@ func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
 			},
 			// Test: Import
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: false,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateId:           "MzgwNjUyNnxBUE18QVBQTElDQVRJT058NTU1NzI4MjY3",
+				ImportStateVerifyIgnore: []string{"is_imported"},
 			},
 		},
 	})
@@ -62,7 +64,7 @@ func testAccCheckNewRelicApplicationDestroy(s *terraform.State) error {
 func testAccNewRelicApplicationConfig() string {
 	return fmt.Sprintf(`
 		resource "newrelic_application_settings" "app" {
-			guid = "MzgwNjUyNnxBUE18QVBQTElDQVRJT058NTY3MjMyMjY0"
+			guid = "MzgwNjUyNnxBUE18QVBQTElDQVRJT058NTU1NzI4MjY3"
 			name = "%[1]s"
 			app_apdex_threshold = "0.5"
 			enable_real_user_monitoring = true
@@ -92,7 +94,7 @@ func testAccNewRelicApplicationConfig() string {
 func testAccNewRelicApplicationConfigUpdated(name string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_application_settings" "app" {
-			guid = "MzgwNjUyNnxBUE18QVBQTElDQVRJT058NTY3MjMyMjY0"
+			guid = "MzgwNjUyNnxBUE18QVBQTElDQVRJT058NTU1NzI4MjY3"
 			name = "%[1]s-updated"
 			app_apdex_threshold = "0.5"
 			enable_real_user_monitoring = true
@@ -133,7 +135,7 @@ func testAccCheckNewRelicApplicationExists(resourceName string) resource.TestChe
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(2 * time.Second)
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
 			return fmt.Errorf(err.Error())
