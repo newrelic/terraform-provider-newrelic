@@ -28,7 +28,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   type                           = "static"
   name                           = "foo"
   description                    = "Alert when transactions are taking too long"
-  title_template                 = "Issue in environment: {{ json accumulations.tag.environment }}"
+  title_template                 = "Issue in environment: {{ tags.environment }}"
   runbook_url                    = "https://www.example.com"
   enabled                        = true
   violation_time_limit_seconds   = 3600
