@@ -5,8 +5,8 @@ package newrelic
 
 import (
 	"fmt"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 
@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 )
 
 var (
@@ -60,47 +61,90 @@ func testAccCheckNewRelicApplicationDestroy(s *terraform.State) error {
 // The test application for this data source is created in provider_test.go
 func testAccNewRelicApplicationConfig() string {
 	return fmt.Sprintf(`
-resource "newrelic_application_settings" "app" {
-	name = "%s"
-	app_apdex_threshold = "0.9"
-	end_user_apdex_threshold = "0.8"
-	enable_real_user_monitoring = true
-}
-`, testExpectedApplicationName)
+		resource "newrelic_application_settings" "app" {
+			guid = "MzgwNjUyNnxBUE18QVBQTElDQVRJT058NTY3MjMyMjY0"
+			name = "%[1]s"
+			app_apdex_threshold = "0.5"
+			enable_real_user_monitoring = true
+			transaction_tracer{
+			   explain_query_plans{
+				 query_plan_threshold_value = "0.5"
+				 query_plan_threshold_type = "VALUE"
+			   }
+			   stack_trace_threshold_value = "0.5"
+			   transaction_threshold_value = "0.5"
+			   transaction_threshold_type = "VALUE"
+			   sql{
+				 record_sql = "RAW"
+			   }
+			}
+			error_collector{
+			  expected_error_classes = []
+			  expected_error_codes = []
+			  ignored_error_classes = []
+			  ignored_error_codes = []
+			}
+			tracer_type = "OPT_OUT"
+			enable_thread_profiler = false
+		}`, testExpectedApplicationName)
 }
 
 func testAccNewRelicApplicationConfigUpdated(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_application_settings" "app" {
-	name = "%s-updated"
-	app_apdex_threshold = "0.8"
-	end_user_apdex_threshold = "0.7"
-	enable_real_user_monitoring = false
-}
-`, name)
+		resource "newrelic_application_settings" "app" {
+			guid = "MzgwNjUyNnxBUE18QVBQTElDQVRJT058NTY3MjMyMjY0"
+			name = "%[1]s-updated"
+			app_apdex_threshold = "0.5"
+			enable_real_user_monitoring = true
+			transaction_tracer{
+			   explain_query_plans{
+				 query_plan_threshold_value = "0.5"
+				 query_plan_threshold_type = "VALUE"
+			   }
+			   stack_trace_threshold_value = "0.5"
+			   transaction_threshold_value = "0.5"
+			   transaction_threshold_type = "VALUE"
+			   sql{
+				 record_sql = "RAW"
+			   }
+			}
+			error_collector{
+			  expected_error_classes = []
+			  expected_error_codes = []
+			  ignored_error_classes = []
+			  ignored_error_codes = []
+			}
+			tracer_type = "OPT_OUT"
+			enable_thread_profiler = false
+		}`, name)
 }
 
-func testAccCheckNewRelicApplicationExists(n string) resource.TestCheckFunc {
+func testAccCheckNewRelicApplicationExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("not found: %s", n)
-		}
+		rs, ok := s.RootModule().Resources[resourceName]
 
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceName)
+		}
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no application ID is set")
 		}
 
-		id, err := strconv.ParseInt(rs.Primary.ID, 10, 32)
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+		time.Sleep(5 * time.Second)
+		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
-			return nil
+			return fmt.Errorf(err.Error())
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).NewClient
-		_, err = client.APM.GetApplication(int(id))
-		if err != nil {
-			return err
+		res, foundOk := (*found).(*entities.ApmApplicationEntity)
+		if !foundOk {
+			return fmt.Errorf("no application found")
+		}
+		if res.GUID != common.EntityGUID(rs.Primary.ID) {
+			return fmt.Errorf("no application found")
 		}
 
 		return nil
@@ -116,7 +160,7 @@ func testPreCheck(t *testing.T) {
 		t.Skipf("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
 	}
 
-	testCreateApplication(t)
+	//testCreateApplication(t)
 
 	time.Sleep(5 * time.Second)
 }
@@ -137,4 +181,5 @@ func testCreateApplication(t *testing.T) {
 
 	app.RecordCustomEvent("terraform test", nil)
 	app.Shutdown(30 * time.Second)
+
 }

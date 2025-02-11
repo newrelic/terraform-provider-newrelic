@@ -2,160 +2,110 @@ package newrelic
 
 import (
 	"fmt"
-	"log"
-	"strconv"
-
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/apm"
 )
 
-func expandApplication(d *schema.ResourceData) *apm.Application {
-	a := apm.Application{
-		Name: d.Get("name").(string),
+func expandApmConfigValues(d *schema.ResourceData) *apm.AgentApplicationSettingsApmConfigInput {
+
+	apmConfig := apm.AgentApplicationSettingsApmConfigInput{}
+
+	if v, ok := d.GetOk("app_apdex_threshold"); ok {
+		apmConfig.ApdexTarget = v.(float64)
 	}
 
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		log.Printf("[ERROR] expanding application, id %s", err)
+	// This ensures that the value is explicitly provided in the configuration before setting it in the APM config which GetOk and Get fails to do so.
+	if configValue := d.GetRawConfig().AsValueMap()["enable_real_user_monitoring"]; !configValue.IsNull() {
+		apmConfig.UseServerSideConfig = getBoolPointer(configValue.True())
+	}
+
+	if apmConfig == (apm.AgentApplicationSettingsApmConfigInput{}) {
+		return nil
+	}
+
+	return &apmConfig
+}
+
+func expandTransactionTracerValues(d *schema.ResourceData) *apm.AgentApplicationSettingsTransactionTracerInput {
+
+	tracer := apm.AgentApplicationSettingsTransactionTracerInput{}
+
+	if _, ok := d.GetOk("transaction_tracer"); ok {
+		flag := true
+		tracer.Enabled = &flag
 	} else {
-		a.ID = id
+		flag := false
+		tracer.Enabled = &flag
 	}
-
-	a.Settings.ApmConfig.ApdexTarget = d.Get("app_apdex_threshold").(float64)
-	a.Settings.ApmConfig.ApdexTarget = d.Get("end_user_apdex_threshold").(float64)
-	a.Settings.ApmConfig.UseServerSideConfig = d.Get("enable_real_user_monitoring").(bool)
-
-	return &a
-}
-
-func flattenApplication(a *apm.Application, d *schema.ResourceData) error {
-	d.SetId(strconv.Itoa(a.ID))
-	var err error
-
-	err = d.Set("name", a.Name)
-	if err != nil {
-		return err
-	}
-
-	err = d.Set("app_apdex_threshold", a.Settings.ApmConfig.ApdexTarget)
-	if err != nil {
-		return err
-	}
-
-	err = d.Set("end_user_apdex_threshold", a.Settings.ApmConfig.ApdexTarget)
-	if err != nil {
-		return err
-	}
-
-	err = d.Set("enable_real_user_monitoring", a.Settings.ApmConfig.UseServerSideConfig)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func getBoolPointer(value bool) *bool {
-	return &value
-}
-
-func getFloatPointer(value float64) *float64 {
-	return &value
-}
-
-func getStringPointer(value string) *string {
-	return &value
-}
-
-func expandApmConfigValues(v interface{}) *apm.AgentApplicationSettingsApmConfigInput {
-	if len(v.([]interface{})) < 1 {
-		return nil
-	}
-
-	values := v.([]interface{})[0].(map[string]interface{})
-
-	perms := &apm.AgentApplicationSettingsApmConfigInput{}
-
-	if v, ok := values["apdex_target"]; ok {
-		perms.ApdexTarget = v.(float64)
-	}
-	if v, ok := values["enable_server_side_config"]; ok {
-		perms.UseServerSideConfig = getBoolPointer(v.(bool))
-	}
-
-	return perms
-}
-
-func expandTransactionTracerValues(v interface{}) *apm.AgentApplicationSettingsTransactionTracerInput {
-	if len(v.([]interface{})) < 1 {
-		return nil
-	}
-
-	values := v.([]interface{})[0].(map[string]interface{})
-
-	tracer := &apm.AgentApplicationSettingsTransactionTracerInput{}
-
-	if v, ok := values["enabled"]; ok {
-		tracer.Enabled = getBoolPointer(v.(bool))
-	}
-	if v, ok := values["explain_enabled"]; ok {
-		tracer.ExplainEnabled = getBoolPointer(v.(bool))
-	}
-	if v, ok := values["explain_threshold_value"]; ok {
-		tracer.ExplainThresholdValue = getFloatPointer(v.(float64))
-	}
-	if v, ok := values["explain_threshold_type"]; ok {
-		tracer.ExplainThresholdType = apm.AgentApplicationSettingsThresholdTypeEnum(v.(string))
-	}
-	if v, ok := values["log_sql"]; ok {
-		tracer.LogSql = getBoolPointer(v.(bool))
-	}
-	if v, ok := values["record_sql"]; ok {
-		tracer.RecordSql = apm.AgentApplicationSettingsRecordSqlEnum(v.(string))
-	}
-	if v, ok := values["stack_trace_threshold_value"]; ok {
-		tracer.StackTraceThreshold = getFloatPointer(v.(float64))
-	}
-	if v, ok := values["transaction_threshold_type"]; ok {
+	if v, ok := d.GetOk("transaction_tracer.0.transaction_threshold_type"); ok {
 		tracer.TransactionThresholdType = apm.AgentApplicationSettingsThresholdTypeEnum(v.(string))
 	}
-	if v, ok := values["transaction_threshold_value"]; ok {
+	if v, ok := d.GetOk("transaction_tracer.0.transaction_threshold_value"); ok {
 		tracer.TransactionThresholdValue = getFloatPointer(v.(float64))
 	}
+	if _, ok := d.GetOk("transaction_tracer.0.explain_query_plans"); ok {
+		flag := true
+		tracer.ExplainEnabled = &flag
+	} else {
+		flag := false
+		tracer.ExplainEnabled = &flag
+	}
+	if v, ok := d.GetOk("transaction_tracer.0.explain_query_plans.0.query_plan_threshold_value"); ok {
+		tracer.ExplainThresholdValue = getFloatPointer(v.(float64))
+	}
+	if v, ok := d.GetOk("transaction_tracer.0.explain_query_plans.0.query_plan_threshold_type"); ok {
+		tracer.ExplainThresholdType = apm.AgentApplicationSettingsThresholdTypeEnum(v.(string))
+	}
+	if _, ok := d.GetOk("transaction_tracer.0.sql"); ok {
+		flag := true
+		tracer.LogSql = &flag
+	} else {
+		flag := false
+		tracer.LogSql = &flag
+	}
+	if v, ok := d.GetOk("transaction_tracer.0.sql.0.record_sql"); ok {
+		tracer.RecordSql = apm.AgentApplicationSettingsRecordSqlEnum(v.(string))
+	}
+	if v, ok := d.GetOk("transaction_tracer.0.stack_trace_threshold_value"); ok {
+		tracer.StackTraceThreshold = getFloatPointer(v.(float64))
+	}
 
-	return tracer
-}
-
-func expandErrorCollectorValues(v interface{}) *apm.AgentApplicationSettingsErrorCollectorInput {
-	if len(v.([]interface{})) < 1 {
+	if tracer == (apm.AgentApplicationSettingsTransactionTracerInput{}) {
 		return nil
 	}
 
-	values := v.([]interface{})[0].(map[string]interface{})
+	return &tracer
+}
 
-	collector := &apm.AgentApplicationSettingsErrorCollectorInput{}
+func expandErrorCollectorValues(d *schema.ResourceData) *apm.AgentApplicationSettingsErrorCollectorInput {
 
-	if v, ok := values["enabled"]; ok {
-		collector.Enabled = getBoolPointer(v.(bool))
+	collector := apm.AgentApplicationSettingsErrorCollectorInput{}
+
+	if _, ok := d.GetOk("error_collector"); ok {
+		flag := true
+		collector.Enabled = &flag
+	} else {
+		flag := false
+		collector.Enabled = &flag
 	}
-	if v, ok := values["expected_error_classes"]; ok {
-		collector.ExpectedErrorClasses = v.([]string)
+	if v, ok := d.GetOk("error_collector.0.expected_error_classes"); ok {
+		collector.ExpectedErrorClasses = convertInterfaceToStringSlice(v)
 	}
-	if v, ok := values["expected_error_codes"]; ok {
-		strSlice := v.([]string)
+	if v, ok := d.GetOk("error_collector.0.expected_error_codes"); ok {
+		strSlice := convertInterfaceToStringSlice(v)
 		var httpStatusSlice []apm.AgentApplicationSettingsErrorCollectorHttpStatus
 		for _, str := range strSlice {
 			httpStatusSlice = append(httpStatusSlice, apm.AgentApplicationSettingsErrorCollectorHttpStatus(str))
 		}
 		collector.ExpectedErrorCodes = httpStatusSlice
 	}
-	if v, ok := values["ignored_error_classes"]; ok {
-		collector.IgnoredErrorClasses = v.([]string)
+	if v, ok := d.GetOk("error_collector.0.ignored_error_classes"); ok {
+		collector.IgnoredErrorClasses = convertInterfaceToStringSlice(v)
 	}
-	if v, ok := values["ignored_error_codes"]; ok {
-		strSlice := v.([]string)
+	if v, ok := d.GetOk("error_collector.0.ignored_error_codes"); ok {
+		strSlice := convertInterfaceToStringSlice(v)
 		var httpStatusSlice []apm.AgentApplicationSettingsErrorCollectorHttpStatus
 		for _, str := range strSlice {
 			httpStatusSlice = append(httpStatusSlice, apm.AgentApplicationSettingsErrorCollectorHttpStatus(str))
@@ -163,7 +113,11 @@ func expandErrorCollectorValues(v interface{}) *apm.AgentApplicationSettingsErro
 		collector.IgnoredErrorCodes = httpStatusSlice
 	}
 
-	return collector
+	if collector.Enabled == nil && len(collector.ExpectedErrorClasses) == 0 && len(collector.ExpectedErrorCodes) == 0 && len(collector.IgnoredErrorClasses) == 0 && len(collector.IgnoredErrorCodes) == 0 {
+		return nil
+	}
+
+	return &collector
 }
 
 func expandMaskInputOptions(v interface{}) apm.AgentApplicationSettingsMaskInputOptionsInput {
@@ -207,150 +161,235 @@ func expandMaskInputOptions(v interface{}) apm.AgentApplicationSettingsMaskInput
 	return inputOptions
 }
 
-func expandApplicationCopy(d *schema.ResourceData) *apm.AgentApplicationSettingsUpdateInput {
+func expandMobileSettingValues(d *schema.ResourceData) *apm.AgentApplicationSettingsMobileSettingsInput {
+	a := apm.AgentApplicationSettingsMobileSettingsInput{}
+
+	if v, ok := d.GetOk("use_crash_reports"); ok {
+		a.UseCrashReports = getBoolPointer(v.(bool))
+	}
+	if v, ok := d.GetOk("enable_application_exit_info"); ok {
+		a.ApplicationExitInfo.Enabled = getBoolPointer(v.(bool))
+	}
+	//if v, ok := d.GetOk("log_reporting.0.enabled"); ok {
+	//	a.NetworkSettings. = getBoolPointer(v.(bool))
+	//}
+	//if v, ok := d.GetOk("log_reporting.0.level"); ok {
+	//	a.UseCrashReports = getBoolPointer(v.(bool))
+	//}
+	//if v, ok := d.GetOk("log_reporting.0.sampling_rate"); ok {
+	//	a.UseCrashReports = getBoolPointer(v.(bool))
+	//}
+
+	if a == (apm.AgentApplicationSettingsMobileSettingsInput{}) {
+		return nil
+	}
+
+	return &a
+}
+
+func expandBrowserMonitoringValue(v interface{}) *apm.AgentApplicationSettingsBrowserMonitoringInput {
+	if len(v.([]interface{})) < 1 {
+		return nil
+	}
+
+	values := v.([]interface{})[0].(map[string]interface{})
+	browserMonitoring := &apm.AgentApplicationSettingsBrowserMonitoringInput{}
+
+	browserMonitoring.DistributedTracing = expandDistributedTracingValues(values["distributed_tracing"])
+	browserMonitoring.Ajax = expandAjaxValues(values["ajax"])
+
+	return browserMonitoring
+}
+
+func expandDistributedTracingValues(v interface{}) *apm.AgentApplicationSettingsBrowserDistributedTracingInput {
+	if len(v.([]interface{})) < 1 {
+		return nil
+	}
+
+	values := v.([]interface{})[0].(map[string]interface{})
+	distributedTracing := apm.AgentApplicationSettingsBrowserDistributedTracingInput{}
+
+	if v, ok := values["enabled"]; ok {
+		distributedTracing.Enabled = getBoolPointer(v.(bool))
+	}
+	if v, ok := values["cors_enabled"]; ok {
+		distributedTracing.CorsEnabled = getBoolPointer(v.(bool))
+	}
+	if v, ok := values["exclude_newrelic_header"]; ok {
+		distributedTracing.ExcludeNewrelicHeader = getBoolPointer(v.(bool))
+	}
+	if v, ok := values["cors_use_newrelic_header"]; ok {
+		distributedTracing.CorsUseNewrelicHeader = getBoolPointer(v.(bool))
+	}
+	if v, ok := values["cors_use_trace_context_headers"]; ok {
+		distributedTracing.CorsUseTracecontextHeaders = getBoolPointer(v.(bool))
+	}
+	if v, ok := values["allowed_origins"]; ok {
+		distributedTracing.AllowedOrigins = v.([]string)
+	}
+
+	return &distributedTracing
+}
+
+func expandAjaxValues(v interface{}) *apm.AgentApplicationSettingsBrowserAjaxInput {
+	if len(v.([]interface{})) < 1 {
+		return nil
+	}
+	values := v.([]interface{})[0].(map[string]interface{})
+	ajax := &apm.AgentApplicationSettingsBrowserAjaxInput{}
+
+	if v, ok := values["deny_list"]; ok {
+		ajax.DenyList = v.([]string)
+	}
+	return ajax
+}
+
+func expandSessionReplayValues(v interface{}) *apm.AgentApplicationSettingsSessionReplayInput {
+	if len(v.([]interface{})) < 1 {
+		return nil
+	}
+
+	values := v.([]interface{})[0].(map[string]interface{})
+	sessionReplay := &apm.AgentApplicationSettingsSessionReplayInput{}
+
+	if v, ok := values["auto_start"]; ok {
+		sessionReplay.AutoStart = getBoolPointer(v.(bool))
+	}
+	if v, ok := values["enabled"]; ok {
+		sessionReplay.Enabled = getBoolPointer(v.(bool))
+	}
+	if v, ok := values["error_sampling_rate"]; ok {
+		sessionReplay.ErrorSamplingRate = v.(float64)
+	}
+	if v, ok := values["sampling_rate"]; ok {
+		sessionReplay.SamplingRate = v.(float64)
+	}
+	if _, ok := values["mask_input_options"]; ok {
+		sessionReplay.MaskInputOptions = expandMaskInputOptions(values["mask_input_options"])
+	}
+	if v, ok := values["mask_all_inputs"]; ok {
+		sessionReplay.MaskAllInputs = getBoolPointer(v.(bool))
+	}
+	if v, ok := values["block_selector"]; ok {
+		sessionReplay.BlockSelector = getStringPointer(v.(string))
+	}
+	if v, ok := values["mask_text_selector"]; ok {
+		sessionReplay.MaskTextSelector = getStringPointer(v.(string))
+	}
+
+	return sessionReplay
+}
+
+func expandSessionTraceValues(v interface{}) *apm.AgentApplicationSettingsSessionTraceInput {
+	if len(v.([]interface{})) < 1 {
+		return nil
+	}
+
+	values := v.([]interface{})[0].(map[string]interface{})
+	sessionTrace := &apm.AgentApplicationSettingsSessionTraceInput{}
+
+	if v, ok := values["error_sampling_rate"]; ok {
+		sessionTrace.ErrorSamplingRate = v.(float64)
+	}
+	if v, ok := values["mode"]; ok {
+		sessionTrace.Mode = apm.AgentApplicationSettingsSessionTraceModeInput(v.(string))
+	}
+	if v, ok := values["sampling_rate"]; ok {
+		sessionTrace.SamplingRate = v.(float64)
+	}
+	if v, ok := values["enabled"]; ok {
+		sessionTrace.Enabled = getBoolPointer(v.(bool))
+	}
+
+	return sessionTrace
+}
+
+func expandApplication(d *schema.ResourceData) *apm.AgentApplicationSettingsUpdateInput {
 
 	a := apm.AgentApplicationSettingsUpdateInput{}
 
-	if v, ok := d.GetOk("alias"); ok {
+	if v, ok := d.GetOk("name"); ok { // alias
 		a.Alias = getStringPointer(v.(string))
 	}
 
-	if v, ok := d.GetOk("tracer_type"); ok {
-		a.TracerType = &apm.AgentApplicationSettingsTracerTypeInput{Value: apm.AgentApplicationSettingsTracer(v.(string))}
+	if v, ok := d.GetOk("tracer_type"); ok { // tracer type
+		TracerType := &apm.AgentApplicationSettingsTracerTypeInput{}
+		TracerType.Value = apm.AgentApplicationSettingsTracer(v.(string))
+		a.TracerType = TracerType
 	}
 
-	if v, ok := d.GetOk("thread_profiler_enabled"); ok {
-		if a.ThreadProfiler == nil {
-			a.ThreadProfiler = &apm.AgentApplicationSettingsThreadProfilerInput{}
-		}
-		a.ThreadProfiler.Enabled = getBoolPointer(v.(bool))
+	if threadProfilerValue := d.GetRawConfig().AsValueMap()["enable_thread_profiler"]; !threadProfilerValue.IsNull() {
+		ThreadProfiler := &apm.AgentApplicationSettingsThreadProfilerInput{}
+		ThreadProfiler.Enabled = getBoolPointer(threadProfilerValue.True())
+		a.ThreadProfiler = ThreadProfiler
 	}
+
 	// apm settings
-	a.ApmConfig = expandApmConfigValues(d.Get("apm_config"))
-	// transaction_tracing
-	a.TransactionTracer = expandTransactionTracerValues(d.Get("transaction_tracing"))
-	// error_collector
-	a.ErrorCollector = expandErrorCollectorValues(d.Get("error_collector"))
+	a.ApmConfig = expandApmConfigValues(d) // APM config
+
+	a.TransactionTracer = expandTransactionTracerValues(d) // transaction_tracing
+
+	a.ErrorCollector = expandErrorCollectorValues(d) // error_collector
 
 	// mobile settings
-	if v, ok := d.GetOk("use_crash_reports"); ok {
-		a.MobileSettings.UseCrashReports = getBoolPointer(v.(bool))
-	}
-	if v, ok := d.GetOk("application_exit_info.0.enabled"); ok {
-		a.MobileSettings.ApplicationExitInfo.Enabled = getBoolPointer(v.(bool))
+	//a.MobileSettings = expandMobileSettingValues(d)
+	//
+	//// browser settings
+	//a.BrowserMonitoring = expandBrowserMonitoringValue(d.Get("browser_monitoring")) // browser_monitoring
+	//
+	//a.SessionReplay = expandSessionReplayValues(d.Get("session_replay")) // session replay settings
+	//
+	//a.SessionTrace = expandSessionTraceValues(d.Get("session_trace")) // session trace settings
+
+	if v, ok := d.GetOk("end_user_apdex_threshold"); ok { // browser config apdex target
+		a.BrowserConfig.ApdexTarget = v.(float64)
 	}
 
-	// browser settings
-
-	// browser_monitoring
-	if v, ok := d.GetOk("browser_monitoring.0.distributed_tracing.0.enabled"); ok {
-		a.BrowserMonitoring.DistributedTracing.Enabled = getBoolPointer(v.(bool))
-	}
-	if v, ok := d.GetOk("browser_monitoring.0.distributed_tracing.0.cors_enabled"); ok {
-		a.BrowserMonitoring.DistributedTracing.CorsEnabled = getBoolPointer(v.(bool))
-	}
-	if v, ok := d.GetOk("browser_monitoring.0.distributed_tracing.0.exclude_newrelic_header"); ok {
-		a.BrowserMonitoring.DistributedTracing.ExcludeNewrelicHeader = getBoolPointer(v.(bool))
-	}
-	if v, ok := d.GetOk("browser_monitoring.0.distributed_tracing.0.cors_use_newrelic_header"); ok {
-		a.BrowserMonitoring.DistributedTracing.CorsUseNewrelicHeader = getBoolPointer(v.(bool))
-	}
-	if v, ok := d.GetOk("browser_monitoring.0.distributed_tracing.0.cors_use_tracecontext_headers"); ok {
-		a.BrowserMonitoring.DistributedTracing.CorsUseTracecontextHeaders = getBoolPointer(v.(bool))
-	}
-	if v, ok := d.GetOk("browser_monitoring.0.distributed_tracing.0.allowed_origins"); ok {
-		a.BrowserMonitoring.DistributedTracing.AllowedOrigins = v.([]string)
-	}
-	if v, ok := d.GetOk("browser_monitoring.0.ajax.0.deny_list"); ok {
-		a.BrowserMonitoring.Ajax.DenyList = v.([]string)
-	}
-	// session replay settings
-	if v, ok := d.GetOk("session_replay.0.auto_start"); ok {
-		a.SessionReplay.AutoStart = getBoolPointer(v.(bool))
-	}
-	if v, ok := d.GetOk("session_replay.0.enabled"); ok {
-		a.SessionReplay.Enabled = getBoolPointer(v.(bool))
-	}
-	if v, ok := d.GetOk("session_replay.0.error_sampling_rate"); ok {
-		a.SessionReplay.ErrorSamplingRate = v.(float64)
-	}
-	if v, ok := d.GetOk("session_replay.0.sampling_rate"); ok {
-		a.SessionReplay.SamplingRate = v.(float64)
-	}
-	if _, ok := d.GetOk("session_replay.0.mask_input_options"); ok {
-		a.SessionReplay.MaskInputOptions = expandMaskInputOptions(d.Get("session_replay.0.mask_input_options"))
-	}
-
-	if v, ok := d.GetOk("session_replay.0.mask_all_inputs"); ok {
-		a.SessionReplay.MaskAllInputs = getBoolPointer(v.(bool))
-	}
-	if v, ok := d.GetOk("session_replay.0.block_selector"); ok {
-		a.SessionReplay.BlockSelector = getStringPointer(v.(string))
-	}
-	if v, ok := d.GetOk("session_replay.0.mask_text_selector"); ok {
-		a.SessionReplay.MaskTextSelector = getStringPointer(v.(string))
-	}
-
-	// session trace settings
-	if v, ok := d.GetOk("session_trace.0.error_sampling_rate"); ok {
-		a.SessionTrace.ErrorSamplingRate = v.(float64)
-	}
-	if v, ok := d.GetOk("session_trace.0.mode"); ok {
-		a.SessionTrace.Mode = apm.AgentApplicationSettingsSessionTraceModeInput(v.(string))
-	}
-	if v, ok := d.GetOk("session_trace.0.sampling_rate"); ok {
-		a.SessionTrace.SamplingRate = v.(float64)
-	}
-	if v, ok := d.GetOk("session_trace.0.enabled"); ok {
-		a.SessionTrace.Enabled = getBoolPointer(v.(bool))
-	}
-
-	// Mobile settings
-	if v, ok := d.GetOk("use_crash_reports"); ok {
-		a.MobileSettings.UseCrashReports = getBoolPointer(v.(bool))
-	}
-	if v, ok := d.GetOk("application_exit_info.0.enabled"); ok {
-		a.MobileSettings.ApplicationExitInfo.Enabled = getBoolPointer(v.(bool))
-	}
 	return &a
 }
 
 // setting APM values
 func setAPMApplicationValues(d *schema.ResourceData, ApmSettings entities.AgentApplicationSettingsApmBase) error {
-
 	var err error
-	err = d.Set("alias", ApmSettings.Alias)
-	if err != nil {
-		return err
-	}
 
-	if _, isok := d.GetOk("apm_config"); isok {
-		if err := d.Set("apm_config", flattenApmConfigValues(ApmSettings.ApmConfig)); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting apm config values: %#v", err)
-		}
-	}
-
-	if _, isok := d.GetOk("thread_profiler_enabled"); isok {
-		if err = d.Set("thread_profiler_enabled", ApmSettings.ThreadProfiler.Enabled); err != nil {
+	if _, ok := d.GetOk("name"); ok {
+		if err = d.Set("name", ApmSettings.Alias); err != nil {
 			return err
 		}
 	}
 
-	if _, isok := d.GetOk("tracer_type"); isok {
-		err = d.Set("tracer_type", ApmSettings.TracerType)
-		if err != nil {
+	if _, ok := d.GetOk("app_apdex_threshold"); ok {
+		if err := d.Set("app_apdex_threshold", ApmSettings.ApmConfig.ApdexTarget); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting app_apdex_threshold value: %#v", err)
+		}
+	}
+
+	if _, ok := d.GetOk("enable_real_user_monitoring"); ok {
+		if err := d.Set("enable_real_user_monitoring", ApmSettings.ApmConfig.UseServerSideConfig); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting enable_real_user_monitoring value : %#v", err)
+		}
+	}
+
+	if _, ok := d.GetOk("enable_thread_profiler"); ok {
+		if err = d.Set("enable_thread_profiler", ApmSettings.ThreadProfiler.Enabled); err != nil {
 			return err
 		}
 	}
 
-	if _, isok := d.GetOk("transaction_tracing"); isok {
-		if err := d.Set("transaction_tracing", flattenTransactionTracingValues(ApmSettings.TransactionTracer)); err != nil {
+	if _, ok := d.GetOk("tracer_type"); ok {
+		if err = d.Set("tracer_type", ApmSettings.TracerType); err != nil {
+			return err
+		}
+	}
+
+	if _, ok := d.GetOk("transaction_tracer"); ok {
+		if err := flattenTransactionTracingValues(d, ApmSettings.TransactionTracer); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting transaction tracer values: %#v", err)
 		}
 	}
 
-	if _, isok := d.GetOk("error_collector"); isok {
-		if err := d.Set("error_collector", flattenErrorCollectorValues(ApmSettings.ErrorCollector)); err != nil {
+	if _, ok := d.GetOk("error_collector"); ok {
+		if err := flattenErrorCollectorValues(d, ApmSettings.ErrorCollector); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting error collector values: %#v", err)
 		}
 	}
@@ -358,57 +397,72 @@ func setAPMApplicationValues(d *schema.ResourceData, ApmSettings entities.AgentA
 	return nil
 }
 
-func flattenApmConfigValues(in entities.AgentApplicationSettingsApmConfig) []interface{} {
-	apmConfigValues := map[string]interface{}{
-		"apdex_target":              in.ApdexTarget,
-		"enable_server_side_config": in.UseServerSideConfig,
-	}
-	return []interface{}{apmConfigValues}
-}
-
-func flattenTransactionTracingValues(in entities.AgentApplicationSettingsTransactionTracer) []interface{} {
+func flattenTransactionTracingValues(d *schema.ResourceData, in entities.AgentApplicationSettingsTransactionTracer) error {
+	var err error
 	transactionTracingValues := map[string]interface{}{
-		"enabled":                     in.Enabled,
-		"log_sql":                     in.LogSql,
-		"record_sql":                  in.RecordSql,
-		"explain_enabled":             in.ExplainEnabled,
-		"explain_threshold_value":     in.ExplainThresholdValue,
-		"explain_threshold_type":      in.ExplainThresholdType,
-		"stack_trace_threshold_value": in.StackTraceThreshold,
-		"transaction_threshold_type":  in.TransactionThresholdType,
-		"transaction_threshold_value": in.TransactionThresholdValue,
+		"stack_trace_threshold_value": 0,
+		"transaction_threshold_value": 0,
+		"explain_query_plans":         make([]interface{}, 0),
+		"sql":                         make([]interface{}, 0),
 	}
-	return []interface{}{transactionTracingValues}
+
+	_, ok := d.GetOk("transaction_tracer")
+	if in.Enabled && ok {
+		transactionTracingValues["stack_trace_threshold_value"] = in.StackTraceThreshold
+		transactionTracingValues["transaction_threshold_type"] = in.TransactionThresholdType
+		transactionTracingValues["transaction_threshold_value"] = in.TransactionThresholdValue
+
+		if in.ExplainEnabled {
+			explainQueryPlans := map[string]interface{}{}
+			explainQueryPlans["query_plan_threshold_value"] = in.ExplainThresholdValue
+			explainQueryPlans["query_plan_threshold_type"] = in.ExplainThresholdType
+			transactionTracingValues["explain_query_plans"] = []interface{}{explainQueryPlans}
+		}
+
+		if in.LogSql {
+			logSqlValues := map[string]interface{}{}
+			logSqlValues["record_sql"] = in.RecordSql
+			transactionTracingValues["sql"] = []interface{}{logSqlValues}
+		}
+
+		err = d.Set("transaction_tracer", []interface{}{transactionTracingValues})
+	}
+
+	return err
 }
 
-func flattenErrorCollectorValues(in entities.AgentApplicationSettingsErrorCollector) []interface{} {
+func flattenErrorCollectorValues(d *schema.ResourceData, in entities.AgentApplicationSettingsErrorCollector) error {
 	var expectedErrorCodes []string
 	var ignoredErrorCodes []string
 	errorCollectorValues := map[string]interface{}{
-		"enabled":                in.Enabled,
 		"expected_error_classes": in.ExpectedErrorClasses,
 		"expected_error_codes":   in.ExpectedErrorCodes,
 		"ignored_error_classes":  in.IgnoredErrorClasses,
 		"ignored_error_codes":    in.IgnoredErrorCodes,
 	}
 
-	for _, code := range in.ExpectedErrorCodes {
-		expectedErrorCodes = append(expectedErrorCodes, string(code))
+	if _, ok := d.GetOk("expected_error_codes"); ok {
+		for _, code := range in.ExpectedErrorCodes {
+			expectedErrorCodes = append(expectedErrorCodes, string(code))
+		}
+		errorCollectorValues["expected_error_codes"] = expectedErrorCodes
 	}
-	errorCollectorValues["expected_error_codes"] = expectedErrorCodes
 
-	for _, code := range in.IgnoredErrorCodes {
-		ignoredErrorCodes = append(ignoredErrorCodes, string(code))
+	if _, ok := d.GetOk("ignored_error_codes"); ok {
+		for _, code := range in.IgnoredErrorCodes {
+			ignoredErrorCodes = append(ignoredErrorCodes, string(code))
+		}
+		errorCollectorValues["ignored_error_codes"] = ignoredErrorCodes
 	}
-	errorCollectorValues["ignored_error_codes"] = ignoredErrorCodes
 
-	return []interface{}{errorCollectorValues}
+	err := d.Set("error_collector", []interface{}{errorCollectorValues})
+	return err
 }
 
 // setting browser values
 func setBrowserApplicationValues(d *schema.ResourceData, BrowserSettings entities.AgentApplicationSettingsBrowserBase) error {
 
-	if err := d.Set("browser_config", flattenBrowserConfigValues(BrowserSettings.BrowserConfig)); err != nil {
+	if err := d.Set("end_user_apdex_threshold", BrowserSettings.BrowserConfig.ApdexTarget); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting browser config values: %#v", err)
 	}
 
@@ -425,14 +479,6 @@ func setBrowserApplicationValues(d *schema.ResourceData, BrowserSettings entitie
 	}
 
 	return nil
-}
-
-func flattenBrowserConfigValues(in entities.AgentApplicationSettingsBrowserConfig) []map[string]interface{} {
-	apmConfigValues := make([]map[string]interface{}, 1)
-	apmConfigValues[0] = map[string]interface{}{
-		"apdex_target": in.ApdexTarget,
-	}
-	return apmConfigValues
 }
 
 func flattenSessionReplayValues(in entities.AgentApplicationSettingsSessionReplay) []map[string]interface{} {
@@ -502,17 +548,9 @@ func setMobileApplicationValues(d *schema.ResourceData, MobileSettings entities.
 		return fmt.Errorf("[DEBUG] Error setting use crash reports: %#v", err)
 	}
 
-	if err := d.Set("application_exit_info", flattenApplicationExitInfoValues(MobileSettings.ApplicationExitInfo)); err != nil {
+	if err := d.Set("enable_application_exit_info", MobileSettings.ApplicationExitInfo.Enabled); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting application exit info values: %#v", err)
 	}
 
 	return nil
-}
-
-func flattenApplicationExitInfoValues(in entities.AgentApplicationSettingsApplicationExitInfo) []map[string]interface{} {
-	applicationExitInfoValues := make([]map[string]interface{}, 1)
-	applicationExitInfoValues[0] = map[string]interface{}{
-		"enabled": in.Enabled,
-	}
-	return applicationExitInfoValues
 }
