@@ -322,15 +322,15 @@ func expandApplication(d *schema.ResourceData) *apm.AgentApplicationSettingsUpda
 
 	a.ErrorCollector = expandErrorCollectorValues(d) // error_collector
 
-	// mobile settings
-	//a.MobileSettings = expandMobileSettingValues(d)
-	//
-	//// browser settings
-	//a.BrowserMonitoring = expandBrowserMonitoringValue(d.Get("browser_monitoring")) // browser_monitoring
-	//
-	//a.SessionReplay = expandSessionReplayValues(d.Get("session_replay")) // session replay settings
-	//
-	//a.SessionTrace = expandSessionTraceValues(d.Get("session_trace")) // session trace settings
+	//mobile settings
+	a.MobileSettings = expandMobileSettingValues(d)
+
+	// browser settings
+	a.BrowserMonitoring = expandBrowserMonitoringValue(d.Get("browser_monitoring")) // browser_monitoring
+
+	a.SessionReplay = expandSessionReplayValues(d.Get("session_replay")) // session replay settings
+
+	a.SessionTrace = expandSessionTraceValues(d.Get("session_trace")) // session trace settings
 
 	if v, ok := d.GetOk("end_user_apdex_threshold"); ok { // browser config apdex target
 		a.BrowserConfig.ApdexTarget = v.(float64)
@@ -344,18 +344,33 @@ func setAPMApplicationValues(d *schema.ResourceData, ApmSettings entities.AgentA
 	var err error
 	isImported := d.Get("is_imported").(bool)
 
+	if err = setBasicAPMValues(d, ApmSettings, isImported); err != nil {
+		return err
+	}
+	if err = setTransactionTracerValues(d, ApmSettings, isImported); err != nil {
+		return err
+	}
+	if err = setErrorCollectorValues(d, ApmSettings, isImported); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func setBasicAPMValues(d *schema.ResourceData, ApmSettings entities.AgentApplicationSettingsApmBase, isImported bool) error {
+	var err error
 	if _, ok := d.GetOk("name"); ok || !isImported {
 		if err = d.Set("name", ApmSettings.Alias); err != nil {
 			return err
 		}
 	}
 	if _, ok := d.GetOk("app_apdex_threshold"); ok || !isImported {
-		if err := d.Set("app_apdex_threshold", ApmSettings.ApmConfig.ApdexTarget); err != nil {
+		if err = d.Set("app_apdex_threshold", ApmSettings.ApmConfig.ApdexTarget); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting app_apdex_threshold value : %#v", err)
 		}
 	}
 	if _, ok := d.GetOk("enable_real_user_monitoring"); ok || !isImported {
-		if err := d.Set("enable_real_user_monitoring", ApmSettings.ApmConfig.UseServerSideConfig); err != nil {
+		if err = d.Set("enable_real_user_monitoring", ApmSettings.ApmConfig.UseServerSideConfig); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting enable_real_user_monitoring value : %#v", err)
 		}
 	}
@@ -369,17 +384,24 @@ func setAPMApplicationValues(d *schema.ResourceData, ApmSettings entities.AgentA
 			return fmt.Errorf("[DEBUG] Error setting tracer type value : %#v", err)
 		}
 	}
+	return nil
+}
+
+func setTransactionTracerValues(d *schema.ResourceData, ApmSettings entities.AgentApplicationSettingsApmBase, isImported bool) error {
 	if _, ok := d.GetOk("transaction_tracer"); ok || !isImported {
 		if err := flattenTransactionTracingValues(d, ApmSettings.TransactionTracer); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting transaction tracer values : %#v", err)
 		}
 	}
+	return nil
+}
+
+func setErrorCollectorValues(d *schema.ResourceData, ApmSettings entities.AgentApplicationSettingsApmBase, isImported bool) error {
 	if _, ok := d.GetOk("error_collector"); ok || !isImported {
 		if err := flattenErrorCollectorValues(d, ApmSettings.ErrorCollector); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting error collector values : %#v", err)
 		}
 	}
-
 	return nil
 }
 
@@ -407,9 +429,9 @@ func flattenTransactionTracingValues(d *schema.ResourceData, in entities.AgentAp
 		}
 
 		if in.LogSql || !isImported {
-			logSqlValues := map[string]interface{}{}
-			logSqlValues["record_sql"] = in.RecordSql
-			transactionTracingValues["sql"] = []interface{}{logSqlValues}
+			logSQLValues := map[string]interface{}{}
+			logSQLValues["record_sql"] = in.RecordSql
+			transactionTracingValues["sql"] = []interface{}{logSQLValues}
 		}
 
 		err = d.Set("transaction_tracer", []interface{}{transactionTracingValues})
