@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -68,7 +69,7 @@ func validateThresholds(d *schema.ResourceDiff, errorsList *[]string) {
 }
 
 func validateRealUserMonitoring(d *schema.ResourceDiff) error {
-	realUserMonitoring := d.Get("enable_real_user_monitoring").(bool)
+	realUserMonitoring := d.Get("use_server_side_config").(bool)
 
 	attr := map[string]interface{}{
 		"transaction_tracer":     d.Get("transaction_tracer"),
@@ -80,7 +81,7 @@ func validateRealUserMonitoring(d *schema.ResourceDiff) error {
 	for atr := range attr {
 		_, blockExists := d.GetOk(atr)
 		if blockExists && !realUserMonitoring {
-			return fmt.Errorf("enable_real_user_monitoring must be set to true when %s is configured", atr)
+			return fmt.Errorf("use_server_side_config must be set to true when %s is configured", atr)
 		}
 	}
 	return nil
@@ -134,10 +135,10 @@ func apmApplicationSettingsSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The response time threshold value for Apdex score calculation.",
 		},
-		"enable_real_user_monitoring": {
+		"use_server_side_config": {
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Description: "Enable or disable real user monitoring.",
+			Description: "Enable or disable server side monitoring.",
 		},
 		"transaction_tracer": {
 			Type:        schema.TypeList,
@@ -219,6 +220,9 @@ func apmApplicationSettingsSchema() map[string]*schema.Schema {
 						Elem:        &schema.Schema{Type: schema.TypeString},
 						Optional:    true,
 						Description: "A list of error codes that are expected and should not trigger alerts.",
+						ValidateFunc: validation.All(
+							validation.StringMatch(regexp.MustCompile(`^[1-9][0-9]{2}$`), "must be a valid status code between 100 and 900"),
+						),
 					},
 					"ignored_error_classes": {
 						Type:        schema.TypeList,
@@ -231,6 +235,9 @@ func apmApplicationSettingsSchema() map[string]*schema.Schema {
 						Elem:        &schema.Schema{Type: schema.TypeString},
 						Optional:    true,
 						Description: "A list of error codes that should be ignored.",
+						ValidateFunc: validation.All(
+							validation.StringMatch(regexp.MustCompile(`^[1-9][0-9]{2}$`), "must be a valid status code between 100 and 900"),
+						),
 					},
 				},
 			},

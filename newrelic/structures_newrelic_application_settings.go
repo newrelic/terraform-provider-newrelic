@@ -14,7 +14,7 @@ func expandApmConfigValues(d *schema.ResourceData) *apm.AgentApplicationSettings
 	if v, ok := d.GetOk("app_apdex_threshold"); ok {
 		apmConfig.ApdexTarget = v.(float64)
 	}
-	apmConfig.UseServerSideConfig = getBoolPointer(d.Get("enable_real_user_monitoring").(bool))
+	apmConfig.UseServerSideConfig = getBoolPointer(d.Get("use_server_side_config").(bool))
 	if apmConfig == (apm.AgentApplicationSettingsApmConfigInput{}) {
 		return nil
 	}
@@ -369,9 +369,9 @@ func setBasicAPMValues(d *schema.ResourceData, ApmSettings entities.AgentApplica
 			return fmt.Errorf("[DEBUG] Error setting app_apdex_threshold value : %#v", err)
 		}
 	}
-	if _, ok := d.GetOk("enable_real_user_monitoring"); ok || !isImported {
-		if err = d.Set("enable_real_user_monitoring", ApmSettings.ApmConfig.UseServerSideConfig); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting enable_real_user_monitoring value : %#v", err)
+	if _, ok := d.GetOk("use_server_side_config"); ok || !isImported {
+		if err = d.Set("use_server_side_config", ApmSettings.ApmConfig.UseServerSideConfig); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting use_server_side_config value : %#v", err)
 		}
 	}
 	if _, ok := d.GetOk("enable_thread_profiler"); ok || !isImported {

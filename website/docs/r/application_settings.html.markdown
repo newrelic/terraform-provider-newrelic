@@ -14,8 +14,7 @@ a reporting agent.
 Use this resource to manage configuration for an application that already
 exists in New Relic.
 
-> **WARNING:** This resource should be used to manage the application settings and not just to update a few functionalities as part of the application settings, as it could create incompatibility issues and discrepancies.
-
+~> **WARNING:** We encourage you to  use this resource to manage all application settings together not just a few to avoid potential issues like incompatibility or unexpected behavior.
 
 ## Example Usage
 
@@ -24,15 +23,14 @@ resource "newrelic_application_settings" "app" {
   guid = "rhbwkguhfjkewqre4r9"
   name = "my-app"
   app_apdex_threshold = "0.7"
-  end_user_apdex_threshold = "0.8"
-  enable_real_user_monitoring = false
-  transaction_tracing {
+  use_server_side_config = false
+  transaction_tracer {
     explain_query_plans {
       query_plan_threshold_type  = "VALUE"
       query_plan_threshold_value = "0.5"
     }
     sql {
-      record_sql = "OFF"
+      record_sql = "RAW"
     }
     stack_trace_threshold_value = "0.5"
     transaction_threshold_type = "VALUE"
@@ -44,39 +42,34 @@ resource "newrelic_application_settings" "app" {
     ignored_error_classes = []
     ignored_error_codes = []
   }
-  tracer_type = "RAW"
+  tracer_type = "NONE"
   enable_thread_profiler = true
 }
 ```
-
 ## Argument Reference
 
 The following arguments are supported:
 
 * `guid` - (Required) The GUID of the application in New Relic APM.
-* `name` - (Optional) The name/alias of the application in New Relic APM.
-* `app_apdex_threshold` - (Optional) The apdex threshold for the New Relic application.
-* `end_user_apdex_threshold` - (Optional) The user's apdex threshold for the New Relic application.
-* `enable_real_user_monitoring` - (Optional) Enable or disable real user monitoring for the New Relic application.
-* `transaction_tracing` - (Optional) Configuration block for transaction tracing. If provided, it enables transaction tracing; otherwise, it disables transaction tracing. The following arguments are supported:
-  * `stack_trace_threshold_value` - (Optional) The threshold value for stack traces.
-  * `transaction_threshold_type` - (Optional) The type of threshold for transactions. Valid values are `VALUE`,`APDEX_F`
-  * `transaction_threshold_value` - (Optional) The threshold value for transactions.
-  * `explain_query_plans` - (Optional) Configuration block for query plans. If provided, it enables explain query plans; otherwise, it disables explain query plans. The following arguments are supported:
-    * `query_plan_threshold_value` - (Optional) The threshold value for query plans.
-    * `query_plan_threshold_type` - (Optional) The type of threshold for query plans. Valid values are `VALUE`,`APDEX_F`
-  * `sql` - (Optional) Configuration block for SQL logging. If provided, it enables sql logging; otherwise, it disables sql logging. The following arguments are supported:
-    * `record_sql` - (Optional) The level of SQL recording. Valid values ar `OBFUSCATED`,`OFF`,`RAW`
-* `error_collector` - (Optional) Configuration block for error collection. The following arguments are supported:
+* `name` - (Optional) A custom name or alias you can give the application in New Relic APM.
+* `app_apdex_threshold` - (Optional) The acceptable response time limit (Apdex threshold) for the application.
+* `use_server_side_config` - (Optional) Enable or disable server side monitoring for the New Relic application.
+* `transaction_tracer` - (Optional) Configuration block for transaction tracer. Providing this block enables transaction tracing. The following arguments are supported:
+  * `stack_trace_threshold_value` - (Optional) The response time threshold for collecting stack traces.
+  * `transaction_threshold_type` - (Optional) The type of threshold for transactions. Valid values are `VALUE`,`APDEX_F`(4 times your apdex target)
+  * `transaction_threshold_value` - (Optional) The threshold value for transactions(in seconds).
+  * `explain_query_plans` - (Optional) Configuration block for query plans. Including this block enables the capture of query plans. The following arguments are supported:
+    * `query_plan_threshold_value` - (Optional) The response time threshold for capturing query plans(in seconds).
+    * `query_plan_threshold_type` - (Optional) The type of threshold for query plans. Valid values are `VALUE`,`APDEX_F`(4 times your apdex target)
+  * `sql` - (Optional) Configuration block for SQL logging.  Including this block enables SQL logging. The following arguments are supported:
+    * `record_sql` - (Required) The level of SQL recording. Valid values ar `OBFUSCATED`,`OFF`,`RAW` (Mandatory attribute when `sql` block is provided).
+* `error_collector` - (Optional) Configuration block for error collection. Including this block enables the error collector. The following arguments are supported:
   * `expected_error_classes` - (Optional) A list of expected error classes.
-  * `expected_error_codes` - (Optional) A list of expected error codes.
+  * `expected_error_codes` - (Optional) A list of expected error codes(any status code between 100-900).
   * `ignored_error_classes` - (Optional) A list of ignored error classes.
-  * `ignored_error_codes` - (Optional) A list of ignored error codes.
-* `tracer_type` - (Optional) The type of tracer. Valid values are `CROSS_APPLICATION_TRACER`, `DISTRIBUTED_TRACING`, `NONE`, `OPT_OUT`
-* `enable_thread_profiler` - (Optional) Enable or disable the thread profiler.
-```
-Warning: This resource will use the account ID linked to your API key. At the moment it is not possible to dynamically set the account ID.
-```
+  * `ignored_error_codes` - (Optional) A list of ignored error codes(any status code between 100-900).
+* `tracer_type` - (Optional) Configures the type of tracer used. Valid values are `CROSS_APPLICATION_TRACER`, `DISTRIBUTED_TRACING`, `NONE`, `OPT_OUT`.
+* `enable_thread_profiler` - (Optional) Enable or disable the collection of thread profiling data.
 
 ## Attributes Reference
 
@@ -89,10 +82,9 @@ In addition to all arguments above, the following attributes are exported:
 Applications can be imported using notation `application_guid`, e.g.
 
 ```
-$ terraform import newrelic_application_settings.main 6789012345
+$ terraform import newrelic_application_settings.main Mzk1NzUyNHQVRJNTxBUE18QVBQTElDc4ODU1MzYx
 ```
 
 ## Notes
 
--> **NOTE:** Applications that have reported data in the last twelve hours
-cannot be deleted.
+-> **NOTE:** At present, this resource does not offer a way to delete applications.

@@ -6,6 +6,7 @@ package newrelic
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 	"time"
 
@@ -14,12 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 )
 
 var (
 	testExpectedApplicationName string
+	testApplicationGUID         = "Mzk1NzUyNHxBUE18QVBQTElDQVRJT058NTc4ODU1MzYx"
 )
 
 func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
@@ -48,8 +49,38 @@ func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateId:           "MzgwNjUyNnxBUE18QVBQTElDQVRJT058NTU1NzI4MjY3",
+				ImportStateId:           testApplicationGUID,
 				ImportStateVerifyIgnore: []string{"is_imported"},
+			},
+		},
+	})
+}
+
+func TestAccNewRelicApplicationSettings_UserMonitoringValidation(t *testing.T) {
+	expectedMsg, _ := regexp.Compile("use_server_side_config must be set to true when transaction_tracer is configured")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicApplicationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicApplicationConfigUserMonitoringValidation(testExpectedApplicationName),
+				ExpectError: expectedMsg,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicApplicationSettings_TransactionTracerValidation(t *testing.T) {
+	expectedMsg, _ := regexp.Compile("`transaction_threshold_value` must be set when `transaction_threshold_type` is 'VALUE'")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicApplicationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicApplicationConfigTransactionTracerValidation(testExpectedApplicationName),
+				ExpectError: expectedMsg,
 			},
 		},
 	})
@@ -60,14 +91,13 @@ func testAccCheckNewRelicApplicationDestroy(s *terraform.State) error {
 	return nil
 }
 
-// The test application for this data source is created in provider_test.go
 func testAccNewRelicApplicationConfig() string {
 	return fmt.Sprintf(`
 		resource "newrelic_application_settings" "app" {
-			guid = "MzgwNjUyNnxBUE18QVBQTElDQVRJT058NTU1NzI4MjY3"
+			guid = "%[2]s"
 			name = "%[1]s"
 			app_apdex_threshold = "0.5"
-			enable_real_user_monitoring = true
+			use_server_side_config = true
 			transaction_tracer{
 			   explain_query_plans{
 				 query_plan_threshold_value = "0.5"
@@ -88,16 +118,16 @@ func testAccNewRelicApplicationConfig() string {
 			}
 			tracer_type = "OPT_OUT"
 			enable_thread_profiler = false
-		}`, testExpectedApplicationName)
+		}`, testExpectedApplicationName, testApplicationGUID)
 }
 
 func testAccNewRelicApplicationConfigUpdated(name string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_application_settings" "app" {
-			guid = "MzgwNjUyNnxBUE18QVBQTElDQVRJT058NTU1NzI4MjY3"
+			guid = "%[2]s"
 			name = "%[1]s-updated"
 			app_apdex_threshold = "0.5"
-			enable_real_user_monitoring = true
+			use_server_side_config = true
 			transaction_tracer{
 			   explain_query_plans{
 				 query_plan_threshold_value = "0.5"
@@ -118,7 +148,50 @@ func testAccNewRelicApplicationConfigUpdated(name string) string {
 			}
 			tracer_type = "OPT_OUT"
 			enable_thread_profiler = false
-		}`, name)
+		}`, name, testApplicationGUID)
+}
+
+func testAccNewRelicApplicationConfigUserMonitoringValidation(name string) string {
+	return fmt.Sprintf(`
+		resource "newrelic_application_settings" "app" {
+			guid = "%[2]s"
+			name = "%[1]s-updated"
+			app_apdex_threshold = "0.5"
+			use_server_side_config = false
+			transaction_tracer{
+			   explain_query_plans{
+				 query_plan_threshold_value = "0.5"
+				 query_plan_threshold_type = "VALUE"
+			   }
+			   stack_trace_threshold_value = "0.5"
+			   transaction_threshold_value = "0.5"
+			   transaction_threshold_type = "VALUE"
+			   sql{
+				 record_sql = "RAW"
+			   }
+			}
+		}`, name, testApplicationGUID)
+}
+
+func testAccNewRelicApplicationConfigTransactionTracerValidation(name string) string {
+	return fmt.Sprintf(`
+		resource "newrelic_application_settings" "app" {
+			guid = "%[2]s"
+			name = "%[1]s-updated"
+			app_apdex_threshold = "0.5"
+			use_server_side_config = true
+			transaction_tracer{
+			   explain_query_plans{
+				 query_plan_threshold_value = "0.5"
+				 query_plan_threshold_type = "VALUE"
+			   }
+			   stack_trace_threshold_value = "0.5"
+			   transaction_threshold_type = "VALUE"
+			   sql{
+				 record_sql = "RAW"
+			   }
+			}
+		}`, name, testApplicationGUID)
 }
 
 func testAccCheckNewRelicApplicationExists(resourceName string) resource.TestCheckFunc {
@@ -162,26 +235,5 @@ func testPreCheck(t *testing.T) {
 		t.Skipf("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
 	}
 
-	//testCreateApplication(t)
-
 	time.Sleep(5 * time.Second)
-}
-
-func testCreateApplication(t *testing.T) {
-	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName(testExpectedApplicationName),
-		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
-	)
-
-	if err != nil {
-		t.Fatalf("Error setting up New Relic application: %s", err)
-	}
-
-	if err := app.WaitForConnection(30 * time.Second); err != nil {
-		t.Fatalf("Unable to setup New Relic application connection: %s", err)
-	}
-
-	app.RecordCustomEvent("terraform test", nil)
-	app.Shutdown(30 * time.Second)
-
 }
