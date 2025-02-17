@@ -25,7 +25,7 @@ var (
 
 func TestAccNewRelicApplicationSettings_Basic(t *testing.T) {
 	resourceName := "newrelic_application_settings.app"
-	testExpectedApplicationName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	testExpectedApplicationName = fmt.Sprintf("dummy_app_pro_test_%s", acctest.RandString(10))
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testPreCheck(t) },
 		Providers:    testAccProviders,
@@ -234,6 +234,4 @@ func testPreCheck(t *testing.T) {
 	if v := os.Getenv("NEW_RELIC_LICENSE_KEY"); v == "" {
 		t.Skipf("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
 	}
-
-	time.Sleep(5 * time.Second)
 }
