@@ -12,7 +12,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/apm"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
@@ -29,8 +28,6 @@ func resourceNewRelicApplicationSettings() *schema.Resource {
 		Schema: mergeSchemas(
 			applicationSettingCommonSchema(),
 			apmApplicationSettingsSchema(),
-			mobileApplicationSettingsSchema(),
-			browserApplicationSettingsSchema(),
 		),
 		CustomizeDiff: validateApplicationSettingsInput,
 	}
@@ -256,242 +253,6 @@ func apmApplicationSettingsSchema() map[string]*schema.Schema {
 	}
 }
 
-func mobileApplicationSettingsSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"name": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "A name for this application in new relic",
-		},
-		"log_reporting": {
-			Type:        schema.TypeList,
-			MinItems:    1,
-			Optional:    true,
-			Description: "TBD",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"enabled": {
-						Type:        schema.TypeBool,
-						Optional:    true,
-						Description: "TBD",
-					},
-					"level": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "TBD",
-					},
-					"sampling_rate": {
-						Type:         schema.TypeFloat,
-						ValidateFunc: validation.FloatBetween(0, 100),
-						Optional:     true,
-						Description:  "TBD",
-					},
-				},
-			},
-		},
-		"use_crash_reports": {
-			Type:         schema.TypeBool,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{"CROSS_APPLICATION_TRACER", "DISTRIBUTED_TRACING", "NONE", "OPT_OUT"}, true),
-			Description:  "TBD",
-		},
-		"enable_application_exit_info": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Description: "TBD",
-		},
-	}
-}
-
-func browserApplicationSettingsSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"session_replay": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"auto_start": {
-						Type:     schema.TypeBool,
-						Optional: true,
-					},
-					"enabled": {
-						Type:     schema.TypeBool,
-						Optional: true,
-					},
-					"error_sampling_rate": {
-						Type:     schema.TypeInt,
-						Optional: true,
-					},
-					"sampling_rate": {
-						Type:     schema.TypeInt,
-						Optional: true,
-					},
-					"mask_input_options": {
-						Type:     schema.TypeList,
-						Optional: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"color": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"datetime_local": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"date": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"email": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"month": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"number": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"range": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"search": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"select": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"tel": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"text": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"text_area": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"time": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"url": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"week": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-							},
-						},
-					},
-					"mask_all_inputs": {
-						Type:     schema.TypeBool,
-						Optional: true,
-					},
-					"block_selector": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"mask_text_selector": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-				},
-			},
-		},
-		"session_trace": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"error_sampling_rate": {
-						Type:     schema.TypeInt,
-						Optional: true,
-					},
-					"mode": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"sampling_rate": {
-						Type:     schema.TypeInt,
-						Optional: true,
-					},
-					"enabled": {
-						Type:     schema.TypeBool,
-						Optional: true,
-					},
-				},
-			},
-		},
-		"browser_monitoring": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"distributed_tracing": {
-						Type:     schema.TypeList,
-						Optional: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"cors_enabled": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"exclude_newrelic_header": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"cors_use_newrelic_header": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"cors_use_trace_context_headers": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"enabled": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"allowed_origins": {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
-							},
-						},
-					},
-					"ajax": {
-						Type:     schema.TypeList,
-						Optional: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"deny_list": {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		"end_user_apdex_threshold": {
-			Type:     schema.TypeFloat,
-			Optional: true,
-		},
-	}
-}
-
 func resourceNewRelicApplicationSettingsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	return resourceNewRelicApplicationSettingsUpdate(ctx, d, meta)
@@ -521,16 +282,6 @@ func resourceNewRelicApplicationSettingsRead(ctx context.Context, d *schema.Reso
 		d.SetId(string(entity.GUID))
 		_ = d.Set("guid", string(entity.GUID))
 		dig = diag.FromErr(setAPMApplicationValues(d, entity.ApmSettings))
-	case *entities.MobileApplicationEntity:
-		entity := (*resp).(*entities.MobileApplicationEntity)
-		d.SetId(string(entity.GUID))
-		_ = d.Set("guid", string(entity.GUID))
-		dig = diag.FromErr(setMobileApplicationValues(d, entity.MobileSettings))
-	case *entities.BrowserApplicationEntity:
-		entity := (*resp).(*entities.BrowserApplicationEntity)
-		d.SetId(string(entity.GUID))
-		_ = d.Set("guid", string(entity.GUID))
-		dig = diag.FromErr(setBrowserApplicationValues(d, entity.BrowserSettings))
 	default:
 		dig = diag.FromErr(fmt.Errorf("problem in retrieving application with GUID %s", d.Id()))
 	}
@@ -545,7 +296,7 @@ func resourceNewRelicApplicationSettingsUpdate(ctx context.Context, d *schema.Re
 	guid := d.Get("guid").(string)
 	log.Printf("[INFO] Updating New Relic application %+v with params: %+v", guid, updateApplicationParams)
 
-	agentApplicationSettingResult, err := client.APM.AgentApplicationSettingsUpdate(apm.EntityGUID(guid), *updateApplicationParams)
+	agentApplicationSettingResult, err := client.AgentApplications.AgentApplicationSettingsUpdate(common.EntityGUID(guid), *updateApplicationParams)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -566,6 +317,16 @@ func resourceNewRelicApplicationSettingsUpdate(ctx context.Context, d *schema.Re
 }
 
 func resourceNewRelicApplicationSettingsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// You can not delete application settings
+	// You can only delete applications which have not reported in the past 12 hours
+	client := meta.(*ProviderConfig).NewClient
+	applicationGUID := common.EntityGUID(d.Id())
+
+	log.Printf("[INFO] Deleting New Relic Application %s", d.Id())
+	result, err := client.AgentApplications.AgentApplicationDelete(applicationGUID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	log.Printf("[INFO] Delete New Relic Application %s response: %+v", d.Id(), result.Success)
+
 	return nil
 }

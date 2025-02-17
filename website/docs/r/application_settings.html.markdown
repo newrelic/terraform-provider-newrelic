@@ -87,4 +87,5 @@ $ terraform import newrelic_application_settings.main Mzk1NzUyNHQVRJNTxBUE18QVBQ
 
 ## Notes
 
--> **NOTE:** At present, this resource does not offer a way to delete applications.
+-> **NOTE:** Applications that have reported data in the last twelve hours
+cannot be deleted.
