@@ -4,6 +4,8 @@ go 1.22
 
 toolchain go1.22.6
 
+replace github.com/newrelic/newrelic-client-go/v2 => github.com/newrelic/newrelic-client-go/v2 v2.52.1-0.20250217151039-2ec7b795a9e7
+
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/mitchellh/go-homedir v1.1.0
