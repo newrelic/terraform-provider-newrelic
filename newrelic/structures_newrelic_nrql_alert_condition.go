@@ -308,7 +308,7 @@ func expandNrqlThresholdPrediction(term map[string]interface{}) (*alerts.NrqlCon
 	}
 
 	predictionSet := term["prediction"].(*schema.Set)
-	
+
 	if predictionSet.Len() == 0 {
 		return nil, nil
 	}
@@ -752,10 +752,11 @@ func flattenNrqlTerms(terms []alerts.NrqlConditionTerm, configTerms []interface{
 		}
 
 		if term.Prediction != nil {
-			dst["prediction"] = map[string]interface{}{
-				"predict_by":               term.Prediction.PredictBy,
-				"prefer_prediction_violation": term.Prediction.PreferPredictionViolation,
-			}
+			dst["prediction"] = make([]interface{}, 1)
+			predictionBlockContents := make(map[string]interface{})
+			predictionBlockContents["predict_by"] = term.Prediction.PredictBy
+			predictionBlockContents["prefer_prediction_violation"] = term.Prediction.PreferPredictionViolation
+			dst["prediction"] = []interface{}{predictionBlockContents}
 		}
 
 		if i < len(configuredTerms) {
@@ -797,6 +798,14 @@ func handleImportFlattenNrqlTerms(terms []alerts.NrqlConditionTerm) []map[string
 			"threshold":             term.Threshold,
 			"threshold_duration":    term.ThresholdDuration,
 			"threshold_occurrences": strings.ToLower(string(term.ThresholdOccurrences)),
+		}
+
+		if term.Prediction != nil {
+			dst["prediction"] = make([]interface{}, 1)
+			predictionBlockContents := make(map[string]interface{})
+			predictionBlockContents["predict_by"] = term.Prediction.PredictBy
+			predictionBlockContents["prefer_prediction_violation"] = term.Prediction.PreferPredictionViolation
+			dst["prediction"] = []interface{}{predictionBlockContents}
 		}
 
 		out = append(out, dst)
