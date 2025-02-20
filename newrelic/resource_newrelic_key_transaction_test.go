@@ -17,10 +17,13 @@ import (
 )
 
 func TestAccNewRelicKeyTransaction_Basic(t *testing.T) {
-	randomName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	randomName := fmt.Sprintf("terraform-key-transaction-from-integration-test-%s", acctest.RandString(5))
 	resourceName := "newrelic_key_transaction.foo"
 	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
+		// resource destroy function added to destroy the key transaction
+		CheckDestroy: testAccCheckKeyTransactionDestroy,
 		Steps: []resource.TestStep{
 			// Create
 			{
@@ -57,7 +60,7 @@ func TestAccNewRelicKeyTransaction_DuplicateNameError(t *testing.T) {
 			// create a key transaction with a name that already exists in the UI
 			// this is expected to throw an error, as only one key transaction may be created per metric name
 			{
-				Config:      testAccNewRelicKeyTransactionBasicConfiguration(fmt.Sprintf("%s", "terraform_acceptance_test_key_transaction_donot_delete")),
+				Config:      testAccNewRelicKeyTransactionBasicConfiguration(fmt.Sprintf("%s", "terraform-key-transaction-from-integration-test-STATIC-DO-NOT-DELETE")),
 				ExpectError: regexp.MustCompile("\\s*"),
 			},
 		},
@@ -68,9 +71,9 @@ func testAccNewRelicKeyTransactionBasicConfiguration(name string) string {
 	return fmt.Sprintf(`
     resource "newrelic_key_transaction" "foo" {
         apdex_index 	     = 0.5
-        application_guid     = "MzgwNjUyNnxBUE18QVBQTElDQVRJT058NTUzNDQ4MjAy"
+        application_guid     = "Mzk1NzUyNHxBUE18QVBQTElDQVRJT058NTc4ODU1MzYx"
         browser_apdex_target = 0.5
-        metric_name          = "test"
+        metric_name          = "WebTransaction/Function/__main__:all_books"
         name                 = "%[1]s"
     }
     `, name)
@@ -105,4 +108,21 @@ func testAccNewRelicCheckKeyTransactionExists(resourceName string) resource.Test
 
 		return nil
 	}
+}
+
+func testAccCheckKeyTransactionDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "newrelic_key_transaction" {
+			continue
+		}
+
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
+		//time.Sleep(60 * time.Second)
+		found, _ := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
+		if (*found) != nil {
+			return fmt.Errorf("key transaction still exists")
+		}
+	}
+	return nil
 }

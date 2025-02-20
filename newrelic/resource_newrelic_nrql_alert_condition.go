@@ -174,7 +174,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Computed:    true,
-							Description: "BETA PREVIEW: the `data_account_id` field is in limited release and only enabled for preview on a per-account basis. - The New Relic account ID to use as the basis for the NRQL alert condition's `query`; will default to `account_id` if unspecified.",
+							Description: "The New Relic account ID to use as the basis for the NRQL alert condition's `query`; will default to `account_id` if unspecified.",
 						},
 						"since_value": {
 							Deprecated:    "use `aggregation_method` attribute instead",
