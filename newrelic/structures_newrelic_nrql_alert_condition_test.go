@@ -479,7 +479,7 @@ func TestExpandNrqlAlertConditionInputWithPrediction(t *testing.T) {
 		"operator":              "ABOVE",
 		"prediction": []interface{}{
 			map[string]interface{}{
-				"predict_by":               7200,
+				"predict_by":                  7200,
 				"prefer_prediction_violation": true,
 			},
 		},
@@ -496,7 +496,7 @@ func TestExpandNrqlAlertConditionInputWithPrediction(t *testing.T) {
 					Priority:             alerts.NrqlConditionPriorities.Critical,
 					Prediction: &alerts.NrqlConditionThresholdPrediction{
 						PredictBy:                 7200,
-						PreferpredictionViolation: true,
+						PreferPredictionViolation: true,
 					},
 				},
 			},

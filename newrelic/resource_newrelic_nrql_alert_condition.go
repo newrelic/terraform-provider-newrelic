@@ -83,8 +83,8 @@ func termSchema() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"predict_by": {
-							Type:        schema.TypeInt,
-							Optional:    true,
+							Type:     schema.TypeInt,
+							Optional: true,
 							// API default 3600 seconds = 1 hour
 							Default:     3600,
 							Description: "BETA PREVIEW: the `predict_by` field is in limited release and only enabled for preview on a per-account basis. - The duration, in seconds, that the prediction should look into the future.",
