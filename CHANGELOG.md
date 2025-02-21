@@ -1,3 +1,11 @@
+<a name="v3.57.0"></a>
+## [v3.57.0] - 2025-02-21
+### Bug Fixes
+- **aws_govcloud:** define a working AWS GovCloud module for cloud integration prerequisites ([#2812](https://github.com/newrelic/terraform-provider-newrelic/issues/2812))
+
+### Features
+- **alerts:** Add prediction support to NRQL alert conditions ([#2816](https://github.com/newrelic/terraform-provider-newrelic/issues/2816))
+
 <a name="v3.56.0"></a>
 ## [v3.56.0] - 2025-02-06
 ### Features
@@ -2305,7 +2313,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.56.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.57.0...HEAD
+[v3.57.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.56.0...v3.57.0
 [v3.56.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.55.0...v3.56.0
 [v3.55.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.1...v3.55.0
 [v3.54.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.0...v3.54.1
