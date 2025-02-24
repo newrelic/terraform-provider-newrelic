@@ -2,8 +2,9 @@ package newrelic
 
 import (
 	"context"
-	"log"
+	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -136,7 +137,7 @@ func dashboardVariableSchemaElem() *schema.Resource {
 				},
 			},
 			"nrql_query": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Configuration for variables of type NRQL.",
 				MaxItems:    1,
@@ -186,6 +187,7 @@ func dashboardPageSchemaElem() *schema.Resource {
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Default:     "",
 				Description: "The dashboard page's description.",
 			},
 			"name": {
@@ -201,85 +203,85 @@ func dashboardPageSchemaElem() *schema.Resource {
 
 			// All the widget types below
 			"widget_area": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "An area widget.",
 				Elem:        dashboardWidgetAreaSchemaElem(),
 			},
 			"widget_bar": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A bar widget.",
 				Elem:        dashboardWidgetBarSchemaElem(),
 			},
 			"widget_billboard": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A billboard widget.",
 				Elem:        dashboardWidgetBillboardSchemaElem(),
 			},
 			"widget_bullet": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A bullet widget.",
 				Elem:        dashboardWidgetBulletSchemaElem(),
 			},
 			"widget_funnel": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A funnel widget.",
 				Elem:        dashboardWidgetFunnelSchemaElem(),
 			},
 			"widget_heatmap": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A heatmap widget.",
 				Elem:        dashboardWidgetHeatmapSchemaElem(),
 			},
 			"widget_histogram": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A histogram widget.",
 				Elem:        dashboardWidgetHistogramSchemaElem(),
 			},
 			"widget_line": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A line widget.",
 				Elem:        dashboardWidgetLineSchemaElem(),
 			},
 			"widget_markdown": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A markdown widget.",
 				Elem:        dashboardWidgetMarkdownSchemaElem(),
 			},
 			"widget_pie": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A pie widget.",
 				Elem:        dashboardWidgetPieSchemaElem(),
 			},
 			"widget_log_table": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A log table widget.",
 				Elem:        dashboardWidgetLogTableSchemaElem(),
 			},
 			"widget_table": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A table widget.",
 				Elem:        dashboardWidgetTableSchemaElem(),
 			},
 			"widget_json": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A JSON widget.",
 				Elem:        dashboardWidgetJSONSchemaElem(),
 			},
 			"widget_stacked_bar": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A stacked bar widget.",
 				Elem:        dashboardWidgetStackedBarSchemaElem(),
@@ -345,10 +347,12 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 		"ignore_time_range": {
 			Type:     schema.TypeBool,
 			Optional: true,
+			Default:  false,
 		},
 		"facet_show_other_series": {
 			Type:     schema.TypeBool,
 			Optional: true,
+			Default:  false,
 		},
 		"legend_enabled": {
 			Type:     schema.TypeBool,
@@ -358,10 +362,12 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 		"y_axis_left_min": {
 			Type:     schema.TypeFloat,
 			Optional: true,
+			Default:  0,
 		},
 		"y_axis_left_max": {
 			Type:     schema.TypeFloat,
 			Optional: true,
+			Default:  0,
 		},
 		"null_values": {
 			Type:     schema.TypeList,
@@ -520,7 +526,6 @@ func dashboardWidgetNRQLQuerySchemaElem() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
-				Optional:    true,
 				Computed:    true,
 				Description: "The account id used for the NRQL query.",
 			},
@@ -558,12 +563,14 @@ func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 	s["critical"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
+		Default:     "",
 		Description: "The critical threshold value.",
 	}
 
 	s["warning"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
+		Default:     "",
 		Description: "The warning threshold value.",
 	}
 
@@ -619,12 +626,14 @@ func dashboardWidgetLineSchemaElem() *schema.Resource {
 	s["y_axis_left_zero"] = &schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,
+		Default:     false,
 		Description: "Specifies if the values on the graph to be rendered need to be fit to scale, or printed within the specified range.",
 	}
 
 	s["is_label_visible"] = &schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,
+		Default:     false,
 		Description: "Specified if the label should be visible in the graph created when specified with thresholds.",
 	}
 
@@ -805,7 +814,6 @@ func dashboardWidgetLinkedEntityGUIDsSchema() *schema.Schema {
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
-		Optional:    true,
 		Computed:    true,
 		Description: "Related entities. Currently only supports Dashboard entities, but may allow other cases in the future.",
 	}
@@ -815,6 +823,7 @@ func dashboardWidgetFilterCurrentDashboardSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,
+		Default:     false,
 		Description: "Use this item to filter the current dashboard",
 	}
 }
@@ -837,7 +846,7 @@ func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[INFO] Creating New Relic One dashboard: %s", dashboard.Name)
+	tflog.Info(ctx, fmt.Sprintf("Creating New Relic One dashboard: %s", dashboard.Name))
 
 	created, err := client.Dashboards.DashboardCreateWithContext(ctx, accountID, *dashboard)
 	if err != nil {
@@ -853,7 +862,7 @@ func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceD
 		return diag.Errorf("err: newrelic_one_dashboard Create failed: %s", errMessages)
 	}
 
-	log.Printf("[INFO] New Dashboard GUID: %s", guid)
+	tflog.Info(ctx, fmt.Sprintf("New Dashboard GUID: %s", guid))
 
 	d.SetId(string(guid))
 
@@ -862,7 +871,7 @@ func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[INFO] Number of widgets with filter_current_dashboard: %d", len(filterWidgets))
+	tflog.Info(ctx, fmt.Sprintf("Number of widgets with filter_current_dashboard: %d", len(filterWidgets)))
 	if len(filterWidgets) > 0 {
 
 		err = setDashboardWidgetFilterCurrentDashboardLinkedEntity(d, filterWidgets)
@@ -892,7 +901,7 @@ func resourceNewRelicOneDashboardRead(ctx context.Context, d *schema.ResourceDat
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	log.Printf("[INFO] Reading New Relic One dashboard %s", d.Id())
+	tflog.Info(ctx, fmt.Sprintf("Reading New Relic One dashboard %s", d.Id()))
 
 	dashboard, err := client.Dashboards.GetDashboardEntityWithContext(ctx, common.EntityGUID(d.Id()))
 
@@ -933,7 +942,7 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[INFO] Updating New Relic One dashboard '%s' (%s)", dashboard.Name, d.Id())
+	tflog.Info(ctx, fmt.Sprintf("Updating New Relic One dashboard '%s' (%s)", dashboard.Name, d.Id()))
 
 	updated, err := client.Dashboards.DashboardUpdateWithContext(ctx, *dashboard, common.EntityGUID(d.Id()))
 	if err != nil {
@@ -955,7 +964,7 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 		return diagErr
 	}
 
-	log.Printf("[INFO] Number of widgets with filter_current_dashboard: %d", len(filterWidgets))
+	tflog.Info(ctx, fmt.Sprintf("Number of widgets with filter_current_dashboard: %d", len(filterWidgets)))
 	// If there are widgets with filter_current_dashboard, we need to update the linked guid entities
 	if len(filterWidgets) > 0 {
 		err = setDashboardWidgetFilterCurrentDashboardLinkedEntity(d, filterWidgets)
@@ -982,7 +991,7 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 func resourceNewRelicOneDashboardDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
-	log.Printf("[INFO] Deleting New Relic One dashboard %v", d.Id())
+	tflog.Info(ctx, fmt.Sprintf("Deleting New Relic One dashboard %v", d.Id()))
 
 	if _, err := client.Dashboards.DashboardDeleteWithContext(ctx, common.EntityGUID(d.Id())); err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
