@@ -229,58 +229,176 @@ resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_pull" {
 resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
   account_id        = var.newrelic_account_id
   linked_account_id = newrelic_cloud_aws_link_account.newrelic_cloud_integration_pull.id
-  billing {}
-  cloudtrail {}
-  health {}
-  trusted_advisor {}
-  vpc {}
-  x_ray {}
-  s3 {}
-  doc_db {}
-  sqs {}
-  ebs {}
-  alb {}
-  elasticache {}
-  api_gateway {}
-  auto_scaling {}
-  aws_app_sync {}
-  aws_athena {}
-  aws_cognito {}
-  aws_connect {}
-  aws_direct_connect {}
-  aws_fsx {}
-  aws_glue {}
-  aws_kinesis_analytics {}
-  aws_media_convert {}
-  aws_media_package_vod {}
-  aws_mq {}
-  aws_msk {}
-  aws_neptune {}
-  aws_qldb {}
-  aws_route53resolver {}
-  aws_states {}
-  aws_transit_gateway {}
-  aws_waf {}
-  aws_wafv2 {}
-  cloudfront {}
-  dynamodb {}
-  ec2 {}
-  ecs {}
-  efs {}
-  elasticbeanstalk {}
-  elasticsearch {}
-  elb {}
-  emr {}
-  iam {}
-  iot {}
-  kinesis {}
-  kinesis_firehose {}
-  lambda {}
-  rds {}
-  redshift {}
-  route53 {}
-  ses {}
-  sns {}
+  billing {
+    metrics_polling_interval = 3600
+  }
+  cloudtrail {
+    metrics_polling_interval = 300
+  }
+  health {
+    metrics_polling_interval = 300
+  }
+  trusted_advisor {
+    metrics_polling_interval = 3600
+  }
+  vpc {
+    metrics_polling_interval = 900
+  }
+  x_ray {
+    metrics_polling_interval = 60
+  }
+  s3 {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  doc_db {
+    metrics_polling_interval = 300
+  }
+  sqs {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  ebs {
+    metrics_polling_interval = 900
+  }
+  alb {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  elasticache {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  api_gateway {
+    metrics_polling_interval = 300
+  }
+  auto_scaling {
+    metrics_polling_interval = 300
+  }
+  aws_app_sync {
+    metrics_polling_interval = 300
+  }
+  aws_athena {
+    metrics_polling_interval = 300
+  }
+  aws_cognito {
+    metrics_polling_interval = 300
+  }
+  aws_connect {
+    metrics_polling_interval = 300
+  }
+  aws_direct_connect {
+    metrics_polling_interval = 300
+  }
+  aws_fsx {
+    metrics_polling_interval = 300
+  }
+  aws_glue {
+    metrics_polling_interval = 300
+  }
+  aws_kinesis_analytics {
+    metrics_polling_interval = 300
+  }
+  aws_media_convert {
+    metrics_polling_interval = 300
+  }
+  aws_media_package_vod {
+    metrics_polling_interval = 300
+  }
+  aws_mq {
+    metrics_polling_interval = 300
+  }
+  aws_msk {
+    metrics_polling_interval = 300
+  }
+  aws_neptune {
+    metrics_polling_interval = 300
+  }
+  aws_qldb {
+    metrics_polling_interval = 300
+  }
+  aws_route53resolver {
+    metrics_polling_interval = 300
+  }
+  aws_states {
+    metrics_polling_interval = 300
+  }
+  aws_transit_gateway {
+    metrics_polling_interval = 300
+  }
+  aws_waf {
+    metrics_polling_interval = 300
+  }
+  aws_wafv2 {
+    metrics_polling_interval = 300
+  }
+  cloudfront {
+    metrics_polling_interval = 300
+  }
+  dynamodb {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  ec2 {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  ecs {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  efs {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  elasticbeanstalk {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  elasticsearch {
+    metrics_polling_interval = 300
+  }
+  elb {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  emr {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  iam {
+    metrics_polling_interval = 3600
+  }
+  iot {
+    metrics_polling_interval = 300
+  }
+  kinesis {
+    fetch_tags               = true
+    metrics_polling_interval = 900
+  }
+  kinesis_firehose {
+    metrics_polling_interval = 300
+  }
+  lambda {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  rds {
+    fetch_tags               = true
+    metrics_polling_interval = 300
+  }
+  redshift {
+    metrics_polling_interval = 300
+  }
+  route53 {
+    metrics_polling_interval = 300
+  }
+  ses {
+    metrics_polling_interval = 300
+  }
+  sns {
+    metrics_polling_interval = 300
+  }
 }
 
 resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {
