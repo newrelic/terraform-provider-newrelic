@@ -340,7 +340,7 @@ resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
     metrics_polling_interval = 300
   }
   ec2 {
-    fetch_tags               = true
+    fetch_ip_addresses       = true
     metrics_polling_interval = 300
   }
   ecs {
