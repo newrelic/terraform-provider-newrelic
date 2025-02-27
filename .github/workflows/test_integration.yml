@@ -19,6 +19,12 @@ jobs:
         run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
         shell: bash
 
+      # for terratest
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.10.1'
+
       - name: Checkout code
         uses: actions/checkout@v4
 
