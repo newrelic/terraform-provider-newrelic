@@ -18,8 +18,3 @@ variable "include_metric_filters" {
   type        = map(list(string))
   default     = {}
 }
-
-variable "new_relic_aws_govcloud_account_id" {
-  type    = string
-  default = "266471868085"
-}
