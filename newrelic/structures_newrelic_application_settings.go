@@ -3,15 +3,16 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/agentapplications"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"log"
 	"strings"
+
+	"github.com/newrelic/newrelic-client-go/v2/pkg/agentapplications"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// Getting the entity details from the name using entity search query to find out the linked GUID to support backward compatability of existing users
+// Getting the entity details from the name using entity search query to find out the linked GUID to support backward compatibility of existing users
 // NOTE : Revisit on this approach to support the name based application settings update in future as it introduces additional query call to fetch entity details. Instead, we can force customers to provide GUID
 func getEntityDetailsFromName(ctx context.Context, d *schema.ResourceData, meta interface{}) (*entities.EntityOutlineInterface, error) {
 	log.Printf("[INFO] Reading New Relic entities")

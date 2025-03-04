@@ -173,10 +173,6 @@ func getFloatPointer(value float64) *float64 {
 	return &value
 }
 
-func getStringPointer(value string) *string {
-	return &value
-}
-
 func convertInterfaceToStringSlice(v interface{}) []string {
 	var result []string
 	for _, item := range v.([]interface{}) {
