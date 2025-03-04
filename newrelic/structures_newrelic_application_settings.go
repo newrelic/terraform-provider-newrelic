@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"fmt"
+
 	"github.com/newrelic/newrelic-client-go/v2/pkg/agentapplications"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 
@@ -271,9 +272,7 @@ func flattenErrorCollectorValues(d *schema.ResourceData, in entities.AgentApplic
 		var ignoredErrorClasses []string
 		var ignoredErrorCodes []string
 		if _, ok := d.GetOk("expected_error_classes"); ok || !isImported {
-			for _, code := range in.ExpectedErrorClasses {
-				expectedErrorClasses = append(expectedErrorClasses, code)
-			}
+			expectedErrorClasses = append(expectedErrorClasses, in.ExpectedErrorClasses...)
 			errorCollectorValues["expected_error_classes"] = expectedErrorClasses
 		} else {
 			errorCollectorValues["expected_error_classes"] = []string{}
@@ -287,9 +286,7 @@ func flattenErrorCollectorValues(d *schema.ResourceData, in entities.AgentApplic
 			errorCollectorValues["expected_error_codes"] = []string{}
 		}
 		if _, ok := d.GetOk("ignored_error_classes"); ok || !isImported {
-			for _, code := range in.IgnoredErrorClasses {
-				ignoredErrorClasses = append(ignoredErrorClasses, code)
-			}
+			ignoredErrorClasses = append(ignoredErrorClasses, in.IgnoredErrorClasses...)
 			errorCollectorValues["ignored_error_classes"] = ignoredErrorClasses
 		} else {
 			errorCollectorValues["ignored_error_classes"] = []string{}

@@ -7,7 +7,6 @@ import (
 	"log"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -58,7 +57,6 @@ func validateErrorCollector(d *schema.ResourceDiff, errorsList *[]string) {
 }
 
 func validateThresholds(d *schema.ResourceDiff, errorsList *[]string) {
-
 	_, tracerExists := d.GetOk("transaction_tracer")
 	if tracerExists {
 		_, queryPlanExists := d.GetOk("transaction_tracer.0.explain_query_plans")
@@ -80,25 +78,28 @@ func validateThresholds(d *schema.ResourceDiff, errorsList *[]string) {
 		if typeExists && thresholdType == "APDEX_F" && valueExists {
 			*errorsList = append(*errorsList, "`query_plan_threshold_value` should not be set when `query_plan_threshold_type` is 'APDEX_F'")
 		}
+		validateTransactionThresholds(d, errorsList)
+	}
+}
 
-		transactionThresholdType, transactionTypeExists := d.GetOk("transaction_tracer.0.transaction_threshold_type")
-		_, transactionValueExists := d.GetOk("transaction_tracer.0.transaction_threshold_value")
+func validateTransactionThresholds(d *schema.ResourceDiff, errorsList *[]string) {
+	transactionThresholdType, transactionTypeExists := d.GetOk("transaction_tracer.0.transaction_threshold_type")
+	_, transactionValueExists := d.GetOk("transaction_tracer.0.transaction_threshold_value")
 
-		if !transactionTypeExists && !transactionValueExists {
-			*errorsList = append(*errorsList, "at least one of `transaction_threshold_type` or `transaction_threshold_value` must be provided when `transaction_tracer` is set")
-		}
+	if !transactionTypeExists && !transactionValueExists {
+		*errorsList = append(*errorsList, "at least one of `transaction_threshold_type` or `transaction_threshold_value` must be provided when `transaction_tracer` is set")
+	}
 
-		if transactionTypeExists && transactionThresholdType == "VALUE" && !transactionValueExists {
-			*errorsList = append(*errorsList, "`transaction_threshold_value` must be set when `transaction_threshold_type` is 'VALUE'")
-		}
+	if transactionTypeExists && transactionThresholdType == "VALUE" && !transactionValueExists {
+		*errorsList = append(*errorsList, "`transaction_threshold_value` must be set when `transaction_threshold_type` is 'VALUE'")
+	}
 
-		if transactionValueExists && (!transactionTypeExists || transactionThresholdType != "VALUE") {
-			*errorsList = append(*errorsList, "`transaction_threshold_type` must be set to 'VALUE' when `transaction_threshold_value` is provided")
-		}
+	if transactionValueExists && (!transactionTypeExists || transactionThresholdType != "VALUE") {
+		*errorsList = append(*errorsList, "`transaction_threshold_type` must be set to 'VALUE' when `transaction_threshold_value` is provided")
+	}
 
-		if transactionTypeExists && transactionThresholdType == "APDEX_F" && transactionValueExists {
-			*errorsList = append(*errorsList, "`transaction_threshold_value` should not be set when `transaction_threshold_type` is 'APDEX_F'")
-		}
+	if transactionTypeExists && transactionThresholdType == "APDEX_F" && transactionValueExists {
+		*errorsList = append(*errorsList, "`transaction_threshold_value` should not be set when `transaction_threshold_type` is 'APDEX_F'")
 	}
 }
 
@@ -178,12 +179,12 @@ func apmApplicationSettingsSchema() map[string]*schema.Schema {
 		"end_user_apdex_threshold": {
 			Type:        schema.TypeFloat,
 			Optional:    true,
-			Description: "Dummy field to support backward compatability of previous version.should be removed with next major version.",
+			Description: "Dummy field to support backward compatibility of previous version.should be removed with next major version.",
 		},
 		"enable_real_user_monitoring": {
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Description: "Dummy field to support backward compatability of previous version.should be removed with next major version.",
+			Description: "Dummy field to support backward compatibility of previous version.should be removed with next major version.",
 		},
 		"use_server_side_config": {
 			Type:        schema.TypeBool,
@@ -346,11 +347,13 @@ func resourceNewRelicApplicationSettingsUpdate(ctx context.Context, d *schema.Re
 	_, nameExists := d.GetOk("name")
 	if nameExists && !guidExists {
 		entityRes, err := getEntityDetailsFromName(ctx, d, meta)
-		if entityRes != nil {
-			err = d.Set("guid", string((*entityRes).GetGUID()))
-		} else {
+		if err != nil {
 			return diag.FromErr(err)
 		}
+		if entityRes == nil {
+			return diag.FromErr(fmt.Errorf("no entities found with the provided name, please ensure the name of a valid APM entity is provided"))
+		}
+		_ = d.Set("guid", string((*entityRes).GetGUID()))
 	}
 
 	updateApplicationParams := expandApplication(d)
@@ -367,8 +370,6 @@ func resourceNewRelicApplicationSettingsUpdate(ctx context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("something went wrong while Updating New Relic application"))
 	}
 
-	time.Sleep(2 * time.Second)
-
 	d.SetId(string(agentApplicationSettingResult.GUID))
 	err = d.Set("is_imported", true)
 	if err != nil {
@@ -383,7 +384,7 @@ func resourceNewRelicApplicationSettingsDelete(ctx context.Context, d *schema.Re
 	var diags diag.Diagnostics
 	diags = append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
-		Summary:  "Only browser, mobile, or APM applications that are not actively reporting data can be deleted via terraform and not just application settings. https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/application_settings",
+		Summary:  "Deleting the settings of an APM Application is not supported by this resource. https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/application_settings",
 	})
 	return diags
 }
