@@ -1,14 +1,67 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
-
 	"github.com/newrelic/newrelic-client-go/v2/pkg/agentapplications"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
+	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// Getting the entity details from the name using entity search query to find out the linked GUID to support backward compatability of existing users
+// NOTE : Revisit on this approach to support the name based application settings update in future as it introduces additional query call to fetch entity details. Instead, we can force customers to provide GUID
+func getEntityDetailsFromName(ctx context.Context, d *schema.ResourceData, meta interface{}) (*entities.EntityOutlineInterface, error) {
+	log.Printf("[INFO] Reading New Relic entities")
+
+	client := meta.(*ProviderConfig).NewClient
+	name := d.Get("name").(string)
+	name = escapeSingleQuote(name)
+	entityType := "APPLICATION"
+	domain := "APM"
+
+	query := buildEntitySearchQuery(name, domain, entityType, []interface{}{})
+
+	entityResults, err := client.Entities.GetEntitySearchByQueryWithContext(ctx,
+		entities.EntitySearchOptions{
+			CaseSensitiveTagMatching: true,
+		},
+		query,
+		[]entities.EntitySearchSortCriteria{},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if entityResults == nil {
+		return nil, fmt.Errorf("GetEntitySearchByQuery response was nil")
+	}
+
+	var entity *entities.EntityOutlineInterface
+	for _, e := range entityResults.Results.Entities {
+		// Conditional on case-sensitive match
+		str := e.GetName()
+		str = strings.TrimSpace(str)
+
+		name = revertEscapedSingleQuote(name)
+		if strings.Compare(str, name) == 0 || (strings.EqualFold(str, name)) {
+			entity = &e
+			break
+		}
+	}
+
+	if entity == nil {
+		return nil, fmt.Errorf("no entities found with the provided name, please ensure your name is valid")
+	}
+
+	return entity, nil
+
+}
+
+// Retrieving the APM values from the user configuration
 func expandApmConfigValues(d *schema.ResourceData) *agentapplications.AgentApplicationSettingsApmConfigInput {
 
 	apmConfig := agentapplications.AgentApplicationSettingsApmConfigInput{}
@@ -119,7 +172,7 @@ func expandApplication(d *schema.ResourceData) *agentapplications.AgentApplicati
 	a := agentapplications.AgentApplicationSettingsUpdateInput{}
 
 	if v, ok := d.GetOk("name"); ok { // alias
-		a.Alias = getStringPointer(v.(string))
+		a.Alias = v.(string)
 	}
 
 	slowSQL := &agentapplications.AgentApplicationSettingsSlowSqlInput{}
@@ -148,7 +201,7 @@ func expandApplication(d *schema.ResourceData) *agentapplications.AgentApplicati
 	return &a
 }
 
-// setting APM values
+// Setting APM values to state file
 func setAPMApplicationValues(d *schema.ResourceData, ApmSettings entities.AgentApplicationSettingsApmBase) error {
 	var err error
 	isImported := d.Get("is_imported").(bool)
@@ -175,27 +228,27 @@ func setBasicAPMValues(d *schema.ResourceData, ApmSettings entities.AgentApplica
 	}
 	if _, ok := d.GetOk("app_apdex_threshold"); ok || !isImported {
 		if err = d.Set("app_apdex_threshold", ApmSettings.ApmConfig.ApdexTarget); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting app_apdex_threshold value : %#v", err)
+			return fmt.Errorf("error setting app_apdex_threshold value : %#v", err)
 		}
 	}
 	if _, ok := d.GetOk("use_server_side_config"); ok || !isImported {
 		if err = d.Set("use_server_side_config", ApmSettings.ApmConfig.UseServerSideConfig); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting use_server_side_config value : %#v", err)
+			return fmt.Errorf("error setting use_server_side_config value : %#v", err)
 		}
 	}
 	if _, ok := d.GetOk("enable_slow_sql"); ok || !isImported {
 		if err = d.Set("enable_slow_sql", ApmSettings.SlowSql.Enabled); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting enable_slow_sql value : %#v", err)
+			return fmt.Errorf("error setting enable_slow_sql value : %#v", err)
 		}
 	}
 	if _, ok := d.GetOk("enable_thread_profiler"); ok || !isImported {
 		if err = d.Set("enable_thread_profiler", ApmSettings.ThreadProfiler.Enabled); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting thread profiler value : %#v", err)
+			return fmt.Errorf("error setting thread profiler value : %#v", err)
 		}
 	}
 	if _, ok := d.GetOk("tracer_type"); ok || !isImported {
 		if err = d.Set("tracer_type", ApmSettings.TracerType); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting tracer type value : %#v", err)
+			return fmt.Errorf("error setting tracer type value : %#v", err)
 		}
 	}
 	return nil
@@ -204,7 +257,7 @@ func setBasicAPMValues(d *schema.ResourceData, ApmSettings entities.AgentApplica
 func setTransactionTracerValues(d *schema.ResourceData, ApmSettings entities.AgentApplicationSettingsApmBase, isImported bool) error {
 	if _, ok := d.GetOk("transaction_tracer"); ok || !isImported {
 		if err := flattenTransactionTracingValues(d, ApmSettings.TransactionTracer); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting transaction tracer values : %#v", err)
+			return fmt.Errorf("error setting transaction tracer values : %#v", err)
 		}
 	}
 	return nil
@@ -213,7 +266,7 @@ func setTransactionTracerValues(d *schema.ResourceData, ApmSettings entities.Age
 func setErrorCollectorValues(d *schema.ResourceData, ApmSettings entities.AgentApplicationSettingsApmBase, isImported bool) error {
 	if _, ok := d.GetOk("error_collector"); ok || !isImported {
 		if err := flattenErrorCollectorValues(d, ApmSettings.ErrorCollector); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting error collector values : %#v", err)
+			return fmt.Errorf("error setting error collector values : %#v", err)
 		}
 	}
 	return nil

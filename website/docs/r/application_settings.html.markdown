@@ -42,6 +42,7 @@ resource "newrelic_application_settings" "app" {
     ignored_error_classes = []
     ignored_error_codes = []
   }
+  enable_slow_sql = true
   tracer_type = "NONE"
   enable_thread_profiler = true
 }
@@ -68,6 +69,7 @@ The following arguments are supported:
   * `expected_error_codes` - (Optional) A list of expected error codes(any status code between 100-900).
   * `ignored_error_classes` - (Optional) A list of ignored error classes.
   * `ignored_error_codes` - (Optional) A list of ignored error codes(any status code between 100-900).
+* `enable_slow_sql` - (Optional) Enable or disable the collection of slowest database queries in your traces.
 * `tracer_type` - (Optional) Configures the type of tracer used. Valid values are `CROSS_APPLICATION_TRACER`, `DISTRIBUTED_TRACING`, `NONE`, `OPT_OUT`.
 * `enable_thread_profiler` - (Optional) Enable or disable the collection of thread profiling data.
 
@@ -87,5 +89,4 @@ $ terraform import newrelic_application_settings.main Mzk1NzUyNHQVRJNTxBUE18QVBQ
 
 ## Notes
 
--> **NOTE:** Applications that have reported data in the last twelve hours
-cannot be deleted.
+-> **NOTE:** The `newrelic_application_settings` resource cannot be deleted directly via Terraform. It can only reset application settings to their initial state.
