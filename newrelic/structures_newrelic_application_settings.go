@@ -271,13 +271,13 @@ func flattenErrorCollectorValues(d *schema.ResourceData, in entities.AgentApplic
 		var expectedErrorCodes []string
 		var ignoredErrorClasses []string
 		var ignoredErrorCodes []string
-		if _, ok := d.GetOk("expected_error_classes"); ok || !isImported {
+		if _, ok := d.GetOk("error_collector.0.expected_error_classes"); ok || !isImported {
 			expectedErrorClasses = append(expectedErrorClasses, in.ExpectedErrorClasses...)
 			errorCollectorValues["expected_error_classes"] = expectedErrorClasses
 		} else {
 			errorCollectorValues["expected_error_classes"] = []string{}
 		}
-		if _, ok := d.GetOk("expected_error_codes"); ok || !isImported {
+		if _, ok := d.GetOk("error_collector.0.expected_error_codes"); ok || !isImported {
 			for _, code := range in.ExpectedErrorCodes {
 				expectedErrorCodes = append(expectedErrorCodes, string(code))
 			}
@@ -285,13 +285,13 @@ func flattenErrorCollectorValues(d *schema.ResourceData, in entities.AgentApplic
 		} else {
 			errorCollectorValues["expected_error_codes"] = []string{}
 		}
-		if _, ok := d.GetOk("ignored_error_classes"); ok || !isImported {
+		if _, ok := d.GetOk("error_collector.0.ignored_error_classes"); ok || !isImported {
 			ignoredErrorClasses = append(ignoredErrorClasses, in.IgnoredErrorClasses...)
 			errorCollectorValues["ignored_error_classes"] = ignoredErrorClasses
 		} else {
 			errorCollectorValues["ignored_error_classes"] = []string{}
 		}
-		if _, ok := d.GetOk("ignored_error_codes"); ok || !isImported {
+		if _, ok := d.GetOk("error_collector.0.ignored_error_codes"); ok || !isImported {
 			for _, code := range in.IgnoredErrorCodes {
 				ignoredErrorCodes = append(ignoredErrorCodes, string(code))
 			}

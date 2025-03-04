@@ -106,7 +106,7 @@ func validateTransactionThresholds(d *schema.ResourceDiff, errorsList *[]string)
 func validateServerSideConfig(d *schema.ResourceDiff, errorsList *[]string) {
 	ServerSideConfig := d.Get("use_server_side_config").(bool)
 
-	attrList := []string{"transaction_tracer", "error_collector", "tracer_type", "enable_thread_profiler"}
+	attrList := []string{"transaction_tracer", "error_collector", "tracer_type", "enable_thread_profiler", "enable_slow_sql"}
 	var finalList []string
 	for _, value := range attrList {
 		_, valueBool := d.GetOk(value)
