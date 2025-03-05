@@ -428,6 +428,13 @@ func TestSyntheticsSimpleBrowserMonitor_PeriodInMinutes(t *testing.T) {
 		Status: synthetics.SyntheticsMonitorStatus(synthetics.SyntheticsMonitorStatusTypes.ENABLED),
 		Uri:    "https://www.one.newrelic.com",
 
+		// Simple Browser Monitors also seem to have the API return an error when no runtime
+		// is specified; updated the test accordingly, after the Legacy Runtime EOL.
+		Runtime: &synthetics.SyntheticsRuntimeInput{
+			RuntimeType:        "CHROME_BROWSER",
+			RuntimeTypeVersion: "100",
+			ScriptLanguage:     "JAVASCRIPT",
+		},
 		AdvancedOptions: synthetics.SyntheticsSimpleBrowserMonitorAdvancedOptionsInput{
 			EnableScreenshotOnFailureAndScript: &tv,
 			ResponseValidationText:             "SUCCESS",

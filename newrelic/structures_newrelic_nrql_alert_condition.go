@@ -278,13 +278,56 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 		}
 	}
 
-	return &alerts.NrqlConditionTerm{
+	expandedTerm := alerts.NrqlConditionTerm{
 		Operator:             operator,
 		Priority:             alerts.NrqlConditionPriority(strings.ToUpper(priority)),
 		Threshold:            &threshold,
 		ThresholdDuration:    duration,
 		ThresholdOccurrences: *thresholdOccurrences,
-	}, nil
+	}
+
+	if conditionType == "baseline" {
+		return &expandedTerm, nil
+	}
+
+	// Set prediction fields if they're present
+	prediction, err := expandNrqlThresholdPrediction(term)
+	if err != nil {
+		return nil, err
+	}
+
+	expandedTerm.Prediction = prediction
+
+	return &expandedTerm, nil
+}
+
+// Terraform config => NerdGraph payload
+func expandNrqlThresholdPrediction(term map[string]interface{}) (*alerts.NrqlConditionThresholdPrediction, error) {
+	if term["prediction"] == nil {
+		return nil, nil
+	}
+
+	predictionSet := term["prediction"].(*schema.Set)
+
+	if predictionSet.Len() == 0 {
+		return nil, nil
+	}
+
+	if predictionSet.Len() > 1 {
+		return nil, fmt.Errorf("only one `prediction` is allowed per `term` block")
+	}
+
+	predictionMap := predictionSet.List()[0].(map[string]interface{})
+
+	var prediction alerts.NrqlConditionThresholdPrediction
+
+	if predictBy, ok := predictionMap["predict_by"].(int); ok {
+		prediction.PredictBy = predictBy
+	}
+
+	prediction.PreferPredictionViolation = predictionMap["prefer_prediction_violation"].(bool)
+
+	return &prediction, nil
 }
 
 func expandNrqlThresholdOccurrences(term map[string]interface{}) (*alerts.ThresholdOccurrence, error) {
@@ -313,7 +356,7 @@ func expandNrqlThresholdOccurrences(term map[string]interface{}) (*alerts.Thresh
 	return &thresholdOccurrences, nil
 }
 
-// NerdGraph
+// Terraform config => NerdGraph payload
 func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.NrqlConditionTerm, error) {
 	var expandedTerms []alerts.NrqlConditionTerm
 	var err error
@@ -505,7 +548,7 @@ func expandUpdateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionUpda
 	return &signal, nil
 }
 
-// NerdGraph
+// NerdGraph response => Terraform state
 func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertCondition, d *schema.ResourceData) error {
 	policyID, err := strconv.Atoi(condition.PolicyID)
 	if err != nil {
@@ -688,7 +731,7 @@ func flattenNrql(nrql alerts.NrqlConditionQuery, configNrql map[string]interface
 	return []interface{}{out}
 }
 
-// NerdGraph
+// NerdGraph response => Terraform state
 func flattenNrqlTerms(terms []alerts.NrqlConditionTerm, configTerms []interface{}) []map[string]interface{} {
 	// Represents the built terms to be saved in state
 	var out []map[string]interface{}
@@ -706,6 +749,14 @@ func flattenNrqlTerms(terms []alerts.NrqlConditionTerm, configTerms []interface{
 			"operator":  strings.ToLower(string(term.Operator)),
 			"priority":  strings.ToLower(string(term.Priority)),
 			"threshold": term.Threshold,
+		}
+
+		if term.Prediction != nil {
+			dst["prediction"] = make([]interface{}, 1)
+			predictionBlockContents := make(map[string]interface{})
+			predictionBlockContents["predict_by"] = term.Prediction.PredictBy
+			predictionBlockContents["prefer_prediction_violation"] = term.Prediction.PreferPredictionViolation
+			dst["prediction"] = []interface{}{predictionBlockContents}
 		}
 
 		if i < len(configuredTerms) {
@@ -749,6 +800,14 @@ func handleImportFlattenNrqlTerms(terms []alerts.NrqlConditionTerm) []map[string
 			"threshold_occurrences": strings.ToLower(string(term.ThresholdOccurrences)),
 		}
 
+		if term.Prediction != nil {
+			dst["prediction"] = make([]interface{}, 1)
+			predictionBlockContents := make(map[string]interface{})
+			predictionBlockContents["predict_by"] = term.Prediction.PredictBy
+			predictionBlockContents["prefer_prediction_violation"] = term.Prediction.PreferPredictionViolation
+			dst["prediction"] = []interface{}{predictionBlockContents}
+		}
+
 		out = append(out, dst)
 	}
 
@@ -771,6 +830,13 @@ func getConfiguredTerms(configTerms []interface{}) []map[string]interface{} {
 			// NerdGraph fields
 			"threshold_duration":    t["threshold_duration"],
 			"threshold_occurrences": t["threshold_occurrences"],
+		}
+
+		if t["prediction"] != nil {
+			trm["prediction"] = map[string]interface{}{
+				"predict_by":                  t["prediction"].(map[string]interface{})["predict_by"],
+				"prefer_prediction_violation": t["prediction"].(map[string]interface{})["prefer_prediction_violation"],
+			}
 		}
 
 		setTerms = append(setTerms, trm)

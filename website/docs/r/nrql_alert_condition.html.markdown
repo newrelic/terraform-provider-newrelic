@@ -105,7 +105,7 @@ The following arguments are supported:
 The `nrql` block supports the following arguments:
 
 - `query` - (Required) The NRQL query to execute for the condition.
-- `data_account_id` - (Optional) **BETA PREVIEW: the `data_account_id` field is in limited release and only enabled for preview on a per-account basis.** The account ID to use for the alert condition's query as specified in the the `query` field. If `data_account_id` is not specified, then the condition's query will be evaluated against the `account_id`. Note that the `account_id` must have read privileges for the `data_account_id` or else the condition will be invalid.
+- `data_account_id` - (Optional) The account ID to use for the alert condition's query as specified in the the `query` field. If `data_account_id` is not specified, then the condition's query will be evaluated against the `account_id`. Note that the `account_id` must have read privileges for the `data_account_id` or else the condition will be invalid.
 - `evaluation_offset` - (Optional) **DEPRECATED:** Use `aggregation_method` instead. Represented in minutes and must be within 1-20 minutes (inclusive). NRQL queries are evaluated based on their `aggregation_window` size. The start time depends on this value. It's recommended to set this to 3 windows. An offset of less than 3 windows will trigger incidents sooner, but you may see more false positives and negatives due to data latency. With `evaluation_offset` set to 3 windows and an `aggregation_window` of 60 seconds, the NRQL time window applied to your query will be: `SINCE 3 minutes ago UNTIL 2 minutes ago`. `evaluation_offset` cannot be set with `aggregation_method`, `aggregation_delay`, or `aggregation_timer`.<br>
 - `since_value` - (Optional)  **DEPRECATED:** Use `aggregation_method` instead. The value to be used in the `SINCE <X> minutes ago` clause for the NRQL query. Must be between 1-20 (inclusive). <br>
 
@@ -128,10 +128,22 @@ The `term` block supports the following arguments:
 - `threshold_occurrences` - (Optional) The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: `all` or `at_least_once` (case insensitive).
 - `duration` - (Optional) **DEPRECATED:** Use `threshold_duration` instead. The duration of time, in _minutes_, that the threshold must violate for in order to create an incident. Must be within 1-120 (inclusive).
 - `time_function` - (Optional) **DEPRECATED:** Use `threshold_occurrences` instead. The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: `all` or `any`.
+- `prediction` - (Optional) **BETA PREVIEW: the `prediction` field is in limited release and only enabled for preview on a per-account basis.** Use `prediction` to open alerts when your static threshold is predicted to be reached in the future. The `prediction` field is only available for _static_ NRQL alert conditions. See [Prediction](#prediction) below for details.
 
 ~> **NOTE:** When a `critical` or `warning` block is added to this resource, using either `duration` or `threshold_duration` (one of the two) is mandatory. Both of these should not be specified.
 
 ~> **NOTE:** When a `critical` or `warning` block is added to this resource, using either `time_function` or `threshold_occurrences` (one of the two) is mandatory. Both of these should not be specified.
+
+### Prediction
+
+~> **BETA PREVIEW:** The `prediction` block is in limited release and only enabled for preview on a per-account basis.
+
+~> **NOTE:** The `prediction` block is only available for _static_ NRQL alert conditions.
+
+The `prediction` block supports the following arguments:
+
+- `predict_by` - (Optional) The duration, in seconds, that the prediction should look into the future. Default is 3600 seconds (1 hour).
+- `prefer_prediction_violation` - (Optional) If a prediction incident is open when a term's static threshold is breached by the actual signal, default behavior is to close the prediction incident and open a static incident. Setting `prefer_prediction_violation` to `true` overrides this behavior leaving the prediction incident open and preventing a static incident from opening. Default is false.
 
 ## Attributes Reference
 
