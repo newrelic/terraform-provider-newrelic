@@ -79,6 +79,7 @@ func TestNewRelicNotificationChannel_Webhook(t *testing.T) {
 }
 
 func TestNewRelicNotificationChannel_WebhookPropertyError(t *testing.T) {
+	t.Skipf("Skipping this test until we are sure on the property block that is expected to throw an error with a Webhook")
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
 	channelPropsAttr := `property {

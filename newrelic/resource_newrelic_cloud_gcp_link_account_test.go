@@ -15,6 +15,7 @@ import (
 )
 
 func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
+	t.Skipf("Skipping test until GCP Environment Variables are fixed")
 	resourceName := "newrelic_cloud_gcp_link_account.foo"
 	testGCPLinkAccountName := fmt.Sprintf("tf_cloud_link_account_test_gcp_%s", acctest.RandString(5))
 
