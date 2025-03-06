@@ -1,3 +1,8 @@
+<a name="v3.57.1"></a>
+## [v3.57.1] - 2025-03-05
+### Documentation Updates
+- **nrql_alert_condition.html.markdown:** fix example ([#2793](https://github.com/newrelic/terraform-provider-newrelic/issues/2793))
+
 <a name="v3.57.0"></a>
 ## [v3.57.0] - 2025-02-21
 ### Bug Fixes
@@ -2313,7 +2318,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.57.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.57.1...HEAD
+[v3.57.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.57.0...v3.57.1
 [v3.57.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.56.0...v3.57.0
 [v3.56.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.55.0...v3.56.0
 [v3.55.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.1...v3.55.0
