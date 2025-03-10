@@ -8,21 +8,21 @@ description: |-
 
 # Resource: newrelic_application_settings
 
--> **NOTE:** Applications are not created by this resource, but are created by
-a reporting agent.
+-> **NOTE:** Applications are not created by this resource, but are created by a reporting agent.
 
-Use this resource to manage configuration for an application that already
-exists in New Relic.
+Use this resource to manage configuration for an application that already exists in New Relic.
 
-~> **WARNING:** We encourage you to  use this resource to manage all application settings together not just a few to avoid potential issues like incompatibility or unexpected behavior.
+~> **WARNING:** We encourage you to use this resource to manage all application settings together, not just a few, to avoid potential issues like incompatibility or unexpected behavior.
 
 ## Example Usage
 
 ```hcl
 resource "newrelic_application_settings" "app" {
-  guid = "rhbwkguhfjkewqre4r9"
-  name = "my-app"
-  app_apdex_threshold = "0.7"
+  # please note that the arguments 'guid' and 'name' are mutually exclusive
+  # using the 'guid' argument is preferred over using the 'name' argument
+  guid                   = "Mxxxxxxxxxxxxxxxxxxxxx"
+  name                   = "Sample New Relic APM Application"
+  app_apdex_threshold    = "0.7"
   use_server_side_config = true
   transaction_tracer {
     explain_query_plans {
@@ -33,17 +33,17 @@ resource "newrelic_application_settings" "app" {
       record_sql = "RAW"
     }
     stack_trace_threshold_value = "0.5"
-    transaction_threshold_type = "VALUE"
+    transaction_threshold_type  = "VALUE"
     transaction_threshold_value = "0.5"
   }
   error_collector {
     expected_error_classes = []
-    expected_error_codes = []
-    ignored_error_classes = []
-    ignored_error_codes = []
+    expected_error_codes   = []
+    ignored_error_classes  = []
+    ignored_error_codes    = []
   }
-  enable_slow_sql = true
-  tracer_type = "NONE"
+  enable_slow_sql        = true
+  tracer_type            = "NONE"
   enable_thread_profiler = true
 }
 ```
@@ -77,7 +77,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The ID of the application.
+* `id` - The GUID of the application.
 
 ## Import
 
