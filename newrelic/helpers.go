@@ -164,3 +164,21 @@ func revertEscapedSingleQuote(name string) string {
 func fetchAttributeValueFromResourceConfig(d *schema.ResourceData, key string) (interface{}, bool) {
 	return d.GetOk(key)
 }
+
+func getBoolPointer(value bool) *bool {
+	return &value
+}
+
+func getFloatPointer(value float64) *float64 {
+	return &value
+}
+
+func convertInterfaceToStringSlice(v interface{}) []string {
+	var result []string
+	for _, item := range v.([]interface{}) {
+		if str, ok := item.(string); ok {
+			result = append(result, str)
+		}
+	}
+	return result
+}
