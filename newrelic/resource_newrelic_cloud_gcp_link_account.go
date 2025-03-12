@@ -39,11 +39,6 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"disabled": {
-				Type:        schema.TypeBool,
-				Description: "project id of the Gcp account",
-				Optional:    true,
-			},
 		},
 	}
 }
