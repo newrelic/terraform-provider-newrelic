@@ -1,3 +1,12 @@
+<a name="unreleased"></a>
+## [Unreleased]
+
+### Bug Fixes
+- **changelog:** updated main as base branch
+- **changelog:** updated main as base branch
+- **changelog:** updated main as base branch
+- **changelog:** updated master as base branch
+- **changelog:** updated main as base branch
 <a name="v3.58.1"></a>
 ## [v3.58.1] - 2025-03-11
 ### Bug Fixes
@@ -924,10 +933,75 @@
 <a name="v3.0.2"></a>
 ## [v3.0.2] - 2022-08-31
 ### Bug Fixes
+- **Notifications:** add update to destinations and channels + rename properties
+- **Notifications:** pr review fixes: not needed remove computes and forcenew
+- **channels:** add tests
+- **channels:** fix lint
+- **channels:** renaming - wip
+- **channels:** small renaming
+- **destinations:** update docs
+- **destinations:** upgrade client version
+- **destinations:** general adjustments for destinations read functionality
+- **docs:** add notifications resources to index doc
+- **newrelic_entity_tags:** extended timeout to see if it fixes not found errors
 - **newrelic_synthetics_monitor:** convert old ID's into GUID
-- **newrelic_synthetics_monitor:** deleted synthetics monitors are not detected
 - **newrelic_synthetics_monitor:** handle already deleted checks
+- **newrelic_synthetics_monitor:** deleted synthetics monitors are not detected
+- **notification_channel:** ignore channel not found error during terraform destroy (deleting workflow deletes channel)
+- **notifications:** lint fix
+- **notifications:** update docs
+- **notifications:** fix tests
+- **notifications:** upgrade newrelic-client-go
+- **notifications:** fix tests -wip
+- **notifications:** cr changes
+- **notifications:** add custom errors handling to notifications
+- **notifications:** fix tests + add jira
+- **notifications:** add internal property
+- **notifications:** add tests + update docs
+- **nrql_alert_condition:** update docs and validation for 'expiration_duration'
+- **nrql_alert_condition:** do not show diff for streaming methods when not provided and defaults are used
 - **synthetics:** catch when synthetic check have been deleted from ui
+- **workflows:** upgrade newrelic-client-go
+- **workflows:** small workflows test twick
+- **workflows:** add custom errors handling to workflows
+- **workflows:** lint fix
+
+### Documentation Updates
+- add v3 migration guide
+- boeken links monitor docs
+- documentation for cert_broken_step monitors
+- added the changes in website guide
+- adding the website guides
+- doc of simple & browser synthectics monitor
+- **synthetics:** update docs for private location data source
+
+### Features
+- swap secure credential resource to GraphQL API
+- add new synthetics resources
+- **newrelic_synthetics_cert_check_monitor:** adding cert check monitor
+- **synthetics:** added private location resource
+- **synthetics:** add step monitor resource
+- **synthetics:** [wip] add broken links monitor resource
+- **synthetics:** add newrelic_synthetics_script_monitor resource
+- **synthetics:** migrate monitor location data source to new GraphQL API
+- **workflows:** add workflows resources - wip
+- **workflows:** add workflows resources
+- **workflows:** add workflows resources workinggg - wip
+- **workflows:** add tests
+- **workflows:** resolve conflict
+
+### BREAKING CHANGE
+
+new synthetics resources use GraphQL API schema
+
+<a name="v2.50.2"></a>
+## [v2.50.2] - 2022-08-30
+<a name="v2.50.1"></a>
+## [v2.50.1] - 2022-08-30
+<a name="v2.50.0"></a>
+## [v2.50.0] - 2022-08-30
+### Features
+- updated dependencies
 
 <a name="v3.0.1"></a>
 ## [v3.0.1] - 2022-08-29
@@ -993,15 +1067,6 @@ new synthetics resources use GraphQL API schema
 
 <a name="2.51.0"></a>
 ## [2.51.0] - 2022-07-22
-<a name="v2.50.2"></a>
-## [v2.50.2] - 2022-08-30
-<a name="v2.50.1"></a>
-## [v2.50.1] - 2022-08-30
-<a name="v2.50.0"></a>
-## [v2.50.0] - 2022-08-30
-### Features
-- updated dependencies
-
 <a name="v2.49.1"></a>
 ## [v2.49.1] - 2022-07-22
 ### Bug Fixes
@@ -1817,19 +1882,185 @@ new synthetics resources use GraphQL API schema
 <a name="v2.4.0"></a>
 ## [v2.4.0] - 2020-07-28
 ### Bug Fixes
+- Require condition_scope = `instance` for validation_close_timer
+- Add validation to newrelic_alert_condtion condition_scope
+- replacement for deadlink linter
+- replacement for deadlink linter
+- **alert_condition:** remove conditional to fix drift when using 'user_defined' attributes
+- **alerts:** require at least one violation time limit attr
 - **alerts:** Unify how alert policy selects an account_id
+- **alerts:** infra alert condition zero value detection
+- **alerts:** improve nil handling for alert_channel
+- **alerts:** remove DiffSuppressFunc on TypeSet to avoid test drift
+- **alerts:** handle a nil reference with more grace
+- **application_settings:** Remove delete, as it is not possible
+- **deps:** Revert terraform sdk to 1.10.0
+- **docs:** extra whitespace below table
+- **docs:** better table header rendering
 - **infra_alert_condition:** support zero-value thresholds for infra_alert_condition resource
+- **newrelic:** fix the failing integration tests ([#519](https://github.com/newrelic/terraform-provider-newrelic/issues/519))
+- **nrql_alert_condition:** threshold_occurrences is case insensitive, attribute description updates
+- **nrql_alert_condition:** use better term operator
 
 ### Documentation Updates
+- update README with new pointers
+- include v1 index.html in sidebar
+- fix broken links
+- fix broken links
+- fix broken links
+- update API key references to match desires
+- communicate that most but not all keys have prefixes
+- update index header with improved words
+- DEPRECATION notice for 1.x
+- fix broken links
+- include documentation about upgrading the provider to 2.x
+- prep for v2.x, isolate v1.x docs
+- add callout to top of each v1.x doc page
+- add table for current endpoint in use per resource
+- update getting started guide to reference new material
+- include information on pinning a version
+- include sidebar link for 2.x upgrade
+- tidy up after review
+- **alert_channel:** fix broken 'nested config' anchor link
 - **alert_policy:** update alert_policy import section, add  default to arg ref
+- **alerts:** include account_id attribute for alert_policy
+- **alerts:** include caveat about NRQL alerts condition operator usage with outliers
+- **alerts:** update wording to avoid implementation details
+- **alerts:** update documentation for newrelic_nrql_alert_condition
+- **alerts:** include deprecation notice for "terms"
+- **alerts:** update examples to reflect deprecation
+- **getting started:** fix resource naming
+- **nrql_alert_condition:** update docs to reflect version 2.0 changes
+- **nrql_alert_condition:** add outlier example, add new attributes, deprecate old attributes, update import section
+- **provider:** add getting started guide to the quick links
+- **provider:** add region to provider docs, removing references to API base URLs
+- **provider:** add provider configuration guide page
+- **provider:** additional v2 updates, migration guide updates
+- **provider:** update getting started example to reflect v2 updates
+- **provider:** add environment variables and schema attribute table
+- **provider:** add account_id to argument reference, move argument reference above the fold
+- **provider:** fix incorrect newrelic_application reference in some examples
+- **readme:** update title, add link to latest documentation
+- **workloads:** fix api key attribute name ([#489](https://github.com/newrelic/terraform-provider-newrelic/issues/489))
 
 ### Features
+- add a newrelic_account data source
+- update the release process to prepare for repo handoff
+- **alerts:** new newrelic_alerts_location_failure_condition resource
+- **alerts:** convert Alerts Policies to nerdgraph
+- **application:** implement newrelic_application resource
+- **dashboard:** add grid_column_count to dashboard schema
+- **entity_tags:** add an entity tag resource ([#679](https://github.com/newrelic/terraform-provider-newrelic/issues/679))
+- **eventstometrics:** add an events to metrics rule resource ([#690](https://github.com/newrelic/terraform-provider-newrelic/issues/690))
 - **infra_alert_condition:** add description attribute
+- **nrql_alert_condition:** integrate nerdgraph for nrql alert conditions
+- **provider:** add region to provider schema, handle API URLs based off region
+
+<a name="v1.20.1"></a>
+## [v1.20.1] - 2020-07-27
+### Bug Fixes
+- **alerts:** infra alert condition zero value detection
+- **changelog:** remove 1.18.1 from changelog, 1.19.0 is the replacement
+- **client:** update the client for pagination URL fix
+- **infra_alert_condition:** [v1.x] support zero-value thresholds for infra_alert_condition resource
+- **test:** Workloads returns ordered list of scope account IDs, update test
+
+### Documentation Updates
+- **application_settings:** add application settings resource to sidebar ([#582](https://github.com/newrelic/terraform-provider-newrelic/issues/582))
+
+### Features
+- update the release process to prepare for repo handoff
+- **application:** implement newrelic_application resource ([#558](https://github.com/newrelic/terraform-provider-newrelic/issues/558))
+- **dashboard:** add grid_column_count to dashboard schema
 
 <a name="v2.3.0"></a>
 ## [v2.3.0] - 2020-07-23
+### Bug Fixes
+- replacement for deadlink linter
+- replacement for deadlink linter
+- Add validation to newrelic_alert_condtion condition_scope
+- Require condition_scope = `instance` for validation_close_timer
+- **alert_condition:** remove conditional to fix drift when using 'user_defined' attributes
+- **alerts:** infra alert condition zero value detection
+- **alerts:** require at least one violation time limit attr
+- **alerts:** improve nil handling for alert_channel
+- **alerts:** remove DiffSuppressFunc on TypeSet to avoid test drift
+- **alerts:** handle a nil reference with more grace
+- **application_settings:** Remove delete, as it is not possible
+- **deps:** Revert terraform sdk to 1.10.0
+- **docs:** better table header rendering
+- **docs:** extra whitespace below table
+- **newrelic:** fix the failing integration tests ([#519](https://github.com/newrelic/terraform-provider-newrelic/issues/519))
+- **nrql_alert_condition:** threshold_occurrences is case insensitive, attribute description updates
+- **nrql_alert_condition:** use better term operator
+
+### Documentation Updates
+- fix broken links
+- DEPRECATION notice for 1.x
+- update index header with improved words
+- fix broken links
+- prep for v2.x, isolate v1.x docs
+- communicate that most but not all keys have prefixes
+- add callout to top of each v1.x doc page
+- update API key references to match desires
+- fix broken links
+- fix broken links
+- add table for current endpoint in use per resource
+- include documentation about upgrading the provider to 2.x
+- update README with new pointers
+- update getting started guide to reference new material
+- include information on pinning a version
+- include sidebar link for 2.x upgrade
+- include v1 index.html in sidebar
+- tidy up after review
+- **alert_channel:** fix broken 'nested config' anchor link
+- **alerts:** update examples to reflect deprecation
+- **alerts:** update wording to avoid implementation details
+- **alerts:** include caveat about NRQL alerts condition operator usage with outliers
+- **alerts:** update documentation for newrelic_nrql_alert_condition
+- **alerts:** include account_id attribute for alert_policy
+- **alerts:** include deprecation notice for "terms"
+- **getting started:** fix resource naming
+- **nrql_alert_condition:** update docs to reflect version 2.0 changes
+- **nrql_alert_condition:** add outlier example, add new attributes, deprecate old attributes, update import section
+- **provider:** fix incorrect newrelic_application reference in some examples
+- **provider:** add getting started guide to the quick links
+- **provider:** add region to provider docs, removing references to API base URLs
+- **provider:** add provider configuration guide page
+- **provider:** additional v2 updates, migration guide updates
+- **provider:** add account_id to argument reference, move argument reference above the fold
+- **provider:** add environment variables and schema attribute table
+- **provider:** update getting started example to reflect v2 updates
+- **readme:** update title, add link to latest documentation
+- **workloads:** fix api key attribute name ([#489](https://github.com/newrelic/terraform-provider-newrelic/issues/489))
+
 ### Features
 - add a newrelic_account data source
+- update the release process to prepare for repo handoff
+- **alerts:** new newrelic_alerts_location_failure_condition resource
+- **alerts:** convert Alerts Policies to nerdgraph
+- **application:** implement newrelic_application resource
+- **dashboard:** add grid_column_count to dashboard schema
+- **entity_tags:** add an entity tag resource ([#679](https://github.com/newrelic/terraform-provider-newrelic/issues/679))
+- **eventstometrics:** add an events to metrics rule resource ([#690](https://github.com/newrelic/terraform-provider-newrelic/issues/690))
+- **nrql_alert_condition:** integrate nerdgraph for nrql alert conditions
+- **provider:** add region to provider schema, handle API URLs based off region
+
+<a name="v1.20.0"></a>
+## [v1.20.0] - 2020-07-23
+### Bug Fixes
+- **alerts:** infra alert condition zero value detection
+- **changelog:** remove 1.18.1 from changelog, 1.19.0 is the replacement
+- **client:** update the client for pagination URL fix
+- **test:** Workloads returns ordered list of scope account IDs, update test
+
+### Documentation Updates
+- **application_settings:** add application settings resource to sidebar ([#582](https://github.com/newrelic/terraform-provider-newrelic/issues/582))
+
+### Features
+- update the release process to prepare for repo handoff
+- **application:** implement newrelic_application resource ([#558](https://github.com/newrelic/terraform-provider-newrelic/issues/558))
+- **dashboard:** add grid_column_count to dashboard schema
 
 <a name="v2.2.1"></a>
 ## [v2.2.1] - 2020-07-10
@@ -1862,17 +2093,76 @@ new synthetics resources use GraphQL API schema
 <a name="v2.1.2"></a>
 ## [v2.1.2] - 2020-06-26
 ### Bug Fixes
+- Require condition_scope = `instance` for validation_close_timer
+- Add validation to newrelic_alert_condtion condition_scope
 - **alerts:** require at least one violation time limit attr
 - **alerts:** improve nil handling for alert_channel
+- **alerts:** remove DiffSuppressFunc on TypeSet to avoid test drift
+- **alerts:** handle a nil reference with more grace
+- **alerts:** infra alert condition zero value detection
+- **application_settings:** Remove delete, as it is not possible
+- **deps:** Revert terraform sdk to 1.10.0
+- **newrelic:** fix the failing integration tests ([#519](https://github.com/newrelic/terraform-provider-newrelic/issues/519))
+- **nrql_alert_condition:** threshold_occurrences is case insensitive, attribute description updates
 
 ### Documentation Updates
-- **provider:** add getting started guide to the quick links
-- **provider:** fix incorrect newrelic_application reference in some examples
-- **provider:** add account_id to argument reference, move argument reference above the fold
-- **provider:** add environment variables and schema attribute table
-- **provider:** update getting started example to reflect v2 updates
+- update README with new pointers
+- include information on pinning a version
+- add table for current endpoint in use per resource
+- prep for v2.x, isolate v1.x docs
+- add callout to top of each v1.x doc page
+- update getting started guide to reference new material
+- include documentation about upgrading the provider to 2.x
+- update API key references to match desires
+- include sidebar link for 2.x upgrade
+- include v1 index.html in sidebar
+- tidy up after review
+- DEPRECATION notice for 1.x
+- update index header with improved words
+- **alert_channel:** fix broken 'nested config' anchor link
+- **alerts:** include deprecation notice for "terms"
+- **alerts:** update wording to avoid implementation details
+- **alerts:** include caveat about NRQL alerts condition operator usage with outliers
+- **alerts:** update examples to reflect deprecation
+- **getting started:** fix resource naming
+- **nrql_alert_condition:** update docs to reflect version 2.0 changes
+- **nrql_alert_condition:** add outlier example, add new attributes, deprecate old attributes, update import section
+- **provider:** add region to provider docs, removing references to API base URLs
 - **provider:** additional v2 updates, migration guide updates
+- **provider:** add provider configuration guide page
+- **provider:** update getting started example to reflect v2 updates
+- **provider:** add environment variables and schema attribute table
+- **provider:** add account_id to argument reference, move argument reference above the fold
+- **provider:** fix incorrect newrelic_application reference in some examples
+- **provider:** add getting started guide to the quick links
 - **readme:** update title, add link to latest documentation
+- **workloads:** fix api key attribute name ([#489](https://github.com/newrelic/terraform-provider-newrelic/issues/489))
+
+### Features
+- update the release process to prepare for repo handoff
+- **alerts:** convert Alerts Policies to nerdgraph
+- **application:** implement newrelic_application resource
+- **dashboard:** add grid_column_count to dashboard schema
+- **entity_tags:** add an entity tag resource ([#679](https://github.com/newrelic/terraform-provider-newrelic/issues/679))
+- **eventstometrics:** add an events to metrics rule resource ([#690](https://github.com/newrelic/terraform-provider-newrelic/issues/690))
+- **nrql_alert_condition:** integrate nerdgraph for nrql alert conditions
+- **provider:** add region to provider schema, handle API URLs based off region
+
+<a name="v1.19.1"></a>
+## [v1.19.1] - 2020-06-24
+### Bug Fixes
+- **alerts:** infra alert condition zero value detection
+- **changelog:** remove 1.18.1 from changelog, 1.19.0 is the replacement
+- **client:** update the client for pagination URL fix
+- **test:** Workloads returns ordered list of scope account IDs, update test
+
+### Documentation Updates
+- **application_settings:** add application settings resource to sidebar ([#582](https://github.com/newrelic/terraform-provider-newrelic/issues/582))
+
+### Features
+- update the release process to prepare for repo handoff
+- **application:** implement newrelic_application resource ([#558](https://github.com/newrelic/terraform-provider-newrelic/issues/558))
+- **dashboard:** add grid_column_count to dashboard schema
 
 <a name="v2.1.1"></a>
 ## [v2.1.1] - 2020-06-23
@@ -1933,21 +2223,6 @@ new synthetics resources use GraphQL API schema
 - **nrql_alert_condition:** integrate nerdgraph for nrql alert conditions
 - **provider:** add region to provider schema, handle API URLs based off region
 
-<a name="v1.20.1"></a>
-## [v1.20.1] - 2020-07-27
-### Bug Fixes
-- **infra_alert_condition:** [v1.x] support zero-value thresholds for infra_alert_condition resource
-
-<a name="v1.20.0"></a>
-## [v1.20.0] - 2020-07-23
-<a name="v1.19.1"></a>
-## [v1.19.1] - 2020-06-24
-### Bug Fixes
-- **changelog:** remove 1.18.1 from changelog, 1.19.0 is the replacement
-
-### Features
-- update the release process to prepare for repo handoff
-
 <a name="v1.19.0"></a>
 ## [v1.19.0] - 2020-06-05
 ### Bug Fixes
@@ -1995,24 +2270,371 @@ new synthetics resources use GraphQL API schema
 <a name="v1.15.0"></a>
 ## [v1.15.0] - 2020-03-04
 ### Bug Fixes
+- appease golangci-lint when running make
+- use name as filter in application lookup
+- make event a computed attribute
+- add attribute validation for infra condition types
+- loosen validation for threshold duration
+- typos
+- merge conflicts
+- lint issue, update modules
+- align alert policy validation with NR's API validation
+- align alert condition duration constraints to NR's API constraints
+- fix newrelic_infra_alert imports and backfill acc testing
+- **alert_channel:** validate payload also has payload_type specified
+- **alert_channels:** allow complex headers & payloads with new attributes
+- **alert_channels:** handle more complex JSON structures in payload or headers ([#361](https://github.com/newrelic/terraform-provider-newrelic/issues/361))
+- **alert_condition:** mark condition_scope optional
 - **application_label:** use correct type assertions for applications and servers attributes
+- **dashboards:** include application_breakdown as a valid visualization
+- **newrelic-client-go:** Fix API Key passing to provider
+- **newrelic_alert_channel:** Force new resource for all config fields
 - **nrql_alert_condition:** terms should be a TypeSet
+- **provider:** deprecate and re-enable the use of infra_api_url ([#411](https://github.com/newrelic/terraform-provider-newrelic/issues/411))
 
 ### Documentation Updates
+- update docs for newrelic_nrql_alert_condition
+- refresh the infra alert condition docs
+- update newrelic_synthetics_monitor docs
+- updates for consistency
+- add missing resources and data source to sidebar
+- add Getting Started section
+- fix formatting in dashboard docs
+- update docs for consistency
+- document the new synthetics_api_url variable
+- update documentation for newrelic_infra_alert_condition
+- Make a note about community resources and support
+- update alert-channel examples
+- Make note about ignoring secrets
+- update for clarity and consistency
+- update nrql_alert_condition docs to reference violation_time_limit_seconds
+- update docs for newrelic_alert_channel resource and data source
+- add docs for newrelic_plugin_component
+- **alert_channel:** add payload_type details to docs
 - **alert_policy_channel:** include sorting recommendation for channel_ids
+- **alerts:** update documentation for newrelic_alert_channel
+- **dashboards:** include application_breakdown in docs
 
 ### Features
+- update newrelic_synthetics_alert_condition  acceptance tests
+- update newrelic_synthetics_monitor_script acceptance tests
+- add ability to import resource_newrelic_synthetics_monitor, update acceptance tests and add coverage
+- allow importing of violation_time_limit_seconds, add validation, remove inline docs
+- update CHANGELOG for v1.11.0
+- replace provider backend with newrelic-client-go ([#358](https://github.com/newrelic/terraform-provider-newrelic/issues/358))
+- add ability to import newrelic_alert_channel data source
+- release 1.11.0
+- add import functionality for newrelic_alert_policy data source
+- create importer for alert policy channels
+- add a plugin component data source
+- add ability to import nrql_alert_condition for types static and outlier
+- **alert_policy:** add ability to add multiple channels to a policy ([#398](https://github.com/newrelic/terraform-provider-newrelic/issues/398))
 - **alert_policy_channels:** add ability to add multiple channels to a policy
+- **alerts:** deprecate alerts channel configuration and add config block
+- **infra_alert_condition:** add violation_close_timer to newrelic_infra_alert_condition resource ([#370](https://github.com/newrelic/terraform-provider-newrelic/issues/370))
+- **synthetics:** add secure credentials resource ([#409](https://github.com/newrelic/terraform-provider-newrelic/issues/409))
+- **synthetics:** add labels resource ([#407](https://github.com/newrelic/terraform-provider-newrelic/issues/407))
+
+<a name="v0.11.0"></a>
+## [v0.11.0] - 2020-02-27
+### Features
+- **http:** allow personal API keys to be used for alerts and APM resources
+
+<a name="v0.10.1"></a>
+## [v0.10.1] - 2020-02-20
+### Bug Fixes
+- update unit tests to use new method sigs
+- fix monitor ID type and GetMonitor URL
+- make use of ErrorNotFound type for Get methods that are based on List methods
+- add policy ID to alert condition
+- retry HTTP requests on 429 status codes
+- add godoc as a dep, and a warning about GOPATH and godoc
+- http client needs to handle other 'success' response status codes such as 201
+- rename variables to fix redeclared error
+- fix paging bug for v2 API
+- allow string representations of JSON for alert channel webhook and payload
+- **alerts:** custom unmarshal of channel configuration Headers and Payload fields ([#102](https://github.com/newrelic/terraform-provider-newrelic/issues/102))
+- **alerts:** handle more complex JSON structures in headers and/or payload
+- **alerts:** ensure multiple channels can be added via /alerts_policy_channel.json endpoint ([#114](https://github.com/newrelic/terraform-provider-newrelic/issues/114))
+- **entities:** tags filter needs to use type TagValue in graphql query
+- **http:** Clear client responses between pages
+- **lint:** formatting fixes for linter
+- **logging:** use global methods for the default logger rather than a logrus instance
+- **newrelic:** Add option to set ServiceName in Config
+
+### Documentation Updates
+- update example
+- update readme example
+- add alerts package docs
+- temporarily checking in broken import paths in generated markdown docs
+- add inline documentation
+- add badges to README
+- fill in missing inline documentation
+- document some methods
+- **build:** Update README for commit message format
+- **changelog:** Add auto-generation of CHANGELOG from git comments via `make changelog`
+- **newrelic:** update API key configuration documentation
+
+### Features
+- add ListNrqlAlertConditions
+- add version.go per auto-versioning docs
+- get TestListApplications passing
+- add application filtering for ListApplications
+- add ListMonitors method for Synthetics monitors
+- maximize page size for ListMonitors
+- add New Relic environment enum
+- add catchall newrelic package
+- add top-level logging package for convenience
+- add option for JSON logging and fail gracefully when log level cannot be parsed
+- introduce logging
+- update monitor scripts with return design pattern, update tests
+- add DeletePluginCondition
+- add CreatePluginCondition
+- add UpdatePluginCondition
+- add GetPluginCondition
+- add ListPluginsConditions
+- encode monitor script text
+- add ability to use 'detailed' query param in ListPlugins method
+- add GetPlugin
+- add ListPlugins
+- publicly expose error types
+- finish components endpoints
+- add Components
+- add internal utils package, move IntArrayToString() util to new home
+- add integration tests for key transactions
+- add query param filters for ListKeyTransactions
+- add GetKeyTransaction
+- add ListKeyTransactions
+- add DeleteLabel
+- add CreateLabel
+- add ListLabels, add GetLabel
+- add DeleteDeployment
+- add CreateDeployment
+- add ListDeployments
+- centralize apm test helpers
+- add DeleteNrqlAlertCondition
+- add UpdateNrqlAlertCondition
+- add GetAlertCondition
+- add infra namespace
+- add CreateNrqlAlertCondition
+- add UpdateAlertPolicy
+- add DeleteAlertCondition
+- add CreateAlertCondition
+- add ListAlertConditions for infrastructure
+- add ListAlertConditions
+- get infra condition integration tests passing
+- add InfrastructureConditions
+- add MonitorScripts
+- add MonitorScript
+- add DeleteAlertPolicyChannel, update unit tests, add integration test (might need to remove this)
+- add alert policy channels
+- add synthetics alert conditions
+- add synthetics alert conditions
+- add GetAlertChannel method
+- add CreateAlertChannel, ListAlertChannels, DeleteAlertChannel
+- add DeleteMonitor
+- add UpdateMonitor
+- add CreateMonitor
+- add dashboards
+- add DeleteAlertPolicy method
+- add UpdateAlertPolicy method
+- add CreateAlertPolicy method
+- add GetAlertPolicy method
+- add ListAlertPolicies method
+- alerts package
+- create remaining CRUD methods for application resource
+- add new dependency-free client implementation
+- add GetNrqlAlertCondition
+- **alerts:** Implement multi-location synthetics conditions
+- **alerts:** add GetSyntheticsCondition method ([#105](https://github.com/newrelic/terraform-provider-newrelic/issues/105))
+- **apm:** Add support application metric names and data
+- **ci:** the beginnings of some release automation
+- **ci:** add release make target
+- **entities:** add entities search and entity tagging
+- **http:** add trace logging with additional request info
+- **newrelic:** add ConfigOptions for logging
+- **newrelic:** add the ability to configure base URLs per API
+- **synthetics:** add secure credentials resource
+- **synthetics:** implement label monitor support
 
 <a name="v1.14.0"></a>
 ## [v1.14.0] - 2020-02-20
 ### Bug Fixes
+- fix newrelic_infra_alert imports and backfill acc testing
+- appease golangci-lint when running make
+- make event a computed attribute
+- loosen validation for threshold duration
+- merge conflicts
+- lint issue, update modules
+- align alert policy validation with NR's API validation
+- align alert condition duration constraints to NR's API constraints
+- add attribute validation for infra condition types
+- typos
+- use name as filter in application lookup
+- **alert_channel:** validate payload also has payload_type specified
+- **alert_channels:** allow complex headers & payloads with new attributes
+- **alert_channels:** handle more complex JSON structures in payload or headers ([#361](https://github.com/newrelic/terraform-provider-newrelic/issues/361))
+- **alert_condition:** mark condition_scope optional
+- **dashboards:** include application_breakdown as a valid visualization
+- **newrelic-client-go:** Fix API Key passing to provider
+- **newrelic_alert_channel:** Force new resource for all config fields
 - **provider:** deprecate and re-enable the use of infra_api_url ([#411](https://github.com/newrelic/terraform-provider-newrelic/issues/411))
 
+### Documentation Updates
+- refresh the infra alert condition docs
+- update nrql_alert_condition docs to reference violation_time_limit_seconds
+- Make note about ignoring secrets
+- update alert-channel examples
+- update documentation for newrelic_infra_alert_condition
+- fix formatting in dashboard docs
+- update docs for consistency
+- add missing resources and data source to sidebar
+- add Getting Started section
+- update docs for newrelic_alert_channel resource and data source
+- document the new synthetics_api_url variable
+- updates for consistency
+- update for clarity and consistency
+- Make a note about community resources and support
+- update docs for newrelic_nrql_alert_condition
+- update newrelic_synthetics_monitor docs
+- add docs for newrelic_plugin_component
+- **alert_channel:** add payload_type details to docs
+- **alerts:** update documentation for newrelic_alert_channel
+- **dashboards:** include application_breakdown in docs
+
 ### Features
+- add ability to import resource_newrelic_synthetics_monitor, update acceptance tests and add coverage
+- add a plugin component data source
+- add import functionality for newrelic_alert_policy data source
+- add ability to import newrelic_alert_channel data source
+- allow importing of violation_time_limit_seconds, add validation, remove inline docs
+- create importer for alert policy channels
+- release 1.11.0
+- add ability to import nrql_alert_condition for types static and outlier
+- update newrelic_synthetics_monitor_script acceptance tests
+- replace provider backend with newrelic-client-go ([#358](https://github.com/newrelic/terraform-provider-newrelic/issues/358))
+- update CHANGELOG for v1.11.0
+- update newrelic_synthetics_alert_condition  acceptance tests
 - **alert_policy:** add ability to add multiple channels to a policy ([#398](https://github.com/newrelic/terraform-provider-newrelic/issues/398))
-- **synthetics:** add secure credentials resource ([#409](https://github.com/newrelic/terraform-provider-newrelic/issues/409))
+- **alerts:** deprecate alerts channel configuration and add config block
+- **infra_alert_condition:** add violation_close_timer to newrelic_infra_alert_condition resource ([#370](https://github.com/newrelic/terraform-provider-newrelic/issues/370))
 - **synthetics:** add labels resource ([#407](https://github.com/newrelic/terraform-provider-newrelic/issues/407))
+- **synthetics:** add secure credentials resource ([#409](https://github.com/newrelic/terraform-provider-newrelic/issues/409))
+
+<a name="v0.10.0"></a>
+## [v0.10.0] - 2020-02-19
+### Bug Fixes
+- http client needs to handle other 'success' response status codes such as 201
+- retry HTTP requests on 429 status codes
+- fix paging bug for v2 API
+- add godoc as a dep, and a warning about GOPATH and godoc
+- add policy ID to alert condition
+- allow string representations of JSON for alert channel webhook and payload
+- fix monitor ID type and GetMonitor URL
+- make use of ErrorNotFound type for Get methods that are based on List methods
+- update unit tests to use new method sigs
+- rename variables to fix redeclared error
+- **alerts:** custom unmarshal of channel configuration Headers and Payload fields ([#102](https://github.com/newrelic/terraform-provider-newrelic/issues/102))
+- **alerts:** handle more complex JSON structures in headers and/or payload
+- **alerts:** ensure multiple channels can be added via /alerts_policy_channel.json endpoint ([#114](https://github.com/newrelic/terraform-provider-newrelic/issues/114))
+- **http:** Clear client responses between pages
+- **lint:** formatting fixes for linter
+- **logging:** use global methods for the default logger rather than a logrus instance
+
+### Documentation Updates
+- update example
+- update readme example
+- add alerts package docs
+- temporarily checking in broken import paths in generated markdown docs
+- add inline documentation
+- add badges to README
+- fill in missing inline documentation
+- document some methods
+- **build:** Update README for commit message format
+- **changelog:** Add auto-generation of CHANGELOG from git comments via `make changelog`
+- **newrelic:** update API key configuration documentation
+
+### Features
+- add ListNrqlAlertConditions
+- add version.go per auto-versioning docs
+- get TestListApplications passing
+- add application filtering for ListApplications
+- add ListMonitors method for Synthetics monitors
+- maximize page size for ListMonitors
+- add New Relic environment enum
+- add catchall newrelic package
+- add top-level logging package for convenience
+- add option for JSON logging and fail gracefully when log level cannot be parsed
+- introduce logging
+- update monitor scripts with return design pattern, update tests
+- add DeletePluginCondition
+- add CreatePluginCondition
+- add UpdatePluginCondition
+- add GetPluginCondition
+- add ListPluginsConditions
+- encode monitor script text
+- add ability to use 'detailed' query param in ListPlugins method
+- add GetPlugin
+- add ListPlugins
+- publicly expose error types
+- finish components endpoints
+- add Components
+- add internal utils package, move IntArrayToString() util to new home
+- add integration tests for key transactions
+- add query param filters for ListKeyTransactions
+- add GetKeyTransaction
+- add ListKeyTransactions
+- add DeleteLabel
+- add CreateLabel
+- add ListLabels, add GetLabel
+- add DeleteDeployment
+- add CreateDeployment
+- add ListDeployments
+- centralize apm test helpers
+- add DeleteNrqlAlertCondition
+- add UpdateNrqlAlertCondition
+- add GetAlertCondition
+- add infra namespace
+- add CreateNrqlAlertCondition
+- add UpdateAlertPolicy
+- add DeleteAlertCondition
+- add CreateAlertCondition
+- add ListAlertConditions for infrastructure
+- add ListAlertConditions
+- get infra condition integration tests passing
+- add InfrastructureConditions
+- add MonitorScripts
+- add MonitorScript
+- add DeleteAlertPolicyChannel, update unit tests, add integration test (might need to remove this)
+- add alert policy channels
+- add synthetics alert conditions
+- add synthetics alert conditions
+- add GetAlertChannel method
+- add CreateAlertChannel, ListAlertChannels, DeleteAlertChannel
+- add DeleteMonitor
+- add UpdateMonitor
+- add CreateMonitor
+- add dashboards
+- add DeleteAlertPolicy method
+- add UpdateAlertPolicy method
+- add CreateAlertPolicy method
+- add GetAlertPolicy method
+- add ListAlertPolicies method
+- alerts package
+- create remaining CRUD methods for application resource
+- add new dependency-free client implementation
+- add GetNrqlAlertCondition
+- **alerts:** Implement multi-location synthetics conditions
+- **alerts:** add GetSyntheticsCondition method ([#105](https://github.com/newrelic/terraform-provider-newrelic/issues/105))
+- **apm:** Add support application metric names and data
+- **ci:** the beginnings of some release automation
+- **ci:** add release make target
+- **entities:** add entities search and entity tagging
+- **http:** add trace logging with additional request info
+- **newrelic:** add ConfigOptions for logging
+- **newrelic:** add the ability to configure base URLs per API
+- **synthetics:** add secure credentials resource
+- **synthetics:** implement label monitor support
 
 <a name="v1.13.1"></a>
 ## [v1.13.1] - 2020-02-12
@@ -2027,147 +2649,58 @@ new synthetics resources use GraphQL API schema
 
 <a name="v1.13.0"></a>
 ## [v1.13.0] - 2020-02-06
-### Documentation Updates
-- Make a note about community resources and support
-- Make note about ignoring secrets
-
-### Features
-- replace provider backend with newrelic-client-go ([#358](https://github.com/newrelic/terraform-provider-newrelic/issues/358))
-- **infra_alert_condition:** add violation_close_timer to newrelic_infra_alert_condition resource ([#370](https://github.com/newrelic/terraform-provider-newrelic/issues/370))
-
-<a name="v1.12.2"></a>
-## [v1.12.2] - 2020-01-25
 ### Bug Fixes
-- **alert_channels:** handle more complex JSON structures in payload or headers ([#361](https://github.com/newrelic/terraform-provider-newrelic/issues/361))
-
-<a name="v1.12.1"></a>
-## [v1.12.1] - 2020-01-22
-### Bug Fixes
-- **newrelic-client-go:** Fix API Key passing to provider
-
-### Documentation Updates
-- update alert-channel examples
-
-<a name="v1.12.0"></a>
-## [v1.12.0] - 2020-01-16
-### Bug Fixes
-- **dashboards:** include application_breakdown as a valid visualization
-
-### Documentation Updates
-- **alerts:** update documentation for newrelic_alert_channel
-- **dashboards:** include application_breakdown in docs
-
-### Features
-- **alerts:** deprecate alerts channel configuration and add config block
-
-<a name="v1.11.0"></a>
-## [v1.11.0] - 2020-01-09
-### Documentation Updates
-- update docs for consistency
-- document the new synthetics_api_url variable
-
-### Features
-- release 1.11.0
-- update CHANGELOG for v1.11.0
-
-<a name="v1.10.0"></a>
-## [v1.10.0] - 2019-12-18
-### Bug Fixes
+- use name as filter in application lookup
+- appease golangci-lint when running make
+- typos
 - make event a computed attribute
 - loosen validation for threshold duration
 - add attribute validation for infra condition types
+- merge conflicts
+- lint issue, update modules
+- align alert policy validation with NR's API validation
+- align alert condition duration constraints to NR's API constraints
+- fix newrelic_infra_alert imports and backfill acc testing
+- **alert_channels:** handle more complex JSON structures in payload or headers ([#361](https://github.com/newrelic/terraform-provider-newrelic/issues/361))
+- **dashboards:** include application_breakdown as a valid visualization
+- **newrelic-client-go:** Fix API Key passing to provider
 
 ### Documentation Updates
-- update documentation for newrelic_infra_alert_condition
+- update nrql_alert_condition docs to reference violation_time_limit_seconds
+- add Getting Started section
 - update newrelic_synthetics_monitor docs
 - add missing resources and data source to sidebar
-- updates for consistency
-
-### Features
-- add ability to import resource_newrelic_synthetics_monitor, update acceptance tests and add coverage
-
-<a name="v1.9.0"></a>
-## [v1.9.0] - 2019-12-05
-### Bug Fixes
-- use name as filter in application lookup
-- fix newrelic_infra_alert imports and backfill acc testing
-
-### Documentation Updates
+- fix formatting in dashboard docs
+- update docs for consistency
+- document the new synthetics_api_url variable
+- update documentation for newrelic_infra_alert_condition
+- update alert-channel examples
+- Make note about ignoring secrets
 - update for clarity and consistency
-- update nrql_alert_condition docs to reference violation_time_limit_seconds
+- updates for consistency
+- Make a note about community resources and support
 - update docs for newrelic_nrql_alert_condition
 - refresh the infra alert condition docs
 - add docs for newrelic_plugin_component
 - update docs for newrelic_alert_channel resource and data source
-- fix formatting in dashboard docs
+- **alerts:** update documentation for newrelic_alert_channel
+- **dashboards:** include application_breakdown in docs
 
 ### Features
 - allow importing of violation_time_limit_seconds, add validation, remove inline docs
-- add ability to import nrql_alert_condition for types static and outlier
 - update newrelic_synthetics_alert_condition  acceptance tests
-- update newrelic_synthetics_monitor_script acceptance tests
-- add a plugin component data source
-- create importer for alert policy channels
-- add ability to import newrelic_alert_channel data source
-
-<a name="v1.8.0"></a>
-## [v1.8.0] - 2019-11-22
-### Bug Fixes
-- appease golangci-lint when running make
-
-### Documentation Updates
-- add Getting Started section
-
-### Features
 - add import functionality for newrelic_alert_policy data source
-
-<a name="v1.7.0"></a>
-## [v1.7.0] - 2019-11-13
-### Bug Fixes
-- align alert condition duration constraints to NR's API constraints
-- align alert policy validation with NR's API validation
-- lint issue, update modules
-- merge conflicts
-- typos
-
-<a name="v1.6.0"></a>
-## [v1.6.0] - 2019-11-07
-<a name="v1.5.2"></a>
-## [v1.5.2] - 2019-10-23
-<a name="v1.5.1"></a>
-## [v1.5.1] - 2019-07-11
-<a name="v1.5.0"></a>
-## [v1.5.0] - 2019-03-26
-<a name="v1.4.0"></a>
-## [v1.4.0] - 2019-02-27
-<a name="v1.3.0"></a>
-## [v1.3.0] - 2019-02-07
-<a name="v1.2.0"></a>
-## [v1.2.0] - 2018-11-02
-<a name="v1.1.0"></a>
-## [v1.1.0] - 2018-10-16
-<a name="v1.0.1"></a>
-## [v1.0.1] - 2018-06-06
-<a name="v1.0.0"></a>
-## [v1.0.0] - 2018-02-12
-<a name="v0.11.0"></a>
-## [v0.11.0] - 2020-02-27
-### Features
-- **http:** allow personal API keys to be used for alerts and APM resources
-
-<a name="v0.10.1"></a>
-## [v0.10.1] - 2020-02-20
-### Bug Fixes
-- **entities:** tags filter needs to use type TagValue in graphql query
-- **newrelic:** Add option to set ServiceName in Config
-
-<a name="v0.10.0"></a>
-## [v0.10.0] - 2020-02-19
-### Features
-- **ci:** add release make target
-- **ci:** the beginnings of some release automation
-- **synthetics:** add secure credentials resource
-- **synthetics:** implement label monitor support
+- release 1.11.0
+- update CHANGELOG for v1.11.0
+- add ability to import resource_newrelic_synthetics_monitor, update acceptance tests and add coverage
+- replace provider backend with newrelic-client-go ([#358](https://github.com/newrelic/terraform-provider-newrelic/issues/358))
+- add ability to import newrelic_alert_channel data source
+- add a plugin component data source
+- update newrelic_synthetics_monitor_script acceptance tests
+- add ability to import nrql_alert_condition for types static and outlier
+- create importer for alert policy channels
+- **alerts:** deprecate alerts channel configuration and add config block
+- **infra_alert_condition:** add violation_close_timer to newrelic_infra_alert_condition resource ([#370](https://github.com/newrelic/terraform-provider-newrelic/issues/370))
 
 <a name="v0.9.0"></a>
 ## [v0.9.0] - 2020-02-05
@@ -2182,10 +2715,160 @@ new synthetics resources use GraphQL API schema
 <a name="v0.8.0"></a>
 ## [v0.8.0] - 2020-01-29
 ### Bug Fixes
+- fix monitor ID type and GetMonitor URL
+- add policy ID to alert condition
+- fix paging bug for v2 API
+- add godoc as a dep, and a warning about GOPATH and godoc
+- retry HTTP requests on 429 status codes
+- make use of ErrorNotFound type for Get methods that are based on List methods
+- update unit tests to use new method sigs
+- rename variables to fix redeclared error
+- http client needs to handle other 'success' response status codes such as 201
 - **alerts:** ensure multiple channels can be added via /alerts_policy_channel.json endpoint ([#114](https://github.com/newrelic/terraform-provider-newrelic/issues/114))
+- **alerts:** handle more complex JSON structures in headers and/or payload
+- **alerts:** custom unmarshal of channel configuration Headers and Payload fields ([#102](https://github.com/newrelic/terraform-provider-newrelic/issues/102))
+- **lint:** formatting fixes for linter
+- **logging:** use global methods for the default logger rather than a logrus instance
+
+### Documentation Updates
+- update example
+- update readme example
+- add alerts package docs
+- temporarily checking in broken import paths in generated markdown docs
+- add inline documentation
+- add badges to README
+- fill in missing inline documentation
+- document some methods
+- **build:** Update README for commit message format
+- **changelog:** Add auto-generation of CHANGELOG from git comments via `make changelog`
+- **newrelic:** update API key configuration documentation
 
 ### Features
+- add GetAlertCondition
+- add CreateAlertPolicy method
+- introduce logging
+- update monitor scripts with return design pattern, update tests
+- add DeletePluginCondition
+- add CreatePluginCondition
+- add UpdatePluginCondition
+- add GetPluginCondition
+- add ListPluginsConditions
+- encode monitor script text
+- add ability to use 'detailed' query param in ListPlugins method
+- add GetPlugin
+- add ListPlugins
+- publicly expose error types
+- finish components endpoints
+- add Components
+- add internal utils package, move IntArrayToString() util to new home
+- add integration tests for key transactions
+- add query param filters for ListKeyTransactions
+- add GetKeyTransaction
+- add ListKeyTransactions
+- add DeleteLabel
+- add CreateLabel
+- add ListLabels, add GetLabel
+- add DeleteDeployment
+- add CreateDeployment
+- add ListDeployments
+- centralize apm test helpers
+- add DeleteNrqlAlertCondition
+- add UpdateNrqlAlertCondition
+- add CreateNrqlAlertCondition
+- add GetNrqlAlertCondition
+- add ListNrqlAlertConditions
+- add UpdateAlertPolicy
+- add DeleteAlertCondition
+- add CreateAlertCondition
+- add ListAlertConditions
+- add top-level logging package for convenience
+- add option for JSON logging and fail gracefully when log level cannot be parsed
+- add InfrastructureConditions
+- add MonitorScripts
+- add MonitorScript
+- add DeleteAlertPolicyChannel, update unit tests, add integration test (might need to remove this)
+- add alert policy channels
+- add synthetics alert conditions
+- add synthetics alert conditions
+- add GetAlertChannel method
+- add CreateAlertChannel, ListAlertChannels, DeleteAlertChannel
+- add DeleteMonitor
+- add UpdateMonitor
+- add CreateMonitor
+- add dashboards
+- add DeleteAlertPolicy method
+- add UpdateAlertPolicy method
+- get infra condition integration tests passing
+- add GetAlertPolicy method
+- add ListAlertPolicies method
+- alerts package
+- create remaining CRUD methods for application resource
+- add new dependency-free client implementation
+- add version.go per auto-versioning docs
+- add ListAlertConditions for infrastructure
+- add infra namespace
+- add catchall newrelic package
+- add New Relic environment enum
+- maximize page size for ListMonitors
+- add ListMonitors method for Synthetics monitors
+- add application filtering for ListApplications
+- get TestListApplications passing
+- **alerts:** add GetSyntheticsCondition method ([#105](https://github.com/newrelic/terraform-provider-newrelic/issues/105))
 - **apm:** Add support application metric names and data
+- **entities:** add entities search and entity tagging
+- **newrelic:** add ConfigOptions for logging
+- **newrelic:** add the ability to configure base URLs per API
+
+<a name="v1.12.2"></a>
+## [v1.12.2] - 2020-01-25
+### Bug Fixes
+- use name as filter in application lookup
+- appease golangci-lint when running make
+- typos
+- make event a computed attribute
+- loosen validation for threshold duration
+- add attribute validation for infra condition types
+- merge conflicts
+- lint issue, update modules
+- align alert policy validation with NR's API validation
+- align alert condition duration constraints to NR's API constraints
+- fix newrelic_infra_alert imports and backfill acc testing
+- **alert_channels:** handle more complex JSON structures in payload or headers ([#361](https://github.com/newrelic/terraform-provider-newrelic/issues/361))
+- **dashboards:** include application_breakdown as a valid visualization
+- **newrelic-client-go:** Fix API Key passing to provider
+
+### Documentation Updates
+- updates for consistency
+- document the new synthetics_api_url variable
+- update alert-channel examples
+- update docs for consistency
+- update for clarity and consistency
+- update documentation for newrelic_infra_alert_condition
+- update newrelic_synthetics_monitor docs
+- update nrql_alert_condition docs to reference violation_time_limit_seconds
+- add Getting Started section
+- fix formatting in dashboard docs
+- add missing resources and data source to sidebar
+- update docs for newrelic_nrql_alert_condition
+- refresh the infra alert condition docs
+- add docs for newrelic_plugin_component
+- update docs for newrelic_alert_channel resource and data source
+- **alerts:** update documentation for newrelic_alert_channel
+- **dashboards:** include application_breakdown in docs
+
+### Features
+- release 1.11.0
+- update CHANGELOG for v1.11.0
+- add ability to import resource_newrelic_synthetics_monitor, update acceptance tests and add coverage
+- allow importing of violation_time_limit_seconds, add validation, remove inline docs
+- add ability to import nrql_alert_condition for types static and outlier
+- update newrelic_synthetics_alert_condition  acceptance tests
+- update newrelic_synthetics_monitor_script acceptance tests
+- add a plugin component data source
+- create importer for alert policy channels
+- add ability to import newrelic_alert_channel data source
+- add import functionality for newrelic_alert_policy data source
+- **alerts:** deprecate alerts channel configuration and add config block
 
 <a name="v0.7.1"></a>
 ## [v0.7.1] - 2020-01-24
@@ -2195,9 +2878,156 @@ new synthetics resources use GraphQL API schema
 
 <a name="v0.7.0"></a>
 ## [v0.7.0] - 2020-01-23
+### Bug Fixes
+- retry HTTP requests on 429 status codes
+- make use of ErrorNotFound type for Get methods that are based on List methods
+- add policy ID to alert condition
+- rename variables to fix redeclared error
+- update unit tests to use new method sigs
+- fix monitor ID type and GetMonitor URL
+- http client needs to handle other 'success' response status codes such as 201
+- add godoc as a dep, and a warning about GOPATH and godoc
+- fix paging bug for v2 API
+- **alerts:** custom unmarshal of channel configuration Headers and Payload fields ([#102](https://github.com/newrelic/terraform-provider-newrelic/issues/102))
+- **lint:** formatting fixes for linter
+
+### Documentation Updates
+- update example
+- update readme example
+- add alerts package docs
+- temporarily checking in broken import paths in generated markdown docs
+- add inline documentation
+- add badges to README
+- fill in missing inline documentation
+- document some methods
+- **build:** Update README for commit message format
+- **changelog:** Add auto-generation of CHANGELOG from git comments via `make changelog`
+- **newrelic:** update API key configuration documentation
+
 ### Features
+- add top-level logging package for convenience
+- add option for JSON logging and fail gracefully when log level cannot be parsed
+- introduce logging
+- update monitor scripts with return design pattern, update tests
+- add DeletePluginCondition
+- add CreatePluginCondition
+- add UpdatePluginCondition
+- add GetPluginCondition
+- add ListPluginsConditions
+- encode monitor script text
+- add ability to use 'detailed' query param in ListPlugins method
+- add GetPlugin
+- add ListPlugins
+- publicly expose error types
+- finish components endpoints
+- add Components
+- add internal utils package, move IntArrayToString() util to new home
+- add integration tests for key transactions
+- add query param filters for ListKeyTransactions
+- add GetKeyTransaction
+- add ListKeyTransactions
+- add DeleteLabel
+- add CreateLabel
+- add ListLabels, add GetLabel
+- add DeleteDeployment
+- add CreateDeployment
+- add ListDeployments
+- centralize apm test helpers
+- add DeleteNrqlAlertCondition
+- add UpdateNrqlAlertCondition
+- add CreateNrqlAlertCondition
+- add GetNrqlAlertCondition
+- add ListNrqlAlertConditions
+- add UpdateAlertPolicy
+- add DeleteAlertCondition
+- add CreateAlertCondition
+- add GetAlertCondition
+- add ListAlertConditions
+- get infra condition integration tests passing
+- add InfrastructureConditions
+- add MonitorScripts
+- add MonitorScript
+- add DeleteAlertPolicyChannel, update unit tests, add integration test (might need to remove this)
+- add alert policy channels
+- add synthetics alert conditions
+- add synthetics alert conditions
+- add GetAlertChannel method
+- add CreateAlertChannel, ListAlertChannels, DeleteAlertChannel
+- add DeleteMonitor
+- add UpdateMonitor
+- add CreateMonitor
+- add dashboards
+- add DeleteAlertPolicy method
+- add UpdateAlertPolicy method
+- add CreateAlertPolicy method
+- add GetAlertPolicy method
+- add ListAlertPolicies method
+- alerts package
+- create remaining CRUD methods for application resource
+- add new dependency-free client implementation
+- add version.go per auto-versioning docs
+- add ListAlertConditions for infrastructure
+- add infra namespace
+- add catchall newrelic package
+- add New Relic environment enum
+- maximize page size for ListMonitors
+- add ListMonitors method for Synthetics monitors
+- add application filtering for ListApplications
+- get TestListApplications passing
+- **alerts:** add GetSyntheticsCondition method ([#105](https://github.com/newrelic/terraform-provider-newrelic/issues/105))
+- **entities:** add entities search and entity tagging
 - **newrelic:** add ConfigOptions for logging
 - **newrelic:** add the ability to configure base URLs per API
+
+<a name="v1.12.1"></a>
+## [v1.12.1] - 2020-01-22
+### Bug Fixes
+- fix newrelic_infra_alert imports and backfill acc testing
+- make event a computed attribute
+- loosen validation for threshold duration
+- add attribute validation for infra condition types
+- use name as filter in application lookup
+- appease golangci-lint when running make
+- align alert condition duration constraints to NR's API constraints
+- align alert policy validation with NR's API validation
+- lint issue, update modules
+- merge conflicts
+- typos
+- **dashboards:** include application_breakdown as a valid visualization
+- **newrelic-client-go:** Fix API Key passing to provider
+
+### Documentation Updates
+- updates for consistency
+- document the new synthetics_api_url variable
+- update alert-channel examples
+- update docs for consistency
+- update for clarity and consistency
+- update documentation for newrelic_infra_alert_condition
+- update newrelic_synthetics_monitor docs
+- update nrql_alert_condition docs to reference violation_time_limit_seconds
+- add Getting Started section
+- fix formatting in dashboard docs
+- add missing resources and data source to sidebar
+- update docs for newrelic_nrql_alert_condition
+- refresh the infra alert condition docs
+- add docs for newrelic_plugin_component
+- update docs for newrelic_alert_channel resource and data source
+- **alerts:** update documentation for newrelic_alert_channel
+- **dashboards:** include application_breakdown in docs
+
+### Features
+- release 1.11.0
+- update CHANGELOG for v1.11.0
+- add ability to import resource_newrelic_synthetics_monitor, update acceptance tests and add coverage
+- allow importing of violation_time_limit_seconds, add validation, remove inline docs
+- add ability to import nrql_alert_condition for types static and outlier
+- update newrelic_synthetics_alert_condition  acceptance tests
+- update newrelic_synthetics_monitor_script acceptance tests
+- add a plugin component data source
+- create importer for alert policy channels
+- add ability to import newrelic_alert_channel data source
+- add import functionality for newrelic_alert_policy data source
+- **alerts:** deprecate alerts channel configuration and add config block
 
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2020-01-22
@@ -2211,8 +3041,150 @@ new synthetics resources use GraphQL API schema
 
 <a name="v0.5.0"></a>
 ## [v0.5.0] - 2020-01-16
+### Bug Fixes
+- retry HTTP requests on 429 status codes
+- make use of ErrorNotFound type for Get methods that are based on List methods
+- add policy ID to alert condition
+- rename variables to fix redeclared error
+- update unit tests to use new method sigs
+- fix monitor ID type and GetMonitor URL
+- http client needs to handle other 'success' response status codes such as 201
+- add godoc as a dep, and a warning about GOPATH and godoc
+- fix paging bug for v2 API
+- **lint:** formatting fixes for linter
+
 ### Documentation Updates
+- update example
+- update readme example
+- add alerts package docs
+- temporarily checking in broken import paths in generated markdown docs
+- add inline documentation
+- add badges to README
+- fill in missing inline documentation
+- document some methods
+- **build:** Update README for commit message format
+- **changelog:** Add auto-generation of CHANGELOG from git comments via `make changelog`
 - **newrelic:** update API key configuration documentation
+
+### Features
+- add top-level logging package for convenience
+- add option for JSON logging and fail gracefully when log level cannot be parsed
+- introduce logging
+- update monitor scripts with return design pattern, update tests
+- add DeletePluginCondition
+- add CreatePluginCondition
+- add UpdatePluginCondition
+- add GetPluginCondition
+- add ListPluginsConditions
+- encode monitor script text
+- add ability to use 'detailed' query param in ListPlugins method
+- add GetPlugin
+- add ListPlugins
+- publicly expose error types
+- finish components endpoints
+- add Components
+- add internal utils package, move IntArrayToString() util to new home
+- add integration tests for key transactions
+- add query param filters for ListKeyTransactions
+- add GetKeyTransaction
+- add ListKeyTransactions
+- add DeleteLabel
+- add CreateLabel
+- add ListLabels, add GetLabel
+- add DeleteDeployment
+- add CreateDeployment
+- add ListDeployments
+- centralize apm test helpers
+- add DeleteNrqlAlertCondition
+- add UpdateNrqlAlertCondition
+- add CreateNrqlAlertCondition
+- add GetNrqlAlertCondition
+- add ListNrqlAlertConditions
+- add UpdateAlertPolicy
+- add DeleteAlertCondition
+- add CreateAlertCondition
+- add GetAlertCondition
+- add ListAlertConditions
+- get infra condition integration tests passing
+- add InfrastructureConditions
+- add MonitorScripts
+- add MonitorScript
+- add DeleteAlertPolicyChannel, update unit tests, add integration test (might need to remove this)
+- add alert policy channels
+- add synthetics alert conditions
+- add synthetics alert conditions
+- add GetAlertChannel method
+- add CreateAlertChannel, ListAlertChannels, DeleteAlertChannel
+- add DeleteMonitor
+- add UpdateMonitor
+- add CreateMonitor
+- add dashboards
+- add DeleteAlertPolicy method
+- add UpdateAlertPolicy method
+- add CreateAlertPolicy method
+- add GetAlertPolicy method
+- add ListAlertPolicies method
+- alerts package
+- create remaining CRUD methods for application resource
+- add new dependency-free client implementation
+- add version.go per auto-versioning docs
+- add ListAlertConditions for infrastructure
+- add infra namespace
+- add catchall newrelic package
+- add New Relic environment enum
+- maximize page size for ListMonitors
+- add ListMonitors method for Synthetics monitors
+- add application filtering for ListApplications
+- get TestListApplications passing
+- **entities:** add entities search and entity tagging
+
+<a name="v1.12.0"></a>
+## [v1.12.0] - 2020-01-16
+### Bug Fixes
+- make event a computed attribute
+- loosen validation for threshold duration
+- add attribute validation for infra condition types
+- use name as filter in application lookup
+- fix newrelic_infra_alert imports and backfill acc testing
+- appease golangci-lint when running make
+- align alert condition duration constraints to NR's API constraints
+- align alert policy validation with NR's API validation
+- lint issue, update modules
+- merge conflicts
+- typos
+- **dashboards:** include application_breakdown as a valid visualization
+
+### Documentation Updates
+- update for clarity and consistency
+- update docs for newrelic_nrql_alert_condition
+- update docs for consistency
+- document the new synthetics_api_url variable
+- add Getting Started section
+- update newrelic_synthetics_monitor docs
+- fix formatting in dashboard docs
+- add missing resources and data source to sidebar
+- update documentation for newrelic_infra_alert_condition
+- update nrql_alert_condition docs to reference violation_time_limit_seconds
+- updates for consistency
+- refresh the infra alert condition docs
+- add docs for newrelic_plugin_component
+- update docs for newrelic_alert_channel resource and data source
+- **alerts:** update documentation for newrelic_alert_channel
+- **dashboards:** include application_breakdown in docs
+
+### Features
+- release 1.11.0
+- update CHANGELOG for v1.11.0
+- add ability to import resource_newrelic_synthetics_monitor, update acceptance tests and add coverage
+- allow importing of violation_time_limit_seconds, add validation, remove inline docs
+- add ability to import nrql_alert_condition for types static and outlier
+- update newrelic_synthetics_alert_condition  acceptance tests
+- update newrelic_synthetics_monitor_script acceptance tests
+- add a plugin component data source
+- create importer for alert policy channels
+- add ability to import newrelic_alert_channel data source
+- add import functionality for newrelic_alert_policy data source
+- **alerts:** deprecate alerts channel configuration and add config block
 
 <a name="v0.4.0"></a>
 ## [v0.4.0] - 2020-01-15
@@ -2227,9 +3199,23 @@ new synthetics resources use GraphQL API schema
 ### Bug Fixes
 - make use of ErrorNotFound type for Get methods that are based on List methods
 - add policy ID to alert condition
+- rename variables to fix redeclared error
+- update unit tests to use new method sigs
+- fix monitor ID type and GetMonitor URL
+- http client needs to handle other 'success' response status codes such as 201
+- add godoc as a dep, and a warning about GOPATH and godoc
+- fix paging bug for v2 API
+- **lint:** formatting fixes for linter
 
 ### Documentation Updates
 - update example
+- update readme example
+- add alerts package docs
+- temporarily checking in broken import paths in generated markdown docs
+- add inline documentation
+- add badges to README
+- fill in missing inline documentation
+- document some methods
 - **build:** Update README for commit message format
 - **changelog:** Add auto-generation of CHANGELOG from git comments via `make changelog`
 
@@ -2238,6 +3224,115 @@ new synthetics resources use GraphQL API schema
 - add option for JSON logging and fail gracefully when log level cannot be parsed
 - introduce logging
 - update monitor scripts with return design pattern, update tests
+- add DeletePluginCondition
+- add CreatePluginCondition
+- add UpdatePluginCondition
+- add GetPluginCondition
+- add ListPluginsConditions
+- encode monitor script text
+- add ability to use 'detailed' query param in ListPlugins method
+- add GetPlugin
+- add ListPlugins
+- publicly expose error types
+- finish components endpoints
+- add Components
+- add internal utils package, move IntArrayToString() util to new home
+- add integration tests for key transactions
+- add query param filters for ListKeyTransactions
+- add GetKeyTransaction
+- add ListKeyTransactions
+- add DeleteLabel
+- add CreateLabel
+- add ListLabels, add GetLabel
+- add DeleteDeployment
+- add CreateDeployment
+- add ListDeployments
+- centralize apm test helpers
+- add DeleteNrqlAlertCondition
+- add UpdateNrqlAlertCondition
+- add CreateNrqlAlertCondition
+- add GetNrqlAlertCondition
+- add ListNrqlAlertConditions
+- add UpdateAlertPolicy
+- add DeleteAlertCondition
+- add CreateAlertCondition
+- add GetAlertCondition
+- add ListAlertConditions
+- get infra condition integration tests passing
+- add InfrastructureConditions
+- add MonitorScripts
+- add MonitorScript
+- add DeleteAlertPolicyChannel, update unit tests, add integration test (might need to remove this)
+- add alert policy channels
+- add synthetics alert conditions
+- add synthetics alert conditions
+- add GetAlertChannel method
+- add CreateAlertChannel, ListAlertChannels, DeleteAlertChannel
+- add DeleteMonitor
+- add UpdateMonitor
+- add CreateMonitor
+- add dashboards
+- add DeleteAlertPolicy method
+- add UpdateAlertPolicy method
+- add CreateAlertPolicy method
+- add GetAlertPolicy method
+- add ListAlertPolicies method
+- alerts package
+- create remaining CRUD methods for application resource
+- add new dependency-free client implementation
+- add version.go per auto-versioning docs
+- add ListAlertConditions for infrastructure
+- add infra namespace
+- add catchall newrelic package
+- add New Relic environment enum
+- maximize page size for ListMonitors
+- add ListMonitors method for Synthetics monitors
+- add application filtering for ListApplications
+- get TestListApplications passing
+
+<a name="v1.11.0"></a>
+## [v1.11.0] - 2020-01-09
+### Bug Fixes
+- make event a computed attribute
+- loosen validation for threshold duration
+- add attribute validation for infra condition types
+- use name as filter in application lookup
+- fix newrelic_infra_alert imports and backfill acc testing
+- appease golangci-lint when running make
+- align alert condition duration constraints to NR's API constraints
+- align alert policy validation with NR's API validation
+- lint issue, update modules
+- merge conflicts
+- typos
+
+### Documentation Updates
+- update docs for consistency
+- document the new synthetics_api_url variable
+- update documentation for newrelic_infra_alert_condition
+- update newrelic_synthetics_monitor docs
+- add missing resources and data source to sidebar
+- updates for consistency
+- update for clarity and consistency
+- update nrql_alert_condition docs to reference violation_time_limit_seconds
+- update docs for newrelic_nrql_alert_condition
+- refresh the infra alert condition docs
+- add docs for newrelic_plugin_component
+- update docs for newrelic_alert_channel resource and data source
+- fix formatting in dashboard docs
+- add Getting Started section
+
+### Features
+- release 1.11.0
+- update CHANGELOG for v1.11.0
+- add ability to import resource_newrelic_synthetics_monitor, update acceptance tests and add coverage
+- allow importing of violation_time_limit_seconds, add validation, remove inline docs
+- add ability to import nrql_alert_condition for types static and outlier
+- update newrelic_synthetics_alert_condition  acceptance tests
+- update newrelic_synthetics_monitor_script acceptance tests
+- add a plugin component data source
+- create importer for alert policy channels
+- add ability to import newrelic_alert_channel data source
+- add import functionality for newrelic_alert_policy data source
 
 <a name="v0.2.0"></a>
 ## [v0.2.0] - 2020-01-08
@@ -2326,6 +3421,86 @@ new synthetics resources use GraphQL API schema
 - add application filtering for ListApplications
 - get TestListApplications passing
 
+<a name="v1.10.0"></a>
+## [v1.10.0] - 2019-12-18
+### Bug Fixes
+- make event a computed attribute
+- loosen validation for threshold duration
+- add attribute validation for infra condition types
+
+### Documentation Updates
+- update documentation for newrelic_infra_alert_condition
+- update newrelic_synthetics_monitor docs
+- add missing resources and data source to sidebar
+- updates for consistency
+
+### Features
+- add ability to import resource_newrelic_synthetics_monitor, update acceptance tests and add coverage
+
+<a name="v1.9.0"></a>
+## [v1.9.0] - 2019-12-05
+### Bug Fixes
+- use name as filter in application lookup
+- fix newrelic_infra_alert imports and backfill acc testing
+
+### Documentation Updates
+- update for clarity and consistency
+- update nrql_alert_condition docs to reference violation_time_limit_seconds
+- update docs for newrelic_nrql_alert_condition
+- refresh the infra alert condition docs
+- add docs for newrelic_plugin_component
+- update docs for newrelic_alert_channel resource and data source
+- fix formatting in dashboard docs
+
+### Features
+- allow importing of violation_time_limit_seconds, add validation, remove inline docs
+- add ability to import nrql_alert_condition for types static and outlier
+- update newrelic_synthetics_alert_condition  acceptance tests
+- update newrelic_synthetics_monitor_script acceptance tests
+- add a plugin component data source
+- create importer for alert policy channels
+- add ability to import newrelic_alert_channel data source
+
+<a name="v1.8.0"></a>
+## [v1.8.0] - 2019-11-22
+### Bug Fixes
+- appease golangci-lint when running make
+
+### Documentation Updates
+- add Getting Started section
+
+### Features
+- add import functionality for newrelic_alert_policy data source
+
+<a name="v1.7.0"></a>
+## [v1.7.0] - 2019-11-13
+### Bug Fixes
+- align alert condition duration constraints to NR's API constraints
+- align alert policy validation with NR's API validation
+- lint issue, update modules
+- merge conflicts
+- typos
+
+<a name="v1.6.0"></a>
+## [v1.6.0] - 2019-11-07
+<a name="v1.5.2"></a>
+## [v1.5.2] - 2019-10-23
+<a name="v1.5.1"></a>
+## [v1.5.1] - 2019-07-11
+<a name="v1.5.0"></a>
+## [v1.5.0] - 2019-03-26
+<a name="v1.4.0"></a>
+## [v1.4.0] - 2019-02-27
+<a name="v1.3.0"></a>
+## [v1.3.0] - 2019-02-07
+<a name="v1.2.0"></a>
+## [v1.2.0] - 2018-11-02
+<a name="v1.1.0"></a>
+## [v1.1.0] - 2018-10-16
+<a name="v1.0.1"></a>
+## [v1.0.1] - 2018-06-06
+<a name="v1.0.0"></a>
+## [v1.0.0] - 2018-02-12
 <a name="v0.1.1"></a>
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
@@ -2440,13 +3615,13 @@ new synthetics resources use GraphQL API schema
 [v3.1.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.4...v3.1.0
 [v3.0.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.3...v3.0.4
 [v3.0.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.2...v3.0.3
-[v3.0.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.1...v3.0.2
-[v3.0.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.0...v3.0.1
-[v3.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.51.0...v3.0.0
-[2.51.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.50.2...2.51.0
+[v3.0.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.50.2...v3.0.2
 [v2.50.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.50.1...v2.50.2
 [v2.50.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.50.0...v2.50.1
-[v2.50.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.1...v2.50.0
+[v2.50.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.1...v2.50.0
+[v3.0.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.0.0...v3.0.1
+[v3.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.51.0...v3.0.0
+[2.51.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.1...2.51.0
 [v2.49.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.49.0...v2.49.1
 [v2.49.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.2...v2.49.0
 [v2.48.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.48.1...v2.48.2
@@ -2542,31 +3717,44 @@ new synthetics resources use GraphQL API schema
 [v2.5.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.2...v2.5.0
 [v2.4.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.1...v2.4.2
 [v2.4.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.4.0...v2.4.1
-[v2.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.3.0...v2.4.0
-[v2.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.1...v2.3.0
+[v2.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.20.1...v2.4.0
+[v1.20.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.3.0...v1.20.1
+[v2.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.20.0...v2.3.0
+[v1.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.1...v1.20.0
 [v2.2.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.2.0...v2.2.1
 [v2.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.2...v2.2.0
-[v2.1.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.1...v2.1.2
+[v2.1.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.19.1...v2.1.2
+[v1.19.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.1...v1.19.1
 [v2.1.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.1.0...v2.1.1
 [v2.1.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.0.0...v2.1.0
-[v2.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.20.1...v2.0.0
-[v1.20.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.20.0...v1.20.1
-[v1.20.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.19.1...v1.20.0
-[v1.19.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.19.0...v1.19.1
+[v2.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.19.0...v2.0.0
 [v1.19.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.18.0...v1.19.0
 [v1.18.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.17.1...v1.18.0
 [v1.17.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.17.0...v1.17.1
 [v1.17.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.16.0...v1.17.0
 [v1.16.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.15.1...v1.16.0
 [v1.15.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.15.0...v1.15.1
-[v1.15.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.14.0...v1.15.0
-[v1.14.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.13.1...v1.14.0
+[v1.15.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.11.0...v1.15.0
+[v0.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.10.1...v0.11.0
+[v0.10.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.14.0...v0.10.1
+[v1.14.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.10.0...v1.14.0
+[v0.10.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.13.1...v0.10.0
 [v1.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.13.0...v1.13.1
-[v1.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.12.2...v1.13.0
-[v1.12.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.12.1...v1.12.2
-[v1.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.12.0...v1.12.1
-[v1.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.11.0...v1.12.0
-[v1.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.10.0...v1.11.0
+[v1.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.9.0...v1.13.0
+[v0.9.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.8.0...v0.9.0
+[v0.8.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.12.2...v0.8.0
+[v1.12.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.7.1...v1.12.2
+[v0.7.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.7.0...v0.7.1
+[v0.7.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.12.1...v0.7.0
+[v1.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.6.0...v1.12.1
+[v0.6.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.5.1...v0.6.0
+[v0.5.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.5.0...v0.5.1
+[v0.5.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.12.0...v0.5.0
+[v1.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.4.0...v1.12.0
+[v0.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.3.0...v0.4.0
+[v0.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.11.0...v0.3.0
+[v1.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.2.0...v1.11.0
+[v0.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.10.0...v0.2.0
 [v1.10.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.9.0...v1.10.0
 [v1.9.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.8.0...v1.9.0
 [v1.8.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.7.0...v1.8.0
@@ -2580,18 +3768,5 @@ new synthetics resources use GraphQL API schema
 [v1.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.1.0...v1.2.0
 [v1.1.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.0.1...v1.1.0
 [v1.0.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v1.0.0...v1.0.1
-[v1.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.11.0...v1.0.0
-[v0.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.10.1...v0.11.0
-[v0.10.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.10.0...v0.10.1
-[v0.10.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.9.0...v0.10.0
-[v0.9.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.8.0...v0.9.0
-[v0.8.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.7.1...v0.8.0
-[v0.7.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.7.0...v0.7.1
-[v0.7.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.6.0...v0.7.0
-[v0.6.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.5.1...v0.6.0
-[v0.5.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.5.0...v0.5.1
-[v0.5.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.4.0...v0.5.0
-[v0.4.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.3.0...v0.4.0
-[v0.3.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.2.0...v0.3.0
-[v0.2.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.1.1...v0.2.0
+[v1.0.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.1.1...v1.0.0
 [v0.1.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v0.1.0...v0.1.1
