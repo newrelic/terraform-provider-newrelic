@@ -14,6 +14,33 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 )
 
+func TestNewRelicWorkflow_WithInvestigatingNotificationTriggers(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, rName, `["ACTIVATED", "INVESTIGATING"]`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+			// Test: Update workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationWithNotificationTriggers(testAccountID, fmt.Sprintf("%s-updated", rName), `["ACTIVATED", "INVESTIGATING", "CLOSED"]`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func TestNewRelicWorkflow_Webhook(t *testing.T) {
 	resourceName := "newrelic_workflow.foo"
 	rName := generateNameForIntegrationTestResource()

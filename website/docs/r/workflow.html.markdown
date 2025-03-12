@@ -180,6 +180,7 @@ One could, for example, configure a workflow to open a Jira ticket and send Slac
 Possible values:
 * `ACTIVATED` - Send a notification when an issue is activated
 * `ACKNOWLEDGED` - Send a notification when an issue is acknowledged
+* `INVESTIGATING` - Send a notification when an issue is being investigated
 * `PRIORITY_CHANGED` - Send a notification when an issue's priority has been changed
 * `CLOSED` - Send a notification when an issue is closed
 * `OTHER_UPDATES` - Send a notification on other updates on the issue. These updates include:

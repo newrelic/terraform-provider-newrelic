@@ -4,8 +4,8 @@ data "aws_iam_policy_document" "newrelic_assume_policy" {
 
     principals {
       type = "AWS"
-      // This is the unique identifier for New Relic account on AWS, there is no need to change this
-      identifiers = [754728514883]
+      // This is the unique identifier for New Relic account on AWS GovCloud, there is no need to change this
+      identifiers = [266471868085]
     }
 
     condition {
@@ -67,12 +67,17 @@ resource "aws_iam_role_policy_attachment" "newrelic_aws_policy_attach" {
   policy_arn = aws_iam_policy.newrelic_aws_permissions.arn
 }
 
-resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_push" {
+resource "aws_iam_role_policy_attachment" "readonly_access_policy_attach" {
+  role       = aws_iam_role.newrelic_aws_role.name
+  policy_arn = "arn:aws-us-gov:iam::aws:policy/ReadOnlyAccess"
+}
+
+resource "newrelic_cloud_aws_govcloud_link_account" "newrelic_cloud_integration_push" {
   account_id             = var.newrelic_account_id
   arn                    = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PUSH"
   name                   = "${var.name} metric stream"
-  depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
+  depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach, aws_iam_role_policy_attachment.readonly_access_policy_attach]
 }
 
 resource "newrelic_api_access_key" "newrelic_aws_access_key" {
@@ -103,6 +108,11 @@ resource "aws_iam_role" "firehose_newrelic_role" {
 EOF
 }
 
+resource "aws_iam_role_policy_attachment" "readonly_access_policy_attach_2" {
+  role       = aws_iam_role.firehose_newrelic_role.name
+  policy_arn = "arn:aws-us-gov:iam::aws:policy/ReadOnlyAccess"
+}
+
 resource "random_string" "s3-bucket-name" {
   length  = 8
   special = false
@@ -121,18 +131,11 @@ resource "aws_s3_bucket_ownership_controls" "newrelic_ownership_controls" {
   }
 }
 
-locals {
-  newrelic_urls = {
-    US      = "https://aws-api.newrelic.com/cloudwatch-metrics/v1"
-    EU      = "https://aws-api.eu01.nr-data.net/cloudwatch-metrics/v1"
-  }
-}
-
 resource "aws_kinesis_firehose_delivery_stream" "newrelic_firehose_stream" {
   name        = "newrelic_firehose_stream_${var.name}"
   destination = "http_endpoint"
   http_endpoint_configuration {
-    url                = local.newrelic_urls[var.newrelic_account_region]
+    url                = "https://gov-aws-api.newrelic.com/cloudwatch-metrics/v1"
     name               = "New Relic ${var.name}"
     access_key         = newrelic_api_access_key.newrelic_aws_access_key.key
     buffering_size     = 1
@@ -218,68 +221,36 @@ resource "aws_cloudwatch_metric_stream" "newrelic_metric_stream" {
   }
 }
 
-resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_pull" {
+resource "newrelic_cloud_aws_govcloud_link_account" "newrelic_cloud_integration_pull" {
   account_id             = var.newrelic_account_id
   arn                    = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PULL"
   name                   = "${var.name} pull"
-  depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
+  depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach, aws_iam_role_policy_attachment.readonly_access_policy_attach]
 }
 
-resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
+resource "newrelic_cloud_aws_govcloud_integrations" "newrelic_cloud_integration_pull" {
   account_id        = var.newrelic_account_id
-  linked_account_id = newrelic_cloud_aws_link_account.newrelic_cloud_integration_pull.id
-  billing {}
+  linked_account_id = newrelic_cloud_aws_govcloud_link_account.newrelic_cloud_integration_pull.id
   cloudtrail {}
-  health {}
-  trusted_advisor {}
-  vpc {}
-  x_ray {}
   s3 {}
-  doc_db {}
   sqs {}
   ebs {}
   alb {}
-  elasticache {}
   api_gateway {}
   auto_scaling {}
-  aws_app_sync {}
-  aws_athena {}
-  aws_cognito {}
-  aws_connect {}
   aws_direct_connect {}
-  aws_fsx {}
-  aws_glue {}
-  aws_kinesis_analytics {}
-  aws_media_convert {}
-  aws_media_package_vod {}
-  aws_mq {}
-  aws_msk {}
-  aws_neptune {}
-  aws_qldb {}
-  aws_route53resolver {}
   aws_states {}
-  aws_transit_gateway {}
-  aws_waf {}
-  aws_wafv2 {}
-  cloudfront {}
-  dynamodb {}
+  dynamo_db {}
   ec2 {}
-  ecs {}
-  efs {}
-  elasticbeanstalk {}
-  elasticsearch {}
+  elastic_search {}
   elb {}
   emr {}
   iam {}
-  iot {}
-  kinesis {}
-  kinesis_firehose {}
   lambda {}
   rds {}
-  redshift {}
+  red_shift {}
   route53 {}
-  ses {}
   sns {}
 }
 
@@ -332,7 +303,7 @@ POLICY
 
 resource "aws_iam_role_policy_attachment" "newrelic_configuration_recorder" {
   role       = aws_iam_role.newrelic_configuration_recorder.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
+  policy_arn = "arn:aws-us-gov:iam::aws:policy/service-role/AWS_ConfigRole"
 }
 
 resource "aws_config_configuration_recorder" "newrelic_recorder" {
