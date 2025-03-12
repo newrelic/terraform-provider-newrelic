@@ -35,7 +35,7 @@ jobs:
       - name: Checkout the pull request base
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: master
 
       - uses: actions/download-artifact@v4
         with:
@@ -46,7 +46,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v4
         with:
-          base: main
+          base: master
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: 'chore(docs): update changelog'
           committer: GitHub <noreply@github.com>
