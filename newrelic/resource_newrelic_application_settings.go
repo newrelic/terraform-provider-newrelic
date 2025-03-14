@@ -42,7 +42,30 @@ func resourceNewRelicApplicationSettingsRead(ctx context.Context, d *schema.Reso
 
 	log.Printf("[INFO] Reading New Relic application %+v", d.Id())
 
-	resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
+	_, decodeError := entities.DecodeEntityGuid(d.Id())
+
+	var effectiveID common.EntityGUID
+	var isIDObsolete bool
+
+	if decodeError != nil {
+		isIDObsolete = true
+		log.Printf("[INFO] The ID of the resource is not the GUID of the application %+v", d.Id())
+		log.Printf("[INFO] \\\n %+v", d.Id())
+		entityRes, err := getEntityDetailsFromName(ctx, d, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if entityRes == nil {
+			return diag.FromErr(fmt.Errorf("no entities found with the provided name, please ensure the name of a valid APM entity is provided"))
+		}
+		effectiveID = (*entityRes).GetGUID()
+	}
+
+	if !isIDObsolete {
+		effectiveID = common.EntityGUID(d.Id())
+	}
+
+	resp, err := client.Entities.GetEntityWithContext(ctx, effectiveID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

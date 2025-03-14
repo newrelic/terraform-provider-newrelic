@@ -32,10 +32,11 @@ func applicationSettingCommonSchema() map[string]*schema.Schema {
 func apmApplicationSettingsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"name": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Computed:    true,
-			Description: "The name of the application in New Relic.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			Description:  "The name of the application in New Relic.",
+			ValidateFunc: validateApplicationSettingsName,
 		},
 		"app_apdex_threshold": {
 			Type:        schema.TypeFloat,
@@ -288,4 +289,25 @@ func validateApplicationSettingsInput(ctx context.Context, d *schema.ResourceDif
 		errorsString += fmt.Sprintf("(%d): %s\n", index+1, val)
 	}
 	return errors.New(errorsString)
+}
+
+func validateApplicationSettingsName(val interface{}, key string) (warns []string, errs []error) {
+	applicationSettingsName := val.(string)
+	if applicationSettingsName != "" {
+		warns = append(warns, fmt.Sprintf("please refrain from using the deprecated attribute `name` with the resource `newrelic_application_settings`\n"+
+			"Starting v3.59.0 of the New Relic Terraform Provider, the attribute `name` in this resource is no longer recommeded to specify\n"+
+			"the application to apply the settings to - this has been made ineffective, in favor of the attribute `guid`, which shall henceforth be\n"+
+			"the *recommended* attribute to select the application to apply settings to, in order to eliminate problems caused by applications\n"+
+			"bearing the same name. In light of the above, please refrain from using `name`, and use `guid` (with the GUID of the application) instead.\n\n"+
+			"However, if you have been using this resource prior to v3.59.0 and have upgraded to this new version, it would be required that\n"+
+			"the attribute `name` (already present with a non-null value in your configuration) needs to continue to exist until the first\n"+
+			"`terraform plan` and `terraform apply` after the upgrade to v3.59.0. This allows changes made to handle backward compatibility\n"+
+			"take effect, so the state of the resource is updated to match the expected format, starting v3.59.0. You may switch to using `guid`\n"+
+			"instead of `name` after the first `terraform plan` and `terraform apply` following the upgrade to v3.59.0, in such a case.\n\n"+
+			"Additionally, when upgrading this resource from older versions, you may observe drift associated with attributes not yet controlled\n"+
+			"by your configuration (showing such attributes being set to null). This is expected due to the inclusion of new attributes in the resource\n"+
+			"resource that are required by the resource state. You can safely ignore these drifts shown during/after the first `terraform plan`\n"+
+			"and `terraform apply` after upgrading from older versions.\n"))
+	}
+	return warns, errs
 }
