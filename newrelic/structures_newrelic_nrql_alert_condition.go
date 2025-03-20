@@ -832,11 +832,17 @@ func getConfiguredTerms(configTerms []interface{}) []map[string]interface{} {
 			"threshold_occurrences": t["threshold_occurrences"],
 		}
 
-		if t["prediction"] != nil {
-			trm["prediction"] = map[string]interface{}{
-				"predict_by":                  t["prediction"].(map[string]interface{})["predict_by"],
-				"prefer_prediction_violation": t["prediction"].(map[string]interface{})["prefer_prediction_violation"],
+		predictionSet := t["prediction"].(*schema.Set)
+		if predictionSet.Len() > 0 {
+			predictionMap := predictionSet.List()[0].(map[string]interface{})
+			predictionMapOut := map[string]interface{}{}
+			if predictBy, ok := predictionMap["predict_by"].(int); ok {
+				predictionMapOut["predict_by"] = predictBy
 			}
+			if preferPredictionViolation, ok := predictionMap["prefer_prediction_violation"].(bool); ok {
+				predictionMapOut["prefer_prediction_violation"] = preferPredictionViolation
+			}
+			trm["prediction"] = predictionMapOut
 		}
 
 		setTerms = append(setTerms, trm)
