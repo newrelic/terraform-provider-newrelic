@@ -1,4 +1,4 @@
-name: PR Title Validation
+name: PR Title Conventional Check
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   validate:
-    name: Validate PR Title
+    name: PR Title Conventional Check
     runs-on: ubuntu-latest
     steps:
       - name: Conventional PR Title Check
