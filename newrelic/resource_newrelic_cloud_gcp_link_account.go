@@ -39,6 +39,12 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"disabled": {
+				Type:        schema.TypeBool,
+				Description: "Enable/Disable GCP account",
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -80,28 +86,6 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 	return diags
 }
 
-// expand function to extract inputs from the schema.
-// Here it takes ResourceData as input and returns cloudLinkCloudAccountsInput.
-func expandGcpCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloudAccountsInput {
-
-	gcpAccount := cloud.CloudGcpLinkAccountInput{}
-
-	if name, ok := d.GetOk("name"); ok {
-		gcpAccount.Name = name.(string)
-	}
-
-	if projectID, ok := d.GetOk("project_id"); ok {
-		gcpAccount.ProjectId = projectID.(string)
-	}
-
-	input := cloud.CloudLinkCloudAccountsInput{
-		Gcp: []cloud.CloudGcpLinkAccountInput{gcpAccount},
-	}
-
-	return input
-
-}
-
 func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -129,14 +113,6 @@ func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.Reso
 
 }
 
-// readGcpLinkedAccount function to store name and ExternalId.
-// Using set func to store the output values.
-func readGcpLinkedAccount(d *schema.ResourceData, result *cloud.CloudLinkedAccount) {
-	_ = d.Set("account_id", result.NrAccountId)
-	_ = d.Set("name", result.Name)
-	_ = d.Set("project_id", result.ExternalId)
-}
-
 func resourceNewRelicCloudGcpLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -148,34 +124,27 @@ func resourceNewRelicCloudGcpLinkAccountUpdate(ctx context.Context, d *schema.Re
 		return diag.FromErr(convErr)
 	}
 
-	input := []cloud.CloudRenameAccountsInput{
-		{
-			Name:            d.Get("name").(string),
-			LinkedAccountId: id,
+	gcpCloudUpdateInputs := cloud.CloudUpdateCloudAccountsInput{
+		Gcp: []cloud.CloudGcpUpdateAccountInput{
+			{
+				Name:            d.Get("name").(string),
+				LinkedAccountId: id,
+				Disabled:        getBoolPointer(d.Get("disabled").(bool)),
+				ProjectId:       d.Get("project_id").(string),
+			},
 		},
 	}
 
-	//CloudRenameAccount to rename the name of linkedAccount
-	cloudRenameAccountPayload, err := client.Cloud.CloudRenameAccountWithContext(ctx, accountID, input)
+	//CloudUpdateCloudAccountsInput to update the name and status of linkedAccount
+	CloudUpdateAccountPayload, err := client.Cloud.CloudUpdateAccountWithContext(ctx, accountID, gcpCloudUpdateInputs)
 
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
-	var diags diag.Diagnostics
-
-	if len(cloudRenameAccountPayload.Errors) > 0 {
-		for _, err := range cloudRenameAccountPayload.Errors {
-
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  err.Type + " " + err.Message,
-			})
-
-		}
-
-		return diags
-
+	if len(CloudUpdateAccountPayload.LinkedAccounts) > 0 {
+		linkAccountDetails := &CloudUpdateAccountPayload.LinkedAccounts[0]
+		readGcpLinkedAccount(d, linkAccountDetails)
 	}
 
 	return nil
