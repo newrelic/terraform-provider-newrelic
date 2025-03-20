@@ -14,7 +14,7 @@ release-clean:
 
 release-publish: clean tools release-notes
 	@echo "=== $(PROJECT_NAME) === [ release-publish  ]: Publishing release via $(REL_CMD)"
-	$(REL_CMD) --release-notes=$(SRCDIR)/tmp/$(RELEASE_NOTES_FILE)
+	$(REL_CMD) release --release-notes=$(SRCDIR)/tmp/$(RELEASE_NOTES_FILE)
 
 # Local Snapshot
 snapshot: release-clean
