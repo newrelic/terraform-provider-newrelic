@@ -55,7 +55,8 @@ jobs:
             done
 
             # Push the changes back to the PR branch
-            git push origin $PR_BRANCH -f
+            # very risky, but just want to give this a try
+            git push -f
             echo "$commit: force pushed with the new title '$NEW_MSG'"
           fi
 
