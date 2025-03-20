@@ -20,7 +20,9 @@ jobs:
           BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
 
           # Get all merge commits in the PR
-          MERGE_COMMITS=$(git log --merges "$BASE_BRANCH..$PR_BRANCH" --format="%H")
+          git fetch origin $PR_BRANCH
+          git fetch origin $BASE_BRANCH
+          MERGE_COMMITS=$(git log --merges "origin/$BASE_BRANCH..origin/$PR_BRANCH" --format="%H")
 
           if [ ! -z "$MERGE_COMMITS" ]; then
             echo "Found merge commits in PR, converting to conventional commits..."
@@ -46,6 +48,7 @@ jobs:
           fi
 
   validate-commits:
+    needs: check-merge-commits
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
