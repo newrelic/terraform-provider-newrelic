@@ -5,6 +5,46 @@ on:
     types: [opened, edited, synchronize, reopened]
 
 jobs:
+  check-merge-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check and Fix Merge Commits
+        id: check_merge_commits
+        run: |
+          # Get the PR branch and base branch
+          PR_BRANCH="${{ github.event.pull_request.head.ref }}"
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+
+          # Get all merge commits in the PR
+          MERGE_COMMITS=$(git log --merges "$BASE_BRANCH..$PR_BRANCH" --format="%H")
+
+          if [ ! -z "$MERGE_COMMITS" ]; then
+            echo "Found merge commits in PR, converting to conventional commits..."
+
+            for commit in $MERGE_COMMITS; do
+              # Get the merge commit message
+              MERGE_MSG=$(git log -1 --format="%B" $commit)
+
+              # Extract meaningful information from merge commit
+              TITLE=$(echo "$MERGE_MSG" | head -n 1)
+
+              # Create conventional commit format
+              # Default to 'chore' type if cannot determine
+              NEW_MSG="chore: $TITLE"
+
+              # Amend the commit with new message
+              git checkout $commit
+              git commit --amend -m "$NEW_MSG" --no-edit
+            done
+
+            # Push the changes back to the PR branch
+            git push origin $PR_BRANCH --force
+          fi
+
   validate-commits:
     runs-on: ubuntu-latest
     steps:
@@ -29,7 +69,7 @@ jobs:
             # Conventional commit regex pattern
             if ! echo "$commit_msg" | grep -qP '^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9-]+\))?: .+$'; then
               commit_info="$(git log -1 --format='%H - %s' $commit)"
-              invalid_commits="$invalid_commits\n$commit_info"
+              invalid_commits="- $invalid_commits\n$commit_info"
             fi
           done < <(git rev-list $base_sha..$head_sha)
           
@@ -52,7 +92,7 @@ jobs:
             
             The following commits do not follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
 
-            - ${invalidCommits}
+            ${invalidCommits}
             
             
             Please update these commit messages to follow the format:
