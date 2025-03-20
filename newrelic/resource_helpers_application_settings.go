@@ -294,8 +294,8 @@ func validateApplicationSettingsInput(ctx context.Context, d *schema.ResourceDif
 func validateApplicationSettingsName(val interface{}, key string) (warns []string, errs []error) {
 	applicationSettingsName := val.(string)
 	if applicationSettingsName != "" {
-		warns = append(warns, fmt.Sprintf("please refrain from using the deprecated attribute `name` with the resource `newrelic_application_settings`\n"+
-			"Starting v3.59.0 of the New Relic Terraform Provider, the attribute `name` in this resource is no longer recommeded to specify\n"+
+		warns = append(warns, fmt.Sprintf("please refrain from using the deprecated attribute `name` as a mandatory attribute with the resource `newrelic_application_settings`\n"+
+			"Starting v3.59.0 of the New Relic Terraform Provider, the attribute `name` in this resource is no longer recommended to specify\n"+
 			"the application to apply the settings to - this has been made ineffective, in favor of the attribute `guid`, which shall henceforth be\n"+
 			"the *recommended* attribute to select the application to apply settings to, in order to eliminate problems caused by applications\n"+
 			"bearing the same name. In light of the above, please refrain from using `name`, and use `guid` (with the GUID of the application) instead.\n\n"+
