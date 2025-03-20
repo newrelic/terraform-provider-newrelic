@@ -14,6 +14,8 @@ jobs:
 
       - name: Check and Fix Merge Commits
         id: check_merge_commits
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Get the PR branch and base branch
           PR_BRANCH="${{ github.event.pull_request.head.ref }}"
