@@ -34,22 +34,29 @@ jobs:
 
             for commit in $MERGE_COMMITS; do
               # Get the merge commit message
+              echo "Processing commit: $commit"
               MERGE_MSG=$(git log -1 --format="%B" $commit)
 
               # Extract meaningful information from merge commit
               TITLE=$(echo "$MERGE_MSG" | head -n 1)
+              echo "$commit current title: $TITLE"
 
               # Create conventional commit format
               # Default to 'chore' type if cannot determine
               NEW_MSG="chore: $TITLE"
+              echo "$commit new title: $NEW_MSG"
 
               # Amend the commit with new message
+              echo "Amending commit: $commit"
               git checkout $commit
+              echo "$commit: checked out"
               git commit --amend -m "$NEW_MSG" --no-edit
+              echo "$commit: amended"
             done
 
             # Push the changes back to the PR branch
             git push origin $PR_BRANCH --force
+            echo "$commit: force pushed with the new title '$NEW_MSG'"
           fi
 
   validate-commits:
