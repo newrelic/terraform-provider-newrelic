@@ -16,6 +16,8 @@ FILES           ?= $(shell find ${SRCDIR} -type f | grep -v -e '.git/' -e '/vend
 GO_FILES        ?= $(shell find $(SRCDIR) -type f -name "*.go" | grep -v -e ".git/" -e '/example/')
 PROJECT_MODULE  ?= $(shell $(GO) list -m)
 
+COMMIT_LINT_CMD ?= go-commitlinter "$1"
+
 lint: deps spell-check gofmt golangci goimports outdated
 lint-fix: deps spell-check-fix gofmt-fix goimports
 
@@ -42,6 +44,10 @@ goimports: deps
 	@echo "=== $(PROJECT_NAME) === [ goimports        ]: Checking imports with $(GOIMPORTS)..."
 	@$(GOIMPORTS) -l -w -local $(PROJECT_MODULE) $(GO_FILES)
 
+lint-commit: deps
+	@echo "=== $(PROJECT_NAME) === [ lint-commit      ]: Checking that commit messages are properly formatted ($(COMMIT_LINT_CMD))..."
+	@$(COMMIT_LINT_CMD)
+
 golangci: deps
 	@echo "=== $(PROJECT_NAME) === [ golangci-lint    ]: Linting using $(GOLINTER) ($(COMMIT_LINT_CMD))..."
 	@$(GOLINTER) run
@@ -50,4 +56,4 @@ outdated: deps tools-outdated
 	@echo "=== $(PROJECT_NAME) === [ outdated         ]: Finding outdated deps with $(GO_MOD_OUTDATED)..."
 	@$(GO) list -u -m -json all | $(GO_MOD_OUTDATED) -direct -update
 
-.PHONY: lint spell-check spell-check-fix gofmt gofmt-fix lint-fix outdated goimports
+.PHONY: lint spell-check spell-check-fix gofmt gofmt-fix lint-fix lint-commit outdated goimports
