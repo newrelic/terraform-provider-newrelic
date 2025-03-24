@@ -9,6 +9,7 @@ import (
 	_ "github.com/git-chglog/git-chglog/cmd/git-chglog"
 	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
 	_ "github.com/goreleaser/goreleaser"
+	_ "github.com/masahiro331/go-commitlinter"
 	_ "github.com/psampaz/go-mod-outdated"
 	_ "github.com/stretchr/testify/assert"
 	_ "golang.org/x/tools/cmd/godoc"
