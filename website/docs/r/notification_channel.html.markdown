@@ -39,7 +39,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the notification channel will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the channel.
-* `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA_CLASSIC`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `SLACK` and `SLACK_COLLABORATION`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`.
+* `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA_CLASSIC`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `SLACK` and `SLACK_COLLABORATION`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`, `MICROSOFT_TEAMS`.
 * `destination_id` - (Required) The id of the destination.
 * `product` - (Required) The type of product.  One of: `DISCUSSIONS`, `ERROR_TRACKING` or `IINT` (workflows).
 * `property` - A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
@@ -80,7 +80,10 @@ Each notification channel type supports a specific set of arguments for the `pro
 * `SLACK`
   * `channelId` - (Required) Specifies the Slack channel id. This can be found in slack browser via the url. Example - https://app.slack.com/client/\<UserId>/\<ChannelId>.
   * `customDetailsSlack` - (Optional) A map of key/value pairs that represents the slack custom details. Must be compatible with Slack's blocks api. 
-
+* `MICROSOFT_TEAMS`
+  * `teamId` - (Required) Free text that represents the team id.
+  * `channelId` - (Required) Identifier that specifies the channel id to alert to.
+  * `customDetails` - (Optional) Free text that *replaces* the content of the alert.
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -309,6 +312,32 @@ resource "newrelic_notification_channel" "foo" {
   property {
     key = "customDetailsSlack"
     value = "issue id - {{issueId}}"
+  }
+}
+```
+
+#### [MICROSOFT_TEAMS]
+```hcl
+resource "newrelic_notification_channel" "foo" {
+  account_id = 12345678
+  name = "ms-teams-example"
+  type = "MICROSOFT_TEAMS"
+  destination_id = "52d36b54-3d68-4ac4-9d0a-581febb91f2c"
+  product = "IINT"
+
+  property {
+    key = "teamId"
+    value = "906379b4-f5ac-40fd-b242-d4faaa4d3963"
+  }
+
+  property {
+    key = "channelId"
+    value = "19:wk9tU4tSr335Y1cNiXOynredbi3lFoeabu0kybfmbBA1@thread.tacv2"
+  }
+
+  property {
+    key = "customDetails"
+    value = "{{ nrAccountId }}"
   }
 }
 ```
