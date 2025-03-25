@@ -14,6 +14,36 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 )
 
+func TestNewRelicWorkflow_MicrosoftTeams(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationMicrosoftTeams(testAccountID, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicWorkflowConfigurationWebhook(testAccountID, fmt.Sprintf("%s-updated", rName)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+				),
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
 func TestNewRelicWorkflow_WithInvestigatingNotificationTriggers(t *testing.T) {
 	resourceName := "newrelic_workflow.foo"
 	rName := generateNameForIntegrationTestResource()
@@ -604,6 +634,71 @@ resource "newrelic_notification_channel" "foo" {
     key   = "payload"
     value = "{\n\t\"name\": \"foo\"\n}"
     label = "Payload Template"
+  }
+}
+
+resource "newrelic_workflow" "foo" {
+  account_id            = newrelic_notification_destination.foo.account_id
+  name                  = "%[2]s"
+  enrichments_enabled   = true
+  destinations_enabled  = true
+  enabled      = true
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+
+  issues_filter {
+    name = "filter-name"
+    type = "FILTER"
+
+    predicate {
+      attribute = "priority"
+      operator  = "EQUAL"
+      values    = ["newrelic", "pagerduty"]
+    }
+  }
+
+  enrichments {
+    nrql {
+      name = "Log"
+      configuration {
+        query = "SELECT count(*) FROM Log"
+      }
+    }
+  }
+
+  destination {
+    channel_id = newrelic_notification_channel.foo.id
+  }
+}
+`, accountID, name)
+}
+
+func testAccNewRelicWorkflowConfigurationMicrosoftTeams(accountID int, name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "foo" {
+  account_id = %[1]d
+  name = "tf-test-destination"
+  type = "MICROSOFT_TEAMS"
+
+  property {
+    key   = "securityCode"
+    value = "BgAICfnE7N1xBjPNNeUvGcWanUEbFz3CUjOx/OBb3bH9"
+  }
+}
+
+resource "newrelic_notification_channel" "foo" {
+  account_id     = newrelic_notification_destination.foo.account_id
+  name           = "ms-teams-example"
+  type           = "MICROSOFT_TEAMS"
+  product        = "IINT"
+  destination_id = newrelic_notification_destination.foo.id
+
+  property {
+    key = "teamId"
+    value = "906379b4-f5ac-40fd-b242-d4faaa4d3963"
+  }
+  property {
+    key = "channelId"
+    value = "19:wk9tU4tSr335Y1cNiXOynredbi3lFoeabu0kybfmbBA1@thread.tacv2"
   }
 }
 
