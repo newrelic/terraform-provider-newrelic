@@ -7,6 +7,6 @@ terraform {
 }
 
 provider "newrelic" {
-  region = "US" # US or EU
+  region = "US" # US or EU or staging
 }
 
