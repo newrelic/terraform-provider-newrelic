@@ -1,3 +1,16 @@
+<a name="v3.60.0"></a>
+## [v3.60.0] - 2025-03-28
+### Features
+- support ms teams destination ([#2842](https://github.com/newrelic/terraform-provider-newrelic/issues/2842))
+
+<a name="v3.59.0"></a>
+## [v3.59.0] - 2025-03-20
+### Bug Fixes
+- **release:** fix goreleaser script to update release-notes ([#2837](https://github.com/newrelic/terraform-provider-newrelic/issues/2837))
+
+### Features
+- **application_settings:** introduce backward compatibility for name ([#2839](https://github.com/newrelic/terraform-provider-newrelic/issues/2839))
+
 <a name="v3.58.1"></a>
 ## [v3.58.1] - 2025-03-11
 ### Bug Fixes
@@ -2330,7 +2343,9 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.58.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.60.0...HEAD
+[v3.60.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.59.0...v3.60.0
+[v3.59.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.58.1...v3.59.0
 [v3.58.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.58.0...v3.58.1
 [v3.58.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.57.2...v3.58.0
 [v3.57.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.57.1...v3.57.2

@@ -52,7 +52,13 @@ resource "newrelic_application_settings" "app" {
 The following arguments are supported:
 
 * `guid` - (Required) The GUID of the application in New Relic APM.
+
+-> **NOTE:** While the attribute `guid` is not mandatory at a schema level, it is recommended to use `guid` over `name`, as support for using `name` with this resource shall eventually be discontinued. Please see the note under `name` for more details.
+
 * `name` - (Optional) A custom name or alias you can give the application in New Relic APM.
+
+-> **NOTE:** <b style="color:red;">Please refrain from using the deprecated attribute `name`</b>with the resource `newrelic_application_settings` and use `guid` instead. For more information on the usage of `guid` against `name` and associated implications if the resource is upgraded from an older version of the New Relic Terraform Provider, please see the note in [this section](#deprecated-attribute-name) below.
+
 * `app_apdex_threshold` - (Optional) The acceptable response time limit (Apdex threshold) for the application.
 * `use_server_side_config` - (Optional) Enable or disable server side monitoring for the New Relic application.
 * `transaction_tracer` - (Optional) Configuration block for transaction tracer. Providing this block enables transaction tracing. The following arguments are supported:
@@ -72,6 +78,13 @@ The following arguments are supported:
 * `enable_slow_sql` - (Optional) Enable or disable the collection of slowest database queries in your traces.
 * `tracer_type` - (Optional) Configures the type of tracer used. Valid values are `CROSS_APPLICATION_TRACER`, `DISTRIBUTED_TRACING`, `NONE`, `OPT_OUT`.
 * `enable_thread_profiler` - (Optional) Enable or disable the collection of thread profiling data.
+
+### Deprecated Attribute `name`
+Starting v3.59.0 of the New Relic Terraform Provider, the attribute `name` in this resource is no longer recommended as a mandatory attribute to specify the application to apply the settings to - this has been made ineffective, in favor of the attribute `guid`, which shall henceforth be the *recommended* attribute to select the application to apply settings to, in order to eliminate problems caused by applications bearing the same name. In light of the above, please refrain from using `name`, and use `guid` (with the GUID of the application) instead.
+
+However, if you have been using this resource prior to v3.59.0 and have upgraded to this new version, it would be required that the attribute `name` (already present with a non-null value in your configuration) needs to continue to exist until the first `terraform plan` and `terraform apply` after the upgrade to v3.59.0. This allows changes made to handle backward compatibility take effect, so the state of the resource is updated to match the expected format, starting v3.59.0. You may switch to using `guid` instead of `name` after the first `terraform plan` and `terraform apply` following the upgrade to v3.59.0, in such a case.
+
+Additionally, when upgrading this resource from older versions, you may observe drift associated with attributes not yet controlled by your configuration (showing such attributes being set to null). This is expected due to the inclusion of new attributes in the resource that are required by the resource state. You can safely ignore these drifts shown during/after the first `terraform plan` and `terraform apply` after upgrading from older versions.
 
 ## Attributes Reference
 
