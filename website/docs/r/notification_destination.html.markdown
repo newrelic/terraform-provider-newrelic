@@ -43,7 +43,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the notification destination will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the destination.
-* `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`. The types `SLACK` and `SLACK_COLLABORATION` can only be imported, updated and destroyed (cannot be created via terraform).
+* `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`, `MICROSOFT_TEAMS`. The types `SLACK` and `SLACK_COLLABORATION` can only be imported, updated and destroyed (cannot be created via terraform).
 * `auth_basic` - (Optional) A nested block that describes a basic username and password authentication credentials. Only one auth_basic block is permitted per notification destination definition.  See [Nested auth_basic blocks](#nested-auth_basic-blocks) below for details.
 * `auth_token` - (Optional) A nested block that describes a token authentication credentials. Only one auth_token block is permitted per notification destination definition.  See [Nested auth_token blocks](#nested-auth_token-blocks) below for details.
 * `auth_custom_header` - (Optional) A nested block that describes a custom header authentication credentials. Multiple blocks are permitted per notification destination definition. [Nested auth_custom_header blocks](#nested-authcustomheader-blocks) below for details.
@@ -100,6 +100,8 @@ Each notification destination type supports a specific set of arguments for the 
 * `EVENT_BRIDGE`
   * `AWSAccountId` - (Required) The account id to integrate to.
   * `AWSRegion` - (Required) The AWS region this account is in.
+* `MICROSOFT_TEAMS`
+  * `securityCode` - (Required) The MS Teams security code.
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -111,6 +113,20 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **NOTE:** We support all properties. The mentioned properties are just an example.
 
+##### [MICROSOFT_TEAMS](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#servicenow)
+
+```hcl
+resource "newrelic_notification_destination" "foo" {
+  account_id = 12345678
+  name = "ms-teams-example"
+  type = "MICROSOFT_TEAMS"
+
+  property {
+    key = "securityCode"
+    value = "abcdefgh"
+  }
+}
+```
 
 ##### [ServiceNow](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#servicenow)
 

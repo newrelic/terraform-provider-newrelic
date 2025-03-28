@@ -10,6 +10,7 @@ require (
 	github.com/git-chglog/git-chglog v0.15.4
 	github.com/golangci/golangci-lint v1.51.2
 	github.com/goreleaser/goreleaser v1.26.2
+	github.com/masahiro331/go-commitlinter v0.0.0-20230912111648-dd369c40beae
 	github.com/psampaz/go-mod-outdated v0.9.0
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/tools v0.23.0
