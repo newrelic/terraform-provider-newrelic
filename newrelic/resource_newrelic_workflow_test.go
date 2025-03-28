@@ -34,11 +34,11 @@ func TestNewRelicWorkflow_MicrosoftTeams(t *testing.T) {
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicWorkflowConfigurationWebhook(testAccountID, fmt.Sprintf("%s-updated", rName)),
+				Config: testAccNewRelicWorkflowConfigurationMicrosoftTeams(testAccountID, fmt.Sprintf("%s-updated", rName)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
-				ExpectNonEmptyPlan: false,
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
