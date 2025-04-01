@@ -398,6 +398,25 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				},
 			},
 		},
+		"signal seasonality not nill": {
+			Data: map[string]interface{}{
+				"nrql":           []interface{}{nrql},
+				"signal_seasonality": "daily",
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
+				SignalSeasonality: &signalSeasonality,
+			},
+		},
+		"signal seasonality nill": {
+			Data: map[string]interface{}{
+				"nrql":           []interface{}{nrql},
+				"signal_seasonality": nil,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
+			},
+		},
 	}
 
 	r := resourceNewRelicNrqlAlertCondition()
