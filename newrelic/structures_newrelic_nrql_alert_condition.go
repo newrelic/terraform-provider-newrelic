@@ -583,7 +583,10 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 
 	if conditionType == "baseline" {
 		_ = d.Set("baseline_direction", string(*condition.BaselineDirection))
-		_ = d.Set("signal_seasonality", string(*condition.SignalSeasonality))
+
+		if condition.SignalSeasonality != nil {
+			_ = d.Set("signal_seasonality", string(*condition.SignalSeasonality))
+		}
 	}
 
 	configuredNrql := d.Get("nrql.0").(map[string]interface{})

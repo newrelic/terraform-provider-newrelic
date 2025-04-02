@@ -51,6 +51,8 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 
 	titleTemplate := "Title {{template}}"
 
+	signalSeasonality := alerts.NrqlSignalSeasonalities.Daily
+
 	cases := map[string]struct {
 		Data         map[string]interface{}
 		ExpectErr    bool
@@ -625,6 +627,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	nrqlConditionBaseline.Type = alerts.NrqlConditionTypes.Baseline
 	nrqlConditionBaseline.BaselineDirection = &alerts.NrqlBaselineDirections.LowerOnly
 	nrqlConditionBaseline.EntityGUID = common.EntityGUID("NDAwMzA0fEFPTkRJVElPTnwxNDMzNjc3")
+	nrqlConditionBaseline.SignalSeasonality = &alerts.NrqlSignalSeasonalities.Daily
 
 	// Static
 	nrqlConditionStatic := nrqlCondition
