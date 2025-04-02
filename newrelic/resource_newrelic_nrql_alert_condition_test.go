@@ -701,7 +701,6 @@ func TestAccNewRelicNrqlAlertCondition_SignalSeasonality(t *testing.T) {
 	})
 }
 
-
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -1528,5 +1527,3 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 	`, name)
 }
-
-
