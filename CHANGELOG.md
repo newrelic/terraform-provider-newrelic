@@ -1,3 +1,76 @@
+<a name="v3.60.0"></a>
+## [v3.60.0] - 2025-03-28
+### Features
+- support ms teams destination ([#2842](https://github.com/newrelic/terraform-provider-newrelic/issues/2842))
+
+<a name="v3.59.0"></a>
+## [v3.59.0] - 2025-03-20
+### Bug Fixes
+- **release:** fix goreleaser script to update release-notes ([#2837](https://github.com/newrelic/terraform-provider-newrelic/issues/2837))
+
+### Features
+- **application_settings:** introduce backward compatibility for name ([#2839](https://github.com/newrelic/terraform-provider-newrelic/issues/2839))
+
+<a name="v3.58.1"></a>
+## [v3.58.1] - 2025-03-11
+### Bug Fixes
+- **artifacts:** updated to latest artifacts version  ([#2826](https://github.com/newrelic/terraform-provider-newrelic/issues/2826))
+
+<a name="v3.58.0"></a>
+## [v3.58.0] - 2025-03-10
+### Features
+- **app_settings:** refine documentation ([#2824](https://github.com/newrelic/terraform-provider-newrelic/issues/2824))
+
+<a name="v3.57.2"></a>
+## [v3.57.2] - 2025-03-10
+<a name="v3.57.1"></a>
+## [v3.57.1] - 2025-03-05
+### Documentation Updates
+- **nrql_alert_condition.html.markdown:** fix example ([#2793](https://github.com/newrelic/terraform-provider-newrelic/issues/2793))
+
+<a name="v3.57.0"></a>
+## [v3.57.0] - 2025-02-21
+### Bug Fixes
+- **aws_govcloud:** define a working AWS GovCloud module for cloud integration prerequisites ([#2812](https://github.com/newrelic/terraform-provider-newrelic/issues/2812))
+
+### Features
+- **alerts:** Add prediction support to NRQL alert conditions ([#2816](https://github.com/newrelic/terraform-provider-newrelic/issues/2816))
+
+<a name="v3.56.0"></a>
+## [v3.56.0] - 2025-02-06
+### Features
+- **aws_govcloud:** revamp of the resource to support ARN based authentication ([#2809](https://github.com/newrelic/terraform-provider-newrelic/issues/2809))
+
+<a name="v3.55.0"></a>
+## [v3.55.0] - 2025-02-05
+### Features
+- **workflows:** adds new `notification_trigger` type `INVESTIGATING` ([#2805](https://github.com/newrelic/terraform-provider-newrelic/issues/2805))
+
+<a name="v3.54.1"></a>
+## [v3.54.1] - 2025-01-31
+### Bug Fixes
+- **aws_govcloud_link_account:** Fixes to resource functionality ([#2804](https://github.com/newrelic/terraform-provider-newrelic/issues/2804))
+- **dependabot_alerts:** Updated dependencies to fix dependabot alerts ([#2796](https://github.com/newrelic/terraform-provider-newrelic/issues/2796))
+- **key-transaction-integrations:** Fixed key transaction integration test ([#2795](https://github.com/newrelic/terraform-provider-newrelic/issues/2795))
+
+### Documentation Updates
+- **nrql_alert_condition:** Remove beta notice about data_account_id ([#2797](https://github.com/newrelic/terraform-provider-newrelic/issues/2797))
+
+<a name="v3.54.0"></a>
+## [v3.54.0] - 2025-01-08
+### Features
+- **alert_muting_rule:** Add `action_on_muting_rule_window_ended` attribute in `newrelic_alert_muting_rule` Terraform Resource ([#2783](https://github.com/newrelic/terraform-provider-newrelic/issues/2783))
+
+<a name="v3.53.0"></a>
+## [v3.53.0] - 2024-12-04
+### Bug Fixes
+- **synthetics:** Fix to detect differences in locations_public of sythetics script monitor ([#2775](https://github.com/newrelic/terraform-provider-newrelic/issues/2775))
+
+### Features
+- **bulk_user_import:** automates import of existing users, groups as terraform resources ([#2778](https://github.com/newrelic/terraform-provider-newrelic/issues/2778))
+
+<a name="v3.52.1"></a>
+## [v3.52.1] - 2024-11-11
 <a name="v3.52.0"></a>
 ## [v3.52.0] - 2024-10-28
 ### Documentation Updates
@@ -2270,7 +2343,20 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.52.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.60.0...HEAD
+[v3.60.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.59.0...v3.60.0
+[v3.59.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.58.1...v3.59.0
+[v3.58.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.58.0...v3.58.1
+[v3.58.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.57.2...v3.58.0
+[v3.57.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.57.1...v3.57.2
+[v3.57.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.57.0...v3.57.1
+[v3.57.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.56.0...v3.57.0
+[v3.56.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.55.0...v3.56.0
+[v3.55.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.1...v3.55.0
+[v3.54.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.54.0...v3.54.1
+[v3.54.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.53.0...v3.54.0
+[v3.53.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.52.1...v3.53.0
+[v3.52.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.52.0...v3.52.1
 [v3.52.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.51.0...v3.52.0
 [v3.51.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.50.0...v3.51.0
 [v3.50.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.49.0...v3.50.0

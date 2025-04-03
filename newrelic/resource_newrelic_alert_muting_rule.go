@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -182,6 +184,19 @@ func resourceNewRelicAlertMutingRule() *schema.Resource {
 				Optional:    true,
 				Elem:        scheduleSchema(),
 				Description: "The time window when the MutingRule should actively mute incidents.",
+			},
+			"action_on_muting_rule_window_ended": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The action when the muting rule window is ended or disabled.",
+				ValidateFunc: validation.StringInSlice(
+					[]string{
+						string(alerts.AlertsActionOnMutingRuleWindowEndedTypes.CLOSE_ISSUES_ON_INACTIVE),
+						string(alerts.AlertsActionOnMutingRuleWindowEndedTypes.DO_NOTHING),
+					},
+					false,
+				),
 			},
 		},
 	}
