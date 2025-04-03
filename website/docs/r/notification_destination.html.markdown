@@ -3,7 +3,7 @@ layout: "newrelic"
 page_title: "New Relic: newrelic_notification_destination"
 sidebar_current: "docs-newrelic-resource-notification-destination"
 description: |-
-Create and manage a notification destination for notifications in New Relic.
+  Create and manage a notification destination for notifications in New Relic.
 ---
 
 # Resource: newrelic\_notification\_destination
