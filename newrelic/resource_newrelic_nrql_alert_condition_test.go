@@ -678,7 +678,7 @@ func TestAccNewRelicNrqlAlertCondition_SignalSeasonality(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
 		Steps: []resource.TestStep{
-			// Test: Create baselin condition with signal seasonality
+			// Test: Create baseline condition with signal seasonality
 			{
 				Config: testAccNewRelicNrqlAlertConditionWithSignalSeasonality(
 					rName,
