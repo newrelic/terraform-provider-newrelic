@@ -316,7 +316,7 @@ resource "newrelic_notification_channel" "foo" {
 }
 ```
 
-#### [MICROSOFT_TEAMS]
+#### MICROSOFT_TEAMS
 ```hcl
 resource "newrelic_notification_channel" "foo" {
   account_id = 12345678
