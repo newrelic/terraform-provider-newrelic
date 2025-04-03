@@ -17,8 +17,9 @@ import (
 )
 
 var (
-	testThresholdLow  = 1.0
-	testThresholdHigh = 10.9
+	testThresholdLow                 = 1.0
+	testThresholdHigh                = 10.9
+	testDisableHealthStatusReporting = true
 )
 
 func TestExpandNrqlAlertConditionInput(t *testing.T) {
@@ -737,17 +738,19 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Priority:      "critical",
 			ConditionType: "static",
 			Term: map[string]interface{}{
-				"threshold":             10.9,
-				"threshold_duration":    5,
-				"threshold_occurrences": "ALL",
-				"operator":              "equals",
+				"threshold":                       10.9,
+				"threshold_duration":              5,
+				"threshold_occurrences":           "ALL",
+				"operator":                        "equals",
+				"disable_health_status_reporting": true,
 			},
 			Expected: &alerts.NrqlConditionTerm{
-				Operator:             alerts.AlertsNRQLConditionTermsOperator("EQUALS"),
-				Priority:             alerts.NrqlConditionPriority("CRITICAL"),
-				Threshold:            &testThresholdHigh,
-				ThresholdDuration:    5,
-				ThresholdOccurrences: "ALL",
+				Operator:                     alerts.AlertsNRQLConditionTermsOperator("EQUALS"),
+				Priority:                     alerts.NrqlConditionPriority("CRITICAL"),
+				Threshold:                    &testThresholdHigh,
+				ThresholdDuration:            5,
+				ThresholdOccurrences:         "ALL",
+				DisableHealthStatusReporting: &testDisableHealthStatusReporting,
 			},
 		},
 		"critical explicit priority": {
