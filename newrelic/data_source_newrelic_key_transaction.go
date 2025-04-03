@@ -34,13 +34,11 @@ func dataSourceNewRelicKeyTransaction() *schema.Resource {
 			},
 			"domain": {
 				Type:        schema.TypeString,
-				Required:    false,
 				Computed:    true,
 				Description: "The Domain of the key transaction in New Relic.",
 			},
 			"type": {
 				Type:        schema.TypeString,
-				Required:    false,
 				Computed:    true,
 				Description: "The Entity type of the key transaction in New Relic.",
 			},
