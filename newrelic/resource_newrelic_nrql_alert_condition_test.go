@@ -1484,7 +1484,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 	critical {
 		operator              = "above"
-		threshold             = 0
+		threshold             = 1.0
 		threshold_duration    = 120
 		threshold_occurrences = "ALL"
 	}
@@ -1519,7 +1519,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
 	critical {
 		operator              = "above"
-		threshold             = 0
+		threshold             = 1.0
 		threshold_duration    = 120
 		threshold_occurrences = "ALL"
 	}
