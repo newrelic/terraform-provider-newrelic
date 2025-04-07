@@ -204,21 +204,8 @@ func updateYAML(yamlFile string, mappings FileMappings, missingInYAML, notInDire
 func assignProductMapping(file string, productMappingKeys []ProductMapping) string {
 	for _, product := range productMappingKeys {
 		patterns := productMappings[product]
-		if strings.Contains(file, "multilocation") {
-			fmt.Println(file)
-			fmt.Println(product)
-			fmt.Println(patterns)
-		}
 		for _, pattern := range patterns {
-			if strings.Contains(file, "multilocation") {
-				fmt.Println(pattern)
-			}
 			if strings.Contains(file, pattern) {
-				if strings.Contains(file, "multilocation") {
-					fmt.Println("=======")
-					fmt.Println(pattern)
-					fmt.Println("=======")
-				}
 				return string(product)
 			}
 		}
