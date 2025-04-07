@@ -23,7 +23,7 @@ TEST_MAPPER_SCRIPT ?= ./integration_test_utilities/integration_test_utilities_ta
 TEST_MAPPER_SCRIPT_OUTPUT ?= $(shell bash $(TEST_MAPPER_SCRIPT) | tail -n 1)
 
 test: test-only
-test-only: test-unit test-integration
+test-only: test-unit test-integration-all
 
 test-unit: tools
 	@echo "=== $(PROJECT_NAME) === [ test-unit        ]: running unit tests..."
@@ -43,6 +43,13 @@ test-integration: tools
 			-timeout 120m -ldflags=$(LDFLAGS_TEST); \
 	fi
 
+test-integration-all: tools
+	@echo "=== $(PROJECT_NAME) === [ test-integration-all ]: running all integration tests..."
+	@mkdir -p $(COVERAGE_DIR)
+	@TF_ACC=1 $(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/integration.xml --rerun-fails=4 --packages "$(GO_PKGS)" --jsonfile $(COVERAGE_DIR)/integration.report \
+		-- -v -parallel 14 -tags=integration $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp \
+		   -timeout 120m -ldflags=$(LDFLAGS_TEST)
+
 #
 # Coverage
 #
@@ -61,4 +68,4 @@ cover-report:
 cover-view: cover-report
 	@$(GO) tool cover -html=$(COVERAGE_DIR)/coverage.out
 
-.PHONY: test test-only test-unit test-integration cover-report cover-view
+.PHONY: test test-only test-unit test-integration test-integration-all cover-report cover-view
