@@ -40,7 +40,7 @@ check_and_install_yq
 product_mappings=""
 
 
-{ git diff main...int-test-exps --name-only; git diff --name-only; } | sort -u | grep '^newrelic/' | while read -r file; do
+{ git diff main...$(git rev-parse --abbrev-ref HEAD) --name-only; git diff --name-only; } | sort -u | grep '^newrelic/' | while read -r file; do
 
     filename=$(echo "$file" | sed 's|^newrelic/||')
     mapping=$(yq eval ".\"$filename\".product_mapping" "integration_test_utilities/integration_test_mappings.yaml")
