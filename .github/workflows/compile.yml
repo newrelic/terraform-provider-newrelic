@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+# cancels an already running job if a new commit has triggered a new run of the job
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Compile on supported OSes
   compile:

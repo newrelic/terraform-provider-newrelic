@@ -29,12 +29,13 @@ compile-only: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"
 	@mkdir -p $(BUILD_DIR)/$(GOOS)
 	@echo "=== $(PROJECT_NAME) === [ compile          ]:     $(BUILD_DIR)$(GOOS)/$(BINARY)"
+	@echo "=== $(PROJECT_NAME) === [ compile          ]: verifying available product mapping of all resource files:"
 	@GOOS=$(GOOS) $(GO) build -ldflags=$(LDFLAGS) -o $(BUILD_DIR)/$(GOOS)/$(BINARY);
 	@if [ -z "$$GITHUB_ACTIONS" ]; then \
-		echo "=== $(PROJECT_NAME) === [ compile          ]: verifying available product mapping of all resource files:"; \
 		cd integration_test_utilities && go run . -r; \
+	else \
+		cd integration_test_utilities && go run .; \
 	fi
-
 # Override GOOS for these specific targets
 compile-darwin: GOOS=darwin
 compile-darwin: deps-only compile-only
