@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 const integrationTestUtilitiesLogInitializer = "=== terraform-provider-newrelic === [ int-test-deps    ]: "
 
@@ -14,4 +17,19 @@ func integrationTestUtilities_PrintYAMLNoChangesNeeded() {
 
 func integrationTestUtilities_PrintYAMLProductMappingNotFound(unknownMappings []string) {
 	integrationTestUtilitiesAlteredPrintln(fmt.Sprintf("❌  Error: The following files have unknown product mappings: %v", unknownMappings))
+}
+
+func getProductMappingSortedKeys() {
+	listIndex := 0
+	productMappingKeys := make([]ProductMapping, len(productMappings))
+	for key := range productMappings {
+		productMappingKeys[listIndex] = key
+		listIndex++
+	}
+
+	sort.Slice(productMappingKeys, func(i, j int) bool {
+		return string(productMappingKeys[i]) < string(productMappingKeys[j])
+	})
+
+	productMappingMapKeysSorted = productMappingKeys
 }

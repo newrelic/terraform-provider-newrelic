@@ -48,6 +48,10 @@ func main() {
 }
 
 func generateInitialYAML(yamlFile string) {
+	if len(productMappingMapKeysSorted) == 0 {
+		getProductMappingSortedKeys()
+	}
+
 	files := scanDirectory("../newrelic")
 	mappings := make(FileMappings)
 
@@ -55,7 +59,7 @@ func generateInitialYAML(yamlFile string) {
 		if !shouldExcludeFile(file) {
 			mappings[file] = FileMapping{
 				Test:           strings.HasSuffix(file, "_test.go"),
-				ProductMapping: assignProductMapping(file),
+				ProductMapping: assignProductMapping(file, productMappingMapKeysSorted),
 			}
 		}
 	}
@@ -107,6 +111,7 @@ func processExistingYAML(yamlFile string, refreshFlag bool) {
 			integrationTestUtilities_PrintYAMLProductMappingNotFound(unknownMappings)
 			os.Exit(1)
 		}
+		// todo: [DO NOT IGNORE] refactor the reportErrors() function in a way that it throws errors in the case above (when -r is not set) but "prints" the errors as logs when -r is set, i.e. the current case
 		updateYAML(yamlFile, mappings, missingInYAML, notInDirectory)
 	}
 }
@@ -173,6 +178,10 @@ func reportErrors(unknownMappings, missingInYAML, notInDirectory []string) {
 }
 
 func updateYAML(yamlFile string, mappings FileMappings, missingInYAML, notInDirectory []string) {
+	if len(productMappingMapKeysSorted) == 0 {
+		getProductMappingSortedKeys()
+	}
+
 	for _, file := range notInDirectory {
 		delete(mappings, file)
 	}
@@ -180,7 +189,7 @@ func updateYAML(yamlFile string, mappings FileMappings, missingInYAML, notInDire
 	for _, file := range missingInYAML {
 		mappings[file] = FileMapping{
 			Test:           strings.HasSuffix(file, "_test.go"),
-			ProductMapping: assignProductMapping(file),
+			ProductMapping: assignProductMapping(file, productMappingMapKeysSorted),
 		}
 	}
 
@@ -192,10 +201,24 @@ func updateYAML(yamlFile string, mappings FileMappings, missingInYAML, notInDire
 	integrationTestUtilitiesAlteredPrintln("✅  Successfully updated YAML content")
 }
 
-func assignProductMapping(file string) string {
-	for product, patterns := range productMappings {
+func assignProductMapping(file string, productMappingKeys []ProductMapping) string {
+	for _, product := range productMappingKeys {
+		patterns := productMappings[product]
+		if strings.Contains(file, "multilocation") {
+			fmt.Println(file)
+			fmt.Println(product)
+			fmt.Println(patterns)
+		}
 		for _, pattern := range patterns {
+			if strings.Contains(file, "multilocation") {
+				fmt.Println(pattern)
+			}
 			if strings.Contains(file, pattern) {
+				if strings.Contains(file, "multilocation") {
+					fmt.Println("=======")
+					fmt.Println(pattern)
+					fmt.Println("=======")
+				}
 				return string(product)
 			}
 		}

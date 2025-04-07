@@ -49,13 +49,15 @@ var productMappings = map[ProductMapping][]string{
 		"application",
 	},
 	ProductMappingTypes.AUTH: {
-		"account",
+		"account_management",
 		"authentication_domain",
 		"group",
 		"user",
 	},
 	ProductMappingTypes.CLOUD: {
+		"link_account",
 		"cloud",
+		"cloud_account",
 	},
 	ProductMappingTypes.DASHBOARDS: {
 		"dashboard",
@@ -89,3 +91,5 @@ var productMappings = map[ProductMapping][]string{
 		"workload",
 	},
 }
+
+var productMappingMapKeysSorted []ProductMapping

@@ -1,7 +1,7 @@
-data_source_newrelic_account.go:
+data_source_newrelic_account_management.go:
   test: false
   product_mapping: AUTH
-data_source_newrelic_account_test.go:
+data_source_newrelic_account_management_test.go:
   test: true
   product_mapping: AUTH
 data_source_newrelic_alert_channel.go:
@@ -30,10 +30,10 @@ data_source_newrelic_authentication_domain_test.go:
   product_mapping: AUTH
 data_source_newrelic_cloud_account.go:
   test: false
-  product_mapping: AUTH
+  product_mapping: CLOUD
 data_source_newrelic_cloud_account_test.go:
   test: true
-  product_mapping: AUTH
+  product_mapping: CLOUD
 data_source_newrelic_entity.go:
   test: false
   product_mapping: ENTITY
@@ -165,10 +165,10 @@ resource_newrelic_cloud_aws_govcloud_integrations_test.go:
   product_mapping: CLOUD
 resource_newrelic_cloud_aws_govcloud_link_account.go:
   test: false
-  product_mapping: AUTH
+  product_mapping: CLOUD
 resource_newrelic_cloud_aws_govcloud_link_account_test.go:
   test: true
-  product_mapping: AUTH
+  product_mapping: CLOUD
 resource_newrelic_cloud_aws_integrations.go:
   test: false
   product_mapping: CLOUD
@@ -180,7 +180,7 @@ resource_newrelic_cloud_aws_link_account.go:
   product_mapping: CLOUD
 resource_newrelic_cloud_aws_link_account_test.go:
   test: true
-  product_mapping: AUTH
+  product_mapping: CLOUD
 resource_newrelic_cloud_azure_integrations.go:
   test: false
   product_mapping: CLOUD
@@ -189,10 +189,10 @@ resource_newrelic_cloud_azure_integrations_test.go:
   product_mapping: CLOUD
 resource_newrelic_cloud_azure_link_account.go:
   test: false
-  product_mapping: AUTH
+  product_mapping: CLOUD
 resource_newrelic_cloud_azure_link_account_test.go:
   test: true
-  product_mapping: AUTH
+  product_mapping: CLOUD
 resource_newrelic_cloud_gcp_integrations.go:
   test: false
   product_mapping: CLOUD
@@ -201,10 +201,10 @@ resource_newrelic_cloud_gcp_integrations_test.go:
   product_mapping: CLOUD
 resource_newrelic_cloud_gcp_link_account.go:
   test: false
-  product_mapping: AUTH
+  product_mapping: CLOUD
 resource_newrelic_cloud_gcp_link_account_test.go:
   test: true
-  product_mapping: AUTH
+  product_mapping: CLOUD
 resource_newrelic_data_partition.go:
   test: false
   product_mapping: LOGGING_INTEGRATIONS
@@ -324,7 +324,7 @@ resource_newrelic_synthetics_alert_condition.go:
   product_mapping: ALERTS
 resource_newrelic_synthetics_alert_condition_test.go:
   test: true
-  product_mapping: SYNTHETICS
+  product_mapping: ALERTS
 resource_newrelic_synthetics_broken_links_monitor.go:
   test: false
   product_mapping: SYNTHETICS
