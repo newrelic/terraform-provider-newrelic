@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# this function is only being called for make test-integration running locally
+# for all runs from GitHub workflows, via the workflow/via GitHub runners, yq is preconfigured
+# for local runs though, we will need to check if yq does not exist, and install it if so
+# the installation is skipped if yq is already installed
+
 check_and_install_yq() {
     if ! command -v yq >/dev/null 2>&1; then
         echo "yq is not installed. Installing yq..."

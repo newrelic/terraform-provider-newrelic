@@ -39,6 +39,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      # the README of this GitHub Action claims that GitHub self-hosted runners
+      # have yq installed by default: https://github.com/dcarbone/install-yq-action
+      # However, the intent of adding this step is to perform a precautionary check
+      # to make sure yq exists on the runner (or, is installed if not found)
+
+      - name: 'Setup yq (needed for YAML-based tag processing to run integration tests)'
+        uses: dcarbone/install-yq-action@v1.3.1
+
+      - name: 'Check yq'
+        run: |
+          which yq
+          yq --version
+
       - name: Integration Tests
         if: github.event.pull_request.head.repo.full_name == github.repository
         run: make test-integration cover-report
