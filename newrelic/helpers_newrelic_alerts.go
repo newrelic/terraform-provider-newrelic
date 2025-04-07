@@ -59,3 +59,6 @@ func intInSlice(valid []int) schema.SchemaValidateFunc {
 		return
 	}
 }
+
+var violationTimeLimitSecondsDefault = 259200
+var violationTimeLimitSecondsMax = 2592000

@@ -127,3 +127,4 @@ jobs:
               body: message
             });
             core.setFailed('Some commits do not follow conventional commit format');
+

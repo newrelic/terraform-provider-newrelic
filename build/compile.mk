@@ -30,6 +30,10 @@ compile-only: deps-only
 	@mkdir -p $(BUILD_DIR)/$(GOOS)
 	@echo "=== $(PROJECT_NAME) === [ compile          ]:     $(BUILD_DIR)$(GOOS)/$(BINARY)"
 	@GOOS=$(GOOS) $(GO) build -ldflags=$(LDFLAGS) -o $(BUILD_DIR)/$(GOOS)/$(BINARY);
+	@if [ -z "$$GITHUB_ACTIONS" ]; then \
+		echo "=== $(PROJECT_NAME) === [ compile          ]: verifying available product mapping of all resource files:"; \
+		cd integration_test_utilities && go run . -r; \
+	fi
 
 # Override GOOS for these specific targets
 compile-darwin: GOOS=darwin

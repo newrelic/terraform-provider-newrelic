@@ -19,6 +19,9 @@ PROJECT_MODULE ?= $(shell $(GO) list -m)
 # Set a few vars and run the test suite
 LDFLAGS_TEST ?= "-X=$(PROJECT_MODULE)/version.ProviderVersion=acc"
 
+TEST_MAPPER_SCRIPT ?= ./integration_test_utilities/integration_test_utilities_tag_mapper.sh
+TEST_MAPPER_SCRIPT_OUTPUT ?= $(shell bash $(TEST_MAPPER_SCRIPT) | tail -n 1)
+
 test: test-only
 test-only: test-unit test-integration
 
@@ -31,9 +34,14 @@ test-unit: tools
 test-integration: tools
 	@echo "=== $(PROJECT_NAME) === [ test-integration ]: running integration tests..."
 	@mkdir -p $(COVERAGE_DIR)
-	@TF_ACC=1 $(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/integration.xml --rerun-fails=1 --packages "$(GO_PKGS)" --jsonfile $(COVERAGE_DIR)/integration.report \
-		-- -v -parallel 10 -tags=integration $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp \
-		   -timeout 120m -ldflags=$(LDFLAGS_TEST)
+	@if [ "$(TEST_MAPPER_SCRIPT_OUTPUT)" = "NONE" ]; then \
+		echo "=== $(PROJECT_NAME) === [ test-integration ]: no changes found in code affecting tests, skipping integration tests..."; \
+	else \
+		echo "=== $(PROJECT_NAME) === [ test-integration ]: running integration tests with tags $(TEST_MAPPER_SCRIPT_OUTPUT)"; \
+		TF_ACC=1 $(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/integration.xml --rerun-fails=4 --packages "$(GO_PKGS)" --jsonfile $(COVERAGE_DIR)/integration.report \
+			-- -v -parallel 14 $(TEST_MAPPER_SCRIPT_OUTPUT) $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp \
+			-timeout 120m -ldflags=$(LDFLAGS_TEST); \
+	fi
 
 #
 # Coverage
