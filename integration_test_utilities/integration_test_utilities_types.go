@@ -3,6 +3,8 @@ package main
 type FileMappings map[string]FileMapping
 type ProductMapping string
 
+var productMappingMapKeysSorted []ProductMapping
+
 type FileMapping struct {
 	Test           bool   `yaml:"test"`
 	ProductMapping string `yaml:"product_mapping"`
@@ -91,5 +93,3 @@ var productMappings = map[ProductMapping][]string{
 		"workload",
 	},
 }
-
-var productMappingMapKeysSorted []ProductMapping

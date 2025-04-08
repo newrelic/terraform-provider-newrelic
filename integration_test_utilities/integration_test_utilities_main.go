@@ -105,13 +105,13 @@ func processExistingYAML(yamlFile string, refreshFlag bool) {
 	}
 
 	if !refreshFlag {
-		reportErrors(unknownMappings, missingInYAML, notInDirectory)
+		reportErrors(unknownMappings, missingInYAML, notInDirectory, false)
 	} else {
 		if len(unknownMappings) > 0 {
 			integrationTestUtilities_PrintYAMLProductMappingNotFound(unknownMappings)
 			os.Exit(1)
 		}
-		// todo: [DO NOT IGNORE] refactor the reportErrors() function in a way that it throws errors in the case above (when -r is not set) but "prints" the errors as logs when -r is set, i.e. the current case
+		reportErrors(unknownMappings, missingInYAML, notInDirectory, true)
 		updateYAML(yamlFile, mappings, missingInYAML, notInDirectory)
 	}
 }
@@ -154,7 +154,7 @@ func writeYAMLFile(filename string, data FileMappings) {
 	}
 }
 
-func reportErrors(unknownMappings, missingInYAML, notInDirectory []string) {
+func reportErrors(unknownMappings, missingInYAML, notInDirectory []string, isRefreshFlagEnabled bool) {
 	var errors []string
 
 	if len(unknownMappings) > 0 {
@@ -172,9 +172,14 @@ func reportErrors(unknownMappings, missingInYAML, notInDirectory []string) {
 		for _, err := range errors {
 			integrationTestUtilitiesAlteredPrintln(err)
 		}
-		os.Exit(1)
+		if !isRefreshFlagEnabled {
+			// if errors are printed via this function without the -r mode, exit immediately after the print to avoid YAML changes
+			// however, if the script is run in the -r mode, the script will continue to update the YAML file, hence no os.Exit()
+			os.Exit(1)
+		}
+	} else {
+		integrationTestUtilities_PrintYAMLNoChangesNeeded()
 	}
-	integrationTestUtilities_PrintYAMLNoChangesNeeded()
 }
 
 func updateYAML(yamlFile string, mappings FileMappings, missingInYAML, notInDirectory []string) {
