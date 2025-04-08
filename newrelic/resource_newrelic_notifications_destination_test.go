@@ -1,5 +1,5 @@
-//go:build integration
-// +build integration
+//go:build integration || WORKFLOW_INTEGRATIONS
+// +build integration WORKFLOW_INTEGRATIONS
 
 package newrelic
 

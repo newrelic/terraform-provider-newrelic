@@ -1,5 +1,5 @@
-//go:build integration
-// +build integration
+//go:build integration || ENTITY
+// +build integration ENTITY
 
 package newrelic
 
