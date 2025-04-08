@@ -1,5 +1,5 @@
-//go:build integration || ALERTS
-// +build integration ALERTS
+//go:build integration || SYNTHETICS
+// +build integration SYNTHETICS
 
 package newrelic
 

@@ -1,5 +1,5 @@
-//go:build integration
-// +build integration
+//go:build integration || KEY_TRANSACTIONS
+// +build integration KEY_TRANSACTIONS
 
 package newrelic
 
