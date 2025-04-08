@@ -31,7 +31,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Integration Tests
-        run: make test-integration cover-report
+        run: make test-integration-all cover-report
         continue-on-error: true
         env:
           NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}

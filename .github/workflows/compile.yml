@@ -6,13 +6,16 @@ on:
   pull_request:
     branches: [main]
 
+# cancels an already running job if a new commit has triggered a new run of the job
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  # Compile on all supported OSes
+  # Compile on supported OSes
   compile:
     strategy:
       matrix:
-        go-version:
-          - 1.22.x
         platform:
           - ubuntu-latest
           - macos-latest
@@ -22,7 +25,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: 1.22.x
 
       - name: Add GOBIN to PATH
         run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH

@@ -1,0 +1,510 @@
+data_source_newrelic_account_management.go:
+  test: false
+  product_mapping: AUTH
+data_source_newrelic_account_management_test.go:
+  test: true
+  product_mapping: AUTH
+data_source_newrelic_alert_channel.go:
+  test: false
+  product_mapping: ALERTS
+data_source_newrelic_alert_channel_test.go:
+  test: true
+  product_mapping: ALERTS
+data_source_newrelic_alert_policy.go:
+  test: false
+  product_mapping: ALERTS
+data_source_newrelic_alert_policy_test.go:
+  test: true
+  product_mapping: ALERTS
+data_source_newrelic_application.go:
+  test: false
+  product_mapping: APM
+data_source_newrelic_application_test.go:
+  test: true
+  product_mapping: APM
+data_source_newrelic_authentication_domain.go:
+  test: false
+  product_mapping: AUTH
+data_source_newrelic_authentication_domain_test.go:
+  test: true
+  product_mapping: AUTH
+data_source_newrelic_cloud_account.go:
+  test: false
+  product_mapping: CLOUD
+data_source_newrelic_cloud_account_test.go:
+  test: true
+  product_mapping: CLOUD
+data_source_newrelic_entity.go:
+  test: false
+  product_mapping: ENTITY
+data_source_newrelic_entity_integration_test.go:
+  test: true
+  product_mapping: ENTITY
+data_source_newrelic_entity_unit_test.go:
+  test: true
+  product_mapping: ENTITY
+data_source_newrelic_group_management.go:
+  test: false
+  product_mapping: AUTH
+data_source_newrelic_group_management_test.go:
+  test: true
+  product_mapping: AUTH
+data_source_newrelic_key_transaction.go:
+  test: false
+  product_mapping: KEY_TRANSACTIONS
+data_source_newrelic_key_transaction_test.go:
+  test: true
+  product_mapping: KEY_TRANSACTIONS
+data_source_newrelic_notifications_destination.go:
+  test: false
+  product_mapping: WORKFLOW_INTEGRATIONS
+data_source_newrelic_notifications_destination_test.go:
+  test: true
+  product_mapping: WORKFLOW_INTEGRATIONS
+data_source_newrelic_obfuscation_expression.go:
+  test: false
+  product_mapping: LOGGING_INTEGRATIONS
+data_source_newrelic_obfuscation_expression_test.go:
+  test: true
+  product_mapping: LOGGING_INTEGRATIONS
+data_source_newrelic_synthetics_private_location.go:
+  test: false
+  product_mapping: SYNTHETICS
+data_source_newrelic_synthetics_private_location_test.go:
+  test: true
+  product_mapping: SYNTHETICS
+data_source_newrelic_synthetics_secure_credential.go:
+  test: false
+  product_mapping: SYNTHETICS
+data_source_newrelic_synthetics_secure_credential_test.go:
+  test: true
+  product_mapping: SYNTHETICS
+data_source_newrelic_test_grok_pattern.go:
+  test: false
+  product_mapping: LOGGING_INTEGRATIONS
+data_source_newrelic_test_grok_pattern_test.go:
+  test: true
+  product_mapping: LOGGING_INTEGRATIONS
+data_source_newrelic_user_management.go:
+  test: false
+  product_mapping: AUTH
+data_source_newrelic_user_management_test.go:
+  test: true
+  product_mapping: AUTH
+resource_newrelic_account_management.go:
+  test: false
+  product_mapping: AUTH
+resource_newrelic_account_management_test.go:
+  test: true
+  product_mapping: AUTH
+resource_newrelic_agent_application_browser.go:
+  test: false
+  product_mapping: APM
+resource_newrelic_agent_application_browser_integration_test.go:
+  test: true
+  product_mapping: APM
+resource_newrelic_alert_channel.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_alert_channel_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_alert_condition.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_alert_condition_integration_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_alert_condition_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_alert_condition_unit_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_alert_muting_rule.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_alert_muting_rule_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_alert_policy.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_alert_policy_channel.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_alert_policy_channel_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_alert_policy_integration_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_alert_policy_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_alert_policy_unit_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_api_access_key.go:
+  test: false
+  product_mapping: APIKS
+resource_newrelic_api_access_key_test.go:
+  test: true
+  product_mapping: APIKS
+resource_newrelic_application_settings.go:
+  test: false
+  product_mapping: APM
+resource_newrelic_application_settings_test.go:
+  test: true
+  product_mapping: APM
+resource_newrelic_cloud_aws_govcloud_integrations.go:
+  test: false
+  product_mapping: CLOUD
+resource_newrelic_cloud_aws_govcloud_integrations_test.go:
+  test: true
+  product_mapping: CLOUD
+resource_newrelic_cloud_aws_govcloud_link_account.go:
+  test: false
+  product_mapping: CLOUD
+resource_newrelic_cloud_aws_govcloud_link_account_test.go:
+  test: true
+  product_mapping: CLOUD
+resource_newrelic_cloud_aws_integrations.go:
+  test: false
+  product_mapping: CLOUD
+resource_newrelic_cloud_aws_integrations_test.go:
+  test: true
+  product_mapping: CLOUD
+resource_newrelic_cloud_aws_link_account.go:
+  test: false
+  product_mapping: CLOUD
+resource_newrelic_cloud_aws_link_account_test.go:
+  test: true
+  product_mapping: CLOUD
+resource_newrelic_cloud_azure_integrations.go:
+  test: false
+  product_mapping: CLOUD
+resource_newrelic_cloud_azure_integrations_test.go:
+  test: true
+  product_mapping: CLOUD
+resource_newrelic_cloud_azure_link_account.go:
+  test: false
+  product_mapping: CLOUD
+resource_newrelic_cloud_azure_link_account_test.go:
+  test: true
+  product_mapping: CLOUD
+resource_newrelic_cloud_gcp_integrations.go:
+  test: false
+  product_mapping: CLOUD
+resource_newrelic_cloud_gcp_integrations_test.go:
+  test: true
+  product_mapping: CLOUD
+resource_newrelic_cloud_gcp_link_account.go:
+  test: false
+  product_mapping: CLOUD
+resource_newrelic_cloud_gcp_link_account_test.go:
+  test: true
+  product_mapping: CLOUD
+resource_newrelic_data_partition.go:
+  test: false
+  product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_data_partition_test.go:
+  test: true
+  product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_entity_tags.go:
+  test: false
+  product_mapping: ENTITY
+resource_newrelic_entity_tags_test.go:
+  test: true
+  product_mapping: ENTITY
+resource_newrelic_events_to_metrics_rule.go:
+  test: false
+  product_mapping: EVENTS
+resource_newrelic_events_to_metrics_rule_test.go:
+  test: true
+  product_mapping: EVENTS
+resource_newrelic_group_management.go:
+  test: false
+  product_mapping: AUTH
+resource_newrelic_group_management_test.go:
+  test: true
+  product_mapping: AUTH
+resource_newrelic_infra_alert_condition.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_infra_alert_condition_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_insights_event.go:
+  test: false
+  product_mapping: EVENTS
+resource_newrelic_insights_event_test.go:
+  test: true
+  product_mapping: EVENTS
+resource_newrelic_key_transaction.go:
+  test: false
+  product_mapping: KEY_TRANSACTIONS
+resource_newrelic_key_transaction_test.go:
+  test: true
+  product_mapping: KEY_TRANSACTIONS
+resource_newrelic_log_parsing_rule.go:
+  test: false
+  product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_log_parsing_rule_test.go:
+  test: true
+  product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_monitor_downtime.go:
+  test: false
+  product_mapping: SYNTHETICS
+resource_newrelic_monitor_downtime_test.go:
+  test: true
+  product_mapping: SYNTHETICS
+resource_newrelic_notifications_channel.go:
+  test: false
+  product_mapping: WORKFLOW_INTEGRATIONS
+resource_newrelic_notifications_channel_test.go:
+  test: true
+  product_mapping: WORKFLOW_INTEGRATIONS
+resource_newrelic_notifications_destination.go:
+  test: false
+  product_mapping: WORKFLOW_INTEGRATIONS
+resource_newrelic_notifications_destination_test.go:
+  test: true
+  product_mapping: WORKFLOW_INTEGRATIONS
+resource_newrelic_nrql_alert_condition.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_nrql_alert_condition_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_nrql_drop_rule.go:
+  test: false
+  product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_nrql_drop_rule_test.go:
+  test: true
+  product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_obfuscation_expression.go:
+  test: false
+  product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_obfuscation_expression_test.go:
+  test: true
+  product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_obfuscation_rule.go:
+  test: false
+  product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_obfuscation_rule_test.go:
+  test: true
+  product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_one_dashboard.go:
+  test: false
+  product_mapping: DASHBOARDS
+resource_newrelic_one_dashboard_json.go:
+  test: false
+  product_mapping: DASHBOARDS
+resource_newrelic_one_dashboard_json_test.go:
+  test: true
+  product_mapping: DASHBOARDS
+resource_newrelic_one_dashboard_raw.go:
+  test: false
+  product_mapping: DASHBOARDS
+resource_newrelic_one_dashboard_raw_test.go:
+  test: true
+  product_mapping: DASHBOARDS
+resource_newrelic_one_dashboard_test.go:
+  test: true
+  product_mapping: DASHBOARDS
+resource_newrelic_service_level.go:
+  test: false
+  product_mapping: WORKLOADS
+resource_newrelic_service_level_test.go:
+  test: true
+  product_mapping: WORKLOADS
+resource_newrelic_synthetics_alert_condition.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_synthetics_alert_condition_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_synthetics_broken_links_monitor.go:
+  test: false
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_broken_links_monitor_test.go:
+  test: true
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_cert_check_monitor.go:
+  test: false
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_cert_check_monitor_test.go:
+  test: true
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_monitor.go:
+  test: false
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_monitor_test.go:
+  test: true
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_multilocation_alert_condition.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_synthetics_multilocation_alert_condition_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_synthetics_private_location.go:
+  test: false
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_private_location_test.go:
+  test: true
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_script_monitor.go:
+  test: false
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_script_monitor_test.go:
+  test: true
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_secure_credential.go:
+  test: false
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_secure_credential_test.go:
+  test: true
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_step_monitor.go:
+  test: false
+  product_mapping: SYNTHETICS
+resource_newrelic_synthetics_step_monitor_test.go:
+  test: true
+  product_mapping: SYNTHETICS
+resource_newrelic_user_management.go:
+  test: false
+  product_mapping: AUTH
+resource_newrelic_user_management_test.go:
+  test: true
+  product_mapping: AUTH
+resource_newrelic_workflow.go:
+  test: false
+  product_mapping: WORKFLOW_INTEGRATIONS
+resource_newrelic_workflow_test.go:
+  test: true
+  product_mapping: WORKFLOW_INTEGRATIONS
+resource_newrelic_workload.go:
+  test: false
+  product_mapping: WORKLOADS
+resource_newrelic_workload_test.go:
+  test: true
+  product_mapping: WORKLOADS
+structures_newrelic_alert_channel.go:
+  test: false
+  product_mapping: ALERTS
+structures_newrelic_alert_channel_test.go:
+  test: true
+  product_mapping: ALERTS
+structures_newrelic_alert_condition.go:
+  test: false
+  product_mapping: ALERTS
+structures_newrelic_alert_condition_test.go:
+  test: true
+  product_mapping: ALERTS
+structures_newrelic_alert_muting_rule.go:
+  test: false
+  product_mapping: ALERTS
+structures_newrelic_alert_muting_rule_test.go:
+  test: true
+  product_mapping: ALERTS
+structures_newrelic_alert_policy.go:
+  test: false
+  product_mapping: ALERTS
+structures_newrelic_alert_policy_channel.go:
+  test: false
+  product_mapping: ALERTS
+structures_newrelic_alert_policy_channel_test.go:
+  test: true
+  product_mapping: ALERTS
+structures_newrelic_application_settings.go:
+  test: false
+  product_mapping: APM
+structures_newrelic_cloud_aws_govcloud_link_account.go:
+  test: false
+  product_mapping: CLOUD
+structures_newrelic_cloud_aws_integrations.go:
+  test: false
+  product_mapping: CLOUD
+structures_newrelic_infra_alert_condition.go:
+  test: false
+  product_mapping: ALERTS
+structures_newrelic_infra_alert_condition_test.go:
+  test: true
+  product_mapping: ALERTS
+structures_newrelic_monitor_downtime.go:
+  test: false
+  product_mapping: SYNTHETICS
+structures_newrelic_notifications_channel.go:
+  test: false
+  product_mapping: WORKFLOW_INTEGRATIONS
+structures_newrelic_notifications_channel_test.go:
+  test: true
+  product_mapping: WORKFLOW_INTEGRATIONS
+structures_newrelic_notifications_destination.go:
+  test: false
+  product_mapping: WORKFLOW_INTEGRATIONS
+structures_newrelic_notifications_destination_test.go:
+  test: true
+  product_mapping: WORKFLOW_INTEGRATIONS
+structures_newrelic_nrql_alert_condition.go:
+  test: false
+  product_mapping: ALERTS
+structures_newrelic_nrql_alert_condition_test.go:
+  test: true
+  product_mapping: ALERTS
+structures_newrelic_one_dashboard.go:
+  test: false
+  product_mapping: DASHBOARDS
+structures_newrelic_one_dashboard_helpers.go:
+  test: false
+  product_mapping: DASHBOARDS
+structures_newrelic_one_dashboard_json.go:
+  test: false
+  product_mapping: DASHBOARDS
+structures_newrelic_one_dashboard_raw.go:
+  test: false
+  product_mapping: DASHBOARDS
+structures_newrelic_one_dashboard_test.go:
+  test: true
+  product_mapping: DASHBOARDS
+structures_newrelic_service_level.go:
+  test: false
+  product_mapping: WORKLOADS
+structures_newrelic_synthetics_all_monitors_validation_helpers.go:
+  test: false
+  product_mapping: SYNTHETICS
+structures_newrelic_synthetics_broken_links_monitor.go:
+  test: false
+  product_mapping: SYNTHETICS
+structures_newrelic_synthetics_multilocation_alert_condition.go:
+  test: false
+  product_mapping: ALERTS
+structures_newrelic_synthetics_multilocation_alert_condition_test.go:
+  test: true
+  product_mapping: ALERTS
+structures_newrelic_synthetics_script_api_monitor.go:
+  test: false
+  product_mapping: SYNTHETICS
+structures_newrelic_synthetics_script_browser_monitor.go:
+  test: false
+  product_mapping: SYNTHETICS
+structures_newrelic_synthetics_simple_browser_monitor.go:
+  test: false
+  product_mapping: SYNTHETICS
+structures_newrelic_synthetics_simple_monitor.go:
+  test: false
+  product_mapping: SYNTHETICS
+structures_newrelic_synthetics_step_monitor.go:
+  test: false
+  product_mapping: SYNTHETICS
+structures_newrelic_workflow.go:
+  test: false
+  product_mapping: WORKFLOW_INTEGRATIONS
+structures_newrelic_workflow_test.go:
+  test: true
+  product_mapping: WORKFLOW_INTEGRATIONS
+structures_newrelic_workload.go:
+  test: false
+  product_mapping: WORKLOADS
