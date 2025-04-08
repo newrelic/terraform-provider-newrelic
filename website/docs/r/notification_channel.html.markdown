@@ -3,7 +3,7 @@ layout: "newrelic"
 page_title: "New Relic: newrelic_notification_channel"
 sidebar_current: "docs-newrelic-resource-notification-channel"
 description: |-
-Create and manage a notification channel for notifications in New Relic.
+  Create and manage a notification channel for notifications in New Relic.
 ---
 
 # Resource: newrelic\_notification\_channel
@@ -316,7 +316,7 @@ resource "newrelic_notification_channel" "foo" {
 }
 ```
 
-#### [MICROSOFT_TEAMS]
+#### MICROSOFT_TEAMS
 ```hcl
 resource "newrelic_notification_channel" "foo" {
   account_id = 12345678
