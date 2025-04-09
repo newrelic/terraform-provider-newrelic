@@ -52,11 +52,13 @@ func resourceNewRelicKeyTransaction() *schema.Resource {
 			"domain": {
 				Type:        schema.TypeString,
 				Description: "Domain of the entity.",
+				Required:    false,
 				Computed:    true,
 			},
 			"type": {
 				Type:        schema.TypeString,
 				Description: "Type of the entity.",
+				Required:    false,
 				Computed:    true,
 			},
 		},
