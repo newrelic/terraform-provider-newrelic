@@ -3,11 +3,11 @@ name: Integration Tests Cron Job
 on:
   workflow_dispatch:
   schedule:
-    # Cron executes at 0800, 1200 1600 (8am, 12pm, 4pm)
-    - cron: "0 8,12,16 * * 1-5"
+    # time in UTC
+    - cron: "30 3,8,13,21 * * 1-5"
 
 jobs:
-  test-integration:
+  test-integration-all:
     runs-on: ubuntu-latest
     steps:
       - name: Install Go

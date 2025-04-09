@@ -56,7 +56,7 @@ jobs:
         # if you would like to see this list locally, run `bash integration_test_utilities/integration_test_utilities_tag_mapper.sh`
         if: github.ref != 'refs/heads/main'
         run: |
-          git diff --name-only origin/main...HEAD
+          git diff --name-only origin/main...HEAD | sed 's/^/• /'
           echo "Integration tests to be run based on the files changed here shall be picked in the following step."
 
       - name: Integration Tests
