@@ -42,6 +42,7 @@ func resourceNewRelicGroup() *schema.Resource {
 				Type:        schema.TypeSet,
 				Description: "IDs of users to be added to the group.",
 				Optional:    true,
+				Default:     nil,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
