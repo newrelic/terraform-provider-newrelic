@@ -72,6 +72,13 @@ func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		}
 	}
 
+	if conditionType == "baseline" {
+		if attr, ok := d.GetOk("signal_seasonality"); ok {
+			seasonality := alerts.NrqlSignalSeasonality(strings.ToUpper(attr.(string)))
+			input.SignalSeasonality = &seasonality
+		}
+	}
+
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
 		input.RunbookURL = runbookURL.(string)
 	}
@@ -129,6 +136,13 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 			input.BaselineDirection = &direction
 		} else {
 			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", "baseline_direction", conditionType)
+		}
+	}
+
+	if conditionType == "baseline" {
+		if attr, ok := d.GetOk("signal_seasonality"); ok {
+			seasonality := alerts.NrqlSignalSeasonality(strings.ToUpper(attr.(string)))
+			input.SignalSeasonality = &seasonality
 		}
 	}
 
@@ -569,6 +583,10 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 
 	if conditionType == "baseline" {
 		_ = d.Set("baseline_direction", string(*condition.BaselineDirection))
+
+		if condition.SignalSeasonality != nil {
+			_ = d.Set("signal_seasonality", string(*condition.SignalSeasonality))
+		}
 	}
 
 	configuredNrql := d.Get("nrql.0").(map[string]interface{})

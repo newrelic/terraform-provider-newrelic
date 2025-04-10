@@ -668,6 +668,39 @@ func TestAccNewRelicNrqlAlertCondition_TitleTemplate(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_SignalSeasonality(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+	signalSeasonality := "daily"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create baseline condition with signal seasonality
+			{
+				Config: testAccNewRelicNrqlAlertConditionWithSignalSeasonality(
+					rName,
+					signalSeasonality,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Signal seasonality is nullable
+			{
+				Config: testAccNewRelicNrqlAlertConditionNullSignalSeasonality(
+					rName,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -1422,4 +1455,75 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	}
 }
 `, name, predictBy)
+}
+
+func testAccNewRelicNrqlAlertConditionWithSignalSeasonality(
+	name string,
+	signalSeasonality string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                           = "tf-test-%[1]s"
+	type                           = "baseline"
+	enabled                        = false
+	signal_seasonality             = "%[2]s"
+	violation_time_limit_seconds   = 3600
+	baseline_direction						 = "lower_only"
+	aggregation_delay              = 120
+	aggregation_method             = "event_flow"
+
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+		operator              = "above"
+		threshold             = 1.0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
+}
+
+	`, name, signalSeasonality)
+}
+
+func testAccNewRelicNrqlAlertConditionNullSignalSeasonality(
+	name string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                           = "tf-test-%[1]s"
+	type                           = "baseline"
+	enabled                        = false
+	signal_seasonality             = null
+	violation_time_limit_seconds   = 3600
+	baseline_direction						 = "lower_only"
+	aggregation_delay              = 120
+	aggregation_method             = "event_flow"
+
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+		operator              = "above"
+		threshold             = 1.0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
+}
+
+	`, name)
 }
