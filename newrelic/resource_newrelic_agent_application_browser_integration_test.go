@@ -1,4 +1,5 @@
-//go:build integration
+//go:build integration || APM
+// +build integration APM
 
 package newrelic
 

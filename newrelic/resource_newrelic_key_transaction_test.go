@@ -1,5 +1,5 @@
-//go:build integration
-// +build integration
+//go:build integration || KEY_TRANSACTIONS
+// +build integration KEY_TRANSACTIONS
 
 package newrelic
 
@@ -71,7 +71,7 @@ func testAccNewRelicKeyTransactionBasicConfiguration(name string) string {
 	return fmt.Sprintf(`
     resource "newrelic_key_transaction" "foo" {
         apdex_index 	     = 0.5
-        application_guid     = "Mzk1NzUyNHxBUE18QVBQTElDQVRJT058NTc4ODU1MzYx"
+        application_guid     = "Mzk1NzUyNHxBUE18QVBQTElDQVRJT058NTIzNjk1ODE0"
         browser_apdex_target = 0.5
         metric_name          = "WebTransaction/Function/__main__:all_books"
         name                 = "%[1]s"

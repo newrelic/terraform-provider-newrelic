@@ -1,5 +1,5 @@
-//go:build integration
-// +build integration
+//go:build integration || ENTITY
+// +build integration ENTITY
 
 package newrelic
 
@@ -93,9 +93,9 @@ func TestAccNewRelicEntityData_EntityInSubAccount(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicEntityDataConfig_EntityInSubAccount("Dummy App Two", 3957524),
+				Config: testAccNewRelicEntityDataConfig_EntityInSubAccount("Dummy App Two Max", 3957524),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", "Dummy App Two", 3957524),
+					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", "Dummy App Two Max", 3957524),
 				),
 			},
 		},
@@ -110,7 +110,7 @@ func TestAccNewRelicEntityData_EntityAbsentInSubAccount(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccNewRelicEntityDataConfig_EntityInSubAccount("Dummy App Two", 3814156),
+				Config:      testAccNewRelicEntityDataConfig_EntityInSubAccount("Dummy App Two Max", 3814156),
 				ExpectError: regexp.MustCompile(`no entities found`),
 			},
 		},
@@ -125,9 +125,9 @@ func TestAccNewRelicEntityData_RetrieveSubAccountEntity(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicEntityDataConfig_RetrieveSubAccountEntity("Dummy App Two", 3957524),
+				Config: testAccNewRelicEntityDataConfig_RetrieveSubAccountEntity("Dummy App Two Max", 3957524),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", "Dummy App Two", 3957524),
+					testAccCheckNewRelicEntityDataExists(t, "data.newrelic_entity.entity", "Dummy App Two Max", 3957524),
 				),
 			},
 		},
@@ -142,7 +142,7 @@ func TestAccNewRelicEntityData_RetrieveAbsentSubAccountEntity(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccNewRelicEntityDataConfig_RetrieveSubAccountEntity("Dummy App Two", 3814156),
+				Config:      testAccNewRelicEntityDataConfig_RetrieveSubAccountEntity("Dummy App Two Max", 3814156),
 				ExpectError: regexp.MustCompile(`no entities found`),
 			},
 		},

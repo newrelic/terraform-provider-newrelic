@@ -1,5 +1,5 @@
-//go:build integration
-// +build integration
+//go:build integration || CLOUD
+// +build integration CLOUD
 
 package newrelic
 

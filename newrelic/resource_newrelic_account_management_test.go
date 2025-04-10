@@ -1,5 +1,5 @@
-//go:build integration
-// +build integration
+//go:build AUTH
+// +build AUTH
 
 package newrelic
 
