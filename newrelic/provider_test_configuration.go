@@ -49,6 +49,7 @@ var (
 		"azure": false,
 		"gcp":   false,
 	}
+	testAccMSTeamsDestinationSecurityCode       = ""
 	testAccBrowserApplicationCleanupComplete    = false
 	testAccSyntheticTestEntitiesCleanupComplete = false
 )
@@ -75,6 +76,10 @@ func init() {
 	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_SUBACCOUNT_ID")); v != 0 {
 		testSubAccountID = v
 	}
+	if v := os.Getenv("NEW_RELIC_MS_TEAMS_DESTINATION_SECURITY_CODE"); v != "" {
+		testAccMSTeamsDestinationSecurityCode = v
+	}
+
 	if v := os.Getenv("NEW_RELIC_ACCOUNT_NAME"); v != "" {
 		testAccountName = v
 	} else {
