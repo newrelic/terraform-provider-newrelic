@@ -52,8 +52,17 @@ jobs:
           which yq
           yq --version
 
+      - name: 'Determine files changed on the current branch to pick integration tests'
+        # if you would like to see this list locally, run `bash integration_test_utilities/integration_test_utilities_tag_mapper.sh`
+        if: github.ref != 'refs/heads/main'
+        run: |
+          git diff --name-only origin/main...HEAD | sed 's/^/• /'
+          echo "Integration tests to be run based on the files changed here shall be picked in the following step."
+
       - name: Integration Tests
-        if: github.event.pull_request.head.repo.full_name == github.repository
+        # commenting this condition, as the optimized integration test suite
+        # can now run on forks of this repo as well, these need not be blocked
+        # if: github.event.pull_request.head.repo.full_name == github.repository
         run: make test-integration cover-report
         env:
           NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
