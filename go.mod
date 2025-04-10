@@ -11,7 +11,7 @@ require (
 	github.com/newrelic/go-insights v1.0.3
 	github.com/newrelic/newrelic-client-go/v2 v2.55.3
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
+	golang.org/x/exp 7e4ce0ab07d0
 )
 
 require (
