@@ -60,9 +60,7 @@ jobs:
           echo "Integration tests to be run based on the files changed here shall be picked in the following step."
 
       - name: Integration Tests
-        # commenting this condition, as the optimized integration test suite
-        # can now run on forks of this repo as well, these need not be blocked
-        # if: github.event.pull_request.head.repo.full_name == github.repository
+        if: github.event.pull_request.head.repo.full_name == github.repository
         run: make test-integration cover-report
         env:
           NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
