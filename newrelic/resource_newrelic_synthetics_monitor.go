@@ -39,6 +39,11 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Description:  "The monitor type. Valid values are SIMPLE AND BROWSER.",
 				ValidateFunc: validation.StringInSlice([]string{"SIMPLE", "BROWSER"}, false),
 			},
+			"monitor_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the monitor",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -248,6 +253,7 @@ func setAttributesFromCreate(res *synthetics.SyntheticsSimpleBrowserMonitorCreat
 	_ = d.Set("locations_private", res.Monitor.Locations.Private)
 	_ = d.Set("device_orientation", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceOrientation)
 	_ = d.Set("device_type", res.Monitor.AdvancedOptions.DeviceEmulation.DeviceType)
+	_ = d.Set("monitor_id", res.Monitor.ID)
 
 	if res.Monitor.Runtime.RuntimeType != "" {
 		_ = d.Set("runtime_type", res.Monitor.Runtime.RuntimeType)
@@ -298,11 +304,12 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 	switch e := (*v).(type) {
 	case *entities.SyntheticMonitorEntity:
 		err := setSyntheticsMonitorAttributes(d, map[string]string{
-			"name":   e.Name,
-			"type":   string(e.MonitorType),
-			"uri":    e.MonitoredURL,
-			"period": string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
-			"status": string(e.MonitorSummary.Status),
+			"name":       e.Name,
+			"type":       string(e.MonitorType),
+			"uri":        e.MonitoredURL,
+			"period":     string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
+			"status":     string(e.MonitorSummary.Status),
+			"monitor_id": e.MonitorId,
 		})
 
 		_ = d.Set("period_in_minutes", e.GetPeriod())
