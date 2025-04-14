@@ -695,6 +695,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		switch condition.Type {
 		case alerts.NrqlConditionTypes.Baseline:
 			require.Equal(t, string(alerts.NrqlBaselineDirections.LowerOnly), d.Get("baseline_direction").(string))
+			require.Equal(t, string(alerts.NrqlSignalSeasonalities.Daily), d.Get("signal_seasonality").(string))
 			require.Equal(t, 120, d.Get("expiration_duration").(int))
 			require.True(t, d.Get("open_violation_on_expiration").(bool))
 			require.True(t, d.Get("close_violations_on_expiration").(bool))

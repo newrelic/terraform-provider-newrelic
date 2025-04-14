@@ -672,6 +672,7 @@ func TestAccNewRelicNrqlAlertCondition_SignalSeasonality(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
 	signalSeasonality := "daily"
+	signalSeasonalityNRCalc := "new_relic_calculation"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -688,10 +689,11 @@ func TestAccNewRelicNrqlAlertCondition_SignalSeasonality(t *testing.T) {
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
 				),
 			},
-			// Test: Signal seasonality is nullable
+			// Test: New Relic Calculation is valid value for signal seasonality
 			{
-				Config: testAccNewRelicNrqlAlertConditionNullSignalSeasonality(
+				Config: testAccNewRelicNrqlAlertConditionWithSignalSeasonality(
 					rName,
+					signalSeasonalityNRCalc
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
@@ -1491,39 +1493,4 @@ resource "newrelic_nrql_alert_condition" "foo" {
 }
 
 	`, name, signalSeasonality)
-}
-
-func testAccNewRelicNrqlAlertConditionNullSignalSeasonality(
-	name string,
-) string {
-	return fmt.Sprintf(`
-resource "newrelic_alert_policy" "foo" {
-	name = "tf-test-%[1]s"
-}
-
-resource "newrelic_nrql_alert_condition" "foo" {
-	policy_id   = newrelic_alert_policy.foo.id
-
-	name                           = "tf-test-%[1]s"
-	type                           = "baseline"
-	enabled                        = false
-	signal_seasonality             = null
-	violation_time_limit_seconds   = 3600
-	baseline_direction						 = "lower_only"
-	aggregation_delay              = 120
-	aggregation_method             = "event_flow"
-
-	nrql {
-		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
-	}
-
-	critical {
-		operator              = "above"
-		threshold             = 1.0
-		threshold_duration    = 120
-		threshold_occurrences = "ALL"
-	}
-}
-
-	`, name)
 }
