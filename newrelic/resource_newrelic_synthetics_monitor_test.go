@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 	mock "github.com/newrelic/newrelic-client-go/v2/pkg/testhelpers"
 	"github.com/stretchr/testify/require"
@@ -379,6 +380,10 @@ func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFun
 
 		if string((*found).GetGUID()) != rs.Primary.ID {
 			return fmt.Errorf("the monitor is not found %v - %v", (*found).GetGUID(), rs.Primary.ID)
+		}
+
+		if rs.Primary.Attributes["monitor_id"] != string((*found).(*entities.SyntheticMonitorEntity).MonitorId) {
+			return fmt.Errorf("the monitor id doesnot not match expected: %v", rs.Primary.Attributes["monitor_id"])
 		}
 
 		return nil
