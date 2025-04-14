@@ -233,6 +233,7 @@ The following attributes are exported:
 
 * `id` - The ID (GUID) of the Synthetics monitor that the script is attached to.
 * `period_in_minutes` - The interval in minutes at which Synthetic monitor should run.
+* `monitor_id` - The monitor id of the Synthetics monitor (not to be confused with the GUID of the monitor).
 
 ## Import
 
