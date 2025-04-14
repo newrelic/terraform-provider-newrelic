@@ -868,3 +868,42 @@ func getConfiguredTerms(configTerms []interface{}) []map[string]interface{} {
 
 	return setTerms
 }
+
+func validateNrqlConditionAttributes(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	var errorsList []error
+
+	_, conditionType := d.GetChange("type")
+	if conditionType != nil {
+		isStaticCondition := strings.Contains(conditionType.(string), "static")
+		if isStaticCondition {
+			err := validateSignalSeasonality(d)
+			if err != nil {
+				errorsList = append(errorsList, err)
+			}
+		}
+	}
+
+	if len(errorsList) == 0 {
+		return nil
+	}
+
+	errorsString := "the following validation errors have been identified with the configuration of the synthetic monitor: \n"
+
+	for index, val := range errorsList {
+		errorsString += fmt.Sprintf("(%d): %s\n", index+1, val)
+	}
+
+	return errors.New(errorsString)
+}
+
+func validateSignalSeasonality(d *schema.ResourceDiff) error {
+	rawConfiguration := d.GetRawConfig()
+
+	signalSeasonalityIsNotNil := !rawConfiguration.GetAttr("signal_seasonality").IsNull()
+
+	if signalSeasonalityIsNotNil {
+		return fmt.Errorf(`'signal_seasonality' is not valid for static conditions. Please remove it or change to baseline condition.`)
+	}
+	return nil
+}
+

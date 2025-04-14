@@ -127,6 +127,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceImportStateWithMetadata(2, "type"),
 		},
+		CustomizeDiff: validateNrqlConditionAttributes,
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
 				Type:        schema.TypeInt,
