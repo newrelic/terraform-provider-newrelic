@@ -693,7 +693,7 @@ func TestAccNewRelicNrqlAlertCondition_SignalSeasonality(t *testing.T) {
 			{
 				Config: testAccNewRelicNrqlAlertConditionWithSignalSeasonality(
 					rName,
-					signalSeasonalityNRCalc
+					signalSeasonalityNRCalc,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),

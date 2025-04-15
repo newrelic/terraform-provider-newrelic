@@ -1,6 +1,8 @@
 package newrelic
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -874,8 +876,8 @@ func validateNrqlConditionAttributes(ctx context.Context, d *schema.ResourceDiff
 
 	_, conditionType := d.GetChange("type")
 	if conditionType != nil {
-		isStaticCondition := strings.Contains(conditionType.(string), "static")
-		if isStaticCondition {
+		isNotBaselineCondition := !strings.Contains(conditionType.(string), "baseline")
+		if isNotBaselineCondition {
 			err := validateSignalSeasonality(d)
 			if err != nil {
 				errorsList = append(errorsList, err)
@@ -887,7 +889,7 @@ func validateNrqlConditionAttributes(ctx context.Context, d *schema.ResourceDiff
 		return nil
 	}
 
-	errorsString := "the following validation errors have been identified with the configuration of the synthetic monitor: \n"
+	errorsString := "the following validation errors have been identified with the configuration of the nrql alert condition: \n"
 
 	for index, val := range errorsList {
 		errorsString += fmt.Sprintf("(%d): %s\n", index+1, val)
@@ -902,7 +904,7 @@ func validateSignalSeasonality(d *schema.ResourceDiff) error {
 	signalSeasonalityIsNotNil := !rawConfiguration.GetAttr("signal_seasonality").IsNull()
 
 	if signalSeasonalityIsNotNil {
-		return fmt.Errorf(`'signal_seasonality' is not valid for static conditions. Please remove it or change to baseline condition.`)
+		return fmt.Errorf(`'signal_seasonality' is only valid on baseline conditions. Please remove this field or change the condition type.`)
 	}
 	return nil
 }
