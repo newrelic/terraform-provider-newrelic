@@ -226,61 +226,20 @@ resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_pull" {
   depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
 }
 
+# NOTE: At the time of writing this metric streams not are supported for the following resources:
+# Cloudtrail
+# Health
+# Trusted Advisor
+# AWS X-Ray
+# We will only configure API polling for these unsupported services. 
 resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
   account_id        = var.newrelic_account_id
   linked_account_id = newrelic_cloud_aws_link_account.newrelic_cloud_integration_pull.id
-  billing {}
+
   cloudtrail {}
+  x_ray {}
   health {}
   trusted_advisor {}
-  vpc {}
-  x_ray {}
-  s3 {}
-  doc_db {}
-  sqs {}
-  ebs {}
-  alb {}
-  elasticache {}
-  api_gateway {}
-  auto_scaling {}
-  aws_app_sync {}
-  aws_athena {}
-  aws_cognito {}
-  aws_connect {}
-  aws_direct_connect {}
-  aws_fsx {}
-  aws_glue {}
-  aws_kinesis_analytics {}
-  aws_media_convert {}
-  aws_media_package_vod {}
-  aws_mq {}
-  aws_msk {}
-  aws_neptune {}
-  aws_qldb {}
-  aws_route53resolver {}
-  aws_states {}
-  aws_transit_gateway {}
-  aws_waf {}
-  aws_wafv2 {}
-  cloudfront {}
-  dynamodb {}
-  ec2 {}
-  ecs {}
-  efs {}
-  elasticbeanstalk {}
-  elasticsearch {}
-  elb {}
-  emr {}
-  iam {}
-  iot {}
-  kinesis {}
-  kinesis_firehose {}
-  lambda {}
-  rds {}
-  redshift {}
-  route53 {}
-  ses {}
-  sns {}
 }
 
 resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {
