@@ -240,10 +240,18 @@ resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
   account_id        = var.newrelic_account_id
   linked_account_id = newrelic_cloud_aws_link_account.newrelic_cloud_integration_pull[0].id
 
-  cloudtrail {}
-  x_ray {}
-  health {}
-  trusted_advisor {}
+  cloudtrail {
+    metrics_polling_interval = 300
+  }
+  x_ray {
+    metrics_polling_interval = 60
+  }
+  health {
+    metrics_polling_interval = 300
+  }
+  trusted_advisor {
+    metrics_polling_interval = 3600
+  }
 }
 
 resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {
