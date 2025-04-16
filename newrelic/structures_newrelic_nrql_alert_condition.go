@@ -904,8 +904,7 @@ func validateSignalSeasonality(d *schema.ResourceDiff) error {
 	signalSeasonalityIsNotNil := !rawConfiguration.GetAttr("signal_seasonality").IsNull()
 
 	if signalSeasonalityIsNotNil {
-		return fmt.Errorf(`'signal_seasonality' is only valid on baseline conditions. Please remove this field or change the condition type.`)
+		return fmt.Errorf(`'signal_seasonality' is only valid on baseline conditions. Please remove this field or change the condition type`)
 	}
 	return nil
 }
-
