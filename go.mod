@@ -4,15 +4,12 @@ go 1.22
 
 toolchain go1.22.6
 
-// For pranav-new-relic/akane0915 : please get rid of the following line after the Go Client is released with the required changes
-replace github.com/newrelic/newrelic-client-go/v2 => github.com/akane0915/newrelic-client-go/v2 v2.0.0-20250414222500-8671fd0bd838
-
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.30.0
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go/v2 v2.57.0
+	github.com/newrelic/newrelic-client-go/v2 v2.58.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 )
