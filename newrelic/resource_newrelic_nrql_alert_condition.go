@@ -391,9 +391,9 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				},
 			},
 			"signal_seasonality": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Seasonality under which a condition's signal(s) are evaluated. Valid values are: 'NEW_RELIC_CALCULATION', 'HOURLY', 'DAILY', 'WEEKLY', or 'NONE'. To have New Relic calculate seasonality automatically, set to 'NEW_RELIC_CALCULATION' (default). To turn off seasonality completely, set to 'NONE'.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Seasonality under which a condition's signal(s) are evaluated. Valid values are: 'NEW_RELIC_CALCULATION', 'HOURLY', 'DAILY', 'WEEKLY', or 'NONE'. To have New Relic calculate seasonality automatically, set to 'NEW_RELIC_CALCULATION' (default). To turn off seasonality completely, set to 'NONE'.",
 				ValidateFunc: validation.StringInSlice(
 					[]string{
 						string(alerts.NrqlSignalSeasonalities.NewRelicCalculation),
