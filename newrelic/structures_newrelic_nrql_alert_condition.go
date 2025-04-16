@@ -78,6 +78,10 @@ func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		if attr, ok := d.GetOk("signal_seasonality"); ok {
 			seasonality := alerts.NrqlSignalSeasonality(strings.ToUpper(attr.(string)))
 			input.SignalSeasonality = &seasonality
+		} else {
+			// Null is equivalent to the default value of `NEW_RELIC_CALCULATION` in the API
+			seasonality := alerts.NrqlSignalSeasonalities.NewRelicCalculation
+			input.SignalSeasonality = &seasonality
 		}
 	}
 
@@ -144,6 +148,11 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 	if conditionType == "baseline" {
 		if attr, ok := d.GetOk("signal_seasonality"); ok {
 			seasonality := alerts.NrqlSignalSeasonality(strings.ToUpper(attr.(string)))
+			input.SignalSeasonality = &seasonality
+		} else {
+			// Null is equivalent to the default value of `NEW_RELIC_CALCULATION` in the API
+			// so this effectively allows the user to null out the signal seasonality on update
+			seasonality := alerts.NrqlSignalSeasonalities.NewRelicCalculation
 			input.SignalSeasonality = &seasonality
 		}
 	}

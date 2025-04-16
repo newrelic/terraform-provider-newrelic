@@ -394,10 +394,19 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Seasonality under which a condition's signal(s) are evaluated. Valid values are: 'NEW_RELIC_CALCULATION', 'HOURLY', 'DAILY', 'WEEKLY', or 'NONE'. To have New Relic calculate seasonality automatically, set to 'NEW_RELIC_CALCULATION' (default). To turn off seasonality completely, set to 'NONE'.",
-				ValidateFunc: validation.StringInSlice([]string{"NEW_RELIC_CALCULATION", "HOURLY", "DAILY", "WEEKLY", "NONE"}, true),
+				ValidateFunc: validation.StringInSlice(
+					[]string{
+						string(alerts.NrqlSignalSeasonalities.NewRelicCalculation),
+						string(alerts.NrqlSignalSeasonalities.Hourly),
+						string(alerts.NrqlSignalSeasonalities.Daily),
+						string(alerts.NrqlSignalSeasonalities.Weekly),
+						string(alerts.NrqlSignalSeasonalities.None),
+					},
+					true,
+				),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					// If a value is not provided and the condition uses the default value, don't show a diff. Also case insensitive.
-					return (strings.EqualFold(old, "NEW_RELIC_CALCULATION") && new == "") || strings.EqualFold(old, new)
+					return (strings.EqualFold(old, string(alerts.NrqlSignalSeasonalities.NewRelicCalculation)) && new == "") || strings.EqualFold(old, new)
 				},
 			},
 		},

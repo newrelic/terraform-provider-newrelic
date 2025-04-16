@@ -181,7 +181,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
   # baseline type only
   baseline_direction = "upper_only"
-  signal_seasonality = "none"
+  signal_seasonality = "weekly"
 
   nrql {
     query = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName'"
