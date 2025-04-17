@@ -1,6 +1,8 @@
 package newrelic
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -72,6 +74,17 @@ func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		}
 	}
 
+	if conditionType == "baseline" {
+		if attr, ok := d.GetOk("signal_seasonality"); ok {
+			seasonality := alerts.NrqlSignalSeasonality(strings.ToUpper(attr.(string)))
+			input.SignalSeasonality = &seasonality
+		} else {
+			// Null is equivalent to the default value of `NEW_RELIC_CALCULATION` in the API
+			seasonality := alerts.NrqlSignalSeasonalities.NewRelicCalculation
+			input.SignalSeasonality = &seasonality
+		}
+	}
+
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
 		input.RunbookURL = runbookURL.(string)
 	}
@@ -129,6 +142,18 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 			input.BaselineDirection = &direction
 		} else {
 			return nil, fmt.Errorf("attribute `%s` is required for nrql alert conditions of type `%+v`", "baseline_direction", conditionType)
+		}
+	}
+
+	if conditionType == "baseline" {
+		if attr, ok := d.GetOk("signal_seasonality"); ok {
+			seasonality := alerts.NrqlSignalSeasonality(strings.ToUpper(attr.(string)))
+			input.SignalSeasonality = &seasonality
+		} else {
+			// Null is equivalent to the default value of `NEW_RELIC_CALCULATION` in the API
+			// so this effectively allows the user to null out the signal seasonality on update
+			seasonality := alerts.NrqlSignalSeasonalities.NewRelicCalculation
+			input.SignalSeasonality = &seasonality
 		}
 	}
 
@@ -569,6 +594,10 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 
 	if conditionType == "baseline" {
 		_ = d.Set("baseline_direction", string(*condition.BaselineDirection))
+
+		if condition.SignalSeasonality != nil {
+			_ = d.Set("signal_seasonality", string(*condition.SignalSeasonality))
+		}
 	}
 
 	configuredNrql := d.Get("nrql.0").(map[string]interface{})
@@ -849,4 +878,42 @@ func getConfiguredTerms(configTerms []interface{}) []map[string]interface{} {
 	}
 
 	return setTerms
+}
+
+func validateNrqlConditionAttributes(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	var errorsList []error
+
+	_, conditionType := d.GetChange("type")
+	if conditionType != nil {
+		isNotBaselineCondition := !strings.Contains(conditionType.(string), "baseline")
+		if isNotBaselineCondition {
+			err := validateSignalSeasonality(d)
+			if err != nil {
+				errorsList = append(errorsList, err)
+			}
+		}
+	}
+
+	if len(errorsList) == 0 {
+		return nil
+	}
+
+	errorsString := "the following validation errors have been identified with the configuration of the nrql alert condition: \n"
+
+	for index, val := range errorsList {
+		errorsString += fmt.Sprintf("(%d): %s\n", index+1, val)
+	}
+
+	return errors.New(errorsString)
+}
+
+func validateSignalSeasonality(d *schema.ResourceDiff) error {
+	rawConfiguration := d.GetRawConfig()
+
+	signalSeasonalityIsNotNil := !rawConfiguration.GetAttr("signal_seasonality").IsNull()
+
+	if signalSeasonalityIsNotNil {
+		return fmt.Errorf(`'signal_seasonality' is only valid on baseline conditions. Please remove this field or change the condition type`)
+	}
+	return nil
 }
