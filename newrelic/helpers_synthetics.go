@@ -394,6 +394,8 @@ func listValidSyntheticsScriptMonitorTypes() []string {
 }
 
 // TODO: Move to newrelic-client-go
+//
+//nolint:revive
 type SyntheticsPublicLocation string
 
 // TODO: Move to newrelic-client-go
