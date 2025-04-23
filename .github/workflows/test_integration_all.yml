@@ -6,6 +6,11 @@ on:
     branches: [main]
   pull_request:
 
+# cancels an already running job if a new commit has triggered a new run of the job
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-integration:
     # makes sure we run these tests on the PR, but integration test failures do not result in a failure of the job
@@ -18,7 +23,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.22.x
+          go-version: 1.23.x
 
       - name: Add GOBIN to PATH
         run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
