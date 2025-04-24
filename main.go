@@ -1,3 +1,4 @@
+// Package main is the entry point for the New Relic Terraform Provider.
 package main
 
 import (

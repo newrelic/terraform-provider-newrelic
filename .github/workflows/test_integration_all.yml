@@ -1,4 +1,4 @@
-name: Integration Tests
+name: Integration Tests (Run All on PRs)
 
 on:
   workflow_dispatch:
@@ -13,6 +13,11 @@ concurrency:
 
 jobs:
   test-integration:
+    # makes sure we run these tests on the PR, but integration test failures do not result in a failure of the job
+    # the intent of running this GitHub Workflow is to check for integration test failures across all product features,
+    # while the actual integration test failures may be determined by the make test-integration task which is expected
+    # to pick a test suite only based on the files modified in the PR
+    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - name: Install Go
@@ -27,10 +32,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Full git history
-        run: |
-          git fetch --prune --unshallow
-
       - name: Cache deps
         uses: actions/cache@v4
         with:
@@ -39,29 +40,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      # the README of this GitHub Action claims that GitHub self-hosted runners
-      # have yq installed by default: https://github.com/dcarbone/install-yq-action
-      # However, the intent of adding this step is to perform a precautionary check
-      # to make sure yq exists on the runner (or, is installed if not found)
-
-      - name: 'Setup yq (needed for YAML-based tag processing to run integration tests)'
-        uses: dcarbone/install-yq-action@v1.3.1
-
-      - name: 'Check yq'
-        run: |
-          which yq
-          yq --version
-
-      - name: 'Determine files changed on the current branch to pick integration tests'
-        # if you would like to see this list locally, run `bash integration_test_utilities/integration_test_utilities_tag_mapper.sh`
-        if: github.ref != 'refs/heads/main'
-        run: |
-          git diff --name-only origin/main...HEAD | sed 's/^/• /'
-          echo "Integration tests to be run based on the files changed here shall be picked in the following step."
-
       - name: Integration Tests
         if: github.event.pull_request.head.repo.full_name == github.repository
-        run: make test-integration cover-report
+        id: integration-tests
+        continue-on-error: true
+        run: make test-integration-all cover-report
         env:
           NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
           NEW_RELIC_SUBACCOUNT_ID: ${{ secrets.NEW_RELIC_SUBACCOUNT_ID }}
@@ -79,10 +62,8 @@ jobs:
           INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID }}
           INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID }}
           INTEGRATION_TESTING_AZURE_TENANT_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_TENANT_ID }}
-          NEW_RELIC_MS_TEAMS_DESTINATION_SECURITY_CODE: ${{ secrets.NEW_RELIC_MS_TEAMS_DESTINATION_SECURITY_CODE }}
-
-      - name: Report test coverage via Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/coverage.out
+          
+      - name: End workflow
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          exit 0

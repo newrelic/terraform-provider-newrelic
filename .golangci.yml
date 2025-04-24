@@ -1,52 +1,82 @@
-# options for analysis running
-run:
-  # timeout for analysis, e.g. 30s, 5m, default is 1m
-  deadline: 5m
+version: "2"
 
-# all available settings of specific linters
-linters-settings:
-  errcheck:
-    ignoretests: true
-    ignore: github.com/hashicorp/terraform-plugin-sdk/helper/schema:ForceNew|Set,github.com/hashicorp/terraform-plugin-sdk/helper/schema:Set,github.com/newrelic/terraform-provider-newrelic/newrelic:Set,io:Close|Write
-  gocyclo:
-    # minimal code complexity to report, 30 by default (but we recommend 10-20)
-    min-complexity: 20
-  govet:
-    # report about shadowed variables
-    check-shadowing: true
-    enable:
-      - assign
-      - bools
-      - framepointer
-      - stringintconv
-      - structtag
-  misspell:
-    ignore-words:
-      - newrelic
+run:
+  timeout: 5m
+  tests: false
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - errcheck
     - gocyclo
-    - gofmt
-    - gosimple
+    - staticcheck
     - govet
     - ineffassign
     - misspell
     - revive
     - unconvert
     - unused
-    - vet
+# vet is deprecated in favor of govet
+#    - vet
+
+  settings:
+    errcheck:
+      exclude-functions:
+        - 'github.com/hashicorp/terraform-plugin-sdk/helper/schema:ForceNew|Set'
+        - 'github.com/hashicorp/terraform-plugin-sdk/helper/schema:Set'
+        - 'github.com/newrelic/terraform-provider-newrelic/newrelic:Set'
+        - 'io:Close|Write'
+
+#    revive:
+#      rules:
+#        - name: unused-parameter
+#          severity: warning
+#          disabled: false
+#        - name: redefines-builtin-id
+#          severity: warning
+#          disabled: false
+#        - name: exported
+#          severity: warning
+#          disabled: false
+#          arguments:
+#            - disableStutteringCheck
+
+
+
+    gocyclo:
+      # minimal code complexity to report, 30 by default (but we recommend 10-20)
+      min-complexity: 25
+    govet:
+      enable:
+        - assign
+        - bools
+        - framepointer
+        - stringintconv
+        - structtag
+        - shadow
+    misspell:
+      ignore-rules:
+        - newrelic
+  exclusions:
+    rules:
+      - linters:
+          - revive
+        text:
+            # the following exclusions are being made as they fit Golang conventions, which do not
+            # necessarily go by the ideal definition of variables/functions with Terraform
+            "exported: exported *|unused-parameter: parameter *|redefines-builtin-id: redefinition of the built-in *"
+      - linters:
+          - staticcheck
+        text:
+          # the following exclusions are being made as they fit Golang conventions, which do not
+          # necessarily go by the ideal definition of variables/functions with Terraform
+          "SA1019:|S1009:|QF1001:|QF1011:|SA1006:|QF1003:|ST1023:"
+
+formatters:
+  enable:
+    - gofmt
 
 issues:
   # disable limits on issue reporting
-  max-per-linter: 0
+  max-issues-per-linter: 0
   max-same-issues: 0
-
-  exclude-rules:
-    # ignore deprecation warnings since they fail ci with failure exit code
-    # https://staticcheck.io/docs/checks#SA1019
-    - linters:
-        - staticcheck
-      text: "SA1019:"

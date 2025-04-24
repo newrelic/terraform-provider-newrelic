@@ -146,11 +146,10 @@ func dataSourceNewRelicEntityRead(ctx context.Context, d *schema.ResourceData, m
 		if strings.Compare(str, name) == 0 || (ignoreCase && strings.EqualFold(str, name)) {
 			if e.GetAccountID() != accountID {
 				continue
-			} else {
-				entity = &e
-				break
 			}
-
+			// outdented else, since the if ends in a continue - modified as per linter suggestion
+			entity = &e
+			break
 		}
 	}
 
