@@ -312,14 +312,17 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 			"monitor_id": e.MonitorId,
 		})
 
+		syntheticMonitorTags := e.Tags
+
 		_ = d.Set("period_in_minutes", e.GetPeriod())
+		_ = d.Set("locations_public", getPublicLocationsFromEntityTags(syntheticMonitorTags))
 
 		if err != nil {
 			diag.FromErr(err)
 		}
 
 		if e.MonitorType == entities.SyntheticMonitorTypeTypes.BROWSER {
-			for _, t := range e.Tags {
+			for _, t := range syntheticMonitorTags {
 				if k, ok := syntheticsMonitorTagKeyToSchemaAttrMap[t.Key]; ok {
 					if len(t.Values) == 1 {
 						_ = d.Set(k, t.Values[0])
@@ -328,7 +331,7 @@ func setCommonSyntheticsMonitorAttributes(v *entities.EntityInterface, d *schema
 			}
 		}
 
-		for _, t := range e.Tags {
+		for _, t := range syntheticMonitorTags {
 			if t.Key == "responseValidationText" {
 				if len(t.Values) == 1 {
 					_ = d.Set("validation_string", t.Values[0])

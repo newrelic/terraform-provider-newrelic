@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -107,6 +108,9 @@ func testAccCheckNewRelicSyntheticsAlertConditionExists(n string) resource.TestC
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
+		time.Sleep(60 * time.Second)
 
 		ids, err := parseIDs(rs.Primary.ID, 2)
 		if err != nil {
