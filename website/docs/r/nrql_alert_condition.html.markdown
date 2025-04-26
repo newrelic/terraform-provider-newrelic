@@ -99,6 +99,7 @@ The following arguments are supported:
 - `aggregation_timer` - (Optional) How long we wait after each data point arrives to make sure we've processed the whole batch. Use `aggregation_timer` with the `event_timer` method. The timer value can range from 0 seconds to 1200 seconds (20 minutes); the default is 60 seconds. `aggregation_timer` cannot be set with `nrql.evaluation_offset`.
 - `evaluation_delay` - (Optional) How long we wait until the signal starts evaluating. The maximum delay is 7200 seconds (120 minutes).
 - `slide_by` - (Optional) Gathers data in overlapping time windows to smooth the chart line, making it easier to spot trends. The `slide_by` value is specified in seconds and must be smaller than and a factor of the `aggregation_window`.
+- `signal_seasonality` - (Optional) Seasonality under which a condition's signal(s) are evaluated. Only available for baseline conditions. Valid values are: `NEW_RELIC_CALCULATION`, `HOURLY`, `DAILY`, `WEEKLY`, or `NONE`. To have New Relic calculate seasonality automatically, set to `NEW_RELIC_CALCULATION`. To turn off seasonality completely, set to `NONE`.
 
 ## NRQL
 
@@ -180,6 +181,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
   # baseline type only
   baseline_direction = "upper_only"
+  signal_seasonality = "weekly"
 
   nrql {
     query = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName'"

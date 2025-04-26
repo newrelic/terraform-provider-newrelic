@@ -1,4 +1,5 @@
-//go:build integration
+//go:build integration || SYNTHETICS
+// +build integration SYNTHETICS
 
 package newrelic
 
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 )
 
 func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
@@ -127,6 +129,10 @@ func testAccNewRelicSyntheticsCertCheckMonitorExists(name string) resource.TestC
 		}
 		if string((*result).GetGUID()) != rs.Primary.ID {
 			return fmt.Errorf("the monitor is not found %v - %v", (*result).GetGUID(), rs.Primary.ID)
+		}
+
+		if rs.Primary.Attributes["monitor_id"] != string((*result).(*entities.SyntheticMonitorEntity).MonitorId) {
+			return fmt.Errorf("the monitor id doesnot match, expected: %v", rs.Primary.Attributes["monitor_id"])
 		}
 
 		if rs.Primary.Attributes["runtime_type"] != "" && rs.Primary.Attributes["runtime_type_version"] != "" {

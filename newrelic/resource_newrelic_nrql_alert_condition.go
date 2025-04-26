@@ -127,6 +127,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceImportStateWithMetadata(2, "type"),
 		},
+		CustomizeDiff: validateNrqlConditionAttributes,
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
 				Type:        schema.TypeInt,
@@ -387,6 +388,25 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"LOWER_ONLY", "UPPER_AND_LOWER", "UPPER_ONLY"}, true),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
+				},
+			},
+			"signal_seasonality": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Seasonality under which a condition's signal(s) are evaluated. Valid values are: 'NEW_RELIC_CALCULATION', 'HOURLY', 'DAILY', 'WEEKLY', or 'NONE'. To have New Relic calculate seasonality automatically, set to 'NEW_RELIC_CALCULATION' (default). To turn off seasonality completely, set to 'NONE'.",
+				ValidateFunc: validation.StringInSlice(
+					[]string{
+						string(alerts.NrqlSignalSeasonalities.NewRelicCalculation),
+						string(alerts.NrqlSignalSeasonalities.Hourly),
+						string(alerts.NrqlSignalSeasonalities.Daily),
+						string(alerts.NrqlSignalSeasonalities.Weekly),
+						string(alerts.NrqlSignalSeasonalities.None),
+					},
+					true,
+				),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// If a value is not provided and the condition uses the default value, don't show a diff. Also case insensitive.
+					return (strings.EqualFold(old, string(alerts.NrqlSignalSeasonalities.NewRelicCalculation)) && new == "") || strings.EqualFold(old, new)
 				},
 			},
 		},

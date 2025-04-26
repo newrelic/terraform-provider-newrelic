@@ -29,6 +29,11 @@ func syntheticsMonitorCommonSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The unique entity identifier of the monitor in New Relic.",
 		},
+		"monitor_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ID of the monitor",
+		},
 		"name": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -389,6 +394,8 @@ func listValidSyntheticsScriptMonitorTypes() []string {
 }
 
 // TODO: Move to newrelic-client-go
+//
+//nolint:revive
 type SyntheticsPublicLocation string
 
 // TODO: Move to newrelic-client-go

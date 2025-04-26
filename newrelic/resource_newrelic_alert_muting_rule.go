@@ -3,10 +3,11 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
 	"log"
 	"regexp"
 	"time"
+
+	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"

@@ -194,13 +194,30 @@ client version you want to be using as well.
 To keep a style and allow us to automate the generating of a change log, we
 require that that commit messages adhere to a standard.
 
-TL;DR The commit message must match this regular expression.
+## Commit Message Format
 
+All commits must follow [Conventional Commits](https://www.conventionalcommits.org/) standards.  
+Use the following format:  
+`<type>(<scope>): <description>`
 
-  (chore|docs|feat|fix|refactor|tests?)(\([^\)]+\))?: .*
+**Allowed commit types**:
 
+- **feat**: New feature for end users (*not* build scripts)
+- **fix**: Bug fix for end users
+- **perf**: Performance improvements
+- **docs**: Documentation changes
+- **style**: Code formatting, semicolons, etc.
+- **refactor**: Code restructuring without changing behavior
+- **test**: Test-related changes (no production code)
+- **build**: Build system/config changes
+- **chore**: Maintenance tasks (e.g., dependency updates)
 
-For more information on commit messages, we mostly follow [this standard][conventional_commits].
+Example of valid commit messages:
+```
+git commit -m "feat(auth): add OAuth2 login support"
+git commit -m "docs(readme): update installation instructions"
+```
+Please make sure your commit messages follow the conventional format. The linter will check your messages before allowing the commit.
 
 [api_explorer]: https://rpm.newrelic.com/api/explore/
 

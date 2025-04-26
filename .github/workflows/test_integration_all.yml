@@ -1,0 +1,69 @@
+name: Integration Tests (Run All on PRs)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+# cancels an already running job if a new commit has triggered a new run of the job
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-integration:
+    # makes sure we run these tests on the PR, but integration test failures do not result in a failure of the job
+    # the intent of running this GitHub Workflow is to check for integration test failures across all product features,
+    # while the actual integration test failures may be determined by the make test-integration task which is expected
+    # to pick a test suite only based on the files modified in the PR
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.x
+
+      - name: Add GOBIN to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache deps
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Integration Tests
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        id: integration-tests
+        continue-on-error: true
+        run: make test-integration-all cover-report
+        env:
+          NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+          NEW_RELIC_SUBACCOUNT_ID: ${{ secrets.NEW_RELIC_SUBACCOUNT_ID }}
+          NEW_RELIC_ADMIN_API_KEY: ${{ secrets.NEW_RELIC_ADMIN_API_KEY }}
+          NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
+          NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+          NEW_RELIC_REGION: ${{ secrets.NEW_RELIC_REGION }}
+          NEW_RELIC_INSIGHTS_INSERT_KEY: ${{ secrets.NEW_RELIC_INSIGHTS_INSERT_KEY }}
+          NR_ACC_TESTING: ${{ secrets.NR_ACC_TESTING }}
+          INTEGRATION_TESTING_AWS_ARN: ${{ secrets.INTEGRATION_TESTING_AWS_ARN }}
+          INTEGRATION_TESTING_GCP_ACCOUNT_NAME: ${{ secrets.INTEGRATION_TESTING_GCP_ACCOUNT_NAME }}
+          INTEGRATION_TESTING_GCP_PROJECT_ID: ${{ secrets.INTEGRATION_TESTING_GCP_PROJECT_ID }}
+          INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID: ${{secrets.INTEGRATION_TESTING_GCP_INTEGRATIONS_PROJECT_ID}}
+          INTEGRATION_TESTING_AZURE_APPLICATION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_APPLICATION_ID }}
+          INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID }}
+          INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID }}
+          INTEGRATION_TESTING_AZURE_TENANT_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_TENANT_ID }}
+          
+      - name: End workflow
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          exit 0

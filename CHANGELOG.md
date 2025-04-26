@@ -1,3 +1,28 @@
+<a name="v3.61.0"></a>
+## [v3.61.0] - 2025-04-17
+### Features
+- **alerts:** adds support for `signal_seasonality` for NRQL baseline conditions ([#2844](https://github.com/newrelic/terraform-provider-newrelic/issues/2844))
+
+<a name="v3.60.2"></a>
+## [v3.60.2] - 2025-04-14
+### Bug Fixes
+- **alerts:** upgrade to client 2.57.0 to revert signal seasonality client reference ([#2857](https://github.com/newrelic/terraform-provider-newrelic/issues/2857))
+
+<a name="v3.60.1"></a>
+## [v3.60.1] - 2025-04-14
+### Bug Fixes
+- add changelog to be populated in release notes ([#2848](https://github.com/newrelic/terraform-provider-newrelic/issues/2848))
+- **build:** revamp integration test framework via selective product capability tag based run processes ([#2821](https://github.com/newrelic/terraform-provider-newrelic/issues/2821))
+- **build:** added a token for code coverage reports ([#2843](https://github.com/newrelic/terraform-provider-newrelic/issues/2843))
+- **scripts:** addition of new commit linter and restrictions on commit messages via workflows ([#2840](https://github.com/newrelic/terraform-provider-newrelic/issues/2840))
+- **synthetics:** export monitor ID in all synthetic monitor resources ([#2854](https://github.com/newrelic/terraform-provider-newrelic/issues/2854))
+- **test:** refine integration test utilities cap mapper shell script ([#2849](https://github.com/newrelic/terraform-provider-newrelic/issues/2849))
+
+<a name="v3.60.0"></a>
+## [v3.60.0] - 2025-03-28
+### Features
+- support ms teams destination ([#2842](https://github.com/newrelic/terraform-provider-newrelic/issues/2842))
+
 <a name="v3.59.0"></a>
 ## [v3.59.0] - 2025-03-20
 ### Bug Fixes
@@ -2338,7 +2363,11 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.59.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.0...HEAD
+[v3.61.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.60.2...v3.61.0
+[v3.60.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.60.1...v3.60.2
+[v3.60.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.60.0...v3.60.1
+[v3.60.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.59.0...v3.60.0
 [v3.59.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.58.1...v3.59.0
 [v3.58.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.58.0...v3.58.1
 [v3.58.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.57.2...v3.58.0
