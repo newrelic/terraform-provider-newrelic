@@ -9,7 +9,7 @@ description: |-
 # Resource: newrelic\_one\_dashboard
 
 -> **IMPORTANT!**
-When configuring the `newrelic_one_dashboard` resource, it is important to understand that the order of widgets plays a critical role in maintaining the stability and accuracy of your dashboard setup. If the specified order is not adhered to, it can lead to resource drift, which might result in discrepancies between the intended setup and the actual deployed dashboard.
+When configuring the `newrelic_one_dashboard` resource, it is important to understand that widgets should ideally be sorted by row and column order to maintain the stability and accuracy of your dashboard setup. If this specified order is not adhered to, it can lead to resource drift, which might result in discrepancies between the intended setup and the actual deployed dashboard.
 
 ## Example Usage: Create a New Relic One Dashboard
 
