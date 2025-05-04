@@ -1,0 +1,114 @@
+{
+  "description": "The Dashboard",
+  "name": "Dashboard",
+  "pages": [
+    {
+      "description": "Overview",
+      "name": "Overview",
+      "widgets": [
+        {
+          "layout": {
+            "column": 1,
+            "height": 3,
+            "row": 1,
+            "width": 6
+          },
+          "linkedEntityGuids": null,
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  123
+                ],
+                "query": "SELECT foo FROM Metric TIMESERIES"
+              },
+              {
+                "accountIds": [
+                  123
+                ],
+                "query": "SELECT bar FROM Metric TIMESERIES"
+              }
+            ]
+          },
+          "title": "title",
+          "visualization": {
+            "id": "viz.table"
+          }
+        },
+        {
+          "layout": {
+            "column": 7,
+            "height": 3,
+            "row": 1,
+            "width": 6
+          },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  123
+                ],
+                "query": "SELECT foo FROM Metric TIMESERIES"
+              },
+              {
+                "accountIds": [
+                  123
+                ],
+                "query": "SELECT bar FROM Metric TIMESERIES"
+              }
+            ]
+          },
+          "title": "Other Title",
+          "visualization": {
+            "id": "viz.table"
+          }
+        }
+      ]
+    }
+  ],
+  "permissions": "PUBLIC_READ_WRITE",
+  "variables": [
+    {
+      "defaultValues": [
+        {
+          "value": {
+            "string": "*"
+          }
+        }
+      ],
+      "isMultiSelection": true,
+      "items": null,
+      "name": "env",
+      "nrqlQuery": {
+        "accountIds": [
+          123
+        ],
+        "query": "SELECT uniques(`deployment.environment`) FROM Metric"
+      },
+      "replacementStrategy": "DEFAULT",
+      "title": null,
+      "type": "NRQL"
+    },
+    {
+      "defaultValues": [
+        {
+          "value": {
+            "string": "*"
+          }
+        }
+      ],
+      "isMultiSelection": true,
+      "items": null,
+      "name": "sync_env",
+      "nrqlQuery": {
+        "accountIds": [
+          123
+        ],
+        "query": "SELECT uniques(`sync_env`) FROM Metric"
+      },
+      "replacementStrategy": "DEFAULT",
+      "title": null,
+      "type": "NRQL"
+    }
+  ]
+}
