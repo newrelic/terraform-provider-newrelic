@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -66,6 +67,9 @@ func testAccCheckNewRelicSyntheticsMultiLocationAlertConditionExists(n string) r
 	return func(s *terraform.State) error {
 		providerConfig := testAccProvider.Meta().(*ProviderConfig)
 		client := providerConfig.NewClient
+
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
+		time.Sleep(60 * time.Second)
 
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
