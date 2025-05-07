@@ -20,6 +20,7 @@ var (
 	testThresholdLow                 = 1.0
 	testThresholdHigh                = 10.9
 	testDisableHealthStatusReporting = true
+	falseDisableHealthStatusReporting = false
 )
 
 func TestExpandNrqlAlertConditionInput(t *testing.T) {
@@ -104,6 +105,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 						ThresholdDuration:    600,
 						Operator:             alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE,
 						Priority:             alerts.NrqlConditionPriorities.Critical,
+						DisableHealthStatusReporting: &falseDisableHealthStatusReporting,
 					},
 				}
 
@@ -128,6 +130,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 						ThresholdDuration:    600,
 						Operator:             alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE,
 						Priority:             alerts.NrqlConditionPriorities.Critical,
+						DisableHealthStatusReporting: &falseDisableHealthStatusReporting,
 					},
 					{
 						Threshold:            &testThresholdHigh,
@@ -135,6 +138,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 						ThresholdDuration:    660,
 						Operator:             alerts.AlertsNRQLConditionTermsOperatorTypes.BELOW,
 						Priority:             alerts.NrqlConditionPriorities.Warning,
+						DisableHealthStatusReporting: &falseDisableHealthStatusReporting,
 					},
 				}
 
