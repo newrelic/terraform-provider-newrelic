@@ -1,5 +1,5 @@
-//go:build integration
-// +build integration
+//go:build integration || CLOUD
+// +build integration CLOUD
 
 package newrelic
 
@@ -16,7 +16,7 @@ import (
 )
 
 func TestAccNewRelicCloudGcpIntegrations_Basic(t *testing.T) {
-	//t.Skipf("Skipping test until environment variables are added")
+	t.Skipf("Skipping test until GCP Environment Variables are fixed")
 	resourceName := "newrelic_cloud_gcp_integrations.foo1"
 	testGCPIntegrationName := fmt.Sprintf("tf_cloud_integrations_test_gcp_%s", acctest.RandString(5))
 

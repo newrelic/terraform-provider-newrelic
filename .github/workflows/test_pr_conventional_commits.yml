@@ -1,0 +1,129 @@
+name: PR Commits Conventional Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  # THIS IS SUPPOSED TO GO BEFORE validate-commits
+  # commenting this for now as this needs rework
+
+  #  check-merge-commits:
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - uses: actions/checkout@v3
+  #        with:
+  #          fetch-depth: 0
+  #          token: ${{ secrets.GITHUB_TOKEN }}
+  #
+  #      - name: Check and Fix Merge Commits
+  #        id: check_merge_commits
+  #        run: |
+  #          # Get the PR branch and base branch
+  #          PR_BRANCH="${{ github.event.pull_request.head.ref }}"
+  #          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+  #
+  #          # Get all merge commits in the PR
+  #
+  #          git config --global user.name ${{ secrets.NEW_RELIC_GITHUB_SERVICE_ACCOUNT_USERNAME }}
+  #          git config --global user.email ${{ secrets.NEW_RELIC_GITHUB_SERVICE_ACCOUNT_EMAIL }}
+  #
+  #          git fetch origin $PR_BRANCH
+  #          git fetch origin $BASE_BRANCH
+  #
+  #          MERGE_COMMITS=$(git log --merges "origin/$BASE_BRANCH..origin/$PR_BRANCH" --format="%H")
+  #
+  #          if [ ! -z "$MERGE_COMMITS" ]; then
+  #            echo "Found merge commits in PR, converting to conventional commits..."
+  #
+  #            for commit in $MERGE_COMMITS; do
+  #              # Get the merge commit message
+  #              echo "Processing commit: $commit"
+  #              MERGE_MSG=$(git log -1 --format="%B" $commit)
+  #
+  #              # Extract meaningful information from merge commit
+  #              TITLE=$(echo "$MERGE_MSG" | head -n 1)
+  #              echo "$commit current title: $TITLE"
+  #
+  #              # Create conventional commit format
+  #              # Default to 'chore' type if cannot determine
+  #              NEW_MSG="chore: $TITLE"
+  #              echo "$commit new title: $NEW_MSG"
+  #
+  #              # Amend the commit with new message
+  #              echo "Amending commit: $commit"
+  #              git checkout $commit
+  #              echo "$commit: checked out"
+  #              git commit --amend -m "$NEW_MSG" --no-edit
+  #              echo "$commit: amended"
+  #            done
+  #
+  #            # Push the changes back to the PR branch
+  #            # very risky, but just want to give this a try
+  #            git push origin HEAD:$PR_BRANCH -f
+  #            echo "$commit: force pushed with the new title '$NEW_MSG'"
+  #          fi
+
+  validate-commits:
+    #    needs: check-merge-commits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get commits
+        id: get-commits
+        run: |
+          # Get the base and head SHAs
+          base_sha=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          head_sha=${{ github.event.pull_request.head.sha }}
+
+          # Store invalid commits in a variable
+          invalid_commits=""
+
+          # Check each commit
+          while read -r commit; do
+            commit_msg=$(git log -1 --format=%B "$commit")
+            # Conventional commit regex pattern
+            if ! echo "$commit_msg" | grep -qP '^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9-]+\))?: .+$'; then
+              commit_info="$(git log -1 --format='%H - %s' $commit)"
+              invalid_commits="- $invalid_commits\n$commit_info"
+            fi
+          done < <(git rev-list $base_sha..$head_sha)
+
+          # Set output
+          if [ ! -z "$invalid_commits" ]; then
+            echo "invalid_commits<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$invalid_commits" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "has_invalid=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_invalid=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Comment PR
+        if: steps.get-commits.outputs.has_invalid == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const invalidCommits = `${{ steps.get-commits.outputs.invalid_commits }}`;
+            const message = `### ❌ Invalid Conventional Commits Detected
+
+            The following commits do not follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
+
+            ${invalidCommits}
+
+
+            Please update these commit messages to follow the format:
+            \`<type>[optional scope]: <description>\`
+
+            Valid types: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+            core.setFailed('Some commits do not follow conventional commit format');

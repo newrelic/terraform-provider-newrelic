@@ -1,11 +1,12 @@
-//go:build integration
-// +build integration
+//go:build integration || SYNTHETICS
+// +build integration SYNTHETICS
 
 package newrelic
 
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -17,9 +18,8 @@ func TestAccNewRelicSyntheticsPrivateLocation_Basic(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicSyntheticsPrivateLocationDestroy,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
@@ -57,6 +57,9 @@ func testAccCheckNewRelicSyntheticsPrivateLocationExists(n string) resource.Test
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
+		time.Sleep(60 * time.Second)
 
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {

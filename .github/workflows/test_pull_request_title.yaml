@@ -1,0 +1,16 @@
+name: Pull Request Title Conventional Check
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+env:
+  GO_VERSION: 1.23.x
+jobs:
+  test:
+    name: Pull Request Title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Go pull request message linter
+        uses: masahiro331/go-commitlinter@0.1.1
+        env:
+          TITLE: ${{ github.event.pull_request.title }}

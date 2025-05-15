@@ -6,6 +6,11 @@ on:
     branches: [main]
   pull_request:
 
+# cancels an already running job if a new commit has triggered a new run of the job
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-integration:
     runs-on: ubuntu-latest
@@ -13,7 +18,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.22.x
+          go-version: 1.23.x
 
       - name: Add GOBIN to PATH
         run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
@@ -22,6 +27,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Full git history
+        run: |
+          git fetch --prune --unshallow
+
       - name: Cache deps
         uses: actions/cache@v4
         with:
@@ -29,6 +38,26 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+
+      # the README of this GitHub Action claims that GitHub self-hosted runners
+      # have yq installed by default: https://github.com/dcarbone/install-yq-action
+      # However, the intent of adding this step is to perform a precautionary check
+      # to make sure yq exists on the runner (or, is installed if not found)
+
+      - name: 'Setup yq (needed for YAML-based tag processing to run integration tests)'
+        uses: dcarbone/install-yq-action@v1.3.1
+
+      - name: 'Check yq'
+        run: |
+          which yq
+          yq --version
+
+      - name: 'Determine files changed on the current branch to pick integration tests'
+        # if you would like to see this list locally, run `bash integration_test_utilities/integration_test_utilities_tag_mapper.sh`
+        if: github.ref != 'refs/heads/main'
+        run: |
+          git diff --name-only origin/main...HEAD | sed 's/^/• /'
+          echo "Integration tests to be run based on the files changed here shall be picked in the following step."
 
       - name: Integration Tests
         if: github.event.pull_request.head.repo.full_name == github.repository
@@ -50,8 +79,10 @@ jobs:
           INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_CLIENT_SECRET_ID }}
           INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_SUBSCRIPTION_ID }}
           INTEGRATION_TESTING_AZURE_TENANT_ID: ${{ secrets.INTEGRATION_TESTING_AZURE_TENANT_ID }}
+          NEW_RELIC_MS_TEAMS_DESTINATION_SECURITY_CODE: ${{ secrets.NEW_RELIC_MS_TEAMS_DESTINATION_SECURITY_CODE }}
 
       - name: Report test coverage via Codecov
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/coverage.out

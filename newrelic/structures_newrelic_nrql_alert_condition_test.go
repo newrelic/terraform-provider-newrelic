@@ -51,6 +51,8 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 
 	titleTemplate := "Title {{template}}"
 
+	signalSeasonality := alerts.NrqlSignalSeasonalities.Daily
+
 	cases := map[string]struct {
 		Data         map[string]interface{}
 		ExpectErr    bool
@@ -398,6 +400,25 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				},
 			},
 		},
+		"signal seasonality not nil": {
+			Data: map[string]interface{}{
+				"nrql":               []interface{}{nrql},
+				"signal_seasonality": "daily",
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
+				SignalSeasonality:       &signalSeasonality,
+			},
+		},
+		"signal seasonality nil": {
+			Data: map[string]interface{}{
+				"nrql":               []interface{}{nrql},
+				"signal_seasonality": nil,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
+			},
+		},
 	}
 
 	r := resourceNewRelicNrqlAlertCondition()
@@ -606,6 +627,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	nrqlConditionBaseline.Type = alerts.NrqlConditionTypes.Baseline
 	nrqlConditionBaseline.BaselineDirection = &alerts.NrqlBaselineDirections.LowerOnly
 	nrqlConditionBaseline.EntityGUID = common.EntityGUID("NDAwMzA0fEFPTkRJVElPTnwxNDMzNjc3")
+	nrqlConditionBaseline.SignalSeasonality = &alerts.NrqlSignalSeasonalities.Daily
 
 	// Static
 	nrqlConditionStatic := nrqlCondition
@@ -673,6 +695,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		switch condition.Type {
 		case alerts.NrqlConditionTypes.Baseline:
 			require.Equal(t, string(alerts.NrqlBaselineDirections.LowerOnly), d.Get("baseline_direction").(string))
+			require.Equal(t, string(alerts.NrqlSignalSeasonalities.Daily), d.Get("signal_seasonality").(string))
 			require.Equal(t, 120, d.Get("expiration_duration").(int))
 			require.True(t, d.Get("open_violation_on_expiration").(bool))
 			require.True(t, d.Get("close_violations_on_expiration").(bool))

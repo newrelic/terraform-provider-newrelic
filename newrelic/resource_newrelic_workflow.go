@@ -583,6 +583,7 @@ func listValidWorkflowsDestinationTypes() []string {
 		string(workflows.AiWorkflowsDestinationTypeTypes.MOBILE_PUSH),
 		string(workflows.AiWorkflowsDestinationTypeTypes.SLACK),
 		string(workflows.AiWorkflowsDestinationTypeTypes.JIRA),
+		string(workflows.AiWorkflowsDestinationTypeTypes.MICROSOFT_TEAMS),
 	}
 }
 
