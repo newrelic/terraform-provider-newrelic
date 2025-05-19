@@ -63,7 +63,7 @@ func TestAccNewRelicAgentApplicationBrowser_InvalidLoaderType(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccBrowserApplicationsCleanup(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
+		CheckDestroy: testAccCheckNewRelicBrowserApplicationResourceDestroy,
 		Steps: []resource.TestStep{
 			// Create with invalid loader type. Expect an error.
 			{
