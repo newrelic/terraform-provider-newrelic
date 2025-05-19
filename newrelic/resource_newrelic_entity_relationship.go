@@ -51,25 +51,25 @@ func resourceNewRelicEntityRelationshipCreateOrUpdate(ctx context.Context, d *sc
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	sourceEntityGuid := common.EntityGUID(d.Get("source_entity_guid").(string))
-	targetEntityGuid := common.EntityGUID(d.Get("target_entity_guid").(string))
+	sourceEntityGUID := common.EntityGUID(d.Get("source_entity_guid").(string))
+	targetEntityGUID := common.EntityGUID(d.Get("target_entity_guid").(string))
 	relationType := d.Get("relation_type").(string)
 
-	log.Printf("[INFO] Creating Entity Relationship between source entity with GUID %+v and target entity with guid %+v having relation type as %+v", sourceEntityGuid, targetEntityGuid, relationType)
+	log.Printf("[INFO] Creating Entity Relationship between source entity with GUID %+v and target entity with guid %+v having relation type as %+v", sourceEntityGUID, targetEntityGUID, relationType)
 
-	_, err := client.EntityRelationship.EntityRelationshipUserDefinedCreateOrReplace(sourceEntityGuid, targetEntityGuid, entityrelationship.EntityRelationshipEdgeType(relationType))
+	_, err := client.EntityRelationship.EntityRelationshipUserDefinedCreateOrReplace(sourceEntityGUID, targetEntityGUID, entityrelationship.EntityRelationshipEdgeType(relationType))
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	id := fmt.Sprintf("%s:%s", sourceEntityGuid, targetEntityGuid)
+	id := fmt.Sprintf("%s:%s", sourceEntityGUID, targetEntityGUID)
 
 	d.SetId(id)
-	if err = d.Set("source_entity_guid", sourceEntityGuid); err != nil {
+	if err = d.Set("source_entity_guid", sourceEntityGUID); err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("target_entity_guid", targetEntityGuid); err != nil {
+	if err = d.Set("target_entity_guid", targetEntityGUID); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("relation_type", relationType); err != nil {
@@ -135,11 +135,11 @@ func resourceNewRelicEntityRelationshipDelete(ctx context.Context, d *schema.Res
 
 	log.Printf("[INFO] Deleting New Relic entity relationship for entity guid %s", d.Id())
 
-	sourceEntityGuid := common.EntityGUID(d.Get("source_entity_guid").(string))
-	targetEntityGuid := common.EntityGUID(d.Get("target_entity_guid").(string))
+	sourceEntityGUID := common.EntityGUID(d.Get("source_entity_guid").(string))
+	targetEntityGUID := common.EntityGUID(d.Get("target_entity_guid").(string))
 	relationType := d.Get("relation_type").(string)
 
-	_, err := client.EntityRelationship.EntityRelationshipUserDefinedDelete(sourceEntityGuid, targetEntityGuid, entityrelationship.EntityRelationshipEdgeType(relationType))
+	_, err := client.EntityRelationship.EntityRelationshipUserDefinedDelete(sourceEntityGUID, targetEntityGUID, entityrelationship.EntityRelationshipEdgeType(relationType))
 
 	if err != nil {
 		return diag.FromErr(err)
