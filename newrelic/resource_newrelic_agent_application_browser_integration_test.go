@@ -29,7 +29,7 @@ func TestAccNewRelicAgentApplicationBrowser(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccBrowserApplicationsCleanup(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
+		CheckDestroy: testAccCheckNewRelicBrowserApplicationResourceDestroy,
 		Steps: []resource.TestStep{
 			// Create
 			{
@@ -146,4 +146,23 @@ func testAccNewRelicAgentApplicationBrowserConfig(accountID int, name string, lo
 		  loader_type                 = "%[3]s"
 		}
 `, accountID, name, loaderType)
+}
+
+func testAccCheckNewRelicBrowserApplicationResourceDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+	for _, r := range s.RootModule().Resources {
+		if r.Type != "newrelic_browser_application" {
+			continue
+		}
+
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
+		time.Sleep(60 * time.Second)
+
+		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
+		if (*found) != nil {
+			return fmt.Errorf("Browser application still exists")
+		}
+	}
+	return nil
 }
