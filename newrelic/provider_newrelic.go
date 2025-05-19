@@ -157,6 +157,7 @@ func Provider() *schema.Provider {
 			"newrelic_cloud_gcp_integrations":                   resourceNewrelicCloudGcpIntegrations(),
 			"newrelic_cloud_gcp_link_account":                   resourceNewRelicCloudGcpLinkAccount(),
 			"newrelic_data_partition_rule":                      resourceNewRelicDataPartition(),
+			"newrelic_entity_relationship":                      resourceNewRelicEntityRelationship(),
 			"newrelic_entity_tags":                              resourceNewRelicEntityTags(),
 			"newrelic_events_to_metrics_rule":                   resourceNewRelicEventsToMetricsRule(),
 			"newrelic_group":                                    resourceNewRelicGroup(),
