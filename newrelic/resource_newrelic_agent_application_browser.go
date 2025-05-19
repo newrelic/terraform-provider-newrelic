@@ -159,11 +159,13 @@ func resourceNewRelicBrowserApplicationUpdate(ctx context.Context, d *schema.Res
 	client := providerConfig.NewClient
 
 	cookiesEnabled := d.Get("cookies_enabled").(bool)
+	loaderType := agentapplications.AgentApplicationSettingsBrowserLoaderInput(strings.ToUpper(d.Get("loader_type").(string)))
 	settingsInput := agentapplications.AgentApplicationSettingsUpdateInput{
 		BrowserMonitoring: &agentapplications.AgentApplicationSettingsBrowserMonitoringInput{
 			DistributedTracing: &agentapplications.AgentApplicationSettingsBrowserDistributedTracingInput{
 				Enabled: d.Get("distributed_tracing_enabled").(bool),
 			},
+			Loader: &loaderType,
 			Privacy: &agentapplications.AgentApplicationSettingsBrowserPrivacyInput{
 				CookiesEnabled: &cookiesEnabled,
 			},
