@@ -111,11 +111,13 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 			},
 			"runtime_type": {
 				Type:        schema.TypeString,
+				Computed:    true,
 				Optional:    true,
 				Description: "The runtime type that the monitor will run",
 			},
 			"runtime_type_version": {
 				Type:        schema.TypeString,
+				Computed:    true,
 				Optional:    true,
 				Description: "The specific version of the runtime type selected",
 			},
@@ -210,9 +212,6 @@ func resourceNewRelicSyntheticsMonitorCreate(ctx context.Context, d *schema.Reso
 		resp, err = client.Synthetics.SyntheticsCreateSimpleMonitorWithContext(ctx, accountID, simpleMonitorInput)
 	case string(SyntheticsMonitorTypes.BROWSER):
 		simpleBrowserMonitorInput, browserMonitorErr := buildSyntheticsSimpleBrowserMonitor(d)
-		log.Println("Check input for runtime")
-		log.Printf("runtime: %s\n", string(simpleBrowserMonitorInput.Runtime.RuntimeType))
-		log.Printf("runtime-type: %s", string(simpleBrowserMonitorInput.Runtime.ScriptLanguage))
 		if browserMonitorErr != nil {
 			return diag.FromErr(browserMonitorErr)
 		}
