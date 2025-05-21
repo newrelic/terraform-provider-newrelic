@@ -111,11 +111,13 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 			},
 			"runtime_type": {
 				Type:        schema.TypeString,
+				Computed:    true,
 				Optional:    true,
 				Description: "The runtime type that the monitor will run",
 			},
 			"runtime_type_version": {
 				Type:        schema.TypeString,
+				Computed:    true,
 				Optional:    true,
 				Description: "The specific version of the runtime type selected",
 			},

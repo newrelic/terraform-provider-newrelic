@@ -53,28 +53,10 @@ func validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d *schema.ResourceD
 	_, monitorType := d.GetChange("type")
 	isSimpleMonitor := monitorType == "SIMPLE"
 
-	// Validation would include checking if runtime attribute values are nil or if they are not nil and comprise values corresponding to the legacy runtime;
-	// as they would lead to creating/updating monitors in the legacy runtime either way, and in both of these cases, create/update requests of monitors
-	// would be blocked by the API via an error; which we're trying to reflect in Terraform.
+	// Validation would include checking if runtime attribute values comprise values corresponding to the legacy runtime;
+	// create/update requests of monitors would be blocked by the API via an error; which we're trying to reflect in Terraform.
 	// also, this error scenario should not apply to SIMPLE Synthetic Monitors, as they do not support using runtime attributes.
 	if !isSimpleMonitor {
-
-		// check if 'runtime_type' and 'runtime_type_version' are nil
-		// if either of these two runtime attributes are nil, throw a relevant error to explain that this is no longer allowed
-		// owing to the Legacy Runtime EOL.
-		if isRuntimeTypeNil {
-			runtimeAttributesValidationErrors = append(
-				runtimeAttributesValidationErrors,
-				buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel),
-			)
-		}
-
-		if isRuntimeTypeVersionNil {
-			runtimeAttributesValidationErrors = append(
-				runtimeAttributesValidationErrors,
-				buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeVersionAttrLabel),
-			)
-		}
 
 		// if neither 'runtime_type' nor 'runtime_type_version' is nil,
 		// check if either of these attributes are not nil and actually comprise values which signify the legacy runtime instead,
