@@ -29,14 +29,25 @@ func TestAccNewRelicAgentApplicationBrowser(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccBrowserApplicationsCleanup(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
+		CheckDestroy: testAccCheckNewRelicBrowserApplicationResourceDestroy,
 		Steps: []resource.TestStep{
 			// Create
 			{
 				Config: testAccNewRelicAgentApplicationBrowserConfig(
 					accountID,
 					rName,
-					string(agentapplications.AgentApplicationBrowserLoaderTypes.SPA),
+					string(agentapplications.AgentApplicationBrowserLoaderTypes.LITE),
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAgentApplicationBrowserExists(resourceName),
+				),
+			},
+			{
+				Config: testAccNewRelicAgentApplicationBrowserConfig(
+					accountID,
+					// updating the name of the browser app isn't supported yet - see the update function of the resource
+					rName,
+					string(agentapplications.AgentApplicationBrowserLoaderTypes.PRO),
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAgentApplicationBrowserExists(resourceName),
@@ -63,7 +74,7 @@ func TestAccNewRelicAgentApplicationBrowser_InvalidLoaderType(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccBrowserApplicationsCleanup(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicSyntheticsMonitorResourceDestroy,
+		CheckDestroy: testAccCheckNewRelicBrowserApplicationResourceDestroy,
 		Steps: []resource.TestStep{
 			// Create with invalid loader type. Expect an error.
 			{
@@ -146,4 +157,23 @@ func testAccNewRelicAgentApplicationBrowserConfig(accountID int, name string, lo
 		  loader_type                 = "%[3]s"
 		}
 `, accountID, name, loaderType)
+}
+
+func testAccCheckNewRelicBrowserApplicationResourceDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+	for _, r := range s.RootModule().Resources {
+		if r.Type != "newrelic_browser_application" {
+			continue
+		}
+
+		// Unfortunately we still have to wait due to async delay with entity indexing :(
+		time.Sleep(60 * time.Second)
+
+		found, _ := client.Entities.GetEntity(common.EntityGUID(r.Primary.ID))
+		if (*found) != nil {
+			return fmt.Errorf("Browser application still exists")
+		}
+	}
+	return nil
 }

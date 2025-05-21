@@ -117,6 +117,7 @@ func testAccNewRelicApplicationConfig() string {
 			  ignored_error_codes = []
 			}
 			tracer_type = "OPT_OUT"
+			enable_slow_sql = false
 			enable_thread_profiler = false
 		}`, testExpectedApplicationName, testApplicationGUID)
 }
@@ -146,6 +147,7 @@ func testAccNewRelicApplicationConfigUpdated(name string) string {
 			  ignored_error_classes = []
 			  ignored_error_codes = []
 			}
+			enable_slow_sql = true	
 			tracer_type = "OPT_OUT"
 			enable_thread_profiler = false
 		}`, name, testApplicationGUID)
