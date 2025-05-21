@@ -105,12 +105,12 @@ func resourceNewRelicSyntheticsCertCheckMonitor() *schema.Resource {
 			},
 			"runtime_type": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "The runtime type that the monitor will run.",
 			},
 			"runtime_type_version": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "The specific semver version of the runtime type.",
 			},
 		},
