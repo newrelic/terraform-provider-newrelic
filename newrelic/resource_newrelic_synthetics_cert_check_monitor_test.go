@@ -61,7 +61,6 @@ func TestAccNewRelicSyntheticsCertCheckMonitor(t *testing.T) {
 					"certificate_expiration",
 					"domain",
 					"tag",
-					SyntheticsUseLegacyRuntimeAttrLabel,
 				},
 			},
 		},
