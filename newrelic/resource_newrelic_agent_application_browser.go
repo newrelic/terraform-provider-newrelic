@@ -161,6 +161,11 @@ func resourceNewRelicBrowserApplicationUpdate(ctx context.Context, d *schema.Res
 	cookiesEnabled := d.Get("cookies_enabled").(bool)
 	loaderType := agentapplications.AgentApplicationSettingsBrowserLoaderInput(strings.ToUpper(d.Get("loader_type").(string)))
 	settingsInput := agentapplications.AgentApplicationSettingsUpdateInput{
+		// the following line has been commented, since name updates to non-APM entities are not supported
+		// by the mutation yet - this shall be uncommented after support for this is added to the NerdGraph mutation.
+
+		// Alias: d.Get("name").(string),
+
 		BrowserMonitoring: &agentapplications.AgentApplicationSettingsBrowserMonitoringInput{
 			DistributedTracing: &agentapplications.AgentApplicationSettingsBrowserDistributedTracingInput{
 				Enabled: d.Get("distributed_tracing_enabled").(bool),

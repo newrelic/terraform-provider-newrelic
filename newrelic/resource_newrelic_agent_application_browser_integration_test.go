@@ -36,7 +36,18 @@ func TestAccNewRelicAgentApplicationBrowser(t *testing.T) {
 				Config: testAccNewRelicAgentApplicationBrowserConfig(
 					accountID,
 					rName,
-					string(agentapplications.AgentApplicationBrowserLoaderTypes.SPA),
+					string(agentapplications.AgentApplicationBrowserLoaderTypes.LITE),
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAgentApplicationBrowserExists(resourceName),
+				),
+			},
+			{
+				Config: testAccNewRelicAgentApplicationBrowserConfig(
+					accountID,
+					// updating the name of the browser app isn't supported yet - see the update function of the resource
+					rName,
+					string(agentapplications.AgentApplicationBrowserLoaderTypes.PRO),
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAgentApplicationBrowserExists(resourceName),
