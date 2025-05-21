@@ -1,3 +1,13 @@
+<a name="v3.61.1"></a>
+## [v3.61.1] - 2025-05-21
+### Bug Fixes
+- **release:** revert v3.61.1, v3.62.2 changelog updates to trigger new release ([#2879](https://github.com/newrelic/terraform-provider-newrelic/issues/2879))
+- **synthetics:** allow public locations of ping and browser monitors to be read ([#2864](https://github.com/newrelic/terraform-provider-newrelic/issues/2864))
+
+### Documentation Updates
+- correct typo in muting rule example
+- adds a note about the order of widgets in `one_dashboard` resource ([#2865](https://github.com/newrelic/terraform-provider-newrelic/issues/2865))
+
 <a name="v3.61.0"></a>
 ## [v3.61.0] - 2025-04-17
 ### Features
@@ -2363,7 +2373,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.1...HEAD
+[v3.61.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.0...v3.61.1
 [v3.61.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.60.2...v3.61.0
 [v3.60.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.60.1...v3.60.2
 [v3.60.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.60.0...v3.60.1
