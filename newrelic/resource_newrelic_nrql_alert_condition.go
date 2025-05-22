@@ -98,6 +98,12 @@ func termSchema() *schema.Resource {
 					},
 				},
 			},
+			"disable_health_status_reporting": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Violations will not change system health status for this term.",
+			},
 		},
 	}
 }

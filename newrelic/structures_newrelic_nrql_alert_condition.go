@@ -311,6 +311,11 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 		ThresholdOccurrences: *thresholdOccurrences,
 	}
 
+	if term["disable_health_status_reporting"] != nil {
+		disableHealthStatusReporting := term["disable_health_status_reporting"].(bool)
+		expandedTerm.DisableHealthStatusReporting = &disableHealthStatusReporting
+	}
+
 	if conditionType == "baseline" {
 		return &expandedTerm, nil
 	}
@@ -810,6 +815,10 @@ func flattenNrqlTerms(terms []alerts.NrqlConditionTerm, configTerms []interface{
 			dst["threshold_occurrences"] = strings.ToLower(string(term.ThresholdOccurrences))
 		}
 
+		if term.DisableHealthStatusReporting != nil {
+			dst["disable_health_status_reporting"] = term.DisableHealthStatusReporting
+		}
+
 		out = append(out, dst)
 	}
 
@@ -837,6 +846,10 @@ func handleImportFlattenNrqlTerms(terms []alerts.NrqlConditionTerm) []map[string
 			dst["prediction"] = []interface{}{predictionBlockContents}
 		}
 
+		if term.DisableHealthStatusReporting != nil {
+			dst["disable_health_status_reporting"] = term.DisableHealthStatusReporting
+		}
+
 		out = append(out, dst)
 	}
 
@@ -857,8 +870,9 @@ func getConfiguredTerms(configTerms []interface{}) []map[string]interface{} {
 			"time_function": t["time_function"],
 
 			// NerdGraph fields
-			"threshold_duration":    t["threshold_duration"],
-			"threshold_occurrences": t["threshold_occurrences"],
+			"threshold_duration":              t["threshold_duration"],
+			"threshold_occurrences":           t["threshold_occurrences"],
+			"disable_health_status_reporting": t["disable_health_status_reporting"],
 		}
 
 		predictionSet := t["prediction"].(*schema.Set)
