@@ -211,6 +211,12 @@ resource_newrelic_data_partition.go:
 resource_newrelic_data_partition_test.go:
   test: true
   product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_entity_relationship.go:
+  test: false
+  product_mapping: ENTITY
+resource_newrelic_entity_relationship_test.go:
+  test: true
+  product_mapping: ENTITY
 resource_newrelic_entity_tags.go:
   test: false
   product_mapping: ENTITY
