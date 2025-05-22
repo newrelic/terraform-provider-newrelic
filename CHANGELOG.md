@@ -1,3 +1,8 @@
+<a name="v3.62.0"></a>
+## [v3.62.0] - 2025-05-22
+### Features
+- **alerts:** add support for silent alerts to `newrelic_nrql_alert_condition` via `disable_health_status_reporting` ([#2871](https://github.com/newrelic/terraform-provider-newrelic/issues/2871))
+
 <a name="v3.61.3"></a>
 ## [v3.61.3] - 2025-05-21
 ### Bug Fixes
@@ -2383,7 +2388,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.3...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.62.0...HEAD
+[v3.62.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.3...v3.62.0
 [v3.61.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.2...v3.61.3
 [v3.61.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.1...v3.61.2
 [v3.61.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.0...v3.61.1
