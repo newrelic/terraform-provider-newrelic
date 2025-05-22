@@ -17,9 +17,9 @@ import (
 )
 
 var (
-	testThresholdLow                 = 1.0
-	testThresholdHigh                = 10.9
-	testDisableHealthStatusReporting = true
+	testThresholdLow                  = 1.0
+	testThresholdHigh                 = 10.9
+	testDisableHealthStatusReporting  = true
 	falseDisableHealthStatusReporting = false
 )
 
@@ -100,11 +100,11 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				x := alerts.NrqlConditionCreateInput{}
 				x.Terms = []alerts.NrqlConditionTerm{
 					{
-						Threshold:            &testThresholdLow,
-						ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
-						ThresholdDuration:    600,
-						Operator:             alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE,
-						Priority:             alerts.NrqlConditionPriorities.Critical,
+						Threshold:                    &testThresholdLow,
+						ThresholdOccurrences:         alerts.ThresholdOccurrences.AtLeastOnce,
+						ThresholdDuration:            600,
+						Operator:                     alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE,
+						Priority:                     alerts.NrqlConditionPriorities.Critical,
 						DisableHealthStatusReporting: &falseDisableHealthStatusReporting,
 					},
 				}
@@ -125,19 +125,19 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				x := alerts.NrqlConditionCreateInput{}
 				x.Terms = []alerts.NrqlConditionTerm{
 					{
-						Threshold:            &testThresholdLow,
-						ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
-						ThresholdDuration:    600,
-						Operator:             alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE,
-						Priority:             alerts.NrqlConditionPriorities.Critical,
+						Threshold:                    &testThresholdLow,
+						ThresholdOccurrences:         alerts.ThresholdOccurrences.AtLeastOnce,
+						ThresholdDuration:            600,
+						Operator:                     alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE,
+						Priority:                     alerts.NrqlConditionPriorities.Critical,
 						DisableHealthStatusReporting: &falseDisableHealthStatusReporting,
 					},
 					{
-						Threshold:            &testThresholdHigh,
-						ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
-						ThresholdDuration:    660,
-						Operator:             alerts.AlertsNRQLConditionTermsOperatorTypes.BELOW,
-						Priority:             alerts.NrqlConditionPriorities.Warning,
+						Threshold:                    &testThresholdHigh,
+						ThresholdOccurrences:         alerts.ThresholdOccurrences.AtLeastOnce,
+						ThresholdDuration:            660,
+						Operator:                     alerts.AlertsNRQLConditionTermsOperatorTypes.BELOW,
+						Priority:                     alerts.NrqlConditionPriorities.Warning,
 						DisableHealthStatusReporting: &falseDisableHealthStatusReporting,
 					},
 				}
