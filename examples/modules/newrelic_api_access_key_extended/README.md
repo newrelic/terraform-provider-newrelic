@@ -1,3 +1,3 @@
-This module may be used to create a user or ingest key using the `create_access_keys_service` resource, and fetch the created key using `fetch_access_keys_service`, by performing a NerdGraph query under the hood, using the ID of the key created via the resource to fetch the created key.
+This module may be used to create a user or ingest key using the `newrelic_api_access_key` resource, and fetch the created key by performing a NerdGraph query under the hood, using the ID of the key created via the resource.
 
 >Please refer [registry](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/api_access_key#extended-usage-with-modules) for more information on the arguments and attributes of these resources.

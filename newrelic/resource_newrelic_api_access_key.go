@@ -52,7 +52,6 @@ func resourceNewRelicAPIAccessKey() *schema.Resource {
 				ConflictsWith: []string{"user_id"},
 				ValidateFunc:  validation.StringInSlice([]string{keyTypeIngestBrowser, keyTypeIngestLicense}, false),
 			},
-
 			"user_id": {
 				Type:          schema.TypeInt,
 				Optional:      true,
@@ -144,7 +143,16 @@ func resourceNewRelicAPIAccessKeyCreate(ctx context.Context, d *schema.ResourceD
 			userKeyOpts.UserID = v.(int)
 			log.Printf("[DEBUG] new api access user_id: %d", userKeyOpts.UserID)
 		} else {
-			return diag.Errorf("[ERROR] you must define the user_id attribute when creating an USER key")
+			log.Printf("[INFO] Fetching user_id attribute from api key provided")
+			userRes, err := client.Users.GetUserWithContext(ctx)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			if userRes == nil {
+				return diag.Errorf("[ERROR] failed to fetch user_id attribute")
+			}
+			log.Printf("[INFO] user_id attribute retrieved successfully with id %d", userRes.ID)
+			userKeyOpts.UserID = userRes.ID
 		}
 
 		userKeyOpts.AccountID = accountID
