@@ -1,16 +1,16 @@
 
 provider "graphql" {
-  url = var.fetch_access_keys_service.graphiql_url
+  url = var.graphiql_url
   headers = {
     "Content-Type" = "application/json"
-    "API-Key" = var.fetch_access_keys_service.api_key != "" ? var.fetch_access_keys_service.api_key : var.create_access_keys_service.api_key
+    "API-Key" = var.api_key != "" ? var.api_key : var.api_key
   }
 }
 
 data "graphql_query" "basic_query" {
   query_variables = {
-    "id"        = var.fetch_access_keys_service.key_id
-    "key_type"  = var.fetch_access_keys_service.key_type
+    "id"        = var.key_id
+    "key_type"  = var.key_type
   }
   query = <<EOF
     query getUser($id: ID!, $key_type: ApiAccessKeyType!) {
@@ -32,19 +32,19 @@ data "graphql_query" "basic_query" {
 }
 
 resource "newrelic_api_access_key" "api_access_key" {
-  count  = var.create_access_keys_service.newrelic_account_id != "" ? 1 : 0
-  account_id  = var.create_access_keys_service.newrelic_account_id
-  key_type    = var.create_access_keys_service.key_type
-  name        = "${var.create_access_keys_service.key_type != "USER" ? "APM " : "" }${var.create_access_keys_service.key_type}${var.create_access_keys_service.key_type != "USER" ? "-" : "" }${var.create_access_keys_service.ingest_type} Key for ${var.create_access_keys_service.name}"
-  notes       = var.create_access_keys_service.notes
-  user_id     = var.create_access_keys_service.key_type == "USER" ? var.create_access_keys_service.user_id : null
-  ingest_type = var.create_access_keys_service.key_type == "INGEST" ? var.create_access_keys_service.ingest_type : null
+  count  = var.newrelic_account_id != "" ? 1 : 0
+  account_id  = var.newrelic_account_id
+  key_type    = var.key_type
+  name        = "${var.key_type != "USER" ? "APM " : "" }${var.key_type}${var.key_type != "USER" ? "-" : "" }${var.ingest_type} Key for ${var.name}"
+  notes       = var.notes
+  user_id     = var.key_type == "USER" ? var.user_id : null
+  ingest_type = var.key_type == "INGEST" ? var.ingest_type : null
 }
 
 data "graphql_query" "query_with_id" {
   query_variables = {
     "id"        = newrelic_api_access_key.api_access_key[0].id
-    "key_type"  = var.create_access_keys_service.key_type
+    "key_type"  = var.key_type
   }
   query = <<EOF
     query getUser($id: ID!, $key_type: ApiAccessKeyType!) {
