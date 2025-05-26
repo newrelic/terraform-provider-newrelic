@@ -3,7 +3,7 @@ layout: 'newrelic'
 page_title: 'New Relic: newrelic_api_access_key'
 sidebar_current: 'docs-newrelic-resource-api-access-key'
 description: |-
-  Create and Manage New Relic API access keys
+  Create and manage New Relic API access keys
 ---
 
 # Resource: newrelic_api_access_key
@@ -18,7 +18,7 @@ Please visit the New Relic article ['Use NerdGraph to manage license keys and Us
 for more information.
 
 -> **Action Required for Key Retrieval:**
-    To retrieve the actual API key value after creation, **it is essential to use this resource in conjunction with the `Create Access Keys` module** detailed in the "Extended Usage with Modules" section below. Please see the "Important Considerations" section for a full explanation.
+    To retrieve the actual API key value after creation, **it is essential to use this resource in conjunction with the [`Create Access Keys`](#module-create-and-retrieve-access-keys) module** detailed in the [Extended Usage with Modules](#extended-usage-with-modules) section below. Please see the [Important Considerations](#important-considerations-for-using-this-resource) section for a full explanation.
 
 ## Example Usage (Resource Only - Key Not Retrievable Directly)
 
@@ -41,7 +41,7 @@ The following arguments are supported:
 - `ingest_type` - (Optional) Required if `key_type = INGEST`. Valid options are `BROWSER` or `LICENSE`, case-sensitive.
 - `user_id` - (Optional) The New Relic user ID yous wish to create the API access key for in an account.
   - Required if `key_type = USER` and you wish to specify a user different from the one associated with the API key making this request.
-  - If `key_type = USER` and this parameter is omitted, the user_id will be automatically inferred from the API key used to authenticate this request. The new access key will be generated for that inferred user.
+  - If `key_type = USER` and this parameter is omitted, the `user_id` will be automatically inferred from the API key used to authenticate this request. The new access key will be generated for that inferred user.
 - `name` - (Optional) The name of the key.
 - `notes` - (Optional) Any notes about this ingest key.
 
@@ -58,10 +58,10 @@ Before you begin, please take note of the following critical points:
 
 1.  **Retrieving the API Key:**
 
-    -> The newrelic_api_access_key resource will create an API key in New Relic, but it does not directly output the sensitive key string for use in your Terraform configuration (e.g., via the key attribute). This is to help prevent accidental exposure of sensitive credentials. To programmatically create an API key and retrieve its value for use in subsequent configurations or outputs, you must use the Create Access Keys module. This module is detailed in the "Extended Usage with Modules" section. It works by first creating the key with this resource and then immediately fetching the key's value using a secure API call.
+    -> The [`newrelic_api_access_key`](#module-create-and-retrieve-access-keys) resource will create an API key in New Relic, but it does not directly output the sensitive key string for use in your Terraform configuration (e.g., via the key attribute). This is to help prevent accidental exposure of sensitive credentials. To programmatically create an API key and retrieve its value for use in subsequent configurations or outputs, you must use the Create Access Keys module. This module is detailed in the [Extended Usage with Modules](#extended-usage-with-modules) section. It works by first creating the key with this resource and then immediately fetching the key's value using a secure API call.
 2.  **Updating Existing Keys:**
 
-    -> **IMPORTANT!** Exercise extreme caution when updating existing `newrelic_api_access_key` resources. Only the `name` and `notes` attributes are updatable in place. Modifying any other attribute will force the resource to be recreated, which **invalidates the previous API key(s)** and generates new ones.
+    -> **IMPORTANT!** Exercise extreme caution when updating existing [`newrelic_api_access_key`](#module-create-and-retrieve-access-keys) resources. Only the `name` and `notes` attributes are updatable in place. Modifying any other attribute will force the resource to be recreated, which **invalidates the previous API key(s)** and generates new ones.
 3.  **Account Type Restrictions for Ingest Keys:**
 
     -> **WARNING:** Creating 'Ingest - License' and 'Ingest - Browser' keys using this resource is restricted to 'core' or 'full platform' New Relic user accounts. If you've signed up as a 'basic' user with New Relic, or have been added as a 'basic' user to your organization on New Relic, you would not be able to use your account to create 'Ingest' keys. If you see the message `"You do not have permission to create this key"` in the response of the API called by this resource, it could be owing to the aforementioned. For more insights into user account types on New Relic and associated privileges, please check out this [page](https://docs.newrelic.com/docs/accounts/accounts-billing/new-relic-one-user-management/user-type/#api-access).
@@ -76,14 +76,14 @@ For example:
 ```
 $ terraform import newrelic_api_access_key.foobar "1234567:INGEST"
 ```
-## Extended Usage with Modules
+## Extended Usage With Modules
 
-As highlighted in the "Important Considerations" section, to effectively create and retrieve API keys, or to fetch existing keys, the following modules are provided. They utilize NerdGraph queries behind the scenes to access the key values.
+As highlighted in the [Important Considerations](#important-considerations-for-using-this-resource) section, to effectively create and retrieve API keys, or to fetch existing keys, the following modules are provided. They utilize NerdGraph queries behind the scenes to access the key values.
 
 ### Module: Create and Retrieve Access Keys
 
 ### Overview
-This module allows you to create a new User or Ingest API key using the `newrelic_api_access_key` resource and and fetch the created key, by performing a NerdGraph query under the hood, using the ID of the key created via the resource to fetch the created key. This is the recommended method for creating new API keys with Terraform when you need to use the key value programmatically.
+This module allows you to create a new User or Ingest API key using the [`newrelic_api_access_key`](#resource-newrelic_api_access_key) resource and fetch the created key, by performing a NerdGraph query under the hood, using the ID of the key created via the resource to fetch the created key. This is the recommended method for creating new API keys with Terraform when you need to use the key value programmatically.
 
 ### Outputs
 The following output values are provided by the module:
@@ -91,10 +91,10 @@ The following output values are provided by the module:
 * `key`: The actual API key.
 * `name`: The name of the key.
 * `type`: The type of API key.
-* `ingest_type`: The type of ingest (applicable only for key_type = INGEST).
+* `ingest_type`: The type of ingest (applicable only for `key_type = INGEST`).
 
 
-### Example usage #1 (USER)
+### Example Usage #1 (USER)
 ```terraform
 module "create_access_keys" {
   source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/newrelic_api_access_key_extended/"
@@ -110,7 +110,7 @@ output "required_attributes" {
   value = module.create_access_keys.required_attributes
 }
 ```
-### Example usage #2 (INGEST-LICENSE)
+### Example Usage #2 (INGEST-LICENSE)
 ```terraform
 module "create_access_keys" {
   source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/newrelic_api_access_key_extended/"
@@ -126,7 +126,7 @@ output "required_attributes" {
   value = module.create_access_keys.required_attributes
 }
 ```
-### Example usage #3 (INGEST-BROWSER)
+### Example Usage #3 (INGEST-BROWSER)
 ```terraform
 module "create_access_keys" {
   source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/newrelic_api_access_key_extended/"
@@ -142,9 +142,10 @@ output "required_attributes" {
   value = module.create_access_keys.required_attributes
 }
 ```
-## Module: Fetch Access keys
+## Module: Fetch Access Keys
+
 ### Overview
-This module may be used to fetch a user or ingest key, using the ID of the key. Note that the ID of a key can be copied from the New Relic One UI, and is also exported by the `newrelic_api_access_key` resource in the New Relic Terraform Provider, if the key is created using this resource.
+This module may be used to fetch a user or ingest key, using the ID of the key. Note that the ID of a key can be copied from the New Relic One UI, and is also exported by the [`newrelic_api_access_key`](#resource-newrelic_api_access_key) resource in the New Relic Terraform Provider, if the key is created using this resource.
 
 ### Outputs
 The following output values are provided by the module:
@@ -152,9 +153,9 @@ The following output values are provided by the module:
 * `key`: The actual API key
 * `name`: The name of the key.
 * `type`: The type of API key
-* `ingest_type`: The type of ingest (applicable only for key_type = INGEST).
+* `ingest_type`: The type of ingest (applicable only for `key_type = INGEST`).
 
-### Example usage
+### Example Usage
 
 ```terraform
 module "fetch_access_keys" {
