@@ -143,16 +143,7 @@ func resourceNewRelicAPIAccessKeyCreate(ctx context.Context, d *schema.ResourceD
 			userKeyOpts.UserID = v.(int)
 			log.Printf("[DEBUG] new api access user_id: %d", userKeyOpts.UserID)
 		} else {
-			log.Printf("[INFO] Fetching user_id attribute from api key provided")
-			userRes, err := client.Users.GetUserWithContext(ctx)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			if userRes == nil {
-				return diag.Errorf("[ERROR] failed to fetch user_id attribute")
-			}
-			log.Printf("[INFO] user_id attribute retrieved successfully with id %d", userRes.ID)
-			userKeyOpts.UserID = userRes.ID
+			return diag.Errorf("[ERROR] you must define the user_id attribute when creating an USER key")
 		}
 
 		userKeyOpts.AccountID = accountID

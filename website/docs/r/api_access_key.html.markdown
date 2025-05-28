@@ -39,9 +39,7 @@ The following arguments are supported:
 - `account_id` - (Required) The New Relic account ID of the account you wish to create the API access key.
 - `key_type` - (Required) What type of API key to create. Valid options are `INGEST` or `USER`, case-sensitive.
 - `ingest_type` - (Optional) Required if `key_type = INGEST`. Valid options are `BROWSER` or `LICENSE`, case-sensitive.
-- `user_id` - (Optional) The New Relic user ID yous wish to create the API access key for in an account.
-  - Required if `key_type = USER` and you wish to specify a user different from the one associated with the API key making this request.
-  - If `key_type = USER` and this parameter is omitted, the `user_id` will be automatically inferred from the API key used to authenticate this request. The new access key will be generated for that inferred user.
+- `user_id` - (Optional) Required if `key_type = USER`. The New Relic user ID yous wish to create the API access key for in an account.
 - `name` - (Optional) The name of the key.
 - `notes` - (Optional) Any notes about this ingest key.
 
@@ -78,7 +76,7 @@ $ terraform import newrelic_api_access_key.foobar "1234567:INGEST"
 ```
 ## Extended Usage With Modules
 
-As highlighted in the [Important Considerations](#important-considerations-for-using-this-resource) section, to effectively create and retrieve API keys, or to fetch existing keys, the following modules are provided. They utilize NerdGraph queries behind the scenes to access the key values.
+As highlighted in the [Important Considerations](#important-considerations-for-using-this-resource) section, to effectively create and retrieve API keys or to fetch existing keys, the following modules are provided. They utilize NerdGraph queries behind the scenes to access the key values.
 
 ### Module: Create and Retrieve Access Keys
 
@@ -93,13 +91,13 @@ The following output values are provided by the module:
 * `type`: The type of API key.
 * `ingest_type`: The type of ingest (applicable only for `key_type = INGEST`).
 
-
+-> For a comprehensive guide on securely providing your New Relic API Key to Terraform as showcased in below examples,please refer [to the guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/api_key_usage_guide) for detailed steps regarding local development and CI/CD pipelines.
 ### Example Usage #1 (USER)
 ```terraform
 module "create_access_keys" {
   source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/newrelic_api_access_key_extended/"
-
-  api_key             = "NRAK-XXXXXXXXXX"
+  
+  api_key             = var.newrelic_api_key
   newrelic_account_id = "12345678"
   name                = "Access key for DemoApp"
   key_type            = "USER"
@@ -110,15 +108,17 @@ output "required_attributes" {
   value = module.create_access_keys.required_attributes
 }
 ```
+-> **IMPORTANT!** The `user_id` parameter is optional, but its behavior changes depending on your `key_type`. If your `key_type` is set to "USER", you must provide `user_id` if you intend to create the API key for a user different from the one associated with the API key making the current Terraform request. However, if `key_type` is "USER" and this parameter is omitted, the `user_id` will be automatically inferred from the API key used to authenticate this request, meaning the new access key will be generated for that inferred user. Always double-check your `user_id` value, or its omission, to ensure the API key is created for the correct New Relic user.
+
 ### Example Usage #2 (INGEST-LICENSE)
 ```terraform
 module "create_access_keys" {
   source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/newrelic_api_access_key_extended/"
 
-  api_key             = "NRAK-XXXXXXXXXX"
+  api_key             = var.newrelic_api_key
   newrelic_account_id = "12345678"
   name                = "DemoApp"
-  key_type            = "USER"
+  key_type            = "INGEST"
   ingest_type         = "LICENSE"
 }
 
@@ -131,10 +131,10 @@ output "required_attributes" {
 module "create_access_keys" {
   source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/newrelic_api_access_key_extended/"
 
-  api_key             = "NRAK-XXXXXXXXXX"
+  api_key             = var.newrelic_api_key
   newrelic_account_id = "12345678"
   name                = "DemoApp"
-  key_type            = "USER"
+  key_type            = "INGEST"
   ingest_type         = "BROWSER"
 }
 
@@ -161,7 +161,7 @@ The following output values are provided by the module:
 module "fetch_access_keys" {
   source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/newrelic_api_access_key_extended/"
 
-  api_key = "NRAK-XXXXXXXXXXXXXXXX"
+  api_key = var.newrelic_api_key
   key_id = "DWEGHFF327532576931786356532327538273"
   key_type = "INGEST"
 }
@@ -170,3 +170,4 @@ output "required_attributes" {
   value = module.fetch_access_keys.required_attributes
 }
 ```
+ 
