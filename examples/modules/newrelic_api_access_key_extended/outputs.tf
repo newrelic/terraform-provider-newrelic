@@ -4,7 +4,8 @@ output "required_attributes" {
     "key": local.key,
     "name": local.name,
     "key_type": local.type,
-    "ingest_type": local.ingestType
+    "ingest_type": local.ingestType,
+    "user_id": coalesce(var.user_id, local.user_id_from_graphql_response),
   }
 }
 

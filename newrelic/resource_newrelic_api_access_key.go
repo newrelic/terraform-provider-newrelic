@@ -52,7 +52,6 @@ func resourceNewRelicAPIAccessKey() *schema.Resource {
 				ConflictsWith: []string{"user_id"},
 				ValidateFunc:  validation.StringInSlice([]string{keyTypeIngestBrowser, keyTypeIngestLicense}, false),
 			},
-
 			"user_id": {
 				Type:          schema.TypeInt,
 				Optional:      true,
