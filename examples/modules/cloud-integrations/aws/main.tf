@@ -68,6 +68,7 @@ resource "aws_iam_role_policy_attachment" "newrelic_aws_policy_attach" {
 }
 
 resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_push" {
+  count                  = var.is_primary_region ? 1 : 0
   account_id             = var.newrelic_account_id
   arn                    = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PUSH"
@@ -123,8 +124,8 @@ resource "aws_s3_bucket_ownership_controls" "newrelic_ownership_controls" {
 
 locals {
   newrelic_urls = {
-    US      = "https://aws-api.newrelic.com/cloudwatch-metrics/v1"
-    EU      = "https://aws-api.eu01.nr-data.net/cloudwatch-metrics/v1"
+    US = "https://aws-api.newrelic.com/cloudwatch-metrics/v1"
+    EU = "https://aws-api.eu01.nr-data.net/cloudwatch-metrics/v1"
   }
 }
 
@@ -137,6 +138,7 @@ resource "aws_kinesis_firehose_delivery_stream" "newrelic_firehose_stream" {
     access_key         = newrelic_api_access_key.newrelic_aws_access_key.key
     buffering_size     = 1
     buffering_interval = 60
+    retry_duration     = 60
     role_arn           = aws_iam_role.firehose_newrelic_role.arn
     s3_backup_mode     = "FailedDataOnly"
     s3_configuration {
@@ -219,6 +221,7 @@ resource "aws_cloudwatch_metric_stream" "newrelic_metric_stream" {
 }
 
 resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_pull" {
+  count                  = var.is_primary_region ? 1 : 0
   account_id             = var.newrelic_account_id
   arn                    = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PULL"
@@ -226,61 +229,29 @@ resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_pull" {
   depends_on             = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
 }
 
+# NOTE: At time of writing, metrics streams aren't supported for the following services:
+# Cloudtrail
+# Health
+# Trusted Advisor
+# AWS X-Ray
+# We will only configure API polling for these unsupported services. 
 resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
+  count             = var.is_primary_region ? 1 : 0
   account_id        = var.newrelic_account_id
-  linked_account_id = newrelic_cloud_aws_link_account.newrelic_cloud_integration_pull.id
-  billing {}
-  cloudtrail {}
-  health {}
-  trusted_advisor {}
-  vpc {}
-  x_ray {}
-  s3 {}
-  doc_db {}
-  sqs {}
-  ebs {}
-  alb {}
-  elasticache {}
-  api_gateway {}
-  auto_scaling {}
-  aws_app_sync {}
-  aws_athena {}
-  aws_cognito {}
-  aws_connect {}
-  aws_direct_connect {}
-  aws_fsx {}
-  aws_glue {}
-  aws_kinesis_analytics {}
-  aws_media_convert {}
-  aws_media_package_vod {}
-  aws_mq {}
-  aws_msk {}
-  aws_neptune {}
-  aws_qldb {}
-  aws_route53resolver {}
-  aws_states {}
-  aws_transit_gateway {}
-  aws_waf {}
-  aws_wafv2 {}
-  cloudfront {}
-  dynamodb {}
-  ec2 {}
-  ecs {}
-  efs {}
-  elasticbeanstalk {}
-  elasticsearch {}
-  elb {}
-  emr {}
-  iam {}
-  iot {}
-  kinesis {}
-  kinesis_firehose {}
-  lambda {}
-  rds {}
-  redshift {}
-  route53 {}
-  ses {}
-  sns {}
+  linked_account_id = newrelic_cloud_aws_link_account.newrelic_cloud_integration_pull[0].id
+
+  cloudtrail {
+    metrics_polling_interval = 300
+  }
+  x_ray {
+    metrics_polling_interval = 60
+  }
+  health {
+    metrics_polling_interval = 300
+  }
+  trusted_advisor {
+    metrics_polling_interval = 3600
+  }
 }
 
 resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {
@@ -342,7 +313,7 @@ resource "aws_config_configuration_recorder" "newrelic_recorder" {
 
 resource "aws_config_configuration_recorder_status" "newrelic_recorder_status" {
   name       = aws_config_configuration_recorder.newrelic_recorder.name
-  is_enabled = true
+  is_enabled = var.recorder_enabled
   depends_on = [aws_config_delivery_channel.newrelic_recorder_delivery]
 }
 
