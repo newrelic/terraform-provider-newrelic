@@ -414,6 +414,10 @@ func testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig map[string]s
 		  fetch_extended_inventory = true
 		  metrics_polling_interval = 6000
 		}
+		security_hub {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 6000
+		}
 	  }
 `)
 }
@@ -708,6 +712,10 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig map[s
 		sns {
 		  aws_regions              = ["us-east-1"]
 		  fetch_extended_inventory = true
+		  metrics_polling_interval = 6000
+		}
+		security_hub {
+		  aws_regions              = ["us-east-1"]
 		  metrics_polling_interval = 6000
 		}
 	  }
