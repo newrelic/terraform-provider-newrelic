@@ -520,6 +520,11 @@ func expandCreateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionCrea
 		signal.EvaluationDelay = &value
 	}
 
+	if pollingFrequency, ok := d.GetOk("polling_frequency"); ok {
+		value := pollingFrequency.(int)
+		signal.PollingFrequency = &value
+	}
+
 	return &signal, nil
 }
 
@@ -573,6 +578,11 @@ func expandUpdateSignal(d *schema.ResourceData) (*alerts.AlertsNrqlConditionUpda
 	if evaluationDelay, ok := d.GetOk("evaluation_delay"); ok {
 		value := evaluationDelay.(int)
 		signal.EvaluationDelay = &value
+	}
+
+	if pollingFrequency, ok := d.GetOk("polling_frequency"); ok {
+		value := pollingFrequency.(int)
+		signal.PollingFrequency = &value
 	}
 
 	return &signal, nil
@@ -736,7 +746,12 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 		if err := d.Set("evaluation_delay", signal.EvaluationDelay); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `evaluation_delay`: %v", err)
 		}
+	}
 
+	if signal.PollingFrequency != nil {
+		if err := d.Set("polling_frequency", signal.PollingFrequency); err != nil {
+			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `polling_frequency`: %v", err)
+		}
 	}
 
 	return nil

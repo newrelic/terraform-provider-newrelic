@@ -364,6 +364,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:    true,
 				Description: "How long we wait until the signal starts evaluating. The maximum delay is 7200 seconds (120 minutes)",
 			},
+			"polling_frequency": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The frequency at which the NRQL will be executed and the results will be evaluated, in seconds. Only valid for NRQL conditions with CloudCost, KubernetesCost, or CloudCostEstimate event types. Conditions for these event types are evaluated in a polling fashion.",
+			},
 			"aggregation_timer": {
 				Type:         schema.TypeString,
 				Optional:     true,
