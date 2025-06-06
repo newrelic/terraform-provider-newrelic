@@ -55,6 +55,8 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 
 	signalSeasonality := alerts.NrqlSignalSeasonalities.Daily
 
+	pollingFrequency := 3600
+
 	cases := map[string]struct {
 		Data         map[string]interface{}
 		ExpectErr    bool
@@ -419,6 +421,28 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 			Data: map[string]interface{}{
 				"nrql":               []interface{}{nrql},
 				"signal_seasonality": nil,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
+			},
+		},
+		"polling frequency not nil": {
+			Data: map[string]interface{}{
+				"nrql":               []interface{}{nrql},
+				"polling_frequency": 3600,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{
+					Signal: &alerts.AlertsNrqlConditionCreateSignal{
+						PollingFrequency: &pollingFrequency,
+					},
+				},
+			},
+		},
+		"polling frequency nil": {
+			Data: map[string]interface{}{
+				"nrql":               []interface{}{nrql},
+				"polling_frequency": nil,
 			},
 			Expanded: &alerts.NrqlConditionCreateInput{
 				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
