@@ -83,9 +83,10 @@ func resourceNewRelicBrowserApplicationCreate(ctx context.Context, d *schema.Res
 	accountID := selectAccountID(providerConfig, d)
 	appName := d.Get("name").(string)
 	cookiesEnabled := d.Get("cookies_enabled").(bool)
+	distributedTracingEnabled := d.Get("distributed_tracing_enabled").(bool)
 	settingsInput := agentapplications.AgentApplicationBrowserSettingsInput{
 		CookiesEnabled:            &cookiesEnabled,
-		DistributedTracingEnabled: d.Get("distributed_tracing_enabled").(bool),
+		DistributedTracingEnabled: &distributedTracingEnabled,
 		LoaderType:                agentapplications.AgentApplicationBrowserLoader(strings.ToUpper(d.Get("loader_type").(string))),
 	}
 
