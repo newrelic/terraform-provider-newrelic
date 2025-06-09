@@ -1,3 +1,12 @@
+<a name="v3.62.1"></a>
+## [v3.62.1] - 2025-06-09
+### Bug Fixes
+- resolve distributed tracing flag misfunction bug ([#2889](https://github.com/newrelic/terraform-provider-newrelic/issues/2889))
+- **synthetics:** disable count check to track changes outside of terraform scope in synthetics_secure_credential ([#2891](https://github.com/newrelic/terraform-provider-newrelic/issues/2891))
+
+### Documentation Updates
+- enhances newrelic_api_access_key resource documentation ([#2884](https://github.com/newrelic/terraform-provider-newrelic/issues/2884))
+
 <a name="v3.62.0"></a>
 ## [v3.62.0] - 2025-05-22
 ### Features
@@ -2388,7 +2397,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.62.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.62.1...HEAD
+[v3.62.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.62.0...v3.62.1
 [v3.62.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.3...v3.62.0
 [v3.61.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.2...v3.61.3
 [v3.61.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.1...v3.61.2
