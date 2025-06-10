@@ -1584,13 +1584,10 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	policy_id = newrelic_alert_policy.foo.id
 
 	name                         = "tf-test-%[1]s"
-	type                         = "baseline"
+	type                         = "static"
 	enabled                      = false
 	violation_time_limit_seconds = 3600
-	aggregation_delay            = 2
 	aggregation_window           = 3600
-	aggregation_method           = "event_flow"
-	evaluation_delay             = 60
 	polling_frequency            = 3600
 
 	nrql {

@@ -428,7 +428,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 		},
 		"polling frequency not nil": {
 			Data: map[string]interface{}{
-				"nrql":               []interface{}{nrql},
+				"nrql":              []interface{}{nrql},
 				"polling_frequency": 3600,
 			},
 			Expanded: &alerts.NrqlConditionCreateInput{
@@ -441,7 +441,7 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 		},
 		"polling frequency nil": {
 			Data: map[string]interface{}{
-				"nrql":               []interface{}{nrql},
+				"nrql":              []interface{}{nrql},
 				"polling_frequency": nil,
 			},
 			Expanded: &alerts.NrqlConditionCreateInput{
