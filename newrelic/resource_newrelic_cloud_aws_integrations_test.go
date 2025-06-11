@@ -710,6 +710,10 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig map[s
 		  fetch_extended_inventory = true
 		  metrics_polling_interval = 6000
 		}
+		aws_auto_discovery {
+			aws_regions              = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
 	  }
 `)
 }
