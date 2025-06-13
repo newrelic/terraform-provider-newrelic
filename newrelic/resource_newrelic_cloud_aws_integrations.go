@@ -262,13 +262,13 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Elem:        cloudAwsIntegrationCommonSchemaElem(),
 				MaxItems:    1,
 			},
-            "aws_auto_discovery": {
-        		Type:        schema.TypeList,
-        		Optional:    true,
-        		Description: "Aws Auto Discovery Integration",
-        		Elem:        cloudAwsIntegrationCommonSchemaElem(),
-        		MaxItems:    1,
-        	},
+			"aws_auto_discovery": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Auto Discovery Integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
 			"cloudfront": {
 				Type:        schema.TypeList,
 				Optional:    true,
