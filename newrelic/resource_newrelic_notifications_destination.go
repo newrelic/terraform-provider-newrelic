@@ -416,6 +416,7 @@ func listValidNotificationsDestinationTypes() []string {
 		string(notifications.AiNotificationsDestinationTypeTypes.MOBILE_PUSH),
 		string(notifications.AiNotificationsDestinationTypeTypes.EVENT_BRIDGE),
 		string(notifications.AiNotificationsDestinationTypeTypes.MICROSOFT_TEAMS),
+		string(notifications.AiNotificationsDestinationTypeTypes.WORKFLOW_AUTOMATION),
 	}
 }
 
