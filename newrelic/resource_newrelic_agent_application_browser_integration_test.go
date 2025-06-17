@@ -153,7 +153,7 @@ func testAccNewRelicAgentApplicationBrowserConfig(accountID int, name string, lo
 		  account_id                  = %[1]d
 		  name                        = "%[2]s"
 		  cookies_enabled             = true
-		  distributed_tracing_enabled = true
+		  distributed_tracing_enabled = false
 		  loader_type                 = "%[3]s"
 		}
 `, accountID, name, loaderType)
