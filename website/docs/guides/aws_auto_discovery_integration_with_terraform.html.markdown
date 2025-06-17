@@ -17,28 +17,28 @@ The below integration process presumes that the client has already integrated wi
 
 ## Variables -
 * **New Relic Region** ```new_relic_region``` - The region where your New Relic account is hosted
-*  **Type** - String
-*  **Allowed Values** - US or EU
+ *  **Type** - String
+ *  **Allowed Values** - US or EU
 
 * **New Relic Account Id** ```new_relic_account_id``` - The account id associated with your organisation's New Relic Account.
-* **Type** - Integer
-* **Example** - 1234567
+ * **Type** - Integer
+ * **Example** - 1234567
 
 * **AWS IAM Role Name** ```aws_iam_role_name``` - The IAM role-name that has been used to integrate cloud monitoring with New Relic.
-* **Type** - String
-* **Example** - "NewRelicInfrastructureIntegrationRole"
+ * **Type** - String
+ * **Example** - "NewRelicInfrastructureIntegrationRole"
 
 * **AWS Account Id** ```aws_account_id``` - The AWS Account Id which has been integrated with New Relic on which Auto-Discovery has to be enabled.
-* **Type** - Integer
-* **Example** - 123456789012
+ * **Type** - Integer
+ * **Example** - 123456789012
 
 * **Metric Polling Interval** ```metric_polling_interval``` - The interval at which the auto-discovery scans are to be triggered on the integrated AWS account in seconds
-* **Type** - Integer
-* **Allowed Values** - 28800, 43200, 86400
+ * **Type** - Integer
+ * **Allowed Values** - 28800, 43200, 86400
 
 * **aws_regions** ```aws_regions``` - The list of regions at which the auto-discovery scans are to be triggered on the integrated AWS account.
-* **Type** - StringList
-* **Allowed Values** - ["af-south-1", "ap-east-1", "ap-northeast-1", "ap-northeast-2", "ap-northeast-3", "ap-south-1", "ap-southeast-1", "ap-southeast-2", "ca-central-1", "eu-north-1", "eu-south-1", "eu-west-1", "eu-west-2", "eu-west-3", "me-south-1", "sa-east-1",
+ * **Type** - StringList
+ * **Allowed Values** - ["af-south-1", "ap-east-1", "ap-northeast-1", "ap-northeast-2", "ap-northeast-3", "ap-south-1", "ap-southeast-1", "ap-southeast-2", "ca-central-1", "eu-north-1", "eu-south-1", "eu-west-1", "eu-west-2", "eu-west-3", "me-south-1", "sa-east-1",
   "us-east-1" "us-east-2", "us-west-1", "us-west-2"]
 
 ## Integrating with AWS Auto-Discovery via Terraform
