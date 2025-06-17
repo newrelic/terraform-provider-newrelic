@@ -566,9 +566,93 @@ func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 		Optional:    true,
 		Description: "The warning threshold value.",
 	}
+	s["billboard_settings"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Optional: true,
+		MinItems: 1,
+		Elem:     dashboardBillBoardWidgetSchema(),
+	}
 
 	return &schema.Resource{
 		Schema: s,
+	}
+}
+
+func dashboardBillBoardWidgetSchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"visual_style": {
+				Type:        schema.TypeList,
+				Required:    true,
+				Description: "Visual style settings for the billboard widget.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"display": {
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "Display mode for the visual style.",
+							ValidateFunc: validation.StringInSlice([]string{"auto", "all", "value", "label", "none"}, false),
+						},
+						"alignment": {
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "Alignment for the visual style.",
+							ValidateFunc: validation.StringInSlice([]string{"stacked", "inline"}, false),
+						},
+					},
+				},
+			},
+			"grid_options": {
+				Type:        schema.TypeList,
+				Required:    true,
+				Description: "Grid options for the billboard widget.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"value": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							Description:  "Value size for the grid options.",
+							ValidateFunc: validation.IntBetween(8, 240),
+						},
+						"label": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							Description:  "Label size for the grid options.",
+							ValidateFunc: validation.IntBetween(8, 240),
+						},
+						"columns": {
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Number of columns for the grid options.",
+						},
+					},
+				},
+			},
+			"link": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Link settings for the billboard widget.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"title": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Title for the link.",
+						},
+						"url": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "URL for the link.",
+						},
+						"new_tab": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Whether the link should open in a new tab.",
+						},
+					},
+				},
+			},
+		},
 	}
 }
 
