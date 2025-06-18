@@ -723,7 +723,7 @@ resource "newrelic_notification_channel" "foo" {
   destination_id = newrelic_notification_destination.foo.id
 
   property {
-    key = "workflowAutomationName"
+    key = "workflowAutomation"
     value = "name"
   }
 }

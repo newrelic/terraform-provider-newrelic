@@ -85,7 +85,7 @@ Each notification channel type supports a specific set of arguments for the `pro
   * `channelId` - (Required) Identifier that specifies the channel id to alert to.
   * `customDetails` - (Optional) Free text that *replaces* the content of the alert.
 * `WORKFLOW_AUTOMATION`
-  * `workflowAutomationName` - (Required) Free text that represents the workflow automation.
+  * `workflowAutomation` - (Required) Free text that represents the workflow automation.
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -354,7 +354,7 @@ resource "newrelic_notification_channel" "foo" {
   product = "IINT"
 
   property {
-    key = "workflowAutomationName"
+    key = "workflowAutomation"
     value = "workflowAutomationNameValue"
   }
 }
