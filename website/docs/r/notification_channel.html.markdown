@@ -39,7 +39,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the notification channel will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the channel.
-* `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA_CLASSIC`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `SLACK` and `SLACK_COLLABORATION`, `PAGERDUTY_ACCOUNT_INTEGRATION`, `PAGERDUTY_SERVICE_INTEGRATION` or `MICROSOFT_TEAMS`.
+* `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA_CLASSIC`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `SLACK` and `SLACK_COLLABORATION`, `PAGERDUTY_ACCOUNT_INTEGRATION`, `PAGERDUTY_SERVICE_INTEGRATION`, `MICROSOFT_TEAMS` or `WORKFLOW_AUTOMATION`.
 * `destination_id` - (Required) The id of the destination.
 * `product` - (Required) The type of product.  One of: `DISCUSSIONS`, `ERROR_TRACKING` or `IINT` (workflows).
 * `property` - A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
@@ -84,6 +84,8 @@ Each notification channel type supports a specific set of arguments for the `pro
   * `teamId` - (Required) Free text that represents the team id.
   * `channelId` - (Required) Identifier that specifies the channel id to alert to.
   * `customDetails` - (Optional) Free text that *replaces* the content of the alert.
+* `WORKFLOW_AUTOMATION`
+  * `workflowAutomation` - (Required) Free text that represents the workflow automation.
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -316,7 +318,7 @@ resource "newrelic_notification_channel" "foo" {
 }
 ```
 
-#### [MICROSOFT_TEAMS]
+#### [MICROSOFT_TEAMS](https://docs.newrelic.com/docs/alerts/get-notified/microsoft-teams-integrations/)
 ```hcl
 resource "newrelic_notification_channel" "foo" {
   account_id = 12345678
