@@ -72,7 +72,7 @@ Optional:
 In addition to all arguments above, the following attributes are exported:
 
 * `name` - The name of the notification destination.
-* `type` - The notification destination type, either: `EMAIL`, `SERVICE_NOW`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`, `SLACK`, `SLACK_COLLABORATION` and `MICROSOFT_TEAMS`.
+* `type` - The notification destination type, either: `EMAIL`, `SERVICE_NOW`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`, `SLACK`, `SLACK_COLLABORATION`, `MICROSOFT_TEAMS` and `WORKFLOW_AUTOMATION`.
 * `property` - A nested block that describes a notification destination property.
 * `active` - An indication whether the notification destination is active or not.
 * `status` - The status of the notification destination.

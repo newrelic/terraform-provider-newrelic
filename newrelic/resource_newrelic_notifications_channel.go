@@ -217,6 +217,7 @@ func listValidNotificationsChannelTypes() []string {
 		string(notifications.AiNotificationsChannelTypeTypes.MOBILE_PUSH),
 		string(notifications.AiNotificationsChannelTypeTypes.EVENT_BRIDGE),
 		string(notifications.AiNotificationsChannelTypeTypes.MICROSOFT_TEAMS),
+		string(notifications.AiNotificationsChannelTypeTypes.WORKFLOW_AUTOMATION),
 	}
 }
 
