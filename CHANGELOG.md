@@ -1,3 +1,10 @@
+<a name="v3.63.0"></a>
+## [v3.63.0] - 2025-06-24
+### Features
+- updated html markdown
+- enable workflow automation entities creation
+- **cloud:** added AWS AutoDiscovery Slug for configure-integration API ([#2898](https://github.com/newrelic/terraform-provider-newrelic/issues/2898))
+
 <a name="v3.62.1"></a>
 ## [v3.62.1] - 2025-06-09
 ### Bug Fixes
@@ -2397,7 +2404,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.62.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.63.0...HEAD
+[v3.63.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.62.1...v3.63.0
 [v3.62.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.62.0...v3.62.1
 [v3.62.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.3...v3.62.0
 [v3.61.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.2...v3.61.3
