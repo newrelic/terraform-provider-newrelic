@@ -246,6 +246,9 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				// Set data formatting
 				rawConfiguration.DataFormat = expandDashboardTableWidgetConfigDataFormatInput(v.(map[string]interface{}))
 
+				// BillBoard setting
+				rawConfiguration.BillboardSettings = expandDashboardBillBoardWidgetSettingsInput(v.(map[string]interface{}))
+
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
 					return nil, err
@@ -608,6 +611,41 @@ func expandDashboardTableWidgetConfigDataFormatInput(w map[string]interface{}) [
 	return nil
 }
 
+func expandDashboardBillBoardWidgetSettingsInput(input map[string]interface{}) *dashboards.DashboardWidgetBillboardSettings {
+	if input == nil {
+		return nil
+	}
+
+	settings := &dashboards.DashboardWidgetBillboardSettings{}
+
+	// Expand visual_style settings
+	if visualStyle, ok := input["visual_style"].(map[string]interface{}); ok {
+		settings.Visual = &dashboards.DashboardWidgetBillboardVisual{
+			Display:   dashboards.BillboardVisualDisplay(visualStyle["display"].(string)),
+			Alignment: dashboards.BillboardVisualAlignment(visualStyle["alignment"].(string)),
+		}
+	}
+
+	// Expand grid_options settings
+	if gridOptions, ok := input["grid_options"].(map[string]interface{}); ok {
+		settings.GridOptions = &dashboards.DashboardWidgetBillboardGridOptions{
+			Columns: gridOptions["columns"].(int),
+			Label:   gridOptions["label"].(int),
+			Value:   gridOptions["value"].(int),
+		}
+	}
+
+	// Expand link settings
+	if link, ok := input["link"].(map[string]interface{}); ok {
+		settings.Link = &dashboards.DashboardWidgetBillboardLink{
+			Title:  link["title"].(string),
+			URL:    link["url"].(string),
+			NewTab: link["new_tab"].(bool),
+		}
+	}
+
+	return settings
+}
 func expandDashboardTableWidgetConfigurationThresholdInput(d *schema.ResourceData, pageIndex int, widgetIndex int) []dashboards.DashboardTableWidgetThresholdInput {
 	// initialize an object of []DashboardTableWidgetThresholdInput, which would include a list of tableWidgetThresholdsToBeAdded as specified
 	// in the Terraform configuration, with the attribute "threshold" in table widgets
@@ -683,7 +721,6 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	if i, ok := w["title"]; ok {
 		widget.Title = i.(string)
 	}
-
 	if i, ok := w["linked_entity_guids"]; ok {
 		widget.LinkedEntityGUIDs = expandLinkedEntityGUIDs(i.([]interface{}))
 	}
